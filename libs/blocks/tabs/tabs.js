@@ -2,7 +2,7 @@
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
-import { createTag, EVENT_MILO_DEFERRED } from '../../utils/utils.js';
+import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 
 const isElementInContainerView = (targetEl) => {
   const rect = targetEl.getBoundingClientRect();
@@ -92,7 +92,7 @@ const handleDeferredImages = (block) => {
       img.removeAttribute('loading');
     });
   };
-  document.addEventListener(EVENT_MILO_DEFERRED, loadLazyImages, { once: true, capture: true });
+  document.addEventListener(MILO_EVENTS.DEFERRED, loadLazyImages, { once: true, capture: true });
 };
 
 const init = (block) => {

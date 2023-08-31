@@ -115,8 +115,11 @@ ENVS.local = {
   name: 'local',
 };
 
-export const EVENT_MILO_DEFERRED = 'milo:deferred';
-export const EVENT_MILO_LCP_LOADED = 'milo:LCP:loaded';
+export const MILO_EVENTS = {
+  DEFERRED: 'milo:deferred',
+  LCP_LOADED: 'milo:LCP:loaded',
+};
+
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
 
@@ -785,7 +788,7 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event(EVENT_MILO_DEFERRED);
+  const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
@@ -880,7 +883,7 @@ export async function loadArea(area = document) {
     await Promise.all(loaded);
 
     if (isDoc && section.el.dataset.idx === '0') {
-      window.dispatchEvent(new Event(EVENT_MILO_LCP_LOADED));
+      window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
       loadPostLCP(config);
     }
 
