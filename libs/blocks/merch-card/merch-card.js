@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring */
-import { decorateButtons } from '../../utils/decorate.js';
+import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
@@ -65,10 +65,10 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     }
 
     const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
+    const altCtaButton = originalCtaButton.cloneNode(true);
     const checkboxContainer = createCheckbox(altCtaMetaData[0]);
-    const altCtaButtonData = altCtaMetaData[1];
-    decorateButtons(altCtaButtonData);
-    const altCtaButton = createTag('div', { class: originalCtaButton.classList }, altCtaButtonData.innerHTML);
+
+    altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
     altCtaButton.classList.add('button--inactive');
     checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', ({ target: { checked } }) => {
       originalCtaButton.classList.toggle('button--inactive', checked);
@@ -154,6 +154,7 @@ const init = (el) => {
   const styles = [...el.classList];
   const cardType = getPodType(styles);
   const merchCard = el;
+  decorateBlockHrs(el);
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
     const { width, height } = imgNode;
