@@ -213,6 +213,10 @@ class Gnav {
   ims = async () => loadIms()
     .then(() => this.imsReady())
     .catch((e) => {
+      if (e?.message === 'IMS timeout') {
+        window.addEventListener('onImsLibInstance', () => this.imsReady());
+        return;
+      }
       lanaLog({ message: 'GNAV: Error with IMS', e });
     });
 
@@ -290,18 +294,15 @@ class Gnav {
         this.el.removeEventListener('click', this.loadDelayed);
         this.el.removeEventListener('keydown', this.loadDelayed);
         const [
-          { appLauncher },
           ProfileDropdown,
           Search,
         ] = await Promise.all([
-          loadBlock('../features/appLauncher/appLauncher.js'),
           loadBlock('../features/profile/dropdown.js'),
           loadBlock('../features/search/gnav-search.js'),
           loadStyles('features/profile/dropdown.css'),
           loadStyles('features/search/gnav-search.css'),
         ]);
         this.ProfileDropdown = ProfileDropdown;
-        this.appLauncher = appLauncher;
         this.Search = Search;
         resolve();
       } catch (e) {
@@ -584,10 +585,11 @@ class Gnav {
           </a>`;
 
         const isSectionMenu = item.closest('.section') instanceof HTMLElement;
+        const tag = isSectionMenu ? 'section' : 'div';
         const triggerTemplate = toFragment`
-          <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
+          <${tag} class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
-          </div>`;
+          </${tag}>`;
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {

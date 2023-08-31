@@ -75,12 +75,17 @@ export const formSuccess = (form) => {
 
 const readyForm = (form) => {
   const formEl = form.getFormElem().get(0);
+  const isDesktop = matchMedia('(min-width: 900px)');
 
-  formEl.addEventListener('focus', (e) => {
-    /* c8 ignore next 5 */
-    if (e.target.type === 'submit' || e.target.type === 'button') return;
+  formEl.addEventListener('focus', ({ target }) => {
+    /* c8 ignore next 9 */
+    const hasError = formEl.classList.contains('show-warnings');
+    const firstInvalidField = formEl.querySelector('.mktoRequired[aria-invalid=true]');
+    if (!['text', 'email', 'tel', 'textarea'].includes(target.type)
+      || (isDesktop.matches && !(hasError && target === firstInvalidField))) return;
+
     const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
-    const targetPosition = e.target?.getBoundingClientRect().top ?? 0;
+    const targetPosition = target?.getBoundingClientRect().top ?? 0;
     const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight / 2;
     window.scrollTo(0, offsetPosition);
   }, true);
@@ -191,8 +196,8 @@ export default function init(el) {
 
   createIntersectionObserver({
     el,
-    callback: (el) => {
-      loadMarketo(el, formData);
+    callback: (target) => {
+      loadMarketo(target, formData);
     },
   });
 }

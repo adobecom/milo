@@ -6,6 +6,8 @@ const MILO_TEMPLATES = [
 ];
 const MILO_BLOCKS = [
   'accordion',
+  'action-item',
+  'action-scroller',
   'adobetv',
   'article-feed',
   'article-header',
@@ -89,11 +91,6 @@ const AUTO_BLOCKS = [
   { 'offer-preview': '/tools/commerce' },
 ];
 const ENVS = {
-  local: {
-    name: 'local',
-    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
-  },
   stage: {
     name: 'stage',
     ims: 'stg1',
@@ -113,10 +110,13 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
-const LANGSTORE = 'langstore';
+ENVS.local = {
+  ...ENVS.stage,
+  name: 'local',
+};
 
+const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
-const DOT_HTML_PATH = PAGE_URL.pathname.endsWith('.html');
 
 function getEnv(conf) {
   const { host } = window.location;
@@ -185,6 +185,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
+      config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
+        && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       return config;
     },
     (conf) => (config = conf),
@@ -228,7 +230,7 @@ export function localizeLink(href, originHostName = window.location.hostname) {
     const relative = url.hostname === originHostName;
     const processedHref = relative ? href.replace(url.origin, '') : href;
     const { hash } = url;
-    if (hash === '#_dnt') return processedHref.split('#')[0];
+    if (hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
     const path = url.pathname;
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
@@ -271,7 +273,8 @@ export function loadStyle(href, callback) {
 }
 
 export function appendHtmlToCanonicalUrl() {
-  if (!DOT_HTML_PATH) return;
+  const { useDotHtml } = getConfig();
+  if (!useDotHtml) return;
   const canonEl = document.head.querySelector('link[rel="canonical"]');
   if (!canonEl) return;
   const canonUrl = new URL(canonEl.href);
@@ -282,7 +285,8 @@ export function appendHtmlToCanonicalUrl() {
 }
 
 export function appendHtmlToLink(link) {
-  if (!DOT_HTML_PATH) return;
+  const { useDotHtml } = getConfig();
+  if (!useDotHtml) return;
   const href = link.getAttribute('href');
   if (!href?.length) return;
 
@@ -385,6 +389,11 @@ function checkForExpBlock(name, expBlocks) {
 }
 
 export async function loadBlock(block) {
+  if (block.classList.contains('hide-block')) {
+    block.remove();
+    return null;
+  }
+
   let name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
@@ -735,16 +744,14 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
   const { env } = getConfig();
-  const previewPage = env?.name === 'stage' || env?.name === 'local';
-  if (mepOverride || mepOverride === '' || previewPage) {
+  const mep = PAGE_URL.searchParams.get('mep');
+  if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
       persEnabled,
       persManifests,
-      previewPage,
       targetEnabled,
     });
   }
@@ -752,7 +759,7 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    // load the personalization only
+    loadIms().catch(() => {});
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
@@ -785,8 +792,8 @@ export async function loadDeferred(area, blocks, config) {
 
   if (config.locale?.ietf === 'ja-JP') {
     // Japanese word-wrap
-    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
-      controlLineBreaksJapanese(config, area);
+    import('../features/japanese-word-wrap.js').then(({ default: controlJapaneseLineBreaks }) => {
+      controlJapaneseLineBreaks(config, area);
     });
   }
 
@@ -819,7 +826,9 @@ function decorateMeta() {
     if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
     try {
       const url = new URL(meta.content);
-      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+      const localizedLink = localizeLink(`${origin}${url.pathname}`);
+      const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
+      meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
@@ -890,9 +899,10 @@ export async function loadArea(area = document) {
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
     }
-    const seotechVideoUrl = getMetadata('seotech-video-url');
-    if (seotechVideoUrl) {
-      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
+    if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
+      import('../features/seotech/seotech.js').then((module) => module.default(
+        { locationUrl: window.location.href, getMetadata, createTag, getConfig },
+      ));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
@@ -908,7 +918,7 @@ export async function loadArea(area = document) {
     initSidekick();
 
     const { default: delayed } = await import('../scripts/delayed.js');
-    delayed([getConfig, getMetadata, loadScript, loadStyle]);
+    delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
   }
 
   // Load everything that can be deferred until after all blocks load.
