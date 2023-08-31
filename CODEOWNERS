@@ -18,6 +18,7 @@
 /libs/blocks/caas-config/ @chrischrischris
 /libs/blocks/carousel/ @rgclayton
 /libs/blocks/chart/ @meganthecoder @Brandon32 @JasonHowellSlavin @sanjayms01
+/libs/blocks/commerce/ @Axelcureno @VKniaz
 /libs/blocks/faas/ @seanchoi-dev
 /libs/blocks/faas-config/ @seanchoi-dev
 /libs/blocks/fragment-personalization/ @chrischrischris
@@ -30,7 +31,9 @@
 /libs/blocks/marketo-config/ @Brandon32
 /libs/blocks/marquee/ @ryanmparrish @Sartxi @auniverseaway
 /libs/blocks/media/ @ryanmparrish
-/libs/blocks/merch/ @3ch023 @honstar @VKniaz @npeltier
+/libs/blocks/merch/ @3ch023 @honstar @VKniaz @npeltier @Axelcureno
+/libs/blocks/merch-card/ @VKniaz @Axelcureno @ryanmparrish
+/libs/blocks/ost/ @Axelcureno @3ch023 @honstar @VKniaz @vladen @yesil @npeltier
 /libs/blocks/pdf-vewer/ @sanjayms01
 /libs/blocks/quote/ @ryanmparrish
 /libs/blocks/table-of-contents/ @Brandon32
