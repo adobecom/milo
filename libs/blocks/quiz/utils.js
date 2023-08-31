@@ -202,18 +202,20 @@ export const nestedFragments = (
 
 const getNestedFragments = (resultResources, productCodes, fragKey) => {
   const fragArray = [];
-  resultResources?.data?.forEach((row) => {
-    if (productCodes.length > 0 && productCodes.includes(row.product)) {
-      insertFragment();
-    }
-
-    function insertFragment() {
-      if (row[fragKey]) {
-        row[fragKey].split(',').forEach((val) => {
-          fragArray.push(val.trim());
-        });
+  productCodes?.forEach((product) => {
+    resultResources?.data?.forEach((row) => {
+      if (product && product === row?.product) {
+        insertFragment();
       }
-    }
+
+      function insertFragment() {
+        if (row[fragKey]) {
+          row[fragKey]?.split(',').forEach((val) => {
+            fragArray.push(val.trim());
+          });
+        }
+      }
+    });
   });
   return fragArray;
 };
