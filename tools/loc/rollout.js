@@ -65,7 +65,7 @@ function processMdast(nodes) {
   return arrayWithContentHash;
 }
 
-export const removeLabelForType = (node, type) => {
+function removeLabelForType(node, type) {
   if (node.children) {
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
