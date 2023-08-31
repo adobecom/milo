@@ -38,6 +38,10 @@
   padding-right: 0;
 }
 
+.featured-article-card-category {
+  min-height: 15px;
+}
+
 .featured-article-card-category,
 .featured-article-card-category a,
 .featured-article-card-date {

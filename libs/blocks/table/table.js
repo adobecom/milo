@@ -1,5 +1,5 @@
 /* eslint-disable no-plusplus */
-import { createTag } from '../../utils/utils.js';
+import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
 const DESKTOP_SIZE = 900;
@@ -452,7 +452,7 @@ export default function init(el) {
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
-  window.addEventListener('milo:LCP:loaded', () => {
+  window.addEventListener(MILO_EVENTS.LCP_LOADED, () => {
     let originTable;
     let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
     if (isMerch) {
