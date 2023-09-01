@@ -62,14 +62,14 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
   let signInElem;
 
   if (!dropdownElem) {
-    signInElem = toFragment`<button qa="gnav-ims-sign-in" daa-ll="${signInLabel}" class="feds-signIn">${signInLabel}</button>`;
+    signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn">${signInLabel}</button>`;
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
       signIn();
     });
   } else {
-    signInElem = toFragment`<button qa="gnav-ims-sign-in" daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
+    signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
 
     signInElem.addEventListener('click', (e) => trigger({ element: signInElem, event: e }));
     signInElem.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
@@ -79,7 +79,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     const dropdownSignInAnchor = dropdownElem.querySelector('[href$="?sign-in=true"]');
     if (dropdownSignInAnchor) {
-      const dropdownSignInButton = toFragment`<button qa="gnav-ims-sign-in">${dropdownSignInAnchor.innerText}</button>`;
+      const dropdownSignInButton = toFragment`<button class="feds-signIn">${dropdownSignInAnchor.textContent}</button>`;
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();

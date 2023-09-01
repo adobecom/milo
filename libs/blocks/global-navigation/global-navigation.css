@@ -392,6 +392,10 @@ header.global-navigation {
   color: #4B4B4B;
   white-space: nowrap;
   border: none;
+  text-align: start;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .feds-signIn:hover {
@@ -427,14 +431,10 @@ header.global-navigation {
 }
 
 .feds-signIn-dropdown li > a,
-.feds-signIn-dropdown li > button {
+.feds-signIn-dropdown .feds-signIn {
   display: block;
   color: var(--feds-color-link--light);
   padding: 6px 32px;
-  border: none;
-  width: 100%;
-  text-align: left;
-  line-height: 1.4;
 }
 
 .feds-signIn-dropdown li > a:hover,
