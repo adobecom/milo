@@ -57,6 +57,7 @@ function getDecoratedCards(articles, taxonomy) {
 
 export default async function init(blockEl) {
   const children = [...blockEl.querySelectorAll(':scope > div')];
+  const config = getConfig();
   let content;
   let recommendedArticleLinks;
 
@@ -76,13 +77,12 @@ export default async function init(blockEl) {
   } else {
     blockEl.classList.add('recommended-articles-content-wrapper');
     if (!content) {
-      const text = await replaceKey('recommended-for-you', getConfig());
+      const text = await replaceKey('recommended-for-you', config);
       content = createTag('h3', null, text);
     }
   }
   blockEl.innerHTML = '';
 
-  const config = getConfig();
   const taxonomyRoot = config.taxonomyRoot || '/topics';
   const taxonomy = await fetchTaxonomy(config, taxonomyRoot);
   const unresolvedPromises = recommendedArticleLinks.map((article) => getArticleDetails(article));
