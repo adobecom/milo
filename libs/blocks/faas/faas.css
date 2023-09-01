@@ -5,6 +5,10 @@
 Common styles for faas form Dexter's
 */
 
+a[href*='/tools/faas#'], a[href*='/tools/faas?'] {
+  visibility: hidden !important;
+}
+
 .faas {
   box-sizing: border-box;
   max-width: 800px;
@@ -108,7 +112,7 @@ input[type="checkbox"] + label {
   color: #000;
 }
 
-.faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]), 
+.faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]),
 .faas-form .error select {
   box-shadow: inset 1px 1px 0 0 #d9534f, inset -1px -1px 0 0 #d9534f;
 }
@@ -403,7 +407,7 @@ input[type="checkbox"] + label {
   .faas-form .row > label {
     margin-bottom: 10px;
   }
-  
+
   .faas.column2 {
     padding: 48px;
   }
@@ -412,7 +416,7 @@ input[type="checkbox"] + label {
     width: 100%;
     padding: 12px 0;
   }
-  
+
   .faas.column2 .faas-form select + div,
   .faas.column2 .faas-form textarea + div,
   .faas.column2 .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=hidden]) + div {
