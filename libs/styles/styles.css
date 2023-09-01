@@ -33,7 +33,7 @@
 
   /* Fonts */
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-  --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
+  --code-font-family: 'Source Code Pro', source-code-pro, monospace;
 
   /* Spacing */
   --spacing-xxs: 8px;
