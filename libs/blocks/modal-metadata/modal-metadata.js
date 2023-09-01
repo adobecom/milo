@@ -5,7 +5,7 @@ const setDimensions = (dimensions, mm, bp, m) => {
   const styleSheet = createTag('style');
   styleSheet.innerHTML = `@media (${mm}-width: ${bp}px) {.dialog-modal, .dialog-modal > .fragment { width: ${dimensions.text?.split(',')[0]}; height: ${dimensions.text?.split(',')[0]} }}`;
   m.append(styleSheet);
-}
+};
 
 export default function init(el) {
   const modal = el.closest('.dialog-modal');
