@@ -127,7 +127,7 @@ export const createFullGlobalNavigation = async ({
   window.fetch = stub().callsFake((url) => {
     if (url.includes('profile')) { return mockRes({ payload: defaultProfile }); }
     if (url.includes('placeholders')) { return mockRes({ payload: placeholders || defaultPlaceholders }); }
-    if (url.includes('large-menu')) { return mockRes({ payload: largeMenuMock }); }
+    if (url.endsWith('large-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     return null;
   });

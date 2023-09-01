@@ -18,7 +18,7 @@ export default `<div>
     <div>
       <div>
         <h2 id="cloud-menu">
-          <a href="./large-menu">Cloud Menu</a>
+          <a href="/large-menu">Cloud Menu</a>
         </h2>
       </div>
     </div>

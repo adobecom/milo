@@ -264,7 +264,8 @@ const decorateMenu = (config) => logErrorFor(async () => {
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
-    const res = await fetch(`${pathElement.href}.plain.html`);
+    const path = pathElement.href.replace(/(\.html$|$)/, '.plain.html');
+    const res = await fetch(path);
     if (res.status !== 200) return;
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
