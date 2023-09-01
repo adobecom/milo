@@ -477,11 +477,11 @@ export function decorateSVG(a) {
 export function decorateModalImageLinks(el, a, btnSize) {
   const pic = el.querySelector('picture');
   const playIcon = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
-  const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIcon);
+  const playCircle = createTag('div', { class: 'consonant-play-btn-circle', 'aria-label': 'play' }, playIcon);
   const playContainer = createTag('div', { class: 'play-container', 'aria-label': 'play' }, playCircle);
   const imgLinkContainer = createTag('span', { class: 'modal-img-link' });
   el.insertBefore(imgLinkContainer, pic);
-  a.classList.add('play-btn');
+  a.classList.add('consonant-play-btn');
   if (btnSize) a.classList.add(btnSize);
   a.append(playContainer);
   imgLinkContainer.append(pic);

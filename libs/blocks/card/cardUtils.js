@@ -9,6 +9,15 @@ export const addBackgroundImg = (picture, cardType, card) => {
   card.append(createTag('div', { class: `consonant-${cardType}-img`, style: `background-image: url(${url})` }));
 };
 
+export const addVideoBtn = (link, cardType, card) => {
+  const cardImage = card.querySelector(`.consonant-${cardType}-img`);
+  const playBtn = createTag('div', { class: `consonant-${cardType}-videoIco` });
+  link.innerHTML = '';
+  link.appendChild(playBtn);
+  link.classList.add('consonant-videoButton-wrapper');
+  cardImage.append(link);
+};
+
 const getUpFromSectionMetadata = (section) => {
   const sectionMetadata = section.querySelector('.section-metadata');
   if (!sectionMetadata) return null;

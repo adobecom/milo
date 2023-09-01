@@ -5,7 +5,7 @@
   z-index: 4;
 }
 
-.modal-img-link .play-btn {
+.modal-img-link .consonant-play-btn {
   position: absolute;
   display: flex;
   z-index: 4;
@@ -20,7 +20,7 @@
   cursor: pointer;
 }
 
-.modal-img-link .play-btn-circle {
+.modal-img-link .consonant-play-btn-circle {
   margin: auto;
   display: flex;
   width: 77px;
@@ -51,46 +51,46 @@
   fill: var(--color-white);
 }
 
-.modal-img-link .play-btn:hover {
+.modal-img-link .consonant-play-btn:hover {
   background-color: var(--color-accent-down);
 }
 
-.modal-img-link .play-btn:focus,
-.modal-img-link .play-btn:focus-visible {
+.modal-img-link .consonant-play-btn:focus,
+.modal-img-link .consonant-play-btn:focus-visible {
   outline: 2.5px solid var(--color-accent);
   background-color: var(--color-accent-down);
 }
 
-.modal-img-link .play-btn:active {
+.modal-img-link .consonant-play-btn:active {
   background-color: var(--color-accent-hover);
   outline: none
 }
 
-.modal-img-link .play-btn.small {
+.modal-img-link .consonant-play-btn.small {
   height: 44px;
   width: 44px;
   left: calc(50% - 22px);
   top: calc(50% - 22px);
 }
 
-.modal-img-link .play-btn.small .play-btn-circle {
+.modal-img-link .consonant-play-btn.small .consonant-play-btn-circle {
   width: 44px;
   height: 44px;
   border: 2.5px solid var(--color-white);
 }
 
-.modal-img-link .play-btn.small .play-icon-container {
+.modal-img-link .consonant-play-btn.small .play-icon-container {
   width: 18px;
   height: 18px;
 }
 
-.modal-img-link .play-btn.small .play-icon {
+.modal-img-link .consonant-play-btn.small .play-icon {
   width: 13.5px;
   height: 18px;
 }
 
 @media screen and (min-width: 600px) {
-  .modal-img-link .play-btn:not(.medium):not(.small) {
+  .modal-img-link .consonant-play-btn:not(.medium):not(.small) {
     position: absolute;
     display: flex;
     z-index: 4;
@@ -105,7 +105,7 @@
     cursor: pointer;
   }
 
-  .modal-img-link .play-btn:not(.medium):not(.small) .play-btn-circle {
+  .modal-img-link .consonant-play-btn:not(.medium):not(.small) .consonant-play-btn-circle {
     margin: auto;
     display: flex;
     width: 102px;
@@ -117,7 +117,7 @@
     border: 3px solid var(--color-white);
   }
 
-  .modal-img-link .play-btn:not(.medium):not(.small) .play-icon-container {
+  .modal-img-link .consonant-play-btn:not(.medium):not(.small) .play-icon-container {
     display: flex;
     width: 42px;
     height: 42px;
@@ -125,15 +125,15 @@
     align-items: flex-end;
   }  
   
-  .modal-img-link .play-btn:not(.medium):not(.small) .play-icon {
+  .modal-img-link .consonant-play-btn:not(.medium):not(.small) .play-icon {
     width: 31.5px;
     height: 42px;
     flex-shrink: 0;
     fill: var(--color-white);
   }  
 
-  .modal-img-link .play-btn:not(.medium):not(.small) .play-btn:focus,
-  .modal-img-link .play-btn:not(.medium):not(.small) .play-btn:focus-visible {
+  .modal-img-link .consonant-play-btn:not(.medium):not(.small) .consonant-play-btn:focus,
+  .modal-img-link .consonant-play-btn:not(.medium):not(.small) .consonant-play-btn:focus-visible {
     outline: 3px solid var(--color-accent);
     background-color: var(--color-accent-down);
   }
