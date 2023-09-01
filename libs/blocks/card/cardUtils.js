@@ -3,6 +3,7 @@ import { createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const DOUBLE_WIDE = 'DoubleWideCard';
+const HALF_HEIGHT = 'HalfHeightCard';
 
 export const addBackgroundImg = (picture, cardType, card) => {
   const url = picture.querySelector('img').src;
@@ -12,10 +13,11 @@ export const addBackgroundImg = (picture, cardType, card) => {
 export const addVideoBtn = (link, cardType, card) => {
   const cardImage = card.querySelector(`.consonant-${cardType}-img`);
   const playBtn = createTag('div', { class: `consonant-${cardType}-videoIco` });
+  if (cardType === HALF_HEIGHT) return cardImage.append(playBtn);
   link.innerHTML = '';
   link.appendChild(playBtn);
   link.classList.add('consonant-videoButton-wrapper');
-  cardImage.append(link);
+  return cardImage.append(link);
 };
 
 const getUpFromSectionMetadata = (section) => {
