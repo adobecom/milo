@@ -775,6 +775,14 @@ async function checkForPageMods() {
   }
 }
 
+export async function loadFonts(config, { loadStyle: utilsLoadStyle }) {
+  const { default: loadTypeKitFonts, loadTypeKitFont } = await import('./fonts.js');
+  return Promise.allSettled([
+    loadTypeKitFonts(config.locale, utilsLoadStyle),
+    document.querySelector('code') && loadTypeKitFont('vih2anh.css', utilsLoadStyle),
+  ]);
+}
+
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
@@ -784,12 +792,7 @@ async function loadPostLCP(config) {
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
-  import('./fonts.js').then((module) => {
-    module.default(config.locale, loadStyle);
-    if (document.querySelector('code')) {
-      module.loadTypeKitFont('vih2anh.css', loadStyle);
-    }
-  });
+  loadFonts(config, { loadStyle });
 }
 
 export async function loadDeferred(area, blocks, config) {

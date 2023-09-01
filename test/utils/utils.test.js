@@ -464,4 +464,36 @@ describe('Utils', () => {
       });
     });
   });
+
+  describe('fonts', async () => {
+    const DEFAULT_FONT_CSS = 'https://use.typekit.net/hah7vzn.css';
+    const CODE_FONT_CSS = 'https://use.typekit.net/vih2anh.css';
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should load default font', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+      const loadStyle = sinon.stub()
+        .withArgs(DEFAULT_FONT_CSS)
+        .yields(Promise.resolve());
+      await utils.loadFonts(utils.getConfig(), { loadStyle });
+      expect(loadStyle.calledOnce).to.be.true;
+      expect(loadStyle.calledWith(DEFAULT_FONT_CSS)).to.be.true;
+    });
+    it('should load code font when monospaced text is present', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body-code.html' });
+      const loadStyle = sinon.stub()
+        .withArgs(DEFAULT_FONT_CSS)
+        .yields(Promise.resolve())
+        .withArgs(CODE_FONT_CSS)
+        .yields(Promise.resolve());
+      await utils.loadFonts(utils.getConfig(), { loadStyle });
+      expect(loadStyle.calledTwice).to.be.true;
+      expect(loadStyle.calledWith(DEFAULT_FONT_CSS)).to.be.true;
+      expect(loadStyle.calledWith(CODE_FONT_CSS)).to.be.true;
+    });
+  });
 });
