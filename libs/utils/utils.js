@@ -388,7 +388,33 @@ function checkForExpBlock(name, expBlocks) {
   return { blockPath: expBlock, blockName };
 }
 
-export async function loadBlock(block) {
+function decorateSectionAnalytics(section) {
+  const sectionFirstClass = section.classList.length > 1 ? `--${section.classList[1]}` : '';
+  section.setAttribute('daa-lh', `s${Number(section.dataset.idx) + 1}${sectionFirstClass}`);
+}
+
+function decorateDefaultBlockAnalytics(block, idx) {
+  let blockCount = idx;
+  if (!block.className.includes('metadata')) {
+    blockCount += 1;
+    block.setAttribute('daa-lh', `b${blockCount}--${[...block.classList].slice(0, 2).join('--')}`);
+
+    let header = '';
+    let linkCount = 1;
+    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a, button').forEach((item) => {
+      if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
+        const label = (item.textContent || item.getAttribute('aria-label'))?.trim().slice(0, 30);
+        item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
+        linkCount += 1;
+      } else {
+        header = `|${item.textContent?.trim().slice(0, 30)}`;
+      }
+    });
+  }
+  return blockCount;
+}
+
+export async function loadBlock(block, idx) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
@@ -756,6 +782,7 @@ async function checkForPageMods() {
     });
   }
 
+  document.querySelector('main')?.setAttribute('daa-im', 'true');
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
@@ -766,6 +793,8 @@ async function checkForPageMods() {
     const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests);
+  } else {
+    document.body.setAttribute('daa-lh', 'default|default');
   }
 }
 
@@ -869,7 +898,11 @@ export async function loadArea(area = document) {
 
   const areaBlocks = [];
   for (const section of sections) {
-    const loaded = section.blocks.map((block) => loadBlock(block));
+    let blockCount = 0;
+    const loaded = section.blocks.map((block) => {
+      blockCount = decorateDefaultBlockAnalytics(block, blockCount);
+      return loadBlock(block);
+    });
     areaBlocks.push(...section.blocks);
 
     await decorateIcons(section.el, config);
@@ -878,6 +911,8 @@ export async function loadArea(area = document) {
     await Promise.all(loaded);
 
     window.dispatchEvent(new Event('milo:LCP:loaded'));
+
+    if (isDoc) decorateSectionAnalytics(section.el);
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }

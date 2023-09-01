@@ -48,7 +48,6 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
-  decorateLinkAnalytics(el, headings);
 }
 
 export function decorateBlockBg(block, node) {
