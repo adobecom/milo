@@ -905,6 +905,7 @@ export async function loadArea(area = document) {
   const areaBlocks = [];
   for (const section of sections) {
     let blockCount = 0;
+    if (isDoc) blockCount = 0;
     const loaded = section.blocks.map((block) => {
       blockCount = decorateDefaultBlockAnalytics(block, blockCount);
       return loadBlock(block);
