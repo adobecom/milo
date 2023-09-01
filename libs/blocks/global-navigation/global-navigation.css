@@ -396,6 +396,7 @@ header.global-navigation {
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
+  width: 100%;
 }
 
 .feds-signIn:hover {
@@ -440,7 +441,7 @@ header.global-navigation {
 .feds-signIn-dropdown li > a:hover,
 .feds-signIn-dropdown li > button:hover {
   color: var(--feds-color-link--hover--light);
-  background-color: var(--feds-background-link--hover--light);;
+  background-color: var(--feds-background-link--hover--light);
 }
 
 #feds-googleLogin {
