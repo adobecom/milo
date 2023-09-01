@@ -355,6 +355,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
   let nextQuizViews = [];
   let hasResultTigger = false;
   let lastStopValue;
+
   allcards.forEach((selection) => {
     // for each elem in current selection, find its coresponding
     // next element and push it to the next array.
@@ -386,16 +387,14 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
   });
 
   // Stripping off the next steps that are negated using 'NOT()'.
-  nextQuizViews.forEach((val) => {
-    let regexStepsToSkip;
-    if (val.startsWith('NOT(')) {
-      regexStepsToSkip = val;
-      const stepsToSkip = regexStepsToSkip.substring(
-        regexStepsToSkip.indexOf('(') + 1,
-        regexStepsToSkip.lastIndexOf(')'),
+  nextQuizViews.forEach((nextStep) => {
+    if (nextStep?.startsWith('NOT(')) {
+      const stepsToSkip = nextStep?.substring(
+        nextStep.indexOf('(') + 1,
+        nextStep.lastIndexOf(')'),
       );
-      const stepsToSkipArr = stepsToSkip.split(',');
-      stepsToSkipArr.forEach((skip) => {
+      const stepsToSkipArr = stepsToSkip?.split(',');
+      stepsToSkipArr?.forEach((skip) => {
         nextQuizViews = nextQuizViews.filter((view) => (view !== skip));
       });
     }
