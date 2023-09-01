@@ -136,7 +136,7 @@ function normalizePath(p) {
 
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
-  const reg = new RegExp(`^${pattern}$`, 'i');
+  const reg = new RegExp(`^${pattern}$`, 'i'); // devtool bug needs this backtick: `
   return reg.test(inputStr);
 };
 
