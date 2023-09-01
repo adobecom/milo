@@ -790,6 +790,7 @@ picture.bg-img img {
 }
 
 /** Video play button styles **/
+
 .modal-img-link {
   position: relative;
   display: inline-block;
@@ -800,13 +801,12 @@ picture.bg-img img {
 .modal-img-link .consonant-play-btn {
   position: absolute;
   display: flex;
+  border: none;
+  outline: none;
   height: 72px;
   width: 72px;
   left: calc(50% - 36px);
   top: calc(50% - 36px);
-  background-color: var(--link-color-dark);
-  border: none;
-  outline: none;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -819,15 +819,30 @@ picture.bg-img img {
 }
 
 .modal-img-link .consonant-play-btn .consonant-play-btn-circle {
-  margin: auto;
   display: flex;
-  width: 72px;
-  height: 72px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  background-color: var(--link-color-dark);
+  width: 72px;
+  height: 72px;
   border: 2.5px solid var(--color-white);
+}
+
+.modal-img-link .consonant-play-btn-circle:hover {
+  background-color: var(--color-accent-down);
+}
+
+.modal-img-link .consonant-play-btn:focus,
+.modal-img-link .consonant-play-btn-circle:focus-visible {
+  outline: 2.5px solid var(--link-color-dark);
+  background-color: var(--color-accent-down);
+}
+
+.modal-img-link .consonant-play-btn-circle:active {
+  background-color: var(--link-hover-color-dark);
+  outline: none
 }
 
 .modal-img-link .consonant-play-btn.small .consonant-play-btn-circle {
@@ -838,10 +853,10 @@ picture.bg-img img {
 
 .modal-img-link .consonant-play-btn .play-icon-container {
   display: flex;
-  width: 32px;
-  height: 32px;
   flex-direction: column;
   align-items: flex-end;
+  width: 32px;
+  height: 32px;
 }
 
 [dir="rtl"] .modal-img-link .consonant-play-btn .play-icon-container {
@@ -865,21 +880,6 @@ picture.bg-img img {
   height: 18px;
 }
 
-.modal-img-link .consonant-play-btn:hover {
-  background-color: var(--color-accent-down);
-}
-
-.modal-img-link .consonant-play-btn:focus,
-.modal-img-link .consonant-play-btn:focus-visible {
-  outline: 2.5px solid var(--link-color-dark);
-  background-color: var(--color-accent-down);
-}
-
-.modal-img-link .consonant-play-btn:active {
-  background-color: var(--link-hover-color-dark);
-  outline: none
-}
-
 @media screen and (min-width: 600px) {
   .modal-img-link .consonant-play-btn.large {
     height: 96px;
@@ -894,9 +894,9 @@ picture.bg-img img {
     border: 3px solid var(--color-white);
   }
 
-  .modal-img-link .consonant-play-btn.large .consonant-play-btn:focus,
-  .modal-img-link .consonant-play-btn.large .consonant-play-btn:focus-visible {
-    outline: 3px solid var(--play-btn-hover);
+  .modal-img-link .consonant-play-btn.large .consonant-play-btn-circle:focus,
+  .modal-img-link .consonant-play-btn.large .consonant-play-btn-circle:focus-visible {
+    outline: 3px solid var(--link-color-dark);
   }
 
   .modal-img-link .consonant-play-btn.large .play-icon-container {
