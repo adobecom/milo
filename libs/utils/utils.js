@@ -401,7 +401,7 @@ function decorateSectionAnalytics(section) {
 
 function decorateDefaultBlockAnalytics(block, idx) {
   let blockCount = idx;
-  if (!block.className.includes('metadata') && !block.classList.contains('fragment') && !block.classList.contains('link-block')) {
+  if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
     blockCount += 1;
     block.setAttribute('daa-lh', `b${blockCount}--${[...block.classList].slice(0, 2).join('--')}`);
 
