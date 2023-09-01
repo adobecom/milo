@@ -1,5 +1,6 @@
 import { readFile, sendMouse, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -9,7 +10,7 @@ describe('table and tablemetadata', () => {
   beforeEach(() => {
     const tables = document.querySelectorAll('.table');
     tables.forEach((t) => init(t));
-    window.dispatchEvent(new Event('milo:LCP:loaded'));
+    window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
   });
 
   describe('standard table', () => {

@@ -1,11 +1,11 @@
 const RE_ALPHANUM = /[^0-9a-z]/gi;
 const RE_TRIM_UNDERSCORE = /^_+|_+$/g;
 
-export function decorateBlockAnalytics(blockEl) {
+export function decorateBlockAnalytics() {
   return false;
 }
 
-export function decorateLinkAnalytics(textEl, headings) {
+export function decorateLinkAnalytics() {
   return false;
 }
 
