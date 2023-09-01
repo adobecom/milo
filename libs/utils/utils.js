@@ -502,7 +502,7 @@ export function decorateImageLinks(el) {
       picParent.insertBefore(aTag, pic);
       if (playBtn?.includes(':play')) {
         const playBtnFormat = playBtn.split(':')[1];
-        const playBtnSize = playBtnFormat.includes('-') ? playBtnFormat.split('-')[1] : '';
+        const playBtnSize = playBtnFormat.includes('-') ? playBtnFormat.split('-')[1] : 'large';
         decorateModalImageLinks(picParent, aTag, playBtnSize);
       } else {
         aTag.append(pic);

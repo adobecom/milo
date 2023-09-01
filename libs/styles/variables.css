@@ -110,13 +110,6 @@
   --aspect-ratio-standard: 4/3;
   --aspect-ratio-wide: 16/9;
 
-  /* Video play button */
-  --play-btn: #378ef0;
-  --play-btn-hover: #095aba;
-  --play-btn-focus: #095aba;
-  --play-btn-focus-outline: #1473E6;
-  --play-btn-down: #0d66d0;
-  
   /* icon sizes */
   --icon-size-xxl: 80px;
   --icon-size-xl: 64px;
