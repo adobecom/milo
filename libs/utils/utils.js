@@ -399,10 +399,11 @@ function decorateSectionAnalytics(section) {
   section.setAttribute('daa-lh', `s${Number(section.dataset.idx) + 1}${sectionFirstClass}`);
 }
 
-function decorateDefaultBlockAnalytics(block, idx) {
-  let blockCount = idx;
+function decorateDefaultBlockAnalytics(block) {
   if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
-    blockCount += 1;
+    const section = block.closest('.section[daa-lh]');
+    const otherBlocks = section.querySelectorAll(':scope [daa-lh]').length;
+    const blockCount = otherBlocks + 1;
     block.setAttribute('daa-lh', `b${blockCount}--${[...block.classList].slice(0, 2).join('--')}`);
 
     let header = '';
@@ -417,7 +418,6 @@ function decorateDefaultBlockAnalytics(block, idx) {
       }
     });
   }
-  return blockCount;
 }
 
 export async function loadBlock(block, idx) {
@@ -904,10 +904,8 @@ export async function loadArea(area = document) {
 
   const areaBlocks = [];
   for (const section of sections) {
-    let blockCount = 0;
-    if (isDoc) blockCount = 0;
     const loaded = section.blocks.map((block) => {
-      blockCount = decorateDefaultBlockAnalytics(block, blockCount);
+      decorateDefaultBlockAnalytics(block);
       return loadBlock(block);
     });
     areaBlocks.push(...section.blocks);
