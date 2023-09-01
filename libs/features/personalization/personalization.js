@@ -558,7 +558,7 @@ export async function applyPers(manifests) {
   const experiments = results.map((r) => r.experiment);
   if (experiments.length) {
     const manifestLh = experiments.map((e) => e.manifest.split('/').pop().replace('.json', ''));
-    const variantLh = experiments.map((e) => e.selectedVariantName.replace('target-', ''));
+    const variantLh = experiments.map((e) => e.selectedVariantName?.replace('target-', '') || 'default');
     document.body.setAttribute('daa-lh', `${manifestLh.join('--')}|${variantLh.join('--')}`);
   }
   updateConfig({
