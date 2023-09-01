@@ -1,3 +1,6 @@
+
+ /*** Variables ***/
+
  :root {
   /* Colors */
   --link-color: #035fe6;
@@ -169,7 +172,8 @@
   }
 }
 
-/* Consonant Typography */
+/*** Consonant Typography ***/
+
 .heading-xxxl,
 .heading-xxl,
 .heading-xl,
@@ -523,7 +527,7 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
 
-/* global styles */
+/*** Global Styles ***/
 
 @font-face {
   font-family: 'Trebuchet MS';
