@@ -22,12 +22,12 @@
 }
 
 .iframe-calendar {
-    height: 1500px;
-    padding-bottom: 0;
+  height: 1500px;
+  padding-bottom: 0;
 }
 
 @media (max-width: 1200px) {
-  .dialog-modal.commerce-frame .milo-iframe{
-    padding-bottom:100vh;
+  .dialog-modal.commerce-frame .milo-iframe {
+    padding-bottom: 100dvh;
   }
 }
