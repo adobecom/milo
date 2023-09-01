@@ -413,7 +413,7 @@ function decorateDefaultBlockAnalytics(block, idx) {
         item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
         linkCount += 1;
       } else {
-        header = `|${item.textContent?.trim().slice(0, 30)}`;
+        header = item.textContent?.trim().slice(0, 30);
       }
     });
   }
