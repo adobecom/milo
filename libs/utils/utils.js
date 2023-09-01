@@ -42,6 +42,7 @@ const MILO_BLOCKS = [
   'marquee-anchors',
   'media',
   'merch',
+  'merch-card',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -113,6 +114,11 @@ const ENVS = {
 ENVS.local = {
   ...ENVS.stage,
   name: 'local',
+};
+
+export const MILO_EVENTS = {
+  DEFERRED: 'milo:deferred',
+  LCP_LOADED: 'milo:LCP:loaded',
 };
 
 const LANGSTORE = 'langstore';
@@ -389,6 +395,11 @@ function checkForExpBlock(name, expBlocks) {
 }
 
 export async function loadBlock(block) {
+  if (block.classList.contains('hide-block')) {
+    block.remove();
+    return null;
+  }
+
   let name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
@@ -778,7 +789,7 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event('milo:deferred');
+  const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
@@ -821,7 +832,9 @@ function decorateMeta() {
     if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
     try {
       const url = new URL(meta.content);
-      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+      const localizedLink = localizeLink(`${origin}${url.pathname}`);
+      const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
+      meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
@@ -870,10 +883,10 @@ export async function loadArea(area = document) {
     // Only move on to the next section when all blocks are loaded.
     await Promise.all(loaded);
 
-    window.dispatchEvent(new Event('milo:LCP:loaded'));
-
-    // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
+    if (isDoc && section.el.dataset.idx === '0') {
+      window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
+      loadPostLCP(config);
+    }
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
@@ -911,7 +924,7 @@ export async function loadArea(area = document) {
     initSidekick();
 
     const { default: delayed } = await import('../scripts/delayed.js');
-    delayed([getConfig, getMetadata, loadScript, loadStyle]);
+    delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
   }
 
   // Load everything that can be deferred until after all blocks load.

@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -254,7 +254,7 @@ export default async function decoratePreviewMode(manifests) {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   addMarkerData(manifests);
-  document.addEventListener('milo:deferred', () => {
+  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     createPreviewPill(manifests);
   }, { once: true });
 }

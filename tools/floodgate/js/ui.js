@@ -10,7 +10,7 @@ import {
   getFloodgateUrl,
 } from './utils.js';
 
-const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles', 'promoteFiles', 'updateFragments'];
+const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles', 'promoteFiles', 'updateFragments', 'delete'];
 
 function getSharepointStatus(doc, isFloodgate) {
   let sharepointStatus = 'Connect to Sharepoint';
@@ -107,6 +107,11 @@ function updateProjectStatusUI(status) {
     document.querySelector('#promote-status').innerHTML = status.promoteStatus.payload.action.status;
     document.querySelector('#promote-status-msg').innerHTML = status.promoteStatus.payload.action.message;
     document.querySelector('#promote-status-ts').innerHTML = status.promoteStatus.payload.action.startTime;
+  }
+  if (status?.deleteStatus?.payload?.action?.type === 'deleteAction') {
+    document.querySelector('#delete-status').innerHTML = status.deleteStatus.payload.action.status;
+    document.querySelector('#delete-status-msg').innerHTML = status.deleteStatus.payload.action.message;
+    document.querySelector('#delete-status-ts').innerHTML = status.deleteStatus.payload.action.startTime;
   }
   document.querySelector('.project-status').hidden = false;
 }
