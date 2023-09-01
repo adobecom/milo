@@ -367,25 +367,6 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
     getAllSelectedQuestionsRelatedOptions.forEach(({ options, next }) => {
       if (options === selection) {
         const flowStepsList = next.split(',');
-
-        let regexStepsToSkip;
-        flowStepsList.forEach((step) => {
-          if (step.startsWith('NOT(')) regexStepsToSkip = step;
-        });
-
-        // regexStepsToSkip = 'NOT(q-rather)'
-        if (regexStepsToSkip) {
-          const stepsToSkip = regexStepsToSkip.substring(
-            regexStepsToSkip.indexOf('(') + 1,
-            regexStepsToSkip.lastIndexOf(')'),
-          );
-
-          // stepsToSkip = 'q-rather'
-          const stepsToSkipArr = stepsToSkip.split(',');
-          stepsToSkipArr.forEach((skip) => {
-            nextQuizViews = nextQuizViews.filter((val) => val !== skip);
-          });
-        }
         // RESET the queue and add only the next question.
         if (flowStepsList.includes('RESET')) { // Reset to intial question
           nextQuizViews = []; // Resetting the nextQuizViews
@@ -398,12 +379,29 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
           hasResultTigger = flowStepsList.includes('RESULT');
         }
 
-        const filteredNextSteps = flowStepsList.filter((val) => (val !== 'RESULT' && val !== 'RESET' && !val.startsWith('NOT(')));
+        const filteredNextSteps = flowStepsList.filter((val) => (val !== 'RESULT' && val !== 'RESET'));
 
         nextQuizViews = [...nextQuizViews, ...filteredNextSteps];
       }
     });
   });
+
+  // Stripping off the next steps that are negated using 'NOT()'.
+  nextQuizViews.forEach((nextStep) => {
+    if (nextStep?.startsWith('NOT(')) {
+      const stepsToSkip = nextStep?.substring(
+        nextStep.indexOf('(') + 1,
+        nextStep.lastIndexOf(')'),
+      );
+      const stepsToSkipArr = stepsToSkip?.split(',');
+      stepsToSkipArr?.forEach((skip) => {
+        nextQuizViews = nextQuizViews.filter((view) => (view !== skip));
+      });
+    }
+  });
+
+  // Filtering out the NOT() from the nextQuizViews.
+  nextQuizViews = nextQuizViews.filter((view) => view.startsWith('NOT(') === false);
 
   return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])], lastStopValue };
 };
