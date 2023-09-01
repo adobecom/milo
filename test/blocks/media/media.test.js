@@ -68,4 +68,12 @@ describe('media', () => {
       expect(appStoreCta).to.exist;
     });
   });
+  describe('with bio variant', () => {
+    it('has a bio avatar and icon-stack area', () => {
+      const avatar = medias[6].querySelectorAll('.avatar');
+      const iconStack = medias[6].querySelectorAll('.icon-stack-area');
+      expect(avatar).to.exist;
+      expect(iconStack).to.exist;
+    });
+  });
 });
