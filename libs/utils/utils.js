@@ -42,6 +42,7 @@ const MILO_BLOCKS = [
   'marquee-anchors',
   'media',
   'merch',
+  'merch-card',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -114,6 +115,12 @@ ENVS.local = {
   ...ENVS.stage,
   name: 'local',
 };
+
+export const MILO_EVENTS = {
+  DEFERRED: 'milo:deferred',
+  LCP_LOADED: 'milo:LCP:loaded',
+};
+
 const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" fill="none" class="play-icon">
                     <path d="M24 16.0005L0 32L1.39876e-06 0L24 16.0005Z" fill="white"/>
                     `;
@@ -805,7 +812,7 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event('milo:deferred');
+  const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
@@ -899,10 +906,10 @@ export async function loadArea(area = document) {
     // Only move on to the next section when all blocks are loaded.
     await Promise.all(loaded);
 
-    window.dispatchEvent(new Event('milo:LCP:loaded'));
-
-    // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
+    if (isDoc && section.el.dataset.idx === '0') {
+      window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
+      loadPostLCP(config);
+    }
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
