@@ -798,6 +798,11 @@ picture.bg-img img {
   z-index: 4;
 }
 
+.modal-img-link, 
+.modal-img-link * {
+  box-sizing: content-box;
+}
+
 .modal-img-link .consonant-play-btn {
   position: absolute;
   display: flex;
@@ -826,6 +831,7 @@ picture.bg-img img {
 .modal-img-link .consonant-play-btn:focus,
 .modal-img-link .consonant-play-btn:focus-visible {
   outline: 2.5px solid var(--link-color-dark);
+  outline-offset: 0;
   background-color: var(--color-accent-down);
 }
 
@@ -890,8 +896,7 @@ picture.bg-img img {
 
   .modal-img-link .consonant-play-btn.large:focus,
   .modal-img-link .consonant-play-btn.large:focus-visible {
-    outline: 2.5px solid var(--link-color-dark);
-    background-color: var(--color-accent-down);
+    outline: 3px solid var(--link-color-dark);
   }
 
   .modal-img-link .consonant-play-btn.large .consonant-play-btn-circle {
