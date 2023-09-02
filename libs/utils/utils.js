@@ -403,7 +403,7 @@ function decorateDefaultBlockAnalytics(block) {
   let sectionFound = false;
   let section = block.closest('.section');
   while (!sectionFound) {
-    if (!section || section.parentElement.nodeName === 'main') {
+    if (!section || section.parentElement.nodeName === 'MAIN') {
       sectionFound = true;
     } else {
       section = section.parentElement.closest('.section');
