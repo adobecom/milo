@@ -400,11 +400,19 @@ function decorateSectionAnalytics(section) {
 }
 
 function decorateDefaultBlockAnalytics(block) {
+  let sectionFound = false;
+  let section = block.closest('.section');
+  while (!sectionFound) {
+    if (!section || section.parentElement.nodeName === 'main') {
+      sectionFound = true;
+    } else {
+      section = section.parentElement.closest('.section');
+    }
+  }
+  let blockCount = section.querySelectorAll('[daa-lh]:not(.section)').length;
   if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
-    const section = block.closest('.section[daa-lh]');
-    const otherBlocks = section.querySelectorAll(':scope [daa-lh]').length;
-    const blockCount = otherBlocks + 1;
-    block.setAttribute('daa-lh', `b${blockCount}--${[...block.classList].slice(0, 2).join('--')}`);
+    blockCount += 1;
+    block.setAttribute('daa-lh', `b${blockCount + 1}--${[...block.classList].slice(0, 2).join('--')}`);
 
     let header = '';
     let linkCount = 1;
@@ -418,6 +426,7 @@ function decorateDefaultBlockAnalytics(block) {
       }
     });
   }
+  return blockCount;
 }
 
 export async function loadBlock(block, idx) {
