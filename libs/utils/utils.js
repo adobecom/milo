@@ -400,19 +400,15 @@ function decorateSectionAnalytics(section) {
 }
 
 function decorateDefaultBlockAnalytics(block) {
-  let sectionFound = false;
-  let section = block.closest('.section');
-  while (!sectionFound) {
-    if (!section || section.parentElement.nodeName === 'MAIN') {
-      sectionFound = true;
-    } else {
+  if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
+    let section = block.closest('.section');
+    if (!section) return;
+    while (section) {
+      if (section.parentElement.nodeName === 'MAIN') return;
       section = section.parentElement.closest('.section');
     }
-  }
-  let blockCount = section.querySelectorAll('[daa-lh]:not(.section)').length;
-  if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
-    blockCount += 1;
-    block.setAttribute('daa-lh', `b${blockCount + 1}--${[...block.classList].slice(0, 2).join('--')}`);
+    const blockCount = section.querySelectorAll('[daa-lh]:not(.section)').length + 1;
+    block.setAttribute('daa-lh', `b${blockCount}--${[...block.classList].slice(0, 2).join('--')}`);
 
     let header = '';
     let linkCount = 1;
