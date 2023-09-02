@@ -810,8 +810,8 @@ picture.bg-img img {
   outline: none;
   height: 77px;
   width: 77px;
-  left: calc(50% - 40px);
-  top: calc(50% - 40px);
+  left: calc(50% - 38.5px);
+  top: calc(50% - 38.5px);
   background-color: var(--link-color-dark);
   border-radius: 50%;
   cursor: pointer;
@@ -820,8 +820,8 @@ picture.bg-img img {
 .modal-img-link .consonant-play-btn.small {
   height: 44px;
   width: 44px;
-  left: calc(50% - 24px);
-  top: calc(50% - 24px);
+  left: calc(50% - 22px);
+  top: calc(50% - 22px);
 }
 
 .modal-img-link .consonant-play-btn:hover {
