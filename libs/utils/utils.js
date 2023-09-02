@@ -395,27 +395,21 @@ function checkForExpBlock(name, expBlocks) {
 }
 
 function decorateSectionAnalytics(section) {
-  section.querySelectorAll('[data-block="true"]').forEach((block) => block.removeAttribute('data-block'));
   const sectionFirstClass = section.classList.length > 1 ? `--${section.classList[1]}` : '';
   section.setAttribute('daa-lh', `s${Number(section.dataset.idx) + 1}${sectionFirstClass}`);
+  section.querySelectorAll('[data-block="true"]').forEach((block, idx) => {
+    if (block.hasAttribute('daa-lh')) {
+      block.setAttribute('daa-lh', `b${idx + 1}--${block.getAttribute('daa-lh')}`);
+    } else {
+      block.setAttribute('daa-lh', `b${idx + 1}--${[...block.classList].slice(0, 2).join('--')}`);
+    }
+    block.removeAttribute('data-block');
+  });
 }
 
-function decorateDefaultBlockAnalytics(block) {
+function decorateDefaultLinkAnalytics(block) {
   if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
-    let sectionFound = false;
-    let section = block.closest('.section');
-    if (!section) return;
-    while (!sectionFound) {
-      if (section.parentElement.nodeName === 'MAIN') {
-        sectionFound = true;
-      } else {
-        section = section.parentElement.closest('.section');
-      }
-    }
-    const sectionBlocks = section.querySelectorAll('[data-block="true"]');
-    const blockCount = Array.prototype.indexOf.call(sectionBlocks, block);
-    block.setAttribute('daa-lh', `b${blockCount}--${[...block.classList].slice(0, 2).join('--')}`);
-
+    block.dataset.block = 'true';
     let header = '';
     let linkCount = 1;
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a, button').forEach((item) => {
@@ -430,7 +424,8 @@ function decorateDefaultBlockAnalytics(block) {
   }
 }
 
-export async function loadBlock(block, idx) {
+export async function loadBlock(block) {
+  decorateDefaultLinkAnalytics(block);
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
@@ -916,8 +911,6 @@ export async function loadArea(area = document) {
   for (const section of sections) {
     const loaded = section.blocks.map((block) => {
       if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
-        block.dataset.block = 'true';
-        decorateDefaultBlockAnalytics(block);
       }
       return loadBlock(block);
     });
