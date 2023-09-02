@@ -121,7 +121,7 @@ export const MILO_EVENTS = {
   LCP_LOADED: 'milo:LCP:loaded',
 };
 
-const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" fill="none" class="play-icon">
+const PLAY_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" fill="none" class="play-icon">
                     <path d="M24 16.0005L0 32L1.39876e-06 0L24 16.0005Z" fill="white"/>
                     `;
 const LANGSTORE = 'langstore';
@@ -476,16 +476,14 @@ export function decorateSVG(a) {
 
 export function decorateModalImageLinks(el, a, btnSize) {
   const pic = el.querySelector('picture');
-  const playIcon = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
+  const playIcon = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON_SVG);
   const playCircle = createTag('div', { class: 'consonant-play-btn-circle', 'aria-label': 'play' }, playIcon);
-  // const playContainer = createTag('div', { class: 'play-container', 'aria-label': 'play' }, playCircle);
   const imgLinkContainer = createTag('span', { class: 'modal-img-link' });
   el.insertBefore(imgLinkContainer, pic);
-  a.classList.add('consonant-play-btn');
   if (btnSize) a.classList.add(btnSize);
+  a.classList.add('consonant-play-btn');
   a.append(playCircle);
-  imgLinkContainer.append(pic);
-  imgLinkContainer.append(a);
+  imgLinkContainer.append(pic, a);
 }
 
 export function decorateImageLinks(el) {
