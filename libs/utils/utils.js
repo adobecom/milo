@@ -499,6 +499,9 @@ export function decorateImageLinks(el) {
       const aTag = createTag('a', { href: url, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
       if (playBtn?.includes(':play')) {
+        const { miloLibs, codeRoot } = getConfig();
+        const base = miloLibs || codeRoot;
+        loadStyle(`${base}/styles/video-play-button.css`);
         const playBtnFormat = playBtn.split(':')[1];
         const playBtnSize = playBtnFormat.includes('-') ? playBtnFormat.split('-')[1] : 'large';
         decorateModalImageLinks(picParent, aTag, playBtnSize);
