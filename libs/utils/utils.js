@@ -395,6 +395,7 @@ function checkForExpBlock(name, expBlocks) {
 }
 
 function decorateSectionAnalytics(section) {
+  section.querySelectorAll('[data-block="true"]').forEach((block) => block.removeAttribute('data-block'));
   const sectionFirstClass = section.classList.length > 1 ? `--${section.classList[1]}` : '';
   section.setAttribute('daa-lh', `s${Number(section.dataset.idx) + 1}${sectionFirstClass}`);
 }
@@ -411,7 +412,8 @@ function decorateDefaultBlockAnalytics(block) {
         section = section.parentElement.closest('.section');
       }
     }
-    const blockCount = section.querySelectorAll('[daa-lh]:not(.section)').length + 1;
+    const sectionBlocks = section.querySelectorAll('[data-block="true"]');
+    const blockCount = Array.prototype.indexOf.call(sectionBlocks, block);
     block.setAttribute('daa-lh', `b${blockCount}--${[...block.classList].slice(0, 2).join('--')}`);
 
     let header = '';
@@ -913,7 +915,10 @@ export async function loadArea(area = document) {
   const areaBlocks = [];
   for (const section of sections) {
     const loaded = section.blocks.map((block) => {
-      decorateDefaultBlockAnalytics(block);
+      if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
+        block.dataset.block = 'true';
+        decorateDefaultBlockAnalytics(block);
+      }
       return loadBlock(block);
     });
     areaBlocks.push(...section.blocks);
