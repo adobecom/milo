@@ -501,7 +501,7 @@ export function decorateImageLinks(el) {
       if (playBtn?.includes(':play')) {
         const { miloLibs, codeRoot } = getConfig();
         const base = miloLibs || codeRoot;
-        loadStyle(`${base}/styles/video-play-button.css`);
+        loadStyle(`${base}/styles/consonant-play-button.css`);
         const playBtnFormat = playBtn.split(':')[1];
         const playBtnSize = playBtnFormat.includes('-') ? playBtnFormat.split('-')[1] : 'large';
         decorateModalImageLinks(picParent, aTag, playBtnSize);
