@@ -401,11 +401,15 @@ function decorateSectionAnalytics(section) {
 
 function decorateDefaultBlockAnalytics(block) {
   if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
+    let sectionFound = false;
     let section = block.closest('.section');
     if (!section) return;
-    while (section) {
-      if (section.parentElement.nodeName === 'MAIN') return;
-      section = section.parentElement.closest('.section');
+    while (!sectionFound) {
+      if (section.parentElement.nodeName === 'MAIN') {
+        sectionFound = true;
+      } else {
+        section = section.parentElement.closest('.section');
+      }
     }
     const blockCount = section.querySelectorAll('[daa-lh]:not(.section)').length + 1;
     block.setAttribute('daa-lh', `b${blockCount}--${[...block.classList].slice(0, 2).join('--')}`);
