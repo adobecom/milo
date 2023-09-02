@@ -422,7 +422,6 @@ function decorateDefaultBlockAnalytics(block) {
       }
     });
   }
-  return blockCount;
 }
 
 export async function loadBlock(block, idx) {
