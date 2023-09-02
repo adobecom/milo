@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -366,9 +366,9 @@ export default function init(el) {
     images.forEach((img) => {
       img.removeAttribute('loading');
     });
-    parentArea.removeEventListener('milo:deferred', handleDeferredImages, true);
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
   }
-  parentArea.addEventListener('milo:deferred', handleDeferredImages, true);
+  parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
   handleChangingSlides(carouselElements);

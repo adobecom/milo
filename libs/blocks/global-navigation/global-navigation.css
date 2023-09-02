@@ -404,6 +404,7 @@ header.global-navigation {
   line-height: 1.4;
   white-space: nowrap;
   z-index: 1;
+  transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
 }
 
 .feds-signIn[aria-expanded = "true"] + .feds-signIn-dropdown {
@@ -429,6 +430,19 @@ header.global-navigation {
 .feds-signIn-dropdown li > a:hover {
   color: var(--feds-color-link--hover--light);
   background-color: var(--feds-background-link--hover--light);;
+}
+
+#feds-googleLogin {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1;
+  transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
+}
+
+[dir = "rtl"] #feds-googleLogin {
+  left: 0;
+  right: auto;
 }
 
 /* Desktop styles */
@@ -487,6 +501,7 @@ header.global-navigation {
     padding: 0;
     z-index: 1;
     box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
+    transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
   }
 
   [dir = "rtl"] .feds-popup {
@@ -585,6 +600,7 @@ header.global-navigation {
     justify-content: center;
     border-bottom: unset;
     box-shadow: 0 3px 2px rgb(142 142 142 / 30%);
+    transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
   }
 
   .feds-breadcrumbs {
