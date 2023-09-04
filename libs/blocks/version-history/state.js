@@ -13,5 +13,5 @@ export {
   comment,
   error,
   versions,
-  showLogin
+  showLogin,
 };
