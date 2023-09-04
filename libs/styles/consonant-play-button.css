@@ -25,7 +25,7 @@
   cursor: pointer;
 }
 
-.modal-img-link .consonant-play-btn.small {
+.modal-img-link .consonant-play-btn.btn-small {
   height: 44px;
   width: 44px;
   left: calc(50% - 22px);
@@ -59,7 +59,7 @@
   border: 2.5px solid var(--color-white);
 }
 
-.modal-img-link .consonant-play-btn.small .consonant-play-btn-circle {
+.modal-img-link .consonant-play-btn.btn-small .consonant-play-btn-circle {
   width: 40px;
   height: 40px;
   border: 2.5px solid var(--color-white);
@@ -77,7 +77,7 @@
   align-items: flex-start;
 }
 
-.modal-img-link .consonant-play-btn.small .play-icon-container {
+.modal-img-link .consonant-play-btn.btn-small .play-icon-container {
   width: 18px;
   height: 18px;
 }
@@ -89,36 +89,36 @@
   fill: var(--color-white);
 }
 
-.modal-img-link .consonant-play-btn.small .play-icon {
+.modal-img-link .consonant-play-btn.btn-small .play-icon {
   width: 13.5px;
   height: 18px;
 }
 
 @media screen and (min-width: 600px) {
-  .modal-img-link .consonant-play-btn.large {
+  .modal-img-link .consonant-play-btn.btn-large {
     height: 102px;
     width: 102px;
     left: calc(50% - 51px);
     top: calc(50% - 51px);
   }
 
-  .modal-img-link .consonant-play-btn.large:focus,
-  .modal-img-link .consonant-play-btn.large:focus-visible {
+  .modal-img-link .consonant-play-btn.btn-large:focus,
+  .modal-img-link .consonant-play-btn.btn-large:focus-visible {
     outline: 3px solid var(--link-color-dark);
   }
 
-  .modal-img-link .consonant-play-btn.large .consonant-play-btn-circle {
+  .modal-img-link .consonant-play-btn.btn-large .consonant-play-btn-circle {
     width: 96px;
     height: 96px;
     border: 3px solid var(--color-white);
   }
 
-  .modal-img-link .consonant-play-btn.large .play-icon-container {
+  .modal-img-link .consonant-play-btn.btn-large .play-icon-container {
     width: 42px;
     height: 42px;
   }  
   
-  .modal-img-link .consonant-play-btn.large .play-icon {
+  .modal-img-link .consonant-play-btn.btn-large .play-icon {
     width: 31.5px;
     height: 42px;
   }  

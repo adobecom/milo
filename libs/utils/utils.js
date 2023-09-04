@@ -502,7 +502,7 @@ export function decorateImageLinks(el) {
         const base = miloLibs || codeRoot;
         loadStyle(`${base}/styles/consonant-play-button.css`);
         const playBtnFormat = playBtn.split(':')[1];
-        const playBtnSize = playBtnFormat.includes('-') ? playBtnFormat.split('-')[1] : 'large';
+        const playBtnSize = playBtnFormat.includes('-') ? `btn-${playBtnFormat.split('-')[1]}` : 'btn-large';
         decorateModalImageLinks(picParent, aTag, playBtnSize);
       } else {
         aTag.append(pic);
