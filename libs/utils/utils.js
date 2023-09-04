@@ -818,15 +818,11 @@ function decorateMeta() {
 }
 
 export async function loadArea(area = document) {
-  const currentHash = window.location.hash;
   const isDoc = area === document;
 
   if (isDoc) {
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
   }
 
   const config = getConfig();
@@ -861,9 +857,8 @@ export async function loadArea(area = document) {
     delete section.el.dataset.status;
     delete section.el.dataset.idx;
   }
-
+  const currentHash = window.location.hash;
   if (currentHash) {
-    // placing the hash back to scroll the screen.
     scrollToHashedElement(currentHash);
   }
 

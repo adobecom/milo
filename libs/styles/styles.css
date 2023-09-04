@@ -86,31 +86,37 @@ header.global-navigation {
 h1 {
   font-size: var(--type-heading-xl-size);
   line-height: var(--type-heading-xl-lh);
+  scroll-margin-top: 94px;
 }
 
 h2 {
   font-size: var(--type-heading-l-size);
   line-height: var(--type-heading-l-lh);
+  scroll-margin-top: 94px;
 }
 
 h3 {
   font-size: var(--type-heading-m-size);
   line-height: var(--type-heading-m-lh);
+  scroll-margin-top: 94px;
 }
 
 h4 {
   font-size: var(--type-heading-s-size);
   line-height: var(--type-heading-s-lh);
+  scroll-margin-top: 94px;
 }
 
 h5 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
+  scroll-margin-top: 94px;
 }
 
 h6 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
+  scroll-margin-top: 94px;
 }
 
 /* Links */
