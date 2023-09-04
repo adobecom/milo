@@ -26,8 +26,6 @@ describe('keyboard navigation', () => {
   before(async () => {
     await Promise.all([
       loadStyles('styles/styles.css'),
-      loadStyles('styles/variables.css'),
-      loadStyles('styles/typography.css'),
       loadStyles('blocks/global-footer/global-footer.css'),
       loadStyles('blocks/global-navigation/base.css'),
       loadStyles('blocks/global-navigation/global-navigation.css'),
