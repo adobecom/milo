@@ -1,76 +1,58 @@
-import { getReqOptions } from '../../tools/sharepoint/msal.js';
+import {
+  origin,
+  itemId,
+  comment,
+  versions,
+  error,
+  showLogin,
+} from './state.js';
+import { getVersions, createVersion } from '../../tools/sharepoint/version.js';
 
-const href = new URL(window.location.href);
-const urlParams = new URLSearchParams(href.search);
-const referrer = urlParams.get('referrer');
-const contentType = 'application/json;odata=verbose';
-const accept = 'application/json;odata=nometadata';
+const TELEMETRY = { application: { appName: 'Adobe Version History' } };
+const CREATE_ERROR = 'Error creating version.';
 
-function getUrl(sourceUrl) {
-  const sourceDoc = sourceUrl?.match(/sourcedoc=([^&]+)/)[1];
-  const sourceId = decodeURIComponent(sourceDoc);
-  return `https://adobe.sharepoint.com/:w:/r/sites/adobecom/_api/web/GetFileById('${sourceId}')`;
+function getSiteOrigin() {
+  const search = new URLSearchParams(window.location.search);
+  const repo = search.get('repo');
+  const owner = search.get('owner');
+  return repo && owner ? `https://main--${repo}--${owner}.hlx.live` : window.location.origin;
 }
 
-export const fetchVersions = async () => {
-  
-  const options = getReqOptions({
-    accept,
-    contentType,
-  });
-  const url = getUrl(referrer);
+function getItemId() {
+  const referrer = new URLSearchParams(window.location.search).get('referrer');
+  const sourceDoc = referrer?.match(/sourcedoc=([^&]+)/)[1];
+  const sourceId = decodeURIComponent(sourceDoc);
+  return sourceId.slice(1, -1);
+}
 
-  // Fetching current version details
-  const response = await fetch(url, options);
-  const jsonRes = await response.json();
+export function onChangeComment(e) {
+  comment.value = e.target.value;
+}
 
-  if (!jsonRes.ok) {
-    const message = jsonRes['odata.error']?.message.value || 'error';
-    window.lana?.log(message);
-  }
-
-  const { CheckInComment, TimeLastModified, UIVersionLabel, ServerRelativeUrl, ID } = jsonRes;
-  const currentVersion = {
-    ID,
-    CheckInComment,
-    Url: ServerRelativeUrl,
-    IsCurrentVersion: true,
-    Created: TimeLastModified,
-    VersionLabel: UIVersionLabel,
-  };
-  const versions = await fetch(`${url}/Versions`, options);
-  const { value = [] } = await versions.json();
-  const versionHistory = [...value, currentVersion];
-  return versionHistory.reverse().filter((item) => item.VersionLabel.indexOf('.0') !== -1);
-};
-
-export const createHistoryTag = async (comment = '') => {
-  const callOptions = getReqOptions({
-    method: 'POST',
-    accept,
-    contentType,
-  });
-  const url = getUrl(referrer);
-
-  const res = await fetch(`${url}/Publish('Through API: ${comment}')`, callOptions);
+export async function onClickCreateVersion() {
+  const res = await createVersion(origin.value, itemId.value, comment.value);
 
   if (!res.ok) {
-    const error = await res.json();
-    const message = error['odata.error']?.message.value || 'error';
-    throw new Error(message);
+    const json = await res.json();
+    error.value = json['odata.error']?.message?.value || CREATE_ERROR;
+    throw new Error(CREATE_ERROR);
   }
-};
 
-export const addVersion = async () => {
-  const sk = document.querySelector('helix-sidekick');
-  const statusJson = JSON.parse(sk.getAttribute('status'));
-  const sourceUrl = statusJson?.edit?.url;
-  const url = getUrl(sourceUrl);
+  comment.value = '';
+  versions.value = await getVersions(TELEMETRY, origin.value, itemId.value);
+}
 
-  const options = getReqOptions({
-    method: 'POST',
-    accept: 'application/json; odata=nometadata',
-    contentType: 'application/json;odata=verbose',
-  });
-  await fetch(`${url}/Publish('Last Published version')`, { ...options, keepalive: true });
-};
+export async function setup() {
+  origin.value = getSiteOrigin();
+  itemId.value = getItemId();
+  versions.value = await getVersions(TELEMETRY, origin.value, itemId.value);
+  showLogin.value = false;
+}
+
+export async function autoSetup() {
+  try {
+    await setup();
+  } catch {
+    showLogin.value = true;
+  }
+}

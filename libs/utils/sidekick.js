@@ -1,18 +1,13 @@
-import '../../tools/loc/lib/msal-browser.js';
-import loginToSharePoint from '../tools/sharepoint/login.js';
-import { addVersion } from '../blocks/version-history/index.js';
-
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // manifest v3
   const sendToCaasListener = async (e) => {
     const { host, project, ref: branch, repo, owner } = e.detail.data.config;
-    const caaSUrl = 'https://milo.adobe.com/tools/send-to-caas/send-to-caas.js';
-    const { sendToCaaS } = await import(caaSUrl);
+    const { sendToCaaS } = await import('https://milo.adobe.com/tools/send-to-caas/send-to-caas.js');
     sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
   };
 
-  const checkSchemaListener = async () => {
+  const checkSchemaListener = async (e) => {
     const schema = document.querySelector('script[type="application/ld+json"]');
     if (schema === null) return;
     const resultsUrl = 'https://search.google.com/test/rich-results?url=';
@@ -34,14 +29,10 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
   });
 
-  // fetch sharepoint access token
-  loginToSharePoint(['https://adobe.sharepoint.com/.default']);
-
   const sk = document.querySelector('helix-sidekick');
 
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', preflightListener);
-  sk.addEventListener('published', addVersion);
 }

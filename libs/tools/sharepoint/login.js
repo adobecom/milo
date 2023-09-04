@@ -1,24 +1,24 @@
 /* global msal */
-import { spAccessToken } from './state.js';
 import { getMSALConfig } from './msal.js';
+import { accessToken, accessTokenExtra, account } from './state.js';
 
-export default async function loginToSharePoint(scope = [], telemetry = {}) {
+export default async function login({ scopes, extraScopes, telemetry = {} }) {
   const msalConfig = await getMSALConfig(telemetry);
   const pca = new msal.PublicClientApplication(msalConfig);
-
-  let account = pca.getAllAccounts()[0];
-
-  if (!account) {
+  let tmpAccount = pca.getAllAccounts()[0];
+  if (!tmpAccount) {
     await pca.loginPopup(msalConfig.login);
-    [account] = pca.getAllAccounts();
+    [tmpAccount] = pca.getAllAccounts();
   }
-
-  const scopes = scope;
-  const reqDetails = { account, scopes };
-
+  const reqDetails = { account: tmpAccount, scopes };
   try {
     const res = await pca.acquireTokenSilent(reqDetails);
-    spAccessToken.value = res.accessToken;
+    account.value = res.account;
+    accessToken.value = res.accessToken;
+    if (extraScopes) {
+      const extraRes = await pca.acquireTokenSilent({ account: tmpAccount, scopes: extraScopes });
+      accessTokenExtra.value = extraRes.accessToken;
+    }
   } catch (err) {
     throw new Error(`Cannot connect to Sharepoint: ${err.message}`);
   }
