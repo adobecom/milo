@@ -28,7 +28,7 @@
 
 @media (max-width: 1200px) {
   .dialog-modal.commerce-frame .milo-iframe {
-    padding-bottom: 100vh;
+    padding-bottom: 90vh;
     padding-bottom: 100dvh;
   }
 }
