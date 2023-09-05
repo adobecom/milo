@@ -466,7 +466,8 @@ export async function loadBlock(block) {
       resolve();
     })();
   });
-  await Promise.all([styleLoaded, scriptLoaded]).then(() => {
+  const loaded = await Promise.all([styleLoaded, scriptLoaded]);
+  loaded.then(() => {
     console.log('about to decorate analytics');
     decorateDefaultLinkAnalytics(block);
   });
