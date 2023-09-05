@@ -86,37 +86,37 @@ header.global-navigation {
 h1 {
   font-size: var(--type-heading-xl-size);
   line-height: var(--type-heading-xl-lh);
-  scroll-margin-top: 94px;
+  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
 }
 
 h2 {
   font-size: var(--type-heading-l-size);
   line-height: var(--type-heading-l-lh);
-  scroll-margin-top: 94px;
+  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
 }
 
 h3 {
   font-size: var(--type-heading-m-size);
   line-height: var(--type-heading-m-lh);
-  scroll-margin-top: 94px;
+  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
 }
 
 h4 {
   font-size: var(--type-heading-s-size);
   line-height: var(--type-heading-s-lh);
-  scroll-margin-top: 94px;
+  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
 }
 
 h5 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
-  scroll-margin-top: 94px;
+  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
 }
 
 h6 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
-  scroll-margin-top: 94px;
+  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
 }
 
 /* Links */
