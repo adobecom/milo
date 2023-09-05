@@ -408,8 +408,9 @@ function decorateSectionAnalytics(section) {
 }
 
 function processTrackingLabels(text, charLimit) {
-  return text?.trim().replace(/\s+/g, ' ').split('|').join(' ')
+  const processed = text?.trim().replace(/\s+/g, ' ').split('|').join(' ')
     .slice(0, charLimit);
+  return processed;
 }
 
 export function decorateDefaultLinkAnalytics(block) {
