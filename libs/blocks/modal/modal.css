@@ -179,3 +179,10 @@
     max-height: 100%;
   }
 }
+
+@media (min-width: 1200px) {
+  .dialog-modal.commerce-frame {
+    width: 1024px;
+    max-height: 825px;
+  }
+}
