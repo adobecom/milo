@@ -408,26 +408,23 @@ function decorateSectionAnalytics(section) {
 }
 
 export async function decorateDefaultLinkAnalytics(block) {
-  return new Promise((resolve) => {
-    console.log('about to decorate analytics');
-    if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
-      block.dataset.block = 'true';
-      let header = '';
-      let linkCount = 1;
-      block.querySelectorAll('h1, h2, h3, h4, h5, h6, a, button').forEach((item) => {
-        if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
-          if (!item.hasAttribute('daa-ll')) {
-            const label = (item.textContent || item.getAttribute('aria-label'))?.trim().slice(0, 30);
-            item.setAttribute('daa-ll', `${label.replace(/\s+/g, ' ').trim()}-${linkCount}|${header}`);
-          }
-          linkCount += 1;
-        } else {
-          header = item.textContent?.replace(/\s+/g, ' ').trim().slice(0, 30);
+  console.log('about to decorate analytics');
+  if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
+    block.dataset.block = 'true';
+    let header = '';
+    let linkCount = 1;
+    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a, button').forEach((item) => {
+      if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
+        if (!item.hasAttribute('daa-ll')) {
+          const label = (item.textContent || item.getAttribute('aria-label'))?.trim().slice(0, 30);
+          item.setAttribute('daa-ll', `${label.replace(/\s+/g, ' ').trim()}-${linkCount}|${header}`);
         }
-      });
-    }
-    resolve();
-  });
+        linkCount += 1;
+      } else {
+        header = item.textContent?.replace(/\s+/g, ' ').trim().slice(0, 30);
+      }
+    });
+  }
 }
 
 export async function loadBlock(block) {
