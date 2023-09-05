@@ -421,7 +421,7 @@ export function decorateDefaultLinkAnalytics(block) {
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a, button, .heading-title').forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (!item.hasAttribute('daa-ll')) {
-          const label = processTrackingNames(item.textContent || item.getAttribute('aria-label'), 30);
+          const label = processTrackingNames(item.textContent || item.getAttribute('title') || item.getAttribute('aria-label'), 30);
           item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
         }
         linkCount += 1;
