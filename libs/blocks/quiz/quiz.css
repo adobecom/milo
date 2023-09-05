@@ -120,7 +120,6 @@ div[data-valign="middle"] {
   line-height: var(--type-body-xs-lh);
   margin: 0;
   text-align: center;
-  word-break: break-all;
 }
 
 .quiz-option:hover {
