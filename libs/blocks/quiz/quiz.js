@@ -1,8 +1,13 @@
-import { render, html, useEffect, useState, useLayoutEffect } from '../../deps/htm-preact.js';
+import {
+  render, html, useEffect, useMemo, useState, useLayoutEffect,
+} from '../../deps/htm-preact.js';
 import { createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
-import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn, getUrlParams } from './utils.js';
+import {
+  initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData,
+  getAnalyticsDataForBtn, getUrlParams,
+} from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
 async function loadFragments(fragmentURL) {
@@ -28,8 +33,12 @@ const App = () => {
   const [totalSteps, setTotalSteps] = useState(3);
   const [prevStepIndicator, setPrevStepIndicator] = useState([]);
   const [nextQuizViewsExist, setNextQuizViewsExist] = useState(true);
-  const [urlParam, setUrlParam] = useState(getUrlParams());
   const [btnAnalytics, setBtnAnalytics] = useState(null);
+  const [btnClicked, setBtnClicked] = useState(false);
+  const initialUrlParams = getUrlParams();
+  const [urlParam, setUrlParam] = useState(initialUrlParams);
+  const VALID_QUESTIONS = useMemo(() => [], []);
+  const KNOWN_PARAMS = useMemo(() => ['martech', 'milolibs', 'quiz-data'], []);
 
   useEffect(() => {
     (async () => {
@@ -37,15 +46,38 @@ const App = () => {
       const qMap = {};
       questions.questions.data.forEach((question) => {
         qMap[question.questions] = question;
+        VALID_QUESTIONS.push(question.questions);
       });
 
       const strMap = {};
       dataStrings.questions.data.forEach((question) => {
         strMap[question.q] = question;
       });
+      const initialUrlParamsKeys = Object.keys(initialUrlParams);
+      const hasInValidParam = initialUrlParamsKeys
+        .some((key) => !VALID_QUESTIONS.includes(key) && !KNOWN_PARAMS.includes(key));
 
-      // initial quesiton to load - picking 1st one
-      setUserFlow([questions.questions.data[0].questions]);
+      const filteredParams = initialUrlParamsKeys
+        .filter((key) => !KNOWN_PARAMS.includes(key));
+      const lastParamKey = filteredParams[filteredParams.length - 1];
+      const selectedCardOptions = {};
+      if (hasInValidParam) {
+        setUserFlow([questions.questions.data[0].questions]);
+      } else {
+        if (typeof initialUrlParams[lastParamKey] === 'object') {
+          Object.keys(initialUrlParams[lastParamKey]).forEach((option) => {
+            selectedCardOptions[initialUrlParams[lastParamKey][option]] = true;
+          });
+        }
+        const paramCountSelectedCards = Object.keys(selectedCardOptions).length;
+        if (lastParamKey) {
+          setSelectedCards(selectedCardOptions);
+          setCountOfSelectedCards(paramCountSelectedCards);
+          setUserFlow([lastParamKey]);
+        } else {
+          setUserFlow([questions.questions.data[0].questions]);
+        }
+      }
 
       setStringData(dataStrings);
       setQuestionData(questions);
@@ -59,6 +91,20 @@ const App = () => {
       document.body.classList.add('quiz-page');
     })();
   }, [setQuestionData, setStringData, setStringQuestionList, setQuestionList]);
+
+  useEffect(() => {
+    function handlePopState() {
+      const currentURL = window.location.href;
+      window.location.href = currentURL;
+    }
+    if (isDataLoaded) {
+      window.addEventListener('popstate', handlePopState);
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+    return () => {};
+  }, [KNOWN_PARAMS, isDataLoaded]);
 
   useEffect(() => {
     if (userFlow.length) {
@@ -117,16 +163,24 @@ const App = () => {
    * Updates the url when the url param is updated as part of the option click.
    */
   useLayoutEffect(() => {
-    if (Object.keys(urlParam).length > 0) {
-      const urlParamList = Object.keys(urlParam).map((key) => {
+    if (Object.keys(urlParam).length > 0 && btnClicked === true) {
+      let urlParamList = Object.keys(urlParam).map((key) => {
         const paramList = [...urlParam[key]];
         if (paramList.length) {
           return `${key}=${paramList.join(',')}`;
         }
-      }).filter((item) => !!item);
-      window.history.pushState('', '', `?${urlParamList.join('&')}`);
-    } else {
-      window.history.pushState('', '', '?');
+        return null; // Explicitly return null if the condition is not met
+      }).filter((item) => !!item && !KNOWN_PARAMS.includes(item.split('=')[0]));
+      const knownParamsList = KNOWN_PARAMS.filter((key) => key in urlParam).map((key) => `${key}=${urlParam[key].join(',')}`);
+      urlParamList = [...urlParamList, ...knownParamsList];
+      const validParams = KNOWN_PARAMS.filter((key) => key in urlParam).map((key) => `${key}=${urlParam[key].join(',')}`);
+      if (validParams.length === 1 && btnClicked === false) {
+        const newURL = knownParamsList && knownParamsList.length > 0 ? `?${knownParamsList.join('&')}` : '';
+        window.history.pushState('', '', newURL);
+      } else {
+        window.history.pushState('', '', `?${urlParamList.join('&')}`);
+      }
+      setBtnClicked(false);
     }
   }, [urlParam]);
 
@@ -146,6 +200,7 @@ const App = () => {
    * @returns {void}
    */
   const handleOnNextClick = (selCards) => {
+    setBtnClicked(true);
     const { nextQuizViews, lastStopValue } = handleNext(
       questionData,
       selectedQuestion,
@@ -156,8 +211,9 @@ const App = () => {
 
     setNextQuizViewsExist(!!nextQuizViewsLen);
     setCurrentStep(currentStep + 1);
-    updateUserSelection((userSelection) => (
-      [...userSelection, { selectedQuestion, selectedCards }]));
+    updateUserSelection((prevUserSelection) => (
+      [...prevUserSelection, { selectedQuestion, selectedCards }]
+    ));
     setSelectedCards({});
     setSelectedQuestion(null);
     setCountOfSelectedCards(0);
@@ -175,12 +231,20 @@ const App = () => {
     }
   };
 
+  let minSelections = 0;
+  let maxSelections = 10;
+
+  if (selectedQuestion) {
+    minSelections = +selectedQuestion['min-selections'];
+    maxSelections = +selectedQuestion['max-selections'];
+  }
   /**
    * Handler of the option click. Updates the selected cards and the count of selected cards.
    * @param {Object} option - Selected option
    *  @returns {void}
    * */
   const onOptionClick = (option) => () => {
+    setBtnClicked(true);
     const newState = { ...selectedCards };
 
     if (Object.keys(newState).length >= maxSelections && !newState[option.options]) {
@@ -197,6 +261,18 @@ const App = () => {
     setCountOfSelectedCards(Object.keys(newState).length);
   };
 
+  useEffect(() => {
+    const getStringValue = (propName) => {
+      if (!selectedQuestion) return '';
+      const question = stringQuestionList[selectedQuestion.questions];
+      return question ? question[propName] || '' : '';
+    };
+    const fragmentURL = getStringValue('footerFragment');
+    if (fragmentURL) {
+      loadFragments(fragmentURL);
+    }
+  }, [selectedQuestion, stringQuestionList]);
+
   if (!isDataLoaded || !selectedQuestion) {
     return html`<div class="quiz-load">Loading</div>`;
   }
@@ -211,17 +287,6 @@ const App = () => {
     );
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
-
-  const minSelections = +selectedQuestion['min-selections'];
-  const maxSelections = +selectedQuestion['max-selections'];
-
-  const fragmentURL = getStringValue('footerFragment');
-
-  useEffect(() => {
-    if (fragmentURL) {
-      loadFragments(fragmentURL);
-    }
-  }, [fragmentURL]);
 
   return html`<div class="quiz-container">
                   <${StepIndicator} 

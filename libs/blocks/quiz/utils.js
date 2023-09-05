@@ -190,11 +190,12 @@ export const nestedFragments = (
   nestedFragsSecondaryArray?.forEach((frag) => {
     if (!frag) return;
     const fragKey = frag.trim();
-    nestedObject[fragKey] = getNestedFragments(
+    if (!nestedObject[fragKey]) nestedObject[fragKey] = [];
+    nestedObject[fragKey].push(...getNestedFragments(
       resultResources,
       secondaryProductCodes,
       fragKey,
-    );
+    ));
   });
 
   return nestedObject;
@@ -202,23 +203,28 @@ export const nestedFragments = (
 
 const getNestedFragments = (resultResources, productCodes, fragKey) => {
   const fragArray = [];
-  resultResources?.data?.forEach((row) => {
-    if (productCodes.length > 0 && productCodes.includes(row.product)) {
-      insertFragment();
-    }
-
-    function insertFragment() {
-      if (row[fragKey]) {
-        row[fragKey].split(',').forEach((val) => {
-          fragArray.push(val.trim());
-        });
+  productCodes?.forEach((product) => {
+    resultResources?.data?.forEach((row) => {
+      if (product && product === row?.product) {
+        insertFragment();
       }
-    }
+
+      function insertFragment() {
+        if (row[fragKey]) {
+          row[fragKey]?.split(',').forEach((val) => {
+            fragArray.push(val.trim());
+          });
+        }
+      }
+    });
   });
   return fragArray;
 };
 
-export const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${quizKey}`;
+export const getRedirectUrl = (destinationPage, primaryProducts) => {
+  const separator = destinationPage.includes('?') ? '&' : '?';
+  return `${destinationPage}${separator}primary=${primaryProducts}&quizKey=${quizKey}`;
+};
 
 export const parseResultData = async (answers) => {
   const results = await fetchContentOfFile(RESULTS_EP_NAME);
@@ -362,25 +368,6 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
     getAllSelectedQuestionsRelatedOptions.forEach(({ options, next }) => {
       if (options === selection) {
         const flowStepsList = next.split(',');
-
-        let regexStepsToSkip;
-        flowStepsList.forEach((step) => {
-          if (step.startsWith('NOT(')) regexStepsToSkip = step;
-        });
-
-        // regexStepsToSkip = 'NOT(q-rather)'
-        if (regexStepsToSkip) {
-          const stepsToSkip = regexStepsToSkip.substring(
-            regexStepsToSkip.indexOf('(') + 1,
-            regexStepsToSkip.lastIndexOf(')'),
-          );
-
-          // stepsToSkip = 'q-rather'
-          const stepsToSkipArr = stepsToSkip.split(',');
-          stepsToSkipArr.forEach((skip) => {
-            nextQuizViews = nextQuizViews.filter((val) => val !== skip);
-          });
-        }
         // RESET the queue and add only the next question.
         if (flowStepsList.includes('RESET')) { // Reset to intial question
           nextQuizViews = []; // Resetting the nextQuizViews
@@ -393,12 +380,29 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
           hasResultTigger = flowStepsList.includes('RESULT');
         }
 
-        const filteredNextSteps = flowStepsList.filter((val) => (val !== 'RESULT' && val !== 'RESET' && !val.startsWith('NOT(')));
+        const filteredNextSteps = flowStepsList.filter((val) => (val !== 'RESULT' && val !== 'RESET'));
 
         nextQuizViews = [...nextQuizViews, ...filteredNextSteps];
       }
     });
   });
+
+  // Stripping off the next steps that are negated using 'NOT()'.
+  nextQuizViews.forEach((nextStep) => {
+    if (nextStep?.startsWith('NOT(')) {
+      const stepsToSkip = nextStep?.substring(
+        nextStep.indexOf('(') + 1,
+        nextStep.lastIndexOf(')'),
+      );
+      const stepsToSkipArr = stepsToSkip?.split(',');
+      stepsToSkipArr?.forEach((skip) => {
+        nextQuizViews = nextQuizViews.filter((view) => (view !== skip));
+      });
+    }
+  });
+
+  // Filtering out the NOT() from the nextQuizViews.
+  nextQuizViews = nextQuizViews.filter((view) => view.startsWith('NOT(') === false);
 
   return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])], lastStopValue };
 };
@@ -412,7 +416,7 @@ export const transformToFlowData = (userSelection) => {
 export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   const selectedCardNames = Object.keys(selectedCards);
   if (selectedCardNames.length > 0) {
-    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion.questions}/${selectedCardNames.join('/')}`;
+    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion?.questions}/${selectedCardNames.join('/')}`;
     return btnAnalytics;
   }
   return '';
