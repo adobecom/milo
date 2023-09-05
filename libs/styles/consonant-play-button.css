@@ -6,23 +6,22 @@
   z-index: 4;
 }
 
-.modal-img-link, 
-.modal-img-link * {
-  box-sizing: content-box;
-}
-
 .modal-img-link .consonant-play-btn {
   position: absolute;
-  display: flex;
-  border: none;
-  outline: none;
   height: 77px;
   width: 77px;
   left: calc(50% - 38.5px);
   top: calc(50% - 38.5px);
-  background-color: var(--link-color-dark);
-  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  background-color: var(--link-color-dark);
+  box-sizing: border-box;
+  border: 2.5px solid var(--color-white);
+  border-radius: 50%;
+  outline: none;
 }
 
 .modal-img-link .consonant-play-btn.btn-small {
@@ -46,23 +45,6 @@
 .modal-img-link .consonant-play-btn:active {
   outline: none;
   background-color: var(--color-accent-down);
-}
-
-.modal-img-link .consonant-play-btn .consonant-play-btn-circle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  width: 72px;
-  height: 72px;
-  border: 2.5px solid var(--color-white);
-}
-
-.modal-img-link .consonant-play-btn.btn-small .consonant-play-btn-circle {
-  width: 40px;
-  height: 40px;
-  border: 2.5px solid var(--color-white);
 }
 
 .modal-img-link .consonant-play-btn .play-icon-container {
@@ -100,17 +82,12 @@
     width: 102px;
     left: calc(50% - 51px);
     top: calc(50% - 51px);
+    border: 3px solid var(--color-white);
   }
 
   .modal-img-link .consonant-play-btn.btn-large:focus,
   .modal-img-link .consonant-play-btn.btn-large:focus-visible {
     outline: 3px solid var(--link-color-dark);
-  }
-
-  .modal-img-link .consonant-play-btn.btn-large .consonant-play-btn-circle {
-    width: 96px;
-    height: 96px;
-    border: 3px solid var(--color-white);
   }
 
   .modal-img-link .consonant-play-btn.btn-large .play-icon-container {
