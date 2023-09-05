@@ -1,8 +1,14 @@
 import { html } from '../../deps/htm-preact.js';
 
-function StepIndicator({ currentStep, totalSteps, prevStepIndicator = [] }) {
+function StepIndicator({
+  currentStep,
+  totalSteps,
+  prevStepIndicator = [],
+  bottom = false,
+  top = false,
+}) {
   const dotIndicators = html`
-    <div class="dot-indicators ${totalSteps > 3 ? 'dot-indicators--wide' : ''}">
+    <div class="dot-indicators${totalSteps > 3 ? ' wide' : ''}${top ? ' top' : ''}${bottom ? ' bottom' : ''}">
       ${Array.from({ length: totalSteps }).map((_, index) => {
     let className;
     switch (true) {

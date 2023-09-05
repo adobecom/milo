@@ -3,25 +3,23 @@ import { html } from '../../deps/htm-preact.js';
 export const OptionCard = ({
   text, title, coverImage, cardIcon, options, disabled, selected,
 }) => {
-  const cardIconHtml = html`<div class="consonant-OneHalfCard-image">
-    <img src="${cardIcon}" alt="Video" class="icon" />
+  const cardIconHtml = html`<div class="quiz-option-icon">
+    <img src="${cardIcon}" alt="Quiz Option Icon" class="icon" />
   </div>`;
 
   const coverImageHtml = html`
-    <div class="consonant-OneHalfCard-cover" 
-      style="background-image: url('${coverImage}') !important;">
+    <div class="quiz-option-image" 
+      style="background-image: url('${coverImage}')">
     </div>`;
 
-  return html`<div class="card half-card border consonant-Card consonant-OneHalfCard quiz-option ${disabled} ${selected}" 
-                    data-card-name="${options}">
-        <div class="consonant-OneHalfCard-inner">
-          ${cardIcon && cardIconHtml}
-          ${coverImage && coverImageHtml}
-        <div data-valign="middle">  
-          <h3 id="lorem-ipsum-dolor-sit-amet-3" class="consonant-OneHalfCard-title">${title}</h3>
-          <p class="consonant-OneHalfCard-text">${text}</p>
+  return html`<div class="quiz-option ${disabled}${selected}" data-option-name="${options}" 
+        data-option-type="${cardIcon ? 'icon' : ''}${coverImage ? 'cover-image' : ''}">
+        ${cardIcon && cardIconHtml}
+        ${coverImage && coverImageHtml}
+        <div class="quiz-option-text-container">  
+          <h3 class="quiz-option-title">${title}</h3>
+          <p class="quiz-option-text">${text}</p>
         </div>
-      </div>
     </div>`;
 };
 
@@ -47,29 +45,24 @@ export const GetQuizOption = ({
   handleOnNextClick, onOptionClick, countSelectedCards, getOptionsIcons,
   btnAnalyticsData,
 }) => html`
-    <div class="milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth">
-        <div class="consonant-Wrapper-collection">
-            <div class="consonant-CardsGrid consonant-CardsGrid--options consonant-CardsGrid--5up consonant-CardsGrid--with4xGutter quiz-options-container">
-              <${CreateOptions} 
-                options=${options} 
-                selectedCards=${selectedCards}
-                countSelectedCards=${countSelectedCards} 
-                maxSelections=${maxSelections}
-                getOptionsIcons=${getOptionsIcons}
-                handleCardSelection=${onOptionClick} />
-              </div>
-          </div>
-          <div class="quiz-button-container">
-            <button 
-              disabled=${countSelectedCards < minSelections && 'disabled'}
-              aria-label="Next" 
-              data-quiz-button="" 
-              class="spectrum-Button spectrum-Button--outline spectrum-Button--sizeXL quiz-btn" 
-              daa-ll="${btnAnalyticsData}"
-              onClick=${() => {
-    handleOnNextClick(selectedCards);
-  }}>
-                <span class="quiz-Button-label">${btnText}</span>
-            </button>
-          </div>
-      </div>`;
+  <div class="quiz-question">
+      <div class="quiz-options-container">
+        <${CreateOptions} 
+          options=${options} 
+          selectedCards=${selectedCards}
+          countSelectedCards=${countSelectedCards} 
+          maxSelections=${maxSelections}
+          getOptionsIcons=${getOptionsIcons}
+          handleCardSelection=${onOptionClick} />
+      </div>
+      <div class="quiz-button-container">
+        <button 
+          disabled=${countSelectedCards < minSelections && 'disabled'}
+          aria-label="Next" 
+          class="quiz-button" 
+          daa-ll="${btnAnalyticsData}"
+          onClick=${() => { handleOnNextClick(selectedCards); }}>
+            <span class="quiz-button-label">${btnText}</span>
+        </button>
+      </div>
+  </div>`;

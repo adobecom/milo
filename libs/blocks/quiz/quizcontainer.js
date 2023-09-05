@@ -9,12 +9,12 @@ export const DecorateBlockBackgroundCmp = ({ background = '' }) => html`<div dat
       </picture>
   </div>`;
 
-export const DecorateBlockForeground = ({ heading, subhead }) => html`<div class="foreground container">
-    <div data-valign="middle" class="text" daa-lh="${heading}">
-      <h2 id="heading-xl-marquee-standard-medium-left" class="heading-XL">
+export const DecorateBlockForeground = ({ heading, subhead }) => html`<div class="quiz-foreground">
+    <div class="text" daa-lh="${heading}">
+      <h2 class="quiz-question-title">
       ${heading}
       </h2>
-      <p class="detail-L">${subhead}</p>
+      <p class="quiz-question-text">${subhead}</p>
     </div>
   </div>`;
 
