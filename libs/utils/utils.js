@@ -408,7 +408,8 @@ function decorateSectionAnalytics(section) {
 }
 
 function processTrackingNames(text, charLimit) {
-  const processedText = text?.trim().replace(/\s+/g, ' ').split('|', ' ').slice(0, charLimit);
+  const processedText = text?.trim().replace(/\s+/g, ' ').split('|').join(' ')
+    .slice(0, charLimit);
   return processedText;
 }
 
