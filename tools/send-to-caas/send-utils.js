@@ -222,7 +222,7 @@ const getTag = (tagName, errors) => {
 const getTags = (s) => {
   let rawTags = [];
   if (s) {
-    rawTags = s.toLowerCase().split(/,|(\s+)|(\\n)/g).filter((t) => t && t.trim() && t !== '\n');
+    rawTags = s.toLowerCase().split(/,|(\s+)|(\\n)|;/g).filter((t) => t && t.trim() && t !== '\n');
   }
 
   const errors = [];
