@@ -115,6 +115,7 @@ function decorateLayout(el) {
 }
 
 export default function init(el) {
+  el.classList.add('con-block');
   const blockData = getBlockData(el);
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);
