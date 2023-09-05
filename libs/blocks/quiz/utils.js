@@ -190,11 +190,12 @@ export const nestedFragments = (
   nestedFragsSecondaryArray?.forEach((frag) => {
     if (!frag) return;
     const fragKey = frag.trim();
-    nestedObject[fragKey] = getNestedFragments(
+    if (!nestedObject[fragKey]) nestedObject[fragKey] = [];
+    nestedObject[fragKey].push(...getNestedFragments(
       resultResources,
       secondaryProductCodes,
       fragKey,
-    );
+    ));
   });
 
   return nestedObject;
