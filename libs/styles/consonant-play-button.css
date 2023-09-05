@@ -43,6 +43,11 @@
   background-color: var(--color-accent-down);
 }
 
+.modal-img-link .consonant-play-btn.btn-small:focus,
+.modal-img-link .consonant-play-btn.btn-small:focus-visible {
+  outline: 2px solid var(--link-color-dark);
+}
+
 .modal-img-link .consonant-play-btn:active {
   outline: none;
   background-color: var(--color-accent-down);
@@ -83,6 +88,7 @@
     width: 102px;
     left: calc(50% - 51px);
     top: calc(50% - 51px);
+    box-sizing: border-box;
     border: 3px solid var(--color-white);
   }
 
