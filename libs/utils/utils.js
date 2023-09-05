@@ -407,7 +407,7 @@ function decorateSectionAnalytics(section) {
   });
 }
 
-export async function decorateDefaultLinkAnalytics(block) {
+export function decorateDefaultLinkAnalytics(block) {
   if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
     block.dataset.block = 'true';
     let header = '';
@@ -466,8 +466,11 @@ export async function loadBlock(block) {
       resolve();
     })();
   });
-  await Promise.all([styleLoaded, scriptLoaded]);
-  decorateDefaultLinkAnalytics(block);
+  await Promise.all([styleLoaded, scriptLoaded]).then(() => {
+    console.log('about to decorate analytics');
+    decorateDefaultLinkAnalytics(block);
+  });
+  console.log('after promise');
   return block;
 }
 
