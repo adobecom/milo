@@ -407,6 +407,11 @@ function decorateSectionAnalytics(section) {
   });
 }
 
+function processTrackingNames(text, charLimit) {
+  const processedText = text?.trim().replace(/\s+/g, ' ').split('|', ' ').slice(0, charLimit);
+  return processedText;
+}
+
 export function decorateDefaultLinkAnalytics(block) {
   if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
     block.dataset.block = 'true';
@@ -415,12 +420,12 @@ export function decorateDefaultLinkAnalytics(block) {
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a, button').forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (!item.hasAttribute('daa-ll')) {
-          const label = (item.textContent || item.getAttribute('aria-label'))?.trim().slice(0, 30);
-          item.setAttribute('daa-ll', `${label.replace(/\s+/g, ' ').trim()}-${linkCount}|${header}`);
+          const label = processTrackingNames(item.textContent || item.getAttribute('aria-label'));
+          item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
         }
         linkCount += 1;
       } else {
-        header = item.textContent?.replace(/\s+/g, ' ').trim().slice(0, 30);
+        header = processTrackingNames(item.textContent);
       }
     });
   }
