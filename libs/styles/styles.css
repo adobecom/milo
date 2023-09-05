@@ -14,8 +14,7 @@
 @import url('typography.css');
 
 :root {
-  --feds-bufferheight-nav: 10px;
-  --feds-totalheight-nav: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs) + var(--feds-bufferheight-nav));
+  --feds-totalheight-nav: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
 }
 
 @font-face {
