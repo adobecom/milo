@@ -408,6 +408,8 @@ function decorateSectionAnalytics(section) {
 }
 
 function processTrackingNames(text, charLimit) {
+  let label = text[0].trim();
+  if (label === '' && text.length === 3) label = text[1] || text[2];
   const processedText = text?.trim().replace(/\s+/g, ' ').split('|').join(' ')
     .slice(0, charLimit);
   return processedText;
@@ -421,12 +423,12 @@ export function decorateDefaultLinkAnalytics(block) {
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a, button, .heading-title').forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (!item.hasAttribute('daa-ll')) {
-          const label = processTrackingNames(item.textContent || item.getAttribute('title') || item.getAttribute('aria-label'), 30);
+          const label = processTrackingNames([item.textContent, item.getAttribute('title'), item.getAttribute('aria-label')], 30);
           item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
         }
         linkCount += 1;
       } else {
-        header = processTrackingNames(item.textContent, 30);
+        header = processTrackingNames([item.textContent], 30);
       }
     });
   }
