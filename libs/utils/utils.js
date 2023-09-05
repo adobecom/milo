@@ -410,7 +410,7 @@ function decorateSectionAnalytics(section) {
 function processTrackingNames(text, charLimit) {
   let label = text[0].trim();
   if (label === '' && text.length === 3) label = text[1] || text[2];
-  const processedText = text?.trim().replace(/\s+/g, ' ').split('|').join(' ')
+  const processedText = label?.trim().replace(/\s+/g, ' ').split('|').join(' ')
     .slice(0, charLimit);
   return processedText;
 }
