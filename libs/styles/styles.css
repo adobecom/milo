@@ -13,6 +13,11 @@
 @import url('variables.css');
 @import url('typography.css');
 
+:root {
+  --feds-bufferheight-nav: 10px;
+  --feds-totalheight-nav: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs) + var(--feds-bufferheight-nav));
+}
+
 @font-face {
   font-family: 'Trebuchet MS';
   font-weight: 700;
@@ -86,37 +91,37 @@ header.global-navigation {
 h1 {
   font-size: var(--type-heading-xl-size);
   line-height: var(--type-heading-xl-lh);
-  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+  scroll-margin-top: var(--feds-totalheight-nav);
 }
 
 h2 {
   font-size: var(--type-heading-l-size);
   line-height: var(--type-heading-l-lh);
-  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+  scroll-margin-top: var(--feds-totalheight-nav);
 }
 
 h3 {
   font-size: var(--type-heading-m-size);
   line-height: var(--type-heading-m-lh);
-  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+  scroll-margin-top: var(--feds-totalheight-nav);
 }
 
 h4 {
   font-size: var(--type-heading-s-size);
   line-height: var(--type-heading-s-lh);
-  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+  scroll-margin-top: var(--feds-totalheight-nav);
 }
 
 h5 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
-  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+  scroll-margin-top: var(--feds-totalheight-nav);
 }
 
 h6 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
-  scroll-margin-top: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+  scroll-margin-top: var(--feds-totalheight-nav);
 }
 
 /* Links */
