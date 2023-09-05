@@ -1,6 +1,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import { extractSearchParams, createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
+
+const { LinkMarkupFactory } = await import('../../../libs/blocks/ost/ost.js');
+const createLinkMarkup = LinkMarkupFactory({
+  checkoutWorkflow: 'UCv3',
+  checkoutWorkflowStep: 'email',
+});
 
 const data = await readFile({ path: './mocks/wcs-artifacts-mock.json' });
 const { stockOffer } = JSON.parse(data);
@@ -16,8 +21,6 @@ const placeholderOptions = {
   displayTax: true, // tax
   isPerpetual: true,
 };
-
-let promotionCode;
 
 describe('test createLinkMarkup', () => {
   const WINDOW_LOCATION = 'https://main--milo--adobecom.hlx.page';
@@ -36,7 +39,6 @@ describe('test createLinkMarkup', () => {
       type,
       stockOffer,
       placeholderOptions,
-      promotionCode,
       location,
     );
     expect(EXPECTED_CTA_TEXT).to.equal(link.text);
@@ -54,7 +56,6 @@ describe('test createLinkMarkup', () => {
       type,
       stockOffer,
       placeholderOptions,
-      promotionCode,
       location,
     );
     expect(EXPECTED_CTA_TEXT).to.equal(link.text);
@@ -66,7 +67,7 @@ describe('test createLinkMarkup', () => {
     placeholderOptions.workflowStep = 'email_checkout';
     placeholderOptions.workflow = 'UCv2';
     const EXPECTED_CTA_TEXT = 'CTA {{buy-now}}';
-    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now&checkoutType=UCv2&workflowStep=email%2Fcheckout`;
+    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now&workflow=UCv2&workflowStep=email%2Fcheckout`;
 
     const type = 'checkoutUrl';
     const link = createLinkMarkup(
@@ -74,7 +75,6 @@ describe('test createLinkMarkup', () => {
       type,
       stockOffer,
       placeholderOptions,
-      promotionCode,
       location,
     );
     expect(EXPECTED_CTA_TEXT).to.equal(link.text);
@@ -91,44 +91,9 @@ describe('test createLinkMarkup', () => {
       type,
       stockOffer,
       placeholderOptions,
-      promotionCode,
       location,
     );
     expect(EXPECTED_PRICE_TEXT).to.be.equal(link.text);
     expect(EXPECTED_PRICE_URL).to.be.equal(link.href);
-  });
-
-  it('create a "price" link with promo', async () => {
-    const EXPECTED_PRICE_TEXT = `PRICE - ${offerType} - Stock`;
-    const EXPECTED_PRICE_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=price&promo=back-to-school&perp=true&term=false&seat=true&tax=true`;
-
-    const type = 'price';
-    promotionCode = 'back-to-school';
-    const link = createLinkMarkup(
-      osi,
-      type,
-      stockOffer,
-      placeholderOptions,
-      promotionCode,
-      location,
-    );
-    expect(EXPECTED_PRICE_TEXT).to.be.equal(link.text);
-    expect(EXPECTED_PRICE_URL).to.be.equal(link.href);
-  });
-
-  it('extract the promotion code from the URL', () => {
-    const type = 'price';
-    promotionCode = 'back-to-school';
-    const link = createLinkMarkup(
-      osi,
-      type,
-      stockOffer,
-      placeholderOptions,
-      promotionCode,
-      location,
-    );
-    const { searchParameters } = extractSearchParams(link.href);
-    expect(searchParameters.get('promo')).to.be.equal(null);
-    expect(searchParameters.get('storedPromoOverride')).to.be.equal('back-to-school');
   });
 });
