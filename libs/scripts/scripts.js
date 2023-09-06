@@ -131,6 +131,7 @@ const config = {
   },
   privacyId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db', // valid for *.adobe.com
   breadcrumbs: 'on',
+  // taxonomyRoot: '/your-path-here',
 };
 
 const eagerLoad = (img) => {
