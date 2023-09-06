@@ -1,6 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
+import merch, { buildCta, getCheckoutContext } from '../../../libs/blocks/merch/merch.js';
+
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
@@ -9,11 +11,6 @@ const config = {
   codeRoot: '/libs',
   env: { name: 'prod' },
 };
-
-async function merch(el) {
-  const { default: init } = await import('../../../libs/blocks/merch/merch.js');
-  return init(el);
-}
 
 describe('Merch Block', () => {
   after(async () => {
@@ -336,6 +333,22 @@ describe('Merch Block', () => {
       ));
       const { classList } = await el.onceSettled();
       expect(classList.contains('button-l')).to.be.true;
+    });
+  });
+
+  describe('Function "getCheckoutContext"', () => {
+    it('returns null if context params do not have osi', async () => {
+      const el = document.createElement('a');
+      const params = new URLSearchParams();
+      expect(await getCheckoutContext(el, params)).to.be.null;
+    });
+  });
+
+  describe('Function "buildCta"', () => {
+    it('returns null if context params do not have osi', async () => {
+      const el = document.createElement('a');
+      const params = new URLSearchParams();
+      expect(await buildCta(el, params)).to.be.null;
     });
   });
 });
