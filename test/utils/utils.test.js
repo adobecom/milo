@@ -432,7 +432,6 @@ describe('Utils', () => {
     });
   });
 
-
   describe('scrollToHashedElement', () => {
     before(() => {
       const div = document.createElement('div');
@@ -444,7 +443,7 @@ describe('Utils', () => {
 
     it('should scroll to the hashed element', () => {
       let scrollToCalled = false;
-      window.scrollBy = () => {
+      window.scrollTo = () => {
         scrollToCalled = true;
       };
 
@@ -494,7 +493,6 @@ describe('Utils', () => {
       htmlLinks.forEach((link) => {
         expect(link.href).to.not.contain('.html');
       });
-
     });
   });
 });
