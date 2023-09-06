@@ -37,9 +37,11 @@ const defaultConfig = {
     ctaAction: '_blank',
     additionalRequestParams: {},
   },
+  headers: [],
   hideCtaIds: [
     '',
   ],
+  hideCtaTags: [],
   featuredCards: [
     '',
   ],

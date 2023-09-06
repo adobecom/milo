@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockText, decorateIconStack, applyHoverPlay } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -32,6 +32,7 @@ const blockConfig = {
     [large]: ['l', 'm'],
   },
 };
+const FORMAT_REGEX = /^format:/i;
 
 function getBlockData(el) {
   const variant = variants.find((variantClass) => el.classList.contains(variantClass));
@@ -46,31 +47,101 @@ function decorateStaticLinks(el) {
   textLinks.forEach((link) => { link.classList.add('static'); });
 }
 
+function decorateMedia(el) {
+  if (!(el.classList.contains('medium') || el.classList.contains('large'))) return;
+  const allMedia = el.querySelectorAll('div > p video, div > p picture');
+  [...allMedia].some((media) => {
+    const parentP = media.closest('p');
+    const siblingP = parentP?.nextElementSibling;
+    if (!siblingP || siblingP.nodeName !== 'P') return false;
+    const siblingText = siblingP.textContent;
+    const hasFormats = FORMAT_REGEX.test(siblingText);
+    if (!hasFormats) return false;
+    const formats = siblingText.split(': ')[1]?.split(/\s+/);
+    if (formats) {
+      const formatClasses = [];
+      formatClasses.push('format');
+      if (formats.length === 3) formatClasses.push(`desktop-${formats[2]}`);
+      if (formats.length >= 2) formatClasses.push(`tablet-${formats[1]}`);
+      formatClasses.push(`mobile-${formats[0]}`);
+      media.closest('div').classList.add(...formatClasses);
+    }
+    siblingP.remove();
+    media.closest('div').insertBefore(media, parentP);
+    parentP.remove();
+    return true;
+  });
+}
+
+function decorateVideo(container) {
+  const link = container.querySelector('a[href*=".mp4"]');
+  if (!link) return;
+  const isNotLooped = link.hash?.includes('autoplay1');
+  const attrs = `playsinline autoplay ${isNotLooped ? '' : 'loop'} muted`;
+  container.innerHTML = `<video preload="metadata" ${attrs}>
+    <source src="${link.href}" type="video/mp4" />
+  </video>`;
+  container.classList.add('has-video');
+}
+
+function decorateBlockBg(block, node) {
+  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
+  const childCount = node.childElementCount;
+  const { children } = node;
+  node.classList.add('background');
+  if (childCount === 2) {
+    children[0].classList.add(viewports[0], viewports[1]);
+    children[1].classList.add(viewports[2]);
+  }
+  [...children].forEach((child, index) => {
+    if (childCount === 3) {
+      child.classList.add(viewports[index]);
+    }
+    decorateVideo(child);
+  });
+  if (!node.querySelector(':scope img') && !node.querySelector(':scope video')) {
+    block.style.background = node.textContent;
+    node.remove();
+  }
+}
+
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
+  if (el.classList.contains('split')) decorateMedia(el);
   const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
-  if (!el.classList.contains('notification')) media?.classList.add('image');
-  const picture = text?.querySelector('picture');
+  if (media && !el.classList.contains('notification')) {
+    media.classList.add('image');
+    const video = media.querySelector('video');
+    if (video) applyHoverPlay(video);
+  }
+  const picture = text?.querySelector('p picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   iconArea?.classList.add('icon-area');
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video')?.closest('div');
+  const bgMedia = el.querySelector(':scope > div:not(.text) video')?.closest('div');
   const image = foregroundImage ?? bgImage;
-  if (image && !image.classList.contains('text')) {
+  const asideMedia = foregroundMedia ?? bgMedia ?? image;
+  if (asideMedia && !asideMedia.classList.contains('text')) {
     const isSplit = el.classList.contains('split');
-    image.classList.add(`${isSplit ? 'split-' : ''}image`);
+    asideMedia.classList.add(`${isSplit ? 'split-' : ''}image`);
     if (isSplit) {
-      const position = Array.from(image.parentNode.children).indexOf(image);
+      const position = [...asideMedia.parentNode.children].indexOf(asideMedia);
       el.classList.add(`split${!position ? '-right' : '-left'}`);
-      foreground.parentElement.appendChild(image);
+      foreground.parentElement.appendChild(asideMedia);
     }
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
+  }
+  if (el.classList.contains('split')
+      && (el.classList.contains('medium') || el.classList.contains('large'))) {
+    decorateIconStack(el);
   }
   return foreground;
 }

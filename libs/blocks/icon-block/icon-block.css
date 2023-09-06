@@ -1,4 +1,3 @@
-/* stylelint-disable selector-class-pattern */
 .icon-block {
   display: block;
   width: 100%;
@@ -42,6 +41,11 @@
   width: 100%;
 }
 
+.five-up .icon-block .foreground .text-content {
+  text-align: left;
+  padding-bottom: var(--spacing-xs);
+}
+
 .icon-block .foreground .text-content .action-area.supplemental-text {
   margin-top: var(--spacing-s);
   margin-bottom: 0;
@@ -64,10 +68,6 @@
   overflow: hidden;
 }
 
-.icon-block.fullwidth .foreground .icon-area {
-  margin-bottom: var(--spacing-m);
-}
-
 .icon-block .foreground .icon-area img {
   height: var(--icon-size-xxl);
   width: auto;
@@ -78,9 +78,19 @@
   min-width: var(--icon-size-xxl);
 }
 
+.icon-block.bio .foreground .icon-area img {
+  object-fit: cover;
+  height: var(--icon-size-xl);
+  width: var(--icon-size-xl);
+}
+
 .icon-block.inline.bio .icon-area,
 .icon-block.inline.bio .icon-area picture img {
   min-width: var(--icon-size-xl);
+}
+
+.icon-block.fullwidth .foreground .icon-area {
+  margin-bottom: var(--spacing-m);
 }
 
 .icon-block.vertical .foreground .icon-area {
@@ -88,7 +98,7 @@
 }
 
 .icon-block.bio .foreground {
-  text-align: left;
+  text-align: start;
   border-top: 1px solid #D5D5D5;
   border-bottom: 1px solid #D5D5D5;
 }
@@ -104,12 +114,6 @@
 
 .icon-block.bio .foreground .second-column {
   margin-top: var(--spacing-s);
-}
-
-.icon-block.bio .foreground .icon-area img {
-  object-fit: cover;
-  height: var(--icon-size-xl);
-  width: var(--icon-size-xl);
 }
 
 .icon-block.inline.m-icon .icon-area,
@@ -162,6 +166,18 @@
   max-width: var(--icon-size-xxl);
 }
 
+.icon-block.inline.m-icon.bio .icon-area,
+.icon-block.inline.m-icon.bio .icon-area picture img {
+  height: var(--icon-size-m);
+  width: var(--icon-size-m);
+}
+
+.icon-block.inline.l-icon.bio .icon-area,
+.icon-block.inline.l-icon.bio .icon-area picture img {
+  height: var(--icon-size-l);
+  width: var(--icon-size-l);
+}
+
 .five-up .icon-block.inline.m-icon .foreground .icon-area,
 .five-up .icon-block.inline.m-icon .foreground .icon-area img {
   max-width: var(--icon-size-m);
@@ -202,15 +218,6 @@
   margin-bottom: 0;
 }
 
-.icon-block:not(.small.fullwidth) .foreground .text-content .action-area {
-  white-space: nowrap;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: var(--spacing-s);
-  row-gap: var(--spacing-xs);
-}
-
 .icon-block.fullwidth .foreground .text-content .action-area {
   justify-content: center;
 }
@@ -220,17 +227,22 @@
   flex-direction: column;
 }
 
+.icon-block:not(.small.fullwidth) .foreground .text-content .action-area {
+  white-space: initial;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--spacing-s);
+  row-gap: var(--spacing-xs);
+}
+
 .icon-block .foreground div {
   flex: 1 1 auto;
 }
 
 .icon-block.vertical .foreground {
-  text-align: left;
+  text-align: start;
   margin-bottom: var(--spacing-s);
-}
-
-[dir="rtl"] .icon-block .foreground {
-  text-align: right;
 }
 
 .icon-block.fullwidth .foreground,
@@ -239,36 +251,19 @@
   margin: 0 auto;
 }
 
-[class*="-up"] .icon-block.bio.inline .foreground {
-  max-width: unset;
-  width: unset;
-}
-
 .icon-block.bio.center .foreground,
 .icon-block.vertical.center .foreground {
   text-align: center;
 }
 
-.icon-block.inline.m-icon.bio .icon-area,
-.icon-block.inline.m-icon.bio .icon-area picture img {
-  height: var(--icon-size-m);
-  width: var(--icon-size-m);
-}
-
-.icon-block.inline.l-icon.bio .icon-area,
-.icon-block.inline.l-icon.bio .icon-area picture img {
-  height: var(--icon-size-l);
-  width: var(--icon-size-l);
+[class*="-up"] .icon-block.bio.inline .foreground {
+  max-width: unset;
+  width: unset;
 }
 
 .icon-block.vertical.center .foreground .text-content .icon-area {
   margin-left: auto;
   margin-right: auto;
-}
-
-.five-up .foreground .text-content {
-  text-align: left;
-  padding-bottom: var(--spacing-xs);
 }
 
 .five-up .foreground .text-content .body-m {
@@ -336,7 +331,7 @@
 @media screen and (min-width: 1200px) {
   .icon-block.fullwidth .foreground,
   .icon-block.bio .foreground {
-    width: 800px;
+    max-width: 800px;
     margin: 0 auto;
   }
 
@@ -359,6 +354,10 @@
     min-width:var(--icon-size-xxl);
   }
 
+  .two-up .icon-block.vertical .foreground .icon-area {
+    max-width: 400px;
+  }
+
   .icon-block.inline.bio.m-icon .icon-area,
   .icon-block.inline.bio.m-icon .icon-area picture img {
     min-width: var(--icon-size-m);
@@ -367,6 +366,18 @@
   .icon-block.inline.bio.l-icon .icon-area,
   .icon-block.inline.bio.l-icon .icon-area picture img {
     min-width: var(--icon-size-l);
+  }
+
+  .five-up .icon-block .foreground .text-content .icon-area {
+    text-align: center;
+  }
+
+  .three-up .icon-block.vertical .foreground .icon-area {
+    max-width: 300px;
+  }
+
+  .four-up .icon-block.vertical .foreground .icon-area {
+    max-width: 276px;
   }
 
   .five-up .icon-block.inline.m-icon .foreground .icon-area,
@@ -401,28 +412,12 @@
     text-align: center;
   }
 
-  .five-up .icon-block .foreground .text-content .icon-area {
-    text-align: center;
-  }
-
   .three-up .icon-block.vertical .foreground .text-content:last-child {
     padding-right: 0;
   }
 
-  .two-up .icon-block.vertical .foreground .icon-area {
-    max-width: 400px;
-  }
-
   .three-up .icon-block.bio .foreground {
     max-width: 300px;
-  }
-
-  .three-up .icon-block.vertical .foreground .icon-area {
-    max-width: 300px;
-  }
-
-  .four-up .icon-block.vertical .foreground .icon-area {
-    max-width: 276px;
   }
 
   .section.five-up {
@@ -432,9 +427,10 @@
 
 .icon-block.inline .foreground .text-content {
   flex-flow: row nowrap;
-  text-align: left;
+  text-align: start;
   gap: 16px;
 }
+
 
 .icon-block.inline .body-s.action-area {
   padding-top: 24px;

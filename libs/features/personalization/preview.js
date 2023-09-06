@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -234,9 +234,11 @@ function createPreviewPill(manifests) {
 function addMarkerData(manifests) {
   manifests.forEach((manifest) => {
     manifest?.selectedVariant.useblockcode?.forEach((item) => {
-      document.querySelectorAll(`.${item.selector}`).forEach((el) => {
-        el.dataset.codeManifestId = manifest.manifest;
-      });
+      if (item.selector) {
+        document.querySelectorAll(`.${item.selector}`).forEach((el) => {
+          el.dataset.codeManifestId = manifest.manifest;
+        });
+      }
     });
     manifest?.selectedVariant.updatemetadata?.forEach((item) => {
       if (item.selector === 'gnav-source') {
@@ -252,7 +254,7 @@ export default async function decoratePreviewMode(manifests) {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   addMarkerData(manifests);
-  document.addEventListener('milo:deferred', () => {
+  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     createPreviewPill(manifests);
   }, { once: true });
 }

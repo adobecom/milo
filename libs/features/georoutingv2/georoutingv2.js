@@ -100,15 +100,17 @@ async function getAvailableLocales(locales) {
 
 function getGeoroutingOverride() {
   const urlParams = new URLSearchParams(window.location.search);
-  const param = urlParams.get('hideGeorouting');
-  const hideGeorouting = param || getCookie('hideGeorouting');
-  if (param === 'on') {
+  const param = urlParams.get('georouting');
+  const georouting = param || getCookie('georouting');
+  if (param === 'off') {
+    const domain = window.location.host === 'adobe.com'
+      || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     const d = new Date();
     d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
     const expires = `expires=${d.toUTCString()}`;
-    document.cookie = `hideGeorouting=${hideGeorouting};${expires};path=/;`;
-  } else if (param === 'off') document.cookie = 'hideGeorouting=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
-  return hideGeorouting === 'on';
+    document.cookie = `georouting=${georouting};${expires};path=/;${domain}`;
+  } else if (param === 'on') document.cookie = 'georouting=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
+  return georouting === 'off';
 }
 
 function decorateForOnLinkClick(link, urlPrefix, localePrefix) {

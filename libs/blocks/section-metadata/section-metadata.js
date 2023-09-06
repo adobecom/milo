@@ -15,6 +15,7 @@ export function handleFocalpoint(pic, child, removeChild) {
   const [x, y = ''] = directions;
   image.style.objectPosition = `${x} ${y}`;
 }
+
 function handleBackground(div, section) {
   const pic = div.background.content?.querySelector('picture');
   if (pic) {
@@ -30,33 +31,15 @@ function handleBackground(div, section) {
   }
 }
 
-function handleTopHeight(section) {
-  const headerHeight = document.querySelector('header').offsetHeight;
-  section.style.top = `${headerHeight}px`;
-}
-async function handleStickySection(sticky, section) {
-  const main = document.querySelector('main');
-  switch (sticky) {
-    case 'sticky-top':
-    {
-      const { debounce } = await import('../../utils/action.js');
-      window.addEventListener('resize', debounce(() => handleTopHeight(section)));
-      main.prepend(section);
-      break;
-    }
-    case 'sticky-bottom':
-      main.append(section);
-      break;
-    default:
-      break;
-  }
-}
-
 export async function handleStyle(text, section) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
-  if (sticky) await handleStickySection(sticky, section);
+  if (sticky) {
+    const { default: handleStickySection } = await import('./sticky-section.js');
+    await handleStickySection(sticky, section);
+  }
+  if (styles.includes('masonry')) styles.push('masonry-up');
   section.classList.add(...styles);
 }
 

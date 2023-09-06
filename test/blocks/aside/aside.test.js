@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/aside/aside.js');
+
 const types = ['simple', 'split', 'inline', 'notification'];
 
 describe('aside', () => {
@@ -42,6 +43,29 @@ describe('aside', () => {
             expect(button.closest('p')).to.exist;
           }
         });
+
+        if (aside.classList.contains('icon-stack')) {
+          it('Has icon stack area', () => {
+            const iconStack = aside.querySelector('ul.icon-stack-area');
+            expect(iconStack).to.exist;
+          });
+        }
+
+        if (aside.classList.contains('aspect-ratio')) {
+          it('Has aspect ratio set', () => {
+            let aspectRatios = '';
+            if (aside.classList.contains('aspect-ratio-three')) {
+              aspectRatios = aside.querySelector('.mobile-square.tablet-standard.desktop-wide');
+              expect(aspectRatios).to.exist;
+            } else if (aside.classList.contains('aspect-ratio-two')) {
+              aspectRatios = aside.querySelector('.mobile-standard.tablet-wide');
+              expect(aspectRatios).to.exist;
+            } else if (aside.classList.contains('aspect-ratio-one')) {
+              aspectRatios = aside.querySelector('.mobile-standard');
+              expect(aspectRatios).to.exist;
+            }
+          });
+        }
       }
 
       if (type === 'default' || type === isInline) {
@@ -52,7 +76,7 @@ describe('aside', () => {
       }
 
       if (type === types[1]) {
-        it('has a background image', () => {
+        it('has a background image or video', () => {
           const body = aside.querySelector('.split-image');
           expect(body).to.exist;
         });
