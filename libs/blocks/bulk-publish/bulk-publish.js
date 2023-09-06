@@ -1,24 +1,24 @@
-import { html, render, useState, useRef } from '../../deps/htm-preact.js';
+import { html, render, useRef, useState } from '../../deps/htm-preact.js';
 import { getMetadata } from '../../utils/utils.js';
 import {
   ANONYMOUS,
-  signOut,
-  getStoredUrlInput,
-  getActionName,
-  getUrls,
-  userIsAuthorized,
   executeActions,
+  getActionName,
   getCompletion,
+  getStoredOperation,
+  getStoredUrlInput,
+  getUrls,
+  getUser,
   sendReport,
   signIn,
-  getUser,
-  getStoredOperation,
-  storeUrls,
+  signOut,
   storeOperation,
+  storeUrls,
+  userIsAuthorized,
 } from './bulk-publish-utils.js';
 
-// eslint-disable-next-line max-len
 const URLS_ENTRY_LIMIT = 1000;
+let urlLimit;
 
 function User({ user }) {
   return html`
@@ -36,7 +36,7 @@ function User({ user }) {
 
 function UrlInput({ urlsElt }) {
   return html`
-    <span class="max-urls">Maximum number of URLS processed: ${URLS_ENTRY_LIMIT} </span>
+    <span class="max-urls">Maximum number of URLS processed: ${urlLimit} </span>
     <textarea class="bulk-urls-input" placeholder="Ex: https://main--milo--adobecom.hlx.page/my/sample/page" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
   `;
 }
@@ -47,6 +47,9 @@ function SelectBtn({ actionElt, onSelectChange, storedOperationName }) {
           <option value="preview">Preview</option>
           <option value="publish" selected="${storedOperationName === 'publish'}">Publish</option>
           <option value="preview&publish" selected="${storedOperationName === 'preview&publish'}">Preview & Publish</option>
+          <option value="unpublish" selected="${storedOperationName === 'unpublish'}">Unpublish</option>
+          <option value="unpublish&delete" selected="${storedOperationName === 'unpublish&delete'}">Delete</option>
+          <option value="index" selected="${storedOperationName === 'index'}">Index</option>
       </select>
   `;
 }
@@ -59,8 +62,7 @@ function SubmitBtn({ submit }) {
   `;
 }
 
-function prettyDate() {
-  const date = new Date();
+function prettyDate(date = new Date()) {
   const localeDate = date.toLocaleString();
   const splitDate = localeDate.split(', ');
   return html`
@@ -70,21 +72,45 @@ function prettyDate() {
 }
 
 function bulkPublishStatus(row) {
-  const status = row.status.publish !== 200
-    ? `Error  - Status: ${row.status.publish}`
-    : '';
-  return row.status.publish !== 200 && row.status.publish !== undefined && html`
+  const success = row.status.publish === 200;
+  const status = success ? '' : `Error - Status: ${row.status.publish}`;
+  return !success && row.status.publish !== undefined && html`
     <span class=page-status>${status}</span>
   `;
 }
 
 function bulkPreviewStatus(row) {
-  const status = row.status.preview !== 200
-    ? `Error - Status: ${row.status.preview}`
-    : '';
+  const success = row.status.preview === 200;
+  const status = success ? '' : `Error - Status: ${row.status.preview}`;
   return row.status.preview !== 200 && row.status.preview !== undefined && html`
     <span class=page-status>${status}</span>
   `;
+}
+
+function bulkDeleteStatus(row) {
+  const success = row.status.delete === 204;
+  const status = row.status.delete === 403
+    ? 'Failed to Delete (Ensure the resource is deleted in SharePoint)'
+    : `Error - Status: ${row.status.delete}`;
+  return !success && row.status.delete !== undefined && html`
+    <span class=page-status>${status}</span>
+  `;
+}
+
+function bulkUnpublishStatus(row) {
+  const success = row.status.unpublish === 204;
+  const status = row.status.unpublish === 403
+    ? 'Failed to Unpublish (Ensure the resource is deleted in SharePoint)'
+    : `Error - Status: ${row.status.unpublish}`;
+  return !success && row.status.unpublish !== undefined && html`
+    <span class=page-status>${status}</span>
+  `;
+}
+
+function bulkIndexStatus(row) {
+  const success = row.status.index === 200 || row.status.index === 202;
+  const status = success ? '' : `Error - Status: ${row.status.index}`;
+  return !success && row.status.index !== undefined && html`<span class=page-status>${status}</span>`;
 }
 
 function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
@@ -100,36 +126,56 @@ function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
 }
 
 function StatusRow({ row }) {
-  const timeStamp = prettyDate();
+  const timeStamp = prettyDate(row?.timestamp);
   const errorStyle = 'status-error';
-  const previewStatusError = row.status.preview === 200 ? '' : errorStyle;
-  const publishStatusError = row.status.publish === 200 ? '' : errorStyle;
+  const del = !!row.status.delete || !!row.status.unpublish;
+  const expectedStatus = del ? 204 : 200;
+  const previewStatus = del ? row.status.delete : row.status.preview;
+  const publishStatus = del ? row.status.unpublish : row.status.publish;
+  const preStatus = del ? bulkDeleteStatus : bulkPreviewStatus;
+  const pubStatus = del ? bulkUnpublishStatus : bulkPublishStatus;
+
+  const previewStatusError = previewStatus === expectedStatus ? '' : errorStyle;
+  const publishStatusError = publishStatus === expectedStatus ? '' : errorStyle;
+  const indexSuccess = row.status.index === 200 || row.status.index === 202;
+  const indexStatusError = indexSuccess ? '' : errorStyle;
 
   return html`
     <tr class="bulk-status-row">
       <td class="bulk-status-url"><a href="${row.url}" target="_blank">${row.url}</a></td>
       <td class="bulk-status-preview ${previewStatusError}">
-        ${row.status.preview === 200 && timeStamp} ${bulkPreviewStatus(row)}
+        ${previewStatus === expectedStatus && timeStamp} ${preStatus(row)}
       </td>
       <td class="bulk-status-publish ${publishStatusError}">
-        ${row.status.publish === 200 && timeStamp} ${bulkPublishStatus(row)}
+        ${publishStatus === expectedStatus && timeStamp} ${pubStatus(row)}
+      </td>
+      <td class="bulk-status-index ${indexStatusError}">
+        ${indexSuccess && timeStamp} ${bulkIndexStatus(row)}
       </td>
     </tr>
   `;
 }
 
 function StatusContent({ resultsElt, result, submittedAction }) {
-  const name = getActionName(submittedAction);
+  const name = getActionName(submittedAction).toLowerCase();
   const displayClass = 'did-bulk';
-  const bulkPreviewed = name.toLowerCase().includes('preview') ? displayClass : '';
-  const bulkPublished = name.toLowerCase().includes('publish') ? displayClass : '';
+  const bulkPreviewed = name.includes('preview') || name === 'delete' ? displayClass : '';
+  const bulkPublished = name.includes('publish') || name === 'delete' ? displayClass : '';
+  const bulkIndexed = name.includes('index') ? displayClass : '';
+
+  const del = name === 'delete' || name === 'unpublish';
+  const headings = {
+    pre: del ? 'Deleted' : 'Previewed',
+    pub: del ? 'UnPublished' : 'Published',
+  };
   return html`
     <table class="bulk-status-content" ref="${resultsElt}">
       ${result && html`
         <tr class="bulk-status-header-row">
           <th>URL</th>
-          <th class="${bulkPreviewed}">Previewed</th>
-          <th class="${bulkPublished}">Published</th>
+          <th class="${bulkPreviewed}">${headings.pre}</th>
+          <th class="${bulkPublished}">${headings.pub}</th>
+          <th class="${bulkIndexed}">Indexed</th>
         </tr>
         ${result.reverse().map((row) => html`<${StatusRow} row=${row} />`)}
       `}
@@ -154,12 +200,33 @@ function StatusCompletion({ completion }) {
           <li><span>Successful:</span> ${completion.publish.success} / ${completion.publish.total}</li>
         </ul>
         `}
+        ${completion.delete.total > 0 && html`
+        <ul class="bulk-job-publish">
+          <li><span>Delete Job Complete:</span> ${timeStamp}</li>
+          <li><span>Successful:</span> ${completion.delete.success} / ${completion.delete.total}</li>
+        </ul>
+        `}
+        ${completion.unpublish.total > 0 && html`
+        <ul class="bulk-job-publish">
+          <li><span>Unpublish Job Complete:</span> ${timeStamp}</li>
+          <li><span>Successful:</span> ${completion.unpublish.success} / ${completion.unpublish.total}</li>
+        </ul>
+        `}
+        ${completion.index.total > 0 && html`
+        <ul class="bulk-job-index">
+          <li><span>Index Job Complete:</span> ${timeStamp}</li>
+          <li><span>Successful:</span> ${completion.index.success} / ${completion.index.total}</li>
+        </ul>
+        `}
       </div>
     </div>
   `;
 }
 
-function Status({ valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion }) {
+// eslint-disable-next-line max-len
+function Status({
+  valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion,
+}) {
   return valid && html`
     <div class="bulk-status">
       <div class="bulk-status-info">
@@ -187,8 +254,8 @@ function ErrorMessage({ valid, authorized, urlNumber }) {
     message = 'You are not authorized to perform bulk operations';
   } else if (urlNumber < 1) {
     message = 'There are no URLS to process. Add URLS to the text area to start bulk publishing.';
-  } else if (urlNumber > URLS_ENTRY_LIMIT) {
-    message = `There are too many URLS. You entered ${urlNumber} URLS. The max allowed number is ${URLS_ENTRY_LIMIT}`;
+  } else if (urlNumber > urlLimit) {
+    message = `There are too many URLS. You entered ${urlNumber} URLS. The max allowed number is ${urlLimit}`;
   }
   return !!message && html`
       <div class="bulk-error">
@@ -247,7 +314,7 @@ function BulkPublish({ user, storedOperation }) {
     const { urls } = getStoredOperation();
     const urlNumberValue = urls.length;
     setUrlNumber(urlNumberValue);
-    if (urlNumberValue < 1 || urlNumberValue > URLS_ENTRY_LIMIT) {
+    if (urlNumberValue < 1 || urlNumberValue > urlLimit) {
       setValid(false);
       return;
     }
@@ -331,6 +398,13 @@ function BulkPublish({ user, storedOperation }) {
   `;
 }
 
+function initUrlLimit() {
+  if (urlLimit) return;
+  const { searchParams } = new URL(window.location.href);
+  const limit = searchParams.get('limit');
+  urlLimit = limit ? Number(limit) || URLS_ENTRY_LIMIT : URLS_ENTRY_LIMIT;
+}
+
 export default async function init(el) {
   const imsSignIn = getMetadata('ims-sign-in');
   if (imsSignIn === 'on' || imsSignIn === 'true') {
@@ -338,6 +412,7 @@ export default async function init(el) {
     if (!signedIn) return;
   }
 
+  initUrlLimit();
   const user = await getUser();
   const storedOperation = getStoredOperation();
   render(html`<${BulkPublish} user="${user}" storedOperation="${storedOperation}" />`, el);

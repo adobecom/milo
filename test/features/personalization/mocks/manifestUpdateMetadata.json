@@ -1,0 +1,36 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "updateMetadata",
+      "selector": "georouting",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "on"
+    },
+    {
+      "action": "updateMetadata",
+      "selector": "mynewmetadata",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "woot"
+    },
+    {
+      "action": "updateMetadata",
+      "selector": "og:title",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "New Title"
+    },
+    {
+      "action": "updateMetadata",
+      "selector": "og:image",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "https://adobe.com/path/to/image.jpg"
+    }
+  ],
+  ":type": "sheet"
+}

@@ -15,25 +15,36 @@
 */
 
 import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
-const variants = ['fullwidth', 'vertical', 'bio'];
+const variants = ['fullwidth', 'vertical', 'bio', 'inline'];
 const iconBlocks = {
   small: {
     [variants[0]]: ['m', 'm'],
     [variants[1]]: ['s', 'm'],
     [variants[2]]: ['s', 's'],
+    [variants[3]]: ['s', 's'],
   },
   medium: {
     [variants[0]]: ['l', 'm'],
     [variants[1]]: ['m', 'm'],
     [variants[2]]: ['s', 's'],
+    [variants[3]]: ['s', 's'],
   },
   large: {
     [variants[0]]: ['xl', 'm'],
     [variants[1]]: ['m', 'm'],
     [variants[2]]: ['s', 's'],
+    [variants[3]]: ['s', 's'],
   },
 };
+
+// checking if block is part of xx-up and is inline variant
+function upAndInline(el) {
+  const isInlineAndSectionMetadata = el.classList.contains('inline') && el.parentElement?.querySelector('.section-metadata');
+  if (!isInlineAndSectionMetadata) return false;
+  return /(two|three|four|five)[- ]?up/i.test(el.parentElement.className);
+}
 
 function decorateContent(el) {
   const block = el.querySelector(':scope > div:not([class])');
@@ -53,7 +64,16 @@ function decorateContent(el) {
     }
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
-    decorateBlockText(el, iconBlocks[size][variant]);
+    const textSize = upAndInline(el) ? ['xs', 's'] : iconBlocks[size][variant];
+    decorateBlockText(el, textSize);
+    if (el.classList.contains('inline')) {
+      const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
+      const secondColumn = createTag('div', { class: 'second-column' });
+      textContent.forEach((content) => {
+        secondColumn.append(content);
+      });
+      el.querySelector('.foreground .text-content').append(secondColumn);
+    }
   }
 }
 

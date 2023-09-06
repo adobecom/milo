@@ -33,7 +33,7 @@ const validUrl = new RegExp(
     + ')'
     // resource path (optional)
     + '(?:[/?#]\\S*)?',
-  'ig'
+  'ig',
 );
 
 const allowedChars = /[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF\s.]/g;
@@ -61,7 +61,7 @@ const sanitizeComment = (comment) => {
       // replace each url with a placeholder before sanitizing rest of comment
       sanitizedComment = sanitizedComment.replace(
         new RegExp(escapeRegExp(url), 'g'),
-        `...${i}...`
+        `...${i}...`,
       );
     }
   });
@@ -74,7 +74,7 @@ const sanitizeComment = (comment) => {
   urls.forEach((url, i) => {
     sanitizedComment = sanitizedComment.replace(
       new RegExp(`...${i}...`, 'g'),
-      url
+      url,
     );
   });
 

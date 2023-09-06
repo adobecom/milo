@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 /* eslint-disable max-classes-per-file */
 class Node {
   constructor(key, value = key, parent = null) {
@@ -21,14 +20,14 @@ export default class Tree {
   * traverse(node = this.root) {
     yield node;
     if (node.children.length) {
-      for (let child of node.children) {
+      for (const child of node.children) {
         yield* this.traverse(child);
       }
     }
   }
 
   insert(parentNodeKey, key, value = key) {
-    for (let node of this.traverse()) {
+    for (const node of this.traverse()) {
       if (node.key === parentNodeKey) {
         node.children.push(new Node(key, value, node));
         return true;
@@ -38,7 +37,7 @@ export default class Tree {
   }
 
   remove(key) {
-    for (let node of this.traverse()) {
+    for (const node of this.traverse()) {
       const filtered = node.children.filter((c) => c.key !== key);
       if (filtered.length !== node.children.length) {
         node.children = filtered;
@@ -49,7 +48,7 @@ export default class Tree {
   }
 
   find(key) {
-    for (let node of this.traverse()) {
+    for (const node of this.traverse()) {
       if (node.key === key) return node;
     }
     return undefined;

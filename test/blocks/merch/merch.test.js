@@ -4,7 +4,14 @@ import sinon from 'sinon';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 
 const config = setConfig({ codeRoot: '/libs', env: { name: 'local' } });
-const { default: merch, VERSION, getTacocatEnv, imsCountryPromise, runTacocat } = await import('../../../libs/blocks/merch/merch.js');
+const {
+  default: merch,
+  VERSION,
+  getTacocatEnv,
+  getTacocatLocale,
+  imsCountryPromise,
+  runTacocat,
+} = await import('../../../libs/blocks/merch/merch.js');
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -16,7 +23,7 @@ describe('Merch Block', () => {
       price: { optionProviders: [] },
       defaults: {
         apiKey: 'wcms-commerce-ims-ro-user-milo',
-        baseUrl: 'https://wcs.stage.adobe.com',
+        baseUrl: 'https://wcs.adobe.com',
         landscape: null,
         env: 'STAGE',
         environment: 'STAGE',
@@ -307,15 +314,34 @@ describe('Merch Block', () => {
     });
 
     it('returns production values', async () => {
-      const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv(
+      const { scriptUrl, literalScriptUrl, country, language, tacocatEnv } = getTacocatEnv(
         'prod',
         { ietf: 'fr-CA' },
       );
+      expect(tacocatEnv).to.equal('PRODUCTION');
       expect(scriptUrl).to.equal(
         `https://www.adobe.com/special/tacocat/lib/${VERSION}/tacocat.js`,
       );
       expect(literalScriptUrl).to.equal(
         'https://www.adobe.com/special/tacocat/literals/fr.js',
+      );
+      expect(country).to.equal('CA');
+      expect(language).to.equal('fr');
+    });
+
+    it('returns stage values', async () => {
+      const metadata = createTag('meta', { name: 'tacocat-env', content: 'STAGE' });
+      document.head.appendChild(metadata);
+      const { scriptUrl, literalScriptUrl, country, language, tacocatEnv } = getTacocatEnv(
+        'stage',
+        { ietf: 'fr-CA' },
+      );
+      expect(tacocatEnv).to.equal('STAGE');
+      expect(scriptUrl).to.equal(
+        `https://www.stage.adobe.com/special/tacocat/lib/${VERSION}/tacocat.js`,
+      );
+      expect(literalScriptUrl).to.equal(
+        'https://www.stage.adobe.com/special/tacocat/literals/fr.js',
       );
       expect(country).to.equal('CA');
       expect(language).to.equal('fr');
@@ -351,6 +377,15 @@ describe('Merch Block', () => {
       el = await merch(el);
       expect(el).to.be.undefined;
     });
+
+    it('does not initialize the block when tacocat fails to load', async () => {
+      const metadata = createTag('meta', { name: 'tacocat-env', content: 'invalidvalue' });
+      document.head.appendChild(metadata);
+      window.tacocat.loadPromise = Promise.resolve(true);
+      let el = document.querySelector('.merch.cta.notacocat');
+      el = await merch(el);
+      expect(el).to.be.undefined;
+    });
   });
 
   describe('Tacocat trigger', () => {
@@ -365,6 +400,31 @@ describe('Merch Block', () => {
         country: 'US',
         language: 'en',
       })).to.be.true;
+    });
+  });
+
+  describe('Utils', () => {
+    describe('getTacocatLocale', () => {
+      it('returns default locale if argument is not provided', () => {
+        expect(getTacocatLocale()).to.deep.equal({
+          country: 'US',
+          language: 'en',
+        });
+      });
+
+      it('returns locale extracted from provided argument', () => {
+        expect(getTacocatLocale({ ietf: 'de-CH' })).to.deep.equal({
+          country: 'CH',
+          language: 'de',
+        });
+      });
+
+      it('returns locale geo-mapped from provided argument', () => {
+        expect(getTacocatLocale({ prefix: 'africa' })).to.deep.equal({
+          country: 'ZA',
+          language: 'en',
+        });
+      });
     });
   });
 });

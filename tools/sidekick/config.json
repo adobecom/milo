@@ -46,7 +46,7 @@
       "containerId": "tools",
       "title": "Send to CaaS",
       "id": "sendtocaas",
-      "environments": ["dev","preview", "live", "prod"],
+      "environments": ["dev", "preview", "live", "prod"],
       "event": "send-to-caas",
       "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
     },
@@ -77,14 +77,6 @@
     },
     {
       "containerId": "tools",
-      "id": "ost",
-      "title": "Use offer",
-      "environments": [ "edit" ],
-      "url": "/tools/ost",
-      "includePaths": [ "**.docx**" ]
-    },
-    {
-      "containerId": "tools",
       "id": "locales",
       "title": "Locales",
       "environments": [ "edit", "dev", "preview", "live" ],
@@ -101,7 +93,38 @@
       "title": "Use offer",
       "environments": [ "edit", "dev", "preview" ],
       "url": "https://milo.adobe.com/tools/ost",
-      "includePaths": [ "**.docx**" ]
+      "includePaths": [ "**.docx**" ],
+      "passConfig": true,
+      "passReferrer": true
+    },
+    {
+      "containerId": "tools",
+      "title": "Tag Selector",
+      "id": "tag-selector",
+      "environments": ["edit"],
+      "url": "https://milo.adobe.com/tools/tag-selector",
+      "isPalette": true,
+      "paletteRect": "top: 150px; left: 7%; height: 675px; width: 85vw;"
+    },
+    {
+      "containerId": "tools",
+      "title": "Send to CaaS",
+      "id": "sendtocaas",
+      "environments": ["dev","preview", "live", "prod"],
+      "event": "send-to-caas",
+      "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
+    },
+    {
+      "containerId": "tools",
+      "id": "version-history",
+      "title": "Version History",
+      "environments": [ "edit" ],
+      "url": "/tools/version-history",
+      "isPalette": true,
+      "passReferrer": true,
+      "passConfig": true,
+      "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 498px; width: 460px;",
+      "includePaths": [ "**.docx**", "**.xlsx**" ]
     }
   ]
 }

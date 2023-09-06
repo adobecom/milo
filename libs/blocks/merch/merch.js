@@ -1,8 +1,8 @@
 import { loadScript, getConfig, getMetadata } from '../../utils/utils.js';
 
 export const VERSION = '1.16.0';
-const ENV_PROD = 'prod';
-const CTA_PREFIX = /^CTA +/;
+export const ENV_PROD = 'prod';
+export const CTA_PREFIX = /^CTA +/;
 
 const SUPPORTED_LANGS = [
   'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
@@ -17,6 +17,32 @@ const GEO_MAPPINGS = {
   id_id: 'in-ID',
   no: 'nb-NO',
 };
+
+// eslint-disable-next-line import/prefer-default-export
+export function getTacocatLocale(locale) {
+  if (!locale) {
+    return { country: 'US', language: 'en' };
+  }
+  const wcsLocale = (GEO_MAPPINGS[locale.prefix] ?? locale.ietf).split('-', 2);
+  let language = wcsLocale[0];
+  const country = wcsLocale[1] || 'US';
+  if (!SUPPORTED_LANGS.includes(language)) {
+    language = 'en';
+  }
+  return { country, language };
+}
+
+export function getTacocatEnv(envName, locale) {
+  const { country, language } = getTacocatLocale(locale);
+  const host = envName === ENV_PROD
+    ? 'https://www.adobe.com'
+    : 'https://www.stage.adobe.com';
+
+  const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
+  const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
+  const tacocatEnv = getMetadata('tacocat-env') ?? 'PRODUCTION';
+  return { country, language, literalScriptUrl, scriptUrl, tacocatEnv };
+}
 
 export const omitNullValues = (target) => {
   if (target != null) {
@@ -51,23 +77,6 @@ export const imsCountryPromise = () => new Promise((resolve) => {
 });
 window.tacocat.imsCountryPromise = imsCountryPromise();
 
-export const getTacocatEnv = (envName, locale) => {
-  const wcsLocale = (GEO_MAPPINGS[locale.prefix] ?? locale.ietf).split('-', 2);
-  let language = wcsLocale[0];
-  const country = wcsLocale[1] || 'US';
-  if (!SUPPORTED_LANGS.includes(language)) {
-    language = 'en';
-  }
-  const host = envName === ENV_PROD
-    ? 'https://www.adobe.com'
-    : 'https://www.stage.adobe.com';
-
-  const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
-  const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
-  const tacocatEnv = envName === ENV_PROD ? 'PRODUCTION' : 'STAGE';
-  return { literalScriptUrl, scriptUrl, country, language, tacocatEnv };
-};
-
 export const runTacocat = (tacocatEnv, country, language) => {
   // init lana logger
   window.tacocat.initLanaLogger('merch-at-scale', tacocatEnv, { country }, { consumer: 'milo' });
@@ -80,7 +89,7 @@ export const runTacocat = (tacocatEnv, country, language) => {
 };
 
 window.tacocat.loadPromise = new Promise((resolve) => {
-  const { env, locale } = getConfig();
+  const { env, locale, miloLibs, codeRoot } = getConfig();
   const {
     literalScriptUrl,
     scriptUrl,
@@ -91,13 +100,27 @@ window.tacocat.loadPromise = new Promise((resolve) => {
 
   loadScript(literalScriptUrl)
     .catch(() => ({})) /* ignore if literals fail */
+    .then(() => {
+      let isSupported = false;
+      document.createElement('div', {
+        // eslint-disable-next-line getter-return
+        get is() {
+          isSupported = true;
+        },
+      });
+      if (!isSupported) {
+        const base = miloLibs || codeRoot;
+        return loadScript(`${base}/deps/custom-elements.js`);
+      }
+      return null;
+    })
     .then(() => loadScript(scriptUrl))
     .then(() => {
       runTacocat(tacocatEnv, country, language);
       resolve(false);
     })
     .catch((error) => {
-      console.error('Failed to load tacocat', error);
+      window.lana.log(`Failed to load tacocat. ${error?.message}`);
       resolve(true);
     });
 });

@@ -1,33 +1,30 @@
 /*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
-/*
  * Marquee - v6.0
  */
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+
+import { applyHoverPlay, decorateButtons, getBlockSize, getVideoAttrs } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
-const decorateVideo = (container) => {
-  const link = container.querySelector('a[href$=".mp4"]');
-
-  container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
-    <source src="${link.href}" type="video/mp4" />
-  </video>`;
-  container.classList.add('has-video');
+const decorateVideo = (container, src) => {
+  if (typeof src === 'string' || src?.href.endsWith('.mp4')) {
+    // no special attrs handling
+    container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
+      <source src="${src}" type="video/mp4" />
+    </video>`;
+    container.classList.add('has-video');
+  } else {
+    const { href, hash } = src;
+    const attrs = getVideoAttrs(hash);
+    container.innerHTML = `<video ${attrs}>
+          <source src="${href}" type="video/mp4" />
+        </video>`;
+  }
+  return container.firstChild;
 };
 
 const decorateBlockBg = (block, node) => {
-  const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
+  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
   const childCount = node.childElementCount;
   const { children } = node;
 
@@ -38,13 +35,23 @@ const decorateBlockBg = (block, node) => {
     children[1].classList.add(viewports[2]);
   }
 
-  Array.from(children).forEach((child, index) => {
+  [...children].forEach(async (child, index) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
+    const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
+    if (videoElement) {
+      const video = decorateVideo(child, videoElement.href || videoElement.src);
+      const hash = video.firstElementChild?.src.split('#')[1];
+      if (hash?.includes('autoplay1')) {
+        video.removeAttribute('loop');
+      }
+    }
 
-    if (child.querySelector('a[href$=".mp4"]')) {
-      decorateVideo(child);
+    const pic = child.querySelector('picture');
+    if (pic && (child.childElementCount === 2 || child.textContent?.trim())) {
+      const { handleFocalpoint } = await import('../section-metadata/section-metadata.js');
+      handleFocalpoint(pic, child, true);
     }
   });
 
@@ -54,19 +61,31 @@ const decorateBlockBg = (block, node) => {
   }
 };
 
+// [headingSize, bodySize, detailSize]
+const blockTypeSizes = {
+  marquee: {
+    small: ['xl', 'm', 'm'],
+    medium: ['xl', 'm', 'm'],
+    large: ['xxl', 'xl', 'l'],
+    xlarge: ['xxl', 'xl', 'l'],
+  },
+};
+
 function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
-    headingEl.classList.add(`heading-${headingSize}`);
-    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
+  const config = blockTypeSizes.marquee[size];
+  const decorate = (headingEl, typeSize) => {
+    headingEl.classList.add(`heading-${typeSize[0]}`);
+    headingEl.nextElementSibling?.classList.add(`body-${typeSize[1]}`);
     const sib = headingEl.previousElementSibling;
     if (sib) {
-      sib.querySelector('img, .icon') ? sib.classList.add('icon-area') : sib.classList.add(`detail-${detailSize}`);
+      const className = sib.querySelector('img, .icon') ? 'icon-area' : `detail-${typeSize[2]}`;
+      sib.classList.add(className);
       sib.previousElementSibling?.classList.add('icon-area');
     }
   };
-  size === 'large' ? decorate(heading, 'xxl', 'xl', 'l') : decorate(heading, 'xl', 'm', 'm');
+  decorate(heading, config);
 }
 
 function decorateMultipleIconArea(iconArea) {
@@ -74,7 +93,6 @@ function decorateMultipleIconArea(iconArea) {
     const src = picture.querySelector('img')?.getAttribute('src');
     const a = picture.nextElementSibling;
     if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
-    
     if (!a.querySelector('img')) {
       a.innerHTML = '';
       a.className = '';
@@ -87,7 +105,7 @@ function decorateMultipleIconArea(iconArea) {
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
+  buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
 }
 
 const decorateImage = (media) => {
@@ -120,12 +138,14 @@ export default function init(el) {
 
   if (media) {
     media.classList.add('media');
-
-    if (media.querySelector('a[href$=".mp4"]')) {
-      decorateVideo(media);
+    let video = media.querySelector('video');
+    const videoLink = media.querySelector('a[href*=".mp4"]');
+    if (videoLink) {
+      video = decorateVideo(media, videoLink);
     } else {
       decorateImage(media);
     }
+    if (video) applyHoverPlay(video);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
@@ -144,8 +164,16 @@ export default function init(el) {
       media.classList.add('bleed');
       foreground.insertAdjacentElement('beforebegin', media);
     }
-    if (media?.lastChild.textContent.trim()) {
-      const mediaCreditInner = createTag('p', { class: 'body-s' }, media.lastChild.textContent);
+
+    let mediaCreditInner;
+    const txtContent = media?.lastChild.textContent.trim();
+    if (txtContent) {
+      mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
+    } else if (media.lastElementChild?.tagName !== 'PICTURE') {
+      mediaCreditInner = media.lastElementChild;
+    }
+
+    if (mediaCreditInner) {
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');

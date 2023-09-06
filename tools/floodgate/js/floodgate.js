@@ -2,16 +2,15 @@ import { getConfig } from './config.js';
 import { loadingOFF, loadingON } from '../../loc/utils.js';
 import { getParams, postData } from './utils.js';
 import { enableRetry, connect as connectToSP, getAccessToken } from '../../loc/sharepoint.js';
+import updateFragments from '../../loc/fragments.js';
 import {
   initProject,
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
-  updateProjectStatus,
 } from './project.js';
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
-  updateProjectStatusUIFromAction,
   updateProjectStatusUI,
 } from './ui.js';
 
@@ -24,7 +23,20 @@ async function floodgateContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
   const copyStatus = await postData(config.sp.aioCopyAction, params);
-  updateProjectStatusUIFromAction({ copyStatus });
+  updateProjectStatusUI({ copyStatus });
+}
+
+async function triggerUpdateFragments() {
+  loadingON('Fetching and updating fragments..');
+  const status = await updateFragments(initProject);
+  loadingON(status);
+}
+
+async function deleteFloodgateDir(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  const deleteStatus = await postData(config.sp.aioDeleteAction, params);
+  updateProjectStatusUI({ deleteStatus });
 }
 
 async function promoteContentAction(project, config) {
@@ -32,23 +44,23 @@ async function promoteContentAction(project, config) {
   params.spToken = getAccessToken();
   // Based on User selection on the Promote Dialog,
   // passing the param if user also wants to Publish the Promoted pages.
-  params.doPublish = 'promotePublish' ===
-    document.querySelector('input[name="promotePublishRadio"]:checked')?.value;
+  params.doPublish = document.querySelector('input[name="promotePublishRadio"]:checked')?.value
+    === 'promotePublish';
   const promoteStatus = await postData(config.sp.aioPromoteAction, params);
-  updateProjectStatusUIFromAction({ promoteStatus });
+  updateProjectStatusUI({ promoteStatus });
 }
 
 async function fetchStatusAction(project, config) {
   // fetch copy status
-  let params = {
-    projectExcelPath: project.excelPath,
-    projectRoot: config.sp.rootFolders,
-  };
+  let params = { type: 'copy', projectExcelPath: project.excelPath, shareUrl: config.sp.shareUrl };
   const copyStatus = await postData(config.sp.aioStatusAction, params);
   // fetch promote status
-  params = { projectRoot: config.sp.fgRootFolder };
+  params = { type: 'promote', fgShareUrl: config.sp.fgShareUrl };
   const promoteStatus = await postData(config.sp.aioStatusAction, params);
-  updateProjectStatusUIFromAction({ copyStatus, promoteStatus });
+  // fetch delete status
+  params = { type: 'delete', fgShareUrl: config.sp.fgShareUrl };
+  const deleteStatus = await postData(config.sp.aioStatusAction, params);
+  updateProjectStatusUI({ copyStatus, promoteStatus, deleteStatus });
 }
 
 async function refreshPage(config, projectDetail, project) {
@@ -62,12 +74,17 @@ async function refreshPage(config, projectDetail, project) {
 
   // Read the project action status
   loadingON('Updating project status...');
-  const status = await updateProjectStatus(project);
-  updateProjectStatusUI(status);
 
   await fetchStatusAction(project, config);
   loadingON('UI updated..');
   loadingOFF();
+}
+
+function togglePromotePublishRadioVisibility(visibility) {
+  const promotePublishOptions = document.getElementById('promote-publish-options');
+  promotePublishOptions.style.display = visibility;
+  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
+  promoteOnlyOption.checked = true;
 }
 
 function setListeners(project, config) {
@@ -76,6 +93,11 @@ function setListeners(project, config) {
     modal.style.display = 'none';
     floodgateContentAction(project, config);
     target.removeEventListener('click', handleFloodgateConfirm);
+  };
+  const handleDeleteConfirm = ({ target }) => {
+    modal.style.display = 'none';
+    deleteFloodgateDir(project, config);
+    target.removeEventListener('click', handleDeleteConfirm);
   };
   const handlePromoteConfirm = ({ target }) => {
     modal.style.display = 'none';
@@ -88,6 +110,12 @@ function setListeners(project, config) {
     modal.style.display = 'block';
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handleFloodgateConfirm);
   });
+  document.querySelector('#updateFragments button').addEventListener('click', triggerUpdateFragments);
+  document.querySelector('#delete button').addEventListener('click', (e) => {
+    modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
+    modal.style.display = 'block';
+    document.querySelector('#fg-modal #yes-btn').addEventListener('click', handleDeleteConfirm);
+  });
   document.querySelector('#promoteFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
     modal.style.display = 'block';
@@ -99,13 +127,6 @@ function setListeners(project, config) {
     togglePromotePublishRadioVisibility('none');
   });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
-}
-
-function togglePromotePublishRadioVisibility(visibility) {
-  const promotePublishOptions = document.getElementById('promote-publish-options');
-  promotePublishOptions.style.display = visibility;
-  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
-  promoteOnlyOption.checked = true;
 }
 
 async function init() {
@@ -129,7 +150,7 @@ async function init() {
     updateProjectInfo(project);
 
     // Read the project excel file and parse the data
-    const projectDetail = await project.getDetails();
+    const projectDetail = await project.detail();
     loadingON('Project Details loaded...');
 
     // Set the listeners on the floodgate action buttons
