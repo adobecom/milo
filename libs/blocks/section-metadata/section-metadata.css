@@ -87,13 +87,13 @@
   width: 100%;
 }
 
-.section.center .content>h1,
-.section.center .content>h2,
-.section.center .content>h3,
-.section.center .content>h4,
-.section.center .content>h5,
-.section.center .content>h6,
-.section.center .content>p {
+.section.center .content > h1,
+.section.center .content > h2,
+.section.center .content > h3,
+.section.center .content > h4,
+.section.center .content > h5,
+.section.center .content > h6,
+.section.center .content > p {
   text-align: center;
 }
 
@@ -109,7 +109,7 @@
   justify-items: center;
 }
 
-main>.section[class*='-up']>.content {
+main > .section[class*='-up'] > .content {
   max-width: initial;
   margin: 0;
 }
@@ -158,8 +158,7 @@ main>.section[class*='-up']>.content {
   padding-right: var(--grid-margins-width);
 }
 
-.section[class*='-up'] .con-block.full-width,
-.section[class*='-up'] .con-block.fullwidth {
+.section[class*='-up'] .con-block.fullwidth-block {
   grid-column: 1 /-1;
 }
 
