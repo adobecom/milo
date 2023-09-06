@@ -4,19 +4,17 @@ import sinon from 'sinon';
 export async function mockFetch() {
   const literals = JSON.parse(await readFile({ path: './mocks/literals.json' }));
   const offers = JSON.parse(await readFile({ path: './mocks/offers.json' }));
-  
+
   const { fetch } = window;
   sinon.stub(window, 'fetch').callsFake((...args) => {
     const { href, pathname, searchParams } = new URL(String(args[0]));
-
     // literals mock
     if (href === 'https://milo.adobe.com/drafts/vlassenko/price-literals.json') {
       return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(literals),
+        ok: true,
+        json: () => Promise.resolve(literals),
       });
     }
-
     // wcs mock
     if (pathname.endsWith('/web_commerce_artifact')) {
       const osis = searchParams.get('offer_selector_ids').split(',');
@@ -36,7 +34,6 @@ export async function mockFetch() {
         }),
       });
     }
-
     return fetch.apply(window, args);
   });
 }

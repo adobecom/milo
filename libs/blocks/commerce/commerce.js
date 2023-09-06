@@ -1,7 +1,7 @@
 // TODO: rename this block to avoid confusion with commerce feature
 
-import { debounce } from "../../utils/action.js";
-import { createTag, getConfig } from '../../utils/utils.js';
+import { debounce } from '../../utils/action.js';
+import { createTag } from '../../utils/utils.js';
 import { buildCta, initService } from '../merch/merch.js';
 
 export const filterOfferDetails = (offerDetails) => {
@@ -91,7 +91,7 @@ export async function decorateOfferDetails(el, of, searchParams) {
   offerDetailsList.appendChild(clearButton);
   offerDetailsList.appendChild(checkoutUrl);
   el.append(offerDetailsList);
-};
+}
 
 export async function handleSearch(event, el) {
   el.textContent = '';
@@ -111,7 +111,7 @@ export async function handleSearch(event, el) {
   notValidUrl.classList.add('not-valid-url');
   notValidUrl.textContent = 'Not a valid offer link';
   el.append(notValidUrl);
-};
+}
 
 export function decorateSearch(el) {
   const search = createTag('input', { class: 'offer-search', placeholder: 'Enter offer URL to preview' });

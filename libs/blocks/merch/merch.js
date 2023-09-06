@@ -4,7 +4,7 @@ export const CTA_PREFIX = /^CTA +/;
 
 export async function initService() {
   const commerce = await import('../../deps/commerce.js');
-  return await commerce.init(getConfig);
+  return commerce.init(getConfig);
 }
 
 export async function getCommerceContext(el, params) {
@@ -35,12 +35,12 @@ export async function getCheckoutContext(el, params) {
   const { checkoutClientId } = settings;
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow')
-      ?? getMetadata('checkout-workflow')
-      ?? settings.checkoutWorkflow;
+    ?? getMetadata('checkout-workflow')
+    ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params
-      ?.get('workflowStep')
-      ?.replace('_', '/')
-      ?? settings.checkoutWorkflowStep;
+    ?.get('workflowStep')
+    ?.replace('_', '/')
+    ?? settings.checkoutWorkflowStep;
   return {
     ...context,
     checkoutClientId,
