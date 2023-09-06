@@ -16,7 +16,7 @@ describe('loadOstEnv', async () => {
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
-      PANDORA_ENV,
+      WCS_ENV,
       WCS_API_KEY,
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -27,7 +27,7 @@ describe('loadOstEnv', async () => {
       checkoutClientId: CHECKOUT_CLIENT_ID,
       workflow,
       country,
-      environment: PANDORA_ENV,
+      environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
     });
@@ -39,7 +39,7 @@ describe('loadOstEnv', async () => {
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
-      PANDORA_ENV,
+      WCS_ENV,
       WCS_API_KEY,
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -49,7 +49,7 @@ describe('loadOstEnv', async () => {
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
       country,
-      environment: PANDORA_ENV,
+      environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
     });
@@ -61,7 +61,7 @@ describe('loadOstEnv', async () => {
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
-      PANDORA_ENV,
+      WCS_ENV,
       WCS_API_KEY,
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -71,7 +71,7 @@ describe('loadOstEnv', async () => {
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
       country: 'US',
-      environment: PANDORA_ENV,
+      environment: WCS_ENV,
       language: 'en',
       wcsApiKey: WCS_API_KEY,
     });
@@ -88,7 +88,7 @@ describe('init', () => {
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
-      PANDORA_ENV,
+      WCS_ENV,
       WCS_API_KEY,
       default: init,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -100,7 +100,7 @@ describe('init', () => {
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
       country,
-      environment: PANDORA_ENV,
+      environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
       workflow,
@@ -114,7 +114,7 @@ describe('init', () => {
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
-      PANDORA_ENV,
+      WCS_ENV,
       WCS_API_KEY,
       default: init,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -130,7 +130,7 @@ describe('init', () => {
       checkoutClientId: CHECKOUT_CLIENT_ID,
       workflow,
       country,
-      environment: PANDORA_ENV,
+      environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
     });

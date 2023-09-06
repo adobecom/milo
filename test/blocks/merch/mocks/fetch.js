@@ -10,7 +10,7 @@ export async function mockFetch() {
   sinon.stub(window, 'fetch').callsFake((...args) => {
     const { href, pathname, searchParams } = new URL(String(args[0]));
     // literals mock
-    if (href === 'https://milo.adobe.com/drafts/vlassenko/price-literals.json') {
+    if (href === 'https://milo.adobe.com/libs/commerce/price-literals.json') {
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve(literals),
