@@ -16,12 +16,15 @@ const { default: init } = await import('../../../libs/blocks/article-header/arti
 const invalidDoc = await readFile({ path: './mocks/body-invalid.html' });
 
 describe('article header', () => {
-  const block = document.body.querySelector('.article-header');
-
-  it('creates article header block', async () => {
+  before(async () => {
+    const block = document.body.querySelector('.article-header');
     config.locale.contentRoot = '/test/blocks/article-header/mocks';
+    config.taxonomyRoot = undefined;
 
     await init(block);
+  });
+
+  it('creates article header block', () => {
     expect(document.body.querySelector('.article-category')).to.exist;
     expect(document.body.querySelector('.article-title')).to.exist;
     expect(document.body.querySelector('.article-author-image')).to.exist;
@@ -67,6 +70,11 @@ describe('article header', () => {
 
     expect(tooltip).to.exist;
     writeTextStub.restore();
+  });
+
+  it('sets default taxonomy path to "topics"', () => {
+    const categoryLink = document.querySelector('.article-category a');
+    expect(categoryLink.href.includes('/topics/')).to.be.true;
   });
 });
 
