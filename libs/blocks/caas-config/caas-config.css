@@ -37,7 +37,7 @@ dd.content .sort-options > .field {
 }
 
 .config-panel dd.content.is-expanded {
-  max-height: 6000px;
+  max-height: none;
 }
 
 .multifield .multifield {
