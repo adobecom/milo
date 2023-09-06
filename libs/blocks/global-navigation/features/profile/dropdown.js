@@ -157,7 +157,7 @@ class ProfileDropdown {
   decorateSignOut() {
     const signOutLink = toFragment`
       <li>
-        <a class="feds-profile-action" daa-ll="${this.placeholders.signOut}">${this.placeholders.signOut}</a>
+        <a href="#" class="feds-profile-action" daa-ll="${this.placeholders.signOut}">${this.placeholders.signOut}</a>
       </li>
     `;
 
