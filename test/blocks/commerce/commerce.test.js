@@ -116,11 +116,7 @@ describe('Merch Block', () => {
   describe('handleSearch', () => {
     it('resolves searched offer and render its info', async () => {
       const el = document.createElement('div');
-      const ev = {
-        target: {
-          value: '/tools/ost?osi=0',
-        },
-      };
+      const ev = { target: { value: '/tools/ost?osi=0' } };
       document.body.append(el);
       await handleSearch(ev, el);
       expect(el.querySelector('.offer-detail')).to.be.not.null;

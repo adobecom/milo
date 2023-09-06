@@ -2,13 +2,9 @@ import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 
 export async function mockFetch() {
-  const literals = JSON.parse(await readFile({
-    // this path allows to import this mock from tests for other blocks (e.g. commerce)
-    path: '../merch/mocks/literals.json',
-  }));
-  const offers = JSON.parse(await readFile({
-    path: '../merch/mocks/offers.json',
-  }));
+  // this path allows to import this mock from tests for other blocks (e.g. commerce)
+  const literals = JSON.parse(await readFile({ path: '../merch/mocks/literals.json' }));
+  const offers = JSON.parse(await readFile({ path: '../merch/mocks/offers.json' }));
 
   const { fetch } = window;
   sinon.stub(window, 'fetch').callsFake((...args) => {

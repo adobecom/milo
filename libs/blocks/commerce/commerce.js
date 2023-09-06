@@ -98,9 +98,7 @@ export async function handleSearch(event, el) {
     const osi = searchParams.get('osi');
     if (osi) {
       const service = await initService();
-      const [promise] = await service.resolveOfferSelectors({
-        offerSelectorIds: [osi],
-      });
+      const [promise] = await service.resolveOfferSelectors({ offerSelectorIds: [osi] });
       const [offer] = await promise;
       await decorateOfferDetails(el, offer, searchParams);
       return;
