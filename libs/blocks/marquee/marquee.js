@@ -42,7 +42,6 @@ const decorateBlockBg = (block, node) => {
 
     if (child.textContent.trim()) {
       block.classList.add(`${child.classList[child.classList.length - 1]}-${child.textContent.trim().toLowerCase()}`);
-      child.querySelector('p')?.remove();
     }
 
     const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
