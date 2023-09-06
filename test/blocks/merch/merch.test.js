@@ -200,7 +200,7 @@ describe('Merch Block', () => {
     it('renders merch link to CTA, default values', async () => {
       const { Defaults } = await import('../../../libs/deps/commerce.js');
       const el = await merch(document.querySelector(
-        '.merch.cta'
+        '.merch.cta',
       ));
       const { dataset, href, nodeName, textContent } = await el.onceSettled();
       const url = new URL(href);
@@ -253,7 +253,7 @@ describe('Merch Block', () => {
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       expect(url.searchParams.get('cli')).to.equal(Defaults.checkoutClientId);
       document.head.removeChild(metadata);
-      const service = await init(() => config, true);
+      await init(() => config, true);
     });
 
     it('renders merch link to cta with empty promo', async () => {
@@ -288,7 +288,7 @@ describe('Merch Block', () => {
 
     it('renders merch link to promo cta with discount in a fragment', async () => {
       const el = await merch(document.querySelector(
-        '.fragment .merch.cta.promo'
+        '.fragment .merch.cta.promo',
       ));
       const { nodeName, dataset } = await el.onceSettled();
       expect(nodeName).to.equal('A');
@@ -298,7 +298,7 @@ describe('Merch Block', () => {
 
     it('renders merch link to UCv2 cta with link-level overrides', async () => {
       const el = await merch(document.querySelector(
-        '.merch.cta.link-overrides'
+        '.merch.cta.link-overrides',
       ));
       const { nodeName, dataset } = await el.onceSettled();
       expect(nodeName).to.equal('A');
@@ -324,7 +324,7 @@ describe('Merch Block', () => {
       expect(els.length).to.equal(2);
       els.forEach((el) => {
         expect(el.classList.contains('blue')).to.be.true;
-      })
+      });
     });
 
     it('renders large CTA inside a marquee', async () => {
