@@ -391,6 +391,14 @@ header.global-navigation {
   border-radius: var(--feds-radius-utilityIcon);
   color: #4B4B4B;
   white-space: nowrap;
+  border: none;
+  font: inherit;
+  text-align: start;
+  width: 100%;
+}
+
+.feds-signIn:hover {
+  color: var(--link-hover-color);
 }
 
 .feds-signIn-dropdown {
@@ -404,6 +412,7 @@ header.global-navigation {
   line-height: 1.4;
   white-space: nowrap;
   z-index: 1;
+  transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
 }
 
 .feds-signIn[aria-expanded = "true"] + .feds-signIn-dropdown {
@@ -420,15 +429,30 @@ header.global-navigation {
   padding: 12px 0;
 }
 
-.feds-signIn-dropdown li > a {
+.feds-signIn-dropdown li > a,
+.feds-signIn-dropdown .feds-signIn {
   display: block;
   color: var(--feds-color-link--light);
   padding: 6px 32px;
 }
 
-.feds-signIn-dropdown li > a:hover {
+.feds-signIn-dropdown li > a:hover,
+.feds-signIn-dropdown .feds-signIn:hover {
   color: var(--feds-color-link--hover--light);
-  background-color: var(--feds-background-link--hover--light);;
+  background-color: var(--feds-background-link--hover--light);
+}
+
+#feds-googleLogin {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1;
+  transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
+}
+
+[dir = "rtl"] #feds-googleLogin {
+  left: 0;
+  right: auto;
 }
 
 /* Desktop styles */
@@ -487,6 +511,7 @@ header.global-navigation {
     padding: 0;
     z-index: 1;
     box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
+    transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
   }
 
   [dir = "rtl"] .feds-popup {
@@ -522,7 +547,7 @@ header.global-navigation {
     padding: 0 8px;
   }
 
-  .feds-navItem--section {
+  .feds-navItem--section:only-of-type {
     border-left: 1px solid var(--feds-borderColor--light);
     border-right: 1px solid var(--feds-borderColor--light);
   }
@@ -585,6 +610,7 @@ header.global-navigation {
     justify-content: center;
     border-bottom: unset;
     box-shadow: 0 3px 2px rgb(142 142 142 / 30%);
+    transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
   }
 
   .feds-breadcrumbs {

@@ -7,7 +7,7 @@ import { res, formatted } from '../mocks/subscriptionsAll.js';
 
 const emptyEntitlements = () => ({
   clouds: {},
-  arrangment_codes: {},
+  arrangement_codes: {},
   fulfilled_codes: {},
   offer_families: {},
   offers: {},

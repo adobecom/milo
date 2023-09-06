@@ -9,6 +9,7 @@ import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
+import globalNavigationMock from './mocks/global-navigation.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -721,7 +722,29 @@ describe('global navigation', () => {
         signIn.click();
 
         const signInDropdown = document.querySelector(selectors.signInDropdown);
-        const dropdownSignIn = signInDropdown.querySelector('[href="https://adobe.com?sign-in=true"]');
+        const dropdownSignIn = signInDropdown.querySelector(selectors.imsSignIn);
+
+        window.adobeIMS = { signIn: sinon.spy() };
+
+        dropdownSignIn.click();
+
+        expect(window.adobeIMS.signIn.callCount).to.equal(1);
+
+        window.adobeIMS = undefined;
+      });
+
+      it('calls ims when clicking a link with a special href, ensuring it only verifies the end of the string', async () => {
+        const mockWithNewSignInHref = globalNavigationMock.replace('https://adobe.com?sign-in=true', 'i-messed-this-up/?sign-in=true');
+        await createFullGlobalNavigation({
+          signedIn: false,
+          globalNavigation: mockWithNewSignInHref,
+        });
+        const signIn = document.querySelector(selectors.signIn);
+
+        signIn.click();
+
+        const signInDropdown = document.querySelector(selectors.signInDropdown);
+        const dropdownSignIn = signInDropdown.querySelector(selectors.imsSignIn);
 
         window.adobeIMS = { signIn: sinon.spy() };
 
@@ -783,7 +806,7 @@ describe('global navigation', () => {
         signIn.click();
 
         const signInDropdown = document.querySelector(selectors.signInDropdown);
-        const dropdownSignIn = signInDropdown.querySelector('[href="https://adobe.com?sign-in=true"]');
+        const dropdownSignIn = signInDropdown.querySelector(selectors.imsSignIn);
 
         window.adobeIMS = { signIn: sinon.spy() };
 

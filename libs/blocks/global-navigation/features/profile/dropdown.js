@@ -157,14 +157,13 @@ class ProfileDropdown {
   decorateSignOut() {
     const signOutLink = toFragment`
       <li>
-        <a href="#" class="feds-profile-action" daa-ll="${this.placeholders.signOut}">${this.placeholders.signOut}</a>
+        <button class="feds-profile-action" daa-ll="${this.placeholders.signOut}">${this.placeholders.signOut}</button>
       </li>
     `;
 
-    // TODO consumers might want to execute their own logic before a sign out
-    // we might want to provide them a way to do so here
     signOutLink.addEventListener('click', (e) => {
       e.preventDefault();
+      window.dispatchEvent(new Event('feds:signOut'));
       window.adobeIMS.signOut();
     });
 

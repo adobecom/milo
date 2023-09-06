@@ -1,6 +1,6 @@
 import { decorateButtons } from '../../utils/decorate.js';
-import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
-import { getMetadata } from '../section-metadata/section-metadata.js';
+import { loadStyle, getConfig } from '../../utils/utils.js';
+import { addBackgroundImg, addWrapper, addFooter } from './cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const HALF = 'OneHalfCard';
@@ -17,55 +17,6 @@ const getCardType = (styles) => {
   };
   const authoredType = styles?.find((style) => style in cardTypes);
   return cardTypes[authoredType] || HALF;
-};
-
-const getUpFromSectionMetadata = (section) => {
-  const sectionMetadata = section.querySelector('.section-metadata');
-  if (!sectionMetadata) return null;
-  const metadata = getMetadata(sectionMetadata);
-  const styles = metadata.style?.text.split(', ').map((style) => style.replaceAll(' ', '-'));
-  return styles?.find((style) => style.includes('-up'));
-};
-
-const addWrapper = (el, section, cardType) => {
-  const gridCl = 'consonant-CardsGrid';
-  const prevGrid = section.querySelector(`.consonant-Wrapper .${gridCl}`);
-
-  if (prevGrid) return;
-
-  let upClass = getUpFromSectionMetadata(section);
-  // Authored w/ a typed out number reference... 'two-up' vs. '2-up'
-  const list = ['two-up', 'three-up', 'four-up', 'five-up'];
-  const idx = list.findIndex((i) => i.includes(upClass));
-  if (idx > -1) {
-    upClass = `${idx + 2}-up`;
-    section.classList.remove(list[idx]);
-  }
-  const up = upClass?.replace('-', '') || '3up';
-  const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
-  const grid = createTag('div', { class: gridClass });
-  const collection = createTag('div', { class: 'consonant-Wrapper-collection' }, grid);
-  const inner = createTag('div', { class: 'consonant-Wrapper-inner' }, collection);
-  const wrapper = createTag('div', { class: 'milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth' }, inner);
-  const cards = section.querySelectorAll('.card');
-  const prevSib = cards[0].previousElementSibling;
-
-  grid.append(...cards);
-
-  if (prevSib) {
-    prevSib.after(wrapper);
-  } else {
-    section.prepend(wrapper);
-  }
-};
-
-const addBackgroundImg = (picture, cardType, card) => {
-  const url = picture.querySelector('img').src;
-  const imageDiv = document.createElement('div');
-
-  imageDiv.style.backgroundImage = `url(${url})`;
-  imageDiv.classList.add(`consonant-${cardType}-img`);
-  card.append(imageDiv);
 };
 
 const addInner = (el, cardType, card) => {
@@ -97,22 +48,6 @@ const addInner = (el, cardType, card) => {
 
   title?.classList.add(`consonant-${cardType}-title`);
   text?.classList.add(`consonant-${cardType}-text`);
-};
-
-const addFooter = (links, container, merch) => {
-  const linksArr = Array.from(links);
-  const linksLeng = linksArr.length;
-  const hrTag = merch ? '<hr>' : '';
-  let footer = `<div class="consonant-CardFooter">${hrTag}<div class="consonant-CardFooter-row" data-cells="${linksLeng}">`;
-  footer = linksArr.reduce(
-    (combined, link, index) => (
-      `${combined}<div class="consonant-CardFooter-cell consonant-CardFooter-cell--${(linksLeng === 2 && index === 0) ? 'left' : 'right'}">${link.outerHTML}</div>`),
-    footer,
-  );
-  footer += '</div></div>';
-
-  container.insertAdjacentHTML('beforeend', footer);
-  links[0]?.parentElement?.remove();
 };
 
 const init = (el) => {
