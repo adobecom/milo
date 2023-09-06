@@ -78,7 +78,6 @@ export function getParams(project, config) {
     fgShareUrl: config.sp.fgShareUrl,
     rootFolder: config.sp.rootFolders,
     fgRootFolder: config.sp.fgRootFolder,
-    promoteIgnorePaths: config.promoteIgnorePaths || [],
-    driveId: config.sp.driveId || '',
+    promoteIgnorePaths: config.promoteIgnorePaths,
   };
 }

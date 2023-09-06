@@ -2,7 +2,8 @@ import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import breadcrumbs from '../../../../libs/blocks/global-navigation/features/breadcrumbs/breadcrumbs.js';
 import { toFragment } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
-import { mockRes, createFullGlobalNavigation } from '../test-utilities.js';
+import { mockRes } from '../test-utilities.js';
+import { setConfig } from '../../../../libs/utils/utils.js';
 
 export const breadcrumbMock = () => toFragment`
   <div class="breadcrumbs">
@@ -130,19 +131,19 @@ describe('breadcrumbs', () => {
   });
 
   it('should localize breadcrumb links', async () => {
-    const customConfig = {
+    setConfig({
       locales: {
         '': { ietf: 'en-US' },
         fi: { ietf: 'fi-FI' },
       },
       pathname: '/fi/',
       prodDomains: 'http://localhost:2000',
-    };
+    });
 
-    const breadcrumbsEl = breadcrumbMock();
-    await createFullGlobalNavigation({ breadcrumbsEl, customConfig });
-    const script = document.querySelector('script[type="application/ld+json"]');
+    await breadcrumbs(breadcrumbMock());
+    const script = document.querySelector('script');
     expect(script).to.exist;
+    expect(script.type).to.equal('application/ld+json');
     expect(JSON.parse(script.innerHTML)).to.deep.equal(
       {
         '@context': 'https://schema.org',
@@ -158,7 +159,7 @@ describe('breadcrumbs', () => {
             '@type': 'ListItem',
             position: 2,
             name: 'Future Releases',
-            item: 'http://localhost:2000/fi/', // <-- localized prod domain
+            item: 'http://localhost:2000/fi/', // <-- localised prod domain
           },
           {
             '@type': 'ListItem',

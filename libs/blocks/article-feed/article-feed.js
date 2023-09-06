@@ -6,10 +6,8 @@ import {
   buildArticleCard,
 } from './article-helpers.js';
 
-import { createTag, getConfig, createIntersectionObserver } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-
-const ROOT_MARGIN = 50;
 
 const replacePlaceholder = async (key) => replaceKey(key, getConfig());
 
@@ -528,19 +526,11 @@ async function decorateFeedFilter(articleFeedEl) {
 }
 
 export default async function init(el) {
-  const initArticleFeed = async () => {
-    blogIndex.config = readBlockConfig(el);
-    el.innerHTML = '';
-    await loadTaxonomy();
-    if (blogIndex.config.filters) {
-      decorateFeedFilter(el);
-    }
-    decorateArticleFeed(el);
-  };
-
-  createIntersectionObserver({
-    el,
-    options: { rootMargin: `${ROOT_MARGIN}px` },
-    callback: initArticleFeed,
-  });
+  blogIndex.config = readBlockConfig(el);
+  el.innerHTML = '';
+  await loadTaxonomy();
+  if (blogIndex.config.filters) {
+    decorateFeedFilter(el);
+  }
+  decorateArticleFeed(el);
 }

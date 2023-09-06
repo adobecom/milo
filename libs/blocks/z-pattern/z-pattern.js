@@ -38,11 +38,8 @@ function getReversedRowCount(rows) {
 
 function getChildSingleRowCount(children) {
   return [...children].reduce((length, child) => {
-    let el = length;
-    if (child.children.length === 1) {
-      el += 1;
-    }
-    return el;
+    if (child.children.length === 1) length += 1;
+    return length;
   }, 0);
 }
 
@@ -87,11 +84,7 @@ export default function init(el) {
     });
   }
   const mediaItems = el.querySelectorAll(':scope > .media');
-  const variants = ['checklist', 'qr-code'];
   mediaItems.forEach((i) => {
-    variants.forEach((v) => {
-      if (el.classList.contains(v)) i.classList.add(v);
-    });
     initMedia(i, false);
   });
 }

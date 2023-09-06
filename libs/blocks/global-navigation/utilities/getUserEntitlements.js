@@ -26,7 +26,7 @@ const getQueryParameters = (params) => {
 
 const emptyEntitlements = () => ({
   clouds: {},
-  arrangement_codes: {},
+  arrangment_codes: {},
   fulfilled_codes: {},
   offer_families: {},
   offers: {},
@@ -47,7 +47,7 @@ const mapSubscriptionCodes = (allOffers) => {
 
   const {
     clouds,
-    arrangement_codes,
+    arrangment_codes,
     fulfilled_codes,
     offer_families,
     offers,
@@ -66,7 +66,7 @@ const mapSubscriptionCodes = (allOffers) => {
     }
 
     if (offer.product_arrangement_code) {
-      arrangement_codes[offer.product_arrangement_code] = true;
+      arrangment_codes[offer.product_arrangement_code] = true;
     }
 
     if (Array.isArray(fulfilled_items)) {
@@ -86,7 +86,7 @@ const mapSubscriptionCodes = (allOffers) => {
 
   return {
     clouds,
-    arrangement_codes,
+    arrangment_codes,
     fulfilled_codes,
     offer_families,
     offers,

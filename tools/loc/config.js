@@ -108,7 +108,6 @@ function getSharepointConfig(config) {
   // ${sharepointConfig.site} - MS Graph API Url with site pointers.
   const baseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.rootFolders}`;
   const fgBaseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.fgRootFolder}`;
-  const baseItemsURI = `${sharepointConfig.site}${drive}/items`;
   return {
     ...sharepointConfig,
     clientApp: {
@@ -163,9 +162,9 @@ function getSharepointConfig(config) {
         },
       },
       excel: {
-        get: { baseItemsURI },
         update: {
-          baseItemsURI,
+          baseURI,
+          fgBaseURI,
           method: 'POST',
         },
       },

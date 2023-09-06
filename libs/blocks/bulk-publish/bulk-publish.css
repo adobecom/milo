@@ -252,14 +252,12 @@ button:hover {
 }
 
 .bulk-status-preview,
-.bulk-status-publish,
-.bulk-status-index {
+.bulk-status-publish {
   width: 13%;
 }
 
 .bulk-status-publish span,
-.bulk-status-preview span,
-.bulk-status-index span {
+.bulk-status-preview span {
   display: block;
 }
 
@@ -280,8 +278,7 @@ button:hover {
 }
 
 .bulk-status-publish.status-error .page-status,
-.bulk-status-preview.status-error .page-status,
-.bulk-status-index.status-error .page-status {
+.bulk-status-preview.status-error .page-status {
   color: var(--error-color);
   font-weight: 700;
   line-height: normal;

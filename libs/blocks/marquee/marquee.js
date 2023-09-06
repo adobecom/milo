@@ -1,26 +1,29 @@
 /*
- * Marquee - v6.0
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
  */
 
-import { applyHoverPlay, decorateButtons, getBlockSize, getVideoAttrs } from '../../utils/decorate.js';
+/*
+ * Marquee - v6.0
+ */
+import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
-const decorateVideo = (container, src) => {
-  if (typeof src === 'string' || src?.href.endsWith('.mp4')) {
-    // no special attrs handling
-    container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
-      <source src="${src}" type="video/mp4" />
-    </video>`;
-    container.classList.add('has-video');
-  } else {
-    const { href, hash } = src;
-    const attrs = getVideoAttrs(hash);
-    container.innerHTML = `<video ${attrs}>
-          <source src="${href}" type="video/mp4" />
-        </video>`;
-  }
-  return container.firstChild;
+const decorateVideo = (container) => {
+  const link = container.querySelector('a[href$=".mp4"]');
+
+  container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
+    <source src="${link.href}" type="video/mp4" />
+  </video>`;
+  container.classList.add('has-video');
 };
 
 const decorateBlockBg = (block, node) => {
@@ -39,17 +42,13 @@ const decorateBlockBg = (block, node) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
-    const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
-    if (videoElement) {
-      const video = decorateVideo(child, videoElement.href || videoElement.src);
-      const hash = video.firstElementChild?.src.split('#')[1];
-      if (hash?.includes('autoplay1')) {
-        video.removeAttribute('loop');
-      }
+
+    if (child.querySelector('a[href$=".mp4"]')) {
+      decorateVideo(child);
     }
 
     const pic = child.querySelector('picture');
-    if (pic && (child.childElementCount === 2 || child.textContent?.trim())) {
+    if (pic && (child.childElementCount == 2 || child.textContent)) {
       const { handleFocalpoint } = await import('../section-metadata/section-metadata.js');
       handleFocalpoint(pic, child, true);
     }
@@ -138,14 +137,12 @@ export default function init(el) {
 
   if (media) {
     media.classList.add('media');
-    let video = media.querySelector('video');
-    const videoLink = media.querySelector('a[href*=".mp4"]');
-    if (videoLink) {
-      video = decorateVideo(media, videoLink);
+
+    if (media.querySelector('a[href$=".mp4"]')) {
+      decorateVideo(media);
     } else {
       decorateImage(media);
     }
-    if (video) applyHoverPlay(video);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');

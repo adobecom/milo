@@ -10,8 +10,6 @@
 .text-block p,
 .text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
 
-.text-block [class^="body-"]:only-child { margin: 0; }
-
 .text-block [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
 
 .text-block [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
@@ -44,6 +42,7 @@
   height: 100%;
 }
 
+
 .text-block .foreground {
   max-width: var(--grid-container-width);
   margin: 0 auto;
@@ -60,12 +59,6 @@
   gap: var(--spacing-s);
   flex-wrap: wrap;
   align-items: center;
-}
-
-.text-block hr {
-  border-color: #e1e1e1;
-  border-style: solid;
-  margin: var(--spacing-m) 0;
 }
 
 /* Alignment */

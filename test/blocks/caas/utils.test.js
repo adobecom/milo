@@ -69,11 +69,6 @@ describe('arrayToObj', () => {
     expect(arrayToObj({})).to.be.eql({});
   });
 });
-describe('additionalQueryParams', () => {
-  expect(arrayToObj([{ key: 'a', value: 1 }, { key: 'b', value: 2 }])).to.be.eql({ a: 1, b: 2 });
-  expect(arrayToObj({})).to.be.eql({});
-});
-
 describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
@@ -197,9 +192,7 @@ describe('getConfig', () => {
         reservoir: { sample: 3, pool: 1000 },
       },
       featuredCards: ['a', 'b'],
-      headers: [],
       hideCtaIds: [''],
-      hideCtaTags: [],
       filterPanel: {
         enabled: true,
         eventFilter: '',
@@ -392,9 +385,7 @@ describe('getConfig', () => {
         reservoir: { sample: 3, pool: 1000 },
       },
       featuredCards: ['a', 'b'],
-      headers: [],
       hideCtaIds: [''],
-      hideCtaTags: [],
       filterPanel: {
         enabled: true,
         eventFilter: '',

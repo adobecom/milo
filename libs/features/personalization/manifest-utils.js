@@ -1,4 +1,4 @@
-import { loadLink } from '../../utils/utils.js';
+import { getConfig, loadLink } from '../../utils/utils.js';
 
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
@@ -9,11 +9,13 @@ export const normalizePath = (p) => {
     return path;
   }
 
-  if (path.startsWith('http')) {
+  const config = getConfig();
+
+  if (path.startsWith(config.codeRoot) || path.startsWith(`https://${config.productionDomain}`)) {
     try {
       path = new URL(path).pathname;
     } catch (e) { /* return path below */ }
-  } else if (!path.startsWith('/')) {
+  } else if (!path.startsWith('http') && !path.startsWith('/')) {
     path = `/${path}`;
   }
   return path;

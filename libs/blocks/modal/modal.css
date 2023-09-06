@@ -21,10 +21,6 @@
   z-index: 102;
 }
 
-.dialog-modal.commerce-frame {
-  z-index: 103;
-}
-
 .modal-curtain.is-open {
   position: fixed;
   top: 0;

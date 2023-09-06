@@ -2,7 +2,7 @@
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
-import { createTag, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 const isElementInContainerView = (targetEl) => {
   const rect = targetEl.getBoundingClientRect();
@@ -39,7 +39,10 @@ function changeTabs(e) {
 }
 
 function getStringKeyName(str) {
-  // The \p{L} and \p{N} Unicode props are used to match any letter or digit character in any lang.
+  /*
+  The [^...] character class is used to match any character that is not a valid CSS selector character.
+  The \p{L} and \p{N} Unicode properties are used to match any letter or digit character in any language.
+  */
   const regex = /[^\p{L}\p{N}_-]/gu;
   return str.trim().toLowerCase().replace(/\s+/g, '-').replace(regex, '');
 }
@@ -87,12 +90,12 @@ function initTabs(elm, config, rootElem) {
 const handleDeferredImages = (block) => {
   const loadLazyImages = () => {
     const images = block.querySelectorAll('img[loading="lazy"]');
-    /* c8 ignore next 3 */
-    images.forEach((img) => {
-      img.removeAttribute('loading');
-    });
+		  images.forEach((img) => {
+		    /* c8 ignore next */
+		    img.removeAttribute('loading');
+		  });
   };
-  document.addEventListener(MILO_EVENTS.DEFERRED, loadLazyImages, { once: true, capture: true });
+  document.addEventListener('milo:deferred', loadLazyImages, { once: true, capture: true });
 };
 
 const init = (block) => {
@@ -162,11 +165,11 @@ const init = (block) => {
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
-  allSections.forEach((e) => {
+  allSections.forEach((e, i) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
-    const smRows = sectionMetadata.querySelectorAll(':scope > div');
-    smRows.forEach((row) => {
+    const rows = sectionMetadata.querySelectorAll(':scope > div');
+    rows.forEach((row) => {
       const key = getStringKeyName(row.children[0].textContent);
       if (key !== 'tab') return;
       let val = getStringKeyName(row.children[1].textContent);
@@ -175,7 +178,7 @@ const init = (block) => {
       let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       if (config.id) {
         const values = row.children[1].textContent.split(',');
-        [id] = values;
+        id = values[0];
         val = getStringKeyName(String(values[1]));
         assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       }

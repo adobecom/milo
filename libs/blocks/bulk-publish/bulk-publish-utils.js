@@ -1,6 +1,6 @@
-import { getImsToken } from '../../../tools/utils/utils.js';
+import { getLocalStorage, setLocalStorage, fetchWithTimeout } from '../utils/utils.js';
 import { loadScript } from '../../utils/utils.js';
-import { fetchWithTimeout, getLocalStorage, setLocalStorage } from '../utils/utils.js';
+import { getImsToken } from '../../../tools/utils/utils.js';
 
 export const ADMIN_BASE_URL = 'https://admin.hlx.page';
 const THROTTLING_DELAY_MS = 300;
@@ -14,7 +14,6 @@ const BULK_STORED_URLS = 'bulkStoredUrls';
 const BULK_STORED_RESULTS = 'bulkStoredResults';
 const BULK_STORED_OPERATION = 'bulkStoredOperation';
 const UNSUPPORTED_SITE_STATUS = 'unsupported domain';
-const UNSUPPORTED_ACTION_STATUS = 'unsupported action';
 const DUPLICATE_STATUS = 'duplicate';
 export const ANONYMOUS = 'anonymous';
 
@@ -99,7 +98,6 @@ const siteIsSupported = async (url) => {
     const { origin } = new URL(url);
     const sites = await getSupportedSites();
     return sites.includes(origin);
-    /* c8 ignore next 3 */
   } catch (e) {
     return false;
   }
@@ -114,42 +112,25 @@ export const getActionName = (action, useGerund) => {
   switch (action) {
     case null:
     case 'preview':
-      name = (useGerund) ? 'Previewing' : 'Preview';
+      name = (!useGerund) ? 'Preview' : 'Previewing';
       break;
     case 'publish':
-      name = (useGerund) ? 'Publishing' : 'Publish';
-      break;
-    case 'unpublish':
-      name = (useGerund) ? 'Unpublishing' : 'Unpublish';
-      break;
-    case 'unpublish&delete':
-      name = (useGerund) ? 'Deleting' : 'Delete';
-      break;
-    case 'index':
-      name = (useGerund) ? 'Indexing' : 'Index';
+      name = (!useGerund) ? 'Publish' : 'Publishing';
       break;
     default:
-      name = (useGerund) ? 'Previewing & publishing' : 'Preview & publish';
+      name = (!useGerund) ? 'Preview & publish' : 'Previewing & publishing';
   }
   return name;
 };
 
 const executeAction = async (action, url) => {
-  const allowedActions = ['preview', 'publish', 'delete', 'unpublish', 'index'];
-  if (!allowedActions.includes(action)) return UNSUPPORTED_ACTION_STATUS;
-  let operation = action;
-  if (action === 'delete') {
-    operation = 'preview';
-  } else if (action === 'publish' || action === 'unpublish') {
-    operation = 'live';
-  }
+  const operation = (action === 'preview') ? 'preview' : 'live';
   const siteAllowed = await siteIsSupported(url);
   if (!siteAllowed) return UNSUPPORTED_SITE_STATUS;
   const { hostname, pathname } = new URL(url);
   const [branch, repo, owner] = hostname.split('.')[0].split('--');
   const adminURL = `${ADMIN_BASE_URL}/${operation}/${owner}/${repo}/${branch}${pathname}`;
-  const method = (action === 'delete' || action === 'unpublish') ? 'DELETE' : 'POST';
-  const resp = await fetchWithTimeout(adminURL, { method });
+  const resp = await fetchWithTimeout(adminURL, { method: 'POST' });
   return resp.status;
 };
 
@@ -194,7 +175,6 @@ export const executeActions = async (resume, setResult) => {
     results.push({
       url,
       status,
-      timestamp: new Date(),
     });
     setResult([...results]);
     setLocalStorage(BULK_STORED_URL_IDX, i);
@@ -209,27 +189,14 @@ export const executeActions = async (resume, setResult) => {
 export const getCompletion = (results) => {
   let previewTotal = 0;
   let publishTotal = 0;
-  let deleteTotal = 0;
-  let unpublishTotal = 0;
   let previewSuccess = 0;
   let publishSuccess = 0;
-  let deleteSuccess = 0;
-  let unpublishSuccess = 0;
-  let indexTotal = 0;
-  let indexSuccess = 0;
-
   results.forEach((result) => {
     const { status } = result;
     if (status.preview) previewTotal += 1;
     if (status.publish) publishTotal += 1;
-    if (status.delete) deleteTotal += 1;
-    if (status.unpublish) unpublishTotal += 1;
     if (status.preview === 200) previewSuccess += 1;
     if (status.publish === 200) publishSuccess += 1;
-    if (status.delete === 204) deleteSuccess += 1;
-    if (status.unpublish === 204) unpublishSuccess += 1;
-    if (status.index) indexTotal += 1;
-    if (status.index === 200 || status.index === 202) indexSuccess += 1;
   });
   return {
     preview: {
@@ -239,18 +206,6 @@ export const getCompletion = (results) => {
     publish: {
       total: publishTotal,
       success: publishSuccess,
-    },
-    delete: {
-      total: deleteTotal,
-      success: deleteSuccess,
-    },
-    unpublish: {
-      total: unpublishTotal,
-      success: unpublishSuccess,
-    },
-    index: {
-      total: indexTotal,
-      success: indexSuccess,
     },
   };
 };
@@ -262,7 +217,6 @@ export const getReport = async (results, action) => {
     try {
       const urlObj = new URL(result.url);
       origin = urlObj.origin;
-      /* c8 ignore next 3 */
     } catch (e) {
       origin = result.url;
     }
@@ -272,18 +226,15 @@ export const getReport = async (results, action) => {
         success: 0,
       };
     }
-    if (action === 'preview&publish' || action === 'unpublish&delete') {
+    if (action === 'preview&publish') {
       origins[origin].total += 2;
     } else {
       origins[origin].total += 1;
     }
-    if (result.status.preview === 200 || result.status.delete === 204) {
+    if (result.status.preview === 200) {
       origins[origin].success += 1;
     }
-    if (result.status.publish === 200 || result.status.unpublish === 204) {
-      origins[origin].success += 1;
-    }
-    if (result.status.index === 200) {
+    if (result.status.publish === 200) {
       origins[origin].success += 1;
     }
   });
