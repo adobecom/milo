@@ -284,14 +284,6 @@
   line-height: var(--type-body-m-lh);
 }
 
-.two-up .icon-block.fullwidth,
-.three-up .icon-block.fullwidth,
-.four-up .icon-block.fullwidth,
-.five-up .icon-block.fullwidth {
-  grid-column: 1 /-1;
-}
-
-
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
