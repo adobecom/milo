@@ -35,8 +35,19 @@ export const addFooter = (links, container, merch) => {
     if (parentElement && document.body.contains(parentElement)) parentElement.remove();
   });
 };
-
 export const addWrapper = (el, section, cardType) => {
+  const observeClassListChanges = (classToRemove) => {
+    const callback = (mutationsList) => {
+      for (const mutation of mutationsList) {
+        const { classList } = section;
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class' && classList.contains(classToRemove)) classList.remove(classToRemove);
+      }
+    };
+    const config = { attributes: true, attributeFilter: ['class'] };
+    const observer = new MutationObserver(callback);
+    observer.observe(section, config);
+  };
+
   const gridCl = 'consonant-CardsGrid';
   const prevGrid = section.querySelector(`.consonant-Wrapper .${gridCl}`);
 
@@ -48,7 +59,7 @@ export const addWrapper = (el, section, cardType) => {
   const idx = list.findIndex((i) => i.includes(upClass));
   if (idx > -1) {
     upClass = `${idx + 2}-up`;
-    section.classList.remove(list[idx]);
+    observeClassListChanges(list[idx]);
   }
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
