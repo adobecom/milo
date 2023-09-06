@@ -5,7 +5,9 @@ async function createCategoryLink(el, category = 'News') {
   Promise.all(promises).then(async ([taxonomyMod, helpersMod]) => {
     const fetchTaxonomy = taxonomyMod.default;
     const { updateLinkWithLangRoot } = helpersMod;
-    const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
+    const config = getConfig();
+    const taxonomyRoot = config.taxonomyRoot || '/topics';
+    const taxonomy = await fetchTaxonomy(config, taxonomyRoot);
     const categoryTaxonomy = taxonomy.get(category);
     const categoryLink = createTag('a', { href: updateLinkWithLangRoot(categoryTaxonomy?.link) }, categoryTaxonomy?.name);
     el.append(categoryLink);
