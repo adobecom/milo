@@ -4,7 +4,9 @@ export default `
   <div>
     <div>
       <p>
-        <a href="/drafts/ramuntea/adobe-logo.svg">http://localhost:2000/test/blocks/global-navigation/mocks/adobe-logo.svg</a>
+        <a href="http://localhost:2000/test/blocks/global-navigation/mocks/adobe-logo.svg">
+          http://localhost:2000/test/blocks/global-navigation/mocks/adobe-logo.svg
+        </a>
       </p>
       <p><a href="https://www.adobe.com/">Adobe</a></p>
     </div>
