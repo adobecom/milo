@@ -4,7 +4,7 @@ export const OptionCard = ({
   text, title, coverImage, cardIcon, options, disabled, selected,
 }) => {
   const cardIconHtml = html`<div class="quiz-option-icon">
-    <img src="${cardIcon}" alt="Quiz Option Icon" class="icon" />
+    <img src="${cardIcon}" alt="Quiz Option Icon" />
   </div>`;
 
   const coverImageHtml = html`
