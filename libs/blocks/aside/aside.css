@@ -16,18 +16,6 @@
   margin: 0;
 }
 
-.aside.small {
-  min-height: 420px;
-}
-
-.aside.medium {
-  min-height: 560px;
-}
-
-.aside.large {
-  min-height: 700px;
-}
-
 .aside.split picture {
   display: flex;
 }
@@ -505,6 +493,18 @@
 }
 
 @media screen and (min-width: 600px) {
+  .aside.small {
+    min-height: 420px;
+  }
+  
+  .aside.medium {
+    min-height: 560px;
+  }
+  
+  .aside.large {
+    min-height: 700px;
+  }
+  
   .aside .foreground.container {
     align-items: center;
     flex-direction: row;
