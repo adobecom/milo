@@ -1,13 +1,15 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { readFile } from '@web/test-runner-commands';
 
-import {
-  filterOfferDetails,
+import init, {
+  buildClearButton,
   decorateOfferDetails,
   decorateSearch,
-  buildClearButton,
+  filterOfferDetails,
+  handleSearch,
 } from '../../../libs/blocks/commerce/commerce.js';
+
+import { mockFetch, unmockFetch } from '../merch/mocks/fetch.js';
 
 const offer = {
   offerType: 'BASE',
@@ -25,8 +27,14 @@ const offer = {
 };
 
 describe('Merch Block', () => {
+  after(() => {
+    unmockFetch();
+    document.body.innerHTML = '';
+  });
+
   before(async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    mockFetch();
+    // document.body.innerHTML = await readFile({ path: './mocks/body.html' });
   });
 
   describe('filterOfferDetails', () => {
@@ -47,6 +55,8 @@ describe('Merch Block', () => {
   describe('decorateOfferDetails', () => {
     it('decorates offer details correctly', async () => {
       const el = document.createElement('div');
+      decorateSearch(el);
+      document.body.append(el);
       const searchParams = new URLSearchParams('osi=01A09572A72A7D7F848721DE4D3C73FA&perp=false&type=checkoutUrl&text=buy-now&promo=1234');
       await decorateOfferDetails(el, offer, searchParams);
       const offerDetailsList = el.querySelector('.offer-details');
@@ -81,14 +91,13 @@ describe('Merch Block', () => {
       expect(input.getAttribute('placeholder')).to.equal('Enter offer URL to preview');
     });
 
-    it('calls handle search correctly on keyup', async () => {
+    it('performs search on keyup, shows "not valid link" message', async () => {
       const clock = sinon.useFakeTimers({
         toFake: ['setTimeout'],
         shouldAdvanceTime: true,
       });
-
       const el = document.createElement('div');
-      decorateSearch(el);
+      await init(el);
       const searchWrapper = el.querySelector('.offer-search-wrapper');
       const input = searchWrapper.querySelector('.offer-search');
       const e = new KeyboardEvent('keyup', { bubbles: false, cancelable: true, key: 'Q', shiftKey: false });
@@ -99,8 +108,22 @@ describe('Merch Block', () => {
       clock.tick(500);
       h4 = el.querySelector('h4');
       expect(h4).to.not.equal(null);
-
+      expect(h4.classList.contains('not-valid-url')).to.be.true;
       clock.restore();
+    });
+  });
+
+  describe('handleSearch', () => {
+    it('resolves searched offer and render its info', async () => {
+      const el = document.createElement('div');
+      const ev = {
+        target: {
+          value: '/tools/ost?osi=0',
+        },
+      };
+      document.body.append(el);
+      await handleSearch(ev, el);
+      expect(el.querySelector('.offer-detail')).to.be.not.null;
     });
   });
 

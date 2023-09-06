@@ -1,5 +1,3 @@
-// TODO: rename this block to avoid confusion with commerce feature
-
 import { debounce } from '../../utils/action.js';
 import { createTag } from '../../utils/utils.js';
 import { buildCta, initService } from '../merch/merch.js';
@@ -96,12 +94,15 @@ export async function decorateOfferDetails(el, of, searchParams) {
 export async function handleSearch(event, el) {
   el.textContent = '';
   try {
-    const { searchParams } = new URL(event.target.value);
+    const { searchParams } = new URL(event.target.value, window.location.href);
     const osi = searchParams.get('osi');
     if (osi) {
       const service = await initService();
-      const [offerDetails] = await service.wcs.resolveOfferSelector({ osi });
-      decorateOfferDetails(el, offerDetails, searchParams);
+      const [promise] = await service.resolveOfferSelectors({
+        offerSelectorIds: [osi],
+      });
+      const [offer] = await promise;
+      await decorateOfferDetails(el, offer, searchParams);
       return;
     }
   } catch {
