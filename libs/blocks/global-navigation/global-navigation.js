@@ -3,7 +3,8 @@ import {
   getConfig,
   getMetadata,
   loadIms,
-  decorateLinks,
+  localizeLink,
+  decorateSVG,
 } from '../../utils/utils.js';
 import {
   toFragment,
@@ -62,14 +63,14 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
   let signInElem;
 
   if (!dropdownElem) {
-    signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn">${signInLabel}</button>`;
+    signInElem = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signIn">${signInLabel}</a>`;
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
       signIn();
     });
   } else {
-    signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
+    signInElem = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signIn" role="button" aria-expanded="false" aria-haspopup="true">${signInLabel}</a>`;
 
     signInElem.addEventListener('click', (e) => trigger({ element: signInElem, event: e }));
     signInElem.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
@@ -77,11 +78,10 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     dropdownElem.classList.add('feds-signIn-dropdown');
 
-    const dropdownSignInAnchor = dropdownElem.querySelector('[href$="?sign-in=true"]');
-    if (dropdownSignInAnchor) {
-      const dropdownSignInButton = toFragment`<button class="feds-signIn">${dropdownSignInAnchor.textContent}</button>`;
-      dropdownSignInAnchor.replaceWith(dropdownSignInButton);
-      dropdownSignInButton.addEventListener('click', (e) => {
+    const dropdownSignIn = dropdownElem.querySelector('[href$="?sign-in=true"]');
+
+    if (dropdownSignIn) {
+      dropdownSignIn.addEventListener('click', (e) => {
         e.preventDefault();
         signIn();
       });
@@ -131,6 +131,18 @@ const getBrandImage = (image) => {
   // Return the default Adobe logo if an image is not available
   if (!image) return CONFIG.icons.company;
 
+  try {
+    // Try to decorate image as SVG
+    const decoratedSvg = decorateSVG(image);
+    // 'decorateSVG' might return the original element if decoration fails
+    // or the picture wrapped in an anchor element in certain cases
+    const svg = decoratedSvg instanceof HTMLPictureElement
+      ? decoratedSvg : decoratedSvg.querySelector('picture');
+    if (svg) return svg;
+  } catch (e) {
+    // continue execution
+  }
+
   // Try to decorate image as PNG, JPG or JPEG
   const imgText = image?.textContent || '';
   const [source, alt] = imgText.split('|');
@@ -169,7 +181,6 @@ class Gnav {
 
     this.el = el;
     this.body = body;
-    decorateLinks(this.body);
     this.elements = {};
   }
 
@@ -434,7 +445,7 @@ class Gnav {
     if (!rawBlock) return '';
 
     // Get all non-image links
-    const imgRegex = /(\.png|\.jpg|\.jpeg)/;
+    const imgRegex = /(\.png|\.svg|\.jpg|\.jpeg)/;
     const blockLinks = [...rawBlock.querySelectorAll('a')];
     const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
       && !imgRegex.test(blockLink.textContent));
@@ -448,40 +459,24 @@ class Gnav {
     if (!renderImage && !renderLabel) return '';
 
     // Create image element
-    const getImageEl = () => {
-      const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
-      if (svgImg) return svgImg;
-    const getImageEl = () => {
-      const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
-      if (svgImg) return svgImg;
+    let imageEl = '';
 
+    if (renderImage) {
       const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
         || imgRegex.test(blockLink.textContent));
-      return getBrandImage(image);
-    };
-
-    const imageEl = renderImage
-      ? toFragment`<span class="${classPrefix}-image">${getImageEl()}</span>`
-      : '';
-      return getBrandImage(image);
-    };
-
-    const imageEl = renderImage
-      ? toFragment`<span class="${classPrefix}-image">${getImageEl()}</span>`
-      : '';
+      imageEl = toFragment`<span class="${classPrefix}-image">${getBrandImage(image)}</span>`;
+    }
 
     // Create label element
-    const labelEl = renderLabel
-      ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
-      : '';
-    const labelEl = renderLabel
-      ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
-      : '';
+    let labelEl = '';
+
+    if (renderLabel) {
+      labelEl = toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`;
+    }
 
     // Create final template
     const decoratedElem = toFragment`
-      <a href="${link.href}" class="${classPrefix}" daa-ll="${analyticsValue}">
-      <a href="${link.href}" class="${classPrefix}" daa-ll="${analyticsValue}">
+      <a href="${localizeLink(link.getAttribute('href'))}" class="${classPrefix}" daa-ll="${analyticsValue}">
         ${imageEl}
         ${labelEl}
       </a>`;
@@ -578,14 +573,16 @@ class Gnav {
     switch (itemType) {
       case 'syncDropdownTrigger':
       case 'asyncDropdownTrigger': {
-        const dropdownTrigger = toFragment`<button
+        const dropdownTrigger = toFragment`<a
+          href="#"
           class="feds-navLink feds-navLink--hoverCaret"
+          role="button"
           aria-expanded="false"
           aria-haspopup="true"
           daa-ll="${getAnalyticsValue(item.textContent, index + 1)}"
           daa-lh="header|Open">
             ${item.textContent.trim()}
-          </button>`;
+          </a>`;
 
         const isSectionMenu = item.closest('.section') instanceof HTMLElement;
         const tag = isSectionMenu ? 'section' : 'div';
@@ -621,15 +618,16 @@ class Gnav {
           </div>`;
       case 'link': {
         const linkElem = item.querySelector('a');
-        linkElem.className = 'feds-navLink';
-        linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
-        linkElem.className = 'feds-navLink';
-        linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
+        const navLink = toFragment`<a
+          href="${localizeLink(linkElem.href)}"
+          class="feds-navLink"
+          daa-ll="${getAnalyticsValue(linkElem.textContent, index + 1)}">
+            ${linkElem.textContent.trim()}
+          </a>`;
 
         const linkTemplate = toFragment`
           <div class="feds-navItem">
-            ${linkElem}
-            ${linkElem}
+            ${navLink}
           </div>`;
         return linkTemplate;
       }
@@ -647,13 +645,8 @@ class Gnav {
   decorateBreadcrumbs = async () => {
     if (!this.el.classList.contains('has-breadcrumbs')) return null;
     if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
-    const breadcrumbsElem = this.el.querySelector('.breadcrumbs');
-    if (!breadcrumbsElem) return null;
-    // Breadcrumbs are not initially part of the nav, need to decorate the links
-    decorateLinks(breadcrumbsElem);
     const createBreadcrumbs = await loadBlock('../features/breadcrumbs/breadcrumbs.js');
-    this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
-    this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
+    this.elements.breadcrumbsWrapper = await createBreadcrumbs(this.el.querySelector('.breadcrumbs'));
     return this.elements.breadcrumbsWrapper;
   };
 
