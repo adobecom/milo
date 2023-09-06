@@ -953,7 +953,7 @@ const Configurator = ({ rootEl }) => {
           ${error && html`<div class="tool-error">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
         </div>
-        <div><button class="collapse-panel" onClick=${() => toogleCollapsed() }><span>v</span></botton></div>
+        <div><button class="collapse-panel" onClick=${() => toogleCollapsed() }>⇆</button></div>
         <div class="content-panel">
           <div class="modalContainer"></div>
           <div id="caas" class="caas-preview"></div>

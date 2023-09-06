@@ -373,28 +373,12 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
       overflow-y: auto
   }
 }
-
 /* End Dexter Modal */
 
-/* Carlos Overrrides */
-.config-panel {
-  border-top: 8px solid black;
-  position: sticky;
-  top: 60px;
-  align-self: start;
-  overflow: scroll;
-  max-height: 95vh;
-  background: #ddd;
-  max-width: 360px;
-}
-
+/* CaaS Overrrides */
 .tool-content {
     grid-template-columns: 340px 20px 1fr;
     gap: 6px;
-}
-
-.config-panel::-webkit-scrollbar {
-   display: none; 
 }
 
 dt.title span {
@@ -442,10 +426,10 @@ dd.content .field {
 .accordion > .accordion-item {
     margin: 1px 0;
 }
+
 .accordion > .accordion-item .title {
     cursor: pointer;
 }
-
 
 dt.title {
   gap: 0;
@@ -498,19 +482,30 @@ dd.content .field label {
 .multifield > .multifield-header h5 {
   max-width: 220px;
 }
+
 input[type=checkbox] {
     align-self: baseline;
     margin-top: 6px;
 }
 
 button.collapse-panel {
-    transform: rotate(90deg);
+    /* transform: rotate(90deg); */
     border: none;
-    width: 24px;
-    height: 24px;
+    font-size: 18px;
+    width: 26px;
+    height: 32px;
+    cursor: pointer;
 }
+button.collapse-panel:hover {
+  background:#666;
+  color: #eee;
+}
+
 .panel-collapsed .tool-content {
     grid-template-columns: 20px 20px 1fr;
+}
+.panel-collapsed dt.title span {
+  color: #333;
 }
 
 .tool-content {
@@ -524,12 +519,11 @@ button.collapse-panel {
 .panel-collapsed button {
   cursor:pointer;
 }
-.panel-collapsed button.collapse-panel {
+/* .panel-collapsed button.collapse-panel {
     transform: rotate(-90deg);
-}
+} */
 
 .tool-content > div:nth-child(2) {
     padding-top: 10px;
     border-top: solid 2px #000;
 }
-

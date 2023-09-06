@@ -91,12 +91,14 @@ dd.content .sort-options > .field {
 
 /* sticky panel */
 .config-panel {
+  border-top: 8px solid black;
   position: sticky;
   top: 60px;
   align-self: start;
   overflow: scroll;
   max-height: 95vh;
   background: #ddd;
+  max-width: 360px;
 }
 
 .config-panel::-webkit-scrollbar { 
