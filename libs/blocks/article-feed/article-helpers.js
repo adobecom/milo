@@ -115,7 +115,9 @@ export function getTaxonomyModule() {
 }
 
 export async function loadTaxonomy() {
-  taxonomyModule = await taxonomyLibrary.default(getConfig(), '/topics');
+  const config = getConfig();
+  const taxonomyRoot = config.taxonomyRoot || '/topics';
+  taxonomyModule = await taxonomyLibrary.default(config, taxonomyRoot);
   if (taxonomyModule) {
     // taxonomy loaded, post loading adjustments
     // fix the links which have been created before the taxonomy has been loaded
