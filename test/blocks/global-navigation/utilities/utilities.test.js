@@ -61,7 +61,7 @@ describe('global navigation utilities', () => {
 
   describe('decorateCta', () => {
     it('should return a fragment for a primary cta', () => {
-      const elem = { href: 'test', textContent: 'test' };
+      const elem = toFragment`<a href="test">test</a>`;
       const el = decorateCta({ elem });
       expect(el.tagName).to.equal('DIV');
       expect(el.className).to.equal('feds-cta-wrapper');
@@ -73,7 +73,7 @@ describe('global navigation utilities', () => {
     });
 
     it('should return a fragment for a secondary cta', () => {
-      const elem = { href: 'test', textContent: 'test' };
+      const elem = toFragment`<a href="test">test</a>`;
       const el = decorateCta({ elem, type: 'secondaryCta' });
       expect(el.tagName).to.equal('DIV');
       expect(el.className).to.equal('feds-cta-wrapper');
