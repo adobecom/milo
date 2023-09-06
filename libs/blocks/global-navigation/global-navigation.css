@@ -391,6 +391,14 @@ header.global-navigation {
   border-radius: var(--feds-radius-utilityIcon);
   color: #4B4B4B;
   white-space: nowrap;
+  border: none;
+  font: inherit;
+  text-align: start;
+  width: 100%;
+}
+
+.feds-signIn:hover {
+  color: var(--link-hover-color);
 }
 
 .feds-signIn-dropdown {
@@ -421,15 +429,17 @@ header.global-navigation {
   padding: 12px 0;
 }
 
-.feds-signIn-dropdown li > a {
+.feds-signIn-dropdown li > a,
+.feds-signIn-dropdown .feds-signIn {
   display: block;
   color: var(--feds-color-link--light);
   padding: 6px 32px;
 }
 
-.feds-signIn-dropdown li > a:hover {
+.feds-signIn-dropdown li > a:hover,
+.feds-signIn-dropdown .feds-signIn:hover {
   color: var(--feds-color-link--hover--light);
-  background-color: var(--feds-background-link--hover--light);;
+  background-color: var(--feds-background-link--hover--light);
 }
 
 #feds-googleLogin {
