@@ -39,11 +39,6 @@ const decorateBlockBg = (block, node) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
-
-    if (child.textContent.trim()) {
-      block.classList.add(`${child.classList[child.classList.length - 1]}-${child.textContent.trim().toLowerCase()}`);
-    }
-
     const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
     if (videoElement) {
       const video = decorateVideo(child, videoElement.href || videoElement.src);
