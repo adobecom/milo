@@ -1,11 +1,15 @@
 // code from https://github.com/adobe/helix-project-boilerplate/blob/main/scripts/lib-franklin.js
+/**
+ * log RUM if part of the sample.
+ * @param {string} checkpoint identifies the checkpoint in funnel
+ * @param {Object} data additional data for RUM sample
+ */
 export function sampleRUM(checkpoint, data = {}) {
   sampleRUM.defer = sampleRUM.defer || [];
   const defer = (fnname) => {
     sampleRUM[fnname] = sampleRUM[fnname]
       || ((...args) => sampleRUM.defer.push({ fnname, args }));
   };
-  /* c8 ignore start */
   sampleRUM.drain = sampleRUM.drain
     || ((dfnname, fn) => {
       sampleRUM[dfnname] = fn;
@@ -16,7 +20,6 @@ export function sampleRUM(checkpoint, data = {}) {
   sampleRUM.always = sampleRUM.always || [];
   sampleRUM.always.on = (chkpnt, fn) => { sampleRUM.always[chkpnt] = fn; };
   sampleRUM.on = (chkpnt, fn) => { sampleRUM.cases[chkpnt] = fn; };
-  /* c8 ignore stop */
   defer('observe');
   defer('cwv');
   try {
@@ -38,13 +41,13 @@ export function sampleRUM(checkpoint, data = {}) {
         // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define
         const body = JSON.stringify({ weight, id, referer: window.location.href, generation: window.hlx.RUM_GENERATION, checkpoint, ...data });
         const url = `https://rum.hlx.page/.rum/${weight}`;
+        // eslint-disable-next-line no-unused-expressions
         navigator.sendBeacon(url, body);
         // eslint-disable-next-line no-console
         console.debug(`ping:${checkpoint}`, pdata);
       };
       sampleRUM.cases = sampleRUM.cases || {
         cwv: () => sampleRUM.cwv(data) || true,
-        /* c8 ignore next 7 */
         lazy: () => {
           // use classic script to avoid CORS issues
           const script = document.createElement('script');
@@ -57,11 +60,14 @@ export function sampleRUM(checkpoint, data = {}) {
       if (sampleRUM.cases[checkpoint]) { sampleRUM.cases[checkpoint](); }
     }
     if (sampleRUM.always[checkpoint]) { sampleRUM.always[checkpoint](data); }
-  } catch (error) { /* do nothing */ }
+  } catch (error) {
+    // something went wrong
+  }
 }
 
-/* c8 ignore start */
-export function addRumListeners() {
+export function setup() {
+  sampleRUM('top');
+
   window.addEventListener('load', () => sampleRUM('load'));
 
   window.addEventListener('unhandledrejection', (event) => {
@@ -72,4 +78,3 @@ export function addRumListeners() {
     sampleRUM('error', { source: event.filename, target: event.lineno });
   });
 }
-/* c8 ignore stop */

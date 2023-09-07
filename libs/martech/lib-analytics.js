@@ -53,7 +53,7 @@ function getDatastreamConfiguration(config) {
   // Sites Internal
   return {
     edgeConfigId,
-    // orgId: '908936ED5D35CC220A495CD4@AdobeOrg',
+    orgId: '908936ED5D35CC220A495CD4@AdobeOrg',
   };
 }
 

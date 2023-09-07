@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 
+import { sampleRUM } from './samplerum.js';
 import { setupAnalyticsTrackingWithAlloy } from '../martech/lib-analytics.js';
 
 const MILO_TEMPLATES = [
@@ -806,11 +807,9 @@ export async function loadDeferred(area, blocks, config) {
     });
   }
 
-  import('./samplerum.js').then(({ sampleRUM }) => {
-    sampleRUM('lazy');
-    sampleRUM.observe(blocks);
-    sampleRUM.observe(area.querySelectorAll('picture > img'));
-  });
+  sampleRUM('lazy');
+  sampleRUM.observe(blocks);
+  sampleRUM.observe(area.querySelectorAll('picture > img'));
 }
 
 function initSidekick() {
@@ -868,10 +867,6 @@ export async function loadArea(area = document) {
     decorateMeta();
     decorateHeader();
     decorateFooterPromo(config);
-
-    import('./samplerum.js').then(({ addRumListeners }) => {
-      addRumListeners();
-    });
   }
 
   const sections = decorateSections(area, isDoc);

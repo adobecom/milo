@@ -15,13 +15,14 @@ import {
   loadLana,
   setConfig,
 } from '../utils/utils.js';
+import { sampleRUM, setup as setupRUM } from '../utils/samplerum.js';
 import {
   analyticsTrack404,
   analyticsTrackCWV,
   analyticsTrackError,
   initAnalyticsTrackingQueue,
+  setupAnalyticsTrackingWithAlloy,
 } from '../martech/lib-analytics.js';
-import { sampleRUM } from '../utils/samplerum.js';
 
 // Production Domain
 const prodDomains = ['milo.adobe.com'];
@@ -158,7 +159,10 @@ const eagerLoad = (img) => {
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
-  await initAnalyticsTrackingQueue();
+
+  setupRUM();
+
+  //await initAnalyticsTrackingQueue();
 
   const cwv = {};
 
@@ -178,4 +182,6 @@ const eagerLoad = (img) => {
   sampleRUM.always.on('error', analyticsTrackError);
 
   await loadArea();
+
+  //await setupAnalyticsTrackingWithAlloy(document, config);
 }());
