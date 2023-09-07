@@ -86,6 +86,10 @@
   padding: var(--spacing-xxxl) 0 var(--spacing-l) 0;
 }
 
+.aside.split.no-media .foreground.container .text {
+  padding: var(--spacing-xxxl) 0 var(--spacing-xxxl) 0;
+}
+
 .aside.split.large .foreground.container .text {
   padding: var(--spacing-l) 0 var(--spacing-xxxl) 0;
 }

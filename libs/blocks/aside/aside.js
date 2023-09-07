@@ -123,13 +123,14 @@ function decorateLayout(el) {
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   iconArea?.classList.add('icon-area');
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
-  const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
   const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video')?.closest('div');
-  const bgMedia = el.querySelector(':scope > div:not(.text) video')?.closest('div');
+  const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video')?.closest('div');
   const image = foregroundImage ?? bgImage;
   const asideMedia = foregroundMedia ?? bgMedia ?? image;
+  const isSplit = el.classList.contains('split');
+  if (isSplit && !asideMedia) el.classList.add('no-media');
   if (asideMedia && !asideMedia.classList.contains('text')) {
-    const isSplit = el.classList.contains('split');
     asideMedia.classList.add(`${isSplit ? 'split-' : ''}image`);
     if (isSplit) {
       const position = [...asideMedia.parentNode.children].indexOf(asideMedia);
