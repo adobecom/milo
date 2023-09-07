@@ -1,21 +1,15 @@
 import { html } from '../../deps/htm-preact.js';
 
-export const DecorateBlockBackgroundCmp = ({ background = '' }) => html`<div data-valign="middle">
-      <picture>
+export const DecorateBlockBackgroundCmp = ({ background = '' }) => html`<picture>
         <source type="image/webp" srcset=${background} media="(min-width: 400px)" />
         <source type="image/png" srcset=${background}  media="(min-width: 400px)" />
         <source type="image/webp" srcset=${background} />
         <img loading="eager" alt="" type="image/png" src=${background}  width="750" height="375" />
-      </picture>
-  </div>`;
+      </picture>`;
 
-export const DecorateBlockForeground = ({ heading, subhead }) => html`<div class="foreground container">
-    <div data-valign="middle" class="text" daa-lh="${heading}">
-      <h2 id="heading-xl-marquee-standard-medium-left" class="heading-XL">
-      ${heading}
-      </h2>
-      <p class="detail-L">${subhead}</p>
-    </div>
+export const DecorateBlockForeground = ({ heading, subhead }) => html`<div class="quiz-foreground">
+    <h2 class="quiz-question-title" daa-lh="${heading}">${heading}</h2>
+    <p class="quiz-question-text">${subhead}</p>
   </div>`;
 
 export const DecorateBlockBackground = (getStringValue) => html`<${DecorateBlockBackgroundCmp} background=${getStringValue('background')} />`;

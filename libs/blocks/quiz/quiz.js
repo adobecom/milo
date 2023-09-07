@@ -1,7 +1,7 @@
 import {
   render, html, useEffect, useMemo, useState, useLayoutEffect,
 } from '../../deps/htm-preact.js';
-import { getConfig, loadStyle, createTag } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
 import {
@@ -9,9 +9,6 @@ import {
   getAnalyticsDataForBtn, getUrlParams,
 } from './utils.js';
 import StepIndicator from './stepIndicator.js';
-
-const { codeRoot } = getConfig();
-loadStyle(`${codeRoot}/deps/caas-uar.css`);
 
 async function loadFragments(fragmentURL) {
   const quizSections = document.querySelector('.quiz-footer');
@@ -277,7 +274,7 @@ const App = () => {
   }, [selectedQuestion, stringQuestionList]);
 
   if (!isDataLoaded || !selectedQuestion) {
-    return html`<div>Loading</div>`;
+    return html`<div class="quiz-load">Loading</div>`;
   }
 
   const getStringValue = (propName) => {
@@ -296,8 +293,9 @@ const App = () => {
                     currentStep=${currentStep} 
                     totalSteps=${totalSteps} 
                     prevStepIndicator=${prevStepIndicator}
-                  />  
-                  <div class="background">
+                    top="${true}" />
+
+                  <div class="quiz-background">
                       ${DecorateBlockBackground(getStringValue)}
                   </div>
 
@@ -318,17 +316,19 @@ const App = () => {
                       handleOnNextClick=${handleOnNextClick}
                       btnAnalyticsData=${btnAnalytics}/>
 
-                  <div class="quiz-footer">
-                  </div>
-
                   <${StepIndicator} 
                   currentStep=${currentStep} 
                   totalSteps=${totalSteps} 
-                  prevStepIndicator=${prevStepIndicator} />
+                  prevStepIndicator=${prevStepIndicator}
+                  bottom="${true}" />
+
+                  <div class="quiz-footer">
+                  </div>
               </div>`;
 };
 
 export default async function init(el) {
   initConfigPathGlob(el);
+  el.replaceChildren();
   render(html`<${App} />`, el);
 }
