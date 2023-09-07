@@ -15,6 +15,13 @@ import {
   loadLana,
   setConfig,
 } from '../utils/utils.js';
+import {
+  analyticsTrack404,
+  analyticsTrackCWV,
+  analyticsTrackError,
+  initAnalyticsTrackingQueue,
+} from '../martech/lib-analytics.js';
+import { sampleRUM } from '../utils/samplerum.js';
 
 // Production Domain
 const prodDomains = ['milo.adobe.com'];
@@ -151,5 +158,24 @@ const eagerLoad = (img) => {
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
+  await initAnalyticsTrackingQueue();
+
+  const cwv = {};
+
+  // Forward the RUM CWV cached measurements to edge using WebSDK before the page unloads
+  window.addEventListener('beforeunload', () => {
+    if (!Object.keys(cwv).length) return;
+    analyticsTrackCWV(cwv);
+  });
+
+  // Callback to RUM CWV checkpoint in order to cache the measurements
+  sampleRUM.always.on('cwv', async (data) => {
+    if (!data.cwv) return;
+    Object.assign(cwv, data.cwv);
+  });
+
+  sampleRUM.always.on('404', analyticsTrack404);
+  sampleRUM.always.on('error', analyticsTrackError);
+
   await loadArea();
 }());

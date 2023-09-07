@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+import { setupAnalyticsTrackingWithAlloy } from '../martech/lib-analytics.js';
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -776,7 +778,8 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  loadMartech(config);
+  await setupAnalyticsTrackingWithAlloy(document, config);
+  await loadMartech(config);
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
@@ -885,7 +888,7 @@ export async function loadArea(area = document) {
 
     if (isDoc && section.el.dataset.idx === '0') {
       window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
-      loadPostLCP(config);
+      await loadPostLCP(config);
     }
 
     // Show the section when all blocks inside are done.
