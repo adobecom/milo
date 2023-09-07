@@ -632,9 +632,8 @@ class Gnav {
     if (!this.el.classList.contains('has-breadcrumbs')) return null;
     if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
     const breadcrumbsElem = this.el.querySelector('.breadcrumbs');
-    if (!breadcrumbsElem) return null;
     // Breadcrumbs are not initially part of the nav, need to decorate the links
-    decorateLinks(breadcrumbsElem);
+    if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
     const createBreadcrumbs = await loadBlock('../features/breadcrumbs/breadcrumbs.js');
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
     return this.elements.breadcrumbsWrapper;
