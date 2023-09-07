@@ -86,6 +86,14 @@ const getTargetPersonalization = async () => {
   return manifests;
 };
 
+const getWebSDKLib = (env) => ({
+  edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
+  url:
+    env.name === 'prod'
+      ? env.consumer?.webSDKUrl || 'https://cdn1.adoberesources.net/alloy/2.14.0/alloy.min.js'
+      : env.consumer?.webSDKUrl || 'https://cdn1.adoberesources.net/alloy/2.14.0/alloy.min.js',
+});
+
 const getDtmLib = (env) => ({
   edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
   url:
