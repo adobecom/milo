@@ -128,9 +128,10 @@ function decorateLayout(el) {
   const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video')?.closest('div');
   const image = foregroundImage ?? bgImage;
   const asideMedia = foregroundMedia ?? bgMedia ?? image;
-  if (!asideMedia) el.classList.add('no-media');
+  const isSplit = el.classList.contains('split');
+  const hasMedia = foregroundImage ?? foregroundMedia ?? (isSplit && bgMedia)
+  if (!hasMedia) el.classList.add('no-media');
   if (asideMedia && !asideMedia.classList.contains('text')) {
-    const isSplit = el.classList.contains('split');
     asideMedia.classList.add(`${isSplit ? 'split-' : ''}image`);
     if (isSplit) {
       const position = [...asideMedia.parentNode.children].indexOf(asideMedia);
