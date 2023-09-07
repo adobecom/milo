@@ -1,16 +1,16 @@
 // Uses the franklin structure without any customizations
 export default `<div>
   <div class="gnav-brand logo">
+  <div>
     <div>
-      <div>
-        <p>
-          <a href="/drafts/ramuntea/adobe-logo.svg"
-            >http://localhost:2000/test/blocks/global-navigation/mocks/adobe-logo.svg</a
-          >
-        </p>
-        <p><a href="https://www.adobe.com/">Adobe</a></p>
-      </div>
+      <p>
+        <a href="http://localhost:2000/test/blocks/global-navigation/mocks/adobe-logo.svg">
+          http://localhost:2000/test/blocks/global-navigation/mocks/adobe-logo.svg
+        </a>
+      </p>
+      <p><a href="https://www.adobe.com/">Adobe</a></p>
     </div>
+  </div>
   </div>
 </div>
 <div>
@@ -18,7 +18,7 @@ export default `<div>
     <div>
       <div>
         <h2 id="cloud-menu">
-          <a href="/libs/feds/drafts/ramuntea/large-menu">Cloud Menu</a>
+          <a href="/large-menu">Cloud Menu</a>
         </h2>
       </div>
     </div>

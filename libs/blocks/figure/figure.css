@@ -13,6 +13,10 @@
   max-height: 600px;
 }
 
+.figure.full-height img {
+  max-height: unset;
+}
+
 .figure-list {
   display: flex;
   flex-direction: column;
