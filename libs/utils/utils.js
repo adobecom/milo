@@ -641,6 +641,7 @@ function decorateDefaults(el) {
       el.insertAdjacentElement('afterbegin', content);
     }
   });
+  decorateDefaultLinkAnalytics(el);
 }
 
 function decorateHeader() {
