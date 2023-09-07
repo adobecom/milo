@@ -129,7 +129,7 @@ function decorateLayout(el) {
   const image = foregroundImage ?? bgImage;
   const asideMedia = foregroundMedia ?? bgMedia ?? image;
   const isSplit = el.classList.contains('split');
-  const hasMedia = foregroundImage ?? foregroundMedia ?? (isSplit && !asideMedia)
+  const hasMedia = foregroundImage ?? foregroundMedia ?? (isSplit && asideMedia)
   if (!hasMedia) el.classList.add('no-media');
   if (asideMedia && !asideMedia.classList.contains('text')) {
     asideMedia.classList.add(`${isSplit ? 'split-' : ''}image`);
