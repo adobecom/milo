@@ -186,7 +186,7 @@
     height: 850px;
   }
 
-  .dialog-modal.commerce-frame .milo-iframe.modal {
+  .dialog-modal.commerce-frame .milo-iframe {
     padding-bottom: 0;
     height: 845px;
   }
