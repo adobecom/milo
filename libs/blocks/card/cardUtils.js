@@ -35,6 +35,7 @@ export const addFooter = (links, container, merch) => {
     if (parentElement && document.body.contains(parentElement)) parentElement.remove();
   });
 };
+
 export const addWrapper = (el, section, cardType) => {
   const gridCl = 'consonant-CardsGrid';
   const prevGrid = section.querySelector(`.consonant-Wrapper .${gridCl}`);
