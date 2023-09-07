@@ -7,21 +7,23 @@ const conf = { locales };
 setConfig(conf);
 const config = getConfig();
 
-const ogDoc = document.body.innerHTML;
-
 const { default: init } = await import('../../../libs/blocks/tags/tags.js');
 
 describe('decorateTags', () => {
-  config.locale.contentRoot = '/test/blocks/tags/mocks';
-
-  afterEach(() => {
-    document.body.innerHTML = ogDoc;
+  before(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    config.locale.contentRoot = '/test/blocks/tags/mocks';
+    config.taxonomyRoot = undefined;
+    const block = document.querySelector('.tags');
+    await init(block);
   });
 
   it('renders tags block', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    const block = document.querySelector('.tags');
-    await init(block);
     expect(document.body.querySelector('.tags')).to.exist;
+  });
+
+  it('sets default taxonomy path to "topics"', async () => {
+    const categoryLink = document.querySelector('.tags a');
+    expect(categoryLink.href.includes('/topics/')).to.be.true;
   });
 });
