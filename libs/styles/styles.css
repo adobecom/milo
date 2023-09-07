@@ -529,6 +529,10 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 
 /*** Global Styles ***/
 
+:root {
+  --feds-totalheight-nav: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+}
+
 @font-face {
   font-family: 'Trebuchet MS';
   font-weight: 700;
@@ -597,6 +601,10 @@ header.global-navigation {
 
 .breadcrumbs {
   display: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  scroll-margin-top: var(--feds-totalheight-nav);
 }
 
 h1 {
