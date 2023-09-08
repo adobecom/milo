@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+import { analyticsSetConsent } from '../martech/lib-analytics.js';
+
 export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
   const jarvis = getMetadata('jarvis-chat')?.toLowerCase();
@@ -38,7 +40,18 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     privacy: { otDomainId },
     documentLanguage: true,
   };
-  loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+  loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js')
+    .then(() => {
+      if (window.adobePrivacy) {
+        window.addEventListener(window.adobePrivacy.events.privacyConsent, async () => {
+          await analyticsSetConsent(window.adobePrivacy.hasUserProvidedConsent());
+        });
+
+        window.addEventListener(window.adobePrivacy.events.privacyReject, async () => {
+          await analyticsSetConsent(false);
+        });
+      }
+    });
 
   // Privacy triggers can exist anywhere on the page and can be added at any time
   document.addEventListener('click', (event) => {
