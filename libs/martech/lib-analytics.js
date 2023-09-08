@@ -14,7 +14,7 @@
  * Customer's XDM schema namespace
  * @type {string}
  */
-const CUSTOM_SCHEMA_NAMESPACE = '_sitesinternal';
+const CUSTOM_SCHEMA_NAMESPACE = '_adobe-corpnew';
 
 /**
  * Returns experiment id and variant running
@@ -51,7 +51,7 @@ function getDatastreamConfiguration(config) {
   const { env } = config;
   const edgeConfigId = env.consumer?.edgeConfigId || env.edgeConfigId;
   const orgId = env.consumer?.orgId || env.orgId;
-  // Sites Internal
+
   return {
     edgeConfigId,
     orgId,
