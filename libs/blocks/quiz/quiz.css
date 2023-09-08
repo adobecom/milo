@@ -118,6 +118,10 @@
   background-color: var(--color-white);
 }
 
+.quiz-option:focus-visible {
+  background-color: #fafafaee;
+}
+
 .quiz-option.selected {
   background-color: var(--color-white);
 }
