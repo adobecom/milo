@@ -75,6 +75,7 @@
   margin: 0 0 16px;
   padding: 16px 24px;
   user-select: none;
+  width: 100%;
 }
 
 .quiz-option-icon {
