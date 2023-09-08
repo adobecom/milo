@@ -788,6 +788,19 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
+export function scrollToHashedElement(hash) {
+  if (!hash) return;
+  const elementId = hash.slice(1);
+  const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+  if (!targetElement) return;
+  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
+  const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
+  window.scrollTo({
+    top: topOffset - bufferHeight,
+    behavior: 'smooth',
+  });
+}
+
 export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
@@ -892,6 +905,10 @@ export async function loadArea(area = document) {
     delete section.el.dataset.status;
     delete section.el.dataset.idx;
   }
+  const currentHash = window.location.hash;
+  if (currentHash) {
+    scrollToHashedElement(currentHash);
+  }
 
   // Post section loading on document
   if (isDoc) {
@@ -926,7 +943,6 @@ export async function loadArea(area = document) {
     const { default: delayed } = await import('../scripts/delayed.js');
     delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
   }
-
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
 }
