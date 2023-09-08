@@ -55,6 +55,7 @@
 }
 
 .merch-card div[class$="-title"] {
+  width: 100%;
   font-size: var(--type-heading-xs-lh);
   font-weight: var(--type-heading-all-weight);
   align-self: flex-start;
@@ -141,6 +142,7 @@
 }
 
 .merch-card div[class$="-description"] {
+  width: 100%;
   font-size: var(--type-heading-xs-size);
   line-height: 1.5;
   margin-top: 0;
