@@ -28,7 +28,7 @@ async function floodgateContentAction(project, config) {
 
 async function triggerUpdateFragments() {
   loadingON('Fetching and updating fragments..');
-  const status = await updateFragments(initProject);
+  const status = await updateFragments(initProject, true);
   loadingON(status);
 }
 
