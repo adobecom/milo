@@ -49,11 +49,12 @@ function getAlloyInitScript() {
  */
 function getDatastreamConfiguration(config) {
   const { env } = config;
-  const edgeConfigId = env.consumer?.edgeConfigId || env.edgeConfigId
+  const edgeConfigId = env.consumer?.edgeConfigId || env.edgeConfigId;
+  const orgId = env.consumer?.orgId || env.orgId;
   // Sites Internal
   return {
     edgeConfigId,
-    orgId: '908936ED5D35CC220A495CD4@AdobeOrg',
+    orgId,
   };
 }
 
