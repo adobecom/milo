@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 
 import { sampleRUM } from './samplerum.js';
-import { setupAnalyticsTrackingWithAlloy } from '../martech/lib-analytics.js';
 
 const MILO_TEMPLATES = [
   '404',
@@ -779,7 +778,6 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  await setupAnalyticsTrackingWithAlloy(document, config);
   await loadMartech(config);
   const header = document.querySelector('header');
   if (header) {

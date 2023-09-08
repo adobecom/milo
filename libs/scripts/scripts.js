@@ -157,12 +157,12 @@ const eagerLoad = (img) => {
 
 (async function loadPage() {
   performance.mark('loadpage');
-  setConfig(config);
+  const newConfig = setConfig(config);
   loadLana({ clientId: 'milo' });
 
   setupRUM();
 
-  //await initAnalyticsTrackingQueue();
+  await initAnalyticsTrackingQueue();
 
   const cwv = {};
 
@@ -183,5 +183,5 @@ const eagerLoad = (img) => {
 
   await loadArea();
 
-  //await setupAnalyticsTrackingWithAlloy(document, config);
+  await setupAnalyticsTrackingWithAlloy(document, newConfig);
 }());
