@@ -177,9 +177,18 @@ main>.section[class*='-up']>.content {
   background-color: var(--color-white);
 }
 
-@media (min-width: 900px) {
-  .section.sticky-top {
-    top: 64px;
+.section[class*='grid-width-'] {
+  display: grid;
+  gap: var(--spacing-m);
+  padding-left: var(--grid-margins-width);
+  padding-right: var(--grid-margins-width);
+
+}
+
+@media screen and (min-width: 600px) {
+  .section.grid-width-6 {
+    padding-left: var(--grid-margins-width-6);
+    padding-right: var(--grid-margins-width-6);
   }
 }
 
@@ -187,24 +196,30 @@ main>.section[class*='-up']>.content {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
+
 }
 
-@media screen and (min-width: 1200px) {
-  .section.grid-width-10 {
-    padding-left: var(--grid-margins-width-10);
-    padding-right: var(--grid-margins-width-10);
-  }
-
+@media screen and (min-width: 800px) {
   .section.grid-width-8 {
     padding-left: var(--grid-margins-width-8);
     padding-right: var(--grid-margins-width-8);
   }
+}
 
-  .section.grid-width-6 {
-    padding-left: var(--grid-margins-width-6);
-    padding-right: var(--grid-margins-width-6);
+@media (min-width: 900px) {
+  .section.sticky-top {
+    top: 64px;
   }
+}
 
+@media screen and (min-width: 1000px) {
+  .section.grid-width-10 {
+    padding-left: var(--grid-margins-width-10);
+    padding-right: var(--grid-margins-width-10);
+  }
+}
+
+@media screen and (min-width: 1200px) {
   .section.two-up {
     grid-template-columns: repeat(2, 1fr);
   }
