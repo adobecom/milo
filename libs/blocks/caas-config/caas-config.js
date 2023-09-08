@@ -242,7 +242,9 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '', title, placeholder}) => {
+const Input = ({
+    label, type = 'text', prop, defaultValue = '', title, placeholder
+  }) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -936,8 +938,8 @@ const Configurator = ({ rootEl }) => {
   }, [isCaasLoaded, state, strings]);
 
   const toogleCollapsed = () => {
-    document.body.classList.toggle('panel-collapsed')
-  }
+    document.body.classList.toggle('panel-collapsed');
+  };
 
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
@@ -953,7 +955,7 @@ const Configurator = ({ rootEl }) => {
           ${error && html`<div class="tool-error">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
         </div>
-        <div><button class="collapse-panel" onClick=${() => toogleCollapsed() }>⇆</button></div>
+        <div><button class="collapse-panel" onClick=${() => toogleCollapsed()}>⇆</button></div>
         <div class="content-panel">
           <div class="modalContainer"></div>
           <div id="caas" class="caas-preview"></div>
