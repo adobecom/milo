@@ -640,6 +640,9 @@ async function decoratePlaceholders(area, config) {
   if (!found) return;
   const { replaceText } = await import('../features/placeholders.js');
   el.innerHTML = await replaceText(el.innerHTML, config, regex);
+  // second pass for url encoded placeholders
+  const regexUrlEncoded = /%7B%7B(.*?)%7D%7D/g;
+  el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
 
 async function loadFooter() {
