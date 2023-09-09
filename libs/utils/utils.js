@@ -642,7 +642,7 @@ async function decoratePlaceholders(area, config) {
   el.innerHTML = await replaceText(el.innerHTML, config, regex);
   // second pass for url encoded placeholders
   const regexUrlEncoded = /%7B%7B(.*?)%7D%7D/g;
-  el.innerHTML = await replaceText(el.innerHTML, config, regex);
+  el.innerHTML = await replaceText(el.innerHTML, config, regexUrlEncoded);
 }
 
 async function loadFooter() {
