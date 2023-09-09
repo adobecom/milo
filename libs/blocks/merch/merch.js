@@ -1,4 +1,5 @@
 import { loadScript, getConfig, getMetadata } from '../../utils/utils.js';
+import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
 export const VERSION = '1.16.0';
 export const ENV_PROD = 'prod';
@@ -217,7 +218,9 @@ export default async function init(el) {
       ...getCheckoutContext(searchParams, getConfig()),
     });
     const cta = buildCheckoutButton(el, options);
+    const parentElem = el.parentNode;
     el.replaceWith(cta);
+    decorateLinkAnalytics(parentElem);
     return cta;
   }
 
