@@ -526,8 +526,6 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   left: 0;
 }
 
-.con-block .background .mobile-only.tablet-only { display: block; }
-
 .con-block .background .tablet-only,
 .con-block .background .desktop-only {
   display: none;
@@ -563,7 +561,6 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   .con-block.max-width-10-desktop .foreground { max-width: 1000px; }
   .con-block.max-width-12-desktop .foreground { max-width: 1200px; }
 
-  .con-block .background .mobile-only.tablet-only,
   .con-block .background .mobile-only,
   .con-block .background .tablet-only {
     display: none;

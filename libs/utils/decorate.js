@@ -80,7 +80,7 @@ export function decorateBlockBg(block, node) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
     node.classList.add('background');
-    const binaryVP = [['mobile-only', 'tablet-only'], ['desktop-only']];
+    const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
     [...node.children].forEach((child, i) => {
