@@ -33,8 +33,9 @@ describe('Image Link', () => {
     expect(i.alt).to.equal('img/badurl#_blank | image link bad url');
   });
 
-  it('Has video play button', () => {
+  it('Has video play button', async () => {
     const p = document.querySelector('.image-link-play');
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
     expect(p.querySelector('.modal-img-link')).to.exist;
   });
 });
