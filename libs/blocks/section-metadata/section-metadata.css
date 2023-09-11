@@ -17,8 +17,9 @@
   color: rgb(34 34 34);
 }
 
-.section.static-links a:not([class]) {
+.section.static-links a:not([class*="button"]) {
   color: inherit;
+  text-decoration: underline;
 }
 
 .section.hide-sticky-section,
