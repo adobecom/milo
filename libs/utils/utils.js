@@ -473,17 +473,6 @@ export function decorateSVG(a) {
   }
 }
 
-export function decorateModalImageLinks(el, a, btnSize) {
-  const pic = el.querySelector('picture');
-  const playIcon = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON_SVG);
-  const imgLinkContainer = createTag('span', { class: 'modal-img-link' });
-  el.insertBefore(imgLinkContainer, pic);
-  if (btnSize) a.classList.add(btnSize);
-  a.classList.add('consonant-play-btn');
-  a.append(playIcon);
-  imgLinkContainer.append(pic, a);
-}
-
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
@@ -497,12 +486,11 @@ export function decorateImageLinks(el) {
       const aTag = createTag('a', { href: url, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
       if (playBtn?.includes(':play')) {
-        const { miloLibs, codeRoot } = getConfig();
-        const base = miloLibs || codeRoot;
-        loadStyle(`${base}/styles/consonant-play-button.css`);
-        const playBtnFormat = playBtn.split(':')[1];
-        const playBtnSize = playBtnFormat.includes('-') ? `btn-${playBtnFormat.split('-')[1]}` : 'btn-large';
-        decorateModalImageLinks(picParent, aTag, playBtnSize);
+        const initVideoModal = async () => {
+          const { default: init } = await import('./imageVideoLink.js');
+          init(picParent, aTag, playBtn);
+        };
+        initVideoModal();
       } else {
         aTag.append(pic);
       }

@@ -35,7 +35,6 @@ describe('Image Link', () => {
 
   it('Has video play button', () => {
     const p = document.querySelector('.image-link-play');
-    console.log('mathuria', p);
     expect(p.querySelector('.modal-img-link')).to.exist;
   });
 });
