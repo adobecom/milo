@@ -98,7 +98,7 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
   return placeholders;
 }
 
-export async function replaceText(text, config, regex = /{{(.*?)}}/g, sheet = 'default') {
+export async function replaceText(text, config, regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g, sheet = 'default') {
   if (typeof text !== 'string' || !text.length) return '';
 
   const matches = [...text.matchAll(new RegExp(regex))];

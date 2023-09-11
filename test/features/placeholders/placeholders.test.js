@@ -15,7 +15,7 @@ describe('Placeholders', () => {
 
   it('Replaces text', async () => {
     config.locale.contentRoot = '/test/features/placeholders';
-    const regex = /{{(.*?)}}/g;
+    const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
     let text = 'Hello world {{recommended-for-you}} and {{no-results}}';
     text = await replaceText(text, config, regex);
     expect(text).to.equal('Hello world Recommended for you and No results found');
