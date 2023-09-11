@@ -722,7 +722,7 @@ describe('global navigation', () => {
         signIn.click();
 
         const signInDropdown = document.querySelector(selectors.signInDropdown);
-        const dropdownSignIn = signInDropdown.querySelector('[href="https://adobe.com?sign-in=true"]');
+        const dropdownSignIn = signInDropdown.querySelector(selectors.imsSignIn);
 
         window.adobeIMS = { signIn: sinon.spy() };
 
@@ -744,7 +744,7 @@ describe('global navigation', () => {
         signIn.click();
 
         const signInDropdown = document.querySelector(selectors.signInDropdown);
-        const dropdownSignIn = signInDropdown.querySelector('[href$="?sign-in=true"]');
+        const dropdownSignIn = signInDropdown.querySelector(selectors.imsSignIn);
 
         window.adobeIMS = { signIn: sinon.spy() };
 
@@ -806,7 +806,7 @@ describe('global navigation', () => {
         signIn.click();
 
         const signInDropdown = document.querySelector(selectors.signInDropdown);
-        const dropdownSignIn = signInDropdown.querySelector('[href="https://adobe.com?sign-in=true"]');
+        const dropdownSignIn = signInDropdown.querySelector(selectors.imsSignIn);
 
         window.adobeIMS = { signIn: sinon.spy() };
 

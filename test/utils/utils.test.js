@@ -432,6 +432,37 @@ describe('Utils', () => {
     });
   });
 
+  describe('scrollToHashedElement', () => {
+    before(() => {
+      const div = document.createElement('div');
+      div.className = 'global-navigation';
+      document.body.appendChild(div);
+      window.location.hash = '#not-block';
+      window.scrollBy = () => {};
+    });
+
+    it('should scroll to the hashed element', () => {
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+
+      utils.scrollToHashedElement('#not-block');
+      expect(scrollToCalled).to.be.true;
+      expect(document.getElementById('not-block')).to.exist;
+    });
+
+    it('should not scroll if no hash is present', () => {
+      window.location.hash = '';
+      let scrollToCalled = false;
+      window.scrollBy = () => {
+        scrollToCalled = true;
+      };
+      utils.scrollToHashedElement('');
+      expect(scrollToCalled).to.be.false;
+    });
+  });
+
   describe('useDotHtml', async () => {
     beforeEach(async () => {
       window.lana = { log: (msg) => console.error(msg) };
