@@ -13,12 +13,12 @@ describe('Placeholders', () => {
     expect(text).to.equal('recommended for you');
   });
 
-  it('Replaces text', async () => {
+  it('Replaces text & links', async () => {
     config.locale.contentRoot = '/test/features/placeholders';
     const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-    let text = 'Hello world {{recommended-for-you}} and {{no-results}}';
+    let text = 'Hello world {{recommended-for-you}} and {{no-results}}. Call tel: %7B%7Bphone-number%7D%7D';
     text = await replaceText(text, config, regex);
-    expect(text).to.equal('Hello world Recommended for you and No results found');
+    expect(text).to.equal('Hello world Recommended for you and No results found. Call tel: 800 12345 6789');
   });
 
   it('Replaces key', async () => {
