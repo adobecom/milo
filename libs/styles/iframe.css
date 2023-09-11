@@ -33,3 +33,7 @@
     padding-bottom: 100dvh;
   }
 }
+
+.dialog-modal.commerce-frame .milo-iframe {
+  min-width: unset;
+}
