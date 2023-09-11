@@ -14,6 +14,8 @@ import {
   updateProjectStatusUI,
 } from './ui.js';
 
+const IS_FLOODGATE = true;
+
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
   await purgeAndReloadProjectFile();
@@ -28,7 +30,7 @@ async function floodgateContentAction(project, config) {
 
 async function triggerUpdateFragments() {
   loadingON('Fetching and updating fragments..');
-  const status = await updateFragments(initProject);
+  const status = await updateFragments(initProject, IS_FLOODGATE);
   loadingON(status);
 }
 
