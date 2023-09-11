@@ -101,6 +101,8 @@ async function getMdast(path) {
 
 function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
   const mergedMdast = { type: 'root', children: [] };
+  let mergedProcessedMdast = [];
+  const resolvedBocks = {};
 
   function addTrackChangesInfo(author, action, root) {
     root.author = author;
@@ -124,44 +126,86 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
     addTrackChangesInfoToChildren(root);
   }
 
+  function checkAndPush(mergedArr, content, type) {
+    if(resolvedBocks[content]?.status === true) {
+      resolvedBocks[content] = {status: false, type};
+      mergedArr.push({hashcode: content, classType: type});
+      return mergedArr;
+    }
+
+    for(let i=mergedArr.length-1; i>= 0; i--) {
+      if(mergedArr[i].hashcode === content && resolvedBocks[content]?.status === false) {
+        if(mergedArr[i].classType === 'added' || mergedArr[i].classType === '') {
+          if(type === 'deleted') {
+              mergedArr[i].classType = '';
+              resolvedBocks[content] = {status: true, type};
+              return mergedArr;
+          } else {
+              resolvedBocks[content] = {status: false, type: 'added'};
+              mergedMdast.push({hashcode: content, classType:type});
+              return mergedMdast;
+          }
+        } else if (mergedArr[i].classType === 'deleted' ) {
+          if(type === 'added') {
+              const newArray = [];
+              for (let i = 0; i < mergedArr.length; i++) {
+                  if (mergedArr[i].hashcode !== content) {
+                      newArray.push({hashcode: mergedArr[i].hashcode, classType: mergedArr[i].classType});
+                  }
+              }
+              newArray.push({hashcode: content, classType:''});
+              resolvedBocks[content] = {status: true, type: ''};
+              return newArray;
+          } else if(type==='deleted') {
+              resolvedBocks[content] = {status: false, type: 'deleted'};
+              mergedMdast.push({hashcode: content, classType:type});
+              return mergedMdast;
+          }
+        }
+      }
+    }
+    resolvedBocks[content] = {status: false, type: ''};
+    mergedArr.push({hashcode: content, classType:type});
+    return mergedArr;
+  }
+
   // Iterate and insert content in mergedMdast as long as both arrays have content
   const length = Math.min(langstoreNowProcessedMdast.length, livecopyProcessedMdast.length);
   let index;
   for (index = 0; index < length; index += 1) {
     if (langstoreNowProcessedMdast[index] === livecopyProcessedMdast[index]) {
-      const content = hashToContentMap.get(langstoreNowProcessedMdast[index]);
-      mergedMdast.children.push(content);
+      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], '');
     } else {
-      const langstoreContent = hashToContentMap.get(langstoreNowProcessedMdast[index]);
-      // Creating new object of langstoreContent to avoid mutation of original object
-      const newLangstoreContent = JSON.parse(JSON.stringify(langstoreContent));
-      addTrackChangesInfo('Langstore Version', 'deleted', newLangstoreContent);
-      mergedMdast.children.push(newLangstoreContent);
-      const livecopyContent = hashToContentMap.get(livecopyProcessedMdast[index]); 
-      // Creating new object of livecopyContent to avoid mutation of original object
-      const newLivecopyContent = JSON.parse(JSON.stringify(livecopyContent));
-      addTrackChangesInfo('Regional Version', 'added', newLivecopyContent);
-      mergedMdast.children.push(newLivecopyContent);
+      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], 'deleted');
+      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, livecopyProcessedMdast[index], 'added');
     }
   }
 
   // Insert the leftover content in langstore if any
   if (index < langstoreNowProcessedMdast.length) {
     for (; index < langstoreNowProcessedMdast.length; index += 1) {
-      const langstoreContent = hashToContentMap.get(langstoreNowProcessedMdast[index]);
-      addTrackChangesInfo('Langstore Version', 'deleted', langstoreContent);
-      mergedMdast.children.push(langstoreContent);
+      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], 'deleted');
     }
   }
 
   // Insert the leftover content in livecopy if any
   if (index < livecopyProcessedMdast.length) {
     for (; index < livecopyProcessedMdast.length; index += 1) {
-      const livecopyContent = hashToContentMap.get(livecopyProcessedMdast[index]);
-      mergedMdast.children.push(livecopyContent);
+      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, livecopyProcessedMdast[index], 'added');
     }
   }
 
+  mergedProcessedMdast.map((elem) => {
+    const content = hashToContentMap.get(elem.hashcode);
+    // Creating new object of langstoreContent to avoid mutation of original object
+    const newContent = JSON.parse(JSON.stringify(content));
+    if(elem.classType === 'deleted') {
+      addTrackChangesInfo('Langstore Version', elem.classType, newContent);
+    } else if (elem.classType === 'added') {
+      addTrackChangesInfo('Regional Version', elem.classType, newContent);
+    }
+    mergedMdast.children.push(newContent);
+  });
   return mergedMdast;
 }
 
