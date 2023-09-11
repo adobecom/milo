@@ -1,3 +1,4 @@
+import { createTag } from './utils.js';
 import { decorateLinkAnalytics } from '../martech/attributes.js';
 
 export function decorateButtons(el, size) {
@@ -101,6 +102,20 @@ export function getBlockSize(el, defaultSize = 1) {
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
+
+export const decorateBlockHrs = (el) => {
+  const els = el.querySelectorAll('p');
+  let hasHr = false;
+  [...els].forEach((e) => {
+    if (!e.textContent.startsWith('---')) return;
+    hasHr = true;
+    const bgStyle = e.textContent.substring(3).trim();
+    const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
+    e.textContent = '';
+    e.appendChild(hrElem);
+  });
+  if (hasHr && els.length) el.classList.add('has-divider');
+};
 
 function applyTextOverrides(el, override) {
   const parts = override.split('-');
