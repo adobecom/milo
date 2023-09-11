@@ -397,7 +397,9 @@ export const getConfig = async (originalState, strs = {}) => {
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
         ',',
-      )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
+      )}&secondSource=${state.showSecondarySource ? state.secondSource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
+        ',',
+      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
@@ -632,6 +634,8 @@ export const defaultState = {
   placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],
+  secondaryTags: [],
+  secondSource: [],
   setCardBorders: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
