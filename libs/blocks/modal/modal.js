@@ -34,6 +34,7 @@ export function sendAnalytics(event) {
 function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
+  document.body.classList.remove('modal-open');
   window.dispatchEvent(closeEvent);
   const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
   const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
@@ -107,7 +108,7 @@ export async function sendViewportDimensionsOnRequest(messageInfo) {
 
 export async function getModal(details, custom) {
   if (!(details?.path || custom)) return null;
-
+  document.body.classList.add('modal-open');
   const { id } = details || custom;
 
   const dialog = createTag('div', { class: 'dialog-modal', id });
