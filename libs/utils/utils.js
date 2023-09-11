@@ -120,9 +120,6 @@ export const MILO_EVENTS = {
   DEFERRED: 'milo:deferred',
   LCP_LOADED: 'milo:LCP:loaded',
 };
-
-const PLAY_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" fill="none" class="play-icon">
-                    <path d="M24 16.0005L0 32L1.39876e-06 0L24 16.0005Z" fill="white"/>`;
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
 
