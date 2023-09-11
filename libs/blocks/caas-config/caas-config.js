@@ -388,12 +388,18 @@ const TagsPanel = ({ tagsData }) => {
     });
   };
 
+  const secondarySourcePanel = html`
+    <${DropdownSelect} options=${defaultOptions.source} prop="secondSource" label="Secondary Source" />
+    <${DropdownSelect} options=${contentTypeTags} prop="secondContentTypes" label="Secondary Content Type Tags" />`;
+
   return html`
     <${DropdownSelect}
       options=${contentTypeTags}
       prop="contentTypeTags"
       label="Content Type Tags"
     />
+    <${Input} label="Use a secondary source for some content types" prop="showSecondarySource" type="checkbox" />
+    ${context.state.showSecondarySource && secondarySourcePanel}
     <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
     <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
     <label>Complex Queries (Include & Exclude)</label>
