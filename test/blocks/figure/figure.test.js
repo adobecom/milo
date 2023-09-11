@@ -57,7 +57,6 @@ describe('init', () => {
   it('should have play button', () => {
     const blockEl = sections[4].querySelector('.figure');
     init(blockEl);
-    const figureBlock = document.querySelectorAll('.figure')[4];
-    expect(figureBlock.querySelector('span.modal-img-link')).to.exist;
+    expect(sections[4].querySelector('span.modal-img-link')).to.exist;
   });
 });
