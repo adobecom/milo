@@ -105,7 +105,7 @@ export async function replaceText(text, config, regex = /{{(.*?)}}|%7B%7B(.*?)%7
   if (!matches.length) {
     return text;
   }
-  const keys = Array.from(matches, (match) => match[1] ? match[1] : match[2]);
+  const keys = Array.from(matches, (match) => (match[1] ? match[1] : match[2]));
   const placeholders = await replaceKeyArray(keys, config, sheet);
   // The .shift method is very slow, thus using normal iterator
   let i = 0;
