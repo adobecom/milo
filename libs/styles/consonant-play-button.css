@@ -43,14 +43,15 @@
   background-color: var(--color-accent-down);
 }
 
-.modal-img-link .consonant-play-btn:active {
-  outline: none;
-  background-color: var(--color-accent-down);
-}
-
 .modal-img-link .consonant-play-btn.btn-small:focus,
 .modal-img-link .consonant-play-btn.btn-small:focus-visible {
   outline: 2px solid var(--link-color-dark);
+}
+
+.modal-img-link .consonant-play-btn:active,
+.modal-img-link .consonant-play-btn.btn-small:active {
+  outline: none;
+  background-color: var(--color-accent-down);
 }
 
 .modal-img-link .consonant-play-btn .play-icon-container {
@@ -95,6 +96,11 @@
   .modal-img-link .consonant-play-btn.btn-large:focus,
   .modal-img-link .consonant-play-btn.btn-large:focus-visible {
     outline: 3px solid var(--link-color-dark);
+  }
+
+  .modal-img-link .consonant-play-btn.btn-large:active {
+    outline: none;
+    background-color: var(--color-accent-down);
   }
 
   .modal-img-link .consonant-play-btn.btn-large .play-icon-container {
