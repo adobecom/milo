@@ -1,4 +1,4 @@
-import { getMetadata, localizeLink } from '../../../../utils/utils.js';
+import { getMetadata } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
 
 const metadata = {
@@ -35,12 +35,6 @@ const setBreadcrumbSEO = (breadcrumbs) => {
   document.head.append(script);
 };
 
-const localizeEntries = (anchor) => {
-  if (!anchor) return;
-  const href = anchor.getAttribute('href');
-  anchor.setAttribute('href', localizeLink(href));
-};
-
 const createBreadcrumbs = (element) => {
   if (!element) return null;
   const ul = element.querySelector('ul');
@@ -58,12 +52,10 @@ const createBreadcrumbs = (element) => {
     .split(',')
     .map((item) => item.trim()) || [];
 
-  ul.querySelectorAll('li').forEach(
-    (li) => {
-      if (hiddenEntries.includes(li.innerText?.toLowerCase().trim())) return li.remove();
-      return localizeEntries(li.querySelector('a'));
-    },
-  );
+  ul.querySelectorAll('li').forEach((li) => {
+    if (hiddenEntries.includes(li.innerText?.toLowerCase().trim())) li.remove();
+  });
+
   const breadcrumbs = toFragment`
     <div class="feds-breadcrumbs-wrapper">
       <nav class="feds-breadcrumbs" aria-label="Breadcrumb">${ul}</nav>

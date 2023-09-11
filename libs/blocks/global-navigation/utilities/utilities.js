@@ -110,14 +110,13 @@ export async function loadDecorateMenu() {
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
+  const clone = elem.cloneNode(true);
+  clone.className = `feds-cta feds-cta--${modifier}`;
+  clone.setAttribute('daa-ll', getAnalyticsValue(clone.textContent, index));
+
   return toFragment`
     <div class="feds-cta-wrapper">
-      <a
-        href="${elem.href}"
-        class="feds-cta feds-cta--${modifier}"
-        daa-ll="${getAnalyticsValue(elem.textContent, index)}">
-          ${elem.textContent}
-      </a>
+      ${clone}
     </div>`;
 }
 
