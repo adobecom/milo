@@ -120,6 +120,7 @@ export const MILO_EVENTS = {
   DEFERRED: 'milo:deferred',
   LCP_LOADED: 'milo:LCP:loaded',
 };
+
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
 
