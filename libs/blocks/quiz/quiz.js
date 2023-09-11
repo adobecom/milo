@@ -194,6 +194,18 @@ const App = () => {
   }, [userSelection]);
 
   /**
+   * Resets focus to the top of the quiz block for accessibility.
+   * To ensure that the next keyboard tab will focus the first avaiable quiz option.
+   */
+  const resetFocus = () => {
+    const quiz = document.querySelector('.quiz');
+    const focuser = createTag('button', { tabindex: 0 });
+    quiz.prepend(focuser);
+    focuser.focus();
+    quiz.removeChild(focuser);
+  };
+
+  /**
    * Handler of the next button click. Checks whether any next view exists or not.
    * Takes care of the user flow and updates the state accordingly.
    * @param {Object} selCards - Selected cards
@@ -229,6 +241,7 @@ const App = () => {
     if (lastStopValue && lastStopValue === 'RESET') {
       setTotalSteps(totalSteps - 1);
     }
+    resetFocus();
   };
 
   let minSelections = 0;
