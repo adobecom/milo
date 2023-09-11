@@ -498,7 +498,7 @@
   }
 
   .aside.split.no-media:not(.notification) .foreground.container .text {
-    padding: var(--spacing-xxxl) 0 var(--spacing-xxxl) 0;
+    padding: var(--spacing-xxxl) 0;
   }  
 }
 
