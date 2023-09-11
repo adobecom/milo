@@ -1,8 +1,9 @@
 .marquee {
   position: relative;
-  color: #FFF;
+  color: var(--color-white);
   display: flex;
 }
+
 .marquee.large.standard {
   min-height: 560px;
 }
@@ -21,7 +22,7 @@
 }
 
 .marquee.mobile-dark {
-  color: #FFF;
+  color: var(--color-white);
 }
 
 .marquee .foreground {
@@ -317,7 +318,7 @@
   }
 
   .marquee.tablet-dark {
-    color: #FFF;
+    color: var(--color-white);
   }
   
   .marquee .media {
@@ -447,7 +448,7 @@
   }
 
   .marquee.desktop-dark {
-    color: #FFF;
+    color: var(--color-white);
   }
   
   .marquee .foreground {
