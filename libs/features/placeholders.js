@@ -101,8 +101,7 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
 export async function replaceText(text, config, regex = /{{(.*?)}}/g, sheet = 'default') {
   if (typeof text !== 'string' || !text.length) return '';
 
-  const matches = [...text.
-    matchAll(new RegExp(regex))];
+  const matches = [...text.matchAll(new RegExp(regex))];
   if (!matches.length) {
     return text;
   }
