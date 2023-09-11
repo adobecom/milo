@@ -395,14 +395,12 @@ function checkForExpBlock(name, expBlocks) {
 }
 
 function decorateSectionAnalytics(section) {
-  const sectionFirstClass = section.classList.length > 1 ? `--${section.classList[1]}` : '';
-  section.setAttribute('daa-lh', `s${Number(section.dataset.idx) + 1}${sectionFirstClass}`);
+  section.setAttribute('daa-lh', `s${Number(section.dataset.idx) + 1}`);
+}
+
+function decorateBlockAnalytics(section) {
   section.querySelectorAll('[data-block="true"]').forEach((block, idx) => {
-    if (block.hasAttribute('daa-lh')) {
-      block.setAttribute('daa-lh', `b${idx + 1}--${block.getAttribute('daa-lh')}`);
-    } else {
-      block.setAttribute('daa-lh', `b${idx + 1}--${[...block.classList].slice(0, 2).join('--')}`);
-    }
+    block.setAttribute('daa-lh', `b${idx + 1}`);
     block.removeAttribute('data-block');
   });
 }
@@ -413,10 +411,15 @@ function processTrackingLabels(text, charLimit) {
 }
 
 export function decorateDefaultLinkAnalytics(block) {
-  if (!block.className.includes('metadata') && !block.classList.contains('link-block')) {
+  if (block.classList.length
+    && !block.className.includes('metadata')
+    && !block.classList.contains('link-block')
+    && !block.classList.contains('section')
+    && block.nodeName === 'DIV') {
     block.dataset.block = 'true';
     let header = '';
     let linkCount = 1;
+    const blockName = block.classList[0] || '';
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .heading-title').forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (!item.hasAttribute('daa-ll')) {
@@ -425,7 +428,7 @@ export function decorateDefaultLinkAnalytics(block) {
             label = item.getAttribute('title') || item.getAttribute('aria-label') || item.querySelector('img')?.getAttribute('alt') || 'no label';
           }
           label = processTrackingLabels(label, 30);
-          item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
+          item.setAttribute('daa-ll', `${label}-${linkCount}|${header}|${blockName}`);
         }
         linkCount += 1;
       } else {
@@ -929,13 +932,14 @@ export async function loadArea(area = document) {
     await Promise.all(loaded);
 
     section.blocks.forEach((block) => decorateDefaultLinkAnalytics(block));
-    if (isDoc) decorateSectionAnalytics(section.el);
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') {
       window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
       loadPostLCP(config);
     }
+
+    if (isDoc) decorateSectionAnalytics(section.el);
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
@@ -944,6 +948,9 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
+    document.querySelectorAll('.section[daa-lh]').forEach((section) => {
+      decorateBlockAnalytics(section);
+    });
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
       // eslint-disable-next-line import/no-cycle
