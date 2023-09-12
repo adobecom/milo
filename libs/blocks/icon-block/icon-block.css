@@ -439,8 +439,8 @@
     grid-template-columns: repeat(5, 1fr) !important;
   }
 
-  [class*='grid-width-6'] .icon-block.fullwidth .foreground,
-  [class*='grid-width-6'] .icon-block.bio .foreground {
+  .grid-width-6 .icon-block.fullwidth .foreground,
+  .grid-width-6 .icon-block.bio .foreground {
     max-width: 600px;
   }
 }
