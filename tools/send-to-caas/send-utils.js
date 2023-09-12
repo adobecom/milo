@@ -144,7 +144,7 @@ const prefixHttps = (url) => {
 };
 
 const flattenLink = (link) => {
-  let htmlElement = document.createElement('div');
+  const htmlElement = document.createElement('div');
   htmlElement.innerHTML = link;
   return htmlElement.querySelector('a').getAttribute('href');
 };
