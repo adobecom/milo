@@ -1,0 +1,9 @@
+.fragment:has(.card,.merch-card) {
+  display: flex;
+}
+
+/* .fragment:has(.merch-card) {
+  display: flex;
+} */
+
+/* :is(p, figcaption, pre, dl, ul, ol) */

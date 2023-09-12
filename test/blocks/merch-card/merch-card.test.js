@@ -67,11 +67,11 @@ describe('Merch Card', () => {
     const fragmentSection = fragment.querySelector('.section');
     const card = fragment.querySelector('.merch-card');
 
-    expect(fragment).to.be.exist;
-    expect(fragment.parentElement.children.length).to.be.equal(3);
-    expect(fragmentSection).to.not.be.exist;
+    expect(fragment).to.exist;
+    expect(fragment.parentElement.childElementCount).to.be.equal(3);
+    expect(fragmentSection).to.not.exist;
     expect(fragment.style.display).to.be.equal('flex');
-    expect(card).to.be.exist;
+    expect(card).to.exist;
     expect(card.classList.contains('consonant-Card')).to.be.true;
   });
 
