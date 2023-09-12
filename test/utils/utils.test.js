@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
+import { loadArea } from '../../libs/utils/utils.js';
 
 const utils = {};
 
@@ -400,6 +401,20 @@ describe('Utils', () => {
       const block = await utils.loadBlock(hiddenQuoteBlock);
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
+    });
+
+    it('should decorate analytics', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body-with-sections.html' });
+      loadArea();
+      expect(document.querySelector('main')?.getAttribute('daa-im'))
+        .to.equal('true');
+      const sectionTwo = document.querySelector('[daa-lh="s2"]');
+      expect(sectionTwo).to.exist;
+      /* const hiddenQuoteBlock = document.querySelector('.quote.hide-block');
+      expect(hiddenQuoteBlock).to.exist;
+      const block = await utils.loadBlock(hiddenQuoteBlock);
+      expect(block).to.be.null;
+      expect(document.querySelector('.quote.hide-block')).to.be.null; */
     });
   });
 
