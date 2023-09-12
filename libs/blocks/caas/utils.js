@@ -3,6 +3,8 @@ import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../util
 import { fetchWithTimeout } from '../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
+export const fgHeaderName = 'X-Adobe-Floodgate';
+export const fgHeaderValue = 'pink';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
@@ -291,13 +293,10 @@ const findTupleIndex = (fgHeader) => {
  * @returns requestHeaders
  */
 const addFloodgateHeader = (state) => {
-  const fgHeader = 'X-Adobe-Floodgate';
-  const fgHeaderValue = 'pink';
-
   // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
-  requestHeaders.splice(findTupleIndex(fgHeader, 1));
+  requestHeaders.splice(findTupleIndex(fgHeaderName, 1));
   if (state.fetchCardsFromFloodgateTree) {
-    requestHeaders.push([fgHeader, fgHeaderValue]);
+    requestHeaders.push([fgHeaderName, fgHeaderValue]);
   }
   return requestHeaders;
 };
