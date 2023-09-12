@@ -26,7 +26,7 @@ document.body.classList.add('tool', 'tool-ost');
 export function createLinkMarkup(
   offerSelectorId,
   type,
-  { offer_id: offerId, name: offerName, commitment, planType },
+  { name: offerName, commitment, planType },
   placeholderOptions,
   promotionCode,
   location = window.location,
@@ -41,7 +41,6 @@ export function createLinkMarkup(
     const url = new URL(location.protocol + location.host);
     url.pathname = '/tools/ost';
     url.searchParams.set('osi', offerSelectorId);
-    url.searchParams.set('offerId', offerId);
     url.searchParams.set('type', type);
 
     if (promotionCode) {
