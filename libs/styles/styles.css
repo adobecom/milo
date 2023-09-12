@@ -482,6 +482,7 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 .con-block.xxl-spacing-static-bottom { padding-bottom: var(--spacing-xxl-static); }
 .con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
+div[class*='-up'] .con-block.full-width { grid-column: 1 /-1; }
 div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
 div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
 div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
