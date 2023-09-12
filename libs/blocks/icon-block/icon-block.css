@@ -56,7 +56,7 @@
   font-size: var(--type-body-m-size);
 }
 
-.icon-block.fullwidth .foreground .text-content .action-area a,
+.icon-block.full-width .foreground .text-content .action-area a,
 .icon-block .foreground .text-content .action-area.supplemental-text a {
   font-weight: bold;
 }
@@ -89,7 +89,7 @@
   min-width: var(--icon-size-xl);
 }
 
-.icon-block.fullwidth .foreground .icon-area {
+.icon-block.full-width .foreground .icon-area {
   margin-bottom: var(--spacing-m);
 }
 
@@ -136,7 +136,7 @@
   margin-top: var(--spacing-s);
 }
 
-.icon-block.fullwidth.small .foreground .icon-area,
+.icon-block.full-width.small .foreground .icon-area,
 .icon-block.vertical.small .foreground .icon-area {
   margin-bottom: var(--spacing-s);
 }
@@ -145,7 +145,7 @@
   margin-bottom: var(--spacing-m);
 }
 
-.five-up .icon-block:not(.fullwidth) .foreground .icon-area {
+.five-up .icon-block:not(.full-width) .foreground .icon-area {
   max-height: 48px;
   max-width: 147px;
   margin-bottom: var(--spacing-xs);
@@ -155,7 +155,7 @@
   width: fit-content;
 }
 
-.five-up .icon-block:not(.fullwidth) .foreground .icon-area img {
+.five-up .icon-block:not(.full-width) .foreground .icon-area img {
   max-height: 48px;
   max-width: 147px;
 }
@@ -218,7 +218,7 @@
   margin-bottom: 0;
 }
 
-.icon-block.fullwidth .foreground .text-content .action-area {
+.icon-block.full-width .foreground .text-content .action-area {
   justify-content: center;
 }
 
@@ -227,7 +227,7 @@
   flex-direction: column;
 }
 
-.icon-block:not(.small.fullwidth) .foreground .text-content .action-area {
+.icon-block:not(.small.full-width) .foreground .text-content .action-area {
   white-space: initial;
   display: flex;
   flex-wrap: wrap;
@@ -245,7 +245,7 @@
   margin-bottom: var(--spacing-s);
 }
 
-.icon-block.fullwidth .foreground,
+.icon-block.full-width .foreground,
 .icon-block.bio .foreground {
   width: var(--grid-container-width);
   margin: 0 auto;
@@ -277,17 +277,17 @@
   line-height: var(--type-body-xs-lh);
 }
 
-.icon-block.fullwidth.small .foreground .text-content .action-area > a:not(.con-button) {
+.icon-block.full-width.small .foreground .text-content .action-area > a:not(.con-button) {
   display: block;
   margin-top: var(--spacing-s);
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
 }
 
-.two-up .icon-block.fullwidth,
-.three-up .icon-block.fullwidth,
-.four-up .icon-block.fullwidth,
-.five-up .icon-block.fullwidth {
+.two-up .icon-block.full-width,
+.three-up .icon-block.full-width,
+.four-up .icon-block.full-width,
+.five-up .icon-block.full-width {
   grid-column: 1 /-1;
 }
 
@@ -329,7 +329,7 @@
 }
 
 @media screen and (min-width: 1200px) {
-  .icon-block.fullwidth .foreground,
+  .icon-block.full-width .foreground,
   .icon-block.bio .foreground {
     max-width: 800px;
     margin: 0 auto;
