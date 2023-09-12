@@ -650,114 +650,114 @@
     "data": [
       {
         "product": "ps-edu",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ps-edu",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ps",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-ps",
+        "marquee": "path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "ps-bus",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ps-bus",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ps",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-ps",
+        "marquee": "path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "ps-ind",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ps-ind",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ps",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-ps",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "lr-edu",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-lr-edu",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-lr",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-lr",
+        "marquee": "/path/to/marquee",
+        "card-list": "",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "lr-bus",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-lr-bus",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-lr",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-lr",
+        "marquee": "/path/to/marquee",
+        "card-list": "",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "lr-ind",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-lr-ind",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-lr",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-lr",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "pr-edu",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-pr-edu",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-pr",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "pr-bus",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-pr-bus",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-pr",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "pr-ind",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-pr-ind",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-pr",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "ae",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ae",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ae",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "an-ind",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-an",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
         "commerce-card": "/fragments/card/animate",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
-        "check-bullet": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/bullet1,https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/bullet2"
+        "marquee-product": "",
+        "check-bullet": "path/to/bullet1,path/to/bullet2"
       },
       {
         "product": "au",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-au",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-au",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-au",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "id",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-id",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-id",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-id",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
         "product": "ai",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ai",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
-        "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ai",
-        "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-ai",
+        "marquee": "/path/to/marquee",
+        "card-list": "/path/to/cardlist",
+        "commerce-card": "/path/to/commerce-card",
+        "marquee-product": "",
         "check-bullet": ""
       },
       {
@@ -818,7 +818,7 @@
       },
       {
         "product": "express",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-express",
+        "marquee": "/path/to/marquee",
         "card-list": "",
         "commerce-card": "",
         "marquee-product": "",
@@ -826,8 +826,8 @@
       },
       {
         "product": "cc",
-        "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-cc",
-        "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+        "marquee": "/path/to/marquee",
+        "card-list": "q",
         "commerce-card": "",
         "marquee-product": "",
         "check-bullet": ""
@@ -858,7 +858,7 @@
       {
         "result": "(ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)&(ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)",
         "umbrella-result": "cc",
-        "url": "https://uar-integration--milo--adobecom.hlx.page/drafts/colloyd/uar-results-block/uar-results",
+        "url": "/path/to/result",
         "basic-fragments": "marquee, card-list",
         "nested-fragments-primary": "",
         "nested-fragments-secondary": "marquee-product, commerce-card"
@@ -866,7 +866,7 @@
       {
         "result": "(ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)",
         "umbrella-result": "",
-        "url": "https://uar-integration--milo--adobecom.hlx.page/drafts/colloyd/uar-results-block/uar-results",
+        "url": "/path/to/result",
         "basic-fragments": "marquee, card-list",
         "nested-fragments-primary": "check-bullet,marquee-plan",
         "nested-fragments-secondary": "commerce-card"
@@ -874,7 +874,7 @@
       {
         "result": "(3d,ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)&(3d,ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)",
         "umbrella-result": "3d-umbrella",
-        "url": "recommend-3d.html",
+        "url": "/path/to/result",
         "basic-fragments": "marquee, card-list",
         "nested-fragments-primary": "",
         "nested-fragments-secondary": ""
@@ -882,7 +882,7 @@
       {
         "result": "default",
         "umbrella-result": "",
-        "url": "https://uar-integration--milo--adobecom.hlx.page/drafts/colloyd/uar-results-block/uar-results",
+        "url": "/path/to/result",
         "basic-fragments": "marquee, card-list",
         "nested-fragments-primary": "",
         "nested-fragments-secondary": "commerce-card"
@@ -890,7 +890,7 @@
       {
         "result": "express",
         "umbrella-result": "",
-        "url": "https://uar-integration--milo--adobecom.hlx.page/drafts/borges/uar-marquee-samples/animate-results",
+        "url": "/path/to/result",
         "basic-fragments": "marquee, card-list",
         "nested-fragments-primary": "",
         "nested-fragments-secondary": "commerce-card"

@@ -14,7 +14,7 @@ const {
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
-const QUIZ_BASE_PATH = 'https://main--milo--adobecom.hlx.page/delta/app-recommender/';
+const QUIZ_BASE_PATH = 'https://mockdata/path/to/quiz';
 
 setConfig(conf);
 
@@ -50,10 +50,12 @@ describe('Quiz', () => {
     expect(analyticsType).to.be.a.string;
     expect(analyticsQuiz).to.be.a.string;
   });
+
   it('Checking quiz data', async () => {
     expect(mockQuestionsData).to.be.an('object');
     expect(mockDataStrings).to.be.an('object');
   });
+
   it('Checking general next button functionality', async () => {
     const selectedQuestion = { 'max-selections': '3', 'min-selections': '1', questions: 'q-category' };
     const userInputSelections = { photo: true };
@@ -64,11 +66,11 @@ describe('Quiz', () => {
       userInputSelections,
       [],
     );
-    expect(nextQuizViews).to.be.an('array');
-    expect(nextQuizViews.length).to.equal(2);
+    expect(nextQuizViews).to.be.an('array').of.length(2);
     expect(nextQuizViews).to.include('q-photo');
     expect(nextQuizViews).to.include('q-rather');
   });
+
   it('Checking next button functionality when selection has a (NOT)', async () => {
     const selectedQuestion = { 'max-selections': '3', 'min-selections': '1', questions: 'q-category' };
     const userInputSelections = { photo: true, '3d': true };
@@ -82,6 +84,7 @@ describe('Quiz', () => {
     expect(nextQuizViews).does.not.include('q-rather');
     expect(nextQuizViews).that.includes('q-photo');
   });
+
   it('Checking next button functionality when selection has a (RESET)', async () => {
     const selectedQuestion = { questions: 'q-rather', 'max-selections': '1', 'min-selections': '1' };
     const userInputSelections = { template: true };
@@ -96,6 +99,7 @@ describe('Quiz', () => {
     expect(nextQuizViews).does.not.include('q-photo');
     expect(nextQuizViews).that.includes('q-customer');
   });
+
   it('Checking next button analytics data', async () => {
     const analyticsDataForBtn = getAnalyticsDataForBtn(null, {});
     expect(analyticsDataForBtn).to.equal('');
@@ -105,11 +109,13 @@ describe('Quiz', () => {
     const analyticsDataForBtnQCat = getAnalyticsDataForBtn(selectedQuestion, selectedCards);
     expect(analyticsDataForBtnQCat).to.equal('Filters|cc:app-reco|q-category/photo');
   });
+
   it('Checking analytics data for local storage', async () => {
     const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
     expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
+
   it('Testing structured fragments', async () => {
     const resultResources = await readFile({ path: './mocks/result-resources.json' });
     const primaryProducts = ['express'];
@@ -118,6 +124,7 @@ describe('Quiz', () => {
     expect(structuredFrags).to.be.an('array');
     expect(structuredFrags.length).to.be.equal(1);
   });
+
   it('Testing nested fragments', async () => {
     const resultResources = await readFile({ path: './mocks/result-resources.json' });
     const nestedFragsPrimaryArray = ['check-bullet', 'marquee-plan'];
@@ -136,12 +143,14 @@ describe('Quiz', () => {
     expect(nestedFrags).to.be.an('object');
     expect(nestedFrags).to.include.keys('commerce-card');
   });
+
   it('Testing redirect url', async () => {
     const primaryProducts = ['express'];
-    const structuredFrags = getRedirectUrl('https://uar-integration--milo--adobecom.hlx.page/drafts/colloyd/uar-results-block/uar-results', primaryProducts);
+    const structuredFrags = getRedirectUrl('https://mockdata/path/to/quiz/uar-results', primaryProducts);
     expect(structuredFrags).to.be.an('string');
     expect(structuredFrags).to.include('express');
   });
+
   it('Testing result flow', async () => {
     const { destinationPage, primaryProductCodes } = await findAndStoreResultData(
       transformToFlowData(userSelection),
@@ -151,11 +160,13 @@ describe('Quiz', () => {
     expect(primaryProductCodes).to.include('lr-ind');
     expect(primaryProductCodes).to.include('pr-ind');
   });
+
   it('Testing how the result data is parsed', async () => {
     const resultObject = await parseResultData(answers);
     expect(resultObject).to.be.an('object');
     expect(resultObject).to.have.ownProperty('filteredResults');
   });
+
   it('Testing a direct product match and its recommendations', async () => {
     const matchingSelections = { primary: ['express'], secondary: [] };
     const matches = findMatchForSelections(resultRules, matchingSelections);
@@ -165,10 +176,12 @@ describe('Quiz', () => {
     expect(notMatched).to.be.an('array');
     expect(notMatched[0]).to.haveOwnProperty('result').eq('default');
   });
+
   it('Testing transformToFlowData', async () => {
     const flowData = transformToFlowData(userSelection);
     expect(flowData).to.be.an('array').of.length(5);
   });
+
   it('Testing storeResultInLocalStorage', async () => {
     const resultResources = await readFile({ path: './mocks/result-resources.json' });
     const primaryProducts = [

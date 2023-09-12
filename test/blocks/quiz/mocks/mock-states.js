@@ -56,7 +56,7 @@ export const resultRules = [
   {
     result: '(ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)&(ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)',
     'umbrella-result': 'cc',
-    url: 'https://uar-integration--milo--adobecom.hlx.page/drafts/colloyd/uar-results-block/uar-results',
+    url: '/path/to/result',
     'basic-fragments': 'marquee, card-list',
     'nested-fragments-primary': '',
     'nested-fragments-secondary': 'marquee-product, commerce-card',
@@ -64,7 +64,7 @@ export const resultRules = [
   {
     result: '(ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)',
     'umbrella-result': '',
-    url: 'https://uar-integration--milo--adobecom.hlx.page/drafts/colloyd/uar-results-block/uar-results',
+    url: '/path/to/result',
     'basic-fragments': 'marquee, card-list',
     'nested-fragments-primary': 'check-bullet,marquee-plan',
     'nested-fragments-secondary': 'commerce-card',
@@ -72,7 +72,7 @@ export const resultRules = [
   {
     result: '(3d,ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)&(3d,ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)',
     'umbrella-result': '3d-umbrella',
-    url: 'recommend-3d.html',
+    url: '/path/to/result',
     'basic-fragments': 'marquee, card-list',
     'nested-fragments-primary': '',
     'nested-fragments-secondary': '',
@@ -80,7 +80,7 @@ export const resultRules = [
   {
     result: 'default',
     'umbrella-result': '',
-    url: 'https://uar-integration--milo--adobecom.hlx.page/drafts/colloyd/uar-results-block/uar-results',
+    url: '/path/to/result',
     'basic-fragments': 'marquee, card-list',
     'nested-fragments-primary': '',
     'nested-fragments-secondary': 'commerce-card',
@@ -88,7 +88,7 @@ export const resultRules = [
   {
     result: 'express',
     'umbrella-result': '',
-    url: 'https://uar-integration--milo--adobecom.hlx.page/drafts/borges/uar-marquee-samples/animate-results',
+    url: '/path/to/result',
     'basic-fragments': 'marquee, card-list',
     'nested-fragments-primary': '',
     'nested-fragments-secondary': 'commerce-card',
@@ -108,7 +108,7 @@ export const resultData = {
     {
       result: '(ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)&(ai,ai-edu,ai-bus,ai-ind,au-edu,au-bus,au-ind,an-edu,an-bus,an-ind,ae-edu,ae-bus,ae-ind,lr-edu,lr-bus,lr-ind,id,pr-edu,pr-bus,pr-ind,ps-bus,ps-edu,ps-ind,ac,pdf)',
       'umbrella-result': 'cc',
-      url: 'https://uar-integration--milo--adobecom.hlx.page/drafts/colloyd/uar-results-block/uar-results',
+      url: '/path/to/result',
       'basic-fragments': 'marquee, card-list',
       'nested-fragments': 'marquee-product, commerce-card',
     },
