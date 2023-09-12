@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring */
-import { decorateButtons } from '../../utils/decorate.js';
+import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
@@ -154,6 +154,7 @@ const init = (el) => {
   const styles = [...el.classList];
   const cardType = getPodType(styles);
   const merchCard = el;
+  decorateBlockHrs(el);
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
     const { width, height } = imgNode;
