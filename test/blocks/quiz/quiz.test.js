@@ -2,67 +2,82 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-const { initConfigPath } = await import('../../../libs/blocks/quiz/utils.js');
-const { default: init } = await import('../../../libs/blocks/quiz/quiz.js');
+const { initConfigPathGlob, getQuizData } = await import('../../../libs/blocks/quiz/utils.js');
+const { default: init, loadFragments } = await import('../../../libs/blocks/quiz/quiz.js');
+const QUIZ_BASE_PATH = 'https://main--milo--adobecom.hlx.page/delta/app-recommender/';
+
+let fetch; let quiz; let mockQuestionsData; let mockDataStrings;
+
+async function mockQuizResourceCall(mockFilePath, resourceType) {
+  const responseData = await readFile({ path: mockFilePath });
+  fetch.withArgs(`${QUIZ_BASE_PATH}${resourceType}.json`).resolves({ ok: true, json: () => JSON.parse(responseData) });
+}
 
 describe('Quiz', () => {
-  before(async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/quiz.html' });
-    init();
+  beforeEach(async () => {
+    fetch = sinon.stub(window, 'fetch');
+    document.body.innerHTML = await readFile({ path: './mocks/index.html' });
+    quiz = document.querySelector('.quiz');
+    initConfigPathGlob(quiz);
+    await mockQuizResourceCall('./mocks/questions.json', 'questions');
+    await mockQuizResourceCall('./mocks/strings.json', 'strings');
+    await mockQuizResourceCall('./mocks/results.json', 'results');
+    const [questions, dataStrings] = await getQuizData(quiz);
+    mockQuestionsData = questions;
+    mockDataStrings = dataStrings;
+
+    const initQuestion = {
+      questionData: {
+        questions: 'q-category',
+        'max-selections': '3',
+        'min-selections': '1',
+      },
+    };
+    const el = document.querySelector('.quiz');
+    await init(el, true, mockQuestionsData, mockDataStrings, initQuestion);
   });
 
-  it('Renders the quiz component', () => {
-    expect(document.querySelector('.quiz')).to.exist;
+  afterEach(() => {
+    sinon.restore();
   });
 
-  it('Renders the dot indicators', () => {
-    expect(document.querySelector('.dot-indicators')).to.exist;
+  it('should render the initial "Loading" html when data is not loaded', async () => {
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(document.querySelector('.quiz-option')).to.exist;
   });
 
-  it('Renders the quiz options', () => {
-    expect(document.querySelectorAll('.quiz-option').length).to.exist;
-  });
-
-  it('Renders the Next button', () => {
-    expect(document.querySelector('.quiz-btn')).to.exist;
-  });
-
-  it('Disables the Next button initially', () => {
-    expect(document.querySelector('.quiz-btn').hasAttribute('disabled')).to.be.true;
-  });
-
-  it('Selecting a quiz option enables the Next button', () => {
+  it('should update the button when an option is selected', async () => {
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 100));
     const quizOption = document.querySelector('.quiz-option');
-    const nextButton = document.querySelector('.quiz-btn');
-
     quizOption.click();
-
-    expect(nextButton.hasAttribute('disabled')).to.be.false;
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(document.querySelector('.quiz-button').hasAttribute('disabled')).to.be.false;
   });
 
-  it('Clicking Next button moves to the next step', async () => {
+  it('should update the state when the next button is clicked', async () => {
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 100));
     const quizOption = document.querySelector('.quiz-option');
-    const nextButton = document.querySelector('.quiz-btn');
-
     quizOption.click();
-    nextButton.click();
-
-    await new Promise((resolve) => setTimeout(resolve, 100)); // Allow time for the transition
-
-    expect(document.querySelectorAll('.dot')[1].classList.contains('current')).to.be.true;
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const quizButton = document.querySelector('.quiz-button');
+    quizButton.click();
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(document.querySelector('.quiz-step-container').children[1].classList.contains('current')).to.be.true;
   });
 
-  it('returns a function that concatenates quizConfigPath and filepath', () => {
-    const result = initConfigPath({ quizurl: { text: 'https://adobe.com.com/' } });
-    const innerResult = result('questions.json');
-    expect(innerResult).to.equal('https://adobe.com.com/questions.json');
-  });
-
-  it('returns a function that concatenates stringsPath and filepath if stringsPath is present', () => {
-    const urlSearchParams = sinon.stub(URLSearchParams.prototype, 'get');
-    urlSearchParams.returns('alternate-data');
-    const getConfigPath = initConfigPath({ quizurl: { text: 'https://adobe.com/' } });
-    expect(getConfigPath('config.json')).to.equal('alternate-data/config.json');
-    urlSearchParams.restore();
+  it('Loads a fragment', async () => {
+    const createFragmentStub = sinon.stub().resolves();
+    const appendSpy = sinon.spy();
+    const querySelectorStub = sinon.stub(document, 'querySelector').returns({ append: appendSpy });
+    const fragmentUrl = 'https://main--milo--adobecom.hlx.page/delta/app-recommender/fragments/test.html';
+    await loadFragments(fragmentUrl, createFragmentStub);
+    expect(querySelectorStub.calledWith('.quiz-footer')).to.be.true;
+    querySelectorStub.restore();
   });
 });
