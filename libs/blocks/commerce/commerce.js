@@ -93,23 +93,19 @@ export async function decorateOfferDetails(el, of, searchParams) {
 
 export async function handleSearch(event, el) {
   el.textContent = '';
-  try {
-    const { searchParams } = new URL(event.target.value, window.location.href);
-    const osi = searchParams.get('osi');
-    if (osi) {
-      const service = await initService();
-      const [promise] = await service.resolveOfferSelectors({ offerSelectorIds: [osi] });
-      const [offer] = await promise;
-      await decorateOfferDetails(el, offer, searchParams);
-      return;
-    }
-  } catch {
-    // ignore
+  const { searchParams } = new URL(event.target.value, window.location.href);
+  const osi = searchParams.get('osi');
+  if (osi != null) {
+    const service = await initService();
+    const [promise] = await service.resolveOfferSelectors({ offerSelectorIds: [osi] });
+    const [offer] = await promise;
+    await decorateOfferDetails(el, offer, searchParams);
+  } else {
+    const notValidUrl = document.createElement('h4');
+    notValidUrl.classList.add('not-valid-url');
+    notValidUrl.textContent = 'Not a valid offer link';
+    el.append(notValidUrl);
   }
-  const notValidUrl = document.createElement('h4');
-  notValidUrl.classList.add('not-valid-url');
-  notValidUrl.textContent = 'Not a valid offer link';
-  el.append(notValidUrl);
 }
 
 export function decorateSearch(el) {

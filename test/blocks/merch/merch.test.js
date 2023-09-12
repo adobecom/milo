@@ -1,7 +1,11 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-import merch, { buildCta, getCheckoutContext } from '../../../libs/blocks/merch/merch.js';
+import merch, {
+  buildCta,
+  getCheckoutContext,
+  priceLiteralsURL,
+} from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
@@ -9,6 +13,7 @@ import { createTag, setConfig } from '../../../libs/utils/utils.js';
 
 const config = {
   codeRoot: '/libs',
+  commerce: { priceLiteralsURL },
   env: { name: 'prod' },
 };
 
@@ -20,7 +25,7 @@ describe('Merch Block', () => {
   });
 
   before(async () => {
-    window.lana = { log: () => {} };
+    window.lana = { log: () => { } };
     document.head.innerHTML = await readFile({ path: './mocks/head.html' });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     await mockIms('CH');

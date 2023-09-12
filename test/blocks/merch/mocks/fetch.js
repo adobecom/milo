@@ -1,6 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 
+import { priceLiteralsURL } from '../../../../libs/blocks/merch/merch.js';
+
 export async function mockFetch() {
   // this path allows to import this mock from tests for other blocks (e.g. commerce)
   const literals = JSON.parse(await readFile({ path: '../merch/mocks/literals.json' }));
@@ -10,7 +12,7 @@ export async function mockFetch() {
   sinon.stub(window, 'fetch').callsFake((...args) => {
     const { href, pathname, searchParams } = new URL(String(args[0]));
     // literals mock
-    if (href === 'https://milo.adobe.com/libs/commerce/price-literals.json') {
+    if (href === priceLiteralsURL) {
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve(literals),
@@ -35,6 +37,7 @@ export async function mockFetch() {
         }),
       });
     }
+    // fallback to original fetch, should not happen!
     return fetch.apply(window, args);
   });
 }

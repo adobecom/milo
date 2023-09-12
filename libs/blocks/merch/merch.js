@@ -1,10 +1,13 @@
 import { getConfig, getMetadata, loadScript } from '../../utils/utils.js';
 
-export const CTA_PREFIX = /^CTA +/;
+export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
 export async function initService() {
   const commerce = await import('../../deps/commerce.js');
-  return commerce.init(getConfig);
+  return commerce.init(() => ({
+    ...getConfig(),
+    commerce: { priceLiteralsURL },
+  }));
 }
 
 export async function getCommerceContext(el, params) {
@@ -75,7 +78,7 @@ export async function buildCta(el, params) {
   const service = await initService();
   const cta = service.createCheckoutLink(
     context,
-    el.textContent?.replace(CTA_PREFIX, ''),
+    el.textContent?.replace(/^CTA +/, ''),
   );
   cta.classList.add('con-button');
   if (el.closest('.marquee')) {
