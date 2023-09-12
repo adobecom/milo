@@ -416,7 +416,7 @@ const props = {
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => {
-    const floodGateColor = getMetadata('floodGateColor') || '';
+    const floodGateColor = getMetadata('floodgatecolor') || '';
     return getUuid(`${options.prodUrl}${floodGateColor}`);
   },
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
@@ -459,7 +459,7 @@ const props = {
   eventduration: 0,
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
-  floodgatecolor: (s) => s || getMetadata('floodGateColor') || 'default',
+  floodgatecolor: (s) => s || getMetadata('floodgatecolor') || 'default',
   lang: async (s, options) => {
     if (s) return s;
     const { lang } = await getCountryAndLang(options);
