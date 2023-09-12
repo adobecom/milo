@@ -33,8 +33,8 @@ const decorateBlockBg = (block, node) => {
   node.classList.add('background');
 
   if (childCount === 2) {
-    children[0].classList.add(viewportsKeys[0], viewportsKeys[1]);
-    children[1].classList.add(viewportsKeys[2]);
+    children[0].classList.add(viewportsKeys[0]);
+    children[1].classList.add(viewportsKeys[1], viewportsKeys[2]);
   }
 
   [...children].forEach(async (child, index) => {
