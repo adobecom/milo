@@ -114,7 +114,7 @@
 .merch-card.special-offers.full-width {
   min-width: 100%;
   max-width: 100%;
-  width: var(--grid-container-width);
+  width: 1200px;
 }
 
 .merch-card.special-offers.center {
