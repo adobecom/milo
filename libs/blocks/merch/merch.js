@@ -1,3 +1,4 @@
+import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { getConfig, getMetadata, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
@@ -127,7 +128,9 @@ export default async function init(el) {
   const merch = await build(el, params);
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
+    const { parentNode } = el;
     el.replaceWith(merch);
+    if (build === buildCta) decorateLinkAnalytics(parentNode);
     return merch;
   }
   log.warn('Failed to get context:', { el });
