@@ -12,15 +12,16 @@ export const OptionCard = ({
       style="background-image: url('${coverImage}')">
     </div>`;
 
-  return html`<div class="quiz-option ${disabled}${selected}" data-option-name="${options}" 
-        data-option-type="${cardIcon ? 'icon' : ''}${coverImage ? 'cover-image' : ''}">
+  return html`<button class="quiz-option ${disabled}${selected}" data-option-name="${options}" 
+        data-option-type="${cardIcon ? 'icon' : ''}${coverImage ? 'cover-image' : ''}"
+        aria-pressed="${!!selected}" tabindex="${disabled ? '-1' : '0'}">
         ${cardIcon && cardIconHtml}
         ${coverImage && coverImageHtml}
         <div class="quiz-option-text-container">  
           <h3 class="quiz-option-title">${title}</h3>
           <p class="quiz-option-text">${text}</p>
         </div>
-    </div>`;
+    </button>`;
 };
 
 export const CreateOptions = ({

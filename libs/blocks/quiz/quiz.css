@@ -75,6 +75,7 @@
   margin: 0 0 16px;
   padding: 16px 24px;
   user-select: none;
+  width: 100%;
 }
 
 .quiz-option-icon {
@@ -86,6 +87,7 @@
 .quiz-option-icon img {
   height: var(--icon-size-m);
   width: var(--icon-size-m);
+  max-width: var(--icon-size-m);
 }
 
 .quiz-option-image {
@@ -116,6 +118,10 @@
 
 .quiz-option:hover {
   background-color: var(--color-white);
+}
+
+.quiz-option:focus-visible {
+  background-color: #fafafaee;
 }
 
 .quiz-option.selected {
@@ -311,6 +317,7 @@
   .quiz-option-icon img {
     height: var(--icon-size-xl);
     width: var(--icon-size-xl);
+    max-width: 100%;
   }
 
   .quiz-option-image {
