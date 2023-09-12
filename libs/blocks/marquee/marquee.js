@@ -7,18 +7,23 @@ import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/att
 import { createTag } from '../../utils/utils.js';
 
 const decorateVideo = (container, video) => {
-  if (video.attributes.getNamedItem('controls')) {
+  if (video.nodeName === 'A' && video.href.includes('.mp4')) {
+    // no special attrs handling
+    container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
+      <source src="${video.href}" type="video/mp4" />
+    </video>`;
+  } else if (video.attributes.getNamedItem('controls')) {
     video.removeAttribute('controls');
     video.setAttribute('muted', '');
     video.setAttribute('autoplay', '');
     video.setAttribute('loop', '');
 
-    const attrs = [...video.attributes].map(a => a.name).join(' ');
+    const attrs = [...video.attributes].map((a) => a.name).join(' ');
     container.innerHTML = `<video preload="metadata" ${attrs}>
         <source src="${video.firstElementChild.src}" type="video/mp4" />
       </video>`;
-    applyHoverPlay(container.firstElementChild);
   }
+  applyHoverPlay(container.firstElementChild);
   container.classList.add('has-video');
 };
 
@@ -38,7 +43,7 @@ const decorateBlockBg = (block, node) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
-    const video = child.querySelector('video');
+    const video = child.querySelector('video, a[href*=".mp4"]');
     if (video) {
       decorateVideo(child, video);
     }
@@ -133,16 +138,16 @@ export default function init(el) {
 
   if (media) {
     media.classList.add('media');
-    const video = media.querySelector('video');
+    const video = media.querySelector('video, a[href*=".mp4"]');
     if (video) {
-      decorateVideo(media.parentElement, video);
+      decorateVideo(media, video);
     } else {
       decorateImage(media);
     }
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
-  if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
+  if (firstDivInForeground?.classList.contains('media')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
