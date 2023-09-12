@@ -81,6 +81,6 @@ export default function init(el) {
   el.classList.add('con-block');
   if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'xl-spacing-static-bottom');
   // provides backwards compatibility with older icon blocks authored in documents as 'fullwidth'
-  if (el.classList.contains('fullwidth')) el.classList.add('full-width');
+  if (el.classList.contains('fullwidth')) el.classList.replace('fullwidth', 'full-width');
   decorateContent(el);
 }
