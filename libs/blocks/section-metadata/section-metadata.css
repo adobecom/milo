@@ -110,11 +110,6 @@
   justify-items: center;
 }
 
-main>.section[class*='-up']>.content {
-  max-width: initial;
-  margin: 0;
-}
-
 .section[class*='-up'].no-gap {
   gap: 0;
 }
@@ -178,17 +173,23 @@ main>.section[class*='-up']>.content {
 }
 
 .section[class*='grid-width-'] {
-  display: grid;
-  gap: var(--spacing-m);
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);
-
+  display: grid;
+  gap: var(--spacing-m);
 }
 
-@media screen and (min-width: 600px) {
+.section[class*='grid-width-'] > .content,
+main > .section[class*='-up'] > .content {
+  max-width: initial;
+  margin: 0;
+}
+
+/* (56x2=112+600=712) */
+@media screen and (min-width: 712px) {
   .section.grid-width-6 {
-    padding-left: var(--grid-margins-width-6);
-    padding-right: var(--grid-margins-width-6);
+    padding-left: calc((100vw - 600px) / 2);
+    padding-right: calc((100vw - 600px) / 2);
   }
 }
 
@@ -199,10 +200,11 @@ main>.section[class*='-up']>.content {
 
 }
 
-@media screen and (min-width: 800px) {
+/* (56x2=112+800=912) */
+@media screen and (min-width: 912px) {
   .section.grid-width-8 {
-    padding-left: var(--grid-margins-width-8);
-    padding-right: var(--grid-margins-width-8);
+    padding-left: calc((100vw - 800px) / 2);
+    padding-right: calc((100vw - 800px) / 2);
   }
 }
 
@@ -212,10 +214,11 @@ main>.section[class*='-up']>.content {
   }
 }
 
-@media screen and (min-width: 1000px) {
+/* (56x2=112+1000=1112) */
+@media screen and (min-width: 1112px) {
   .section.grid-width-10 {
-    padding-left: var(--grid-margins-width-10);
-    padding-right: var(--grid-margins-width-10);
+    padding-left: calc((100vw - 1000px) / 2);
+    padding-right: calc((100vw - 1000px) / 2);
   }
 }
 
@@ -250,5 +253,20 @@ main>.section[class*='-up']>.content {
 
   .section.grid-template-columns-3-1 {
     grid-template-columns: 3fr 1fr;
+  }
+  
+  .section.grid-width-6-desktop {
+    padding-left: var(--grid-margins-width-6);
+    padding-right: var(--grid-margins-width-6);
+  }
+  
+  .section.grid-width-8-desktop {
+    padding-left: var(--grid-margins-width-8);
+    padding-right: var(--grid-margins-width-8);
+  }
+
+  .section.grid-width-10-desktop {
+    padding-left: var(--grid-margins-width-10);
+    padding-right: var(--grid-margins-width-10);
   }
 }
