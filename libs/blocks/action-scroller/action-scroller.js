@@ -85,6 +85,6 @@ export default function init(el) {
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
     items.addEventListener('scroll', () => handleBtnState(items, buttons));
-    setTimeout(() => handleBtnState(items, buttons), 200);
+    setTimeout(() => handleBtnState(items, buttons), 400);
   }
 }

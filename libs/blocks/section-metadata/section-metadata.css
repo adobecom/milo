@@ -177,6 +177,10 @@ main>.section[class*='-up']>.content {
   background-color: var(--color-white);
 }
 
+.section[class*='-up'] .con-block.grid-full-width {
+  grid-column: 1 /-1;
+}
+
 @media (min-width: 900px) {
   .section.sticky-top {
     top: 64px;
