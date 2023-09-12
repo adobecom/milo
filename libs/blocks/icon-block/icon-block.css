@@ -266,6 +266,12 @@
   margin: 0 auto;
 }
 
+[class*='grid-width-'] .icon-block.fullwidth .foreground,
+[class*='grid-width-'] .icon-block.bio .foreground {
+  width: unset;
+  margin: 0;
+}
+
 .icon-block.bio.center .foreground,
 .icon-block.vertical.center .foreground {
   text-align: center;
