@@ -335,6 +335,11 @@
     margin: 0 auto;
   }
 
+  [class*='grid-width-6'] .icon-block.fullwidth .foreground,
+  [class*='grid-width-6'] .icon-block.bio .foreground {
+    max-width: 600px;
+  }
+
   .icon-block .foreground .text-content {
     margin: 0 auto;
   }
