@@ -43,7 +43,9 @@ const decorateBlockBg = (block, node) => {
     }
 
     // Skip the fallback if current screen size isn't matching the child's viewport.
-    if (viewportWidth >= viewports[viewportsKeys[index]]) {
+    const nextChildViewportWidth = viewports[viewportsKeys[index + 1]] || 99999;
+    if (nextChildViewportWidth > viewportWidth
+      && viewportWidth >= viewports[viewportsKeys[index]]) {
       // decorateVideo as fallback of video autoblock.
       const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
       if (videoElement) {
