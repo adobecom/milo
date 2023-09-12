@@ -62,7 +62,7 @@
 }
 
 .icon-block .foreground .icon-area {
-  margin: 0 auto;
+  margin: 0 auto var(--spacing-xs);
   max-height: var(--icon-size-xxl);
   max-width: 234px;
   overflow: hidden;
@@ -350,11 +350,6 @@
     margin: 0 auto;
   }
 
-  [class*='grid-width-6'] .icon-block.fullwidth .foreground,
-  [class*='grid-width-6'] .icon-block.bio .foreground {
-    max-width: 600px;
-  }
-
   .icon-block .foreground .text-content {
     margin: 0 auto;
   }
@@ -442,5 +437,10 @@
 
   .section.five-up {
     grid-template-columns: repeat(5, 1fr) !important;
+  }
+
+  [class*='grid-width-6'] .icon-block.fullwidth .foreground,
+  [class*='grid-width-6'] .icon-block.bio .foreground {
+    max-width: 600px;
   }
 }
