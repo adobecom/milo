@@ -35,9 +35,9 @@ const mockRes = ({ payload, status = 200 } = {}) => new Promise((resolve) => {
 
 function mockOstDeps({ failStatus = false, failMetadata = false, mockToken } = {}) {
   const options = {
-    checkoutType: 'UCv2',
     country: 'CH',
     language: 'de',
+    workflow: 'UCv2',
   };
 
   const params = {
@@ -64,7 +64,7 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken } = {
       () => (
         failMetadata
           ? mockRes({ status: 500 })
-          : mockRes({ payload: `<head><meta name="checkout-type" content="${options.checkoutType}"></head>` })
+          : mockRes({ payload: `<head><meta name="checkout-workflow" content="${options.workflow}"></head>` })
       ),
     );
 
