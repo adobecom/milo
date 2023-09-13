@@ -41,7 +41,6 @@ export const addWrapper = (el, cardType) => {
   if (fragment) {
     const fragmentSection = el.closest('.section');
     fragmentSection?.replaceWith(el);
-    fragment.classList.add('fragment-flex');
   }
   const section = el.closest('.section');
   section.classList.add('milo-card-section');

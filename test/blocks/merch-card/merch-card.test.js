@@ -70,7 +70,6 @@ describe('Merch Card', () => {
     expect(fragment).to.exist;
     expect(fragment.parentElement.childElementCount).to.be.equal(3);
     expect(fragmentSection).to.not.exist;
-    expect(fragment.classList.contains('fragment-flex')).to.be.true;
     expect(card).to.exist;
     expect(card.classList.contains('consonant-Card')).to.be.true;
   });
