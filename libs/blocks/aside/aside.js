@@ -123,14 +123,17 @@ function checkViewportPromobar(foreground) {
   if (childCount < 3) addPromobar(children[childCount - 1], foreground);
 }
 
-function combineTextBocks(textBlocks, mediaPort) {
+function combineTextBocks(iconArea, textBlocks, mediaPort) {
+  const contentArea = createTag('p', { class: 'content-area' });
   const textArea = createTag('p', { class: 'text-area' });
-  textBlocks[0].insertAdjacentElement('beforeBegin', textArea);
+  textBlocks[0].parentElement.prepend(contentArea);
   textBlocks.forEach((textBlock) => {
     textArea.appendChild(textBlock);
     if (textBlock.nodeName === 'P') textBlock.classList.add(`body-${blockConfig.promobar[mediaPort][1]}`);
     else textBlock.classList.add(`heading-${blockConfig.promobar[mediaPort][0]}`);
   });
+  if (iconArea) contentArea.appendChild(iconArea);
+  contentArea.appendChild(textArea);
 }
 
 function decoratePromobar(el) {
@@ -147,7 +150,7 @@ function decoratePromobar(el) {
       textBlocks.shift();
     }
     if (actionArea.length) textBlocks.pop();
-    if (textBlocks.length) combineTextBocks(textBlocks, mediaports[index]);
+    if (textBlocks.length) combineTextBocks(iconArea, textBlocks, mediaports[index]);
   });
   return foreground;
 }
