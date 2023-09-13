@@ -146,10 +146,7 @@ function decoratePromobar(el) {
       iconArea.classList.add('icon-area');
       textBlocks.shift();
     }
-    if (actionArea.length) {
-      actionArea[0].closest('p, div').classList.add('action-area');
-      textBlocks.pop();
-    }
+    if (actionArea.length) textBlocks.pop();
     if (textBlocks.length) combineTextBocks(textBlocks, mediaports[index]);
   });
   return foreground;
