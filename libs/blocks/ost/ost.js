@@ -25,67 +25,63 @@ const METADATA_MAPPINGS = { 'checkout-workflow': 'workflow' };
 
 document.body.classList.add('tool', 'tool-ost');
 
+const getCtaText = (options) => options.ctaText ?? 'buy-now';
+
 /**
  * @param {Commerce.Defaults} defaults
  */
-export const LinkMarkupFactory = (defaults) => (
+export const createLinkMarkup = (defaults) => (
   offerSelectorId,
   type,
   { offer_id: offerId, name: offerName, commitment, planType },
-  placeholderOptions,
+  options,
+  promo,
   location = window.location,
 ) => {
-  const { ctaText = 'buy-now' } = placeholderOptions;
-  const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
-  const createText = () => (isCheckoutPlaceholder
-    ? `CTA {{${ctaText}}}`
-    : `PRICE - ${planType} - ${offerName}`);
+  const isCta = !!type?.startsWith('checkout');
 
   const createHref = () => {
-    const url = new URL(location.protocol + location.host);
-    url.pathname = '/tools/ost';
-    url.searchParams.set('osi', offerSelectorId);
-    url.searchParams.set('offerId', offerId);
-    url.searchParams.set('type', type);
+    const params = new URLSearchParams([
+      ['osi', offerSelectorId],
+      ['offerId', offerId],
+      ['type', type],
+    ]);
+    if (promo) params.set('promo', promo);
+    if (commitment === 'PERPETUAL') params.set('perp', true);
 
-    if (commitment === 'PERPETUAL') {
-      url.searchParams.set('perp', true);
-    }
-    const toggleWorkflowStepFormat = (workflowStep) => (workflowStep
-      ? workflowStep.replace(/[_/]/g, (match) => (match === '_' ? '/' : '_'))
-      : '');
-
-    if (isCheckoutPlaceholder) {
-      url.searchParams.set('text', ctaText);
-      const { workflow, workflowStep } = placeholderOptions;
+    if (isCta) {
+      const { workflow, workflowStep } = options;
+      params.set('text', getCtaText(options));
       if (workflow !== defaults.checkoutWorkflow) {
-        url.searchParams.set('workflow', workflow);
+        params.set('workflow', workflow);
       }
-      if (workflowStep !== defaults.checkoutWorkflowStep) {
-        url.searchParams.set(
+      if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
+        params.set(
           'workflowStep',
-          toggleWorkflowStepFormat(workflowStep),
+          workflowStep.replace(/[_/]/g, (match) => (match === '_' ? '/' : '_')),
         );
       }
     } else {
-      const { displayRecurrence, displayPerUnit, displayTax } = placeholderOptions;
-      url.searchParams.set('term', displayRecurrence);
-      url.searchParams.set('seat', displayPerUnit);
-      url.searchParams.set('tax', displayTax);
+      const { displayRecurrence, displayPerUnit, displayTax } = options;
+      params.set('term', displayRecurrence);
+      params.set('seat', displayPerUnit);
+      params.set('tax', displayTax);
     }
 
-    return url.toString();
+    return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
   };
 
   const link = document.createElement('a');
-  link.textContent = createText();
+  link.textContent = isCta
+    ? `CTA {{${getCtaText(options)}}}`
+    : `PRICE - ${planType} - ${offerName}`;
   link.href = createHref();
   return link;
 };
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const { Log, defaults, getLocaleSettings } = await import('../../deps/commerce.js');
+  const { Log, Defaults, getLocaleSettings } = await import('../../deps/commerce.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
   const aosAccessToken = searchParameters.get('token');
@@ -136,7 +132,7 @@ export async function loadOstEnv() {
     aosAccessToken,
     aosApiKey: AOS_API_KEY,
     checkoutClientId: CHECKOUT_CLIENT_ID,
-    createLinkMarkup: LinkMarkupFactory(defaults),
+    createLinkMarkup: createLinkMarkup(Defaults),
     country,
     environment,
     language,
