@@ -10,7 +10,7 @@ import {
 } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
-async function loadFragments(fragmentURL) {
+export async function loadFragments(fragmentURL) {
   const quizSections = document.querySelector('.quiz-footer');
   const a = createTag('a', { href: fragmentURL });
   quizSections.append(a);
@@ -18,13 +18,16 @@ async function loadFragments(fragmentURL) {
   await createFragment(a);
 }
 
-const App = () => {
-  const [questionData, setQuestionData] = useState({});
-  const [stringData, setStringData] = useState({});
-  const [isDataLoaded, setDataLoaded] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [questionList, setQuestionList] = useState({});
-  const [stringQuestionList, setStringQuestionList] = useState({});
+const App = ({
+  initialIsDataLoaded = false,
+  preQuestions = {}, initialStrings = {},
+}) => {
+  const [questionData, setQuestionData] = useState(preQuestions.questionData || {});
+  const [stringData, setStringData] = useState(initialStrings || {});
+  const [isDataLoaded, setDataLoaded] = useState(initialIsDataLoaded);
+  const [selectedQuestion, setSelectedQuestion] = useState(preQuestions || null);
+  const [questionList, setQuestionList] = useState(preQuestions.questionList || {});
+  const [stringQList, setStringQList] = useState(preQuestions.stringQList || {});
   const [userSelection, updateUserSelection] = useState([]);
   const [userFlow, setUserFlow] = useState([]);
   const [selectedCards, setSelectedCards] = useState({});
@@ -53,35 +56,12 @@ const App = () => {
       dataStrings.questions.data.forEach((question) => {
         strMap[question.q] = question;
       });
-      const initialUrlParamsKeys = Object.keys(initialUrlParams);
-      const hasInValidParam = initialUrlParamsKeys
-        .some((key) => !VALID_QUESTIONS.includes(key) && !KNOWN_PARAMS.includes(key));
 
-      const filteredParams = initialUrlParamsKeys
-        .filter((key) => !KNOWN_PARAMS.includes(key));
-      const lastParamKey = filteredParams[filteredParams.length - 1];
-      const selectedCardOptions = {};
-      if (hasInValidParam) {
-        setUserFlow([questions.questions.data[0].questions]);
-      } else {
-        if (typeof initialUrlParams[lastParamKey] === 'object') {
-          Object.keys(initialUrlParams[lastParamKey]).forEach((option) => {
-            selectedCardOptions[initialUrlParams[lastParamKey][option]] = true;
-          });
-        }
-        const paramCountSelectedCards = Object.keys(selectedCardOptions).length;
-        if (lastParamKey) {
-          setSelectedCards(selectedCardOptions);
-          setCountOfSelectedCards(paramCountSelectedCards);
-          setUserFlow([lastParamKey]);
-        } else {
-          setUserFlow([questions.questions.data[0].questions]);
-        }
-      }
+      setUserFlow([questions.questions.data[0].questions]);
 
       setStringData(dataStrings);
       setQuestionData(questions);
-      setStringQuestionList(strMap);
+      setStringQList(strMap);
       setQuestionList(qMap);
 
       // wait for data to load
@@ -90,7 +70,8 @@ const App = () => {
       // add quiz class to page
       document.body.classList.add('quiz-page');
     })();
-  }, [setQuestionData, setStringData, setStringQuestionList, setQuestionList]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setQuestionData, setStringData, setStringQList, setQuestionList]);
 
   useEffect(() => {
     function handlePopState() {
@@ -109,7 +90,7 @@ const App = () => {
   useEffect(() => {
     if (userFlow.length) {
       const currentFlow = userFlow.shift();
-      if (!currentFlow.length) {
+      if (!currentFlow?.length) {
         return;
       }
       setSelectedQuestion(questionList[currentFlow] || []);
@@ -157,6 +138,7 @@ const App = () => {
         return newParam;
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuestion, selectedCards, JSON.stringify(urlParam)]);
 
   /**
@@ -243,7 +225,6 @@ const App = () => {
     }
     resetFocus();
   };
-
   let minSelections = 0;
   let maxSelections = 10;
 
@@ -277,21 +258,21 @@ const App = () => {
   useEffect(() => {
     const getStringValue = (propName) => {
       if (!selectedQuestion) return '';
-      const question = stringQuestionList[selectedQuestion.questions];
+      const question = stringQList[selectedQuestion.questions];
       return question ? question[propName] || '' : '';
     };
     const fragmentURL = getStringValue('footerFragment');
     if (fragmentURL) {
       loadFragments(fragmentURL);
     }
-  }, [selectedQuestion, stringQuestionList]);
+  }, [selectedQuestion, stringQList]);
 
   if (!isDataLoaded || !selectedQuestion) {
     return html`<div class="quiz-load">Loading</div>`;
   }
 
   const getStringValue = (propName) => {
-    const question = stringQuestionList[selectedQuestion.questions];
+    const question = stringQList[selectedQuestion.questions];
     return question ? question[propName] || '' : '';
   };
   const getOptionsIcons = (optionsType, prop) => {
@@ -340,8 +321,17 @@ const App = () => {
               </div>`;
 };
 
-export default async function init(el) {
+export default async function init(
+  el,
+  initialIsDataLoaded = false,
+  preQuestions = {},
+  initialStrings = {},
+) {
   initConfigPathGlob(el);
   el.replaceChildren();
-  render(html`<${App} />`, el);
+  render(html`<${App} 
+    initialIsDataLoaded=${initialIsDataLoaded} 
+    preQuestions=${preQuestions} 
+    initialStrings=${initialStrings} 
+  />`, el);
 }

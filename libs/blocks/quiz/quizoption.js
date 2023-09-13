@@ -28,7 +28,7 @@ export const CreateOptions = ({
   options, handleCardSelection, selectedCards, countSelectedCards = 0, maxSelections,
   getOptionsIcons,
 }) => html`
-      ${options.data.map((option, index) => (
+      ${options?.data.map((option, index) => (
     html`<div key=${index} onClick=${handleCardSelection(option)}>
           <${OptionCard} 
             text=${option.text}
