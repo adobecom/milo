@@ -86,10 +86,6 @@
   font-weight: 500;
 }
 
-.merch-card .consonant-PlansCard-title h5 {
-  color: var(--color-gray-700);
-}
-
 .merch-card.segment-blade {
   position: relative;
   display: flex;
@@ -263,10 +259,17 @@
   background-color: transparent;
 }
 
+.merch-card.inline-heading .consonant-SegmentBlade-inner {
+  display: grid;
+  column-gap: 12px;
+  align-items: center;
+  grid-template-columns: 40px 1fr;
+}
+
 .merch-card ul[class$="-list"] {
   list-style: none;
   margin: 0;
-  padding-left: 8px;
+  padding-left: var(--spacing-xxs);
   position: relative;
   font-size: var(--type-body-xs-size);
   line-height: 1.5;
