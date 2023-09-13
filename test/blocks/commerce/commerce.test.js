@@ -6,7 +6,7 @@ import init, {
   decorateOfferDetails,
   decorateSearch,
   filterOfferDetails,
-  handleSearch,
+  handleOfferSearch,
 } from '../../../libs/blocks/commerce/commerce.js';
 
 import { mockFetch, unmockFetch } from '../merch/mocks/fetch.js';
@@ -116,7 +116,7 @@ describe('Merch Block', () => {
       const el = document.createElement('div');
       const ev = { target: { value: '/tools/ost?osi=0' } };
       document.body.append(el);
-      await handleSearch(ev, el);
+      await handleOfferSearch(ev, el);
       expect(el.querySelector('.offer-detail')).to.be.not.null;
     });
   });

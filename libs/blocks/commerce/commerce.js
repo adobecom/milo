@@ -91,7 +91,7 @@ export async function decorateOfferDetails(el, of, searchParams) {
   el.append(offerDetailsList);
 }
 
-export async function handleSearch(event, el) {
+export async function handleOfferSearch(event, el) {
   el.textContent = '';
   const { searchParams } = new URL(event.target.value, window.location.href);
   const osi = searchParams.get('osi');
@@ -117,7 +117,7 @@ export function decorateSearch(el) {
   el.append(offerDetailsWrapper);
   search.addEventListener(
     'keyup',
-    debounce((event) => handleSearch(event, offerDetailsWrapper), 500),
+    debounce((event) => handleOfferSearch(event, offerDetailsWrapper), 500),
   );
 }
 
