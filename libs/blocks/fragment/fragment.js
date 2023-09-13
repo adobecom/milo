@@ -34,9 +34,6 @@ const updateFragMap = (fragment, a, href) => {
 export default async function init(a) {
   const { expFragments } = getConfig();
   let relHref = localizeLink(a.href);
-
-  if (relHref.endsWith('marquee-anchors')) return;
-
   if (expFragments?.[relHref]) {
     a.href = expFragments[relHref];
     relHref = expFragments[relHref];
