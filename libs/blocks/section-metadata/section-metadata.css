@@ -88,13 +88,13 @@
   width: 100%;
 }
 
-.section.center .content>h1,
-.section.center .content>h2,
-.section.center .content>h3,
-.section.center .content>h4,
-.section.center .content>h5,
-.section.center .content>h6,
-.section.center .content>p {
+.section.center .content > h1,
+.section.center .content > h2,
+.section.center .content > h3,
+.section.center .content > h4,
+.section.center .content > h5,
+.section.center .content > h6,
+.section.center .content > p {
   text-align: center;
 }
 
@@ -185,14 +185,6 @@ main > .section[class*='-up'] > .content {
   margin: 0;
 }
 
-/* (56x2=112+600=712) */
-@media screen and (min-width: 712px) {
-  .section.grid-width-6 {
-    padding-left: calc((100vw - 600px) / 2);
-    padding-right: calc((100vw - 600px) / 2);
-  }
-}
-
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -200,8 +192,14 @@ main > .section[class*='-up'] > .content {
 
 }
 
-/* (56x2=112+800=912) */
-@media screen and (min-width: 912px) {
+@media screen and (min-width: 720px) {
+  .section.grid-width-6 {
+    padding-left: calc((100vw - 600px) / 2);
+    padding-right: calc((100vw - 600px) / 2);
+  }
+}
+
+@media screen and (min-width: 920px) {
   .section.grid-width-8 {
     padding-left: calc((100vw - 800px) / 2);
     padding-right: calc((100vw - 800px) / 2);
@@ -214,8 +212,8 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-/* (56x2=112+1000=1112) */
-@media screen and (min-width: 1112px) {
+
+@media screen and (min-width: 1120px) {
   .section.grid-width-10 {
     padding-left: calc((100vw - 1000px) / 2);
     padding-right: calc((100vw - 1000px) / 2);
