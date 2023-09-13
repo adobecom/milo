@@ -8,7 +8,7 @@ const RESULTS_EP_NAME = 'results.json';
 
 let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
 
-export const initConfigPath = (quizMetaData) => {
+const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.quizurl.text.toLowerCase();
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
@@ -63,11 +63,16 @@ export const getUrlParams = () => {
   return params;
 };
 
+export const handleResultFlow = async (answers = []) => {
+  const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
+  window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+};
+
 /**
  * Handling the result flow from here. Will need to make sure we capture all
  * the data so that we can come back.
  */
-export const handleResultFlow = async (answers = []) => {
+export const findAndStoreResultData = async (answers = []) => {
   const entireResultData = await parseResultData(answers);
   const resultData = entireResultData.filteredResults;
   const { resultResources } = entireResultData;
@@ -91,7 +96,10 @@ export const handleResultFlow = async (answers = []) => {
     secondaryProductCodes,
     umbrellaProduct,
   );
-  window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  return {
+    destinationPage,
+    primaryProductCodes,
+  };
 };
 
 export const storeResultInLocalStorage = (
