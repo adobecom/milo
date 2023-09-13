@@ -122,7 +122,7 @@
   white-space: nowrap;
 }
 
-.aside:not(.notification) .foreground.container .text > * {
+.aside:not(.notification):not(.promobar) .foreground.container .text > * {
   width: 100%;
 }
 
@@ -504,6 +504,53 @@
   width: auto;
 }
 
+.aside.promobar .foreground.container {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+}
+
+.aside.promobar .foreground.container .icon-area {
+  margin-bottom: 0;
+  height: var(--icon-size-m);
+}
+
+.aside.promobar .foreground.container .icon-area img {
+  height: var(--icon-size-m);
+}
+
+.aside.promobar .foreground.container .promo-text.desktop-only,
+.aside.promobar .foreground.container .promo-text.tablet-only {
+  display: none;
+}
+
+.aside.promobar .foreground.container .promo-text.mobile-only {
+  display: flex;
+}
+
+.aside.promobar .foreground.container > .promo-text {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--spacing-xs);
+  justify-content: space-between;
+  align-items: center;
+  width: var(--grid-container-width);
+  padding: var(--spacing-xs) 0;
+}
+
+.aside.promobar .foreground.container .promo-text .action-area {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+[dir="rtl"] .aside.promobar .foreground.container .promo-text .action-area {
+  margin-right: auto;
+  margin-left: 0;
+}
+
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
     align-items: center;
@@ -747,6 +794,15 @@
     height: var(--icon-size-xxl);
     border-radius: 50%;
   }
+
+  .aside.promobar .foreground.container .promo-text.mobile-only,
+  .aside.promobar .foreground.container .promo-text.desktop-only {
+    display: none;
+  }
+
+  .aside.promobar .foreground.container .promo-text.tablet-only {
+    display: flex;
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -893,5 +949,31 @@
 
   .aside.notification.medium .foreground.container .text+.image {
     margin-right: 0;
+  }
+
+  .aside.promobar .foreground.container {
+    min-height: 0;
+  }
+
+  .aside.promobar .foreground.container .text {
+    min-height: 0;
+  }
+
+  .aside.promobar .foreground.container .icon-area {
+    height: var(--icon-size-xxl);
+  }
+
+  .aside.promobar .foreground.container .icon-area img {
+    height: var(--icon-size-xxl);
+  }
+
+  .aside.promobar .foreground.container .promo-text.mobile-only,
+  .aside.promobar .foreground.container .promo-text.tablet-only {
+    display: none;
+  }
+
+  .aside.promobar .foreground.container .promo-text.desktop-only {
+    display: flex;
+    gap: var(--spacing-m);
   }
 }

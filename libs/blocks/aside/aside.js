@@ -105,11 +105,46 @@ function decorateBlockBg(block, node) {
   }
 }
 
+function decoratePromobar(el) {
+  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
+  const foreground = el.querySelector('.foreground')
+  const childCount = foreground.childElementCount;
+  const { children } = foreground;
+  [...children].forEach((child, index) => {
+    child.classList.add('promo-text');
+    child.classList.add(viewports[index]);
+    const iconArea = child.querySelector('picture').closest('p');
+    iconArea?.classList.add('icon-area');
+    const actionArea = child.querySelectorAll('em a, strong a, p > a strong');
+    const promoTxtAreas = [...child.children];
+    if (iconArea) promoTxtAreas.shift();
+    if (actionArea) {
+      promoTxtAreas.pop();
+      actionArea[0].closest('p, div').classList.add('action-area');
+    }
+    const headings = child.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    [...headings].forEach(h => {
+      h.classList.add('heading-s');
+    });
+    if (promoTxtAreas.length) {
+      const promoText = createTag('p', {class: 'text-area'});
+      promoTxtAreas[0].insertAdjacentElement('beforeBegin', promoText);
+      promoTxtAreas.forEach(txtArea => {
+        promoText.appendChild(txtArea);
+      });
+    }
+  });
+  if (childCount < 3) children[childCount - 1].classList.add(viewports[2]);
+  if (childCount < 2) children[childCount - 1].classList.add(viewports[1]);
+  return foreground;
+}
+
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
+  if (el.classList.contains('promobar')) return decoratePromobar(el);
   if (el.classList.contains('split')) decorateMedia(el);
   const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
