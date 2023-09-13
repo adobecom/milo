@@ -86,6 +86,10 @@
   font-weight: 500;
 }
 
+.merch-card .consonant-PlansCard-title h5 {
+  color: var(--color-gray-700);
+}
+
 .merch-card.segment-blade {
   position: relative;
   display: flex;
