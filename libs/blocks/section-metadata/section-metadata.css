@@ -189,7 +189,6 @@ main > .section[class*='-up'] > .content {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
-
 }
 
 @media screen and (min-width: 720px) {
@@ -211,7 +210,6 @@ main > .section[class*='-up'] > .content {
     top: 64px;
   }
 }
-
 
 @media screen and (min-width: 1120px) {
   .section.grid-width-10 {
