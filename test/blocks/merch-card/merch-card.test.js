@@ -78,6 +78,8 @@ describe('Merch Card', () => {
       const plansCard = document.querySelector('.consonant-ProductCard');
       const iconsWrapper = document.querySelector('.consonant-PlansCard-iconWrapper');
       const icons = iconsWrapper.querySelectorAll('.consonant-MerchCard-ProductIcon');
+      const list = document.querySelector('.consonant-PlansCard-list');
+      const listItems = list.querySelectorAll('li');
 
       expect(plansCard).to.be.exist;
       expect(plansCard.style.border).to.be.equal('1px solid rgb(237, 204, 45)');
@@ -93,6 +95,11 @@ describe('Merch Card', () => {
       expect(buttons[0].textContent).to.be.equal('Learn More');
       expect(buttons[1].textContent).to.be.equal('Save now');
       expect(secureWrapper).to.be.exist;
+      expect(list).to.be.exist;
+      expect(list.classList.contains('consonant-PlansCard-list')).to.be.true;
+      expect(listItems.length).to.be.equal(2);
+      expect(listItems[0].textContent).to.be.equal('Maecenas porttitor congue massa');
+      expect(listItems[1].textContent).to.be.equal('Nunc viverra imperdiet enim.');
 
       expect(checkBoxContainer.querySelector('.checkMark')).to.be.exist;
       expect(checkBoxContainer.querySelector('.checkbox-label').textContent).to.be.equal('Lorem ipsum dolor sit amet');
