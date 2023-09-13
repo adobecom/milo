@@ -31,7 +31,7 @@ const blockConfig = {
     [medium]: ['s', 's'],
     [large]: ['l', 'm'],
   },
-  'promobar': {
+  promobar: {
     'mobile-only': ['s', 's'],
     'tablet-only': ['s', 's'],
     'desktop-only': ['m', 'l'],
@@ -111,7 +111,7 @@ function decorateBlockBg(block, node) {
   }
 }
 
-function createViewportPromobar(sourceEl, parent) {
+function addPromobar(sourceEl, parent) {
   const newPromo = sourceEl.cloneNode(true);
   parent.appendChild(newPromo);
 }
@@ -119,22 +119,22 @@ function createViewportPromobar(sourceEl, parent) {
 function checkViewportPromobar(foreground) {
   const childCount = foreground.childElementCount;
   const { children } = foreground;
-  if (childCount < 2) createViewportPromobar(children[childCount - 1], foreground);
-  if (childCount < 3) createViewportPromobar(children[childCount - 1], foreground);
+  if (childCount < 2) addPromobar(children[childCount - 1], foreground);
+  if (childCount < 3) addPromobar(children[childCount - 1], foreground);
 }
 
 function combineTextBocks(textBlocks, mediaPort) {
-  const textArea = createTag('p', {class: 'text-area'});
+  const textArea = createTag('p', { class: 'text-area' });
   textBlocks[0].insertAdjacentElement('beforeBegin', textArea);
-  textBlocks.forEach(textBlock => {
+  textBlocks.forEach((textBlock) => {
     textArea.appendChild(textBlock);
-    if (textBlock.nodeName != 'P') textBlock.classList.add(`heading-${blockConfig['promobar'][mediaports[mediaPort]][0]}`);
-    else textBlock.classList.add(`body-${blockConfig['promobar'][mediaports[mediaPort]][1]}`);
+    if (textBlock.nodeName === 'P') textBlock.classList.add(`body-${blockConfig.promobar[mediaPort][1]}`);
+    else textBlock.classList.add(`heading-${blockConfig.promobar[mediaPort][0]}`);
   });
 }
 
 function decoratePromobar(el) {
-  const foreground = el.querySelector('.foreground')
+  const foreground = el.querySelector('.foreground');
   if (foreground.childElementCount !== 3) checkViewportPromobar(foreground);
   [...foreground.children].forEach((child, index) => {
     child.className = mediaports[index];
@@ -145,12 +145,12 @@ function decoratePromobar(el) {
     if (iconArea) {
       iconArea.classList.add('icon-area');
       textBlocks.shift();
-    };
-    if (actionArea) {
+    }
+    if (actionArea.length) {
       actionArea[0].closest('p, div').classList.add('action-area');
       textBlocks.pop();
     }
-    if (textBlocks.length) combineTextBocks(textBlocks, index);
+    if (textBlocks.length) combineTextBocks(textBlocks, mediaports[index]);
   });
   return foreground;
 }
