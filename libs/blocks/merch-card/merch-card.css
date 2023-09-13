@@ -254,12 +254,23 @@
   background-color: transparent;
 }
 
-.merch-card.inline-heading .consonant-SegmentBlade-inner {
-  display: grid;
-  column-gap: 12px;
-  align-items: center;
-  grid-template-columns: 40px 1fr;
+.merch-card ul[class$="-list"] {
+  list-style: none;
+  margin: 0;
+  padding-left: 8px;
+  position: relative;
+  font-size: var(--type-body-xs-size);
+  line-height: 1.5;
+  color: var(--color-black);
 }
+
+.merch-card li[class$="-list-item"]::before {
+  content: "\B7";
+  left: 0;
+  position: absolute;
+
+}
+
 
 .merch-card.inline-heading .consonant-SegmentBlade-description,
 .merch-card.inline-heading .consonant-CardFooter {

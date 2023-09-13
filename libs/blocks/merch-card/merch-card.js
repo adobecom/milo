@@ -89,6 +89,7 @@ const addInner = (el, altCta, cardType, merchCard) => {
   const merch = styles.includes('merch-card');
   const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
   const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
+  const list = el.querySelector('ul');
 
   const inner = el.querySelector(':scope > div:not([class])');
   inner.classList.add(`consonant-${cardType}-inner`);
@@ -97,6 +98,11 @@ const addInner = (el, altCta, cardType, merchCard) => {
 
   inner.prepend(title);
   inner.append(description);
+  if (list) {
+    list.classList.add(`consonant-${cardType}-list`);
+    list.querySelectorAll('li').forEach((li) => li.classList.add(`consonant-${cardType}-list-item`));
+    inner.append(list);
+  }
   addFooter(links, inner, merchCard);
   decorateFooter(el, altCta, cardType);
   merchCard.append(inner);
