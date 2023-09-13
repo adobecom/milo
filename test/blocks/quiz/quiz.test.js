@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 const { initConfigPathGlob, getQuizData } = await import('../../../libs/blocks/quiz/utils.js');
-const { default: init, loadFragments } = await import('../../../libs/blocks/quiz/quiz.js');
+const { default: init } = await import('../../../libs/blocks/quiz/quiz.js');
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 const QUIZ_BASE_PATH = 'https://mockdata/path/to/quiz';
@@ -27,7 +27,6 @@ describe('Quiz', () => {
     await mockQuizResourceCall('./mocks/questions.json', 'questions.json');
     await mockQuizResourceCall('./mocks/strings.json', 'strings.json');
     await mockQuizResourceCall('./mocks/results.json', 'results.json');
-    // await mockQuizResourceCall('./mocks/fragment.html', 'fragment.html');
     const [questions, dataStrings] = await getQuizData(quiz);
     mockQuestionsData = questions;
     mockDataStrings = dataStrings;
