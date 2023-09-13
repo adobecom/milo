@@ -12,7 +12,7 @@ const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERS
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
-export const WCS_ENV = 'production';
+export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 
 /**
@@ -90,6 +90,7 @@ export async function loadOstEnv() {
   const searchParameters = new URLSearchParams(window.location.search);
   const aosAccessToken = searchParameters.get('token');
   searchParameters.delete('token');
+  const environment = searchParameters.get('env') ?? WCS_ENV;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
@@ -137,7 +138,7 @@ export async function loadOstEnv() {
     checkoutClientId: CHECKOUT_CLIENT_ID,
     createLinkMarkup: LinkMarkupFactory(defaults),
     country,
-    environment: WCS_ENV,
+    environment,
     language,
     searchParameters,
     wcsApiKey: WCS_API_KEY,
