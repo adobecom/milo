@@ -116,12 +116,17 @@ function createViewportPromobar(sourceEl, parent) {
   parent.appendChild(newPromo);
 }
 
-function decoratePromobar(el) {
-  const foreground = el.querySelector('.foreground')
+function checkViewportPromobar(foreground) {
   const childCount = foreground.childElementCount;
   const { children } = foreground;
   if (childCount < 2) createViewportPromobar(children[childCount - 1], foreground);
   if (childCount < 3) createViewportPromobar(children[childCount - 1], foreground);
+}
+
+function decoratePromobar(el) {
+  const foreground = el.querySelector('.foreground')
+  if (foreground.childElementCount !== 3) checkViewportPromobar(foreground);
+  const { children } = foreground;
   [...children].forEach((child, index) => {
     child.className = mediaports[index];
     child.classList.add('promo-text');
