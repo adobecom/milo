@@ -108,7 +108,7 @@ class Footer {
 
     if (!html) return null;
 
-    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g, 'feds');
+    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
 
     try {
       return new DOMParser().parseFromString(parsedHTML, 'text/html').body;

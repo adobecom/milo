@@ -677,7 +677,7 @@ export default async function init(header) {
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
   if (!html) return null;
-  const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g, 'feds');
+  const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
 
   try {
     const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
