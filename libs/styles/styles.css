@@ -2,6 +2,8 @@
  /*** Variables ***/
 
  :root {
+  --feds-totalheight-nav: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+
   /* Colors */
   --link-color: #035fe6;
   --link-hover-color: #136ff6;
@@ -529,11 +531,6 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 }
 
 /*** Global Styles ***/
-
-:root {
-  --feds-totalheight-nav: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
-}
-
 @font-face {
   font-family: 'Trebuchet MS';
   font-weight: 700;
@@ -692,6 +689,19 @@ div:not([class]) > div > div > img[src^="./media_"] {
   margin: 0 auto;
 }
 
+picture.bg-img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+picture.bg-img img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
 .section .section-background img {
   object-fit: cover;
   height: 100%;
@@ -746,20 +756,6 @@ div[data-failed="true"]::before {
   background: #ff00a0;
   font-weight: 700;
   display: block;
-}
-
-/* Utilities */
-picture.bg-img {
-  display: block;
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-
-picture.bg-img img {
-  object-fit: cover;
-  height: 100%;
-  width: 100%;
 }
 
 .milo-card-section {
