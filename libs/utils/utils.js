@@ -27,7 +27,6 @@ const MILO_BLOCKS = [
   'featured-article',
   'figure',
   'fragment',
-  'fragment-personalization',
   'featured-article',
   'global-footer',
   'global-navigation',
@@ -90,6 +89,10 @@ const AUTO_BLOCKS = [
   { video: '.mp4' },
   { merch: '/tools/ost?' },
   { 'offer-preview': '/tools/commerce' },
+];
+const DO_NOT_INLINE = [
+  'columns',
+  'z-pattern',
 ];
 
 const ENVS = {
@@ -180,6 +183,9 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
+      config.doNotInline = conf.doNotInline
+        ? [...DO_NOT_INLINE, ...conf.doNotInline]
+        : DO_NOT_INLINE;
       const lang = getMetadata('content-language') || config.locale.ietf;
       document.documentElement.setAttribute('lang', lang);
       try {
@@ -665,11 +671,15 @@ function decorateSection(section, idx) {
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
 
+  const { doNotInline } = getConfig();
   const blockLinks = [...blocks].reduce((blkLinks, block) => {
+    const blockName = block.classList[0];
     links.forEach((link) => {
       if (!block.contains(link)) return;
 
-      if (link.classList.contains('fragment')) {
+      if (link.classList.contains('fragment')
+        && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
+        && !doNotInline.includes(blockName)) {
         link.href = `${link.href}#_inline`;
         blkLinks.inlineFrags.push(link);
       } else if (link.classList.contains('link-block')) {
