@@ -21,7 +21,7 @@ const initConfigPath = (quizMetaData) => {
 const initQuizKey = () => {
   const { locale } = getConfig();
   quizKey = metaData.storagepath?.text;
-  return locale.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
+  return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
 };
 
 const initAnalyticsType = () => metaData['analytics-type']?.text;
