@@ -444,9 +444,4 @@
   .section.five-up {
     grid-template-columns: repeat(5, 1fr) !important;
   }
-
-  .grid-width-6 .icon-block.fullwidth .foreground,
-  .grid-width-6 .icon-block.bio .foreground {
-    max-width: 600px;
-  }
 }
