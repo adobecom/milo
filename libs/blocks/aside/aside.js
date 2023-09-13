@@ -123,31 +123,34 @@ function checkViewportPromobar(foreground) {
   if (childCount < 3) createViewportPromobar(children[childCount - 1], foreground);
 }
 
+function combineTextBocks(textBlocks, mediaPort) {
+  const textArea = createTag('p', {class: 'text-area'});
+  textBlocks[0].insertAdjacentElement('beforeBegin', textArea);
+  textBlocks.forEach(textBlock => {
+    textArea.appendChild(textBlock);
+    if (textBlock.nodeName != 'P') textBlock.classList.add(`heading-${blockConfig['promobar'][mediaports[mediaPort]][0]}`);
+    else textBlock.classList.add(`body-${blockConfig['promobar'][mediaports[mediaPort]][1]}`);
+  });
+}
+
 function decoratePromobar(el) {
   const foreground = el.querySelector('.foreground')
   if (foreground.childElementCount !== 3) checkViewportPromobar(foreground);
-  const { children } = foreground;
-  [...children].forEach((child, index) => {
+  [...foreground.children].forEach((child, index) => {
     child.className = mediaports[index];
     child.classList.add('promo-text');
-    const iconArea = child.querySelector('picture').closest('p');
-    iconArea?.classList.add('icon-area');
+    const textBlocks = [...child.children];
+    const iconArea = child.querySelector('picture')?.closest('p');
     const actionArea = child.querySelectorAll('em a, strong a, p > a strong');
-    const promoTxtAreas = [...child.children];
-    if (iconArea) promoTxtAreas.shift();
+    if (iconArea) {
+      iconArea.classList.add('icon-area');
+      textBlocks.shift();
+    };
     if (actionArea) {
-      promoTxtAreas.pop();
       actionArea[0].closest('p, div').classList.add('action-area');
+      textBlocks.pop();
     }
-    if (promoTxtAreas.length) {
-      const promoText = createTag('p', {class: 'text-area'});
-      promoTxtAreas[0].insertAdjacentElement('beforeBegin', promoText);
-      promoTxtAreas.forEach(txtArea => {
-        promoText.appendChild(txtArea);
-        if (txtArea.nodeName != 'P') txtArea.classList.add(`heading-${blockConfig['promobar'][mediaports[index]][0]}`);
-        else txtArea.classList.add(`body-${blockConfig['promobar'][mediaports[index]][1]}`);
-      });
-    }
+    if (textBlocks.length) combineTextBocks(textBlocks, index);
   });
   return foreground;
 }
