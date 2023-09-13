@@ -3,6 +3,25 @@ import { getConfig, getMetadata, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
+export async function polyfills() {
+  if (polyfills.done) return;
+  polyfills.done = true;
+  let isSupported = false;
+  document.createElement('div', {
+    // eslint-disable-next-line getter-return
+    get is() {
+      isSupported = true;
+    },
+  });
+  /* c8 ignore start */
+  if (!isSupported) {
+    const { codeRoot, miloLibs } = getConfig();
+    const base = miloLibs || codeRoot;
+    await loadScript(`${base}/deps/custom-elements.js`);
+  }
+  /* c8 ignore stop */
+}
+
 export async function initService() {
   const commerce = await import('../../deps/commerce.js');
   return commerce.init(() => ({
@@ -74,63 +93,41 @@ export async function getPriceContext(el, params) {
 }
 
 export async function buildCta(el, params) {
+  const large = !!el.closest('.marquee');
+  const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
+  await polyfills();
   const service = await initService();
-  const cta = service.createCheckoutLink(
-    context,
-    el.textContent?.replace(/^CTA +/, ''),
-  );
+  const text = el.textContent?.replace(/^CTA +/, '');
+  const cta = service.createCheckoutLink(context, text);
   cta.classList.add('con-button');
-  if (el.closest('.marquee')) {
-    cta.classList.add('button-l');
-  }
-  if (el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG') {
-    cta.classList.add('blue');
-  }
+  cta.classList.toggle('button-l', large);
+  cta.classList.toggle('blue', strong);
   return cta;
 }
 
 async function buildPrice(el, params) {
   const context = await getPriceContext(el, params);
   if (!context) return null;
+  await polyfills();
   const service = await initService();
   const price = service.createInlinePrice(context);
   return price;
 }
 
-export async function polyfill() {
-  if (polyfill.done) return;
-  polyfill.done = true;
-  let isSupported = false;
-  document.createElement('div', {
-    // eslint-disable-next-line getter-return
-    get is() {
-      isSupported = true;
-    },
-  });
-  /* c8 ignore start */
-  if (!isSupported) {
-    const { codeRoot, miloLibs } = getConfig();
-    const base = miloLibs || codeRoot;
-    await loadScript(`${base}/deps/custom-elements.js`);
-  }
-  /* c8 ignore stop */
-}
-
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
-  await polyfill();
-  const { searchParams: params } = new URL(el.href);
+  const { searchParams } = new URL(el.href);
+  const isCta = searchParams.get('type') === 'checkoutUrl';
+  const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
   const service = await initService();
   const log = service.log.module('merch');
-  const build = params.get('type') === 'checkoutUrl' ? buildCta : buildPrice;
-  const merch = await build(el, params);
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
     const { parentNode } = el;
     el.replaceWith(merch);
-    if (build === buildCta) decorateLinkAnalytics(parentNode);
+    if (isCta) decorateLinkAnalytics(parentNode);
     return merch;
   }
   log.warn('Failed to get context:', { el });
