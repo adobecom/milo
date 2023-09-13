@@ -1,5 +1,5 @@
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
-import { getConfig, getMetadata, loadScript } from '../../utils/utils.js';
+import { getConfig, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
@@ -57,13 +57,8 @@ export async function getCheckoutContext(el, params) {
   const { settings } = await initService();
   const { checkoutClientId } = settings;
   const checkoutMarketSegment = params.get('marketSegment');
-  const checkoutWorkflow = params.get('workflow')
-    ?? getMetadata('checkout-workflow')
-    ?? settings.checkoutWorkflow;
-  const checkoutWorkflowStep = params
-    ?.get('workflowStep')
-    ?.replace('_', '/')
-    ?? settings.checkoutWorkflowStep;
+  const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
+  const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   return {
     ...context,
     checkoutClientId,

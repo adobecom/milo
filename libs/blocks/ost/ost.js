@@ -3,6 +3,7 @@ import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
+export const DEFAULT_CTA_TEXT = 'buy-now';
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
@@ -25,41 +26,35 @@ const METADATA_MAPPINGS = { 'checkout-workflow': 'workflow' };
 
 document.body.classList.add('tool', 'tool-ost');
 
-const getCtaText = (options) => options.ctaText ?? 'buy-now';
-
 /**
  * @param {Commerce.Defaults} defaults
  */
 export const createLinkMarkup = (defaults) => (
   offerSelectorId,
   type,
-  { offer_id: offerId, name: offerName, commitment, planType },
+  offer,
   options,
   promo,
-  location = window.location,
 ) => {
   const isCta = !!type?.startsWith('checkout');
 
   const createHref = () => {
     const params = new URLSearchParams([
       ['osi', offerSelectorId],
-      ['offerId', offerId],
+      ['offerId', offer.offer_id],
       ['type', type],
     ]);
     if (promo) params.set('promo', promo);
-    if (commitment === 'PERPETUAL') params.set('perp', true);
+    if (offer.commitment === 'PERPETUAL') params.set('perp', true);
 
     if (isCta) {
       const { workflow, workflowStep } = options;
-      params.set('text', getCtaText(options));
-      if (workflow !== defaults.checkoutWorkflow) {
+      params.set('text', options.ctaText ?? DEFAULT_CTA_TEXT);
+      if (workflow && workflow !== defaults.checkoutWorkflow) {
         params.set('workflow', workflow);
       }
       if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
-        params.set(
-          'workflowStep',
-          workflowStep.replace(/[_/]/g, (match) => (match === '_' ? '/' : '_')),
-        );
+        params.set('workflowStep', workflowStep);
       }
     } else {
       const { displayRecurrence, displayPerUnit, displayTax } = options;
@@ -67,14 +62,14 @@ export const createLinkMarkup = (defaults) => (
       params.set('seat', displayPerUnit);
       params.set('tax', displayTax);
     }
-
+    const { location } = window;
     return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
   };
 
   const link = document.createElement('a');
   link.textContent = isCta
-    ? `CTA {{${getCtaText(options)}}}`
-    : `PRICE - ${planType} - ${offerName}`;
+    ? `CTA {{${options.ctaText ?? DEFAULT_CTA_TEXT}}}`
+    : `PRICE - ${offer.planType} - ${offer.name}`;
   link.href = createHref();
   return link;
 };
