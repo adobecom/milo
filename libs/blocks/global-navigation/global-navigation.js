@@ -451,9 +451,18 @@ class Gnav {
     const getImageEl = () => {
       const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
       if (svgImg) return svgImg;
+    const getImageEl = () => {
+      const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
+      if (svgImg) return svgImg;
 
       const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
         || imgRegex.test(blockLink.textContent));
+      return getBrandImage(image);
+    };
+
+    const imageEl = renderImage
+      ? toFragment`<span class="${classPrefix}-image">${getImageEl()}</span>`
+      : '';
       return getBrandImage(image);
     };
 
@@ -465,9 +474,13 @@ class Gnav {
     const labelEl = renderLabel
       ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
       : '';
+    const labelEl = renderLabel
+      ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
+      : '';
 
     // Create final template
     const decoratedElem = toFragment`
+      <a href="${link.href}" class="${classPrefix}" daa-ll="${analyticsValue}">
       <a href="${link.href}" class="${classPrefix}" daa-ll="${analyticsValue}">
         ${imageEl}
         ${labelEl}
@@ -610,9 +623,12 @@ class Gnav {
         const linkElem = item.querySelector('a');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
+        linkElem.className = 'feds-navLink';
+        linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
 
         const linkTemplate = toFragment`
           <div class="feds-navItem">
+            ${linkElem}
             ${linkElem}
           </div>`;
         return linkTemplate;
@@ -632,9 +648,11 @@ class Gnav {
     if (!this.el.classList.contains('has-breadcrumbs')) return null;
     if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
     const breadcrumbsElem = this.el.querySelector('.breadcrumbs');
+    if (!breadcrumbsElem) return null;
     // Breadcrumbs are not initially part of the nav, need to decorate the links
-    if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
+    decorateLinks(breadcrumbsElem);
     const createBreadcrumbs = await loadBlock('../features/breadcrumbs/breadcrumbs.js');
+    this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
     return this.elements.breadcrumbsWrapper;
   };
