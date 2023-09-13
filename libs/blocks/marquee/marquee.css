@@ -1,8 +1,9 @@
 .marquee {
   position: relative;
-  color: #FFF;
+  color: var(--color-white);
   display: flex;
 }
+
 .marquee.large.standard {
   min-height: 560px;
 }
@@ -16,8 +17,12 @@
   margin-bottom: 0;
 }
 
-.marquee.light, .marquee.quiet, .marquee.inline {
+.marquee.light, .marquee.mobile-light, .marquee.quiet, .marquee.inline {
   color: var(--text-color);
+}
+
+.marquee.mobile-dark {
+  color: var(--color-white);
 }
 
 .marquee .foreground {
@@ -159,6 +164,10 @@
   background-color: black;
 }
 
+.marquee.large.mobile-light {
+  background-color: initial;
+}
+
 .marquee.large .text {
   display: flex;
   flex-direction: column;
@@ -296,6 +305,22 @@
     display: block;
   }
 
+  .marquee.large.tablet-dark {
+    background-color: black;
+  }
+
+  .marquee.large.tablet-light {
+    background-color: initial;
+  }
+
+  .marquee.tablet-light {
+    color: var(--text-color);
+  }
+
+  .marquee.tablet-dark {
+    color: var(--color-white);
+  }
+  
   .marquee .media {
     width: var(--grid-container-width); /* 10 grid / 83% */
   }
@@ -410,6 +435,22 @@
     display: block;
   }
 
+  .marquee.large.desktop-dark {
+    background-color: black;
+  }
+
+  .marquee.large.desktop-light {
+    background-color: initial;
+  }
+
+  .marquee.desktop-light {
+    color: var(--text-color);
+  }
+
+  .marquee.desktop-dark {
+    color: var(--color-white);
+  }
+  
   .marquee .foreground {
     flex-direction: row;
     align-items: center;
