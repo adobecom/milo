@@ -185,6 +185,11 @@
   font-size: var(--type-body-xs-size);
 }
 
+.merch-card .consonant-SpecialOffers-description p em,
+.merch-card .consonant-PlansCard-description p em {
+  color: var(--color-gray-700);
+}
+
 .merch-card.special-offers h4 {
   font-size: var(--type-body-xxs-size);
   text-transform: uppercase;

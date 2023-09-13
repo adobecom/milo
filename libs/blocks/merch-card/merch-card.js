@@ -20,9 +20,6 @@ const getPodType = (styles) => {
   const authoredType = styles?.find((style) => style in cardTypes);
   return cardTypes[authoredType] || SEGMENT_BLADE;
 };
-
-const createDescription = (rows, cardType) => createTag('div', { class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
-
 const createTitle = (titles, cardType) => {
   const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
   titles?.forEach((title) => titleWrapper.appendChild(title));
@@ -94,7 +91,7 @@ const addInner = (el, altCta, cardType, merchCard) => {
   const inner = el.querySelector(':scope > div:not([class])');
   inner.classList.add(`consonant-${cardType}-inner`);
   const title = createTitle(titles, cardType);
-  const description = createDescription(rows, cardType, inner);
+  const description = createTag('div', { class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
 
   inner.prepend(title);
   inner.append(description);
