@@ -132,7 +132,10 @@ function combineTextBocks(iconArea, textBlocks, mediaPort) {
     if (textBlock.nodeName === 'P') textBlock.classList.add(`body-${blockConfig.promobar[mediaPort][1]}`);
     else textBlock.classList.add(`heading-${blockConfig.promobar[mediaPort][0]}`);
   });
-  if (iconArea) contentArea.appendChild(iconArea);
+  if (iconArea) {
+    iconArea.classList.add('icon-area');
+    contentArea.appendChild(iconArea);
+  }
   contentArea.appendChild(textArea);
 }
 
@@ -145,10 +148,7 @@ function decoratePromobar(el) {
     const textBlocks = [...child.children];
     const iconArea = child.querySelector('picture')?.closest('p');
     const actionArea = child.querySelectorAll('em a, strong a, p > a strong');
-    if (iconArea) {
-      iconArea.classList.add('icon-area');
-      textBlocks.shift();
-    }
+    if (iconArea) textBlocks.shift();
     if (actionArea.length) textBlocks.pop();
     if (textBlocks.length) combineTextBocks(iconArea, textBlocks, mediaports[index]);
   });
