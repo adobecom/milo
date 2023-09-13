@@ -62,14 +62,14 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
   let signInElem;
 
   if (!dropdownElem) {
-    signInElem = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signIn">${signInLabel}</a>`;
+    signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn">${signInLabel}</button>`;
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
       signIn();
     });
   } else {
-    signInElem = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signIn" role="button" aria-expanded="false" aria-haspopup="true">${signInLabel}</a>`;
+    signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
 
     signInElem.addEventListener('click', (e) => trigger({ element: signInElem, event: e }));
     signInElem.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
@@ -77,10 +77,11 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     dropdownElem.classList.add('feds-signIn-dropdown');
 
-    const dropdownSignIn = dropdownElem.querySelector('[href$="?sign-in=true"]');
-
-    if (dropdownSignIn) {
-      dropdownSignIn.addEventListener('click', (e) => {
+    const dropdownSignInAnchor = dropdownElem.querySelector('[href$="?sign-in=true"]');
+    if (dropdownSignInAnchor) {
+      const dropdownSignInButton = toFragment`<button class="feds-signIn">${dropdownSignInAnchor.textContent}</button>`;
+      dropdownSignInAnchor.replaceWith(dropdownSignInButton);
+      dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
         signIn();
       });
@@ -631,9 +632,8 @@ class Gnav {
     if (!this.el.classList.contains('has-breadcrumbs')) return null;
     if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
     const breadcrumbsElem = this.el.querySelector('.breadcrumbs');
-    if (!breadcrumbsElem) return null;
     // Breadcrumbs are not initially part of the nav, need to decorate the links
-    decorateLinks(breadcrumbsElem);
+    if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
     const createBreadcrumbs = await loadBlock('../features/breadcrumbs/breadcrumbs.js');
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
     return this.elements.breadcrumbsWrapper;

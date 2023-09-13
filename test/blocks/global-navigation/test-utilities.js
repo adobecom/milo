@@ -39,6 +39,7 @@ export const selectors = {
   topNavWrapper: '.feds-topnav-wrapper',
   breadcrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',
+  imsSignIn: '.feds-signIn',
 };
 
 export const viewports = {
