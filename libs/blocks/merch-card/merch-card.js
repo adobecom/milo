@@ -20,11 +20,6 @@ const getPodType = (styles) => {
   const authoredType = styles?.find((style) => style in cardTypes);
   return cardTypes[authoredType] || SEGMENT_BLADE;
 };
-const createTitle = (titles, cardType) => {
-  const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
-  titles?.forEach((title) => titleWrapper.appendChild(title));
-  return titleWrapper;
-};
 
 const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
@@ -40,7 +35,6 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   };
 
   const createCheckbox = (checkBoxText) => {
-    cardFooter.querySelector('hr')?.remove();
     const container = createTag('label', { class: 'checkbox-container' });
     const input = createTag('input', { id: 'alt-cta', type: 'checkbox' });
     const checkmark = createTag('span', { class: 'checkmark' });
@@ -80,8 +74,7 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
 };
 
 const addInner = (el, altCta, cardType, merchCard) => {
-  const titles = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6')];
-  const rows = [...el.querySelectorAll('p')];
+  const innerElements = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul')];
   const styles = [...el.classList];
   const merch = styles.includes('merch-card');
   const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
@@ -90,17 +83,18 @@ const addInner = (el, altCta, cardType, merchCard) => {
 
   const inner = el.querySelector(':scope > div:not([class])');
   inner.classList.add(`consonant-${cardType}-inner`);
-  const title = createTitle(titles, cardType);
-  const description = createTag('div', { class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
 
-  inner.prepend(title);
-  inner.append(description);
-  if (list) {
-    list.classList.add(`consonant-${cardType}-list`);
-    list.querySelectorAll('li').forEach((li) => li.classList.add(`consonant-${cardType}-list-item`));
-    inner.append(list);
-  }
-  addFooter(links, inner, merchCard);
+  innerElements.forEach((element) => {
+    if (element.tagName.match(/^H[1-6]$/)) element.classList.add(`consonant-${cardType}-title`);
+    if (element.tagName.match(/^P$/)) element.classList.add(`consonant-${cardType}-description`);
+    if (element.tagName.match(/^UL$/)) {
+      list.classList.add(`consonant-${cardType}-list`);
+      list.querySelectorAll('li').forEach((li) => li.classList.add(`consonant-${cardType}-list-item`));
+    }
+  });
+
+  inner.append(...innerElements);
+  addFooter(links, inner, cardType !== PLANS_CARD);
   decorateFooter(el, altCta, cardType);
   merchCard.append(inner);
 };
