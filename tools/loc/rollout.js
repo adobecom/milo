@@ -137,7 +137,6 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
             newArr.push({hashcode: content, classType: ''});
             return newArr;
           }
-
           if(type === 'deleted') {
             mergedArr.push({hashcode: content, classType: type});
             return mergedArr;
@@ -148,7 +147,6 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
               mergedArr.push({hashcode: content, classType: type});
               return mergedArr;
           }
-
           if(type === 'deleted') {
               mergedArr[i].classType = '';
               return mergedArr;
