@@ -52,9 +52,13 @@ describe('Merch Card', () => {
     expect(inner.querySelector('.consonant-SpecialOffers-description')).to.be.exist;
     expect(document.querySelector('.consonant-SpecialOffers-iconWrapper')).to.be.exist;
     expect(ribbon).to.be.exist;
-    expect(ribbon.style.backgroundColor).to.be.equal('rgb(237, 204, 45)');
+    expect(ribbon.style.backgroundColor).to.be.equal('');
     expect(ribbon.style.color).to.be.equal('rgb(0, 0, 0)');
     expect(ribbon.textContent).to.be.equal('LOREM IPSUM DOLOR');
+    expect(ribbon.style.borderLeft).to.be.equal('1px solid rgb(237, 204, 45)');
+    expect(ribbon.style.borderRight).to.be.equal('none');
+    expect(ribbon.style.borderTop).to.be.equal('1px solid rgb(237, 204, 45)');
+    expect(ribbon.style.borderBottom).to.be.equal('1px solid rgb(237, 204, 45)');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Learn More');
     expect(buttons[1].textContent).to.be.equal('Save now');

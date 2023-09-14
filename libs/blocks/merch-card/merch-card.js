@@ -113,9 +113,15 @@ const decorateRibbon = (el, ribbonMetadata, cardType) => {
   const ribbonWrapper = ribbonMetadata[0].parentNode;
   const ribbon = ribbonMetadata[1];
   ribbon.classList.add(`consonant-${cardType}-ribbon`);
-  ribbon.style.backgroundColor = ribbonBgColor;
+  const borderStyle = `1px solid ${ribbonBgColor}`;
+  if (el.classList.contains('evergreen')) {
+    ribbon.style.border = borderStyle;
+    ribbon.style.borderRight = 'none';
+  } else {
+    ribbon.style.backgroundColor = ribbonBgColor;
+    el.style.border = borderStyle;
+  }
   ribbon.style.color = ribbonTextColor;
-  el.style.border = `1px solid ${ribbonBgColor}`;
   const picture = el.querySelector(`.consonant-${cardType}-img`);
   if (picture) {
     picture.insertAdjacentElement('afterend', ribbon);
