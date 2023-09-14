@@ -84,6 +84,7 @@
 
 .merch-card h4.consonant-PlansCard-title {
   font-size: var(--type-body-xxs-size);
+  font-style: italic;
 }
 
 .merch-card h5[class$="-title"] {
@@ -300,8 +301,6 @@
 
 .merch-card li[class$="-list-item"] {
   position: relative;
-  padding-left: 0.1em;
-
 }
 
 .merch-card li[class$="-list-item"]::before {
@@ -309,7 +308,7 @@
   position: absolute;
   left: -0.4em;
   font-size: 1.5em;
-  top: calc(0.5 * 1.5 * var(--type-body-xs-size));
+  top: calc(0.5 * 1.5 * var(--type-body-xxs-size) - 0.05em);
   transform: translateY(-50%);
 }
 
