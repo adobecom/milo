@@ -102,7 +102,6 @@ async function getMdast(path) {
 function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
   const mergedMdast = { type: 'root', children: [] };
   let mergedProcessedMdast = [];
-  const resolvedBocks = {};
 
   function addTrackChangesInfo(author, action, root) {
     root.author = author;
@@ -127,44 +126,34 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
   }
 
   function checkAndPush(mergedArr, content, type) {
-    if(resolvedBocks[content]?.status === true) {
-      resolvedBocks[content] = {status: false, type};
-      mergedArr.push({hashcode: content, classType: type});
-      return mergedArr;
-    }
-
-    for(let i=mergedArr.length-1; i>= 0; i--) {
-      if(mergedArr[i].hashcode === content && resolvedBocks[content]?.status === false) {
-        if(mergedArr[i].classType === 'added' || mergedArr[i].classType === '') {
+    for(let i=0; i< mergedArr.length; i++) {
+      if(mergedArr[i].hashcode === content) {
+        if(mergedArr[i].classType === '') {
+          continue;
+        }
+        if(mergedArr[i].classType === 'deleted') {
+          if(type === 'added') {
+            const newArr = [...mergedArr.slice(0, i), ...mergedArr.slice(i + 1)];
+            newArr.push({hashcode: content, classType: ''});
+            return newArr;
+          }
           if(type === 'deleted') {
-              mergedArr[i].classType = '';
-              resolvedBocks[content] = {status: true, type};
-              return mergedArr;
-          } else {
-              resolvedBocks[content] = {status: false, type: 'added'};
-              mergedArr.push({hashcode: content, classType:type});
+            mergedArr.push({hashcode: content, classType: type});
+            return mergedArr;
+          }
+        }
+        if(mergedArr[i].classType === 'added') {
+          if(type === 'added') {
+              mergedArr.push({hashcode: content, classType: type});
               return mergedArr;
           }
-        } else if (mergedArr[i].classType === 'deleted' ) {
-          if(type === 'added') {
-              const newArray = [];
-              for (let i = 0; i < mergedArr.length; i++) {
-                  if (mergedArr[i].hashcode !== content) {
-                      newArray.push({hashcode: mergedArr[i].hashcode, classType: mergedArr[i].classType});
-                  }
-              }
-              newArray.push({hashcode: content, classType:''});
-              resolvedBocks[content] = {status: true, type: ''};
-              return newArray;
-          } else if(type==='deleted') {
-              resolvedBocks[content] = {status: false, type: 'deleted'};
-              mergedArr.push({hashcode: content, classType:type});
+          if(type === 'deleted') {
+              mergedArr[i].classType = '';
               return mergedArr;
           }
         }
       }
     }
-    resolvedBocks[content] = {status: false, type: ''};
     mergedArr.push({hashcode: content, classType:type});
     return mergedArr;
   }
