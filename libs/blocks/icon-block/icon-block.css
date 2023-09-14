@@ -266,7 +266,7 @@
   margin: 0 auto;
 }
 
-[class*='grid-width-'] .icon-block.fullwidth .foreground,
+[class*='grid-width-'] .icon-block.full-width .foreground,
 [class*='grid-width-'] .icon-block.bio .foreground {
   width: unset;
   max-width: unset;
