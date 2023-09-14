@@ -114,15 +114,9 @@
         enableAdvancedTags.checked = true;
         enableAdvancedTags.dispatchEvent(new Event('change'));
         await delay(50);
-        
-        // const secondSourceEl = findByLabel('Secondary Source');
+    
         await tagSelectorDropdownChoose('Secondary Source', 'Bacom');
-        // secondSourceEl.value = 'bacom';
-        // secondSourceEl.dispatchEvent(new Event('change'));
-        // const secondaryTagsEl = findByLabel('Secondary Content Type Tags');
         await tagSelectorDropdownChoose('Secondary Content Type Tags', 'Customer Story');
-        // secondaryTagsEl.value = 'caas:content-type/customer-story';
-        // secondaryTagsEl.dispatchEvent(new Event('change'));
 
         expectedConfig.collection.endpoint = 
           'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=bacom&secondaryTags=caas:content-type/customer-story&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
