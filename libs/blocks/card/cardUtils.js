@@ -36,10 +36,16 @@ export const addFooter = (links, container, merch) => {
   });
 };
 
-export const addWrapper = (el, section, cardType) => {
+export const addWrapper = (el, cardType) => {
+  const fragment = el.closest('.fragment');
+  if (fragment) {
+    const fragmentSection = el.closest('.section');
+    fragmentSection?.replaceWith(el);
+  }
+  const section = el.closest('.section');
+  section.classList.add('milo-card-section');
   const gridCl = 'consonant-CardsGrid';
-  const prevGrid = section.querySelector(`.consonant-Wrapper .${gridCl}`);
-
+  const prevGrid = el.closest(`.consonant-Wrapper .${gridCl}`);
   if (prevGrid) return;
   const card = el.classList[0];
   let upClass = getUpFromSectionMetadata(section);
@@ -57,7 +63,10 @@ export const addWrapper = (el, section, cardType) => {
   const collection = createTag('div', { class: 'consonant-Wrapper-collection' }, grid);
   const inner = createTag('div', { class: 'consonant-Wrapper-inner' }, collection);
   const wrapper = createTag('div', { class: 'milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth' }, inner);
-  const cards = section.querySelectorAll(`.${card}`);
+  section.querySelectorAll('div > .fragment').forEach((child) => {
+    child.parentElement.replaceWith(child);
+  });
+  const cards = [...section.children].filter((child) => child.classList.contains(card) || child.classList.contains('fragment'));
   const prevSib = cards[0].previousElementSibling;
 
   grid.append(...cards);
