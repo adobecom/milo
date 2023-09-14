@@ -543,7 +543,8 @@
 .aside.promobar .foreground.container .promo-text .content-area {
   display: flex;
   flex-flow: row nowrap;
-  gap: var(--spacing-xs);;
+  gap: var(--spacing-xs);
+  align-items: center;
 }
 
 .aside.promobar .foreground.container .promo-text .action-area {
