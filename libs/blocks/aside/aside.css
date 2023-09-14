@@ -795,6 +795,12 @@
     border-radius: 50%;
   }
 
+  .aside.promobar .foreground.container .promo-text .content-area .text-area {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: var(--spacing-xxs);
+  }
+
   .aside.promobar .foreground.container .promo-text.mobile-only,
   .aside.promobar .foreground.container .promo-text.desktop-only {
     display: none;
@@ -961,6 +967,14 @@
 
   .aside.promobar .foreground.container .icon-area img {
     height: var(--icon-size-xxl);
+  }
+
+  .aside.promobar .foreground.container .promo-text .content-area {
+    gap: var(--spacing-m);
+  }
+
+  .aside.promobar .foreground.container .promo-text .content-area .text-area {
+    gap: var(--spacing-xs);
   }
 
   .aside.promobar .foreground.container .promo-text.mobile-only,
