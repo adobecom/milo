@@ -1,3 +1,5 @@
+import { createTag } from './utils.js';
+
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
