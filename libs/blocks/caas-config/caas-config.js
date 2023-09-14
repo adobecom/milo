@@ -398,8 +398,6 @@ const TagsPanel = ({ tagsData }) => {
       prop="contentTypeTags"
       label="Content Type Tags"
     />
-    <${Input} label="Use a secondary source for some content types" prop="showSecondarySource" type="checkbox" />
-    ${context.state.showSecondarySource && secondarySourcePanel}
     <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
     <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
     <label>Complex Queries (Include & Exclude)</label>
@@ -427,12 +425,12 @@ const TagsPanel = ({ tagsData }) => {
       <${TagSelect} id="orTags" options=${allTags} label="Tags"
     /><//>
     <${MultiField}
-    onChange=${onLogicTagChange('notLogicTags')}
-    className="notLogicTags"
-    values=${context.state.notLogicTags}
-    title="NOT logic Tags"
-    subTitle=""
-  >
+      onChange=${onLogicTagChange('notLogicTags')}
+      className="notLogicTags"
+      values=${context.state.notLogicTags}
+      title="NOT logic Tags"
+      subTitle=""
+    >
     <${FormSelect}
       label="Intra Tag Logic"
       name="intraTagLogicExclude"
@@ -440,6 +438,9 @@ const TagsPanel = ({ tagsData }) => {
     />
     <${TagSelect} id="notTags" options=${allTags} label="Tags"
   /><//>
+    <label>Advanced Tag Configurations</label>
+    <${Input} label="Use a secondary source for some content types" prop="showSecondarySource" type="checkbox" />
+    ${context.state.showSecondarySource && secondarySourcePanel}
   `;
 };
 
