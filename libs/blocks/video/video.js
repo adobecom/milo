@@ -17,6 +17,7 @@ const loadVideo = async (a) => {
 };
 
 export default async function init(a) {
+  a.classList.add('hide');
   if (a.textContent.includes('no-lazy')) {
     loadVideo(a);
   } else {

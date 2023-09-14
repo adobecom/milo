@@ -51,9 +51,7 @@ const decorateBlockBg = (block, node) => {
       if (videoElement) {
         const video = decorateVideo(child, videoElement.href || videoElement.src);
         const hash = video.firstElementChild?.src.split('#')[1];
-        if (hash?.includes('autoplay1')) {
-          video.removeAttribute('loop');
-        }
+        if (hash?.includes('autoplay1')) video.removeAttribute('loop');
       }
     }
 

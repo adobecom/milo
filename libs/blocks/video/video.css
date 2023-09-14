@@ -1,4 +1,4 @@
-a[href*='.mp4'] {
+a[href*='.mp4'].hide {
   visibility: hidden !important;
 }
 
