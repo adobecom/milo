@@ -139,8 +139,6 @@ const init = (el) => {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   loadStyle(`${base}/deps/caas.css`);
-  const section = el.closest('.section');
-  section.classList.add('milo-card-section');
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
@@ -167,7 +165,7 @@ const init = (el) => {
       }
     }
   });
-  addWrapper(el, section, cardType);
+  addWrapper(el, cardType);
   merchCard.classList.add('consonant-Card', 'consonant-ProductCard', `consonant-${cardType}`);
   if (image) addBackgroundImg(image, cardType, merchCard);
   if (ribbonMetadata !== null) decorateRibbon(el, ribbonMetadata, cardType);
