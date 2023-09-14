@@ -402,20 +402,6 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
-
-    it('should decorate analytics', async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/body-with-sections.html' });
-      loadArea();
-      expect(document.querySelector('main')?.getAttribute('daa-im'))
-        .to.equal('true');
-      const sectionTwo = document.querySelector('[daa-lh="s2"]');
-      expect(sectionTwo).to.exist;
-      /* const hiddenQuoteBlock = document.querySelector('.quote.hide-block');
-      expect(hiddenQuoteBlock).to.exist;
-      const block = await utils.loadBlock(hiddenQuoteBlock);
-      expect(block).to.be.null;
-      expect(document.querySelector('.quote.hide-block')).to.be.null; */
-    });
   });
 
   describe('title-append', async () => {
@@ -508,6 +494,23 @@ describe('Utils', () => {
       htmlLinks.forEach((link) => {
         expect(link.href).to.not.contain('.html');
       });
+    });
+  });
+
+  describe('Analytics', async () => {
+    beforeEach(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body-with-sections.html' });
+      await utils.loadArea();
+    });
+    it('should decorate w attributes', async () => {
+      const main = document.querySelector('main');
+      expect(main?.getAttribute('daa-im')).to.equal('true');
+      const section = document.querySelector('main > div');
+      expect(section?.getAttribute('daa-lh')).to.equal('s1');
+      const block = section.querySelector(':scope > div')?.getAttribute('daa-lh');
+      expect(block).to.equal('b1');
+      const link = section.querySelector('#unit-test')?.getAttribute('daa-ll');
+      expect(link).to.equal('Learn more-2|Do more with Adobe Photoshop.|icon-block');
     });
   });
 });
