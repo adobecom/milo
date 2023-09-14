@@ -119,7 +119,6 @@ function populateMedia(accordion, id, num, collection) {
 }
 
 export default function init(el) {
-  decorateBlockAnalytics(el);
   const id = getUniqueId(el);
   const accordion = createTag('dl', { class: 'accordion', id: `accordion-${id}`, role: 'presentation' });
   const accordionMedia = createTag('div', { class: 'accordion-media', id: `accordion-media-${id}` });
@@ -151,4 +150,5 @@ export default function init(el) {
     el.append(accordionMedia);
     defalutOpen(el);
   }
+  decorateBlockAnalytics(el);
 }
