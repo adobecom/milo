@@ -116,6 +116,7 @@
   max-width: none;
   padding-top: 0;
   padding-bottom: 0;
+  align-content: start;
 }
 
 .aside.notification .foreground.container .text a {
@@ -492,7 +493,6 @@
 .aside.split.bio .foreground.container .text .icon-area {
   display: none;
 }
-
 
 .aside.center:not(.notification) .foreground.container .text .icon-area {
   height: var(--icon-size-xxl);
