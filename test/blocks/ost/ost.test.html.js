@@ -9,13 +9,14 @@ afterEach(() => {
 describe('loadOstEnv', async () => {
   it('fetches and returns page status and metadata', async () => {
     const {
-      options: { checkoutType, country, language },
+      options: { country, language, workflow },
       params,
     } = mockOstDeps({ mockToken: true });
 
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
+      WCS_ENV,
       WCS_API_KEY,
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -24,9 +25,9 @@ describe('loadOstEnv', async () => {
       aosAccessToken: params.token,
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
-      checkoutType,
+      workflow,
       country,
-      environment: 'PROD',
+      environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
     });
@@ -38,6 +39,7 @@ describe('loadOstEnv', async () => {
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
+      WCS_ENV,
       WCS_API_KEY,
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -47,7 +49,7 @@ describe('loadOstEnv', async () => {
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
       country,
-      environment: 'PROD',
+      environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
     });
@@ -59,6 +61,7 @@ describe('loadOstEnv', async () => {
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
+      WCS_ENV,
       WCS_API_KEY,
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -68,7 +71,7 @@ describe('loadOstEnv', async () => {
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
       country: 'US',
-      environment: 'PROD',
+      environment: WCS_ENV,
       language: 'en',
       wcsApiKey: WCS_API_KEY,
     });
@@ -78,13 +81,14 @@ describe('loadOstEnv', async () => {
 describe('init', () => {
   it('opens OST without waiting for IMS if query string includes token', async () => {
     const {
-      options: { checkoutType, country, language },
+      options: { country, language, workflow },
       params: { token },
     } = mockOstDeps({ mockToken: true });
 
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
+      WCS_ENV,
       WCS_API_KEY,
       default: init,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -95,21 +99,22 @@ describe('init', () => {
       aosAccessToken: token,
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
-      checkoutType,
       country,
-      environment: 'PROD',
+      environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
+      workflow,
     });
   });
 
   it('waits for IMS callback to open OST if query string does not include token', async () => {
-    const { options: { checkoutType, country, language } } = mockOstDeps({ mockToken: false });
+    const { options: { country, language, workflow } } = mockOstDeps({ mockToken: false });
 
     const token = 'test-token';
     const {
       AOS_API_KEY,
       CHECKOUT_CLIENT_ID,
+      WCS_ENV,
       WCS_API_KEY,
       default: init,
     } = await import('../../../libs/blocks/ost/ost.js');
@@ -123,9 +128,9 @@ describe('init', () => {
       aosAccessToken: token,
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
-      checkoutType,
+      workflow,
       country,
-      environment: 'PROD',
+      environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
     });

@@ -60,6 +60,20 @@ describe('Merch Card', () => {
     expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
+  it('Supports Card as a Fragment', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
+    await init(document.querySelector('.special-offers-black-friday'));
+    const fragment = document.querySelector('.special-offers-fragment');
+    const fragmentSection = fragment.querySelector('.section');
+    const card = fragment.querySelector('.merch-card');
+
+    expect(fragment).to.exist;
+    expect(fragment.parentElement.childElementCount).to.be.equal(3);
+    expect(fragmentSection).to.not.exist;
+    expect(card).to.exist;
+    expect(card.classList.contains('consonant-Card')).to.be.true;
+  });
+
   describe('Plans Card', () => {
     before(async () => {
       document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
