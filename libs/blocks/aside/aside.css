@@ -105,7 +105,6 @@
 .aside .foreground.container .text {
   display: flex;
   flex-wrap: wrap;
-  align-content: center;
 }
 
 .aside .foreground.container .image {
@@ -116,7 +115,6 @@
   max-width: none;
   padding-top: 0;
   padding-bottom: 0;
-  align-content: start;
 }
 
 .aside.notification .foreground.container .text a {
