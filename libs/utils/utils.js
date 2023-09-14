@@ -522,30 +522,32 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
-    const isInlineFrag = url.hash.includes('#_inline');
-    if (key === 'fragment' && (url.hash === '' || isInlineFrag)) {
-      const { parentElement } = a;
-      const { nodeName, innerHTML } = parentElement;
-      const noText = innerHTML === a.outerHTML;
-      if (noText && nodeName === 'P') {
-        const div = createTag('div', null, a);
-        parentElement.parentElement.replaceChild(div, parentElement);
+    if (key === 'fragment') {
+      const isInlineFrag = url.hash.includes('#_inline');
+      if (url.hash === '' || isInlineFrag) {
+        const { parentElement } = a;
+        const { nodeName, innerHTML } = parentElement;
+        const noText = innerHTML === a.outerHTML;
+        if (noText && nodeName === 'P') {
+          const div = createTag('div', null, a);
+          parentElement.parentElement.replaceChild(div, parentElement);
+        }
       }
-    }
 
-    // previewing a fragment page with mp4 video
-    if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
-      a.className = 'video link-block';
-      return false;
-    }
+      // previewing a fragment page with mp4 video
+      if (a.textContent.match('media_.*.mp4')) {
+        a.className = 'video link-block';
+        return false;
+      }
 
-    // Modals
-    if (key === 'fragment' && url.hash !== '' && !isInlineFrag) {
-      a.dataset.modalPath = url.pathname;
-      a.dataset.modalHash = url.hash;
-      a.href = url.hash;
-      a.className = 'modal link-block';
-      return true;
+      // Modals
+      if (url.hash !== '' && !isInlineFrag) {
+        a.dataset.modalPath = url.pathname;
+        a.dataset.modalHash = url.hash;
+        a.href = url.hash;
+        a.className = 'modal link-block';
+        return true;
+      }
     }
 
     // slack uploaded mp4s
@@ -674,18 +676,19 @@ function decorateSection(section, idx) {
   const { doNotInline } = getConfig();
   const blockLinks = [...blocks].reduce((blkLinks, block) => {
     const blockName = block.classList[0];
-    links.forEach((link) => {
-      if (!block.contains(link)) return;
-
-      if (link.classList.contains('fragment')
-        && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
-        && !doNotInline.includes(blockName)) {
-        link.href = `${link.href}#_inline`;
-        blkLinks.inlineFrags.push(link);
-      } else if (link.classList.contains('link-block')) {
-        blkLinks.autoBlocks.push(link);
-      }
-    });
+    links.filter((link) => block.contains(link))
+      .forEach((link) => {
+        if (link.classList.contains('fragment')
+          && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
+          && !doNotInline.includes(blockName)) {
+          if (!link.href.includes('#_inline')) {
+            link.href = `${link.href}#_inline`;
+          }
+          blkLinks.inlineFrags.push(link);
+        } else if (link.classList.contains('link-block')) {
+          blkLinks.autoBlocks.push(link);
+        }
+      });
     return blkLinks;
   }, { inlineFrags: [], autoBlocks: [] });
 
