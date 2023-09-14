@@ -10,3 +10,8 @@
   width: 100%;
   margin-bottom: var(--spacing-xs);
 }
+
+/* stylelint-disable-next-line selector-class-pattern */
+.consonant-Wrapper .fragment {
+  display: flex;
+}

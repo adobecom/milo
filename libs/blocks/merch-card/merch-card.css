@@ -91,7 +91,7 @@
   font-weight: 500;
 }
 
-.merch-card.segment-blade {
+.merch-card.segment {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -342,6 +342,11 @@
   margin-left: auto;
   height: auto;
   width: auto;
+}
+
+.dark .merch-card .consonant-CardFooter .con-button.outline {
+  border-color: var(--color-black);
+  color: var(--color-black);
 }
 
 .merch-card .consonant-CardFooter-row .button--inactive {
