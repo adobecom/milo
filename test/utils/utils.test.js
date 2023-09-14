@@ -3,7 +3,6 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
-import { loadArea } from '../../libs/utils/utils.js';
 
 const utils = {};
 
