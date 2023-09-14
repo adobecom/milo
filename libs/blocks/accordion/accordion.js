@@ -1,5 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
+import { decorateBlockAnalytics } from '../../martech/attributes.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 const mediaCollection = {};
@@ -118,6 +119,7 @@ function populateMedia(accordion, id, num, collection) {
 }
 
 export default function init(el) {
+  decorateBlockAnalytics(el);
   const id = getUniqueId(el);
   const accordion = createTag('dl', { class: 'accordion', id: `accordion-${id}`, role: 'presentation' });
   const accordionMedia = createTag('div', { class: 'accordion-media', id: `accordion-media-${id}` });
