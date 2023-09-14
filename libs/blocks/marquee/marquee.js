@@ -24,9 +24,12 @@ const decorateVideo = (container, src) => {
 };
 
 const decorateBlockBg = (block, node) => {
-  const viewports = { 'mobile-only': 0, 'tablet-only': 600, 'desktop-only': 1200 };
+  const viewports = {
+    'mobile-only': window.matchMedia('(max-width: 599.99px)'),
+    'tablet-only': window.matchMedia('(min-width: 600px) and (max-width: 1199.99px)'),
+    'desktop-only': window.matchMedia('(min-width: 1200px)'),
+  };
   const viewportsKeys = Object.keys(viewports);
-  const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
   const childCount = node.childElementCount;
   const { children } = node;
 
@@ -43,9 +46,7 @@ const decorateBlockBg = (block, node) => {
     }
 
     // Skip the fallback if current screen size isn't matching the child's viewport.
-    const nextChildViewportWidth = viewports[viewportsKeys[index + 1]] || 99999;
-    if (nextChildViewportWidth > viewportWidth
-      && viewportWidth >= viewports[viewportsKeys[index]]) {
+    if (viewports[viewportsKeys[index]].matches) {
       // decorateVideo as fallback of video autoblock.
       const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
       if (videoElement) {
