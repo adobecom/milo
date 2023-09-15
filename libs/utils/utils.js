@@ -402,13 +402,10 @@ function checkForExpBlock(name, expBlocks) {
   return { blockPath: expBlock, blockName };
 }
 
-function decorateSectionAnalytics(section) {
-  section.setAttribute('daa-lh', `s${Number(section.dataset.idx) + 1}`);
-}
-
-function decorateBlockAnalytics(section) {
-  section.querySelectorAll('[data-block="true"]').forEach((block, idx) => {
-    block.setAttribute('daa-lh', `b${idx + 1}`);
+function decorateSectionAnalytics(section, idx) {
+  section.setAttribute('daa-lh', `s${idx + 1}`);
+  section.querySelectorAll('[data-block="true"]').forEach((block, blockIdx) => {
+    block.setAttribute('daa-lh', `b${blockIdx + 1}`);
     block.removeAttribute('data-block');
   });
 }
@@ -971,9 +968,7 @@ function decorateDocumentExtras(config) {
 }
 
 async function documentPostSectionLoading(config) {
-  document.querySelectorAll('.section[daa-lh]').forEach((section) => {
-    decorateBlockAnalytics(section);
-  });
+  document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx));
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     // eslint-disable-next-line import/no-cycle
@@ -1063,7 +1058,6 @@ export async function loadArea(area = document) {
     const sectionBlocks = await processSection(section, config, isDoc);
     areaBlocks.push(...sectionBlocks);
 
-    if (isDoc) decorateSectionAnalytics(section.el);
     areaBlocks.forEach((block) => decorateDefaultLinkAnalytics(block));
   }
 
