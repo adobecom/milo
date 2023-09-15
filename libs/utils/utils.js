@@ -91,6 +91,7 @@ const AUTO_BLOCKS = [
   { 'offer-preview': '/tools/commerce' },
 ];
 const DO_NOT_INLINE = [
+  'accordion',
   'columns',
   'z-pattern',
 ];
