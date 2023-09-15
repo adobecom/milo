@@ -57,6 +57,8 @@ const init = (el) => {
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/deps/caas.css`);
 
+  const section = el.closest('.section');
+  section.classList.add('milo-card-section');
   const row = el.querySelector(':scope > div');
   const picture = el.querySelector('picture');
   const styles = Array.from(el.classList);
@@ -66,7 +68,7 @@ const init = (el) => {
     .querySelectorAll('a') : el.querySelectorAll('a');
   let card = el;
 
-  addWrapper(el, cardType);
+  addWrapper(el, section, cardType);
 
   if (cardType === HALF_HEIGHT) {
     const [link] = links;
