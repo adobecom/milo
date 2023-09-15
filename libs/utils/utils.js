@@ -971,6 +971,9 @@ function decorateDocumentExtras(config) {
 }
 
 async function documentPostSectionLoading(config) {
+  document.querySelectorAll('.section[daa-lh]').forEach((section) => {
+    decorateBlockAnalytics(section);
+  });
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     // eslint-disable-next-line import/no-cycle
@@ -1059,6 +1062,9 @@ export async function loadArea(area = document) {
   for (const section of sections) {
     const sectionBlocks = await processSection(section, config, isDoc);
     areaBlocks.push(...sectionBlocks);
+
+    if (isDoc) decorateSectionAnalytics(section.el);
+    areaBlocks.forEach((block) => decorateDefaultLinkAnalytics(block));
   }
 
   const currentHash = window.location.hash;
@@ -1066,9 +1072,7 @@ export async function loadArea(area = document) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) {
-    await documentPostSectionLoading(config);
-  }
+  if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
 }
