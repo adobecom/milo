@@ -24,13 +24,13 @@ const decorateVideo = (container, src) => {
 };
 
 const decorateBlockBg = (block, node) => {
+  const childCount = node.childElementCount;
   const viewports = {
-    'mobile-only': window.matchMedia('(max-width: 599.99px)'),
-    'tablet-only': window.matchMedia('(min-width: 600px) and (max-width: 1199.99px)'),
+    'mobile-only': window.matchMedia(`${childCount > 1 ? '(max-width: 599.99px)' : ''}`),
+    'tablet-only': window.matchMedia(`(min-width: 600px)${childCount === 3 ? ' and (max-width: 1199.99px)' : ''}`),
     'desktop-only': window.matchMedia('(min-width: 1200px)'),
   };
   const viewportsKeys = Object.keys(viewports);
-  const childCount = node.childElementCount;
   const { children } = node;
 
   node.classList.add('background');
