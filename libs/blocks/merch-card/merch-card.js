@@ -21,7 +21,7 @@ const getPodType = (styles) => {
   return cardTypes[authoredType] || SEGMENT_BLADE;
 };
 
-const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
+const decorateFooter = (el, altCtaMetaData, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
@@ -43,18 +43,18 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     return container;
   };
 
+  const createSecureSign = () => {
+    const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
+    const standardWrapper = createTag('div', { class: 'standard-wrapper' });
+    const secureTransactionWrapper = decorateWithSecureTransactionSign();
+    standardWrapper.append(secureTransactionWrapper, cardFooterRow);
+    cardFooter?.append(standardWrapper);
+  };
+
   const decorateAlternativeCta = () => {
     const altCtaRegex = /href=".*"/;
     if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return;
-
     const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    if (el.classList.contains('secure')) {
-      const standardWrapper = createTag('div', { class: 'standard-wrapper' });
-      const secureTransactionWrapper = decorateWithSecureTransactionSign();
-      standardWrapper.append(secureTransactionWrapper, cardFooterRow);
-      cardFooter?.append(standardWrapper);
-    }
-
     const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
     const checkboxContainer = createCheckbox(altCtaMetaData[0]);
     const altCtaButtonData = altCtaMetaData[1];
@@ -70,6 +70,7 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     altCtaMetaData[0].parentNode.remove();
   };
   if (altCtaMetaData !== null) decorateAlternativeCta();
+  if (el.classList.contains('secure')) createSecureSign();
   cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
 };
 
