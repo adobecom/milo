@@ -1,8 +1,9 @@
-
- /*** Variables ***/
+/*** Variables ***/
 
  :root {
-  --feds-totalheight-nav: calc(var(--feds-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
+  --global-height-nav: 64px;
+  --global-height-breadcrumbs: 33px;
+  --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
 
   /* Colors */
   --link-color: #035fe6;
@@ -587,13 +588,13 @@ header:not(.global-navigation) ~ main {
   all of the ':not(.global-navigation)' rules can be entirely removed.
  */
 header.global-navigation {
-  height: 64px; /* TODO better approach for value? */
+  height: var(--global-height-nav); /* TODO better approach for value? */
   visibility: hidden;
 }
 
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
-    padding-bottom: 33px; /* TODO better approach for value? */
+    padding-bottom: var(--global-height-breadcrumbs); /* TODO better approach for value? */
   }
 }
 
@@ -764,7 +765,7 @@ div[data-failed="true"]::before {
 
 @media (min-width: 900px) {
   header:not(.global-navigation) {
-    min-height: 64px;
+    min-height: var(--global-height-nav);
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
   }
