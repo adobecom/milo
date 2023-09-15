@@ -47,13 +47,15 @@ describe('Fragments', () => {
   it('Inlines fragments inside a block', async () => {
     const marquee = document.querySelector('.marquee-section');
     await loadArea(marquee);
-    // await waitForUpdate(marquee);
+    expect(marquee.querySelector('.fragment')).to.not.exist;
     expect(marquee.innerHTML.includes('This marquee content is pulled from a fragment')).to.be.true;
   });
 
-  // it('Does not inline fragments inside a block in DO_NOT_INLINE list', async () => {
-  //   const a = document.querySelector('a.bad');
-  //   await getFragment(a);
-  //   expect(window.lana.log.args[0][0]).to.equal('Could not get fragment: http://localhost:2000/test/blocks/fragment/mocks/fragments/bad.plain.html');
-  // });
+  it('Does not inline fragments inside a block in DO_NOT_INLINE list', async () => {
+    const cols = document.querySelector('.columns-section');
+    await loadArea(cols);
+    expect(cols.querySelector('.fragment')).to.exist;
+    expect(cols.querySelector('.aside').style.background).to.equal('rgb(238, 238, 238)');
+    expect(cols.innerHTML.includes('Hello World!!!')).to.be.true;
+  });
 });
