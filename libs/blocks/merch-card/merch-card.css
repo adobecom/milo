@@ -331,6 +331,7 @@
   flex-wrap: wrap;
   gap: var(--spacing-xs);
   align-items: center;
+  justify-content: space-between;
 }
 
 .merch-card .consonant-CardFooter-row,
