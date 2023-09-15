@@ -64,7 +64,6 @@
 .aside .foreground.container .text {
   display: flex;
   flex-wrap: wrap;
-  align-content: center;
 }
 
 .aside.split .foreground.container .text {
@@ -460,7 +459,6 @@
 .aside.split.bio .foreground.container .text .icon-area {
   display: none;
 }
-
 
 .aside.center:not(.notification) .foreground.container .text .icon-area {
   height: var(--icon-size-xxl);
