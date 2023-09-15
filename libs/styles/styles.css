@@ -2,7 +2,7 @@
  /*** Variables ***/
 
  :root {
-  --feds-totalheight-nav: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
+  --feds-totalheight-nav: calc(var(--feds-height-nav, 64px) + var(--feds-height-breadcrumbs, 33px));
 
   /* Colors */
   --link-color: #035fe6;
