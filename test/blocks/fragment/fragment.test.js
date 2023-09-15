@@ -2,7 +2,6 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { getLocale, loadArea, setConfig } from '../../../libs/utils/utils.js';
-import { waitForUpdate } from '../../helpers/waitfor.js';
 
 window.lana = { log: stub() };
 

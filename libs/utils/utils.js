@@ -523,6 +523,10 @@ export function decorateAutoBlock(a) {
     }
 
     if (key === 'fragment') {
+      if (a.href === window.location.href) {
+        return false;
+      }
+
       const isInlineFrag = url.hash.includes('#_inline');
       if (url.hash === '' || isInlineFrag) {
         const { parentElement } = a;
