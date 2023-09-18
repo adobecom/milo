@@ -141,4 +141,17 @@ describe('Merch Card', () => {
       expect(el.outerHTML.includes('undefined')).to.be.false;
     });
   });
+
+  describe('UAR Card', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/uar-card.html' });
+    });
+    it('handles decorated <hr>', async () => {
+      const cards = document.querySelectorAll('.merch-card');
+      cards.forEach((card) => {
+        init(card);
+      });
+      expect(cards[0].classList.contains('has-divider')).to.be.true;
+    });
+  });
 });

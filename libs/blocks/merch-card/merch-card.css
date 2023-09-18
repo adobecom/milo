@@ -55,8 +55,16 @@
 }
 
 .merch-card div[class$="-title"] {
+  width: 100%;
   font-size: var(--type-heading-xs-lh);
   font-weight: var(--type-heading-all-weight);
+  align-self: flex-start;
+  max-height: max-content;
+  flex: none;
+}
+
+.merch-card .consonant-SpecialOffers-title h4 {
+  text-transform: uppercase;
 }
 
 .merch-card .consonant-PlansCard-title h2 {
@@ -75,7 +83,8 @@
 }
 
 .merch-card .consonant-SpecialOffers-title h4,
-.merch-card .consonant-PlansCard-title h4 {
+.merch-card .consonant-PlansCard-title h4,
+.merch-card .consonant-SegmentBlade-title h4 {
   font-size: var(--type-heading-xxs-size);
 }
 
@@ -86,7 +95,7 @@
   font-weight: 500;
 }
 
-.merch-card.segment-blade {
+.merch-card.segment {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -101,6 +110,16 @@
 .merch-card.segment,
 .merch-card.plans {
   border-radius: 16px;
+}
+
+.merch-card.special-offers.full-width {
+  min-width: 100%;
+  max-width: 100%;
+  width: 1200px;
+}
+
+.merch-card.special-offers.center {
+  text-align: center;
 }
 
 .merch-card div[class$="-inner"] {
@@ -124,9 +143,12 @@
 }
 
 .merch-card div[class$="-description"] {
+  width: 100%;
   font-size: var(--type-heading-xs-size);
   line-height: 1.5;
   margin-top: 0;
+  align-self: flex-start;
+  flex-grow: 1;
 }
 
 .merch-card .consonant-SegmentBlade-description span.placeholder-resolved,
@@ -169,11 +191,13 @@
   text-align: center;
   padding: 8px 11px;
   border-radius: 5px 0 0 5px;
+  text-transform: uppercase;
 }
 
 .merch-card .consonant-SpecialOffers-inner,
 .merch-card .consonant-PlansCard-inner {
   justify-content: center;
+  height: 100%;
 }
 
 .merch-card.special-offers .consonant-SpecialOffers-description p,
@@ -238,11 +262,41 @@
   border-color: var(--color-accent);
 }
 
+.merch-card.has-divider hr {
+  margin: var(--spacing-xxs) 0;
+}
+
+.merch-card.has-divider .consonant-CardFooter hr {
+  display: none;
+}
+
+.merch-card.background-opacity-70 {
+  background-color: rgba(255 255 255 / 70%);
+}
+
+.merch-card.background-opacity-70 div[class$="-inner"] {
+  background-color: transparent;
+}
+
+.merch-card.inline-heading .consonant-SegmentBlade-inner {
+  display: grid;
+  column-gap: 12px;
+  align-items: center;
+  grid-template-columns: 40px 1fr;
+}
+
+.merch-card.inline-heading .consonant-SegmentBlade-description,
+.merch-card.inline-heading .consonant-CardFooter {
+  grid-column: span 2;
+}
+
 .merch-card.special-offers .consonant-CardFooter {
   margin-top: 0;
   padding-top: 0;
   justify-content: center;
   box-sizing: border-box;
+  align-self: flex-end;
+  width: 100%;
 }
 
 .merch-card .consonant-CardFooter .standard-wrapper {
@@ -252,7 +306,6 @@
   align-items: center;
 }
 
-
 .merch-card .consonant-CardFooter-row,
 .merch-card .consonant-CardFooter-cell {
   display: flex;
@@ -261,6 +314,11 @@
   margin-left: auto;
   height: auto;
   width: auto;
+}
+
+.dark .merch-card .consonant-CardFooter .con-button.outline {
+  border-color: var(--color-black);
+  color: var(--color-black);
 }
 
 .merch-card .consonant-CardFooter-row .button--inactive {

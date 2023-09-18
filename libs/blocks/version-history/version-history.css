@@ -1,0 +1,145 @@
+:root {
+  /* Colors */
+  --hlx-sk-bg: rgb(48 48 48);
+  --hlx-sk-color: #FFF;
+  --notch-size: 12px;
+}
+
+body {
+  background-color: var(--hlx-sk-bg);
+  color: var(--hlx-sk-color);
+  margin: 0;
+}
+
+.in-page {
+  background-color: #FFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.version-history {
+  padding: 10px 10px 0;
+}
+
+.in-page .version-history {
+  margin-top: 10px;
+  background-color: var(--hlx-sk-bg);
+  width: 460px;
+  height: 500px;
+  overflow-y: scroll;
+}
+
+.version-history-starting {
+  text-align: center;
+  align-self: center;
+  justify-self: center;
+}
+
+.version-history .comment-container {
+  position: relative;
+  background: #191919;
+  margin-bottom: 10px;
+}
+
+.version-history textarea {
+  min-height: 120px;
+  display: block;
+  color: var(--hlx-sk-color);
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  background: none;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.version-action-container {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.version-history .version-action-help {
+  width: 44px;
+  display: block;
+  overflow: hidden;
+  text-indent: -1000px;
+  background: url(./img/help.svg) center no-repeat;
+  height: 36px;
+  border: none;
+}
+
+.version-action {
+  cursor: pointer;
+  background: #FF1593;
+  color: #FFF;
+  font-weight: 700;
+  outline: transparent solid 0;
+  transition: outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: var(--body-font-family);
+  padding: 0 18px;
+  clip-path: polygon(0% 0%, var(--notch-size) 0%, calc(100% - var(--notch-size)) 0%, 100% var(--notch-size), 100% calc(100% - var(--notch-size)), 100% 100%, 0% 100%, 0% 100%);
+}
+
+.error-container {
+  margin-bottom: 10px;
+  padding: 2px 8px;
+  background: #9b1212;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.version-row {
+  color: #FFF;
+  border-bottom: 1px solid #777;
+  padding: 12px 0;
+}
+
+.version-row:nth-child(2) {
+  background: #122e07;
+}
+
+.version-row.version-row--header {
+  display: grid;
+  grid-template-columns: 88px 88px 1fr 44px;
+  gap: 24px;
+  color: #838383;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0 0 10px 0;
+}
+
+.version-row-detail {
+  display: grid;
+  grid-template-columns: 88px 88px 1fr 44px;
+  gap: 24px;
+  line-height: 1.2;
+}
+
+.version-number {
+  display: flex;
+  justify-content: center;
+}
+
+.version-comment {
+  font-size: 14px;
+  padding: 0 6px;
+  background: #232323;
+  margin: 12px 12px 0;
+}
+
+.version-download {
+  width: 44px;
+  display: block;
+  overflow: hidden;
+  text-indent: -1000px;
+  background: url('./img/download.svg') center no-repeat;
+}
