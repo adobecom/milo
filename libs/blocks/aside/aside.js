@@ -33,7 +33,6 @@ const blockConfig = {
   },
 };
 const FORMAT_REGEX = /^format:/i;
-const mediaports = ['mobile-only', 'tablet-only', 'desktop-only'];
 
 function getBlockData(el) {
   const variant = variants.find((variantClass) => el.classList.contains(variantClass));
@@ -118,8 +117,8 @@ function checkViewportPromobar(foreground) {
   if (childCount < 3) addPromobar(children[childCount - 1], foreground);
 }
 
-function combineTextBocks(textBlocks, iconArea, mediaPort) {
-  const textStyle = mediaPort === 'desktop-only' ? ['m', 'l'] : ['s', 's'];
+function combineTextBocks(textBlocks, iconArea, viewPort) {
+  const textStyle = viewPort === 'desktop-up' ? ['m', 'l'] : ['s', 's'];
   const contentArea = createTag('p', { class: 'content-area' });
   const textArea = createTag('p', { class: 'text-area' });
   textBlocks[0].parentElement.prepend(contentArea);
@@ -139,17 +138,18 @@ function combineTextBocks(textBlocks, iconArea, mediaPort) {
 }
 
 function decoratePromobar(el) {
+  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
   const foreground = el.querySelector('.foreground');
   if (foreground.childElementCount !== 3) checkViewportPromobar(foreground);
   [...foreground.children].forEach((child, index) => {
-    child.className = mediaports[index];
+    child.className = viewports[index];
     child.classList.add('promo-text');
     const textBlocks = [...child.children];
     const iconArea = child.querySelector('picture')?.closest('p');
     const actionArea = child.querySelectorAll('em a, strong a, p > a strong');
     if (iconArea) textBlocks.shift();
     if (actionArea.length) textBlocks.pop();
-    if (textBlocks.length) combineTextBocks(textBlocks, iconArea, mediaports[index]);
+    if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index]);
   });
   return foreground;
 }
