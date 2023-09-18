@@ -33,8 +33,8 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [], fla
       const [flag, manifestPath] = persManifest.split('|');
       const flagData = flags.data.find((f) => f?.flag === flag);
       if (flagData) {
-        if (flagData.onoff === 'off') {
-          disabled = true;
+        if (flagData.onoff !== '') {
+          disabled = flagData.onoff === 'off';
         } else {
           const start = xlSerialToJsDate(flagData.start);
           const end = xlSerialToJsDate(flagData.end);
@@ -49,7 +49,7 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [], fla
   );
 
   for (const manifest of manifests) {
-    if (!manifest.manifestData && manifest.manifestPath && manifest.disabled) {
+    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
       manifest.manifestPath = normalizePath(manifest.manifestPath);
       loadLink(
         manifest.manifestPath,

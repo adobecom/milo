@@ -470,6 +470,7 @@ export async function runPersonalization(info, config) {
     manifestData,
     manifestPath,
     variantLabel,
+    disabled,
   } = info;
 
   const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath);
@@ -478,7 +479,7 @@ export async function runPersonalization(info, config) {
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
-  if (selectedVariant === 'no changes') {
+  if (selectedVariant === 'no changes' || disabled) {
     return { experiment };
   }
 
