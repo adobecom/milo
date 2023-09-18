@@ -414,7 +414,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
 export default function init(el) {
   el.setAttribute('role', 'table');
-  if (el.parentElement.classList.contains('section')) el.parentElement.classList.add(`table-${el.classList.contains('merch') ? 'merch-' : ''}section`);
+  if (el.parentElement.classList.contains('section')) {
+    el.parentElement.classList.add(`table-${el.classList.contains('merch') ? 'merch-' : ''}section`);
+  }
   const rows = Array.from(el.children);
   const isMerch = el.classList.contains('merch');
   const isCollapseTable = el.classList.contains('collapse') && !isMerch;
@@ -479,12 +481,7 @@ export default function init(el) {
     });
   };
 
-  if (window.MILO_LCP_LOADED) {
+  window.addEventListener(MILO_EVENTS.DEFERRED, () => {
     handleTable();
-  } else {
-    window.addEventListener(MILO_EVENTS.LCP_LOADED, () => {
-      window.MILO_LCP_LOADED = true;
-      handleTable();
-    }, { once: true });
-  }
+  }, true);
 }
