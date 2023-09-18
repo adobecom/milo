@@ -969,10 +969,6 @@
     margin-right: 0;
   }
 
-  .aside.promobar .foreground.container {
-    min-height: 0;
-  }
-
   .aside.promobar .icon-area {
     height: var(--icon-size-xxl);
   }
