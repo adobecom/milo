@@ -30,12 +30,7 @@ const blockConfig = {
     [small]: ['m', 'm'],
     [medium]: ['s', 's'],
     [large]: ['l', 'm'],
-  },
-  promobar: {
-    'mobile-only': ['s', 's'],
-    'tablet-only': ['s', 's'],
-    'desktop-only': ['m', 'l'],
-  },
+  }
 };
 const FORMAT_REGEX = /^format:/i;
 const mediaports = ['mobile-only', 'tablet-only', 'desktop-only'];
@@ -123,14 +118,18 @@ function checkViewportPromobar(foreground) {
   if (childCount < 3) addPromobar(children[childCount - 1], foreground);
 }
 
-function combineTextBocks(iconArea, textBlocks, mediaPort) {
+function combineTextBocks(textBlocks, iconArea, mediaPort) {
+  const textStyle = mediaPort === 'desktop-only' ? ['m', 'l'] : ['s', 's'];
   const contentArea = createTag('p', { class: 'content-area' });
   const textArea = createTag('p', { class: 'text-area' });
   textBlocks[0].parentElement.prepend(contentArea);
   textBlocks.forEach((textBlock) => {
     textArea.appendChild(textBlock);
-    if (textBlock.nodeName === 'P') textBlock.classList.add(`body-${blockConfig.promobar[mediaPort][1]}`);
-    else textBlock.classList.add(`heading-${blockConfig.promobar[mediaPort][0]}`);
+    if (textBlock.nodeName === 'P') {
+      textBlock.classList.add(`body-${textStyle[1]}`);
+    } else {
+      textBlock.classList.add(`heading-${textStyle[0]}`);
+    }
   });
   if (iconArea) {
     iconArea.classList.add('icon-area');
@@ -150,7 +149,7 @@ function decoratePromobar(el) {
     const actionArea = child.querySelectorAll('em a, strong a, p > a strong');
     if (iconArea) textBlocks.shift();
     if (actionArea.length) textBlocks.pop();
-    if (textBlocks.length) combineTextBocks(iconArea, textBlocks, mediaports[index]);
+    if (textBlocks.length) combineTextBocks(textBlocks, iconArea, mediaports[index]);
   });
   return foreground;
 }

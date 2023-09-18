@@ -19,10 +19,8 @@ describe('aside', () => {
 
       if (type !== 'notification') {
         it('has a heading', () => {
-          if (type !== 'promobar') {
-            const heading = aside.querySelector('[class^=heading-]');
-            expect(heading).to.exist;
-          }
+          const heading = aside.querySelector('[class^=heading-]');
+          expect(heading).to.exist;
         });
 
         it('icon has a wrapper', () => {
