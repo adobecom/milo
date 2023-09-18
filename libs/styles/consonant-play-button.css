@@ -1,20 +1,20 @@
 
 :root {
-  --play-circle-size-l: 96px;
-  --play-circle-size-m: 72px;
   --play-circle-size-s: 40px;
-  --play-border-width-l: 3px;
-  --play-border-width-m: 2.5px;
+  --play-circle-size-m: 72px;
+  --play-circle-size-l: 96px;
   --play-border-width-s: 2px;
-  --play-icon-size-l: calc(var(--play-circle-size-l) + 2 * var(--play-border-width-l));
-  --play-icon-size-m: calc(var(--play-circle-size-m) + 2 * var(--play-border-width-m));
+  --play-border-width-m: 2.5px;
+  --play-border-width-l: 3px;
   --play-icon-size-s: calc(var(--play-circle-size-s) + 2 * var(--play-border-width-s));
-  --play-triangle-width-l: 31.5px;
-  --play-triangle-height-l: 42px;
-  --play-triangle-width-m: 24px;
-  --play-triangle-height-m: 32px;
+  --play-icon-size-m: calc(var(--play-circle-size-m) + 2 * var(--play-border-width-m));
+  --play-icon-size-l: calc(var(--play-circle-size-l) + 2 * var(--play-border-width-l));
   --play-triangle-width-s: 13.5px;
   --play-triangle-height-s: 18px;
+  --play-triangle-width-m: 24px;
+  --play-triangle-height-m: 32px;
+  --play-triangle-width-l: 31.5px;
+  --play-triangle-height-l: 42px;
 }
 
  .modal-img-link {
