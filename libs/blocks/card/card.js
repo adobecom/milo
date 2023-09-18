@@ -66,7 +66,6 @@ const init = (el) => {
   const merch = styles.includes('merch') && cardType === HALF;
   const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
     .querySelectorAll('a') : el.querySelectorAll('a:not(.consonant-play-btn)');
-  const playBtn = el.querySelector('a.consonant-play-btn');
   let card = el;
 
   addWrapper(el, section, cardType);
@@ -89,6 +88,7 @@ const init = (el) => {
 
   if (picture && cardType !== PRODUCT) {
     addBackgroundImg(picture, cardType, card);
+    const playBtn = el.querySelector('a.consonant-play-btn');
     if (playBtn) addVideoBtn(playBtn, cardType, card);
   }
 
