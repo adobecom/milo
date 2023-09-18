@@ -43,10 +43,39 @@
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 6%;
   align-items: flex-start;
   visibility: visible;
   opacity: 1;
   transition: opacity 1s ease-in, height 1s ease-in;
+}
+
+.marketo .mktoFormRow.mktoFormRowTop.comments,
+.marketo .mktoFormRow.mktoFormRowTop.demo,
+.marketo .mktoFormRow.mktoFormRowTop.name {
+  display: block;
+  grid-column: span 2;
+}
+
+.marketo .mktoFormRow.mktoFormRowTop.name > .mktoFormCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: "salutation ." "firstName lastName";
+  column-gap: 6%;
+}
+
+.marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="Salutation"] {
+  grid-area: salutation;
+}
+
+.marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="FirstName"] {
+  grid-area: firstName;
+}
+
+.marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="LastName"] {
+  grid-area: lastName;
 }
 
 .marketo .mktoFormRow {
@@ -67,6 +96,33 @@
   border: none;
   margin: 0;
   padding: 0;
+}
+
+.marketo .mktoFormRow.name fieldset.mktoFormCol {
+  /* width: 100%; */
+}
+
+.marketo .mktoFormRow.name .mktoFormCol.mktoVisible .mktoFormCol.mktoVisible {
+  /* width: 47.7%; */
+}
+
+.marketo .mktoFormRow.name .mktoFormCol {
+  /* width: 100%; */
+  /* display: flex; */
+  /* flex-flow: row wrap; */
+  /* justify-content: space-between; */
+  /* align-items: flex-start; */
+}
+
+.marketo .mktoFormRow.name .mktoFormRow {
+  /* width: 47.7%; */
+  /* display: block; */
+  /* display: inline-block; */
+  /* margin-right: 3%; */
+}
+
+.marketo > .mktoFormRow.mktoFormRowTop > .mktoFormCol > .mktoFormRow > .mktoFormCol.mktoVisible > .mktoFieldWrap {
+  width: auto;
 }
 
 .marketo .mktoFormRow.demo fieldset.mktoFormCol {
@@ -430,10 +486,6 @@
     padding: var(--spacing-xxl);
   }
 
-  .marketo .mktoFormCol.mktoVisible {
-    width: 47.7%;
-  }
-
   .marketo [class*="adobe-privacy"] fieldset.mktoFormCol.mktoVisible {
     width: 100%;
   }
@@ -442,6 +494,7 @@
   .marketo .msg-error .mktoFormCol.mktoVisible,
   .marketo .mktoFormCol.mktoVisible .mktoFormCol.mktoVisible {
     width: 100%;
+    grid-column: span 2;
   }
 
   .marketo .mktoForm.show-warnings .mktoError {
