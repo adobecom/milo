@@ -39,8 +39,8 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [], fla
           flagData.startLocal = xlSerialToJsDate(flagData.start);
           flagData.endLocal = xlSerialToJsDate(flagData.end);
           const currentDate = new Date();
-          if (flag.startLocal && flag.endLocal
-            && (currentDate < flag.startLocal || currentDate > flag.endLocal)) {
+          if (flagData.startLocal && flagData.endLocal
+            && (currentDate < flagData.startLocal || currentDate > flagData.endLocal)) {
             disabled = true;
           }
         }
