@@ -121,9 +121,7 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = {
-  DEFERRED: 'milo:deferred',
-};
+export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
