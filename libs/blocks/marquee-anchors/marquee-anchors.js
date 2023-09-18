@@ -64,12 +64,14 @@ export default function init(el) {
       const content = i.querySelector(':scope > div');
       const hrefPathEqual = (aTag.href.split(/\?|#/)[0] === window.location.href.split(/\?|#/)[0]);
       const hrefUrl = (hrefPathEqual)
-        ? `${aTag.textContent}`
+        ? `${aTag.textContent.toLowerCase()}`
         : `${aTag.href}`;
       const link = createTag('a', {
         class: 'anchor-link',
         href: hrefUrl,
       }, content);
+      if (aTag.hasAttribute('target')) link.target = aTag.target;
+      if (aTag.hasAttribute('daa-ll')) link.setAttribute('daa-ll', aTag.getAttribute('daa-ll'));
       if (!hrefPathEqual) link.classList.add('external');
       i.parentElement.replaceChild(link, i);
       aTag.parentElement.remove();
