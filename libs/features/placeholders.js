@@ -98,14 +98,14 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
   return placeholders;
 }
 
-export async function replaceText(text, config, regex = /{{(.*?)}}/g, sheet = 'default') {
+export async function replaceText(text, config, regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g, sheet = 'default') {
   if (typeof text !== 'string' || !text.length) return '';
 
   const matches = [...text.matchAll(new RegExp(regex))];
   if (!matches.length) {
     return text;
   }
-  const keys = Array.from(matches, (match) => match[1]);
+  const keys = Array.from(matches, (match) => (match[1] || match[2]));
   const placeholders = await replaceKeyArray(keys, config, sheet);
   // The .shift method is very slow, thus using normal iterator
   let i = 0;
