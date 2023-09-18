@@ -1,6 +1,5 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import { decorateBlockAnalytics } from '../../martech/attributes.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 const mediaCollection = {};
@@ -150,5 +149,4 @@ export default function init(el) {
     el.append(accordionMedia);
     defalutOpen(el);
   }
-  decorateBlockAnalytics(el);
 }
