@@ -339,7 +339,6 @@
   display: flex;
   gap: var(--spacing-xs);
   flex-wrap: wrap;
-  margin-left: auto;
   height: auto;
   width: auto;
 }
@@ -351,4 +350,10 @@
 
 .merch-card .consonant-CardFooter-row .button--inactive {
   display: none;
+}
+
+.merch-card .content-background {
+  right: 0;
+  padding: var(--spacing-xs);
+  border-radius: 5px;
 }

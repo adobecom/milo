@@ -117,6 +117,29 @@ export const decorateBlockHrs = (el) => {
   if (hasHr && els.length) el.classList.add('has-divider');
 };
 
+export const decorateBgContent = (el) => {
+  const els = el.querySelectorAll('p');
+  let insidePattern = false;
+  let decoratedBlock;
+  [...els].forEach((e) => {
+    if (e.textContent.startsWith('/--')) {
+      insidePattern = true;
+      decoratedBlock = createTag('div', { class: 'content-background' });
+      decoratedBlock.style.background = e.textContent.substring(3).trim();
+      e.replaceWith(decoratedBlock);
+      return;
+    }
+    if (e.textContent.includes('--/')) {
+      insidePattern = false;
+      e.remove();
+      return;
+    }
+    if (insidePattern) {
+      decoratedBlock.appendChild(e);
+    }
+  });
+};
+
 function applyTextOverrides(el, override) {
   const parts = override.split('-');
   const type = parts[1];

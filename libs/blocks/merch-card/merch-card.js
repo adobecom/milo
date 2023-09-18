@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring */
-import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
+import { decorateButtons, decorateBlockHrs, decorateBgContent } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
@@ -95,6 +95,7 @@ const addInner = (el, altCta, cardType, merchCard) => {
   });
 
   inner.append(...innerElements);
+  decorateBgContent(inner);
   addFooter(links, inner, cardType !== PLANS_CARD);
   decorateFooter(el, altCta, cardType);
   merchCard.append(inner);
