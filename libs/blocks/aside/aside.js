@@ -30,7 +30,7 @@ const blockConfig = {
     [small]: ['m', 'm'],
     [medium]: ['s', 's'],
     [large]: ['l', 'm'],
-  }
+  },
 };
 const FORMAT_REGEX = /^format:/i;
 const mediaports = ['mobile-only', 'tablet-only', 'desktop-only'];
