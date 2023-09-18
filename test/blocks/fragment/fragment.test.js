@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { getLocale, setConfig } from '../../../libs/utils/utils.js';
+import { getLocale, loadArea, setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
@@ -34,7 +34,6 @@ describe('Fragments', () => {
   it('Doesnt create a malformed fragment', async () => {
     const a = document.querySelector('a.malformed');
     await getFragment(a);
-    console.log(window.lana.log.args);
     expect(window.lana.log.args[1][0]).to.equal('Could not make fragment: http://localhost:2000/test/blocks/fragment/mocks/fragments/malform.plain.html');
   });
 
@@ -43,5 +42,20 @@ describe('Fragments', () => {
     await getFragment(a);
     expect(document.querySelector('h4')).to.exist;
     expect(window.lana.log.args[2][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/frag-a');
+  });
+
+  it('Inlines fragments inside a block', async () => {
+    const marquee = document.querySelector('.marquee-section');
+    await loadArea(marquee);
+    expect(marquee.querySelector('.fragment')).to.not.exist;
+    expect(marquee.innerHTML.includes('This marquee content is pulled from a fragment')).to.be.true;
+  });
+
+  it('Does not inline fragments inside a block in DO_NOT_INLINE list', async () => {
+    const cols = document.querySelector('.columns-section');
+    await loadArea(cols);
+    expect(cols.querySelector('.fragment')).to.exist;
+    expect(cols.querySelector('.aside').style.background).to.equal('rgb(238, 238, 238)');
+    expect(cols.innerHTML.includes('Hello World!!!')).to.be.true;
   });
 });

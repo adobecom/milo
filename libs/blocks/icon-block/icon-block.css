@@ -62,7 +62,7 @@
 }
 
 .icon-block .foreground .icon-area {
-  margin: 0 auto;
+  margin: 0 auto var(--spacing-xs);
   max-height: var(--icon-size-xxl);
   max-width: 234px;
   overflow: hidden;
@@ -71,6 +71,21 @@
 .icon-block .foreground .icon-area img {
   height: var(--icon-size-xxl);
   width: auto;
+}
+
+.icon-block.inline .foreground {
+  max-width: max-content;
+  margin: 0 auto;
+}
+
+.icon-block.inline .foreground .text-content {
+  flex-flow: row nowrap;
+  text-align: start;
+  gap: 16px;
+}
+
+.icon-block.inline .body-s.action-area {
+  padding-top: 24px;
 }
 
 .icon-block.inline .icon-area,
@@ -251,6 +266,12 @@
   margin: 0 auto;
 }
 
+[class*='grid-width-'] .icon-block.fullwidth .foreground,
+[class*='grid-width-'] .icon-block.bio .foreground {
+  width: unset;
+  max-width: unset;
+}
+
 .icon-block.bio.center .foreground,
 .icon-block.vertical.center .foreground {
   text-align: center;
@@ -423,15 +444,4 @@
   .section.five-up {
     grid-template-columns: repeat(5, 1fr) !important;
   }
-}
-
-.icon-block.inline .foreground .text-content {
-  flex-flow: row nowrap;
-  text-align: start;
-  gap: 16px;
-}
-
-
-.icon-block.inline .body-s.action-area {
-  padding-top: 24px;
 }

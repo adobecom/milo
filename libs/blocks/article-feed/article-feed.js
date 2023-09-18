@@ -8,6 +8,7 @@ import {
 
 import { createTag, getConfig, createIntersectionObserver } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
 const ROOT_MARGIN = 50;
 
@@ -74,9 +75,10 @@ export async function fetchBlogArticleIndex() {
   const pageSize = 500;
   const { feed } = blogIndex.config;
   const queryParams = `?limit=${pageSize}&offset=${blogIndex.offset}`;
+  const defaultPath = updateLinkWithLangRoot(`${getConfig().locale.contentRoot}/query-index.json`);
   const indexPath = feed
     ? `${feed}${queryParams}`
-    : `${getConfig().locale.contentRoot}/query-index.json${queryParams}`;
+    : `${defaultPath}${queryParams}`;
 
   if (blogIndex.complete) return (blogIndex);
 
