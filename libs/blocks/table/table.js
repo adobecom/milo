@@ -414,6 +414,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
 export default function init(el) {
   el.setAttribute('role', 'table');
+  if (el.parentElement.classList.contains('section')) el.parentElement.classList.add(`table-${el.classList.contains('merch') ? 'merch-' : ''}section`);
   const rows = Array.from(el.children);
   const isMerch = el.classList.contains('merch');
   const isCollapseTable = el.classList.contains('collapse') && !isMerch;
@@ -452,29 +453,27 @@ export default function init(el) {
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
-  window.addEventListener(MILO_EVENTS.LCP_LOADED, () => {
-    let originTable;
-    let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
-    if (isMerch) {
-      visibleHeadingsSelector = '.col-heading:not(.hidden)';
-    }
-    if (el.querySelectorAll(visibleHeadingsSelector).length > 2) {
-      originTable = el.cloneNode(true);
-    } else {
-      originTable = el;
-    }
+  let originTable;
+  let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
+  if (isMerch) {
+    visibleHeadingsSelector = '.col-heading:not(.hidden)';
+  }
+  if (el.querySelectorAll(visibleHeadingsSelector).length > 2) {
+    originTable = el.cloneNode(true);
+  } else {
+    originTable = el;
+  }
 
-    const handleResize = () => {
-      applyStylesBasedOnScreenSize(el, originTable);
-      if (isStickyHeader) handleScrollEffect(el);
-    };
+  const handleResize = () => {
+    applyStylesBasedOnScreenSize(el, originTable);
+    if (isStickyHeader) handleScrollEffect(el);
+  };
+  handleResize();
+
+  let deviceBySize = defineDeviceByScreenSize();
+  window.addEventListener('resize', () => {
+    if (deviceBySize === defineDeviceByScreenSize()) return;
+    deviceBySize = defineDeviceByScreenSize();
     handleResize();
-
-    let deviceBySize = defineDeviceByScreenSize();
-    window.addEventListener('resize', () => {
-      if (deviceBySize === defineDeviceByScreenSize()) return;
-      deviceBySize = defineDeviceByScreenSize();
-      handleResize();
-    });
-  }, { once: true });
+  });
 }
