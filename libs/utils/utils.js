@@ -766,24 +766,11 @@ async function checkForPageMods() {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
     loadIms().catch(() => {});
-    // for each manifest, check if it has a flag and if yes, if the flag is enabled.
-    // Flag is enabled either by a date range or by on/off switch
-    // const flags = await fetch('/flags.json');
-    // persManifests.map((persManifest) => {
-    //   if (persManifest.includes('|')) {
-    //     const [flag, manifestPath] = persManifest.split('|');
-    //     return { flag, manifestPath };
-    //   }
-    //   return { manifestPath: persManifest };
-    // });
-    //
     const flagsResp = await fetch('/flags.json');
     if (!flagsResp.ok) {
       // throw new Error('Config not found!');
     }
     const flags = await flagsResp.json();
-    // const urlInfo = getUrlInfo();
-    // const flags2 = await fetchConfigJson('/flags.json');
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests, flags }, { getConfig, loadLink });
 
