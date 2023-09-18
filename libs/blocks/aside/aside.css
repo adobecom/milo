@@ -72,7 +72,7 @@
   gap: var(--spacing-l);
 }
 
-.aside:not(.notification):not(.inline):not(.promobar) .foreground> :first-child {
+.aside:not(.notification):not(.inline) .foreground> :first-child {
   padding: var(--spacing-xxxl) 0 0;
 }
 
@@ -489,6 +489,10 @@
   height: var(--icon-size-xxl);
   max-width: 300px;
   width: auto;
+}
+
+.aside.promobar .foreground.container > :first-child {
+  padding: var(--spacing-xs) 0;
 }
 
 .aside.promobar .foreground.container {
