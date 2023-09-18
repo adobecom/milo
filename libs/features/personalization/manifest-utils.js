@@ -36,15 +36,16 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [], fla
         if (flagData.onoff !== '') {
           disabled = flagData.onoff === 'off';
         } else {
-          const start = xlSerialToJsDate(flagData.start);
-          const end = xlSerialToJsDate(flagData.end);
+          flagData.startLocal = xlSerialToJsDate(flagData.start);
+          flagData.endLocal = xlSerialToJsDate(flagData.end);
           const currentDate = new Date();
-          if (start && end && (currentDate < start || currentDate > end)) {
+          if (flag.startLocal && flag.endLocal
+            && (currentDate < flag.startLocal || currentDate > flag.endLocal)) {
             disabled = true;
           }
         }
       }
-      return { flag, manifestPath, disabled };
+      return { flag: flagData, manifestPath, disabled };
     }),
   );
 

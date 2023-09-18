@@ -407,7 +407,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   return matchingVariant;
 }
 
-export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
+export async function getPersConfig(name, variantLabel, manifestData, manifestPath, disabled) {
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
@@ -451,6 +451,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
 
   config.name = name;
   config.manifest = manifestPath;
+  config.disabled = disabled;
   return config;
 }
 
@@ -471,11 +472,13 @@ export async function runPersonalization(info, config) {
     manifestPath,
     variantLabel,
     disabled,
+    flag,
   } = info;
 
-  const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath);
+  const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath, disabled);
 
   if (!experiment) return null;
+  experiment.flag = flag;
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
