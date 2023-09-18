@@ -37,7 +37,7 @@ function setAnalytics(hashValue, debug) {
   window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.customHash = hashValue;
   if (debug === 'quiz-results') {
     // eslint-disable-next-line no-console
-    console.log(`Setting a custom hash for pageload to: ${window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.customHash}`);
+    console.log('Setting a custom hash for pageload to: ', hashValue);
   }
 }
 
