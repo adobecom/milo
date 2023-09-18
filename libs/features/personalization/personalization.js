@@ -418,7 +418,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     placeholders = data.placeholders.data;
   }
 
-  const persData = data?.data || data?.experiences?.data || data?.experiments?.data;
+  const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
   const config = parseConfig(persData);
 

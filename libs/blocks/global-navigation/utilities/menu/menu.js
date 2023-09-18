@@ -268,7 +268,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const res = await fetch(path);
     if (res.status !== 200) return;
     const content = await res.text();
-    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-content">
           ${parsedContent}
