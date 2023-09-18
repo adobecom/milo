@@ -1,5 +1,5 @@
 /* eslint-disable no-plusplus */
-import { createTag } from '../../utils/utils.js';
+import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
 const DESKTOP_SIZE = 900;
@@ -453,27 +453,38 @@ export default function init(el) {
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
-  let originTable;
-  let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
-  if (isMerch) {
-    visibleHeadingsSelector = '.col-heading:not(.hidden)';
-  }
-  if (el.querySelectorAll(visibleHeadingsSelector).length > 2) {
-    originTable = el.cloneNode(true);
-  } else {
-    originTable = el;
-  }
+  const handleTable = () => {
+    let originTable;
+    let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
+    if (isMerch) {
+      visibleHeadingsSelector = '.col-heading:not(.hidden)';
+    }
+    if (el.querySelectorAll(visibleHeadingsSelector).length > 2) {
+      originTable = el.cloneNode(true);
+    } else {
+      originTable = el;
+    }
 
-  const handleResize = () => {
-    applyStylesBasedOnScreenSize(el, originTable);
-    if (isStickyHeader) handleScrollEffect(el);
-  };
-  handleResize();
-
-  let deviceBySize = defineDeviceByScreenSize();
-  window.addEventListener('resize', () => {
-    if (deviceBySize === defineDeviceByScreenSize()) return;
-    deviceBySize = defineDeviceByScreenSize();
+    const handleResize = () => {
+      applyStylesBasedOnScreenSize(el, originTable);
+      if (isStickyHeader) handleScrollEffect(el);
+    };
     handleResize();
-  });
+
+    let deviceBySize = defineDeviceByScreenSize();
+    window.addEventListener('resize', () => {
+      if (deviceBySize === defineDeviceByScreenSize()) return;
+      deviceBySize = defineDeviceByScreenSize();
+      handleResize();
+    });
+  };
+
+  if (window.MILO_LCP_LOADED) {
+    handleTable();
+  } else {
+    window.addEventListener(MILO_EVENTS.LCP_LOADED, () => {
+      window.MILO_LCP_LOADED = true;
+      handleTable();
+    }, { once: true });
+  }
 }
