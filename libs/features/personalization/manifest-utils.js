@@ -26,27 +26,25 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [], fla
 
   manifests = manifests.concat(
     persManifests.map((persManifest) => {
-      const mmm = { manifestPath: appendJsonExt(persManifest) };
-
-      if (persManifest.includes('|')) {
-        const [flag, manifestPath] = appendJsonExt(persManifest).split('|');
-        let isDisabled = false;
-        const flagData = flags.data.find((f) => f?.flag === flag);
-        if (flagData) {
-          if (flagData.onoff === 'off') {
-            isDisabled = true;
-          } else {
-            const start = xlSerialToJsDate(flagData.start);
-            const end = xlSerialToJsDate(flagData.end);
-            const currentDate = new Date();
-            if (start && end && (currentDate < start || currentDate > end)) {
-              isDisabled = true;
-            }
+      if (!persManifest.includes('|')) {
+        return { manifestPath: appendJsonExt(persManifest) };
+      }
+      let disabled = false;
+      const [flag, manifestPath] = persManifest.split('|');
+      const flagData = flags.data.find((f) => f?.flag === flag);
+      if (flagData) {
+        if (flagData.onoff === 'off') {
+          disabled = true;
+        } else {
+          const start = xlSerialToJsDate(flagData.start);
+          const end = xlSerialToJsDate(flagData.end);
+          const currentDate = new Date();
+          if (start && end && (currentDate < start || currentDate > end)) {
+            disabled = true;
           }
         }
-        return { manifestFlag: flag, manifestPath, disabled: isDisabled };
       }
-      return mmm;
+      return { flag, manifestPath, disabled };
     }),
   );
 
