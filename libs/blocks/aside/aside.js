@@ -73,9 +73,23 @@ function decorateMedia(el) {
   });
 }
 
+function decorateVideo(container) {
+  const link = container.querySelector('a[href*=".mp4"]');
+  if (!link) return;
+  const isNotLooped = link.hash?.includes('autoplay1');
+  const attrs = `playsinline autoplay ${isNotLooped ? '' : 'loop'} muted`;
+  container.innerHTML = `<video preload="metadata" ${attrs}>
+    <source src="${link.href}" type="video/mp4" />
+  </video>`;
+  container.classList.add('has-video');
+}
+
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
-  if (elems.length > 1) decorateBlockBg(el, elems[0]);
+  if (elems.length > 1) {
+    decorateBlockBg(el, elems[0]);
+    [...elems[0].children].forEach((child) => decorateVideo(child));
+  }
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
   if (el.classList.contains('split')) decorateMedia(el);
