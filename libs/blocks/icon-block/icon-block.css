@@ -56,13 +56,13 @@
   font-size: var(--type-body-m-size);
 }
 
-.icon-block.fullwidth .foreground .text-content .action-area a,
+.icon-block.full-width .foreground .text-content .action-area a,
 .icon-block .foreground .text-content .action-area.supplemental-text a {
   font-weight: bold;
 }
 
 .icon-block .foreground .icon-area {
-  margin: 0 auto;
+  margin: 0 auto var(--spacing-xs);
   max-height: var(--icon-size-xxl);
   max-width: 234px;
   overflow: hidden;
@@ -71,6 +71,21 @@
 .icon-block .foreground .icon-area img {
   height: var(--icon-size-xxl);
   width: auto;
+}
+
+.icon-block.inline .foreground {
+  max-width: max-content;
+  margin: 0 auto;
+}
+
+.icon-block.inline .foreground .text-content {
+  flex-flow: row nowrap;
+  text-align: start;
+  gap: 16px;
+}
+
+.icon-block.inline .body-s.action-area {
+  padding-top: 24px;
 }
 
 .icon-block.inline .icon-area,
@@ -89,7 +104,7 @@
   min-width: var(--icon-size-xl);
 }
 
-.icon-block.fullwidth .foreground .icon-area {
+.icon-block.full-width .foreground .icon-area {
   margin-bottom: var(--spacing-m);
 }
 
@@ -136,7 +151,7 @@
   margin-top: var(--spacing-s);
 }
 
-.icon-block.fullwidth.small .foreground .icon-area,
+.icon-block.full-width.small .foreground .icon-area,
 .icon-block.vertical.small .foreground .icon-area {
   margin-bottom: var(--spacing-s);
 }
@@ -145,7 +160,7 @@
   margin-bottom: var(--spacing-m);
 }
 
-.five-up .icon-block:not(.fullwidth) .foreground .icon-area {
+.five-up .icon-block:not(.full-width) .foreground .icon-area {
   max-height: 48px;
   max-width: 147px;
   margin-bottom: var(--spacing-xs);
@@ -155,7 +170,7 @@
   width: fit-content;
 }
 
-.five-up .icon-block:not(.fullwidth) .foreground .icon-area img {
+.five-up .icon-block:not(.full-width) .foreground .icon-area img {
   max-height: 48px;
   max-width: 147px;
 }
@@ -218,7 +233,7 @@
   margin-bottom: 0;
 }
 
-.icon-block.fullwidth .foreground .text-content .action-area {
+.icon-block.full-width .foreground .text-content .action-area {
   justify-content: center;
 }
 
@@ -227,7 +242,7 @@
   flex-direction: column;
 }
 
-.icon-block:not(.small.fullwidth) .foreground .text-content .action-area {
+.icon-block:not(.small.full-width) .foreground .text-content .action-area {
   white-space: initial;
   display: flex;
   flex-wrap: wrap;
@@ -245,10 +260,16 @@
   margin-bottom: var(--spacing-s);
 }
 
-.icon-block.fullwidth .foreground,
+.icon-block.full-width .foreground,
 .icon-block.bio .foreground {
   width: var(--grid-container-width);
   margin: 0 auto;
+}
+
+[class*='grid-width-'] .icon-block.full-width .foreground,
+[class*='grid-width-'] .icon-block.bio .foreground {
+  width: unset;
+  max-width: unset;
 }
 
 .icon-block.bio.center .foreground,
@@ -277,20 +298,12 @@
   line-height: var(--type-body-xs-lh);
 }
 
-.icon-block.fullwidth.small .foreground .text-content .action-area > a:not(.con-button) {
+.icon-block.full-width.small .foreground .text-content .action-area > a:not(.con-button) {
   display: block;
   margin-top: var(--spacing-s);
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
 }
-
-.two-up .icon-block.fullwidth,
-.three-up .icon-block.fullwidth,
-.four-up .icon-block.fullwidth,
-.five-up .icon-block.fullwidth {
-  grid-column: 1 /-1;
-}
-
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
@@ -329,7 +342,7 @@
 }
 
 @media screen and (min-width: 1200px) {
-  .icon-block.fullwidth .foreground,
+  .icon-block.full-width .foreground,
   .icon-block.bio .foreground {
     max-width: 800px;
     margin: 0 auto;
@@ -423,15 +436,4 @@
   .section.five-up {
     grid-template-columns: repeat(5, 1fr) !important;
   }
-}
-
-.icon-block.inline .foreground .text-content {
-  flex-flow: row nowrap;
-  text-align: start;
-  gap: 16px;
-}
-
-
-.icon-block.inline .body-s.action-area {
-  padding-top: 24px;
 }

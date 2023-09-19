@@ -1,7 +1,10 @@
-
- /*** Variables ***/
+/*** Variables ***/
 
  :root {
+  --global-height-nav: 64px;
+  --global-height-breadcrumbs: 33px;
+  --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
+
   /* Colors */
   --link-color: #035fe6;
   --link-hover-color: #136ff6;
@@ -482,6 +485,7 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 .con-block.xxl-spacing-static-bottom { padding-bottom: var(--spacing-xxl-static); }
 .con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
+div[class*='-up'] .con-block.full-width { grid-column: 1 /-1; }
 div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
 div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
 div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
@@ -528,11 +532,6 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 }
 
 /*** Global Styles ***/
-
-:root {
-  --feds-totalheight-nav: calc(var(--feds-height-nav) + var(--feds-height-breadcrumbs));
-}
-
 @font-face {
   font-family: 'Trebuchet MS';
   font-weight: 700;
@@ -589,13 +588,13 @@ header:not(.global-navigation) ~ main {
   all of the ':not(.global-navigation)' rules can be entirely removed.
  */
 header.global-navigation {
-  height: 64px; /* TODO better approach for value? */
+  height: var(--global-height-nav); /* TODO better approach for value? */
   visibility: hidden;
 }
 
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
-    padding-bottom: 33px; /* TODO better approach for value? */
+    padding-bottom: var(--global-height-breadcrumbs); /* TODO better approach for value? */
   }
 }
 
@@ -691,6 +690,19 @@ div:not([class]) > div > div > img[src^="./media_"] {
   margin: 0 auto;
 }
 
+picture.bg-img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+picture.bg-img img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
 .section .section-background img {
   object-fit: cover;
   height: 100%;
@@ -747,27 +759,13 @@ div[data-failed="true"]::before {
   display: block;
 }
 
-/* Utilities */
-picture.bg-img {
-  display: block;
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-
-picture.bg-img img {
-  object-fit: cover;
-  height: 100%;
-  width: 100%;
-}
-
 .milo-card-section {
   visibility: hidden;
 }
 
 @media (min-width: 900px) {
   header:not(.global-navigation) {
-    min-height: 64px;
+    min-height: var(--global-height-nav);
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
   }

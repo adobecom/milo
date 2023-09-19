@@ -17,7 +17,7 @@
 import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const variants = ['fullwidth', 'vertical', 'bio', 'inline'];
+const variants = ['full-width', 'vertical', 'bio', 'inline'];
 const iconBlocks = {
   small: {
     [variants[0]]: ['m', 'm'],
@@ -63,7 +63,7 @@ function decorateContent(el) {
       text.lastElementChild.classList.add('action-area');
     }
     const size = getBlockSize(el, 2);
-    const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
+    const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? variants[0];
     const textSize = upAndInline(el) ? ['xs', 's'] : iconBlocks[size][variant];
     decorateBlockText(el, textSize);
     if (el.classList.contains('inline')) {
@@ -80,5 +80,6 @@ function decorateContent(el) {
 export default function init(el) {
   el.classList.add('con-block');
   if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'xl-spacing-static-bottom');
+  if (el.classList.contains('fullwidth')) el.classList.replace('fullwidth', 'full-width');
   decorateContent(el);
 }
