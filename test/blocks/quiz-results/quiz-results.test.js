@@ -7,7 +7,7 @@ window.lana = { log: stub() };
 localStorage.clear();
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, loadingErrorText } = await import('../../../libs/blocks/quiz-results/quiz-results.js');
+const { default: init, LOADING_ERROR } = await import('../../../libs/blocks/quiz-results/quiz-results.js');
 const { default: mockData } = await import('./mocks/quiz-results.mock-data.js');
 
 describe('Quiz Results', () => {
@@ -17,7 +17,7 @@ describe('Quiz Results', () => {
 
     await init(el, 'quiz-results', 'quiz-result-test');
 
-    expect(window.lana.log.args[0][0]).to.equal(`${loadingErrorText} local storage missing`);
+    expect(window.lana.log.args[0][0]).to.equal(`${LOADING_ERROR} local storage missing`);
   });
   it('Doesnt load data without basicFragments in local storage', async () => {
     const el = document.body.querySelector('.basic-one');
@@ -25,7 +25,7 @@ describe('Quiz Results', () => {
 
     await init(el, 'quiz-results', 'quiz-result-test');
 
-    expect(window.lana.log.args[1][0]).to.equal(`${loadingErrorText} Basic fragments are missing`);
+    expect(window.lana.log.args[1][0]).to.equal(`${LOADING_ERROR} Basic fragments are missing`);
   });
   it('Loads basic fragments', async () => {
     const el = document.body.querySelector('.basic-one');
