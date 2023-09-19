@@ -51,7 +51,10 @@ jobs:
 
             str="${str//\"/""}"
             str="${str//\'/""}"
-            str="${str//$'\r\n\t'/ }"
+            str="${str//$'\r'/\r}"
+            str="${str//$'\n'/\n}"
+            str="${str//$'\t'/\t}"
+            str="${str//$'/'/\/}"
 
             echo "$str"
           }
@@ -120,7 +123,5 @@ jobs:
               echo "CMR creation was successful"
             fi
           }
-
-          echo "${{ env.release_summary }}"
 
           skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ secrets.SKMS_CHANGE_EXECUTOR }}","maintenance_window_end_time":"${{ env.end_time }}","maintenance_window_start_time":"${{ env.start_time }}","preapproved_change_model_id":"${{ secrets.SKMS_CHANGE_MODEL_ID }}","summary":"${{ env.release_summary }}"}'
