@@ -11,10 +11,10 @@ describe('Merch Card', () => {
     const cardFooter = inner.querySelector('.consonant-CardFooter');
     const buttons = cardFooter.querySelectorAll('.con-button');
 
-    expect(document.querySelector('.consonant-ProductCard')).to.be.exist;
-    expect(inner.querySelector('.consonant-SegmentBlade-title')).to.be.exist;
-    expect(inner.querySelector('.consonant-SegmentBlade-description')).to.be.exist;
-    expect(cardFooter.querySelector('.con-button')).to.be.exist;
+    expect(document.querySelector('.consonant-ProductCard')).to.exist;
+    expect(inner.querySelector('.consonant-SegmentBlade-title')).to.exist;
+    expect(inner.querySelector('.consonant-SegmentBlade-description')).to.exist;
+    expect(cardFooter.querySelector('.con-button')).to.exist;
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Learn More');
     expect(buttons[1].textContent).to.be.equal('Save now');
@@ -47,14 +47,18 @@ describe('Merch Card', () => {
     const ribbon = document.querySelector('.consonant-SpecialOffers-ribbon');
     const buttons = cardFooter.querySelectorAll('.con-button');
 
-    expect(document.querySelector('.consonant-ProductCard')).to.be.exist;
-    expect(inner.querySelector('.consonant-SpecialOffers-title')).to.be.exist;
-    expect(inner.querySelector('.consonant-SpecialOffers-description')).to.be.exist;
-    expect(document.querySelector('.consonant-SpecialOffers-iconWrapper')).to.be.exist;
-    expect(ribbon).to.be.exist;
-    expect(ribbon.style.backgroundColor).to.be.equal('rgb(237, 204, 45)');
+    expect(document.querySelector('.consonant-ProductCard')).to.exist;
+    expect(inner.querySelector('.consonant-SpecialOffers-title')).to.exist;
+    expect(inner.querySelector('.consonant-SpecialOffers-description')).to.exist;
+    expect(document.querySelector('.consonant-SpecialOffers-iconWrapper')).to.exist;
+    expect(ribbon).to.exist;
+    expect(ribbon.style.backgroundColor).to.be.equal('');
     expect(ribbon.style.color).to.be.equal('rgb(0, 0, 0)');
     expect(ribbon.textContent).to.be.equal('LOREM IPSUM DOLOR');
+    expect(ribbon.style.borderLeft).to.be.equal('1px solid rgb(237, 204, 45)');
+    expect(ribbon.style.borderRight).to.be.equal('none');
+    expect(ribbon.style.borderTop).to.be.equal('1px solid rgb(237, 204, 45)');
+    expect(ribbon.style.borderBottom).to.be.equal('1px solid rgb(237, 204, 45)');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Learn More');
     expect(buttons[1].textContent).to.be.equal('Save now');
@@ -78,26 +82,33 @@ describe('Merch Card', () => {
       const plansCard = document.querySelector('.consonant-ProductCard');
       const iconsWrapper = document.querySelector('.consonant-PlansCard-iconWrapper');
       const icons = iconsWrapper.querySelectorAll('.consonant-MerchCard-ProductIcon');
+      const list = document.querySelector('.consonant-PlansCard-list');
+      const listItems = list.querySelectorAll('li');
 
-      expect(plansCard).to.be.exist;
+      expect(plansCard).to.exist;
       expect(plansCard.style.border).to.be.equal('1px solid rgb(237, 204, 45)');
-      expect(inner.querySelector('.consonant-PlansCard-title')).to.be.exist;
-      expect(inner.querySelector('.consonant-PlansCard-description')).to.be.exist;
-      expect(iconsWrapper).to.be.exist;
+      expect(inner.querySelector('.consonant-PlansCard-title')).to.exist;
+      expect(inner.querySelector('.consonant-PlansCard-description')).to.exist;
+      expect(iconsWrapper).to.exist;
       expect(icons.length).to.be.equal(2);
-      expect(ribbon).to.be.exist;
+      expect(ribbon).to.exist;
       expect(ribbon.style.backgroundColor).to.be.equal('rgb(237, 204, 45)');
       expect(ribbon.style.color).to.be.equal('rgb(0, 0, 0)');
       expect(ribbon.textContent).to.be.equal('LOREM IPSUM DOLOR');
       expect(buttons.length).to.be.equal(2);
       expect(buttons[0].textContent).to.be.equal('Learn More');
       expect(buttons[1].textContent).to.be.equal('Save now');
-      expect(secureWrapper).to.be.exist;
+      expect(secureWrapper).to.exist;
+      expect(list).to.exist;
+      expect(list.classList.contains('consonant-PlansCard-list')).to.be.true;
+      expect(listItems.length).to.be.equal(2);
+      expect(listItems[0].textContent).to.be.equal('Maecenas porttitor congue massa');
+      expect(listItems[1].textContent).to.be.equal('Nunc viverra imperdiet enim.');
 
-      expect(checkBoxContainer.querySelector('.checkMark')).to.be.exist;
+      expect(checkBoxContainer.querySelector('.checkMark')).to.exist;
       expect(checkBoxContainer.querySelector('.checkbox-label').textContent).to.be.equal('Lorem ipsum dolor sit amet');
-      expect(secureWrapper.querySelector('.secure-transaction-icon').classList).to.be.exist;
-      expect(secureWrapper.querySelector('.secure-transaction-label')).to.be.exist;
+      expect(secureWrapper.querySelector('.secure-transaction-icon').classList).to.exist;
+      expect(secureWrapper.querySelector('.secure-transaction-label')).to.exist;
 
       expect(inactiveButton.classList.contains('button--inactive')).to.be.true;
       checkBoxContainer.querySelector('.checkMark').click();
@@ -120,17 +131,17 @@ describe('Merch Card', () => {
       const iconsWrapper = document.querySelector('.consonant-PlansCard-iconWrapper');
       const icons = iconsWrapper.querySelectorAll('.consonant-MerchCard-ProductIcon');
 
-      expect(plansCard).to.be.exist;
+      expect(plansCard).to.exist;
       console.log(plansCard.style.border);
-      expect(inner.querySelector('.consonant-PlansCard-title')).to.be.exist;
-      expect(inner.querySelector('.consonant-PlansCard-description')).to.be.exist;
-      expect(iconsWrapper).to.be.exist;
+      expect(inner.querySelector('.consonant-PlansCard-title')).to.exist;
+      expect(inner.querySelector('.consonant-PlansCard-description')).to.exist;
+      expect(iconsWrapper).to.exist;
       expect(icons.length).to.be.equal(2);
       expect(ribbon).to.not.exist;
       expect(buttons.length).to.be.equal(2);
       expect(buttons[0].textContent).to.be.equal('Learn More');
       expect(buttons[1].textContent).to.be.equal('Save now');
-      expect(inactiveButton).to.be.exist;
+      expect(inactiveButton).to.exist;
       expect(secureWrapper).to.not.exist;
       expect(checkBoxContainer).to.not.exist;
     });
@@ -139,6 +150,19 @@ describe('Merch Card', () => {
       const el = document.querySelector('.merch-card.empty');
       await init(el);
       expect(el.outerHTML.includes('undefined')).to.be.false;
+    });
+  });
+
+  describe('UAR Card', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/uar-card.html' });
+    });
+    it('handles decorated <hr>', async () => {
+      const cards = document.querySelectorAll('.merch-card');
+      cards.forEach((card) => {
+        init(card);
+      });
+      expect(cards[0].classList.contains('has-divider')).to.be.true;
     });
   });
 });
