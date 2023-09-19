@@ -57,18 +57,6 @@
   width: 100%;
 }
 
-.marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="Salutation"] {
-  grid-area: salutation;
-}
-
-.marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="FirstName"] {
-  grid-area: firstName;
-}
-
-.marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="LastName"] {
-  grid-area: lastName;
-}
-
 .marketo .mktoFormRow {
   transition: height 0.5s ease-in;
   height: auto;
@@ -271,8 +259,6 @@
   justify-content: center;
   width: 100%;
   margin-top: 21px;
-  grid-column-start: 1;
-  grid-column-end: 3;
 }
 
 .marketo .mktoForm .mktoButton {
@@ -488,6 +474,22 @@
   .marketo .mktoFormRow.mktoFormRowTop.demo,
   .marketo .mktoFormRow.mktoFormRowTop.name {
     display: block;
+    grid-column: span 2;
+  }
+
+  .marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="Salutation"] {
+    grid-area: salutation;
+  }
+  
+  .marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="FirstName"] {
+    grid-area: firstName;
+  }
+  
+  .marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="LastName"] {
+    grid-area: lastName;
+  }
+
+  .marketo .mktoForm .mktoButtonRow {
     grid-column: span 2;
   }
 }
