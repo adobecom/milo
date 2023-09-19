@@ -107,7 +107,7 @@ jobs:
             local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
             local sani_method_params=$(echo "$method_params" | jq -Rsa .)
             echo "$sani_method_params"
-            params=$(echo "$params $sani_method_params" | jq -s add)
+            params=$(echo "$params\n$sani_method_params" | jq -s add)
 
             local response=$(curl --write-out "%{http_code}" --silent --output response.txt https://${url}/web_api --data-urlencode "_parameters=${params}")
 
