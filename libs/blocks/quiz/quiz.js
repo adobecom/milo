@@ -22,26 +22,26 @@ const App = ({
   initialIsDataLoaded = false,
   preQuestions = {}, initialStrings = {},
 }) => {
-  const [questionData, setQuestionData] = useState(preQuestions.questionData || {});
-  const [stringData, setStringData] = useState(initialStrings || {});
-  const [isDataLoaded, setDataLoaded] = useState(initialIsDataLoaded);
-  const [selectedQuestion, setSelectedQuestion] = useState(preQuestions || null);
-  const [questionList, setQuestionList] = useState(preQuestions.questionList || {});
-  const [stringQList, setStringQList] = useState(preQuestions.stringQList || {});
-  const [userSelection, updateUserSelection] = useState([]);
-  const [userFlow, setUserFlow] = useState([]);
-  const [selectedCards, setSelectedCards] = useState({});
+  const [btnAnalytics, setBtnAnalytics] = useState(null);
+  const [isBtnClicked, setIsBtnClicked] = useState(false);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-  const [totalSteps, setTotalSteps] = useState(3);
-  const [prevStepIndicator, setPrevStepIndicator] = useState([]);
+  const [isDataLoaded, setDataLoaded] = useState(initialIsDataLoaded);
   const [nextQuizViewsExist, setNextQuizViewsExist] = useState(true);
-  const [btnAnalytics, setBtnAnalytics] = useState(null);
-  const [btnClicked, setBtnClicked] = useState(false);
+  const [prevStepIndicator, setPrevStepIndicator] = useState([]);
+  const [questionData, setQuestionData] = useState(preQuestions.questionData || {});
+  const [questionList, setQuestionList] = useState(preQuestions.questionList || {});
+  const [selectedCards, setSelectedCards] = useState({});
+  const [selectedQuestion, setSelectedQuestion] = useState(preQuestions || null);
+  const [stringData, setStringData] = useState(initialStrings || {});
+  const [stringQList, setStringQList] = useState(preQuestions.stringQList || {});
+  const [totalSteps, setTotalSteps] = useState(3);
   const initialUrlParams = getUrlParams();
   const [urlParam, setUrlParam] = useState(initialUrlParams);
-  const VALID_QUESTIONS = useMemo(() => [], []);
-  const KNOWN_PARAMS = useMemo(() => ['martech', 'milolibs', 'quiz-data'], []);
+  const [userSelection, updateUserSelection] = useState([]);
+  const [userFlow, setUserFlow] = useState([]);
+  const validQuestions = useMemo(() => [], []);
+  const knownParams = useMemo(() => ['martech', 'milolibs', 'quiz-data'], []);
 
   useEffect(() => {
     (async () => {
@@ -49,7 +49,7 @@ const App = ({
       const qMap = {};
       questions.questions.data.forEach((question) => {
         qMap[question.questions] = question;
-        VALID_QUESTIONS.push(question.questions);
+        validQuestions.push(question.questions);
       });
 
       const strMap = {};
@@ -63,11 +63,7 @@ const App = ({
       setQuestionData(questions);
       setStringQList(strMap);
       setQuestionList(qMap);
-
-      // wait for data to load
       setDataLoaded(true);
-
-      // add quiz class to page
       document.body.classList.add('quiz-page');
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,8 +71,7 @@ const App = ({
 
   useEffect(() => {
     function handlePopState() {
-      const currentURL = window.location.href;
-      window.location.href = currentURL;
+      window.location.reload();
     }
     if (isDataLoaded) {
       window.addEventListener('popstate', handlePopState);
@@ -85,7 +80,7 @@ const App = ({
       };
     }
     return () => {};
-  }, [KNOWN_PARAMS, isDataLoaded]);
+  }, [knownParams, isDataLoaded]);
 
   useEffect(() => {
     if (userFlow.length) {
@@ -122,22 +117,22 @@ const App = ({
    *  Happens with each option click/tap.
    */
   useEffect(() => {
+    if (!selectedQuestion) return;
+    const { questions } = selectedQuestion;
     const cardValues = Object.getOwnPropertyNames(selectedCards);
-    if (selectedQuestion) {
-      setUrlParam((prevUrlParam) => {
-        const newParam = { ...prevUrlParam };
-        if (selectedQuestion && cardValues.length === 0) {
-          delete newParam[selectedQuestion.questions];
-        } else if (!urlParam[selectedQuestion.questions]) {
-          newParam[selectedQuestion.questions] = new Set(
-            [...(urlParam[selectedQuestion.questions] || []), ...cardValues],
-          );
-        } else {
-          newParam[selectedQuestion.questions] = new Set(cardValues);
-        }
-        return newParam;
-      });
-    }
+    setUrlParam((prevUrlParam) => {
+      const newParam = { ...prevUrlParam };
+      if (selectedQuestion && cardValues.length === 0) {
+        delete newParam[questions];
+      } else if (!urlParam[questions]) {
+        newParam[questions] = new Set(
+          [...(urlParam[questions] || []), ...cardValues],
+        );
+      } else {
+        newParam[questions] = new Set(cardValues);
+      }
+      return newParam;
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuestion, selectedCards, JSON.stringify(urlParam)]);
 
@@ -145,24 +140,25 @@ const App = ({
    * Updates the url when the url param is updated as part of the option click.
    */
   useLayoutEffect(() => {
-    if (Object.keys(urlParam).length > 0 && btnClicked === true) {
+    if (Object.keys(urlParam).length > 0 && isBtnClicked === true) {
       let urlParamList = Object.keys(urlParam).map((key) => {
         const paramList = [...urlParam[key]];
         if (paramList.length) {
           return `${key}=${paramList.join(',')}`;
         }
         return null; // Explicitly return null if the condition is not met
-      }).filter((item) => !!item && !KNOWN_PARAMS.includes(item.split('=')[0]));
-      const knownParamsList = KNOWN_PARAMS.filter((key) => key in urlParam).map((key) => `${key}=${urlParam[key].join(',')}`);
+      }).filter((item) => !!item && !knownParams.includes(item.split('=')[0]));
+      const knownParamsList = knownParams
+        .filter((key) => key in urlParam)
+        .map((key) => `${key}=${urlParam[key].join(',')}`);
       urlParamList = [...urlParamList, ...knownParamsList];
-      const validParams = KNOWN_PARAMS.filter((key) => key in urlParam).map((key) => `${key}=${urlParam[key].join(',')}`);
-      if (validParams.length === 1 && btnClicked === false) {
+      if (knownParamsList.length === 1 && isBtnClicked === false) {
         const newURL = knownParamsList && knownParamsList.length > 0 ? `?${knownParamsList.join('&')}` : '';
         window.history.pushState('', '', newURL);
       } else {
         window.history.pushState('', '', `?${urlParamList.join('&')}`);
       }
-      setBtnClicked(false);
+      setIsBtnClicked(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlParam]);
@@ -195,7 +191,7 @@ const App = ({
    * @returns {void}
    */
   const handleOnNextClick = (selCards) => {
-    setBtnClicked(true);
+    setIsBtnClicked(true);
     const { nextQuizViews, lastStopValue } = handleNext(
       questionData,
       selectedQuestion,
@@ -239,7 +235,7 @@ const App = ({
    *  @returns {void}
    * */
   const onOptionClick = (option) => () => {
-    setBtnClicked(true);
+    setIsBtnClicked(true);
     const newState = { ...selectedCards };
 
     if (Object.keys(newState).length >= maxSelections && !newState[option.options]) {
@@ -260,7 +256,7 @@ const App = ({
     const getStringValue = (propName) => {
       if (!selectedQuestion) return '';
       const question = stringQList[selectedQuestion.questions];
-      return question ? question[propName] || '' : '';
+      return question?.[propName] || '';
     };
     const fragmentURL = getStringValue('footerFragment');
     if (fragmentURL) {
@@ -274,7 +270,7 @@ const App = ({
 
   const getStringValue = (propName) => {
     const question = stringQList[selectedQuestion.questions];
-    return question ? question[propName] || '' : '';
+    return question?.[propName] || '';
   };
   const getOptionsIcons = (optionsType, prop) => {
     const optionItem = stringData[selectedQuestion.questions].data.find(
