@@ -51,10 +51,7 @@ jobs:
 
             str="${str//\"/""}"
             str="${str//\'/""}"
-            str="${str//$'\r'/\r}"
-            str="${str//$'\n'/\n}"
-            str="${str//$'\t'/\t}"
-            str="${str//$'/'/\/}"
+            str="${str//$'\r\n\t'/ }"
 
             echo "$str"
           }
@@ -108,7 +105,8 @@ jobs:
             fi
 
             local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
-            params=$(echo "$params $method_params" | jq -s add)
+            sani_method_params=$(echo "$method_params" | jq -Rsa .)
+            params=$(echo "$params $sani_method_params" | jq -s add)
 
             local response=$(curl --write-out "%{http_code}" --silent --output response.txt https://${url}/web_api --data-urlencode "_parameters=${params}")
 
