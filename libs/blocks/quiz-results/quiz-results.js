@@ -1,13 +1,15 @@
 import { createTag } from '../../utils/utils.js';
 import { getMetadata, handleStyle } from '../section-metadata/section-metadata.js';
 
+export const LOADING_ERROR = 'Could not load quiz results:';
+
 async function loadFragments(el, experiences) {
+  const { default: createFragment } = await import('../fragment/fragment.js');
   // eslint-disable-next-line no-restricted-syntax
   for (const href of experiences) {
     /* eslint-disable no-await-in-loop */
     const a = createTag('a', { href });
     el.append(a);
-    const { default: createFragment } = await import('../fragment/fragment.js');
     await createFragment(a);
   }
 }
@@ -41,8 +43,6 @@ function setAnalytics(hashValue, debug) {
   }
 }
 
-export const loadingErrorText = 'Could not load quiz results:';
-
 export default async function init(el, debug = null, localStoreKey = null) {
   const data = getMetadata(el);
   const params = new URL(document.location).searchParams;
@@ -60,10 +60,16 @@ export default async function init(el, debug = null, localStoreKey = null) {
 
   let results = localStorage.getItem(localStoreKey);
   if (!results) {
-    redirectPage(quizUrl, debug, `${loadingErrorText} local storage missing`);
+    redirectPage(quizUrl, debug, `${LOADING_ERROR} local storage missing`);
     return;
   }
-  results = JSON.parse(results);
+
+  try {
+    results = JSON.parse(results);
+  } catch (e) {
+    redirectPage(quizUrl, debug, `${LOADING_ERROR} invalid JSON in local storage`);
+    return;
+  }
 
   if (data['nested-fragments'] && el.classList.contains('nested')) {
     const nested = results[NESTED_KEY][data['nested-fragments'].text];
@@ -73,7 +79,7 @@ export default async function init(el, debug = null, localStoreKey = null) {
     const pageloadHash = results[HASH_KEY];
 
     if (!basic) {
-      redirectPage(quizUrl, debug, `${loadingErrorText} Basic fragments are missing`);
+      redirectPage(quizUrl, debug, `${LOADING_ERROR} Basic fragments are missing`);
       return;
     }
 
@@ -83,7 +89,7 @@ export default async function init(el, debug = null, localStoreKey = null) {
 
     loadFragments(el, basic);
   } else {
-    window.lana.log(`${loadingErrorText} The quiz-results block is misconfigured`);
+    window.lana.log(`${LOADING_ERROR} The quiz-results block is misconfigured`);
     return;
   }
 
