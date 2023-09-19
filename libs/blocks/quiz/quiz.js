@@ -23,7 +23,7 @@ const App = ({
   preQuestions = {}, initialStrings = {},
 }) => {
   const [btnAnalytics, setBtnAnalytics] = useState(null);
-  const [btnClicked, setBtnClicked] = useState(false);
+  const [isBtnClicked, setIsBtnClicked] = useState(false);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isDataLoaded, setDataLoaded] = useState(initialIsDataLoaded);
@@ -140,7 +140,7 @@ const App = ({
    * Updates the url when the url param is updated as part of the option click.
    */
   useLayoutEffect(() => {
-    if (Object.keys(urlParam).length > 0 && btnClicked === true) {
+    if (Object.keys(urlParam).length > 0 && isBtnClicked === true) {
       let urlParamList = Object.keys(urlParam).map((key) => {
         const paramList = [...urlParam[key]];
         if (paramList.length) {
@@ -152,13 +152,13 @@ const App = ({
         .filter((key) => key in urlParam)
         .map((key) => `${key}=${urlParam[key].join(',')}`);
       urlParamList = [...urlParamList, ...knownParamsList];
-      if (knownParamsList.length === 1 && btnClicked === false) {
+      if (knownParamsList.length === 1 && isBtnClicked === false) {
         const newURL = knownParamsList && knownParamsList.length > 0 ? `?${knownParamsList.join('&')}` : '';
         window.history.pushState('', '', newURL);
       } else {
         window.history.pushState('', '', `?${urlParamList.join('&')}`);
       }
-      setBtnClicked(false);
+      setIsBtnClicked(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlParam]);
@@ -191,7 +191,7 @@ const App = ({
    * @returns {void}
    */
   const handleOnNextClick = (selCards) => {
-    setBtnClicked(true);
+    setIsBtnClicked(true);
     const { nextQuizViews, lastStopValue } = handleNext(
       questionData,
       selectedQuestion,
@@ -235,7 +235,7 @@ const App = ({
    *  @returns {void}
    * */
   const onOptionClick = (option) => () => {
-    setBtnClicked(true);
+    setIsBtnClicked(true);
     const newState = { ...selectedCards };
 
     if (Object.keys(newState).length >= maxSelections && !newState[option.options]) {
