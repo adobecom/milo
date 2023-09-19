@@ -431,7 +431,7 @@ header.global-navigation {
 
   .table:not(.highlight):not(.merch) .col-2.col-heading {
     border-top-left-radius: 16px;
-  };
+  }
 }
 
 /* Start mobile styles */
