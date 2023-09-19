@@ -42,7 +42,10 @@ function closeModal(modal) {
   sendAnalytics(closeEventAnalytics);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
-    document.querySelector(`#${id}~.modal-curtain`).remove();
+    const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
+    if (modalCurtain) {
+      modalCurtain.remove();
+    }
     if (mod.classList.contains('dialog-modal')) {
       mod.remove();
     }
