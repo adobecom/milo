@@ -10,6 +10,10 @@
     {
       "key": "no-results",
       "value": "No results found"
+    },
+    {
+      "key": "phone-number",
+      "value": "800 12345 6789"
     }
   ],
   ":type": "sheet"

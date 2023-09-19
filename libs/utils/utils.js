@@ -653,7 +653,7 @@ async function decorateIcons(area, config) {
 
 async function decoratePlaceholders(area, config) {
   const el = area.documentElement ? area.body : area;
-  const regex = /{{(.*?)}}/g;
+  const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
   const { replaceText } = await import('../features/placeholders.js');
@@ -840,7 +840,12 @@ async function loadPostLCP(config) {
 export function scrollToHashedElement(hash) {
   if (!hash) return;
   const elementId = hash.slice(1);
-  const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+  let targetElement;
+  try {
+    targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+  } catch (e) {
+    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`);
+  }
   if (!targetElement) return;
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
