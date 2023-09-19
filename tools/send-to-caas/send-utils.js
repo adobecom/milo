@@ -151,7 +151,7 @@ const flattenLink = (link) => {
 
 const checkUrl = (url, errorMsg) => {
   if (url === undefined) return url;
-  const flatUrl = (url.indexOf('href=')) ? flattenLink(url) : url;
+  const flatUrl = url.includes('href=') ? flattenLink(url) : url;
   return isValidUrl(flatUrl) ? prefixHttps(flatUrl) : { error: errorMsg };
 };
 
