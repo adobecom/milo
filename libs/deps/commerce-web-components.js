@@ -592,7 +592,7 @@
       variant: { type: String },
       title: { type: String },
       description: { type: String },
-      cardImage: { type: String, attribute: "card-image" }
+      image: { type: String, attribute: "image" }
     };
     static styles = i`
         :host {
@@ -610,7 +610,7 @@
             display: block;
         }
 
-        .card-image {
+        .image {
             height: var(--consonant-merch-card-image-height);
             background-position: 50% 50%;
             background-repeat: no-repeat;
@@ -638,7 +638,7 @@
     `;
     constructor() {
       super();
-      this.cardImage = "";
+      this.image = "";
     }
     render() {
       switch (this.variant) {
@@ -650,7 +650,7 @@
     }
     renderSpecialOffer() {
       return x`
-        <div class="card-image" style="background-image: url(${this.cardImage})"></div>
+        <div class="image" style="background-image: url(${this.image})"></div>
         <div class="body">
             <slot name="detail"></slot>
             <slot name="heading"></slot>
