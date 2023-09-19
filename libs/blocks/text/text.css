@@ -175,6 +175,10 @@
   text-decoration: double underline;
 }
 
+.section[class*='grid-width-'] .text-block .foreground {
+  max-width: unset;
+}
+
 /* Tablet up */
 @media screen and (min-width: 600px) {
   .link-farm.text-block h2 {
