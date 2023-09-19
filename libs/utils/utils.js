@@ -653,7 +653,7 @@ async function decorateIcons(area, config) {
 
 async function decoratePlaceholders(area, config) {
   const el = area.documentElement ? area.body : area;
-  const regex = /{{(.*?)}}/g;
+  const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
   const { replaceText } = await import('../features/placeholders.js');
