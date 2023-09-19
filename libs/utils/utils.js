@@ -121,10 +121,7 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = {
-  DEFERRED: 'milo:deferred',
-  LCP_LOADED: 'milo:LCP:loaded',
-};
+export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
@@ -984,7 +981,6 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loaded);
 
   if (isDoc && section.el.dataset.idx === '0') {
-    window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
     loadPostLCP(config);
   }
 

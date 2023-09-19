@@ -414,6 +414,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
 export default function init(el) {
   el.setAttribute('role', 'table');
+  if (el.parentElement.classList.contains('section')) {
+    el.parentElement.classList.add(`table-${el.classList.contains('merch') ? 'merch-' : ''}section`);
+  }
   const rows = Array.from(el.children);
   const isMerch = el.classList.contains('merch');
   const isCollapseTable = el.classList.contains('collapse') && !isMerch;
@@ -452,7 +455,7 @@ export default function init(el) {
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
-  window.addEventListener(MILO_EVENTS.LCP_LOADED, () => {
+  const handleTable = () => {
     let originTable;
     let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
     if (isMerch) {
@@ -476,5 +479,9 @@ export default function init(el) {
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
     });
-  }, { once: true });
+  };
+
+  window.addEventListener(MILO_EVENTS.DEFERRED, () => {
+    handleTable();
+  }, true);
 }
