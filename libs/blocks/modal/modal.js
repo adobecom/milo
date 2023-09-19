@@ -34,7 +34,7 @@ export function sendAnalytics(event) {
 function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
-  if(document.body.classList.contains('modal-open')) {
+  if (document.body.classList.contains('modal-open')) {
     document.body.classList.remove('modal-open');
   }
   window.dispatchEvent(closeEvent);
