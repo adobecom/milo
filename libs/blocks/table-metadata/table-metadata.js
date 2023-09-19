@@ -46,7 +46,6 @@ export default function init(el) {
   const section = el.closest('.section');
   const table = section.querySelector('.table');
   if (!table) return;
-  section.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
   const metadata = getMetadata(el);
   if (!el.dataset.metadataHandled) {
     table.addEventListener('milo:table:highlight:loaded', () => {
