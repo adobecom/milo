@@ -844,7 +844,7 @@ export function scrollToHashedElement(hash) {
   try {
     targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   } catch (e) {
-    window.lana?.log(`Cannot make URL from metadata - ${elementId}: ${e.toString()}`);
+    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`);
   }
   if (!targetElement) return;
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
