@@ -4,11 +4,6 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const DOUBLE_WIDE = 'DoubleWideCard';
 
-export const addBackgroundImg = (picture, cardType, card) => {
-  const url = picture.querySelector('img').src;
-  card.append(createTag('div', { class: `consonant-${cardType}-img`, style: `background-image: url(${url})` }));
-};
-
 const getUpFromSectionMetadata = (section) => {
   const sectionMetadata = section.querySelector('.section-metadata');
   if (!sectionMetadata) return null;

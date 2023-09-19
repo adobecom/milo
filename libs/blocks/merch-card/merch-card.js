@@ -1,19 +1,23 @@
 /* eslint-disable prefer-destructuring */
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
-import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
+import { addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
+import '../../deps/commerce.js';
+import '../../deps/commerce-web-components.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
+loadStyle(`${base}/deps/commerce-web-components.css`);
+
 const SEGMENT_BLADE = 'SegmentBlade';
-const SPECIAL_OFFERS = 'SpecialOffers';
+const SPECIAL_OFFER = 'special-offer';
 const PLANS_CARD = 'PlansCard';
 const cardTypes = {
   segment: SEGMENT_BLADE,
-  'special-offers': SPECIAL_OFFERS,
+  'special-offers': SPECIAL_OFFER,
   plans: PLANS_CARD,
 };
 const getPodType = (styles) => {
@@ -21,10 +25,10 @@ const getPodType = (styles) => {
   return cardTypes[authoredType] || SEGMENT_BLADE;
 };
 
-const createDescription = (rows, cardType) => createTag('div', { class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
+const createDescription = (rows, cardType) => createTag('div', { slot: 'body', class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
 
 const createTitle = (titles, cardType) => {
-  const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
+  const titleWrapper = createTag('div', { slot: 'heading', class: `consonant-${cardType}-title` });
   titles?.forEach((title) => titleWrapper.appendChild(title));
   return titleWrapper;
 };
@@ -91,12 +95,11 @@ const addInner = (el, altCta, cardType, merchCard) => {
   const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
 
   const inner = el.querySelector(':scope > div:not([class])');
-  inner.classList.add(`consonant-${cardType}-inner`);
   const title = createTitle(titles, cardType);
   const description = createDescription(rows, cardType, inner);
 
-  inner.prepend(title);
-  inner.append(description);
+  merchCard.prepend(title);
+  merchCard.append(description);
   addFooter(links, inner, merchCard);
   decorateFooter(el, altCta, cardType);
   merchCard.append(inner);
@@ -122,25 +125,21 @@ const decorateRibbon = (el, ribbonMetadata, cardType) => {
   ribbonWrapper.remove();
 };
 
-const decorateIcon = (el, icons, cardType) => {
+const decorateIcon = (icons, cardType, merchCard) => {
   if (!icons) return;
-  const inner = el.querySelector(`.consonant-${cardType}-inner`);
-  const iconWrapper = createTag('div', { class: `consonant-${cardType}-iconWrapper` });
+  const iconWrapper = createTag('div', { slot: 'card-image', class: `consonant-${cardType}-iconWrapper` });
   icons?.forEach((icon) => {
     const url = icon.querySelector('img').src;
     const iconDiv = createTag('div', { class: 'consonant-MerchCard-ProductIcon', style: `background-image: url(${url})` });
     iconWrapper.appendChild(iconDiv);
     icon.parentNode?.remove();
   });
-  inner.prepend(iconWrapper);
+  merchCard.prepend(iconWrapper);
 };
 
 const init = (el) => {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
-  loadStyle(`${base}/deps/caas.css`);
-  const section = el.closest('.section');
-  section.classList.add('milo-card-section');
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
@@ -153,7 +152,6 @@ const init = (el) => {
   const ctas = allPElems[allPElems.length - 1];
   const styles = [...el.classList];
   const cardType = getPodType(styles);
-  const merchCard = el;
   decorateBlockHrs(el);
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
@@ -167,17 +165,22 @@ const init = (el) => {
       }
     }
   });
-  addWrapper(el, section, cardType);
-  merchCard.classList.add('consonant-Card', 'consonant-ProductCard', `consonant-${cardType}`);
-  if (image) addBackgroundImg(image, cardType, merchCard);
+
+  const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
   if (ribbonMetadata !== null) decorateRibbon(el, ribbonMetadata, cardType);
   image?.parentElement.remove();
   if (ctas) decorateButtons(ctas);
+  if (icons.length > 0) {
+    decorateIcon(icons, cardType, merchCard);
+  } else {
+    const cardImage = image.querySelector('img').src;
+    merchCard.setAttribute('card-image', cardImage);
+  }
+  const footer = createTag('div', { slot: 'footer' });
+  footer.appendChild(ctas);
   addInner(el, altCta, cardType, merchCard);
-  decorateIcon(el, icons, cardType);
-  const inner = el.querySelector(`.consonant-${cardType}-inner`);
-  const innerCleanup = inner.querySelectorAll(':scope > div')[1];
-  if (innerCleanup.classList.length === 0) innerCleanup.remove();
+  merchCard.appendChild(footer);
+  el.replaceWith(merchCard);
 };
 
 export default init;

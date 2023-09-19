@@ -131,6 +131,10 @@ main>.section[class*='-up']>.content {
   gap: var(--spacing-s);
 }
 
+.section[class*='-up'].m-gap {
+  gap: var(--spacing-m);
+}
+
 .section[class*='-up'].l-gap {
   gap: var(--spacing-l);
 }
