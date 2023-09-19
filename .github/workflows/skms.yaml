@@ -60,9 +60,9 @@ jobs:
           release_details=$(sanitizeStr "${{ github.event.pull_request.body }}")
           release=Release_Title--"${release_title}"--Release_Details--"${release_details}"--Pull_Request_Number--"${{ github.event.pull_request.number }}"--Pull_Request_Created_At--"${{ github.event.pull_request.created_at }}"--Pull_Request_Merged_At--"${{ github.event.pull_request.merged_at }}"
           {
-            echo 'release_summary<<EOF'
+            echo 'release_summary<<RS_EOF'
             "${release}"
-            echo EOF
+            echo RS_EOF
           } >> "$GITHUB_ENV"
 
       - name: Create CMR in SKMS
