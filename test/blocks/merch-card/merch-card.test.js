@@ -46,6 +46,7 @@ describe('Merch Card', () => {
     const cardFooter = inner.querySelector('.consonant-CardFooter');
     const ribbon = document.querySelector('.consonant-SpecialOffers-ribbon');
     const buttons = cardFooter.querySelectorAll('.con-button');
+    const decoratedText = document.querySelector('.content-background');
 
     expect(document.querySelector('.consonant-ProductCard')).to.exist;
     expect(inner.querySelector('.consonant-SpecialOffers-title')).to.exist;
@@ -59,6 +60,9 @@ describe('Merch Card', () => {
     expect(ribbon.style.borderRight).to.be.equal('none');
     expect(ribbon.style.borderTop).to.be.equal('1px solid rgb(237, 204, 45)');
     expect(ribbon.style.borderBottom).to.be.equal('1px solid rgb(237, 204, 45)');
+    expect(decoratedText).to.exist;
+    expect(decoratedText.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.');
+    expect(decoratedText.style.backgroundColor).to.be.equal('rgb(237, 204, 45)');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Learn More');
     expect(buttons[1].textContent).to.be.equal('Save now');
