@@ -174,7 +174,7 @@ const init = (el) => {
     decorateIcon(icons, cardType, merchCard);
   } else {
     const cardImage = image.querySelector('img').src;
-    merchCard.setAttribute('card-image', cardImage);
+    merchCard.setAttribute('image', cardImage);
   }
   const footer = createTag('div', { slot: 'footer' });
   footer.appendChild(ctas);
