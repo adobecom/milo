@@ -111,8 +111,7 @@ function addPromobar(sourceEl, parent) {
 }
 
 function checkViewportPromobar(foreground) {
-  const childCount = foreground.childElementCount;
-  const { children } = foreground;
+  const { children, childElementCount: childCount } = foreground;
   if (childCount < 2) addPromobar(children[childCount - 1], foreground);
   if (childCount < 3) addPromobar(children[childCount - 1], foreground);
 }
