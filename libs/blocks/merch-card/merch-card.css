@@ -341,6 +341,11 @@
   flex-wrap: wrap;
   height: auto;
   width: auto;
+  justify-content: flex-end;
+}
+
+.merch-card .consonant-CardFooter .standard-wrapper .consonant-CardFooter-row {
+  margin-left: auto;
 }
 
 .dark .merch-card .consonant-CardFooter .con-button.outline {
