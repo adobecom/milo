@@ -483,7 +483,7 @@ export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
   [...images].forEach((img) => {
-    const [source, alt, playBtn] = img.alt.split('|');
+    const [source, alt, icon] = img.alt.split('|');
     try {
       const url = new URL(source.trim());
       if (alt?.trim().length) img.alt = alt.trim();
@@ -491,12 +491,8 @@ export function decorateImageLinks(el) {
       const picParent = pic.parentElement;
       const aTag = createTag('a', { href: url, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
-      if (playBtn?.includes(':play')) {
-        const initVideoModal = async () => {
-          const { default: init } = await import('./imageVideoLink.js');
-          init(picParent, aTag, playBtn);
-        };
-        initVideoModal();
+      if (icon) {
+        import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
       } else {
         aTag.append(pic);
       }
