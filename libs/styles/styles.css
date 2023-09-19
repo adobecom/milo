@@ -518,7 +518,6 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 .con-block .background img,
 .con-block .background video {
   object-fit: cover;
-  min-height: 700px;
   width: 100%;
   height: 100%;
 }
