@@ -876,8 +876,12 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect([...document.querySelectorAll(selectors.headline)]
+        .every((elem) => elem.getAttribute('daa-ll') === null))
+        .to.be.true;
 
       await setViewport(viewports.smallDesktop);
+      isDesktop.dispatchEvent(new Event('change'));
 
       expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
@@ -886,8 +890,12 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect([...document.querySelectorAll(selectors.headline)]
+        .every((elem) => elem.getAttribute('daa-ll') === null))
+        .to.be.true;
 
       await setViewport(viewports.mobile);
+      isDesktop.dispatchEvent(new Event('change'));
 
       expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(false);
@@ -896,9 +904,12 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect([...document.querySelectorAll(selectors.headline)]
+        .every((elem) => elem.getAttribute('daa-ll') !== null))
+        .to.be.true;
     });
 
-    it('should change the DOM order to ensure correct TAB behaviour for mobile|desktop', async () => {
+    it('should change the DOM order to ensure correct TAB behavior for mobile|desktop', async () => {
       await createFullGlobalNavigation();
 
       expect(document.querySelector(selectors.mainNav).nextElementSibling)
