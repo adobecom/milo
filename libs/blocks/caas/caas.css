@@ -395,6 +395,11 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   margin: 14px 0 0;
 }
 
+.config-panel .multifield.filtersCustomItems {
+  margin: 0 0 20px 14px;
+  width: 250px;
+}
+
 .config-panel .multifield > .multifield-header h3 {
   font-size: 18px;
   font-weight: 700;
@@ -457,6 +462,16 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
 .config-panel .accordion dd.content button.multifield-delete:hover {
   background-color: #AAA;
 }
+
+
+.config-panel .accordion dd.content  .filtersCustomItems button.multifield-delete {
+  margin: 2px 16px;
+  background-color: #999;
+}
+.config-panel .accordion dd.content  .filtersCustomItems button.multifield-delete:hover {
+  background-color: #AAA;
+}
+
 
 .config-panel .accordion dd.content button:hover {
   background-color: #505050;
