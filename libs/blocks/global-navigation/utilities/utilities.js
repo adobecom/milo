@@ -60,7 +60,8 @@ export function getAnalyticsValue(str, index) {
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
   const explicitExperience = experiencePath?.split('/').pop();
-  if (explicitExperience?.length) return explicitExperience;
+  if (explicitExperience?.length
+    && explicitExperience !== 'gnav') return explicitExperience;
 
   const { imsClientId } = getConfig();
   if (imsClientId?.length) return imsClientId;
