@@ -49,7 +49,7 @@ jobs:
               return 1
             fi
 
-            str="${str//\"/"\'"}"
+            str="${str//$'\"'/'\"'}"
             str="${str//(/"["}"
             str="${str//)/"]"}"
             str="${str//$'\r'/"\r"}"
