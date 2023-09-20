@@ -74,6 +74,10 @@ describe('Card', () => {
       init(el);
       expect(el.outerHTML.includes('undefined')).to.be.false;
     });
+
+    it('Has play button', () => {
+      expect(document.querySelector('.consonant-HalfHeightCard-videoIco')).to.exist;
+    });
   });
 
   describe('Two-Up Cards', () => {
@@ -82,8 +86,14 @@ describe('Card', () => {
     });
 
     it('are supported when authored with a two-up refernce in section-metadata', () => {
-      init(document.querySelector('.card'));
+      [...document.querySelectorAll('.card')].forEach((el) => {
+        init(el);
+      });
       expect(document.querySelector('.consonant-CardsGrid--2up')).to.exist;
+    });
+
+    it('Has play button', () => {
+      expect(document.querySelector('.consonant-videoButton-wrapper')).to.exist;
     });
   });
 
