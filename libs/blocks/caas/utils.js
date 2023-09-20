@@ -434,7 +434,7 @@ export const getConfig = async (originalState, strs = {}) => {
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
         ',',
-      )}&secondSource=${state.showSecondarySource ? state.secondSource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
+      )}&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
         ',',
       ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
@@ -672,7 +672,7 @@ export const defaultState = {
   resultsPerPage: 5,
   searchFields: [],
   secondaryTags: [],
-  secondSource: [],
+  secondarySource: [],
   setCardBorders: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
