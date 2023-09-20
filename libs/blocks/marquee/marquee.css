@@ -284,6 +284,10 @@
   line-height: var(--type-body-l-lh);
 }
 
+.marquee.large.split .action-area a:not(.con-button) {
+  font-size: var(--type-body-m-size);
+}
+
 @media screen and (min-width: 600px) {
   .marquee .action-area {
     display: flex;
