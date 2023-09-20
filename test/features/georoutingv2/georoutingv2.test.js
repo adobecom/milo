@@ -1,5 +1,6 @@
 import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
+import { setViewport } from '@web/test-runner-commands';
 
 const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
@@ -194,10 +195,11 @@ let stubURLSearchParamsGet = stub(URLSearchParams.prototype, 'get');
 const setUserCountryFromIP = (country = 'CH') => {
   stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('akamaiLocale').returns(country);
 };
-const setHideGeorouting = (setting) => {
-  stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('hideGeorouting').returns(setting);
+const setGeorouting = (setting) => {
+  stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('georouting').returns(setting);
 };
 
+const ogInnerHeight = window.innerHeight;
 const ogFetch = window.fetch;
 window.fetch = stub();
 
@@ -239,7 +241,7 @@ describe('GeoRouting', () => {
   before(() => {
     setUserCountryFromIP();
     stubFetchForGeorouting();
-    setHideGeorouting();
+    setGeorouting();
   });
   after(() => {
     stubURLSearchParamsGet.reset();
@@ -547,6 +549,17 @@ describe('GeoRouting', () => {
     expect(document.querySelector('.picker')).to.be.null;
   });
 
+  it('Add class .top to picker when there is no space to render below the trigger button', async () => {
+    await setViewport({ width: 600, height: 100 });
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    const links = modal.querySelectorAll('a');
+    links[0].click();
+    const picker = document.querySelector('.locale-modal-v2 .picker.top');
+    expect(picker).to.not.be.null;
+    await setViewport({ width: 600, height: ogInnerHeight });
+  });
+
   it('Sets international and georouting_presented cookies on link click in modal', async () => {
     // prepare
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
@@ -564,12 +577,12 @@ describe('GeoRouting', () => {
 
   it('Does not open georouting modal if georouting hide is active', async () => {
     // prepare
-    setHideGeorouting('on');
+    setGeorouting('off');
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
     // cleanup
-    setHideGeorouting('off');
+    setGeorouting('on');
   });
 });

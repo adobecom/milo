@@ -1,6 +1,5 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { delay } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/how-to/how-to.js');
@@ -13,10 +12,11 @@ describe('How To', () => {
     expect(script).not.to.exist;
 
     const howTo = document.querySelector('#test1');
-    await init(howTo);
-    const howToHeading = document.querySelector('#test1 > .how-to-heading');
+    init(howTo);
+
+    const howToHeading = document.querySelector('#test1 .how-to-heading');
     expect(howToHeading).to.exist;
-    const howToList = document.querySelector('#test1 > ol');
+    const howToList = document.querySelector('#test1 ol');
     expect(howToList).to.exist;
     expect(howToList?.children.length).to.equal(3);
 
@@ -29,7 +29,7 @@ describe('How To', () => {
   it('Shows JSON-LD that has required fields present and not null', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const howTo = document.getElementById('test2');
-    await init(howTo);
+    init(howTo);
     const script = document.querySelector('script[type="application/ld+json"]');
     // convert script innerHTML to JSON
     const json = JSON.parse(script.innerHTML);
@@ -85,13 +85,17 @@ describe('How To', () => {
   });
 
   it('Does not add seo data if the seo attribute is not set', async () => {
-    // await delay(50);
-    // expect(document.querySelectorAll('script[type="application/ld+json"]').length).to.equal(0);
-
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const howTo = document.getElementById('test3');
-    await init(howTo);
+    init(howTo);
     const script = document.querySelector('script[type="application/ld+json"]');
     expect(script).to.be.null;
+  });
+
+  it('Renders a legacy list', async () => {
+    const howTo = document.querySelector('#test4');
+    init(howTo);
+    const howToList = document.querySelector('#test4 ol');
+    expect(howToList).to.exist;
   });
 });

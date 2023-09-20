@@ -1,136 +1,179 @@
-import { loadScript, loadStyle } from '../../utils/utils.js';
+import ctaTextOption from './ctaTextOption.js';
+import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
 
+export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
+export const CHECKOUT_CLIENT_ID = 'creative';
+export const DEFAULT_CTA_TEXT = 'buy-now';
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
+const IMS_SCOPE = 'AdobeID,openid';
+const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.10.4';
+const OST_VERSION = '1.14.0';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
+/** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
+export const WCS_ENV = 'PROD';
+export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 
-const ENVIRONMENT = 'PROD';
-const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
-const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
-const CHECKOUT_CLIENT_ID = 'creative';
-
-const searchParameters = new URLSearchParams(window.location.search);
-// this is only for testing PRs where test URLs are not supported by IMS.
-const token = searchParameters.get('token');
-if (token) {
-  searchParameters.delete('token');
-}
+/**
+ * Maps Franklin page metadata to OST properties.
+ * Only values present in this object will be provided to OST.
+ * Each key of the object is metadata key.
+ * Each value is OST property name.
+ */
+const METADATA_MAPPINGS = { 'checkout-workflow': 'workflow' };
 
 document.body.classList.add('tool', 'tool-ost');
 
-export function createLinkMarkup(
+/**
+ * @param {Commerce.Defaults} defaults
+ */
+export const createLinkMarkup = (defaults) => (
   offerSelectorId,
   type,
-  { offer_id: offerId, name: offerName, commitment, planType },
-  placeholderOptions,
-  location = window.location,
-) {
-  const ctaText = 'buy-now';
-  const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
-  const createText = () => (isCheckoutPlaceholder
-    ? `CTA {{${ctaText}}}`
-    : `PRICE - ${planType} - ${offerName}`);
+  offer,
+  options,
+  promo,
+) => {
+  const isCta = !!type?.startsWith('checkout');
 
   const createHref = () => {
-    const url = new URL(location.protocol + location.host);
-    url.pathname = '/tools/ost';
-    url.searchParams.set('osi', offerSelectorId);
-    url.searchParams.set('offerId', offerId);
-    url.searchParams.set('type', type);
+    const params = new URLSearchParams([
+      ['osi', offerSelectorId],
+      ['type', type],
+    ]);
+    if (promo) params.set('promo', promo);
+    if (offer.commitment === 'PERPETUAL') params.set('perp', true);
 
-    if (commitment === 'PERPETUAL') {
-      url.searchParams.set('perp', true);
-    }
-    const toggleWorkflowStepFormat = (workflowStep) => (workflowStep
-      ? workflowStep.replace(/[_/]/g, (match) => (match === '_' ? '/' : '_'))
-      : '');
-
-    if (isCheckoutPlaceholder) {
-      const DEFAULT_WORKFLOW = 'UCv3';
-      const DEFAULT_WORKFLOW_STEP = 'email';
-      const { workflow, workflowStep } = placeholderOptions;
-      url.searchParams.set('text', ctaText);
-      if (workflow !== DEFAULT_WORKFLOW) {
-        url.searchParams.set('checkoutType', workflow);
+    if (isCta) {
+      const { workflow, workflowStep } = options;
+      params.set('text', options.ctaText ?? DEFAULT_CTA_TEXT);
+      if (workflow && workflow !== defaults.checkoutWorkflow) {
+        params.set('workflow', workflow);
       }
-      if (workflowStep !== DEFAULT_WORKFLOW_STEP) {
-        url.searchParams.set(
-          'workflowStep',
-          toggleWorkflowStepFormat(workflowStep),
-        );
+      if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
+        params.set('workflowStep', workflowStep);
       }
     } else {
-      const { displayRecurrence, displayPerUnit, displayTax } = placeholderOptions;
-      url.searchParams.set('term', displayRecurrence);
-      url.searchParams.set('seat', displayPerUnit);
-      url.searchParams.set('tax', displayTax);
+      const { displayRecurrence, displayPerUnit, displayTax } = options;
+      params.set('term', displayRecurrence);
+      params.set('seat', displayPerUnit);
+      params.set('tax', displayTax);
     }
-    return url.toString();
+    const { location } = window;
+    return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
   };
 
   const link = document.createElement('a');
-  link.textContent = createText();
+  link.textContent = isCta
+    ? `CTA {{${options.ctaText ?? DEFAULT_CTA_TEXT}}}`
+    : `PRICE - ${offer.planType} - ${offer.name}`;
   link.href = createHref();
   return link;
-}
+};
 
-let rootElement;
+export async function loadOstEnv() {
+  /* c8 ignore next */
+  const { Log, Defaults, getLocaleSettings } = await import('../../deps/commerce.js');
 
-function initOST({ token: aosAccessToken }) {
-  const country = 'US';
-  const language = 'en';
+  const searchParameters = new URLSearchParams(window.location.search);
+  const aosAccessToken = searchParameters.get('token');
+  searchParameters.delete('token');
+  const environment = searchParameters.get('env') ?? WCS_ENV;
+  const owner = searchParameters.get('owner');
+  const referrer = searchParameters.get('referrer');
+  const repo = searchParameters.get('repo');
 
-  const options = {
-    rootMargin: '0px',
-    threshold: 1.0,
+  let { country, language } = getLocaleSettings();
+  const { locales } = getConfig();
+  const log = Log.module('ost');
+  const metadata = {};
+  let url;
+
+  if (owner && referrer && repo) {
+    try {
+      const res = await fetch(`//admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`);
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const json = await res.json();
+      url = new URL(json.preview.url);
+      const locale = getLocale(locales, url.pathname);
+      ({ country, language } = getLocaleSettings({ locale }));
+    } catch (error) {
+      log.error('Unable to fetch page status:', error);
+    }
+
+    if (url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(await res.text(), 'text/html');
+        Object.entries(METADATA_MAPPINGS).forEach(
+          ([key, value]) => {
+            const content = getMetadata(key, doc);
+            if (content) metadata[value] = content;
+          },
+        );
+      } catch (error) {
+        log.error('Unable to fetch page metadata:', error);
+      }
+    }
+  }
+
+  return {
+    ...metadata,
+    aosAccessToken,
+    aosApiKey: AOS_API_KEY,
+    checkoutClientId: CHECKOUT_CLIENT_ID,
+    createLinkMarkup: createLinkMarkup(Defaults),
+    country,
+    environment,
+    language,
+    searchParameters,
+    wcsApiKey: WCS_API_KEY,
+    ctaTextOption,
   };
-
-  const main = document.querySelector('main');
-  const observer = new IntersectionObserver(() => {
-    observer.unobserve(main);
-    window.ost.openOfferSelectorTool({
-      country,
-      language,
-      environment: ENVIRONMENT,
-      wcsApiKey: WCS_API_KEY,
-      aosApiKey: AOS_API_KEY,
-      aosAccessToken,
-      checkoutClientId: CHECKOUT_CLIENT_ID,
-      searchParameters,
-      createLinkMarkup,
-      rootElement,
-    });
-  }, options);
-  observer.observe(main);
 }
 
 export default async function init(el) {
-  if (rootElement) return; // only one OST is supported per page
   el.innerHTML = '<div />';
-  rootElement = el.firstElementChild;
 
   loadStyle(OST_STYLE_URL);
-  await loadScript(OST_SCRIPT_URL);
-  await loadStyle('https://use.typekit.net/pps7abe.css');
-  if (token) {
-    initOST({ token });
+  loadStyle('https://use.typekit.net/pps7abe.css');
+
+  const [ostEnv] = await Promise.all([
+    loadOstEnv(),
+    loadScript(OST_SCRIPT_URL),
+  ]);
+
+  function openOst() {
+    window.ost.openOfferSelectorTool({
+      ...ostEnv,
+      rootElement: el.firstElementChild,
+    });
+  }
+
+  if (ostEnv.aosAccessToken) {
+    openOst();
   } else {
     window.adobeid = {
       client_id: IMS_COMMERCE_CLIENT_ID,
-      environment: 'prod',
+      environment: IMS_ENV,
       optimizations: { fastEvents: true },
       autoValidateToken: true,
-      scope: 'AdobeID,openid',
-      onAccessToken: initOST,
+      scope: IMS_SCOPE,
+      onAccessToken: ({ token }) => {
+        ostEnv.aosAccessToken = token;
+        openOst();
+      },
       onReady: () => {
         if (!window.adobeIMS.isSignedInUser()) {
           window.adobeIMS.signIn();
         }
       },
     };
+
     await loadScript(IMS_PROD_URL);
   }
 }

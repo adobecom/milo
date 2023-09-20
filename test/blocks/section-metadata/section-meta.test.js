@@ -13,31 +13,39 @@ describe('Section Metdata', () => {
     expect(sec.classList.length).to.equal(0);
   });
 
-  it('Handles background image', () => {
+  it('Handles background image', async () => {
     const sec = document.querySelector('.section.image');
     const sm = sec.querySelector('.section-metadata');
-    init(sm);
+    await init(sm);
     expect(sec.classList.contains('has-background')).to.be.true;
   });
 
-  it('Handles background color', () => {
+  it('Handles background image focal point', async () => {
+    const sec = document.querySelector('.section.image');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    const image = sec.querySelector('img');
+    expect(image.style.objectPosition).to.equal('center bottom');
+  });
+
+  it('Handles background color', async () => {
     const sec = document.querySelector('.section.color');
     const sm = sec.querySelector('.section-metadata');
-    init(sm);
+    await init(sm);
     expect(sec.style.background).to.equal('rgb(239, 239, 239)');
   });
 
-  it('Handles background gradient', () => {
+  it('Handles background gradient', async () => {
     const sec = document.querySelector('.section.gradient.color');
     const sm = sec.querySelector('.section-metadata');
-    init(sm);
+    await init(sm);
     expect(sec.style.background).to.equal('linear-gradient(red, yellow)');
   });
 
-  it('Adds class based on layout input', () => {
+  it('Adds class based on layout input', async () => {
     const sec = document.querySelector('.section.layout');
     const sm = sec.querySelector('.section-metadata');
-    init(sm);
+    await init(sm);
     expect(sec.classList.contains('grid-template-columns-1-2')).to.be.true;
   });
 
@@ -46,20 +54,28 @@ describe('Section Metdata', () => {
     expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
   });
 
-  it('gets section metadata', () => {
+  it('gets section metadata', async () => {
     const sec = document.querySelector('.section.sticky-bottom');
     const sm = sec.querySelector('.section-metadata');
     const main = document.querySelector('main');
-    init(sm);
+    await init(sm);
     expect(main.lastElementChild).to.be.eql(sec);
   });
 
-  it('add section to top', () => {
+  it('add section to top', async () => {
     const sec = document.querySelector('.section.sticky-top');
     const sm = sec.querySelector('.section-metadata');
     const main = document.querySelector('main');
-    init(sm);
+    await init(sm);
     expect(main.firstElementChild).to.be.eql(sec);
+  });
+
+  it('add promobar behaviour to section', async () => {
+    const main = document.querySelector('main');
+    const sec = document.querySelector('.section.sticky-bottom .promobar').closest('.section');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(main.lastElementChild.classList.contains('hide-sticky-section')).to.be.true;
   });
 
   it('should calculate the top position based on header height', async () => {

@@ -89,7 +89,7 @@ async function initProject() {
       const hlxAdminPreviewUrl = getHelixAdminApiUrl(urlInfo, config.admin.api.preview.baseURI);
       return fetch(`${hlxAdminPreviewUrl}${projectPath}`, { method: 'POST' });
     },
-    async getDetails() {
+    async detail() {
       const projectFileJson = await readProjectFile(projectUrl);
       if (!projectFileJson) {
         return {};

@@ -43,10 +43,8 @@ async function promoteCopy(srcPath, destinationFolder, newName) {
   let copySuccess = false;
   let copyStatusJson = {};
   while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
-    // eslint-disable-next-line no-await-in-loop
     const status = await fetchWithRetry(statusUrl);
     if (status.ok) {
-      // eslint-disable-next-line no-await-in-loop
       copyStatusJson = await status.json();
       copySuccess = copyStatusJson.status === 'completed';
     }
@@ -60,10 +58,8 @@ async function promoteCopy(srcPath, destinationFolder, newName) {
 async function findAllFloodgatedFiles(baseURI, options, rootFolder, fgFiles, fgFolders) {
   while (fgFolders.length !== 0) {
     const uri = `${baseURI}${fgFolders.shift()}:/children?$top=${MAX_CHILDREN}`;
-    // eslint-disable-next-line no-await-in-loop
     const res = await fetchWithRetry(uri, options);
     if (res.ok) {
-      // eslint-disable-next-line no-await-in-loop
       const json = await res.json();
       const driveItems = json.value;
       driveItems?.forEach((item) => {
@@ -141,11 +137,10 @@ async function promoteFloodgatedFiles(project) {
   // process data in batches
   const promoteStatuses = [];
   for (let i = 0; i < batchArray.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     promoteStatuses.push(...await Promise.all(
       batchArray[i].map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
     ));
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    // eslint-disable-next-line no-promise-executor-return
     await delay(DELAY_TIME_PROMOTE);
   }
   const endPromote = new Date();
@@ -154,11 +149,10 @@ async function promoteFloodgatedFiles(project) {
   const previewStatuses = [];
   for (let i = 0; i < promoteStatuses.length; i += 1) {
     if (promoteStatuses[i].success) {
-      // eslint-disable-next-line no-await-in-loop
       const result = await simulatePreview(handleExtension(promoteStatuses[i].srcPath), 1);
       previewStatuses.push(result);
     }
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    // eslint-disable-next-line no-promise-executor-return
     await delay();
   }
   loadingON('Completed Preview for promoted files... ');

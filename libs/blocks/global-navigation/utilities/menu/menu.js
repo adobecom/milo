@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 import {
   getAnalyticsValue,
   toFragment,
@@ -6,7 +5,9 @@ import {
   yieldToMain,
   getFedsPlaceholderConfig,
   logErrorFor,
-  selectors,
+  setActiveDropdown,
+  trigger,
+  isDesktop,
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
@@ -14,39 +15,34 @@ import { replaceText } from '../../../../features/placeholders.js';
 const decorateHeadline = (elem) => {
   if (!(elem instanceof HTMLElement)) return null;
 
-  // TODO: proper handling of aria-expanded across devices
-  const headline = toFragment`<div
-    class="feds-menu-headline"
-    role="heading"
-    aria-level="2"
-    aria-haspopup="true"
-    aria-expanded="false">
-    ${elem.textContent.trim()}
-  </div>`;
+  const headline = toFragment`<div class="feds-menu-headline">
+      ${elem.textContent.trim()}
+    </div>`;
 
-  // TODO: move proper logic to accessibility,
-  // this is just for demo functionality purposes
-  headline.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    const openMenu = document.querySelector('.feds-menu-headline[aria-expanded = "true"]');
-
-    if (openMenu && openMenu !== headline) {
-      openMenu.setAttribute('aria-expanded', 'false');
-    }
-
-    const currentState = headline.getAttribute('aria-expanded');
-    headline.setAttribute('aria-expanded', currentState === 'false');
-
-    const activeClass = selectors.activeDropdown.replace('.', '');
-    [...document.querySelectorAll(selectors.activeDropdown)]
-      .forEach((section) => section.classList.remove(activeClass));
-    if (currentState === 'true') {
-      headline.closest(selectors.navItem)?.classList.add(activeClass);
+  const setHeadlineAttributes = () => {
+    if (isDesktop.matches) {
+      headline.setAttribute('role', 'heading');
+      headline.removeAttribute('tabindex');
+      headline.setAttribute('aria-level', 2);
+      headline.removeAttribute('aria-haspopup', true);
+      headline.removeAttribute('aria-expanded', false);
     } else {
-      headline.closest(`${selectors.menuSection}, ${selectors.menuColumn}`)?.classList
-        .toggle(activeClass, currentState === 'false');
+      headline.setAttribute('role', 'button');
+      headline.setAttribute('tabindex', 0);
+      headline.removeAttribute('aria-level');
+      headline.setAttribute('aria-haspopup', true);
+      headline.setAttribute('aria-expanded', false);
     }
+  };
+
+  setHeadlineAttributes();
+  isDesktop.addEventListener('change', setHeadlineAttributes);
+
+  headline.addEventListener('click', (e) => {
+    if (isDesktop.matches) return;
+
+    trigger({ element: headline, event: e, type: 'headline' });
+    setActiveDropdown(headline);
   });
 
   // Since heading is turned into a div, it can be safely removed
@@ -62,7 +58,9 @@ const decorateLinkGroup = (elem, index) => {
   const image = elem.querySelector('picture');
   const link = elem.querySelector('a');
   const description = elem.querySelector('p:nth-child(2)');
-
+  const modifierClasses = [...elem.classList]
+    .filter((className) => className !== 'link-group')
+    .map((className) => `feds-navLink--${className}`);
   const imageElem = image ? toFragment`<div class="feds-navLink-image">${image}</div>` : '';
   const descriptionElem = description ? toFragment`<div class="feds-navLink-description">${description.textContent}</div>` : '';
   const contentElem = link ? toFragment`<div class="feds-navLink-content">
@@ -71,11 +69,12 @@ const decorateLinkGroup = (elem, index) => {
     </div>` : '';
   const linkGroup = toFragment`<a
     href="${link.href}"
-    class="feds-navLink"
+    class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
       ${imageElem}
       ${contentElem}
     </a>`;
+  if (link?.target) linkGroup.target = link.target;
 
   return linkGroup;
 };
@@ -125,8 +124,8 @@ const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, 
 
 // Current limitation: we can only add one link
 const decoratePromo = (elem, index) => {
-  const isDarkTheme = elem.classList.contains('dark');
-  const isImageOnly = elem.classList.contains('image-only');
+  const isDarkTheme = elem.matches('.dark');
+  const isImageOnly = elem.matches('.image-only');
   const imageElem = elem.querySelector('picture');
 
   decorateElements({ elem, className: 'feds-promo-link', parseCtas: false, index });
@@ -174,7 +173,6 @@ const decoratePromo = (elem, index) => {
 };
 
 const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
-  decorateLinks(content);
   const hasMultipleColumns = content.children.length > 1;
 
   // The resulting template structure should follow these rules:
@@ -202,7 +200,6 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
     };
 
     while (column.children.length) {
-      // eslint-disable-next-line no-await-in-loop
       await yieldToMain();
       const columnElem = column.firstElementChild;
 
@@ -250,7 +247,6 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 // is found in a menu column, no new sections can be created without a heading
 const decorateMenu = (config) => logErrorFor(async () => {
   let menuTemplate;
-
   if (config.type === 'syncDropdownTrigger') {
     const itemTopParent = config.item.closest('div');
     // The initial heading is already part of the item template,
@@ -268,18 +264,19 @@ const decorateMenu = (config) => logErrorFor(async () => {
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
-    const path = pathElement.href;
-
-    const res = await fetch(`${path}.plain.html`);
+    const path = pathElement.href.replace(/(\.html$|$)/, '.plain.html');
+    const res = await fetch(path);
     if (res.status !== 200) return;
     const content = await res.text();
-    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-content">
           ${parsedContent}
         </div>
       </div>`;
 
+    // Content has been fetched dynamically, need to decorate links
+    decorateLinks(menuTemplate);
     await decorateColumns({ content: menuTemplate.firstElementChild });
     config.template.classList.add('feds-navItem--megaMenu');
   }

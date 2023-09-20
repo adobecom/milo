@@ -46,7 +46,9 @@ export function getDocPathFromUrl(url) {
     path = path.slice(0, -5);
     return `${path}.xlsx`;
   }
-
+  if (path.endsWith('.svg')) {
+    return path;
+  }
   if (path.endsWith('/')) {
     path += 'index';
   } else if (path.endsWith('.html')) {
@@ -78,5 +80,7 @@ export function getParams(project, config) {
     fgShareUrl: config.sp.fgShareUrl,
     rootFolder: config.sp.rootFolders,
     fgRootFolder: config.sp.fgRootFolder,
+    promoteIgnorePaths: config.promoteIgnorePaths || [],
+    driveId: config.sp.driveId || '',
   };
 }

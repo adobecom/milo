@@ -1,6 +1,7 @@
 import { decorateButtons } from '../../utils/decorate.js';
-import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
-import { getMetadata } from '../section-metadata/section-metadata.js';
+import { loadStyle, getConfig } from '../../utils/utils.js';
+import { addBackgroundImg, addWrapper, addFooter, addVideoBtn } from './cardUtils.js';
+import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -16,55 +17,6 @@ const getCardType = (styles) => {
   };
   const authoredType = styles?.find((style) => style in cardTypes);
   return cardTypes[authoredType] || HALF;
-};
-
-const getUpFromSectionMetadata = (section) => {
-  const sectionMetadata = section.querySelector('.section-metadata');
-  if (!sectionMetadata) return null;
-  const metadata = getMetadata(sectionMetadata);
-  const styles = metadata.style?.text.split(', ').map((style) => style.replaceAll(' ', '-'));
-  return styles?.find((style) => style.includes('-up'));
-};
-
-const addWrapper = (el, section, cardType) => {
-  const gridCl = 'consonant-CardsGrid';
-  const prevGrid = section.querySelector(`.consonant-Wrapper .${gridCl}`);
-
-  if (prevGrid) return;
-
-  let upClass = getUpFromSectionMetadata(section);
-  // Authored w/ a typed out number reference... 'two-up' vs. '2-up'
-  const list = ['two-up', 'three-up', 'four-up', 'five-up'];
-  const ixd = list.findIndex(i => i.includes(upClass));
-  if (ixd > -1) {
-    upClass = `${ixd+2}-up`;
-    section.classList.remove(list[ixd]);
-  }
-  const up = upClass?.replace('-', '') || '3up';
-  const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
-  const grid = createTag('div', { class: gridClass });
-  const collection = createTag('div', { class: 'consonant-Wrapper-collection' }, grid);
-  const inner = createTag('div', { class: 'consonant-Wrapper-inner' }, collection);
-  const wrapper = createTag('div', { class: 'milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth' }, inner);
-  const cards = section.querySelectorAll('.card');
-  const prevSib = cards[0].previousElementSibling;
-
-  grid.append(...cards);
-
-  if (prevSib) {
-    prevSib.after(wrapper);
-  } else {
-    section.prepend(wrapper);
-  }
-};
-
-const addBackgroundImg = (picture, cardType, card) => {
-  const url = picture.querySelector('img').src;
-  const imageDiv = document.createElement('div');
-
-  imageDiv.style.backgroundImage = `url(${url})`;
-  imageDiv.classList.add(`consonant-${cardType}-img`);
-  card.append(imageDiv);
 };
 
 const addInner = (el, cardType, card) => {
@@ -98,23 +50,9 @@ const addInner = (el, cardType, card) => {
   text?.classList.add(`consonant-${cardType}-text`);
 };
 
-const addFooter = (links, container, merch) => {
-  const linksArr = Array.from(links);
-  const linksLeng = linksArr.length;
-  const hrTag = merch ? '<hr>' : '';
-  let footer = `<div class="consonant-CardFooter">${hrTag}<div class="consonant-CardFooter-row" data-cells="${linksLeng}">`;
-  footer = linksArr.reduce(
-    (combined, link, index) => (
-      `${combined}<div class="consonant-CardFooter-cell consonant-CardFooter-cell--${(linksLeng === 2 && index === 0) ? 'left' : 'right'}">${link.outerHTML}</div>`),
-    footer,
-  );
-  footer += '</div></div>';
-
-  container.insertAdjacentHTML('beforeend', footer);
-  links[0]?.parentElement?.remove();
-};
-
 const init = (el) => {
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  decorateLinkAnalytics(el, headings);
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/deps/caas.css`);
@@ -127,7 +65,7 @@ const init = (el) => {
   const cardType = getCardType(styles);
   const merch = styles.includes('merch') && cardType === HALF;
   const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
-    .querySelectorAll('a') : el.querySelectorAll('a');
+    .querySelectorAll('a') : el.querySelectorAll('a:not(.consonant-play-btn)');
   let card = el;
 
   addWrapper(el, section, cardType);
@@ -150,6 +88,8 @@ const init = (el) => {
 
   if (picture && cardType !== PRODUCT) {
     addBackgroundImg(picture, cardType, card);
+    const playBtn = el.querySelector('a.consonant-play-btn');
+    if (playBtn) addVideoBtn(playBtn, cardType, card);
   }
 
   picture?.parentElement.remove();

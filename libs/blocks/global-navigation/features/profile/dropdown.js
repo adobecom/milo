@@ -105,7 +105,7 @@ class ProfileDropdown {
       class="feds-profile-img"
       src="${this.avatar}"
       tabindex="0"
-      aria-label="${this.placeholders.profileAvatar}"
+      alt="${this.placeholders.profileAvatar}"
       data-url="${decorateProfileLink('account', `profile?lang=${lang}`)}"></img>`;
     return toFragment`
       <div id="feds-profile-menu" class="feds-profile-menu">
@@ -161,10 +161,9 @@ class ProfileDropdown {
       </li>
     `;
 
-    // TODO consumers might want to execute their own logic before a sign out
-    // we might want to provide them a way to do so here
     signOutLink.addEventListener('click', (e) => {
       e.preventDefault();
+      window.dispatchEvent(new Event('feds:signOut'));
       window.adobeIMS.signOut();
     });
 

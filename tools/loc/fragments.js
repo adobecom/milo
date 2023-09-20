@@ -1,4 +1,3 @@
-import { init as getProjectFile } from './project.js';
 import { connect as connectToSp, updateExcelTable } from './sharepoint.js';
 import { loadingON } from './utils.js';
 
@@ -37,6 +36,10 @@ function isLocalFragment(link, baseUrlOrigin) {
   return link && link.startsWith(baseUrlOrigin) && link.includes(fragmentPath);
 }
 
+function isReferencedAsset(link, baseUrlOrigin) {
+  return link && link.startsWith(baseUrlOrigin) && link.endsWith('.svg');
+}
+
 function getOriginFromLink(link) {
   const url = new URL(link);
   return url.origin;
@@ -47,7 +50,7 @@ function getSanitizedUrl(link) {
   return `${url.origin}${url.pathname}`;
 }
 
-function getFragmentLinksFromUrlHtml(urlHtml) {
+function getFragmentLinksFromUrlHtml(urlHtml, isFloodgate) {
   const fragments = [];
   const parser = new DOMParser();
   const dom = parser.parseFromString(urlHtml.value, 'text/html');
@@ -57,11 +60,11 @@ function getFragmentLinksFromUrlHtml(urlHtml) {
   const { links } = dom;
   for (let i = 0; i < links.length; i += 1) {
     const linkHref = links[i].href;
-    if (isLocalFragment(linkHref, baseUrlOrigin)) {
-      const sanitizedUrl = getSanitizedUrl(linkHref);
-      if (!fragments.includes(sanitizedUrl)) {
-        fragments.push(sanitizedUrl);
-      }
+    const sanitizedUrl = getSanitizedUrl(linkHref);
+    if ((isLocalFragment(linkHref, baseUrlOrigin) 
+          || (isFloodgate && isReferencedAsset(linkHref, baseUrlOrigin))) 
+          && !fragments.includes(sanitizedUrl)) {
+      fragments.push(sanitizedUrl);
     }
   }
   return fragments;
@@ -86,7 +89,7 @@ async function refreshProjectJson(projectFile, fragments, attempts = 0) {
   const maxAttempts = 2;
   await projectFile.purge();
   const projectJson = await fetchUrl(projectFile.path, 'json');
-  const urls = projectJson?.value?.translation?.data;
+  const urls = projectJson?.value?.urls?.data;
   if (!urls || !urls.map((url) => url.URL).includes(...fragments)) {
     if (attempts < maxAttempts) {
       loadingON(`Failed to reload Project JSON... Trying until max attempts ${maxAttempts}`);
@@ -104,7 +107,7 @@ async function refreshProjectJson(projectFile, fragments, attempts = 0) {
   return isJsonUpdated;
 }
 
-async function updateFragments() {
+async function updateFragments(getProjectFile, isFloodgate) {
   let status = 'No Fragments found';
   const projectFile = await getProjectFile();
   const projectDetail = await projectFile.detail();
@@ -115,7 +118,7 @@ async function updateFragments() {
   loadingON('Finding Fragments...');
   urlHtmls.forEach((urlHtml) => {
     if (urlHtml.status !== 'error') {
-      const fragmentsInUrl = getFragmentLinksFromUrlHtml(urlHtml);
+      const fragmentsInUrl = getFragmentLinksFromUrlHtml(urlHtml, isFloodgate);
       if (fragmentsInUrl.length > 0) {
         const filteredFragments = fragmentsInUrl
           .filter((fragment) => !urls.includes(fragment) && !fragments.includes(fragment));
