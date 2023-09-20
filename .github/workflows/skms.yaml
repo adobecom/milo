@@ -50,7 +50,6 @@ jobs:
             fi
 
             str="${str//"/\"}"
-            str="${str//'/\'}"
             str="${str//(/"["}"
             str="${str//)/"]"}"
             str="${str//$'\r'/"\r"}"
