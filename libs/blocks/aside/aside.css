@@ -591,6 +591,7 @@
     flex-direction: column;
   }
 
+  .aside .split-image .modal-img-link,
   .aside.split .split-image img,
   .aside.split .split-image video  {
     width: 60.5vw;
@@ -601,6 +602,7 @@
     object-position: center top;
   }
 
+  .aside .split-image .modal-img-link,
   .aside.split.half .split-image img,
   .aside.split.half .split-image video {
     width: 50vw;
