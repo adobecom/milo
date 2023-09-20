@@ -389,7 +389,7 @@ const TagsPanel = ({ tagsData }) => {
   };
 
   const secondarySourcePanel = html`
-    <${DropdownSelect} options=${defaultOptions.source} prop="secondSource" label="Secondary Source" />
+    <${DropdownSelect} options=${defaultOptions.source} prop="secondarySource" label="Secondary Source" />
     <${DropdownSelect} options=${contentTypeTags} prop="secondaryTags" label="Secondary Content Type Tags" />`;
 
   return html`
