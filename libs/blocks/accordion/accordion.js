@@ -73,7 +73,7 @@ function createItem(accordion, id, heading, num, edit) {
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
   const hTag = heading.querySelector('h1, h2, h3, h4, h5, h6');
-  const analyticsString = `open-${num}|${heading.textContent.trim().slice(0, 30)}|accordion`;
+  const analyticsString = `open-${num}|${heading.textContent.trim().slice(0, 30)}`;
   const button = createTag('button', {
     type: 'button',
     id: triggerId,

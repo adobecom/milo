@@ -540,7 +540,7 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) {
-    document.body.setAttribute('daa-lh', 'default|default');
+    document.body.dataset.mep = 'default|default';
     decoratePreviewCheck(config, []);
     return;
   }
@@ -559,7 +559,7 @@ export async function applyPers(manifests) {
   if (experiments.length) {
     const manifestLh = experiments.map((e) => e.manifest.split('/').pop().replace('.json', ''));
     const variantLh = experiments.map((e) => e.selectedVariantName?.replace('target-', '') || 'default');
-    document.body.setAttribute('daa-lh', `${manifestLh.join('--')}|${variantLh.join('--')}`);
+    document.body.dataset.mep = `${variantLh.join('--')}|${manifestLh.join('--')}`;
   }
   updateConfig({
     ...config,

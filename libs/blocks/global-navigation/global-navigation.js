@@ -683,7 +683,7 @@ export default async function init(header) {
     const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
     gnav.init();
     header.setAttribute('daa-im', 'true');
-    header.setAttribute('daa-lh', `gnav|${getExperienceName()}`);
+    header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e });

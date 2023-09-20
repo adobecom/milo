@@ -402,15 +402,7 @@ function checkForExpBlock(name, expBlocks) {
   return { blockPath: expBlock, blockName };
 }
 
-function decorateSectionAnalytics(section, idx) {
-  section.setAttribute('daa-lh', `s${idx + 1}`);
-  section.querySelectorAll('[data-block="true"]').forEach((block, blockIdx) => {
-    block.setAttribute('daa-lh', `b${blockIdx + 1}`);
-    block.removeAttribute('data-block');
-  });
-}
-
-function processTrackingLabels(text, charLimit) {
+export function processTrackingLabels(text, charLimit) {
   return text?.trim().replace(/\s+/g, ' ').split('|').join(' ')
     .slice(0, charLimit);
 }
@@ -421,10 +413,8 @@ export function decorateDefaultLinkAnalytics(block) {
     && !block.classList.contains('link-block')
     && !block.classList.contains('section')
     && block.nodeName === 'DIV') {
-    block.dataset.block = 'true';
     let header = '';
     let linkCount = 1;
-    const blockName = block.classList[0] || '';
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .heading-title').forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (!item.hasAttribute('daa-ll')) {
@@ -432,15 +422,28 @@ export function decorateDefaultLinkAnalytics(block) {
           if (label.trim() === '') {
             label = item.getAttribute('title') || item.getAttribute('aria-label') || item.querySelector('img')?.getAttribute('alt') || 'no label';
           }
-          label = processTrackingLabels(label, 30);
-          item.setAttribute('daa-ll', `${label}-${linkCount}|${header}|${blockName}`);
+          label = processTrackingLabels(label, 20);
+          item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
         }
         linkCount += 1;
       } else {
-        header = processTrackingLabels(item.textContent, 30);
+        header = processTrackingLabels(item.textContent, 20);
       }
     });
   }
+}
+
+function decorateSectionAnalytics(section, idx) {
+  section.setAttribute('daa-lh', `s${idx + 1}`);
+  section.querySelectorAll('[data-block="true"] [data-block="true"]').forEach((block) => {
+    block.removeAttribute('data-block');
+  });
+  section.querySelectorAll('[data-block="true"]').forEach((block, blockIdx) => {
+    const blockName = block.classList[0] || '';
+    block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName}|${document.body.dataset.mep}`);
+    decorateDefaultLinkAnalytics(block);
+    block.removeAttribute('data-block');
+  });
 }
 
 export async function loadBlock(block) {
@@ -643,6 +646,7 @@ function decorateContent(el) {
   const block = document.createElement('div');
   block.className = 'content';
   block.append(...children);
+  block.dataset.block = 'true';
   return block;
 }
 
@@ -659,7 +663,6 @@ function decorateDefaults(el) {
       el.insertAdjacentElement('afterbegin', content);
     }
   });
-  decorateDefaultLinkAnalytics(el);
 }
 
 function decorateHeader() {
@@ -865,7 +868,7 @@ async function checkForPageMods() {
 
     await applyPers(manifests);
   } else {
-    document.body.setAttribute('daa-lh', 'default|default');
+    document.body.dataset.mep = 'default|default';
   }
 }
 
@@ -1058,7 +1061,9 @@ export async function loadArea(area = document) {
     const sectionBlocks = await processSection(section, config, isDoc);
     areaBlocks.push(...sectionBlocks);
 
-    areaBlocks.forEach((block) => decorateDefaultLinkAnalytics(block));
+    areaBlocks.forEach((block) => {
+      block.dataset.block = 'true';
+    });
   }
 
   const currentHash = window.location.hash;
