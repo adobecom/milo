@@ -373,4 +373,48 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
       overflow-y: auto
   }
 }
+
 /* End Dexter Modal */
+
+
+/* collapsible panel */
+button.collapse-panel {
+  border: none;
+  font-size: 18px;
+  width: 26px;
+  height: 32px;
+  cursor: pointer;
+}
+
+button.collapse-panel:hover {
+background:#666;
+color: #eee;
+}
+
+.tool-content {
+  transition: all 400ms;
+  grid-template-columns: 340px 20px 1fr;
+  gap: 6px;
+}
+
+.panel-collapsed .config-panel {
+  z-index: -1;
+}
+
+.panel-collapsed .tool-content {
+  grid-template-columns: 20px 20px 1fr;
+}
+
+.panel-collapsed dt.title span {
+  color: #333;
+  padding: 0 3px
+}
+
+.panel-collapsed button {
+cursor:pointer;
+}
+
+.tool-content > div:nth-child(2) {
+  padding-top: 10px;
+  border-top: solid 2px #000;
+}
