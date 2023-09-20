@@ -243,7 +243,7 @@ const Select = ({ label, options, prop, sort = false }) => {
 };
 
 const Input = ({
-    label, type = 'text', prop, defaultValue = '', title, placeholder,
+  label, type = 'text', prop, defaultValue = '', title, placeholder,
 }) => {
   const context = useContext(ConfiguratorContext);
 
