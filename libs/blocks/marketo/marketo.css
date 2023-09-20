@@ -443,6 +443,8 @@
   }
 
   .marketo [class*="adobe-privacy"] fieldset.mktoFormCol.mktoVisible {
+    display: grid;
+    grid-column: span 2;
     width: 100%;
   }
 
