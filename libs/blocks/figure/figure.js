@@ -13,10 +13,15 @@ export function buildFigure(blockEl) {
   Array.from(blockEl.children).forEach((child) => {
     const clone = child.cloneNode(true);
     // picture, video, or embed link is NOT wrapped in P tag
-    if (clone.nodeName === 'PICTURE' || clone.nodeName === 'VIDEO' || clone.nodeName === 'A') {
+    if (clone.nodeName === 'PICTURE' || clone.nodeName === 'VIDEO' || clone.nodeName === 'A'
+    || (clone.nodeName === 'SPAN' && clone.classList.contains('modal-img-link'))) {
       figEl.prepend(clone);
     } else {
       // content wrapped in P tag(s)
+      const imageVideo = clone.querySelector('.modal-img-link');
+      if (imageVideo) {
+        figEl.prepend(imageVideo);
+      }
       const picture = clone.querySelector('picture');
       if (picture) {
         figEl.prepend(picture);

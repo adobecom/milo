@@ -113,7 +113,7 @@ const decorateImage = (media) => {
   const imageLink = media.querySelector('a');
   const picture = media.querySelector('picture');
 
-  if (imageLink && picture) {
+  if (imageLink && picture && !imageLink.parentElement.classList.contains('modal-img-link')) {
     imageLink.textContent = '';
     imageLink.append(picture);
   }
