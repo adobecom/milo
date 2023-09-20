@@ -1,5 +1,4 @@
 import { createTag } from './utils.js';
-import { decorateLinkAnalytics } from '../martech/attributes.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -74,7 +73,6 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
   }
   decorateButtons(el);
   if (type === 'merch') decorateIconStack(el);
-  decorateLinkAnalytics(el, headings);
 }
 
 export function decorateBlockBg(block, node) {

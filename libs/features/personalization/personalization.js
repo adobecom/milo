@@ -439,7 +439,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariantName = selectedVariantName;
     config.selectedVariant = config.variants[selectedVariantName];
   } else {
-    config.selectedVariantName = 'no changes';
+    config.selectedVariantName = variantLabel;
     config.selectedVariant = 'no changes';
   }
 
@@ -540,6 +540,7 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) {
+    document.body.dataset.mep = 'default|default';
     decoratePreviewCheck(config, []);
     return;
   }
@@ -555,6 +556,11 @@ export async function applyPers(manifests) {
   deleteMarkedEls();
 
   const experiments = results.map((r) => r.experiment);
+  if (experiments.length) {
+    const manifestLh = experiments.map((e) => e.manifest.split('/').pop().replace('.json', ''));
+    const variantLh = experiments.map((e) => e.selectedVariantName?.replace('target-', '') || 'default');
+    document.body.dataset.mep = `${variantLh.join('--')}|${manifestLh.join('--')}`;
+  }
   updateConfig({
     ...config,
     experiments,
