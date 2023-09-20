@@ -121,10 +121,7 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = {
-  DEFERRED: 'milo:deferred',
-  LCP_LOADED: 'milo:LCP:loaded',
-};
+export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
@@ -840,7 +837,12 @@ async function loadPostLCP(config) {
 export function scrollToHashedElement(hash) {
   if (!hash) return;
   const elementId = hash.slice(1);
-  const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+  let targetElement;
+  try {
+    targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+  } catch (e) {
+    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`);
+  }
   if (!targetElement) return;
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
@@ -979,7 +981,6 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loaded);
 
   if (isDoc && section.el.dataset.idx === '0') {
-    window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
     loadPostLCP(config);
   }
 
