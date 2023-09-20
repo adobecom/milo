@@ -507,9 +507,9 @@ describe('Utils', () => {
       const section = document.querySelector('main > div');
       expect(section?.getAttribute('daa-lh')).to.equal('s1');
       const block = section.querySelector(':scope > div')?.getAttribute('daa-lh');
-      expect(block).to.equal('b1');
+      expect(block).to.equal('b1|icon-block|default|default');
       const link = section.querySelector('#unit-test')?.getAttribute('daa-ll');
-      expect(link).to.equal('Learn more-2|Do more with Adobe Photoshop.|icon-block');
+      expect(link).to.equal('Learn more-2|Do more with Adobe P');
     });
   });
 });
