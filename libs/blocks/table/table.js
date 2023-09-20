@@ -287,6 +287,23 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const isMerch = table.classList.contains('merch');
   const deviceBySize = defineDeviceByScreenSize();
 
+  const setRowStyle = () => {
+    const sectionRow = Array.from(table.getElementsByClassName('section-row'));
+    if (sectionRow.length > 0) {
+      const colsForTablet = sectionRow[0].children.length - 1;
+      const percentage = 100 / colsForTablet;
+      const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
+      sectionRow.forEach((row) => {
+        if (isMerch) return;
+        if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
+          row.style.gridTemplateColumns = templateColumnsValue;
+        } else {
+          row.style.gridTemplateColumns = '';
+        }
+      });
+    }
+  };
+
   const reAssignEvents = (tableEl) => {
     tableEl.dispatchEvent(tableHighlightLoadedEvent);
     tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
@@ -349,20 +366,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           });
         }
       });
-      const sectionRow = Array.from(table.getElementsByClassName('section-row'));
-      if (sectionRow.length > 0) {
-        const colsForTablet = sectionRow[0].children.length - 1;
-        const percentage = 100 / colsForTablet;
-        const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
-        sectionRow.forEach((row) => {
-          if (isMerch) return;
-          if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
-            row.style.gridTemplateColumns = templateColumnsValue;
-          } else {
-            row.style.gridTemplateColumns = '';
-          }
-        });
-      }
+      setRowStyle();
     };
 
     if (!table.parentElement.querySelector('.filters')) {
@@ -410,20 +414,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     });
   }
 
-  const sectionRow = Array.from(table.getElementsByClassName('section-row'));
-  if (sectionRow.length > 0) {
-    const colsForTablet = sectionRow[0].children.length - 1;
-    const percentage = 100 / colsForTablet;
-    const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
-    sectionRow.forEach((row) => {
-      if (isMerch) return;
-      if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
-        row.style.gridTemplateColumns = templateColumnsValue;
-      } else {
-        row.style.gridTemplateColumns = '';
-      }
-    });
-  }
+  setRowStyle();
 }
 
 export default function init(el) {
