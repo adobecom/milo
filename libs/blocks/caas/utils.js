@@ -336,7 +336,7 @@ const addMissingStateProps = (state) => {
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const { country, language, locales } = getCountryAndLang(state);
+  const { country, language } = getCountryAndLang(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
@@ -344,7 +344,6 @@ export const getConfig = async (originalState, strs = {}) => {
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
-  const localesQueryParam = locales ? `&locales=${locales}` : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
@@ -368,7 +367,7 @@ export const getConfig = async (originalState, strs = {}) => {
         ',',
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${flatFile}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
