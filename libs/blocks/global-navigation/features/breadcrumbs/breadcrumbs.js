@@ -1,4 +1,4 @@
-import { getMetadata } from '../../../../utils/utils.js';
+import { getMetadata, getConfig } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
 
 const metadata = {
@@ -85,7 +85,10 @@ const fromUrl = () => {
   if (getMetadata(metadata.fromUrl) !== 'on') return null;
   const list = toFragment`<ul></ul>`;
   const paths = document.location.pathname.split('/').filter((n) => n);
+  const locales = getConfig().locales || {};
   for (let i = 0; i < paths.length; i += 1) {
+    // eslint-disable-next-line no-continue
+    if (locales[paths[i]]) continue;
     list.append(toFragment`
       <li>
         <a href="/${paths.slice(0, i + 1).join('/')}">${paths[i].replaceAll('-', ' ')}</a>
