@@ -262,7 +262,6 @@ const getFilterArray = async (state, country, lang, strs) => {
 export function getCountryAndLang({ autoCountryLang, country, language }) {
   const locales = getMetadata('caas-locales');
   if (locales) {
-    /* eslint-disable-next-line object-shorthand */
     return {
       country: '',
       language: '',
