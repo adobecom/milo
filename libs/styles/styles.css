@@ -496,11 +496,43 @@ div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
 div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
 div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 
+.con-block .foreground { position: relative; }
+
 .con-block.max-width-6 .foreground { max-width: 600px; }
 .con-block.max-width-8 .foreground { max-width: 800px; }
 .con-block.max-width-10 .foreground { max-width: 1000px; }
 .con-block.max-width-12 .foreground { max-width: 1200px; }
 .con-block.max-width-auto .foreground { max-width: unset; }
+
+.con-block .background {
+  overflow: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.con-block .background>div { height: 100%; }
+
+.con-block .background img,
+.con-block .background video {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.con-block .background video {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.con-block .background .tablet-only,
+.con-block .background .desktop-only {
+  display: none;
+}
 
 /* mobile only */
 @media (max-width: 600px) {
@@ -516,6 +548,13 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   .con-block.max-width-8-tablet .foreground { max-width: 800px; }
   .con-block.max-width-10-tablet .foreground { max-width: 1000px; }
   .con-block.max-width-12-tablet .foreground { max-width: 1200px; }
+
+  .con-block .background .mobile-only,
+  .con-block .background .desktop-only {
+    display: none;
+  }
+
+  .con-block .background .tablet-only { display: block; }
 }
 
 /* desktop up */
@@ -524,6 +563,13 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   .con-block.max-width-8-desktop .foreground { max-width: 800px; }
   .con-block.max-width-10-desktop .foreground { max-width: 1000px; }
   .con-block.max-width-12-desktop .foreground { max-width: 1200px; }
+
+  .con-block .background .mobile-only,
+  .con-block .background .tablet-only {
+    display: none;
+  }
+
+  .con-block .background .desktop-only { display: block; }
 }
 
 /* desktop large < 1440 */
