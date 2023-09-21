@@ -42,11 +42,11 @@ function closeModal(modal) {
   sendAnalytics(closeEventAnalytics);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
-    const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
-    if (modalCurtain) {
-      modalCurtain.remove();
-    }
     if (mod.classList.contains('dialog-modal')) {
+      const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
+      if (modalCurtain) {
+        modalCurtain.remove();
+      }
       mod.remove();
     }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
