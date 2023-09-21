@@ -35,8 +35,8 @@ const decorateBlockBg = (block, node) => {
   node.classList.add('background');
 
   if (childCount === 2) {
-    children[0].classList.add(viewports[0], viewports[1]);
-    children[1].classList.add(viewports[2]);
+    children[0].classList.add(viewports[0]);
+    children[1].classList.add(viewports[1], viewports[2]);
   }
 
   [...children].forEach(async (child, index) => {
@@ -114,7 +114,7 @@ const decorateImage = (media) => {
   const imageLink = media.querySelector('a');
   const picture = media.querySelector('picture');
 
-  if (imageLink && picture) {
+  if (imageLink && picture && !imageLink.parentElement.classList.contains('modal-img-link')) {
     imageLink.textContent = '';
     imageLink.append(picture);
   }
