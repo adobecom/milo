@@ -337,7 +337,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
-  const debug = state.showIds ? 'debug=true' : '';
+  const debug = state.showIds && document.location.href.includes('/tools/caas') ? 'debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
