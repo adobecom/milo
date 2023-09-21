@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
+import { loadScript, loadStyle, getMetadata, getConfig as pageConfigHelper } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
@@ -260,16 +260,33 @@ const getFilterArray = async (state, country, lang, strs) => {
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
-  if (autoCountryLang) {
-    const locale = pageConfigHelper()?.locale;
+  const locales = getMetadata('caas-locales');
+  if(locales){
     return {
-      country: locale.region?.toLowerCase() || 'us',
-      language: locale.ietf?.toLowerCase() || 'en-us',
+      country: '',
+      language: '',
+      locales: locales
+    }
+  }
+  if (autoCountryLang) {
+    let locale = pageConfigHelper()?.locale?.ietf || 'en-us';
+    const region = pageConfigHelper()?.locale?.region || '';
+    let country = locale.split('-')[1];
+    if(!country){
+      country = region;
+    }
+    const language = locale.split('-')[0];
+
+    return {
+      country: country,
+      language: language,
+      locales: ''
     };
   }
   return {
     country: country ? country.split('/').pop() : 'us',
     language: language ? language.split('/').pop() : 'en',
+    locales: ''
   };
 }
 
@@ -329,7 +346,7 @@ const addMissingStateProps = (state) => {
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const { country, language } = getCountryAndLang(state);
+  const { country, language, locales } = getCountryAndLang(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
@@ -337,6 +354,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
+  const localesQueryParam = locales ? `&locales=${locales}` : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
@@ -360,7 +378,7 @@ export const getConfig = async (originalState, strs = {}) => {
         ',',
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
