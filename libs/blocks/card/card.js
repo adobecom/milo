@@ -1,6 +1,6 @@
 import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig } from '../../utils/utils.js';
-import { addBackgroundImg, addWrapper, addFooter } from './cardUtils.js';
+import { addBackgroundImg, addWrapper, addFooter, addVideoBtn } from './cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const HALF = 'OneHalfCard';
@@ -65,7 +65,7 @@ const init = (el) => {
   const cardType = getCardType(styles);
   const merch = styles.includes('merch') && cardType === HALF;
   const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
-    .querySelectorAll('a') : el.querySelectorAll('a');
+    .querySelectorAll('a') : el.querySelectorAll('a:not(.consonant-play-btn)');
   let card = el;
 
   addWrapper(el, section, cardType);
@@ -88,6 +88,8 @@ const init = (el) => {
 
   if (picture && cardType !== PRODUCT) {
     addBackgroundImg(picture, cardType, card);
+    const playBtn = el.querySelector('a.consonant-play-btn');
+    if (playBtn) addVideoBtn(playBtn, cardType, card);
   }
 
   picture?.parentElement.remove();

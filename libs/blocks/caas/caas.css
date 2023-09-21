@@ -180,7 +180,6 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   }
 }
 
-
 .dexter-Modal {
   display: none;
   opacity: 0;
@@ -385,7 +384,8 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   font-size: 18px;
 }
 
-.config-panel dt.title.is-expanded span, dt.title.is-expanded button {
+.config-panel dt.title.is-expanded span, 
+dt.title.is-expanded button {
   font-weight: 300;
 }
 
@@ -394,6 +394,11 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   border-bottom: 0;
   padding: 0;
   margin: 14px 0 0;
+}
+
+.config-panel .multifield.filtersCustomItems {
+  margin: 0 0 20px 14px;
+  width: 250px;
 }
 
 .config-panel .multifield > .multifield-header h3 {
@@ -459,6 +464,15 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   background-color: #AAA;
 }
 
+.config-panel .accordion dd.content .filtersCustomItems button.multifield-delete {
+  margin: 2px 16px;
+  background-color: #999;
+}
+
+.config-panel .accordion dd.content .filtersCustomItems button.multifield-delete:hover {
+  background-color: #AAA;
+}
+
 .config-panel .accordion dd.content button:hover {
   background-color: #505050;
 }
@@ -489,7 +503,8 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   padding-left: 8px;
 }
 
-.config-panel .accordion .multifield input, .multifield .tagselect-input {
+.config-panel .accordion .multifield input, 
+.multifield .tagselect-input {
   border: solid 1px #666 !important;
   margin-left: 8px;
 }
