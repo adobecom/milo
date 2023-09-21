@@ -969,11 +969,11 @@
     margin-right: 0;
   }
 
-  .aside.promobar .icon-area {
+  .aside.promobar .foreground.container .icon-area {
     height: var(--icon-size-xxl);
   }
 
-  .aside.promobar .icon-area img {
+  .aside.promobar .foreground.container .icon-area img {
     height: var(--icon-size-xxl);
   }
 
