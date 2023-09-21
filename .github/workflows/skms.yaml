@@ -49,9 +49,12 @@ jobs:
               return 1
             fi
 
-            str="${str//$"\'"/"\'"}"
-            str="${str//(/"["}"
-            str="${str//)/"]"}"
+            sed -i 's/"/\"/g' $str
+            sed -i "s/'/\'/g" $str
+            sed -i 's/\(/\[/g' $str
+            sed -i 's/\)/\]/g' $str
+            sed -i 's,\,\\,g' $str
+            sed -i 's,/,\/,g' $str
             str="${str//$'\r'/"\r"}"
             str="${str//$'\n'/"\n"}"
             str="${str//$'\t'/"\t"}"
