@@ -272,6 +272,7 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
     const locale = pageConfigHelper()?.locale?.ietf || 'en-us';
     const region = pageConfigHelper()?.locale?.region || '';
+    /* eslint-disable-next-line prefer-const */
     let [currCountry, currLang] = locale.split('-');
     if (!currCountry) {
       currCountry = region;
