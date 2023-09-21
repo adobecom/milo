@@ -63,7 +63,7 @@ const LOCALES = {
   no: { ietf: 'no-NO' },
   pl: { ietf: 'pl-PL' },
   pt: { ietf: 'pt-PT' },
-  qa_ar: { ietf: 'ar' },
+  qa_ar: { ietf: 'ar-QA' },
   qa_en: { ietf: 'en-GB' },
   ro: { ietf: 'ro-RO' },
   sa_en: { ietf: 'en-sa' },
