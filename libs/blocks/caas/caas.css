@@ -460,6 +460,7 @@ dt.title.is-expanded button {
   margin: 8px 16px;
   background-color: #858585;
 }
+
 .config-panel .accordion dd.content button.multifield-delete:hover {
   background-color: #AAA;
 }
