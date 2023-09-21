@@ -253,7 +253,20 @@ const getDateProp = (dateStr, errorMsg) => {
 
 const getOrigin = () => {
   const origin = getConfig().project || getConfig().repo;
-  if (origin) return origin;
+  const mappings = {
+    cc: 'hawks',
+    dc: 'doccloud',
+    bacom: 'bacom',
+    experienceleague: 'experienceleague',
+    magento: 'magento',
+    marketo: 'marketo',
+    milo: 'milo',
+    northstar: 'northstar',
+    workfront: 'workfront',
+  };
+  if (mappings[origin]) {
+    return mappings[origin] || origin;
+  }
 
   if (window.location.hostname.endsWith('.hlx.page')) {
     const [, repo] = window.location.hostname.split('.')[0].split('--');
