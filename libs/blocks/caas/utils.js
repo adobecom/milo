@@ -8,6 +8,92 @@ const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
 const requestHeaders = [];
 
+const LOCALES = {
+  // Americas
+  ar: { ietf: 'es-AR' },
+  br: { ietf: 'pt-BR' },
+  ca: { ietf: 'en-CA' },
+  ca_fr: { ietf: 'fr-CA' },
+  cl: { ietf: 'es-CL' },
+  co: { ietf: 'es-CO' },
+  la: { ietf: 'es-LA' },
+  mx: { ietf: 'es-MX' },
+  pe: { ietf: 'es-PE' },
+  '': { ietf: 'en-US' },
+  // EMEA
+  africa: { ietf: 'en-africa' },
+  be_fr: { ietf: 'fr-BE' },
+  be_en: { ietf: 'en-BE' },
+  be_nl: { ietf: 'nl-BE' },
+  cy_en: { ietf: 'en-CY' },
+  dk: { ietf: 'da-DK' },
+  de: { ietf: 'de-DE' },
+  ee: { ietf: 'et-EE' },
+  es: { ietf: 'es-ES' },
+  fr: { ietf: 'fr-FR' },
+  gr_en: { ietf: 'en-GR' },
+  ie: { ietf: 'en-IE' },
+  il_en: { ietf: 'en-IL' },
+  it: { ietf: 'it-IT' },
+  lv: { ietf: 'lv-LV' },
+  lt: { ietf: 'lt-LT' },
+  lu_de: { ietf: 'de-LU' },
+  lu_en: { ietf: 'en-LU' },
+  lu_fr: { ietf: 'fr-LU' },
+  hu: { ietf: 'hu-HU' },
+  mt: { ietf: 'en-MT' },
+  mena: { ietf: 'en-mena' },
+  mena_en: { ietf: 'en-mena' },
+  mena_ar: { ietf: 'ar-mena' },
+  mena_fr: { ietf: 'fr-mena' },
+  nl: { ietf: 'nl-NL' },
+  no: { ietf: 'no-NO' },
+  pl: { ietf: 'pl-PL' },
+  pt: { ietf: 'pt-PT' },
+  ro: { ietf: 'ro-RO' },
+  sa_en: { ietf: 'en-sa' },
+  ch_fr: { ietf: 'fr-CH' },
+  ch_de: { ietf: 'de-CH' },
+  ch_it: { ietf: 'it-CH' },
+  si: { ietf: 'sl-SI' },
+  sk: { ietf: 'sk-SK' },
+  fi: { ietf: 'fi-FI' },
+  se: { ietf: 'sv-SE' },
+  tr: { ietf: 'tr-TR' },
+  ae_en: { ietf: 'en-ae' },
+  uk: { ietf: 'en-GB' },
+  at: { ietf: 'de-AT' },
+  cz: { ietf: 'cs-CZ' },
+  bg: { ietf: 'bg-BG' },
+  ru: { ietf: 'ru-RU' },
+  ua: { ietf: 'uk-UA' },
+  il_he: { ietf: 'he-il' },
+  ae_ar: { ietf: 'ar-ae' },
+  sa_ar: { ietf: 'ar-sa' },
+  // Asia Pacific
+  au: { ietf: 'en-AU' },
+  hk_en: { ietf: 'en-HK' },
+  in: { ietf: 'en-in' },
+  id_id: { ietf: 'id-id' },
+  id_en: { ietf: 'en-id' },
+  my_ms: { ietf: 'ms-my' },
+  my_en: { ietf: 'en-my' },
+  nz: { ietf: 'en-nz' },
+  ph_en: { ietf: 'en-ph' },
+  ph_fil: { ietf: 'fil-PH' },
+  sg: { ietf: 'en-SG' },
+  th_en: { ietf: 'en-th' },
+  in_hi: { ietf: 'hi-in' },
+  th_th: { ietf: 'th-th' },
+  cn: { ietf: 'zh-CN' },
+  hk_zh: { ietf: 'zh-HK' },
+  tw: { ietf: 'zh-TW' },
+  jp: { ietf: 'ja-JP' },
+  kr: { ietf: 'ko-KR' },
+  vn_en: { ietf: 'en-vn' },
+  vn_vi: { ietf: 'vi-VN' },
+};
+
 export function getPageLocale(currentPath, locales = pageLocales) {
   const possibleLocale = currentPath.split('/')[1];
   if (locales.includes(possibleLocale)) {
@@ -261,13 +347,10 @@ const getFilterArray = async (state, country, lang, strs) => {
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
-    const locale = pageConfigHelper()?.locale?.ietf || 'en-us';
-    const region = pageConfigHelper()?.locale?.region || '';
+    const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
+    const locale = LOCALES[prefix] || 'en-us'
     /* eslint-disable-next-line prefer-const */
     let [currCountry, currLang] = locale.split('-');
-    if (!currCountry) {
-      currCountry = region;
-    }
 
     return {
       country: currCountry,
