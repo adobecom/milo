@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle, getMetadata, getConfig as pageConfigHelper } from '../../utils/utils.js';
+import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
@@ -260,15 +260,6 @@ const getFilterArray = async (state, country, lang, strs) => {
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
-  const locales = getMetadata('caas-locales');
-  if (locales) {
-    /* eslint-disable-next-line object-shorthand */
-    return {
-      country: '',
-      language: '',
-      locales,
-    };
-  }
   if (autoCountryLang) {
     const locale = pageConfigHelper()?.locale?.ietf || 'en-us';
     const region = pageConfigHelper()?.locale?.region || '';
@@ -281,13 +272,11 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
     return {
       country: currCountry,
       language: currLang,
-      locales: '',
     };
   }
   return {
     country: country ? country.split('/').pop() : 'us',
     language: language ? language.split('/').pop() : 'en',
-    locales: '',
   };
 }
 
