@@ -266,21 +266,20 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
     return {
       country: '',
       language: '',
-      locales: locales,
+      locales,
     };
   }
   if (autoCountryLang) {
     const locale = pageConfigHelper()?.locale?.ietf || 'en-us';
     const region = pageConfigHelper()?.locale?.region || '';
-    country = locale.split('-')[1];
-    if (!country) {
-      country = region;
+    let [currCountry, currLang] = locale.split('-');
+    if (!currCountry) {
+      currCountry = region;
     }
-    language = locale.split('-')[0];
 
     return {
-      country,
-      language,
+      country: currCountry,
+      language: currLang,
       locales: '',
     };
   }
