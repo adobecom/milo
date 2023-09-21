@@ -794,3 +794,8 @@ div[data-failed="true"]::before {
 .hide-block {
   display: none !important;
 }
+
+.static-links a:not([class*="button"]) {
+  color: inherit;
+  text-decoration: underline;
+}
