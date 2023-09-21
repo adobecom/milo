@@ -348,7 +348,7 @@ const getFilterArray = async (state, country, lang, strs) => {
 export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
     const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
-    const locale = LOCALES[prefix] || 'en-us'
+    const locale = LOCALES[prefix] || 'en-us';
     /* eslint-disable-next-line prefer-const */
     let [currCountry, currLang] = locale.split('-');
 
