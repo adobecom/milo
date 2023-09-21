@@ -94,10 +94,6 @@
   top: 0;
 }
 
-.marquee .background .mobile-only.tablet-only {
-  display: block;
-}
-
 .marquee .background .tablet-only,
 .marquee .background .desktop-only {
   display: none;
@@ -288,6 +284,10 @@
   line-height: var(--type-body-l-lh);
 }
 
+.marquee.large.split .action-area a:not(.con-button) {
+  font-size: var(--type-body-m-size);
+}
+
 @media screen and (min-width: 600px) {
   .marquee .action-area {
     display: flex;
@@ -425,7 +425,6 @@
     min-height: 360px;
   }
 
-  .marquee .background .mobile-only.tablet-only,
   .marquee .background .mobile-only,
   .marquee .background .tablet-only {
     display: none;

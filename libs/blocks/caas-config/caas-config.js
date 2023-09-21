@@ -242,7 +242,9 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '', title }) => {
+const Input = ({
+  label, type = 'text', prop, defaultValue = '', title, placeholder,
+}) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -265,6 +267,7 @@ const Input = ({ label, type = 'text', prop, defaultValue = '', title }) => {
       title=${title}
       onChange=${onInputChange}
       value=${context.state[prop]}
+      placeholder=${placeholder}
     />
   `;
 };
@@ -319,8 +322,8 @@ const BasicsPanel = ({ tagsData }) => {
     <${Select} options=${languageTags} prop="language" label="Language" sort />`;
 
   return html`
-    <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
-    <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
+  <${Input} label="Collection Name" placeholder="Only used in the author link" prop="collectionName" type="text" />
+  <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
@@ -430,7 +433,7 @@ const CardsPanel = ({ tagsData }) => {
       className="featuredCards"
       values=${context.state.featuredCards}
       title="Featured Cards"
-      subTitle="Enter the UUID for cards to be featured"
+      subTitle="UUIDs for featured cards"
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
@@ -439,7 +442,7 @@ const CardsPanel = ({ tagsData }) => {
       className="excludedCards"
       values=${context.state.excludedCards}
       title="Excluded Cards"
-      subTitle="Enter the UUID for cards to be excluded"
+      subTitle="UUIDs for excluded cards"
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
@@ -448,10 +451,11 @@ const CardsPanel = ({ tagsData }) => {
       className="hideCtaIds"
       values=${context.state.hideCtaIds}
       title="Hidden CTAs"
-      subTitle="Enter the UUID for cards that should never have CTAs"
+      subTitle="UUIDs for cards no CTAs"
     >
       <${FormInput} name="contentId" onValidate${isValidUuid} />
     <//>
+    <hr class="divider"/>
     <${DropdownSelect} options=${allTags} prop="hideCtaTags" label="Tags that should hide CTAS" />
   `;
 };
@@ -460,7 +464,7 @@ const BookmarksPanel = () => html`
   <${Input} label="Show bookmark icon on cards" prop="showBookmarksOnCards" type="checkbox" />
   <${Input} label="Only show bookmarked cards" prop="onlyShowBookmarkedCards" type="checkbox" />
   <${Input}
-    label="Show the Bookmarks Filter In The Card Collection"
+    label="Show Bookmarks Filter"
     prop="showBookmarksFilter"
     type="checkbox"
   />
@@ -650,10 +654,10 @@ const AdvancedPanel = () => {
 
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
-    <${Input} label="Fetch Cards from Floodgate Content Tree" prop="fetchCardsFromFloodgateTree" type="checkbox" />
+    <${Input} label="Preview Floodgate Cards" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Input} label="Do not lazyload" prop="doNotLazyLoad" type="checkbox" />
-    <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
+    <${Input} label="Collection Size (Defaults: Total Cards)" prop="collectionSize" type="text" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
     <${Input}
       label="Fallback Endpoint"

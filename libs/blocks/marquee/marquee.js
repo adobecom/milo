@@ -28,24 +28,34 @@ const decorateVideo = (container, video) => {
 };
 
 const decorateBlockBg = (block, node) => {
-  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
   const childCount = node.childElementCount;
+  const viewports = {
+    'mobile-only': window.matchMedia(`${childCount > 1 ? '(max-width: 599.99px)' : ''}`),
+    'tablet-only': window.matchMedia(`(min-width: 600px)${childCount === 3 ? ' and (max-width: 1199.99px)' : ''}`),
+    'desktop-only': window.matchMedia('(min-width: 1200px)'),
+  };
+  const viewportsKeys = Object.keys(viewports);
   const { children } = node;
 
   node.classList.add('background');
 
   if (childCount === 2) {
-    children[0].classList.add(viewports[0], viewports[1]);
-    children[1].classList.add(viewports[2]);
+    children[0].classList.add(viewportsKeys[0]);
+    children[1].classList.add(viewportsKeys[1], viewportsKeys[2]);
   }
 
   [...children].forEach(async (child, index) => {
     if (childCount === 3) {
-      child.classList.add(viewports[index]);
+      child.classList.add(viewportsKeys[index]);
     }
-    const video = child.querySelector('video, a[href*=".mp4"]');
-    if (video) {
-      decorateVideo(child, video);
+
+    // Skip the fallback if current screen size isn't matching the child's viewport.
+    if (viewports[viewportsKeys[index]].matches) {
+      // decorateVideo as fallback of video autoblock.
+      const video = child.querySelector('video, a[href*=".mp4"]');
+      if (video) {
+        decorateVideo(child, video);
+      }
     }
 
     const pic = child.querySelector('picture');
@@ -114,7 +124,7 @@ const decorateImage = (media) => {
   const imageLink = media.querySelector('a');
   const picture = media.querySelector('picture');
 
-  if (imageLink && picture) {
+  if (imageLink && picture && !imageLink.parentElement.classList.contains('modal-img-link')) {
     imageLink.textContent = '';
     imageLink.append(picture);
   }
