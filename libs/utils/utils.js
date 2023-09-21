@@ -551,7 +551,7 @@ export function decorateAutoBlock(a) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        a.className = `modal link-block ${[...a.classList].join(' ')}`;
+        a.className = `modal link-block ${[...a.classList].join(' ')}`.trim();
         return true;
       }
     }
