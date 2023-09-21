@@ -41,7 +41,6 @@ export const createLinkMarkup = (defaults) => (
   const createHref = () => {
     const params = new URLSearchParams([
       ['osi', offerSelectorId],
-      ['offerId', offer.offer_id],
       ['type', type],
     ]);
     if (promo) params.set('promo', promo);
