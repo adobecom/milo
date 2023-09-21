@@ -25,6 +25,7 @@
   color: var(--color-white);
 }
 
+
 .marquee.mobile-light .con-button.outline {
   border-color: var(--text-color);
   color: var(--text-color);
@@ -35,13 +36,13 @@
   color: var(--color-white);
 }
 
-.marquee.mobile-light .con-button:hover {
+.marquee.mobile-light .con-button.outline:hover {
   background-color: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
 }
 
-.marquee.mobile-dark .con-button:hover {
+.marquee.mobile-dark .con-button.outline:hover {
   background-color: var(--color-white);
   color: var(--color-black);
   text-decoration: none;
@@ -357,13 +358,13 @@
     color: var(--color-white);
   }
 
-  .marquee.tablet-light .con-button:hover {
+  .marquee.tablet-light .con-button.outline:hover {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .marquee.tablet-dark .con-button:hover {
+  .marquee.tablet-dark .con-button.outline:hover {
     background-color: var(--color-white);
     color: var(--color-black);
     text-decoration: none;
@@ -505,13 +506,13 @@
     color: var(--color-white);
   }
 
-  .marquee.desktop-light .con-button:hover {
+  .marquee.desktop-light .con-button.outline:hover {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .marquee.desktop-dark .con-button:hover {
+  .marquee.desktop-dark .con-button.outline:hover {
     background-color: var(--color-white);
     color: var(--color-black);
     text-decoration: none;
