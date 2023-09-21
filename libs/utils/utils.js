@@ -399,50 +399,6 @@ function checkForExpBlock(name, expBlocks) {
   return { blockPath: expBlock, blockName };
 }
 
-export function processTrackingLabels(text, charLimit) {
-  return text?.trim().replace(/\s+/g, ' ').split('|').join(' ')
-    .slice(0, charLimit);
-}
-
-export function decorateDefaultLinkAnalytics(block) {
-  if (block.classList.length
-    && !block.className.includes('metadata')
-    && !block.classList.contains('link-block')
-    && !block.classList.contains('section')
-    && block.nodeName === 'DIV') {
-    let header = '';
-    let linkCount = 1;
-    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .heading-title').forEach((item) => {
-      if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
-        if (!item.hasAttribute('daa-ll')) {
-          let label = item.textContent;
-          if (label.trim() === '') {
-            label = item.getAttribute('title') || item.getAttribute('aria-label') || item.querySelector('img')?.getAttribute('alt') || 'no label';
-          }
-          label = processTrackingLabels(label, 20);
-          item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
-        }
-        linkCount += 1;
-      } else {
-        header = processTrackingLabels(item.textContent, 20);
-      }
-    });
-  }
-}
-
-function decorateSectionAnalytics(section, idx) {
-  section.setAttribute('daa-lh', `s${idx + 1}`);
-  section.querySelectorAll('[data-block="true"] [data-block="true"]').forEach((block) => {
-    block.removeAttribute('data-block');
-  });
-  section.querySelectorAll('[data-block="true"]').forEach((block, blockIdx) => {
-    const blockName = block.classList[0] || '';
-    block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName}|${document.body.dataset.mep}`);
-    decorateDefaultLinkAnalytics(block);
-    block.removeAttribute('data-block');
-  });
-}
-
 export async function loadBlock(block) {
   if (block.classList.contains('hide-block')) {
     block.remove();
@@ -977,7 +933,6 @@ function decorateDocumentExtras(config) {
 }
 
 async function documentPostSectionLoading(config) {
-  document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx));
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     // eslint-disable-next-line import/no-cycle
@@ -1008,6 +963,10 @@ async function documentPostSectionLoading(config) {
 
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
+
+  import('../martech/attributes.js').then((attributes) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => attributes.decorateSectionAnalytics(section, idx));
+  });
 }
 
 async function processSection(section, config, isDoc) {
