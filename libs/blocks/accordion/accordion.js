@@ -1,6 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import { processTrackingLabels } from '../../martech/attributes.js';
+import { processTrackingLabels } from '../../martech/analytics.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 const mediaCollection = {};

@@ -964,8 +964,8 @@ async function documentPostSectionLoading(config) {
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
-  import('../martech/attributes.js').then((attributes) => {
-    document.querySelectorAll('main > div').forEach((section, idx) => attributes.decorateSectionAnalytics(section, idx));
+  import('../martech/analytics.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
   });
 }
 
