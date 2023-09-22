@@ -1,8 +1,9 @@
 .marquee {
   position: relative;
-  color: #FFF;
+  color: var(--color-white);
   display: flex;
 }
+
 .marquee.large.standard {
   min-height: 560px;
 }
@@ -16,8 +17,12 @@
   margin-bottom: 0;
 }
 
-.marquee.light, .marquee.quiet, .marquee.inline {
+.marquee.light, .marquee.mobile-light, .marquee.quiet, .marquee.inline {
   color: var(--text-color);
+}
+
+.marquee.mobile-dark {
+  color: var(--color-white);
 }
 
 .marquee .foreground {
@@ -89,10 +94,6 @@
   top: 0;
 }
 
-.marquee .background .mobile-only.tablet-only {
-  display: block;
-}
-
 .marquee .background .tablet-only,
 .marquee .background .desktop-only {
   display: none;
@@ -157,6 +158,10 @@
 
 .marquee.large.dark {
   background-color: black;
+}
+
+.marquee.large.mobile-light {
+  background-color: initial;
 }
 
 .marquee.large .text {
@@ -279,6 +284,10 @@
   line-height: var(--type-body-l-lh);
 }
 
+.marquee.large.split .action-area a:not(.con-button) {
+  font-size: var(--type-body-m-size);
+}
+
 @media screen and (min-width: 600px) {
   .marquee .action-area {
     display: flex;
@@ -296,6 +305,22 @@
     display: block;
   }
 
+  .marquee.large.tablet-dark {
+    background-color: black;
+  }
+
+  .marquee.large.tablet-light {
+    background-color: initial;
+  }
+
+  .marquee.tablet-light {
+    color: var(--text-color);
+  }
+
+  .marquee.tablet-dark {
+    color: var(--color-white);
+  }
+  
   .marquee .media {
     width: var(--grid-container-width); /* 10 grid / 83% */
   }
@@ -400,7 +425,6 @@
     min-height: 360px;
   }
 
-  .marquee .background .mobile-only.tablet-only,
   .marquee .background .mobile-only,
   .marquee .background .tablet-only {
     display: none;
@@ -410,6 +434,22 @@
     display: block;
   }
 
+  .marquee.large.desktop-dark {
+    background-color: black;
+  }
+
+  .marquee.large.desktop-light {
+    background-color: initial;
+  }
+
+  .marquee.desktop-light {
+    color: var(--text-color);
+  }
+
+  .marquee.desktop-dark {
+    color: var(--color-white);
+  }
+  
   .marquee .foreground {
     flex-direction: row;
     align-items: center;

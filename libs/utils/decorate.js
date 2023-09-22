@@ -1,3 +1,4 @@
+import { createTag } from './utils.js';
 import { decorateLinkAnalytics } from '../martech/attributes.js';
 
 export function decorateButtons(el, size) {
@@ -77,20 +78,20 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
 }
 
 export function decorateBlockBg(block, node) {
-  node.classList.add('background');
-  if (node.childElementCount > 1) {
-    const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
-    if (node.childElementCount === 2) {
-      node.children[0].classList.add(viewports[0], viewports[1]);
-      node.children[1].classList.add(viewports[2]);
-    } else {
-      [...node.children].forEach((e, i) => {
-        /* c8 ignore next */
-        e.classList.add(viewports[i]);
-      });
-    }
-  }
-  if (!node.querySelector(':scope img')) {
+  const childCount = node.childElementCount;
+  if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
+    node.classList.add('background');
+    const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
+    const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
+    const viewports = childCount === 2 ? binaryVP : allVP;
+    [...node.children].forEach((child, i) => {
+      if (childCount > 1) child.classList.add(...viewports[i]);
+      if (!child.querySelector('img, video, a[href*=".mp4"]')) {
+        child.style.background = child.textContent;
+        child.textContent = '';
+      }
+    });
+  } else {
     block.style.background = node.textContent;
     node.remove();
   }
@@ -101,6 +102,20 @@ export function getBlockSize(el, defaultSize = 1) {
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
+
+export const decorateBlockHrs = (el) => {
+  const els = el.querySelectorAll('p');
+  let hasHr = false;
+  [...els].forEach((e) => {
+    if (!e.textContent.startsWith('---')) return;
+    hasHr = true;
+    const bgStyle = e.textContent.substring(3).trim();
+    const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
+    e.textContent = '';
+    e.appendChild(hrElem);
+  });
+  if (hasHr && els.length) el.classList.add('has-divider');
+};
 
 function applyTextOverrides(el, override) {
   const parts = override.split('-');

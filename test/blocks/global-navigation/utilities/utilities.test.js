@@ -134,6 +134,19 @@ describe('global navigation utilities', () => {
     expect(experienceName).to.equal(config.imsClientId);
   });
 
+  it('getExperienceName replaces default experience name with client ID', () => {
+    // If the experience name is the default one (gnav), the imsClientId should be used instead
+    const gnavSourceMeta = toFragment`<meta name="gnav-source" content="http://localhost:2000/ch_de/libs/feds/gnav">`;
+    document.head.append(gnavSourceMeta);
+    let experienceName = getExperienceName();
+    expect(experienceName).to.equal(config.imsClientId);
+    // If the experience name is not the default one, the custom name should be used
+    gnavSourceMeta.setAttribute('content', 'http://localhost:2000/ch_de/libs/feds/custom-gnav');
+    experienceName = getExperienceName();
+    expect(experienceName).to.equal('custom-gnav');
+    gnavSourceMeta.remove();
+  });
+
   it('getExperienceName is empty if no imsClientId is defined', () => {
     const ogImsClientId = config.imsClientId;
     delete config.imsClientId;

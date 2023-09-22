@@ -3,10 +3,21 @@ import { createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const DOUBLE_WIDE = 'DoubleWideCard';
+const HALF_HEIGHT = 'HalfHeightCard';
 
 export const addBackgroundImg = (picture, cardType, card) => {
   const url = picture.querySelector('img').src;
   card.append(createTag('div', { class: `consonant-${cardType}-img`, style: `background-image: url(${url})` }));
+};
+
+export const addVideoBtn = (link, cardType, card) => {
+  const cardImage = card.querySelector(`.consonant-${cardType}-img`);
+  const playBtn = createTag('div', { class: `consonant-${cardType}-videoIco` });
+  if (cardType === HALF_HEIGHT) return cardImage.append(playBtn);
+  link.innerHTML = '';
+  link.appendChild(playBtn);
+  link.classList.add('consonant-videoButton-wrapper');
+  return cardImage.append(link);
 };
 
 const getUpFromSectionMetadata = (section) => {
@@ -48,7 +59,8 @@ export const addWrapper = (el, section, cardType) => {
   const idx = list.findIndex((i) => i.includes(upClass));
   if (idx > -1) {
     upClass = `${idx + 2}-up`;
-    section.classList.remove(list[idx]);
+    const classToRemove = list[idx];
+    new MutationObserver(() => { if (section.classList.contains(classToRemove)) section.classList.remove(classToRemove); }).observe(section, { attributes: true, attributeFilter: ['class'] });
   }
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
