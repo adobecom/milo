@@ -425,6 +425,7 @@ dt.title.is-expanded button {
 
 .config-panel dd.content.is-expanded {
   margin-top: 0;
+  max-height: 999999px; /* needed for transition animation */
 }
 
 .config-panel dd.content .field {
