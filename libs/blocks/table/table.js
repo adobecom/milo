@@ -321,10 +321,12 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     const headings = table.querySelectorAll('.row-heading .col');
     const headingsLength = headings.length;
     // Remove filter if table there are only 2 columns
+    let filter = true;
     if (isMerch && headingsLength <= 2) {
-      table.querySelector('.filters')?.remove();
-    } else if (headingsLength <= 3) {
-      table.querySelector('.filters')?.remove();
+      filter = false;
+    }
+    if (headingsLength <= 3) {
+      filter = false;
     }
 
     if (isMerch && headingsLength > 2) {
@@ -375,7 +377,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       setRowStyle();
     };
 
-    if (!table.parentElement.querySelector('.filters')) {
+    if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
       const filter2 = createTag('div', { class: 'filter-wrapper' });
