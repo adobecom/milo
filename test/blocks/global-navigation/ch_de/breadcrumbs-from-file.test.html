@@ -11,6 +11,7 @@
       describe('breadcrumbs', () => {
         it('should create a breadcrumb from the url', async () => {
           setConfig({
+            pathname: '/ch_de/',
             locales: {
               '': { ietf: 'en-US', tk: 'hah7vzn.css' },
               ch_de: {
@@ -37,7 +38,7 @@
           expect(gnavBreadcrumb.textContent).to.equal('global navigation');
         });
 
-        it("should not create a breadcrumb from the url if the config isn't on", async () => {
+        it('should not create a breadcrumb from the url if the config isn\'t on', async () => {
           document.head.innerHTML = '';
           const breadcrumb = await breadcrumbs();
           expect(breadcrumb).to.equal(null);
