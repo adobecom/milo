@@ -320,6 +320,14 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const mobileRenderer = () => {
     const headings = table.querySelectorAll('.row-heading .col');
     const headingsLength = headings.length;
+    // Remove filter if table there are only 2 columns
+    let filter = true;
+    if (isMerch && headingsLength <= 2) {
+      filter = false;
+    }
+    if (headingsLength <= 3) {
+      filter = false;
+    }
 
     if (isMerch && headingsLength > 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
@@ -369,7 +377,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       setRowStyle();
     };
 
-    if (!table.parentElement.querySelector('.filters')) {
+    if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
       const filter2 = createTag('div', { class: 'filter-wrapper' });
@@ -466,7 +474,7 @@ export default function init(el) {
     if (isMerch) {
       visibleHeadingsSelector = '.col-heading:not(.hidden)';
     }
-    if (el.querySelectorAll(visibleHeadingsSelector).length > 1) {
+    if (el.querySelectorAll(visibleHeadingsSelector).length > 2) {
       originTable = el.cloneNode(true);
     } else {
       originTable = el;
