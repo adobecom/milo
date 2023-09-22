@@ -474,7 +474,7 @@ export default function init(el) {
     if (isMerch) {
       visibleHeadingsSelector = '.col-heading:not(.hidden)';
     }
-    if (el.querySelectorAll(visibleHeadingsSelector).length > 1) {
+    if (el.querySelectorAll(visibleHeadingsSelector).length > 2) {
       originTable = el.cloneNode(true);
     } else {
       originTable = el;
