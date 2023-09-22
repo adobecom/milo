@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { waitForElement } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/marquee/marquee.js');
@@ -54,21 +55,24 @@ describe('marquee', () => {
       document.body.innerHTML = video;
     });
 
-    it('in background, single', () => {
+    it('in background, single', async () => {
       const marquee = document.getElementById('single-background');
       init(marquee);
-      expect(marquee.querySelector('.background video')).to.exist;
+      const videoEl = await waitForElement('#single-background .background video');
+      expect(videoEl).to.exist;
     });
 
-    it('in background, multiple', () => {
+    it('in background, multiple', async () => {
       const marquee = document.getElementById('multiple-background');
       init(marquee);
+      await waitForElement('#multiple-background .background video');
       expect(marquee.querySelectorAll('.background video').length).to.equal(1);
     });
 
-    it('in foreground', () => {
+    it('in foreground', async () => {
       const marquee = document.getElementById('foreground');
       init(marquee);
+      await waitForElement('#foreground video');
       expect(marquee.querySelector('.foreground video')).to.exist;
     });
   });

@@ -64,7 +64,7 @@ const decorateBlockBg = (block, node) => {
     }
   });
 
-  if (!node.querySelector(':scope img') && !node.querySelector(':scope video')) {
+  if (!node.querySelector(':scope img') && !node.querySelector(':scope video, :scope a[href*=".mp4"]')) {
     block.style.background = node.textContent;
     node.remove();
   }
