@@ -50,7 +50,7 @@ function getTable(block) {
   const table = document.createElement('table');
   table.setAttribute('border', 1);
   const headerRow = document.createElement('tr');
-  headerRow.append(createTag('td', { colspan: maxCols }, name));
+  headerRow.append(createTag('th', { colspan: maxCols }, name));
   table.append(headerRow);
   rows.forEach((row) => {
     const tr = document.createElement('tr');
