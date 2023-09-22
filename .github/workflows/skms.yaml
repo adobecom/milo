@@ -36,8 +36,8 @@ jobs:
 
       - name: Set Maintenance Time Windows for CMR
         run: |
-          echo "start_time=$(TZ=":America/Los_Angeles" date -d "+20 minutes" '+%Y-%m-%d %H:%M')" >> $GITHUB_ENV
-          echo "end_time=$(TZ=":America/Los_Angeles" date -d "+30 minutes" '+%Y-%m-%d %H:%M')" >> $GITHUB_ENV
+          echo "start_time=$(date -d "+60 minutes" '+%Y-%m-%d %H:%M')" >> $GITHUB_ENV
+          echo "end_time=$(date -d "+90 minutes" '+%Y-%m-%d %H:%M')" >> $GITHUB_ENV
 
       - name: Set Release Summary for CMR
         run: |
