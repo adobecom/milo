@@ -69,7 +69,7 @@
 }
 
 .icon-block .foreground .icon-area img {
-  height: var(--icon-size-xxl);
+  max-height: var(--icon-size-xxl);
   width: auto;
 }
 
