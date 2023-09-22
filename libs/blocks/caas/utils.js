@@ -350,7 +350,7 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
     const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
     const locale = LOCALES[prefix]?.ietf || 'en-us';
     /* eslint-disable-next-line prefer-const */
-    let [currCountry, currLang] = locale.split('-');
+    let [currLang, currCountry] = locale.split('-');
 
     return {
       country: currCountry,
