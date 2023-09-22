@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockText, decorateIconStack, applyHoverPlay } from '../../utils/decorate.js';
+import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -84,30 +84,12 @@ function decorateVideo(container) {
   container.classList.add('has-video');
 }
 
-function decorateBlockBg(block, node) {
-  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
-  const childCount = node.childElementCount;
-  const { children } = node;
-  node.classList.add('background');
-  if (childCount === 2) {
-    children[0].classList.add(viewports[0], viewports[1]);
-    children[1].classList.add(viewports[2]);
-  }
-  [...children].forEach((child, index) => {
-    if (childCount === 3) {
-      child.classList.add(viewports[index]);
-    }
-    decorateVideo(child);
-  });
-  if (!node.querySelector(':scope img') && !node.querySelector(':scope video')) {
-    block.style.background = node.textContent;
-    node.remove();
-  }
-}
-
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
-  if (elems.length > 1) decorateBlockBg(el, elems[0]);
+  if (elems.length > 1) {
+    decorateBlockBg(el, elems[0]);
+    [...elems[0].children].forEach((child) => decorateVideo(child));
+  }
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
   if (el.classList.contains('split')) decorateMedia(el);
@@ -123,13 +105,15 @@ function decorateLayout(el) {
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   iconArea?.classList.add('icon-area');
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
-  const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
   const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video')?.closest('div');
-  const bgMedia = el.querySelector(':scope > div:not(.text) video')?.closest('div');
+  const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video')?.closest('div');
   const image = foregroundImage ?? bgImage;
   const asideMedia = foregroundMedia ?? bgMedia ?? image;
+  const isSplit = el.classList.contains('split');
+  const hasMedia = foregroundImage ?? foregroundMedia ?? (isSplit && asideMedia);
+  if (!hasMedia) el.classList.add('no-media');
   if (asideMedia && !asideMedia.classList.contains('text')) {
-    const isSplit = el.classList.contains('split');
     asideMedia.classList.add(`${isSplit ? 'split-' : ''}image`);
     if (isSplit) {
       const position = [...asideMedia.parentNode.children].indexOf(asideMedia);
@@ -147,6 +131,7 @@ function decorateLayout(el) {
 }
 
 export default function init(el) {
+  el.classList.add('con-block');
   const blockData = getBlockData(el);
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);

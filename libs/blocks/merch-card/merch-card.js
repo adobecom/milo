@@ -21,15 +21,7 @@ const getPodType = (styles) => {
   return cardTypes[authoredType] || SEGMENT_BLADE;
 };
 
-const createDescription = (rows, cardType) => createTag('div', { class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
-
-const createTitle = (titles, cardType) => {
-  const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
-  titles?.forEach((title) => titleWrapper.appendChild(title));
-  return titleWrapper;
-};
-
-const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
+const decorateFooter = (el, altCtaMetaData, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
@@ -43,7 +35,6 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   };
 
   const createCheckbox = (checkBoxText) => {
-    cardFooter.querySelector('hr')?.remove();
     const container = createTag('label', { class: 'checkbox-container' });
     const input = createTag('input', { id: 'alt-cta', type: 'checkbox' });
     const checkmark = createTag('span', { class: 'checkmark' });
@@ -52,18 +43,18 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     return container;
   };
 
+  const createSecureSign = () => {
+    const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
+    const standardWrapper = createTag('div', { class: 'standard-wrapper' });
+    const secureTransactionWrapper = decorateWithSecureTransactionSign();
+    standardWrapper.append(secureTransactionWrapper, cardFooterRow);
+    cardFooter?.append(standardWrapper);
+  };
+
   const decorateAlternativeCta = () => {
     const altCtaRegex = /href=".*"/;
     if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return;
-
     const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    if (el.classList.contains('secure')) {
-      const standardWrapper = createTag('div', { class: 'standard-wrapper' });
-      const secureTransactionWrapper = decorateWithSecureTransactionSign();
-      standardWrapper.append(secureTransactionWrapper, cardFooterRow);
-      cardFooter?.append(standardWrapper);
-    }
-
     const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
     const checkboxContainer = createCheckbox(altCtaMetaData[0]);
     const altCtaButtonData = altCtaMetaData[1];
@@ -79,25 +70,32 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     altCtaMetaData[0].parentNode.remove();
   };
   if (altCtaMetaData !== null) decorateAlternativeCta();
+  if (el.classList.contains('secure')) createSecureSign();
   cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
 };
 
 const addInner = (el, altCta, cardType, merchCard) => {
-  const titles = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6')];
-  const rows = [...el.querySelectorAll('p')];
+  const innerElements = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul')];
   const styles = [...el.classList];
   const merch = styles.includes('merch-card');
   const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
   const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
+  const list = el.querySelector('ul');
 
   const inner = el.querySelector(':scope > div:not([class])');
   inner.classList.add(`consonant-${cardType}-inner`);
-  const title = createTitle(titles, cardType);
-  const description = createDescription(rows, cardType, inner);
 
-  inner.prepend(title);
-  inner.append(description);
-  addFooter(links, inner, merchCard);
+  innerElements.forEach((element) => {
+    if (element.tagName.match(/^H[1-6]$/)) element.classList.add(`consonant-${cardType}-title`);
+    if (element.tagName.match(/^P$/)) element.classList.add(`consonant-${cardType}-description`);
+    if (element.tagName.match(/^UL$/)) {
+      list.classList.add(`consonant-${cardType}-list`);
+      list.querySelectorAll('li').forEach((li) => li.classList.add(`consonant-${cardType}-list-item`));
+    }
+  });
+
+  inner.append(...innerElements);
+  addFooter(links, inner, cardType !== PLANS_CARD);
   decorateFooter(el, altCta, cardType);
   merchCard.append(inner);
 };
@@ -110,9 +108,15 @@ const decorateRibbon = (el, ribbonMetadata, cardType) => {
   const ribbonWrapper = ribbonMetadata[0].parentNode;
   const ribbon = ribbonMetadata[1];
   ribbon.classList.add(`consonant-${cardType}-ribbon`);
-  ribbon.style.backgroundColor = ribbonBgColor;
+  const borderStyle = `1px solid ${ribbonBgColor}`;
+  if (el.classList.contains('evergreen')) {
+    ribbon.style.border = borderStyle;
+    ribbon.style.borderRight = 'none';
+  } else {
+    ribbon.style.backgroundColor = ribbonBgColor;
+    el.style.border = borderStyle;
+  }
   ribbon.style.color = ribbonTextColor;
-  el.style.border = `1px solid ${ribbonBgColor}`;
   const picture = el.querySelector(`.consonant-${cardType}-img`);
   if (picture) {
     picture.insertAdjacentElement('afterend', ribbon);
@@ -139,6 +143,8 @@ const init = (el) => {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   loadStyle(`${base}/deps/caas.css`);
+  const section = el.closest('.section');
+  section.classList.add('milo-card-section');
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
@@ -165,7 +171,7 @@ const init = (el) => {
       }
     }
   });
-  addWrapper(el, cardType);
+  addWrapper(el, section, cardType);
   merchCard.classList.add('consonant-Card', 'consonant-ProductCard', `consonant-${cardType}`);
   if (image) addBackgroundImg(image, cardType, merchCard);
   if (ribbonMetadata !== null) decorateRibbon(el, ribbonMetadata, cardType);

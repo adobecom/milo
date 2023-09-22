@@ -10,7 +10,7 @@ describe('table and tablemetadata', () => {
   beforeEach(() => {
     const tables = document.querySelectorAll('.table');
     tables.forEach((t) => init(t));
-    window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
+    window.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
   });
 
   describe('standard table', () => {
