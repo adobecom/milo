@@ -529,7 +529,6 @@ dt.title.is-expanded button {
   margin-top: 6px;
 }
 
-
 /* collapsible panel */
 button.collapse-panel {
   border: none;
@@ -540,7 +539,7 @@ button.collapse-panel {
 }
 
 button.collapse-panel:hover {
-background:#666;
+background: #666;
 color: #eee;
 }
 
@@ -560,11 +559,11 @@ color: #eee;
 
 .panel-collapsed dt.title span {
   color: #333;
-  padding: 0 3px
+  padding: 0 3px;
 }
 
 .panel-collapsed button {
-cursor:pointer;
+  cursor:pointer;
 }
 
 .tool-content > div:nth-child(2) {
