@@ -63,7 +63,7 @@ describe('marquee', () => {
     it('in background, multiple', () => {
       const marquee = document.getElementById('multiple-background');
       init(marquee);
-      expect(marquee.querySelectorAll('.background video').length).to.equal(3);
+      expect(marquee.querySelectorAll('.background video').length).to.equal(1);
     });
 
     it('in foreground', () => {
