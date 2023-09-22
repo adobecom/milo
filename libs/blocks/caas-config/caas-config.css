@@ -36,8 +36,8 @@ dd.content .sort-options > .field {
   top: 12px;
 }
 
-.config-panel dd.content.is-expanded {
-  max-height: none;
+dd.content.is-expanded {
+  max-height: 999999px; /* needed for transition animation */
 }
 
 .multifield .multifield {
@@ -91,12 +91,14 @@ dd.content .sort-options > .field {
 
 /* sticky panel */
 .config-panel {
+  border-top: 8px solid black;
   position: sticky;
   top: 60px;
   align-self: start;
   overflow: scroll;
   max-height: 95vh;
-  background: #ddd;
+  max-width: 360px;
+  margin-bottom: 20px;
 }
 
 .config-panel::-webkit-scrollbar { 
