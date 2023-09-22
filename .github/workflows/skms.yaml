@@ -49,12 +49,8 @@ jobs:
               return 1
             fi
 
-            sed -i 's/"/\"/g' $str
-            sed -i "s/'/\'/g" $str
-            sed -i 's/\(/\[/g' $str
-            sed -i 's/\)/\]/g' $str
-            sed -i 's,\,\\,g' $str
-            sed -i 's,/,\/,g' $str
+            str=`echo "$str" | sed 's/"/\"/g' | sed "s/'/\'/g" | sed 's/\(/\[/g' | sed 's/\)/\]/g' | sed 's,\,\\,g' | sed 's,/,\/,g'`
+
             str="${str//$'\r'/"\r"}"
             str="${str//$'\n'/"\n"}"
             str="${str//$'\t'/"\t"}"
