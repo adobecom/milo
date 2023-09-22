@@ -39,7 +39,7 @@ const Select = ({
 };
 
 const Input = ({
-  label, name, onChange, onValidate, isRequired, type = 'text', value, title, tooltip,
+  label, name, onChange, onValidate, isRequired, type = 'text', value, title, tooltip, placeholder,
 }) => {
   const [isValid, setIsValid] = useState(true);
 
@@ -82,6 +82,7 @@ const Input = ({
         name=${name}
         title=${title}
         ...${computedValue}
+        placeholder=${placeholder}
         onChange=${onInputChange}
       />
       ${tooltip && html`<span class="tooltip-text">${tooltip}</span>`}
