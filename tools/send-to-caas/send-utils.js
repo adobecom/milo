@@ -264,6 +264,7 @@ const getOrigin = () => {
     northstar: 'northstar',
     workfront: 'workfront',
   };
+
   if (mappings[origin]) {
     return mappings[origin] || origin;
   }
