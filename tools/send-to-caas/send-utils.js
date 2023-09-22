@@ -256,13 +256,6 @@ const getOrigin = () => {
   const mappings = {
     cc: 'hawks',
     dc: 'doccloud',
-    bacom: 'bacom',
-    experienceleague: 'experienceleague',
-    magento: 'magento',
-    marketo: 'marketo',
-    milo: 'milo',
-    northstar: 'northstar',
-    workfront: 'workfront',
   };
 
   if (mappings[origin]) {
