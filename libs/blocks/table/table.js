@@ -324,7 +324,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     let filter = true;
     if (isMerch && headingsLength <= 2) {
       filter = false;
-    } else if (headingsLength <= 3) {
+    } else if (!isMerch && headingsLength <= 3) {
       filter = false;
     }
 
