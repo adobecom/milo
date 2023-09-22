@@ -1,5 +1,5 @@
 import { html } from '../../../deps/htm-preact.js';
-import { spAccessToken, urls } from '../utils/state.js';
+import { urls } from '../utils/state.js';
 import { findFragments, syncToLangstore } from './index.js';
 
 export default function Actions() {
@@ -11,7 +11,6 @@ export default function Actions() {
       <div class=locui-url-heading-actions>
         <button 
           class=locui-urls-heading-action
-          disabled=${!spAccessToken.value}
           onClick=${findFragments}>Find Fragments</button>
         <button
           onClick=${syncToLangstore}

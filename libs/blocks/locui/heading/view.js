@@ -1,12 +1,12 @@
 import { html } from '../../../deps/htm-preact.js';
 import { heading, user, urls, languages, statuses } from '../utils/state.js';
-import setDetails from '../loc/index.js';
+import { autoSetup } from '../loc/index.js';
 
 async function handleRefresh() {
   languages.value = [];
   urls.value = [];
   statuses.value = {};
-  setDetails();
+  autoSetup();
 }
 
 export default function Heading() {

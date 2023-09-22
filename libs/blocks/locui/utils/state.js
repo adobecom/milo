@@ -1,7 +1,10 @@
 import { signal } from '../../../deps/htm-preact.js';
 import { origin } from './franklin.js';
 
-const LOC_CONFIG = '/drafts/localization/configs/config.json';
+// TODO: Need to support consumers here
+const LOC_CONFIG = '/.milo/config.json';
+
+export const telemetry = { application: { appName: 'Adobe Localization' } };
 
 // Signals
 export const statuses = signal({});
@@ -11,6 +14,7 @@ export const urls = signal([]);
 export const siteConfig = signal(null);
 export const user = signal();
 export const spAccessToken = signal();
+export const showLogin = signal(false);
 
 export function setStatus(name, type, text, description, timeout) {
   const content = type && text ? { type, text, description } : null;

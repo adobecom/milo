@@ -1,12 +1,11 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import updateExcelTable from '../utils/sp/excel.js';
 import { heading, setStatus, urls } from '../utils/state.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import copyFile from '../utils/sp/file.js';
-import makeGroups from '../utils/group.js';
+import updateExcelTable from '../../../tools/sharepoint/excel.js';
 
 const MISSING_SOURCE = 'There are missing source docs in the project. Remove the missing docs or create them.';
 
@@ -63,7 +62,9 @@ export async function findFragments() {
   setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
   if (forExcel.length > 0) {
     urls.value = [...urls.value];
-    updateExcelTable(forExcel);
+
+    const resp = await updateExcelTable({ telemetry, filename, tablename, values })
+
     updateExcelJson();
   }
 }

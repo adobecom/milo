@@ -713,7 +713,7 @@ function decorateSection(section, idx) {
   };
 }
 
-function decorateSections(el, isDoc) {
+export function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
   return [...el.querySelectorAll(selector)].map(decorateSection);
 }

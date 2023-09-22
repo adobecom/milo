@@ -1,6 +1,9 @@
 import { getConfig, getLocale } from '../../../utils/utils.js';
-import { heading, languages, urls, getSiteConfig, setStatus } from '../utils/state.js';
+import {
+  heading, languages, urls, getSiteConfig, setStatus, showLogin, telemetry,
+} from '../utils/state.js';
 import { getStatus, preview } from '../utils/franklin.js';
+import login from '../../../tools/sharepoint/login.js';
 
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
@@ -71,8 +74,22 @@ async function loadHeading() {
   await preview(`${path}.json`);
 }
 
-export default async function setDetails() {
+async function loginToSharePoint() {
+  const scopes = ['files.readwrite', 'sites.readwrite.all'];
+  await login({ scopes, telemetry });
+}
+
+export async function setup() {
+  await loginToSharePoint();
   await loadHeading();
   await loadDetails();
   await loadLocales();
+}
+
+export async function autoSetup() {
+  try {
+    await setup();
+  } catch {
+    showLogin.value = true;
+  }
 }
