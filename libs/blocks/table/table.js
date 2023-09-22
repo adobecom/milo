@@ -320,6 +320,12 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const mobileRenderer = () => {
     const headings = table.querySelectorAll('.row-heading .col');
     const headingsLength = headings.length;
+    // Remove filter if table there are only 2 columns
+    if (isMerch && headingsLength <= 2) {
+      table.querySelector('.filter')?.remove();
+    } else if (headingsLength <= 3) {
+      table.querySelector('.filter')?.remove();
+    }
 
     if (isMerch && headingsLength > 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
