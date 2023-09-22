@@ -1,13 +1,15 @@
 name: Milo Bot Release Email
 
 on:
-  pull_request:
-    types: [closed]
+  pull_request_target:
+    types:
+      - closed
     branches:
       - main
 
 jobs:
   action:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +18,8 @@ jobs:
       - name: Use email bot
         uses: adobecom/milo-email-bot@main
         env:
-          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          TO_EMAIL_NEW_FEATURE: ${{ secrets.TO_EMAIL_NEW_FEATURE }}
+          TO_EMAIL_HIGH_IMPACT: ${{ secrets.TO_EMAIL_HIGH_IMPACT }}
           FROM_EMAIL: 'bot@em2344.milo.pink'
           FROM_NAME: 'Milo Bot'
           SG_KEY: ${{ secrets.SG_KEY }}

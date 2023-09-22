@@ -1,4 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { inlineBlock } from '../../utils/inline.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 export async function getSVGsfromFile(path, selectors) {
@@ -15,7 +16,9 @@ export async function getSVGsfromFile(path, selectors) {
     if (svg) return [{ svg }];
     /* c8 ignore next 4 */
     return null;
-  } else if (!(selectors instanceof Array)) {
+  }
+  if (!(selectors instanceof Array)) {
+    /* eslint-disable no-param-reassign */
     selectors = [selectors];
   }
 
@@ -43,47 +46,87 @@ function getPlatforms(el) {
   });
 }
 
-export default async function decorate(el) {
+export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
-  const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
-  el.innerHTML = '';
-  const clipboardSupport = !!(navigator.clipboard)
+  const platforms = getPlatforms(block) || [
+    'facebook',
+    'twitter',
+    'linkedin',
+    'pinterest',
+    'reddit',
+  ];
+  block.innerHTML = '';
+  const clipboardSupport = !!navigator.clipboard;
   if (clipboardSupport) platforms.push('clipboard');
-  const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
+  const svgs = await getSVGsfromFile(
+    `${base}/blocks/share/share.svg`,
+    platforms,
+  );
   if (!svgs) return;
-
-  const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
+  /* eslint-disable  no-confusing-arrow,no-useless-escape */
+  const toSentenceCase = (str) => str && typeof str === 'string' ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
   const shareToText = toSentenceCase(await replaceKey('share-to', config));
   const url = encodeURIComponent(window.location.href);
+  const title = document.title ?? url;
+  /* eslint-disable  no-shadow */
   const getDetails = (name, url) => {
     switch (name) {
       case 'facebook':
-        return { title: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` };
+        return {
+          title: 'Facebook',
+          href: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+          'daa-lh': 'facebook:click',
+        };
       case 'twitter':
-        return { title: 'Twitter', href: `https://twitter.com/share?&url=${url}` };
+        return {
+          title: 'Twitter',
+          href: `https://twitter.com/share?&url=${url}`,
+          'daa-lh': 'twitter:click',
+        };
       case 'linkedin':
-        return { title: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}` };
+        return {
+          title: 'LinkedIn',
+          href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+          'daa-lh': 'linkedin:click',
+        };
       case 'pinterest':
-        return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
-      default: return null;
+        return {
+          title: 'Pinterest',
+          href: `https://pinterest.com/pin/create/button/?url=${url}&description=${title}`,
+          'daa-lh': 'pinterest:click',
+        };
+      case 'reddit':
+        return {
+          title: 'Reddit',
+          href: `https://reddit.com/submit?url=${url}&title=${title}`,
+          'daa-lh': 'reddit:click',
+        };
+      default:
+        return null;
     }
   };
-  
-  const heading = toSentenceCase(await replaceKey('share-this-page', config));
-  el.append(createTag('p', null, ((heading))));
+  if (!block.classList.contains('inline')) {
+    const heading = toSentenceCase(await replaceKey('share-this-page', config));
+    block.append(createTag('p', null, heading));
+  }
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
     if (svg.name === 'clipboard') return;
-    
+
     const obj = getDetails(svg.name, url);
     if (!obj) return;
 
-    const shareLink = createTag('a', { 
-      title: `${shareToText} ${obj.title}`,
-      target: '_blank',
-      href: obj.href 
-    }, svg.svg);
+    const shareLink = createTag(
+      'a',
+      {
+        title: `${shareToText} ${obj.title}`,
+        target: '_blank',
+        href: obj.href,
+        'daa-ll': `${obj.title}:click`,
+      },
+      svg.svg,
+    );
     container.append(shareLink);
     shareLink.addEventListener('click', (e) => {
       /* c8 ignore next 2 */
@@ -91,18 +134,24 @@ export default async function decorate(el) {
       window.open(shareLink.href, 'newwindow', 'width=600, height=400');
     });
   });
-
   const clipboardSvg = svgs.find((svg) => svg.name === 'clipboard');
   if (clipboardSvg && clipboardSupport) {
-    const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
+    const clipboardToolTip = toSentenceCase(
+      await replaceKey('copy-to-clipboard', config),
+    );
     const copiedTooltip = toSentenceCase(await replaceKey('copied', config));
-    const copyButton = createTag('button', { 
-      type:'button', 
-      class:'copy-to-clipboard', 
-      'aria-label': clipboardToolTip, 
-      'data-copy-to-clipboard': clipboardToolTip, 
-      'data-copied': `${copiedTooltip}!` 
-    }, clipboardSvg.svg);
+    const copyButton = createTag(
+      'button',
+      {
+        type: 'button',
+        class: 'copy-to-clipboard',
+        'aria-label': clipboardToolTip,
+        'data-copy-to-clipboard': clipboardToolTip,
+        'data-copied': `${copiedTooltip}!`,
+        'daa-ll': 'copy:click',
+      },
+      clipboardSvg.svg,
+    );
     container.append(copyButton);
     copyButton.addEventListener('click', (e) => {
       /* c8 ignore next 6 */
@@ -110,9 +159,13 @@ export default async function decorate(el) {
       navigator.clipboard.writeText(window.location.href).then(() => {
         copyButton.classList.add('copy-to-clipboard-copied');
         setTimeout(() => document.activeElement.blur(), 500);
-        setTimeout(() => copyButton.classList.remove('copy-to-clipboard-copied'), 2000);
+        setTimeout(
+          () => copyButton.classList.remove('copy-to-clipboard-copied'),
+          2000,
+        );
       });
     });
   }
-  el.append(container);
+  block.append(container);
+  inlineBlock(block);
 }

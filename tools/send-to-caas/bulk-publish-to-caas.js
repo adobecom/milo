@@ -1,6 +1,6 @@
-/* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
 import { loadScript, loadStyle } from '../../libs/utils/utils.js';
+import { getImsToken } from '../utils/utils.js';
 import {
   loadTingleModalFiles,
   showAlert,
@@ -9,7 +9,6 @@ import {
 import {
   getCardMetadata,
   getCaasProps,
-  getImsToken,
   loadCaasTags,
   postDataToCaaS,
   getConfig,
@@ -18,10 +17,11 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls'];
-const FIELDS_CB = ['draftOnly', 'usepreview'];
+const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType'];
+const FIELDS_CB = ['draftOnly', 'usePreview', 'useHtml'];
 const DEFAULT_VALUES = {
   caasEnv: 'Prod',
+  contentType: 'caas:content-type/article',
   excelFile: '',
   host: 'business.adobe.com',
   owner: 'adobecom',
@@ -30,7 +30,8 @@ const DEFAULT_VALUES = {
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
-  usepreview: false,
+  usePreview: false,
+  useHtml: true,
 };
 
 const fetchExcelJson = async (url) => {
@@ -94,13 +95,20 @@ const processData = async (data, accessToken) => {
   let keepGoing = true;
 
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
-  const { caasEnv, draftOnly, host, owner, repo, usepreview } = getConfig();
+  const {
+    caasEnv,
+    draftOnly,
+    host,
+    owner,
+    repo,
+    useHtml,
+    usePreview,
+  } = getConfig();
 
-  const domain = usepreview
+  const domain = usePreview
     ? `https://main--${repo}--${owner}.hlx.page`
     : `https://${host}`;
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const page of data) {
     if (!keepGoing) break;
 
@@ -108,8 +116,9 @@ const processData = async (data, accessToken) => {
       const rawUrl = page.Path || page.path || page.url || page.URL || page.Url || page;
 
       const { pathname } = new URL(rawUrl);
-      const pageUrl = usepreview ? `${domain}${pathname.replace('.html', '')}` : `${domain}${pathname}`;
-      const prodUrl = `${host}${pathname}`;
+      const pathnameNoHtml = pathname.replace('.html', '');
+      const pageUrl = usePreview ? `${domain}${pathnameNoHtml}` : `${domain}${pathname}`;
+      const prodUrl = `${host}${pathnameNoHtml}${useHtml ? '.html' : ''}`;
 
       index += 1;
       statusModal.setContent(`Publishing ${index} of ${data.length}:<br>${pageUrl}`);
@@ -136,6 +145,11 @@ const processData = async (data, accessToken) => {
         caasMetadata.tags = updatedTags;
       }
 
+      if (!caasMetadata.tags.length) {
+        errorArr.push([pageUrl, 'No tags on page']);
+        continue;
+      }
+
       const caasProps = getCaasProps(caasMetadata);
 
       const response = await postDataToCaaS({
@@ -151,6 +165,7 @@ const processData = async (data, accessToken) => {
         errorArr.push([pageUrl, response]);
       }
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log(`ERROR: ${e.message}`);
     }
   }
@@ -181,20 +196,18 @@ const bulkPublish = async () => {
 
 const loadFromLS = () => {
   const ls = localStorage.getItem(LS_KEY);
-  if (ls) {
-    try {
-      setConfig(JSON.parse(ls));
-      /* c8 ignore next */
-    } catch (e) { /* do nothing */ }
-  }
-
-  const config = getConfig();
-  FIELDS.forEach((field) => {
-    document.getElementById(field).value = config[field] || DEFAULT_VALUES[field];
-  });
-  FIELDS_CB.forEach((field) => {
-    document.getElementById(field).checked = config[field] || DEFAULT_VALUES_CB[field];
-  });
+  if (!ls) return;
+  try {
+    setConfig(JSON.parse(ls));
+    const config = getConfig();
+    FIELDS.forEach((field) => {
+      document.getElementById(field).value = config[field] ?? DEFAULT_VALUES[field];
+    });
+    FIELDS_CB.forEach((field) => {
+      document.getElementById(field).checked = config[field] ?? DEFAULT_VALUES_CB[field];
+    });
+    /* c8 ignore next */
+  } catch (e) { /* do nothing */ }
 };
 
 const init = async () => {
@@ -219,11 +232,13 @@ const init = async () => {
       project: '',
       branch: 'main',
       caasEnv: document.getElementById('caasEnv').value,
+      contentType: document.getElementById('contentType').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       draftOnly: document.getElementById('draftOnly').checked,
-      usepreview: document.getElementById('usepreview').checked,
+      useHtml: document.getElementById('useHtml').checked,
+      usePreview: document.getElementById('usePreview').checked,
     });
     bulkPublish();
   });

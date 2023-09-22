@@ -1,0 +1,13 @@
+@import '../columns/columns.css';
+
+.columns > .row {
+  border-bottom: 1px solid #808080;
+}
+
+.columns > .row:not(:first-of-type):hover {
+  background-color: #808588;
+}
+
+.columns > .row:first-of-type {
+  border-top: 1px solid #808080;
+}

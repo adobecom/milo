@@ -46,7 +46,7 @@ export function processDataset(data) {
   const optionalHeaders = ['unit', 'group', 'color', 'subheading'];
   const headers = data?.[0];
   const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
-  const units = headers?.[unitKey]?.split('-') || [];
+  const units = headers?.[unitKey]?.split('-') || [''];
   const cleanHeaders = Object.keys(headers).filter((header) => (
     !optionalHeaders.includes(header.toLowerCase())
   ));
@@ -342,7 +342,7 @@ export const pieSeriesOptions = (size) => {
  */
 export const getChartOptions = ({
   chartType,
-  processedData: { dataset, headers, units = [] } = {},
+  processedData: { dataset, headers, units = [''] } = {},
   series,
   size,
   colors,
@@ -454,7 +454,9 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
   chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
 };
 
-const initChart = ({ chartWrapper, chartType, data, series, size, ...rest }) => {
+const initChart = ({
+  chartWrapper, chartType, data, series, size, ...rest
+}) => {
   const themeName = getTheme(size);
   const options = { chartType, processedData: data, series, size, ...rest };
   const chartOptions = getChartOptions(options);

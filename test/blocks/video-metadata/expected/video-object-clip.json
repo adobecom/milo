@@ -1,0 +1,25 @@
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "Cat video",
+  "duration": "PT10M",
+  "uploadDate": "2019-07-19",
+  "thumbnailUrl": "https://www.example.com/cat.jpg",
+  "description": "Watch this cat jump over a fence!",
+  "contentUrl": "https://www.example.com/cat_video_full.mp4",
+  "regionsAllowed": "US",
+  "hasPart": [{
+    "@type": "Clip",
+    "name": "Cat jumps",
+    "startOffset": 30,
+    "endOffset": 45,
+    "url": "https://www.example.com/example?t=30"
+  },
+  {
+    "@type": "Clip",
+    "name": "Cat misses the fence",
+    "startOffset": 111,
+    "endOffset": 150,
+    "url": "https://www.example.com/example?t=111"
+  }]
+}

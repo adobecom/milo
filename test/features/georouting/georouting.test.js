@@ -1,77 +1,82 @@
 import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
+
 const { default: init, getCookie } = await import('../../../libs/features/georouting/georouting.js');
 let { createTag, getMetadata } = await import('../../../libs/utils/utils.js');
 
-const mockConfig = { locales: { '': {}, africa: {}, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {} }, locale: { contentRoot: window.location.href, prefix: '' } };
+const mockConfig = {
+  locales: {
+    '': {}, africa: {}, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {},
+  },
+  locale: { contentRoot: window.location.href, prefix: '' },
+  codeRoot: '/libs',
+};
 
 const mockGeoroutingJson = {
   data: [
     {
-      "prefix": "",
-      "text": "Are you visiting Adobe.com from outside the US? Visit your regional site for more relevant pricing, promotions and events.",
-      "button": "Continue to United States",
-      "akamaiCodes": "US"
+      prefix: '',
+      text: 'Are you visiting Adobe.com from outside the US? Visit your regional site for more relevant pricing, promotions and events.',
+      button: 'Continue to United States',
+      akamaiCodes: 'US',
     },
     {
-      "prefix": "ch_de",
-      "text": "Sie befinden sich außerhalb der USA? Auf der Adobe-Website für Ihre Region finden Sie Informationen zu den für Sie relevanten Preisen, Angeboten und Veranstaltungen.",
-      "button": "Zur Website für die Schweiz",
-      "akamaiCodes": "CH"
+      prefix: 'ch_de',
+      text: 'Sie befinden sich außerhalb der USA? Auf der Adobe-Website für Ihre Region finden Sie Informationen zu den für Sie relevanten Preisen, Angeboten und Veranstaltungen.',
+      button: 'Zur Website für die Schweiz',
+      akamaiCodes: 'CH',
     },
     {
-      "prefix": "ch_it",
-      "text": "Se stai visitando Adobe.com da un’area geografica diversa dagli Stati Uniti, accedi al sito del tuo paese per informazioni più pertinenti su prezzi, promozioni ed eventi in corso.",
-      "button": "Continua in Svizzera",
-      "akamaiCodes": "CH"
+      prefix: 'ch_it',
+      text: 'Se stai visitando Adobe.com da un’area geografica diversa dagli Stati Uniti, accedi al sito del tuo paese per informazioni più pertinenti su prezzi, promozioni ed eventi in corso.',
+      button: 'Continua in Svizzera',
+      akamaiCodes: 'CH',
     },
     {
-      "prefix": "ch_fr",
-      "text": "Consultez-vous le site Adobe.com depuis un autre pays que les États-Unis ? Visitez votre site régional pour découvrir les tarifs appropriés, les promotions et les événements.",
-      "button": "Aller sur le site suisse",
-      "akamaiCodes": "CH"
+      prefix: 'ch_fr',
+      text: 'Consultez-vous le site Adobe.com depuis un autre pays que les États-Unis ? Visitez votre site régional pour découvrir les tarifs appropriés, les promotions et les événements.',
+      button: 'Aller sur le site suisse',
+      akamaiCodes: 'CH',
     },
     {
-      "prefix": "de",
-      "text": "Sie befinden sich außerhalb der USA? Auf der Adobe-Website für Ihre Region finden Sie Informationen zu den für Sie relevanten Preisen, Angeboten und Veranstaltungen.",
-      "button": "Zur Website für Deutschland",
-      "akamaiCodes": "DE"
+      prefix: 'de',
+      text: 'Sie befinden sich außerhalb der USA? Auf der Adobe-Website für Ihre Region finden Sie Informationen zu den für Sie relevanten Preisen, Angeboten und Veranstaltungen.',
+      button: 'Zur Website für Deutschland',
+      akamaiCodes: 'DE',
     },
     {
-      "prefix": "africa",
-      "text": "africa blah",
-      "button": "To the African Page",
-      "akamaiCodes": "ZA, BW"
+      prefix: 'africa',
+      text: 'africa blah',
+      button: 'To the African Page',
+      akamaiCodes: 'ZA, BW',
     },
     {
-      "prefix": "mena_en",
-      "text": "mena blah",
-      "button": "To the Mena Page",
-      "akamaiCodes": "OM, PS, QA"
-    }
-  ]
-}
+      prefix: 'mena_en',
+      text: 'mena blah',
+      button: 'To the Mena Page',
+      akamaiCodes: 'OM, PS, QA',
+    },
+  ],
+};
 
 let stubURLSearchParamsGet = stub(URLSearchParams.prototype, 'get');
 const setUserCountryFromIP = (country = 'CH') => {
-  stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('akamaiLocale').returns(country)
-}
+  stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('akamaiLocale').returns(country);
+};
 
 const ogFetch = window.fetch;
 window.fetch = stub();
 
 function stubHeadRequestToReturnVal(prefix, val) {
-  window.fetch.withArgs(`${prefix}`, {method: 'HEAD'}).returns(
+  window.fetch.withArgs(`${prefix}`, { method: 'HEAD' }).returns(
     new Promise((resolve) => {
-      resolve({
-        ok: val
-      });
+      resolve({ ok: val });
     }),
   );
 }
 
 const stubFetchForGeorouting = () => {
-  window.fetch.withArgs(`/georouting.json`).returns(
+  window.fetch.withArgs('/georouting.json').returns(
     new Promise((resolve) => {
       resolve({
         ok: true,
@@ -82,19 +87,18 @@ const stubFetchForGeorouting = () => {
   mockGeoroutingJson.data.forEach((d) => {
     const prefix = d.prefix ? `/${d.prefix}` : '';
     stubHeadRequestToReturnVal(prefix, true);
-  })
+  });
 };
 const stubFallbackMetadata = (fallbackrouting) => {
   getMetadata = stub();
-  getMetadata.withArgs('fallbackrouting').returns(fallbackrouting)
+  getMetadata.withArgs('fallbackrouting').returns(fallbackrouting);
 };
 const restoreFetch = () => {
   window.fetch = ogFetch;
 };
 const closeModal = () => {
   document.querySelector('.dialog-modal')?.querySelector('.dialog-close').dispatchEvent(new Event('click'));
-}
-
+};
 
 describe('GeoRouting', () => {
   before(() => {
@@ -102,32 +106,32 @@ describe('GeoRouting', () => {
     stubFetchForGeorouting();
   });
   after(() => {
-    stubURLSearchParamsGet.reset()
-    restoreFetch()
+    stubURLSearchParamsGet.reset();
+    restoreFetch();
   });
   afterEach(() => {
-    document.cookie = `international=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
-    sessionStorage.removeItem('international')
+    document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
+    sessionStorage.removeItem('international');
     closeModal();
-  })
+  });
 
   it('Will read undefined if attempting to read unset cookie', async () => {
     // prepare
     const cookieName = 'test123';
     const testcookie = getCookie(cookieName);
     // assert
-    expect(testcookie).to.be.undefined
+    expect(testcookie).to.be.undefined;
   });
 
   it('Will read cookie value correctly if set', async () => {
     // prepare
     const cookieName = 'test';
-    document.cookie = `${cookieName}=test`
+    document.cookie = `${cookieName}=test`;
     const testcookie = getCookie(cookieName);
     // assert
-    expect(testcookie).to.be.equal('test')
+    expect(testcookie).to.be.equal('test');
     // cleanup
-    document.cookie = `test=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
+    document.cookie = 'test=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
   });
 
   it('Does create a modal if detected country from IP is CH and url prefix is US', async () => {
@@ -146,19 +150,19 @@ describe('GeoRouting', () => {
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
-    //cleanup
+    // cleanup
     setUserCountryFromIP();
   });
 
   it('If aiming for CH page and IP in Switzerland no modal is shown', async () => {
     // prepare
-    mockConfig.locale.prefix = 'ch_de'
+    mockConfig.locale.prefix = 'ch_de';
     await init(mockConfig, createTag, getMetadata);
     const modal = document.querySelector('.dialog-modal');
     // assert
-    expect(modal).to.be.null
+    expect(modal).to.be.null;
     // cleanup
-    mockConfig.locale.prefix = ''
+    mockConfig.locale.prefix = '';
   });
 
   it('If aiming for US page but IP in Switzerland shows CH links and US continue', async () => {
@@ -170,17 +174,17 @@ describe('GeoRouting', () => {
     const text = modal.querySelectorAll('.locale-text');
     expect(text).to.not.be.null;
     expect(text.length).to.be.equal(4);
-    expect(text[0].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_de').text)
-    expect(text[1].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_it').text)
-    expect(text[2].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_fr').text)
-    expect(text[3].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === '').text)
+    expect(text[0].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_de').text);
+    expect(text[1].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_it').text);
+    expect(text[2].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_fr').text);
+    expect(text[3].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === '').text);
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links.length).to.be.equal(4);
-    expect(links[0].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_de').button)
-    expect(links[1].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_it').button)
-    expect(links[2].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_fr').button)
-    expect(links[3].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === '').button)
+    expect(links[0].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_de').button);
+    expect(links[1].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_it').button);
+    expect(links[2].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_fr').button);
+    expect(links[3].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === '').button);
   });
 
   it('If aiming for CH page, IP in US, and session storage is DE shows DE links and CH continue', async () => {
@@ -195,18 +199,17 @@ describe('GeoRouting', () => {
     const text = modal.querySelectorAll('.locale-text');
     expect(text).to.not.be.null;
     expect(text.length).to.be.equal(2);
-    expect(text[0].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'de').text)
-    expect(text[1].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_fr').text)
+    expect(text[0].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'de').text);
+    expect(text[1].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_fr').text);
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links.length).to.be.equal(2);
-    expect(links[0].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'de').button)
-    expect(links[1].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_fr').button)
+    expect(links[0].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'de').button);
+    expect(links[1].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_fr').button);
     // cleanup
     mockConfig.locale.prefix = '';
     setUserCountryFromIP('CH');
   });
-
 
   it('If aiming for mena_en page but IP in Botswana shows Botswana links and mena_en continue', async () => {
     // prepare
@@ -219,13 +222,13 @@ describe('GeoRouting', () => {
     const text = modal.querySelectorAll('.locale-text');
     expect(text).to.not.be.null;
     expect(text.length).to.be.equal(2);
-    expect(text[0].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'africa').text)
-    expect(text[1].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'mena_en').text)
+    expect(text[0].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'africa').text);
+    expect(text[1].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'mena_en').text);
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links.length).to.be.equal(2);
-    expect(links[0].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'africa').button)
-    expect(links[1].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'mena_en').button)
+    expect(links[0].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'africa').button);
+    expect(links[1].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'mena_en').button);
     // cleanup
     mockConfig.locale.prefix = '';
     setUserCountryFromIP('CH');
@@ -235,7 +238,7 @@ describe('GeoRouting', () => {
     // prepare
     mockConfig.locale.prefix = 'mena_en';
     setUserCountryFromIP('BW');
-    document.cookie = `international=ch_de;path=/`;
+    document.cookie = 'international=ch_de;path=/';
     await init(mockConfig, createTag, getMetadata);
     const modal = document.querySelector('.dialog-modal');
     // assert
@@ -243,13 +246,13 @@ describe('GeoRouting', () => {
     const text = modal.querySelectorAll('.locale-text');
     expect(text).to.not.be.null;
     expect(text.length).to.be.equal(2);
-    expect(text[0].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_de').text)
-    expect(text[1].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'mena_en').text)
+    expect(text[0].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_de').text);
+    expect(text[1].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'mena_en').text);
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links.length).to.be.equal(2);
-    expect(links[0].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_de').button)
-    expect(links[1].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'mena_en').button)
+    expect(links[0].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_de').button);
+    expect(links[1].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'mena_en').button);
     // cleanup
     mockConfig.locale.prefix = '';
     setUserCountryFromIP('CH');
@@ -288,15 +291,15 @@ describe('GeoRouting', () => {
     const text = modal.querySelectorAll('.locale-text');
     expect(text).to.not.be.null;
     expect(text.length).to.be.equal(3);
-    expect(text[0].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_de').text)
-    expect(text[1].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_fr').text)
-    expect(text[2].textContent).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === '').text)
+    expect(text[0].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_de').text);
+    expect(text[1].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_fr').text);
+    expect(text[2].textContent).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === '').text);
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links.length).to.be.equal(3);
-    expect(links[0].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_de').button)
-    expect(links[1].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_fr').button)
-    expect(links[2].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === '').button)
+    expect(links[0].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_de').button);
+    expect(links[1].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_fr').button);
+    expect(links[2].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === '').button);
     // cleanup
     stubFallbackMetadata('on');
     stubHeadRequestToReturnVal('/ch_it', true);
@@ -340,15 +343,15 @@ describe('GeoRouting', () => {
     // prepare
     await init(mockConfig, createTag, getMetadata);
     const modal = document.querySelector('.dialog-modal');
-    let cookie = getCookie('international');
-    let storage = sessionStorage.getItem('international');
+    const cookie = getCookie('international');
+    const storage = sessionStorage.getItem('international');
     // assert
     expect(modal).to.not.be.null;
     expect(cookie).to.be.undefined;
     expect(storage).to.be.null;
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
-    expect(links[0].text).to.be.equal( mockGeoroutingJson.data.find(d => d.prefix === 'ch_de').button);
+    expect(links[0].text).to.be.equal(mockGeoroutingJson.data.find((d) => d.prefix === 'ch_de').button);
     links[3].click();
     expect(getCookie('international')).to.be.equal('us');
     expect(sessionStorage.getItem('international')).to.be.equal('us');

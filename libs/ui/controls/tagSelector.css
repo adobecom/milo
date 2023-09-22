@@ -56,7 +56,7 @@
   transform: rotate(45deg);
 }
 
-.tagselect-plus:after {
+.tagselect-plus::after {
   background: #666;
   content: '';
   height: 2px;
@@ -127,7 +127,7 @@
   padding: 3px 5px;
   margin: 3px 5px 3px 0;
   color: #fff;
-  background-color: #222222;
+  background-color: #222;
   border-radius: 4px;
   animation-name: scaleIn;
   animation-duration: 0.2s;
@@ -140,17 +140,17 @@
   cursor: pointer;
 }
 
-.tagselect-tag-closeX {
-  fill: rgb(222, 53, 11);
+.tagselect-tag-close {
+  fill: rgb(222 53 11);
 }
 
 .tagselect-tag-delete:hover {
-  background-color: rgb(255, 189, 173);
+  background-color: rgb(255 189 173);
 }
 
 .tagselect-modal-overlay {
   position: fixed;
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: rgb(255 255 255 / 25%);
   top: 0;
   right: 0;
   bottom: 0;
@@ -165,8 +165,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 3em 2em 2em 2em;
-  background: rgb(200, 200, 200);
+  padding: 3em 2em 2em;
+  background: rgb(200 200 200);
 }
 
 .tagselect-modal-close {
@@ -184,37 +184,44 @@
   background-color: darkgray;
 }
 
-.tagselect-modal-cols {
+.tagselect-picker {
+  height: 100%;
+}
+
+.tagselect-picker-cols {
   display: flex;
   height: 100%;
   overflow-x: auto;
 }
 
-.tagselect-modal .col {
+.tagselect-picker .col {
   min-width: 250px;
   margin-right: 20px;
   overflow-y: auto;
   padding-bottom: 10px;
 }
 
-.tagselect-modal .cb {
+.tagselect-picker .cb {
   opacity: 0;
   position: absolute;
   width: 30px;
   height: 30px;
   z-index: 1;
+  cursor: pointer;
 }
 
-.tagselect-modal label {
+.tagselect-picker label {
   position: relative;
-  margin: 2em 0 1em;
-  padding: 0 0 0 40px;
+  padding: 0 10px 0 40px;
   height: 30px;
+  width: 100%;
   line-height: 30px;
   font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-.tagselect-modal label:before {
+.tagselect-picker label::before {
   content: '';
   position: absolute;
   background: transparent;
@@ -227,6 +234,7 @@
 
 .tagselect-item {
   position: relative;
+  cursor: pointer;
 }
 
 .tagselect-item:hover {
@@ -237,19 +245,19 @@
   background-color: lightblue;
 }
 
-.tagselect-item .cb + label:before,
-.search-item .cb + label:before {
+.tagselect-item .cb + label::before,
+.search-item .cb + label::before {
   background-size: cover;
   background-origin: border-box;
   background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgd2lkdGg9IjE4Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmEgewogICAgICAgIGZpbGw6ICM2RTZFNkU7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDx0aXRsZT5TIFNlbGVjdGlvbiAxOCBOPC90aXRsZT4KICA8cmVjdCBpZD0iQ2FudmFzIiBmaWxsPSIjZmYxM2RjIiBvcGFjaXR5PSIwIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIC8+PHJlY3QgY2xhc3M9ImEiIGhlaWdodD0iMi41IiB3aWR0aD0iMSIgeD0iMiIgeT0iMTAiIC8+CiAgPHJlY3QgY2xhc3M9ImEiIGhlaWdodD0iMi41IiB3aWR0aD0iMSIgeD0iMiIgeT0iNiIgLz4KICA8cGF0aCBjbGFzcz0iYSIgZD0iTTMsMTVWMTRIMnYxLjU1NTVBLjQ0NDUuNDQ0NSwwLDAsMCwyLjQ0NDUsMTZINC41VjE1WiIgLz4KICA8cmVjdCBjbGFzcz0iYSIgaGVpZ2h0PSIxIiB3aWR0aD0iMi41IiB4PSI2IiB5PSIxNSIgLz4KICA8cmVjdCBjbGFzcz0iYSIgaGVpZ2h0PSIxIiB3aWR0aD0iMi41IiB4PSIxMCIgeT0iMTUiIC8+CiAgPHJlY3QgY2xhc3M9ImEiIGhlaWdodD0iMi41IiB3aWR0aD0iMSIgeD0iMTUiIHk9IjUuNSIgLz4KICA8cmVjdCBjbGFzcz0iYSIgaGVpZ2h0PSIyLjUiIHdpZHRoPSIxIiB4PSIxNSIgeT0iOS41IiAvPgogIDxwYXRoIGNsYXNzPSJhIiBkPSJNMTUsMTMuNVYxNUgxNHYxaDEuNWEuNS41LDAsMCwwLC41LS41di0yWiIgLz4KICA8cGF0aCBjbGFzcz0iYSIgZD0iTTE1LjU1NiwySDEzLjVWM0gxNVY0aDFWMi40NDQ1QS40NDQ1LjQ0NDUsMCwwLDAsMTUuNTU2LDJaIiAvPgogIDxyZWN0IGNsYXNzPSJhIiBoZWlnaHQ9IjEiIHdpZHRoPSIyLjUwMDUiIHg9IjkuNSIgeT0iMiIgLz4KICA8cmVjdCBjbGFzcz0iYSIgaGVpZ2h0PSIxIiB3aWR0aD0iMi41MDA1IiB4PSI1LjUiIHk9IjIiIC8+CiAgPHBhdGggY2xhc3M9ImEiIGQ9Ik00LDJIMi41YS41LjUsMCwwLDAtLjUuNXYySDNWM0g0WiIgLz4KPC9zdmc+');
 }
 
-.tagselect-item .cb.checked + label:before,
-.search-item .cb.checked + label:before  {
+.tagselect-item .cb.checked + label::before,
+.search-item .cb.checked + label::before  {
   background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgd2lkdGg9IjE4Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmEgewogICAgICAgIGZpbGw6ICM2RTZFNkU7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDx0aXRsZT5TIFNlbGVjdEJveCAxOCBOPC90aXRsZT4KICA8cmVjdCBpZD0iQ2FudmFzIiBmaWxsPSIjZmYxM2RjIiBvcGFjaXR5PSIwIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIC8+PHBhdGggY2xhc3M9ImEiIGQ9Ik0xNC42LDFIMy40QTIuNCwyLjQsMCwwLDAsMSwzLjRIMVYxNC42QTIuNCwyLjQsMCwwLDAsMy40LDE3SDE0LjZBMi40LDIuNCwwLDAsMCwxNywxNC42VjMuNEEyLjQsMi40LDAsMCwwLDE0LjYsMVptLS4xNzc1LDUuMTg4NUw3LjI4MywxMy4zMjc1YS40LjQsMCwwLDEtLjU2NTUsMGwtMy4xNC0zLjEzOWEuNC40LDAsMCwxLDAtLjU2NTVMNC44MjMsOC4zNzc1YS40LjQsMCwwLDEsLjU2NTUsMEw3LDkuOTlsNS42MTE1LTUuNjEyNWEuNC40LDAsMCwxLC41NjU1LDBMMTQuNDIyNSw1LjYyM0EuNC40LDAsMCwxLDE0LjQyMjUsNi4xODg1WiIgLz4KPC9zdmc+');
 }
 
-.tagselect-item .has-children:after {
+.tagselect-item .has-children::after {
   content: '';
   position: absolute;
   background: transparent;
@@ -263,30 +271,33 @@
   background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgd2lkdGg9IjE4Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmEgewogICAgICAgIGZpbGw6ICM2RTZFNkU7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDx0aXRsZT5TIENoZXZyb25SaWdodCAxOCBOPC90aXRsZT4KICA8cmVjdCBpZD0iQ2FudmFzIiBmaWxsPSIjZmYxM2RjIiBvcGFjaXR5PSIwIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIC8+PHBhdGggY2xhc3M9ImEiIGQ9Ik0xMiw5YS45OTQuOTk0LDAsMCwxLS4yOTI1LjcwNDVsLTMuOTkxNSwzLjk5YTEsMSwwLDEsMS0xLjQzNTUtMS4zODZsLjAyNDUtLjAyNDVMOS41OTA1LDksNi4zMDQ1LDUuNzE1QTEsMSwwLDAsMSw3LjY5MSw0LjI4bC4wMjQ1LjAyNDUsMy45OTE1LDMuOTlBLjk5NC45OTQsMCwwLDEsMTIsOVoiIC8+Cjwvc3ZnPg==');
 }
 
-.tagselect-modal-table {
+.tagselect-picker-table {
     overflow-x: auto;
     height: 100%;
 }
 
-.tagselect-modal-search {
+.tagselect-picker-search {
   position: absolute;
   font-size: 16px;
   top: 15px;
   width: 30%;
   height: 32px;
+  appearance: none;
+  border: 1px solid grey;
 }
 
-.tagselect-modal-table .search-item:hover {
+.tagselect-picker-table .search-item:hover {
   background-color: lightgray;
 }
 
-.tagselect-modal-table .search-item label {
+.tagselect-picker-table .search-item label {
   display: flex;
   height: 100%;
+  width: auto;
   justify-content: space-between;
-  margin: 5px 0 0 0;
+  margin: 5px 0 0;
 }
 
-.tagselect-modal-table .search-item .path {
+.tagselect-picker-table .search-item .path {
   font-size: 12px;
 }

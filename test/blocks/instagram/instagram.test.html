@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "./mocks/embed-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a href="https://www.instagram.com/p/Cl1xhZuvN8N/?utm_source=ig_web_button_share_sheet">https://www.instagram.com/p/Cl1xhZuvN8N/?utm_source=ig_web_button_share_sheet</a>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import { stub } from 'sinon';
+    import { waitForElement } from '../../helpers/waitfor.js';
+    import { loadScript } from '../../../libs/utils/utils.js';
+    import init from "../../../libs/blocks/instagram/instagram.js"
+
+    runTests(() => {
+      describe('instagram', () => {
+        it('renders embed post for instagram link', () => {
+          const instagram = document.querySelector('a');
+          init(instagram);
+          const blockquote = document.querySelector('.instagram-media');
+          const wrapper = document.querySelector('.embed-instagram');
+          expect(loadScript.callCount).to.equal(1);
+          expect(blockquote).to.not.be.null;
+          expect(wrapper).to.not.be.null;
+        });
+      });
+    });
+  </script>
+</html>

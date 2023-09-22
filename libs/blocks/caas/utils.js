@@ -1,23 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
+import { fetchWithTimeout } from '../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
 
-const fetchWithTimeout = async (resource, options = {}) => {
-  const { timeout = 5000 } = options;
-
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  const response = await fetch(resource, {
-    ...options,
-    signal: controller.signal,
-  });
-  clearTimeout(id);
-  return response;
-};
-
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
+const requestHeaders = [];
 
 export function getPageLocale(currentPath, locales = pageLocales) {
   const possibleLocale = currentPath.split('/')[1];
@@ -142,7 +131,8 @@ const getSortOptions = (state, strs) => {
     featured: 'Featured',
     dateAsc: 'Date: (Oldest to Newest)',
     dateDesc: 'Date: (Newest to Oldest)',
-    dateModified: 'Date: (Last Modified)',
+    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
+    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
@@ -186,20 +176,24 @@ const getLocalTitle = (tag, country, lang) => tag[`title.${lang}_${country}`]
   || tag[`title.${lang}`]
   || tag.title;
 
-const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, state) => {
+const getFilterObj = (
+  { excludeTags, filterTag, icon, openedOnLoad },
+  tags,
+  state,
+  country,
+  lang,
+) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
   if (!tag) return null;
-  const country = state.country.split('/')[1];
-  const lang = state.language.split('/')[1];
   const items = Object.values(tag.tags)
     .map((itemTag) => {
-      if (excludeTags.includes(itemTag.tagID)) return null;
-      const label = getLocalTitle(itemTag, country, lang);
+      if (excludeTags?.includes(itemTag.tagID)) return null;
+      const titleLabel = getLocalTitle(itemTag, country, lang);
       return {
         id: itemTag.tagID,
-        label: label.replace('&amp;', '&'),
+        label: titleLabel.replace('&amp;', '&'),
       };
     })
     .filter((i) => i !== null)
@@ -219,16 +213,93 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
   return filterObj;
 };
 
-const getFilterArray = async (state) => {
-  if (!state.showFilters || state.filters.length === 0) {
+const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = {}) => {
+  if (!group) return null;
+
+  const IN_BRACKETS_RE = /^{.*}$/;
+
+  const items = filtersCustomItems.map((item) => ({
+    id: item.customFilterTag[0],
+    label: item.filtersCustomLabel?.match(IN_BRACKETS_RE)
+      ? strs[item.filtersCustomLabel.replace(/{|}/g, '')]
+      : item.filtersCustomLabel || '',
+  }));
+
+  const filterObj = {
+    id: group,
+    openedOnLoad: !!openedOnLoad,
+    items,
+    group: group?.match(IN_BRACKETS_RE)
+      ? strs[group.replace(/{|}/g, '')]
+      : group || '',
+  };
+
+  return filterObj;
+};
+
+const getFilterArray = async (state, country, lang, strs) => {
+  if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
 
   const { tags } = await getTags(state.tagsUrl);
-  const filters = state.filters
-    .map((filter) => getFilterObj(filter, tags, state))
-    .filter((filter) => filter !== null);
+  const useCustomFilters = state.filterBuildPanel === 'custom';
+
+  let filters = [];
+  if (!useCustomFilters) {
+    filters = state.filters
+      .map((filter) => getFilterObj(filter, tags, state, country, lang))
+      .filter((filter) => filter !== null);
+  } else {
+    filters = state.filtersCustom.length > 0
+      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
+      : [];
+  }
+
   return filters;
+};
+
+export function getCountryAndLang({ autoCountryLang, country, language }) {
+  if (autoCountryLang) {
+    const locale = pageConfigHelper()?.locale;
+    return {
+      country: locale.region?.toLowerCase() || 'us',
+      language: locale.ietf?.toLowerCase() || 'en-us',
+    };
+  }
+  return {
+    country: country ? country.split('/').pop() : 'us',
+    language: language ? language.split('/').pop() : 'en',
+  };
+}
+
+/**
+ * Finds the matching tuple and returns its index.
+ * Looks for 'X-Adobe-Floodgate' in [['X-Adobe-Floodgate', 'pink'], ['a','b']]
+ * @param {*} fgHeader fgHeader
+ * @returns tupleIndex
+ */
+const findTupleIndex = (fgHeader) => {
+  const matchingTupleIndex = requestHeaders.findIndex((element) => element[0] === fgHeader);
+  return matchingTupleIndex;
+};
+
+/**
+ * Adds the floodgate header to the Config of ConsonantCardCollection
+ * headers: [['X-Adobe-Floodgate', 'pink'], ['OtherHeader', 'Value']]
+ * @param {*} state state
+ * @returns requestHeaders
+ */
+const addFloodgateHeader = (state) => {
+  const fgHeader = 'X-Adobe-Floodgate';
+  const fgHeaderValue = 'pink';
+
+  // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
+  requestHeaders.splice(findTupleIndex(fgHeader, 1));
+  if (state.fetchCardsFromFloodgateTree) {
+    requestHeaders.push([fgHeader, fgHeaderValue]);
+  }
+  return requestHeaders;
 };
 
 export function arrayToObj(input = []) {
@@ -245,12 +316,24 @@ export function arrayToObj(input = []) {
   return obj;
 }
 
-export const getConfig = async (state, strs = {}) => {
+const addMissingStateProps = (state) => {
+  // eslint-disable-next-line no-use-before-define
+  Object.entries(defaultState).forEach(([key, val]) => {
+    if (state[key] === undefined) {
+      state[key] = val;
+    }
+  });
+  return state;
+};
+
+export const getConfig = async (originalState, strs = {}) => {
+  const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const language = state.language ? state.language.split('/').pop() : 'en';
-  const country = state.country ? state.country.split('/').pop() : 'us';
+  const { country, language } = getCountryAndLang(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
+  const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
+  const hideCtaTags = state.hideCtaTags ? state.hideCtaTags : [];
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
@@ -258,6 +341,8 @@ export const getConfig = async (state, strs = {}) => {
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
+
+  const caasRequestHeaders = addFloodgateHeader(state);
 
   const config = {
     collection: {
@@ -284,13 +369,15 @@ export const getConfig = async (state, strs = {}) => {
         prettyDateIntervalFormat:
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
-        title: strs.collectionTitle || '',
+        title: state.collectionTitle?.match(/^{.*}$/) ? strs[state.collectionTitle.replace(/{|}/g, '')] : state.collectionTitle || '',
         titleHeadingLevel: state.titleHeadingLevel,
         cardTitleAccessibilityLevel: state.cardTitleAccessibilityLevel,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
+        lastModified: strs.lastModified || 'Last modified {date}',
       },
+      detailsTextOption: state.detailsTextOption,
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
       collectionButtonStyle: state.collectionBtnStyle,
@@ -312,13 +399,15 @@ export const getConfig = async (state, strs = {}) => {
       ctaAction: state.ctaAction,
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
+    hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
+    hideCtaTags,
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
-      filters: await getFilterArray(state),
+      filters: await getFilterArray(state, country, language, strs),
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
@@ -424,6 +513,7 @@ export const getConfig = async (state, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
+    headers: caasRequestHeaders,
   };
   return config;
 };
@@ -453,12 +543,15 @@ export const defaultState = {
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
+  autoCountryLang: false,
+  fetchCardsFromFloodgateTree: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
   cardTitleAccessibilityLevel: 6,
   collectionBtnStyle: 'primary',
   collectionName: '',
+  collectionTitle: '',
   collectionSize: '',
   container: '1200MaxWidth',
   contentTypeTags: [],
@@ -475,11 +568,16 @@ export const defaultState = {
   fallbackEndpoint: '',
   featuredCards: [],
   filterEvent: '',
+  filterBuildPanel: 'automatic',
   filterLocation: 'left',
   filterLogic: 'or',
   filters: [],
+  filtersCustom: [],
   filtersShowEmpty: false,
   gutter: '4x',
+  headers: [],
+  hideCtaIds: [],
+  hideCtaTags: [],
   includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',
@@ -489,7 +587,7 @@ export const defaultState = {
   paginationAnimationStyle: 'paged',
   paginationEnabled: false,
   paginationQuantityShown: false,
-  paginationType: 'none',
+  paginationType: 'paginator',
   paginationUseTheme3: false,
   placeholderUrl: '',
   resultsPerPage: 5,
@@ -508,6 +606,8 @@ export const defaultState = {
   sortEnableRandomSampling: false,
   sortEventSort: false,
   sortFeatured: false,
+  sortModifiedAsc: false,
+  sortModifiedDesc: false,
   sortRandom: false,
   sortReservoirPool: 1000,
   sortReservoirSample: 3,
@@ -518,6 +618,7 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useLightText: false,

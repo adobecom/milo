@@ -53,5 +53,10 @@ describe('init', () => {
 
     expect(blockEl.classList.length).to.equal(0);
   });
-  console.log(document.body.innerHTML)
+
+  it('should have play button', () => {
+    const blockEl = sections[4].querySelector('.figure');
+    init(blockEl);
+    expect(sections[4].querySelector('span.modal-img-link')).to.exist;
+  });
 });

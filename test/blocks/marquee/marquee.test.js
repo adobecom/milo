@@ -4,6 +4,7 @@ import { expect } from '@esm-bundle/chai';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/marquee/marquee.js');
 const video = await readFile({ path: './mocks/video.html' });
+const multipleIcons = await readFile({ path: './mocks/multiple-icons.html' });
 describe('marquee', () => {
   const marquees = document.querySelectorAll('.marquee');
   marquees.forEach((marquee) => {
@@ -29,13 +30,22 @@ describe('marquee', () => {
       const iconArea = marquees[1].querySelector('.icon-area');
       expect(iconArea).to.exist;
     });
+    it('wraps the picture in a link if provided', () => {
+      const picture = marquees[1].querySelector('.foreground .image a picture');
+      expect(picture).to.exist;
+    });
   });
 
   describe('supports media credits', () => {
     it('has a media credit with text content', () => {
-      const mediaCredit = marquees[8].querySelector('.media-credit .body-s');
+      const mediaCredit = document.getElementById('media-credit-text').querySelector('.media-credit .body-s');
       expect(mediaCredit).to.exist;
       expect(mediaCredit.textContent.trim()).to.have.lengthOf.above(0);
+    });
+
+    it('has a media credit with element content', () => {
+      const mediaCredit = document.getElementById('media-credit-element').querySelector('.media-credit').firstElementChild;
+      expect(mediaCredit).to.exist;
     });
   });
 
@@ -60,6 +70,24 @@ describe('marquee', () => {
       const marquee = document.getElementById('foreground');
       init(marquee);
       expect(marquee.querySelector('.foreground video')).to.exist;
+    });
+  });
+
+  describe('supports multiple icons', () => {
+    before(() => {
+      document.body.innerHTML = multipleIcons;
+    });
+
+    it('using img', () => {
+      const marquee = document.getElementById('using-images');
+      init(marquee);
+      expect(marquee.querySelector('.icon-area-multiple')).to.exist;
+    });
+
+    it('using svg', () => {
+      const marquee = document.getElementById('using-svgs');
+      init(marquee);
+      expect(marquee.querySelector('.icon-area-multiple')).to.exist;
     });
   });
 });

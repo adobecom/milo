@@ -1,31 +1,26 @@
-<header></header>
 <main>
   <div>
     <!-- Block Decorating -->
-    <div class="breadcrumbs"></div>
-    <div class="hero small light"></div>
-    <div class="hero"></div>
     <div id="not-block"></div>
     <!-- Picture Decorating -->
-    <p><em><picture><img src="/test/mocks/media_.png"/></picture></em></p>
-    <p><strong><picture><img src="/test/mocks/media_.png"/></picture></strong></p>
+    <p><em><picture><img src="http://localhost:2000/test/utils/mocks/media_.png"/></picture></em></p>
+    <p><strong><picture><img src="http://localhost:2000/test/utils/mocks/media_.png"/></picture></strong></p>
     <!-- Link Decorating -->
     <!-- Relative URLs -->
     <p><a href="https://test--milo--adobecom.hlx.page/test">Milo Test</a></p>
     <p><a href="https://milo.adobe.com/test">Milo Test</a></p>
     <p><a href="https://www.adobe.com/test">Milo Test</a></p>
     <!-- Auto Blocks -->
-    <p><a href="https://www.youtube.com/watch?v=0EWdoiU8BXw">YouTube</a></p>
-    <p><a href="https://milo.adobe.com/fragments/mock#otis">Open modal</a></p>
-    <p><a href="https://documentcloud.adobe.com/view-sdk/PDFs/test.pdf">View PDF</a></p>
+    <p><a href="https://www.youtube.com/watch?v=0EWdoiU8BXw#_dnb">YouTube</a></p>
+    <p><a href="https://milo.adobe.com/fragments/mock#otis#_dnb">Open modal</a></p>
+    <p><a href="https://acrobatservices.adobe.com/view-sdk/PDFs/test.pdf">View PDF</a></p>
     <!-- Fragments -->
     <p><a href="https://milo.adobe.com/fragments/mock">https://milo.adobe.com/fragments/mock</a></p>
     <p>My sibling content<a href="https://milo.adobe.com/fragments/mock">https://milo.adobe.com/fragments/mock</a></p>
     <ul><li>My sibling content<a href="https://milo.adobe.com/fragments/mock">https://milo.adobe.com/fragments/mock</a></li></ul>
     <!-- SVGs -->
-    <p><a href="https://milo.adobe.com/img/favicon.svg">https://milo.adobe.com/img/favicon.svg</a></p>
-    <p><a href="https://www.adobe.com">https://milo.adobe.com/img/favicon.svg</a></p>
-    <p><a class="bad-url" href="https://www.adobe.com">img/favicon.svg</a></p>
+    <p><a href="http://localhost:2000/img/favicon.svg">http://localhost:2000/img/favicon.svg</a></p>
+    <p><a href="http://localhost:2000">http://localhost:2000/img/favicon.svg</a></p>
     <!-- #_blank -->
     <p><a class="new-tab" href="https://www.adobe.com/test#_blank">New Tab</a></p>
     <!-- Nofollow -->
@@ -33,7 +28,16 @@
     <!-- Disable Auto Block-->
     <p><a class="disable-autoblock" href="https://www.instagram.com/#_dnb">Disable Autoblock</a></p>
     <!-- Auto Block -->
-    <p><a class="autoblock" href="https://twitter.com/Adobe">Auto Block</a></p>    
+    <p><a class="autoblock" href="https://twitter.com/Adobe#_dnb">Auto Block</a></p>
+  </div>
+  <div class="quote borders contained hide-block">
+    <div>
+      <div data-valign="middle">
+        <p>“Blah blah blah.”</p>
+        <p><strong>Ron Nagy</strong></p>
+        <p>Sr. Evangelist, Adobe@Adobe</p>
+      </div>
+    </div>
   </div>
   <!-- Default content -->
   <div>
@@ -41,4 +45,3 @@
     <p>{{nothing-to-see-here}}</p>
   </div>
 </main>
-<footer></footer>

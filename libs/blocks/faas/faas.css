@@ -5,6 +5,10 @@
 Common styles for faas form Dexter's
 */
 
+a[href*='/tools/faas#'], a[href*='/tools/faas?'] {
+  visibility: hidden !important;
+}
+
 .faas {
   box-sizing: border-box;
   max-width: 800px;
@@ -42,7 +46,8 @@ Common styles for faas form Dexter's
 }
 
 .faas-form .submit input {
-  appearance: button;
+  -webkit-appearance: none;
+  appearance: none;
   background-color: #2680eb;
   border: 0;
   border-radius: 24px;
@@ -97,14 +102,17 @@ input[type="checkbox"] + label {
 }
 
 .faas-form select {
+  -webkit-appearance: none;
+  appearance: none;
   background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+') no-repeat 128% 54%;
   background-color: inherit;
   background-position: 100% 50%;
   background-size: 1em 1em;
   height: 58px;
+  color: #000;
 }
 
-.faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]), 
+.faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]),
 .faas-form .error select {
   box-shadow: inset 1px 1px 0 0 #d9534f, inset -1px -1px 0 0 #d9534f;
 }
@@ -399,7 +407,7 @@ input[type="checkbox"] + label {
   .faas-form .row > label {
     margin-bottom: 10px;
   }
-  
+
   .faas.column2 {
     padding: 48px;
   }
@@ -408,7 +416,7 @@ input[type="checkbox"] + label {
     width: 100%;
     padding: 12px 0;
   }
-  
+
   .faas.column2 .faas-form select + div,
   .faas.column2 .faas-form textarea + div,
   .faas.column2 .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=hidden]) + div {

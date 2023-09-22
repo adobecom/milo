@@ -33,12 +33,23 @@ function getRichResultsForSiteSearchBox(getMetadata) {
   };
 }
 
+function getRichResultsForOrgLogo(getMetadata) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    url: getMetadata('orgurl'),
+    logo: getMetadata('orglogo'),
+  };
+}
+
 function getRichResults(type, getMetadata) {
   switch (type) {
     case 'NewsArticle':
       return getRichResultsForNewsArticle(getMetadata);
     case 'SiteSearchBox':
       return getRichResultsForSiteSearchBox(getMetadata);
+    case 'Organization':
+      return getRichResultsForOrgLogo(getMetadata);
     default:
       // eslint-disable-next-line no-console
       console.error(`Type ${type} is not supported`);

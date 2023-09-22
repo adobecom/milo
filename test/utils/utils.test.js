@@ -1,7 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../helpers/waitfor.js';
+import { waitFor, waitForElement } from '../helpers/waitfor.js';
+import { mockFetch } from '../helpers/generalHelpers.js';
 
 const utils = {};
 
@@ -9,28 +10,39 @@ const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
+const ogFetch = window.fetch;
 
 describe('Utils', () => {
+  let head;
+  let body;
   before(async () => {
+    head = await readFile({ path: './mocks/head.html' });
+    body = await readFile({ path: './mocks/body.html' });
     const module = await import('../../libs/utils/utils.js');
     module.setConfig(config);
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
     });
+    window.hlx = { rum: { isSelected: false } };
+  });
+
+  after(() => {
+    delete window.hlx;
   });
 
   describe('with body', () => {
-    before(() => {
+    beforeEach(async () => {
+      window.fetch = mockFetch({ payload: { data: '' } });
+      document.head.innerHTML = head;
+      document.body.innerHTML = body;
+      await utils.loadArea();
       sinon.spy(console, 'log');
     });
 
-    after(() => {
+    afterEach(() => {
+      window.fetch = ogFetch;
+      // eslint-disable-next-line no-console
       console.log.restore();
-    });
-
-    before(async () => {
-      document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-      document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     });
 
     describe('Template', () => {
@@ -52,24 +64,27 @@ describe('Utils', () => {
         expect(link.target).to.equal('_blank');
       });
     });
-    
+
     describe('Configure Auto Block', () => {
-      it('Disable auto block when #_dnb in url', () => {
-        const disableAutoBlockLink =
-          document.querySelector('.disable-autoblock');
+      it('Disable auto block when #_dnb in url', async () => {
+        await waitForElement('.disable-autoblock');
+        const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
-        expect(disableAutoBlockLink.href).to.equal(
-          'https://www.instagram.com/'
-        );
+        expect(disableAutoBlockLink.href).to.equal('https://www.instagram.com/');
       });
 
-      it('Auto block works as expected when #_dnb is not added to url', () => {
-        const autoBlockLink = document.querySelector(
-          '[href="https://twitter.com/Adobe"]'
-        );
+      it('Auto block works as expected when #_dnb is not added to url', async () => {
+        const a = await waitForElement('[href="https://twitter.com/Adobe"]');
+        utils.decorateAutoBlock(a);
+        const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
-    }); 
+
+      it('Does not error on invalid url', () => {
+        const autoBlock = utils.decorateAutoBlock('http://HostName:Port/lc/system/console/configMgr');
+        expect(autoBlock).to.equal(false);
+      });
+    });
 
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
@@ -117,7 +132,9 @@ describe('Utils', () => {
     });
 
     it('Does not setup nofollow links', async () => {
-      const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
+      window.fetch = mockFetch({ payload: { data: [] } });
+      await utils.loadDeferred(document, [], { links: 'on' });
+      const gaLink = document.querySelector('a[href="https://analytics.google.com/"]');
       expect(gaLink.getAttribute('rel')).to.be.null;
     });
 
@@ -136,17 +153,6 @@ describe('Utils', () => {
       expect(gaLink).to.exist;
     });
 
-    it('loadDelayed() test - expect moduled', async () => {
-      const mod = await utils.loadDelayed(0);
-      expect(mod).to.exist;
-    });
-
-    it('loadDelayed() test - expect nothing', async () => {
-      document.head.querySelector('meta[name="interlinks"]').remove();
-      const mod = await utils.loadDelayed(0);
-      expect(mod).to.be.null;
-    });
-
     it('Converts UTF-8 to Base 64', () => {
       const b64 = utils.utf8ToB64('hello world');
       expect(b64).to.equal('aGVsbG8gd29ybGQ=');
@@ -159,6 +165,7 @@ describe('Utils', () => {
 
     it('Successfully dies parsing a bad config', () => {
       utils.parseEncodedConfig('error');
+      // eslint-disable-next-line no-console
       expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
     });
 
@@ -191,7 +198,7 @@ describe('Utils', () => {
       window.dispatchEvent(event);
       await waitForElement('#milo');
       expect(document.getElementById('milo')).to.exist;
-    })
+    });
 
     it('getLocale default return', () => {
       expect(utils.getLocale().ietf).to.equal('en-US');
@@ -229,9 +236,11 @@ describe('Utils', () => {
 
     describe('SVGs', () => {
       it('Not a valid URL', () => {
+        document.body.innerHTML = '<div class="bad-url">https://www.adobe.com/test</div>';
         const a = document.querySelector('.bad-url');
         try {
-          const textContentUrl = new URL(a.textContent);
+          // eslint-disable-next-line no-new
+          new URL(a.textContent);
         } catch (err) {
           expect(err.message).to.equal("Failed to construct 'URL': Invalid URL");
         }
@@ -243,8 +252,9 @@ describe('Utils', () => {
         config.locales = {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           africa: { ietf: 'en', tk: 'pps7abe.css' },
-          il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+          il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+          langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
           ua: { tk: 'aaz7dvd.css' },
         };
       });
@@ -260,6 +270,11 @@ describe('Utils', () => {
         expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
 
+      it('LTR Languages have dir as ltr for langstore path', () => {
+        setConfigWithPath('/langstore/en/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
+      });
+
       it('RTL Languages have dir as rtl', () => {
         setConfigWithPath('/il_he/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
@@ -267,14 +282,21 @@ describe('Utils', () => {
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
       });
 
+      it('RTL Languages have dir as rtl for langstore path', () => {
+        setConfigWithPath('/langstore/he/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+        setConfigWithPath('/langstore/ar/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+      });
+
       it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
         setConfigWithPath('/ua/solutions');
-        expect(document.documentElement.getAttribute('dir')).null;
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
     });
 
     describe('localizeLink', () => {
-      before(async () => {
+      before(() => {
         config.locales = {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' },
@@ -283,7 +305,6 @@ describe('Utils', () => {
         };
         config.prodDomains = ['milo.adobe.com', 'www.adobe.com'];
         config.pathname = '/be_fr/page';
-        config.origin = 'https://main--milo--adobecom';
         utils.setConfig(config);
       });
 
@@ -351,6 +372,11 @@ describe('Utils', () => {
       });
     });
 
+    it('decorates footer promo fragment', () => {
+      const a = document.querySelector('main > div:last-of-type .fragment');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
     it('creates an IntersectionObserver', (done) => {
       const block = document.createElement('div');
       block.id = 'myblock';
@@ -366,14 +392,107 @@ describe('Utils', () => {
       });
       expect(io instanceof IntersectionObserver).to.be.true;
     });
+
+    it('should remove any blocks with the hide-block class from the DOM', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+      const hiddenQuoteBlock = document.querySelector('.quote.hide-block');
+      expect(hiddenQuoteBlock).to.exist;
+      const block = await utils.loadBlock(hiddenQuoteBlock);
+      expect(block).to.be.null;
+      expect(document.querySelector('.quote.hide-block')).to.be.null;
+    });
   });
 
-  it('adds privacy trigger to cookie preferences link in footer', () => {
-    window.adobePrivacy = { showPreferenceCenter: sinon.spy() };
-    document.body.innerHTML = '<footer><a href="https://www.adobe.com/#openPrivacy" id="privacy-link">Cookie preferences</a></footer>';
-    utils.loadPrivacy();
-    const privacyLink = document.querySelector('#privacy-link');
-    privacyLink.click();
-    expect(adobePrivacy.showPreferenceCenter.called).to.be.true;
+  describe('title-append', async () => {
+    beforeEach(async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/head-title-append.html' });
+    });
+    it('should append to title using string from metadata', async () => {
+      const expected = 'Document Title NOODLE';
+      await utils.loadArea();
+      await waitFor(() => document.title === expected);
+      expect(document.title).to.equal(expected);
+    });
+  });
+
+  describe('seotech', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should import feature when metadata is defined and error if invalid', async () => {
+      const expectedError = 'SEOTECH: Failed to construct \'URL\': Invalid URL';
+      await utils.loadArea();
+      const lanaStub = sinon.stub(window.lana, 'log');
+      await waitFor(() => lanaStub.calledOnceWith(expectedError));
+      expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
+    });
+  });
+
+  describe('scrollToHashedElement', () => {
+    before(() => {
+      const div = document.createElement('div');
+      div.className = 'global-navigation';
+      document.body.appendChild(div);
+      window.location.hash = '#not-block';
+      window.scrollBy = () => {};
+    });
+
+    it('should scroll to the hashed element', () => {
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+
+      utils.scrollToHashedElement('#not-block');
+      expect(scrollToCalled).to.be.true;
+      expect(document.getElementById('not-block')).to.exist;
+    });
+
+    it('should not scroll if no hash is present', () => {
+      window.location.hash = '';
+      let scrollToCalled = false;
+      window.scrollBy = () => {
+        scrollToCalled = true;
+      };
+      utils.scrollToHashedElement('');
+      expect(scrollToCalled).to.be.false;
+    });
+  });
+
+  describe('useDotHtml', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.body.innerHTML = await readFile({ path: './mocks/useDotHtml.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should add .html to relative links when enabled', async () => {
+      utils.setConfig({ useDotHtml: true, htmlExclude: [/exclude\/.*/gm] });
+      expect(utils.getConfig().useDotHtml).to.be.true;
+      await utils.decorateLinks(document.getElementById('linklist'));
+      expect(document.getElementById('excluded')?.getAttribute('href'))
+        .to.equal('/exclude/this/page');
+      const htmlLinks = document.querySelectorAll('.has-html');
+      htmlLinks.forEach((link) => {
+        expect(link.href).to.contain('.html');
+      });
+    });
+
+    it('should not add .html to relative links when disabled', async () => {
+      utils.setConfig({ useDotHtml: false, htmlExclude: [/exclude\/.*/gm] });
+      expect(utils.getConfig().useDotHtml).to.be.false;
+      await utils.decorateLinks(document.getElementById('linklist'));
+      expect(document.getElementById('excluded')?.getAttribute('href'))
+        .to.equal('/exclude/this/page');
+      const htmlLinks = document.querySelectorAll('.has-html');
+      htmlLinks.forEach((link) => {
+        expect(link.href).to.not.contain('.html');
+      });
+    });
   });
 });

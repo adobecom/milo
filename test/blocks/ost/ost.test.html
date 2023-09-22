@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "./mocks/ost-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <script type="module">
+      import { runTests } from '@web/test-runner-mocha';
+
+      runTests(async () => {
+        await import('./ost.test.html.js');
+      });
+    </script>
+  </body>
+</html>

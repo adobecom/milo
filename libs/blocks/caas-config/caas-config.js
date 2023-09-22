@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* global ClipboardItem */
 import {
   createContext,
@@ -42,7 +43,7 @@ const getHashConfig = () => {
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   return parseEncodedConfig(encodedConfig);
-}
+};
 
 const caasFilesLoaded = loadCaasFiles();
 
@@ -64,7 +65,7 @@ const defaultOptions = {
     'double-wide': 'Double Width Card',
     product: 'Product Card',
     'text-card': 'Text Card',
-    'custom-card': 'Custom Card'
+    'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -80,8 +81,8 @@ const defaultOptions = {
     carousel: 'Carousel',
   },
   ctaActions: {
-    '_blank': 'New Tab',
-    '_self': 'Same Tab',
+    _blank: 'New Tab',
+    _self: 'Same Tab',
   },
   draftDb: {
     false: 'Live',
@@ -145,7 +146,6 @@ const defaultOptions = {
     incremental: 'Incremental',
   },
   paginationType: {
-    none: 'None',
     paginator: 'Paginator',
     loadMore: 'Load More',
   },
@@ -160,7 +160,8 @@ const defaultOptions = {
     featured: 'Featured',
     dateDesc: 'Date: (Newest to Oldest)',
     dateAsc: 'Date: (Oldest to Newest)',
-    dateModified: 'Date: (Last Modified)',
+    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
+    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title: (A - Z)',
     titleDesc: 'Title: (Z - A)',
@@ -191,13 +192,16 @@ const defaultOptions = {
     dark: 'Dark Theme',
     darkest: 'Darkest Theme',
   },
+  detailsTextOption: {
+    default: 'Default',
+    modifiedDate: 'Modified Date',
+  },
 };
 
-const getTagList = (root) =>
-  Object.entries(root).reduce((options, [, tag]) => {
-    options[tag.tagID] = tag.title;
-    return options;
-  }, {});
+const getTagList = (root) => Object.entries(root).reduce((options, [, tag]) => {
+  options[tag.tagID] = tag.title;
+  return options;
+}, {});
 
 const getTagTree = (root) => {
   const options = Object.entries(root).reduce((opts, [, tag]) => {
@@ -238,7 +242,9 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
+const Input = ({
+  label, type = 'text', prop, defaultValue = '', title, placeholder,
+}) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -258,8 +264,10 @@ const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
       label=${label}
       name=${prop}
       type=${type}
+      title=${title}
       onChange=${onInputChange}
       value=${context.state[prop]}
+      placeholder=${placeholder}
     />
   `;
 };
@@ -287,7 +295,10 @@ const DropdownSelect = ({ label, options, prop }) => {
 };
 
 const BasicsPanel = ({ tagsData }) => {
+  const { state } = useContext(ConfiguratorContext);
+
   if (!tagsData) return '';
+
   const countryTags = getTagList(tagsData.country.tags);
   const languageTags = getTagList(tagsData.language.tags);
 
@@ -306,14 +317,20 @@ const BasicsPanel = ({ tagsData }) => {
     delete countryTags['caas:country/gr_en'];
   }
 
+  const countryLangOptions = html`
+    <${Select} options=${countryTags} prop="country" label="Country" sort />
+    <${Select} options=${languageTags} prop="language" label="Language" sort />`;
+
   return html`
-    <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
+  <${Input} label="Collection Name" placeholder="Only used in the author link" prop="collectionName" type="text" />
+  <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
-    <${Select} options=${countryTags} prop="country" label="Country" sort />
-    <${Select} options=${languageTags} prop="language" label="Language" sort />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
+    <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
+    ${!state.autoCountryLang && countryLangOptions}
+
   `;
 };
 
@@ -329,6 +346,7 @@ const UiPanel = () => html`
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
+  <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"
@@ -348,11 +366,11 @@ const UiPanel = () => html`
 `;
 
 const TagsPanel = ({ tagsData }) => {
+  const context = useContext(ConfiguratorContext);
   if (!tagsData) return '';
   const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
   const allTags = getTagTree(tagsData);
-  const context = useContext(ConfiguratorContext);
 
   const onLogicTagChange = (prop) => (values) => {
     context.dispatch({
@@ -396,8 +414,10 @@ const TagsPanel = ({ tagsData }) => {
   `;
 };
 
-const CardsPanel = () => {
+const CardsPanel = ({ tagsData }) => {
   const context = useContext(ConfiguratorContext);
+
+  const allTags = getTagTree(tagsData);
 
   const onChange = (prop) => (values) => {
     context.dispatch({
@@ -413,7 +433,7 @@ const CardsPanel = () => {
       className="featuredCards"
       values=${context.state.featuredCards}
       title="Featured Cards"
-      subTitle="Enter the UUID for cards to be featured"
+      subTitle="UUIDs for featured cards"
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
@@ -422,10 +442,21 @@ const CardsPanel = () => {
       className="excludedCards"
       values=${context.state.excludedCards}
       title="Excluded Cards"
-      subTitle="Enter the UUID for cards to be excluded"
+      subTitle="UUIDs for excluded cards"
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
+    <${MultiField}
+      onChange=${onChange('hideCtaIds')}
+      className="hideCtaIds"
+      values=${context.state.hideCtaIds}
+      title="Hidden CTAs"
+      subTitle="UUIDs for cards no CTAs"
+    >
+      <${FormInput} name="contentId" onValidate${isValidUuid} />
+    <//>
+    <hr class="divider"/>
+    <${DropdownSelect} options=${allTags} prop="hideCtaTags" label="Tags that should hide CTAS" />
   `;
 };
 
@@ -433,7 +464,7 @@ const BookmarksPanel = () => html`
   <${Input} label="Show bookmark icon on cards" prop="showBookmarksOnCards" type="checkbox" />
   <${Input} label="Only show bookmarked cards" prop="onlyShowBookmarkedCards" type="checkbox" />
   <${Input}
-    label="Show the Bookmarks Filter In The Card Collection"
+    label="Show Bookmarks Filter"
     prop="showBookmarksFilter"
     type="checkbox"
   />
@@ -455,7 +486,8 @@ const SortPanel = () => {
       <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
       <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
       <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
-      <${Input} label="Date: (Last Modified)" prop="sortDateModified" type="checkbox" />
+      <${Input} label="Date (Last Modified, Oldest to Newest)" prop="sortModifiedAsc" type="checkbox" />
+      <${Input} label="Date: (Last Modified, Newest to Oldest)" prop="sortModifiedDesc" type="checkbox" />
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
@@ -492,23 +524,62 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
+    <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
+  `;
+
+  const FilterBuildPanel = html`
+    <${FilterOptions}>
     <${MultiField}
       onChange=${onChange('filters')}
       className="filters"
       values=${context.state.filters}
-      title="Filter Tags"
+      title="Automatic Filters"
       subTitle=""
     >
-    <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
       <${FormInput} label="Icon Path" name="icon" />
       <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
     <//>
   `;
 
+  const FilterCustomBuildPanel = html`
+    <${FilterOptions}>
+    <${MultiField}
+      onChange=${onChange('filtersCustom')}
+      className="filtersCustom"
+      values=${context.state.filtersCustom}
+      title="Custom Filters"
+      addBtnTitle="New Group"
+      subTitle=""
+    >
+      <${FormInput} label="Group Name" name="group" />
+
+      <!-- nested multifield  -->
+      <${MultiField}
+        className="filtersCustomItems"
+        parentValues=${context.state.filtersCustom}
+        title="Filters"
+        subTitle=""
+        addBtnLabel="+"
+        addBtnTitle="New Filter"
+        name="filtersCustomItems"
+      >
+        <${FormInput} label="Filter label" name="filtersCustomLabel"/>
+        <${TagSelect} id="customFilterTag" options=${allTags} label="Filter Tag" singleSelect />
+      <//>
+      <!-- End nested multifield -->
+
+      <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
+    <//>
+  `;
+
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
-    ${state.showFilters && FilterOptions}
+    ${state.showFilters
+      && (state.filterBuildPanel === 'custom'
+        ? FilterCustomBuildPanel
+        : FilterBuildPanel)}
   `;
 };
 
@@ -549,15 +620,13 @@ const PaginationPanel = () => {
   `;
 };
 
-const TargetPanel = () =>
-  html`
+const TargetPanel = () => html`
     <${Input} label="Target Enabled" prop="targetEnabled" type="checkbox" />
     <${Input} label="Last Viewed Session" prop="lastViewedSession" type="checkbox" />
     <${Input} label="Target Activity" prop="targetActivity" type="text" />
   `;
 
-const AnalyticsPanel = () =>
-  html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
+const AnalyticsPanel = () => html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
   <${Input} label="Collection Name" prop="analyticsCollectionName" type="text" />`;
 
 const AdvancedPanel = () => {
@@ -575,17 +644,20 @@ const AdvancedPanel = () => {
     });
   };
 
-  function getAdditionalQueryParams(){
-    if(Array.isArray(context.state.additionalRequestParams)){
+  function getAdditionalQueryParams() {
+    if (Array.isArray(context.state.additionalRequestParams)) {
       return context.state.additionalRequestParams;
     }
-    return Object.entries(context.state.additionalRequestParams).map(([key, value]) => ({key, value}));
+    return Object.entries(context.state.additionalRequestParams)
+      .map(([key, value]) => ({ key, value }));
   }
+
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+    <${Input} label="Preview Floodgate Cards" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Input} label="Do not lazyload" prop="doNotLazyLoad" type="checkbox" />
-    <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
+    <${Input} label="Collection Size (Defaults: Total Cards)" prop="collectionSize" type="text" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
     <${Input}
       label="Fallback Endpoint"
@@ -626,10 +698,13 @@ const getInitialState = () => {
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
-    if (lsState) {
+    // For backwards compatibilty: Check that localStorage state exists
+    // and it contains the new filtersCustom attribute before using it
+    if (lsState?.includes('filtersCustom')) {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
+      // eslint-disable-next-line no-empty
       } catch (e) {}
     }
   }
@@ -642,6 +717,16 @@ const getInitialState = () => {
 const saveStateToLocalStorage = (state) => {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
 };
+
+/**
+ * Removes the JSON key "fetchCardsFromFloodgateTree" from the Copied URL to Caas.
+ * Caas Collection will determine if the content should be served from floodgate
+ * based on  metadata.xslx logic in caas-libs
+ * @param {*} key jsonKey
+ * @param {*} value jsonValue
+ * @returns replacedJson
+ */
+const fgKeyReplacer = (key, value) => (key === 'fetchCardsFromFloodgateTree' ? undefined : value);
 
 /* c8 ignore start */
 const CopyBtn = () => {
@@ -659,8 +744,10 @@ const CopyBtn = () => {
   };
 
   const getUrl = () => {
-    const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = utf8ToB64(JSON.stringify(state, fgKeyReplacer));
+    return url.href;
   };
 
   const copyConfig = () => {
@@ -713,8 +800,8 @@ const CopyBtn = () => {
   return html` <textarea class=${`copy-text ${(!navigator?.clipboard) ? '' : 'hide'}`}>${configUrl}</textarea>
     <button
       class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true
-        ? 'is-success'
-        : ''}"
+  ? 'is-success'
+  : ''}"
       onClick=${copyConfig}
     >
       ${btnText}
@@ -736,7 +823,7 @@ const getPanels = (tagsData) => [
   },
   {
     title: 'Cards',
-    content: html`<${CardsPanel} />`,
+    content: html`<${CardsPanel} tagsData=${tagsData} />`,
   },
   {
     title: 'Sort',
@@ -812,9 +899,10 @@ const Configurator = ({ rootEl }) => {
       .then(() => {
         setIsCaasLoaded(true);
       })
-      .catch((error) => {
-        /* c8 ignore next */
-        console.log('Error loading script: ', error);
+      .catch((e) => {
+        /* c8 ignore next 2 */
+        // eslint-disable-next-line no-console
+        console.log('Error loading script: ', e);
       });
   }, []);
 
@@ -883,6 +971,7 @@ const init = async (el) => {
 };
 
 export {
+  // eslint-disable-next-line no-restricted-exports
   init as default,
   cloneObj,
   getHashConfig,

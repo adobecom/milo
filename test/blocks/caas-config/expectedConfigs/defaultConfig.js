@@ -13,6 +13,7 @@ const defaultConfig = {
     showTotalResults: false,
     i18n: {
       cardTitleAccessibilityLevel: 6,
+      lastModified: 'Last modified {date}',
       prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
       totalResultsText: '{total} results',
       title: '',
@@ -20,8 +21,8 @@ const defaultConfig = {
       onErrorDescription:
         'Please try reloading the page or try coming back to the page another time.',
       titleHeadingLevel: 'h3',
-
     },
+    detailsTextOption: 'default',
     setCardBorders: false,
     useOverlayLinks: false,
     banner: {
@@ -34,8 +35,13 @@ const defaultConfig = {
     disableBanners: false,
     reservoir: { sample: 3, pool: 1000 },
     ctaAction: '_blank',
-    additionalRequestParams: {}
+    additionalRequestParams: {},
   },
+  headers: [],
+  hideCtaIds: [
+    '',
+  ],
+  hideCtaTags: [],
   featuredCards: [
     '',
   ],
@@ -88,7 +94,7 @@ const defaultConfig = {
     enabled: false,
     resultsQuantityShown: false,
     loadMoreButton: { style: 'primary', useThemeThree: false },
-    type: 'none',
+    type: 'paginator',
     i18n: {
       loadMore: { btnText: 'Load More', resultsQuantityText: '{start} of {end} displayed' },
       paginator: {
@@ -127,9 +133,9 @@ const defaultConfig = {
   analytics: { trackImpressions: '', collectionIdentifier: '' },
   target: {
     enabled: '',
-    lastViewedSession: ''
+    lastViewedSession: '',
   },
-  customCard: ["card","return ``"]
+  customCard: ['card', 'return ``'],
 };
 
 export default defaultConfig;

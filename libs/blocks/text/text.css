@@ -2,8 +2,15 @@
   position: relative;
 }
 
+.dark .text-block,
+.text-block.dark {
+  color: #fff;
+}
+
 .text-block p,
 .text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
+
+.text-block [class^="body-"]:only-child { margin: 0; }
 
 .text-block [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
 
@@ -37,7 +44,6 @@
   height: 100%;
 }
 
-
 .text-block .foreground {
   max-width: var(--grid-container-width);
   margin: 0 auto;
@@ -54,6 +60,12 @@
   gap: var(--spacing-s);
   flex-wrap: wrap;
   align-items: center;
+}
+
+.text-block hr {
+  border-color: #e1e1e1;
+  border-style: solid;
+  margin: var(--spacing-m) 0;
 }
 
 /* Alignment */
@@ -103,8 +115,76 @@
   padding-left: var(--spacing-xs);;
 }
 
-/* Tablet */
+/* Legal */
+.legal.text-block {
+  padding: var(--spacing-xl) 0;
+}
+
+.legal.text-block .foreground,
+.legal.text-block p {
+  font-style: italic;
+  font-size: var(--type-body-xxs-size);
+  line-height: var(--type-body-xxs-lh);
+}
+
+/* link-farm */
+.link-farm.text-block {
+  padding: var(--spacing-xl) 0;
+}
+
+.link-farm.text-block .foreground {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spacing-xl) var(--spacing-m);
+}
+
+.link-farm.text-block .foreground:first-child {
+  grid-template-columns: auto;
+}
+
+.link-farm.text-block h3 {
+  margin: 0 0 var(--spacing-l);
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-heading-xs-lh);
+}
+
+.link-farm.text-block .no-heading {
+  margin: 0;
+}
+
+.link-farm.text-block h2 {
+  margin: 0 0 var(--spacing-m);
+}
+
+.link-farm.text-block p {
+  font-size: var(--type-body-s-size);
+  margin: 0 0 var(--spacing-s);
+  line-height: var(--type-body-s-lh);
+}
+
+.link-farm.text-block p:last-child {
+  margin: 0;
+}
+
+.link-farm.text-block a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.link-farm.text-block a:hover {
+  text-decoration: double underline;
+}
+
+.section[class*='grid-width-'] .text-block .foreground {
+  max-width: unset;
+}
+
+/* Tablet up */
 @media screen and (min-width: 600px) {
+  .link-farm.text-block h2 {
+    margin: 0 0 var(--spacing-xl-static);
+  }
+
   .inset.text-block .foreground::before {
     display: none;
   }
@@ -115,5 +195,21 @@
 
   .inset.text-block .foreground > div {
     padding-left: var(--spacing-l);
+  }
+
+  .link-farm.text-block .foreground {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .link-farm.text-block .no-heading {
+    height: var(--type-heading-m-size);
+    margin: 0 0 var(--spacing-l);
+  }
+}
+
+/* Desktop up */
+@media screen and (min-width: 1200px) {
+  .link-farm.text-block .foreground {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

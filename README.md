@@ -41,7 +41,7 @@ You can use any text editor or IDE of your choice, but milo is highly optimized 
 If you want to see how your local milo changes impact a consuming site you will need to work on a different port.
 
 ```
-npm run libs  
+npm run libs
 ```
 Milo will run at:
 ```
