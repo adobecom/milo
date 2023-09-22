@@ -56,7 +56,7 @@ jobs:
             str="${str//$'\r'/"\r"}"
             str="${str//$'\n'/"\n"}"
             str="${str//$'\t'/"\t"}"
-            str="${str//\\\/}"
+            str="${str//\\//}"
             str="${str////"\/"}"
 
             echo "$str"
