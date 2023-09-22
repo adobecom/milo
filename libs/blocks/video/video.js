@@ -3,7 +3,7 @@ import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
 
 const ROOT_MARGIN = 1000;
 
-const loadVideo = async (a) => {
+export const loadVideo = async (a) => {
   const { pathname, hash } = a;
   const attrs = getVideoAttrs(hash);
   const video = `<video ${attrs}>

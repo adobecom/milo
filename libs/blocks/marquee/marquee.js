@@ -6,12 +6,11 @@ import { applyHoverPlay, decorateButtons, getBlockSize } from '../../utils/decor
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
-const decorateVideo = (container, video) => {
+const decorateVideo = async (container, video) => {
   if (video.nodeName === 'A' && video.href.includes('.mp4')) {
     // no special attrs handling
-    container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
-      <source src="${video.href}" type="video/mp4" />
-    </video>`;
+    const { loadVideo } = await import('../video/video.js');
+    loadVideo(video);
   } else if (video.attributes.getNamedItem('controls')) {
     video.removeAttribute('controls');
     video.setAttribute('muted', '');
