@@ -322,9 +322,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     const headingsLength = headings.length;
     // Remove filter if table there are only 2 columns
     if (isMerch && headingsLength <= 2) {
-      table.querySelector('.filter')?.remove();
+      table.querySelector('.filters')?.remove();
     } else if (headingsLength <= 3) {
-      table.querySelector('.filter')?.remove();
+      table.querySelector('.filters')?.remove();
     }
 
     if (isMerch && headingsLength > 2) {
