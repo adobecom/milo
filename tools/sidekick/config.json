@@ -25,7 +25,7 @@
     {
       "containerId": "tools",
       "id": "localize",
-      "title": "Localize",
+      "title": "Localize project",
       "environments": [ "edit" ],
       "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
       "passReferrer": true,
