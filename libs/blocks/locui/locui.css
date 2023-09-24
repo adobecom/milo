@@ -181,7 +181,7 @@ li.locui-subproject {
   border: 4px solid rgb(246 97 182);
   background: rgb(255 100 194 / 30%);
   border-radius: 6px;
-  padding: 18px;
+  padding: 18px 18px 72px 18px;
   -webkit-backdrop-filter: blur(.3em);
   backdrop-filter: blur(.3em);
 }
@@ -204,6 +204,10 @@ li.locui-subproject.locui-subproject-translated {
 }
 
 li.locui-subproject.locui-subproject-translated .locui-subproject-badge {
+  background: #093;
+}
+
+li.locui-subproject.locui-subproject-translated button.locui-urls-heading-action {
   background: #093;
 }
 
@@ -245,6 +249,14 @@ span.locui-subproject-locale {
   border-radius: 4px;
   font-size: 14px;
   line-height: 1;
+}
+
+.locui-subproject-action-area {
+  display: flex;
+  justify-content: end;
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
 }
 
 div.locui-url-heading-actions {

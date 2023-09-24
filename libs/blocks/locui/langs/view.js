@@ -21,9 +21,11 @@ function Badge({ status }) {
   return html`<div class=locui-subproject-badge>${prettyStatus}</div>`;
 }
 
-function Language({ item }) {
+function Language({ item, idx }) {
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
+  const completeType = item.status === 'translated' || item.status === 'in-progress' ? 'Translated' : 'Rolled out';
+  const rolloutType = item.status === 'completed' ? 'Rollout again' : 'Rollout';
 
   return html`
     <li class="locui-subproject ${cssStatus}">
@@ -39,7 +41,7 @@ function Language({ item }) {
         </div>
         ${item.done > 0 && html`
         <div>
-          <p class=locui-project-label>Complete</p>
+          <p class=locui-project-label>${completeType}</p>
           <h3 class=locui-subproject-name>${item.done}</h3>
         </div>
         `}
@@ -50,8 +52,10 @@ function Language({ item }) {
           ${item.locales.map((locale) => html`<span class=locui-subproject-locale>${locale}</span>`)}
         </div>
       `}
-      ${item.status === 'translated' && html`
-        <button class=locui-urls-heading-action onClick=${() => rollout(item)}>Rollout</button>
+      ${(item.status === 'translated' || item.status === 'completed') && html`
+        <div class=locui-subproject-action-area>
+          <button class=locui-urls-heading-action onClick=${() => rollout(item, idx)}>${rolloutType}</button>
+        </div>
       `}
     </li>
   `;
@@ -64,7 +68,7 @@ export default function Langs() {
         <h2 class=locui-section-label>Languages</h2>
       </div>
       <ul class=locui-subprojects>
-        ${languages.value.map((proj) => html`<${Language} item=${proj} />`)}
+        ${languages.value.map((proj, idx) => html`<${Language} item=${proj} key=${idx} idx=${idx} />`)}
       </ul>
     </div>
   `;

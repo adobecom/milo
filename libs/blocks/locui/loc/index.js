@@ -8,7 +8,7 @@ import {
   telemetry,
   allowFindFragments,
   allowSyncToLangstore,
-  allowSendForLoc,
+  canRefresh,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../utils/franklin.js';
@@ -50,7 +50,7 @@ async function loadLocales() {
     if (language.Locales) found.livecopies = language.Locales;
     // Clean up the livecopies
     const livecopies = found.livecopies.replaceAll(' ', '');
-    language.locales = livecopies.split(',');
+    language.locales = livecopies.includes('\n') ? livecopies.split('\n') : livecopies.split(',');
   });
   languages.value = [...languages.value];
 }
@@ -58,9 +58,12 @@ async function loadLocales() {
 async function loadServiceProject(settings) {
   const projectId = settings.find((setting) => setting.key === 'Project ID');
   if (projectId?.value) {
+    setStatus('service', 'info', 'Connecting to localiztion service.');
     heading.value = { ...heading.value, projectId: projectId.value };
     await getServiceUpdates();
+    setStatus('service');
   } else {
+    canRefresh.value = true;
     allowFindFragments.value = true;
     allowSyncToLangstore.value = true;
   }

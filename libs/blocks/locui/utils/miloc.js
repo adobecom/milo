@@ -2,7 +2,7 @@ import { allowFindFragments, allowSendForLoc, allowSyncToLangstore, heading, lan
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { origin, preview } from './franklin.js';
-import { setExcelStatus } from './status.js';
+import { setExcelStatus, setStatus } from './status.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import '../../../deps/md5.min.js';
 
@@ -22,12 +22,25 @@ export async function getProjectStatus() {
   const url = await getMilocUrl();
   const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`);
   const json = await resp.json();
-  // TODO: There will be other scenarios where this will be true.
+
+  if (json.projectStatus === 'sync' || json.projectStatus === 'download') {
+    setStatus('service', 'info', json.projectStatusText);
+  }
+
   if (json.projectStatus === 'sync-done') {
+    setStatus('service');
     allowSyncToLangstore.value = true;
     allowSendForLoc.value = true;
   }
+
+  // This is misleading because the service says it's waiting even it's done.
   if (json.projectStatus === 'waiting') {
+    const waiting = Object.keys(json).some((key) => {
+      if (json[key].status) return json[key].status === 'in-progress';
+      return false;
+    });
+
+    if (waiting) setStatus('service', 'info', json.projectStatusText);
     allowSyncToLangstore.value = false;
     allowSendForLoc.value = false;
   }
@@ -37,6 +50,7 @@ export async function getProjectStatus() {
 }
 
 export async function startSync() {
+  setStatus('service', 'info', 'Syncing documents to Langstore.');
   const url = await getMilocUrl();
   setExcelStatus('Sync to langstore/en.', '');
   const opts = { method: 'POST' };
@@ -46,15 +60,15 @@ export async function startSync() {
 
 export async function startProject() {
   const url = await getMilocUrl();
-  setExcelStatus('Sending to localization service.', '');
+  setStatus('service', 'info', 'Sending to translation service.');
   const opts = { method: 'POST' };
   const resp = await fetch(`${url}start-project?project=${heading.value.projectId}`, opts);
-  console.log(resp.status);
-  if (resp.status === 201) setExcelStatus('Sending to localization service.', '');
+  if (resp.status === 201) setExcelStatus('Sent to localization service.', '');
   return resp.status;
 }
 
 export async function rolloutLang(languageCode, reroll = false) {
+  setExcelStatus('Rolling out.', `Lang: ${languageCode} - Reroll: ${reroll ? 'yes' : 'no'}`);
   const url = await getMilocUrl();
   const opts = { method: 'POST' };
   const resp = await fetch(`${url}start-rollout?project=${heading.value.projectId}&languageCode=${languageCode}&reroll=${reroll}`, opts);
@@ -63,7 +77,8 @@ export async function rolloutLang(languageCode, reroll = false) {
 
 export async function createProject() {
   const url = await getMilocUrl();
-  setExcelStatus('Creating new project', '');
+  setStatus('service', 'info', 'Creating new project.');
+  setExcelStatus('Creating new project.', '');
   const body = `${origin}${heading.value.path}.json`;
   const opts = { method: 'POST', body };
   const resp = await fetch(`${url}create-project`, opts);

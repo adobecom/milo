@@ -1,5 +1,5 @@
 import { html } from '../../../deps/htm-preact.js';
-import { heading } from '../utils/state.js';
+import { canRefresh, heading } from '../utils/state.js';
 import { account } from '../../../tools/sharepoint/state.js';
 import handleRefresh from './index.js';
 
@@ -15,7 +15,7 @@ export default function Heading() {
               <a class=locui-project-details-edit
                  href="${heading.value.editUrl}"
                  target="_blank">Edit</a>`}
-          ${heading.value.name && html`
+          ${heading.value.name && canRefresh.value && html`
             <button class=locui-project-details-refresh onClick=${handleRefresh}>Refresh</a>`}
         </div>
       </div>
