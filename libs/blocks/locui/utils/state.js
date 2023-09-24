@@ -1,7 +1,7 @@
 import { signal } from '../../../deps/htm-preact.js';
+import { setStatus } from './status.js';
 import { origin } from './franklin.js';
 
-// TODO: Need to support consumers here
 const LOC_CONFIG = '/.milo/config.json';
 
 export const telemetry = { application: { appName: 'Adobe Localization' } };
@@ -15,17 +15,11 @@ export const siteConfig = signal(null);
 export const user = signal();
 export const spAccessToken = signal();
 export const showLogin = signal(false);
-
-export function setStatus(name, type, text, description, timeout) {
-  const content = type && text ? { type, text, description } : null;
-  statuses.value = { ...statuses.value, [name]: content };
-  if (timeout) {
-    setTimeout(() => {
-      delete statuses.value[name];
-      statuses.value = { ...statuses.value };
-    }, timeout);
-  }
-}
+export const allowFindFragments = signal(false);
+export const allowSyncToLangstore = signal(false);
+export const allowSendForLoc = signal(false);
+export const allowRollout = signal(false);
+export const polling = signal(false);
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');

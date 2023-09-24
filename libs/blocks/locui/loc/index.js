@@ -1,9 +1,20 @@
 import { getConfig, getLocale } from '../../../utils/utils.js';
 import {
-  heading, languages, urls, getSiteConfig, setStatus, showLogin, telemetry,
+  heading,
+  languages,
+  urls,
+  getSiteConfig,
+  showLogin,
+  telemetry,
+  allowFindFragments,
+  allowSyncToLangstore,
+  allowSendForLoc,
 } from '../utils/state.js';
+import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
+import getServiceConfig from '../../../utils/service-config.js';
+import { getProjectStatus, getServiceUpdates } from '../utils/miloc.js';
 
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
@@ -34,9 +45,33 @@ async function loadLocales() {
     const found = config.locales.data.find(
       (locale) => language.Language === locale.language,
     );
-    language.locales = found.livecopies.split(',');
+    language.code = found.languagecode;
+    const livecopies = found.livecopies.replaceAll(' ', '');
+    language.locales = livecopies.split(',');
   });
   languages.value = [...languages.value];
+}
+
+async function loadServiceProject(settings) {
+  const projectId = settings.find((setting) => setting.key === 'Project ID');
+  if (projectId?.value) {
+    // You cannot find fragments after you create a project.
+    allowFindFragments.value = false;
+    heading.value = { ...heading.value, projectId: projectId.value };
+    // TODO: Once it's off to loc, we will need to shut down the sync to langstore button
+    const { miloc } = await getServiceConfig(origin);
+    const json = await getProjectStatus(miloc.url);
+    // TODO: This is janky, there will be more statuses that allow this.
+    if (json.projectStatus === 'waiting') {
+      await getProjectStatus(miloc.url);
+      getServiceUpdates(miloc.url);
+    } else {
+      allowSendForLoc.value = true;
+    }
+  } else {
+    allowFindFragments.value = true;
+    allowSyncToLangstore.value = true;
+  }
 }
 
 async function loadDetails() {
@@ -55,6 +90,7 @@ async function loadDetails() {
     }, []);
     languages.value = projectLangs;
     urls.value = projectUrls;
+    if (json.settings) loadServiceProject(json.settings.data);
     setStatus('details');
   } catch {
     setStatus('details', 'error', 'Error loading languages and URLs.');
@@ -71,6 +107,7 @@ async function loadHeading() {
   setStatus('details');
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
+  window.document.title = `${projectName} - LocUI`;
   await preview(`${path}.json`);
 }
 

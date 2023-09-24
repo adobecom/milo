@@ -1,5 +1,6 @@
 import { getStatus } from '../utils/franklin.js';
-import { urls, setStatus } from '../utils/state.js';
+import { urls } from '../utils/state.js';
+import { setStatus } from '../utils/status.js';
 
 function getFileName(editUrl) {
   const url = new URL(editUrl);

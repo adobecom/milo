@@ -37,10 +37,6 @@ main {
   align-items: center;
 }
 
-.locui-project-details-name {
-  text-transform: lowercase;
-}
-
 .locui-project-details-edit {
   background: url('./img/edit-sheet.svg');
   width: 68px;
@@ -186,10 +182,49 @@ li.locui-subproject {
   backdrop-filter: blur(.3em);
 }
 
+.locui-subproject-badge {
+  position: absolute;
+  right: 0;
+  color: #FFF;
+  background: #000;
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 8px;
+  border-radius: 6px 0 0 6px;
+}
+
+li.locui-subproject.locui-subproject-translated {
+  border-color: #093;
+  background: rgb(149 230 195 / 20%);
+}
+
+li.locui-subproject.locui-subproject-translated .locui-subproject-badge {
+  background: #093;
+}
+
+li.locui-subproject.locui-subproject-rolling-out .locui-subproject-badge {
+  background: rgb(246 97 182);
+}
+
+li.locui-subproject.locui-subproject-in-progress {
+  border-color: #80B3E7;
+  background: rgb(184 222 244 / 20%);
+}
+
+li.locui-subproject.locui-subproject-in-progress .locui-subproject-badge {
+  background: #80B3E7;
+}
+
 h3.locui-subproject-name {
   font-weight: 400;
   font-size: 28px;
   margin: 0 0 24px;
+}
+
+div.locui-subproject-items {
+  display: flex;
+  gap: 96px;
 }
 
 div.locui-subproject-locales {

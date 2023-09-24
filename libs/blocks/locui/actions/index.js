@@ -1,13 +1,14 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import { heading, setStatus, urls } from '../utils/state.js';
+import { heading, urls, languages, allowSyncToLangstore, allowSendForLoc } from '../utils/state.js';
+import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
-import copyFile from '../utils/sp/file.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
-
-const MISSING_SOURCE = 'There are missing source docs in the project. Remove the missing docs or create them.';
+import { getItemId } from '../../../tools/sharepoint/shared.js';
+import getServiceConfig from '../../../utils/service-config.js';
+import { createProject, getProjectStatus, getServiceUpdates, startProject, startSync } from '../utils/miloc.js';
 
 async function updateExcelJson() {
   let count = 1;
@@ -25,22 +26,36 @@ async function updateExcelJson() {
 }
 
 async function findPageFragments(path) {
-  const resp = await fetch(`${origin}${path}`);
+  const isIndex = path.lastIndexOf('index');
+  const hlxPath = isIndex > 0 ? path.substring(0, isIndex) : path;
+  const resp = await fetch(`${origin}${hlxPath}`);
   if (!resp.ok) return [];
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
+  // TODO: Support nested fragments
+  // Decorate the doc, but don't load any blocks (i.e. do not use loadArea)
   decorateSections(doc, true);
-  const fragments = [...doc.querySelectorAll('.fragment')];
+  const fragments = [...doc.querySelectorAll('.fragment, .modal.link-block')];
   const fragmentUrls = fragments.reduce((rdx, fragment) => {
     // Normalize the fragment path to support production urls.
-    const pathname = new URL(fragment.href).pathname.replace('.html', '');
+    const pathname = fragment.dataset.modalPath || new URL(fragment.href).pathname.replace('.html', '');
     const fragmentUrl = new URL(`${origin}${pathname}`);
     // Look for duplicates that are already in the urls
     const dupe = urls.value.some((url) => url.href === fragmentUrl.href);
     if (!dupe) rdx.push(fragmentUrl);
     return rdx;
   }, []);
+  // TODO: Footer promos
+  // const footerPromo = doc.querySelector('[name="footer-promo-tag"]');
+  // if (footerPromo) {
+  //   const content = footerPromo.getAttribute('content');
+  //   if (content) {
+  //     const promoUrl = new URL(`${origin}/fragments/footer-promos/${content}`);
+  //     const dupe = urls.value.some((url) => url.href === promoUrl.href);
+  //     if (!dupe) fragmentUrls.push(promoUrl);
+  //   }
+  // }
   if (fragmentUrls.length === 0) return [];
   return getUrls(fragmentUrls);
 }
@@ -60,53 +75,48 @@ export async function findFragments() {
     return rdx;
   }, []);
   setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
+  setExcelStatus('Find fragments', `Found ${forExcel.length} fragments.`);
   if (forExcel.length > 0) {
     urls.value = [...urls.value];
-
-    const resp = await updateExcelTable({ telemetry, filename, tablename, values })
-
+    // Update language cards count
+    languages.value = [...languages.value.map((lang) => {
+      lang.size = urls.value.length;
+      return lang;
+    })];
+    const itemId = getItemId();
+    const resp = await updateExcelTable({ itemId, tablename: 'URL', values: forExcel });
+    if (resp.status !== 201) {
+      setStatus('fragments', 'error', 'Couldn\'t add to Excel.');
+      return;
+    }
     updateExcelJson();
   }
 }
 
-function checkSource() {
-  return urls.value.some((url) => {
-    if (!url.actions || url.actions.edit?.status === 404) return true;
-    return false;
-  });
-}
-
-async function syncFile(url) {
-  return new Promise(async (resolve) => {
-    const sourcePath = url.pathname;
-    const destPath = url.langstore.pathname;
-    const json = await copyFile(sourcePath, destPath);
-    if (json.webUrl) {
-      url.langstore.actions = {
-        ...url.langstore.actions,
-        edit: {
-          url: json.webUrl,
-          status: 200,
-        },
-      };
-      resolve(url);
-    }
-  });
-}
-
 export async function syncToLangstore() {
-  if (checkSource()) {
-    setStatus('langstore', 'error', 'Missing source docs.', MISSING_SOURCE);
+  const { miloc } = await getServiceConfig(origin);
+  if (!miloc) {
+    setStatus(
+      'service',
+      'error',
+      'No Milo Localization config',
+      'Check /.milo/config in your project.',
+    );
     return;
   }
+  const status = !heading.value.projectId
+    ? await createProject(miloc.url) : await startSync(miloc.url);
+  if (status === 204) {
+    getServiceUpdates(miloc.url, 'sync-done');
+  }
+}
 
-  let total = urls.value.length;
-  for (const [idx, url] of urls.value.entries()) {
-    setStatus('langstore', 'info', `Syncing - ${total} left.`, 'Syncing to Langstore.');
-    // eslint-disable-next-line no-await-in-loop
-    urls.value[idx] = await syncFile(url);
-    urls.value = [...urls.value];
-    total -= 1;
-    if (total === 0) setStatus('langstore');
+export async function sendForLoc() {
+  const { miloc } = await getServiceConfig(origin);
+  const status = await startProject(miloc.url);
+  if (status === 201) {
+    allowSyncToLangstore.value = false;
+    allowSendForLoc.value = false;
+    getServiceUpdates(miloc.url, 'sync-done');
   }
 }

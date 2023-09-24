@@ -1,13 +1,7 @@
 import { html } from '../../../deps/htm-preact.js';
-import { heading, user, urls, languages, statuses } from '../utils/state.js';
-import { autoSetup } from '../loc/index.js';
-
-async function handleRefresh() {
-  languages.value = [];
-  urls.value = [];
-  statuses.value = {};
-  autoSetup();
-}
+import { heading } from '../utils/state.js';
+import { account } from '../../../tools/sharepoint/state.js';
+import handleRefresh from './index.js';
 
 export default function Heading() {
   return html`
@@ -28,7 +22,7 @@ export default function Heading() {
       <div class=locui-project-heading-column>
         <h2 class=locui-section-label>LOGGED IN</h2>
         <div class=locui-project-details-name>
-          <span>${user}</span>
+          <span>${account.value.name}</span>
         </div>
       </div>
     </div>`;

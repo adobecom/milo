@@ -24,8 +24,8 @@ export default function Localization() {
   return html`
     <h1>Milo Localization</h1>
     ${heading.value.editUrl && html`<${Heading} />`}
-    ${languages.value.length > 0 && html`<${Langs} />`}
     ${urls.value.length > 0 && html`<${Actions} />`}
+    ${languages.value.length > 0 && html`<${Langs} />`}
     ${urls.value.length > 0 && html`<${Urls} />`}
     <${Status} />`;
 }

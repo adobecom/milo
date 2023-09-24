@@ -1,13 +1,10 @@
+import { getSharePointDetails, getSiteOrigin } from './shared.js';
 import { getReqOptions } from './msal.js';
 
-export default async function updateExcelTable({ filename, tablename, values }) {
-  console.log(filename);
-
-  // baseUri: driveId ? `${site}/drives/${driveId}/root:${rootFolders}` : `${site}/drive/root:${rootFolders}`,
-
-  // const excel = `${filename}.xlsx`;
-  // const path = `${baseUri}${excel}:/workbook/tables/${tablename}/rows/add`;
-  // const options = getReqOptions({ body: { values }, method: 'POST' });
-
-  // return fetch(path, options);
+export default async function updateExcelTable({ itemId, tablename, values }) {
+  const origin = getSiteOrigin();
+  const { site, driveId } = await getSharePointDetails(origin);
+  const options = getReqOptions({ body: { values }, method: 'POST' });
+  const url = `${site}/${driveId}/items/${itemId}/workbook/tables/${tablename}/rows/add`;
+  return fetch(url, options);
 }
