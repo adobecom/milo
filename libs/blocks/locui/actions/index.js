@@ -7,7 +7,7 @@ import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
-import { createProject, startSync, startProject } from '../utils/miloc.js';
+import { createProject, startSync, startProject, getServiceUpdates } from '../utils/miloc.js';
 
 async function updateExcelJson() {
   let count = 1;
@@ -96,9 +96,8 @@ export async function syncToLangstore(e) {
   e.target.disabled = true;
   if (!heading.value.projectId) {
     const status = await createProject();
-    if (status === 201) {
-      const status = await startSync();
-    }
+    if (status === 201) await startSync();
+    getServiceUpdates();
   } else {
     await startSync();
   }
