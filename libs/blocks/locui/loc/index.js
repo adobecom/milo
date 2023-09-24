@@ -46,6 +46,9 @@ async function loadLocales() {
       (locale) => language.Language === locale.language,
     );
     language.code = found.languagecode;
+    // If there are project-level overrides, use them.
+    if (language.Locales) found.livecopies = language.Locales;
+    // Clean up the livecopies
     const livecopies = found.livecopies.replaceAll(' ', '');
     language.locales = livecopies.split(',');
   });
@@ -55,19 +58,8 @@ async function loadLocales() {
 async function loadServiceProject(settings) {
   const projectId = settings.find((setting) => setting.key === 'Project ID');
   if (projectId?.value) {
-    // You cannot find fragments after you create a project.
-    allowFindFragments.value = false;
     heading.value = { ...heading.value, projectId: projectId.value };
-    // TODO: Once it's off to loc, we will need to shut down the sync to langstore button
-    const { miloc } = await getServiceConfig(origin);
-    const json = await getProjectStatus(miloc.url);
-    // TODO: This is janky, there will be more statuses that allow this.
-    if (json.projectStatus === 'waiting') {
-      await getProjectStatus(miloc.url);
-      getServiceUpdates(miloc.url);
-    } else {
-      allowSendForLoc.value = true;
-    }
+    await getServiceUpdates();
   } else {
     allowFindFragments.value = true;
     allowSyncToLangstore.value = true;

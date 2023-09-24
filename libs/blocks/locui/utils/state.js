@@ -20,6 +20,7 @@ export const allowSyncToLangstore = signal(false);
 export const allowSendForLoc = signal(false);
 export const allowRollout = signal(false);
 export const polling = signal(false);
+export const projectStatus = signal({});
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');

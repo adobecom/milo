@@ -3,7 +3,7 @@ import { urls, allowFindFragments, allowSyncToLangstore, allowSendForLoc } from 
 import { findFragments, syncToLangstore, sendForLoc } from './index.js';
 
 export default function Actions() {
-  if (allowFindFragments.value || allowSyncToLangstore.value) {
+  if (allowFindFragments.value || allowSyncToLangstore.value || allowSendForLoc.value) {
     return html`
       <div class=locui-section>
         <div class=locui-section-heading>

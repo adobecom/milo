@@ -16,6 +16,10 @@ main {
   padding: 48px;
 }
 
+.locui button:disabled {
+  opacity: 0.5;
+}
+
 .locui-project-heading {
   display: flex;
   gap: 48px;
@@ -203,7 +207,8 @@ li.locui-subproject.locui-subproject-translated .locui-subproject-badge {
   background: #093;
 }
 
-li.locui-subproject.locui-subproject-rolling-out .locui-subproject-badge {
+li.locui-subproject.locui-subproject-rolling-out .locui-subproject-badge,
+li.locui-subproject.locui-subproject-completed .locui-subproject-badge {
   background: rgb(246 97 182);
 }
 

@@ -1,9 +1,9 @@
 import { getConfig, loadScript } from '../../../utils/utils.js';
-import { allowFindFragments, heading, languages, polling } from './state.js';
+import { allowFindFragments, allowSendForLoc, allowSyncToLangstore, heading, languages, projectStatus } from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { origin, preview } from './franklin.js';
-import { setExcelStatus, setStatus } from './status.js';
+import { setExcelStatus } from './status.js';
 import getServiceConfig from '../../../utils/service-config.js';
 
 const INTERVAL = 3000;
@@ -15,29 +15,43 @@ async function getMilocUrl() {
 }
 
 function handleProjectStatusDetail(detail) {
-  console.log(detail);
   languages.value = [...languages.value.map((lang) => ({ ...lang, ...detail[lang.code] }))];
 }
 
-export async function getProjectStatus(url) {
+export async function getProjectStatus() {
+  const url = await getMilocUrl();
   const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`);
   const json = await resp.json();
-  setStatus('service', 'info', json.projectStatusText);
+  console.log(json);
+  // TODO: There will be other scenarios where this will be true.
+  if (json.projectStatus === 'sync-done') {
+    allowSyncToLangstore.value = true;
+    allowSendForLoc.value = true;
+  }
+  if (json.projectStatus === 'waiting') {
+    allowSyncToLangstore.value = false;
+    allowSendForLoc.value = false;
+  }
+
   handleProjectStatusDetail(json);
   return json;
 }
 
-export async function startSync(url) {
+export async function startSync() {
+  const url = await getMilocUrl();
   setExcelStatus('Sync to langstore/en.', '');
   const opts = { method: 'POST' };
   const resp = await fetch(`${url}start-sync?project=${heading.value.projectId}`, opts);
   return resp.status;
 }
 
-export async function startProject(url) {
+export async function startProject() {
+  const url = await getMilocUrl();
   setExcelStatus('Sending to localization service.', '');
   const opts = { method: 'POST' };
   const resp = await fetch(`${url}start-project?project=${heading.value.projectId}`, opts);
+  console.log(resp.status);
+  if (resp.status === 201) setExcelStatus('Sending to localization service.', '');
   return resp.status;
 }
 
@@ -45,11 +59,11 @@ export async function rolloutLang(languageCode, reroll = false) {
   const url = await getMilocUrl();
   const opts = { method: 'POST' };
   const resp = await fetch(`${url}start-rollout?project=${heading.value.projectId}&languageCode=${languageCode}&reroll=${reroll}`, opts);
-  console.log(resp);
   return resp.json();
 }
 
-export async function createProject(url) {
+export async function createProject() {
+  const url = await getMilocUrl();
   setExcelStatus('Creating new project', '');
   const body = `${origin}${heading.value.path}.json`;
   const opts = { method: 'POST', body };
@@ -69,22 +83,14 @@ export async function createProject(url) {
   return resp.status;
 }
 
-export function getServiceUpdates(url, expectedStatus) {
-  if (polling.value) {
-    console.log('Already polling');
-    return false;
-  }
-  return new Promise((resolve) => {
-    let count = 1;
-    const excelUpdated = setInterval(async () => {
-      const json = await getProjectStatus(url);
-      const { projectStatus } = json;
-      count += 1;
-      if (expectedStatus === projectStatus || count > 1000) {
-        setStatus('service', 'info', json.projectStatusText, null, 3000);
-        clearInterval(excelUpdated);
-        resolve();
-      }
-    }, INTERVAL);
-  });
+export async function getServiceUpdates() {
+  const url = await getMilocUrl();
+  let count = 1;
+  const excelUpdated = setInterval(async () => {
+    projectStatus.value = await getProjectStatus(url);
+    count += 1;
+    // Stop counting after an hour
+    if (count > 1200) clearInterval(excelUpdated);
+  }, INTERVAL);
+  return getProjectStatus(url);
 }

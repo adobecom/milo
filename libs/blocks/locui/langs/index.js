@@ -1,5 +1,5 @@
 import { rolloutLang } from '../utils/miloc.js';
 
-export default function rollout(item) {
-  rolloutLang(item.code);
+export default async function rollout(item) {
+  await rolloutLang(item.code);
 }

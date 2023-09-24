@@ -7,8 +7,7 @@ import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
-import getServiceConfig from '../../../utils/service-config.js';
-import { createProject, getProjectStatus, getServiceUpdates, startProject, startSync } from '../utils/miloc.js';
+import { createProject, startSync, startProject } from '../utils/miloc.js';
 
 async function updateExcelJson() {
   let count = 1;
@@ -93,30 +92,25 @@ export async function findFragments() {
   }
 }
 
-export async function syncToLangstore() {
-  const { miloc } = await getServiceConfig(origin);
-  if (!miloc) {
-    setStatus(
-      'service',
-      'error',
-      'No Milo Localization config',
-      'Check /.milo/config in your project.',
-    );
-    return;
+export async function syncToLangstore(e) {
+  e.target.disabled = true;
+  if (!heading.value.projectId) {
+    const status = await createProject();
+    if (status === 201) {
+      const status = await startSync();
+    }
+  } else {
+    await startSync();
   }
-  const status = !heading.value.projectId
-    ? await createProject(miloc.url) : await startSync(miloc.url);
-  if (status === 204) {
-    getServiceUpdates(miloc.url, 'sync-done');
-  }
+  e.target.disabled = false;
 }
 
-export async function sendForLoc() {
-  const { miloc } = await getServiceConfig(origin);
-  const status = await startProject(miloc.url);
+export async function sendForLoc(e) {
+  e.target.disabled = true;
+  const status = await startProject();
   if (status === 201) {
     allowSyncToLangstore.value = false;
     allowSendForLoc.value = false;
-    getServiceUpdates(miloc.url, 'sync-done');
   }
+  e.target.disabled = false;
 }
