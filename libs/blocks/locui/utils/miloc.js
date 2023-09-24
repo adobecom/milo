@@ -1,10 +1,10 @@
-import { getConfig, loadScript } from '../../../utils/utils.js';
 import { allowFindFragments, allowSendForLoc, allowSyncToLangstore, heading, languages, projectStatus } from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { origin, preview } from './franklin.js';
 import { setExcelStatus } from './status.js';
 import getServiceConfig from '../../../utils/service-config.js';
+import '../../../deps/md5.min.js';
 
 const INTERVAL = 3000;
 
@@ -22,7 +22,6 @@ export async function getProjectStatus() {
   const url = await getMilocUrl();
   const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`);
   const json = await resp.json();
-  console.log(json);
   // TODO: There will be other scenarios where this will be true.
   if (json.projectStatus === 'sync-done') {
     allowSyncToLangstore.value = true;
@@ -70,8 +69,6 @@ export async function createProject() {
   const resp = await fetch(`${url}create-project`, opts);
   if (resp.status === 201) {
     allowFindFragments.value = false;
-    const { base } = getConfig();
-    await loadScript(`${base}/deps/md5.js`);
     const projectId = window.md5(body);
     heading.value = { ...heading.value, projectId };
     const values = [['Project ID', projectId]];
