@@ -507,6 +507,7 @@
 
 .aside.promobar .promo-text .action-area {
   flex-wrap: nowrap;
+  gap: var(--spacing-xs);
 }
 
 @media screen and (max-width: 600px) {
@@ -952,6 +953,10 @@
 
   .aside.promobar .promo-text .content-area .text-area {
     gap: var(--spacing-xs);
+  }
+
+  .aside.promobar .promo-text .action-area {
+    gap: var(--spacing-s);
   }
 
   .aside.promobar .promo-text.mobile-up,
