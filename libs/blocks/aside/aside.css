@@ -543,15 +543,11 @@
   gap: var(--spacing-xs);
 }
 
-.aside.promobar.popup .promo-text .icon-area {
+.aside.promobar.popup .promo-text .icon-area,
+.aside.promobar.popup .promo-text .icon-area img {
   display: flex;
   gap: var(--spacing-xxs);
   align-items: center;
-  height: var(--icon-size-xs);
-}
-
-.aside.promobar.popup .promo-text .icon-area img {
-  display: flex;
   height: var(--icon-size-xs);
 }
 
