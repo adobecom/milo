@@ -59,7 +59,7 @@ describe('Functional Test', () => {
     const fragment = document.querySelector('a[href="/fragments/insertafter"]');
     expect(fragment).to.not.be.null;
 
-    expect(fragment.parentElement.parentElement.firstElementChild.className).to.equal('marquee');
+    expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
   });
 
   it('insertContentBefore should add fragment before target element', async () => {
@@ -148,10 +148,10 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('.marquee')).to.not.be.null;
-    expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
+    expect(document.querySelector('a[href="/fragments/insertafter2"]')).to.be.null;
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    const fragment = document.querySelector('a[href="/fragments/insertafter"]');
+    const fragment = document.querySelector('a[href="/fragments/insertafter2"]');
     expect(fragment).to.not.be.null;
-    expect(fragment.parentElement.parentElement.firstElementChild.className).to.equal('marquee');
+    expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
   });
 });
