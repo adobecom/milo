@@ -33,6 +33,13 @@ const blockConfig = {
   },
 };
 const FORMAT_REGEX = /^format:/i;
+const closeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <g transform="translate(-10500 3403)">
+                      <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"></circle>
+                      <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"></line>
+                      <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"></line>
+                    </g>
+                  </svg>`;
 
 function getBlockData(el) {
   const variant = variants.find((variantClass) => el.classList.contains(variantClass));
@@ -84,6 +91,25 @@ function decorateVideo(container) {
   container.classList.add('has-video');
 }
 
+function formatPromoButton(el) {
+  if (!(el.classList.contains('promobar') && el.classList.contains('popup'))) return;
+  const actionArea = el.querySelectorAll('.action-area');
+  [...actionArea].forEach((aa) => {
+    const buttons = aa.querySelectorAll('.con-button');
+    [...buttons].forEach((btn) => {
+      if (!btn.classList.contains('outline')) btn.classList.add('fill');
+    });
+  });
+}
+
+function addCloseButton(el) {
+  const closeBtn = createTag('button', { class: 'promo-close close-sticky-section', 'aria-label': 'Close' }, closeSvg);
+  el.querySelector('.foreground').appendChild(closeBtn);
+  closeBtn.addEventListener('click', (e) => {
+    e.target.closest('.section').classList.add('close-sticky-section');
+  });
+}
+
 function addPromobar(sourceEl, parent) {
   const newPromo = sourceEl.cloneNode(true);
   parent.appendChild(newPromo);
@@ -95,8 +121,20 @@ function checkViewportPromobar(foreground) {
   if (childCount < 3) addPromobar(children[childCount - 1], foreground);
 }
 
-function combineTextBocks(textBlocks, iconArea, viewPort) {
-  const textStyle = viewPort === 'desktop-up' ? ['m', 'l'] : ['s', 's'];
+function combineTextBocks(textBlocks, iconArea, viewPort, variant) {
+  const promobarConfig = {
+    default: {
+      'mobile-up': ['s', 's'],
+      'tablet-up': ['s', 's'],
+      'desktop-up': ['m', 'l'],
+    },
+    popup: {
+      'mobile-up': ['s', 's'],
+      'tablet-up': ['l', 'm'],
+      'desktop-up': ['xxl', 'xl'],
+    },
+  };
+  const textStyle = promobarConfig[variant][viewPort];
   const contentArea = createTag('p', { class: 'content-area' });
   const textArea = createTag('p', { class: 'text-area' });
   textBlocks[0].parentElement.prepend(contentArea);
@@ -109,6 +147,7 @@ function combineTextBocks(textBlocks, iconArea, viewPort) {
     }
   });
   if (iconArea) {
+    if (iconArea.children.length > 1) iconArea.classList.add('detail-xs');
     iconArea.classList.add('icon-area');
     contentArea.appendChild(iconArea);
   }
@@ -118,6 +157,7 @@ function combineTextBocks(textBlocks, iconArea, viewPort) {
 function decoratePromobar(el) {
   const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
   const foreground = el.querySelector('.foreground');
+  const variant = el.classList.contains('popup') ? 'popup' : 'default';
   if (foreground.childElementCount !== 3) checkViewportPromobar(foreground);
   [...foreground.children].forEach((child, index) => {
     child.className = viewports[index];
@@ -127,8 +167,10 @@ function decoratePromobar(el) {
     const actionArea = child.querySelectorAll('em a, strong a, p > a strong');
     if (iconArea) textBlocks.shift();
     if (actionArea.length) textBlocks.pop();
-    if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index]);
+    if (!(textBlocks.length || iconArea || actionArea.length)) return child.classList.add('hide-block');
+    if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index], variant);
   });
+  if (variant === 'popup') addCloseButton(el);
   return foreground;
 }
 
@@ -185,4 +227,5 @@ export default function init(el) {
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);
   decorateStaticLinks(el);
+  formatPromoButton(el);
 }
