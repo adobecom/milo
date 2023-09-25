@@ -1073,7 +1073,7 @@
   }
 
   .aside.promobar.popup {
-    border-radius: var(--spacing-l);
+    border-radius: var(--spacing-xl);
   }
 
   .aside.promobar.popup .foreground.container .promo-text {
