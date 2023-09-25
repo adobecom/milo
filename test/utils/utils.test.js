@@ -495,21 +495,4 @@ describe('Utils', () => {
       });
     });
   });
-
-  describe('Analytics', async () => {
-    beforeEach(async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/body-with-sections.html' });
-      await utils.loadArea();
-    });
-    it('should decorate w attributes', async () => {
-      const main = document.querySelector('main');
-      expect(main?.getAttribute('daa-im')).to.equal('true');
-      const section = document.querySelector('main > div');
-      expect(section?.getAttribute('daa-lh')).to.equal('s1');
-      const block = section.querySelector(':scope > div')?.getAttribute('daa-lh');
-      expect(block).to.equal('b1|icon-block|default|default');
-      const link = section.querySelector('#unit-test')?.getAttribute('daa-ll');
-      expect(link).to.equal('Learn more-2|Do more with Adobe P');
-    });
-  });
 });

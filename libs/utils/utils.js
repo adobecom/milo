@@ -813,7 +813,6 @@ async function checkForPageMods() {
     });
   }
 
-  document.querySelector('main')?.setAttribute('daa-im', 'true');
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {

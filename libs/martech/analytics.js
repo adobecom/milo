@@ -30,6 +30,7 @@ export function decorateDefaultLinkAnalytics(block) {
 }
 
 export async function decorateSectionAnalytics(section, idx) {
+  document.querySelector('main')?.setAttribute('daa-im', 'true');
   section.setAttribute('daa-lh', `s${idx + 1}`);
   section.querySelectorAll('[data-block="true"] [data-block="true"]').forEach((block) => {
     block.removeAttribute('data-block');
