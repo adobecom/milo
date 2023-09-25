@@ -564,6 +564,7 @@
   width: 20px;
   border: none;
   background: none;
+  cursor: pointer;
 }
 
 .aside.promobar .promo-close svg {
