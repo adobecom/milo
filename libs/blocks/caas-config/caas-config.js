@@ -938,6 +938,10 @@ const Configurator = ({ rootEl }) => {
     }
   }, [isCaasLoaded, state, strings]);
 
+  const toogleCollapsed = () => {
+    document.body.classList.toggle('panel-collapsed');
+  };
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
@@ -951,6 +955,9 @@ const Configurator = ({ rootEl }) => {
         <div class="config-panel">
           ${error && html`<div class="tool-error">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
+        </div>
+        <div>
+          <button class="collapse-panel" onClick=${() => toogleCollapsed()}>⇆</button>
         </div>
         <div class="content-panel">
           <div class="modalContainer"></div>
