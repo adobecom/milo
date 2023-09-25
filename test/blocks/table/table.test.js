@@ -85,6 +85,11 @@ describe('table and tablemetadata', () => {
       expect(filters[2].value).to.equal('2');
     });
 
+    it('filter test: no filter if only 2 columns', async () => {
+      const tableWith2Columns = document.querySelector('.twocolumns');
+      expect(tableWith2Columns.parentElement.querySelector('.filters')).to.be.null;
+    });
+
     it('back to desktop test', async () => {
       window.innerWidth = 1200;
       window.dispatchEvent(new Event('resize'));
