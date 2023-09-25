@@ -288,13 +288,13 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const deviceBySize = defineDeviceByScreenSize();
 
   const setRowStyle = () => {
+    if (isMerch) return;
     const sectionRow = Array.from(table.getElementsByClassName('section-row'));
-    if (sectionRow.length > 0) {
+    if (sectionRow.length) {
       const colsForTablet = sectionRow[0].children.length - 1;
       const percentage = 100 / colsForTablet;
       const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
       sectionRow.forEach((row) => {
-        if (isMerch) return;
         if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
           row.style.gridTemplateColumns = templateColumnsValue;
         } else {
@@ -319,14 +319,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
   const mobileRenderer = () => {
     const headings = table.querySelectorAll('.row-heading .col');
-    const headingsLength = headings.length;
-    // Remove filter if table there are only 2 columns
-    let filter = true;
-    if (isMerch && headingsLength <= 2) {
-      filter = false;
-    } else if (!isMerch && headingsLength <= 3) {
-      filter = false;
-    }
+    const headingsLength = headings.length; 
 
     if (isMerch && headingsLength > 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
@@ -376,6 +369,14 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       setRowStyle();
     };
 
+    // Remove filter if table there are only 2 columns
+    let filter = true;
+    if (isMerch && headingsLength <= 2) {
+      filter = false;
+    } else if (!isMerch && headingsLength <= 3) {
+      filter = false;
+    }
+    
     if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
