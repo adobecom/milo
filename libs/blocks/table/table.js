@@ -319,7 +319,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
   const mobileRenderer = () => {
     const headings = table.querySelectorAll('.row-heading .col');
-    const headingsLength = headings.length; 
+    const headingsLength = headings.length;
 
     if (isMerch && headingsLength > 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
@@ -376,7 +376,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     } else if (!isMerch && headingsLength <= 3) {
       filter = false;
     }
-    
     if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
