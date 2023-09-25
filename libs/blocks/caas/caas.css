@@ -180,7 +180,6 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   }
 }
 
-
 .dexter-Modal {
   display: none;
   opacity: 0;
@@ -374,3 +373,157 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   }
 }
 /* End Dexter Modal */
+
+/* CaaS Configurator Overrrides */
+.config-panel hr.divider {
+  margin: 15px 0 8px;
+  border-color: #666;}
+
+.config-panel dt.title span {
+  font-size: 18px;
+}
+
+.config-panel dt.title.is-expanded span, 
+dt.title.is-expanded button {
+  font-weight: 300;
+}
+
+.config-panel .multifield {
+  background-color: #404040;
+  border-bottom: 0;
+  padding: 0;
+  margin: 14px 0 0;
+}
+
+.config-panel .multifield.filtersCustomItems {
+  margin: 0 0 20px 14px;
+  width: 250px;
+}
+
+.config-panel .multifield > .multifield-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 2px 6px;
+}
+
+.config-panel .multifield > .multifield-set{
+  padding-bottom: 13px;
+}
+
+.config-panel .multifield > .multifield-set:not(:nth-child(2)) {
+  border-top: 2px solid #5d8c0499;
+}
+
+.config-panel .multifield > .multifield-set > .multifield-fields .fields {
+  margin: 0;
+}
+
+.config-panel .accordion {
+  margin: 0 0 0 6px;
+}
+
+.config-panel dd.content.is-expanded {
+  margin-top: 0;
+}
+
+.config-panel dd.content .field {
+  margin: 8px 0;
+}
+
+.config-panel .accordion-item {
+  margin: 1px 0;
+}
+
+.config-panel .accordion > .accordion-item {
+  margin: 1px 0;
+}
+
+.config-panel .accordion > .accordion-item .title {
+  cursor: pointer;
+}
+
+.config-panel .accordion dt.title {
+  gap: 0;
+}
+
+.config-panel .accordion .tagselect {
+  margin: 0;
+}
+
+.config-panel .accordion dd.content button {
+  background-color: #666;
+  cursor: pointer;
+}
+
+.config-panel .accordion dd.content button.multifield-delete {
+  margin: 8px 16px;
+  background-color: #858585;
+}
+
+.config-panel .accordion dd.content button.multifield-delete:hover {
+  background-color: #AAA;
+}
+
+.config-panel .accordion dd.content .filtersCustomItems button.multifield-delete {
+  margin: 2px 16px;
+  background-color: #999;
+}
+
+.config-panel .accordion dd.content .filtersCustomItems button.multifield-delete:hover {
+  background-color: #AAA;
+}
+
+.config-panel .accordion dd.content button:hover {
+  background-color: #505050;
+}
+
+.config-panel .accordion .multifield > .multifield-header h5 {
+  font-size: 15px;
+  margin: 0 6px;
+  font-weight: 300;
+  font-style: italic;
+  color: #aaa;
+}
+
+.config-panel .accordion dd.content .content-container {
+  padding: 20px;
+}
+
+.config-panel .accordion dd.content .field select, 
+.config-panel .accordion dd.content .field input {
+  font-size: 14px;
+}
+
+.config-panel .accordion .tagselect label,
+.config-panel .accordion dd.content .field label {
+  margin-left: 6px;
+}
+
+.config-panel .accordion .multifield-fields .field {
+  padding-left: 8px;
+}
+
+.config-panel .accordion .multifield input, 
+.multifield .tagselect-input {
+  border: solid 1px #666 !important;
+  margin-left: 8px;
+}
+
+.multifield > .multifield-set > .multifield-delete {
+  margin: 8px 20px;
+}
+
+.config-panel .accordion .field input, 
+.config-panel .accordion .field select, 
+.config-panel .accordion .tagselect-input {
+  border: #666 solid 1px !important;
+}
+
+.config-panel .accordion .multifield > .multifield-header h5 {
+  max-width: 220px;
+}
+
+.config-panel .accordion input[type=checkbox] {
+  align-self: baseline;
+  margin-top: 6px;
+}
