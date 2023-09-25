@@ -539,7 +539,7 @@
   gap: var(--spacing-xxs);
 }
 
-.aside.promobar.popup .mobile-up .promo-text .detail-xs + .text-area {
+.aside.promobar.popup .mobile-up.promo-text .detail-xs + .text-area {
   gap: var(--spacing-xs);
 }
 
