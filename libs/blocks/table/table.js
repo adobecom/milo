@@ -370,12 +370,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     };
 
     // Remove filter if table there are only 2 columns
-    let filter = true;
-    if (isMerch && headingsLength <= 2) {
-      filter = false;
-    } else if (!isMerch && headingsLength <= 3) {
-      filter = false;
-    }
+    const filter = isMerch ? headingsLength > 2 : headingsLength > 3;
     if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
