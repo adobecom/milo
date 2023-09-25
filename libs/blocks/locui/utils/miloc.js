@@ -96,7 +96,7 @@ export async function getServiceUpdates() {
   const excelUpdated = setInterval(async () => {
     projectStatus.value = await getProjectStatus(url);
     count += 1;
-    // Stop counting after an hour
+    // Stop syncing after an hour
     if (count > MAX_COUNT) {
       setStatus(
         'service',
