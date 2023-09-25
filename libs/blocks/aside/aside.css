@@ -1084,9 +1084,11 @@
     flex-direction: row;
     gap: var(--spacing-l);
     justify-content: center;
+    max-width: 83.4%;
   }
 
-  .aside.promobar.popup .promo-text .content-area {
+  .aside.promobar.popup .promo-text .content-area,
+  .aside.promobar.popup .promo-text .action-area {
     flex-direction: row;
     padding: 0;
   }
@@ -1096,12 +1098,8 @@
     height: var(--icon-size-m);
   }
 
-  .aside.promobar.popup .promo-text .action-area {
-    padding: 0;
-  }
-
   .aside.promobar .promo-close {
-    right: 24px;
+    right: var(--spacing-s);
     top: calc(50% - 10px);
   }
   
