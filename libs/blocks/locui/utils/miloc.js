@@ -7,6 +7,7 @@ import getServiceConfig from '../../../utils/service-config.js';
 import '../../../deps/md5.min.js';
 
 const INTERVAL = 3000;
+const MAX_COUNT = 1200; // 3000 x 1200 = 3600000s = 1 hour
 
 async function getMilocUrl() {
   const env = heading.value.env || null;
@@ -33,14 +34,8 @@ export async function getProjectStatus() {
     allowSendForLoc.value = true;
   }
 
-  // This is misleading because the service says it's waiting even it's done.
   if (json.projectStatus === 'waiting') {
-    const waiting = Object.keys(json).some((key) => {
-      if (json[key].status) return json[key].status === 'in-progress';
-      return false;
-    });
-
-    if (waiting) setStatus('service', 'info', json.projectStatusText);
+    setStatus('service');
     allowSyncToLangstore.value = false;
     allowSendForLoc.value = false;
   }
@@ -102,7 +97,15 @@ export async function getServiceUpdates() {
     projectStatus.value = await getProjectStatus(url);
     count += 1;
     // Stop counting after an hour
-    if (count > 1200) clearInterval(excelUpdated);
+    if (count > MAX_COUNT) {
+      setStatus(
+        'service',
+        'info',
+        'Sync stopped after 1 hour.',
+        'Please refresh the page if you wish to see the latest updates on your project',
+      );
+      clearInterval(excelUpdated);
+    }
   }, INTERVAL);
   return getProjectStatus(url);
 }
