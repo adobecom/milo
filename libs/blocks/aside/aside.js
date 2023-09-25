@@ -169,6 +169,7 @@ function decoratePromobar(el) {
     if (actionArea.length) textBlocks.pop();
     if (!(textBlocks.length || iconArea || actionArea.length)) return child.classList.add('hide-block');
     if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index], variant);
+    return true;
   });
   if (variant === 'popup') addCloseButton(el);
   return foreground;
