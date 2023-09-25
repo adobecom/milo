@@ -12,10 +12,7 @@ const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.quizurl.text.toLowerCase();
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
-  if (stringsPath) {
-    return (filepath) => `${stringsPath}/${filepath}`;
-  }
-  return (filepath) => `${quizConfigPath}${filepath}`;
+  return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
 };
 
 const initQuizKey = () => {
@@ -155,7 +152,7 @@ export const structuredFragments = (
         if (umbrellaProduct && row.product === umbrellaProduct) {
           structureFragments.push(row[fragment]);
         }
-      } else if ((primaryProducts.length > 0 && primaryProducts.includes(row.product))
+      } else if (primaryProducts.length > 0 && primaryProducts.includes(row.product)
       && row[fragment]) {
         structureFragments.push(row[fragment]);
       }
