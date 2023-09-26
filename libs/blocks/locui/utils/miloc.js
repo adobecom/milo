@@ -8,6 +8,7 @@ import {
   canRefresh,
   serviceStatus,
   allowRollout,
+  serviceStatusDate,
 } from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
@@ -112,6 +113,7 @@ export async function getServiceUpdates() {
   let count = 1;
   const excelUpdated = setInterval(async () => {
     serviceStatus.value = 'connected';
+    serviceStatusDate.value = new Date();
     projectStatus.value = await getProjectStatus(url);
     count += 1;
     // Stop syncing after an hour

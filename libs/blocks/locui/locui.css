@@ -32,21 +32,37 @@ main {
 
 .locui-sync-badge {
   background: #CEF8E0;
-  font-size: 14px;
   color: #15A46E;
-  border-radius: 2px;
+  font-size: 16px;
+  border-radius: 0 0 4px 4px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  text-transform: uppercase;
+  font-weight: 700;
 }
 
-.locui-sync-badge-content {
-  display: none;
-}
-
-.locui-sync-badge-header {
+button.locui-sync-badge-header {
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  color: #15A46E;
+  background: #CEF8E0;
+  border: none;
   font-weight: 700;
   text-transform: uppercase;
   line-height: 24px;
   padding: 0 8px;
+  display: block;
+}
+
+.locui-sync-badge-content {
+  padding: 0 8px;
+  line-height: 24px;
+  margin-top: -8px;
+}
+
+span.locui-sync-badge-mono {
+  font-family: monospace;
 }
 
 .locui-project-heading {
@@ -204,6 +220,7 @@ p.locui-project-label {
 
 .locui-project-name-totals h4 {
   margin: 0;
+  font-weight: 400;
 }
 
 .locui-subprojects {
@@ -249,10 +266,6 @@ li.locui-subproject.locui-subproject-translated {
 }
 
 li.locui-subproject.locui-subproject-translated .locui-subproject-badge {
-  background: #093;
-}
-
-li.locui-subproject.locui-subproject-translated button.locui-urls-heading-action {
   background: #093;
 }
 
@@ -311,8 +324,9 @@ div.locui-url-heading-action-group {
   gap: 12px;
 }
 
+button.loc-action,
 button.locui-urls-heading-action {
-  outline: transparent solid 0px;
+  outline: transparent solid 0;
   transition: outline 300ms;
   border: none;
   height: 36px;
@@ -327,6 +341,10 @@ button.locui-urls-heading-action {
   padding: 0 18px;
   clip-path: polygon(0% 0%, 12px 0%, calc(100% - 12px) 0%, 100% 12px, 100% calc(100% - 12px), 100% 100%, 0% 100%, 0% 100%);
   box-sizing: border-box;
+}
+
+li.locui-subproject.locui-subproject-translated button.locui-urls-heading-action {
+  background: #093;
 }
 
 ul.locui-urls {

@@ -1,6 +1,6 @@
 import { html, useEffect } from '../../../deps/htm-preact.js';
 import { autoSetup, setup } from './index.js';
-import { showLogin, heading, languages, urls } from '../utils/state.js';
+import { showLogin, heading, languages, urls, serviceStatus } from '../utils/state.js';
 import { account } from '../../../tools/sharepoint/state.js';
 
 import Heading from '../heading/view.js';
@@ -23,7 +23,7 @@ export default function Localization() {
   }
 
   return html`
-    <${Sync} />
+    ${serviceStatus.value && html`<${Sync} />`}
     <h1>Milo Localization</h1>
     <div>${heading.value.editUrl && html`<${Heading} />`}</div>
     <div>${urls.value.length > 0 && html`<${Actions} />`}</div>
