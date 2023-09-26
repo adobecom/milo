@@ -8,7 +8,7 @@ describe('Analytics', async () => {
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
     document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
   });
-  it('should decorate w attributes', async () => {
+  it('should decorate with attributes', async () => {
     const main = document.querySelector('main');
     expect(main?.getAttribute('daa-im')).to.equal('true');
     const section = document.querySelector('main > div');

@@ -15,8 +15,8 @@ export function decorateDefaultLinkAnalytics(block) {
       .forEach((item) => {
         if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
           if (!item.hasAttribute('daa-ll')) {
-            let label = item.textContent;
-            if (label.trim() === '') {
+            let label = item.textContent?.trim();
+            if (label === '') {
               label = item.getAttribute('title')
                 || item.getAttribute('aria-label')
                 || item.querySelector('img')?.getAttribute('alt')
