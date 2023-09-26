@@ -287,6 +287,23 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const isMerch = table.classList.contains('merch');
   const deviceBySize = defineDeviceByScreenSize();
 
+  const setRowStyle = () => {
+    if (isMerch) return;
+    const sectionRow = Array.from(table.getElementsByClassName('section-row'));
+    if (sectionRow.length) {
+      const colsForTablet = sectionRow[0].children.length - 1;
+      const percentage = 100 / colsForTablet;
+      const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
+      sectionRow.forEach((row) => {
+        if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
+          row.style.gridTemplateColumns = templateColumnsValue;
+        } else {
+          row.style.gridTemplateColumns = '';
+        }
+      });
+    }
+  };
+
   const reAssignEvents = (tableEl) => {
     tableEl.dispatchEvent(tableHighlightLoadedEvent);
     tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
@@ -349,9 +366,12 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           });
         }
       });
+      setRowStyle();
     };
 
-    if (!table.parentElement.querySelector('.filters')) {
+    // Remove filter if table there are only 2 columns
+    const filter = isMerch ? headingsLength > 2 : headingsLength > 3;
+    if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
       const filter2 = createTag('div', { class: 'filter-wrapper' });
@@ -396,20 +416,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     });
   }
 
-  const sectionRow = Array.from(table.getElementsByClassName('section-row'));
-  if (sectionRow.length > 0) {
-    const colsForTablet = sectionRow[0].children.length - 1;
-    const percentage = 100 / colsForTablet;
-    const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
-    sectionRow.forEach((row) => {
-      if (isMerch) return;
-      if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
-        row.style.gridTemplateColumns = templateColumnsValue;
-      } else {
-        row.style.gridTemplateColumns = '';
-      }
-    });
-  }
+  setRowStyle();
 }
 
 export default function init(el) {
