@@ -83,12 +83,11 @@ const App = ({
   }, [knownParams, isDataLoaded]);
 
   useEffect(() => {
-    if (userFlow.length) {
+    if (userFlow && userFlow.length) {
       const currentFlow = userFlow.shift();
-      if (!currentFlow?.length) {
-        return;
+      if (currentFlow && currentFlow.length) {
+        setSelectedQuestion(questionList[currentFlow] || []);
       }
-      setSelectedQuestion(questionList[currentFlow] || []);
     }
   }, [userFlow, questionList]);
 
