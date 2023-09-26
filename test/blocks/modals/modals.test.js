@@ -170,4 +170,10 @@ describe('Modals', () => {
     dialogmodal.classList.remove('commerce-frame');
     expect(window.innerWidth).not.equal(dialogmodal.offsetWidth);
   });
+
+  it('does not error for a modal with a non-querySelector compliant hash', () => {
+    // Test passing, means there was no error thrown
+    window.location.hash = '#milo=&';
+    window.location.hash = '';
+  });
 });

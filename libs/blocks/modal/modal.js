@@ -199,7 +199,12 @@ export default function init(el) {
 window.addEventListener('hashchange', (e) => {
   if (!window.location.hash) {
     const url = new URL(e.oldURL);
-    const dialog = document.querySelector(`.dialog-modal${url.hash}`);
+    let dialog;
+    try {
+      dialog = document.querySelector(`.dialog-modal${url.hash}`);
+    } catch (error) {
+      /* do nothing */
+    }
     if (dialog) closeModal(dialog);
   } else {
     const details = findDetails(window.location.hash, null);
