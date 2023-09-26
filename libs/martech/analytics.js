@@ -11,7 +11,7 @@ export function decorateDefaultLinkAnalytics(block) {
     && block.nodeName === 'DIV') {
     let header = '';
     let linkCount = 1;
-    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .heading-title')
+    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .tracking-header')
       .forEach((item) => {
         if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
           if (!item.hasAttribute('daa-ll')) {

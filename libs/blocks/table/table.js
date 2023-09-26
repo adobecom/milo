@@ -32,13 +32,13 @@ function handleHeading(headingCols) {
 
     const elements = col.children;
     if (!elements.length) {
-      col.innerHTML = `<p class="heading-title">${col.innerHTML}</p>`;
+      col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
       let textStartIndex = 0;
       if (elements[0]?.querySelector('img')) {
         textStartIndex += 1;
       }
-      elements[textStartIndex]?.classList.add('heading-title');
+      elements[textStartIndex]?.classList.add('tracking-header');
 
       if (elements[textStartIndex + 1]) {
         elements[textStartIndex + 1].classList.add('pricing');
@@ -378,7 +378,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       const colSelect0 = createTag('select', { class: 'filter' });
       const headingsFromOrigin = originTable.querySelectorAll('.col-heading');
       headingsFromOrigin.forEach((heading, index) => {
-        const title = heading.querySelector('.heading-title');
+        const title = heading.querySelector('.tracking-header');
         if (!title || (!isMerch && title.closest('.col-1'))) return;
 
         const option = createTag('option', { value: index }, title.innerText);

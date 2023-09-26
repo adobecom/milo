@@ -103,7 +103,7 @@ export default async function decorate(block) {
   };
   if (!block.classList.contains('inline')) {
     const heading = toSentenceCase(await replaceKey('share-this-page', config));
-    block.append(createTag('p', { class: 'heading-title' }, heading));
+    block.append(createTag('p', { class: 'tracking-header' }, heading));
   }
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
