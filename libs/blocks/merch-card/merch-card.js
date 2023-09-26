@@ -105,24 +105,14 @@ const addInner = (el, altCta, cardType, merchCard) => {
   merchCard.append(inner);
 };
 
-const decorateRibbon = (el, ribbonMetadata, cardType) => {
+const returnRibbonStyle = (ribbonMetadata) => {
   const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
-  if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return;
+  if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return null;
   const ribbonStyle = ribbonMetadata[0].innerText;
-  const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
   const ribbonWrapper = ribbonMetadata[0].parentNode;
-  const ribbon = ribbonMetadata[1];
-  ribbon.classList.add(`consonant-${cardType}-ribbon`);
-  ribbon.style.backgroundColor = ribbonBgColor;
-  ribbon.style.color = ribbonTextColor;
-  el.style.border = `1px solid ${ribbonBgColor}`;
-  const picture = el.querySelector(`.consonant-${cardType}-img`);
-  if (picture) {
-    picture.insertAdjacentElement('afterend', ribbon);
-  } else {
-    el.insertAdjacentElement('beforeend', ribbon);
-  }
+  const value = ribbonMetadata[1];
   ribbonWrapper.remove();
+  return { ribbonStyle, value };
 };
 
 const decorateIcon = (icons, cardType, merchCard) => {
@@ -166,8 +156,14 @@ const init = (el) => {
     }
   });
 
-  const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
-  if (ribbonMetadata !== null) decorateRibbon(el, ribbonMetadata, cardType);
+  const attributes = { class: el.className, variant: cardType};
+  if (ribbonMetadata !== null) {
+    attributes.badge = returnRibbonStyle(ribbonMetadata);
+  }
+
+  const merchCard = createTag('merch-card', attributes);
+
+  if (ribbonMetadata !== null) returnRibbonStyle(el, ribbonMetadata, cardType);
   image?.parentElement.remove();
   if (ctas) decorateButtons(ctas);
   if (icons.length > 0) {
