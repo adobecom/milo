@@ -603,7 +603,7 @@ function decorateContent(el) {
   const block = document.createElement('div');
   block.className = 'content';
   block.append(...children);
-  block.dataset.block = 'true';
+  block.dataset.block = '';
   return block;
 }
 
@@ -1025,7 +1025,7 @@ export async function loadArea(area = document) {
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {
-      block.dataset.block = 'true';
+      block.dataset.block = '';
     });
   }
 

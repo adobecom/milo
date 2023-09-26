@@ -36,10 +36,10 @@ export function decorateDefaultLinkAnalytics(block) {
 export async function decorateSectionAnalytics(section, idx) {
   document.querySelector('main')?.setAttribute('daa-im', 'true');
   section.setAttribute('daa-lh', `s${idx + 1}`);
-  section.querySelectorAll('[data-block="true"] [data-block="true"]').forEach((block) => {
+  section.querySelectorAll('[data-block] [data-block]').forEach((block) => {
     block.removeAttribute('data-block');
   });
-  section.querySelectorAll('[data-block="true"]').forEach((block, blockIdx) => {
+  section.querySelectorAll('[data-block]').forEach((block, blockIdx) => {
     const blockName = block.classList[0] || '';
     block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName}|${document.body.dataset.mep}`);
     decorateDefaultLinkAnalytics(block);
