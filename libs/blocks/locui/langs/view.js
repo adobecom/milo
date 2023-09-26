@@ -25,6 +25,7 @@ function Language({ item, idx }) {
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
   const completeType = item.status === 'translated' || item.status === 'in-progress' ? 'Translated' : 'Rolled out';
+  const total = item.locales?.length && completeType === 'Rolled out' ? item.locales.length * item.size : null;
   const rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
 
   return html`
@@ -42,7 +43,13 @@ function Language({ item, idx }) {
         ${item.done > 0 && html`
         <div>
           <p class=locui-project-label>${completeType}</p>
-          <h3 class=locui-subproject-name>${item.done}</h3>
+          <div class=locui-project-name-totals>
+            <h3 class=locui-subproject-name>${item.done}</h3>
+            ${total > 0 && html`
+              <h4 class=locui-subproject-of>of</h4>
+              <h4 class=locui-subproject-name>${total}</h3>
+            `}
+          </div>
         </div>
         `}
       </div>

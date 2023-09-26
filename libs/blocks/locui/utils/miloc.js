@@ -35,7 +35,7 @@ function handleProjectStatusDetail(detail) {
 
 export async function getProjectStatus() {
   const url = await getMilocUrl();
-  const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`);
+  const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`, { cache: 'reload' });
   const json = await resp.json();
 
   if (json.projectStatus === 'sync'

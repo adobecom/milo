@@ -196,6 +196,16 @@ p.locui-project-label {
   text-transform: uppercase;
 }
 
+.locui-project-name-totals {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.locui-project-name-totals h4 {
+  margin: 0;
+}
+
 .locui-subprojects {
   list-style: none;
   margin: 0;
