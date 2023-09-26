@@ -291,6 +291,7 @@ span.locui-subproject-locale {
 
 div.locui-url-heading-actions,
 div.locui-url-heading-action-group {
+  min-height: 36px;
   display: flex;
   gap: 12px;
 }

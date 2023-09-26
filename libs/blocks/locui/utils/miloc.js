@@ -38,7 +38,9 @@ export async function getProjectStatus() {
   const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`);
   const json = await resp.json();
 
-  if (json.projectStatus === 'sync' || json.projectStatus === 'download') {
+  if (json.projectStatus === 'sync'
+    || json.projectStatus === 'download'
+    || json.projectStatus === 'start-glaas') {
     setStatus('service', 'info', json.projectStatusText);
   }
 
