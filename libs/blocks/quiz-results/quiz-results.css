@@ -13,6 +13,17 @@
   display: none;
 }
 
+.quiz-results .quiz-card-list {
+  align-items: center;
+  display: flex;
+  gap: var(--spacing-s);
+  justify-content: center;
+  margin: 0 auto;
+  padding: var(--spacing-s) 0;
+  position: relative;
+  flex-wrap: wrap;
+}
+
 @media screen and (min-width: 600px) {
   .quiz-results .tablet-portrait-up {
     display: block;
