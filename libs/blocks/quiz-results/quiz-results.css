@@ -8,8 +8,10 @@
   visibility: unset;
 }
 
-.quiz-results .tablet-portrait-up, .quiz-results .tablet-landscape-up,
-.quiz-results .section.desktop-up, .quiz-results .big-desktop-up {
+.quiz-results .tablet-portrait-up, 
+.quiz-results .tablet-landscape-up,
+.quiz-results .section.desktop-up, 
+.quiz-results .big-desktop-up {
   display: none;
 }
 
@@ -20,7 +22,8 @@
 
   .quiz-results .phone-only,
   .quiz-results .tablet-landscape-up,
-  .quiz-results .desktop-up, .quiz-results .big-desktop-up {
+  .quiz-results .desktop-up, 
+  .quiz-results .big-desktop-up {
     display: none;
   }
 }
@@ -31,7 +34,8 @@
   }
 
   .quiz-results .tablet-portrait-up,
-  .quiz-results .desktop-up, .quiz-results .big-desktop-up {
+  .quiz-results .desktop-up, 
+  .quiz-results .big-desktop-up {
     display: none;
   }
 }
@@ -41,7 +45,8 @@
     display: block;
   }
 
-  .quiz-results .tablet-portrait-up, .quiz-results .tablet-landscape-up,
+  .quiz-results .tablet-portrait-up, 
+  .quiz-results .tablet-landscape-up,
   .quiz-results .big-desktop-up {
     display: none;
   }
@@ -52,7 +57,8 @@
     display: block;
   }
 
-  .quiz-results .tablet-portrait-up, .quiz-results .tablet-landscape-up, 
+  .quiz-results .tablet-portrait-up, 
+  .quiz-results .tablet-landscape-up, 
   .quiz-results .desktop-up {
     display: none;
   }
