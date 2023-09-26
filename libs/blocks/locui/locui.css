@@ -238,6 +238,11 @@ li.locui-subproject {
   border-radius: 6px 0 0 6px;
 }
 
+li.locui-subproject.locui-subproject-not-started {
+  border-color: #B8B8B8;
+  background: rgb(234 234 234 / 25%);
+}
+
 li.locui-subproject.locui-subproject-translated {
   border-color: #093;
   background: rgb(149 230 195 / 20%);
