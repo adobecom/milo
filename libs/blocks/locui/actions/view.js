@@ -40,14 +40,14 @@ export default function Actions() {
             `}
             ${showRolloutOptions.value && html`
               <button
-                onClick=${(e) => rolloutAll(e, true)}
-                class=locui-urls-heading-action>
-                Re-rollout all
-              </button>
-              <button
                 onClick=${(e) => rolloutAll(e, false)}
                 class=locui-urls-heading-action>
                 Rollout all new
+              </button>
+              <button
+                onClick=${(e) => rolloutAll(e, true)}
+                class=locui-urls-heading-action>
+                Re-rollout all
               </button>
             `}
           </div>
