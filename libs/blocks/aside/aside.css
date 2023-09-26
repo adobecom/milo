@@ -129,7 +129,8 @@
   margin-bottom: 0;
 }
 
-.aside .foreground.container .text .action-area {
+.aside .foreground.container .text .action-area,
+.aside.promobar .promo-text .action-area {
   margin-bottom: 0;
   display: flex;
   gap: var(--spacing-s);
@@ -458,6 +459,57 @@
   width: auto;
 }
 
+.aside.promobar .foreground.container > :first-child {
+  padding: var(--spacing-xs) 0;
+}
+
+.aside.promobar .foreground.container {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+}
+
+.aside.promobar .foreground.container .icon-area {
+  margin-bottom: 0;
+  height: var(--icon-size-m);
+}
+
+.aside.promobar .foreground.container .icon-area img {
+  height: var(--icon-size-m);
+}
+
+.aside.promobar .promo-text.desktop-up,
+.aside.promobar .promo-text.tablet-up {
+  display: none;
+}
+
+.aside.promobar .promo-text.mobile-up {
+  display: flex;
+}
+
+.aside.promobar .promo-text {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: var(--spacing-xs);
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-xs) 0;
+}
+
+.aside.promobar .promo-text .content-area {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.aside.promobar .promo-text .action-area {
+  flex-wrap: nowrap;
+  gap: var(--spacing-xs);
+}
+
 @media screen and (max-width: 600px) {
   .aside.no-media:not(.notification) .foreground.container {
     gap: 0;
@@ -725,6 +777,21 @@
     height: var(--icon-size-xxl);
     border-radius: 50%;
   }
+
+  .aside.promobar .promo-text .content-area .text-area {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: var(--spacing-xxs);
+  }
+
+  .aside.promobar .promo-text.mobile-up,
+  .aside.promobar .promo-text.desktop-up {
+    display: none;
+  }
+
+  .aside.promobar .promo-text.tablet-up {
+    display: flex;
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -870,5 +937,35 @@
 
   .aside.notification.medium .foreground.container .text+.image {
     margin-right: 0;
+  }
+
+  .aside.promobar .foreground.container .icon-area {
+    height: var(--icon-size-xxl);
+  }
+
+  .aside.promobar .foreground.container .icon-area img {
+    height: var(--icon-size-xxl);
+  }
+
+  .aside.promobar .promo-text .content-area {
+    gap: var(--spacing-m);
+  }
+
+  .aside.promobar .promo-text .content-area .text-area {
+    gap: var(--spacing-xs);
+  }
+
+  .aside.promobar .promo-text .action-area {
+    gap: var(--spacing-s);
+  }
+
+  .aside.promobar .promo-text.mobile-up,
+  .aside.promobar .promo-text.tablet-up {
+    display: none;
+  }
+
+  .aside.promobar .promo-text.desktop-up {
+    display: flex;
+    gap: var(--spacing-m);
   }
 }
