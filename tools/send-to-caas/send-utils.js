@@ -1,6 +1,5 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata } from '../../libs/utils/utils.js';
-import { isImsStage } from '../utils/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -590,7 +589,8 @@ const getCardMetadata = async (options) => {
 };
 
 const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) => {
-  const uie = isImsStage() ? { 'user-ims-env': 'stage' } : {};
+  const uie = window.adobeid?.environment?.toLowerCase
+    && window.adobeid.environment.toLowerCase() !== 'prod' ? { 'user-ims-env': 'stage' } : {};
 
   const options = {
     method: 'POST',
