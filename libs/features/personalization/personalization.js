@@ -180,16 +180,15 @@ function normalizeKeys(obj) {
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
-      try {
-        let selectorEl = rootEl.querySelector(cmd.selector);
-        if (!selectorEl) return;
-        if (selectorEl.classList[0] === 'section-metadata') {
-          selectorEl = selectorEl.parentElement || selectorEl;
-        }
-        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
-      } catch (e) {
-        console.log('Invalid selector: ', cmd.selector);
+      let selectorEl = rootEl.querySelector(cmd.selector);
+
+      if (!selectorEl) return;
+
+      if (selectorEl.classList[0] === 'section-metadata') {
+        selectorEl = selectorEl.parentElement || selectorEl;
       }
+
+      COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
@@ -440,7 +439,8 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariantName = selectedVariantName;
     config.selectedVariant = config.variants[selectedVariantName];
   } else {
-    config.selectedVariantName = variantLabel;
+    /* c8 ignore next */
+    config.selectedVariantName = 'no changes';
     config.selectedVariant = 'no changes';
   }
 
@@ -541,7 +541,7 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) {
-    document.body.dataset.mep = 'default|default';
+    /* c8 ignore next */
     decoratePreviewCheck(config, []);
     return;
   }
@@ -557,11 +557,6 @@ export async function applyPers(manifests) {
   deleteMarkedEls();
 
   const experiments = results.map((r) => r.experiment);
-  if (experiments.length) {
-    const manifestLh = experiments.map((e) => e.manifest.split('/').pop().replace('.json', ''));
-    const variantLh = experiments.map((e) => e.selectedVariantName?.replace('target-', '') || 'default');
-    document.body.dataset.mep = `${variantLh.join('--')}|${manifestLh.join('--')}`;
-  }
   updateConfig({
     ...config,
     experiments,
