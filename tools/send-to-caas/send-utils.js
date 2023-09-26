@@ -607,7 +607,6 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
   const res = await fetch(URL_POSTXDM, options);
   if (res !== undefined) {
     const text = await res.text();
-
     try {
       response = JSON.parse(text);
     } catch {
