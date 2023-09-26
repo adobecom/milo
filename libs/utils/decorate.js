@@ -17,12 +17,12 @@ export function decorateButtons(el, size) {
       parent.insertAdjacentElement('afterend', button);
       parent.remove();
     }
+    const actionArea = button.closest('p, div');
+    if (actionArea) {
+      actionArea.classList.add('action-area');
+      actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
+    }
   });
-  const actionArea = buttons[0].closest('p, div');
-  if (actionArea) {
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
-  }
 }
 
 export function decorateIconStack(el) {
@@ -78,20 +78,20 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
 }
 
 export function decorateBlockBg(block, node) {
-  node.classList.add('background');
-  if (node.childElementCount > 1) {
-    const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
-    if (node.childElementCount === 2) {
-      node.children[0].classList.add(viewports[0], viewports[1]);
-      node.children[1].classList.add(viewports[2]);
-    } else {
-      [...node.children].forEach((e, i) => {
-        /* c8 ignore next */
-        e.classList.add(viewports[i]);
-      });
-    }
-  }
-  if (!node.querySelector(':scope img')) {
+  const childCount = node.childElementCount;
+  if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
+    node.classList.add('background');
+    const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
+    const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
+    const viewports = childCount === 2 ? binaryVP : allVP;
+    [...node.children].forEach((child, i) => {
+      if (childCount > 1) child.classList.add(...viewports[i]);
+      if (!child.querySelector('img, video, a[href*=".mp4"]')) {
+        child.style.background = child.textContent;
+        child.textContent = '';
+      }
+    });
+  } else {
     block.style.background = node.textContent;
     node.remove();
   }
