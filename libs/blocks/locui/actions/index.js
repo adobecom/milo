@@ -1,13 +1,16 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import { heading, urls, languages, allowSyncToLangstore, allowSendForLoc } from '../utils/state.js';
+import { heading, urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
-import { createProject, startSync, startProject, getServiceUpdates } from '../utils/miloc.js';
+import { createProject, startSync, startProject, getServiceUpdates, rolloutLang } from '../utils/miloc.js';
+import { signal } from '../../../deps/htm-preact.js';
+
+export const showRolloutOptions = signal(false);
 
 async function updateExcelJson() {
   let count = 1;
@@ -112,4 +115,14 @@ export async function sendForLoc(e) {
     allowSendForLoc.value = false;
   }
   e.target.disabled = false;
+}
+
+export function showRollout() {
+  showRolloutOptions.value = true;
+}
+
+export async function rolloutAll(e, reroll) {
+  showRolloutOptions.value = false;
+  allowRollout.value = false;
+  await rolloutLang('all', reroll);
 }

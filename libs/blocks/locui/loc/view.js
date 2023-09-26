@@ -8,6 +8,7 @@ import Langs from '../langs/view.js';
 import Actions from '../actions/view.js';
 import Urls from '../urls/view.js';
 import Status from '../status/view.js';
+import Sync from '../sync/view.js';
 
 export default function Localization() {
   useEffect(() => { autoSetup(); }, []);
@@ -22,10 +23,12 @@ export default function Localization() {
   }
 
   return html`
+    <${Sync} />
     <h1>Milo Localization</h1>
-    ${heading.value.editUrl && html`<${Heading} />`}
-    ${urls.value.length > 0 && html`<${Actions} />`}
-    ${languages.value.length > 0 && html`<${Langs} />`}
-    ${urls.value.length > 0 && html`<${Urls} />`}
-    <${Status} />`;
+    <div>${heading.value.editUrl && html`<${Heading} />`}</div>
+    <div>${urls.value.length > 0 && html`<${Actions} />`}</div>
+    <div>${languages.value.length > 0 && html`<${Langs} />`}</div>
+    <div>${urls.value.length > 0 && html`<${Urls} />`}</div>
+    <div><${Status} /></div>
+  `;
 }

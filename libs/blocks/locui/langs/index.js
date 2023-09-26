@@ -6,6 +6,7 @@ export default async function rollout(item, idx) {
 
   // Update the UI immediate instead of waiting on polling
   languages.value[idx].status = 'rolling-out';
+  languages.value[idx].done = 0;
   languages.value = [...languages.value];
 
   await rolloutLang(item.code, reroll);

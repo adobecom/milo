@@ -1,4 +1,14 @@
-import { allowFindFragments, allowSendForLoc, allowSyncToLangstore, heading, languages, projectStatus } from './state.js';
+import {
+  allowFindFragments,
+  allowSendForLoc,
+  allowSyncToLangstore,
+  heading,
+  languages,
+  projectStatus,
+  canRefresh,
+  serviceStatus,
+  allowRollout,
+} from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { origin, preview } from './franklin.js';
@@ -8,6 +18,7 @@ import '../../../deps/md5.min.js';
 
 const INTERVAL = 3000;
 const MAX_COUNT = 1200; // 3000 x 1200 = 3600000s = 1 hour
+const ROLLOUT_ALL_AVAILABLE = ['completed', 'translated'];
 
 async function getMilocUrl() {
   const env = heading.value.env || null;
@@ -16,6 +27,9 @@ async function getMilocUrl() {
 }
 
 function handleProjectStatusDetail(detail) {
+  allowRollout.value = Object.keys(detail).some(
+    (key) => ROLLOUT_ALL_AVAILABLE.includes(detail[key].status),
+  );
   languages.value = [...languages.value.map((lang) => ({ ...lang, ...detail[lang.code] }))];
 }
 
@@ -78,6 +92,7 @@ export async function createProject() {
   const opts = { method: 'POST', body };
   const resp = await fetch(`${url}create-project`, opts);
   if (resp.status === 201) {
+    canRefresh.value = false;
     allowFindFragments.value = false;
     const projectId = window.md5(body);
     heading.value = { ...heading.value, projectId };
@@ -94,6 +109,7 @@ export async function getServiceUpdates() {
   const url = await getMilocUrl();
   let count = 1;
   const excelUpdated = setInterval(async () => {
+    serviceStatus.value = 'connected';
     projectStatus.value = await getProjectStatus(url);
     count += 1;
     // Stop syncing after an hour

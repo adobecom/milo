@@ -22,6 +22,7 @@ export const allowRollout = signal(false);
 export const polling = signal(false);
 export const projectStatus = signal({});
 export const canRefresh = signal(false);
+export const serviceStatus = signal('');
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');

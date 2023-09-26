@@ -55,11 +55,11 @@ async function loadLocales() {
   languages.value = [...languages.value];
 }
 
-async function loadServiceProject(settings) {
-  const projectId = settings.find((setting) => setting.key === 'Project ID');
-  if (projectId?.value) {
+async function loadProjectSettings(projSettings) {
+  const settings = projSettings.reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
+  heading.value = { ...heading.value, env: settings.env, projectId: settings['Project ID'] };
+  if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localiztion service.');
-    heading.value = { ...heading.value, projectId: projectId.value };
     await getServiceUpdates();
     setStatus('service');
   } else {
@@ -85,7 +85,7 @@ async function loadDetails() {
     }, []);
     languages.value = projectLangs;
     urls.value = projectUrls;
-    if (json.settings) loadServiceProject(json.settings.data);
+    if (json.settings) loadProjectSettings(json.settings.data);
     setStatus('details');
   } catch {
     setStatus('details', 'error', 'Error loading languages and URLs.');
