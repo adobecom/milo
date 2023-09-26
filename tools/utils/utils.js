@@ -14,7 +14,7 @@ const getImsToken = async (loadScript) => {
   return window.adobeIMS?.getAccessToken()?.token;
 };
 
-const isImsStage = () => window.adobeid?.environment
-  && window.adobeid.environment?.toLowerCase() !== 'prod';
+const isImsStage = () => window.adobeid?.environment?.toLowerCase
+  && window.adobeid.environment.toLowerCase() !== 'prod';
 
 export { getImsToken, isImsStage };
