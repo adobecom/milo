@@ -12,10 +12,7 @@ const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.quizurl.text.toLowerCase();
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
-  if (stringsPath) {
-    return (filepath) => `${stringsPath}/${filepath}`;
-  }
-  return (filepath) => `${quizConfigPath}${filepath}`;
+  return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
 };
 
 const initQuizKey = () => {
@@ -155,10 +152,9 @@ export const structuredFragments = (
         if (umbrellaProduct && row.product === umbrellaProduct) {
           structureFragments.push(row[fragment]);
         }
-      } else if ((primaryProducts.length > 0 && primaryProducts.includes(row.product))) {
-        if (row[fragment]) {
-          structureFragments.push(row[fragment]);
-        }
+      } else if (primaryProducts.length > 0 && primaryProducts.includes(row.product)
+      && row[fragment]) {
+        structureFragments.push(row[fragment]);
       }
     });
   });
@@ -218,11 +214,9 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
       }
 
       function insertFragment() {
-        if (row[fragKey]) {
-          row[fragKey]?.split(',').forEach((val) => {
-            fragArray.push(val.trim());
-          });
-        }
+        row[fragKey]?.split(',').forEach((val) => {
+          fragArray.push(val.trim());
+        });
       }
     });
   });
@@ -293,14 +287,13 @@ export const parseResultData = async (answers) => {
 const getRecommendedResults = (selectedDestination, defaultValue) => (selectedDestination.length
   ? selectedDestination : defaultValue);
 
-// TODO: needs refactoring - can split to smaller functions
 export const findMatchForSelections = (results, selections) => {
   const recommendations = [];
   const matchResults = [];
   const defaultResult = [];
 
   results.forEach((destination) => {
-    if (destination.result.indexOf('(') === -1) {
+    if (!destination.result.includes('(')) {
       matchResults.push(destination.result);
     }
     if (destination.result === 'default') {
@@ -312,7 +305,6 @@ export const findMatchForSelections = (results, selections) => {
   const isProductsMatched = selections.primary.every((product) => matchResults.includes(product));
 
   if (isProductsMatched) {
-    // lr, ai
     selections.primary.forEach((product) => {
       results.forEach((destination) => {
         if (destination.result === product) {
@@ -362,7 +354,7 @@ export const findMatchForSelections = (results, selections) => {
 export const handleNext = (questionsData, selectedQuestion, userInputSelections, userFlow) => {
   const allcards = Object.keys(userInputSelections);
   let nextQuizViews = [];
-  let hasResultTigger = false;
+  let hasResultTrigger = false;
   let lastStopValue;
 
   allcards.forEach((selection) => {
@@ -384,8 +376,8 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
           lastStopValue = 'RESET';
         }
 
-        if (!hasResultTigger) {
-          hasResultTigger = flowStepsList.includes('RESULT');
+        if (!hasResultTrigger) {
+          hasResultTrigger = flowStepsList.includes('RESULT');
         }
 
         const filteredNextSteps = flowStepsList.filter((val) => (val !== 'RESULT' && val !== 'RESET'));
