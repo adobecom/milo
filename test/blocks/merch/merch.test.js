@@ -101,6 +101,10 @@ describe('Merch Block', () => {
     it('renders merch link to optical price with term, seat and tax', async () => {
       validatePriceSpan('.merch.price.optical', { template: 'optical' });
     });
+
+    it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {
+      validatePriceSpan('.merch.price.tax-exclusive', { forceTaxExclusive: 'true' });
+    });
   });
 
   describe('Promo Prices', () => {
