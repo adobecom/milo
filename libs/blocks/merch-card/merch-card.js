@@ -2,7 +2,6 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
-import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -140,8 +139,6 @@ const decorateIcon = (el, icons, cardType) => {
 };
 
 const init = (el) => {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  decorateLinkAnalytics(el, headings);
   loadStyle(`${base}/deps/caas.css`);
   const section = el.closest('.section');
   section.classList.add('milo-card-section');
