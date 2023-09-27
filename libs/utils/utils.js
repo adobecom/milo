@@ -603,6 +603,7 @@ function decorateContent(el) {
   const block = document.createElement('div');
   block.className = 'content';
   block.append(...children);
+  block.dataset.block = '';
   return block;
 }
 
@@ -822,6 +823,8 @@ async function checkForPageMods() {
     const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests);
+  } else {
+    document.body.dataset.mep = 'default|default';
   }
 }
 
@@ -959,6 +962,10 @@ async function documentPostSectionLoading(config) {
 
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
+
+  import('../martech/analytics.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
+  });
 }
 
 async function processSection(section, config, isDoc) {
@@ -1016,6 +1023,10 @@ export async function loadArea(area = document) {
   for (const section of sections) {
     const sectionBlocks = await processSection(section, config, isDoc);
     areaBlocks.push(...sectionBlocks);
+
+    areaBlocks.forEach((block) => {
+      block.dataset.block = '';
+    });
   }
 
   const currentHash = window.location.hash;
@@ -1023,9 +1034,7 @@ export async function loadArea(area = document) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) {
-    await documentPostSectionLoading(config);
-  }
+  if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
 }
