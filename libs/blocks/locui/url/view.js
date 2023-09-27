@@ -1,18 +1,20 @@
 import { html, useEffect } from '../../../deps/htm-preact.js';
-import setActions from './index.js';
+import { setActions, openWord } from './index.js';
 
 function handleAction(url) {
   window.open(url, '_blank');
 }
 
 function Actions({ label, parent }) {
+  console.log(parent);
+
   return html`
     <h3 class=locui-url-label>${label}</h3>
     <div class=locui-url-source-actions>
       <button
-        disabled=${parent.actions?.edit?.status !== 200}
+        disabled=${parent.actions?.edit?.status === 404}
         class="locui-url-action locui-url-action-edit"
-        onClick=${() => { handleAction(parent.actions?.edit.url); }}>Edit</button>
+        onClick=${(e) => { openWord(e, parent); }}>Edit</button>
       <button
         disabled=${parent.actions?.preview?.status !== 200}
         class="locui-url-action locui-url-action-view"
@@ -36,9 +38,11 @@ export default function Url({ item, idx }) {
           <div class=locui-url-source>
             <${Actions} label=Source parent=${item} />
           </div>
-          <div class=locui-url-langstore>
-            <${Actions} label="Langstore (${item.langstore.lang})" parent=${item.langstore} />
-          </div>
+          ${item.langstore && html`
+            <div class=locui-url-langstore>
+              <${Actions} label="Langstore (${item.langstore.lang})" parent=${item.langstore} />
+            </div>
+          `}
         </div>
       </div>
       <div class=locui-url-dates>

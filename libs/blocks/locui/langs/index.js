@@ -1,7 +1,22 @@
 import { rolloutLang } from '../utils/miloc.js';
 import { languages } from '../utils/state.js';
+import { getModal } from '../../modal/modal.js';
+import Modal from './modal.js';
+import { createTag } from '../../../utils/utils.js';
 
-export default async function rollout(item, idx) {
+export function showUrls(item, prefix) {
+  const div = createTag('div');
+  const content = Modal(div, item, prefix);
+  const modalOpts = {
+    class: 'locui-modal',
+    id: 'locui-modal',
+    content,
+    closeEvent: 'closeModal',
+  };
+  return getModal(null, modalOpts);
+}
+
+export async function rollout(item, idx) {
   const reroll = item.status === 'completed';
 
   // Update the UI immediate instead of waiting on polling

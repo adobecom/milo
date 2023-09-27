@@ -299,12 +299,14 @@ div.locui-subproject-locales {
   flex-wrap: wrap;
 }
 
-span.locui-subproject-locale {
+button.locui-subproject-locale {
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
   background: rgb(0 0 0 / 15%);
   margin: 4px 4px 0 0;
   text-transform: uppercase;
   padding: 4px 6px;
   border-radius: 4px;
+  border: none;
   font-size: 14px;
   line-height: 1;
 }
@@ -394,6 +396,7 @@ div.locui-url-actions {
 }
 
 button.locui-url-action {
+  position: relative;
   min-width: 88px;
   display: block;
   padding: 44px 0 6px;
@@ -402,8 +405,35 @@ button.locui-url-action {
   font-weight: 700;
   color: #676767;
   border-radius: 4px;
+  overflow: hidden;
   border: none;
   cursor: pointer;
+}
+
+.locui-action-loading::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: url('./img/spectrum-refresh.svg');
+  width: 26px;
+  height: 26px;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  border-radius: 50%;
+  cursor: pointer;
+  animation: rotate 2s linear infinite;
+  background-color: #3d3d3d;
+}
+
+@keyframes rotate {
+  from {
+    transform: translate(-50%, -76%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -76%) rotate(360deg);
+  }
 }
 
 button.locui-url-action[disabled] {
@@ -425,10 +455,22 @@ button.locui-url-action-view {
   background: url('../../ui/img/aec-icon.svg') center 14px / 26px no-repeat;
 }
 
+#locui-modal {
+  padding: 0 24px 24px;
+}
+
+#locui-modal ul.locui-urls {
+  backdrop-filter: unset;
+}
+
 @media screen and (min-width: 1200px) {
   .locui,
   .locui-sync-badge-container {
     max-width: 1200px;
+  }
+
+  #locui-modal {
+    min-width: 800px;
   }
 }
 

@@ -8,9 +8,7 @@ function getFileName(editUrl) {
 }
 
 async function getDetails(path) {
-  setStatus('url', 'info', 'Getting URL details.');
   const json = await getStatus(path, false);
-  setStatus('url');
   const filename = json.edit.url ? getFileName(json.edit.url) : undefined;
   return {
     preview: { url: json.preview.url, status: json.preview.status },
@@ -19,11 +17,20 @@ async function getDetails(path) {
   };
 }
 
-export default async function setActions(idx) {
+export async function openWord(e, parent) {
+  e.target.classList.add('locui-action-loading');
+  const details = await getStatus(parent.pathname);
+  e.target.classList.remove('locui-action-loading');
+  if (details.edit.url) window.open(details.edit.url, '_blank');
+}
+
+export async function setActions(idx) {
   if (!urls.value[idx].actions) {
     urls.value[idx].actions = await getDetails(urls.value[idx].pathname);
-    urls.value[idx].langstore.actions = {};
-    // urls.value[idx].langstore.actions = await getDetails(urls.value[idx].langstore.pathname);
+    if (urls.value[idx].langstore) {
+      urls.value[idx].langstore.actions = {};
+      urls.value[idx].langstore.actions = await getDetails(urls.value[idx].langstore.pathname);
+    }
     urls.value = [...urls.value];
   }
 }

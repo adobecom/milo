@@ -1,6 +1,6 @@
 import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
-import rollout from './index.js';
+import { rollout, showUrls } from './index.js';
 
 function getPrettyStatus(status) {
   switch (status) {
@@ -27,7 +27,6 @@ function Language({ item, idx }) {
   const completeType = item.status === 'translated' || item.status === 'in-progress' ? 'Translated' : 'Rolled out';
   const total = item.locales?.length && completeType === 'Rolled out' ? item.locales.length * item.size : null;
   const rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
-
   return html`
     <li class="locui-subproject ${cssStatus}">
       ${item.status && html`<${Badge} status=${item.status} />`}
@@ -56,7 +55,10 @@ function Language({ item, idx }) {
       ${hasLocales && html`
         <p class=locui-project-label>Locales</p>
         <div class=locui-subproject-locales>
-          ${item.locales.map((locale) => html`<span class=locui-subproject-locale>${locale}</span>`)}
+          <button class=locui-subproject-locale onClick=${() => showUrls(item, `langstore/${item.code}`)}>Langstore</button>
+          ${item.locales.map((locale) => html`
+            <button class=locui-subproject-locale onClick=${() => showUrls(item, locale)}>${locale}</button>
+          `)}
         </div>
       `}
       ${(item.status === 'translated' || item.status === 'completed') && html`

@@ -12,10 +12,10 @@ export async function preview(path) {
   return json;
 }
 
-export async function getStatus(url = '', editUrl = 'auto') {
-  let path = `${ADMIN}/status/${owner}/${repo}/main${url}`;
-  path = editUrl ? `${path}?editUrl=${editUrl}` : path;
-  const resp = await fetch(path);
+export async function getStatus(path = '', editUrl = 'auto') {
+  let url = `${ADMIN}/status/${owner}/${repo}/main${path}`;
+  url = editUrl ? `${url}?editUrl=${editUrl}` : url;
+  const resp = await fetch(url);
   const json = await resp.json();
   return json;
 }
