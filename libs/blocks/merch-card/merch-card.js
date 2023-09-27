@@ -12,9 +12,9 @@ const base = miloLibs || codeRoot;
 
 loadStyle(`${base}/deps/commerce-web-components.css`);
 
-const cardTypes = ['segment', 'special-offers', 'plans'];
+const cardTypes = ['segment', 'special-offer', 'plans'];
 
-const getPodType = (styles) => styles?.find((style) => style in cardTypes) || 'segment';
+const getPodType = (styles) => styles?.find((style) => cardTypes.includes(style));
 
 const createDescription = (rows, cardType) => createTag('div', {
   slot: 'body',
@@ -102,11 +102,11 @@ const addInner = (el, altCta, cardType, merchCard) => {
 const returnRibbonStyle = (ribbonMetadata) => {
   const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
   if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return null;
-  const ribbonStyle = ribbonMetadata[0].innerText;
+  const style = ribbonMetadata[0].innerText;
   const ribbonWrapper = ribbonMetadata[0].parentNode;
   const value = ribbonMetadata[1].innerText;
   ribbonWrapper.remove();
-  return { ribbonStyle, value };
+  return { style, value };
 };
 
 const init = (el) => {
@@ -138,23 +138,22 @@ const init = (el) => {
     }
   });
 
-  const attributes = { class: el.className, variant: cardType };
+  const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
+
   if (ribbonMetadata !== null) {
     const badge = returnRibbonStyle(ribbonMetadata);
     if (badge !== null) {
-      attributes.badge = badge;
+      merchCard.setAttribute('badge', JSON.stringify(badge));
     }
   }
   if (image !== undefined) {
-    attributes.image = image;
+    merchCard.setAttribute('image', image.querySelector('img').src);
     image?.parentElement.remove();
   }
-  if (icons.length > 0) {
-    attributes.icons = [...icons];
+  if (!icons || icons.length > 0) {
+    merchCard.setAttribute('icons', JSON.stringify(Array.from(icons).map((icon) => icon.querySelector('img').src)));
     icons.forEach((icon) => icon.parentElement.remove());
   }
-
-  const merchCard = createTag('merch-card', attributes);
 
   if (ctas) decorateButtons(ctas);
   const footer = createTag('div', { slot: 'footer' });
