@@ -52,7 +52,7 @@ This order is the reason the personalization and testing information is repeated
 > Any link with daa-ll will send tracking when a user clicks an element. Same value as impression tracking but limited to 100 characters.
 
 ### impression tracking
-> Only links with daa-ll and under a daa-im="true" value sent. Sent after page load (sometimes on unload). Same value as click tracking but limited to 255 characters per link.
+> Only links with daa-ll and under a daa-im="true" value sent. Sent after page load (sometimes on unload). Same value as click tracking but limited to 250 characters per link.
 
 
 
