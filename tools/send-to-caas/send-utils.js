@@ -589,6 +589,9 @@ const getCardMetadata = async (options) => {
 };
 
 const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) => {
+  const userImsEnv = window.adobeid?.environment?.toLowerCase
+    && window.adobeid.environment.toLowerCase() !== 'prod' ? { 'user-ims-env': 'stage' } : {};
+
   const options = {
     method: 'POST',
     body: JSON.stringify(caasProps),
@@ -596,7 +599,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
       Authorization: `Bearer ${accessToken}`,
       draft: !!draftOnly,
       'caas-env': caasEnv,
-      'user-ims-env': window.adobeid?.environment?.toLowerCase() === 'prod' ? 'prod' : 'stage',
+      ...userImsEnv,
     },
   };
 
