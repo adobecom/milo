@@ -35,11 +35,7 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
   }
   Object.keys(expectedAttributes).forEach((key) => {
     const value = expectedAttributes[key];
-    if (value === 'UNDEF') {
-      expect(dataset[key]).to.be.undefined;
-    } else {
-      expect(dataset[key]).to.equal(value);
-    }
+    expect(dataset[key]).to.equal(value);
   });
 };
 
@@ -79,7 +75,7 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to price with term', async () => {
-      validatePriceSpan('.merch.price.term', { displayRecurrence: 'UNDEF' });
+      validatePriceSpan('.merch.price.term', { displayRecurrence: undefined });
     });
 
     it('renders merch link to price with term and seat', async () => {
@@ -109,11 +105,11 @@ describe('Merch Block', () => {
 
   describe('Promo Prices', () => {
     it('renders merch link to promo price with discount', async () => {
-      validatePriceSpan('.merch.price.oldprice', { promotionCode: 'UNDEF' });
+      validatePriceSpan('.merch.price.oldprice', { promotionCode: undefined });
     });
 
     it('renders merch link to promo price without discount', async () => {
-      validatePriceSpan('.merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: 'UNDEF' });
+      validatePriceSpan('.merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
     });
 
     it('renders merch link to promo price with discount', async () => {
@@ -127,11 +123,11 @@ describe('Merch Block', () => {
 
   describe('Promo Prices in a fragment', () => {
     it('renders merch link to promo price with discount', async () => {
-      validatePriceSpan('.fragment .merch.price.oldprice', { promotionCode: 'UNDEF' });
+      validatePriceSpan('.fragment .merch.price.oldprice', { promotionCode: undefined });
     });
 
     it('renders merch link to promo price without discount', async () => {
-      validatePriceSpan('.fragment .merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: 'UNDEF' });
+      validatePriceSpan('.fragment .merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
     });
 
     it('renders merch link to promo price with discount', async () => {
