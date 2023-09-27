@@ -313,3 +313,20 @@ span.preflight-time {
 .seo-item-description {
   margin: 0;
 }
+
+.accessibility-grid-container {
+  display: grid;
+  grid-gap: 10px;
+  max-width: 100%;
+  margin: 20px;
+}
+
+.accessibility-grid-item {
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+}
+
+.accessibility-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+}
