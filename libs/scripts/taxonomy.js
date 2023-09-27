@@ -69,7 +69,6 @@ async function fetchTaxonomy(target) {
 
 function parseTaxonomyJson(data, root, route) {
   let level1; let level2;
-
   return data?.reduce((taxonomy, row) => {
     const level3 = removeLineBreaks(row[TAXONOMY_FIELDS.level3]);
     if (!level3) {
@@ -94,7 +93,6 @@ function parseTaxonomyJson(data, root, route) {
     const taxLink = row[TAXONOMY_FIELDS.link]
       ? new URL([row[TAXONOMY_FIELDS.link]])
       : generateUri(name);
-
     const path = taxLink.pathname
       ? taxLink.pathname?.replace('.html', '').split(`${route}/`).pop()
       : taxLink;
