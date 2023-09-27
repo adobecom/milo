@@ -35,7 +35,7 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
   }
   Object.keys(expectedAttributes).forEach((key) => {
     const value = expectedAttributes[key];
-    expect(dataset[key]).to.equal(value);
+    expect(dataset[key], ` ${key} should equal ${value}`).to.equal(value);
   });
 };
 
@@ -71,71 +71,71 @@ describe('Merch Block', () => {
 
   describe('Prices', () => {
     it('renders merch link to price without term (new)', async () => {
-      validatePriceSpan('.merch.price.hide-term', { displayRecurrence: 'false' });
+      await validatePriceSpan('.merch.price.hide-term', { displayRecurrence: 'false' });
     });
 
     it('renders merch link to price with term', async () => {
-      validatePriceSpan('.merch.price.term', { displayRecurrence: undefined });
+      await validatePriceSpan('.merch.price.term', { displayRecurrence: undefined });
     });
 
     it('renders merch link to price with term and seat', async () => {
-      validatePriceSpan('.merch.price.seat', { displayPerUnit: 'true' });
+      await validatePriceSpan('.merch.price.seat', { displayPerUnit: 'true' });
     });
 
     it('renders merch link to price with term and tax', async () => {
-      validatePriceSpan('.merch.price.tax', { displayTax: 'true' });
+      await validatePriceSpan('.merch.price.tax', { displayTax: 'true' });
     });
 
     it('renders merch link to price with term, seat and tax', async () => {
-      validatePriceSpan('.merch.price.seat.tax', { displayTax: 'true' });
+      await validatePriceSpan('.merch.price.seat.tax', { displayTax: 'true' });
     });
 
     it('renders merch link to strikethrough price with term, seat and tax', async () => {
-      validatePriceSpan('.merch.price.strikethrough', { template: 'strikethrough' });
+      await validatePriceSpan('.merch.price.strikethrough', { template: 'strikethrough' });
     });
 
     it('renders merch link to optical price with term, seat and tax', async () => {
-      validatePriceSpan('.merch.price.optical', { template: 'optical' });
+      await validatePriceSpan('.merch.price.optical', { template: 'optical' });
     });
 
     it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {
-      validatePriceSpan('.merch.price.tax-exclusive', { forceTaxExclusive: 'true' });
+      await validatePriceSpan('.merch.price.tax-exclusive', { forceTaxExclusive: 'true' });
     });
   });
 
   describe('Promo Prices', () => {
     it('renders merch link to promo price with discount', async () => {
-      validatePriceSpan('.merch.price.oldprice', { promotionCode: undefined });
+      await validatePriceSpan('.merch.price.oldprice', { promotionCode: undefined });
     });
 
     it('renders merch link to promo price without discount', async () => {
-      validatePriceSpan('.merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
+      await validatePriceSpan('.merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
     });
 
     it('renders merch link to promo price with discount', async () => {
-      validatePriceSpan('.merch.price.promo', { promotionCode: 'nicopromo' });
+      await validatePriceSpan('.merch.price.promo', { promotionCode: 'nicopromo' });
     });
 
     it('renders merch link to full promo price', async () => {
-      validatePriceSpan('.merch.price.promo', { promotionCode: 'nicopromo' });
+      await validatePriceSpan('.merch.price.promo', { promotionCode: 'nicopromo' });
     });
   });
 
   describe('Promo Prices in a fragment', () => {
     it('renders merch link to promo price with discount', async () => {
-      validatePriceSpan('.fragment .merch.price.oldprice', { promotionCode: undefined });
+      await validatePriceSpan('.fragment .merch.price.oldprice', { promotionCode: undefined });
     });
 
     it('renders merch link to promo price without discount', async () => {
-      validatePriceSpan('.fragment .merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
+      await validatePriceSpan('.fragment .merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
     });
 
     it('renders merch link to promo price with discount', async () => {
-      validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
+      await validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
     });
 
     it('renders merch link to full promo price', async () => {
-      validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
+      await validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
     });
   });
 

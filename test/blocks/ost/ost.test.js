@@ -92,7 +92,7 @@ describe('function "createLinkMarkup"', () => {
         term: displayRecurrence,
         seat: displayPerUnit,
         tax: displayTax,
-        forceTaxExclusive,
+        exclusive: forceTaxExclusive,
         osi,
         type,
       });

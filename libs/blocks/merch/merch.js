@@ -75,7 +75,7 @@ export async function getPriceContext(el, params) {
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
-  const forceTaxExclusive = params.get('forceTaxExclusive');
+  const forceTaxExclusive = params.get('exclusive');
   const type = params.get('type');
   const template = type === 'price' ? undefined : type;
   return {

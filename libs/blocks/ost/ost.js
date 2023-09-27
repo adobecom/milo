@@ -60,7 +60,7 @@ export const createLinkMarkup = (defaults) => (
       params.set('term', displayRecurrence);
       params.set('seat', displayPerUnit);
       params.set('tax', displayTax);
-      params.set('forceTaxExclusive', forceTaxExclusive);
+      params.set('exclusive', forceTaxExclusive);
     }
     const { location } = window;
     return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
