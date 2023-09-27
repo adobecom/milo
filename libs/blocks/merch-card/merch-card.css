@@ -13,7 +13,7 @@
   line-height: 1.5;
   margin-bottom: var(--spacing-xxs);
   margin-top: 0;
-  color: var(--color-black);
+  color: rgb(33, 50, 237);
 }
 
 .merch-card h1,
@@ -24,7 +24,7 @@
 .merch-card h6 {
   line-height: 1.25;
   margin-top: 0;
-  color: var(--color-black);
+  color:  rgb(33, 50, 237);
 }
 
 .merch-card h2 {
@@ -194,11 +194,18 @@
   text-transform: uppercase;
 }
 
+.consonant-SpecialOffers-inner {
+  background-color: #00ffda24;
+}
+
 .merch-card .consonant-SpecialOffers-inner,
 .merch-card .consonant-PlansCard-inner {
   justify-content: center;
   height: 100%;
+  background-color: #00ffda24;
 }
+
+
 
 .merch-card.special-offers .consonant-SpecialOffers-description p,
 .merch-card.special-offers .consonant-PlansCard-description p {
