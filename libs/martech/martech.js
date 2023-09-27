@@ -53,7 +53,7 @@ const handleAlloyResponse = (response) => {
 
       return {
         manifestPath: content.manifestLocation || content.manifestPath,
-        manifestData: content.manifestContent?.data,
+        manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
         name: item.meta['activity.name'],
         variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
         meta: item.meta,

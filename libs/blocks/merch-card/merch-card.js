@@ -50,18 +50,18 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     return container;
   };
 
+  const createSecureSign = () => {
+    const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
+    const standardWrapper = createTag('div', { class: 'standard-wrapper' });
+    const secureTransactionWrapper = decorateWithSecureTransactionSign();
+    standardWrapper.append(secureTransactionWrapper, cardFooterRow);
+    cardFooter?.append(standardWrapper);
+  };
+
   const decorateAlternativeCta = () => {
     const altCtaRegex = /href=".*"/;
     if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return;
-
     const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    if (el.classList.contains('secure')) {
-      const standardWrapper = createTag('div', { class: 'standard-wrapper' });
-      const secureTransactionWrapper = decorateWithSecureTransactionSign();
-      standardWrapper.append(secureTransactionWrapper, cardFooterRow);
-      cardFooter?.append(standardWrapper);
-    }
-
     const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
     const checkboxContainer = createCheckbox(altCtaMetaData[0]);
     const altCtaButtonData = altCtaMetaData[1];
@@ -77,16 +77,17 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     altCtaMetaData[0].parentNode.remove();
   };
   if (altCtaMetaData !== null) decorateAlternativeCta();
+  if (el.classList.contains('secure')) createSecureSign();
   cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
 };
 
 const addInner = (el, altCta, cardType, merchCard) => {
-  const titles = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6')];
-  const rows = [...el.querySelectorAll('p')];
+  const innerElements = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul')];
   const styles = [...el.classList];
   const merch = styles.includes('merch-card');
   const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
   const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
+  const list = el.querySelector('ul');
 
   const inner = el.querySelector(':scope > div:not([class])');
   const title = createTitle(titles, cardType);

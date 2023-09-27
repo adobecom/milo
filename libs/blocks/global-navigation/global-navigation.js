@@ -677,13 +677,13 @@ export default async function init(header) {
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
   if (!html) return null;
-  const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+  const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
 
   try {
     const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
     gnav.init();
     header.setAttribute('daa-im', 'true');
-    header.setAttribute('daa-lh', `gnav|${getExperienceName()}`);
+    header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e });

@@ -2,25 +2,28 @@
  * Marquee - v6.0
  */
 
-import { applyHoverPlay, decorateButtons, getBlockSize, getVideoAttrs } from '../../utils/decorate.js';
-import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
+import { applyHoverPlay, decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const decorateVideo = (container, src) => {
-  if (typeof src === 'string' || src?.href.endsWith('.mp4')) {
+const decorateVideo = (container, video) => {
+  if (video.nodeName === 'A' && video.href.includes('.mp4')) {
     // no special attrs handling
     container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
-      <source src="${src}" type="video/mp4" />
+      <source src="${video.href}" type="video/mp4" />
     </video>`;
-    container.classList.add('has-video');
-  } else {
-    const { href, hash } = src;
-    const attrs = getVideoAttrs(hash);
-    container.innerHTML = `<video ${attrs}>
-          <source src="${href}" type="video/mp4" />
-        </video>`;
+  } else if (video.attributes.getNamedItem('controls')) {
+    video.removeAttribute('controls');
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('loop', '');
+
+    const attrs = [...video.attributes].map((a) => a.name).join(' ');
+    container.innerHTML = `<video preload="metadata" ${attrs}>
+        <source src="${video.firstElementChild.src}" type="video/mp4" />
+      </video>`;
   }
-  return container.firstChild;
+  applyHoverPlay(container.firstElementChild);
+  container.classList.add('has-video');
 };
 
 const decorateBlockBg = (block, node) => {
@@ -31,21 +34,17 @@ const decorateBlockBg = (block, node) => {
   node.classList.add('background');
 
   if (childCount === 2) {
-    children[0].classList.add(viewports[0], viewports[1]);
-    children[1].classList.add(viewports[2]);
+    children[0].classList.add(viewports[0]);
+    children[1].classList.add(viewports[1], viewports[2]);
   }
 
   [...children].forEach(async (child, index) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
-    const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
-    if (videoElement) {
-      const video = decorateVideo(child, videoElement.href || videoElement.src);
-      const hash = video.firstElementChild?.src.split('#')[1];
-      if (hash?.includes('autoplay1')) {
-        video.removeAttribute('loop');
-      }
+    const video = child.querySelector('video, a[href*=".mp4"]');
+    if (video) {
+      decorateVideo(child, video);
     }
 
     const pic = child.querySelector('picture');
@@ -114,14 +113,13 @@ const decorateImage = (media) => {
   const imageLink = media.querySelector('a');
   const picture = media.querySelector('picture');
 
-  if (imageLink && picture) {
+  if (imageLink && picture && !imageLink.parentElement.classList.contains('modal-img-link')) {
     imageLink.textContent = '';
     imageLink.append(picture);
   }
 };
 
 export default function init(el) {
-  decorateBlockAnalytics(el);
   const isLight = el.classList.contains('light');
   if (!isLight) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
@@ -138,23 +136,19 @@ export default function init(el) {
 
   if (media) {
     media.classList.add('media');
-    let video = media.querySelector('video');
-    const videoLink = media.querySelector('a[href*=".mp4"]');
-    if (videoLink) {
-      video = decorateVideo(media, videoLink);
+    const video = media.querySelector('video, a[href*=".mp4"]');
+    if (video) {
+      decorateVideo(media, video);
     } else {
       decorateImage(media);
     }
-    if (video) applyHoverPlay(video);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
-  if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
+  if (firstDivInForeground?.classList.contains('media')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
-  const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  decorateLinkAnalytics(text, headings);
   decorateText(text, size);
   const iconArea = text.querySelector('.icon-area');
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);

@@ -10,7 +10,7 @@ describe('table and tablemetadata', () => {
   beforeEach(() => {
     const tables = document.querySelectorAll('.table');
     tables.forEach((t) => init(t));
-    window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
+    window.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
   });
 
   describe('standard table', () => {
@@ -83,6 +83,11 @@ describe('table and tablemetadata', () => {
       filters[2].dispatchEvent(new Event('change', { bubbles: true }));
       await delay(500);
       expect(filters[2].value).to.equal('2');
+    });
+
+    it('filter test: no filter if only 2 columns', async () => {
+      const tableWith2Columns = document.querySelector('.twocolumns');
+      expect(tableWith2Columns.parentElement.querySelector('.filters')).to.be.null;
     });
 
     it('back to desktop test', async () => {
