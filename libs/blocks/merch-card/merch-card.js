@@ -12,20 +12,14 @@ const base = miloLibs || codeRoot;
 
 loadStyle(`${base}/deps/commerce-web-components.css`);
 
-const SEGMENT_BLADE = 'SegmentBlade';
-const SPECIAL_OFFER = 'special-offer';
-const PLANS_CARD = 'PlansCard';
-const cardTypes = {
-  segment: SEGMENT_BLADE,
-  'special-offers': SPECIAL_OFFER,
-  plans: PLANS_CARD,
-};
-const getPodType = (styles) => {
-  const authoredType = styles?.find((style) => style in cardTypes);
-  return cardTypes[authoredType] || SEGMENT_BLADE;
-};
+const cardTypes = ['segment', 'special-offers', 'plans'];
 
-const createDescription = (rows, cardType) => createTag('div', { slot: 'body', class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
+const getPodType = (styles) => styles?.find((style) => style in cardTypes) || 'segment';
+
+const createDescription = (rows, cardType) => createTag('div', {
+  slot: 'body',
+  class: `consonant-${cardType}-description`,
+}, rows.slice(0, rows.length - 1));
 
 const createTitle = (titles, cardType) => {
   const titleWrapper = createTag('div', { slot: 'heading', class: `consonant-${cardType}-title` });
@@ -110,21 +104,9 @@ const returnRibbonStyle = (ribbonMetadata) => {
   if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return null;
   const ribbonStyle = ribbonMetadata[0].innerText;
   const ribbonWrapper = ribbonMetadata[0].parentNode;
-  const value = ribbonMetadata[1];
+  const value = ribbonMetadata[1].innerText;
   ribbonWrapper.remove();
   return { ribbonStyle, value };
-};
-
-const decorateIcon = (icons, cardType, merchCard) => {
-  if (!icons) return;
-  const iconWrapper = createTag('div', { slot: 'card-image', class: `consonant-${cardType}-iconWrapper` });
-  icons?.forEach((icon) => {
-    const url = icon.querySelector('img').src;
-    const iconDiv = createTag('div', { class: 'consonant-MerchCard-ProductIcon', style: `background-image: url(${url})` });
-    iconWrapper.appendChild(iconDiv);
-    icon.parentNode?.remove();
-  });
-  merchCard.prepend(iconWrapper);
 };
 
 const init = (el) => {
@@ -156,22 +138,25 @@ const init = (el) => {
     }
   });
 
-  const attributes = { class: el.className, variant: cardType};
+  const attributes = { class: el.className, variant: cardType };
   if (ribbonMetadata !== null) {
-    attributes.badge = returnRibbonStyle(ribbonMetadata);
+    const badge = returnRibbonStyle(ribbonMetadata);
+    if (badge !== null) {
+      attributes.badge = badge;
+    }
+  }
+  if (image !== undefined) {
+    attributes.image = image;
+    image?.parentElement.remove();
+  }
+  if (icons.length > 0) {
+    attributes.icons = [...icons];
+    icons.forEach((icon) => icon.parentElement.remove());
   }
 
   const merchCard = createTag('merch-card', attributes);
 
-  if (ribbonMetadata !== null) returnRibbonStyle(el, ribbonMetadata, cardType);
-  image?.parentElement.remove();
   if (ctas) decorateButtons(ctas);
-  if (icons.length > 0) {
-    decorateIcon(icons, cardType, merchCard);
-  } else {
-    const cardImage = image.querySelector('img').src;
-    merchCard.setAttribute('image', cardImage);
-  }
   const footer = createTag('div', { slot: 'footer' });
   footer.appendChild(ctas);
   addInner(el, altCta, cardType, merchCard);
