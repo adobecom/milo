@@ -76,31 +76,26 @@ export default async function decorate(block) {
         return {
           title: 'Facebook',
           href: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-          'daa-lh': 'facebook:click',
         };
       case 'twitter':
         return {
           title: 'Twitter',
           href: `https://twitter.com/share?&url=${url}`,
-          'daa-lh': 'twitter:click',
         };
       case 'linkedin':
         return {
           title: 'LinkedIn',
           href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-          'daa-lh': 'linkedin:click',
         };
       case 'pinterest':
         return {
           title: 'Pinterest',
           href: `https://pinterest.com/pin/create/button/?url=${url}&description=${title}`,
-          'daa-lh': 'pinterest:click',
         };
       case 'reddit':
         return {
           title: 'Reddit',
           href: `https://reddit.com/submit?url=${url}&title=${title}`,
-          'daa-lh': 'reddit:click',
         };
       default:
         return null;
@@ -108,7 +103,7 @@ export default async function decorate(block) {
   };
   if (!block.classList.contains('inline')) {
     const heading = toSentenceCase(await replaceKey('share-this-page', config));
-    block.append(createTag('p', null, heading));
+    block.append(createTag('p', { class: 'tracking-header' }, heading));
   }
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
@@ -123,7 +118,6 @@ export default async function decorate(block) {
         title: `${shareToText} ${obj.title}`,
         target: '_blank',
         href: obj.href,
-        'daa-ll': `${obj.title}:click`,
       },
       svg.svg,
     );
@@ -148,7 +142,6 @@ export default async function decorate(block) {
         'aria-label': clipboardToolTip,
         'data-copy-to-clipboard': clipboardToolTip,
         'data-copied': `${copiedTooltip}!`,
-        'daa-ll': 'copy:click',
       },
       clipboardSvg.svg,
     );

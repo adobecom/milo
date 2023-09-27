@@ -28,7 +28,7 @@ function handleStickyPromobar(section) {
   let stickySectionEl = null;
   if (main.children[0] !== section) {
     stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
-    main.insertBefore(stickySectionEl, section);
+    section.parentElement.insertBefore(stickySectionEl, section);
   }
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
