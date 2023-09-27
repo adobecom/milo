@@ -565,7 +565,11 @@ export async function applyPers(manifests) {
     expFragments: consolidateObjects(results, 'fragments'),
   });
   const trackingManifests = results.map((r) => r.experiment.manifest.split('/').pop().replace('.json', ''));
-  const trackingVariants = results.map((r) => r.experiment.selectedVariantName);
+  const trackingVariants = results.map((r) => {
+    const { selectedVariantName } = r.experiment;
+    if (selectedVariantName === 'no changes') return 'default';
+    return selectedVariantName;
+  });
   document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
 
   decoratePreviewCheck(config, experiments);
