@@ -74,6 +74,7 @@
 .marketo fieldset.mktoFormCol {
   display: none;
 }
+
 .marketo fieldset.mktoFormCol.mktoVisible {
   display: block;
 }
