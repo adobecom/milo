@@ -171,9 +171,19 @@ describe('Modals', () => {
     expect(window.innerWidth).not.equal(dialogmodal.offsetWidth);
   });
 
-  it('does not error for a modal with a non-querySelector compliant hash', () => {
-    // Test passing, means there was no error thrown
+  it('does not error for a modal with a non-querySelector compliant hash', async () => {
     window.location.hash = '#milo=&';
+
+    const hashChangeTriggered = new Promise((resolve) => {
+      window.addEventListener('hashchange', function onHashChange() {
+        window.removeEventListener('hashchange', onHashChange);
+        resolve();
+      });
+    });
+
     window.location.hash = '';
+
+    // Test passing, means there was no error thrown
+    await hashChangeTriggered;
   });
 });
