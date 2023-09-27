@@ -180,15 +180,16 @@ function normalizeKeys(obj) {
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
-      let selectorEl = rootEl.querySelector(cmd.selector);
-
-      if (!selectorEl) return;
-
-      if (selectorEl.classList[0] === 'section-metadata') {
-        selectorEl = selectorEl.parentElement || selectorEl;
+      try {
+        let selectorEl = rootEl.querySelector(cmd.selector);
+        if (!selectorEl) return;
+        if (selectorEl.classList[0] === 'section-metadata') {
+          selectorEl = selectorEl.parentElement || selectorEl;
+        }
+        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
+      } catch (e) {
+        console.log('Invalid selector: ', cmd.selector);
       }
-
-      COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
