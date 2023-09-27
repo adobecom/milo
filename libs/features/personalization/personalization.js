@@ -49,19 +49,23 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
-const createFrag = (url, manifestId) => {
+const createFrag = (el, url, manifestId) => {
   const a = createTag('a', { href: url }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
-  const p = createTag('p', undefined, a);
+  let frag = createTag('p', undefined, a);
+  const isSection = el.parentElement.nodeName === 'MAIN';
+  if (isSection) {
+    frag = createTag('div', undefined, frag);
+  }
   loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
-  return p;
+  return frag;
 };
 
 const COMMANDS = {
   insertcontentafter: (el, target, manifestId) => el
-    .insertAdjacentElement('afterend', createFrag(target, manifestId)),
+    .insertAdjacentElement('afterend', createFrag(el, target, manifestId)),
   insertcontentbefore: (el, target, manifestId) => el
-    .insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
+    .insertAdjacentElement('beforebegin', createFrag(el, target, manifestId)),
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
@@ -72,7 +76,7 @@ const COMMANDS = {
   },
   replacecontent: (el, target, manifestId) => {
     if (el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(target, manifestId));
+    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
