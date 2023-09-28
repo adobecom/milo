@@ -34,13 +34,14 @@ async function getDetails(path) {
   };
 }
 
-export async function openWord(e, parent) {
+export async function openWord(e, item) {
   e.target.classList.add('locui-action-loading');
-  const details = await getStatus(parent.pathname);
+  const details = await getStatus(item.value.path);
   e.target.classList.remove('locui-action-loading');
   if (details.edit.url) window.open(details.edit.url, '_blank');
 }
 
 export async function setActions(item) {
-  item.value = await getDetails(item.value.path);
+  const details = await getDetails(item.value.path);
+  item.value = { ...item.value, ...details };
 }
