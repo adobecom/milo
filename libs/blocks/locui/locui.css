@@ -2,11 +2,7 @@ body {
   background: url('./img/bg.png');
   background-size: 100%;
   background-repeat: no-repeat;
-}
-
-main {
-  max-height: 100vh;
-  overflow-y: scroll;
+  background-attachment: fixed;
 }
 
 .locui {
@@ -21,7 +17,7 @@ main {
 }
 
 .locui-sync-badge-container {
-  position: fixed;
+  position: absolute;
   top: 0;
   width: 83.4%;
   margin: 0 auto;
@@ -110,7 +106,7 @@ span.locui-sync-badge-mono {
 }
 
 .locui-status-toast-section {
-  position: fixed;
+  position: absolute;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
@@ -549,8 +545,4 @@ button.locui-url-action-view {
   #locui-modal {
     min-width: 800px;
   }
-}
-
-helix-sidekick {
-  display: none;
 }

@@ -12,6 +12,13 @@ export default function Actions() {
         ${allowFindFragments.value && html`
           <button 
             class=locui-urls-heading-action
+            onClick=${findFragments}>Hello video crew
+          </button>
+        `}
+
+        ${allowFindFragments.value && html`
+          <button 
+            class=locui-urls-heading-action
             onClick=${findFragments}>Find Fragments
           </button>
         `}
