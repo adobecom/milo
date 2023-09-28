@@ -65,8 +65,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
     const emptyPs = el.querySelectorAll(':scope p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
     if (!headings?.length && !emptyPs?.length) {
-      const wrapper = el.querySelector(':scope > div');
-      [...wrapper.children]
+      [...el.querySelectorAll(':scope div:not([class])')]
         .filter((child) => child.textContent.trim() !== '')
         .forEach((text) => text.classList.add(`body-${config[1]}`));
     }
