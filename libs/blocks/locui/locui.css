@@ -505,6 +505,10 @@ button.locui-url-action-edit {
   background: url('../../ui/img/word-icon.svg') center 14px / 26px no-repeat;
 }
 
+button.locui-url-action-edit-excel {
+  background: url('../../ui/img/excel-icon.svg') center 14px / 26px no-repeat;
+}
+
 button.locui-url-action-view {
   background: url('../../ui/img/aec-icon.svg') center 14px / 26px no-repeat;
 }

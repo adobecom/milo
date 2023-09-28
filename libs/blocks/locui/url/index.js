@@ -1,12 +1,13 @@
 import { getStatus } from '../utils/franklin.js';
 
+const TIME_FORMAT = { hour12: false, hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
+
 function getPrettyDate(string) {
   if (!string) return ['Not available'];
   const rawDate = new Date(string);
-  rawDate.setSeconds(0, 0);
   const date = rawDate.toLocaleDateString();
-  const time = rawDate.toLocaleTimeString([], { hour12: false });
-  return [date, `${time} GMT`];
+  const time = rawDate.toLocaleTimeString([], TIME_FORMAT);
+  return [date, time];
 }
 
 export function handleAction(url) {
