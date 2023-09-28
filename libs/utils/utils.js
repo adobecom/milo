@@ -445,7 +445,7 @@ export async function loadBlock(block) {
   return block;
 }
 
-const convertHlxLink = (url) => (url.hostname.includes('.hlx.') ? url.pathname : url);
+const convertHlxUrl = (url) => (url.hostname.includes('.hlx.') ? url.pathname : url);
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
@@ -461,7 +461,7 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = convertHlxLink(textUrl);
+    const src = convertHlxUrl(textUrl);
 
     const img = createTag('img', { loading: 'lazy', src });
     if (altText) img.alt = altText;
@@ -486,7 +486,7 @@ export function decorateImageLinks(el) {
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
-      const url = convertHlxLink(new URL(source.trim()));
+      const url = convertHlxUrl(new URL(source.trim()));
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
