@@ -103,7 +103,7 @@ async function loadHeading() {
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
   window.document.title = `${projectName} - LocUI`;
-  // await preview(`${path}.json`);
+  await preview(`${path}.json`);
 }
 
 async function loginToSharePoint() {
