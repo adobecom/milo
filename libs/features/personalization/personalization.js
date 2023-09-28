@@ -440,7 +440,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariantName = selectedVariantName;
     config.selectedVariant = config.variants[selectedVariantName];
   } else {
-    /* c8 ignore next */
+    /* c8 ignore next 2 */
     config.selectedVariantName = 'default';
     config.selectedVariant = 'default';
   }
