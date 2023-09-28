@@ -248,7 +248,7 @@
   color: var(--marketo-form-text);
 }
 
-.marketo .mktoFormRow.adobe-privacy .mktoFormCol:not(fieldset) {
+.marketo .mktoFormRow[class*="adobe-privacy"] .mktoFormCol:not(fieldset) {
   margin-top: 21px;
 }
 
@@ -405,7 +405,7 @@
   width: 100%;
 }
 
-.dialog-modal .marketo .mktoFormRow.adobe-privacy {
+.dialog-modal .marketo .mktoFormRow[class*="adobe-privacy"] {
   width: 100%;
 }
 
@@ -455,13 +455,12 @@
     padding: var(--spacing-xxl);
   }
 
-  .marketo [class*="adobe-privacy"] fieldset.mktoFormCol.mktoVisible {
+  .marketo .mktoFormRowTop[class*="adobe-privacy"] {
     display: grid;
-    grid-column: span 2;
     width: 100%;
   }
 
-  .marketo .adobe-privacy .mktoFormCol.mktoVisible,
+  .marketo [class*="adobe-privacy"],
   .marketo .msg-error .mktoFormCol.mktoVisible,
   .marketo .mktoFormCol.mktoVisible .mktoFormCol.mktoVisible {
     width: 100%;
