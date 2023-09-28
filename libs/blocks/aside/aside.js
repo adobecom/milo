@@ -93,17 +93,15 @@ function decorateVideo(container) {
 
 function formatPromoButton(el) {
   if (!(el.classList.contains('promobar') && el.classList.contains('popup'))) return;
-  const actionArea = el.querySelectorAll('.action-area');
-  [...actionArea].forEach((aa) => {
-    const buttons = aa.querySelectorAll('.con-button');
-    [...buttons].forEach((btn) => {
-      if (!btn.classList.contains('outline')) btn.classList.add('fill');
+  el.querySelectorAll('.action-area').forEach((aa) => {
+    aa.querySelectorAll('.con-button:not(.outline)').forEach((btn) => {
+      btn.classList.add('fill');
     });
   });
 }
 
 function addCloseButton(el) {
-  const closeBtn = createTag('button', { class: 'promo-close close-sticky-section', 'aria-label': 'Close' }, closeSvg);
+  const closeBtn = createTag('button', { class: 'promo-close', 'aria-label': 'Close' }, closeSvg);
   el.querySelector('.foreground').appendChild(closeBtn);
   closeBtn.addEventListener('click', (e) => {
     e.target.closest('.section').classList.add('close-sticky-section');

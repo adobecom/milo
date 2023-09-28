@@ -27,8 +27,8 @@ function handleStickyPromobar(section) {
   section.classList.add('promo-sticky-section');
   section.classList.add('hide-sticky-section');
   let stickySectionEl = null;
-  const isPopupPromo = section.querySelector('.promobar').classList.contains('popup');
-  if (!isPopupPromo && main.children[0] !== section) {
+  const hasScrollControl = section.querySelector('.promobar').classList.contains('no-delay');
+  if (!hasScrollControl && main.children[0] !== section) {
     stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
     section.parentElement.insertBefore(stickySectionEl, section);
   }
