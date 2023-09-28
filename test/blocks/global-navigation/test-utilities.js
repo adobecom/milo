@@ -4,7 +4,6 @@ import sinon, { stub } from 'sinon';
 import { setViewport } from '@web/test-runner-commands';
 import initGnav from '../../../libs/blocks/global-navigation/global-navigation.js';
 import {
-  getLocale,
   setConfig,
   loadStyle,
 } from '../../../libs/utils/utils.js';
@@ -81,7 +80,6 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 export const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
-  contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
   locales,
 };
 
@@ -122,13 +120,15 @@ export const createFullGlobalNavigation = async ({
     // Intercept setTimeout and call the function immediately
     toFake: ['setTimeout'],
   });
-  setConfig(customConfig);
+  setConfig({ ...config, ...customConfig });
   await setViewport(viewports[viewport]);
   window.lana = { log: stub() };
   window.fetch = stub().callsFake((url) => {
     if (url.includes('profile')) { return mockRes({ payload: defaultProfile }); }
     if (url.includes('placeholders')) { return mockRes({ payload: placeholders || defaultPlaceholders }); }
     if (url.endsWith('large-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
+    if (url.includes('main--milo--adobecom.hlx.page')
+      && url.endsWith('feds-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     return null;
   });

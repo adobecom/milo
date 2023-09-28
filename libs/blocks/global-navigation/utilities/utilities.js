@@ -31,21 +31,42 @@ export function toFragment(htmlStrings, ...values) {
   return fragment;
 }
 
-export const getFedsPlaceholderConfig = () => {
-  const { locale } = getConfig();
-  let libOrigin = 'https://milo.adobe.com';
+let fedsContentRoot;
+export const getFedsContentRoot = () => {
+  if (fedsContentRoot) return fedsContentRoot;
+
+  fedsContentRoot = 'https://milo.adobe.com';
   const { origin } = window.location;
 
   if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    libOrigin = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
+    fedsContentRoot = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
   }
 
-  return {
+  return fedsContentRoot;
+};
+
+export const federatePictureSources = (section) => {
+  section?.querySelectorAll('[src], [srcset]').forEach((source) => {
+    const type = source.hasAttribute('src') ? 'src' : 'srcset';
+    source.setAttribute(type, source.getAttribute(type).replace(/^\.?\//, `${getFedsContentRoot()}/`));
+  });
+};
+
+let fedsPlaceholderConfig;
+export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
+  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
+
+  const { locale } = getConfig();
+  const libOrigin = getFedsContentRoot();
+
+  fedsPlaceholderConfig = {
     locale: {
       ...locale,
       contentRoot: `${libOrigin}${locale.prefix}`,
     },
   };
+
+  return fedsPlaceholderConfig;
 };
 
 export function getAnalyticsValue(str, index) {

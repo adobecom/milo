@@ -8,6 +8,8 @@ import {
 import {
   toFragment,
   getFedsPlaceholderConfig,
+  getFedsContentRoot,
+  federatePictureSources,
   getAnalyticsValue,
   decorateCta,
   getExperienceName,
@@ -157,18 +159,27 @@ const closeOnClickOutside = (e) => {
 };
 
 class Gnav {
-  constructor(body, el) {
+  /**
+   * Gnav constructor
+   * @param {Object} config Configuration object for Gnav class
+   * @param {Element} config.body The raw content to decorate to populate the Gnav
+   * @param {Element} config.el The placeholder element where the Gnav should be rendered
+   * @param {Boolean} [config.useFederatedContent] Whether the Gnav loads from a central location
+   */
+  constructor(config) {
+    Object.keys(config).forEach((key) => {
+      this[key] = config[key];
+    });
+
     this.blocks = {
       profile: {
-        rawElem: body.querySelector('.profile'),
+        rawElem: this.body.querySelector('.profile'),
         decoratedElem: toFragment`<div class="feds-profile"></div>`,
       },
       search: { config: { icon: CONFIG.icons.search } },
       breadcrumbs: { wrapper: '' },
     };
 
-    this.el = el;
-    this.body = body;
     decorateLinks(this.body);
     this.elements = {};
   }
@@ -231,6 +242,7 @@ class Gnav {
         ${breadcrumbs}
       </div>`;
 
+    if (this.useFederatedContent) federatePictureSources(this.elements.topnavWrapper);
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
   };
 
@@ -541,7 +553,11 @@ class Gnav {
     const itemType = this.getMainNavItemType(item);
 
     // All dropdown decoration is delayed
-    const delayDropdownDecoration = (template) => {
+    const delayDropdownDecoration = ({
+      template,
+      isFederatedGnav,
+      isFederatedMenu,
+    } = {}) => {
       let decorationTimeout;
 
       const decorateDropdown = () => logErrorFor(async () => {
@@ -554,6 +570,8 @@ class Gnav {
           item,
           template,
           type: itemType,
+          isFederatedGnav,
+          isFederatedMenu,
         });
       }, 'Decorate dropdown failed');
 
@@ -595,7 +613,11 @@ class Gnav {
         });
         observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
 
-        delayDropdownDecoration(triggerTemplate);
+        delayDropdownDecoration({
+          template: triggerTemplate,
+          isFederatedGnav: this.useFederatedContent,
+          isFederatedMenu: item.closest('.feds') instanceof HTMLElement,
+        });
         return triggerTemplate;
       }
       case 'primaryCta':
@@ -671,16 +693,22 @@ class Gnav {
 }
 
 export default async function init(header) {
-  const { locale } = getConfig();
-  // TODO locale.contentRoot is not the fallback we want if we implement centralized content
-  const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-  const resp = await fetch(`${url}.plain.html`);
-  const html = await resp.text();
-  if (!html) return null;
-  const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
-
   try {
-    const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
+    const { locale } = getConfig();
+    const useFederatedContent = getMetadata('feds')?.toLowerCase().includes('header');
+    const gnavPath = new URL(getMetadata('gnav-source') || `${locale.contentRoot}/gnav`);
+    const gnavUrl = useFederatedContent
+      ? new URL(`${getFedsContentRoot()}${gnavPath.pathname}`)
+      : gnavPath;
+    const resp = await fetch(`${gnavUrl.href}.plain.html`);
+    const html = await resp.text();
+    if (!html) throw new Error('Gnav content could not be fetched');
+    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
+    const gnav = new Gnav({
+      body: new DOMParser().parseFromString(parsedHTML, 'text/html').body,
+      el: header,
+      useFederatedContent,
+    });
     gnav.init();
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);

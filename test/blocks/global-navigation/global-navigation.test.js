@@ -2,8 +2,10 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
+import { setConfig } from '../../../libs/utils/utils.js';
+import initGnav from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
-import { isDesktop, isTangentToViewport } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
@@ -22,6 +24,38 @@ describe('global navigation', () => {
   });
 
   describe('basic sanity tests', () => {
+    it('should fetch the navigation from a centralized location based on metadata', async () => {
+      setConfig({ locale: { ietf: 'en-US', prefix: '' } });
+      const baseUrl = 'https://main--milo--adobecom.hlx.page';
+      const stub = sinon.stub(window, 'fetch');
+      const lanaStub = sinon.stub(window.lana, 'log');
+      // Check default path with centralized content
+      const fedsMeta = toFragment`<meta name="feds" content="header">`;
+      document.head.append(fedsMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(stub.calledOnceWith(`${baseUrl}/gnav.plain.html`)).to.be.true;
+      // Check custom path with centralized content
+      const customPath = '/path/to/gnav';
+      const gnavMeta = toFragment`<meta name="gnav-source" content="https://localhost:2000${customPath}">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(stub.calledWith(`${baseUrl}${customPath}.plain.html`)).to.be.true;
+      // Check that an invalid path doesn't make a network request
+      expect(stub.callCount).to.eql(2);
+      gnavMeta.setAttribute('content', customPath);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(stub.callCount).to.eql(2);
+      // Clean up
+      stub.reset();
+      lanaStub.reset();
+      fedsMeta.remove();
+      gnavMeta.remove();
+      document.body.replaceChildren();
+    });
+
     it('should render the navigation on desktop', async () => {
       const nav = await createFullGlobalNavigation();
 
@@ -32,7 +66,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
     });
 
     it('should render the navigation on smallDesktop', async () => {
@@ -44,7 +78,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
     });
 
     it('should render the navigation on mobile', async () => {
@@ -56,7 +90,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
     });
   });
 
@@ -220,6 +254,23 @@ describe('global navigation', () => {
   });
 
   describe('main nav', () => {
+    it('should federate image sources when needed', async () => {
+      const fedsMeta = toFragment`<meta name="feds" content="header">`;
+      document.head.append(fedsMeta);
+      await createFullGlobalNavigation();
+
+      const hasCorrectSources = [...document.querySelectorAll('img[src], source[srcset]')]
+        .every((source) => {
+          const attr = source.hasAttribute('src') ? 'src' : 'srcset';
+          return source.getAttribute(attr).includes('localhost')
+            || source.getAttribute(attr).startsWith('https://main--milo--adobecom.hlx.page/');
+        });
+
+      expect(hasCorrectSources).to.be.true;
+
+      fedsMeta.remove();
+    });
+
     describe('desktop', () => {
       it('should render the main nav', async () => {
         await createFullGlobalNavigation();
@@ -860,10 +911,6 @@ describe('global navigation', () => {
     });
   });
 
-  describe('Breadcrumbs', () => {
-
-  });
-
   describe('Viewport changes', () => {
     it('should render desktop -> small desktop -> mobile', async () => {
       const nav = await createFullGlobalNavigation();
@@ -875,7 +922,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
       expect([...document.querySelectorAll(selectors.headline)]
         .every((elem) => elem.getAttribute('daa-ll') === null))
         .to.be.true;
@@ -889,7 +936,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
       expect([...document.querySelectorAll(selectors.headline)]
         .every((elem) => elem.getAttribute('daa-ll') === null))
         .to.be.true;
@@ -903,7 +950,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
       expect([...document.querySelectorAll(selectors.headline)]
         .every((elem) => elem.getAttribute('daa-ll') !== null))
         .to.be.true;

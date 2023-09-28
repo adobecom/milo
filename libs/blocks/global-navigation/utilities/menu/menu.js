@@ -4,7 +4,10 @@ import {
   decorateCta,
   yieldToMain,
   getFedsPlaceholderConfig,
+  getFedsContentRoot,
+  federatePictureSources,
   logErrorFor,
+  lanaLog,
   setActiveDropdown,
   trigger,
   isDesktop,
@@ -264,22 +267,38 @@ const decorateMenu = (config) => logErrorFor(async () => {
         ${itemTopParent}
       </div>`;
 
+    if (config.isFederatedGnav) federatePictureSources(menuTemplate);
+
     await decorateColumns({ content: menuTemplate });
   }
 
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
-    const path = pathElement.href.replace(/(\.html$|$)/, '.plain.html');
-    const res = await fetch(path);
-    if (res.status !== 200) return;
-    const content = await res.text();
+    let content;
+
+    try {
+      const authoredPath = new URL(pathElement.href);
+      const path = config.isFederatedMenu || config.isFederatedGnav
+        ? new URL(`${getFedsContentRoot()}${authoredPath.pathname}`)
+        : authoredPath;
+
+      const res = await fetch(path.href.replace(/(\.html$|$)/, '.plain.html'));
+      content = await res.text();
+      if (!content) throw new Error('Section menu content could not be fetched');
+    } catch (e) {
+      lanaLog({ message: 'Could not decorate section menu.', e });
+      return;
+    }
+
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-content">
           ${parsedContent}
         </div>
       </div>`;
+
+    if (config.isFederatedMenu || config.isFederatedGnav) federatePictureSources(menuTemplate);
 
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);

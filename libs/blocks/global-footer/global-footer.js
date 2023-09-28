@@ -12,9 +12,12 @@ import {
   getExperienceName,
   loadDecorateMenu,
   getFedsPlaceholderConfig,
+  getFedsContentRoot,
+  federatePictureSources,
   getAnalyticsValue,
   loadBaseStyles,
   yieldToMain,
+  lanaLog,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey, replaceText } from '../../features/placeholders.js';
@@ -28,9 +31,18 @@ const CONFIG = {
 };
 
 class Footer {
-  constructor(footerEl, contentUrl) {
-    this.footerEl = footerEl;
-    this.contentUrl = contentUrl;
+  /**
+   * Footer constructor
+   * @param {Object} config Configuration object for Footer class
+   * @param {Element} config.contentUrl The raw content to decorate to populate the Footer
+   * @param {Element} config.footerEl The placeholder element where the Footer should be rendered
+   * @param {Boolean} [config.useFederatedContent] Whether the Footer loads from a central location
+   */
+  constructor(config) {
+    Object.keys(config).forEach((key) => {
+      this[key] = config[key];
+    });
+
     this.elements = {};
 
     this.init();
@@ -67,8 +79,10 @@ class Footer {
     // Fetch footer content
     this.body = await this.fetchContent();
 
-    // TODO: log to LANA if Footer content could not be found
-    if (!this.body) return;
+    if (!this.body) {
+      lanaLog({ message: 'Footer content could not be found' });
+      return;
+    }
     // TODO: revisit region picker and social links decoration logic
     const regionAnchor = this.body.querySelector('.region-selector a');
     if (regionAnchor?.href) {
@@ -114,7 +128,6 @@ class Footer {
     try {
       return new DOMParser().parseFromString(parsedHTML, 'text/html').body;
     } catch (e) {
-      // TODO: log to LANA if Footer could not be instantiated
       return null;
     }
   };
@@ -195,10 +208,9 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      // TODO: Log to Lana if URL could not be created
+      lanaLog({ message: 'Region Picker link is invalid' });
+      return this.elements.regionPicker;
     }
-
-    if (!url) return this.elements.regionPicker;
 
     const regionPickerClass = 'feds-regionPicker';
     const regionPickerTextElem = toFragment`<span class="feds-regionPicker-text">${regionSelector.textContent}</span>`;
@@ -344,12 +356,26 @@ class Footer {
         </div>
       </div>`;
 
+    if (this.useFederatedContent) federatePictureSources(this.elements.footer);
     return this.elements.footer;
   };
 }
 
 export default function init(block) {
-  const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
-  const footer = new Footer(block, url);
-  return footer;
+  try {
+    const useFederatedContent = getMetadata('feds')?.toLowerCase().includes('footer');
+    const footerPath = new URL(getMetadata('footer-source') || `${locale.contentRoot}/footer`);
+    const footerUrl = useFederatedContent
+      ? new URL(`${getFedsContentRoot()}${footerPath.pathname}`)
+      : footerPath;
+    const footer = new Footer({
+      footerEl: block,
+      contentUrl: footerUrl.href,
+      useFederatedContent,
+    });
+    return footer;
+  } catch (e) {
+    lanaLog({ message: 'Could not create footer', e });
+    return null;
+  }
 }
