@@ -30,7 +30,6 @@
       "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
       "passReferrer": true,
       "passConfig": true,
-      "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
     },
     {
