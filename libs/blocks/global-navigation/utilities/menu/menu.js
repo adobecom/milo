@@ -3,12 +3,15 @@ import {
   getActiveLink,
   getAnalyticsValue,
   getFedsPlaceholderConfig,
-  isDesktop,
+  federatePictureSources,
+  getFederatedUrl,
   logErrorFor,
-  selectors,
+  lanaLog,
   setActiveDropdown,
-  toFragment,
   trigger,
+  isDesktop,
+  selectors,
+  toFragment,
   yieldToMain,
   processMartechAttributeMetadata,
 } from '../utilities.js';
@@ -303,17 +306,27 @@ const decorateMenu = (config) => logErrorFor(async () => {
         ${itemTopParent}
       </div>`;
 
+    if (config.isFederatedGnav) federatePictureSources(menuTemplate);
+
     await decorateColumns({ content: menuTemplate });
   }
 
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
-    const path = pathElement.href.replace(/(\.html$|$)/, '.plain.html');
-    const res = await fetch(path);
-    if (res.status !== 200) return;
-    const content = await res.text();
-    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
+    let content;
+
+    try {
+      const path = getFederatedUrl(pathElement.href);
+      const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
+      content = await res.text();
+      if (!content) throw new Error('Section menu content could not be fetched');
+    } catch (e) {
+      lanaLog({ message: 'Could not decorate section menu.', e });
+      return;
+    }
+
+    const parsedContent = await replaceText(content, getFedsPlaceholderConfig());
     processMartechAttributeMetadata(parsedContent);
     const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
@@ -322,6 +335,9 @@ const decorateMenu = (config) => logErrorFor(async () => {
         </div>
       </div>`;
     decorateCrossCloudMenu(menuTemplate);
+
+    if (config.isFederatedMenu || config.isFederatedGnav) federatePictureSources(menuTemplate);
+
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
     await decorateColumns({ content: menuContent });

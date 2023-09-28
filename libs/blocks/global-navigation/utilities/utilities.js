@@ -18,6 +18,22 @@ export const selectors = {
   columnBreak: '.column-break',
 };
 
+export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
+  const url = getMetadata('gnav-source');
+  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
+    clientId: 'feds-milo',
+    sampleRate: 1,
+    tags,
+  });
+};
+
+export const logErrorFor = async (fn, message, tags) => {
+  try {
+    await fn();
+  } catch (e) {
+    lanaLog({ message, e, tags });
+  }
+};
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
     if (values[index] instanceof HTMLElement) {
@@ -36,21 +52,56 @@ export function toFragment(htmlStrings, ...values) {
   return fragment;
 }
 
-export const getFedsPlaceholderConfig = () => {
-  const { locale } = getConfig();
-  let libOrigin = 'https://milo.adobe.com';
+let fedsContentRoot;
+export const getFederatedContentRoot = () => {
+  if (fedsContentRoot) return fedsContentRoot;
+
   const { origin } = window.location;
+  fedsContentRoot = origin;
 
   if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    libOrigin = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
+    fedsContentRoot = `https://main--federal--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
   }
 
-  return {
+  return fedsContentRoot;
+};
+
+export const getFederatedUrl = (url = '') => {
+  if (typeof url !== 'string' || !url.includes('/federal/')) return url;
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
+  try {
+    const { pathname } = new URL(url);
+    return `${getFederatedContentRoot()}${pathname}`;
+  } catch (e) {
+    lanaLog({ message: `getFederatedUrl errored parsing the URL: ${url}`, e, tags: 'errorType=warn,module=global-footer' });
+  }
+  return url;
+};
+
+export const federatePictureSources = (section) => {
+  section?.querySelectorAll('[src], [srcset]').forEach((source) => {
+    const type = source.hasAttribute('src') ? 'src' : 'srcset';
+    const value = source.getAttribute(type);
+    if (!value) return;
+    source.setAttribute(type, value.replace(/^\.?\//, `${getFederatedContentRoot()}/`));
+  });
+};
+
+let fedsPlaceholderConfig;
+export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
+  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
+
+  const { locale } = getConfig();
+  const libOrigin = getFederatedContentRoot();
+
+  fedsPlaceholderConfig = {
     locale: {
       ...locale,
-      contentRoot: `${libOrigin}${locale.prefix}`,
+      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
     },
   };
+
+  return fedsPlaceholderConfig;
 };
 
 export function getAnalyticsValue(str, index) {
@@ -216,23 +267,6 @@ export function trigger({ element, event, type } = {}) {
 }
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
-
-export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
-  const url = getMetadata('gnav-source');
-  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
-    clientId: 'feds-milo',
-    sampleRate: 1,
-    tags,
-  });
-};
-
-export const logErrorFor = async (fn, message, tags) => {
-  try {
-    await fn();
-  } catch (e) {
-    lanaLog({ message, e, tags });
-  }
-};
 
 export function processMartechAttributeMetadata(html) {
   const dom = new DOMParser().parseFromString(html, 'text/html').body;

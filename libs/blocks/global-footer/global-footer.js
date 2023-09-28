@@ -1,22 +1,24 @@
 /* eslint-disable no-async-promise-executor */
 import {
   decorateAutoBlock,
-  getConfig,
-  getMetadata,
-  loadBlock,
   decorateLinks,
+  getMetadata,
+  getConfig,
+  loadBlock,
 } from '../../utils/utils.js';
 
 import {
-  toFragment,
-  getExperienceName,
-  loadDecorateMenu,
   getFedsPlaceholderConfig,
+  federatePictureSources,
+  getExperienceName,
   getAnalyticsValue,
+  loadDecorateMenu,
+  getFederatedUrl,
   loadBaseStyles,
   yieldToMain,
   lanaLog,
   logErrorFor,
+  toFragment,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey, replaceText } from '../../features/placeholders.js';
@@ -30,11 +32,11 @@ const CONFIG = {
 };
 
 class Footer {
-  constructor(footerEl, contentUrl) {
-    this.footerEl = footerEl;
+  constructor({ contentUrl, block, useFederatedContent } = {}) {
+    this.useFederatedContent = useFederatedContent;
     this.contentUrl = contentUrl;
+    this.block = block;
     this.elements = {};
-
     this.init();
   }
 
@@ -56,7 +58,7 @@ class Footer {
       }
     }, intersectionOptions);
 
-    observer.observe(this.footerEl);
+    observer.observe(this.block);
 
     // Set timeout after which we load the footer automatically
     decorationTimeout = setTimeout(() => {
@@ -101,9 +103,9 @@ class Footer {
     }
 
     const mepMartech = mep?.martech || '';
-    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
+    this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
 
-    this.footerEl.append(this.elements.footer);
+    this.block.append(this.elements.footer);
   }, 'Failed to decorate footer content', 'errorType=error,module=global-footer');
 
   fetchContent = async () => {
@@ -120,7 +122,7 @@ class Footer {
 
     if (!html) return null;
 
-    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
+    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig());
 
     try {
       return new DOMParser().parseFromString(parsedHTML, 'text/html').body;
@@ -167,7 +169,7 @@ class Footer {
 
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
-    this.footerEl.append(elem);
+    this.block.append(elem);
   };
 
   decorateProducts = async () => {
@@ -181,7 +183,7 @@ class Footer {
     this.elements.featuredProducts = toFragment`<div class="feds-featuredProducts"></div>`;
 
     const [placeholder] = await Promise.all([
-      replaceKey('featured-products', getFedsPlaceholderConfig(), 'feds'),
+      replaceKey('featured-products', getFedsPlaceholderConfig()),
       this.loadMenuLogic(),
     ]);
 
@@ -208,10 +210,8 @@ class Footer {
       url = new URL(regionSelector.href);
     } catch (e) {
       lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'errorType=error,module=global-footer' });
-      throw e;
+      return this.elements.regionPicker;
     }
-
-    if (!url) return this.elements.regionPicker;
 
     const regionPickerClass = 'feds-regionPicker';
     const regionPickerTextElem = toFragment`<span class="feds-regionPicker-text">${regionSelector.textContent}</span>`;
@@ -357,12 +357,22 @@ class Footer {
         </div>
       </div>`;
 
+    if (this.useFederatedContent) federatePictureSources(this.elements.footer);
     return this.elements.footer;
   };
 }
 
 export default function init(block) {
-  const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
-  const footer = new Footer(block, url);
-  return footer;
+  try {
+    const contentUrl = getFederatedUrl(getMetadata('footer-source') || `${locale.contentRoot}/footer`);
+    const footer = new Footer({
+      block,
+      contentUrl,
+      useFederatedContent: contentUrl.includes('/federal/'),
+    });
+    return footer;
+  } catch (e) {
+    lanaLog({ message: 'Could not create footer', e });
+    return null;
+  }
 }
