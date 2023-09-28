@@ -259,7 +259,7 @@ export function parseConfig(data) {
 
 /* c8 ignore start */
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
-  if (!placeholders?.length || selectedVariantName === 'no changes') return config;
+  if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     'value',
     selectedVariantName.toLowerCase(),
@@ -441,8 +441,8 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariant = config.variants[selectedVariantName];
   } else {
     /* c8 ignore next */
-    config.selectedVariantName = 'no changes';
-    config.selectedVariant = 'no changes';
+    config.selectedVariantName = 'default';
+    config.selectedVariant = 'default';
   }
 
   if (placeholders) {
@@ -480,7 +480,7 @@ export async function runPersonalization(info, config) {
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
-  if (selectedVariant === 'no changes') {
+  if (selectedVariant === 'default') {
     return { experiment };
   }
 
@@ -565,11 +565,7 @@ export async function applyPers(manifests) {
     expFragments: consolidateObjects(results, 'fragments'),
   });
   const trackingManifests = results.map((r) => r.experiment.manifest.split('/').pop().replace('.json', ''));
-  const trackingVariants = results.map((r) => {
-    const { selectedVariantName } = r.experiment;
-    if (selectedVariantName === 'no changes') return 'default';
-    return selectedVariantName;
-  });
+  const trackingVariants = results.map((r) => r.experiment.selectedVariantName);
   document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
 
   decoratePreviewCheck(config, experiments);
