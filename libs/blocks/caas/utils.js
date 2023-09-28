@@ -557,7 +557,7 @@ export const defaultState = {
   contentTypeTags: [],
   country: 'caas:country/us',
   customCard: '',
-  ctaAction: '_blank',
+  ctaAction: '_self',
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
