@@ -80,14 +80,11 @@ export default async function interlink(path, language, limit = 1000) {
             // split text node, insert link with matched text, and add link tracking
               .forEach(({ item, start, end }) => {
                 const text = textNode.nodeValue;
-                if (!p.getAttribute('daa-lh')) {
-                  p.setAttribute('daa-lh', 'interlinks_p_'.concat(item.Keyword));
-                }
                 const a = document.createElement('a');
                 a.title = item.Keyword;
                 a.href = item.URL;
                 a.setAttribute('data-origin', 'interlink');
-                a.setAttribute('daa-ll', a.title);
+                a.setAttribute('daa-ll', `${a.title}|interlinks_p_${item.Keyword}`);
                 a.appendChild(document.createTextNode(text.substring(start, end)));
                 p.insertBefore(a, textNode.nextSibling);
                 p.insertBefore(document.createTextNode(text.substring(end)), a.nextSibling);

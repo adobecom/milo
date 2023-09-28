@@ -440,6 +440,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariantName = selectedVariantName;
     config.selectedVariant = config.variants[selectedVariantName];
   } else {
+    /* c8 ignore next */
     config.selectedVariantName = 'no changes';
     config.selectedVariant = 'no changes';
   }
@@ -541,6 +542,7 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) {
+    /* c8 ignore next */
     decoratePreviewCheck(config, []);
     return;
   }
@@ -562,6 +564,9 @@ export async function applyPers(manifests) {
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
+  const trackingManifests = results.map((r) => r.experiment.manifest.split('/').pop().replace('.json', ''));
+  const trackingVariants = results.map((r) => r.experiment.selectedVariantName);
+  document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
 
   decoratePreviewCheck(config, experiments);
 }
