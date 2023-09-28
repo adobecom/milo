@@ -54,6 +54,8 @@ const MILO_BLOCKS = [
   'slideshare',
   'preflight',
   'promo',
+  'quiz',
+  'quiz-results',
   'tabs',
   'table-of-contents',
   'text',
@@ -443,6 +445,8 @@ export async function loadBlock(block) {
   return block;
 }
 
+const convertHlxUrl = (url) => (url?.hostname?.includes('.hlx.') ? url.pathname : url);
+
 export function decorateSVG(a) {
   const { textContent, href } = a;
   if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
@@ -457,7 +461,7 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = textUrl.hostname.includes('.hlx.') ? textUrl.pathname : textUrl;
+    const src = convertHlxUrl(textUrl);
 
     const img = createTag('img', { loading: 'lazy', src });
     if (altText) img.alt = altText;
@@ -482,7 +486,7 @@ export function decorateImageLinks(el) {
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
-      const url = new URL(source.trim());
+      const url = convertHlxUrl(new URL(source.trim()));
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
@@ -603,6 +607,7 @@ function decorateContent(el) {
   const block = document.createElement('div');
   block.className = 'content';
   block.append(...children);
+  block.dataset.block = '';
   return block;
 }
 
@@ -822,6 +827,8 @@ async function checkForPageMods() {
     const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests);
+  } else {
+    document.body.dataset.mep = 'default|default';
   }
 }
 
@@ -959,6 +966,10 @@ async function documentPostSectionLoading(config) {
 
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
+
+  import('../martech/analytics.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
+  });
 }
 
 async function processSection(section, config, isDoc) {
@@ -1016,6 +1027,10 @@ export async function loadArea(area = document) {
   for (const section of sections) {
     const sectionBlocks = await processSection(section, config, isDoc);
     areaBlocks.push(...sectionBlocks);
+
+    areaBlocks.forEach((block) => {
+      block.dataset.block = '';
+    });
   }
 
   const currentHash = window.location.hash;
@@ -1023,9 +1038,7 @@ export async function loadArea(area = document) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) {
-    await documentPostSectionLoading(config);
-  }
+  if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
 }

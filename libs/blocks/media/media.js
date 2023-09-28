@@ -1,7 +1,6 @@
 /* media - consonant v6 */
 
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
-import { decorateBlockAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
 const blockTypeSizes = {
@@ -21,7 +20,6 @@ function decorateAvatar(el) {
 }
 
 export default function init(el) {
-  decorateBlockAnalytics(el);
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
