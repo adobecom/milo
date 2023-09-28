@@ -445,7 +445,7 @@ export async function loadBlock(block) {
   return block;
 }
 
-const convertHlxUrl = (url) => (url.hostname.includes('.hlx.') ? url.pathname : url);
+const convertHlxUrl = (url) => (url?.hostname?.includes('.hlx.') ? url.pathname : url);
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
