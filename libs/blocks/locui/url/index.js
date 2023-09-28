@@ -1,19 +1,36 @@
 import { getStatus } from '../utils/franklin.js';
-import { urls } from '../utils/state.js';
-import { setStatus } from '../utils/status.js';
 
-function getFileName(editUrl) {
-  const url = new URL(editUrl);
-  return url.searchParams.get('file');
+function getPrettyDate(string) {
+  if (!string) return ['Not available'];
+  const rawDate = new Date(string);
+  rawDate.setSeconds(0, 0);
+  const date = rawDate.toLocaleDateString();
+  const time = rawDate.toLocaleTimeString([], { hour12: false });
+  return [date, `${time} GMT`];
+}
+
+export function handleAction(url) {
+  window.open(url, '_blank');
 }
 
 async function getDetails(path) {
   const json = await getStatus(path, false);
-  const filename = json.edit.url ? getFileName(json.edit.url) : undefined;
   return {
-    preview: { url: json.preview.url, status: json.preview.status },
-    edit: { url: json.edit.url, status: json.edit.status, filename },
-    live: { url: json.live.url, status: json.live.status },
+    preview: {
+      url: json.preview.url,
+      status: json.preview.status,
+      modified: getPrettyDate(json.preview.lastModified),
+    },
+    edit: {
+      url: json.edit.url,
+      status: json.edit.status,
+      modified: getPrettyDate(json.preview.sourceLastModified),
+    },
+    live: {
+      url: json.live.url,
+      status: json.live.status,
+      modified: getPrettyDate(json.live.lastModified),
+    },
   };
 }
 
@@ -24,13 +41,6 @@ export async function openWord(e, parent) {
   if (details.edit.url) window.open(details.edit.url, '_blank');
 }
 
-export async function setActions(idx) {
-  if (!urls.value[idx].actions) {
-    urls.value[idx].actions = await getDetails(urls.value[idx].pathname);
-    if (urls.value[idx].langstore) {
-      urls.value[idx].langstore.actions = {};
-      urls.value[idx].langstore.actions = await getDetails(urls.value[idx].langstore.pathname);
-    }
-    urls.value = [...urls.value];
-  }
+export async function setActions(item) {
+  item.value = await getDetails(item.value.path);
 }

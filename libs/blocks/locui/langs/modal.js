@@ -15,7 +15,9 @@ function Modal({ lang, prefix }) {
   return html`
     <h2>${lang.Language} (${prefix})</h2>
     <ul class=locui-urls>
-      ${localeUrls.value.map((url, idx) => html`<${Url} item=${url} key=${idx} idx=${idx} />`)}
+      ${localeUrls.value.map((url, idx) => html`
+        <${Url} item=${url} key=${idx} idx=${idx} suffix=${[prefix]} />
+      `)}
     </ul>
   `;
 }

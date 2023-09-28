@@ -311,6 +311,11 @@ button.locui-subproject-locale {
   line-height: 1;
 }
 
+button.locui-subproject-locale:hover {
+  cursor: pointer;
+  background: rgb(255 251 251 / 80%);
+}
+
 .locui-subproject-action-area {
   display: flex;
   justify-content: end;
@@ -363,8 +368,6 @@ ul.locui-urls {
 li.locui-url {
   padding: 18px 0;
   border-bottom: 1px solid #ccc;
-  display: grid;
-  grid-template-columns: .8fr auto;
 }
 
 li.locui-url:last-child {
@@ -384,13 +387,64 @@ p.locui-url-path {
   margin: 12px 0 24px;
 }
 
+/* TABS */
+
+.locui-tabs {
+  min-height: 120px;
+}
+
+.locui-url-tab-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.locui-url-tab-group-cols-1 {
+  grid-template-columns: 1fr;
+}
+
+span.locui-tab-buttons-suffix {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #777;
+}
+
+.locui-tab-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.locui-url-tab-button {
+  background: none;
+  font-size: 16px;
+  line-height: 1;
+  margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  padding: 0 0 4px;
+}
+
+.locui-url-tab-button[aria-selected="true"] {
+  border-bottom: 2px solid;
+}
+
+.locui-tab-panel[aria-selected="false"] {
+  display: none;
+}
+
+/* END TABS */
+
 div.locui-url-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
 .locui-url-source-actions {
-  margin-top: 12px;
+  margin-top: 22px;
   display: flex;
   gap: 24px;
 }
@@ -453,6 +507,25 @@ button.locui-url-action-edit {
 
 button.locui-url-action-view {
   background: url('../../ui/img/aec-icon.svg') center 14px / 26px no-repeat;
+}
+
+.locui-url-source-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 80%;
+  color: #676767;
+  padding-top: 6px;
+}
+
+.locui-url-source-details-col h3,
+.locui-url-source-details-col p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.locui-url-source-details-col h3 {
+  font-size: 16px;
+  text-transform: uppercase;
 }
 
 #locui-modal {

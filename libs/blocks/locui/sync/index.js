@@ -3,7 +3,6 @@ import { serviceStatusDate } from '../utils/state.js';
 
 export const showContents = signal(false);
 
-
 export function getPrettyDate() {
   if (!serviceStatusDate.value) return null;
   const dateObj = serviceStatusDate.value;

@@ -6,10 +6,12 @@ export default function Urls() {
   return html`
     <div class=locui-section>
       <div class=locui-section-heading>
-        <h2 class=locui-section-label>Source URLs</h2>
+        <h2 class=locui-section-label>URLs</h2>
       </div>
       <ul class=locui-urls>
-        ${urls.value.map((url, idx) => html`<${Url} item=${url} key=${idx} idx=${idx} />`)}
+        ${urls.value.map((url, idx) => html`
+          <${Url} item=${url} key=${idx} idx=${idx} suffix=${['source', 'langstore/en']} />
+        `)}
       </ul>
     </div>
   `;
