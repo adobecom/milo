@@ -6,11 +6,12 @@ function useSignal(value) {
 }
 
 function Actions({ item }) {
+  const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
   return html`
     <div class=locui-url-source-actions>
       <button
         disabled=${item.value.edit?.status === 404}
-        class="locui-url-action locui-url-action-edit"
+        class="locui-url-action locui-url-action-edit${isExcel}"
         onClick=${(e) => { openWord(e, item); }}>Edit</button>
       <button
         disabled=${item.value.preview?.status !== 200}
