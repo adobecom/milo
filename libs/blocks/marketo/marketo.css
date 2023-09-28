@@ -43,7 +43,7 @@
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
-  column-gap: 6%;
+  column-gap: 4.6%;
   align-items: flex-start;
   visibility: visible;
   opacity: 1;
@@ -482,7 +482,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-areas: "salutation ." "firstName lastName";
-    column-gap: 6%;
+    column-gap: 4.6%;
   }
 
   .marketo .mktoFormRow.mktoFormRowTop.comments,
