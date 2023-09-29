@@ -39,7 +39,6 @@
       "environments": [ "edit" ],
       "url": "/tools/floodgate/index.html?project=milo--adobecom",
       "passReferrer": true,
-      "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
     },
     {

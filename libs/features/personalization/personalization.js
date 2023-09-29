@@ -49,19 +49,23 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
-const createFrag = (url, manifestId) => {
+const createFrag = (el, url, manifestId) => {
   const a = createTag('a', { href: url }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
-  const p = createTag('p', undefined, a);
+  let frag = createTag('p', undefined, a);
+  const isSection = el.parentElement.nodeName === 'MAIN';
+  if (isSection) {
+    frag = createTag('div', undefined, frag);
+  }
   loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
-  return p;
+  return frag;
 };
 
 const COMMANDS = {
   insertcontentafter: (el, target, manifestId) => el
-    .insertAdjacentElement('afterend', createFrag(target, manifestId)),
+    .insertAdjacentElement('afterend', createFrag(el, target, manifestId)),
   insertcontentbefore: (el, target, manifestId) => el
-    .insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
+    .insertAdjacentElement('beforebegin', createFrag(el, target, manifestId)),
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
@@ -72,7 +76,7 @@ const COMMANDS = {
   },
   replacecontent: (el, target, manifestId) => {
     if (el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(target, manifestId));
+    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
@@ -180,15 +184,13 @@ function normalizeKeys(obj) {
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
-      let selectorEl = rootEl.querySelector(cmd.selector);
-
-      if (!selectorEl) return;
-
-      if (selectorEl.classList[0] === 'section-metadata') {
-        selectorEl = selectorEl.parentElement || selectorEl;
+      try {
+        const selectorEl = rootEl.querySelector(cmd.selector);
+        if (!selectorEl) return;
+        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
+      } catch (e) {
+        console.log('Invalid selector: ', cmd.selector);
       }
-
-      COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
@@ -439,6 +441,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariantName = selectedVariantName;
     config.selectedVariant = config.variants[selectedVariantName];
   } else {
+    /* c8 ignore next */
     config.selectedVariantName = 'no changes';
     config.selectedVariant = 'no changes';
   }
@@ -540,6 +543,7 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) {
+    /* c8 ignore next */
     decoratePreviewCheck(config, []);
     return;
   }
@@ -561,6 +565,9 @@ export async function applyPers(manifests) {
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
+  const trackingManifests = results.map((r) => r.experiment.manifest.split('/').pop().replace('.json', ''));
+  const trackingVariants = results.map((r) => r.experiment.selectedVariantName);
+  document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
 
   decoratePreviewCheck(config, experiments);
 }

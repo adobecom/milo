@@ -1,0 +1,431 @@
+{
+  "questions": {
+    "total": 9,
+    "offset": 0,
+    "limit": 9,
+    "data": [
+      {
+        "q": "q-category",
+        "heading": "What do you want to do today?",
+        "sub-head": "Pick up to three.",
+        "btn": "Next",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q1%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      },
+      {
+        "q": "q-photo",
+        "heading": "What do you want to do with photos?",
+        "sub-head": "Pick one.",
+        "btn": "Next",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q2-Photo%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      },
+      {
+        "q": "q-video",
+        "heading": "What do you want to do with video?",
+        "sub-head": "Pick one.",
+        "btn": "Next",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q2-Photo%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      },
+      {
+        "q": "q-design",
+        "heading": "What do you want to do with design?",
+        "sub-head": "Pick one.",
+        "btn": "Next",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q2-Design%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      },
+      {
+        "q": "q-illustration",
+        "heading": "What do you want to do with illustration?",
+        "sub-head": "Pick one.",
+        "btn": "Next",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q2-Illustration%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      },
+      {
+        "q": "q-pdf",
+        "heading": "What do you want to do with PDFs?",
+        "sub-head": "Pick one.",
+        "btn": "Next",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q2-Acrobat%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      },
+      {
+        "q": "q-3d",
+        "heading": "What do you want to do with 3D/AR?",
+        "sub-head": "Pick one.",
+        "btn": "Next",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-3D-AR%20BKGD?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      },
+      {
+        "q": "q-rather",
+        "heading": "For your projects, would you rather:",
+        "sub-head": "Pick one.",
+        "btn": "Next",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q3-Learn%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      },
+      {
+        "q": "q-customer",
+        "heading": "What else are you looking for today?",
+        "sub-head": "Pick one.",
+        "btn": "Get your results",
+        "background": "https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q4%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920",
+        "footerFragment": ""
+      }
+    ]
+  },
+  "q-video": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "social",
+        "title": "",
+        "text": "Create, edit, and share on social",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-video/1-PR-CreateEditShare.png"
+      },
+      {
+        "options": "pro",
+        "title": "",
+        "text": "Make pro-level edits for high-quality results",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-video/2-PR-ProLevelEdits.png"
+      },
+      {
+        "options": "movement",
+        "title": "",
+        "text": "Create graphics and transitions that move",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-video/3-AE-TitlesAndTransitions.png"
+      },
+      {
+        "options": "animate",
+        "title": "",
+        "text": "Make animations for cartoons or games",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-video/4-AN-Animations.png"
+      },
+      {
+        "options": "sound",
+        "title": "",
+        "text": "Edit, mix, and add sound effects",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-video/5-AU-SoundEffects.png"
+      }
+    ]
+  },
+  "q-illustration": {
+    "total": 4,
+    "offset": 0,
+    "limit": 4,
+    "data": [
+      {
+        "options": "raster",
+        "title": "",
+        "text": "Paint, draw, or doodle like on paper",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-illustration/1-PS-PaintDraw.png"
+      },
+      {
+        "options": "vector",
+        "title": "",
+        "text": "Make illustrations that work at any size",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-illustration/2-Ai-WorkAtAnySize.png"
+      },
+      {
+        "options": "crisp",
+        "title": "",
+        "text": "Draw crisp lines and smooth curves",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-illustration/3-Ai-CrispLines.png"
+      },
+      {
+        "options": "images",
+        "title": "",
+        "text": "Blend multiple images into something new",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-illustration/4-PS-BlendImages.png"
+      }
+    ]
+  },
+  "q-design": {
+    "total": 3,
+    "offset": 0,
+    "limit": 3,
+    "data": [
+      {
+        "options": "layouts",
+        "title": "",
+        "text": "Create layouts for magazines, books, or posters",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-design/1-%20Id-Layouts.png"
+      },
+      {
+        "options": "images",
+        "title": "",
+        "text": "Combine multiple images into new designs",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-design/2-PS-CombineImages.png"
+      },
+      {
+        "options": "graphics",
+        "title": "",
+        "text": "Create graphics and designs that work at any size",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-design/3-Ai-CreateGraphics.png"
+      }
+    ]
+  },
+  "q-customer": {
+    "total": 3,
+    "offset": 0,
+    "limit": 3,
+    "data": [
+      {
+        "options": "educational",
+        "title": "",
+        "text": "A student or teacher discount",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q4/2-StudentTeacher.png"
+      },
+      {
+        "options": "business",
+        "title": "",
+        "text": "Licenses and business features for teams",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q4/3-Work.png"
+      },
+      {
+        "options": "individual",
+        "title": "",
+        "text": "Neither apply",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q4/1-Individual.png"
+      }
+    ]
+  },
+  "q-photo": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "organize",
+        "title": "",
+        "text": "Get them sorted and organized",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-photo/1-LR-StoreAndOrganize.png"
+      },
+      {
+        "options": "batch",
+        "title": "",
+        "text": "Edit lots of photos quickly",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-photo/2-LR-ApplyFilters.png"
+      },
+      {
+        "options": "edit",
+        "title": "",
+        "text": "Edit and finesse the smallest details",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-photo/3-PS-RemoveObjects.png"
+      },
+      {
+        "options": "color",
+        "title": "",
+        "text": "Correct color and lighting like a pro",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-photo/4-PS-MakeDetailedColor.png"
+      },
+      {
+        "options": "blend",
+        "title": "",
+        "text": "Blend multiple shots into something new",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-photo/5-PS-BlendImages.png"
+      }
+    ]
+  },
+  "q-category": {
+    "total": 6,
+    "offset": 0,
+    "limit": 6,
+    "data": [
+      {
+        "options": "photo",
+        "title": "Photography",
+        "text": "Edit or organize my photos",
+        "image": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/1-Photo%20ICON.svg",
+        "cover": ""
+      },
+      {
+        "options": "video",
+        "title": "Video",
+        "text": "Create and edit video or audio",
+        "image": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/2-Video%20ICON.svg",
+        "cover": ""
+      },
+      {
+        "options": "design",
+        "title": "Graphic design",
+        "text": "Design layouts or websites",
+        "image": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/3-Design%20ICON.svg",
+        "cover": ""
+      },
+      {
+        "options": "illustration",
+        "title": "Illustration",
+        "text": "Paint, draw, or create illustrations",
+        "image": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/4-Illustration%20ICON.svg",
+        "cover": ""
+      },
+      {
+        "options": "pdf",
+        "title": "PDFs",
+        "text": "Create, edit, or sign PDFs",
+        "image": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/5-PDF%20ICON.svg",
+        "cover": ""
+      },
+      {
+        "options": "3d",
+        "title": "3D/AR",
+        "text": "Model, texture, and render 3D assets and scenes",
+        "image": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/6-3D-AR%20ICON.svg",
+        "cover": ""
+      }
+    ]
+  },
+  "q-pdf": {
+    "total": 6,
+    "offset": 0,
+    "limit": 6,
+    "data": [
+      {
+        "options": "create",
+        "title": "",
+        "text": "Create and export PDFs to Office",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-pdf/1-Ac-CreateExport.png"
+      },
+      {
+        "options": "edit",
+        "title": "",
+        "text": "Edit text and images in PDFs",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-pdf/2-Ac-EditText.png"
+      },
+      {
+        "options": "share",
+        "title": "",
+        "text": "Share PDFs with anyone",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-pdf/3-Ac-Share.png"
+      },
+      {
+        "options": "protect",
+        "title": "",
+        "text": "Protect and secure PDFs",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-pdf/4-Ac-Protect.png"
+      },
+      {
+        "options": "sign",
+        "title": "",
+        "text": "Sign PDFs wherever you are",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-pdf/5-Ac-Sign.png"
+      },
+      {
+        "options": "track",
+        "title": "",
+        "text": "Track signatures and progress",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-pdf/6-Ac-TrackSignatures.png"
+      }
+    ]
+  },
+  "q-rather": {
+    "total": 2,
+    "offset": 0,
+    "limit": 2,
+    "data": [
+      {
+        "options": "template",
+        "title": "",
+        "text": "Edit quickly and customize templates",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/1-Templates.png"
+      },
+      {
+        "options": "custom",
+        "title": "",
+        "text": "Take the time to control every detail",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/2-CustomDesigns.png"
+      }
+    ]
+  },
+  "q-3d": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "stage",
+        "title": "",
+        "text": "Assemble, stage, and render 3D scenes",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q3/3-Stager@1x.png"
+      },
+      {
+        "options": "texture",
+        "title": "",
+        "text": "Texture 3D assets in real time",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q3/2-Painter@1x.png"
+      },
+      {
+        "options": "materials",
+        "title": "",
+        "text": "Create 3D materials from real-life images",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q3/5-Sampler@1x.png"
+      },
+      {
+        "options": "model",
+        "title": "",
+        "text": "Create 3D models with digital clay",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q3/1-Modeler@1x.png"
+      },
+      {
+        "options": "assets",
+        "title": "",
+        "text": "Design 3D assets and materials",
+        "image": "",
+        "cover": "https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q3/4-Designer@1x.png"
+      }
+    ]
+  },
+  ":version": 3,
+  ":names": [
+    "questions",
+    "q-video",
+    "q-illustration",
+    "q-design",
+    "q-customer",
+    "q-photo",
+    "q-category",
+    "q-pdf",
+    "q-rather",
+    "q-3d"
+  ],
+  ":type": "multi-sheet"
+}
