@@ -346,6 +346,12 @@ button.locui-urls-heading-action {
   box-sizing: border-box;
 }
 
+button.loc-action:hover,
+button.locui-urls-heading-action:hover {
+  background: #a7055c;
+  cursor: pointer;
+}
+
 li.locui-subproject.locui-subproject-translated button.locui-urls-heading-action {
   background: #093;
 }
