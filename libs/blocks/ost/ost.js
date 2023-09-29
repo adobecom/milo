@@ -56,10 +56,11 @@ export const createLinkMarkup = (defaults) => (
         params.set('workflowStep', workflowStep);
       }
     } else {
-      const { displayRecurrence, displayPerUnit, displayTax } = options;
+      const { displayRecurrence, displayPerUnit, displayTax, forceTaxExclusive } = options;
       params.set('term', displayRecurrence);
       params.set('seat', displayPerUnit);
       params.set('tax', displayTax);
+      params.set('exclusive', forceTaxExclusive);
     }
     const { location } = window;
     return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
