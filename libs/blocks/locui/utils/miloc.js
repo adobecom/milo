@@ -39,9 +39,15 @@ export async function getProjectStatus() {
   const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`, { cache: 'reload' });
   const json = await resp.json();
 
+  if (json.projectStatus === 'sync') {
+    allowSyncToLangstore.value = false;
+  }
+
   if (json.projectStatus === 'sync'
     || json.projectStatus === 'download'
     || json.projectStatus === 'start-glaas') {
+    allowSyncToLangstore.value = false;
+    allowSendForLoc.value = false;
     setStatus('service', 'info', json.projectStatusText);
   }
 

@@ -35,29 +35,22 @@ async function findPageFragments(path) {
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  // TODO: Support nested fragments
   // Decorate the doc, but don't load any blocks (i.e. do not use loadArea)
   decorateSections(doc, true);
   const fragments = [...doc.querySelectorAll('.fragment, .modal.link-block')];
-  const fragmentUrls = fragments.reduce((rdx, fragment) => {
+  const fragmentUrls = fragments.reduce((acc, fragment) => {
     // Normalize the fragment path to support production urls.
     const pathname = fragment.dataset.modalPath || new URL(fragment.href).pathname.replace('.html', '');
+
+    // Find dupes across current iterator as well as original url list
+    const accDupe = acc.some((url) => url.pathname === pathname);
+    const dupe = urls.value.some((url) => url.pathname === pathname);
+
+    if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
-    // Look for duplicates that are already in the urls
-    const dupe = urls.value.some((url) => url.href === fragmentUrl.href);
-    if (!dupe) rdx.push(fragmentUrl);
-    return rdx;
+    acc.push(fragmentUrl);
+    return acc;
   }, []);
-  // TODO: Footer promos
-  // const footerPromo = doc.querySelector('[name="footer-promo-tag"]');
-  // if (footerPromo) {
-  //   const content = footerPromo.getAttribute('content');
-  //   if (content) {
-  //     const promoUrl = new URL(`${origin}/fragments/footer-promos/${content}`);
-  //     const dupe = urls.value.some((url) => url.href === promoUrl.href);
-  //     if (!dupe) fragmentUrls.push(promoUrl);
-  //   }
-  // }
   if (fragmentUrls.length === 0) return [];
   return getUrls(fragmentUrls);
 }
@@ -66,15 +59,22 @@ export async function findFragments() {
   setStatus('fragments', 'info', 'Finding fragments.');
   const found = urls.value.map((url) => findPageFragments(url.pathname));
   const pageFragments = await Promise.all(found);
+
   // For each page, loop through all the found fragments
-  const forExcel = pageFragments.reduce((rdx, fragments) => {
+  const forExcel = pageFragments.reduce((acc, fragments) => {
     if (fragments.length > 0) {
       fragments.forEach((fragment) => {
-        urls.value.push(fragment);
-        rdx.push([fragment.href]);
+        // De-dupe across pages that share fragments
+        const dupe = acc.some((url) => url[0] === fragment.href);
+        if (!dupe) {
+          // Push into urls state for the UI
+          urls.value.push(fragment);
+          // Push into excel
+          acc.push([fragment.href]);
+        }
       });
     }
-    return rdx;
+    return acc;
   }, []);
   setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
   setExcelStatus('Find fragments', `Found ${forExcel.length} fragments.`);
@@ -109,9 +109,9 @@ export async function syncToLangstore(e) {
 
 export async function sendForLoc(e) {
   e.target.disabled = true;
+  allowSyncToLangstore.value = false;
   const status = await startProject();
   if (status === 201) {
-    allowSyncToLangstore.value = false;
     allowSendForLoc.value = false;
   }
   e.target.disabled = false;
