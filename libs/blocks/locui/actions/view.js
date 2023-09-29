@@ -1,12 +1,24 @@
 import { html } from '../../../deps/htm-preact.js';
-import { urls, allowFindFragments, allowSyncToLangstore, allowSendForLoc, allowRollout } from '../utils/state.js';
-import { findFragments, syncToLangstore, sendForLoc, showRolloutOptions, showRollout, rolloutAll } from './index.js';
+import {
+  urls, languages, allowFindFragments, allowSyncToLangstore, allowSendForLoc, allowRollout,
+} from '../utils/state.js';
+import {
+  findFragments, syncToLangstore, sendForLoc, showRolloutOptions, showRollout, rolloutAll,
+} from './index.js';
 
 export default function Actions() {
+  const canAct = allowFindFragments.value
+              || allowSyncToLangstore.value
+              || allowSendForLoc.value
+              || allowRollout.value;
+  const canActStyle = canAct ? 'locui-section-label' : 'locui-section-label is-invisible';
+  const canReRollAll = languages.value.some((lang) => lang.status === 'completed');
+  const canRollAll = languages.value.some((lang) => lang.status === 'translated');
+
   return html`
     <div class=locui-section>
       <div class=locui-section-heading>
-        <h2 class=locui-section-label>Actions</h2>
+        <h2 class="${canActStyle}">Actions</h2>
       </div>
       <div class=locui-url-heading-actions>
         ${allowFindFragments.value && html`
@@ -39,16 +51,20 @@ export default function Actions() {
               </button>
             `}
             ${showRolloutOptions.value && html`
-              <button
-                onClick=${(e) => rolloutAll(e, false)}
-                class=locui-urls-heading-action>
-                Rollout all new
-              </button>
-              <button
-                onClick=${(e) => rolloutAll(e, true)}
-                class=locui-urls-heading-action>
-                Re-rollout all
-              </button>
+              ${canRollAll && html`
+                <button
+                  onClick=${(e) => rolloutAll(e, false)}
+                  class=locui-urls-heading-action>
+                  Rollout all new
+                </button>
+              `}
+              ${canReRollAll && html`
+                <button
+                  onClick=${(e) => rolloutAll(e, true)}
+                  class=locui-urls-heading-action>
+                  Re-rollout all
+                </button>
+              `}
             `}
           </div>
         `}

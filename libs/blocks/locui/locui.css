@@ -1,5 +1,5 @@
 body {
-  background: url('./img/bg.png');
+  background: url('./img/bg.gif');
   background-size: 100%;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -199,6 +199,10 @@ h2.locui-section-label {
   margin: 0;
   font-size: 22px;
   line-height: 1;
+}
+
+h2.locui-section-label.is-invisible {
+  opacity: 0;
 }
 
 p.locui-project-label {
