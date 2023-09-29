@@ -372,6 +372,7 @@ describe('Utils', () => {
       });
     });
 
+    // ToDo: Remove?
     it('decorates footer promo fragment', () => {
       const a = document.querySelector('main > div:last-of-type .fragment');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
@@ -493,6 +494,75 @@ describe('Utils', () => {
       htmlLinks.forEach((link) => {
         expect(link.href).to.not.contain('.html');
       });
+    });
+  });
+
+  describe('footer promo', () => {
+    const favicon = '<link rel="icon" href="data:,">';
+    const tagBasedOff = '<meta name="tag-based-footer-promo" content="off">';
+    const tagBasedOn = '<meta name="tag-based-footer-promo" content="on">';
+    const ccxVideo = '<meta name="footer-promo-tag" content="ccx-video-links">';
+    const metaBasedOff = '<meta name="footer-promo-tag" content="off">';
+    const analytics = '<meta property="article:tag" content="Analytics">';
+    const commerce = '<meta property="article:tag" content="Commerce">';
+    const summit = '<meta property="article:tag" content="Summit">';
+    const promoConfig = { locale: { contentRoot: '/test/utils/mocks' } };
+    let oldHead;
+    let promoBody;
+    let taxonomyData;
+
+    before(async () => {
+      oldHead = document.head.innerHTML;
+      promoBody = await readFile({ path: './mocks/body-footer-promo.html' });
+      taxonomyData = await readFile({ path: './mocks/taxonomy.json' });
+    });
+
+    beforeEach(() => {
+      document.body.innerHTML = promoBody;
+      window.fetch = mockFetch({ payload: JSON.parse(taxonomyData) });
+    });
+
+    afterEach(() => {
+      window.fetch = ogFetch;
+    });
+
+    after(() => {
+      document.head.innerHTML = oldHead;
+    });
+
+    it('loads from metadata without tag-based meta', async () => {
+      document.head.innerHTML = favicon + ccxVideo;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
+    it('loads from metadata with tag-based meta off', async () => {
+      document.head.innerHTML = favicon + ccxVideo + tagBasedOff;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
+    it('loads from tag in order on sheet', async () => {
+      document.head.innerHTML = ccxVideo + tagBasedOn + analytics + commerce + summit;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/commerce');
+    });
+
+    it('loads backup from metadata when tag has no promo', async () => {
+      document.head.innerHTML = ccxVideo + tagBasedOn + summit;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
+    it('does not load promo when disabled', async () => {
+      document.head.innerHTML = metaBasedOff + tagBasedOff + commerce;
+      await utils.decorateFooterPromo(promoConfig);
+      const div = document.querySelector('main > div:last-of-type');
+      expect(div.classList.contains('text')).to.be.true;
     });
   });
 });

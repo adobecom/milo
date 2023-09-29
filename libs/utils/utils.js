@@ -721,13 +721,48 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map(decorateSection);
 }
 
-function decorateFooterPromo(config) {
-  const footerPromo = getMetadata('footer-promo-tag');
-  if (!footerPromo) return;
-  const href = `${config.locale.contentRoot}/fragments/footer-promos/${footerPromo}`;
-  const para = createTag('p', {}, createTag('a', { href }, href));
-  const section = createTag('div', null, para);
-  document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+async function getFooterPromoByTag(contentRoot) {
+  const NAME = 'Name';
+  const FOOTER_PROMO_LINK = 'Footer Promo Link';
+  const taxonomyUrl = `${contentRoot}/taxonomy.json`;
+  const tagsOnPage = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content);
+
+  if (!tagsOnPage.length) return false;
+
+  try {
+    const resp = await fetch(taxonomyUrl);
+    if (!resp.ok) return false;
+    const { data } = await resp.json();
+    const primaryTag = data.find((tag) => tagsOnPage.includes(tag[NAME]) && tag[FOOTER_PROMO_LINK]);
+    if (primaryTag) return primaryTag[FOOTER_PROMO_LINK];
+  } catch (error) {
+    window.lana.log(`Footer Promo - Taxonomy error: ${error}`);
+    return false;
+  }
+  return false;
+}
+
+export async function decorateFooterPromo({ locale: { contentRoot } }) {
+  const footerPromoMeta = getMetadata('footer-promo-tag');
+  const tagBased = getMetadata('tag-based-footer-promo');
+  if ((!footerPromoMeta || footerPromoMeta === 'off') && tagBased !== 'on') return;
+
+  let href;
+
+  if (footerPromoMeta !== 'off') {
+    href = `${contentRoot}/fragments/footer-promos/${footerPromoMeta}`;
+  }
+
+  if (tagBased === 'on') {
+    const linkFromTag = await getFooterPromoByTag(contentRoot);
+    if (linkFromTag) href = linkFromTag;
+  }
+
+  if (href) {
+    const para = createTag('p', {}, createTag('a', { href }, href));
+    const section = createTag('div', null, para);
+    document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+  }
 }
 
 let imsLoaded;
@@ -923,10 +958,10 @@ function decorateMeta() {
   });
 }
 
-function decorateDocumentExtras(config) {
+async function decorateDocumentExtras(config) {
   decorateMeta();
   decorateHeader();
-  decorateFooterPromo(config);
+  await decorateFooterPromo(config);
 
   import('./samplerum.js').then(({ addRumListeners }) => {
     addRumListeners();
@@ -1016,7 +1051,7 @@ export async function loadArea(area = document) {
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
-    decorateDocumentExtras(config);
+    await decorateDocumentExtras(config);
   }
 
   const sections = decorateSections(area, isDoc);
