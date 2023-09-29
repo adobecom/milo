@@ -3,7 +3,6 @@
  */
 
 import { applyHoverPlay, decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
 const decorateVideo = async (container, video) => {
@@ -130,7 +129,6 @@ const decorateImage = (media) => {
 };
 
 export default function init(el) {
-  decorateBlockAnalytics(el);
   const isLight = el.classList.contains('light');
   if (!isLight) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
@@ -160,8 +158,6 @@ export default function init(el) {
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
-  const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  decorateLinkAnalytics(text, headings);
   decorateText(text, size);
   const iconArea = text.querySelector('.icon-area');
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);

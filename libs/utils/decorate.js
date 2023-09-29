@@ -1,5 +1,4 @@
 import { createTag } from './utils.js';
-import { decorateLinkAnalytics } from '../martech/attributes.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -17,12 +16,12 @@ export function decorateButtons(el, size) {
       parent.insertAdjacentElement('afterend', button);
       parent.remove();
     }
+    const actionArea = button.closest('p, div');
+    if (actionArea) {
+      actionArea.classList.add('action-area');
+      actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
+    }
   });
-  const actionArea = buttons[0].closest('p, div');
-  if (actionArea) {
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
-  }
 }
 
 export function decorateIconStack(el) {
@@ -74,7 +73,6 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
   }
   decorateButtons(el);
   if (type === 'merch') decorateIconStack(el);
-  decorateLinkAnalytics(el, headings);
 }
 
 export function decorateBlockBg(block, node) {

@@ -1,25 +1,19 @@
-# Adobe analytics
+# Sunset functions
 
-> Add tracking attributes to the DOM
+> All functions in this file are being deprecated. Use functions in analytics.js instead
 
-## Link hierarchy attributes
+## decorateBlockAnalytics
 
-### `daa-im`
+> Was used to add daa-lh and daa-im to the block
 
-Simple attribute flag if set to true will capture impressions for each link in that container.
+## decorateLinkAnalytics
 
-### `daa-lh`
+> Was used to add daa-lh to headers and daa-ll to links and buttons
 
-Hierarchy values that are used to create a complete view of where each interaction is located. 
+## analyticsGetLabel
 
-Our code will combine hierarchy values to create where (unique identifier) for every interaction.
+> Cleans up string. Used in analyticsDecorateList, gnav.js and footer.js
 
-## CTA attributes
+## analyticsDecorateList
 
-(CTA English value-CTA number in current box)
-
-### `daa-ll`
-
-Interaction identifier. Such as "Learn more" for a learn more link.
-
-[Home Page Link Tracking](https://wiki.corp.adobe.com/display/~cwest/PRD%3A+Home+Page+Link+Tracking)
+Used in gnav.js and footer.js to add tracking.
