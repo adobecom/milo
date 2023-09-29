@@ -1,21 +1,17 @@
-import { html, render, signal, useEffect } from '../../../deps/htm-preact.js';
+import { html, render } from '../../../deps/htm-preact.js';
 import { urls } from '../utils/state.js';
 import Url from '../url/view.js';
 import { origin } from '../utils/franklin.js';
 
-const localeUrls = signal([]);
-
 function Modal({ lang, prefix }) {
-  useEffect(() => {
-    localeUrls.value = urls.value.map((url) => {
-      return new URL(`${origin}/${prefix}${url.pathname}`);
-    });
-  }, [prefix]);
+  const localeUrls = urls.value.map(
+    (url) => new URL(`${origin}/${prefix}${url.pathname}`),
+  );
 
   return html`
     <h2>${lang.Language} (${prefix})</h2>
     <ul class=locui-urls>
-      ${localeUrls.value.map((url, idx) => html`
+      ${localeUrls.map((url, idx) => html`
         <${Url} item=${url} key=${idx} idx=${idx} suffix=${[prefix]} />
       `)}
     </ul>

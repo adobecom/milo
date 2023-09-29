@@ -6,6 +6,7 @@ function useSignal(value) {
 }
 
 function Actions({ item }) {
+  console.log(item.value.path);
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
   return html`
     <div class=locui-url-source-actions>

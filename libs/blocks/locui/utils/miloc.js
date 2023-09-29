@@ -21,6 +21,8 @@ const INTERVAL = 3000;
 const MAX_COUNT = 1200; // 3000 x 1200 = 3600000s = 1 hour
 const ROLLOUT_ALL_AVAILABLE = ['completed', 'translated'];
 
+let waiting = false;
+
 async function getMilocUrl() {
   const env = heading.value.env || null;
   const { miloc } = await getServiceConfig(origin, env);
@@ -120,7 +122,11 @@ export async function getServiceUpdates() {
   const excelUpdated = setInterval(async () => {
     serviceStatus.value = 'connected';
     serviceStatusDate.value = new Date();
-    projectStatus.value = await getProjectStatus(url);
+    if (!waiting) {
+      waiting = true;
+      projectStatus.value = await getProjectStatus(url);
+      waiting = false;
+    }
     count += 1;
     // Stop syncing after an hour
     if (count > MAX_COUNT) {
