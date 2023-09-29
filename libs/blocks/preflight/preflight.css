@@ -314,19 +314,41 @@ span.preflight-time {
   margin: 0;
 }
 
-.accessibility-grid-container {
+/* Accessibility css */
+.access-columns {
+  margin: 24px 48px;
+  gap: 48px;
+}
+
+.accessibility-result {
+  gap: 48px;
+}
+
+.access-image-grid {
   display: grid;
-  grid-gap: 10px;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 20px;
   max-width: 100%;
   margin: 20px;
+  margin-left: 72px;
 }
 
-.accessibility-grid-item {
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+.access-image-grid-item {
+  border: solid white 4px;
+  position: relative;
+  overflow: hidden;
+  width: 128px;
+  height: 128px;
 }
 
-.accessibility-item {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
+.access-image-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.access-image-header {
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-left: 72px;
 }

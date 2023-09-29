@@ -11,12 +11,12 @@ const altResult = signal({ icon: DEF_ICON, title: 'Image alt value', description
 async function checkAlt() {
   const main = document.querySelector('main');
   const images = main.querySelectorAll('img');
-  const imagesWithoutAlt = [];
   const result = { ...altResult.value };
+  const imagesWithoutAlt = [];
   images.forEach((img) => {
     const alt = img.getAttribute('alt');
     if (!alt || alt.trim() === '') {
-      imagesWithoutAlt.push(img.getAttribute('src').split('?')[0]);
+      imagesWithoutAlt.push(img.getAttribute('src'));
     }
   });
   if (!imagesWithoutAlt.length) {
@@ -46,12 +46,13 @@ export default function Accessibility() {
   useEffect(() => { checkAlt(); }, []);
 
   return html`
-  <div>
+  <div class="access-columns">
     <${AccessibilityItem} icon=${altResult.value.icon} title=${altResult.value.title} description=${altResult.value.description} />
     ${content.value.length > 0 && html`
-    <div class="accessibility-grid-container">
-      <p class="preflight-content-heading">Images</p>
-      ${Object.keys(content.value).map((key) => html`<div class="accessibility-grid-item">${content.value[key]}</div>`)}
+    <p class="access-image-header">Images</p>
+    <div class="access-image-grid">
+      ${Object.keys(content.value).map((key) => html`<div class="access-image-grid-item">
+        <img src="${content.value[key]}"></img></div>`)}
     </div>
     `}
   </div>`;
