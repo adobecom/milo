@@ -25,10 +25,11 @@
     {
       "containerId": "tools",
       "id": "localize",
-      "title": "Localize",
+      "title": "Localize project",
       "environments": [ "edit" ],
-      "url": "/tools/loc/index.html?project=milo--adobecom",
+      "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
       "passReferrer": true,
+      "passConfig": true,
       "includePaths": [ "**/:x**" ]
     },
     {

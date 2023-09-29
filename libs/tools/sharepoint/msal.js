@@ -1,5 +1,6 @@
 import getServiceConfig from '../../utils/service-config.js';
 import { loadScript, getConfig } from '../../utils/utils.js';
+import { getSiteOrigin } from './shared.js';
 import { accessToken, accessTokenExtra } from './state.js';
 
 const BASE_CONFIG = {
@@ -15,7 +16,8 @@ export async function getMSALConfig(telemetry) {
     const { base } = getConfig();
     await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
 
-    const { sharepoint } = await getServiceConfig(window.location.origin);
+    const origin = getSiteOrigin();
+    const { sharepoint } = await getServiceConfig(origin);
 
     const auth = {
       clientId: sharepoint.clientId,

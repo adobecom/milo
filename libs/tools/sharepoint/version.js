@@ -1,4 +1,4 @@
-import getServiceConfig from '../../utils/service-config.js';
+import { getSharePointDetails } from './shared.js';
 import { getReqOptions } from './msal.js';
 import login from './login.js';
 
@@ -18,17 +18,6 @@ async function loginToSharePoint(origin, telemetry) {
   const scopes = ['files.readwrite', 'sites.readwrite.all'];
   const extraScopes = [`${origin}/.default`];
   await login({ scopes, extraScopes, telemetry });
-}
-
-async function getSharePointDetails(hlxOrigin) {
-  const { sharepoint } = await getServiceConfig(hlxOrigin);
-  const spSiteHostname = sharepoint.site.split(',')[0].split('/').pop();
-  return {
-    origin: `https://${spSiteHostname}`,
-    siteId: sharepoint.siteId,
-    site: sharepoint.site,
-    driveId: sharepoint.driveId ? `drives/${sharepoint.driveId}` : 'drive',
-  };
 }
 
 async function getGraphVersions(site, driveId, itemId) {
