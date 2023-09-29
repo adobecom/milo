@@ -55,14 +55,14 @@ export default function Actions() {
                 <button
                   onClick=${(e) => rolloutAll(e, false)}
                   class=locui-urls-heading-action>
-                  Rollout all new
+                  Rollout all translated
                 </button>
               `}
               ${canReRollAll && html`
                 <button
                   onClick=${(e) => rolloutAll(e, true)}
                   class=locui-urls-heading-action>
-                  Re-rollout all
+                  Re-rollout all completed
                 </button>
               `}
             `}
