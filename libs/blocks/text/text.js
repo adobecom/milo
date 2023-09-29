@@ -16,7 +16,7 @@ const blockTypeSizes = {
     xlarge: ['xl', 'xxl'],
   },
   text: {
-    xsmall: ['xxs', 'xxs'],
+    xxsmall: ['xxs', 'xxs'],
     small: ['m', 's', 's'],
     medium: ['l', 'm', 'm'],
     large: ['xl', 'm', 'l'],
@@ -33,17 +33,19 @@ export default function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
-  rows.forEach((row) => row.classList.add('foreground'));
   const helperClasses = [];
   let blockType = 'text';
-  const size = el.classList.contains('legal') ? 'xsmall' : getBlockSize(el);
+  const size = el.classList.contains('legal') ? 'xxsmall' : getBlockSize(el);
   ['inset', 'long-form', 'bio'].forEach((variant, index) => {
     if (el.classList.contains(variant)) {
       helperClasses.push('max-width-8-desktop');
       blockType = (index > 0) ? 'standard' : variant;
     }
   });
-  decorateBlockText(el, blockTypeSizes[blockType][size]);
+  rows.forEach((row) => {
+    row.classList.add('foreground');
+    decorateBlockText(row, blockTypeSizes[blockType][size]);
+  });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {

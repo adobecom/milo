@@ -135,10 +135,6 @@
   gap: var(--spacing-xl) var(--spacing-m);
 }
 
-.legal.text-block .foreground:not(:last-child) {
-  margin-bottom: var(--spacing-xs);
-}
-
 .link-farm.text-block .foreground:first-child {
   grid-template-columns: auto;
 }
