@@ -320,8 +320,10 @@ span.preflight-time {
   gap: 48px;
 }
 
-.accessibility-result {
-  gap: 48px;
+.access-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
 }
 
 .access-image-grid {
