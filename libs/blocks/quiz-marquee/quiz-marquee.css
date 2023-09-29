@@ -1,0 +1,71 @@
+.quiz-marquee {
+  position: relative;
+  padding: var(--spacing-m) 0;
+  color: var(--color-white);
+}
+
+.light .quiz-marquee,
+.quiz-marquee.light {
+  color: var(--text-color);
+}
+
+.quiz-marquee > .foreground {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  display: grid;
+  gap: var(--spacing-m);
+}
+
+.quiz-marquee .foreground .copy {
+  display: grid;
+  gap: var(--spacing-s);
+}
+
+.quiz-marquee hr {
+  width: 100%;
+  border: none;
+  height: 1px;
+}
+
+.quiz-marquee .con-block .container {
+  width: unset;
+  margin: 0;
+}
+
+.quiz-marquee.split .asset {
+  /* position: absolute;
+  width: 50vw;
+  height: 100%;
+  right: 0; */
+  visibility: hidden;
+}
+
+.quiz-marquee .background-split picture img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+.quiz-marquee .foreground div:empty {
+  display: none;
+}
+
+/* tablet up */
+@media screen and (min-width: 600px) {
+  .quiz-marquee > .foreground.has-asset {
+    grid-template-columns: minmax(50%, 1fr) minmax(50%, 1fr);
+    align-items: center;
+  }
+  
+  .quiz-marquee .background-split {
+    position: absolute;
+    width: calc(50vw - var(--spacing-m));
+    height: 100%;
+    right: 0;
+    top: 0;
+  }
+
+  .quiz-marquee.asset-left .background-split {
+    right: unset;
+  }
+}
