@@ -445,8 +445,6 @@ export async function loadBlock(block) {
   return block;
 }
 
-const convertHlxUrl = (url) => (url?.hostname?.includes('.hlx.') ? url.pathname : url);
-
 export function decorateSVG(a) {
   const { textContent, href } = a;
   if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
@@ -461,7 +459,7 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = convertHlxUrl(textUrl);
+    const src = textUrl.hostname.includes('.hlx.') ? textUrl.pathname : textUrl;
 
     const img = createTag('img', { loading: 'lazy', src });
     if (altText) img.alt = altText;
@@ -486,7 +484,7 @@ export function decorateImageLinks(el) {
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
-      const url = convertHlxUrl(new URL(source.trim()));
+      const url = new URL(source.trim());
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
@@ -1029,7 +1027,7 @@ export async function loadArea(area = document) {
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {
-      block.dataset.block = '';
+      if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
 
