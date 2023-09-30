@@ -12,73 +12,24 @@ const base = miloLibs || codeRoot;
 
 loadStyle(`${base}/deps/commerce-web-components.css`);
 
+const wordNumbers = ['one', 'two', 'three', 'four'];
+
 const cardTypes = ['segment', 'special-offer', 'plans'];
 
 const getPodType = (styles) => styles?.find((style) => cardTypes.includes(style));
 
-const createDescription = (rows, cardType) => createTag('div', {
-  slot: 'body',
-  class: `consonant-${cardType}-description`,
-}, rows.slice(0, rows.length - 1));
-
-const createTitle = (titles, cardType) => {
-  const titleWrapper = createTag('div', { slot: 'heading', class: `consonant-${cardType}-title` });
-  titles?.forEach((title) => titleWrapper.appendChild(title));
-  return titleWrapper;
-};
-
-const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
-  const cardFooter = el.querySelector('.consonant-CardFooter');
-  const decorateWithSecureTransactionSign = () => {
-    const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    const label = createTag('span', { class: 'secure-transaction-label' });
-    const secureElement = createTag('span', { class: 'secure-transaction-icon' });
-    secureTransactionWrapper.append(secureElement, label);
-    replaceKey('secure-transaction', getConfig()).then((replacedKey) => {
-      label.textContent = replacedKey;
-    });
-    return secureTransactionWrapper;
-  };
-
-  const createCheckbox = (checkBoxText) => {
-    cardFooter.querySelector('hr')?.remove();
-    const container = createTag('label', { class: 'checkbox-container' });
-    const input = createTag('input', { id: 'alt-cta', type: 'checkbox' });
-    const checkmark = createTag('span', { class: 'checkmark' });
-    const label = createTag('span', { class: 'checkbox-label' }, checkBoxText.innerHTML);
-    container.append(input, checkmark, label);
-    return container;
-  };
-
-  const createSecureSign = () => {
-    const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    const standardWrapper = createTag('div', { class: 'standard-wrapper' });
-    const secureTransactionWrapper = decorateWithSecureTransactionSign();
-    standardWrapper.append(secureTransactionWrapper, cardFooterRow);
-    cardFooter?.append(standardWrapper);
-  };
-
-  const decorateAlternativeCta = () => {
-    const altCtaRegex = /href=".*"/;
-    if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return;
-    const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
-    const checkboxContainer = createCheckbox(altCtaMetaData[0]);
-    const altCtaButtonData = altCtaMetaData[1];
-    decorateButtons(altCtaButtonData);
-    const altCtaButton = createTag('div', { class: originalCtaButton.classList }, altCtaButtonData.innerHTML);
-    altCtaButton.classList.add('button--inactive');
-    checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', ({ target: { checked } }) => {
-      originalCtaButton.classList.toggle('button--inactive', checked);
-      altCtaButton.classList.toggle('button--inactive', !checked);
-    });
-    cardFooterRow.append(altCtaButton);
-    cardFooter.prepend(checkboxContainer);
-    altCtaMetaData[0].parentNode.remove();
-  };
-  if (altCtaMetaData !== null) decorateAlternativeCta();
-  if (el.classList.contains('secure')) createSecureSign();
-  cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
+const checkBoxLabel = (el, altCtaMetaData) => {
+  const altCtaRegex = /href=".*"/;
+  if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return null;
+  const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
+  const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
+  const altCtaButtonData = altCtaMetaData[1];
+  decorateButtons(altCtaButtonData);
+  const altCtaButton = createTag('div', { class: [...originalCtaButton.classList, 'altCta'] }, altCtaButtonData.innerHTML);
+  altCtaButton.classList.add('button--inactive');
+  cardFooterRow.append(altCtaButton);
+  altCtaMetaData[0].parentNode.remove();
+  return altCtaButtonData;
 };
 
 const addInner = (el, altCta, cardType, merchCard) => {
@@ -87,16 +38,26 @@ const addInner = (el, altCta, cardType, merchCard) => {
   const merch = styles.includes('merch-card');
   const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
   const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
-  const list = el.querySelector('ul');
-
   const inner = el.querySelector(':scope > div:not([class])');
-  const title = createTitle(titles, cardType);
-  const description = createDescription(rows, cardType, inner);
+  let titleNumber = 0;
+  const body = createTag('div', { slot: 'body' });
+  innerElements.forEach((element) => {
+    if (element.tagName.match(/^H[1-6]$/)) {
+      merchCard.append(createTag(element.tagName, { slot: `${titleNumber !== 0 ? `heading-${wordNumbers[titleNumber]}` : 'heading'}` }, element.textContent));
+      titleNumber += 1;
+    }
+    if (element.tagName.match(/^P$/)) {
+      body.append(element);
+    }
+    if (element.tagName.match(/^UL$/)) {
+      const list = el.querySelector('ul');
+      list.querySelectorAll('li');
+      merchCard.append(list);
+    }
+    merchCard.append(body);
+  });
 
-  merchCard.prepend(title);
-  merchCard.append(description);
   addFooter(links, inner, merchCard);
-  decorateFooter(el, altCta, cardType);
   merchCard.append(inner);
 };
 
@@ -138,7 +99,7 @@ const init = (el) => {
       }
     }
   });
-
+  if (ctas) decorateButtons(ctas);
   const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
 
   if (ribbonMetadata !== null) {
@@ -155,8 +116,14 @@ const init = (el) => {
     merchCard.setAttribute('icons', JSON.stringify(Array.from(icons).map((icon) => icon.querySelector('img').src)));
     icons.forEach((icon) => icon.parentElement.remove());
   }
-
-  if (ctas) decorateButtons(ctas);
+  if (styles.includes('secure')) {
+    replaceKey('secure-transaction', getConfig())
+      .then((key) => merchCard.setAttribute('secure-label', key));
+  }
+  if (altCta) {
+    const checkboxLabel = checkBoxLabel(el, altCta);
+    if (checkboxLabel !== null) merchCard.setAttribute('checkbox-label', checkboxLabel);
+  }
   const footer = createTag('div', { slot: 'footer' });
   footer.appendChild(ctas);
   addInner(el, altCta, cardType, merchCard);
