@@ -260,7 +260,7 @@ export function parseConfig(data) {
 
 /* c8 ignore start */
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
-  if (!placeholders?.length || selectedVariantName === 'no changes') return config;
+  if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     'value',
     selectedVariantName.toLowerCase(),
@@ -441,9 +441,9 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariantName = selectedVariantName;
     config.selectedVariant = config.variants[selectedVariantName];
   } else {
-    /* c8 ignore next */
-    config.selectedVariantName = 'no changes';
-    config.selectedVariant = 'no changes';
+    /* c8 ignore next 2 */
+    config.selectedVariantName = 'default';
+    config.selectedVariant = 'default';
   }
 
   if (placeholders) {
@@ -481,7 +481,7 @@ export async function runPersonalization(info, config) {
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
-  if (selectedVariant === 'no changes') {
+  if (selectedVariant === 'default') {
     return { experiment };
   }
 
