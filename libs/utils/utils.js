@@ -54,6 +54,8 @@ const MILO_BLOCKS = [
   'slideshare',
   'preflight',
   'promo',
+  'quiz',
+  'quiz-results',
   'tabs',
   'table-of-contents',
   'text',
@@ -1025,7 +1027,7 @@ export async function loadArea(area = document) {
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {
-      block.dataset.block = '';
+      if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
 
