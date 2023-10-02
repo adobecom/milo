@@ -274,7 +274,7 @@ const App = ({
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
-  if (isDataLoaded) {
+  if (isDataLoaded && selectedQuestion) {
     return html`<div class="quiz-container">
                     <${StepIndicator} 
                       currentStep=${currentStep} 
