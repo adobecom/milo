@@ -274,48 +274,43 @@ const App = ({
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
-  if (isDataLoaded && selectedQuestion) {
-    return html`<div class="quiz-container">
-                    <${StepIndicator} 
-                      currentStep=${currentStep} 
-                      totalSteps=${totalSteps} 
-                      prevStepIndicator=${prevStepIndicator}
-                      top="${true}" />
-
-                    ${getStringValue('background') != '' && html`<div class="quiz-background">
-                        ${DecorateBlockBackground(getStringValue)}
-                    </div>`}
-
-                    <${DecorateBlockForeground} 
-                        heading=${getStringValue('heading')} 
-                        subhead=${getStringValue('sub-head')} 
-                        btnText=${getStringValue('btn')} />
-                      
-                    <${GetQuizOption} 
-                        btnText=${getStringValue('btn')} 
-                        minSelections=${minSelections} 
-                        maxSelections=${maxSelections} 
-                        options=${stringData[selectedQuestion.questions]} 
-                        countSelectedCards=${countSelectedCards}
-                        selectedCards=${selectedCards}
-                        onOptionClick=${onOptionClick}
-                        getOptionsIcons=${getOptionsIcons}
-                        handleOnNextClick=${handleOnNextClick}
-                        btnAnalyticsData=${btnAnalytics}/>
-
-                    <${StepIndicator} 
+  return html`<div class="quiz-container">
+                  <${StepIndicator} 
                     currentStep=${currentStep} 
                     totalSteps=${totalSteps} 
                     prevStepIndicator=${prevStepIndicator}
-                    bottom="${true}" />
+                    top="${true}" />
 
-                    <div class="quiz-footer">
-                    </div>
-                </div>`;
-  }
-  else {
-    return html``;
-  }
+                  ${getStringValue('background') != '' && html`<div class="quiz-background">
+                      ${DecorateBlockBackground(getStringValue)}
+                  </div>`}
+
+                  <${DecorateBlockForeground} 
+                      heading=${getStringValue('heading')} 
+                      subhead=${getStringValue('sub-head')} 
+                      btnText=${getStringValue('btn')} />
+                    
+                  <${GetQuizOption} 
+                      btnText=${getStringValue('btn')} 
+                      minSelections=${minSelections} 
+                      maxSelections=${maxSelections} 
+                      options=${stringData[selectedQuestion.questions]} 
+                      countSelectedCards=${countSelectedCards}
+                      selectedCards=${selectedCards}
+                      onOptionClick=${onOptionClick}
+                      getOptionsIcons=${getOptionsIcons}
+                      handleOnNextClick=${handleOnNextClick}
+                      btnAnalyticsData=${btnAnalytics}/>
+
+                  <${StepIndicator} 
+                  currentStep=${currentStep} 
+                  totalSteps=${totalSteps} 
+                  prevStepIndicator=${prevStepIndicator}
+                  bottom="${true}" />
+
+                  <div class="quiz-footer">
+                  </div>
+              </div>`;
 
 };
 
