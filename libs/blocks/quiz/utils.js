@@ -355,7 +355,6 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
   const allcards = Object.keys(userInputSelections);
   let nextQuizViews = [];
   let hasResultTrigger = false;
-  let lastStopValue;
 
   allcards.forEach((selection) => {
     // for each elem in current selection, find its coresponding
@@ -373,7 +372,6 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
           nextQuizViews = []; // Resetting the nextQuizViews
           // eslint-disable-next-line no-param-reassign
           userFlow = []; // Resetting the userFlow as well
-          lastStopValue = 'RESET';
         }
 
         if (!hasResultTrigger) {
@@ -404,7 +402,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
   // Filtering out the NOT() from the nextQuizViews.
   nextQuizViews = nextQuizViews.filter((view) => view.startsWith('NOT(') === false);
 
-  return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])], lastStopValue };
+  return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])] };
 };
 
 export const transformToFlowData = (userSelection) => {
