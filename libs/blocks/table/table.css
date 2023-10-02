@@ -141,7 +141,7 @@
   border-top-left-radius: 16px;
 }
 
-.table .row-heading .col-heading .heading-title {
+.table .row-heading .col-heading .tracking-header {
   font-size: var(--type-heading-s-size);
   line-height: var(--type-heading-s-lh);
   font-weight: bold;
