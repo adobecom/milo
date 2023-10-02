@@ -11,7 +11,7 @@
 }
 
 .quiz {
-  min-height: calc(100vh - 131px); /* window height minus global nav + global footer heights */
+  min-height: calc(100vh - 64px); /* window height minus global nav height */
 }
 
 .quiz-container {
