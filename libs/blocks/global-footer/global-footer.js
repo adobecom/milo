@@ -98,7 +98,7 @@ class Footer {
       await task();
     }
 
-    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer`);
+    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
 
     this.footerEl.append(this.elements.footer);
   };
