@@ -19,7 +19,7 @@ describe('Metadata', () => {
   it('Flattens URLs', async () => {
     const expectedResults = [
       'https://milo.adobe.com/index.html',
-      'https://www.youtube.com/watch?v=9H5S4Cc5SgM'
+      'https://www.youtube.com/watch?v=9H5S4Cc5SgM',
     ];
     const cardMetadataValues = document.querySelectorAll('.card-metadata a');
 
@@ -28,6 +28,5 @@ describe('Metadata', () => {
 
     const youtubeUrl = await checkUrl(cardMetadataValues[1].toString());
     expect(youtubeUrl).to.equal(expectedResults[1]);
-    
   });
 });
