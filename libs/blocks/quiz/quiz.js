@@ -88,7 +88,7 @@ const App = ({
       if (currentFlow && currentFlow.length) {
         setSelectedQuestion(questionList[currentFlow] || []);
       }
-      const lastQuestion = [...Object.keys(questionList)]?.pop();
+      const lastQuestion = [...Object.keys(questionList)].pop() || {};
       if (lastQuestion === currentFlow) {
         setTotalSteps(totalSteps - 1);
       }
