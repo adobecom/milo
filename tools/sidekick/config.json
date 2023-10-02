@@ -34,7 +34,7 @@
     },
     {
       "containerId": "tools",
-      "id": "localize",
+      "id": "localize-v2",
       "title": "Localize project (V2)",
       "environments": [ "edit" ],
       "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
