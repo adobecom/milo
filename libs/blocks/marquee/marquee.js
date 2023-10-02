@@ -2,29 +2,9 @@
  * Marquee - v6.0
  */
 
-import { applyHoverPlay, decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
-
-const decorateVideo = async (container, video) => {
-  if (video.nodeName === 'A' && video.href.includes('.mp4')) {
-    // no special attrs handling
-    const { loadVideo } = await import('../video/video.js');
-    loadVideo(video);
-  } else if (video.attributes.getNamedItem('controls')) {
-    video.removeAttribute('controls');
-    video.setAttribute('muted', '');
-    video.setAttribute('autoplay', '');
-    video.setAttribute('loop', '');
-
-    const attrs = [...video.attributes].map((a) => a.name).join(' ');
-    container.innerHTML = `<video preload="metadata" ${attrs}>
-        <source src="${video.firstElementChild.src}" type="video/mp4" />
-      </video>`;
-  }
-  applyHoverPlay(container.firstElementChild);
-  container.classList.add('has-video');
-};
 
 const decorateBlockBg = (block, node) => {
   const childCount = node.childElementCount;
@@ -46,15 +26,6 @@ const decorateBlockBg = (block, node) => {
   [...children].forEach(async (child, index) => {
     if (childCount === 3) {
       child.classList.add(viewportsKeys[index]);
-    }
-
-    // Skip the fallback if current screen size isn't matching the child's viewport.
-    if (viewports[viewportsKeys[index]].matches) {
-      // decorateVideo as fallback of video autoblock.
-      const video = child.querySelector('video, a[href*=".mp4"]');
-      if (video) {
-        decorateVideo(child, video);
-      }
     }
 
     const pic = child.querySelector('picture');
@@ -145,14 +116,9 @@ export default function init(el) {
   text.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
 
-  if (media) {
+  if (media && !media.querySelector('video, a[href*=".mp4"]')) {
     media.classList.add('media');
-    const video = media.querySelector('video, a[href*=".mp4"]');
-    if (video) {
-      decorateVideo(media, video);
-    } else {
-      decorateImage(media);
-    }
+    decorateImage(media);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
@@ -184,7 +150,7 @@ export default function init(el) {
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');
-      media.lastChild.remove();
+      media?.lastChild.remove();
     }
   }
 }

@@ -85,15 +85,6 @@
   left: 0;
 }
 
-.marquee .background.has-video {
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
 .marquee .background .tablet-only,
 .marquee .background .desktop-only {
   display: none;

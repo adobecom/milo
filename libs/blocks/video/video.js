@@ -3,7 +3,7 @@ import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
 
 const ROOT_MARGIN = 1000;
 
-export const loadVideo = async (a) => {
+const loadVideo = (a) => {
   const { pathname, hash } = a;
   const attrs = getVideoAttrs(hash);
   const video = `<video ${attrs}>
@@ -16,7 +16,7 @@ export const loadVideo = async (a) => {
   a.remove();
 };
 
-export default async function init(a) {
+export default function init(a) {
   a.classList.add('hide');
   if (a.textContent.includes('no-lazy')) {
     loadVideo(a);
