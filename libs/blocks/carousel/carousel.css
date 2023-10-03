@@ -130,7 +130,6 @@
   transition: opacity;
 }
 
-
 .carousel-slide.reference-slide {
   order: 1;
 }
@@ -138,17 +137,6 @@
 .carousel-slide.active {
   opacity: 1;
 } 
-
-/* Corrects backgournd images coming from section metadata */
-.carousel .carousel-slide.has-background {
-  position: relative;
-}
-
-/* Rest for nested text blocks background image */
-.carousel .carousel-slide .foreground {
-  max-width: unset;
-  margin: unset;
-}
 
 .carousel-slides.is-ready,
 .carousel-slides.is-ready.is-reversing,
@@ -319,6 +307,7 @@
 
 .carousel .carousel-expand img {
   background-color: var(--carousel-expand-background-color);
+  box-sizing: content-box;
   border: 1px solid var(--carousel-expand-border-color);
   border-radius: 4px;
   padding: 2px 1px 2px 3px;
@@ -357,6 +346,58 @@
 }
 
 /* End Lightbox */
+
+/* Corrects backgournd images coming from section metadata */
+.carousel .carousel-slide.has-background {
+  position: relative;
+}
+
+/* Multiple slides reset for nested blocks foreground */
+.carousel.show-2 .carousel-slide .foreground,
+.carousel.show-3 .carousel-slide .foreground,
+.carousel.show-4 .carousel-slide .foreground,
+.carousel.show-5 .carousel-slide .foreground,
+.carousel.show-6 .carousel-slide .foreground { width: auto; }
+
+.carousel.container .carousel-slide .foreground:not(.icon-block .foreground) {
+  max-width: unset;
+  margin: unset;
+}
+
+.carousel.container .carousel-slide .container {
+  width: unset;
+}
+
+/* Zero out spacing token on carousel-slide */
+.carousel.container .carousel-slide.section.xs-spacing,
+.carousel.container .carousel-slide.section.s-spacing,
+.carousel.container .carousel-slide.section.m-spacing,
+.carousel.container .carousel-slide.section.l-spacing,
+.carousel.container .carousel-slide.section.xl-spacing,
+.carousel.container .carousel-slide.section.xxl-spacing,
+.carousel.container .carousel-slide.section.xxxl-spacing { padding: 0; }
+
+/* Apply spacing token to block inside of slide */
+.carousel.container .carousel-slide.xs-spacing > div,
+.carousel.container .carousel-slide .xs-spacing { padding: var(--spacing-xs); }
+
+.carousel.container .carousel-slide.s-spacing > div,
+.carousel.container .carousel-slide .s-spacing { padding: var(--spacing-s); }
+
+.carousel.container .carousel-slide.m-spacing > div,
+.carousel.container .carousel-slide .m-spacing { padding: var(--spacing-m);  }
+
+.carousel.container .carousel-slide.l-spacing > div,
+.carousel.container .carousel-slide .l-spacing { padding: var(--spacing-l); }
+
+.carousel.container .carousel-slide.xl-spacing > div,
+.carousel.container .carousel-slide .xl-spacing { padding: var(--spacing-xl); }
+
+.carousel.container .carousel-slide.xxl-spacing > div,
+.carousel.container .carousel-slide .xxl-spacing { padding: var(--spacing-xxl); }
+
+.carousel.container .carousel-slide.xxxl-spacing > div,
+.carousel.container .carousel-slide .xxxl-spacing { padding: var(--spacing-xxxl); }
 
 @media (min-width: 900px) {
   .carousel.lightbox-active.container .carousel-wrapper {

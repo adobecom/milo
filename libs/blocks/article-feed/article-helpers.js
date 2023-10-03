@@ -1,5 +1,6 @@
 import { getConfig } from '../../utils/utils.js';
 import * as taxonomyLibrary from '../../scripts/taxonomy.js';
+import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
 /*
  *
@@ -114,7 +115,9 @@ export function getTaxonomyModule() {
 }
 
 export async function loadTaxonomy() {
-  taxonomyModule = await taxonomyLibrary.default(getConfig(), '/topics');
+  const config = getConfig();
+  const taxonomyRoot = config.taxonomyRoot || '/topics';
+  taxonomyModule = await taxonomyLibrary.default(config, taxonomyRoot);
   if (taxonomyModule) {
     // taxonomy loaded, post loading adjustments
     // fix the links which have been created before the taxonomy has been loaded
@@ -262,7 +265,7 @@ export function getArticleTaxonomy(article) {
 export function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
-  const catLink = [getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#');
+  const catLink = updateLinkWithLangRoot([getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#'));
 
   if (catLink === '#') {
     // eslint-disable-next-line no-console

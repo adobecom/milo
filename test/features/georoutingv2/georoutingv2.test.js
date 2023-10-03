@@ -1,5 +1,6 @@
 import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
+import { setViewport } from '@web/test-runner-commands';
 
 const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
@@ -7,7 +8,7 @@ const { createTag, loadStyle, loadBlock, setConfig } = await import('../../../li
 
 const mockConfig = {
   locales: {
-    '': { ietf: 'us' }, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {}, africa: {},
+    '': { ietf: 'us' }, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {}, africa: {}, eg_ar: { dir: 'rtl' }, eg_en: { },
   },
   locale: { contentRoot: window.location.href, prefix: '' },
   env: 'test',
@@ -88,6 +89,26 @@ const mockGeoroutingJson = {
         languageOrder: '',
         geo: 'africa',
       },
+      {
+        prefix: 'eg_ar',
+        title: 'موقع Adobe هذا لا يتطابق مع موقعك.',
+        text: 'بناءً على موقعك ، نعتقد أنك قد تفضل موقع مصر ، حيث ستحصل على المحتوى الجغرافي والعروض والأسعار',
+        button: 'مصر - اللغة العربية',
+        akamaiCodes: 'EG',
+        language: 'عربي',
+        languageOrder: '1',
+        geo: 'eg',
+      },
+      {
+        prefix: 'eg_en',
+        title: "You're visiting Adobe.com for {{geo}}",
+        text: "Based on your location, we think you may prefer the Egypt website, where you'll get geoal content, offerings, and pricing",
+        button: 'Egypt',
+        akamaiCodes: 'EG',
+        language: 'English',
+        languageOrder: '2',
+        geo: 'eg',
+      },
     ],
   },
   geos: {
@@ -147,6 +168,25 @@ const mockGeoroutingJson = {
         mena: 'the Middle East & North Africa',
         africa: 'Africa',
       },
+      {
+        prefix: 'eg_ar',
+        us: 'الولايات المتحدة الأمريكية',
+        de: 'ألمانيا',
+        ch: 'سويسرا',
+        mena: 'الشرق الأوسط وشمال أفريقيا',
+        africa: 'أفريقيا',
+        eg: 'مصر',
+      },
+      {
+        prefix: 'eg_en',
+        us: 'the United States',
+        de: 'Germany',
+        ch: 'Switzerland',
+        mena: 'the Middle East & North Africa',
+        africa: 'Africa',
+        eg: 'Egypt',
+      },
+
     ],
   },
 };
@@ -155,15 +195,17 @@ let stubURLSearchParamsGet = stub(URLSearchParams.prototype, 'get');
 const setUserCountryFromIP = (country = 'CH') => {
   stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('akamaiLocale').returns(country);
 };
-const setHideGeorouting = (setting) => {
-  stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('hideGeorouting').returns(setting);
+const setGeorouting = (setting) => {
+  stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('georouting').returns(setting);
 };
 
+const ogInnerHeight = window.innerHeight;
 const ogFetch = window.fetch;
 window.fetch = stub();
 
 function stubHeadRequestToReturnVal(prefix, val) {
-  window.fetch.withArgs(`${prefix}`, { method: 'HEAD' }).returns(
+  const path = window.location.href.replace(`${window.location.origin}`, '');
+  window.fetch.withArgs(`${prefix}${path}`, { method: 'HEAD' }).returns(
     new Promise((resolve) => {
       resolve({ ok: val });
     }),
@@ -199,7 +241,7 @@ describe('GeoRouting', () => {
   before(() => {
     setUserCountryFromIP();
     stubFetchForGeorouting();
-    setHideGeorouting();
+    setGeorouting();
   });
   after(() => {
     stubURLSearchParamsGet.reset();
@@ -207,7 +249,6 @@ describe('GeoRouting', () => {
   });
   afterEach(() => {
     document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
-    sessionStorage.removeItem('international');
     closeModal();
   });
 
@@ -241,7 +282,7 @@ describe('GeoRouting', () => {
   it('Does not create a modal if the user IP matches session storage.', async () => {
     // prepare
     setUserCountryFromIP('US');
-    sessionStorage.setItem('international', 'us');
+    document.cookie = 'international=us;path=/;';
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     // assert
@@ -292,11 +333,67 @@ describe('GeoRouting', () => {
     expect(italianTab.querySelectorAll('a')[1].textContent).to.be.equal(usData.button);
   });
 
+  it('If aiming for US page but IP in Egypt arabic content in geo routing modal is in rtl', async () => {
+    // prepare
+    setUserCountryFromIP('EG');
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.not.be.null;
+    const tabs = modal.querySelectorAll('.tabpanel');
+    expect(tabs.length).to.be.equal(2);
+    const arabicTab = tabs[0];
+    const downArrow = arabicTab.querySelectorAll('img')[1];
+    expect(arabicTab.querySelector('h3').getAttribute('dir')).to.be.equal('rtl');
+    expect(arabicTab.querySelector('p').getAttribute('dir')).to.be.equal('rtl');
+    expect(downArrow).to.not.be.null;
+    downArrow.click();
+    expect(arabicTab.querySelector('ul').getAttribute('dir')).to.be.equal('rtl');
+    // Cleanup
+    setUserCountryFromIP('CH');
+  });
+
+  it('If aiming for US page but IP in Egypt english content in geo routing modal is in ltr', async () => {
+    // prepare
+    setUserCountryFromIP('EG');
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.not.be.null;
+    const tabs = modal.querySelectorAll('.tabpanel');
+    expect(tabs.length).to.be.equal(2);
+    const englishTab = tabs[1];
+    const downArrow = englishTab.querySelectorAll('img')[1];
+    expect(englishTab.querySelector('h3').getAttribute('dir')).to.be.equal('ltr');
+    expect(englishTab.querySelector('p').getAttribute('dir')).to.be.equal('ltr');
+    expect(downArrow).to.not.be.null;
+    downArrow.click();
+    expect(englishTab.querySelector('ul').getAttribute('dir')).to.be.equal('ltr');
+    // Cleanup
+    setUserCountryFromIP('CH');
+  });
+
+  it('If aiming for Arabic page but IP in US english content in geo routing modal is in ltr', async () => {
+    // prepare
+    mockConfig.locale.prefix = 'eg_ar';
+    setUserCountryFromIP('US');
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    const wrapper = document.querySelector('.georouting-wrapper');
+    // assert
+    expect(modal).to.not.be.null;
+    expect(wrapper.querySelector('h3').getAttribute('dir')).to.be.equal('ltr');
+    expect(wrapper.querySelector('p').getAttribute('dir')).to.be.equal('ltr');
+    // Cleanup
+    setUserCountryFromIP('CH');
+    mockConfig.locale.prefix = '';
+  });
+
   it('If aiming for CH page, IP in US, and session storage is DE shows DE links and CH continue', async () => {
     // prepare
-    mockConfig.locale.prefix = 'ch_fr';
+    mockConfig.locale.prefix = '/ch_fr';
     setUserCountryFromIP('US');
-    sessionStorage.setItem('international', 'de');
+    document.cookie = 'international=de;path=/;';
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const wrapper = document.querySelector('.georouting-wrapper');
     // assert
@@ -355,7 +452,7 @@ describe('GeoRouting', () => {
   it('If aiming for ch_de page and storage is ch_fr no modal is shown', async () => {
     // prepare
     mockConfig.locale.prefix = 'ch_de';
-    sessionStorage.setItem('international', 'ch_fr');
+    document.cookie = 'international=ch_fr;path=/;';
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     // assert
@@ -436,11 +533,9 @@ describe('GeoRouting', () => {
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     const cookie = getCookie('international');
-    const storage = sessionStorage.getItem('international');
     // assert
     expect(modal).to.not.be.null;
     expect(cookie).to.be.undefined;
-    expect(storage).to.be.null;
     const links = modal.querySelectorAll('a');
     links[0].click();
     const picker = document.querySelector('.locale-modal-v2 .picker');
@@ -454,32 +549,40 @@ describe('GeoRouting', () => {
     expect(document.querySelector('.picker')).to.be.null;
   });
 
+  it('Add class .top to picker when there is no space to render below the trigger button', async () => {
+    await setViewport({ width: 600, height: 100 });
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    const links = modal.querySelectorAll('a');
+    links[0].click();
+    const picker = document.querySelector('.locale-modal-v2 .picker.top');
+    expect(picker).to.not.be.null;
+    await setViewport({ width: 600, height: ogInnerHeight });
+  });
+
   it('Sets international and georouting_presented cookies on link click in modal', async () => {
     // prepare
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     const cookie = getCookie('international');
-    const storage = sessionStorage.getItem('international');
     // assert
     expect(modal).to.not.be.null;
     expect(cookie).to.be.undefined;
-    expect(storage).to.be.null;
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links[0].text).to.be.equal(mockGeoroutingJson.georouting.data.find((d) => d.prefix === 'ch_de').button);
     links[1].click();
     expect(getCookie('international')).to.be.equal('us');
-    expect(sessionStorage.getItem('international')).to.be.equal('us');
   });
 
   it('Does not open georouting modal if georouting hide is active', async () => {
     // prepare
-    setHideGeorouting('on');
+    setGeorouting('off');
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
     // cleanup
-    setHideGeorouting('off');
+    setGeorouting('on');
   });
 });

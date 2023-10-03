@@ -1,6 +1,7 @@
 import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import fetchTaxonomy from '../../scripts/taxonomy.js';
-import { replaceKey } from '../../features/placeholders.js'
+import { replaceKey } from '../../features/placeholders.js';
+import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
 async function getArticleDetails(article) {
   const path = new URL(article.href).pathname;
@@ -40,8 +41,8 @@ function getDecoratedCards(articles, taxonomy) {
     const wrapper = createTag('a', { class: 'article-card', href: path });
     const cardImage = createTag('div', { class: 'article-card-image' }, imageEl);
     const cardBody = createTag('div', { class: 'article-card-body' });
-    const categoryTaxonomy = taxonomy.get(category || 'News');
-    const categoryLink = createTag('a', { href: categoryTaxonomy.link }, categoryTaxonomy.name);
+    const categoryTaxonomy = taxonomy.get(category) || 'News';
+    const categoryLink = createTag('a', { href: updateLinkWithLangRoot(categoryTaxonomy.link) }, categoryTaxonomy.name);
     const categoryEl = createTag('p', { class: 'article-card-category' }, categoryLink);
     const titleEl = createTag('h3', null, title);
     const descriptionEl = createTag('p', { class: 'article-card-description' }, description);
@@ -56,6 +57,7 @@ function getDecoratedCards(articles, taxonomy) {
 
 export default async function init(blockEl) {
   const children = [...blockEl.querySelectorAll(':scope > div')];
+  const config = getConfig();
   let content;
   let recommendedArticleLinks;
 
@@ -75,13 +77,14 @@ export default async function init(blockEl) {
   } else {
     blockEl.classList.add('recommended-articles-content-wrapper');
     if (!content) {
-      const text = await replaceKey('recommended-for-you', getConfig());
+      const text = await replaceKey('recommended-for-you', config);
       content = createTag('h3', null, text);
     }
   }
   blockEl.innerHTML = '';
 
-  const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
+  const taxonomyRoot = config.taxonomyRoot || '/topics';
+  const taxonomy = await fetchTaxonomy(config, taxonomyRoot);
   const unresolvedPromises = recommendedArticleLinks.map((article) => getArticleDetails(article));
   let articles = [];
   articles = await Promise.all(unresolvedPromises);

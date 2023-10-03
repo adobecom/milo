@@ -1,159 +1,129 @@
-import {
-  loadScript,
-  getConfig,
-  createTag,
-} from '../../utils/utils.js';
+import { getConfig, loadScript } from '../../utils/utils.js';
 
-const VERSION = '1.12.0';
-const WCS = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
-const ENV_PROD = 'prod';
-const CTA_PREFIX = /^CTA +/;
+export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
-const SUPPORTED_LANGS = [
-  'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
-  'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
-];
-
-const GEO_MAPPINGS = {
-  africa: 'en-ZA',
-  mena_en: 'en-DZ',
-  il_he: 'iw-IL',
-  mena_ar: 'ar-DZ',
-  id_id: 'in-ID',
-  no: 'nb-NO',
-};
-
-const PLACEHOLDER_TYPE_MAPPINGS = {
-  optical: 'priceOptical',
-  strikethrough: 'priceStrikethrough',
-};
-
-let initialized = false;
-
-function omitNullValues(target) {
-  if (target != null) {
-    Object.entries(target).forEach(([key, value]) => {
-      if (value == null) delete target[key];
-    });
-  }
-  return target;
-}
-
-const getTacocatEnv = (envName, locale) => {
-  const wcsLocale = GEO_MAPPINGS[locale.prefix] ?? locale.ietf;
-  // eslint-disable-next-line prefer-const
-  let [language, country = 'US'] = wcsLocale.split('-', 2);
-  if (!SUPPORTED_LANGS.includes(language)) {
-    language = 'en';
-  }
-  const host = envName === ENV_PROD
-    ? 'https://www.adobe.com'
-    : 'https://www.stage.adobe.com';
-  const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
-  const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
-  return { scriptUrl, literalScriptUrl, country, language };
-};
-
-function initTacocat(envName, country, language) {
-  window.tacocat.tacocat({
-    defaults: {
-      country,
-      language,
+export async function polyfills() {
+  if (polyfills.done) return;
+  polyfills.done = true;
+  let isSupported = false;
+  document.createElement('div', {
+    // eslint-disable-next-line getter-return
+    get is() {
+      isSupported = true;
     },
-    environment: envName,
-    wcs: WCS,
-    literals: window.tacocat.literals?.[language] ?? {},
   });
-}
-
-function loadTacocat() {
-  if (initialized) {
-    return;
+  /* c8 ignore start */
+  if (!isSupported) {
+    const { codeRoot, miloLibs } = getConfig();
+    const base = miloLibs || codeRoot;
+    await loadScript(`${base}/deps/custom-elements.js`);
   }
-  initialized = true;
-  const {
-    env,
-    locale,
-  } = getConfig();
-  const {
-    scriptUrl,
-    literalScriptUrl,
-    country,
-    language,
-  } = getTacocatEnv(env.name, locale);
-
-  Promise.all([
-    loadScript(literalScriptUrl).catch(() => ({})),
-    loadScript(scriptUrl),
-  ]).then(() => initTacocat(env.name, country, language));
+  /* c8 ignore stop */
 }
 
-function buildCheckoutButton(a, osi, options) {
-  a.href = '#';
-  a.dataset.wcsOsi = osi;
-  a.dataset.template = 'checkoutUrl';
-  a.className = 'con-button blue button-m';
-  Object.assign(a.dataset, options);
-  a.textContent = a.textContent?.replace(CTA_PREFIX, '');
-  return a;
+export async function initService() {
+  const commerce = await import('../../deps/commerce.js');
+  return commerce.init(() => ({
+    ...getConfig(),
+    commerce: { priceLiteralsURL },
+  }));
 }
 
-function buildPrice(osi, type, dataAttrs = {}) {
-  const span = createTag('span', {
-    'data-wcs-osi': osi,
-    'data-template': type,
-  });
-  Object.assign(span.dataset, omitNullValues(dataAttrs));
-  return span;
+export async function getCommerceContext(el, params) {
+  const wcsOsi = params.get('osi');
+  if (!wcsOsi) return null;
+  const perpetual = params.get('perp') === 'true' || undefined;
+  const promotionCode = (
+    params.get('promo') ?? el.closest('[data-promotion-code]')?.dataset.promotionCode
+  ) || undefined;
+  return { promotionCode, perpetual, wcsOsi };
 }
 
-function isCTA(type) {
-  return type === 'checkoutUrl';
+/**
+ * Checkout parameter can be set Merch link, code config (scripts.js) or be a default from tacocat.
+ * To get the default, 'undefinded' should be passed, empty string will trigger an error!
+ *
+ * clientId - code config -> default (adobe_com)
+ * workflow - merch link -> metadata -> default (UCv3)
+ * workflowStep - merch link -> default (email)
+ * marketSegment - merch link -> default (COM)
+ * @param {{params: URLSearchParams, service: {settings: object}}} context
+ * @returns checkout context object required to build a checkout url
+ */
+export async function getCheckoutContext(el, params) {
+  const context = await getCommerceContext(el, params);
+  if (!context) return null;
+  const { settings } = await initService();
+  const { checkoutClientId } = settings;
+  const checkoutMarketSegment = params.get('marketSegment');
+  const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
+  const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
+  return {
+    ...context,
+    checkoutClientId,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    checkoutMarketSegment,
+  };
+}
+
+export async function getPriceContext(el, params) {
+  const context = await getCommerceContext(el, params);
+  if (!context) return null;
+  const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
+  const displayPerUnit = params.get('seat');
+  const displayRecurrence = params.get('term');
+  const displayTax = params.get('tax');
+  const forceTaxExclusive = params.get('exclusive');
+  const type = params.get('type');
+  const template = type === 'price' ? undefined : type;
+  return {
+    ...context,
+    displayOldPrice,
+    displayPerUnit,
+    displayRecurrence,
+    displayTax,
+    forceTaxExclusive,
+    template,
+  };
+}
+
+export async function buildCta(el, params) {
+  const large = !!el.closest('.marquee');
+  const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
+  const context = await getCheckoutContext(el, params);
+  if (!context) return null;
+  await polyfills();
+  const service = await initService();
+  const text = el.textContent?.replace(/^CTA +/, '');
+  const cta = service.createCheckoutLink(context, text);
+  cta.classList.add('con-button');
+  cta.classList.toggle('button-l', large);
+  cta.classList.toggle('blue', strong);
+  return cta;
+}
+
+async function buildPrice(el, params) {
+  const context = await getPriceContext(el, params);
+  if (!context) return null;
+  await polyfills();
+  const service = await initService();
+  const price = service.createInlinePrice(context);
+  return price;
 }
 
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
-  loadTacocat();
   const { searchParams } = new URL(el.href);
-  const osi = searchParams.get('osi');
-  const type = searchParams.get('type');
-  if (!(osi && type)) {
-    el.textContent = '';
-    el.setAttribute('aria-details', 'Invalid merch block');
-    return undefined;
+  const isCta = searchParams.get('type') === 'checkoutUrl';
+  const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
+  const service = await initService();
+  const log = service.log.module('merch');
+  if (merch) {
+    log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
+    el.replaceWith(merch);
+    return merch;
   }
-
-  const promotionCode = (searchParams.get('promo')
-    ?? el.closest('[data-promotion-code]')?.dataset.promotionCode) || undefined;
-
-  if (isCTA(type)) {
-    const checkoutContext = {}; // TODO: load dynamically
-    const checkoutWorkflow = searchParams.get('checkoutType');
-    const checkoutWorkflowStep = searchParams.get('workflowStep');
-    const options = omitNullValues({
-      ...checkoutContext,
-      ...omitNullValues({
-        promotionCode,
-        checkoutWorkflow,
-        checkoutWorkflowStep,
-      }),
-    });
-    buildCheckoutButton(el, osi, options);
-    return el;
-  }
-  const displayRecurrence = searchParams.get('term');
-  const displayPerUnit = searchParams.get('seat');
-  const displayTax = searchParams.get('tax');
-  const displayOldPrice = promotionCode ? searchParams.get('old') : undefined;
-  const price = buildPrice(osi, PLACEHOLDER_TYPE_MAPPINGS[type] || type, {
-    displayRecurrence,
-    displayPerUnit,
-    displayTax,
-    displayOldPrice,
-    promotionCode,
-  });
-  el.replaceWith(price);
-  return price;
+  log.warn('Failed to get context:', { el });
+  return null;
 }
-
-export { getTacocatEnv, initTacocat };

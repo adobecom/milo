@@ -2,6 +2,7 @@ const defaultState = {
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
+  autoCountryLang: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
@@ -33,7 +34,7 @@ const defaultState = {
   paginationAnimationStyle: 'paged',
   paginationEnabled: false,
   paginationQuantityShown: false,
-  paginationType: 'none',
+  paginationType: '',
   paginationUseTheme3: false,
   placeholderUrl: '',
   resultsPerPage: 5,
@@ -98,7 +99,7 @@ const parseAndQuery = (str) => {
         : 'OR';
       return {
         intraTagLogic,
-        andTags: q.split(` ${intraTagLogic} `)
+        andTags: q.split(` ${intraTagLogic} `),
       };
     });
 };

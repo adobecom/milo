@@ -1,4 +1,5 @@
-import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -42,11 +43,6 @@ export default function init(el) {
     }
   });
   const config = blockTypeSizes[blockType][size];
-  const overrides = ['-heading', '-body', '-detail'];
-  overrides.forEach((override, index) => {
-    const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
-    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toLowerCase();
-  });
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
@@ -55,5 +51,16 @@ export default function init(el) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-s');
   }
+  if (el.classList.contains('link-farm')) {
+    const foregroundDiv = el.querySelectorAll('.foreground')[1];
+    const count = foregroundDiv.querySelectorAll('h3').length;
+    foregroundDiv.querySelectorAll('div').forEach((divElem) => {
+      if (!divElem.querySelector('h3') && count) {
+        const headingElem = createTag('h3', { class: 'no-heading' });
+        divElem.insertBefore(headingElem, divElem.firstChild);
+      }
+    });
+  }
   el.classList.add(...helperClasses);
+  decorateTextOverrides(el);
 }

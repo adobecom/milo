@@ -1,4 +1,4 @@
-span[data-wcs-osi],
+span[is='inline-price'],
 a[href^="/tools/ost"] {
   visibility: hidden; 
 }
@@ -7,12 +7,12 @@ span[data-wcs-osi] {
   display: inline-block;
 }
 
-.price-strikethrough {
+span.placeholder-resolved[data-template="priceStrikethrough"], span.price.price-strikethrough {
   text-decoration: line-through;
 }
 
 .placeholder-resolved[data-wcs-osi] {
-  visibility: unset;
+  visibility: inherit;
 }
 
 .price-unit-type:not(.disabled)::before,

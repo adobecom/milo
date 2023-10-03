@@ -74,5 +74,45 @@ describe('Card', () => {
       init(el);
       expect(el.outerHTML.includes('undefined')).to.be.false;
     });
+
+    it('Has play button', () => {
+      expect(document.querySelector('.consonant-HalfHeightCard-videoIco')).to.exist;
+    });
+  });
+
+  describe('Two-Up Cards', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-up-cards.html' });
+    });
+
+    it('are supported when authored with a two-up refernce in section-metadata', () => {
+      [...document.querySelectorAll('.card')].forEach((el) => {
+        init(el);
+      });
+      expect(document.querySelector('.consonant-CardsGrid--2up')).to.exist;
+    });
+
+    it('Has play button', () => {
+      expect(document.querySelector('.consonant-videoButton-wrapper')).to.exist;
+    });
+  });
+
+  describe('Analytics', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-up-cards.html' });
+    });
+
+    it('Analytics attribute are added to the links and headings in the card', () => {
+      const card = document.querySelector('.card');
+      init(card);
+      const links = card.querySelectorAll('a');
+      const headings = card.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      links.forEach((link) => {
+        expect(link.hasAttribute('daa-ll'));
+      });
+      headings.forEach((heading) => {
+        expect(heading.hasAttribute('daa-lh'));
+      });
+    });
   });
 });

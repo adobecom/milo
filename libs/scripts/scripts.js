@@ -12,7 +12,6 @@
 
 import {
   loadArea,
-  loadDelayed,
   loadLana,
   setConfig,
 } from '../utils/utils.js';
@@ -21,87 +20,99 @@ import {
 const prodDomains = ['milo.adobe.com'];
 
 const locales = {
-  // Americas
-  ar: { ietf: 'es-AR', tk: 'oln4yqj.css' },
-  br: { ietf: 'pt-BR', tk: 'inq1xob.css' },
-  ca: { ietf: 'en-CA', tk: 'pps7abe.css' },
-  ca_fr: { ietf: 'fr-CA', tk: 'vrk5vyv.css' },
-  cl: { ietf: 'es-CL', tk: 'oln4yqj.css' },
-  co: { ietf: 'es-CO', tk: 'oln4yqj.css' },
-  la: { ietf: 'es-LA', tk: 'oln4yqj.css' },
-  mx: { ietf: 'es-MX', tk: 'oln4yqj.css' },
-  pe: { ietf: 'es-PE', tk: 'oln4yqj.css' },
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-  // EMEA
+  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  ae_en: { ietf: 'en', tk: 'pps7abe.css' },
   africa: { ietf: 'en', tk: 'pps7abe.css' },
-  be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
+  ar: { ietf: 'es-AR', tk: 'oln4yqj.css' },
+  at: { ietf: 'de-AT', tk: 'vin7zsi.css' },
+  au: { ietf: 'en-AU', tk: 'pps7abe.css' },
   be_en: { ietf: 'en-BE', tk: 'pps7abe.css' },
+  be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
   be_nl: { ietf: 'nl-BE', tk: 'cya6bri.css' },
+  bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
+  br: { ietf: 'pt-BR', tk: 'inq1xob.css' },
+  ca_fr: { ietf: 'fr-CA', tk: 'vrk5vyv.css' },
+  ca: { ietf: 'en-CA', tk: 'pps7abe.css' },
+  ch_de: { ietf: 'de-CH', tk: 'vin7zsi.css' },
+  ch_fr: { ietf: 'fr-CH', tk: 'vrk5vyv.css' },
+  ch_it: { ietf: 'it-CH', tk: 'bbf5pok.css' },
+  cl: { ietf: 'es-CL', tk: 'oln4yqj.css' },
+  cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
+  co: { ietf: 'es-CO', tk: 'oln4yqj.css' },
+  cr: { ietf: 'es-419', tk: 'oln4yqj.css' },
   cy_en: { ietf: 'en-CY', tk: 'pps7abe.css' },
-  dk: { ietf: 'da-DK', tk: 'aaz7dvd.css' },
+  cz: { ietf: 'cs-CZ', tk: 'aaz7dvd.css' },
   de: { ietf: 'de-DE', tk: 'vin7zsi.css' },
+  dk: { ietf: 'da-DK', tk: 'aaz7dvd.css' },
+  ec: { ietf: 'es-419', tk: 'oln4yqj.css' },
   ee: { ietf: 'et-EE', tk: 'aaz7dvd.css' },
+  eg_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  eg_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  el: { ietf: 'el', tk: 'aaz7dvd.css' },
   es: { ietf: 'es-ES', tk: 'oln4yqj.css' },
+  fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' },
   fr: { ietf: 'fr-FR', tk: 'vrk5vyv.css' },
+  gr_el: { ietf: 'el', tk: 'fnx0rsr.css' },
   gr_en: { ietf: 'en-GR', tk: 'pps7abe.css' },
+  gt: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },
+  hk_zh: { ietf: 'zh-HK', tk: 'jay0ecd' },
+  hu: { ietf: 'hu-HU', tk: 'aaz7dvd.css' },
+  id_en: { ietf: 'en', tk: 'pps7abe.css' },
+  id_id: { ietf: 'id', tk: 'czc0mun.css' },
   ie: { ietf: 'en-GB', tk: 'pps7abe.css' },
   il_en: { ietf: 'en-IL', tk: 'pps7abe.css' },
+  il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+  in_hi: { ietf: 'hi', tk: 'aaa8deh.css' },
+  in: { ietf: 'en-GB', tk: 'pps7abe.css' },
   it: { ietf: 'it-IT', tk: 'bbf5pok.css' },
-  lv: { ietf: 'lv-LV', tk: 'aaz7dvd.css' },
+  jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
+  kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
+  kw_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  kw_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  la: { ietf: 'es-LA', tk: 'oln4yqj.css' },
+  langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
   lt: { ietf: 'lt-LT', tk: 'aaz7dvd.css' },
   lu_de: { ietf: 'de-LU', tk: 'vin7zsi.css' },
   lu_en: { ietf: 'en-LU', tk: 'pps7abe.css' },
   lu_fr: { ietf: 'fr-LU', tk: 'vrk5vyv.css' },
-  hu: { ietf: 'hu-HU', tk: 'aaz7dvd.css' },
-  mt: { ietf: 'en-MT', tk: 'pps7abe.css' },
+  lv: { ietf: 'lv-LV', tk: 'aaz7dvd.css' },
+  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
   mena_en: { ietf: 'en', tk: 'pps7abe.css' },
+  mt: { ietf: 'en-MT', tk: 'pps7abe.css' },
+  mx: { ietf: 'es-MX', tk: 'oln4yqj.css' },
+  my_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  my_ms: { ietf: 'ms', tk: 'sxj4tvo.css' },
+  ng: { ietf: 'en-GB', tk: 'pps7abe.css' },
   nl: { ietf: 'nl-NL', tk: 'cya6bri.css' },
   no: { ietf: 'no-NO', tk: 'aaz7dvd.css' },
-  pl: { ietf: 'pl-PL', tk: 'aaz7dvd.css' },
-  pt: { ietf: 'pt-PT', tk: 'inq1xob.css' },
-  ro: { ietf: 'ro-RO', tk: 'aaz7dvd.css' },
-  sa_en: { ietf: 'en', tk: 'pps7abe.css' },
-  ch_de: { ietf: 'de-CH', tk: 'vin7zsi.css' },
-  si: { ietf: 'sl-SI', tk: 'aaz7dvd.css' },
-  sk: { ietf: 'sk-SK', tk: 'aaz7dvd.css' },
-  ch_fr: { ietf: 'fr-CH', tk: 'vrk5vyv.css' },
-  fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' },
-  se: { ietf: 'sv-SE', tk: 'fpk1pcd.css' },
-  ch_it: { ietf: 'it-CH', tk: 'bbf5pok.css' },
-  tr: { ietf: 'tr-TR', tk: 'aaz7dvd.css' },
-  ae_en: { ietf: 'en', tk: 'pps7abe.css' },
-  uk: { ietf: 'en-GB', tk: 'pps7abe.css' },
-  at: { ietf: 'de-AT', tk: 'vin7zsi.css' },
-  cz: { ietf: 'cs-CZ', tk: 'aaz7dvd.css' },
-  bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
-  ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
-  ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
-  il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
-  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
-  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
-  // Asia Pacific
-  au: { ietf: 'en-AU', tk: 'pps7abe.css' },
-  hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },
-  in: { ietf: 'en-GB', tk: 'pps7abe.css' },
-  id_id: { ietf: 'id', tk: 'czc0mun.css' },
-  id_en: { ietf: 'en', tk: 'pps7abe.css' },
-  my_ms: { ietf: 'ms', tk: 'sxj4tvo.css' },
-  my_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
   nz: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  pe: { ietf: 'es-PE', tk: 'oln4yqj.css' },
   ph_en: { ietf: 'en', tk: 'pps7abe.css' },
   ph_fil: { ietf: 'fil-PH', tk: 'ict8rmp.css' },
+  pl: { ietf: 'pl-PL', tk: 'aaz7dvd.css' },
+  pr: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  pt: { ietf: 'pt-PT', tk: 'inq1xob.css' },
+  qa_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  qa_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  ro: { ietf: 'ro-RO', tk: 'aaz7dvd.css' },
+  ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
+  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  sa_en: { ietf: 'en', tk: 'pps7abe.css' },
+  se: { ietf: 'sv-SE', tk: 'fpk1pcd.css' },
   sg: { ietf: 'en-SG', tk: 'pps7abe.css' },
+  si: { ietf: 'sl-SI', tk: 'aaz7dvd.css' },
+  sk: { ietf: 'sk-SK', tk: 'aaz7dvd.css' },
   th_en: { ietf: 'en', tk: 'pps7abe.css' },
-  in_hi: { ietf: 'hi', tk: 'aaa8deh.css' },
   th_th: { ietf: 'th', tk: 'aaz7dvd.css' },
-  cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
-  hk_zh: { ietf: 'zh-HK', tk: 'jay0ecd' },
+  tr: { ietf: 'tr-TR', tk: 'aaz7dvd.css' },
   tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
-  jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
-  kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
-  // Langstore Support.
-  langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+  ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
+  uk: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  vn_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  vn_vi: { ietf: 'vi', tk: 'jii8bki.css' },
+  za: { ietf: 'en-GB', tk: 'pps7abe.css' },
 };
 
 const config = {
@@ -109,22 +120,37 @@ const config = {
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
+  imsScope: 'AdobeID,openid,gnav',
   codeRoot: '/libs',
   locales,
   prodDomains,
-  marketoBaseURL: '//app-aba.marketo.com',
-  marketoFormID: '1761',
-  marketoMunchkinID: '345-TTI-184',
+  jarvis: {
+    id: 'milo',
+    version: '1.0',
+    onDemand: false,
+  },
+  privacyId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db', // valid for *.adobe.com
+  breadcrumbs: 'on',
+  // taxonomyRoot: '/your-path-here',
+};
+
+const eagerLoad = (img) => {
+  img?.setAttribute('loading', 'eager');
+  img?.setAttribute('fetchpriority', 'high');
 };
 
 (async function loadLCPImage() {
-  const lcpImg = document.querySelector('img');
-  lcpImg?.setAttribute('loading', 'eager');
+  const firstDiv = document.querySelector('body > main > div:nth-child(1) > div');
+  if (firstDiv?.classList.contains('marquee')) {
+    firstDiv.querySelectorAll('img').forEach(eagerLoad);
+  } else {
+    eagerLoad(document.querySelector('img'));
+  }
 }());
 
 (async function loadPage() {
+  performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
-  loadDelayed();
 }());

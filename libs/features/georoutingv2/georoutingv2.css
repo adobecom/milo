@@ -7,6 +7,7 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
 .dialog-modal.locale-modal-v2 .picker {
@@ -19,10 +20,17 @@
   opacity: 1;
   padding-inline-start: 0;
   min-width: 176px;
+  margin-bottom: 8px;
+  z-index: 10;
+}
+
+.dialog-modal.locale-modal-v2 .picker.top {
+  bottom: 41px;
+  position: absolute;
 }
 
 .dialog-modal.locale-modal-v2 a:first-child {
-  margin-right: 24px;
+  margin-inline-end: 24px;
 }
 
 .dialog-modal.locale-modal-v2 a:last-child {
@@ -30,13 +38,13 @@
 }
 
 .dialog-modal.locale-modal-v2 .picker li {
-  list-style-type: none
+  list-style-type: none;
 }
 
 .dialog-modal.locale-modal-v2 .picker li a {
   width: calc(100% - 12px);
   display: block;
-  padding-left: 12px;
+  padding-inline-start: 12px;
   color: #222;
   font-size: 14px;
 }
@@ -56,6 +64,7 @@
 
 .dialog-modal.locale-modal-v2 .link-wrapper {
   line-height: 48px;
+  position: relative;
 }
 
 .dialog-modal.locale-modal-v2 span.icon {
@@ -69,7 +78,7 @@
 .dialog-modal.locale-modal-v2 .icon-milo.down-arrow {
   float: right;
   margin-left: 4px;
-  top: 1px;
+  top: 3px;
   filter: brightness(0) invert(1);
 }
 
@@ -78,7 +87,7 @@
   background: initial;
 }
 
-.dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tabList-container {
+.dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tab-list-container {
   padding: initial;
   margin: initial;
 }
@@ -88,10 +97,10 @@
 }
 
 .dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button:not(:first-of-type) {
-  margin-left: 24px;
+  margin-inline-start: 24px;
 }
 
-.dialog-modal.locale-modal-v2 .tabs .tabContent {
+.dialog-modal.locale-modal-v2 .tabs .tab-content {
   border-bottom: initial;
   padding: initial;
 }

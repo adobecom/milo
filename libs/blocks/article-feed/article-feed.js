@@ -6,8 +6,11 @@ import {
   buildArticleCard,
 } from './article-helpers.js';
 
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, createIntersectionObserver } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { updateLinkWithLangRoot } from '../../utils/helpers.js';
+
+const ROOT_MARGIN = 50;
 
 const replacePlaceholder = async (key) => replaceKey(key, getConfig());
 
@@ -16,6 +19,7 @@ const blogIndex = {
   byPath: {},
   offset: 0,
   complete: false,
+  config: {},
 };
 
 /**
@@ -69,10 +73,16 @@ export function readBlockConfig(block) {
  */
 export async function fetchBlogArticleIndex() {
   const pageSize = 500;
+  const { feed } = blogIndex.config;
+  const queryParams = `?limit=${pageSize}&offset=${blogIndex.offset}`;
+  const defaultPath = updateLinkWithLangRoot(`${getConfig().locale.contentRoot}/query-index.json`);
+  const indexPath = feed
+    ? `${feed}${queryParams}`
+    : `${defaultPath}${queryParams}`;
 
   if (blogIndex.complete) return (blogIndex);
 
-  return fetch(`${getConfig().locale.contentRoot}/query-index.json?limit=${pageSize}&offset=${blogIndex.offset}`)
+  return fetch(indexPath)
     .then((response) => response.json())
     .then((json) => {
       const complete = (json.limit + json.offset) === json.total;
@@ -178,18 +188,18 @@ function buildSelectedFilter(name) {
   return a;
 }
 
-function clearFilter(e, block, config) {
+function clearFilter(e, block) {
   const { target } = e;
   const checked = document
     .querySelector(`input[name='${target.textContent}']`);
   if (checked) { checked.checked = false; }
-  delete config.selectedProducts;
-  delete config.selectedIndustries;
+  delete blogIndex.config.selectedProducts;
+  delete blogIndex.config.selectedIndustries;
   // eslint-disable-next-line no-use-before-define
-  applyCurrentFilters(block, config);
+  applyCurrentFilters(block);
 }
 
-function applyCurrentFilters(block, config, close) {
+function applyCurrentFilters(block, close) {
   const filters = {};
   document.querySelectorAll('.filter-options').forEach((filter) => {
     const type = filter.getAttribute('data-type');
@@ -199,10 +209,10 @@ function applyCurrentFilters(block, config, close) {
         const boxType = box.parentElement.parentElement.getAttribute('data-type');
         const capBoxType = boxType.charAt(0).toUpperCase() + boxType.slice(1);
         subfilters.push(box.name);
-        if (config[`selected${capBoxType}`]) {
-          config[`selected${capBoxType}`] += `, ${box.name}`;
+        if (blogIndex.config[`selected${capBoxType}`]) {
+          blogIndex.config[`selected${capBoxType}`] += `, ${box.name}`;
         } else {
-          config[`selected${capBoxType}`] = box.name;
+          blogIndex.config[`selected${capBoxType}`] = box.name;
         }
       }
     });
@@ -224,7 +234,7 @@ function applyCurrentFilters(block, config, close) {
       filters[filter].forEach((f) => {
         const selectedFilter = buildSelectedFilter(f);
         selectedFilter.addEventListener('click', (e) => {
-          clearFilter(e, block, config);
+          clearFilter(e, block);
         });
         selectedFilters.append(selectedFilter);
       });
@@ -236,11 +246,11 @@ function applyCurrentFilters(block, config, close) {
   if (block) {
     block.innerHTML = '';
     // eslint-disable-next-line no-use-before-define
-    decorateArticleFeed(block, config);
+    decorateArticleFeed(block);
   }
 }
 
-function clearFilters(e, block, config) {
+function clearFilters(e, block) {
   const type = e.target.classList[e.target.classList.length - 1];
   let target = document;
   if (type === 'reset') {
@@ -251,9 +261,9 @@ function clearFilters(e, block, config) {
     const checked = dropdown.querySelectorAll('input:checked');
     checked.forEach((box) => { box.checked = false; });
   });
-  delete config.selectedProducts;
-  delete config.selectedIndustries;
-  applyCurrentFilters(block, config);
+  delete blogIndex.config.selectedProducts;
+  delete blogIndex.config.selectedIndustries;
+  applyCurrentFilters(block);
 }
 
 function buildFilterOption(itemName, type) {
@@ -307,7 +317,7 @@ async function buildFilter(type, tax, block, config) {
   options.classList.add('filter-options');
   options.setAttribute('data-type', type);
   const category = tax.getCategory(tax[`${type.toUpperCase()}`]);
-  // console.log(category);
+
   category.forEach((topic) => {
     const item = tax.get(topic, tax[`${type.toUpperCase()}`]);
     if (item.level === 1) {
@@ -348,13 +358,13 @@ async function buildFilter(type, tax, block, config) {
 
 const isInList = (list, val) => list && list.map((t) => t.toLowerCase()).includes(val);
 
-async function filterArticles(config, feed, limit, offset) {
+async function filterArticles(feed, limit, offset) {
   /* filter posts by category, tag and author */
   const FILTER_NAMES = ['tags', 'topics', 'selectedProducts', 'selectedIndustries', 'author', 'category', 'exclude'];
 
-  const filters = Object.keys(config).reduce((prev, key) => {
+  const filters = Object.keys(blogIndex.config).reduce((prev, key) => {
     if (FILTER_NAMES.includes(key)) {
-      prev[key] = config[key].split(',').map((e) => e.toLowerCase().trim());
+      prev[key] = blogIndex.config[key].split(',').map((e) => e.toLowerCase().trim());
     }
 
     return prev;
@@ -362,7 +372,6 @@ async function filterArticles(config, feed, limit, offset) {
 
   while ((feed.data.length < limit + offset) && (!feed.complete)) {
     const beforeLoading = new Date();
-    // eslint-disable-next-line no-await-in-loop
     const index = await fetchBlogArticleIndex();
     const indexChunk = index.data.slice(feed.cursor);
 
@@ -411,7 +420,6 @@ async function filterArticles(config, feed, limit, offset) {
 
 async function decorateArticleFeed(
   articleFeedEl,
-  config,
   offset = 0,
   feed = { data: [], complete: false, cursor: 0 },
   limit = 12,
@@ -431,13 +439,13 @@ async function decorateArticleFeed(
   articleCards.append(container);
 
   const pageEnd = offset + limit;
-  await filterArticles(config, feed, limit, offset);
+  await filterArticles(feed, limit, offset);
   const articles = feed.data;
 
   if (articles.length) {
     // results were found
     container.remove();
-  } else if (config.selectedProducts || config.selectedIndustries) {
+  } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
     // no user filtered results were found
     spinner.remove();
     const noMatches = document.createElement('p');
@@ -468,13 +476,13 @@ async function decorateArticleFeed(
     loadMore.addEventListener('click', (event) => {
       event.preventDefault();
       loadMore.remove();
-      decorateArticleFeed(articleFeedEl, config, pageEnd, feed);
+      decorateArticleFeed(articleFeedEl, pageEnd, feed);
     });
   }
   articleFeedEl.classList.add('appear');
 }
 
-async function decorateFeedFilter(articleFeedEl, config) {
+async function decorateFeedFilter(articleFeedEl) {
   const taxonomy = getTaxonomyModule();
   const parent = document.querySelector('.article-feed');
 
@@ -489,8 +497,8 @@ async function decorateFeedFilter(articleFeedEl, config) {
   filterText.classList.add('filter-text');
   filterText.textContent = await replacePlaceholder('filters');
 
-  const productsDropdown = await buildFilter('products', taxonomy, articleFeedEl, config);
-  const industriesDropdown = await buildFilter('industries', taxonomy, articleFeedEl, config);
+  const productsDropdown = await buildFilter('products', taxonomy, articleFeedEl, blogIndex.config);
+  const industriesDropdown = await buildFilter('industries', taxonomy, articleFeedEl, blogIndex.config);
 
   filterWrapper.append(filterText, productsDropdown, industriesDropdown);
   filterContainer.append(filterWrapper);
@@ -513,7 +521,7 @@ async function decorateFeedFilter(articleFeedEl, config) {
   clearBtn.textContent = await replacePlaceholder('clear-all');
   clearBtn.addEventListener(
     'click',
-    (e) => clearFilters(e, articleFeedEl, config),
+    (e) => clearFilters(e, articleFeedEl),
   );
 
   selectedWrapper.append(selectedText, selectedCategories, clearBtn);
@@ -521,14 +529,20 @@ async function decorateFeedFilter(articleFeedEl, config) {
   parent.parentElement.insertBefore(selectedContainer, parent);
 }
 
-const clearBlock = (block) => { block.innerHTML = ''; };
+export default async function init(el) {
+  const initArticleFeed = async () => {
+    blogIndex.config = readBlockConfig(el);
+    el.innerHTML = '';
+    await loadTaxonomy();
+    if (blogIndex.config.filters) {
+      decorateFeedFilter(el);
+    }
+    decorateArticleFeed(el);
+  };
 
-export default async function init(articleFeed) {
-  const config = readBlockConfig(articleFeed);
-  clearBlock(articleFeed);
-  await loadTaxonomy();
-  if (config.filters) {
-    decorateFeedFilter(articleFeed, config);
-  }
-  decorateArticleFeed(articleFeed, config);
+  createIntersectionObserver({
+    el,
+    options: { rootMargin: `${ROOT_MARGIN}px` },
+    callback: initArticleFeed,
+  });
 }
