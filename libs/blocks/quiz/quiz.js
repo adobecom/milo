@@ -291,8 +291,8 @@ const App = ({
                       heading=${getStringValue('heading')} 
                       subhead=${getStringValue('sub-head')} 
                       btnText=${getStringValue('btn')} />
-                    
-                  <${GetQuizOption} 
+                  
+                  ${selectedQuestion && selectedQuestion.questions && html`<${GetQuizOption} 
                       btnText=${getStringValue('btn')} 
                       minSelections=${minSelections} 
                       maxSelections=${maxSelections} 
@@ -302,7 +302,7 @@ const App = ({
                       onOptionClick=${onOptionClick}
                       getOptionsIcons=${getOptionsIcons}
                       handleOnNextClick=${handleOnNextClick}
-                      btnAnalyticsData=${btnAnalytics}/>
+                      btnAnalyticsData=${btnAnalytics}/>`}
 
                   <${StepIndicator} 
                   currentStep=${currentStep} 
