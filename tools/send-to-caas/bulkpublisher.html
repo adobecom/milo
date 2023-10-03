@@ -88,6 +88,15 @@
                 <option>Dev</option>
               </select>
             </div>
+            <div class="field">
+              <label for="publishToFloodgate">Publish to Floodgate</label>
+              <select name="publishToFloodgate" id="publishToFloodgate">
+                <option value="default">--</option>
+                <option value="pink">Pink</option>
+                <option value="blue">Blue</option>
+                <option value="purple">Purple</option>
+              </select>
+            </div>
             <div id="caas-draft-cb" class="field checkbox">
               <input type="checkbox" id="draftOnly" name="draftOnly" />
               <label for="draftOnly">Publish to Draft only</label>
@@ -99,10 +108,6 @@
             <div id="use-html-cb" class="field checkbox">
               <input type="checkbox" id="useHtml" name="useHtml" />
               <label for="useHtml">Use .html extension on CTA links</label>
-            </div>
-            <div id="publish-to-floodgate-cb" class="field checkbox">
-              <input type="checkbox" id="publishToFloodgate" name="publishToFloodgate" />
-              <label for="publishToFloodgate">Publish to Floodgate Content</label>
             </div>
             <button id="bulkpublish" href="#">Bulk Publish</button>
           </dd>

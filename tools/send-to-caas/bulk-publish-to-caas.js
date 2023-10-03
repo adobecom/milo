@@ -15,11 +15,10 @@ import {
   setConfig,
 } from './send-utils.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
-import { fgHeaderValue } from '../../libs/blocks/caas/utils.js';
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType'];
-const FIELDS_CB = ['draftOnly', 'usePreview', 'useHtml', 'publishToFloodgate'];
+const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
+const FIELDS_CB = ['draftOnly', 'usePreview', 'useHtml'];
 const DEFAULT_VALUES = {
   caasEnv: 'Prod',
   contentType: 'caas:content-type/article',
@@ -28,12 +27,12 @@ const DEFAULT_VALUES = {
   owner: 'adobecom',
   repo: 'bacom',
   urls: '',
+  publishToFloodgate: 'default',
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
   usePreview: false,
   useHtml: true,
-  publishToFloodgate: false,
 };
 
 const fetchExcelJson = async (url) => {
@@ -111,14 +110,14 @@ const processData = async (data, accessToken) => {
   if (!repo) {
     showAlert('You must enter a repo when choosing publish content to caas floodgate', { error: true });
     if (statusModal.modal) statusModal.close();
-    return false;
+    return;
   }
 
   let domain = `https://${host}`;
 
   if (usePreview) {
     domain = `https://main--${repo}--${owner}.hlx.page`;
-  } else if (publishToFloodgate) {
+  } else if (publishToFloodgate !== 'default') {
     domain = `https://main--${repo}--${owner}.hlx.live`;
   }
 
@@ -147,7 +146,7 @@ const processData = async (data, accessToken) => {
       setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
       const { caasMetadata, errors } = await getCardMetadata({
         prodUrl,
-        floodgatecolor: publishToFloodgate ? fgHeaderValue : 'default',
+        floodgatecolor: publishToFloodgate,
       });
 
       if (errors.length) {
@@ -252,10 +251,10 @@ const init = async () => {
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
+      publishToFloodgate: document.getElementById('publishToFloodgate').value,
       draftOnly: document.getElementById('draftOnly').checked,
       useHtml: document.getElementById('useHtml').checked,
       usePreview: document.getElementById('usePreview').checked,
-      publishToFloodgate: document.getElementById('publishToFloodgate').checked,
     });
     bulkPublish();
   });
