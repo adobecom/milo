@@ -28,9 +28,9 @@ export const decorateBgContent = (el) => {
   [...els].forEach((e) => {
     if (e.textContent.startsWith('/--')) {
       insidePattern = true;
-      decoratedBlock = createTag('div', { class: 'detail-bg' });
+      decoratedBlock = createTag('div', { slot: 'detail-bg' });
       style = e.textContent.substring(3).trim();
-      e.replaceWith(decoratedBlock);
+      e.remove();
       return;
     }
     if (e.textContent.includes('--/')) {
@@ -42,7 +42,7 @@ export const decorateBgContent = (el) => {
       decoratedBlock.appendChild(e);
     }
   });
-  return style;
+  return { style, decoratedBlock };
 };
 
 const checkBoxLabel = (ctas, altCtaMetaData) => {
@@ -159,12 +159,14 @@ const init = (el) => {
     }
   }
   if (styles.includes('evergreen')) {
+    const decoratedContent = decorateBgContent(el);
     merchCard.setAttribute('evergreen', true);
-    merchCard.setAttribute('detail-bg', decorateBgContent(el));
+    merchCard.setAttribute('detail-bg', decoratedContent.style);
+    merchCard.append(decoratedContent.decoratedBlock);
+  } else {
+    merchCard.appendChild(footer);
   }
-
   addInner(el, altCta, cardType, merchCard);
-  merchCard.appendChild(footer);
   el.replaceWith(merchCard);
 };
 
