@@ -221,52 +221,6 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.merch-card .checkbox-container,
-.merch-card .secure-transaction-wrapper {
-  display: grid;
-  grid-template-columns: 12px auto;
-  gap: var(--spacing-xxs);
-}
-
-.merch-card .checkbox-label,
-.merch-card .secure-transaction-label {
-  font-size: var(--type-body-xxs-size);
-  line-height: 1.3;
-  color: var(--color-gray-600);
-}
-
-.merch-card .secure-transaction-icon {
-  height: 15px;
-  width: 12px;
-  background: url('/libs/img/ui/secure-transaction.svg') no-repeat left center;
-}
-
-.merch-card .secure-transaction-label {
-  white-space: nowrap;
-}
-
-.merch-card .checkbox-container input[type="checkbox"] {
-  display: none;
-}
-
-.merch-card .checkbox-container .checkmark {
-  position: relative;
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border: 2px solid #757575;
-  background: #fff;
-  border-radius: 2px;
-  cursor: pointer;
-  margin-top: 2px;
-}
-
-.merch-card .checkbox-container input[type="checkbox"]:checked + .checkmark {
-  background-color: var(--color-accent);
-  background-image: url('/libs/img/ui/checkmark-white-small.svg');
-  border-color: var(--color-accent);
-}
-
 .merch-card.has-divider hr {
   margin: var(--spacing-xxs) 0;
 }
@@ -290,57 +244,9 @@
   grid-template-columns: 40px 1fr;
 }
 
-.merch-card ul[class$="-list"] {
-  list-style: none;
-  margin: 0;
-  padding-left: var(--spacing-xxs);
-  font-size: var(--type-body-xxs-size);
-  line-height: 1.5;
-  color: var(--color-black);
-}
-
-.merch-card li[class$="-list-item"] {
-  position: relative;
-}
-
-.merch-card li[class$="-list-item"]::before {
-  content: "\B7";
-  position: absolute;
-  left: -0.4em;
-  font-size: 1.5em;
-  top: calc(0.5 * 1.5 * var(--type-body-xxs-size) - 0.05em);
-  transform: translateY(-50%);
-}
-
 .merch-card.inline-heading .consonant-SegmentBlade-description,
 .merch-card.inline-heading .consonant-CardFooter {
   grid-column: span 2;
-}
-
-.merch-card.special-offers .consonant-CardFooter {
-  margin-top: 0;
-  padding-top: 0;
-  justify-content: center;
-  box-sizing: border-box;
-  align-self: flex-end;
-  width: 100%;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-  align-items: center;
-}
-
-.merch-card .consonant-CardFooter-row,
-.merch-card .consonant-CardFooter-cell {
-  display: flex;
-  gap: var(--spacing-xs);
-  flex-wrap: wrap;
-  margin-left: auto;
-  height: auto;
-  width: auto;
 }
 
 .dark .merch-card .consonant-CardFooter .con-button.outline {
@@ -348,6 +254,3 @@
   color: var(--color-black);
 }
 
-.merch-card .consonant-CardFooter-row .button--inactive {
-  display: none;
-}

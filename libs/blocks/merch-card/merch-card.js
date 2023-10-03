@@ -12,24 +12,50 @@ const base = miloLibs || codeRoot;
 
 loadStyle(`${base}/deps/commerce-web-components.css`);
 
+const detailLineConfig = { catalog: 0, plans: 0 };
+
 const wordNumbers = ['one', 'two', 'three', 'four'];
 
-const cardTypes = ['segment', 'special-offer', 'plans'];
+const cardTypes = ['segment', 'special-offer', 'plans', 'catalog'];
 
 const getPodType = (styles) => styles?.find((style) => cardTypes.includes(style));
 
-const checkBoxLabel = (el, altCtaMetaData) => {
+export const decorateBgContent = (el) => {
+  const els = el.querySelectorAll('p');
+  let insidePattern = false;
+  let decoratedBlock;
+  let style;
+  [...els].forEach((e) => {
+    if (e.textContent.startsWith('/--')) {
+      insidePattern = true;
+      decoratedBlock = createTag('div', { class: 'detail-bg' });
+      style = e.textContent.substring(3).trim();
+      e.replaceWith(decoratedBlock);
+      return;
+    }
+    if (e.textContent.includes('--/')) {
+      insidePattern = false;
+      e.remove();
+      return;
+    }
+    if (insidePattern) {
+      decoratedBlock.appendChild(e);
+    }
+  });
+  return style;
+};
+
+const checkBoxLabel = (ctas, altCtaMetaData) => {
   const altCtaRegex = /href=".*"/;
   if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return null;
-  const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-  const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
+  const allButtons = ctas.querySelectorAll('a');
+  const originalCtaButton = allButtons[allButtons.length - 1];
   const altCtaButtonData = altCtaMetaData[1];
-  decorateButtons(altCtaButtonData);
-  const altCtaButton = createTag('div', { class: [...originalCtaButton.classList, 'altCta'] }, altCtaButtonData.innerHTML);
-  altCtaButton.classList.add('button--inactive');
-  cardFooterRow.append(altCtaButton);
-  altCtaMetaData[0].parentNode.remove();
-  return altCtaButtonData;
+  const altCtaButton = createTag('div', { class: [...originalCtaButton.classList, 'alt-cta', 'button--inactive'].join(' ') }, altCtaButtonData.textContent);
+  originalCtaButton.classList.add('active');
+  decorateButtons(altCtaButton);
+  ctas.appendChild(altCtaButton);
+  return altCtaMetaData[0].textContent;
 };
 
 const addInner = (el, altCta, cardType, merchCard) => {
@@ -41,12 +67,17 @@ const addInner = (el, altCta, cardType, merchCard) => {
   const inner = el.querySelector(':scope > div:not([class])');
   let titleNumber = 0;
   const body = createTag('div', { slot: 'body' });
+  let detailLineCount = 0;
   innerElements.forEach((element) => {
     if (element.tagName.match(/^H[1-6]$/)) {
       merchCard.append(createTag(element.tagName, { slot: `${titleNumber !== 0 ? `heading-${wordNumbers[titleNumber]}` : 'heading'}` }, element.textContent));
       titleNumber += 1;
     }
     if (element.tagName.match(/^P$/)) {
+      if (detailLineConfig[cardType] && detailLineConfig[cardType] === detailLineCount) {
+        merchCard.append(createTag('div', { class: 'detail' }, element));
+        detailLineCount += 1;
+      }
       body.append(element);
     }
     if (element.tagName.match(/^UL$/)) {
@@ -99,9 +130,10 @@ const init = (el) => {
       }
     }
   });
+  const footer = createTag('div', { slot: 'footer' });
   if (ctas) decorateButtons(ctas);
+  footer.appendChild(ctas);
   const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
-
   if (ribbonMetadata !== null) {
     const badge = returnRibbonStyle(ribbonMetadata);
     if (badge !== null) {
@@ -121,11 +153,16 @@ const init = (el) => {
       .then((key) => merchCard.setAttribute('secure-label', key));
   }
   if (altCta) {
-    const checkboxLabel = checkBoxLabel(el, altCta);
-    if (checkboxLabel !== null) merchCard.setAttribute('checkbox-label', checkboxLabel);
+    const label = checkBoxLabel(ctas, altCta);
+    if (label !== null) {
+      merchCard.setAttribute('checkbox-label', label);
+    }
   }
-  const footer = createTag('div', { slot: 'footer' });
-  footer.appendChild(ctas);
+  if (styles.includes('evergreen')) {
+    merchCard.setAttribute('evergreen', true);
+    merchCard.setAttribute('detail-bg', decorateBgContent(el));
+  }
+
   addInner(el, altCta, cardType, merchCard);
   merchCard.appendChild(footer);
   el.replaceWith(merchCard);
