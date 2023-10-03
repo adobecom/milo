@@ -265,6 +265,7 @@ const App = ({
   }, [selectedQuestion, stringQList]);
 
   const getStringValue = (propName) => {
+    if (!selectedQuestion || !selectedQuestion.questions) return '';
     const question = stringQList[selectedQuestion.questions];
     return question?.[propName] || '';
   };
