@@ -254,7 +254,7 @@ const App = ({
 
   useEffect(() => {
     const getStringValue = (propName) => {
-      if (!selectedQuestion || !selectedQuestion.questions) return '';
+      if (!selectedQuestion?.questions) return '';
       const question = stringQList[selectedQuestion.questions];
       return question?.[propName] || '';
     };
@@ -265,7 +265,7 @@ const App = ({
   }, [selectedQuestion, stringQList]);
 
   const getStringValue = (propName) => {
-    if (!selectedQuestion || !selectedQuestion.questions) return '';
+    if (!selectedQuestion?.questions) return '';
     const question = stringQList[selectedQuestion.questions];
     return question?.[propName] || '';
   };
@@ -276,48 +276,45 @@ const App = ({
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
-  if (isDataLoaded) {
-    return html`<div class="quiz-container">
-                    <${StepIndicator} 
-                      currentStep=${currentStep} 
-                      totalSteps=${totalSteps} 
-                      prevStepIndicator=${prevStepIndicator}
-                      top="${true}" />
+  if (!isDataLoaded) return '';
 
-                    ${getStringValue('background') !== '' && html`<div class="quiz-background">
-                        ${DecorateBlockBackground(getStringValue)}
-                    </div>`}
-
-                    <${DecorateBlockForeground} 
-                        heading=${getStringValue('heading')} 
-                        subhead=${getStringValue('sub-head')} 
-                        btnText=${getStringValue('btn')} />
-                  
-                    ${selectedQuestion && selectedQuestion.questions && html`<${GetQuizOption} 
-                        btnText=${getStringValue('btn')} 
-                        minSelections=${minSelections} 
-                        maxSelections=${maxSelections} 
-                        options=${stringData[selectedQuestion.questions]} 
-                        countSelectedCards=${countSelectedCards}
-                        selectedCards=${selectedCards}
-                        onOptionClick=${onOptionClick}
-                        getOptionsIcons=${getOptionsIcons}
-                        handleOnNextClick=${handleOnNextClick}
-                        btnAnalyticsData=${btnAnalytics}/>`}
-
-                    <${StepIndicator} 
+  return html`<div class="quiz-container">
+                  <${StepIndicator} 
                     currentStep=${currentStep} 
                     totalSteps=${totalSteps} 
                     prevStepIndicator=${prevStepIndicator}
-                    bottom="${true}" />
+                    top="${true}" />
 
-                    <div class="quiz-footer">
-                    </div>
-                </div>`;
-  }
-  else {
-    return '';
-  }
+                  ${getStringValue('background') !== '' && html`<div class="quiz-background">
+                      ${DecorateBlockBackground(getStringValue)}
+                  </div>`}
+
+                  <${DecorateBlockForeground} 
+                      heading=${getStringValue('heading')} 
+                      subhead=${getStringValue('sub-head')} 
+                      btnText=${getStringValue('btn')} />
+                
+                  ${selectedQuestion?.questions && html`<${GetQuizOption} 
+                      btnText=${getStringValue('btn')} 
+                      minSelections=${minSelections} 
+                      maxSelections=${maxSelections} 
+                      options=${stringData[selectedQuestion.questions]} 
+                      countSelectedCards=${countSelectedCards}
+                      selectedCards=${selectedCards}
+                      onOptionClick=${onOptionClick}
+                      getOptionsIcons=${getOptionsIcons}
+                      handleOnNextClick=${handleOnNextClick}
+                      btnAnalyticsData=${btnAnalytics}/>`}
+
+                  <${StepIndicator} 
+                  currentStep=${currentStep} 
+                  totalSteps=${totalSteps} 
+                  prevStepIndicator=${prevStepIndicator}
+                  bottom="${true}" />
+
+                  <div class="quiz-footer">
+                  </div>
+              </div>`;
 };
 
 export default async function init(
