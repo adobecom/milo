@@ -282,7 +282,7 @@ const App = ({
                     prevStepIndicator=${prevStepIndicator}
                     top="${true}" />
 
-                  ${getStringValue('background') != '' && html`<div class="quiz-background">
+                  ${getStringValue('background') !== '' && html`<div class="quiz-background">
                       ${DecorateBlockBackground(getStringValue)}
                   </div>`}
 
@@ -312,7 +312,6 @@ const App = ({
                   <div class="quiz-footer">
                   </div>
               </div>`;
-
 };
 
 export default async function init(
