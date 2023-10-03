@@ -88,8 +88,12 @@ const App = ({
       if (currentFlow && currentFlow.length) {
         setSelectedQuestion(questionList[currentFlow] || []);
       }
+      const lastQuestion = [...Object.keys(questionList)].pop() || {};
+      if (lastQuestion === currentFlow) {
+        setTotalSteps(totalSteps - 1);
+      }
     }
-  }, [userFlow, questionList]);
+  }, [userFlow, questionList, totalSteps]);
 
   /**
    * Updates the analytics data for the next button.
@@ -191,7 +195,7 @@ const App = ({
    */
   const handleOnNextClick = (selCards) => {
     setIsBtnClicked(true);
-    const { nextQuizViews, lastStopValue } = handleNext(
+    const { nextQuizViews } = handleNext(
       questionData,
       selectedQuestion,
       selCards,
@@ -215,9 +219,6 @@ const App = ({
       } else {
         setTotalSteps(totalSteps);
       }
-    }
-    if (lastStopValue && lastStopValue === 'RESET') {
-      setTotalSteps(totalSteps - 1);
     }
     resetFocus();
   };

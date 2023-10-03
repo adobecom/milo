@@ -267,6 +267,11 @@
   margin: 0 0 24px;
 }
 
+.quiz-footer .section,
+.quiz-footer .section.dark {
+  background: inherit;
+}
+
 @media screen and (min-width: 768px) {
   .quiz-foreground {
     margin: var(--spacing-xxxl) 0;
