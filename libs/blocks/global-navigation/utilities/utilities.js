@@ -48,7 +48,9 @@ export const getFedsContentRoot = () => {
 export const federatePictureSources = (section) => {
   section?.querySelectorAll('[src], [srcset]').forEach((source) => {
     const type = source.hasAttribute('src') ? 'src' : 'srcset';
-    source.setAttribute(type, source.getAttribute(type).replace(/^\.?\//, `${getFedsContentRoot()}/`));
+    const value = source.getAttribute(type);
+    if (!value) return;
+    source.setAttribute(type, value.replace(/^\.?\//, `${getFedsContentRoot()}/`));
   });
 };
 

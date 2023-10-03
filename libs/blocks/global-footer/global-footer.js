@@ -31,17 +31,10 @@ const CONFIG = {
 };
 
 class Footer {
-  /**
-   * Footer constructor
-   * @param {Object} config Configuration object for Footer class
-   * @param {Element} config.contentUrl The raw content to decorate to populate the Footer
-   * @param {Element} config.footerEl The placeholder element where the Footer should be rendered
-   * @param {Boolean} [config.useFederatedContent] Whether the Footer loads from a central location
-   */
-  constructor(config) {
-    Object.keys(config).forEach((key) => {
-      this[key] = config[key];
-    });
+  constructor({ contentUrl, block, useFederatedContent } = {}) {
+    this.contentUrl = contentUrl;
+    this.block = block;
+    this.useFederatedContent = useFederatedContent;
 
     this.elements = {};
 
@@ -66,7 +59,7 @@ class Footer {
       }
     }, intersectionOptions);
 
-    observer.observe(this.footerEl);
+    observer.observe(this.block);
 
     // Set timeout after which we load the footer automatically
     decorationTimeout = setTimeout(() => {
@@ -112,9 +105,9 @@ class Footer {
       await task();
     }
 
-    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
+    this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
 
-    this.footerEl.append(this.elements.footer);
+    this.block.append(this.elements.footer);
   };
 
   fetchContent = async () => {
@@ -168,7 +161,7 @@ class Footer {
     const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
-    this.footerEl.append(elem);
+    this.block.append(elem);
   };
 
   decorateProducts = async () => {
@@ -369,7 +362,7 @@ export default function init(block) {
       ? new URL(`${getFedsContentRoot()}${footerPath.pathname}`)
       : footerPath;
     const footer = new Footer({
-      footerEl: block,
+      block,
       contentUrl: footerUrl.href,
       useFederatedContent,
     });

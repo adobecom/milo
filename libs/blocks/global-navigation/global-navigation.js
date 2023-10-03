@@ -159,28 +159,21 @@ const closeOnClickOutside = (e) => {
 };
 
 class Gnav {
-  /**
-   * Gnav constructor
-   * @param {Object} config Configuration object for Gnav class
-   * @param {Element} config.body The raw content to decorate to populate the Gnav
-   * @param {Element} config.el The placeholder element where the Gnav should be rendered
-   * @param {Boolean} [config.useFederatedContent] Whether the Gnav loads from a central location
-   */
-  constructor(config) {
-    Object.keys(config).forEach((key) => {
-      this[key] = config[key];
-    });
+  constructor({ content, block, useFederatedContent } = {}) {
+    this.content = content;
+    this.block = block;
+    this.useFederatedContent = useFederatedContent;
 
     this.blocks = {
       profile: {
-        rawElem: this.body.querySelector('.profile'),
+        rawElem: this.content.querySelector('.profile'),
         decoratedElem: toFragment`<div class="feds-profile"></div>`,
       },
       search: { config: { icon: CONFIG.icons.search } },
       breadcrumbs: { wrapper: '' },
     };
 
-    decorateLinks(this.body);
+    decorateLinks(this.content);
     this.elements = {};
   }
 
@@ -197,8 +190,8 @@ class Gnav {
       this.ims,
       this.addChangeEventListeners,
     ];
-    this.el.addEventListener('click', this.loadDelayed);
-    this.el.addEventListener('keydown', setupKeyboardNav);
+    this.block.addEventListener('click', this.loadDelayed);
+    this.block.addEventListener('keydown', setupKeyboardNav);
     setTimeout(this.loadDelayed, CONFIG.delays.loadDelayed);
     setTimeout(setupKeyboardNav, CONFIG.delays.keyboardNav);
     for await (const task of tasks) {
@@ -243,7 +236,7 @@ class Gnav {
       </div>`;
 
     if (this.useFederatedContent) federatePictureSources(this.elements.topnavWrapper);
-    this.el.append(this.elements.curtain, this.elements.topnavWrapper);
+    this.block.append(this.elements.curtain, this.elements.topnavWrapper);
   };
 
   addChangeEventListeners = () => {
@@ -292,8 +285,8 @@ class Gnav {
   loadDelayed = async () => {
     this.ready = this.ready || new Promise(async (resolve) => {
       try {
-        this.el.removeEventListener('click', this.loadDelayed);
-        this.el.removeEventListener('keydown', this.loadDelayed);
+        this.block.removeEventListener('click', this.loadDelayed);
+        this.block.removeEventListener('keydown', this.loadDelayed);
         const [
           ProfileDropdown,
           Search,
@@ -442,7 +435,7 @@ class Gnav {
   };
 
   decorateGenericLogo = ({ selector, classPrefix, includeLabel = true, analyticsValue } = {}) => {
-    const rawBlock = this.body.querySelector(selector);
+    const rawBlock = this.content.querySelector(selector);
     if (!rawBlock) return '';
 
     // Get all non-image links
@@ -517,7 +510,7 @@ class Gnav {
     `;
 
     // Get all main menu items, but exclude any that are nested inside other features
-    const items = [...this.body.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
+    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
 
     // Save number of items to decide whether a hamburger menu is required
@@ -651,9 +644,9 @@ class Gnav {
   };
 
   decorateBreadcrumbs = async () => {
-    if (!this.el.classList.contains('has-breadcrumbs')) return null;
+    if (!this.block.classList.contains('has-breadcrumbs')) return null;
     if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
-    const breadcrumbsElem = this.el.querySelector('.breadcrumbs');
+    const breadcrumbsElem = this.block.querySelector('.breadcrumbs');
     // Breadcrumbs are not initially part of the nav, need to decorate the links
     if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
     const createBreadcrumbs = await loadBlock('../features/breadcrumbs/breadcrumbs.js');
@@ -662,7 +655,7 @@ class Gnav {
   };
 
   decorateSearch = () => {
-    const searchBlock = this.body.querySelector('.search');
+    const searchBlock = this.content.querySelector('.search');
 
     if (!searchBlock) return null;
 
@@ -692,7 +685,7 @@ class Gnav {
   };
 }
 
-export default async function init(header) {
+export default async function init(block) {
   try {
     const { locale } = getConfig();
     const useFederatedContent = getMetadata('feds')?.toLowerCase().includes('header');
@@ -705,13 +698,13 @@ export default async function init(header) {
     if (!html) throw new Error('Gnav content could not be fetched');
     const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
     const gnav = new Gnav({
-      body: new DOMParser().parseFromString(parsedHTML, 'text/html').body,
-      el: header,
+      content: new DOMParser().parseFromString(parsedHTML, 'text/html').body,
+      block,
       useFederatedContent,
     });
     gnav.init();
-    header.setAttribute('daa-im', 'true');
-    header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
+    block.setAttribute('daa-im', 'true');
+    block.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e });

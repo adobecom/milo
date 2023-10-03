@@ -62,7 +62,7 @@ describe('global navigation utilities', () => {
       federatePictureSources(template);
       document.querySelectorAll('source, img').forEach((source) => {
         const attr = source.hasAttribute('src') ? 'src' : 'srcset';
-        expect(source.getAttribute(attr) === `https://main--milo--adobecom.hlx.page/${imgPath}`);
+        expect(source.getAttribute(attr)).to.equal(`https://main--milo--adobecom.hlx.page/${imgPath}`);
       });
     });
   });

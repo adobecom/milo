@@ -23,39 +23,55 @@ describe('global navigation', () => {
     document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
   });
 
-  describe('basic sanity tests', () => {
-    it('should fetch the navigation from a centralized location based on metadata', async () => {
+  describe('content source', () => {
+    const baseUrl = 'https://main--milo--adobecom.hlx.page';
+    const customPath = '/path/to/gnav';
+    let fetchStub;
+
+    beforeEach(() => {
+      fetchStub = sinon.stub(window, 'fetch');
+      sinon.stub(window.lana, 'log');
       setConfig({ locale: { ietf: 'en-US', prefix: '' } });
-      const baseUrl = 'https://main--milo--adobecom.hlx.page';
-      const stub = sinon.stub(window, 'fetch');
-      const lanaStub = sinon.stub(window.lana, 'log');
-      // Check default path with centralized content
+    });
+
+    afterEach(() => {
+      fetchStub = null;
+      window.fetch.restore();
+      window.lana.log.restore();
+      document.head.replaceChildren();
+      document.body.replaceChildren();
+    });
+
+    it('fetches centralized default global navigation based on metadata', async () => {
       const fedsMeta = toFragment`<meta name="feds" content="header">`;
       document.head.append(fedsMeta);
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
-      expect(stub.calledOnceWith(`${baseUrl}/gnav.plain.html`)).to.be.true;
-      // Check custom path with centralized content
-      const customPath = '/path/to/gnav';
+      expect(fetchStub.calledOnceWith(`${baseUrl}/gnav.plain.html`)).to.be.true;
+    });
+
+    it('fetches centralized custom global navigation based on metadata', async () => {
+      const fedsMeta = toFragment`<meta name="feds" content="header">`;
+      document.head.append(fedsMeta);
       const gnavMeta = toFragment`<meta name="gnav-source" content="https://localhost:2000${customPath}">`;
       document.head.append(gnavMeta);
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
-      expect(stub.calledWith(`${baseUrl}${customPath}.plain.html`)).to.be.true;
-      // Check that an invalid path doesn't make a network request
-      expect(stub.callCount).to.eql(2);
-      gnavMeta.setAttribute('content', customPath);
-      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-      await initGnav(document.body.querySelector('header'));
-      expect(stub.callCount).to.eql(2);
-      // Clean up
-      stub.reset();
-      lanaStub.reset();
-      fedsMeta.remove();
-      gnavMeta.remove();
-      document.body.replaceChildren();
+      expect(fetchStub.calledOnceWith(`${baseUrl}${customPath}.plain.html`)).to.be.true;
     });
 
+    it('doesn\'t fetch content if path to centralized content is invalid', async () => {
+      const fedsMeta = toFragment`<meta name="feds" content="header">`;
+      document.head.append(fedsMeta);
+      const gnavMeta = toFragment`<meta name="gnav-source" content="${customPath}">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(fetchStub.callCount).to.equal(0);
+    });
+  });
+
+  describe('basic sanity tests', () => {
     it('should render the navigation on desktop', async () => {
       const nav = await createFullGlobalNavigation();
 
