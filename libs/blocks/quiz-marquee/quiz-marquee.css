@@ -1,13 +1,19 @@
 .quiz-marquee {
   position: relative;
   padding: var(--spacing-m) 0;
-  color: var(--color-white);
 }
 
-.light .quiz-marquee,
-.quiz-marquee.light {
-  color: var(--text-color);
+.dark .quiz-marquee,
+.quiz-marquee.dark {
+  color: white;
 }
+
+.quiz-marquee .static p { margin: var(--spacing-xs) 0; }
+.quiz-marquee .static p:only-child { margin: 0; }
+.quiz-marquee .static p:first-child { margin-top: 0; }
+.quiz-marquee .static [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
+.quiz-marquee .static [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
+.quiz-marquee .static div > *:last-child { margin-bottom: 0; }
 
 .quiz-marquee > .foreground {
   max-width: var(--grid-container-width);
@@ -27,7 +33,21 @@
   height: 1px;
 }
 
-.quiz-marquee .con-block .container {
+.quiz-marquee .badge {
+  font-size: 14px;
+  line-height: 1em;
+  font-weight: 400;
+  vertical-align: middle;
+  padding: 4px 8px;
+  margin-left: 4px;
+  border-radius: 4px;
+  background-color: yellow;
+  color: var(--text-color);
+  white-space: no-wrap;
+}
+
+.quiz-marquee .con-block .container,
+.quiz-marquee .text-block .foreground {
   width: unset;
   margin: 0;
 }
