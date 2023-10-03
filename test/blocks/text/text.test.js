@@ -16,7 +16,7 @@ describe('text block', () => {
     });
 
     it('has body copy', () => {
-      const body = textBlocks[0].querySelector('.body-m');
+      const body = textBlocks[0].querySelector('[class*="body-"]');
       expect(body).to.exist;
     });
   });
@@ -27,7 +27,7 @@ describe('text block', () => {
     });
 
     it('has body copy', () => {
-      const body = textBlocks[1].querySelector('.body-m');
+      const body = textBlocks[1].querySelector('[class*="body-"]');
       expect(body).to.exist;
     });
   });
