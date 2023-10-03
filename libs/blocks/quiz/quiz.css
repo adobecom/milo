@@ -1,3 +1,5 @@
+@import url('../../styles/styles.css');
+
 .quiz-page * {
   box-sizing: border-box;
 }
@@ -11,7 +13,7 @@
 }
 
 .quiz {
-  min-height: calc(100vh - 64px); /* window height minus global nav height */
+  min-height: calc(100vh - var(--global-height-nav)); /* window height minus global nav height from styles.css */
 }
 
 .quiz-container {
