@@ -276,43 +276,48 @@ const App = ({
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
-  return html`<div class="quiz-container">
-                  <${StepIndicator} 
+  if (isDataLoaded) {
+    return html`<div class="quiz-container">
+                    <${StepIndicator} 
+                      currentStep=${currentStep} 
+                      totalSteps=${totalSteps} 
+                      prevStepIndicator=${prevStepIndicator}
+                      top="${true}" />
+
+                    ${getStringValue('background') !== '' && html`<div class="quiz-background">
+                        ${DecorateBlockBackground(getStringValue)}
+                    </div>`}
+
+                    <${DecorateBlockForeground} 
+                        heading=${getStringValue('heading')} 
+                        subhead=${getStringValue('sub-head')} 
+                        btnText=${getStringValue('btn')} />
+                  
+                    ${selectedQuestion && selectedQuestion.questions && html`<${GetQuizOption} 
+                        btnText=${getStringValue('btn')} 
+                        minSelections=${minSelections} 
+                        maxSelections=${maxSelections} 
+                        options=${stringData[selectedQuestion.questions]} 
+                        countSelectedCards=${countSelectedCards}
+                        selectedCards=${selectedCards}
+                        onOptionClick=${onOptionClick}
+                        getOptionsIcons=${getOptionsIcons}
+                        handleOnNextClick=${handleOnNextClick}
+                        btnAnalyticsData=${btnAnalytics}/>`}
+
+                    <${StepIndicator} 
                     currentStep=${currentStep} 
                     totalSteps=${totalSteps} 
                     prevStepIndicator=${prevStepIndicator}
-                    top="${true}" />
+                    bottom="${true}" />
 
-                  ${getStringValue('background') !== '' && html`<div class="quiz-background">
-                      ${DecorateBlockBackground(getStringValue)}
-                  </div>`}
-
-                  <${DecorateBlockForeground} 
-                      heading=${getStringValue('heading')} 
-                      subhead=${getStringValue('sub-head')} 
-                      btnText=${getStringValue('btn')} />
-                  
-                  ${selectedQuestion && selectedQuestion.questions && html`<${GetQuizOption} 
-                      btnText=${getStringValue('btn')} 
-                      minSelections=${minSelections} 
-                      maxSelections=${maxSelections} 
-                      options=${stringData[selectedQuestion.questions]} 
-                      countSelectedCards=${countSelectedCards}
-                      selectedCards=${selectedCards}
-                      onOptionClick=${onOptionClick}
-                      getOptionsIcons=${getOptionsIcons}
-                      handleOnNextClick=${handleOnNextClick}
-                      btnAnalyticsData=${btnAnalytics}/>`}
-
-                  <${StepIndicator} 
-                  currentStep=${currentStep} 
-                  totalSteps=${totalSteps} 
-                  prevStepIndicator=${prevStepIndicator}
-                  bottom="${true}" />
-
-                  <div class="quiz-footer">
-                  </div>
-              </div>`;
+                    <div class="quiz-footer">
+                    </div>
+                </div>`;
+  }
+  else {
+    return '';
+  }
 };
 
 export default async function init(
