@@ -4,6 +4,7 @@ import { waitForElement } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/marquee/marquee.js');
+const { default: videoBLock } = await import('../../../libs/blocks/video/video.js');
 const video = await readFile({ path: './mocks/video.html' });
 const multipleIcons = await readFile({ path: './mocks/multiple-icons.html' });
 describe('marquee', () => {
@@ -58,20 +59,25 @@ describe('marquee', () => {
     it('in background, single', async () => {
       const marquee = document.getElementById('single-background');
       init(marquee);
+      videoBLock(document.querySelector('#single-background a[href*=".mp4"]'));
       const videoEl = await waitForElement('#single-background .background video');
       expect(videoEl).to.exist;
+      document.getElementById('single-background').remove();
     });
 
     it('in background, multiple', async () => {
       const marquee = document.getElementById('multiple-background');
       init(marquee);
+      document.querySelectorAll('#multiple-background a[href*=".mp4"]').forEach((videoLink) => videoBLock(videoLink));
       await waitForElement('#multiple-background .background video');
       expect(marquee.querySelectorAll('.background video').length).to.equal(1);
+      document.getElementById('multiple-background').remove();
     });
 
     it('in foreground', async () => {
       const marquee = document.getElementById('foreground');
       init(marquee);
+      videoBLock(document.querySelector('#foreground a[href*=".mp4"]'));
       await waitForElement('#foreground video');
       expect(marquee.querySelector('.foreground video')).to.exist;
     });
