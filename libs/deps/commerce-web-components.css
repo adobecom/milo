@@ -1,0 +1,80 @@
+:root {
+
+    --consonant-merch-card-detail-font-size: 12px;
+    --consonant-merch-card-detail-font-weight: bold;
+    --consonant-merch-card-detail-letter-spacing: 0.8px;
+    --consonant-merch-card-background-color: #fff;
+
+    --consonant-merch-card-heading-font-size: 18px;
+    --consonant-merch-card-heading-line-height: 22.5px;
+    --consonant-merch-card-heading-secondary-font-size: 14px;
+    --consonant-merch-card-body-font-size: 14px;
+    --consonant-merch-card-body-line-height: 21px;
+
+    /* spacing */
+    --consonant-merch-card-spacing-xxxs: 4px;
+    --consonant-merch-card-spacing-xxs: 8px;
+    --consonant-merch-card-spacing-xs: 16px;
+    --consonant-merch-card-spacing-s: 24px;
+    --consonant-merch-card-spacing-m: 32px;
+
+    --consonant-merch-card-heading-padding: 0;
+
+    --consonant-merch-card-image-height: 180px;
+
+    /* colors */
+    --consonant-merch-card-border-color: #eaeaea;
+
+    /* special offers */
+    --consonant-merch-card-special-offer-height: 408px;
+    --consonant-merch-card-special-offer-width: 300px;
+}
+
+/* Tablet */
+@media (min-width: 900px) {
+    :root {
+        --consonant-merch-card-special-offer-height: 408px;
+        --consonant-merch-card-special-offer-width: 302px;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1200px) {
+    :root {
+        --consonant-merch-card-special-offer-height: 438px;
+        --consonant-merch-card-special-offer-width: 378px;
+    }
+}
+
+merch-card p, merch-card h3, merch-card h4 {
+    margin: 0;
+}
+
+merch-card [is=inline-price] {
+    display: inline-block;
+}
+
+merch-card [slot='detail'] {
+    font-size: var(--consonant-merch-card-detail-font-size);
+    font-weight: var(--consonant-merch-card-detail-font-weight);
+    letter-spacing: var(--consonant-merch-card-detail-letter-spacing);
+}
+
+merch-card [slot="body"] p {
+    font-size: var(--consonant-merch-card-body-font-size);
+    line-height: var(--consonant-merch-card-body-line-height);
+}
+
+merch-card [slot="heading"],
+merch-card [slot="heading-two"] {
+    font-size: var(--consonant-merch-card-heading-font-size);
+    height: var(--consonant-merch-card-heading-line-height);
+}
+merch-card [slot="heading-two"] {
+    align-items: baseline;
+    gap: var(--consonant-merch-card-spacing-xxxs);
+}
+
+merch-card [slot="heading-two"] > span:nth-child(2) {
+    font-size: var(--consonant-merch-card-heading-secondary-font-size);
+}
