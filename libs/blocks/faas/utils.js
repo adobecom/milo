@@ -352,7 +352,11 @@ export const initFaas = (config, targetEl) => {
   if (state.complete) {
     if (state.js) {
       Object.keys(state.js).forEach((key) => {
-        state[key] = state.js[key];
+        if (key === 'd') {
+          state[key] = localizeLink(state.js[key]);
+        } else {
+          state[key] = state.js[key];
+        }
       });
       delete state.js;
     }
