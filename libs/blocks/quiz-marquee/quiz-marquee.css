@@ -72,14 +72,14 @@
   margin: 0;
 }
 
-.quiz-marquee .text-block.inline-header .foreground > div {
+.quiz-marquee .text-block.icon-inline .foreground > div {
   display: grid;
   column-gap: 12px;
   align-items: center;
   grid-template-columns: auto 1fr;
 }
 
-.quiz-marquee .text-block.inline-header .body-l {
+.quiz-marquee .text-block.icon-inline .body-m {
   grid-column: span 2;
 }
 
