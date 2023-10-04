@@ -59,7 +59,6 @@ const checkBoxLabel = (ctas, altCtaMetaData) => {
 
 const addInner = (el, altCta, cardType, merchCard) => {
   const innerElements = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul')];
-  const inner = el.querySelector(':scope > div:not([class])');
   let titleNumber = 0;
   const body = createTag('div', { slot: 'body' });
   let detailLineCount = 0;
@@ -77,14 +76,15 @@ const addInner = (el, altCta, cardType, merchCard) => {
       body.append(element);
     }
     if (element.tagName.match(/^UL$/)) {
-      const list = el.querySelector('ul');
-      list.querySelectorAll('li');
-      merchCard.append(list);
+      const lastChildOfBody = body.lastElementChild;
+      if (lastChildOfBody) {
+        body.removeChild(lastChildOfBody);
+        element.prepend(lastChildOfBody);
+      }
+      merchCard.append(createTag('div', { slot: 'list' }, element));
     }
-    merchCard.append(body);
   });
-
-  merchCard.append(inner);
+  merchCard.append(body);
 };
 
 const returnRibbonStyle = (ribbonMetadata) => {
