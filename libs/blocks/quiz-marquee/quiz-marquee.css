@@ -1,6 +1,7 @@
 .quiz-marquee {
   position: relative;
   padding: var(--spacing-m) 0;
+  min-height: 700px;
 }
 
 .dark .quiz-marquee,
@@ -46,12 +47,6 @@
   white-space: no-wrap;
 }
 
-.quiz-marquee .con-block .container,
-.quiz-marquee .text-block .foreground {
-  width: unset;
-  margin: 0;
-}
-
 .quiz-marquee.split .asset {
   /* position: absolute;
   width: 50vw;
@@ -68,6 +63,24 @@
 
 .quiz-marquee .foreground div:empty {
   display: none;
+}
+
+/* Nested blocks */
+.quiz-marquee .con-block .container,
+.quiz-marquee .text-block .foreground {
+  width: unset;
+  margin: 0;
+}
+
+.quiz-marquee .text-block.inline-header .foreground > div {
+  display: grid;
+  column-gap: 12px;
+  align-items: center;
+  grid-template-columns: auto 1fr;
+}
+
+.quiz-marquee .text-block.inline-header .body-l {
+  grid-column: span 2;
 }
 
 /* tablet up */
