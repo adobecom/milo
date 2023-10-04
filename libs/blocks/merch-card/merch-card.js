@@ -1,7 +1,6 @@
 /* eslint-disable prefer-destructuring */
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
-import { addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/commerce.js';
@@ -60,10 +59,6 @@ const checkBoxLabel = (ctas, altCtaMetaData) => {
 
 const addInner = (el, altCta, cardType, merchCard) => {
   const innerElements = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul')];
-  const styles = [...el.classList];
-  const merch = styles.includes('merch-card');
-  const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
-  const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
   const inner = el.querySelector(':scope > div:not([class])');
   let titleNumber = 0;
   const body = createTag('div', { slot: 'body' });
@@ -74,9 +69,10 @@ const addInner = (el, altCta, cardType, merchCard) => {
       titleNumber += 1;
     }
     if (element.tagName.match(/^P$/)) {
-      if (detailLineConfig[cardType] && detailLineConfig[cardType] === detailLineCount) {
-        merchCard.append(createTag('div', { class: 'detail' }, element));
+      if (detailLineConfig[cardType] === detailLineCount) {
+        merchCard.append(createTag('div', { slot: 'detail' }, element));
         detailLineCount += 1;
+        return;
       }
       body.append(element);
     }
@@ -88,7 +84,6 @@ const addInner = (el, altCta, cardType, merchCard) => {
     merchCard.append(body);
   });
 
-  addFooter(links, inner, merchCard);
   merchCard.append(inner);
 };
 
