@@ -75,16 +75,23 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
   if (type === 'merch') decorateIconStack(el);
 }
 
-export function decorateBlockBg(block, node) {
+export async function decorateBlockBg(block, node) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
     node.classList.add('background');
     const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
+    const { handleFocalpoint } = await import('../blocks/section-metadata/section-metadata.js');
     [...node.children].forEach((child, i) => {
+      const videoLink = child.querySelector('a[href*=".mp4"]');
+      const pic = child.querySelector('picture');
       if (childCount > 1) child.classList.add(...viewports[i]);
-      if (!child.querySelector('img, video, a[href*=".mp4"]')) {
+      if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
+      if (pic && (child.childElementCount === 2 || child.textContent?.trim())) {
+        handleFocalpoint(pic, child, true);
+      }
+      if (!pic && !videoLink) {
         child.style.background = child.textContent;
         child.textContent = '';
       }

@@ -2,43 +2,8 @@
  * Marquee - v6.0
  */
 
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
-
-const decorateBlockBg = (block, node) => {
-  const childCount = node.childElementCount;
-  const viewports = {
-    'mobile-only': window.matchMedia(`${childCount > 1 ? '(max-width: 599.99px)' : ''}`),
-    'tablet-only': window.matchMedia(`(min-width: 600px)${childCount === 3 ? ' and (max-width: 1199.99px)' : ''}`),
-    'desktop-only': window.matchMedia('(min-width: 1200px)'),
-  };
-  const viewportsKeys = Object.keys(viewports);
-  const { children } = node;
-
-  node.classList.add('background');
-
-  if (childCount === 2) {
-    children[0].classList.add(viewportsKeys[0]);
-    children[1].classList.add(viewportsKeys[1], viewportsKeys[2]);
-  }
-
-  [...children].forEach(async (child, index) => {
-    if (childCount === 3) {
-      child.classList.add(viewportsKeys[index]);
-    }
-
-    const pic = child.querySelector('picture');
-    if (pic && (child.childElementCount === 2 || child.textContent?.trim())) {
-      const { handleFocalpoint } = await import('../section-metadata/section-metadata.js');
-      handleFocalpoint(pic, child, true);
-    }
-  });
-
-  if (!node.querySelector(':scope img') && !node.querySelector(':scope video, :scope a[href*=".mp4"]')) {
-    block.style.background = node.textContent;
-    node.remove();
-  }
-};
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
