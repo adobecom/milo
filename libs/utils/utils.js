@@ -747,7 +747,7 @@ export async function decorateFooterPromo({ locale: { contentRoot } }) {
   const tagBased = getMetadata('tag-based-footer-promo');
   if ((!footerPromoMeta || footerPromoMeta === 'off') && tagBased !== 'on') return;
   let href;
-  if (footerPromoMeta !== 'off') href = `${contentRoot}/fragments/footer-promos/${footerPromoMeta}`;
+  if (footerPromoMeta && footerPromoMeta !== 'off') href = `${contentRoot}/fragments/footer-promos/${footerPromoMeta}`;
 
   if (tagBased === 'on') {
     const linkFromTag = await getFooterPromoByTag(contentRoot);
