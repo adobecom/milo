@@ -22,7 +22,6 @@ function Badge({ status }) {
 }
 
 function Language({ item, idx }) {
-  console.log(item);
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
   const completeType = item.status === 'translated' || item.status === 'in-progress' ? 'Translated' : 'Rolled out';
