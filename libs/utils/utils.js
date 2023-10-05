@@ -733,7 +733,10 @@ async function getFooterPromoByTag(contentRoot) {
     const resp = await fetch(taxonomyUrl);
     if (!resp.ok) return false;
     const { data } = await resp.json();
-    const primaryTag = data.find((tag) => tagsOnPage.includes(tag[NAME]) && tag[FOOTER_PROMO_LINK]);
+    const primaryTag = data.find((tag) => {
+      const name = tag[NAME].split('|').pop().trim();
+      return tagsOnPage.includes(name) && tag[FOOTER_PROMO_LINK];
+    });
     if (primaryTag) return primaryTag[FOOTER_PROMO_LINK];
   } catch (error) {
     window.lana.log(`Footer Promo - Taxonomy error: ${error}`);
