@@ -34,7 +34,7 @@ const defaultConfig = {
     useLightText: false,
     disableBanners: false,
     reservoir: { sample: 3, pool: 1000 },
-    ctaAction: '_blank',
+    ctaAction: '_self',
     additionalRequestParams: {},
   },
   headers: [],

@@ -32,13 +32,13 @@ function handleHeading(headingCols) {
 
     const elements = col.children;
     if (!elements.length) {
-      col.innerHTML = `<p class="heading-title">${col.innerHTML}</p>`;
+      col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
       let textStartIndex = 0;
       if (elements[0]?.querySelector('img')) {
         textStartIndex += 1;
       }
-      elements[textStartIndex]?.classList.add('heading-title');
+      elements[textStartIndex]?.classList.add('tracking-header');
 
       if (elements[textStartIndex + 1]) {
         elements[textStartIndex + 1].classList.add('pricing');
@@ -287,6 +287,23 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const isMerch = table.classList.contains('merch');
   const deviceBySize = defineDeviceByScreenSize();
 
+  const setRowStyle = () => {
+    if (isMerch) return;
+    const sectionRow = Array.from(table.getElementsByClassName('section-row'));
+    if (sectionRow.length) {
+      const colsForTablet = sectionRow[0].children.length - 1;
+      const percentage = 100 / colsForTablet;
+      const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
+      sectionRow.forEach((row) => {
+        if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
+          row.style.gridTemplateColumns = templateColumnsValue;
+        } else {
+          row.style.gridTemplateColumns = '';
+        }
+      });
+    }
+  };
+
   const reAssignEvents = (tableEl) => {
     tableEl.dispatchEvent(tableHighlightLoadedEvent);
     tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
@@ -349,16 +366,19 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           });
         }
       });
+      setRowStyle();
     };
 
-    if (!table.parentElement.querySelector('.filters')) {
+    // Remove filter if table there are only 2 columns
+    const filter = isMerch ? headingsLength > 2 : headingsLength > 3;
+    if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
       const filter2 = createTag('div', { class: 'filter-wrapper' });
       const colSelect0 = createTag('select', { class: 'filter' });
       const headingsFromOrigin = originTable.querySelectorAll('.col-heading');
       headingsFromOrigin.forEach((heading, index) => {
-        const title = heading.querySelector('.heading-title');
+        const title = heading.querySelector('.tracking-header');
         if (!title || (!isMerch && title.closest('.col-1'))) return;
 
         const option = createTag('option', { value: index }, title.innerText);
@@ -396,20 +416,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     });
   }
 
-  const sectionRow = Array.from(table.getElementsByClassName('section-row'));
-  if (sectionRow.length > 0) {
-    const colsForTablet = sectionRow[0].children.length - 1;
-    const percentage = 100 / colsForTablet;
-    const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
-    sectionRow.forEach((row) => {
-      if (isMerch) return;
-      if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
-        row.style.gridTemplateColumns = templateColumnsValue;
-      } else {
-        row.style.gridTemplateColumns = '';
-      }
-    });
-  }
+  setRowStyle();
 }
 
 export default function init(el) {
