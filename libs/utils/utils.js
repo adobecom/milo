@@ -746,12 +746,8 @@ export async function decorateFooterPromo({ locale: { contentRoot } }) {
   const footerPromoMeta = getMetadata('footer-promo-tag');
   const tagBased = getMetadata('tag-based-footer-promo');
   if ((!footerPromoMeta || footerPromoMeta === 'off') && tagBased !== 'on') return;
-
   let href;
-
-  if (footerPromoMeta !== 'off') {
-    href = `${contentRoot}/fragments/footer-promos/${footerPromoMeta}`;
-  }
+  if (footerPromoMeta !== 'off') href = `${contentRoot}/fragments/footer-promos/${footerPromoMeta}`;
 
   if (tagBased === 'on') {
     const linkFromTag = await getFooterPromoByTag(contentRoot);
