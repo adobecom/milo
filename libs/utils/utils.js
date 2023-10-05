@@ -54,6 +54,8 @@ const MILO_BLOCKS = [
   'slideshare',
   'preflight',
   'promo',
+  'quiz',
+  'quiz-results',
   'tabs',
   'table-of-contents',
   'text',
@@ -121,10 +123,7 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = {
-  DEFERRED: 'milo:deferred',
-  LCP_LOADED: 'milo:LCP:loaded',
-};
+export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
@@ -483,7 +482,7 @@ export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
   [...images].forEach((img) => {
-    const [source, alt] = img.alt.split('|');
+    const [source, alt, icon] = img.alt.split('|');
     try {
       const url = new URL(source.trim());
       if (alt?.trim().length) img.alt = alt.trim();
@@ -491,7 +490,11 @@ export function decorateImageLinks(el) {
       const picParent = pic.parentElement;
       const aTag = createTag('a', { href: url, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
-      aTag.append(pic);
+      if (icon) {
+        import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+      } else {
+        aTag.append(pic);
+      }
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
@@ -550,7 +553,7 @@ export function decorateAutoBlock(a) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        a.className = 'modal link-block';
+        a.className = `modal link-block ${[...a.classList].join(' ')}`;
         return true;
       }
     }
@@ -602,6 +605,7 @@ function decorateContent(el) {
   const block = document.createElement('div');
   block.className = 'content';
   block.append(...children);
+  block.dataset.block = '';
   return block;
 }
 
@@ -821,6 +825,8 @@ async function checkForPageMods() {
     const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests);
+  } else {
+    document.body.dataset.mep = 'default|default';
   }
 }
 
@@ -958,6 +964,10 @@ async function documentPostSectionLoading(config) {
 
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
+
+  import('../martech/analytics.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
+  });
 }
 
 async function processSection(section, config, isDoc) {
@@ -984,7 +994,6 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loaded);
 
   if (isDoc && section.el.dataset.idx === '0') {
-    window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
     loadPostLCP(config);
   }
 
@@ -1016,6 +1025,10 @@ export async function loadArea(area = document) {
   for (const section of sections) {
     const sectionBlocks = await processSection(section, config, isDoc);
     areaBlocks.push(...sectionBlocks);
+
+    areaBlocks.forEach((block) => {
+      if (!block.className.includes('metadata')) block.dataset.block = '';
+    });
   }
 
   const currentHash = window.location.hash;
@@ -1023,9 +1036,7 @@ export async function loadArea(area = document) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) {
-    await documentPostSectionLoading(config);
-  }
+  if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
 }
