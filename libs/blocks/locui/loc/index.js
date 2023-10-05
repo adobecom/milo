@@ -45,6 +45,8 @@ async function loadLocales() {
     const found = config.locales.data.find(
       (locale) => language.Language === locale.language,
     );
+    if (found) language.code = found.languagecode;
+
     const locales = language.Locales || found?.livecopies;
     if (locales) {
       const localesTrim = locales.replaceAll(' ', '');
