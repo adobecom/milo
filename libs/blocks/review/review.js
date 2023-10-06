@@ -121,6 +121,11 @@ export default async function init(el) {
   loadStyle(`${base}/ui/page/page.css`);
   const metaData = getMetaData(el);
   const strings = getStrings(metaData);
+
+  if (window.location.host === 'www.stage.adobe.com') {
+    strings.postUrl = strings.postUrl.replace('www.adobe', 'www.stage.adobe');
+  }
+
   removeMetaDataElements(el);
 
   const app = html` <${App} rootEl=${el} strings="${strings}" /> `;
