@@ -28,7 +28,6 @@ async function checkAlt() {
   }
   content.value = imagesWithoutAlt;
   altResult.value = result;
-  return result.icon;
 }
 
 function AccessibilityItem({ icon, title, description }) {
