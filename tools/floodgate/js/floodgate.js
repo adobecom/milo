@@ -55,7 +55,7 @@ async function promoteContentAction(project, config) {
 
 async function fetchStatusAction(project, config) {
   // fetch copy status
-  let params = { type: 'copy', projectExcelPath: project.excelPath, shareUrl: config.sp.shareUrl };
+  let params = { type: 'copy', projectExcelPath: project.excelPath, fgShareUrl: config.sp.fgShareUrl };
   const copyStatus = await postData(config.sp.aioStatusAction, params);
   // fetch promote status
   params = { type: 'promote', fgShareUrl: config.sp.fgShareUrl };
