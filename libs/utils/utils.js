@@ -721,47 +721,13 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map(decorateSection);
 }
 
-async function getFooterPromoByTag(contentRoot) {
-  const NAME = 'Name';
-  const FOOTER_PROMO_LINK = 'Footer Promo Link';
-  const taxonomyUrl = `${contentRoot}/taxonomy.json`;
-  const tagsOnPage = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content);
-
-  if (!tagsOnPage.length) return false;
-
-  try {
-    const resp = await fetch(taxonomyUrl);
-    if (!resp.ok) return false;
-    const { data } = await resp.json();
-    const primaryTag = data.find((tag) => {
-      const name = tag[NAME].split('|').pop().trim();
-      return tagsOnPage.includes(name) && tag[FOOTER_PROMO_LINK];
-    });
-    if (primaryTag) return primaryTag[FOOTER_PROMO_LINK];
-  } catch (error) {
-    window.lana.log(`Footer Promo - Taxonomy error: ${error}`);
-    return false;
-  }
-  return false;
-}
-
 export async function decorateFooterPromo({ locale: { contentRoot } }) {
-  const footerPromoMeta = getMetadata('footer-promo-tag');
-  const tagBased = getMetadata('tag-based-footer-promo');
-  if ((!footerPromoMeta || footerPromoMeta === 'off') && tagBased !== 'on') return;
-  let href;
-  if (footerPromoMeta && footerPromoMeta !== 'off') href = `${contentRoot}/fragments/footer-promos/${footerPromoMeta}`;
+  const urlBasedPromo = getMetadata('footer-promo-tag');
+  const tagBasedPromo = getMetadata('tag-based-footer-promo');
+  if ((!urlBasedPromo || urlBasedPromo === 'off') && tagBasedPromo !== 'on') return;
 
-  if (tagBased === 'on') {
-    const linkFromTag = await getFooterPromoByTag(contentRoot);
-    if (linkFromTag) href = linkFromTag;
-  }
-
-  if (href) {
-    const para = createTag('p', {}, createTag('a', { href }, href));
-    const section = createTag('div', null, para);
-    document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
-  }
+  const { default: initFooterPromo } = await import('../features/footer-promo.js');
+  await initFooterPromo(contentRoot, urlBasedPromo, tagBasedPromo);
 }
 
 let imsLoaded;
