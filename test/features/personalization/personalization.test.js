@@ -177,6 +177,29 @@ describe('Functional Test', () => {
     const fragment = document.querySelector('a[href="/fragments/insertafter2"]');
     expect(fragment).to.not.be.null;
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
+    // TODO: add check for after3
+  });
+
+  it('Can select elements using block-#', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestBlockNumber.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('.marquee')).to.not.be.null;
+    expect(document.querySelector('a[href="/fragments/replace/marquee/r2c1"]')).to.be.null;
+    expect(document.querySelector('a[href="/fragments/replace/marquee-2/r3c2"]')).to.be.null;
+    const secondMarquee = document.getElementsByClassName('marquee')[1];
+    expect(secondMarquee).to.not.be.null;
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    const fragment = document.querySelector('a[href="/fragments/replace/marquee/r2c1"]');
+    expect(fragment).to.not.be.null;
+    const replacedCell = document.querySelector('.marquee > div:nth-child(2) > div:nth-child(1)');
+    expect(replacedCell.firstChild.firstChild).to.equal(fragment);
+    const secondFrag = document.querySelector('a[href="/fragments/replace/marquee-2/r2c2"]');
+    expect(secondMarquee.lastElementChild.lastElementChild.firstChild.firstChild)
+      .to.equal(secondFrag);
   });
 
   it('scheduled manifest should apply changes if active (bts)', async () => {

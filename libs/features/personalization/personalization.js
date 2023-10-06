@@ -239,11 +239,86 @@ function normalizeKeys(obj) {
   }, {});
 }
 
+const getDivInTargetedCell = (tableCell) => {
+  tableCell.replaceChildren();
+  const div = document.createElement('div');
+  tableCell.appendChild(div);
+  return div;
+};
+
+const querySelector = (el, selector, all = false) => {
+  try {
+    return all ? el.querySelectorAll(selector) : el.querySelector(selector);
+  } catch (e) {
+    /* eslint-disable-next-line no-console */
+    console.log('Invalid selector: ', selector);
+    return null;
+  }
+};
+
+function getTrailingNumber(s) {
+  const match = s.match(/\d+$/);
+  return match ? parseInt(match[0], 10) : null;
+}
+
+function getSection(rootEl, idx) {
+  return rootEl === document
+    ? document.querySelector(`body > main > div:nth-child(${idx})`)
+    : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
+}
+
+function getSelectedEl(rootEl, selector) {
+  if (!selector) return null;
+
+  let selectedEl = querySelector(rootEl, selector);
+  if (selectedEl) return selectedEl;
+
+  const terms = selector.split(/\s+/);
+
+  let section = null;
+  if (terms[0]?.startsWith('section')) {
+    const sectionIdx = getTrailingNumber(terms[0]) || 1;
+    section = getSection(rootEl, sectionIdx);
+    terms.shift();
+  }
+
+  if (terms.length) {
+    const blockStr = terms.shift();
+    if (blockStr.includes('.')) {
+      selectedEl = querySelector(section || rootEl, blockStr);
+    } else {
+      const blockIndex = getTrailingNumber(blockStr) || 1;
+      const blockName = blockStr.replace(`${blockIndex}`, '');
+      if (blockName === 'block') {
+        if (!section) section = getSection(rootEl, 1);
+        selectedEl = querySelector(section, `:scope > div:nth-of-type(${blockIndex})`);
+      } else {
+        selectedEl = querySelector(section || rootEl, `.${blockName}`, true)?.[blockIndex - 1];
+      }
+    }
+  } else if (section) {
+    return section;
+  }
+
+  if (terms.length) {
+    // find targeted table cell in rowX colY format
+    const rowColMatch = /row(?<row>\d+)\s+col(?<col>\d+)/gm.exec(terms.join(' '));
+    if (rowColMatch) {
+      const { row, col } = rowColMatch.groups;
+      const tableCell = querySelector(selectedEl, `:nth-child(${row}) > :nth-child(${col})`);
+      if (!tableCell) return null;
+      return getDivInTargetedCell(tableCell);
+    }
+  }
+
+  return selectedEl;
+}
+
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
       try {
-        const selectorEl = rootEl.querySelector(cmd.selector);
+        const selectorEl = getSelectedEl(rootEl, cmd.selector);
         if (!selectorEl) return;
         COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
       } catch (e) {
@@ -336,7 +411,6 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   }
   return config;
 }
-/* c8 ignore stop */
 
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');

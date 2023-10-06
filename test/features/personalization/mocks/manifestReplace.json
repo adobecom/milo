@@ -22,6 +22,16 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "replaceContent",
+      "selector": ".z-pattern.small row3 col2",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/milo-replace-r3c2",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"
