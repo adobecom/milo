@@ -255,7 +255,7 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
       // 1. if regional file exists but there are no changes in regional doc
       // AND
       // 2. if the doc at the regional was not previously merged
-      if (isExcel(filePath) || skipDocMerge || (noRegionalChanges(fileMetadata) && !previouslyMerged)) {
+      if (isExcel(filePath) || skipDocMerge) {
         await saveFileAndUpdateMetadata(
           filePath,
           file.blob,
@@ -265,35 +265,28 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
         return status;
       }
 
-      // if regional file exists AND there are changes in the regional file, then merge process kicks in.
-      if (!langstorePrevVersion) {
-        // if for some reason the RolloutVersion metadata info is not available in region, rollout is NOT performed
-        // Cannot merge since we don't have rollout version info.
-        // eslint-disable-next-line no-console
-        loadingON(`Cannot rollout to ${livecopyFilePath} since last rollout version info is unavailable`);
-      } else {
-        // get MDAST of the current langstore file that needs to be rolled out
-        const langstoreNow = await getMdast(filePathWithoutExtension);
-        // force block name to be bold in langstore doc mdast
-        // MWPW-135315: remove after franklin adds a fix for the bold issue
-        addBoldHeaders(langstoreNow);
-        // get processed data Map for the current langstore file that needs to be rolled out
-        const langstoreNowProcessedMdast = await getProcessedMdast(langstoreNow);
+      // if regional file exists, kick-in the diff & merge process
+      // get MDAST of the current langstore file that needs to be rolled out
+      const langstoreNow = await getMdast(filePathWithoutExtension);
+      // force block name to be bold in langstore doc mdast
+      // MWPW-135315: remove after franklin adds a fix for the bold issue
+      addBoldHeaders(langstoreNow);
+      // get processed data Map for the current langstore file that needs to be rolled out
+      const langstoreNowProcessedMdast = await getProcessedMdast(langstoreNow);
 
-        const liveCopyPath = `${targetFolder}/${fileName}`;
-        // get MDAST of the livecopy file
-        const livecopy = await getMdast(liveCopyPath.substring(0, liveCopyPath.lastIndexOf('.')));
-        // force block name to be bold in livecopy doc mdast
-        // MWPW-135315: remove after franklin adds a fix for the bold issue
-        addBoldHeaders(livecopy);
-        // get processed data Map for the livecopy file
-        const livecopyProcessedMdast = await getProcessedMdast(livecopy);
-        // get merged mdast
-        const livecopyMergedMdast = getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast);
-        // save the merged livecopy file
-        await persist(filePath, livecopyMergedMdast, livecopyFilePath);
-        loadingON(`Rollout to ${livecopyFilePath} complete`);
-      }
+      const liveCopyPath = `${targetFolder}/${fileName}`;
+      // get MDAST of the livecopy file
+      const livecopy = await getMdast(liveCopyPath.substring(0, liveCopyPath.lastIndexOf('.')));
+      // force block name to be bold in livecopy doc mdast
+      // MWPW-135315: remove after franklin adds a fix for the bold issue
+      addBoldHeaders(livecopy);
+      // get processed data Map for the livecopy file
+      const livecopyProcessedMdast = await getProcessedMdast(livecopy);
+      // get merged mdast
+      const livecopyMergedMdast = getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast);
+      // save the merged livecopy file
+      await persist(filePath, livecopyMergedMdast, livecopyFilePath);
+      loadingON(`Rollout to ${livecopyFilePath} complete`);
     } catch (error) {
       udpateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Error ${error.message}`);
     }
