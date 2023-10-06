@@ -29,6 +29,18 @@
       "environments": [ "edit" ],
       "url": "/tools/loc/index.html?project=milo--adobecom",
       "passReferrer": true,
+      "excludePaths": [ "/**" ],
+      "includePaths": [ "**/:x**" ]
+    },
+    {
+      "containerId": "tools",
+      "id": "localize-v2",
+      "title": "Localize project (V2)",
+      "environments": [ "edit" ],
+      "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
+      "passReferrer": true,
+      "passConfig": true,
+      "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
     },
     {
@@ -38,6 +50,7 @@
       "environments": [ "edit" ],
       "url": "/tools/floodgate/index.html?project=milo--adobecom",
       "passReferrer": true,
+      "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
     },
     {
