@@ -25,24 +25,40 @@
   color: var(--color-white);
 }
 
+.section:not(.static-links) .marquee.mobile-light a:not(.con-button),
+.section:not(.static-links) .section:not(.static-links) .marquee.mobile-light a:not(.con-button) {
+  color: var(--link-color);
+}
 
-.marquee.mobile-light .con-button.outline {
+.section:not(.static-links) .marquee.mobile-light a:not(.con-button):hover,
+.section:not(.static-links) .section:not(.static-links) .marquee.mobile-light a:not(.con-button):hover {
+  color: var(--link-hover-color);
+}
+
+.section:not(.static-links) .marquee.mobile-dark:not(.static-links) a:not(.con-button),
+.section:not(.static-links) .marquee.mobile-dark:not(.static-links) a:not(.con-button):hover,
+.section:not(.static-links) .section:not(.static-links) .marquee.mobile-dark:not(.static-links) a:not(.con-button),
+.section:not(.static-links) .section:not(.static-links) .marquee.mobile-dark.section:not(.static-links) a:not(.con-button):hover {
+  color: var(--link-color-dark);
+}
+
+.marquee.mobile-light a.con-button.outline {
   border-color: var(--text-color);
   color: var(--text-color);
 }
 
-.marquee.mobile-dark .con-button.outline {
+.marquee.mobile-dark a.con-button.outline {
   border-color: var(--color-white);
   color: var(--color-white);
 }
 
-.marquee.mobile-light .con-button.outline:hover {
+.marquee.mobile-light a.con-button.outline:hover {
   background-color: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
 }
 
-.marquee.mobile-dark .con-button.outline:hover {
+.marquee.mobile-dark a.con-button.outline:hover {
   background-color: var(--color-white);
   color: var(--color-black);
   text-decoration: none;
@@ -344,23 +360,40 @@
     color: var(--color-white);
   }
   
-  .marquee.tablet-light .con-button.outline {
+  .section:not(.static-links) .marquee.tablet-light a:not(.con-button),
+  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-light a:not(.con-button) {
+    color: var(--link-color);
+  }
+
+  .section:not(.static-links) .marquee.tablet-light a:not(.con-button):hover,
+  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-light a:not(.con-button):hover {
+    color: var(--link-hover-color);
+  }
+
+  .section:not(.static-links) .marquee.tablet-dark:not(.static-links) a:not(.con-button),
+  .section:not(.static-links) .marquee.tablet-dark:not(.static-links) a:not(.con-button):hover,
+  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-dark:not(.static-links) a:not(.con-button),
+  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-dark.section:not(.static-links) a:not(.con-button):hover {
+    color: var(--link-color-dark);
+  }
+
+  .marquee.tablet-light a.con-button.outline {
     border-color: var(--text-color);
     color: var(--text-color);
   }
 
-  .marquee.tablet-dark .con-button.outline {
+  .marquee.tablet-dark a.con-button.outline {
     border-color: var(--color-white);
     color: var(--color-white);
   }
 
-  .marquee.tablet-light .con-button.outline:hover {
+  .marquee.tablet-light a.con-button.outline:hover {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .marquee.tablet-dark .con-button.outline:hover {
+  .marquee.tablet-dark a.con-button.outline:hover {
     background-color: var(--color-white);
     color: var(--color-black);
     text-decoration: none;
@@ -491,23 +524,40 @@
     color: var(--text-color);
   }
 
-  .marquee.desktop-light .con-button.outline {
+  .section:not(.static-links) .marquee.desktop-light a:not(.con-button),
+  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-light a:not(.con-button) {
+    color: var(--link-color);
+  }
+
+  .section:not(.static-links) .marquee.desktop-light a:not(.con-button):hover,
+  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-light a:not(.con-button):hover {
+    color: var(--link-hover-color);
+  }
+
+  .section:not(.static-links) .marquee.desktop-dark:not(.static-links) a:not(.con-button),
+  .section:not(.static-links) .marquee.desktop-dark:not(.static-links) a:not(.con-button):hover,
+  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-dark:not(.static-links) a:not(.con-button),
+  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-dark.section:not(.static-links) a:not(.con-button):hover {
+    color: var(--link-color-dark);
+  }
+
+  .marquee.desktop-light a.con-button.outline {
     border-color: var(--text-color);
     color: var(--text-color);
   }
 
-  .marquee.desktop-dark .con-button.outline {
+  .marquee.desktop-dark a.con-button.outline {
     border-color: var(--color-white);
     color: var(--color-white);
   }
 
-  .marquee.desktop-light .con-button.outline:hover {
+  .marquee.desktop-light a.con-button.outline:hover {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .marquee.desktop-dark .con-button.outline:hover {
+  .marquee.desktop-dark a.con-button.outline:hover {
     background-color: var(--color-white);
     color: var(--color-black);
     text-decoration: none;
