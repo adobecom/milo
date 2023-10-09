@@ -42,6 +42,8 @@ const MANIFEST_KEYS = [
   'pagefilter',
   'page filter',
   'page filter optional',
+  'preview on',
+  'preview off',
 ];
 
 const DATA_TYPE = {
@@ -246,6 +248,25 @@ export function parseConfig(data) {
       variants[vn] = { commands: [] };
     });
 
+    const laterToDate = (laterExpression) => {
+      const regex = /at (\d{1,2}):(\d{1,2}) on the (\d{1,2}) day of (\w+) in (\d{4})/;
+      const matches = laterExpression.match(regex);
+      if (matches && matches.length === 6) {
+        const monthNumber = new Date(Date.parse(`${matches[4]}1, 2012`)).getMonth();
+        return new Date(Date.UTC(matches[5], monthNumber, matches[3], matches[1], matches[2]));
+      }
+      console.log('Error parsing MEP preview date: ', laterExpression);
+      return null;
+    };
+    const previewOn = experiences[0] ? laterToDate(experiences[0]['preview on']) : '';
+    const previewOff = experiences[0] ? laterToDate(experiences[0]['preview off']) : '';
+    if (previewOn && previewOff) {
+      config.previewOn = previewOn;
+      config.previewOff = previewOff;
+      const now = new Date();
+      config.previewDisabled = now < previewOn || now > previewOff;
+    }
+
     experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
 
     config.variants = variants;
@@ -363,7 +384,12 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
-async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
+async function getPersonalizationVariant(
+  manifestPath,
+  variantNames = [],
+  variantLabel = null,
+  previewDisabled = false,
+) {
   const config = getConfig();
   if (config.mep?.override !== '') {
     let manifest;
@@ -379,6 +405,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     /* c8 ignore stop */
     if (manifest) return manifest;
   }
+  if (previewDisabled) return 'default';
 
   const variantInfo = variantNames.reduce((acc, name) => {
     const vNames = name.split(',').map((v) => v.trim()).filter(Boolean);
@@ -434,6 +461,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     manifestPath,
     config.variantNames,
     variantLabel,
+    config.previewDisabled,
   );
 
   if (selectedVariantName && config.variantNames.includes(selectedVariantName)) {
