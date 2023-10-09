@@ -1,0 +1,289 @@
+{
+  "questions": {
+    "total": 9,
+    "offset": 0,
+    "limit": 9,
+    "data": [
+      {
+        "questions": "q-category",
+        "max-selections": "3",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-rather",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-video",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-photo",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-pdf",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-customer",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-3d",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-design",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-illustration",
+        "max-selections": "1",
+        "min-selections": "1"
+      }
+    ]
+  },
+  "q-rather": {
+    "total": 2,
+    "offset": 0,
+    "limit": 2,
+    "data": [
+      {
+        "options": "template",
+        "next": "RESET,q-customer",
+        "data-analytics-title": "ccx"
+      },
+      {
+        "options": "custom",
+        "next": "RESULT",
+        "data-analytics-title": "Flagship"
+      }
+    ]
+  },
+  "q-customer": {
+    "total": 3,
+    "offset": 0,
+    "limit": 3,
+    "data": [
+      {
+        "options": "educational",
+        "next": "RESULT"
+      },
+      {
+        "options": "business",
+        "next": "RESULT"
+      },
+      {
+        "options": "individual",
+        "next": "RESULT"
+      }
+    ]
+  },
+  "q-design": {
+    "total": 3,
+    "offset": 0,
+    "limit": 3,
+    "data": [
+      {
+        "options": "layouts",
+        "next": "q-customer"
+      },
+      {
+        "options": "images",
+        "next": "q-customer"
+      },
+      {
+        "options": "graphics",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-3d": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "stage",
+        "next": "q-customer"
+      },
+      {
+        "options": "texture",
+        "next": "q-customer"
+      },
+      {
+        "options": "materials",
+        "next": "q-customer"
+      },
+      {
+        "options": "model",
+        "next": "q-customer"
+      },
+      {
+        "options": "assets",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-category": {
+    "total": 6,
+    "offset": 0,
+    "limit": 6,
+    "data": [
+      {
+        "options": "photo",
+        "next": "q-rather,q-photo"
+      },
+      {
+        "options": "video",
+        "next": "q-rather,q-video"
+      },
+      {
+        "options": "design",
+        "next": "q-rather,q-design"
+      },
+      {
+        "options": "illustration",
+        "next": "q-rather,q-illustration"
+      },
+      {
+        "options": "3d",
+        "next": "NOT(q-rather),q-3d"
+      },
+      {
+        "options": "pdf",
+        "next": "q-rather,q-pdf"
+      }
+    ]
+  },
+  "q-photo": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "organize",
+        "next": "q-customer"
+      },
+      {
+        "options": "batch",
+        "next": "q-customer"
+      },
+      {
+        "options": "edit",
+        "next": "q-customer"
+      },
+      {
+        "options": "color",
+        "next": "q-customer"
+      },
+      {
+        "options": "blend",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-illustration": {
+    "total": 4,
+    "offset": 0,
+    "limit": 4,
+    "data": [
+      {
+        "options": "raster",
+        "next": "q-customer"
+      },
+      {
+        "options": "vector",
+        "next": "q-customer"
+      },
+      {
+        "options": "crisp",
+        "next": "q-customer"
+      },
+      {
+        "options": "images",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-video": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "social",
+        "next": "q-customer"
+      },
+      {
+        "options": "pro",
+        "next": "q-customer"
+      },
+      {
+        "options": "movement",
+        "next": "q-customer"
+      },
+      {
+        "options": "animate",
+        "next": "q-customer"
+      },
+      {
+        "options": "sound",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-pdf": {
+    "total": 6,
+    "offset": 0,
+    "limit": 6,
+    "data": [
+      {
+        "options": "create",
+        "next": "q-customer"
+      },
+      {
+        "options": "edit",
+        "next": "q-customer"
+      },
+      {
+        "options": "share",
+        "next": "q-customer"
+      },
+      {
+        "options": "protect",
+        "next": "q-customer"
+      },
+      {
+        "options": "sign",
+        "next": "q-customer"
+      },
+      {
+        "options": "track",
+        "next": "q-customer"
+      }
+    ]
+  },
+  ":version": 3,
+  ":names": [
+    "questions",
+    "q-rather",
+    "q-customer",
+    "q-design",
+    "q-3d",
+    "q-category",
+    "q-photo",
+    "q-illustration",
+    "q-video",
+    "q-pdf"
+  ],
+  ":type": "multi-sheet"
+}

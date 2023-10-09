@@ -5,6 +5,7 @@ import {
   loadScript,
   getConfig,
   createTag,
+  localizeLink,
 } from '../../utils/utils.js';
 
 const { env, miloLibs, codeRoot } = getConfig();
@@ -259,23 +260,12 @@ export const makeFaasConfig = (targetState) => {
     return state;
   }
 
-  const url = targetState.d;
-  let destinationURL = '';
-  try {
-    // checking if URL is absolute.
-    new URL(url);
-    destinationURL = targetState.d;
-  } catch (e) {
-    // in case of relative:
-    destinationURL = window.location.origin + targetState.d;
-  }
-
   const config = {
     multicampaignradiostyle: targetState.multicampaignradiostyle ?? false,
     hidePrepopulated: targetState.hidePrepopulated ?? false,
     id: targetState.id,
     l: targetState.l,
-    d: destinationURL,
+    d: localizeLink(targetState.d),
     as: targetState.as,
     ar: targetState.ar,
     pc: {
@@ -362,7 +352,11 @@ export const initFaas = (config, targetEl) => {
   if (state.complete) {
     if (state.js) {
       Object.keys(state.js).forEach((key) => {
-        state[key] = state.js[key];
+        if (key === 'd') {
+          state[key] = localizeLink(state.js[key]);
+        } else {
+          state[key] = state.js[key];
+        }
       });
       delete state.js;
     }

@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/aside/aside.js');
 
-const types = ['simple', 'split', 'inline', 'notification'];
+const types = ['simple', 'split', 'inline', 'notification', 'promobar'];
 
 describe('aside', () => {
   const asides = document.querySelectorAll('.aside');
@@ -24,8 +24,7 @@ describe('aside', () => {
         });
 
         it('icon has a wrapper', () => {
-          const icon = aside.querySelector('.text picture');
-
+          const icon = aside.querySelector('.text picture, .promo-text picture');
           if (icon) {
             expect(icon.closest('.icon-area')).to.exist;
           }
@@ -37,9 +36,8 @@ describe('aside', () => {
         });
 
         it('button has a wrapper', () => {
-          const button = aside.querySelector('.text .con-button');
-
-          if (aside.querySelector('.text .con-button')) {
+          const button = aside.querySelector('.text .con-button, .promo-text .con-button');
+          if (button) {
             expect(button.closest('p')).to.exist;
           }
         });
@@ -79,6 +77,13 @@ describe('aside', () => {
         it('has a background image or video', () => {
           const body = aside.querySelector('.split-image');
           expect(body).to.exist;
+        });
+      }
+
+      if (type === 'promobar') {
+        it('has viewport content', () => {
+          const viewportContent = aside.querySelectorAll('.promo-text');
+          expect(viewportContent.length).to.equal(3);
         });
       }
     });
