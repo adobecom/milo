@@ -59,7 +59,7 @@ describe('Functional Test', () => {
     const fragment = document.querySelector('a[href="/fragments/insertafter"]');
     expect(fragment).to.not.be.null;
 
-    expect(fragment.parentElement.parentElement.firstElementChild.className).to.equal('marquee');
+    expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
   });
 
   it('insertContentBefore should add fragment before target element', async () => {
@@ -140,5 +140,18 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
+  });
+
+  it('Invalid selector should not fail page render and rest of items', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestInvalid.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('.marquee')).to.not.be.null;
+    expect(document.querySelector('a[href="/fragments/insertafter2"]')).to.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    const fragment = document.querySelector('a[href="/fragments/insertafter2"]');
+    expect(fragment).to.not.be.null;
+    expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
   });
 });

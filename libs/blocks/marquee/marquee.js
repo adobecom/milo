@@ -3,7 +3,6 @@
  */
 
 import { applyHoverPlay, decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
 const decorateVideo = (container, video) => {
@@ -28,34 +27,24 @@ const decorateVideo = (container, video) => {
 };
 
 const decorateBlockBg = (block, node) => {
+  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
   const childCount = node.childElementCount;
-  const viewports = {
-    'mobile-only': window.matchMedia(`${childCount > 1 ? '(max-width: 599.99px)' : ''}`),
-    'tablet-only': window.matchMedia(`(min-width: 600px)${childCount === 3 ? ' and (max-width: 1199.99px)' : ''}`),
-    'desktop-only': window.matchMedia('(min-width: 1200px)'),
-  };
-  const viewportsKeys = Object.keys(viewports);
   const { children } = node;
 
   node.classList.add('background');
 
   if (childCount === 2) {
-    children[0].classList.add(viewportsKeys[0]);
-    children[1].classList.add(viewportsKeys[1], viewportsKeys[2]);
+    children[0].classList.add(viewports[0]);
+    children[1].classList.add(viewports[1], viewports[2]);
   }
 
   [...children].forEach(async (child, index) => {
     if (childCount === 3) {
-      child.classList.add(viewportsKeys[index]);
+      child.classList.add(viewports[index]);
     }
-
-    // Skip the fallback if current screen size isn't matching the child's viewport.
-    if (viewports[viewportsKeys[index]].matches) {
-      // decorateVideo as fallback of video autoblock.
-      const video = child.querySelector('video, a[href*=".mp4"]');
-      if (video) {
-        decorateVideo(child, video);
-      }
+    const video = child.querySelector('video, a[href*=".mp4"]');
+    if (video) {
+      decorateVideo(child, video);
     }
 
     const pic = child.querySelector('picture');
@@ -131,7 +120,6 @@ const decorateImage = (media) => {
 };
 
 export default function init(el) {
-  decorateBlockAnalytics(el);
   const isLight = el.classList.contains('light');
   if (!isLight) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
@@ -161,8 +149,6 @@ export default function init(el) {
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
-  const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  decorateLinkAnalytics(text, headings);
   decorateText(text, size);
   const iconArea = text.querySelector('.icon-area');
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);

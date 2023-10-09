@@ -98,8 +98,6 @@ const defaultOptions = {
       '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
-    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
-      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   filterBuildPanel: {
     automatic: 'Automatic',
@@ -938,6 +936,10 @@ const Configurator = ({ rootEl }) => {
     }
   }, [isCaasLoaded, state, strings]);
 
+  const toogleCollapsed = () => {
+    document.body.classList.toggle('panel-collapsed');
+  };
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
@@ -951,6 +953,9 @@ const Configurator = ({ rootEl }) => {
         <div class="config-panel">
           ${error && html`<div class="tool-error">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
+        </div>
+        <div>
+          <button class="collapse-panel" onClick=${() => toogleCollapsed()}>⇆</button>
         </div>
         <div class="content-panel">
           <div class="modalContainer"></div>
