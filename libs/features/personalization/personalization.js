@@ -249,6 +249,7 @@ export function parseConfig(data) {
     });
 
     const laterToDate = (laterExpression) => {
+      if (!laterExpression) return null;
       const regex = /at (\d{1,2}):(\d{1,2}) on the (\d{1,2}) day of (\w+) in (\d{4})/;
       const matches = laterExpression.match(regex);
       if (matches && matches.length === 6) {
