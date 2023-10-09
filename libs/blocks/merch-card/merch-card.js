@@ -130,10 +130,14 @@ const getMerchCardRows = (rows, ribbonMetadata, cardType, actionMenuContent) => 
         return rows[0];
       }
     }
-  } 
+  } else {
+    return rows[ribbonMetadata === null ? 0 : 1];
+  }
 };
 
 const init = (el) => {
+  const section = el.closest('.section');
+  section.classList.add('merch-card-collection');
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   const images = el.querySelectorAll('picture');
