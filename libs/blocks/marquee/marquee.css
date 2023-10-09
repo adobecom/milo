@@ -25,13 +25,13 @@
   color: var(--color-white);
 }
 
-.section:not(.static-links) .marquee.mobile-light a:not(.con-button),
-.section:not(.static-links) .section:not(.static-links) .marquee.mobile-light a:not(.con-button) {
+.section:not(.static-links) .marquee.mobile-light:not(.static-links) a:not(.con-button),
+.section:not(.static-links) .section:not(.static-links) .marquee.mobile-light:not(.static-links) a:not(.con-button) {
   color: var(--link-color);
 }
 
-.section:not(.static-links) .marquee.mobile-light a:not(.con-button):hover,
-.section:not(.static-links) .section:not(.static-links) .marquee.mobile-light a:not(.con-button):hover {
+.section:not(.static-links) .marquee.mobile-light:not(.static-links) a:not(.con-button):hover,
+.section:not(.static-links) .section:not(.static-links) .marquee.mobile-light:not(.static-links) a:not(.con-button):hover {
   color: var(--link-hover-color);
 }
 
@@ -360,13 +360,13 @@
     color: var(--color-white);
   }
   
-  .section:not(.static-links) .marquee.tablet-light a:not(.con-button),
-  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-light a:not(.con-button) {
+  .section:not(.static-links) .marquee.tablet-light:not(.static-links) a:not(.con-button),
+  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-light:not(.static-links) a:not(.con-button) {
     color: var(--link-color);
   }
 
-  .section:not(.static-links) .marquee.tablet-light a:not(.con-button):hover,
-  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-light a:not(.con-button):hover {
+  .section:not(.static-links) .marquee.tablet-light:not(.static-links) a:not(.con-button):hover,
+  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-light:not(.static-links) a:not(.con-button):hover {
     color: var(--link-hover-color);
   }
 
@@ -524,13 +524,13 @@
     color: var(--text-color);
   }
 
-  .section:not(.static-links) .marquee.desktop-light a:not(.con-button),
-  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-light a:not(.con-button) {
+  .section:not(.static-links) .marquee.desktop-light:not(.static-links) a:not(.con-button),
+  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-light:not(.static-links) a:not(.con-button) {
     color: var(--link-color);
   }
 
-  .section:not(.static-links) .marquee.desktop-light a:not(.con-button):hover,
-  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-light a:not(.con-button):hover {
+  .section:not(.static-links) .marquee.desktop-light:not(.static-links) a:not(.con-button):hover,
+  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-light:not(.static-links) a:not(.con-button):hover {
     color: var(--link-hover-color);
   }
 
