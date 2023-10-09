@@ -59,6 +59,7 @@ export default async function init(el) {
     }
   }
   copy.classList.add('copy');
+  if (fRows.length === 1) foreground.classList.add('fw');
   decorateBlockText(copy, ['xxl', 'm', 'l']); // heading, body, detail
   const assetRow = foreground.querySelector(':scope > div').classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');

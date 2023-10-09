@@ -179,6 +179,28 @@
   max-width: unset;
 }
 
+.text-block .icon-area {
+  display: flex;
+  column-gap: var(--spacing-xxs);
+}
+
+.text-block .icon-area picture {
+  line-height: 0em;
+}
+
+/* icon inline */
+.text-block.icon-inline .foreground > div {
+  display: grid;
+  column-gap: var(--spacing-xs);
+  align-items: center;
+  grid-template-columns: auto 1fr;
+}
+
+.text-block.icon-inline .foreground [class^="body-"] {
+  grid-column: span 2;
+  margin-top: 0;
+}
+
 /* Tablet up */
 @media screen and (min-width: 600px) {
   .link-farm.text-block h2 {

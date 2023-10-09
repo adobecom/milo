@@ -1,7 +1,6 @@
 .quiz-marquee {
-  position: relative;
   padding: var(--spacing-m) 0;
-  min-height: 700px;
+  position: relative;
 }
 
 .dark .quiz-marquee,
@@ -14,7 +13,7 @@
 .quiz-marquee .static p:first-child { margin-top: 0; }
 .quiz-marquee .static [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
 .quiz-marquee .static [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
-.quiz-marquee .static div > *:last-child { margin-bottom: 0; }
+.quiz-marquee .static *:last-child { margin-bottom: 0; }
 
 .quiz-marquee > .foreground {
   max-width: var(--grid-container-width);
@@ -23,15 +22,24 @@
   gap: var(--spacing-m);
 }
 
+.quiz-marquee > .foreground.fw {
+  width: 100%;
+}
+
 .quiz-marquee .foreground .copy {
   display: grid;
-  gap: var(--spacing-s);
+  gap: var(--spacing-xs);
 }
 
 .quiz-marquee hr {
   width: 100%;
   border: none;
   height: 1px;
+  margin: 0;
+}
+
+.quiz-marquee .has-divider {
+  margin: var(--spacing-xs) 0;
 }
 
 .quiz-marquee .badge {
@@ -67,24 +75,42 @@
 
 /* Nested blocks */
 .quiz-marquee .con-block .container,
-.quiz-marquee .text-block .foreground {
+.quiz-marquee .text-block .foreground,
+.quiz-marquee .aside.notification .foreground.container{
   width: unset;
   margin: 0;
+  max-width: initial;
+  padding: 0;
 }
 
-.quiz-marquee .text-block.icon-inline .foreground > div {
-  display: grid;
-  column-gap: 12px;
-  align-items: center;
-  grid-template-columns: auto 1fr;
+.quiz-marquee .text-block .icon-area picture img {
+  min-height: var(--icon-size-s);
+  max-height: var(--icon-size-s);
 }
 
-.quiz-marquee .text-block.icon-inline .body-m {
-  grid-column: span 2;
+.quiz-marquee .aside.notification .foreground.container .icon-area img {
+  min-height: var(--icon-size-xs);
+  max-height: var(--icon-size-xs);
+  height: var(--icon-size-xs);
+}
+
+.quiz-marquee .aside.notification.small .foreground.container .text {
+  align-items: flex-start;
+}
+
+.quiz-marquee .aside.notification.small .foreground.container .text .icon-area {
+  width: unset;
+  height: unset;
 }
 
 /* tablet up */
 @media screen and (min-width: 600px) {
+  .quiz-marquee {
+    align-items: center;
+    display: flex;
+    min-height: 700px;
+  }
+
   .quiz-marquee > .foreground.has-asset {
     grid-template-columns: minmax(50%, 1fr) minmax(50%, 1fr);
     align-items: center;
@@ -100,5 +126,9 @@
 
   .quiz-marquee.asset-left .background-split {
     right: unset;
+  }
+
+  .quiz-marquee .aside.notification.small .foreground.container .text .icon-area {
+    margin-top: 6px;
   }
 }

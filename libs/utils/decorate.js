@@ -57,6 +57,14 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
       headings.forEach((h) => {
         h.classList.add(`heading-${config[0]}`);
       });
+      const detailElm = headings[0]?.previousElementSibling;
+      if (detailElm?.childElementCount) {
+        let picCount = 0;
+        [...detailElm.children].forEach((child) => {
+          if (child.nodeName === 'PICTURE') picCount += 1;
+        });
+        if (picCount === detailElm.childElementCount) detailElm.classList.add('icon-area');
+      }
       if (config[2]) {
         headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
         decorateIconArea(el);
