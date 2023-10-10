@@ -43,7 +43,7 @@ const decorateBlockBg = (block, node) => {
       child.classList.add(viewports[index]);
     }
     const video = child.querySelector('video, a[href*=".mp4"]');
-    if (video) {
+    if (video && window.getComputedStyle(video.parentElement).getPropertyValue('display') !== 'none') {
       decorateVideo(child, video);
     }
 
