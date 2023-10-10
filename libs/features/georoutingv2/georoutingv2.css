@@ -3,7 +3,7 @@
 }
 
 .dialog-modal.locale-modal-v2 {
-  background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Mobile.png');
+  /* background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Mobile.png'); */
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -107,7 +107,7 @@
 
 @media (min-width: 480px) {
   .dialog-modal.locale-modal-v2 {
-    background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Tablet.png');
+    /* background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Tablet.png'); */
   }
 }
 
@@ -129,6 +129,6 @@
 
 @media (min-width: 1200px) {
   .dialog-modal.locale-modal-v2 {
-    background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Desktop.png');
+    /* background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Desktop.png'); */
   }
 }
