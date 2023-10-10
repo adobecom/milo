@@ -153,11 +153,11 @@ function createPreviewPill(manifests) {
     if (!manifest.variantNames.includes(manifest.selectedVariantName)) {
       checked.attribute = 'checked="checked"';
       checked.class = 'class="mep-manifest-selected-variant"';
-      manifestParameter.push(`${manifest.manifest}--NoChanges`);
+      manifestParameter.push(`${manifest.manifest}--default`);
     }
     radio += `<div>
-      <input type="radio" name="${manifest.manifest}" value="no changes" id="${manifest.manifest}--no changes" ${checked.attribute}>
-      <label for="${manifest.manifest}--no changes" ${checked.class}>No changes (control)</label>
+      <input type="radio" name="${manifest.manifest}" value="default" id="${manifest.manifest}--default" ${checked.attribute}>
+      <label for="${manifest.manifest}--default" ${checked.class}>Default (control)</label>
     </div>`;
     const targetTitle = manifest.name ? `${manifest.name}<br><i>${manifest.manifest}</i>` : manifest.manifest;
     manifestList += `<div class="mep-manifest-info">

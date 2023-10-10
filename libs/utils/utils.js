@@ -1027,7 +1027,7 @@ export async function loadArea(area = document) {
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {
-      block.dataset.block = '';
+      if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
 

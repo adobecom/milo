@@ -43,10 +43,18 @@
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
+  column-gap: 4.6%;
   align-items: flex-start;
   visibility: visible;
   opacity: 1;
   transition: opacity 1s ease-in, height 1s ease-in;
+}
+
+.marketo .mktoFormRow.mktoFormRowTop.comments,
+.marketo .mktoFormRow.mktoFormRowTop.demo,
+.marketo .mktoFormRow.mktoFormRowTop.name {
+  display: flex;
+  width: 100%;
 }
 
 .marketo .mktoFormRow {
@@ -63,10 +71,22 @@
   margin-bottom: 11px;
 }
 
+.marketo fieldset.mktoFormCol {
+  display: none;
+}
+
+.marketo fieldset.mktoFormCol.mktoVisible {
+  display: block;
+}
+
 .marketo .mktoFormRow fieldset.mktoFormCol {
   border: none;
   margin: 0;
   padding: 0;
+}
+
+.marketo > .mktoFormRow.mktoFormRowTop > .mktoFormCol > .mktoFormRow > .mktoFormCol.mktoVisible > .mktoFieldWrap {
+  width: auto;
 }
 
 .marketo .mktoFormRow.demo fieldset.mktoFormCol {
@@ -228,7 +248,7 @@
   color: var(--marketo-form-text);
 }
 
-.marketo .mktoFormRow.adobe-privacy .mktoFormCol:not(fieldset) {
+.marketo .mktoFormRow[class*="adobe-privacy"] .mktoFormCol:not(fieldset) {
   margin-top: 21px;
 }
 
@@ -385,7 +405,7 @@
   width: 100%;
 }
 
-.dialog-modal .marketo .mktoFormRow.adobe-privacy {
+.dialog-modal .marketo .mktoFormRow[class*="adobe-privacy"] {
   width: 100%;
 }
 
@@ -425,28 +445,66 @@
   margin-left: 0;
 }
 
+.marketo .mktoFormRowTop[class*="adobe-privacy"] {
+  display: flex;
+  width: 100%;
+}
+
 @media screen and (min-width: 600px) {
   .marketo .marketo-form-wrapper {
     padding: var(--spacing-xxl);
   }
 
-  .marketo .mktoFormCol.mktoVisible {
-    width: 47.7%;
-  }
-
-  .marketo [class*="adobe-privacy"] fieldset.mktoFormCol.mktoVisible {
+  .marketo .mktoFormRowTop[class*="adobe-privacy"] {
+    display: grid;
     width: 100%;
   }
 
-  .marketo .adobe-privacy .mktoFormCol.mktoVisible,
+  .marketo [class*="adobe-privacy"],
   .marketo .msg-error .mktoFormCol.mktoVisible,
   .marketo .mktoFormCol.mktoVisible .mktoFormCol.mktoVisible {
     width: 100%;
+    grid-column: span 2;
   }
 
   .marketo .mktoForm.show-warnings .mktoError {
     width: 50%;
     margin-left: 50%;
+  }
+
+  .marketo form.mktoForm--fade-in.mktoVisible {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .marketo .mktoFormRow.mktoFormRowTop.name > .mktoFormCol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "salutation ." "firstName lastName";
+    column-gap: 4.6%;
+  }
+
+  .marketo .mktoFormRow.mktoFormRowTop.comments,
+  .marketo .mktoFormRow.mktoFormRowTop.demo,
+  .marketo .mktoFormRow.mktoFormRowTop.name {
+    display: block;
+    grid-column: span 2;
+  }
+
+  .marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="Salutation"] {
+    grid-area: salutation;
+  }
+  
+  .marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="FirstName"] {
+    grid-area: firstName;
+  }
+  
+  .marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="LastName"] {
+    grid-area: lastName;
+  }
+
+  .marketo .mktoForm .mktoButtonRow {
+    grid-column: span 2;
   }
 }
 

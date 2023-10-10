@@ -97,21 +97,62 @@ const returnRibbonStyle = (ribbonMetadata) => {
   return { style, value };
 };
 
+const getActionMenuContent = (el, ribbonMetadata) => {
+  if (ribbonMetadata !== null) {
+    if (el.childElementCount === 3) {
+      const actionMenuContentWrapper = el.children[1];
+      const actionMenuContent = actionMenuContentWrapper.children[0];
+      actionMenuContentWrapper.remove();
+      return actionMenuContent;
+    } else return null;
+  } else {
+    if (el.childElementCount === 2) {
+      const actionMenuContentWrapper = el.children[0];
+      const actionMenuContent = actionMenuContentWrapper.children[0];
+      actionMenuContentWrapper.remove();
+      return actionMenuContent;
+    } else return null;
+  }
+};
+
+const getMerchCardRows = (rows, ribbonMetadata, cardType, actionMenuContent) => {
+  if (cardType === 'catalog') {
+    if (ribbonMetadata !== null) {
+      if (actionMenuContent !== null) {
+        return rows[2];
+      } else {
+        return rows[1];
+      }
+    } else {
+      if (actionMenuContent !== null) {
+        return rows[1];
+      } else {
+        return rows[0];
+      }
+    }
+  } else {
+    return rows[ribbonMetadata === null ? 0 : 1];
+  }
+};
+
 const init = (el) => {
+  const section = el.closest('.section');
+  section.classList.add('merch-card-collection');
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
   const rows = el.querySelectorAll(':scope > *');
+  const styles = [...el.classList];
+  const cardType = getPodType(styles);
   const ribbonMetadata = rows[0].children?.length === 2 ? rows[0].children : null;
-  const row = rows[ribbonMetadata === null ? 0 : 1];
+  const actionMenuContent = cardType === 'catalog' ? getActionMenuContent(el, ribbonMetadata) : null;
+  const row =  getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent);
   const altCta = rows[rows.length - 1].children?.length === 2
     ? rows[rows.length - 1].children : null;
   const allPElems = row.querySelectorAll('p');
   const ctas = allPElems[allPElems.length - 1];
-  const styles = [...el.classList];
-  const cardType = getPodType(styles);
   decorateBlockHrs(el);
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
@@ -135,6 +176,12 @@ const init = (el) => {
       merchCard.setAttribute('badge', JSON.stringify(badge));
     }
   }
+
+  if (actionMenuContent !== null) {
+    merchCard.setAttribute('actionmenu', true);
+    merchCard.append(createTag('div', { slot: 'actionMenuContent' }, actionMenuContent.innerHTML));
+  }
+
   if (image !== undefined) {
     merchCard.setAttribute('image', image.querySelector('img').src);
     image?.parentElement.remove();
