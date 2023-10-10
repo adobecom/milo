@@ -1,3 +1,4 @@
+/* eslint-disable compat/compat */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* global ClipboardItem */
 import {
@@ -36,6 +37,8 @@ const updateObj = (obj, defaultObj) => {
 
 const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
+
+// TODO add new ~~ format
 const getHashConfig = () => {
   const { hash } = window.location;
   if (!hash) return null;
@@ -726,6 +729,30 @@ const saveStateToLocalStorage = (state) => {
  */
 const fgKeyReplacer = (key, value) => (key === 'fetchCardsFromFloodgateTree' ? undefined : value);
 
+const getEncodedObject = async (obj, replacer = null) => {
+  const objToStream = (data) => new Blob(
+    [JSON.stringify(data, replacer)],
+    { type: 'text/plain' },
+  ).stream();
+
+  const compressStream = async (stream) => new Response(
+    // eslint-disable-next-line no-undef
+    stream.pipeThrough(new CompressionStream('gzip')),
+  );
+
+  const responseToBuffer = async (res) => {
+    const blob = await res.blob();
+    return blob.arrayBuffer();
+  };
+
+  const b64encode = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+
+  const stream = objToStream(obj);
+  const compressedResponse = await compressStream(stream);
+  const buffer = await responseToBuffer(compressedResponse);
+  return b64encode(buffer);
+};
+
 /* c8 ignore start */
 const CopyBtn = () => {
   const { state } = useContext(ConfiguratorContext);
@@ -741,22 +768,25 @@ const CopyBtn = () => {
     }, 2000);
   };
 
-  const getUrl = () => {
+  const getUrl = async () => {
     const url = new URL(window.location.href);
     url.search = '';
-    url.hash = utf8ToB64(JSON.stringify(state, fgKeyReplacer));
+    const hashStr = await getEncodedObject(state, fgKeyReplacer);
+    // starts with ~~ to differentiate from old hash format
+    url.hash = `~~${hashStr}`;
     return url.href;
   };
 
-  const copyConfig = () => {
-    setConfigUrl(getUrl());
+  const copyConfig = async () => {
+    const url = await getUrl();
+    setConfigUrl(url);
     if (!navigator?.clipboard) {
       setTempStatus(setIsError);
       return;
     }
 
     const link = document.createElement('a');
-    link.href = getUrl();
+    link.href = url;
     const dateStr = new Date().toLocaleString('us-EN', {
       weekday: 'long',
       year: 'numeric',
