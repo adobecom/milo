@@ -1,0 +1,16 @@
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+/*! js-yaml 4.1.0 https://github.com/nodeca/js-yaml @license MIT */
+
+/**
+ * @author Richard Smith-Unna
+ * @copyright 2016 Richard Smith-Unnar
+ * @license MIT
+ * @module unist:find
+ * @fileoverview Unist node finder
+ */
