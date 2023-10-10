@@ -25,20 +25,16 @@
   color: var(--color-white);
 }
 
-.section:not(.static-links) .marquee.mobile-light:not(.static-links) a:not(.con-button),
-.section:not(.static-links) .section:not(.static-links) .marquee.mobile-light:not(.static-links) a:not(.con-button) {
+.marquee.mobile-light a:not(.con-button) {
   color: var(--link-color);
 }
 
-.section:not(.static-links) .marquee.mobile-light:not(.static-links) a:not(.con-button):hover,
-.section:not(.static-links) .section:not(.static-links) .marquee.mobile-light:not(.static-links) a:not(.con-button):hover {
+.marquee.mobile-light a:not(.con-button):hover {
   color: var(--link-hover-color);
 }
 
-.section:not(.static-links) .marquee.mobile-dark:not(.static-links) a:not(.con-button),
-.section:not(.static-links) .marquee.mobile-dark:not(.static-links) a:not(.con-button):hover,
-.section:not(.static-links) .section:not(.static-links) .marquee.mobile-dark:not(.static-links) a:not(.con-button),
-.section:not(.static-links) .section:not(.static-links) .marquee.mobile-dark.section:not(.static-links) a:not(.con-button):hover {
+.marquee.mobile-dark a:not(.con-button),
+.marquee.mobile-dark a:not(.con-button):hover {
   color: var(--link-color-dark);
 }
 
@@ -360,20 +356,16 @@
     color: var(--color-white);
   }
   
-  .section:not(.static-links) .marquee.tablet-light:not(.static-links) a:not(.con-button),
-  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-light:not(.static-links) a:not(.con-button) {
+  .marquee.tablet-light a:not(.con-button) {
     color: var(--link-color);
   }
 
-  .section:not(.static-links) .marquee.tablet-light:not(.static-links) a:not(.con-button):hover,
-  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-light:not(.static-links) a:not(.con-button):hover {
+  .marquee.tablet-light a:not(.con-button):hover {
     color: var(--link-hover-color);
   }
 
-  .section:not(.static-links) .marquee.tablet-dark:not(.static-links) a:not(.con-button),
-  .section:not(.static-links) .marquee.tablet-dark:not(.static-links) a:not(.con-button):hover,
-  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-dark:not(.static-links) a:not(.con-button),
-  .section:not(.static-links) .section:not(.static-links) .marquee.tablet-dark.section:not(.static-links) a:not(.con-button):hover {
+  .marquee.tablet-dark a:not(.con-button),
+  .marquee.tablet-dark a:not(.con-button):hover {
     color: var(--link-color-dark);
   }
 
@@ -524,20 +516,16 @@
     color: var(--text-color);
   }
 
-  .section:not(.static-links) .marquee.desktop-light:not(.static-links) a:not(.con-button),
-  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-light:not(.static-links) a:not(.con-button) {
+  .marquee.desktop-light a:not(.con-button) {
     color: var(--link-color);
   }
 
-  .section:not(.static-links) .marquee.desktop-light:not(.static-links) a:not(.con-button):hover,
-  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-light:not(.static-links) a:not(.con-button):hover {
+  .marquee.desktop-light a:not(.con-button):hover {
     color: var(--link-hover-color);
   }
 
-  .section:not(.static-links) .marquee.desktop-dark:not(.static-links) a:not(.con-button),
-  .section:not(.static-links) .marquee.desktop-dark:not(.static-links) a:not(.con-button):hover,
-  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-dark:not(.static-links) a:not(.con-button),
-  .section:not(.static-links) .section:not(.static-links) .marquee.desktop-dark.section:not(.static-links) a:not(.con-button):hover {
+  .marquee.desktop-dark a:not(.con-button),
+  .marquee.desktop-dark a:not(.con-button):hover {
     color: var(--link-color-dark);
   }
 
@@ -716,4 +704,12 @@
   .marquee.large .foreground.container {
     max-width: var(--grid-container-width);
   }
+}
+
+
+.marquee.static-links a:not(.con-button),
+.marquee.static-links a:not(.con-button):hover,
+.static-links .marquee a:not(.con-button),
+.static-links .marquee a:not(.con-button):hover {
+  color: inherit;
 }
