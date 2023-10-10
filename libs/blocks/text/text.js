@@ -23,6 +23,21 @@ const blockTypeSizes = {
   },
 };
 
+function findClassWithPrefix(el, prefix) {
+  const matchingClass = [...el.classList].find((c) => c.startsWith(prefix));
+  return matchingClass;
+}
+
+function extendButtonsClass(el) {
+  const hasBtnClass = findClassWithPrefix(el, 'button-');
+  const buttons = el.querySelectorAll('.con-button');
+  if (buttons.length === 0) return;
+  buttons.forEach((button) => {
+    button.classList.add('button-justified-mobile');
+    if (hasBtnClass) button.classList.add(hasBtnClass);
+  });
+}
+
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -43,7 +58,15 @@ export default function init(el) {
     }
   });
   const config = blockTypeSizes[blockType][size];
+  // const hasBtnClass = findClassWithPrefix(el, 'button-');
+  // // console.log('hasBtnClass', hasBtnClass);
+  // if (hasBtnClass) {
+  //   decorateBlockText(el, config, hasBtnClass);
+  // } else {
+  //   decorateBlockText(el, config);
+  // }
   decorateBlockText(el, config);
+
   rows.forEach((row) => { row.classList.add('foreground'); });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
@@ -62,5 +85,6 @@ export default function init(el) {
     });
   }
   el.classList.add(...helperClasses);
+  extendButtonsClass(el);
   decorateTextOverrides(el);
 }

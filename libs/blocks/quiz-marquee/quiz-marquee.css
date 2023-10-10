@@ -76,7 +76,8 @@
 /* Nested blocks */
 .quiz-marquee .con-block .container,
 .quiz-marquee .text-block .foreground,
-.quiz-marquee .aside.notification .foreground.container{
+.quiz-marquee .aside.notification .foreground.container, 
+.quiz-marquee .fragment > .section > .content {
   width: unset;
   margin: 0;
   max-width: initial;
@@ -101,6 +102,10 @@
 .quiz-marquee .aside.notification.small .foreground.container .text .icon-area {
   width: unset;
   height: unset;
+}
+
+.quiz-marquee .nested.check-bullet p {
+  margin: 0;
 }
 
 /* tablet up */
@@ -130,5 +135,12 @@
 
   .quiz-marquee .aside.notification.small .foreground.container .text .icon-area {
     margin-top: 6px;
+  }
+}
+
+/* desktop up */
+@media screen and (min-width: 600px) {
+  .quiz-marquee > .foreground {
+    min-width: var(--grid-container-width);
   }
 }
