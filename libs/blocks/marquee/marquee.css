@@ -4,6 +4,10 @@
   display: flex;
 }
 
+.marquee [data-valign="middle"] {
+  display: none;
+}
+
 .marquee.large.standard {
   min-height: 560px;
 }
