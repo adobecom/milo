@@ -1,0 +1,7 @@
+{
+  "dataType": "Map",
+  "value": [
+    ["84cb1fd9b2e89354092f6db14cdef9da62facdf4", { "op": "edited", "newHash": "e99613456e0b85ce5e8ecd78b8e804b0c2559caf" }],
+    ["7825c452610d21ca7bc869199f3102f13f631fe6", { "op": "deleted" } ]
+    ["ee2b478bbcdc7972a416b3b3319e4fe8f8666555", { "op": "added" } ]
+}

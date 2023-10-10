@@ -1,0 +1,9 @@
+<html>
+  <head>
+    <script>
+      const u = new URL(window.location.href.replace(/#/, '?'));
+      window.opener.setGLaaSAccessToken(u.searchParams.get('access_token'));
+      window.close();
+    </script>
+  </head>
+</html>

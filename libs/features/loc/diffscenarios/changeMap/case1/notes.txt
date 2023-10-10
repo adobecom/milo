@@ -1,0 +1,10 @@
+Langmaster-Base Langmaster-v1
+para            para
+columns
+
+basehash(para) - no change
+basehash(columns) - deleted
+
+
+
+

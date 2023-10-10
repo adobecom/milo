@@ -1,0 +1,72 @@
+Diff
+{
+  "dataType": "Map",
+  "value": [
+    ["84cb1fd9b2e89354092f6db14cdef9da62facdf4", { "op": "deleted" } ]
+    ["7825c452610d21ca7bc869199f3102f13f631fe6", { "op": "added" } ]
+    ["ee2b478bbcdc7972a416b3b3319e4fe8f8666555", { "op": "added" }],
+    ["e99613456e0b85ce5e8ecd78b8e804b0c2559caf", { "op": "added" } ]
+}
+
+Hash To Content Info
+[
+    [
+        "84cb1fd9b2e89354092f6db14cdef9da62facdf4",
+        {
+            "type": "paragraph",
+            "children": [
+                {
+                    "type": "text",
+                    "value": "No Change"
+                }
+            ]
+        }
+    ],
+    [
+        "7825c452610d21ca7bc869199f3102f13f631fe6",
+        {
+            "type": "html",
+            "value": "<table>\n  <tr>\n    <td colspan=\"2\">Columns (contained)</td>\n  </tr>\n  <tr>\n    <td>Column 1</td>\n    <td>Column 2</td>\n  </tr>\n</table>"
+        }
+    ],
+    [
+        "ee2b478bbcdc7972a416b3b3319e4fe8f8666555",
+        {
+            "type": "html",
+            "value": "<table>\n  <tr>\n    <td colspan=\"2\">List</td>\n  </tr>\n  <tr>\n    <td>List 1</td>\n    <td>List 2</td>\n  </tr>\n</table>"
+        }
+    ],
+    [
+        "e99613456e0b85ce5e8ecd78b8e804b0c2559caf",
+        {
+            "type": "paragraph",
+            "children": [
+                {
+                    "type": "text",
+                    "value": "Edited"
+                }
+            ]
+        }
+    ],
+    [
+        "0d0e223f2c240ff7066338437750e0eb7ef58889",
+        {
+            "type": "html",
+            "value": "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+        }
+    ],
+    [
+        "fb2f9e73bfe6ac9b6b324dfab89ff514705f0d01",
+        {
+            "type": "html",
+            "value": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">"
+        }
+    ],
+    [
+        "c8b9d56439c63300619021d0fd3cc99f7e799eda",
+        {
+            "type": "html",
+            "value": "<html>\n  <head>\n    <title>404 Not Found</title>\n  </head>\n  <body>\n    <h1>Error 404 Not Found</h1>\n    <p>Not Found</p>\n    <h3>Error 54113</h3>\n    <p>Details: cache-pao17449-PAO 1659243609 3281035739</p>\n    <hr>\n    <p>Varnish cache server</p>\n  </body>\n</html>"
+        }
+    ]
+]

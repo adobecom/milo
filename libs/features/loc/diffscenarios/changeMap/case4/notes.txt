@@ -1,0 +1,10 @@
+Langmaster-Base Langmaster-v1
+para            columns
+columns         list
+                para+
+
+basehash(para) - deleted
+v1Hash(columns)[=basehash(columns)] - added
+v1hash(list) - added
+v1hash(para+) - added
+
