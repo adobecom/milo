@@ -139,6 +139,10 @@
   display: block;
 }
 
+.marquee:is(.center, .centered) .icon-area img {
+  margin: 0 auto;
+}
+
 .marquee.large .icon-area img {
   height: 64px;
 }
@@ -348,6 +352,10 @@
   .marquee.center .foreground .text,
   .marquee.centered .foreground .text {
     margin: 0 auto;
+  }
+  
+  .marquee.quiet.large .foreground .text {
+    max-width: 800px;
   }
   
   .marquee.split .foreground.container .text {
