@@ -2,6 +2,8 @@ import { getConfig, loadLink, loadScript } from '../utils/utils.js';
 
 const TARGET_TIMEOUT_MS = 2000;
 
+const params = new URL(window.location.href).searchParams;
+
 const setDeep = (obj, path, value) => {
   const pathArr = path.split('.');
   let currentObj = obj;
@@ -63,8 +65,6 @@ const handleAlloyResponse = (response) => {
 };
 
 const getTargetPersonalization = async () => {
-  const params = new URL(window.location.href).searchParams;
-
   const experimentParam = params.get('experiment');
   if (experimentParam) return getExpFromParam(experimentParam);
 
@@ -88,10 +88,10 @@ const getTargetPersonalization = async () => {
 
 const getDtmLib = (env) => ({
   edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
-  url:
+  url: params.get('marTechUrl') ?? (
     env.name === 'prod'
       ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
+      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js'),
 });
 
 export default async function init({ persEnabled = false, persManifests }) {
