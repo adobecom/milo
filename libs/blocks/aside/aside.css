@@ -144,6 +144,11 @@
   margin-bottom: var(--spacing-s);
 }
 
+.aside .foreground.container a.icon-area {
+  height: auto;
+  margin-bottom: 0;
+}
+
 .aside .foreground.container .icon-area .icon {
   color: inherit;
 }
