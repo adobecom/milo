@@ -694,14 +694,16 @@ const reducer = (state, action) => {
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
       return cloneObj(defaultState);
+    case 'SET_STATE':
+      return cloneObj(action.value);
     /* c8 ignore next 2 */
     default:
       return state;
   }
 };
 
-const getInitialState = () => {
-  let state = getHashConfig();
+const getInitialState = async () => {
+  let state = await getHashConfig();
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
@@ -924,7 +926,7 @@ const idOverlayMO = () => {
 };
 
 const Configurator = ({ rootEl }) => {
-  const [state, dispatch] = useReducer(reducer, getInitialState() || cloneObj(defaultState));
+  const [state, dispatch] = useReducer(reducer, {});
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
   const [strings, setStrings] = useState();
   const [panels, setPanels] = useState([]);
@@ -943,6 +945,17 @@ const Configurator = ({ rootEl }) => {
         console.log('Error loading script: ', e);
       });
   }, []);
+
+  useEffect(() => {
+    const setInitialState = async () => {
+      const initialState = await getInitialState();
+      dispatch({ type: 'SET_STATE', value: initialState });
+    };
+
+    if (!Object.keys(state).length) {
+      setInitialState();
+    }
+  }, [state]);
 
   useEffect(() => {
     if (state.showIds && !cardMutationObsv) {
