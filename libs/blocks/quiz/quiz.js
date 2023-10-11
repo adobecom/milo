@@ -203,7 +203,7 @@ const App = ({
     );
     const nextQuizViewsLen = nextQuizViews.length;
 
-    if (nextQuizViewsLen == 1 && isValidUrl(nextQuizViews[0])) {
+    if (nextQuizViewsLen === 1 && isValidUrl(nextQuizViews[0])) {
       window.location.href = prefixHttps(nextQuizViews[0]);
       return;
     }
