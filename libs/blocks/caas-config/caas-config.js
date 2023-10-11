@@ -14,10 +14,16 @@ import {
   getConfig,
   parseEncodedConfig,
   loadStyle,
-  utf8ToB64,
 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
-import { defaultState, initCaas, loadCaasFiles, loadCaasTags, loadStrings } from '../caas/utils.js';
+import {
+  decodeCompressedString,
+  defaultState,
+  initCaas,
+  loadCaasFiles,
+  loadCaasTags,
+  loadStrings,
+} from '../caas/utils.js';
 import { Input as FormInput, Select as FormSelect } from '../../ui/controls/formControls.js';
 import TagSelect from '../../ui/controls/TagSelector.js';
 import MultiField from '../../ui/controls/MultiField.js';
@@ -37,15 +43,15 @@ const updateObj = (obj, defaultObj) => {
 
 const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
-
-// TODO add new ~~ format
-const getHashConfig = () => {
+const getHashConfig = async () => {
   const { hash } = window.location;
   if (!hash) return null;
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  return parseEncodedConfig(encodedConfig);
+  return encodedConfig.startsWith('~~')
+    ? decodeCompressedString(encodedConfig.substring(2))
+    : parseEncodedConfig(encodedConfig);
 };
 
 const caasFilesLoaded = loadCaasFiles();
@@ -730,6 +736,10 @@ const saveStateToLocalStorage = (state) => {
 const fgKeyReplacer = (key, value) => (key === 'fetchCardsFromFloodgateTree' ? undefined : value);
 
 const getEncodedObject = async (obj, replacer = null) => {
+  if (!window.CompressionStream) {
+    await import('../../deps/compression-streams-pollyfill.js');
+  }
+
   const objToStream = (data) => new Blob(
     [JSON.stringify(data, replacer)],
     { type: 'text/plain' },
