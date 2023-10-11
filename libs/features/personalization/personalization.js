@@ -49,19 +49,23 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
-const createFrag = (url, manifestId) => {
+const createFrag = (el, url, manifestId) => {
   const a = createTag('a', { href: url }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
-  const p = createTag('p', undefined, a);
+  let frag = createTag('p', undefined, a);
+  const isSection = el.parentElement.nodeName === 'MAIN';
+  if (isSection) {
+    frag = createTag('div', undefined, frag);
+  }
   loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
-  return p;
+  return frag;
 };
 
 const COMMANDS = {
   insertcontentafter: (el, target, manifestId) => el
-    .insertAdjacentElement('afterend', createFrag(target, manifestId)),
+    .insertAdjacentElement('afterend', createFrag(el, target, manifestId)),
   insertcontentbefore: (el, target, manifestId) => el
-    .insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
+    .insertAdjacentElement('beforebegin', createFrag(el, target, manifestId)),
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
@@ -72,7 +76,7 @@ const COMMANDS = {
   },
   replacecontent: (el, target, manifestId) => {
     if (el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(target, manifestId));
+    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
@@ -181,11 +185,8 @@ function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
       try {
-        let selectorEl = rootEl.querySelector(cmd.selector);
+        const selectorEl = rootEl.querySelector(cmd.selector);
         if (!selectorEl) return;
-        if (selectorEl.classList[0] === 'section-metadata') {
-          selectorEl = selectorEl.parentElement || selectorEl;
-        }
         COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
       } catch (e) {
         console.log('Invalid selector: ', cmd.selector);
@@ -259,7 +260,7 @@ export function parseConfig(data) {
 
 /* c8 ignore start */
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
-  if (!placeholders?.length || selectedVariantName === 'no changes') return config;
+  if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     'value',
     selectedVariantName.toLowerCase(),
@@ -440,9 +441,9 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariantName = selectedVariantName;
     config.selectedVariant = config.variants[selectedVariantName];
   } else {
-    /* c8 ignore next */
-    config.selectedVariantName = 'no changes';
-    config.selectedVariant = 'no changes';
+    /* c8 ignore next 2 */
+    config.selectedVariantName = 'default';
+    config.selectedVariant = 'default';
   }
 
   if (placeholders) {
@@ -480,7 +481,7 @@ export async function runPersonalization(info, config) {
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
-  if (selectedVariant === 'no changes') {
+  if (selectedVariant === 'default') {
     return { experiment };
   }
 
