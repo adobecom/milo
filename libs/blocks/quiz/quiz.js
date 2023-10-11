@@ -6,7 +6,7 @@ import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
 import {
   initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData,
-  getAnalyticsDataForBtn, getUrlParams,
+  getAnalyticsDataForBtn, getUrlParams, isValidUrl, prefixHttps,
 } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
@@ -202,6 +202,11 @@ const App = ({
       userFlow,
     );
     const nextQuizViewsLen = nextQuizViews.length;
+
+    if (nextQuizViewsLen == 1 && isValidUrl(nextQuizViews[0])) {
+      window.location.href = prefixHttps(nextQuizViews[0]);
+      return;
+    }
 
     setNextQuizViewsExist(!!nextQuizViewsLen);
     setCurrentStep(currentStep + 1);
