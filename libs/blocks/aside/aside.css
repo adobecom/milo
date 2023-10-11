@@ -149,10 +149,6 @@
   margin-bottom: 0;
 }
 
-.aside .foreground.container .icon-area .icon {
-  color: inherit;
-}
-
 .aside.split .split-image img,
 .aside.split .split-image video {
   position: relative;
