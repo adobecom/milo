@@ -336,9 +336,6 @@ const convertToCsv = (obj) => {
   arr.unshift('"key","val"');
   return arr.join('\n');
 };
-
-
-
 const { getCaasConfigHash, getStringCsv } = (() => {
   let data;
   const getData = (configStr) => {
