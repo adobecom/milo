@@ -145,7 +145,7 @@
 }
 
 .aside .foreground.container .icon-area .icon {
-  color: transparent;
+  color: inherit;
 }
 
 .aside.split .split-image img,
