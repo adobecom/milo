@@ -154,4 +154,42 @@ describe('Functional Test', () => {
     expect(fragment).to.not.be.null;
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
   });
+
+  it('scheduled manifest should apply changes if active', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestScheduledActive.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('a[href="/fragments/insertafter3"]')).to.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    const fragment = document.querySelector('a[href="/fragments/insertafter3"]');
+    expect(fragment).to.not.be.null;
+
+    expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
+  });
+
+  it('scheduled manifest should not apply changes if not active', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestScheduledInactive.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('a[href="/fragments/insertafter4"]')).to.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
+    expect(fragment).to.be.null;
+  });
+
+  it('scheduled manifest ignore invalid/missing schedule expressions & apply changes', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestScheduledInvalid.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('a[href="/fragments/insertafter4"]')).to.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
+    expect(fragment).to.not.be.null;
+  });
 });
