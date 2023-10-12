@@ -834,7 +834,7 @@ div[data-failed="true"]::before {
 }
 
 .gnav-hide {
-  opacity: 0;
+  visibility: hidden;
 }
 
 .hide-block {
