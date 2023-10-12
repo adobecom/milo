@@ -9,4 +9,8 @@ const isKeyboardNavigation = (ev) => (ev.clientX === 0 && ev.clientY === 0)
     && ev.nativeEvent.webkitForce !== undefined
     && ev.nativeEvent.webkitForce === 0);
 
-export { addToAverage, isKeyboardNavigation };
+const checkPostUrl = (postUrl, env) => (
+  env?.name !== 'prod' && postUrl?.includes('adobe.com') ? postUrl.replace('adobe.com', 'stage.adobe.com') : postUrl
+);
+
+export { addToAverage, isKeyboardNavigation, checkPostUrl };
