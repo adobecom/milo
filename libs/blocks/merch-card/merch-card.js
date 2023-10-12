@@ -13,7 +13,7 @@ loadStyle(`${base}/deps/commerce-web-components.css`);
 
 const detailLineConfig = { catalog: 0, plans: 0 };
 
-const wordNumbers = ['one', 'two', 'three', 'four'];
+const wordNumbers = ['one', 'two', 'three', 'four', 'five'];
 
 const cardTypes = ['segment', 'special-offer', 'plans', 'catalog'];
 
@@ -24,7 +24,7 @@ export const decorateBgContent = (el) => {
   let insidePattern = false;
   let decoratedBlock;
   let style;
-  [...els].forEach((e) => {
+  els.forEach((e) => {
     if (e.textContent.startsWith('/--')) {
       insidePattern = true;
       decoratedBlock = createTag('div', { slot: 'detail-bg' });
@@ -57,33 +57,52 @@ const checkBoxLabel = (ctas, altCtaMetaData) => {
   return altCtaMetaData[0].textContent;
 };
 
-const addInner = (el, altCta, cardType, merchCard) => {
+const isHeadingTag = (tagName) => /^H[1-6]$/.test(tagName);
+const isParagraphTag = (tagName) => tagName === 'P';
+const isListTag = (tagName) => tagName === 'UL';
+
+const createAndAppendTag = (tagName, attributes, content, parent) => {
+  const newElement = createTag(tagName, attributes, content);
+  parent.append(newElement);
+  return newElement;
+};
+
+const parseContent = (el, altCta, cardType, merchCard) => {
   const innerElements = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul')];
   let titleNumber = 0;
   const body = createTag('div', { slot: 'body' });
   let detailLineCount = 0;
+
   innerElements.forEach((element) => {
-    if (element.tagName.match(/^H[1-6]$/)) {
-      merchCard.append(createTag(element.tagName, { slot: `${titleNumber !== 0 ? `heading-${wordNumbers[titleNumber]}` : 'heading'}` }, element.textContent));
+    const { tagName } = element;
+
+    if (isHeadingTag(tagName)) {
+      const slotName = titleNumber === 0 ? 'heading' : `heading-${wordNumbers[titleNumber]}`;
+      createAndAppendTag(tagName, { slot: slotName }, element.textContent, merchCard);
       titleNumber += 1;
+      return;
     }
-    if (element.tagName.match(/^P$/)) {
+
+    if (isParagraphTag(tagName)) {
       if (detailLineConfig[cardType] === detailLineCount) {
-        merchCard.append(createTag('div', { slot: 'detail' }, element));
+        createAndAppendTag('div', { slot: 'detail' }, element, merchCard);
         detailLineCount += 1;
         return;
       }
       body.append(element);
+      return;
     }
-    if (element.tagName.match(/^UL$/)) {
+
+    if (isListTag(tagName)) {
       const lastChildOfBody = body.lastElementChild;
       if (lastChildOfBody) {
         body.removeChild(lastChildOfBody);
         element.prepend(lastChildOfBody);
       }
-      merchCard.append(createTag('div', { slot: 'list' }, element));
+      createAndAppendTag('div', { slot: 'list' }, element, merchCard);
     }
   });
+
   merchCard.append(body);
 };
 
@@ -98,41 +117,25 @@ const returnRibbonStyle = (ribbonMetadata) => {
 };
 
 const getActionMenuContent = (el, ribbonMetadata) => {
-  if (ribbonMetadata !== null) {
-    if (el.childElementCount === 3) {
-      const actionMenuContentWrapper = el.children[1];
-      const actionMenuContent = actionMenuContentWrapper.children[0];
-      actionMenuContentWrapper.remove();
-      return actionMenuContent;
-    } else return null;
-  } else {
-    if (el.childElementCount === 2) {
-      const actionMenuContentWrapper = el.children[0];
-      const actionMenuContent = actionMenuContentWrapper.children[0];
-      actionMenuContentWrapper.remove();
-      return actionMenuContent;
-    } else return null;
+  const index = (ribbonMetadata !== null) ? 1 : 0;
+  const expectedChildren = (ribbonMetadata !== null) ? 3 : 2;
+  if (el.childElementCount !== expectedChildren) {
+    return null;
   }
+  const actionMenuContentWrapper = el.children[index];
+  const actionMenuContent = actionMenuContentWrapper.children[0];
+  actionMenuContentWrapper.remove();
+  return actionMenuContent;
 };
 
 const getMerchCardRows = (rows, ribbonMetadata, cardType, actionMenuContent) => {
   if (cardType === 'catalog') {
     if (ribbonMetadata !== null) {
-      if (actionMenuContent !== null) {
-        return rows[2];
-      } else {
-        return rows[1];
-      }
-    } else {
-      if (actionMenuContent !== null) {
-        return rows[1];
-      } else {
-        return rows[0];
-      }
+      return actionMenuContent !== null ? rows[2] : rows[1];
     }
-  } else {
-    return rows[ribbonMetadata === null ? 0 : 1];
+    return actionMenuContent !== null ? rows[1] : rows[0];
   }
+  return rows[ribbonMetadata === null ? 0 : 1];
 };
 
 const init = (el) => {
@@ -148,7 +151,7 @@ const init = (el) => {
   const cardType = getPodType(styles);
   const ribbonMetadata = rows[0].children?.length === 2 ? rows[0].children : null;
   const actionMenuContent = cardType === 'catalog' ? getActionMenuContent(el, ribbonMetadata) : null;
-  const row =  getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent);
+  const row = getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent);
   const altCta = rows[rows.length - 1].children?.length === 2
     ? rows[rows.length - 1].children : null;
   const allPElems = row.querySelectorAll('p');
@@ -166,9 +169,7 @@ const init = (el) => {
       }
     }
   });
-  const footer = createTag('div', { slot: 'footer' });
-  if (ctas) decorateButtons(ctas);
-  footer.appendChild(ctas);
+
   const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
   if (ribbonMetadata !== null) {
     const badge = returnRibbonStyle(ribbonMetadata);
@@ -176,28 +177,32 @@ const init = (el) => {
       merchCard.setAttribute('badge', JSON.stringify(badge));
     }
   }
-
   if (actionMenuContent !== null) {
     merchCard.setAttribute('actionmenu', true);
     merchCard.append(createTag('div', { slot: 'actionMenuContent' }, actionMenuContent.innerHTML));
   }
-
+  if (ctas) {
+    const footer = createTag('div', { slot: 'footer' });
+    decorateButtons(ctas);
+    footer.append(ctas);
+    merchCard.appendChild(footer);
+  }
   if (image !== undefined) {
     merchCard.setAttribute('image', image.querySelector('img').src);
-    image?.parentElement.remove();
+    image.remove();
   }
   if (!icons || icons.length > 0) {
     merchCard.setAttribute('icons', JSON.stringify(Array.from(icons).map((icon) => icon.querySelector('img').src)));
-    icons.forEach((icon) => icon.parentElement.remove());
+    icons.forEach((icon) => icon.remove());
   }
   if (styles.includes('secure')) {
     replaceKey('secure-transaction', getConfig())
-      .then((key) => merchCard.setAttribute('secure-label', key));
+      .then((key) => merchCard.setAttribute('secureLabel', key));
   }
   if (altCta) {
     const label = checkBoxLabel(ctas, altCta);
     if (label !== null) {
-      merchCard.setAttribute('checkbox-label', label);
+      merchCard.setAttribute('checkboxLabel', label);
     }
   }
   if (styles.includes('evergreen')) {
@@ -205,10 +210,8 @@ const init = (el) => {
     merchCard.setAttribute('evergreen', true);
     merchCard.setAttribute('detail-bg', decoratedContent.style);
     merchCard.append(decoratedContent.decoratedBlock);
-  } else {
-    merchCard.appendChild(footer);
   }
-  addInner(el, altCta, cardType, merchCard);
+  parseContent(el, altCta, cardType, merchCard);
   el.replaceWith(merchCard);
 };
 
