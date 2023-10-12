@@ -34,6 +34,17 @@
     },
     {
       "containerId": "tools",
+      "id": "localize-v2",
+      "title": "Localize project (V2)",
+      "environments": [ "edit" ],
+      "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
+      "passReferrer": true,
+      "passConfig": true,
+      "excludePaths": [ "/**" ],
+      "includePaths": [ "**/:x**" ]
+    },
+    {
+      "containerId": "tools",
       "id": "floodgate",
       "title": "Floodgate",
       "environments": [ "edit" ],

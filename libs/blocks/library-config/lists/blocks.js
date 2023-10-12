@@ -105,6 +105,11 @@ export function getHtml(container, path) {
   return container.elements.reduce((acc, element) => {
     decorateImages(element, path);
     handleLinks(element, path);
+
+    if (element.className === 'mock-metadata') {
+      element.className = 'metadata';
+    }
+
     const isBlock = element.nodeName === 'DIV' && element.className;
     const content = isBlock ? getTable(element) : element.outerHTML;
     return `${acc}${content}`;
