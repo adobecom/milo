@@ -58,6 +58,7 @@ export default async function loadIcons(icons, config) {
     const iconName = icon.classList[1].replace('icon-', '');
     if (!iconSVGs[iconName]) return;
     const parent = icon.parentElement;
+    if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
     if (parent.childNodes.length > 1) {
       if (parent.lastChild === icon) {
         icon.classList.add('margin-left');
