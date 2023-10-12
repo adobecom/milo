@@ -19,7 +19,6 @@ async function getFooterPromoByTag(contentRoot) {
     if (primaryTag) return primaryTag[FOOTER_PROMO_LINK_KEY];
   } catch (error) {
     window.lana.log(`Footer Promo - Taxonomy error: ${error}`);
-    return undefined;
   }
   return undefined;
 }
