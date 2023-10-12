@@ -26,3 +26,4 @@ jobs:
           prBaseBranch: ${{ github.event.pull_request.base.ref }}
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
+          HLX_TKN: ${{ secrets.HLX_TKN }}
