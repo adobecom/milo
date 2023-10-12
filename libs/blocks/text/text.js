@@ -29,13 +29,34 @@ function findClassWithPrefix(el, prefix) {
 }
 
 function extendButtonsClass(el) {
-  const hasBtnClass = findClassWithPrefix(el, 'button-');
+  const btnClass = findClassWithPrefix(el, 'button-');
   const buttons = el.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
     button.classList.add('button-justified-mobile');
-    if (hasBtnClass) button.classList.add(hasBtnClass);
+    if (btnClass) button.classList.add(btnClass);
   });
+}
+
+function addNode(sourceEl, parent) {
+  const node = sourceEl.cloneNode(true);
+  parent.appendChild(node);
+}
+
+function checkViewport(foreground) {
+  const { children, childElementCount: childCount } = foreground;
+  if (childCount < 2) addNode(children[childCount - 1], foreground);
+  if (childCount < 3) addNode(children[childCount - 1], foreground);
+}
+
+function decorateMultiViewport(el) {
+  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
+  const foreground = el.querySelector('.foreground');
+  if (foreground.childElementCount !== 3) checkViewport(foreground);
+  [...foreground.children].forEach((child, index) => {
+    child.className = viewports[index];
+  });
+  return foreground;
 }
 
 export default function init(el) {
@@ -58,13 +79,6 @@ export default function init(el) {
     }
   });
   const config = blockTypeSizes[blockType][size];
-  // const hasBtnClass = findClassWithPrefix(el, 'button-');
-  // // console.log('hasBtnClass', hasBtnClass);
-  // if (hasBtnClass) {
-  //   decorateBlockText(el, config, hasBtnClass);
-  // } else {
-  //   decorateBlockText(el, config);
-  // }
   decorateBlockText(el, config);
 
   rows.forEach((row) => { row.classList.add('foreground'); });
@@ -87,4 +101,5 @@ export default function init(el) {
   el.classList.add(...helperClasses);
   extendButtonsClass(el);
   decorateTextOverrides(el);
+  decorateMultiViewport(el);
 }

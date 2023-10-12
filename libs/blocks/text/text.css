@@ -190,7 +190,6 @@
 
 /* icon inline */
 .text-block.icon-inline .foreground > div {
-  display: grid;
   column-gap: var(--spacing-xs);
   align-items: center;
   grid-template-columns: auto 1fr;
@@ -200,6 +199,16 @@
   grid-column: span 2;
   margin-top: 0;
 }
+
+.text-block .foreground > .mobile-up {
+  display: grid;
+}
+
+.text-block .foreground > .desktop-up,
+.text-block .foreground > .tablet-up {
+  display: none;
+}
+
 
 /* Tablet up */
 @media screen and (min-width: 600px) {
@@ -227,11 +236,29 @@
     height: var(--type-heading-m-size);
     margin: 0 0 var(--spacing-l);
   }
+  
+  .text-block .foreground > .tablet-up {
+    display: grid;
+  }
+  
+  .text-block .foreground > .mobile-up,
+  .text-block .foreground > .desktop-up {
+    display: none;
+  }
 }
 
 /* Desktop up */
 @media screen and (min-width: 1200px) {
   .link-farm.text-block .foreground {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  .text-block .foreground > .desktop-up {
+    display: grid;
+  }
+  
+  .text-block .foreground > .mobile-up,
+  .text-block .foreground > .tablet-up {
+    display: none;
   }
 }
