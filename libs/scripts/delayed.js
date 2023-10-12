@@ -69,7 +69,10 @@ const loadDelayed = ([
 ], DELAY = 3000) => new Promise((resolve) => {
   setTimeout(() => {
     loadPrivacy(getConfig, loadScript);
-    loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
+    setTimeout(() => {
+      // temporary fix, Jarvis should be loaded only once user tries to interact with the button.
+      loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
+    }, 3000);
     loadGoogleLogin(getMetadata, loadIms, loadScript);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
