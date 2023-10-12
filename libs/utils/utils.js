@@ -764,7 +764,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   }
 
   let query = PAGE_URL.searchParams.get('martech');
-  query = 'on';
+  // query = 'on';
   if (query === 'off' || getMetadata('martech') === 'off') {
     return false;
   }
