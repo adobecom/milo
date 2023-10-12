@@ -986,7 +986,15 @@ async function processSection(section, config, isDoc) {
     await Promise.all(preloads);
   }
 
-  const loaded = section.blocks.map((block) => loadBlock(block));
+  let { blocks } = section;
+  if (blocks.length > 0) {
+    const lastBlock = blocks.slice(-1)[0];
+    if (lastBlock.classList.contains('section-metadata')) {
+      blocks = blocks.slice(0, -1);
+      blocks.unshift(lastBlock);
+    }
+  }
+  const loaded = blocks.map((block) => loadBlock(block));
 
   await decorateIcons(section.el, config);
 
