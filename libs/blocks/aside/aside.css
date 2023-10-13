@@ -532,6 +532,7 @@
   padding: var(--spacing-xs) var(--spacing-xs) 0 var(--spacing-xs);
   flex-direction: column;
   align-items: flex-start;
+  gap: var(--spacing-xxs);
 }
 
 .aside.promobar.popup .promo-text .content-area .text-area {
@@ -593,6 +594,14 @@
 
   .aside.promobar .mobile-up.hide-block ~ .promo-close {
     display: none;
+  }
+
+  .aside.promobar.popup .promo-text .text-area {
+    margin-top: var(--spacing-m);
+  }
+
+  .aside.promobar.popup .promo-text .icon-area + .text-area {
+    margin-top: 0;
   }
 }
 
