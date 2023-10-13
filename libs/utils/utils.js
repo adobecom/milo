@@ -763,8 +763,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
     return true;
   }
 
-  let query = PAGE_URL.searchParams.get('martech');
-  // query = 'on';
+  const query = PAGE_URL.searchParams.get('martech');
   if (query === 'off' || getMetadata('martech') === 'off') {
     return false;
   }
@@ -976,7 +975,12 @@ async function processSection(section, config, isDoc, first) {
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
-    await Promise.all(fragPromises);
+    if (first) {
+      await Promise.all(fragPromises);
+    } else {
+      // temporarily ignore fragments
+      return;
+    }
     const newlyDecoratedSection = decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;
