@@ -11,8 +11,6 @@ const base = miloLibs || codeRoot;
 
 loadStyle(`${base}/deps/commerce-web-components.css`);
 
-const detailLineConfig = { catalog: 0, plans: 0 };
-
 const wordNumbers = ['one', 'two', 'three', 'four', 'five'];
 
 const cardTypes = ['segment', 'special-offer', 'plans', 'catalog'];
@@ -50,7 +48,7 @@ const checkBoxLabel = (ctas, altCtaMetaData) => {
   const allButtons = ctas.querySelectorAll('a');
   const originalCtaButton = allButtons[allButtons.length - 1];
   const altCtaButtonData = altCtaMetaData[1];
-  const altCtaButton = createTag('div', { class: [...originalCtaButton.classList, 'alt-cta', 'button--inactive'].join(' ') }, altCtaButtonData.textContent);
+  const altCtaButton = createTag('a', { class: [...originalCtaButton.classList, 'alt-cta', 'button--inactive'].join(' ') }, altCtaButtonData.textContent);
   originalCtaButton.classList.add('active');
   decorateButtons(altCtaButton);
   ctas.appendChild(altCtaButton);
@@ -77,18 +75,17 @@ const parseContent = (el, altCta, cardType, merchCard) => {
     const { tagName } = element;
 
     if (isHeadingTag(tagName)) {
-      const slotName = titleNumber === 0 ? 'heading' : `heading-${wordNumbers[titleNumber]}`;
-      createAndAppendTag(tagName, { slot: slotName }, element.textContent, merchCard);
-      titleNumber += 1;
+      if (element.nodeName === 'H5') {
+        createAndAppendTag('div', { slot: 'detail' }, element.innerText, merchCard);
+      } else {
+        const slotName = titleNumber === 0 ? 'heading' : `heading-${wordNumbers[titleNumber]}`;
+        createAndAppendTag(tagName, { slot: slotName }, element.innerHTML, merchCard);
+        titleNumber += 1;
+      }
       return;
     }
 
     if (isParagraphTag(tagName) && element?.textContent.trim().length > 0) {
-      if (detailLineConfig[cardType] === detailLineCount) {
-        createAndAppendTag('div', { slot: 'detail' }, element, merchCard);
-        detailLineCount += 1;
-        return;
-      }
       body.append(element);
       return;
     }
@@ -128,15 +125,13 @@ const getActionMenuContent = (el, ribbonMetadata) => {
   return actionMenuContent;
 };
 
-const getMerchCardRows = (rows, ribbonMetadata, cardType, actionMenuContent) => {
+function getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent) {
   if (cardType === 'catalog') {
-    if (ribbonMetadata !== null) {
-      return actionMenuContent !== null ? rows[2] : rows[1];
-    }
-    return actionMenuContent !== null ? rows[1] : rows[0];
+    const index = ribbonMetadata === null ? 0 : 1;
+    return actionMenuContent !== null ? rows[index + 1] : rows[index];
   }
   return rows[ribbonMetadata === null ? 0 : 1];
-};
+}
 
 const init = (el) => {
   const section = el.closest('.section');
@@ -178,8 +173,8 @@ const init = (el) => {
     }
   }
   if (actionMenuContent !== null) {
-    merchCard.setAttribute('actionMenu', true);
-    merchCard.append(createTag('div', { slot: 'actionMenuContent' }, actionMenuContent.innerHTML));
+    merchCard.setAttribute('action-menu', true);
+    merchCard.append(createTag('div', { slot: 'action-menu-content' }, actionMenuContent.innerHTML));
   }
   if (ctas) {
     const footer = createTag('div', { slot: 'footer' });
@@ -197,12 +192,12 @@ const init = (el) => {
   }
   if (styles.includes('secure')) {
     replaceKey('secure-transaction', getConfig())
-      .then((key) => merchCard.setAttribute('secureLabel', key));
+      .then((key) => merchCard.setAttribute('secure-label', key));
   }
   if (altCta) {
     const label = checkBoxLabel(ctas, altCta);
     if (label !== null) {
-      merchCard.setAttribute('checkboxLabel', label);
+      merchCard.setAttribute('checkbox-label', label);
     }
   }
   if (styles.includes('evergreen')) {

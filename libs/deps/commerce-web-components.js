@@ -586,83 +586,695 @@
   null == n4 || n4({ LitElement: s4 });
   (null !== (o4 = globalThis.litElementVersions) && void 0 !== o4 ? o4 : globalThis.litElementVersions = []).push("3.3.3");
 
+  // src/shared-styles.js
+  var sharedStyles = i`
+    :host {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 222px;
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        flex: 1 1 0;
+        min-width: var(--consonant-merch-card-min-width);
+        max-width: var(--consonant-merch-card-max-height);
+        text-align: left;
+        border-radius: var(--consonant-merch-card-spacing-xxxs);
+        background-color: var(--consonant-merch-card-background-color);
+        overflow: auto;
+        grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
+        background-color: var(--consonant-merch-card-background-color);
+        font-family: var(--body-font-family, 'Adobe Clean');
+        border-radius: var(--consonant-merch-card-spacing-xs);
+        border: 1px solid var(--consonant-merch-card-border-color);
+    }
+
+    .invisible {
+        visibility: hidden;
+    }
+
+    :host(:hover) .invisible {
+        visibility: visible;
+    }
+
+    slot {
+        display: block;
+    }
+
+    .top-section {
+        display: flex;
+        justify-content: flex-start;
+        height: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .image {
+        height: var(--consonant-merch-card-image-height);
+        background-position: 50% 50%;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .icons {
+        display: flex;
+        width: fit-content;
+        fle-direction: row;
+    }
+
+    .icons img {
+        width: var(--consonant-merch-card-plans-icon-size);
+        height: var(--consonant-merch-card-plans-icon-size);
+        margin-right: var(--consonant-merch-card-spacing-xxs);
+    }
+
+    .body {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        height: 100%;
+        flex-direction: column;
+        gap: var(--consonant-merch-card-spacing-xxs);
+        padding: var(--consonant-merch-card-spacing-xs);
+    }
+
+    ::slotted([slot='footer']) {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: auto;
+        box-sizing: border-box;
+        align-self: flex-end;
+        width: 100%;
+        padding: var(--consonant-merch-card-spacing-xs);
+    }
+
+    hr {
+        background-color: var(--color-gray-200);
+        border: none;
+        height: 1px;
+        width: auto;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: var(--consonant-merch-card-spacing-xs);
+        margin-right: var(--consonant-merch-card-spacing-xs);
+    }
+
+    div[class$='-ribbon'] {
+        position: absolute;
+        top: 16px;
+        right: 0;
+        font-size: var(--type-heading-xxs-size);
+        font-weight: 500;
+        max-width: 150px;
+        line-height: 16px;
+        text-align: center;
+        padding: 8px 11px;
+        border-radius: 5px 0 0 5px;
+    }
+
+    .body .catalog-ribbon {
+        display: flex;
+        height: fit-content;
+        flex-direction: column;
+        width: fit-content;
+        border-radius: 5px;
+        position: relative;
+        top: 0;
+        margin-left: var(--consonant-merch-card-spacing-xxs);
+    }
+
+    .image {
+        flex-grow: 1;
+        position: relative;
+        width: 100%;
+        min-height: 213px;
+        max-height: 213px;
+        background-color: var(--background-color);
+        background-position: 50% 50%;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .detail-bg-container {
+        right: 0;
+        padding: var(--consonant-merch-card-spacing-xs);
+        border-radius: 5px;
+        font-size: var(--consonant-merch-card-body-font-size);
+        margin: var(--consonant-merch-card-spacing-xs);
+    }
+
+    .action-menu {
+        display: flex;
+        width: 32px;
+        height: 32px;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: url('../src/img/ellipsis.svg') no-repeat center center,
+            #f6f6f6;
+        background-size: 16px 16px;
+    }
+    .hidden {
+        visibility: hidden;
+    }
+
+    .standard-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .checkbox-label,
+    .secure-transaction-label {
+        font-size: var(--consonant-merch-card-body-xxs-font-size);
+        line-height: 1.3;
+        color: var(--color-gray-600);
+    }
+
+    .secure-transaction-label {
+        white-space: nowrap;
+    }
+
+    .secure-transaction-icon {
+        height: 15px;
+        width: 12px;
+        right: 16px;
+        background-image: url('../src/img/secure-transaction.svg');
+        background-repeat: no-repeat;
+    }
+
+    .checkbox-container,
+    .secure-transaction-wrapper {
+        display: flex;
+        align-items: center;
+        gap: var(--consonant-merch-card-spacing-xxs);
+    }
+
+    .secure-transaction-wrapper {
+        padding-left: var(--consonant-merch-card-spacing-xs);
+    }
+    .checkbox-container input[type='checkbox']:checked + .checkmark {
+        background-color: var(--color-accent);
+        background-image: url('../src/img/checkmark-white-small.svg');
+        border-color: var(--color-accent);
+    }
+
+    .checkbox-container input[type='checkbox'] {
+        display: none;
+    }
+
+    .checkbox-container .checkmark {
+        position: relative;
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid #757575;
+        background: #fff;
+        border-radius: 2px;
+        cursor: pointer;
+        margin-top: 2px;
+    }
+`;
+
   // src/merch-card.js
   var MerchCard = class extends s4 {
     static properties = {
       variant: { type: String },
+      badge: { type: Object },
+      actionmenu: { type: Boolean, attribute: "action-menu" },
+      actionMenuContent: { type: String, attribute: "action-menu-content" },
       title: { type: String },
       description: { type: String },
-      image: { type: String, attribute: "image" }
+      image: { type: String, attribute: "image" },
+      customHr: { type: String, attribute: "hr" },
+      icons: { type: Array },
+      detailBg: { type: String, attribute: "detail-bg" },
+      secureLabel: { type: String, attribute: "secure-label" },
+      checkboxLabel: { type: String, attribute: "checkbox-label" },
+      evergreen: { type: Boolean },
+      attrFilters: { type: String, attribute: "filters" },
+      attrTypes: { type: String, attribute: "types" }
     };
-    static styles = i`
-        :host {
-            display: block;
-            box-sizing: border-box;
-            background-color: var(--consonant-merch-card-background-color);
-            width: var(--consonant-merch-card-special-offer-width);
-            height: var(--consonant-merch-card-special-offer-height);
-            font-family: var(--body-font-family, 'Adobe Clean');
-            border-radius: var(--consonant-merch-card-spacing-xs);
-            border: 1px solid var(--consonant-merch-card-border-color);
-        }
-
-        slot {
-            display: block;
-        }
-
-        .image {
-            height: var(--consonant-merch-card-image-height);
-            background-position: 50% 50%;
-            background-repeat: no-repeat;
-            background-size: cover;
-        }
-
-        ::slotted([slot='footer']) {
-            display: flex;
-            justify-content: end;
-        }
-
-        .body {
-            display: flex;
-            flex-direction: column;
-            gap: var(--consonant-merch-card-spacing-xxs);
-            padding: var(--consonant-merch-card-spacing-xs);
-        }
-
-        hr {
-            border: none;
-            background-color: var(--consonant-merch-card-border-color);
-            height: 1px;
-            margin: 8px 0px;
-        }
-    `;
+    static styles = [sharedStyles];
     constructor() {
       super();
-      this.image = "";
+    }
+    renderIcons() {
+      return this.icons && this.icons.length > 0 ? x`
+                  <div class="icons">
+                      ${this.icons.map((icon) => x`<img src="${icon}" />`)}
+                  </div>
+              ` : "";
+    }
+    createCheckBox() {
+      return this.checkboxLabel ? x`
+                  <div class="checkbox-container">
+                      <input id="alt-cta" type="checkbox" />
+                      <span
+                          class="checkmark"
+                          @click="${this.toggleCheckBox}"
+                      ></span>
+                      <label class="checkbox-label"
+                          >${this.checkboxLabel}</label
+                      >
+                  </div>
+              ` : "";
+    }
+    createPlansFooter() {
+      const footerSlot = x` <slot name="footer"></slot>`;
+      const secureLabel = this["secureLabel"];
+      return secureLabel ? x` <div class="standard-wrapper">
+                  <div class="secure-transaction-wrapper">
+                      <span class="secure-transaction-icon"></span>
+                      <span class="secure-transaction-label"
+                          >${secureLabel}</span
+                      >
+                  </div>
+                  ${footerSlot}
+              </div>` : footerSlot;
+    }
+    generateRibbonTemplate(additionalStyles) {
+      const style = this.badge.style;
+      const [ribbonBgColor, ribbonTextColor] = style.split(", ", 2);
+      return x`
+            <div
+                class="${this.variant}-ribbon"
+                style="background-color: ${ribbonBgColor}; color: ${ribbonTextColor}; ${additionalStyles ? ` ${additionalStyles}` : ""}"
+            >
+                ${this.badge.value}
+            </div>
+        `;
+    }
+    decorateRibbon() {
+      return this.generateRibbonTemplate();
+    }
+    decorateEvergreenRibbon() {
+      return this.generateRibbonTemplate(
+        `border: 1px solid ${this.badge.style[0]}; border-right: none;`
+      );
+    }
+    toggleCheckBox() {
+      const checkbox = this.shadowRoot.querySelector("#alt-cta");
+      checkbox.checked = !checkbox.checked;
+      const footerSlot = this.shadowRoot.querySelector('slot[name="footer"]');
+      if (footerSlot) {
+        const nodes = footerSlot.assignedNodes({ flatten: true });
+        let active, altCta;
+        nodes.forEach((node) => {
+          altCta = node.querySelector(".alt-cta");
+          active = node.querySelector(".active");
+        });
+        if (active && altCta) {
+          active.classList.toggle("button--inactive", checkbox.checked);
+          altCta.classList.toggle("button--inactive", !checkbox.checked);
+        }
+      }
+    }
+    toggleActionMenu() {
+      const actionMenuContentSlot = this.shadowRoot.querySelector(
+        'slot[name="action-menu-content"]'
+      );
+      actionMenuContentSlot.classList.toggle("hidden");
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this.initFilters();
+      this.initTypes();
+    }
+    get title() {
+      const heading = this.shadowRoot.querySelector('slot[name="heading"]');
+      return heading.assignedNodes()[0]?.textContent;
+    }
+    initFilters() {
+      this.filters = Object.fromEntries(
+        this.attrFilters.split(",").map((filter) => filter.split(":"))
+      );
+    }
+    initTypes() {
+      this.types = this.attrTypes.split(",");
+    }
+    includes(string) {
+      const slots = [...this.shadowRoot.querySelectorAll("slot")];
+      return slots.some(
+        (slot) => slot.assignedNodes().some(
+          (node) => node.textContent?.toLowerCase().includes(string)
+        )
+      );
     }
     render() {
       switch (this.variant) {
         case "special-offer":
           return this.renderSpecialOffer();
+        case "segment":
+          return this.renderSegment();
+        case "plans":
+          return this.renderPlans();
+        case "catalog":
+          return this.renderCatalog();
         default:
-          return `<div/>`;
+          return x` <div />`;
       }
     }
     renderSpecialOffer() {
-      return x`
-        <div class="image" style="background-image: url(${this.image})"></div>
-        <div class="body">
-            <slot name="detail"></slot>
-            <slot name="heading"></slot>
-            <slot name="heading-two"></slot>
-            <slot name="body"></slot>
+      return x` <div
+                class="image"
+                style="${this.image ? `background-image: url(${this.image})` : ""}"
+            >
+                ${this.badge ? this.evergreen ? this.decorateEvergreenRibbon() : this.decorateRibbon() : ""}
+            </div>
+            <div class="body">
+                <slot name="heading"></slot>
+                <slot name="heading-two"></slot>
+                <slot name="heading-three"></slot>
+                <slot name="body"></slot>
+                <slot name="list"></slot>
+            </div>
+            ${this.evergreen ? x`
+                      <div
+                          class="detail-bg-container"
+                          style="background: ${this["detailBg"]}"
+                      >
+                          <slot name="detail-bg"></slot>
+                      </div>
+                  ` : x`
+                      <hr />
+                      <slot name="footer"></slot>
+                  `}`;
+    }
+    renderSegment() {
+      return x` ${this.badge ? this.decorateRibbon() : ""}
+            <div class="body">
+                <slot name="heading"></slot>
+                <slot name="heading-two"></slot>
+                <slot name="body"></slot>
+            </div>
             <hr />
-            <slot name="footer"></slot>
-        </div>
-    </div>`;
+            <slot name="footer"></slot>`;
+    }
+    renderPlans() {
+      return x` ${this.badge ? this.decorateRibbon() : ""}
+            <div class="body">
+                ${this.renderIcons()}
+                <slot name="heading"></slot>
+                <slot name="heading-two"></slot>
+                <slot name="detail"></slot>
+                <slot name="body"></slot>
+                ${this.createCheckBox()}
+            </div>
+            ${this.createPlansFooter()}`;
+    }
+    renderCatalog() {
+      return x` <div class="body">
+                <div class="top-section">
+                    ${this.renderIcons()}
+                    ${this.badge ? this.decorateRibbon() : ""}
+                    <div
+                        class="action-menu ${!this.actionmenu ? "hidden" : "invisible"}"
+                        @click="${this.toggleActionMenu}"
+                    ></div>
+                </div>
+                <slot
+                    name="action-menu-content"
+                    class="action-menu-content ${!this.actionMenuContent ? "hidden" : ""}"
+                    >${this.actionMenuContent}</slot
+                >
+                <slot name="heading"></slot>
+                <slot name="heading-two"></slot>
+                <slot name="detail"></slot>
+                <slot name="body"></slot>
+            </div>
+            <slot name="footer"></slot>`;
     }
   };
   customElements.define("merch-card", MerchCard);
+
+  // src/focus.js
+  var FOCUSABLE_SELECTORS = [
+    "a[href]:not([disabled])",
+    "button:not([disabled])",
+    "textarea:not([disabled])",
+    'input[type="text"]:not([disabled])',
+    'input[type="radio"]:not([disabled])',
+    'input[type="checkbox"]:not([disabled])',
+    "select:not([disabled])",
+    '[tabindex]:not([tabindex="-1"]):not([disabled])'
+  ].join(", ");
+  var [ARROW_LEFT, ARROW_RIGHT, ARROW_UP, ARROW_DOWN] = [
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown"
+  ];
+  var FOCUS_KEYS = [
+    "Tab",
+    ARROW_LEFT,
+    ARROW_RIGHT,
+    ARROW_UP,
+    ARROW_DOWN
+  ];
+  function getFirstLastFocusableElement(container) {
+    const focusableElements = container.querySelectorAll(FOCUSABLE_SELECTORS);
+    return focusableElements.length > 0 ? [
+      focusableElements[0],
+      focusableElements[focusableElements.length - 1]
+    ] : [];
+  }
+
+  // src/deeplink.js
+  var EVENT_HASHCHANGE = "hashchange";
+  function parseState(hash = window.location.hash) {
+    const result = [];
+    const keyValuePairs = hash.replace(/^#/, "").split("&");
+    for (const pair of keyValuePairs) {
+      const [key, value] = pair.split("=");
+      if (key) {
+        result.push([key, decodeURIComponent(value || "")]);
+      }
+    }
+    return Object.fromEntries(result);
+  }
+  function deeplink(callback) {
+    const handler = (e4) => {
+      const state = parseState(window.location.hash);
+      callback(state);
+    };
+    handler();
+    window.addEventListener(EVENT_HASHCHANGE, handler);
+    return () => {
+      window.removeEventListener(EVENT_HASHCHANGE, handler);
+    };
+  }
+
+  // src/merch-cards.js
+  var SortOrder = {
+    alphabetical: "alphabetical",
+    authored: 0
+  };
+  var makeCategoryFilter = ({ filter }) => (elements) => elements.filter((element) => element.filters.hasOwnProperty(filter));
+  var makeTypeFilter = ({ types }) => {
+    if (!types) {
+      return (elements) => elements;
+    }
+    types = types.split(",");
+    return (elements) => elements.filter(
+      (element) => types.some((type) => element.types.includes(type))
+    );
+  };
+  var makeAlphabeticalSorter = () => (elements) => elements.sort(
+    (a3, b2) => (a3.title ?? "").localeCompare(b2.title ?? "", "en", {
+      sensitivity: "base"
+    })
+  );
+  var makeAuthoredSorter = ({ filter }) => (elements) => elements.sort(
+    (a3, b2) => (a3.filters[filter] ?? elements.length) - (b2.filters[filter] ?? elements.length)
+  );
+  var makeSearcher = ({ search }) => {
+    if (search?.length) {
+      search = search.toLowerCase();
+      return (elements) => elements.filter((element) => element.includes(search));
+    }
+    return (elements) => elements;
+  };
+  var MerchCards = class extends s4 {
+    static properties = {
+      filter: { type: String, attribute: "filter", reflect: true },
+      search: { type: String, attribute: "search", reflect: true },
+      sort: {
+        type: Number,
+        attribute: "sort",
+        default: SortOrder.authored,
+        reflect: true
+      },
+      types: { type: String, attribute: "types", reflect: true },
+      limit: { type: Number, attribute: "limit", reflect: true }
+    };
+    static styles = i`
+        ul,
+        ::slotted(li) {
+            display: contents;
+        }
+    `;
+    render() {
+      return x`<ul role="list">
+            <slot></slot>
+        </ul>`;
+    }
+    updated(changedProperties) {
+      let updateChildren = false;
+      if (!this._filters || changedProperties.has("filter") || changedProperties.has("types")) {
+        this._filters = [makeCategoryFilter(this), makeTypeFilter(this)];
+        updateChildren = true;
+      }
+      if (!this._searcher || changedProperties.has("search")) {
+        this._searcher = makeSearcher(this);
+        updateChildren = true;
+      }
+      if (!this._sorter || changedProperties.has("sort")) {
+        this._sorter = this.sort === SortOrder.alphabetical ? makeAlphabeticalSorter(this) : makeAuthoredSorter(this);
+        updateChildren = true;
+      }
+      const children = [...this.querySelectorAll("merch-card")];
+      const reducers = [...this._filters, this._searcher, this._sorter];
+      const reduced = new Map(
+        reducers.reduce((elements, reducer) => reducer(elements), children).map((element, index) => [element, index])
+      );
+      children.forEach((child) => {
+        if (reduced.has(child)) {
+          child.style.order = reduced.get(child);
+          child.style.removeProperty("display");
+        } else {
+          child.style.display = "none";
+          child.style.removeProperty("order");
+        }
+      });
+    }
+    firstUpdated() {
+      const slot = this.shadowRoot.querySelector("slot");
+      const nodes = slot.assignedNodes({ flatten: true });
+      nodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === "MERCH-CARD") {
+          const li = document.createElement("li");
+          li.setAttribute("role", "listitem");
+          node.setAttribute("tabindex", "0");
+          node.replaceWith(li);
+          li.appendChild(node);
+          node.addEventListener(
+            "keydown",
+            this.handleCardKeydown.bind(this)
+          );
+        }
+      });
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this.startDeeplink();
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this.stopDeeplink();
+    }
+    startDeeplink() {
+      this.stopDeeplink = deeplink(
+        ({ filter = "all", types, sort, search, single_app }) => {
+          this.filter = filter;
+          this.types = types ?? "";
+          this.search = search ?? "";
+          this.single_app = single_app;
+          this.sort = sort;
+        }
+      );
+    }
+    // custom methods
+    handleCardKeydown(event) {
+      if (!FOCUS_KEYS.includes(event.key))
+        return;
+      const currentFocusedCard = event.currentTarget;
+      const [firstFocusable, lastFocusable] = getFirstLastFocusableElement(currentFocusedCard);
+      let arrowKey;
+      switch (event.key) {
+        case ARROW_LEFT:
+        case ARROW_UP:
+        case ARROW_RIGHT:
+        case ARROW_DOWN:
+          arrowKey = event.key;
+          break;
+        case "Tab":
+          if (document.activeElement.tagName === "MERCH-CARD" && event.shiftKey) {
+            arrowKey = ARROW_LEFT;
+          } else if (document.activeElement === lastFocusable && !event.shiftKey) {
+            arrowKey = ARROW_RIGHT;
+          }
+          if (!arrowKey)
+            return;
+          break;
+        default:
+          return;
+      }
+      const nextCard = this.getNextCard(currentFocusedCard, arrowKey);
+      if (nextCard) {
+        currentFocusedCard.setAttribute("tabindex", "-1");
+        nextCard.setAttribute("tabindex", "0");
+        nextCard.focus();
+        event.preventDefault();
+      }
+    }
+    getCardsPerRow() {
+      if (window.matchMedia("screen and (min-width: 1440px)").matches) {
+        return 4;
+      }
+      if (window.matchMedia("screen and (min-width: 1280px)").matches) {
+        return 3;
+      }
+      if (window.matchMedia("screen and (min-width: 600px)").matches) {
+        return 2;
+      }
+      return 1;
+    }
+    getNextCard(currentCard, arrowKey) {
+      const allCards = Array.from(this.querySelectorAll("merch-card")).filter(
+        (card) => window.getComputedStyle(card).display !== "none"
+      );
+      const orderedCards = allCards.sort((a3, b2) => {
+        const orderA = parseInt(window.getComputedStyle(a3).order) || allCards.indexOf(a3);
+        const orderB = parseInt(window.getComputedStyle(b2).order) || allCards.indexOf(b2);
+        return orderA - orderB;
+      });
+      const currentIndex = orderedCards.indexOf(currentCard);
+      const cardsPerRow = this.getCardsPerRow();
+      switch (arrowKey) {
+        case ARROW_LEFT:
+          if (currentIndex > 0) {
+            return orderedCards[currentIndex - 1];
+          }
+          break;
+        case ARROW_RIGHT:
+          if (currentIndex < orderedCards.length - 1) {
+            return orderedCards[currentIndex + 1];
+          }
+          break;
+        case ARROW_UP:
+          const upIndex = currentIndex - cardsPerRow;
+          if (upIndex >= 0) {
+            return orderedCards[upIndex];
+          }
+          break;
+        case ARROW_DOWN:
+          const downIndex = currentIndex + cardsPerRow;
+          if (downIndex < orderedCards.length) {
+            return orderedCards[downIndex];
+          }
+          break;
+        default:
+          return null;
+      }
+      return null;
+    }
+  };
+  MerchCards.SortOrder = SortOrder;
+  customElements.define("merch-cards", MerchCards);
 })();
 /*! Bundled license information:
 
