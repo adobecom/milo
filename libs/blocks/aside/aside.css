@@ -556,6 +556,7 @@
 .aside.promobar.popup .promo-text .action-area {
   justify-content: flex-end;
   padding: 0 var(--spacing-xxs) var(--spacing-xxs) 0;
+  gap: var(--spacing-xxs);
 }
 
 .aside.promobar .promo-close {
@@ -878,6 +879,9 @@
     display: flex;
   }
 
+  .aside.promobar.popup .promo-text {
+    gap: var(--spacing-s);
+  }
 
   .aside.promobar.popup .promo-text .content-area {
     padding: var(--spacing-xxs) 0 0;
