@@ -167,7 +167,7 @@
   color: var(--tabs-active-text-color);
 }
 
-/* Tabs: .quiet, .pills */
+/* Tabs: .quiet, .pill */
 .tabs.quiet div[role="tablist"] button {
   border-width: 0 0 2px;
   border-color: transparent;
@@ -177,13 +177,13 @@
   margin-inline-start: 16px;
 }
 
-.tabs.pills div[role="tablist"] {
+.tabs.pill div[role="tablist"] {
   box-shadow: unset;
   background: unset;
   margin-bottom: var(--spacing-xxs);
 }
 
-.tabs.pills div[role="tablist"] button {
+.tabs.pill div[role="tablist"] button {
   border-width: 1px;
   border-color: var(--tabs-pill-text-color);
   color: var(--tabs-pill-text-color);
@@ -199,7 +199,7 @@
 }
 
 .tabs.quiet div[role="tablist"] button:first-of-type,
-.tabs.pills div[role="tablist"] button:first-of-type {
+.tabs.pill div[role="tablist"] button:first-of-type {
   margin-inline-start: 0;
 }
 
@@ -211,11 +211,11 @@
   border-bottom-color: var(--tabs-active-color);
 }
 
-.tabs.pills div[role="tablist"] button:active {
+.tabs.pill div[role="tablist"] button:active {
   color: var(--tabs-active-color);
 }
 
-.tabs.pills div[role="tablist"] button[aria-selected="true"] {
+.tabs.pill div[role="tablist"] button[aria-selected="true"] {
   background-color: var(--tabs-pill-text-color);
   color: var(--tabs-pill-bg-color);
 }
