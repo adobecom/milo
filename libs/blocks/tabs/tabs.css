@@ -8,15 +8,20 @@
   --tabs-bg-color: #f1f1f1;
   --tabs-active-bg-color: #fff;
   --tabs-list-bg-gradient: linear-gradient(rgb(255 255 255 / 0%) 60%, rgb(245 245 245 / 80%));
+  --tabs-pill-bg-color: #fff;
+  --tabs-pill-text-color: #000;
 }
 
 :root .dark {
   --tabs-border-color: rgb(56 56 56);
   --tabs-text-color: #cdcdcd;
   --tabs-active-text-color: #fff;
+  --tabs-active-text-color-hi: #fff;
   --tabs-bg-color: #1a1a1a;
   --tabs-active-bg-color: #111;
   --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 80%));
+  --tabs-pill-bg-color: #000;
+  --tabs-pill-text-color: #fff;
 }
 
 .tabs {
@@ -162,7 +167,7 @@
   color: var(--tabs-active-text-color);
 }
 
-/* Tabs: .quiet */
+/* Tabs: .quiet, .pills */
 .tabs.quiet div[role="tablist"] button {
   border-width: 0 0 2px;
   border-color: transparent;
@@ -172,7 +177,29 @@
   margin-inline-start: 16px;
 }
 
-.tabs.quiet div[role="tablist"] button:first-of-type {
+.tabs.pills div[role="tablist"] {
+  box-shadow: unset;
+  background: unset;
+  margin-bottom: var(--spacing-xxs);
+}
+
+.tabs.pills div[role="tablist"] button {
+  border-width: 1px;
+  border-color: var(--tabs-pill-text-color);
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color);
+  margin: 0;
+  margin-inline-start: 16px;
+  border-radius: 20px;
+  font-size: 17px;
+  line-height: 20px;
+  min-height: 21px;
+  padding: 7px 18px 8px;
+
+}
+
+.tabs.quiet div[role="tablist"] button:first-of-type,
+.tabs.pills div[role="tablist"] button:first-of-type {
   margin-inline-start: 0;
 }
 
@@ -183,6 +210,16 @@
 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-color);
 }
+
+.tabs.pills div[role="tablist"] button:active {
+  color: var(--tabs-active-color);
+}
+
+.tabs.pills div[role="tablist"] button[aria-selected="true"] {
+  background-color: var(--tabs-pill-text-color);
+  color: var(--tabs-pill-bg-color);
+}
+
 
 /* Section Metadata */
 .tabs-background-transparent .tabs,
