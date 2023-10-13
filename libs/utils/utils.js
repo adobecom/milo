@@ -979,7 +979,6 @@ async function processSection(section, config, isDoc, first) {
       await Promise.all(fragPromises);
     } else {
       // temporarily ignore fragments
-      return;
     }
     const newlyDecoratedSection = decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
