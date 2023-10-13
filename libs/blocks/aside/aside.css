@@ -1074,11 +1074,12 @@
     justify-content: center;
     max-width: 83.4%;
   }
-
+  
   .aside.promobar.popup .promo-text .content-area,
   .aside.promobar.popup .promo-text .action-area {
     flex-direction: row;
     padding: 0;
+    gap: var(--spacing-xs)
   }
 
   .aside.promobar.popup .promo-text .icon-area,
