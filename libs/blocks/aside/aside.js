@@ -145,7 +145,7 @@ function combineTextBocks(textBlocks, iconArea, viewPort, variant) {
     }
   });
   if (iconArea) {
-    if (iconArea.children.length > 1) iconArea.classList.add('detail-xs');
+    if (iconArea.innerText?.trim()) iconArea.classList.add('detail-xs');
     iconArea.classList.add('icon-area');
     contentArea.appendChild(iconArea);
   }

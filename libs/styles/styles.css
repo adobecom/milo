@@ -288,8 +288,9 @@
 }
 
 .detail-xs {
-  font-size: var(--type-detail-s-size);
-  line-height: var(--type-detail-s-lh);
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+  font-weight: 700;
 }
 
 .detail-xl,
