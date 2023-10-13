@@ -583,6 +583,14 @@
   stroke: var(--color-white);
 }
 
+.aside.promobar.popup .promo-text .text-area {
+  margin-top: var(--spacing-m);
+}
+
+.aside.promobar.popup .promo-text .icon-area + .text-area {
+  margin-top: 0;
+}
+
 @media screen and (max-width: 600px) {
   .aside.no-media:not(.notification) .foreground.container {
     gap: 0;
@@ -594,14 +602,6 @@
 
   .aside.promobar .mobile-up.hide-block ~ .promo-close {
     display: none;
-  }
-
-  .aside.promobar.popup .promo-text .text-area {
-    margin-top: var(--spacing-m);
-  }
-
-  .aside.promobar.popup .promo-text .icon-area + .text-area {
-    margin-top: 0;
   }
 }
 
@@ -1103,5 +1103,9 @@
   
   .aside.promobar .desktop-up.hide-block ~ .promo-close {
     display: none;
+  }
+
+  .aside.promobar.popup .promo-text .text-area {
+    margin-top: 0;
   }
 }
