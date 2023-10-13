@@ -24,7 +24,7 @@ export const decorateBgContent = (el) => {
   let insidePattern = false;
   let decoratedBlock;
   let style;
-  els.forEach((e) => {
+  [...els].forEach((e) => {
     if (e.textContent.startsWith('/--')) {
       insidePattern = true;
       decoratedBlock = createTag('div', { slot: 'detail-bg' });
@@ -83,7 +83,7 @@ const parseContent = (el, altCta, cardType, merchCard) => {
       return;
     }
 
-    if (isParagraphTag(tagName)) {
+    if (isParagraphTag(tagName) && element?.textContent.trim().length > 0) {
       if (detailLineConfig[cardType] === detailLineCount) {
         createAndAppendTag('div', { slot: 'detail' }, element, merchCard);
         detailLineCount += 1;
@@ -178,7 +178,7 @@ const init = (el) => {
     }
   }
   if (actionMenuContent !== null) {
-    merchCard.setAttribute('actionmenu', true);
+    merchCard.setAttribute('actionMenu', true);
     merchCard.append(createTag('div', { slot: 'actionMenuContent' }, actionMenuContent.innerHTML));
   }
   if (ctas) {
@@ -208,7 +208,7 @@ const init = (el) => {
   if (styles.includes('evergreen')) {
     const decoratedContent = decorateBgContent(el);
     merchCard.setAttribute('evergreen', true);
-    merchCard.setAttribute('detail-bg', decoratedContent.style);
+    merchCard.setAttribute('detailBg', decoratedContent.style);
     merchCard.append(decoratedContent.decoratedBlock);
   }
   parseContent(el, altCta, cardType, merchCard);

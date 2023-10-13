@@ -31,14 +31,54 @@ describe('Merch Card', () => {
     const headingOne = merchCard.querySelector('h3[slot="heading-two"]');
     const body = merchCard.querySelector('div[slot="body"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
+    const list = merchCard.querySelector('div[slot="list"]');
     const buttons = footer.querySelectorAll('.con-button');
+    const expectedList = `
+        <p><strong>Best for</strong>:</p>
+        <ul>
+            <li>Photo editing</li>
+            <li>Compositing</li>
+            <li>Drawing and painting</li>
+            <li>Graphic design</li>
+        </ul>
+    `;
 
     expect(merchCard).to.exist;
     expect(heading).to.exist;
     expect(headingOne).to.exist;
     expect(body).to.exist;
+    expect(list).to.exist;
     expect(merchCard.getAttribute('variant')).to.be.equal('special-offer');
     expect(merchCard.getAttribute('badge')).to.be.equal('{"style":"#EDCC2D, #000000","value":"LOREM IPSUM DOLOR"}');
+    expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+    expect(list.trim()).to.be.equal(expectedList.trim());
+    expect(buttons.length).to.be.equal(2);
+    expect(buttons[0].textContent).to.be.equal('Learn More');
+    expect(buttons[1].textContent).to.be.equal('Save now');
+  });
+
+  it('Supports Special Offers card', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
+    await init(document.querySelector('.merch-card.special-offer.evergreen'));
+    const merchCard = document.querySelector('merch-card');
+    const heading = merchCard.querySelector('h4[slot="heading"]');
+    const headingOne = merchCard.querySelector('h3[slot="heading-two"]');
+    const body = merchCard.querySelector('div[slot="body"]');
+    const detailBg = merchCard.querySelector('div[slot="detail-bg"]');
+    const footer = merchCard.querySelector('div[slot="footer"]');
+    const buttons = footer.querySelectorAll('.con-button');
+
+    console.log('MERCH_CARD', merchCard);
+
+    expect(merchCard).to.exist;
+    expect(heading).to.exist;
+    expect(headingOne).to.exist;
+    expect(body).to.exist;
+    expect(detailBg).to.exist;
+    expect(merchCard.getAttribute('variant')).to.be.equal('special-offer');
+    expect(merchCard.getAttribute('badge')).to.be.equal('{"style":"#EDCC2D, #000000","value":"LOREM IPSUM DOLOR"}');
+    expect(merchCard.getAttribute('evergreen')).to.be.equal('true');
+    expect(merchCard.getAttribute('detailBg')).to.be.equal('#000000');
     expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Learn More');
@@ -108,6 +148,124 @@ describe('Merch Card', () => {
       const el = document.querySelector('.merch-card.empty');
       await init(el);
       expect(el.outerHTML.includes('undefined')).to.be.false;
+    });
+  });
+
+  describe('Catalog Card', () => {
+    it('Supports Catalog card', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+      await init(document.querySelector('.merch-card.ribbon'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h4[slot="heading"]');
+      const headingOne = merchCard.querySelector('h3[slot="heading-two"]');
+      const body = merchCard.querySelector('div[slot="body"]');
+      const actionMenu = merchCard.querySelector('div[slot="actionMenuContent"]');
+      const detail = merchCard.querySelector('div[slot="detail"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
+
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(detail).to.exist;
+      expect(actionMenu).to.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+      expect(merchCard.getAttribute('badge')).to.be.equal('{"style":"#EDCC2D, #000000","value":"LOREM IPSUM DOLOR"}');
+      expect(merchCard.getAttribute('actionMenu')).to.be.equal('true');
+      expect(merchCard.getAttribute('image')).to.exist;
+      expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+      expect(detail.textContent).to.be.equal('Desktop + Mobile');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
+    });
+
+    it('Supports Catalog card without badge', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+      await init(document.querySelector('.merch-card.catalog.empty-badge'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h4[slot="heading"]');
+      const headingOne = merchCard.querySelector('h3[slot="heading-two"]');
+      const body = merchCard.querySelector('div[slot="body"]');
+      const actionMenu = merchCard.querySelector('div[slot="actionMenuContent"]');
+      const detail = merchCard.querySelector('div[slot="detail"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
+
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(detail).to.exist;
+      expect(actionMenu).to.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+      expect(merchCard.getAttribute('badge')).to.not.exist;
+      expect(merchCard.getAttribute('actionMenu')).to.be.equal('true');
+      expect(merchCard.getAttribute('image')).to.exist;
+      expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+      expect(detail.textContent).to.be.equal('Desktop + Mobile');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
+    });
+
+    it('Supports Catalog card without badge and action-menu', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+      await init(document.querySelector('.merch-card.catalog.empty-action-menu'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h4[slot="heading"]');
+      const headingOne = merchCard.querySelector('h3[slot="heading-two"]');
+      const body = merchCard.querySelector('div[slot="body"]');
+      const actionMenu = merchCard.querySelector('div[slot="actionMenuContent"]');
+      const detail = merchCard.querySelector('div[slot="detail"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
+
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(detail).to.exist;
+      expect(actionMenu).to.not.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+      expect(merchCard.getAttribute('badge')).to.not.exist;
+      expect(merchCard.getAttribute('actionMenu')).to.not.exist;
+      expect(merchCard.getAttribute('image')).to.exist;
+      expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+      expect(detail.textContent).to.be.equal('Desktop + Mobile');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
+    });
+
+    it('Supports Catalog card with badge without action-menu', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+      await init(document.querySelector('.merch-card.catalog.empty-badge.action-menu-exist'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h4[slot="heading"]');
+      const headingOne = merchCard.querySelector('h3[slot="heading-two"]');
+      const body = merchCard.querySelector('div[slot="body"]');
+      const actionMenu = merchCard.querySelector('div[slot="actionMenuContent"]');
+      const detail = merchCard.querySelector('div[slot="detail"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
+
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(detail).to.exist;
+      expect(actionMenu).to.not.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+      expect(merchCard.getAttribute('badge')).to.be.equal('{"style":"#EDCC2D, #000000","value":"LOREM IPSUM DOLOR"}');
+      expect(merchCard.getAttribute('actionMenu')).to.not.exist;
+      expect(merchCard.getAttribute('image')).to.exist;
+      expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+      expect(detail.textContent).to.be.equal('Desktop + Mobile');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
     });
   });
 
