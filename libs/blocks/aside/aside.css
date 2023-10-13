@@ -575,20 +575,10 @@
 }
 
 .aside.promobar .promo-close circle {
-  fill: var(--color-white);
-}
-
-.aside.promobar .promo-close line {
-  stroke: var(--color-black);
-}
-
-.dark .aside.promobar .promo-close circle,
-.dark.aside.promobar .promo-close circle {
   fill: var(--color-black);
 }
 
-.dark .aside.promobar .promo-close line,
-.dark.aside.promobar .promo-close line {
+.aside.promobar .promo-close line {
   stroke: var(--color-white);
 }
 

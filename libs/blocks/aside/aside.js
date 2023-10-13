@@ -165,9 +165,8 @@ function decoratePromobar(el) {
     const actionArea = child.querySelectorAll('em a, strong a, p > a strong');
     if (iconArea) textBlocks.shift();
     if (actionArea.length) textBlocks.pop();
-    if (!(textBlocks.length || iconArea || actionArea.length)) return child.classList.add('hide-block');
-    if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index], variant);
-    return true;
+    if (!(textBlocks.length || iconArea || actionArea.length)) child.classList.add('hide-block');
+    else if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index], variant);
   });
   if (variant === 'popup') addCloseButton(el);
   return foreground;
