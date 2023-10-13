@@ -177,6 +177,14 @@
   margin-inline-start: 16px;
 }
 
+.tabs.pill {
+  background: unset;
+}
+
+.tabs.pill .tab-content {
+  border-bottom: none;
+}
+
 .tabs.pill div[role="tablist"] {
   box-shadow: unset;
   background: unset;
