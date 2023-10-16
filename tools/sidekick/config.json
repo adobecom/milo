@@ -43,6 +43,16 @@
     },
     {
       "containerId": "tools",
+      "id": "floodgate-new",
+      "title": "Floodgate (New)",
+      "environments": [ "edit" ],
+      "url": "https://floodgateui--milo--adobecom.hlx.page/tools/floodgate",
+      "passReferrer": true,
+      "passConfig": true,
+      "includePaths": [ "**/:x**" ]
+    },
+    {
+      "containerId": "tools",
       "title": "Send to CaaS",
       "id": "sendtocaas",
       "environments": ["dev", "preview", "live", "prod"],
