@@ -5,7 +5,7 @@ import { getConfig } from '../../utils/utils.js';
 const QUESTIONS_EP_NAME = 'questions.json';
 const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
-const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
+const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
 let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
 
@@ -432,10 +432,3 @@ export const getAnalyticsDataForLocalStorage = (answers) => {
 };
 
 export const isValidUrl = (url) => VALID_URL_RE.test(url);
-
-export const prefixHttps = (url) => {
-  if (!(url?.startsWith('https://') || url?.startsWith('http://'))) {
-    return `https://${url}`;
-  }
-  return url;
-};
