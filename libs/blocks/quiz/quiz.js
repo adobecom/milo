@@ -88,12 +88,20 @@ const App = ({
       if (currentFlow && currentFlow.length) {
         setSelectedQuestion(questionList[currentFlow] || []);
       }
-      const lastQuestion = [...Object.keys(questionList)].pop() || {};
-      if (lastQuestion === currentFlow) {
+
+      const currentFlowData = questionData[currentFlow].data;
+      let resultsNext = true;
+      currentFlowData.forEach((item) => {
+        if (item.next !== 'RESULT') {
+          resultsNext = false;
+        }
+      });
+
+      if (resultsNext) {
         setTotalSteps(totalSteps - 1);
       }
     }
-  }, [userFlow, questionList, totalSteps]);
+  }, [userFlow, questionList, totalSteps, questionData]);
 
   /**
    * Updates the analytics data for the next button.
