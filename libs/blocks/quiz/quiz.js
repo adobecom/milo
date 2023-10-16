@@ -210,9 +210,10 @@ const App = ({
       userFlow,
     );
     const nextQuizViewsLen = nextQuizViews.length;
+    const [firstQuizView] = nextQuizViews;
 
-    if (nextQuizViewsLen === 1 && isValidUrl(nextQuizViews[0])) {
-      window.location.href = nextQuizViews[0];
+    if (nextQuizViewsLen === 1 && isValidUrl(firstQuizView)) {
+      window.location.href = firstQuizView;
       return;
     }
 
