@@ -44,7 +44,7 @@
 
 html[dir="rtl"] .how-to ol > li::before {
   margin-left: 20px;
-  margin-right: inherit;
+  margin-right: 0;
 }
 
 .how-to-heading {
