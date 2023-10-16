@@ -776,6 +776,7 @@
     .secure-transaction-wrapper {
         padding-left: var(--consonant-merch-card-spacing-xs);
     }
+
     .checkbox-container input[type='checkbox']:checked + .checkmark {
         background-color: var(--color-accent);
         background-image: url('../src/img/checkmark-white-small.svg');
@@ -803,6 +804,7 @@
   var MerchCard = class extends s4 {
     static properties = {
       variant: { type: String },
+      type: { type: String },
       badge: { type: Object },
       actionmenu: { type: Boolean, attribute: "action-menu" },
       actionMenuContent: { type: String, attribute: "action-menu-content" },
@@ -926,7 +928,7 @@
     }
     render() {
       switch (this.variant) {
-        case "special-offer":
+        case "special-offers":
           return this.renderSpecialOffer();
         case "segment":
           return this.renderSegment();
@@ -935,7 +937,7 @@
         case "catalog":
           return this.renderCatalog();
         default:
-          return x` <div />`;
+          return x`<div class="no-variant>No variant detected. Please check authoring document.</div> <div />`;
       }
     }
     renderSpecialOffer() {
@@ -946,11 +948,9 @@
                 ${this.badge ? this.evergreen ? this.decorateEvergreenRibbon() : this.decorateRibbon() : ""}
             </div>
             <div class="body">
-                <slot name="heading"></slot>
-                <slot name="heading-two"></slot>
-                <slot name="heading-three"></slot>
-                <slot name="body"></slot>
-                <slot name="list"></slot>
+                <slot name="detail-m"></slot>
+                <slot name="heading-xs"></slot>
+                <slot name="body-xs"></slot>
             </div>
             ${this.evergreen ? x`
                       <div
@@ -967,9 +967,9 @@
     renderSegment() {
       return x` ${this.badge ? this.decorateRibbon() : ""}
             <div class="body">
-                <slot name="heading"></slot>
-                <slot name="heading-two"></slot>
-                <slot name="body"></slot>
+                <slot name="heading-xs"></slot>
+                <slot name="heading-xs"></slot>
+                <slot name="body-xs"></slot>
             </div>
             <hr />
             <slot name="footer"></slot>`;
@@ -978,10 +978,10 @@
       return x` ${this.badge ? this.decorateRibbon() : ""}
             <div class="body">
                 ${this.renderIcons()}
-                <slot name="heading"></slot>
-                <slot name="heading-two"></slot>
-                <slot name="detail"></slot>
-                <slot name="body"></slot>
+                <slot name="heading-xs"></slot>
+                <slot name="heading-m"></slot>
+                <slot name="body-xxs"></slot>
+                <slot name="body-xs"></slot>
                 ${this.createCheckBox()}
             </div>
             ${this.createPlansFooter()}`;
@@ -1001,10 +1001,10 @@
                     class="action-menu-content ${!this.actionMenuContent ? "hidden" : ""}"
                     >${this.actionMenuContent}</slot
                 >
-                <slot name="heading"></slot>
-                <slot name="heading-two"></slot>
-                <slot name="detail"></slot>
-                <slot name="body"></slot>
+                <slot name="heading-xs"></slot>
+                <slot name="heading-m"></slot>
+                <slot name="body-xxs"></slot>
+                <slot name="body-xs"></slot>
             </div>
             <slot name="footer"></slot>`;
     }

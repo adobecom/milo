@@ -1,7 +1,7 @@
 :root {
 
     --consonant-merch-card-detail-font-size: 12px;
-    --consonant-merch-card-detail-font-weight: bold;
+    --consonant-merch-card-detail-font-weight: 500;
     --consonant-merch-card-detail-letter-spacing: 0.8px;
     --consonant-merch-card-background-color: #fff;
 
@@ -18,23 +18,73 @@
     --consonant-merch-card-spacing-s: 24px;
     --consonant-merch-card-spacing-m: 32px;
 
+    /* headings */
+    --consonant-merch-card-heading-xs-font-size: 18px;
+    --consonant-merch-card-heading-xs-line-height: 22.5px;
+    --consonant-merch-card-heading-s-font-size: 20px;
+    --consonant-merch-card-heading-s-line-height: 25px;
+    --consonant-merch-card-heading-m-font-size: 18px;
+    --consonant-merch-card-heading-m-line-height: 27px;
+    --consonant-merch-card-heading-l-font-size: 20px;
+    --consonant-merch-card-heading-l-line-height: 30px;
+    --consonant-merch-card-heading-xl-font-size: 36px;
+    --consonant-merch-card-heading-xl-line-height: 45px;
+
+    /* detail */
+    --consonant-merch-card-detail-m-font-size: 12px;
+    --consonant-merch-card-detail-m-line-height: 15px;
+
+    /* body */
+    --consonant-merch-card-body-xxs-font-size: 12px;
+    --consonant-merch-card-body-xxs-line-height: 18px;
+    --consonant-merch-card-body-xs-font-size: 14px;
+    --consonant-merch-card-body-xs-line-height: 21px;
+    --consonant-merch-card-body-m-font-size: 18px;
+    --consonant-merch-card-body-m-line-height: 27px;
+    --consonant-merch-card-body-l-font-size: 20px;
+    --consonant-merch-card-body-l-line-height: 30px;
+    --consonant-merch-card-body-xl-font-size: 22px;
+    --consonant-merch-card-body-xl-line-height: 33px;
+
+
     --consonant-merch-card-heading-padding: 0;
 
     --consonant-merch-card-image-height: 180px;
 
     /* colors */
     --consonant-merch-card-border-color: #eaeaea;
+    --color-accent: #1473E6;
+    --color-black: #000;
 
-    /* special offers */
+    /* merch card generic */
+    --consonant-merch-card-min-width: 300px;
+    --consonant-merch-card-max-width: 378px;
+
+    /* special offer */
     --consonant-merch-card-special-offer-height: 408px;
     --consonant-merch-card-special-offer-width: 300px;
+    --consonant-merch-card-special-offer-max-width: 378px;
+    --consonant-merch-card-special-offer-full-width: 100%;
+
+    /* segment */
+    --consonant-merch-card-segment-max-width: 378px;
+
+    /* plans */
+    --consonant-merch-card-plans-height: 408px;
+    --consonant-merch-card-plans-width: 302px;
+    --consonant-merch-card-plans-icon-size: 40px;
+
+    /* catalog */
+    --consonant-merch-card-catalog-height: 408px;
+    --consonant-merch-card-catalog-width: 302px;
+    --consonant-merch-card-catalog-icon-size: 40px;
 }
 
 /* Tablet */
 @media (min-width: 900px) {
     :root {
         --consonant-merch-card-special-offer-height: 408px;
-        --consonant-merch-card-special-offer-width: 302px;
+        --consonant-merch-card-special-offer-width: 276px;
     }
 }
 
@@ -46,6 +96,38 @@
     }
 }
 
+main > .section.merch-card-collection {
+    gap: 32px;
+    padding-bottom: 32px;
+    display: grid;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: repeat(auto-fit,minmax(300px,max-content));
+    width: 83.3%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+merch-card[variant="special-offer"] {
+    max-width: var(--consonant-merch-card-special-offer-max-width);
+}
+
+merch-card[variant="segment"] {
+    max-width: var(--consonant-merch-card-segment-max-width);
+}
+
+merch-card[variant="plans"] {
+    min-width: var(--consonant-merch-card-plans-width);
+    width: var(--consonant-merch-card-plans-width);
+}
+
+merch-card[variant="catalog"] {
+    min-width: var(--consonant-merch-card-catalog-width);
+    width: var(--consonant-merch-card-plans-width);
+}
+
 merch-card p, merch-card h3, merch-card h4 {
     margin: 0;
 }
@@ -54,27 +136,129 @@ merch-card [is=inline-price] {
     display: inline-block;
 }
 
-merch-card [slot='detail'] {
-    font-size: var(--consonant-merch-card-detail-font-size);
-    font-weight: var(--consonant-merch-card-detail-font-weight);
-    letter-spacing: var(--consonant-merch-card-detail-letter-spacing);
+merch-card [slot='heading-xs'] {
+    font-size: var(--consonant-merch-card-heading-xs-font-size);
+    line-height: var(--consonant-merch-card-heading-xs-line-height);
 }
 
-merch-card [slot="body"] p {
-    font-size: var(--consonant-merch-card-body-font-size);
+merch-card [slot='heading-s'] {
+    font-size: var(--consonant-merch-card-heading-s-font-size);
+    line-height: var(--consonant-merch-card-heading-s-line-height);
+}
+
+merch-card [slot='heading-m'] {
+    font-size: var(--consonant-merch-card-heading-m-font-size);
+    line-height: var(--consonant-merch-card-heading-m-line-height);
+}
+
+merch-card [slot='heading-l'] {
+    font-size: var(--consonant-merch-card-heading-l-font-size);
+    line-height: var(--consonant-merch-card-heading-l-line-height);
+}
+
+merch-card [slot='heading-xl'] {
+    font-size: var(--consonant-merch-card-heading-xl-font-size);
+    line-height: var(--consonant-merch-card-heading-xl-line-height);
+}
+
+merch-card [slot='detail-m'] {
+    font-size: var(--consonant-merch-card-detail-m-font-size);
+    font-weight: var(--consonant-merch-card-detail-font-weight);
+    letter-spacing: var(--consonant-merch-card-detail-m-letter-spacing);
+}
+
+merch-card [slot="body-xxs"] {
+    font-size: var(--consonant-merch-card-body-xxs-font-size);
+    line-height: var(--consonant-merch-card-body-xxs-line-height);
+}
+
+merch-card [slot="body-xs"] {
+    font-size: var(--consonant-merch-card-body-xs-font-size);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+}
+
+merch-card [slot="body-m"] {
+    font-size: var(--consonant-merch-card-body-m-font-size);
+    line-height: var(--consonant-merch-card-body-m-line-height);
+}
+
+merch-card [slot="body-l"] {
+    font-size: var(--consonant-merch-card-body-l-font-size);
+    line-height: var(--consonant-merch-card-body-l-line-height);
+}
+
+merch-card [slot="body-xl"] {
+    font-size: var(--consonant-merch-card-body-xl-font-size);
+    line-height: var(--consonant-merch-card-body-xl-line-height);
+}
+
+merch-card[variant="special-offers"][type="super-wide"] {
+    min-width: 100%;
+}
+
+merch-card[variant="special-offers"][type="wide"] {
+    min-width: 100%;
+}
+
+merch-card[variant="special-offers"] [slot="list"] ul {
+    padding-left: 0;
+    padding-bottom: var(--consonant-merch-card-spacing-xxs);
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-position: inside;
+    list-style-type: '• ';
+}
+
+merch-card[variant="special-offers"] ul li {
+    padding-left: 0;
+    line-height: var(--consonant-merch-card-body-line-height);
+    font-size: var(--consonant-merch-card-body-xxs-font-size);
+}
+
+merch-card[variant="special-offers"] ul li ::marker {
+    margin-right: 0;
+}
+
+merch-card[variant="catalog"] [slot="action-menu-content"] {
+    background-color: #000;
+    color: #fff;
+    font-size: var(--consonant-merch-card-body-xs-font-size);
+    width: fit-content;
+    padding: var(--consonant-merch-card-spacing-xs);
+    border-radius: var(--consonant-merch-card-spacing-xxxs);
+    position: absolute;
+    top: 55px;
+    right: 15px;
     line-height: var(--consonant-merch-card-body-line-height);
 }
 
-merch-card [slot="heading"],
-merch-card [slot="heading-two"] {
-    font-size: var(--consonant-merch-card-heading-font-size);
-    height: var(--consonant-merch-card-heading-line-height);
-}
-merch-card [slot="heading-two"] {
-    align-items: baseline;
-    gap: var(--consonant-merch-card-spacing-xxxs);
+merch-card[variant="catalog"] [slot="action-menu-content"] ul {
+    padding-left: 0;
+    padding-bottom: var(--consonant-merch-card-spacing-xss);
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-position: inside;
+    list-style-type: '• ';
 }
 
-merch-card [slot="heading-two"] > span:nth-child(2) {
-    font-size: var(--consonant-merch-card-heading-secondary-font-size);
+merch-card[variant="catalog"] [slot="action-menu-content"] ul li {
+    padding-left: 0;
+    line-height: var(--consonant-merch-card-body-line-height);
+}
+
+merch-card[variant="catalog"] [slot="action-menu-content"] ::marker {
+    margin-right: 0;
+}
+
+merch-card[variant="catalog"] [slot="action-menu-content"] a {
+    color: var(--consonant-merch-card-background-color);
+    text-decoration: underline;
+}
+
+.button--inactive {
+    display: none;
+}
+
+div[slot="footer"] a.con-button {
+    margin-left: var(--consonant-merch-card-spacing-xs);
 }

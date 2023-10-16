@@ -11,9 +11,16 @@ const base = miloLibs || codeRoot;
 
 loadStyle(`${base}/deps/commerce-web-components.css`);
 
-const wordNumbers = ['one', 'two', 'three', 'four', 'five'];
+const cardTypes = ['segment', 'special-offers', 'plans', 'catalog'];
 
-const cardTypes = ['segment', 'special-offer', 'plans', 'catalog'];
+const textStyles = {
+  'H5': 'detail-m',
+  'H4': 'body-xxs',
+  'H3': 'heading-xs',
+  'H2': 'heading-m',
+  'H1': 'heading-l',
+  'H1': 'heading-xl',
+}
 
 const getPodType = (styles) => styles?.find((style) => cardTypes.includes(style));
 
@@ -55,7 +62,7 @@ const checkBoxLabel = (ctas, altCtaMetaData) => {
   return altCtaMetaData[0].textContent;
 };
 
-const isHeadingTag = (tagName) => /^H[1-6]$/.test(tagName);
+const isHeadingTag = (tagName) => /^H[1-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 const isListTag = (tagName) => tagName === 'UL';
 
@@ -67,26 +74,15 @@ const createAndAppendTag = (tagName, attributes, content, parent) => {
 
 const parseContent = (el, altCta, cardType, merchCard) => {
   const innerElements = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul')];
-  let titleNumber = 0;
-  const body = createTag('div', { slot: 'body' });
-  let detailLineCount = 0;
+  const bodySlot = createTag('div', { slot: 'body-xs' });
 
   innerElements.forEach((element) => {
     const { tagName } = element;
-
     if (isHeadingTag(tagName)) {
-      if (element.nodeName === 'H5') {
-        createAndAppendTag('div', { slot: 'detail' }, element.innerText, merchCard);
-      } else {
-        const slotName = titleNumber === 0 ? 'heading' : `heading-${wordNumbers[titleNumber]}`;
-        createAndAppendTag(tagName, { slot: slotName }, element.innerHTML, merchCard);
-        titleNumber += 1;
-      }
+      createAndAppendTag(tagName, { slot: textStyles[tagName] }, element.innerHTML, merchCard);
       return;
-    }
-
-    if (isParagraphTag(tagName) && element?.textContent.trim().length > 0) {
-      body.append(element);
+    } else if (isParagraphTag(tagName)) {
+      bodySlot.append(element);
       return;
     }
 
@@ -99,8 +95,7 @@ const parseContent = (el, altCta, cardType, merchCard) => {
       createAndAppendTag('div', { slot: 'list' }, element, merchCard);
     }
   });
-
-  merchCard.append(body);
+  merchCard.append(bodySlot);
 };
 
 const returnRibbonStyle = (ribbonMetadata) => {
