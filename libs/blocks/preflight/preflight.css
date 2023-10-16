@@ -11,18 +11,19 @@
 .preflight {
   display: grid;
   grid-template-rows: auto 1fr;
+  position: relative;
 }
 
 .dialog-modal#preflight {
   width: 1200px;
   height: 680px;
   color: #FFF;
+  overflow: hidden;
 }
 
 .preflight-tab-panel {
   display: grid;
   grid-template-rows: 1fr;
-  overflow: scroll;
 }
 
 .preflight-heading {
@@ -33,8 +34,7 @@
 
 .preflight-content {
   display: grid;
-  position: relative;
-  overflow: scroll;
+  overflow-x: hidden;
 }
 
 p#preflight-title {

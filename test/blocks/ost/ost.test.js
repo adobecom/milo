@@ -1,75 +1,101 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import { createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
+
+const { CheckoutWorkflow, CheckoutWorkflowStep } = await import('../../../libs/deps/commerce.js');
+const { DEFAULT_CTA_TEXT, createLinkMarkup } = await import('../../../libs/blocks/ost/ost.js');
 
 const data = await readFile({ path: './mocks/wcs-artifacts-mock.json' });
-const { stockOffer } = JSON.parse(data);
-
-const osi = 'cea462e983f649bca2293325c9894bdd';
-const offerId = 'aeb0bf53517d46e89a1b039f859cf573';
-const offerType = 'M2M';
-const placeholderOptions = {
-  workflow: 'UCv3',
-  workflowStep: 'email',
-  displayRecurrence: false, // term
-  displayPerUnit: true, // seat
-  displayTax: true, // tax
-  isPerpetual: true,
+const { perpM2M } = JSON.parse(data);
+const defaults = {
+  checkoutWorkflow: 'UCv3',
+  checkoutWorkflowStep: 'email',
 };
-describe('test createLinkMarkup', () => {
-  const WINDOW_LOCATION = 'https://main--milo--adobecom.hlx.page';
-  const location = {
-    protocol: 'https:',
-    host: 'main--milo--adobecom.hlx.page',
-  };
+const osi = 'cea462e983f649bca2293325c9894bdd';
+const promo = 'test-promo';
+const texts = {
+  buy: DEFAULT_CTA_TEXT,
+  try: 'free-trial',
+};
+const types = {
+  checkoutUrl: 'checkoutUrl',
+  price: 'price',
+  opticalPrice: 'opticalPrice',
+};
 
-  it('create a default "cta" link', async () => {
-    const EXPECTED_CTA_TEXT = 'CTA {{buy-now}}';
-    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now`;
+function assertLink(link, offer, params, text = texts.buy) {
+  const { searchParams } = new URL(link.href);
+  Object.entries(params).forEach(([key, value]) => {
+    expect(searchParams.get(key)).to.equal(String(value));
+  });
+  if (params.type === types.checkoutUrl) {
+    expect(searchParams.get('text')).to.equal(text);
+    expect(link.text).to.equal(`CTA {{${text}}}`);
+  } else {
+    expect(link.text).to.equal(`PRICE - ${offer.planType} - ${offer.name}`);
+  }
+}
 
-    const type = 'checkoutUrl';
-    const link = createLinkMarkup(
-      osi,
-      type,
-      stockOffer,
-      placeholderOptions,
-      location,
-    );
-    expect(EXPECTED_CTA_TEXT).to.equal(link.text);
-    expect(EXPECTED_CTA_URL).to.equal(link.href);
+function createLink(params = {}) {
+  return createLinkMarkup(defaults)(
+    params.osi ?? osi,
+    params.type,
+    perpM2M,
+    params,
+    params.promo,
+  );
+}
+
+describe('function "createLinkMarkup"', () => {
+  describe('creates "cta" link', () => {
+    const type = types.checkoutUrl;
+
+    it('with default params', async () => {
+      const link = createLink({ type });
+      assertLink(link, perpM2M, { osi, type });
+    });
+
+    it('with promo and custom text', async () => {
+      const ctaText = texts.try;
+      const link = createLink({ ctaText, promo, type });
+      assertLink(link, perpM2M, { osi, promo, type }, ctaText);
+    });
+
+    it('to UCv2 workflow', async () => {
+      const workflow = CheckoutWorkflow.V2;
+      const workflowStep = CheckoutWorkflowStep.CHECKOUT_EMAIL;
+      const link = createLink({ type, workflow, workflowStep });
+      assertLink(link, perpM2M, { osi, type, workflow, workflowStep });
+    });
   });
 
-  it('create a "cta" link with overwrites', async () => {
-    placeholderOptions.workflowStep = 'email_checkout';
-    placeholderOptions.workflow = 'UCv2';
-    const EXPECTED_CTA_TEXT = 'CTA {{buy-now}}';
-    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now&checkoutType=UCv2&workflowStep=email%2Fcheckout`;
+  describe('creates "price" link', () => {
+    const type = types.price;
 
-    const type = 'checkoutUrl';
-    const link = createLinkMarkup(
-      osi,
-      type,
-      stockOffer,
-      placeholderOptions,
-      location,
-    );
-    expect(EXPECTED_CTA_TEXT).to.equal(link.text);
-    expect(EXPECTED_CTA_URL).to.equal(link.href);
-  });
+    it('with default params', async () => {
+      const link = createLink({ type });
+      assertLink(link, perpM2M, { osi, type });
+    });
 
-  it('create a "price" link', async () => {
-    const EXPECTED_PRICE_TEXT = `{{PRICE - ${offerType} - Stock}}`;
-    const EXPECTED_PRICE_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=price&perp=true&term=false&seat=true&tax=true`;
-
-    const type = 'price';
-    const link = createLinkMarkup(
-      osi,
-      type,
-      stockOffer,
-      placeholderOptions,
-      location,
-    );
-    expect(EXPECTED_PRICE_TEXT).to.be.equal(link.text);
-    expect(EXPECTED_PRICE_URL).to.be.equal(link.href);
+    it('with custom options', async () => {
+      const displayRecurrence = true;
+      const displayPerUnit = true;
+      const displayTax = true;
+      const forceTaxExclusive = true;
+      const link = createLink({
+        displayRecurrence,
+        displayPerUnit,
+        displayTax,
+        forceTaxExclusive,
+        type,
+      });
+      assertLink(link, perpM2M, {
+        term: displayRecurrence,
+        seat: displayPerUnit,
+        tax: displayTax,
+        exclusive: forceTaxExclusive,
+        osi,
+        type,
+      });
+    });
   });
 });

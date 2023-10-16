@@ -20,3 +20,20 @@
 .dialog-modal .milo-iframe {
   min-width: 80vw;
 }
+
+.iframe-calendar {
+  height: 1500px;
+  padding-bottom: 0;
+}
+
+@media (max-width: 1200px) {
+  .dialog-modal.commerce-frame .milo-iframe {
+    /* fallback to vh if dvh is not supported */
+    padding-bottom: 90vh;
+    padding-bottom: 100dvh;
+  }
+}
+
+.dialog-modal.commerce-frame .milo-iframe {
+  min-width: unset;
+}

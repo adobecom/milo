@@ -1,9 +1,13 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { loadArea } from '../../libs/utils/utils.js';
+import { loadArea, setConfig } from '../../libs/utils/utils.js';
 
 describe('Rich Results', () => {
+  beforeEach(() => {
+    setConfig({});
+  });
+
   it('add the NewsArticle rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
     await loadArea(document);
@@ -54,7 +58,7 @@ describe('Rich Results', () => {
     await loadArea(document);
     const script = document.querySelector('script[type="application/ld+json"]');
     expect(script).to.be.null;
-    expect( console.error.calledWith('Type Unsupported is not supported') ).to.be.true;
+    expect(console.error.calledWith('Type Unsupported is not supported')).to.be.true;
   });
 
   it('add the Site Search Box rich results', async () => {
@@ -70,9 +74,9 @@ describe('Rich Results', () => {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: 'https://query.example.com/search?q={search_term_string}'
+          urlTemplate: 'https://query.example.com/search?q={search_term_string}',
         },
-        'query-input': 'required name=search_term_string'
+        'query-input': 'required name=search_term_string',
       }],
     };
     expect(actual).to.deep.equal(expected);

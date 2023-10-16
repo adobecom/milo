@@ -1,52 +1,45 @@
+export function handleFocalpoint(pic, child, removeChild) {
+  const image = pic.querySelector('img');
+  if (!child || !image) return;
+  let text = '';
+  if (child.childElementCount === 2) {
+    const dataElement = child.querySelectorAll('p')[1];
+    text = dataElement?.textContent;
+    if (removeChild) dataElement?.remove();
+  } else if (child.textContent) {
+    text = child.textContent;
+    const childData = child.childNodes;
+    if (removeChild) childData.forEach((c) => c.nodeType === Node.TEXT_NODE && c.remove());
+  }
+  const directions = text.trim().toLowerCase().split(',');
+  const [x, y = ''] = directions;
+  image.style.objectPosition = `${x} ${y}`;
+}
+
 function handleBackground(div, section) {
-  const pic = div.querySelector('picture');
+  const pic = div.background.content?.querySelector('picture');
   if (pic) {
     section.classList.add('has-background');
     pic.classList.add('section-background');
+    handleFocalpoint(pic, div.background.content);
     section.insertAdjacentElement('afterbegin', pic);
   } else {
-    const color = div.textContent;
+    const color = div.background.content?.textContent;
     if (color) {
       section.style.background = color;
     }
   }
 }
 
-function debounce(func, timeout = 300) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
-}
-
-function handleTopHeight(section) {
-  const headerHeight = document.querySelector('header').offsetHeight;
-  section.style.top = `${headerHeight}px`;
-}
-
-function handleStickySection(sticky, section) {
-  const main = document.querySelector('main');
-  switch (sticky) {
-    case 'sticky-top':
-      window.addEventListener('resize', debounce(() => handleTopHeight(section)));
-      main.prepend(section);
-      break;
-    case 'sticky-bottom':
-      main.append(section);
-      break;
-    default:
-      break;
-  }
-}
-
-export function handleStyle(text, section) {
+export async function handleStyle(text, section) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
   if (sticky) {
-    handleStickySection(sticky, section);
+    const { default: handleStickySection } = await import('./sticky-section.js');
+    await handleStickySection(sticky, section);
   }
+  if (styles.includes('masonry')) styles.push('masonry-up');
   section.classList.add(...styles);
 }
 
@@ -66,10 +59,10 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, {});
 
-export default function init(el) {
+export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
-  if (metadata.style) handleStyle(metadata.style.text, section);
-  if (metadata.background) handleBackground(metadata.background.content, section);
+  if (metadata.style) await handleStyle(metadata.style.text, section);
+  if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
 }

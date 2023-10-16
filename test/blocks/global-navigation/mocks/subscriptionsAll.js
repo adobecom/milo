@@ -50,6 +50,7 @@ const res = [
         cloud: 'EXPERIENCE',
       },
       payment_structure: 'PAID_IN_ADVANCE',
+      offer_id: 'testOffer',
     },
     fulfilled_items: [{ code: 'dma_analytics' }],
   },
@@ -159,7 +160,7 @@ const formatted = {
     document_cloud: true,
     experience_cloud: true,
   },
-  arrangment_codes: {
+  arrangement_codes: {
     dm_data_launch_ml: true,
     dm_analytics_enterprise_ml: true,
     dm_audience_manager_enterprise_ml: true,
@@ -227,6 +228,19 @@ const formatted = {
     audience: true,
     cc_all_apps: true,
     acrobat: true,
+  },
+  offers: {
+    testOffer: {
+      product_code: 'DMA_ANALYTICS',
+      product_arrangement_code: 'dm_analytics_enterprise_ml',
+      product_arrangement: {
+        code: 'dm_analytics_enterprise_ml',
+        label: 'DM_ANALYTICS_ENTERPRISE_ML',
+        family: 'ANALYTICS',
+        cloud: 'EXPERIENCE',
+      },
+      payment_structure: 'PAID_IN_ADVANCE',
+    },
   },
   list: {
     fulfilled_codes: [

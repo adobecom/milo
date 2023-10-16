@@ -1,5 +1,4 @@
 /* eslint-disable no-async-promise-executor */
-/* eslint-disable no-restricted-syntax */
 import {
   decorateAutoBlock,
   getConfig,
@@ -13,6 +12,7 @@ import {
   getExperienceName,
   loadDecorateMenu,
   getFedsPlaceholderConfig,
+  getAnalyticsValue,
   loadBaseStyles,
   yieldToMain,
 } from '../global-navigation/utilities/utilities.js';
@@ -31,7 +31,6 @@ class Footer {
   constructor(footerEl, contentUrl) {
     this.footerEl = footerEl;
     this.contentUrl = contentUrl;
-    this.isDesktop = window.matchMedia('(min-width: 900px)');
     this.elements = {};
 
     this.init();
@@ -70,6 +69,16 @@ class Footer {
 
     // TODO: log to LANA if Footer content could not be found
     if (!this.body) return;
+    // TODO: revisit region picker and social links decoration logic
+    const regionAnchor = this.body.querySelector('.region-selector a');
+    if (regionAnchor?.href) {
+      regionAnchor.setAttribute('href', `${regionAnchor.getAttribute('href')}#_dnt#_dnb`);
+    }
+    const socialLinks = document.querySelectorAll('.social a');
+    socialLinks.forEach((socialLink) => {
+      socialLink.setAttribute('href', `${socialLink.getAttribute('href')}#_dnb`);
+    });
+    decorateLinks(this.body);
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
@@ -77,6 +86,7 @@ class Footer {
       loadBaseStyles,
       this.decorateGrid,
       this.decorateProducts,
+      this.loadIcons,
       this.decorateRegionPicker,
       this.decorateSocial,
       this.decoratePrivacy,
@@ -88,9 +98,7 @@ class Footer {
       await task();
     }
 
-    this.setHeadlineAttributes();
-    this.addEventListeners();
-    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer`);
+    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
 
     this.footerEl.append(this.elements.footer);
   };
@@ -101,7 +109,7 @@ class Footer {
 
     if (!html) return null;
 
-    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
 
     try {
       return new DOMParser().parseFromString(parsedHTML, 'text/html').body;
@@ -141,6 +149,13 @@ class Footer {
     this.elements.headlines = this.elements.footerMenu.querySelectorAll('.feds-menu-headline');
 
     return this.elements.footerMenu;
+  };
+
+  loadIcons = async () => {
+    const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
+    const content = await file.text();
+    const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
+    this.footerEl.append(elem);
   };
 
   decorateProducts = async () => {
@@ -195,13 +210,16 @@ class Footer {
         aria-haspopup="true"
         role="button">
         <svg xmlns="http://www.w3.org/2000/svg" class="feds-regionPicker-globe" focusable="false">
-          <use href="${base}/blocks/global-footer/icons.svg#globe" />
+          <use href="#footer-icon-globe" />
         </svg>
         ${regionPickerTextElem}
       </a>`;
-    this.elements.regionPicker = toFragment`<div class="feds-regionPicker-wrapper">
+    const regionPickerWrapperClass = 'feds-regionPicker-wrapper';
+    this.elements.regionPicker = toFragment`<div class="${regionPickerWrapperClass}">
         ${regionPickerElem}
       </div>`;
+
+    const isRegionPickerExpanded = () => regionPickerElem.getAttribute('aria-expanded') === 'true';
 
     // Note: the region picker currently works only with Milo modals/fragments;
     // in the future we'll need to update this for non-Milo consumers
@@ -211,7 +229,6 @@ class Footer {
       await loadBlock(regionPickerElem); // load modal logic and styles
       // 'decorateAutoBlock' logic replaces class name entirely, need to add it back
       regionPickerElem.classList.add(regionPickerClass);
-      const isRegionPickerExpanded = () => regionPickerElem.getAttribute('aria-expanded') === 'true';
       regionPickerElem.addEventListener('click', () => {
         if (!isRegionPickerExpanded()) {
           regionPickerElem.setAttribute('aria-expanded', 'true');
@@ -235,6 +252,13 @@ class Footer {
         const isDialogActive = regionPickerElem.getAttribute('aria-expanded') === 'true';
         regionPickerElem.setAttribute('aria-expanded', !isDialogActive);
       });
+      // Close region picker dropdown on outside click
+      document.addEventListener('click', (e) => {
+        if (isRegionPickerExpanded()
+          && !e.target.closest(`.${regionPickerWrapperClass}`)) {
+          regionPickerElem.setAttribute('aria-expanded', false);
+        }
+      });
     }
 
     return this.regionPicker;
@@ -245,17 +269,21 @@ class Footer {
     const socialBlock = this.body.querySelector('.social');
     if (!socialBlock) return this.elements.social;
 
-    const socialElem = toFragment`<ul class="feds-social"></ul>`;
+    const socialElem = toFragment`<ul class="feds-social" daa-lh="Social"></ul>`;
 
-    CONFIG.socialPlatforms.forEach((platform) => {
+    CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
       if (!link) return;
 
-      // Add '#_dnb' to the 'href' value, since certain social media platforms are also blocks
       const iconElem = toFragment`<li class="feds-social-item">
-          <a href="${link.href}#_dnb" class="feds-social-link" aria-label="${platform}">
+          <a
+            href="${link.href}"
+            class="feds-social-link"
+            aria-label="${platform}"
+            daa-ll="${getAnalyticsValue(platform, index + 1)}"
+            target="_blank">
             <svg xmlns="http://www.w3.org/2000/svg" class="feds-social-icon" alt="${platform} logo">
-              <use href="${base}/blocks/global-footer/icons.svg#${platform}" />
+              <use href="#footer-icon-${platform}" />
             </svg>
           </a>
         </li>`;
@@ -285,15 +313,18 @@ class Footer {
     // Add Ad Choices icon
     const adChoicesElem = privacyContent.querySelector('a[href*="#interest-based-ads"]');
     adChoicesElem?.prepend(toFragment`<svg xmlns="http://www.w3.org/2000/svg" class="feds-adChoices-icon" focusable="false">
-        <use href="${base}/blocks/global-footer/icons.svg#adchoices" />
+        <use href="#footer-icon-adchoices" />
       </svg>`);
 
-    this.elements.legal = toFragment`<div class="feds-footer-legalWrapper"></div>`;
+    this.elements.legal = toFragment`<div class="feds-footer-legalWrapper" daa-lh="Legal"></div>`;
 
     while (privacyContent.children.length) {
       const privacySection = privacyContent.firstElementChild;
       privacySection.classList.add('feds-footer-privacySection');
-      privacySection.querySelectorAll('a').forEach((link) => link.classList.add('feds-footer-privacyLink'));
+      privacySection.querySelectorAll('a').forEach((link, index) => {
+        link.classList.add('feds-footer-privacyLink');
+        link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
+      });
       this.elements.legal.append(privacySection);
     }
 
@@ -313,35 +344,7 @@ class Footer {
         </div>
       </div>`;
 
-    decorateLinks(this.elements.footer);
-
     return this.elements.footer;
-  };
-
-  setHeadlineAttributes = () => {
-    if (!this.elements?.headlines) return;
-
-    if (this.isDesktop.matches) {
-      this.elements.headlines.forEach((headline) => {
-        headline.setAttribute('role', 'heading');
-        headline.removeAttribute('tabindex');
-        headline.setAttribute('aria-level', 2);
-        headline.removeAttribute('aria-haspopup', true);
-        headline.removeAttribute('aria-expanded', false);
-      });
-    } else {
-      this.elements.headlines.forEach((headline) => {
-        headline.setAttribute('role', 'button');
-        headline.setAttribute('tabindex', 0);
-        headline.removeAttribute('aria-level');
-        headline.setAttribute('aria-haspopup', true);
-        headline.setAttribute('aria-expanded', false);
-      });
-    }
-  };
-
-  addEventListeners = () => {
-    this.isDesktop.addEventListener('change', this.setHeadlineAttributes);
   };
 }
 
