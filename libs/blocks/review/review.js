@@ -55,6 +55,9 @@ const App = ({ strings }) => html`
       visitorId=${getVisitorId()}
       reviewPath=${getReviewPath(strings.postUrl)}
       initialValue=${strings.initialValue}
+      onRatingSet=${(/* { rating, comment } */) => {}}
+      onRatingHover=${(/* { rating } */) => {}}
+      onReviewLoad=${(/* { hasRated, rating } */) => {}}
     />
   `;
 
