@@ -10,7 +10,7 @@ const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-
 let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
 
 const initConfigPath = (quizMetaData) => {
-  const quizConfigPath = quizMetaData.quizurl.text.toLowerCase();
+  const quizConfigPath = quizMetaData.data.text;
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
   return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
@@ -18,7 +18,7 @@ const initConfigPath = (quizMetaData) => {
 
 const initQuizKey = () => {
   const { locale } = getConfig();
-  quizKey = metaData.storagepath?.text;
+  quizKey = metaData.storage?.text;
   return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
 };
 
