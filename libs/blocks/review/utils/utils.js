@@ -9,8 +9,14 @@ const isKeyboardNavigation = (ev) => (ev.clientX === 0 && ev.clientY === 0)
     && ev.nativeEvent.webkitForce !== undefined
     && ev.nativeEvent.webkitForce === 0);
 
-const checkPostUrl = (postUrl, env) => (
-  env?.name !== 'prod' && postUrl?.includes('adobe.com') ? postUrl.replace('adobe.com', 'stage.adobe.com') : postUrl
-);
+const checkPostUrl = (postUrl, env) => {
+  const url = new URL(postUrl);
+  if (env?.name !== 'prod' && url.origin.match(/adobe\.com$/)) {
+    const newOrigin = url.origin.replace(/adobe\.com$/, 'stage.adobe.com');
+    const newUrl = newOrigin + url.pathname + url.search + url.hash;
+    return newUrl;
+  }
+  return postUrl;
+};
 
 export { addToAverage, isKeyboardNavigation, checkPostUrl };
