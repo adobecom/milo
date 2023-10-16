@@ -1,6 +1,5 @@
-import { createIntersectionObserver } from '../../utils/utils.js';
+import { createIntersectionObserver, getConfig } from '../../utils/utils.js';
 import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
-import { getConfig } from '../../utils/utils.js';
 
 const ROOT_MARGIN = 1000;
 
