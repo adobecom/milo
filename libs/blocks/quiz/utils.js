@@ -17,7 +17,7 @@ const initConfigPath = (quizMetaData) => {
 
 const initQuizKey = () => {
   const { locale } = getConfig();
-  quizKey = metaData['storage ']?.text;
+  quizKey = metaData.storage?.text;
   return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
 };
 
