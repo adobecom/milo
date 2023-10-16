@@ -1,6 +1,6 @@
 /*** Variables ***/
 
- :root {
+:root {
   --global-height-nav: 64px;
   --global-height-breadcrumbs: 33px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
@@ -313,6 +313,12 @@
   background-color: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
+  text-decoration: none;
+}
+
+.con-button:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-accent-focus-ring);
   text-decoration: none;
 }
 
@@ -693,9 +699,11 @@ a {
   text-decoration: none;
 }
 
-a:hover {
+a:hover,
+a:focus-visible {
   text-decoration: underline;
   color: var(--link-hover-color);
+  outline: none;
 }
 
 /* Links Static */
