@@ -1,7 +1,9 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
+import { loadScript, loadStyle, getConfig as pageConfigHelper, localizeLink }
+  from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
+import getUuid from '../../utils/getUuid.js';
 
 const URL_ENCODED_COMMA = '%2C';
 export const fgHeaderName = 'X-Adobe-Floodgate';
@@ -19,6 +21,12 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   // defaults to en_US
   return '';
 }
+
+export const isValidHtmlUrl = (url) => {
+  const regex = /^https:\/\/[^\s]+$/;
+  return regex.test(url);
+};
+export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
 export const loadStrings = async (
   url,
@@ -365,11 +373,36 @@ const addMissingStateProps = (state) => {
   return state;
 };
 
+const fetchUuidForCard = async (card) => {
+  if (!card.contentId) {
+    return null;
+  }
+  if (isValidUuid(card.contentId)) {
+    return card.contentId;
+  }
+  try {
+    const url = new URL(card.contentId);
+    const localizedLink = localizeLink(url, window.location.hostname, true);
+    return await getUuid(localizedLink);
+  } catch (error) {
+    console.error(`Error fetching UUID for card: ${error}`);
+    return null;
+  }
+};
+
+const getCardsString = async (cards = []) => {
+  const uuids = await Promise.all(cards.map(async (card) => {
+    const uuid = await fetchUuidForCard(card);
+    return uuid !== null ? uuid : undefined;
+  }));
+  return uuids.filter(Boolean).join('%2C');
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const { country, language } = getCountryAndLang(state);
-  const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
+  const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
   const hideCtaTags = state.hideCtaTags ? state.hideCtaTags : [];
