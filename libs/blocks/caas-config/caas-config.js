@@ -386,6 +386,7 @@ const TagsPanel = ({ tagsData }) => {
     />
     <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
     <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
+    <label>Complex Queries (Include & Exclude)</label>
     <${MultiField}
       onChange=${onLogicTagChange('andLogicTags')}
       className="andLogicTags"
@@ -409,6 +410,20 @@ const TagsPanel = ({ tagsData }) => {
     >
       <${TagSelect} id="orTags" options=${allTags} label="Tags"
     /><//>
+    <${MultiField}
+    onChange=${onLogicTagChange('notLogicTags')}
+    className="notLogicTags"
+    values=${context.state.notLogicTags}
+    title="NOT logic Tags"
+    subTitle=""
+  >
+    <${FormSelect}
+      label="Intra Tag Logic"
+      name="intraTagLogicExclude"
+      options=${defaultOptions.intraTagLogicOptions}
+    />
+    <${TagSelect} id="notTags" options=${allTags} label="Tags"
+  /><//>
   `;
 };
 

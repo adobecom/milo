@@ -74,7 +74,7 @@ const MILO_BLOCKS = [
   'reading-time',
 ];
 const AUTO_BLOCKS = [
-  { adobetv: 'https://video.tv.adobe.com' },
+  { adobetv: 'tv.adobe.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
