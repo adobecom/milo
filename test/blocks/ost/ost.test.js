@@ -80,11 +80,19 @@ describe('function "createLinkMarkup"', () => {
       const displayRecurrence = true;
       const displayPerUnit = true;
       const displayTax = true;
-      const link = createLink({ displayRecurrence, displayPerUnit, displayTax, type });
+      const forceTaxExclusive = true;
+      const link = createLink({
+        displayRecurrence,
+        displayPerUnit,
+        displayTax,
+        forceTaxExclusive,
+        type,
+      });
       assertLink(link, perpM2M, {
         term: displayRecurrence,
         seat: displayPerUnit,
         tax: displayTax,
+        exclusive: forceTaxExclusive,
         osi,
         type,
       });

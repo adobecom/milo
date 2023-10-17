@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockText, decorateIconStack, applyHoverPlay } from '../../utils/decorate.js';
+import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -73,43 +73,62 @@ function decorateMedia(el) {
   });
 }
 
-function decorateVideo(container) {
-  const link = container.querySelector('a[href*=".mp4"]');
-  if (!link) return;
-  const isNotLooped = link.hash?.includes('autoplay1');
-  const attrs = `playsinline autoplay ${isNotLooped ? '' : 'loop'} muted`;
-  container.innerHTML = `<video preload="metadata" ${attrs}>
-    <source src="${link.href}" type="video/mp4" />
-  </video>`;
-  container.classList.add('has-video');
+function addPromobar(sourceEl, parent) {
+  const newPromo = sourceEl.cloneNode(true);
+  parent.appendChild(newPromo);
 }
 
-function decorateBlockBg(block, node) {
-  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
-  const childCount = node.childElementCount;
-  const { children } = node;
-  node.classList.add('background');
-  if (childCount === 2) {
-    children[0].classList.add(viewports[0], viewports[1]);
-    children[1].classList.add(viewports[2]);
-  }
-  [...children].forEach((child, index) => {
-    if (childCount === 3) {
-      child.classList.add(viewports[index]);
+function checkViewportPromobar(foreground) {
+  const { children, childElementCount: childCount } = foreground;
+  if (childCount < 2) addPromobar(children[childCount - 1], foreground);
+  if (childCount < 3) addPromobar(children[childCount - 1], foreground);
+}
+
+function combineTextBocks(textBlocks, iconArea, viewPort) {
+  const textStyle = viewPort === 'desktop-up' ? ['m', 'l'] : ['s', 's'];
+  const contentArea = createTag('p', { class: 'content-area' });
+  const textArea = createTag('p', { class: 'text-area' });
+  textBlocks[0].parentElement.prepend(contentArea);
+  textBlocks.forEach((textBlock) => {
+    textArea.appendChild(textBlock);
+    if (textBlock.nodeName === 'P') {
+      textBlock.classList.add(`body-${textStyle[1]}`);
+    } else {
+      textBlock.classList.add(`heading-${textStyle[0]}`);
     }
-    decorateVideo(child);
   });
-  if (!node.querySelector(':scope img') && !node.querySelector(':scope video')) {
-    block.style.background = node.textContent;
-    node.remove();
+  if (iconArea) {
+    iconArea.classList.add('icon-area');
+    contentArea.appendChild(iconArea);
   }
+  contentArea.appendChild(textArea);
+}
+
+function decoratePromobar(el) {
+  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
+  const foreground = el.querySelector('.foreground');
+  if (foreground.childElementCount !== 3) checkViewportPromobar(foreground);
+  [...foreground.children].forEach((child, index) => {
+    child.className = viewports[index];
+    child.classList.add('promo-text');
+    const textBlocks = [...child.children];
+    const iconArea = child.querySelector('picture')?.closest('p');
+    const actionArea = child.querySelectorAll('em a, strong a, p > a strong');
+    if (iconArea) textBlocks.shift();
+    if (actionArea.length) textBlocks.pop();
+    if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index]);
+  });
+  return foreground;
 }
 
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
-  if (elems.length > 1) decorateBlockBg(el, elems[0]);
+  if (elems.length > 1) {
+    decorateBlockBg(el, elems[0]);
+  }
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
+  if (el.classList.contains('promobar')) return decoratePromobar(el);
   if (el.classList.contains('split')) decorateMedia(el);
   const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
@@ -124,8 +143,8 @@ function decorateLayout(el) {
   iconArea?.classList.add('icon-area');
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
-  const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video')?.closest('div');
-  const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video')?.closest('div');
+  const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video, :scope > div:not(.text) a[href*=".mp4"]')?.closest('div');
+  const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video, :scope > div:not(.text):not(.foreground) a[href*=".mp4"]')?.closest('div');
   const image = foregroundImage ?? bgImage;
   const asideMedia = foregroundMedia ?? bgMedia ?? image;
   const isSplit = el.classList.contains('split');
@@ -149,6 +168,7 @@ function decorateLayout(el) {
 }
 
 export default function init(el) {
+  el.classList.add('con-block');
   const blockData = getBlockData(el);
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);

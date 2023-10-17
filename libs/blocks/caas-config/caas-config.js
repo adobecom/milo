@@ -98,8 +98,6 @@ const defaultOptions = {
       '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
-    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
-      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   filterBuildPanel: {
     automatic: 'Automatic',
@@ -242,7 +240,9 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '', title }) => {
+const Input = ({
+  label, type = 'text', prop, defaultValue = '', title, placeholder,
+}) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -265,6 +265,7 @@ const Input = ({ label, type = 'text', prop, defaultValue = '', title }) => {
       title=${title}
       onChange=${onInputChange}
       value=${context.state[prop]}
+      placeholder=${placeholder}
     />
   `;
 };
@@ -319,8 +320,8 @@ const BasicsPanel = ({ tagsData }) => {
     <${Select} options=${languageTags} prop="language" label="Language" sort />`;
 
   return html`
-    <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
-    <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
+  <${Input} label="Collection Name" placeholder="Only used in the author link" prop="collectionName" type="text" />
+  <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
@@ -385,6 +386,7 @@ const TagsPanel = ({ tagsData }) => {
     />
     <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
     <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
+    <label>Complex Queries (Include & Exclude)</label>
     <${MultiField}
       onChange=${onLogicTagChange('andLogicTags')}
       className="andLogicTags"
@@ -408,6 +410,20 @@ const TagsPanel = ({ tagsData }) => {
     >
       <${TagSelect} id="orTags" options=${allTags} label="Tags"
     /><//>
+    <${MultiField}
+    onChange=${onLogicTagChange('notLogicTags')}
+    className="notLogicTags"
+    values=${context.state.notLogicTags}
+    title="NOT logic Tags"
+    subTitle=""
+  >
+    <${FormSelect}
+      label="Intra Tag Logic"
+      name="intraTagLogicExclude"
+      options=${defaultOptions.intraTagLogicOptions}
+    />
+    <${TagSelect} id="notTags" options=${allTags} label="Tags"
+  /><//>
   `;
 };
 
@@ -430,7 +446,7 @@ const CardsPanel = ({ tagsData }) => {
       className="featuredCards"
       values=${context.state.featuredCards}
       title="Featured Cards"
-      subTitle="Enter the UUID for cards to be featured"
+      subTitle="UUIDs for featured cards"
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
@@ -439,7 +455,7 @@ const CardsPanel = ({ tagsData }) => {
       className="excludedCards"
       values=${context.state.excludedCards}
       title="Excluded Cards"
-      subTitle="Enter the UUID for cards to be excluded"
+      subTitle="UUIDs for excluded cards"
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
@@ -448,10 +464,11 @@ const CardsPanel = ({ tagsData }) => {
       className="hideCtaIds"
       values=${context.state.hideCtaIds}
       title="Hidden CTAs"
-      subTitle="Enter the UUID for cards that should never have CTAs"
+      subTitle="UUIDs for cards no CTAs"
     >
       <${FormInput} name="contentId" onValidate${isValidUuid} />
     <//>
+    <hr class="divider"/>
     <${DropdownSelect} options=${allTags} prop="hideCtaTags" label="Tags that should hide CTAS" />
   `;
 };
@@ -460,7 +477,7 @@ const BookmarksPanel = () => html`
   <${Input} label="Show bookmark icon on cards" prop="showBookmarksOnCards" type="checkbox" />
   <${Input} label="Only show bookmarked cards" prop="onlyShowBookmarkedCards" type="checkbox" />
   <${Input}
-    label="Show the Bookmarks Filter In The Card Collection"
+    label="Show Bookmarks Filter"
     prop="showBookmarksFilter"
     type="checkbox"
   />
@@ -650,10 +667,10 @@ const AdvancedPanel = () => {
 
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
-    <${Input} label="Fetch Cards from Floodgate Content Tree" prop="fetchCardsFromFloodgateTree" type="checkbox" />
+    <${Input} label="Preview Floodgate Cards" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Input} label="Do not lazyload" prop="doNotLazyLoad" type="checkbox" />
-    <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
+    <${Input} label="Collection Size (Defaults: Total Cards)" prop="collectionSize" type="text" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
     <${Input}
       label="Fallback Endpoint"
@@ -934,6 +951,10 @@ const Configurator = ({ rootEl }) => {
     }
   }, [isCaasLoaded, state, strings]);
 
+  const toogleCollapsed = () => {
+    document.body.classList.toggle('panel-collapsed');
+  };
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
@@ -947,6 +968,9 @@ const Configurator = ({ rootEl }) => {
         <div class="config-panel">
           ${error && html`<div class="tool-error">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
+        </div>
+        <div>
+          <button class="collapse-panel" onClick=${() => toogleCollapsed()}>⇆</button>
         </div>
         <div class="content-panel">
           <div class="modalContainer"></div>

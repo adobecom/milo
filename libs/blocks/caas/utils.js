@@ -4,6 +4,8 @@ import { fetchWithTimeout } from '../utils/utils.js';
 import { LOCALES } from '../../../tools/send-to-caas/send-utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
+export const fgHeaderName = 'X-Adobe-Floodgate';
+export const fgHeaderValue = 'pink';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
@@ -110,7 +112,7 @@ const getContentIdStr = (cardStr, card) => {
 
 const wrapInParens = (s) => `(${s})`;
 
-const buildComplexQuery = (andLogicTags, orLogicTags) => {
+const buildComplexQuery = (andLogicTags, orLogicTags, notLogicTags) => {
   let andQuery = andLogicTags
     .filter((tag) => tag.intraTagLogic !== '' && tag.andTags.length)
     .map((tag) => wrapInParens(tag.andTags.map((val) => `"${val}"`).join(`+${tag.intraTagLogic}+`)))
@@ -121,10 +123,20 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
     .map((tag) => wrapInParens(tag.orTags.map((val) => `"${val}"`).join('+AND+')))
     .join('+OR+');
 
+  let notQuery = notLogicTags
+    .filter((tag) => tag.intraTagLogicExclude !== '' && tag.notTags.length)
+    .map((tag) => wrapInParens(tag.notTags.map((val) => `"${val}"`).join(`+${tag.intraTagLogicExclude}+`)))
+    .join('+AND+');
+
   andQuery = andQuery.length ? wrapInParens(andQuery) : '';
   orQuery = orQuery.length ? wrapInParens(orQuery) : '';
+  notQuery = notQuery.length ? wrapInParens(notQuery) : '';
 
-  return encodeURIComponent(`${andQuery}${andQuery && orQuery ? '+AND+' : ''}${orQuery}`);
+  return (andQuery || orQuery)
+    ? encodeURIComponent(`${andQuery}${
+      andQuery && orQuery ? '+AND+' : ''}${orQuery}${
+      (andQuery || orQuery) && notQuery ? '+AND+NOT+' : ''}${notQuery}`)
+    : '';
 };
 
 const getSortOptions = (state, strs) => {
@@ -296,13 +308,10 @@ const findTupleIndex = (fgHeader) => {
  * @returns requestHeaders
  */
 const addFloodgateHeader = (state) => {
-  const fgHeader = 'X-Adobe-Floodgate';
-  const fgHeaderValue = 'pink';
-
   // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
-  requestHeaders.splice(findTupleIndex(fgHeader, 1));
+  requestHeaders.splice(findTupleIndex(fgHeaderName, 1));
   if (state.fetchCardsFromFloodgateTree) {
-    requestHeaders.push([fgHeader, fgHeaderValue]);
+    requestHeaders.push([fgHeaderName, fgHeaderValue]);
   }
   return requestHeaders;
 };
@@ -345,7 +354,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
-  const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
+  const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags, state.notLogicTags);
 
   const caasRequestHeaders = addFloodgateHeader(state);
 
@@ -562,7 +571,7 @@ export const defaultState = {
   contentTypeTags: [],
   country: 'caas:country/us',
   customCard: '',
-  ctaAction: '_blank',
+  ctaAction: '_self',
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
@@ -587,6 +596,7 @@ export const defaultState = {
   language: 'caas:language/en',
   layoutType: '4up',
   loadMoreBtnStyle: 'primary',
+  notLogicTags: [],
   onlyShowBookmarkedCards: false,
   orLogicTags: [],
   paginationAnimationStyle: 'paged',
