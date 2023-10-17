@@ -122,7 +122,7 @@ export default async function init(el) {
   loadStyle(`${base}/ui/page/page.css`);
   const metaData = getMetaData(el);
   const strings = getStrings(metaData);
-  strings.postUrl = checkPostUrl(strings.postUrl, env);
+  strings.postUrl = strings.postUrl ? checkPostUrl(strings.postUrl, env) : strings.postUrl;
   removeMetaDataElements(el);
 
   const app = html` <${App} strings="${strings}" /> `;
