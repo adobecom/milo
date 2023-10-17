@@ -37,36 +37,40 @@ function handleProjectStatusDetail(detail) {
 }
 
 export async function getProjectStatus() {
-  const url = await getMilocUrl();
-  const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`, { cache: 'reload' });
-  const json = await resp.json();
+  try {
+    const url = await getMilocUrl();
+    const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`, { cache: 'reload' });
+    const json = await resp.json();
 
-  if (json.projectStatus === 'sync') {
-    allowSyncToLangstore.value = false;
+    if (json.projectStatus === 'sync') {
+      allowSyncToLangstore.value = false;
+    }
+
+    if (json.projectStatus === 'sync'
+      || json.projectStatus === 'download'
+      || json.projectStatus === 'start-glaas') {
+      allowSyncToLangstore.value = false;
+      allowSendForLoc.value = false;
+      setStatus('service', 'info', json.projectStatusText);
+    }
+
+    if (json.projectStatus === 'sync-done') {
+      setStatus('service');
+      allowSyncToLangstore.value = true;
+      allowSendForLoc.value = true;
+    }
+
+    if (json.projectStatus === 'waiting') {
+      setStatus('service');
+      allowSyncToLangstore.value = false;
+      allowSendForLoc.value = false;
+    }
+
+    handleProjectStatusDetail(json);
+    return json;
+  } catch (e) {
+    return null;
   }
-
-  if (json.projectStatus === 'sync'
-    || json.projectStatus === 'download'
-    || json.projectStatus === 'start-glaas') {
-    allowSyncToLangstore.value = false;
-    allowSendForLoc.value = false;
-    setStatus('service', 'info', json.projectStatusText);
-  }
-
-  if (json.projectStatus === 'sync-done') {
-    setStatus('service');
-    allowSyncToLangstore.value = true;
-    allowSendForLoc.value = true;
-  }
-
-  if (json.projectStatus === 'waiting') {
-    setStatus('service');
-    allowSyncToLangstore.value = false;
-    allowSendForLoc.value = false;
-  }
-
-  handleProjectStatusDetail(json);
-  return json;
 }
 
 export async function startSync() {
@@ -124,7 +128,8 @@ export async function getServiceUpdates() {
     serviceStatusDate.value = new Date();
     if (!waiting) {
       waiting = true;
-      projectStatus.value = await getProjectStatus(url);
+      const json = await getProjectStatus(url);
+      if (json) projectStatus.value = json;
       waiting = false;
     }
     count += 1;

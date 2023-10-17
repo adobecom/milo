@@ -41,18 +41,19 @@ export function getUrls(jsonUrls, fgFlag = false) {
 
 async function loadLocales() {
   const config = await getSiteConfig();
-  languages.value.forEach((language) => {
+  languages.value = [...languages.value.map((language) => {
     const found = config.locales.data.find(
       (locale) => language.Language === locale.language,
     );
-    language.code = found.languagecode;
-    // If there are project-level overrides, use them.
-    if (language.Locales) found.livecopies = language.Locales;
-    // Clean up the livecopies
-    const livecopies = found.livecopies.replaceAll(' ', '');
-    language.locales = livecopies.includes('\n') ? livecopies.split('\n') : livecopies.split(',');
-  });
-  languages.value = [...languages.value];
+    if (found) language.code = found.languagecode;
+
+    const locales = language.Locales || found?.livecopies;
+    if (locales) {
+      const localesTrim = locales.replaceAll(' ', '');
+      language.locales = localesTrim.includes('\n') ? localesTrim.split('\n') : localesTrim.split(',');
+    }
+    return language;
+  })];
 }
 
 async function loadProjectSettings(projSettings) {
