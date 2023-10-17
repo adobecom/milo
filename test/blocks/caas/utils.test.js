@@ -617,7 +617,7 @@ describe('getFloodgateCaasConfig', () => {
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
-        ctaAction: '_blank',
+        ctaAction: '_self',
         detailsTextOption: 'default',
         showTotalResults: false,
         i18n: {
