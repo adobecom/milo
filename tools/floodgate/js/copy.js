@@ -25,7 +25,7 @@ async function floodgateContent(project, projectDetail) {
 
     try {
       const srcPath = urlInfo.doc.filePath;
-      loadingON(`Copying ${srcPath} to pink folder`);
+      loadingON(`Copying ${srcPath} to FG folder`);
       let copySuccess = false;
       const destinationFolder = `${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
       copySuccess = await copyFile(srcPath, destinationFolder, undefined, true);
@@ -78,7 +78,8 @@ async function floodgateContent(project, projectDetail) {
   const previewStatuses = [];
   for (let i = 0; i < copyStatuses.length; i += 1) {
     if (copyStatuses[i].success) {
-      const result = await simulatePreview(handleExtension(copyStatuses[i].srcPath), 1, true);
+      const extn = handleExtension(copyStatuses[i].srcPath);
+      const result = await simulatePreview(extn, 1, true, project.fgColor);
       previewStatuses.push(result);
     }
     // eslint-disable-next-line no-promise-executor-return
