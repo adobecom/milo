@@ -1,7 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
-import { LOCALES } from '../../../tools/send-to-caas/send-utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
 export const fgHeaderName = 'X-Adobe-Floodgate';
@@ -274,14 +273,10 @@ const getFilterArray = async (state, country, lang, strs) => {
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
-    const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
-    const locale = LOCALES[prefix]?.ietf || 'en-us';
-    /* eslint-disable-next-line prefer-const */
-    let [currLang, currCountry] = locale.split('-');
-
+    const locale = pageConfigHelper()?.locale;
     return {
-      country: currCountry,
-      language: currLang,
+      country: locale.region?.toLowerCase() || 'us',
+      language: locale.ietf?.toLowerCase() || 'en-us',
     };
   }
   return {
