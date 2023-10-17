@@ -144,8 +144,6 @@
       "environments": [ "edit", "preview", "dev" ],
       "url": "https://milo.adobe.com/tools/caas",
       "isPalette": false,
-      "passReferrer": true,
-      "passConfig": true,
       "includePaths": [ "**.docx**"]
     },
     {
@@ -155,8 +153,6 @@
       "environments": [ "edit", "preview", "dev" ],
       "url": "https://milo.adobe.com/tools/faas",
       "isPalette": false,
-      "passReferrer": true,
-      "passConfig": true,
       "includePaths": [ "**.docx**"]
     }
   ]
