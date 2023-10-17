@@ -11,43 +11,17 @@ const base = miloLibs || codeRoot;
 
 loadStyle(`${base}/deps/commerce-web-components.css`);
 
-const cardTypes = ['segment', 'special-offers', 'plans', 'catalog'];
+const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'evergreen'];
 
 const textStyles = {
-  'H5': 'detail-m',
-  'H4': 'body-xxs',
-  'H3': 'heading-xs',
-  'H2': 'heading-m',
-  'H1': 'heading-l',
-  'H1': 'heading-xl',
-}
+  H5: 'detail-m',
+  H4: 'body-xxs',
+  H3: 'heading-xs',
+  H2: 'heading-m',
+  H1: 'heading-l',
+};
 
 const getPodType = (styles) => styles?.find((style) => cardTypes.includes(style));
-
-export const decorateBgContent = (el) => {
-  const els = el.querySelectorAll('p');
-  let insidePattern = false;
-  let decoratedBlock;
-  let style;
-  [...els].forEach((e) => {
-    if (e.textContent.startsWith('/--')) {
-      insidePattern = true;
-      decoratedBlock = createTag('div', { slot: 'detail-bg' });
-      style = e.textContent.substring(3).trim();
-      e.remove();
-      return;
-    }
-    if (e.textContent.includes('--/')) {
-      insidePattern = false;
-      e.remove();
-      return;
-    }
-    if (insidePattern) {
-      decoratedBlock.appendChild(e);
-    }
-  });
-  return { style, decoratedBlock };
-};
 
 const checkBoxLabel = (ctas, altCtaMetaData) => {
   const altCtaRegex = /href=".*"/;
@@ -80,16 +54,17 @@ const parseContent = (el, altCta, cardType, merchCard) => {
     const { tagName } = element;
     if (isHeadingTag(tagName)) {
       createAndAppendTag(tagName, { slot: textStyles[tagName] }, element.innerHTML, merchCard);
+      element.remove();
       return;
-    } else if (isParagraphTag(tagName)) {
+    } if (isParagraphTag(tagName)) {
       bodySlot.append(element);
       return;
     }
 
     if (isListTag(tagName)) {
-      const lastChildOfBody = body.lastElementChild;
+      const lastChildOfBody = bodySlot.lastElementChild;
       if (lastChildOfBody) {
-        body.removeChild(lastChildOfBody);
+        bodySlot.removeChild(lastChildOfBody);
         element.prepend(lastChildOfBody);
       }
       createAndAppendTag('div', { slot: 'list' }, element, merchCard);
@@ -194,12 +169,6 @@ const init = (el) => {
     if (label !== null) {
       merchCard.setAttribute('checkbox-label', label);
     }
-  }
-  if (styles.includes('evergreen')) {
-    const decoratedContent = decorateBgContent(el);
-    merchCard.setAttribute('evergreen', true);
-    merchCard.setAttribute('detailBg', decoratedContent.style);
-    merchCard.append(decoratedContent.decoratedBlock);
   }
   parseContent(el, altCta, cardType, merchCard);
   el.replaceWith(merchCard);

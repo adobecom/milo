@@ -907,16 +907,21 @@
       this.initTypes();
     }
     get title() {
-      const heading = this.shadowRoot.querySelector('slot[name="heading"]');
+      const heading = this.shadowRoot.querySelector(
+        'slot[name="heading-xs"]'
+      );
       return heading.assignedNodes()[0]?.textContent;
     }
     initFilters() {
-      this.filters = Object.fromEntries(
-        this.attrFilters.split(",").map((filter) => filter.split(":"))
-      );
+      if (this.attrFilters) {
+        this.filters = Object.fromEntries(
+          this.attrFilters.split(",").map((filter) => filter.split(":"))
+        );
+      }
+      this.filter = {};
     }
     initTypes() {
-      this.types = this.attrTypes.split(",");
+      this.types = this.attrTypes ? this.attrTypes.split(",") : [];
     }
     includes(string) {
       const slots = [...this.shadowRoot.querySelectorAll("slot")];
@@ -936,6 +941,8 @@
           return this.renderPlans();
         case "catalog":
           return this.renderCatalog();
+        case "evergreen":
+          return this.renderEverGreen();
         default:
           return x`<div class="no-variant>No variant detected. Please check authoring document.</div> <div />`;
       }
@@ -945,7 +952,7 @@
                 class="image"
                 style="${this.image ? `background-image: url(${this.image})` : ""}"
             >
-                ${this.badge ? this.evergreen ? this.decorateEvergreenRibbon() : this.decorateRibbon() : ""}
+                ${this.badge ? this.decorateRibbon() : ""}
             </div>
             <div class="body">
                 <slot name="detail-m"></slot>
@@ -1007,6 +1014,31 @@
                 <slot name="body-xs"></slot>
             </div>
             <slot name="footer"></slot>`;
+    }
+    renderEverGreen() {
+      const [ribbonBgColor, ribbonTextColor] = this.badge?.style?.split(
+        ", ",
+        2
+      );
+      return x`
+            <div
+                class="image"
+                style="${this.image ? `background-image: url(${this.image})` : ""}"
+            >
+                ${this.badge ? this.decorateEvergreenRibbon() : ""}
+            </div>
+            <div class="body">
+                <slot name="detail-m"></slot>
+                <slot name="heading-xs"></slot>
+                <slot name="body-xs"></slot>
+            </div>
+            <div
+                class="detail-bg-container"
+                style="${ribbonBgColor ? `background: ${ribbonBgColor}` : ""}"
+            >
+                <slot name="body-xxs"></slot>
+            </div>
+        `;
     }
   };
   customElements.define("merch-card", MerchCard);
