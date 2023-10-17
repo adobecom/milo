@@ -43,7 +43,7 @@ function closeModal(modal) {
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
-      document.querySelector('body').style.removeProperty('overflow');
+      document.body.style.removeProperty('overflow');
       mod.nextElementSibling.remove();
     }
     if (mod.classList.contains('dialog-modal')) {
@@ -167,7 +167,7 @@ export async function getModal(details, custom) {
 
   if (!dialog.classList.contains('curtain-off')) {
     const curtain = createTag('div', { class: 'modal-curtain is-open' });
-    document.querySelector('body').style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
     curtain.addEventListener('click', (e) => {
       if (e.target === curtain) closeModal(dialog);
     });
