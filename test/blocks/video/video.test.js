@@ -1,10 +1,15 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 const { default: init } = await import('../../../libs/blocks/video/video.js');
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('video uploaded using franklin bot', () => {
+  beforeEach(() => {
+    setConfig({});
+  });
+
   it('decorates video', async () => {
     const block = document.querySelector('.video.normal');
     const a = block.querySelector('a');
