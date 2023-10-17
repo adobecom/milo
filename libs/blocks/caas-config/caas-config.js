@@ -49,9 +49,10 @@ const getHashConfig = async () => {
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  return encodedConfig.startsWith('~~')
-    ? decodeCompressedString(encodedConfig.substring(2))
+  const config = encodedConfig.startsWith('~~')
+    ? await decodeCompressedString(encodedConfig.substring(2))
     : parseEncodedConfig(encodedConfig);
+  return config;
 };
 
 const caasFilesLoaded = loadCaasFiles();
@@ -967,10 +968,8 @@ const Configurator = ({ rootEl }) => {
       dispatch({ type: 'SET_STATE', value: initialState });
     };
 
-    if (!Object.keys(state).length) {
-      setInitialState();
-    }
-  }, [state]);
+    setInitialState();
+  }, []);
 
   useEffect(() => {
     if (state.showIds && !cardMutationObsv) {

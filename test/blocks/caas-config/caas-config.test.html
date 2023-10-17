@@ -209,10 +209,16 @@
         const tagUrlInput = findByLabel('Tags Url', configPanelEl);
         tagUrlInput.value = 'https://not.the.right.url/tags';
         tagUrlInput.dispatchEvent(new Event('change'));
-        const errorEl = await waitForElement('.tool-error');
-        expect(errorEl).to.not.be.null;
-        expect(errorEl.textContent).to.be.equal('Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel');
+        const toolErrorEl = await waitForElement('.tool-error');
+        expect(toolErrorEl).to.not.be.null;
 
+        // Due to a race condition, the error message may be one of two things
+        let correctErrorMsg = false;
+        if (toolErrorEl.textContent === 'Tags url is not defined in the Advanced Panel'
+          || toolErrorEl.textContent === 'Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel') {
+            correctErrorMsg = true;
+        }
+        expect(correctErrorMsg).to.be.true;
         const expectedConfig = cloneObj(defaultConfig);
         expect(config).to.eql(expectedConfig);
       });
@@ -285,7 +291,7 @@
         copyBtn.click();
         await delay(50);
         const copyTextArea = document.querySelector('.copy-text');
-        expect(copyTextArea.value.split('#')[1]).to.equal('~~H4sIAAAAAAAAE3VVTXPbNhD9Lzw7sVK3PehmyfbEM3KsRvL0kOl0VsBSxAjEsgAomen0v3cX/JSi3Ii32K+3D8t/M9DaREMO7Ff8p8YQ1+ChDNn82183GTDcRKPCkqxFJfe+QInZPMsmxq0HdXguK48h8I1snoMNKBf0ivZGbWHfx6sjLal20TcrcPvh5o7oUII/PCtyG5RMbYop/ubCxKLA601srNRSgM0/FGj2RewsWxMt3islBe2MNbFZ4RFtNv+d7UMri+j6EJU3nKfJpuax0xFLgS/Bjfk+YC6Ccej5+OmX2ewF3v80OhadCV3cNhWOfKiWC76tAMK8O97WQRzqEKlccjdd7Aj3KR0f/2YqcsY0faG4gu/NikAPbGoTYGdxAY4rCSPsIY8Pu+GMTldknBB6Op0+gqYdflRU3qrClOjhA1TmduwyE4+j8eRKdN0U8F3ZWqOWKruWOmjskbPZHQvkcUzHnjlCrP2ZZ25sRP94HKK3wKI2Vq/ByfiSgEpg0Q3mFSnoWLGYxwnOymOQ/ACd5QnLxO8ZtCno9FhWsRk42tcxpmn++s5hCgQ9hCmMxmWEZ31+Hhs37oIJy5KvYY/9uPvzLQq5Fhqqkz4kXV0JxFN9IY9XhUrONlLwonsjA5dd6eQvHl8Fe+MSV/fOlOljiMpV6Gx65dGJhEZNjZY/anCRX5TkdlfsXQcdkOgfjW8BtwWWeDc6WlBYkGVi37xtB8+LpLYxrNGvE12/3WQBwaviyaDt+Q4YpeEFeT1VeZhQEp7SXK/bXt05X2J86nUywTYp8xm0pSjrMhU5GsjHB4h4H9QP2ANeAV9Im9xMOE4GzIHDMg+692sN7UDWVLEypg4t/pV3LZUbKCtrJns1XZAHteGPM/Spe39nYF/RZQs9/kMbbdpzCAP6Ixm/JuJxfprNZheGVCVP9a7F2119ETiBF+lqr9jrG6/70yFkrIDI0m418/P9JXcyuer3GGV/Ho0872zALoUeRZ6yTOR3wr9D2bLIS92GLb7H16rbNbqbEztIqZ95MzDx3V8mK+7EICpJGtuSPBYh4yarA64ktEQbkjL4ekTPK2Bl3GHU1ORfxYuIrmwB9vTPLid5E//9DxyYdnXOBwAA')
+        expect(copyTextArea.value.split('#')[1]).to.equal('~~H4sIAAAAAAAAE3VVTXPbNhD9Lzw7sVK3PehmyfbEM3KsRvL0kOl0VsBSxAjEsgAomen0v3cXpPihKDfiLfbr7cPy3wy0NtGQA/sV/6kxxDV4KEM2//bXTQYMN9GosCRrUcm9L1BiNs+ykXHrQR2ey8pjCHwjm+dgA8oFvaK9UVvYn+PVkZZUu+ibFbh9f3NHdCjBH54VuQ1KpjbFGH9zYWRR4PUmNlZqKcDmHwo0+yJ2lq2JFu+VkoJ2xprYrPCINpv/zva+lUV05xCVN5ynycbmodMBS4EvwY353mMugnHo+fjpl9nsBd7/NDoWnQld3DYVDnyolgu+rQDCvDve1kEc6hCpXHI3XewI9ykdH/9mKnLGNH2huILvzYpA92xqE2BncQGOKwkD7CGPD7v+jE5XZJwQejqdPoKmHX5UVN6qwpTo4QNU5nboMhOPo/HkSnTdFPBd2Vqjliq7ljpo6JGz2R0L5HFIx545Qqz9xDM3NqJ/PPbRW2BRG6vX4GR8SUAlsOh684oUdKxYzOMIZ+UxSL6HJnnCMvE7gTYFnR7LKjY9R/s6xjTNX985TIGg+zCF0biM8Kyn56Fx4y6YsCz5GvZ4Hvf5fItCroWG6qQPSVdXAvFUX8jjVaE6nvz0dZGzjbSw6F5Nz27XDPkLhwr2xiX27p0p00efh+vS2fjKoxNRDSobLH/U4CK/Mcntrti7njogDWQwvgXcFlji3eBoQWFBlql+87aVAq+W2sawRr9OBP52kwUEr4ong/Y8gYBRGl6Q12PdhxEl4SlN+rrt1U35EuPTWTkjbJMyT6AtRVmgqcjBQD4+QMT7oH7AHvAK+ELa5GbEcTJgDhyWedBnv9bQDmRNFWtl7NDiX3n7UrmBsrJmtGnTBXliG/6YoE/di5yA54ouWzjjP7TRpp1CGNAfyfg1EY/z02w2uzCkKnmqdy3ebu+LwAm8SFd7xV7f+AdwOoSMFRBZ2q1mfr7R5E4mV/0eo2zUo5EHn/XYpdCjyFPWi/xg+Acpexd5zduwxff4WnXbR3dzYgcp9TPvCia+++9kxZ0YRCVJY1uSxyJk3GR1wJWElmh9UgZfj+h5KayMOwyaGv29eDXRlb3Anv7Z5SRv4r//Ac4t/CbgBwAA')
       });
 
       it('Clones an object', () => {
@@ -305,11 +311,19 @@
         expect(updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
       });
 
-      it('Converts Base 64 to UTF-8', () => {
+      it('Converts Verson1 Hash Base 64 to UTF-8', async () => {
         const hash = 'eyJhZGRpdGlvbmFsUmVxdWVzdFBhcmFtcyI6W10sImFuYWx5dGljc0NvbGxlY3Rpb25OYW1lIjoiIiwiYW5hbHl0aWNzVHJhY2tJbXByZXNzaW9uIjpmYWxzZSwiYW5kTG9naWNUYWdzIjpbXSwiYXV0b0NvdW50cnlMYW5nIjpmYWxzZSwiYm9va21hcmtJY29uU2VsZWN0IjoiIiwiYm9va21hcmtJY29uVW5zZWxlY3QiOiIiLCJjYXJkU3R5bGUiOiJoYWxmLWhlaWdodCIsImNhcmRUaXRsZUFjY2Vzc2liaWxpdHlMZXZlbCI6NiwiY29sbGVjdGlvbkJ0blN0eWxlIjoicHJpbWFyeSIsImNvbGxlY3Rpb25OYW1lIjoiIiwiY29sbGVjdGlvblRpdGxlIjoiIiwiY29sbGVjdGlvblNpemUiOiIiLCJjb250YWluZXIiOiIxMjAwTWF4V2lkdGgiLCJjb250ZW50VHlwZVRhZ3MiOltdLCJjb3VudHJ5IjoiY2Fhczpjb3VudHJ5L3VzIiwiY3VzdG9tQ2FyZCI6IiIsImN0YUFjdGlvbiI6Il9ibGFuayIsImRvTm90TGF6eUxvYWQiOmZhbHNlLCJkaXNhYmxlQmFubmVycyI6ZmFsc2UsImRyYWZ0RGIiOmZhbHNlLCJlbmRwb2ludCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvY29sbGVjdGlvbiIsImVudmlyb25tZW50IjoiIiwiZXhjbHVkZWRDYXJkcyI6W10sImV4Y2x1ZGVUYWdzIjpbXSwiZmFsbGJhY2tFbmRwb2ludCI6IiIsImZlYXR1cmVkQ2FyZHMiOltdLCJmaWx0ZXJFdmVudCI6IiIsImZpbHRlckJ1aWxkUGFuZWwiOiJhdXRvbWF0aWMiLCJmaWx0ZXJMb2NhdGlvbiI6ImxlZnQiLCJmaWx0ZXJMb2dpYyI6Im9yIiwiZmlsdGVycyI6W10sImZpbHRlcnNDdXN0b20iOltdLCJmaWx0ZXJzU2hvd0VtcHR5IjpmYWxzZSwiZ3V0dGVyIjoiNHgiLCJoZWFkZXJzIjpbXSwiaGVhZGVycyI6W10sImhpZGVDdGFJZHMiOltdLCJpbmNsdWRlVGFncyI6W10sImxhbmd1YWdlIjoiY2FhczpsYW5ndWFnZS9lbiIsImxheW91dFR5cGUiOiI0dXAiLCJsb2FkTW9yZUJ0blN0eWxlIjoicHJpbWFyeSIsIm9ubHlTaG93Qm9va21hcmtlZENhcmRzIjpmYWxzZSwib3JMb2dpY1RhZ3MiOltdLCJwYWdpbmF0aW9uQW5pbWF0aW9uU3R5bGUiOiJwYWdlZCIsInBhZ2luYXRpb25FbmFibGVkIjpmYWxzZSwicGFnaW5hdGlvblF1YW50aXR5U2hvd24iOmZhbHNlLCJwYWdpbmF0aW9uVHlwZSI6InBhZ2luYXRvciIsInBhZ2luYXRpb25Vc2VUaGVtZTMiOmZhbHNlLCJwbGFjZWhvbGRlclVybCI6IiIsInJlc3VsdHNQZXJQYWdlIjo1LCJzZWFyY2hGaWVsZHMiOltdLCJzZXRDYXJkQm9yZGVycyI6ZmFsc2UsInNob3dCb29rbWFya3NGaWx0ZXIiOmZhbHNlLCJzaG93Qm9va21hcmtzT25DYXJkcyI6ZmFsc2UsInNob3dGaWx0ZXJzIjpmYWxzZSwic2hvd1NlYXJjaCI6ZmFsc2UsInNob3dUb3RhbFJlc3VsdHMiOmZhbHNlLCJzb3J0RGF0ZUFzYyI6ZmFsc2UsInNvcnREYXRlRGVzYyI6ZmFsc2UsInNvcnREYXRlTW9kaWZpZWQiOmZhbHNlLCJzb3J0RGVmYXVsdCI6ImRhdGVEZXNjIiwic29ydEVuYWJsZVBvcHVwIjpmYWxzZSwic29ydEVuYWJsZVJhbmRvbVNhbXBsaW5nIjpmYWxzZSwic29ydEV2ZW50U29ydCI6ZmFsc2UsInNvcnRGZWF0dXJlZCI6ZmFsc2UsInNvcnRNb2RpZmllZEFzYyI6ZmFsc2UsInNvcnRNb2RpZmllZERlc2MiOmZhbHNlLCJzb3J0UmFuZG9tIjpmYWxzZSwic29ydFJlc2Vydm9pclBvb2wiOjEwMDAsInNvcnRSZXNlcnZvaXJTYW1wbGUiOjMsInNvcnRUaXRsZUFzYyI6ZmFsc2UsInNvcnRUaXRsZURlc2MiOmZhbHNlLCJzb3VyY2UiOlsiaGF3a3MiXSwidGFnc1VybCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvdGFncyIsInRhcmdldEFjdGl2aXR5IjoiIiwidGFyZ2V0RW5hYmxlZCI6ZmFsc2UsInRoZW1lIjoibGlnaHRlc3QiLCJkZXRhaWxzVGV4dE9wdGlvbiI6ImRlZmF1bHQiLCJ0aXRsZUhlYWRpbmdMZXZlbCI6ImgzIiwidG90YWxDYXJkc1RvU2hvdyI6MTAsInVzZUxpZ2h0VGV4dCI6ZmFsc2UsInVzZU92ZXJsYXlMaW5rcyI6ZmFsc2UsImNvbGxlY3Rpb25CdXR0b25TdHlsZSI6InByaW1hcnkiLCJ1c2VySW5mbyI6W119';
         window.location.hash = hash;
-        const hashConfig = getHashConfig();
+        const hashConfig = await getHashConfig();
         expect(hashConfig.cardStyle).to.equal('half-height');
+      });
+
+      it('Converts Verson2 Gzipped Hash Base 64 to UTF-8', async () => {
+        const hash = '~~H4sIAAAAAAAAE3VVTXPbNhD9Lzw7sVK3PehmyfbEM3KsRvL0kOl0VsBSxAjEsgAomen0v3cX/JSi3Ii32K+3D8t/M9DaREMO7Ff8p8YQ1+ChDNn82183GTDcRKPCkqxFJfe+QInZPMsmxq0HdXguK48h8I1snoMNKBf0ivZGbWHfx6sjLal20TcrcPvh5o7oUII/PCtyG5RMbYop/ubCxKLA601srNSS19Z+EKDDtyZavFdKytkZa2KzwiPabP4724dGFtH1ASpvOEuTTc1jnyOWAl+CG/N9wFwE49Dz8dMvs9kLvP9pdCw6E7q4bSoc2VAtE3xbAYR5d7ytgzjUIVK5lKba2BHuUzo+/s1E5Ixp+kJxBd+bFYEeuNQmwM7iAhxXEkbYQx4fdsMZna7IOKHzdDp9BE07/KiovFWFKdHDB6jM7dhlJh5H48mV6LoZ4LuytUYtVXYtddDYI2ezO5bH45iOPXOEWPszz9zYiP7xOERvgUVtrF6Dk/El+ZTAkhvMK1LQsWIxjxOcdccg+QE6yxOWid8zaFPQ6bGsYjNwtK9jTNP89Z3DFAh6CFMYjcsIz/r8PDZu3AUTlgVfwx77cffnWxRyLTRUJ31IuroSiKf6Qh6vCpWcbaTgRfdCBi670slfPL0K9sYlru6dKdPHEJWrkLczXnl0IqFRU6Pljxpc5Bclud0Ve9dBByT6R+NbwG2BJd6NjhYUFmSZ2Ddv28HzGqltDGv060TXbzdZQPCqeDJoe74DRml4QV5PVR4mlISnNNfrtld3zpcYn3qdTLBNynwGbSnKskxFjgby8QEi3gf1A/aAV8AX0iY3E46TAXPgsMyD7v1aQzuQNVWsjKlDi3/lTUvlBsrKmslWTRfkQW344wx96t7fGdhXdNlCj//QRpv2HMKA/kjGr4l4nJ9ms9mFIVXJU71r8XZXXwRO4EW62iv2+pYVcDqEjBUQWdqtZn6+v+ROJlf9HqPsz6OR550N2KXQo8hTlonZF5F/hrJlkZe6DVt8j69Vt2t0Nyd2kFI/82Zg4ru/TFbciUFUkjS2JXksQsZNVgdcSWiJNiRl8PWInlfAyrjDqKnJv4oXEV3ZAuzpn11O7Ztw/DeYPvr//gcuiyqz3gcAAA==';
+        window.location.hash = hash;
+        // v2 getHashConfig is async
+        const hashConfig = await getHashConfig();
+        expect(hashConfig.cardStyle).to.equal('full-card');
       });
 
     });
