@@ -52,8 +52,8 @@ const DATA_TYPE = {
 const createFrag = (el, url, manifestId) => {
   let href = url;
   try {
-    const { pathname, hash } = new URL(url);
-    href = `${pathname}${hash}`;
+    const { pathname, search, hash } = new URL(url);
+    href = `${pathname}${search}${hash}`;
   } catch {
     // ignore
   }
