@@ -3,10 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
-const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const conf = { locales };
-setConfig(conf);
-
+setConfig({});
 const { default: init } = await import('../../../libs/blocks/video/video.js');
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
