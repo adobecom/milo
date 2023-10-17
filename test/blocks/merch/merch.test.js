@@ -17,6 +17,28 @@ const config = {
   env: { name: 'prod' },
 };
 
+/**
+ * utility function that tests Price spans against mock HTML
+ *
+ * @param {util} selector price span selector
+ * @param {*} expectedAttributes { <attribute key in element dataset>:
+ * <expected attribute value, UNDEF if should be undefined>}
+ */
+const validatePriceSpan = async (selector, expectedAttributes) => {
+  const el = await merch(document.querySelector(
+    selector,
+  ));
+  const { nodeName, dataset } = await el.onceSettled();
+  expect(nodeName).to.equal('SPAN');
+  if (!expectedAttributes.template) {
+    expect(dataset.template).to.be.undefined;
+  }
+  Object.keys(expectedAttributes).forEach((key) => {
+    const value = expectedAttributes[key];
+    expect(dataset[key], ` ${key} should equal ${value}`).to.equal(value);
+  });
+};
+
 describe('Merch Block', () => {
   after(async () => {
     delete window.lana;
@@ -48,156 +70,72 @@ describe('Merch Block', () => {
   });
 
   describe('Prices', () => {
-    it('renders merch link to price without term', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.hide-term',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.displayRecurrence).to.equal('false');
+    it('renders merch link to price without term (new)', async () => {
+      await validatePriceSpan('.merch.price.hide-term', { displayRecurrence: 'false' });
     });
 
     it('renders merch link to price with term', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.term',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.displayRecurrence).to.be.undefined;
+      await validatePriceSpan('.merch.price.term', { displayRecurrence: undefined });
     });
 
     it('renders merch link to price with term and seat', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.seat',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.displayPerUnit).to.equal('true');
+      await validatePriceSpan('.merch.price.seat', { displayPerUnit: 'true' });
     });
 
     it('renders merch link to price with term and tax', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.tax',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.displayTax).to.equal('true');
+      await validatePriceSpan('.merch.price.tax', { displayTax: 'true' });
     });
 
     it('renders merch link to price with term, seat and tax', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.seat.tax',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.displayTax).to.equal('true');
+      await validatePriceSpan('.merch.price.seat.tax', { displayTax: 'true' });
     });
 
     it('renders merch link to strikethrough price with term, seat and tax', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.strikethrough',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.equal('strikethrough');
+      await validatePriceSpan('.merch.price.strikethrough', { template: 'strikethrough' });
     });
 
     it('renders merch link to optical price with term, seat and tax', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.optical',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.equal('optical');
+      await validatePriceSpan('.merch.price.optical', { template: 'optical' });
+    });
+
+    it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {
+      await validatePriceSpan('.merch.price.tax-exclusive', { forceTaxExclusive: 'true' });
     });
   });
 
   describe('Promo Prices', () => {
     it('renders merch link to promo price with discount', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.oldprice',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.promotionCode).to.equal(undefined);
+      await validatePriceSpan('.merch.price.oldprice', { promotionCode: undefined });
     });
 
     it('renders merch link to promo price without discount', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.strikethrough.oldprice',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.equal('strikethrough');
-      expect(dataset.promotionCode).to.equal(undefined);
+      await validatePriceSpan('.merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
     });
 
     it('renders merch link to promo price with discount', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.promo',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.promotionCode).to.equal('nicopromo');
+      await validatePriceSpan('.merch.price.promo', { promotionCode: 'nicopromo' });
     });
 
     it('renders merch link to full promo price', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.price.promo',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.promotionCode).to.equal('nicopromo');
+      await validatePriceSpan('.merch.price.promo', { promotionCode: 'nicopromo' });
     });
   });
 
   describe('Promo Prices in a fragment', () => {
     it('renders merch link to promo price with discount', async () => {
-      const el = await merch(document.querySelector(
-        '.fragment .merch.price.oldprice',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.promotionCode).to.equal(undefined);
+      await validatePriceSpan('.fragment .merch.price.oldprice', { promotionCode: undefined });
     });
 
     it('renders merch link to promo price without discount', async () => {
-      const el = await merch(document.querySelector(
-        '.fragment .merch.strikethrough.oldprice',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.equal('strikethrough');
-      expect(dataset.promotionCode).to.equal(undefined);
+      await validatePriceSpan('.fragment .merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
     });
 
     it('renders merch link to promo price with discount', async () => {
-      const el = await merch(document.querySelector(
-        '.fragment .merch.price.promo',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.promotionCode).to.equal('nicopromo');
+      await validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
     });
 
     it('renders merch link to full promo price', async () => {
-      const el = await merch(document.querySelector(
-        '.fragment .merch.price.promo',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('SPAN');
-      expect(dataset.template).to.be.undefined;
-      expect(dataset.promotionCode).to.equal('nicopromo');
+      await validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
     });
   });
 

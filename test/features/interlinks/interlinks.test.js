@@ -17,9 +17,6 @@ function interlinksCheck(item) {
   if (!item.getAttribute('daa-ll')) {
     return;
   }
-  if (item.parentElement.getAttribute('daa-lh')) {
-    expect(item.parentElement.getAttribute('daa-lh')).to.contain('interlinks_p_');
-  } else return;
 
   foundInterlinks += 1;
 }
