@@ -9,7 +9,7 @@ const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
 
-const LOCALES = {
+export const LOCALES = {
   // Americas
   ar: { ietf: 'es-AR' },
   br: { ietf: 'pt-BR' },
@@ -17,10 +17,16 @@ const LOCALES = {
   ca_fr: { ietf: 'fr-CA' },
   cl: { ietf: 'es-CL' },
   co: { ietf: 'es-CO' },
+  cr: { ietf: 'es-CR' },
+  ec: { ietf: 'es-EC' },
+  el: { ietf: 'es-EL' },
+  gt: { ietf: 'es-GT' },
   la: { ietf: 'es-LA' },
   mx: { ietf: 'es-MX' },
   pe: { ietf: 'es-PE' },
+  pr: { ietf: 'es-PR' },
   '': { ietf: 'en-US' },
+  langstore: { ietf: 'en-US' },
   // EMEA
   africa: { ietf: 'en-africa' },
   be_fr: { ietf: 'fr-BE' },
@@ -30,12 +36,18 @@ const LOCALES = {
   dk: { ietf: 'da-DK' },
   de: { ietf: 'de-DE' },
   ee: { ietf: 'et-EE' },
+  eg_ar: { ietf: 'ar-EG' },
+  eg_en: { ietf: 'en-GB' },
   es: { ietf: 'es-ES' },
   fr: { ietf: 'fr-FR' },
   gr_en: { ietf: 'en-GR' },
+  gr_el: { ietf: 'el-GR' },
   ie: { ietf: 'en-IE' },
   il_en: { ietf: 'en-IL' },
+  il_he: { ietf: 'he-il' },
   it: { ietf: 'it-IT' },
+  kw_ar: { ietf: 'ar-KW' },
+  kw_en: { ietf: 'en-GB' },
   lv: { ietf: 'lv-LV' },
   lt: { ietf: 'lt-LT' },
   lu_de: { ietf: 'de-LU' },
@@ -43,14 +55,15 @@ const LOCALES = {
   lu_fr: { ietf: 'fr-LU' },
   hu: { ietf: 'hu-HU' },
   mt: { ietf: 'en-MT' },
-  mena: { ietf: 'en-mena' },
   mena_en: { ietf: 'en-mena' },
   mena_ar: { ietf: 'ar-mena' },
-  mena_fr: { ietf: 'fr-mena' },
+  ng: { ietf: 'en-NG' },
   nl: { ietf: 'nl-NL' },
   no: { ietf: 'no-NO' },
   pl: { ietf: 'pl-PL' },
   pt: { ietf: 'pt-PT' },
+  qa_ar: { ietf: 'ar-QA' },
+  qa_en: { ietf: 'en-GB' },
   ro: { ietf: 'ro-RO' },
   sa_en: { ietf: 'en-sa' },
   ch_fr: { ietf: 'fr-CH' },
@@ -68,9 +81,9 @@ const LOCALES = {
   bg: { ietf: 'bg-BG' },
   ru: { ietf: 'ru-RU' },
   ua: { ietf: 'uk-UA' },
-  il_he: { ietf: 'he-il' },
   ae_ar: { ietf: 'ar-ae' },
   sa_ar: { ietf: 'ar-sa' },
+  za: { ietf: 'en-ZA' },
   // Asia Pacific
   au: { ietf: 'en-AU' },
   hk_en: { ietf: 'en-HK' },
@@ -366,8 +379,7 @@ const getBulkPublishLangAttr = async (options) => {
 const getCountryAndLang = async (options) => {
   const langStr = window.location.pathname === '/tools/send-to-caas/bulkpublisher.html'
     ? await getBulkPublishLangAttr(options)
-    : document.documentElement.lang;
-
+    : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
   const langAttr = langStr?.toLowerCase().split('-') || [];
 
   const [lang = 'en', country = 'us'] = langAttr;
