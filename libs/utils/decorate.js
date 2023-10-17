@@ -88,7 +88,8 @@ export function handleFocalpoint(pic, child, removeChild) {
     const childData = child.childNodes;
     if (removeChild) childData.forEach((c) => c.nodeType === Node.TEXT_NODE && c.remove());
   }
-  const directions = text?.trim().toLowerCase().split(',') ?? '';
+  if (!text) return;
+  const directions = text.trim().toLowerCase().split(',');
   const [x, y = ''] = directions;
   image.style.objectPosition = `${x} ${y}`;
 }
