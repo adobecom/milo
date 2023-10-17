@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
+
 const LOCALES = {
   // Americas
   ar: { ietf: 'es-AR' },
