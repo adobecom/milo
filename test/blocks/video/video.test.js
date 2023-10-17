@@ -1,22 +1,13 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
-setConfig({});
 const { default: init } = await import('../../../libs/blocks/video/video.js');
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('video uploaded using franklin bot', () => {
-  it('decorates no-lazy video', async () => {
-    const block = document.querySelector('.video.no-lazy');
-    const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
-    block.append(a);
-
-    init(a);
-    const video = await waitForElement('.video.no-lazy video');
-    expect(video).to.exist;
+  beforeEach(() => {
+    setConfig({});
   });
 
   it('decorates video', async () => {
@@ -27,8 +18,9 @@ describe('video uploaded using franklin bot', () => {
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.normal video');
-    expect(video).to.exist;
+
+    expect(block.querySelector('a')).to.be.null;
+    expect(block.firstElementChild.tagName).to.eql('VIDEO');
   });
 
   it('decorates video with autoplay', async () => {
@@ -39,8 +31,8 @@ describe('video uploaded using franklin bot', () => {
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.autoplay video');
-    expect(video.hasAttribute('autoplay')).to.be.true;
+
+    expect(block.firstElementChild.hasAttribute('autoplay')).to.be.true;
   });
 
   it('decorates video with autoplay and no loop', async () => {
@@ -51,8 +43,8 @@ describe('video uploaded using franklin bot', () => {
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.no-loop video');
-    expect(video.hasAttribute('loop')).to.be.false;
+
+    expect(block.firstElementChild.hasAttribute('loop')).to.be.false;
   });
 
   it('decorates video with autoplay, no loop and hover play', async () => {
@@ -63,9 +55,9 @@ describe('video uploaded using franklin bot', () => {
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.no-loop.hoverplay video');
-    expect(video.hasAttribute('loop')).to.be.false;
-    expect(video.hasAttribute('data-hoverplay')).to.be.true;
+
+    expect(block.firstElementChild.hasAttribute('loop')).to.be.false;
+    expect(block.firstElementChild.hasAttribute('data-hoverplay')).to.be.true;
   });
 
   it('no hoverplay attribute added when with autoplay on loop', async () => {
@@ -76,9 +68,9 @@ describe('video uploaded using franklin bot', () => {
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.autoplay.playonhover video');
-    expect(video.hasAttribute('loop')).to.be.true;
-    expect(video.hasAttribute('data-hoverplay')).to.be.false;
+
+    expect(block.firstElementChild.hasAttribute('loop')).to.be.true;
+    expect(block.firstElementChild.hasAttribute('data-hoverplay')).to.be.false;
   });
 
   it('no hoverplay attribute added when only hoverplay is added to url', async () => {
@@ -89,7 +81,7 @@ describe('video uploaded using franklin bot', () => {
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.hoveronly video');
-    expect(video.hasAttribute('data-hoverplay')).to.be.false;
+
+    expect(block.firstElementChild.hasAttribute('data-hoverplay')).to.be.false;
   });
 });

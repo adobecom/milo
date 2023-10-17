@@ -275,7 +275,7 @@
         const openedOnLoadCb = findByLabel('Opened on load');
         openedOnLoadCb.checked = true;
         openedOnLoadCb.dispatchEvent(new Event('change'));
-        await delay(100);
+        await delay(50);
 
         expect(openedOnLoadCb.checked).to.be.true;
       });

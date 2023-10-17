@@ -1,9 +1,7 @@
-import { createIntersectionObserver, getConfig } from '../../utils/utils.js';
 import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
+import { getConfig } from '../../utils/utils.js';
 
-const ROOT_MARGIN = 1000;
-
-const loadVideo = (a) => {
+export default function init(a) {
   const { pathname, hash } = a;
   let videoPath = `.${pathname}`;
   if (pathname.match('media_.*.mp4')) {
@@ -24,17 +22,4 @@ const loadVideo = (a) => {
   const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
   applyHoverPlay(videoElem);
   a.remove();
-};
-
-export default function init(a) {
-  if (!a.closest('.dialog-modal')) a.classList.add('hide');
-  if (a.textContent.includes('no-lazy')) {
-    loadVideo(a);
-  } else {
-    createIntersectionObserver({
-      el: a,
-      options: { rootMargin: `${ROOT_MARGIN}px` },
-      callback: loadVideo,
-    });
-  }
 }

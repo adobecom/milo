@@ -73,6 +73,17 @@ function decorateMedia(el) {
   });
 }
 
+function decorateVideo(container) {
+  const link = container.querySelector('a[href*=".mp4"]');
+  if (!link) return;
+  const isNotLooped = link.hash?.includes('autoplay1');
+  const attrs = `playsinline autoplay ${isNotLooped ? '' : 'loop'} muted`;
+  container.innerHTML = `<video preload="metadata" ${attrs}>
+    <source src="${link.href}" type="video/mp4" />
+  </video>`;
+  container.classList.add('has-video');
+}
+
 function addPromobar(sourceEl, parent) {
   const newPromo = sourceEl.cloneNode(true);
   parent.appendChild(newPromo);
@@ -125,6 +136,7 @@ function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) {
     decorateBlockBg(el, elems[0]);
+    [...elems[0].children].forEach((child) => decorateVideo(child));
   }
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
@@ -143,8 +155,8 @@ function decorateLayout(el) {
   iconArea?.classList.add('icon-area');
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
-  const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video, :scope > div:not(.text) a[href*=".mp4"]')?.closest('div');
-  const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video, :scope > div:not(.text):not(.foreground) a[href*=".mp4"]')?.closest('div');
+  const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video')?.closest('div');
+  const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video')?.closest('div');
   const image = foregroundImage ?? bgImage;
   const asideMedia = foregroundMedia ?? bgMedia ?? image;
   const isSplit = el.classList.contains('split');

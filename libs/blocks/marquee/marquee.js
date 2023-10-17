@@ -2,8 +2,63 @@
  * Marquee - v6.0
  */
 
-import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
+import { applyHoverPlay, decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
+
+const decorateVideo = (container, video) => {
+  if (video.nodeName === 'A' && video.href.includes('.mp4')) {
+    // no special attrs handling
+    container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
+      <source src="${video.href}" type="video/mp4" />
+    </video>`;
+  } else if (video.attributes.getNamedItem('controls')) {
+    video.removeAttribute('controls');
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('loop', '');
+
+    const attrs = [...video.attributes].map((a) => a.name).join(' ');
+    container.innerHTML = `<video preload="metadata" ${attrs}>
+        <source src="${video.firstElementChild.src}" type="video/mp4" />
+      </video>`;
+  }
+  applyHoverPlay(container.firstElementChild);
+  container.classList.add('has-video');
+};
+
+const decorateBlockBg = (block, node) => {
+  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
+  const childCount = node.childElementCount;
+  const { children } = node;
+
+  node.classList.add('background');
+
+  if (childCount === 2) {
+    children[0].classList.add(viewports[0]);
+    children[1].classList.add(viewports[1], viewports[2]);
+  }
+
+  [...children].forEach(async (child, index) => {
+    if (childCount === 3) {
+      child.classList.add(viewports[index]);
+    }
+    const video = child.querySelector('video, a[href*=".mp4"]');
+    if (video) {
+      decorateVideo(child, video);
+    }
+
+    const pic = child.querySelector('picture');
+    if (pic && (child.childElementCount === 2 || child.textContent?.trim())) {
+      const { handleFocalpoint } = await import('../section-metadata/section-metadata.js');
+      handleFocalpoint(pic, child, true);
+    }
+  });
+
+  if (!node.querySelector(':scope img') && !node.querySelector(':scope video')) {
+    block.style.background = node.textContent;
+    node.remove();
+  }
+};
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
@@ -79,9 +134,14 @@ export default function init(el) {
   text.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
 
-  if (media && !media.querySelector('video, a[href*=".mp4"]')) {
+  if (media) {
     media.classList.add('media');
-    decorateImage(media);
+    const video = media.querySelector('video, a[href*=".mp4"]');
+    if (video) {
+      decorateVideo(media, video);
+    } else {
+      decorateImage(media);
+    }
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
@@ -111,7 +171,7 @@ export default function init(el) {
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');
-      media?.lastChild.remove();
+      media.lastChild.remove();
     }
   }
 }
