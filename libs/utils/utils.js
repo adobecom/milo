@@ -861,7 +861,7 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-function setupDeferredPromise() {
+export function setupDeferredPromise() {
   let resolveFn;
   window.milo.deferredPromise = new Promise((resolve) => {
     resolveFn = resolve;
