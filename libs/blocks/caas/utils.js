@@ -387,10 +387,9 @@ const fetchUuidForCard = async (card) => {
   try {
     const url = new URL(card.contentId);
     const localizedLink = localizeLink(url, window.location.hostname, true);
-    const substr = localizedLink.split('https://').pop();
+    const substr = String(localizedLink).split('https://').pop();
     return await getUuid(substr);
   } catch (error) {
-    console.error(`Error fetching UUID for card: ${error}`);
     return null;
   }
 };
