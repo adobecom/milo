@@ -94,7 +94,7 @@ export function handleFocalpoint(pic, child, removeChild) {
   image.style.objectPosition = `${x} ${y}`;
 }
 
-export async function decorateBlockBg(block, node, addHandleFocalpoint = false) {
+export async function decorateBlockBg(block, node, { useHandleFocalpoint = false } = {}) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
     node.classList.add('background');
@@ -106,7 +106,7 @@ export async function decorateBlockBg(block, node, addHandleFocalpoint = false) 
       if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
       if (childCount > 1) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
-      if (addHandleFocalpoint
+      if (useHandleFocalpoint
         && pic && (child.childElementCount === 2 || child.textContent?.trim())) {
         handleFocalpoint(pic, child, true);
       }

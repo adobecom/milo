@@ -71,7 +71,8 @@ export default function init(el) {
   const foreground = children[children.length - 1];
   if (children.length > 1) {
     children[0].classList.add('background');
-    decorateBlockBg(el, children[0], true);
+    const useHandleFocalpoint = true;
+    decorateBlockBg(el, children[0], { useHandleFocalpoint });
   }
   foreground.classList.add('foreground', 'container');
   const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
