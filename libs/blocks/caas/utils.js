@@ -1,7 +1,11 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle, getConfig as pageConfigHelper, localizeLink }
-  from '../../utils/utils.js';
+import {
+  getConfig as pageConfigHelper,
+  loadScript,
+  loadStyle,
+  localizeLink
+} from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
@@ -383,7 +387,8 @@ const fetchUuidForCard = async (card) => {
   try {
     const url = new URL(card.contentId);
     const localizedLink = localizeLink(url, window.location.hostname, true);
-    return await getUuid(localizedLink);
+    const substr = localizedLink.split('https://').pop();
+    return await getUuid(substr);
   } catch (error) {
     console.error(`Error fetching UUID for card: ${error}`);
     return null;
