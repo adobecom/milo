@@ -124,7 +124,15 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
+
+    /* border-radius sizes */
+    --border-radius-s: 4px;
+    --border-radius-l: 8px;
+    --border-radius-xl: 16px;
+    --full-border-radius: 50%;
+    --no-border-radius: 0;
 }
+
 
 :root:lang(ko-KR) {
   --body-font-family: adobe-clean-han-korean, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
