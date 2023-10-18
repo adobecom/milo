@@ -755,6 +755,7 @@ const fgKeyReplacer = (key, value) => (key === 'fetchCardsFromFloodgateTree' ? u
 
 const getEncodedObject = async (obj, replacer = null) => {
   if (!window.CompressionStream) {
+    console.log('USING CompressionStream pollyfill');
     await import('../../deps/compression-streams-pollyfill.js');
   }
 
@@ -775,9 +776,11 @@ const getEncodedObject = async (obj, replacer = null) => {
 
   const b64encode = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
 
+  console.log(JSON.stringify(obj, fgKeyReplacer));
   const stream = objToStream(obj);
   const compressedResponse = await compressStream(stream);
   const buffer = await responseToBuffer(compressedResponse);
+  console.log(new Int32Array(buffer));
   return b64encode(buffer);
 };
 
