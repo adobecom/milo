@@ -354,10 +354,6 @@
     margin: 0 auto;
   }
   
-  .marquee.quiet.large .foreground .text {
-    max-width: 800px;
-  }
-  
   .marquee.split .foreground.container .text {
     max-width: calc(50% - var(--grid-column-width));
   }
