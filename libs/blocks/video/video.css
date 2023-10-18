@@ -1,3 +1,7 @@
+a[href*='.mp4'].hide-video {
+  visibility: hidden !important;
+}
+
 video {
   max-width: 100%;
   height: auto;
