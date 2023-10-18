@@ -89,11 +89,7 @@
 
 .dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tab-list-container {
   padding: initial;
-  margin: 2px;
-}
-
-.dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button {
-  border-radius: 0!important;
+  margin: initial;
 }
 
 .dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
