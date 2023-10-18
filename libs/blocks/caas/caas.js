@@ -1,17 +1,5 @@
-import {
-  decodeCompressedString,
-  fgHeaderValue,
-  initCaas,
-  loadCaasFiles,
-  loadStrings,
-} from './utils.js';
-import {
-  b64ToUtf8,
-  createIntersectionObserver,
-  getConfig,
-  getMetadata,
-  parseEncodedConfig,
-} from '../../utils/utils.js';
+import { initCaas, loadCaasFiles, loadStrings, fgHeaderValue } from './utils.js';
+import { parseEncodedConfig, createIntersectionObserver, getMetadata, getConfig, b64ToUtf8 } from '../../utils/utils.js';
 
 const ROOT_MARGIN = 1000;
 const P_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
@@ -27,10 +15,7 @@ const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
 
 const loadCaas = async (a) => {
   const encodedConfig = a.href.split('#')[1];
-  // ~~ indicates the new compressed string format
-  const state = encodedConfig.startsWith('~~')
-    ? await decodeCompressedString(encodedConfig.substring(2))
-    : parseEncodedConfig(encodedConfig);
+  const state = parseEncodedConfig(encodedConfig);
 
   const [caasStrs] = await Promise.all([
     getCaasStrings(state.placeholderUrl),

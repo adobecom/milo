@@ -1,4 +1,3 @@
-/* eslint-disable compat/compat */
 const defaultState = {
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
@@ -336,6 +335,7 @@ const convertToCsv = (obj) => {
   arr.unshift('"key","val"');
   return arr.join('\n');
 };
+
 const { getCaasConfigHash, getStringCsv } = (() => {
   let data;
   const getData = (configStr) => {
@@ -349,9 +349,9 @@ const { getCaasConfigHash, getStringCsv } = (() => {
     getCaasConfigHash: (conf) => {
       const state = getData(conf);
       const configStr = JSON.stringify(state.configState);
-      const link = 'https://milo.adobe.com/tools/caas';
-      if (window?.btoa) {
-        return `${link}#~~${utf8ToB64(configStr)}`;
+      const link = 'https://milo.adobe.com/tools/caas#';
+      if (typeof window !== 'undefined' && window.btoa) {
+        return `${link}${utf8ToB64(configStr)}`;
       }
       // for node
       return `${link}${Buffer.from(configStr).toString('base64')}`;
