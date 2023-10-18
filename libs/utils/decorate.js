@@ -88,12 +88,13 @@ export function handleFocalpoint(pic, child, removeChild) {
     const childData = child.childNodes;
     if (removeChild) childData.forEach((c) => c.nodeType === Node.TEXT_NODE && c.remove());
   }
+  if (!text) return;
   const directions = text.trim().toLowerCase().split(',');
   const [x, y = ''] = directions;
   image.style.objectPosition = `${x} ${y}`;
 }
 
-export async function decorateBlockBg(block, node) {
+export async function decorateBlockBg(block, node, { useHandleFocalpoint = false } = {}) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
     node.classList.add('background');
@@ -105,7 +106,8 @@ export async function decorateBlockBg(block, node) {
       if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
       if (childCount > 1) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
-      if (pic && (child.childElementCount === 2 || child.textContent?.trim())) {
+      if (useHandleFocalpoint && pic
+        && (child.childElementCount === 2 || child.textContent?.trim())) {
         handleFocalpoint(pic, child, true);
       }
       if (!child.querySelector('img, video, a[href*=".mp4"]')) {
