@@ -4,7 +4,7 @@ import {
   getConfig as pageConfigHelper,
   loadScript,
   loadStyle,
-  localizeLink
+  localizeLink,
 } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
