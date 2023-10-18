@@ -1,4 +1,4 @@
-import { createTag } from '../utils/utils.js';
+import { createTag, getConfig } from '../utils/utils.js';
 
 async function getFooterPromoByTag(contentRoot) {
   const NAME_KEY = 'Name';
@@ -23,7 +23,8 @@ async function getFooterPromoByTag(contentRoot) {
   return undefined;
 }
 
-export default async function initFooterPromo(contentRoot, urlBasedPromo, tagBasedPromo) {
+export default async function initFooterPromo(urlBasedPromo, tagBasedPromo) {
+  const { locale: { contentRoot } } = getConfig();
   let href = urlBasedPromo && urlBasedPromo !== 'off' && `${contentRoot}/fragments/footer-promos/${urlBasedPromo}`;
 
   if (tagBasedPromo === 'on') {

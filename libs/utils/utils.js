@@ -721,13 +721,13 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map(decorateSection);
 }
 
-export async function decorateFooterPromo({ locale: { contentRoot } }) {
+export async function decorateFooterPromo() {
   const urlBasedPromo = getMetadata('footer-promo-tag');
   const tagBasedPromo = getMetadata('tag-based-footer-promo');
   if ((!urlBasedPromo || urlBasedPromo === 'off') && tagBasedPromo !== 'on') return;
 
   const { default: initFooterPromo } = await import('../features/footer-promo.js');
-  await initFooterPromo(contentRoot, urlBasedPromo, tagBasedPromo);
+  await initFooterPromo(urlBasedPromo, tagBasedPromo);
 }
 
 let imsLoaded;
@@ -940,7 +940,7 @@ async function documentPostSectionLoading(config) {
     loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
 
-  await decorateFooterPromo(config);
+  decorateFooterPromo();
 
   const appendage = getMetadata('title-append');
   if (appendage) {
