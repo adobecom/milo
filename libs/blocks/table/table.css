@@ -372,8 +372,16 @@ header.global-navigation {
   justify-content: flex-start;
 }
 
+.table.merch .row-heading .col.col-heading .buttons-wrapper.align-right {
+  justify-content: flex-end;
+}
+
 .table.merch .row-heading .col.col-heading .buttons-wrapper > * {
   margin: 12px 12px 12px 0;
+}
+
+.table.merch .row-heading .col.col-heading .buttons-wrapper.align-right > * {
+  margin: 12px 0 12px 12px;
 }
 
 .table.merch .col.no-borders {

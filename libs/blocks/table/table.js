@@ -17,7 +17,7 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function handleHeading(headingCols) {
+function handleHeading(headingCols, alignButtonRight, isPriceBottom) {
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
 
@@ -39,14 +39,16 @@ function handleHeading(headingCols) {
         textStartIndex += 1;
       }
       elements[textStartIndex]?.classList.add('tracking-header');
-
-      if (elements[textStartIndex + 1]) {
-        elements[textStartIndex + 1].classList.add('pricing');
+      let pricingElem = elements[textStartIndex + 1]
+      if (pricingElem) {
+        pricingElem.classList.add('pricing');
       }
-
+ 
+      isPriceBottom && pricingElem.parentNode.insertBefore(elements[textStartIndex + 2], elements[textStartIndex + 1]);
       decorateButtons(col, 'button-l');
 
       const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
+      alignButtonRight && buttonsWrapper.classList.add('align-right')
       col.append(buttonsWrapper);
       const buttons = col.querySelectorAll('.con-button');
 
@@ -64,6 +66,8 @@ function handleHighlight(table) {
   const firstRowCols = firstRow.querySelectorAll('.col');
   const secondRow = table.querySelector('.row-2');
   const secondRowCols = secondRow.querySelectorAll('.col');
+  const alignButtonRight = table.classList.contains('button-right');
+  const isPriceBottom = table.classList.contains('price-bottom');
   let headingCols = null;
 
   if (isHighlightTable) {
@@ -92,7 +96,7 @@ function handleHighlight(table) {
     firstRow.classList.add('row-heading');
   }
 
-  handleHeading(headingCols);
+  handleHeading(headingCols, alignButtonRight, isPriceBottom);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
