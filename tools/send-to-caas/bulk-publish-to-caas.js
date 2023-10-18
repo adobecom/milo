@@ -17,7 +17,7 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType'];
+const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
 const FIELDS_CB = ['draftOnly', 'usePreview', 'useHtml'];
 const DEFAULT_VALUES = {
   caasEnv: 'Prod',
@@ -27,6 +27,7 @@ const DEFAULT_VALUES = {
   owner: 'adobecom',
   repo: 'bacom',
   urls: '',
+  publishToFloodgate: 'default',
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
@@ -103,11 +104,22 @@ const processData = async (data, accessToken) => {
     repo,
     useHtml,
     usePreview,
+    publishToFloodgate,
   } = getConfig();
 
-  const domain = usePreview
-    ? `https://main--${repo}--${owner}.hlx.page`
-    : `https://${host}`;
+  if (!repo) {
+    showAlert('You must enter a repo when choosing publish content to caas floodgate', { error: true });
+    if (statusModal.modal) statusModal.close();
+    return;
+  }
+
+  let domain = `https://${host}`;
+
+  if (usePreview) {
+    domain = `https://main--${repo}--${owner}.hlx.page`;
+  } else if (publishToFloodgate !== 'default') {
+    domain = `https://main--${repo}--${owner}.hlx.live`;
+  }
 
   for (const page of data) {
     if (!keepGoing) break;
@@ -132,7 +144,10 @@ const processData = async (data, accessToken) => {
       }
 
       setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
-      const { caasMetadata, errors } = await getCardMetadata({ prodUrl });
+      const { caasMetadata, errors } = await getCardMetadata({
+        prodUrl,
+        floodgatecolor: publishToFloodgate,
+      });
 
       if (errors.length) {
         errorArr.push([pageUrl, errors]);
@@ -236,6 +251,7 @@ const init = async () => {
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
+      publishToFloodgate: document.getElementById('publishToFloodgate').value,
       draftOnly: document.getElementById('draftOnly').checked,
       useHtml: document.getElementById('useHtml').checked,
       usePreview: document.getElementById('usePreview').checked,
