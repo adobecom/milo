@@ -28,7 +28,7 @@ const loadAdobeTv = (a) => {
 };
 
 export default function init(a) {
-  a.classList.add('hide');
+  a.classList.add('hide-video');
   if (a.textContent.includes('no-lazy')) {
     loadAdobeTv(a);
   } else {
