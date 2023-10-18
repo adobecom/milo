@@ -106,8 +106,8 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
       if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
       if (childCount > 1) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
-      if (useHandleFocalpoint
-        && pic && (child.childElementCount === 2 || child.textContent?.trim())) {
+      if (useHandleFocalpoint && pic
+        && (child.childElementCount === 2 || child.textContent?.trim())) {
         handleFocalpoint(pic, child, true);
       }
       if (!child.querySelector('img, video, a[href*=".mp4"]')) {
