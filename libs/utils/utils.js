@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { sampleRUM } from './samplerum.js';
 
 const MILO_TEMPLATES = [
   '404',
@@ -143,6 +144,21 @@ function getEnv(conf) {
   }
   return { ...ENVS.prod, consumer: conf.prod };
   /* c8 ignore stop */
+}
+export function initRUM() {
+  window.hlx = window.hlx || {};
+  window.hlx.RUM_MASK_URL = 'full';
+  sampleRUM('top');
+
+  window.addEventListener('load', () => sampleRUM('load'));
+
+  window.addEventListener('unhandledrejection', (event) => {
+    sampleRUM('error', { source: event.reason.sourceURL, target: event.reason.line });
+  });
+
+  window.addEventListener('error', (event) => {
+    sampleRUM('error', { source: event.filename, target: event.lineno });
+  });
 }
 
 export function getLocale(locales, pathname = window.location.pathname) {
@@ -876,11 +892,9 @@ export async function loadDeferred(area, blocks, config) {
     });
   }
 
-  import('./samplerum.js').then(({ sampleRUM }) => {
-    sampleRUM('lazy');
-    sampleRUM.observe(blocks);
-    sampleRUM.observe(area.querySelectorAll('picture > img'));
-  });
+  sampleRUM('lazy');
+  sampleRUM.observe(blocks);
+  sampleRUM.observe(area.querySelectorAll('picture > img'));
 }
 
 function initSidekick() {
@@ -927,10 +941,6 @@ function decorateDocumentExtras(config) {
   decorateMeta();
   decorateHeader();
   decorateFooterPromo(config);
-
-  import('./samplerum.js').then(({ addRumListeners }) => {
-    addRumListeners();
-  });
 }
 
 async function documentPostSectionLoading(config) {

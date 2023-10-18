@@ -39,6 +39,7 @@
     "@web/dev-server-import-maps": "^0.0.6",
     "@web/test-runner": "0.13.27",
     "@web/test-runner-commands": "0.6.1",
+    "@adobe/helix-rum-js": "1.6.0",
     "chai": "4.3.6",
     "eslint": "8.11.0",
     "eslint-config-airbnb-base": "15.0.0",
