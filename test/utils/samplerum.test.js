@@ -3,7 +3,7 @@
 
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { sampleRUM } from '../../libs/utils/samplerum.js';
+import { sampleRUM } from '../../libs/utils/utils.js';
 
 describe('SampleRUM', () => {
   it('Collects RUM data', () => {

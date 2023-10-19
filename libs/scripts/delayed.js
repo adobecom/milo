@@ -82,7 +82,7 @@ const loadDelayed = ([
     } else {
       resolve(null);
     }
-    import('../utils/samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
+    import('../utils/utils.js').then(({ sampleRUM }) => sampleRUM('cwv'));
   }, DELAY);
 });
 

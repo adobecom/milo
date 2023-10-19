@@ -1,5 +1,4 @@
-import { getConfig, createTag, loadArea, getMetadata } from '../../utils/utils.js';
-import { sampleRUM } from '../../utils/samplerum.js';
+import { getConfig, createTag, loadArea, getMetadata, sampleRUM } from '../../utils/utils.js';
 
 const { base, contentRoot, locale } = getConfig();
 

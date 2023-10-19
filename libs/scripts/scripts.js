@@ -14,7 +14,6 @@ import {
   loadArea,
   loadLana,
   setConfig,
-  initRUM,
 } from '../utils/utils.js';
 
 // Production Domain
@@ -139,8 +138,6 @@ const eagerLoad = (img) => {
   img?.setAttribute('loading', 'eager');
   img?.setAttribute('fetchpriority', 'high');
 };
-// Initializes Real User Monitoring
-initRUM();
 
 (async function loadLCPImage() {
   const firstDiv = document.querySelector('body > main > div:nth-child(1) > div');
