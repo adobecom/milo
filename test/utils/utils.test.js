@@ -496,7 +496,7 @@ describe('Utils', () => {
     const tagBasedOff = '<meta name="tag-based-footer-promo" content="off">';
     const tagBasedOn = '<meta name="tag-based-footer-promo" content="on">';
     const ccxVideo = '<meta name="footer-promo-tag" content="ccx-video-links">';
-    const metaBasedOff = '<meta name="footer-promo-tag" content="off">';
+    const metaBasedOff = '<meta name="footer-promo-tag" content="">';
     const analytics = '<meta property="article:tag" content="Analytics">';
     const commerce = '<meta property="article:tag" content="Commerce">';
     const summit = '<meta property="article:tag" content="Summit">';

@@ -25,7 +25,7 @@ async function getFooterPromoByTag(contentRoot) {
 
 export default async function initFooterPromo(urlBasedPromo, tagBasedPromo) {
   const { locale: { contentRoot } } = getConfig();
-  let href = urlBasedPromo && urlBasedPromo !== 'off' && `${contentRoot}/fragments/footer-promos/${urlBasedPromo}`;
+  let href = urlBasedPromo && `${contentRoot}/fragments/footer-promos/${urlBasedPromo}`;
 
   if (tagBasedPromo === 'on') {
     const linkFromTag = await getFooterPromoByTag(contentRoot);
