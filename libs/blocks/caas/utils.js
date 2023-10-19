@@ -1,3 +1,4 @@
+/* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
@@ -56,6 +57,35 @@ export const loadStrings = async (
   }
 };
 
+export const decodeCompressedString = async (txt) => {
+  if (!window.DecompressionStream) {
+    await import('../../deps/compression-streams-pollyfill.js');
+  }
+  const b64decode = (str) => {
+    const binaryStr = window.atob(str);
+    const bytes = new Uint8Array(new ArrayBuffer(binaryStr.length));
+    binaryStr?.split('')
+      .forEach((c, i) => (bytes[i] = c.charCodeAt(0)));
+    return bytes;
+  };
+
+  const b64toStream = (b64) => new Blob([b64decode(b64)], { type: 'text/plain' }).stream();
+
+  const decompressStream = async (stream) => new Response(
+    // eslint-disable-next-line no-undef
+    stream.pipeThrough(new DecompressionStream('gzip')),
+  );
+
+  const responseToJSON = async (response) => {
+    const blob = await response.blob();
+    return JSON.parse(await blob.text());
+  };
+
+  const stream = b64toStream(txt);
+  const resp = await decompressStream(stream);
+  return responseToJSON(resp);
+};
+
 export const loadCaasFiles = async () => {
   const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'stable';
 
@@ -111,7 +141,7 @@ const getContentIdStr = (cardStr, card) => {
 
 const wrapInParens = (s) => `(${s})`;
 
-const buildComplexQuery = (andLogicTags, orLogicTags) => {
+const buildComplexQuery = (andLogicTags, orLogicTags, notLogicTags) => {
   let andQuery = andLogicTags
     .filter((tag) => tag.intraTagLogic !== '' && tag.andTags.length)
     .map((tag) => wrapInParens(tag.andTags.map((val) => `"${val}"`).join(`+${tag.intraTagLogic}+`)))
@@ -122,10 +152,20 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
     .map((tag) => wrapInParens(tag.orTags.map((val) => `"${val}"`).join('+AND+')))
     .join('+OR+');
 
+  let notQuery = notLogicTags
+    .filter((tag) => tag.intraTagLogicExclude !== '' && tag.notTags.length)
+    .map((tag) => wrapInParens(tag.notTags.map((val) => `"${val}"`).join(`+${tag.intraTagLogicExclude}+`)))
+    .join('+AND+');
+
   andQuery = andQuery.length ? wrapInParens(andQuery) : '';
   orQuery = orQuery.length ? wrapInParens(orQuery) : '';
+  notQuery = notQuery.length ? wrapInParens(notQuery) : '';
 
-  return encodeURIComponent(`${andQuery}${andQuery && orQuery ? '+AND+' : ''}${orQuery}`);
+  return (andQuery || orQuery)
+    ? encodeURIComponent(`${andQuery}${
+      andQuery && orQuery ? '+AND+' : ''}${orQuery}${
+      (andQuery || orQuery) && notQuery ? '+AND+NOT+' : ''}${notQuery}`)
+    : '';
 };
 
 const getSortOptions = (state, strs) => {
@@ -339,7 +379,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
-  const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
+  const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags, state.notLogicTags);
 
   const caasRequestHeaders = addFloodgateHeader(state);
 
@@ -581,6 +621,7 @@ export const defaultState = {
   language: 'caas:language/en',
   layoutType: '4up',
   loadMoreBtnStyle: 'primary',
+  notLogicTags: [],
   onlyShowBookmarkedCards: false,
   orLogicTags: [],
   paginationAnimationStyle: 'paged',
