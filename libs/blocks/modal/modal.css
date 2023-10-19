@@ -195,3 +195,7 @@
     height: 845px;
   }
 }
+
+body.disable-scroll {
+  overflow: hidden;
+}
