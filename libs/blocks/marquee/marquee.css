@@ -25,6 +25,42 @@
   color: var(--color-white);
 }
 
+.marquee.mobile-light a:not(.con-button) {
+  color: var(--link-color);
+}
+
+.marquee.mobile-light a:not(.con-button):hover {
+  color: var(--link-hover-color);
+}
+
+.marquee.mobile-dark a:not(.con-button),
+.marquee.mobile-dark a:not(.con-button):hover {
+  color: var(--link-color-dark);
+}
+
+.marquee.mobile-light a.con-button.outline {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
+.marquee.mobile-dark a.con-button.outline {
+  border-color: var(--color-white);
+  color: var(--color-white);
+}
+
+.marquee.mobile-light a.con-button.outline:hover {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.marquee.mobile-dark a.con-button.outline:hover {
+  background-color: var(--color-white);
+  border-color: var(--color-white);
+  color: var(--color-black);
+  text-decoration: none;
+}
+
 .marquee .foreground {
   position: relative;
   padding: var(--spacing-xxl) 0;
@@ -83,15 +119,6 @@
   position: absolute;
   top: 0;
   left: 0;
-}
-
-.marquee .background.has-video {
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  right: 0;
-  top: 0;
 }
 
 .marquee .background .tablet-only,
@@ -321,7 +348,43 @@
     color: var(--color-white);
   }
   
-  .marquee .media {
+  .marquee.tablet-light a:not(.con-button) {
+    color: var(--link-color);
+  }
+
+  .marquee.tablet-light a:not(.con-button):hover {
+    color: var(--link-hover-color);
+  }
+
+  .marquee.tablet-dark a:not(.con-button),
+  .marquee.tablet-dark a:not(.con-button):hover {
+    color: var(--link-color-dark);
+  }
+
+  .marquee.tablet-light a.con-button.outline {
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  .marquee.tablet-dark a.con-button.outline {
+    border-color: var(--color-white);
+    color: var(--color-white);
+  }
+
+  .marquee.tablet-light a.con-button.outline:hover {
+    background-color: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .marquee.tablet-dark a.con-button.outline:hover {
+    background-color: var(--color-white);
+    border-color: var(--color-white);
+    color: var(--color-black);
+    text-decoration: none;
+  }
+
+.marquee .media {
     width: var(--grid-container-width); /* 10 grid / 83% */
   }
 
@@ -444,6 +507,42 @@
 
   .marquee.desktop-light {
     color: var(--text-color);
+  }
+
+  .marquee.desktop-light a:not(.con-button) {
+    color: var(--link-color);
+  }
+
+  .marquee.desktop-light a:not(.con-button):hover {
+    color: var(--link-hover-color);
+  }
+
+  .marquee.desktop-dark a:not(.con-button),
+  .marquee.desktop-dark a:not(.con-button):hover {
+    color: var(--link-color-dark);
+  }
+
+  .marquee.desktop-light a.con-button.outline {
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  .marquee.desktop-dark a.con-button.outline {
+    border-color: var(--color-white);
+    color: var(--color-white);
+  }
+
+  .marquee.desktop-light a.con-button.outline:hover {
+    background-color: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .marquee.desktop-dark a.con-button.outline:hover {
+    background-color: var(--color-white);
+    border-color: var(--color-white);
+    color: var(--color-black);
+    text-decoration: none;
   }
 
   .marquee.desktop-dark {
@@ -599,4 +698,12 @@
   .marquee.large .foreground.container {
     max-width: var(--grid-container-width);
   }
+}
+
+
+.marquee.static-links a:not(.con-button),
+.marquee.static-links a:not(.con-button):hover,
+.static-links .marquee a:not(.con-button),
+.static-links .marquee a:not(.con-button):hover {
+  color: inherit;
 }
