@@ -1,4 +1,3 @@
-import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { getConfig, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
@@ -75,6 +74,7 @@ export async function getPriceContext(el, params) {
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const forceTaxExclusive = params.get('exclusive');
   const type = params.get('type');
   const template = type === 'price' ? undefined : type;
   return {
@@ -83,6 +83,7 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    forceTaxExclusive,
     template,
   };
 }
@@ -120,9 +121,7 @@ export default async function init(el) {
   const log = service.log.module('merch');
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
-    const { parentNode } = el;
     el.replaceWith(merch);
-    if (isCta) decorateLinkAnalytics(parentNode);
     return merch;
   }
   log.warn('Failed to get context:', { el });

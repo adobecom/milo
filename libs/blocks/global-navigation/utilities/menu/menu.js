@@ -12,7 +12,7 @@ import {
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
 
-const decorateHeadline = (elem) => {
+const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
 
   const headline = toFragment`<div class="feds-menu-headline">
@@ -26,12 +26,14 @@ const decorateHeadline = (elem) => {
       headline.setAttribute('aria-level', 2);
       headline.removeAttribute('aria-haspopup', true);
       headline.removeAttribute('aria-expanded', false);
+      headline.removeAttribute('daa-ll');
     } else {
       headline.setAttribute('role', 'button');
       headline.setAttribute('tabindex', 0);
       headline.removeAttribute('aria-level');
       headline.setAttribute('aria-haspopup', true);
       headline.setAttribute('aria-expanded', false);
+      headline.setAttribute('daa-ll', getAnalyticsValue(headline.textContent, index));
     }
   };
 
@@ -79,14 +81,14 @@ const decorateLinkGroup = (elem, index) => {
   return linkGroup;
 };
 
-const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, index = { position: 0 } } = {}) => {
+const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, itemIndex = { position: 0 } } = {}) => {
   const decorateLink = (link) => {
     // Increase analytics index every time a link is decorated
-    index.position += 1;
+    itemIndex.position += 1;
 
     // Decorate link group
     if (link.matches('.link-group')) {
-      return decorateLinkGroup(link, index.position);
+      return decorateLinkGroup(link, itemIndex.position);
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
@@ -96,11 +98,11 @@ const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, 
       // Remove its 'em' or 'strong' wrapper
       link.parentElement.replaceWith(link);
 
-      return decorateCta({ elem: link, type, index: index.position });
+      return decorateCta({ elem: link, type, index: itemIndex.position });
     }
 
     // Simple links get analytics attributes and appropriate class name
-    link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index.position));
+    link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, itemIndex.position));
     link.classList.add(className);
 
     return link;
@@ -174,6 +176,8 @@ const decoratePromo = (elem, index) => {
 
 const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
   const hasMultipleColumns = content.children.length > 1;
+  // Headline index is defined in the context of a whole menu
+  let headlineIndex = 0;
 
   // The resulting template structure should follow these rules:
   // * a menu can have multiple columns;
@@ -186,7 +190,8 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
     const wrapper = toFragment`<div class="${wrapperClass}"></div>`;
     let itemDestination = toFragment`<div class="${itemDestinationClass}"></div>`;
     let menuItems;
-    const index = { position: 0 };
+    // Item index is defined in the context of a particular column
+    const itemIndex = { position: 0 };
 
     const resetDestination = () => {
       // First, if the previous destination has children,
@@ -204,28 +209,29 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
       const columnElem = column.firstElementChild;
 
       if (columnElem.tagName === separatorTagName) {
+        headlineIndex += 1;
         // When encountering a separator (h5 for header, h2 for footer),
         // add the previous section to the column
         resetDestination();
         // If the separator splits content into columns, reset the analytics index
-        if (!hasMultipleColumns) index.position = 0;
+        if (!hasMultipleColumns) itemIndex.position = 0;
 
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
-        const sectionHeadline = decorateHeadline(columnElem);
-        menuItems = toFragment`<div class="feds-menu-items" daa-lh="${sectionHeadline.textContent.trim()}"></div>`;
+        const sectionHeadline = decorateHeadline(columnElem, headlineIndex);
+        menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
         itemDestination.append(sectionHeadline, menuItems);
       } else if (columnElem.classList.contains('gnav-promo')) {
         // When encountering a promo, add the previous section to the column
         resetDestination();
         // Since the promo is alone on a column, reset the analytics index
-        index.position = 0;
+        itemIndex.position = 0;
 
-        const promoElem = decoratePromo(columnElem, index);
+        const promoElem = decoratePromo(columnElem, itemIndex);
 
         itemDestination.append(promoElem);
       } else {
-        const decoratedElem = decorateElements({ elem: columnElem, index });
+        const decoratedElem = decorateElements({ elem: columnElem, itemIndex });
         columnElem.remove();
 
         // If an items template has been previously created,
@@ -268,7 +274,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const res = await fetch(path);
     if (res.status !== 200) return;
     const content = await res.text();
-    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-content">
           ${parsedContent}

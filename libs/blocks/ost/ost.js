@@ -8,7 +8,7 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.14.0';
+const OST_VERSION = '1.14.1';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
@@ -41,7 +41,6 @@ export const createLinkMarkup = (defaults) => (
   const createHref = () => {
     const params = new URLSearchParams([
       ['osi', offerSelectorId],
-      ['offerId', offer.offer_id],
       ['type', type],
     ]);
     if (promo) params.set('promo', promo);
@@ -57,10 +56,11 @@ export const createLinkMarkup = (defaults) => (
         params.set('workflowStep', workflowStep);
       }
     } else {
-      const { displayRecurrence, displayPerUnit, displayTax } = options;
+      const { displayRecurrence, displayPerUnit, displayTax, forceTaxExclusive } = options;
       params.set('term', displayRecurrence);
       params.set('seat', displayPerUnit);
       params.set('tax', displayTax);
+      params.set('exclusive', forceTaxExclusive);
     }
     const { location } = window;
     return `${location.protocol + location.host}/tools/ost?${params.toString()}`;

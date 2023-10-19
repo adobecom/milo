@@ -1,7 +1,6 @@
 import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig } from '../../utils/utils.js';
-import { addBackgroundImg, addWrapper, addFooter } from './cardUtils.js';
-import { decorateLinkAnalytics } from '../../martech/attributes.js';
+import { addBackgroundImg, addWrapper, addFooter, addVideoBtn } from './cardUtils.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -51,22 +50,22 @@ const addInner = (el, cardType, card) => {
 };
 
 const init = (el) => {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  decorateLinkAnalytics(el, headings);
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/deps/caas.css`);
 
+  const section = el.closest('.section');
+  section.classList.add('milo-card-section');
   const row = el.querySelector(':scope > div');
   const picture = el.querySelector('picture');
   const styles = Array.from(el.classList);
   const cardType = getCardType(styles);
   const merch = styles.includes('merch') && cardType === HALF;
   const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
-    .querySelectorAll('a') : el.querySelectorAll('a');
+    .querySelectorAll('a') : el.querySelectorAll('a:not(.consonant-play-btn)');
   let card = el;
 
-  addWrapper(el, cardType);
+  addWrapper(el, section, cardType);
 
   if (cardType === HALF_HEIGHT) {
     const [link] = links;
@@ -86,6 +85,8 @@ const init = (el) => {
 
   if (picture && cardType !== PRODUCT) {
     addBackgroundImg(picture, cardType, card);
+    const playBtn = el.querySelector('a.consonant-play-btn');
+    if (playBtn) addVideoBtn(playBtn, cardType, card);
   }
 
   picture?.parentElement.remove();

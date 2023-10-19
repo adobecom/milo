@@ -12,6 +12,7 @@ import {
   getExperienceName,
   loadDecorateMenu,
   getFedsPlaceholderConfig,
+  getAnalyticsValue,
   loadBaseStyles,
   yieldToMain,
 } from '../global-navigation/utilities/utilities.js';
@@ -97,7 +98,7 @@ class Footer {
       await task();
     }
 
-    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer`);
+    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
 
     this.footerEl.append(this.elements.footer);
   };
@@ -108,7 +109,7 @@ class Footer {
 
     if (!html) return null;
 
-    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
 
     try {
       return new DOMParser().parseFromString(parsedHTML, 'text/html').body;
@@ -268,14 +269,19 @@ class Footer {
     const socialBlock = this.body.querySelector('.social');
     if (!socialBlock) return this.elements.social;
 
-    const socialElem = toFragment`<ul class="feds-social"></ul>`;
+    const socialElem = toFragment`<ul class="feds-social" daa-lh="Social"></ul>`;
 
-    CONFIG.socialPlatforms.forEach((platform) => {
+    CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
       if (!link) return;
 
       const iconElem = toFragment`<li class="feds-social-item">
-          <a href="${link.href}" class="feds-social-link" aria-label="${platform}" target="_blank">
+          <a
+            href="${link.href}"
+            class="feds-social-link"
+            aria-label="${platform}"
+            daa-ll="${getAnalyticsValue(platform, index + 1)}"
+            target="_blank">
             <svg xmlns="http://www.w3.org/2000/svg" class="feds-social-icon" alt="${platform} logo">
               <use href="#footer-icon-${platform}" />
             </svg>
@@ -310,12 +316,15 @@ class Footer {
         <use href="#footer-icon-adchoices" />
       </svg>`);
 
-    this.elements.legal = toFragment`<div class="feds-footer-legalWrapper"></div>`;
+    this.elements.legal = toFragment`<div class="feds-footer-legalWrapper" daa-lh="Legal"></div>`;
 
     while (privacyContent.children.length) {
       const privacySection = privacyContent.firstElementChild;
       privacySection.classList.add('feds-footer-privacySection');
-      privacySection.querySelectorAll('a').forEach((link) => link.classList.add('feds-footer-privacyLink'));
+      privacySection.querySelectorAll('a').forEach((link, index) => {
+        link.classList.add('feds-footer-privacyLink');
+        link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
+      });
       this.elements.legal.append(privacySection);
     }
 

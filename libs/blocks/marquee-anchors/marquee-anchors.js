@@ -62,20 +62,19 @@ export default function init(el) {
     const aTag = i.querySelector('a');
     if (aTag?.textContent.charAt(0) === '#') {
       const content = i.querySelector(':scope > div');
+      const aTagText = aTag.textContent.toLowerCase();
+      aTag.textContent = '';
+      aTag.classList.add('anchor-link');
+      i.parentElement.replaceChild(aTag, i);
+      aTag.append(content);
       const hrefPathEqual = (aTag.href.split(/\?|#/)[0] === window.location.href.split(/\?|#/)[0]);
-      const hrefUrl = (hrefPathEqual)
-        ? `${aTag.textContent}`
-        : `${aTag.href}`;
-      const link = createTag('a', {
-        class: 'anchor-link',
-        href: hrefUrl,
-      }, content);
-      if (!hrefPathEqual) link.classList.add('external');
-      i.parentElement.replaceChild(link, i);
-      aTag.parentElement.remove();
+      if (hrefPathEqual) {
+        aTag.href = aTagText;
+      } else {
+        aTag.classList.add('external');
+      }
     }
   });
-
   const emptyLinkRows = links.querySelectorAll(':scope > div:not([class])');
   if (emptyLinkRows[0]) emptyLinkRows[0].classList.add('links-header');
   if (emptyLinkRows[1]) emptyLinkRows[1].classList.add('links-footer', 'body-s');
