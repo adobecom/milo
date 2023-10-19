@@ -27,7 +27,7 @@ const loadVideo = (a) => {
 };
 
 export default function init(a) {
-  if (!a.closest('.dialog-modal')) a.classList.add('hide');
+  a.classList.add('hide-video');
   if (a.textContent.includes('no-lazy')) {
     loadVideo(a);
   } else {
