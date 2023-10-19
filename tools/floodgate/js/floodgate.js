@@ -7,6 +7,7 @@ import {
   initProject,
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
+  getFloodgateColor,
 } from './project.js';
 import {
   updateProjectInfo,
@@ -54,7 +55,7 @@ async function promoteContentAction(project, config) {
 
 async function fetchStatusAction(project, config) {
   // fetch copy status
-  let params = { type: 'copy', projectExcelPath: project.excelPath, shareUrl: config.sp.shareUrl };
+  let params = { type: 'copy', projectExcelPath: project.excelPath, fgShareUrl: config.sp.fgShareUrl };
   const copyStatus = await postData(config.sp.aioStatusAction, params);
   // fetch promote status
   params = { type: 'promote', fgShareUrl: config.sp.fgShareUrl };
@@ -133,10 +134,13 @@ function setListeners(project, config) {
 
 async function init() {
   try {
+    // Read FG Color
+    const fgColor = await getFloodgateColor();
+
     // Read the Floodgate Sharepoint Config
     loadingON('Fetching Floodgate Config...');
     enableRetry(); // Adding this for checking rate limit code for floodgate
-    const config = await getConfig();
+    const config = await getConfig(fgColor);
     if (!config) {
       return;
     }
@@ -144,7 +148,7 @@ async function init() {
 
     // Initialize the Floodgate Project by setting the required project info
     loadingON('Fetching Project Config...');
-    const project = await initProject();
+    const project = await initProject(fgColor);
     await project.purge();
     loadingON(`Fetching project details for ${project.url}`);
 
