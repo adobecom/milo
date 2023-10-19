@@ -69,6 +69,7 @@ const loadDelayed = ([
   loadScript,
   loadStyle,
   loadIms,
+  sampleRUM,
 ], DELAY = 3000) => new Promise((resolve) => {
   setTimeout(() => {
     loadPrivacy(getConfig, loadScript);
@@ -82,7 +83,7 @@ const loadDelayed = ([
     } else {
       resolve(null);
     }
-    import('../utils/utils.js').then(({ sampleRUM }) => sampleRUM('cwv'));
+    sampleRUM('cwv');
   }, DELAY);
 });
 

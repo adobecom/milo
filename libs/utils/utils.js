@@ -1058,7 +1058,7 @@ async function documentPostSectionLoading(config) {
   initSidekick();
 
   const { default: delayed } = await import('../scripts/delayed.js');
-  delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
+  delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms, sampleRUM]);
 
   import('../martech/analytics.js').then((analytics) => {
     document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
