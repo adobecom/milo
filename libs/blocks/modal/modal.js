@@ -43,7 +43,7 @@ function closeModal(modal) {
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
-      document.body.removeAttribute('class');
+      document.body.classList.remove('disable-scroll')
       mod.nextElementSibling.remove();
     }
     if (mod.classList.contains('dialog-modal')) {
