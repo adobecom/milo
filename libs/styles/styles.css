@@ -263,8 +263,8 @@
 }
 
 .body-xxs {
-  font-size: var(--type-heading-xxs-size);
-  line-height: var(--type-body-xs-lh);
+  font-size: var(--type-body-xxs-size);
+  line-height: var(--type-body-xxs-lh);
 }
 
 .detail-xl {
