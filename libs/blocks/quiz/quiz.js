@@ -268,7 +268,7 @@ const App = ({
 
   useEffect(() => {
     const getStringValue = (propName) => {
-      if (!selectedQuestion.questions) return '';
+      if (!selectedQuestion?.questions) return '';
       const question = stringQList[selectedQuestion.questions];
       return question?.[propName] || '';
     };
