@@ -268,7 +268,7 @@ const App = ({
 
   useEffect(() => {
     const getStringValue = (propName) => {
-      if (!selectedQuestion) return '';
+      if (!selectedQuestion.questions) return '';
       const question = stringQList[selectedQuestion.questions];
       return question?.[propName] || '';
     };
@@ -283,6 +283,7 @@ const App = ({
   }
 
   const getStringValue = (propName) => {
+    if (!selectedQuestion?.questions) return '';
     const question = stringQList[selectedQuestion.questions];
     return question?.[propName] || '';
   };
@@ -294,7 +295,7 @@ const App = ({
   };
 
   return html`<div class="quiz-container">
-                  ${selectedQuestion.questions && html`<${StepIndicator}
+                  ${selectedQuestion.questions && getStringValue('background') !== '' && html`<${StepIndicator}
                     currentStep=${currentStep} 
                     totalSteps=${totalSteps} 
                     prevStepIndicator=${prevStepIndicator}
