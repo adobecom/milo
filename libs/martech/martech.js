@@ -124,6 +124,7 @@ export default async function init({ persEnabled = false, persManifests }) {
       alloy: { edgeConfigId },
       target: false,
     },
+    milo: true,
   };
   window.edgeConfigId = edgeConfigId;
 
