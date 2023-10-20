@@ -1,20 +1,4 @@
-export function handleFocalpoint(pic, child, removeChild) {
-  const image = pic.querySelector('img');
-  if (!child || !image) return;
-  let text = '';
-  if (child.childElementCount === 2) {
-    const dataElement = child.querySelectorAll('p')[1];
-    text = dataElement?.textContent;
-    if (removeChild) dataElement?.remove();
-  } else if (child.textContent) {
-    text = child.textContent;
-    const childData = child.childNodes;
-    if (removeChild) childData.forEach((c) => c.nodeType === Node.TEXT_NODE && c.remove());
-  }
-  const directions = text.trim().toLowerCase().split(',');
-  const [x, y = ''] = directions;
-  image.style.objectPosition = `${x} ${y}`;
-}
+import { handleFocalpoint } from '../../utils/decorate.js';
 
 function handleBackground(div, section) {
   const pic = div.background.content?.querySelector('picture');
