@@ -130,7 +130,6 @@
     --border-radius-l: 8px;
     --border-radius-xl: 16px;
     --full-border-radius: 50%;
-    --no-border-radius: 0;
 }
 
 :root:lang(ko-KR) {

@@ -152,9 +152,9 @@
   border-radius: var(--border-radius-xl);
 }
 
-.section.no-border-block-radius > div,
-.section.no-border-block-radius > div .background picture img {
-  border-radius: var(--no-border-radius) !important;
+.section.no-border-radius-block > div,
+.section.no-border-radius-block > div .background picture img {
+  border-radius: 0;
 }
 
 .section.border-radius-image-s > div .foreground picture img{
@@ -170,7 +170,7 @@
 }
 
 .section.no-border-radius-image > div .foreground picture img {
-  border-radius: var(--no-border-radius) !important;
+  border-radius: 0;
 }
 
 .section.full-border-radius-image > div .foreground picture img{
