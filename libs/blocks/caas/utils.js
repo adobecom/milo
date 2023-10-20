@@ -104,7 +104,8 @@ export const loadCaasFiles = async () => {
   loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
+  // await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
+  await loadScript('http://localhost:5000/dist/main.js');
 };
 
 export const loadCaasTags = async (tagsUrl) => {
