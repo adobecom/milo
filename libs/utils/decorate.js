@@ -54,20 +54,18 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
-      headings.forEach((h) => {
-        h.classList.add(`heading-${config[0]}`);
-      });
+      headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
         headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
         decorateIconArea(el);
       }
     }
     const emptyPs = el.querySelectorAll(':scope p:not([class])');
-    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
-    if (!headings?.length && !emptyPs?.length) {
-      const wrapper = el.querySelector(':scope > div');
-      [...wrapper.children]
-        .filter((child) => child.textContent.trim() !== '')
+    if (emptyPs.length) {
+      emptyPs.forEach((p) => p.classList.add(`body-${config[1]}`));
+    } else {
+      [...el.querySelectorAll(':scope div:not([class])')]
+        .filter((emptyDivs) => emptyDivs.textContent.trim() !== '')
         .forEach((text) => text.classList.add(`body-${config[1]}`));
     }
   }
