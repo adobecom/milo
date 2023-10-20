@@ -120,11 +120,8 @@
   padding: var(--spacing-xl) 0;
 }
 
-.legal.text-block .foreground,
-.legal.text-block p {
+.legal.text-block .foreground {
   font-style: italic;
-  font-size: var(--type-body-xxs-size);
-  line-height: var(--type-body-xxs-lh);
 }
 
 /* link-farm */
