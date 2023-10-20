@@ -5,6 +5,7 @@ import { getMetadata } from '../../section-metadata/section-metadata.js';
 const LIBRARY_METADATA = 'library-metadata';
 const LIBRARY_CONTAINER_START = 'library-container-start';
 const LIBRARY_CONTAINER_END = 'library-container-end';
+const BLOCK_SPACING = '<br>';
 // Block types:
 const CONTAINER_START_BLOCK = 0;
 const CONTAINER_END_BLOCK = 1;
@@ -112,7 +113,7 @@ export function getHtml(container, path) {
 
     const isBlock = element.nodeName === 'DIV' && element.className;
     const content = isBlock ? getTable(element) : element.outerHTML;
-    return `${acc}${content}`;
+    return `${BLOCK_SPACING}${acc}${content}${BLOCK_SPACING}`;
   }, '');
 }
 
