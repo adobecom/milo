@@ -167,6 +167,11 @@
   background-color: var(--color-white);
 }
 
+.section.sticky-bottom.promo-sticky-section {
+  background: none;
+  z-index: 4;
+}
+
 .section[class*='grid-width-'] {
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);
