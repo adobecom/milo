@@ -485,10 +485,11 @@ export function decorateImageLinks(el) {
     const [source, alt, icon] = img.alt.split('|');
     try {
       const url = new URL(source.trim());
+      const href = url.hostname.includes('.hlx.') ? `${url.pathname}${url.hash}` : url.href;
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: url, class: 'image-link' });
+      const aTag = createTag('a', { href, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
       if (icon) {
         import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
