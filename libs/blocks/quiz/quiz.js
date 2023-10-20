@@ -268,7 +268,7 @@ const App = ({
 
   useEffect(() => {
     const getStringValue = (propName) => {
-      if (!selectedQuestion) return '';
+      if (!selectedQuestion?.questions) return '';
       const question = stringQList[selectedQuestion.questions];
       return question?.[propName] || '';
     };
@@ -279,10 +279,11 @@ const App = ({
   }, [selectedQuestion, stringQList]);
 
   if (!isDataLoaded || !selectedQuestion) {
-    return html`<div class="quiz-load">Loading</div>`;
+    return null;
   }
 
   const getStringValue = (propName) => {
+    if (!selectedQuestion?.questions) return '';
     const question = stringQList[selectedQuestion.questions];
     return question?.[propName] || '';
   };
@@ -294,41 +295,42 @@ const App = ({
   };
 
   return html`<div class="quiz-container">
-                  <${StepIndicator} 
+                  ${selectedQuestion.questions && getStringValue('background') !== '' && html`<${StepIndicator}
                     currentStep=${currentStep} 
                     totalSteps=${totalSteps} 
                     prevStepIndicator=${prevStepIndicator}
                     top="${true}" />
+                  `}
 
-                  <div class="quiz-background">
+                  ${selectedQuestion.questions && html`<div class="quiz-background">
                       ${DecorateBlockBackground(getStringValue)}
-                  </div>
+                  </div>`}
 
-                  <${DecorateBlockForeground} 
+                  ${selectedQuestion.questions && html`<${DecorateBlockForeground} 
                       heading=${getStringValue('heading')} 
                       subhead=${getStringValue('sub-head')} 
-                      btnText=${getStringValue('btn')} />
+                      btnText=${getStringValue('btn')} />`}
                       
-                  <${GetQuizOption} 
-                      btnText=${getStringValue('btn')} 
-                      minSelections=${minSelections} 
-                      maxSelections=${maxSelections} 
-                      options=${stringData[selectedQuestion.questions]} 
-                      countSelectedCards=${countSelectedCards}
-                      selectedCards=${selectedCards}
-                      onOptionClick=${onOptionClick}
-                      getOptionsIcons=${getOptionsIcons}
-                      handleOnNextClick=${handleOnNextClick}
-                      btnAnalyticsData=${btnAnalytics}/>
+                  ${selectedQuestion.questions && html`<${GetQuizOption} 
+                    btnText=${getStringValue('btn')} 
+                    minSelections=${minSelections} 
+                    maxSelections=${maxSelections} 
+                    options=${stringData[selectedQuestion.questions]} 
+                    countSelectedCards=${countSelectedCards}
+                    selectedCards=${selectedCards}
+                    onOptionClick=${onOptionClick}
+                    getOptionsIcons=${getOptionsIcons}
+                    handleOnNextClick=${handleOnNextClick}
+                    btnAnalyticsData=${btnAnalytics}/>`}
 
-                  <${StepIndicator} 
-                  currentStep=${currentStep} 
-                  totalSteps=${totalSteps} 
-                  prevStepIndicator=${prevStepIndicator}
-                  bottom="${true}" />
-
-                  <div class="quiz-footer">
-                  </div>
+                  ${selectedQuestion.questions && html`
+                    <${StepIndicator} 
+                      currentStep=${currentStep} 
+                      totalSteps=${totalSteps} 
+                      prevStepIndicator=${prevStepIndicator}
+                      bottom="${true}" />
+                  `}
+                  <div class=quiz-footer />
               </div>`;
 };
 
