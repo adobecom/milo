@@ -74,7 +74,7 @@ const MILO_BLOCKS = [
   'reading-time',
 ];
 const AUTO_BLOCKS = [
-  { adobetv: 'https://video.tv.adobe.com' },
+  { adobetv: 'tv.adobe.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
@@ -485,10 +485,11 @@ export function decorateImageLinks(el) {
     const [source, alt, icon] = img.alt.split('|');
     try {
       const url = new URL(source.trim());
+      const href = url.hostname.includes('.hlx.') ? `${url.pathname}${url.hash}` : url.href;
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: url, class: 'image-link' });
+      const aTag = createTag('a', { href, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
       if (icon) {
         import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
@@ -861,9 +862,24 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-export async function loadDeferred(area, blocks, config) {
+export function setupDeferredPromise() {
+  let resolveFn;
+  window.milo.deferredPromise = new Promise((resolve) => {
+    resolveFn = resolve;
+  });
+  return resolveFn;
+}
+
+export async function loadDeferred(area, blocks, config, resolveDeferred) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
+
+  if (area !== document) {
+    return;
+  }
+
+  resolveDeferred(true);
+
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
     import('../features/links.js').then((mod) => mod.default(path, area));
@@ -1006,10 +1022,13 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  let resolveDeferredFn;
 
   if (isDoc) {
+    window.milo = {};
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
+    resolveDeferredFn = setupDeferredPromise();
   }
 
   const config = getConfig();
@@ -1038,7 +1057,7 @@ export async function loadArea(area = document) {
 
   if (isDoc) await documentPostSectionLoading(config);
 
-  await loadDeferred(area, areaBlocks, config);
+  await loadDeferred(area, areaBlocks, config, resolveDeferredFn);
 }
 
 export function loadDelayed() {

@@ -10,6 +10,7 @@ import {
 } from '../../loc/project.js';
 import { getSpFiles } from '../../loc/sharepoint.js';
 import { getDocPathFromUrl, getFloodgateUrl } from './utils.js';
+import { getHelixAdminConfig } from '../../loc/config.js';
 
 let project;
 
@@ -55,16 +56,10 @@ async function updateProjectWithDocs(projectDetail) {
   injectSharepointData(projectDetail.urls, filePaths, docPaths, fgSpBatchFiles, true);
 }
 
-async function initProject() {
-  if (project) return project;
-  const config = await getConfig();
-  const urlInfo = getUrlInfo();
-  if (!urlInfo.isValid()) {
-    throw new Error('Invalid Url Parameters that point to project file');
-  }
-
+async function getProjFileStatus(urlInfo) {
+  const adminConfig = getHelixAdminConfig();
   // helix API to get the details/status of the file
-  const hlxAdminStatusUrl = getHelixAdminApiUrl(urlInfo, config.admin.api.status.baseURI);
+  const hlxAdminStatusUrl = getHelixAdminApiUrl(urlInfo, adminConfig.api.status.baseURI);
 
   // get the status of the project file
   const projectFileStatus = await getProjectFileStatus(hlxAdminStatusUrl, urlInfo.sp);
@@ -72,6 +67,39 @@ async function initProject() {
     throw new Error('Project file does not have valid web path');
   }
 
+  return projectFileStatus;
+}
+
+async function getFloodgateColor() {
+  const urlInfo = getUrlInfo();
+  if (!urlInfo.isValid()) {
+    throw new Error('Invalid Url Parameters that point to project file');
+  }
+
+  const projectFileStatus = await getProjFileStatus(urlInfo);
+
+  const projectPath = projectFileStatus.webPath;
+  const projectUrl = `${urlInfo.origin}${projectPath}`;
+  const projectFileJson = await readProjectFile(projectUrl);
+  if (!projectFileJson) {
+    throw new Error('Could not read the profile file');
+  }
+
+  return projectFileJson.fgcolor.data[0]?.FloodgateColor || 'pink';
+}
+
+async function initProject(fgColor) {
+  if (project) return project;
+  if (!fgColor) {
+    throw new Error('Invalid Floodgate Color');
+  }
+  const config = await getConfig(fgColor);
+  const urlInfo = getUrlInfo();
+  if (!urlInfo.isValid()) {
+    throw new Error('Invalid Url Parameters that point to project file');
+  }
+
+  const projectFileStatus = await getProjFileStatus(urlInfo);
   const projectPath = projectFileStatus.webPath;
   const projectUrl = `${urlInfo.origin}${projectPath}`;
   const projectName = projectFileStatus.edit.name;
@@ -85,6 +113,7 @@ async function initProject() {
     owner: urlInfo.owner,
     repo: urlInfo.repo,
     ref: urlInfo.ref,
+    fgColor,
     purge() {
       const hlxAdminPreviewUrl = getHelixAdminApiUrl(urlInfo, config.admin.api.preview.baseURI);
       return fetch(`${hlxAdminPreviewUrl}${projectPath}`, { method: 'POST' });
@@ -101,7 +130,8 @@ async function initProject() {
       urlsData.forEach((urlRow) => {
         const url = urlRow.URL;
         const docPath = getDocPathFromUrl(url);
-        urls.set(url, { doc: { filePath: docPath, url, fg: { url: getFloodgateUrl(url) } } });
+        const fgUrl = getFloodgateUrl(url, fgColor);
+        urls.set(url, { doc: { filePath: docPath, url, fg: { url: fgUrl } } });
         // Add urls data to filePaths map
         if (filePaths.has(docPath)) {
           filePaths.get(docPath).push(url);
@@ -110,7 +140,7 @@ async function initProject() {
         }
       });
 
-      return { url: projectUrl, name: projectName, urls, filePaths };
+      return { url: projectUrl, name: projectName, urls, filePaths, fgColor };
     },
   };
   return project;
@@ -156,4 +186,5 @@ export {
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
   updateProjectStatus,
+  getFloodgateColor,
 };

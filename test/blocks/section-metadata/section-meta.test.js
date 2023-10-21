@@ -21,7 +21,7 @@ describe('Section Metdata', () => {
   });
 
   it('Handles background image focal point', async () => {
-    const sec = document.querySelector('.section.image');
+    const sec = document.querySelector('.section.image-focalpoint');
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
     const image = sec.querySelector('img');
