@@ -1,18 +1,15 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
 import { heading, urls, languages } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import { signal } from '../../../deps/htm-preact.js';
-//import { updateExcelJson, findPageFragments } from '../../locui/actions/index.js';
 import { origin, preview } from '../../locui/utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../../locui/loc/index.js';
 
 export const showRolloutOptions = signal(false);
 
-export async function updateExcelJson() {
+async function updateExcelJson() {
   let count = 1;
   const excelUpdated = setInterval(async () => {
     setStatus('excel', 'info', `Refreshing project. Try #${count}`);
@@ -27,7 +24,7 @@ export async function updateExcelJson() {
   }, 1000);
 }
 
-export async function findPageFragments(path) {
+async function findPageFragments(path) {
   const isIndex = path.lastIndexOf('index');
   const hlxPath = isIndex > 0 ? path.substring(0, isIndex) : path;
   const resp = await fetch(`${origin}${hlxPath}`);
@@ -35,14 +32,14 @@ export async function findPageFragments(path) {
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  // Decorate the doc, but don't load any blocks (i.e. do not use loadArea)
+  // Decorate the doc without loading any blocks (i.e., do not use loadArea)
   decorateSections(doc, true);
   const fragments = [...doc.querySelectorAll('.fragment, .modal.link-block')];
   const fragmentUrls = fragments.reduce((acc, fragment) => {
     // Normalize the fragment path to support production urls.
     const pathname = fragment.dataset.modalPath || new URL(fragment.href).pathname.replace('.html', '');
 
-    // Find dupes across current iterator as well as original url list
+    // Find duplicates across the current iterator and the original url list
     const accDupe = acc.some((url) => url.pathname === pathname);
     const dupe = urls.value.some((url) => url.pathname === pathname);
 
@@ -52,7 +49,7 @@ export async function findPageFragments(path) {
     return acc;
   }, []);
   if (fragmentUrls.length === 0) return [];
-  return getUrls(fragmentUrls, true);
+  return getUrls(fragmentUrls);
 }
 
 export async function findFragments() {
@@ -77,7 +74,7 @@ export async function findFragments() {
     return acc;
   }, []);
   setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
-  //setExcelStatus('Find fragments', `Found ${forExcel.length} fragments.`);
+
   if (forExcel.length > 0) {
     urls.value = [...urls.value];
     // Update language cards count

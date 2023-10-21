@@ -1,5 +1,5 @@
 body {
-  background: url('./img/bg.png');
+  background: url('../locui/img/bg.png');
   background-size: 100%;
   background-repeat: no-repeat;
   margin: 150px;
@@ -10,18 +10,18 @@ main {
   max-height: 100vh;
 }
 
-.locui {
+.fgui {
   max-width: 83.4%;
   margin: 0 auto;
   min-height: 100vh;
   padding: 48px;
 }
 
-.locui button:disabled {
+.fgui button:disabled {
   opacity: 0.5;
 }
 
-.locui-sync-badge-container {
+.fgui-sync-badge-container {
   position: fixed;
   top: 0;
   width: 83.4%;
@@ -31,7 +31,7 @@ main {
   z-index: 100;
 }
 
-.locui-sync-badge {
+.fgui-sync-badge {
   background: #CEF8E0;
   color: #15A46E;
   font-size: 16px;
@@ -44,7 +44,7 @@ main {
   font-weight: 700;
 }
 
-button.locui-sync-badge-header {
+button.fgui-sync-badge-header {
   font-family: 'Adobe Clean', adobe-clean, sans-serif;
   color: #15A46E;
   background: #CEF8E0;
@@ -56,28 +56,28 @@ button.locui-sync-badge-header {
   display: block;
 }
 
-.locui-sync-badge-content {
+.fgui-sync-badge-content {
   padding: 0 8px;
   line-height: 24px;
   margin-top: -8px;
 }
 
-span.locui-sync-badge-mono {
+span.fgui-sync-badge-mono {
   font-family: monospace;
 }
 
-.locui-project-heading {
+.fgui-project-heading {
   display: flex;
   gap: 48px;
   margin: 0 0 48px;
 }
 
-.locui-project-heading-column {
+.fgui-project-heading-column {
   flex: 1;
 }
 
-.locui-project-details-project,
-.locui-project-details-name {
+.fgui-project-details-project,
+.fgui-project-details-name {
   display: flex;
   gap: 12px;
   text-transform: capitalize;
@@ -87,8 +87,8 @@ span.locui-sync-badge-mono {
   align-items: center;
 }
 
-.locui-project-details-edit {
-  background: url('./img/edit-sheet.svg');
+.fgui-project-details-edit {
+  background: url('../locui/img/edit-sheet.svg');
   width: 68px;
   text-indent: -1000px;
   overflow: hidden;
@@ -96,8 +96,8 @@ span.locui-sync-badge-mono {
   background-repeat: no-repeat;
 }
 
-.locui-project-details-refresh {
-  background: url(./img/spectrum-refresh.svg);
+.fgui-project-details-refresh {
+  background: url(../locui/img/spectrum-refresh.svg);
   width: 26px;
   text-indent: -1000px;
   overflow: hidden;
@@ -110,51 +110,51 @@ span.locui-sync-badge-mono {
   border-radius: 2px;
 }
 
-.locui-status-toast-section {
+.fgui-status-toast-section {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
 }
 
-.locui-status-toast {
+.fgui-status-toast {
   position: relative;
   border-radius: 4px;
   margin-bottom: 20px;
   width: 420px;
 }
 
-.locui-status-toast-type-info {
+.fgui-status-toast-type-info {
   background: linear-gradient(0deg, rgb(0 154 206 / 100%) 0%, rgb(0 139 186 / 100%) 100%);
   color: #003d52;
 }
 
-.locui-status-toast-type-error {
+.fgui-status-toast-type-error {
   background: #d66060;
   color: #790909;
 }
 
-.locui-status-toast-content {
+.fgui-status-toast-content {
   margin: 0 16px;
   display: flex;
   align-items: center;
 }
 
-.locui-status-toast-content-type {
+.fgui-status-toast-content-type {
   margin: 0 6px 0 0;
   font-weight: 700;
   text-transform: uppercase;
   line-height: 48px;
 }
 
-p.locui-status-toast-description {
+p.fgui-status-toast-description {
   display: none;
   margin: 0;
   padding: 12px 16px;
   background: rgba(255 255 255 / 10%);
 }
 
-div.locui-status-toast-expand {
+div.fgui-status-toast-expand {
   position: absolute;
   right: 0;
   top: 0;
@@ -165,11 +165,11 @@ div.locui-status-toast-expand {
   transition: transform .2s ease-in-out;
 }
 
-div.locui-status-toast.open div.locui-status-toast-expand {
+div.fgui-status-toast.open div.fgui-status-toast-expand {
   transform: rotate(90deg);
 }
 
-div.locui-status-toast-expand::after {
+div.fgui-status-toast-expand::after {
   content: '';
   position: absolute;
   right: 20px;
@@ -183,22 +183,22 @@ div.locui-status-toast-expand::after {
   height: 10px;
 }
 
-div.locui-status-toast.open p.locui-status-toast-description {
+div.fgui-status-toast.open p.fgui-status-toast-description {
   display: block;
 }
 
 
-.locui-section {
+.fgui-section {
   margin-bottom: 36px;
 }
 
-.locui-section-heading {
+.fgui-section-heading {
   display: flex;
   align-items: center;
   margin: 24px 0 12px;
 }
 
-h2.locui-section-label {
+h2.fgui-section-label {
   font-weight: 700;
   text-transform: uppercase;
   margin: 0;
@@ -206,36 +206,39 @@ h2.locui-section-label {
   line-height: 1;
 }
 
-p.locui-project-label {
+p.fgui-project-label {
   font-size: 16px;
   margin: 0;
   font-weight: 700;
   text-transform: uppercase;
 }
 
-.locui-project-name-totals {
+.fgui-project-name-totals {
   display: flex;
   align-items: baseline;
   gap: 6px;
 }
 
-.locui-project-name-totals h4 {
+.fgui-project-name-totals h4 {
   margin: 0;
   font-weight: 400;
 }
 
-.locui-subprojects {
+.fgui-subprojects {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: 24px;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 
-li.locui-subproject {
+li.fgui-subproject {
   position: relative;
-  min-height: 320px;
+  min-height: 200px;
+  min-width: 80px;
+  max-width: 250px;
+  max-height: 250px;
   border: 4px solid rgb(246 97 182);
   background: rgb(255 100 194 / 30%);
   border-radius: 6px;
@@ -244,11 +247,11 @@ li.locui-subproject {
   backdrop-filter: blur(.3em);
 }
 
-.locui-subproject-badge {
+.fgui-subproject-badge {
   position: absolute;
   right: 0;
   color: #FFF;
-  background: #000;
+  background: #000000;
   text-transform: uppercase;
   font-size: 14px;
   font-weight: 700;
@@ -256,51 +259,71 @@ li.locui-subproject {
   border-radius: 6px 0 0 6px;
 }
 
-li.locui-subproject.locui-subproject-not-started {
+li.fgui-subproject.fgui-subproject-NOT.STARTED {
   border-color: #B8B8B8;
   background: rgb(234 234 234 / 25%);
 }
 
-li.locui-subproject.locui-subproject-translated {
+li.fgui-subproject.fgui-subproject-placeholder {
+  border-color: #B8B8B8;
+  background: rgb(234 234 234 / 25%);
+}
+
+li.fgui-subproject.fgui-subproject-COMPLETED {
   border-color: #093;
   background: rgb(149 230 195 / 20%);
 }
 
-li.locui-subproject.locui-subproject-translated .locui-subproject-badge {
+li.fgui-subproject.fgui-subproject-COMPLETED.WITH.ERROR {
+  border-color: #093;
+  background: rgb(149 230 195 / 20%);
+}
+
+li.fgui-subproject.fgui-subproject-FAILED {
+  border-color: rgb(205, 8, 8);
+  background: rgba(198, 138, 138, 0.2);
+}
+
+li.fgui-subproject.fgui-subproject-IN.PROGRESS {
+  border-color: rgb(238, 234, 11);
+  background: rgba(189, 194, 134, 0.2);
+}
+
+li.fgui-subproject.fgui-subproject-translated .fgui-subproject-badge {
   background: #093;
 }
 
-li.locui-subproject.locui-subproject-rolling-out .locui-subproject-badge,
-li.locui-subproject.locui-subproject-completed .locui-subproject-badge {
+li.fgui-subproject.fgui-subproject-rolling-out .fgui-subproject-badge,
+li.fgui-subproject.fgui-subproject-completed .fgui-subproject-badge {
   background: rgb(246 97 182);
 }
 
-li.locui-subproject.locui-subproject-in-progress {
+li.fgui-subproject.fgui-subproject-in-progress {
   border-color: #80B3E7;
   background: rgb(184 222 244 / 20%);
 }
 
-li.locui-subproject.locui-subproject-in-progress .locui-subproject-badge {
+li.fgui-subproject.fgui-subproject-in-progress .fgui-subproject-badge {
   background: #80B3E7;
 }
 
-h3.locui-subproject-name {
+h3.fgui-subproject-name {
   font-weight: 400;
-  font-size: 28px;
+  font-size: 20px;
   margin: 0 0 24px;
 }
 
-div.locui-subproject-items {
+div.fgui-subproject-items {
   display: flex;
   gap: 96px;
 }
 
-div.locui-subproject-locales {
+div.fgui-subproject-locales {
   display: flex;
   flex-wrap: wrap;
 }
 
-button.locui-subproject-locale {
+button.fgui-subproject-locale {
   font-family: 'Adobe Clean', adobe-clean, sans-serif;
   background: rgb(0 0 0 / 15%);
   margin: 4px 4px 0 0;
@@ -312,12 +335,12 @@ button.locui-subproject-locale {
   line-height: 1;
 }
 
-button.locui-subproject-locale:hover {
+button.fgui-subproject-locale:hover {
   cursor: pointer;
   background: rgb(255 251 251 / 80%);
 }
 
-.locui-subproject-action-area {
+.fgui-subproject-action-area {
   display: flex;
   justify-content: end;
   position: absolute;
@@ -325,15 +348,15 @@ button.locui-subproject-locale:hover {
   bottom: 18px;
 }
 
-div.locui-url-heading-actions,
-div.locui-url-heading-action-group {
+div.fgui-url-heading-actions,
+div.fgui-url-heading-action-group {
   min-height: 36px;
   display: flex;
   gap: 12px;
 }
 
-button.loc-action,
-button.locui-urls-heading-action {
+button.fg-action,
+button.fgui-urls-heading-action {
   outline: transparent solid 0;
   transition: outline 300ms;
   border: none;
@@ -351,11 +374,11 @@ button.locui-urls-heading-action {
   box-sizing: border-box;
 }
 
-li.locui-subproject.locui-subproject-translated button.locui-urls-heading-action {
+li.fgui-subproject.fgui-subproject-translated button.fgui-urls-heading-action {
   background: #093;
 }
 
-ul.locui-urls {
+ul.fgui-urls {
   margin: 0;
   list-style: none;
   background: rgb(213 213 213 / 11%);
@@ -366,16 +389,16 @@ ul.locui-urls {
   backdrop-filter: blur(0.3em);
 }
 
-li.locui-url {
+li.fgui-url {
   padding: 18px 0;
   border-bottom: 1px solid #ccc;
 }
 
-li.locui-url:last-child {
+li.fgui-url:last-child {
   border-bottom: unset;
 }
 
-h3.locui-url-label {
+h3.fgui-url-label {
   font-size: 16px;
   line-height: 1;
   margin: 0;
@@ -383,41 +406,41 @@ h3.locui-url-label {
   text-transform: uppercase;
 }
 
-p.locui-url-path {
+p.fgui-url-path {
   font-size: 1.4rem;
   margin: 12px 0 24px;
 }
 
 /* TABS */
 
-.locui-tabs {
+.fgui-tabs {
   min-height: 120px;
 }
 
-.locui-url-tab-group {
+.fgui-url-tab-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-.locui-url-tab-group-cols-1 {
+.fgui-url-tab-group-cols-1 {
   grid-template-columns: 1fr;
 }
 
-span.locui-tab-buttons-suffix {
+span.fgui-tab-buttons-suffix {
   font-size: 16px;
   font-weight: 700;
   text-transform: uppercase;
   color: #777;
 }
 
-.locui-tab-buttons {
+.fgui-tab-buttons {
   display: flex;
   gap: 12px;
   align-items: baseline;
   margin-bottom: 12px;
 }
 
-.locui-url-tab-button {
+.fgui-url-tab-button {
   background: none;
   font-size: 16px;
   line-height: 1;
@@ -429,28 +452,28 @@ span.locui-tab-buttons-suffix {
   padding: 0 0 4px;
 }
 
-.locui-url-tab-button[aria-selected="true"] {
+.fgui-url-tab-button[aria-selected="true"] {
   border-bottom: 2px solid;
 }
 
-.locui-tab-panel[aria-selected="false"] {
+.fgui-tab-panel[aria-selected="false"] {
   display: none;
 }
 
 /* END TABS */
 
-div.locui-url-actions {
+div.fgui-url-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-.locui-url-source-actions {
+.fgui-url-source-actions {
   margin-top: 22px;
   display: flex;
   gap: 24px;
 }
 
-button.locui-url-action {
+button.fgui-url-action {
   position: relative;
   min-width: 88px;
   display: block;
@@ -465,12 +488,12 @@ button.locui-url-action {
   cursor: pointer;
 }
 
-.locui-action-loading::after {
+.fgui-action-loading::after {
   content: '';
   position: absolute;
   left: 50%;
   top: 50%;
-  background: url('./img/spectrum-refresh.svg');
+  background: url('../locui/img/spectrum-refresh.svg');
   width: 26px;
   height: 26px;
   background-repeat: no-repeat;
@@ -491,26 +514,55 @@ button.locui-url-action {
   }
 }
 
-button.locui-url-action[disabled] {
+button.fgui-url-action[disabled] {
   opacity: 0.25;
 }
 
-button.locui-url-action:hover {
+.fgui-urls-heading-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Set an immediate transition delay for the tooltip */
+.fgui-urls-heading-action:disabled[title]::before {
+  content: attr(title);
+  display: none;
+  transition: opacity 0s ease-in-out;
+}
+
+/* Show the tooltip */
+.fgui-urls-heading-action:disabled:hover[title]::before {
+  display: block;
+  position: absolute;
+  bottom: 100%; /* Position above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 1;
+  z-index: 1000;
+}
+
+button.fgui-url-action:hover {
   text-decoration: none;
   background-color: #d9d9d9;
   color: #000;
   box-shadow: inset 0 0 10px #9f9f9f;
 }
 
-button.locui-url-action-edit {
+button.fgui-url-action-edit {
   background: url('../../ui/img/word-icon.svg') center 14px / 26px no-repeat;
 }
 
-button.locui-url-action-view {
+button.fgui-url-action-view {
   background: url('../../ui/img/aec-icon.svg') center 14px / 26px no-repeat;
 }
 
-.locui-url-source-details {
+.fgui-url-source-details {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   width: 80%;
@@ -518,32 +570,32 @@ button.locui-url-action-view {
   padding-top: 6px;
 }
 
-.locui-url-source-details-col h3,
-.locui-url-source-details-col p {
+.fgui-url-source-details-col h3,
+.fgui-url-source-details-col p {
   margin: 0;
   line-height: 1.4;
 }
 
-.locui-url-source-details-col h3 {
+.fgui-url-source-details-col h3 {
   font-size: 16px;
   text-transform: uppercase;
 }
 
-#locui-modal {
+#fgui-modal {
   padding: 0 24px 24px;
 }
 
-#locui-modal ul.locui-urls {
+#fgui-modal ul.fgui-urls {
   backdrop-filter: unset;
 }
 
 @media screen and (min-width: 1200px) {
-  .locui,
-  .locui-sync-badge-container {
+  .fgui,
+  .fgui-sync-badge-container {
     max-width: 1200px;
   }
 
-  #locui-modal {
+  #fgui-modal {
     min-width: 800px;
   }
 }
@@ -553,14 +605,24 @@ helix-sidekick {
 }
 
 .pagination {
+
+  text-align: right;
+  font-size: 1rem; /* Adjust the font size as needed */
   margin-top: 10px;
-  text-align: center;
+}
+
+.pagination-bottom {
+  margin-bottom: 20px;
+  padding-bottom: 30px;
+  text-align: right;
+
 }
 
 .prev-page,
 .next-page,
 .page-button {
-  background-color: #007bff;
+  font-size: 1rem;
+  background-color: #2e6c31;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -573,13 +635,271 @@ helix-sidekick {
 .prev-page:hover,
 .next-page:hover,
 .page-button:hover {
-  background-color: #0056b3;
+  background-color: #2e6c31;
 }
 
 .current-page {
-  background-color: #0056b3;
+  background-color: #2e6c31;
+  font-size: 1rem;
 }
 
 .current-page:hover {
-  background-color: #004aa0;
+  background-color: #2e6c31;
 }
+
+/* Add subtle colors and spacing to the table */
+.container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.project-status {
+  background: rgb(213 213 213 / 11%);
+  padding: 20px;
+  margin-top: 10px;
+  border: 4px solid #e6e6e6;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(.3em);
+  backdrop-filter: blur(0.3em);
+}
+
+#pr-status {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+#pr-status th, #pr-status td {
+  border: 1px solid #e6e6e6;
+  padding: 12px;
+  text-align: left;
+}
+
+#pr-status th {
+  background-color: #2e6c31;
+  color: white;
+}
+
+.title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-top: 5px;
+  font-size: larger;
+}
+
+/* Additional styles for better visibility and aesthetics */
+#pr-status td {
+  background-color: #ffffff;
+}
+
+#pr-status tr:nth-child(even) td {
+  background-color: rgb(213, 213, 213, 0.11);
+}
+
+#pr-status tr:hover {
+  background-color: #e0f7fa;
+  transition: background-color 0.3s;
+}
+
+
+#modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure the overlay is on top of other elements */
+}
+
+#fg-modal {
+  background: #fff;
+  padding: 50px;
+  padding-bottom: 50px;
+  padding-left: 100px;
+  padding-right: 100px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.modal-content {
+  text-align: center;
+}
+
+.fgui-urls-heading-action.longer-button.yes-btn {
+  background-color: #2e6c31;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px; /* Add margin-right for space */
+}
+
+.fgui-urls-heading-action.longer-button.no-btn {
+  background-color: hsl(120, 7%, 11%);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.longer-button {
+  width: 120px; /* Adjust the width as needed */
+}
+
+.search-box {
+  max-width: 2000px;
+}
+/* Styles for the search box */
+.search-box-pagination-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.search-box-container { /* Add the border to the container */
+  border-radius: 4px;
+  position: relative; /* Make the container relative for positioning the cross */
+}
+
+.search-box-container input {
+  font-size: 1.2rem;
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 5px;
+  min-width: 450px;
+}
+
+.search-box-container input::placeholder {
+  font-size: 1.2rem; /* Adjust the font size for the placeholder */
+}
+
+.search-box-container button {
+  background-color: #2e6c31;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-left: 20px
+}
+
+.search-box-container button:hover {
+  background-color: #2e6c31;
+}
+
+.message { /* Green background color */
+  color: #000000; /* White text color */
+  font-weight: 800;
+  margin-bottom: 20px; /* Add space between the message and other content */
+  border-radius: 5px; /* Rounded corners */
+  font-size: 16px; /* Font size */
+}
+
+.search-box button.clear-icon {
+  background:#333;
+  border: none;
+  font-size: 1rem;
+  font-weight: 200;
+  cursor:pointer;
+  color: #2e6c31;
+  margin-left: -30px; /* Adjust the margin as needed */
+}
+
+
+.search-box .clear-icon:hover {
+  color: red; 
+  cursor: pointer;/* Change the color as desired */
+}
+
+.loading-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  border-top: 3px solid #0b4b1a;
+  animation: spin 1s linear infinite;
+}
+
+.loading-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Assuming this is the height of the container, adjust as needed */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0; /* Fully transparent at the start and end */
+  }
+  50% {
+    opacity: 1; /* Fully opaque in the middle */
+  }
+}
+
+.spectrum-search-field {
+  display: flex;
+  align-items: center;
+}
+
+.spectrum-search-field input {
+  min-width: 500px;
+  border: none;
+  flex-grow: 1;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white url('./img/searchBoxIcon.png') left center no-repeat;
+  padding-left: 45px; /* Adjust as needed to accommodate the image */
+  background-size: 4.5%;
+  background-position: 10px;
+}
+
+.spectrum-search-field .spectrum-search-icon {
+  width: 16px;
+  height: 16px;
+  /* Replace 'your-search-icon-url' with the actual URL or path to your search icon */
+}
+
+.clear-icon {
+  cursor: pointer;
+  margin-left: 8px;
+  margin-right: 10px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.spectrum-search-field input::after {
+  content: '×'; /* Cross symbol content */
+  font-size: 1rem; /* Adjust the font size as needed */
+  color: black; /* Cross color */
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.spectrum-search-field input:focus {
+  border-color: #ccc; /* Add border color for focus state */
+}
+

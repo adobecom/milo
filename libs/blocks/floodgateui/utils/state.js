@@ -24,6 +24,14 @@ export const projectStatus = signal({});
 export const canRefresh = signal(false);
 export const serviceStatus = signal('');
 export const serviceStatusDate = signal();
+export const copyStatusCheck = signal();
+export const promoteStatusCheck = signal();
+export const deleteStatusCheck = signal();
+export const allActionStatus = signal();
+export const cssStatusCopy = signal();
+export const cssStatusPromote = signal();
+export const cssStatusDelete = signal();
+export const fgColor = signal();
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');

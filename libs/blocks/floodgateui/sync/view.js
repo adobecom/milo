@@ -8,11 +8,11 @@ export default function Sync() {
   const connectedTo = heading.value.env ? `${serviceStatus} (${heading.value.env})` : serviceStatus;
 
   return html`
-    <div class=locui-sync-badge-container>
-      <div class="locui-sync-badge locui-sync-badge-status-${prettySync}">
-        <button class=locui-sync-badge-header onClick=${toggleContent}>${connectedTo}</button>
+    <div class=fgui-sync-badge-container>
+      <div class="fgui-sync-badge fgui-sync-badge-status-${prettySync}">
+        <button class=fgui-sync-badge-header onClick=${toggleContent}>${connectedTo}</button>
         ${showContents.value && html`
-          <div class=locui-sync-badge-content>Last sync: <span class=locui-sync-badge-mono>${prettyDate[1]}</span></div>
+          <div class=fgui-sync-badge-content>Last sync: <span class=fgui-sync-badge-mono>${prettyDate[1]}</span></div>
         `}
       </div>
     </div>

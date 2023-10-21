@@ -6,20 +6,20 @@ function useSignal(value) {
 }
 
 function Actions({ item, suffix }) {
-  const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
+  const isExcel = item.value.path.endsWith('.json') ? ' fgui-url-action-edit-excel' : ' fgui-url-action-edit-word';
   return html`
-    <div class=locui-url-source-actions>
+    <div class=fgui-url-source-actions>
       <button
         disabled=${item.value.edit?.status === 404}
-        class="locui-url-action locui-url-action-edit${isExcel}"
+        class="fgui-url-action fgui-url-action-edit${isExcel}"
         onClick=${(e) => { openWord(e, item, suffix); }}>Edit</button>
       <button
         disabled=${item.value.preview?.status !== 200}
-        class="locui-url-action locui-url-action-view"
+        class="fgui-url-action fgui-url-action-view"
         onClick=${() => { handleAction(item.value.preview.url); }}>Preview</button>
       <button
         disabled=${item.value.live?.status !== 200}
-        class="locui-url-action locui-url-action-view"
+        class="fgui-url-action fgui-url-action-view"
         onClick=${() => { handleAction(item.value.live.url); }}>Live</button>
     </div>
   `;
@@ -27,22 +27,22 @@ function Actions({ item, suffix }) {
 
 function Details({ item }) {
   return html`
-    <div class=locui-url-source-details>
-      <div class=locui-url-source-details-col>
+    <div class=fgui-url-source-details>
+      <div class=fgui-url-source-details-col>
         <h3>Modified</h3>
-        <p class=locui-url-source-details-date>
+        <p class=fgui-url-source-details-date>
           ${item.value.edit.modified[0]}
         </p>
-        <p class=locui-url-source-details-time>
+        <p class=fgui-url-source-details-time>
           ${item.value.edit.modified[1]}
         </p>
       </div>
-      <div class=locui-url-source-details-col>
+      <div class=fgui-url-source-details-col>
         <h3>Previewed</h3>
         <p>${item.value.preview.modified[0]}</p>
         <p>${item.value.preview.modified[1]}</p>
       </div>
-      <div class=locui-url-source-details-col>
+      <div class=fgui-url-source-details-col>
         <h3>Published</h3>
         <p>${item.value.live.modified[0]}</p>
         <p>${item.value.live.modified[1]}</p>
@@ -75,7 +75,7 @@ function TabButton({ tabs, tab, idx }) {
   return html`
     <button
       id=${id}
-      class=locui-url-tab-button
+      class=fgui-url-tab-button
       key=${tab.title}
       aria-selected=${selected}
       onClick=${() => setTab(tabs, tab)}>
@@ -91,7 +91,7 @@ function TabPanel({ tab, idx, item, suffix }) {
   return html`
     <div
       id=${id}
-      class=locui-tab-panel
+      class=fgui-tab-panel
       aria-labelledby=${labeledBy}
       key=${tab.title}
       aria-selected=${selected}
@@ -110,12 +110,12 @@ export default function Tabs({ suffix, path, idx }) {
 
   useEffect(() => { setActions(item, suffix, idx); }, [item, idx]);
   return html`
-    <div class=locui-tabs>
-      <div class=locui-tab-buttons>
+    <div class=fgui-tabs>
+      <div class=fgui-tab-buttons>
         ${tabs.value.map((tab, idx) => html`<${TabButton} tabs=${tabs} tab=${tab} idx=${idx} />`)}
-        <span class=locui-tab-buttons-suffix>(${suffix})</span>
+        <span class=fgui-tab-buttons-suffix>(${suffix})</span>
       </div>
-      <div class=locui-tab-content>
+      <div class=fgui-tab-content>
         ${item.value.preview && html`
           ${tabs.value.map((tab, idx) => html`<${TabPanel} tab=${tab} idx=${idx} item=${item} suffix=${suffix}/>`)}
         `}

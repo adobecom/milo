@@ -43,3 +43,14 @@ export default async function getServiceConfig(origin, envName) {
 
   return config[env];
 }
+
+export async function getServiceConfigFg(origin, envName) {
+  if (config) return config;
+  const utilsConfig = getConfig();
+  const queryEnv = new URLSearchParams(window.location.search).get('env');
+  const env = queryEnv || envName || utilsConfig.env.name;
+  const resp = await fetch(`${origin}${DOT_MILO}`);
+  if (!resp.ok) return { error: 'Could not fetch .milo/config.' };
+  const json = await resp.json();
+  return json;
+}
