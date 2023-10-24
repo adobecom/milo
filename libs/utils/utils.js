@@ -285,6 +285,15 @@ export function loadStyle(href, callback) {
   return loadLink(href, { rel: 'stylesheet', callback });
 }
 
+function hideDashes(document) {
+  const pTags = document.querySelectorAll('p');
+  pTags.forEach((p) => {
+    if (p.innerHTML === '------') {
+      p.classList.add('hide-block');
+    }
+  });
+}
+
 export function appendHtmlToCanonicalUrl() {
   const { useDotHtml } = getConfig();
   if (!useDotHtml) return;
@@ -1028,6 +1037,7 @@ export async function loadArea(area = document) {
     window.milo = {};
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
+    hideDashes(area);
     resolveDeferredFn = setupDeferredPromise();
   }
 

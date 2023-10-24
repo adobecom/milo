@@ -15,6 +15,8 @@ import {
   stripExtension,
 } from './utils.js';
 
+const SIX_DASH_HASH = 'cea073fb9b2173bba877383ad9e65d8a2b437458';
+
 async function persistDoc(srcPath, docx, dstPath) {
   try {
     await saveFileAndUpdateMetadata(srcPath, docx, dstPath, { RolloutStatus: 'Merged' });
@@ -62,12 +64,32 @@ const addBoldHeaders = (mdast) => {
 
 const hashToContentMap = new Map();
 function processMdast(nodes) {
-  const arrayWithContentHash = [];
-  nodes.forEach((node) => {
+  const arrayWithContentHash = [];  
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
     const hash = objectHash.sha1(node);
-    arrayWithContentHash.push(hash);
-    hashToContentMap.set(hash, node);
-  });
+    if (hash === SIX_DASH_HASH) {
+      const groupArray = [];
+      groupArray.push(node);
+      for (let j = i + 1; j < nodes.length; j++) {
+        const nextNode = nodes[j];
+        const nextHash = objectHash.sha1(nextNode);
+        i = j;
+        if (nextHash !== SIX_DASH_HASH) {
+          groupArray.push(nextNode);
+        } else {
+          groupArray.push(nextNode);
+          break;
+        }        
+      }
+      const hashOfGroupArray = objectHash.sha1(groupArray);
+      arrayWithContentHash.push(hashOfGroupArray);
+      hashToContentMap.set(hashOfGroupArray, groupArray);
+    } else {
+      arrayWithContentHash.push(hash);
+      hashToContentMap.set(hash, node);
+    }
+  }
   return arrayWithContentHash;
 }
 
@@ -195,11 +217,20 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
     // Creating new object of langstoreContent to avoid mutation of original object
     const newContent = JSON.parse(JSON.stringify(content));
     if (elem.classType === 'deleted') {
-      addTrackChangesInfo('Langstore Version', elem.classType, newContent);
+      if (Array.isArray(newContent))
+        newContent.forEach((el) => addTrackChangesInfo('Langstore Version', elem.classType, el));
+      else 
+        addTrackChangesInfo('Langstore Version', elem.classType, newContent);
     } else if (elem.classType === 'added') {
-      addTrackChangesInfo('Regional Version', elem.classType, newContent);
+      if (Array.isArray(newContent))
+        newContent.forEach((el) => addTrackChangesInfo('Regional Version', elem.classType, el));
+      else 
+        addTrackChangesInfo('Regional Version', elem.classType, newContent);      
     }
-    mergedMdast.children.push(newContent);
+    if (Array.isArray(newContent))
+      mergedMdast.children.push(...newContent);
+    else 
+      mergedMdast.children.push(newContent);
   });
   return mergedMdast;
 }
