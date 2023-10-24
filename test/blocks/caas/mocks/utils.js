@@ -62,6 +62,8 @@ export const parseEncodedConfig = stub().returns({
   showBookmarksOnCards: false,
   showFilters: false,
   filters: [],
+  secondarySource: '',
+  secondaryTags: [],
   showSearch: false,
   showTotalResults: false,
   sortDefault: 'dateDesc',
