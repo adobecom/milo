@@ -1,3 +1,4 @@
+/* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
@@ -54,6 +55,35 @@ export const loadStrings = async (
   } catch (err) {
     return {};
   }
+};
+
+export const decodeCompressedString = async (txt) => {
+  if (!window.DecompressionStream) {
+    await import('../../deps/compression-streams-pollyfill.js');
+  }
+  const b64decode = (str) => {
+    const binaryStr = window.atob(str);
+    const bytes = new Uint8Array(new ArrayBuffer(binaryStr.length));
+    binaryStr?.split('')
+      .forEach((c, i) => (bytes[i] = c.charCodeAt(0)));
+    return bytes;
+  };
+
+  const b64toStream = (b64) => new Blob([b64decode(b64)], { type: 'text/plain' }).stream();
+
+  const decompressStream = async (stream) => new Response(
+    // eslint-disable-next-line no-undef
+    stream.pipeThrough(new DecompressionStream('gzip')),
+  );
+
+  const responseToJSON = async (response) => {
+    const blob = await response.blob();
+    return JSON.parse(await blob.text());
+  };
+
+  const stream = b64toStream(txt);
+  const resp = await decompressStream(stream);
+  return responseToJSON(resp);
 };
 
 export const loadCaasFiles = async () => {
