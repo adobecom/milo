@@ -92,8 +92,7 @@ export const loadCaasFiles = async () => {
   loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
-  // await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
-  await loadScript('http://localhost:5000/dist/main.js');
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
@@ -398,9 +397,7 @@ export const getConfig = async (originalState, strs = {}) => {
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
         ',',
-      )}&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
-        ',',
-      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
+      )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
@@ -635,8 +632,6 @@ export const defaultState = {
   placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],
-  secondaryTags: [],
-  secondarySource: [],
   setCardBorders: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
