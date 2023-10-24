@@ -131,6 +131,10 @@
   content: '*';
 }
 
+p {
+  font-family:"adobe-clean";
+}
+
 .marketo .mktoForm .mktoField {
   width: 100%!important;
   padding: 9px var(--spacing-xs);

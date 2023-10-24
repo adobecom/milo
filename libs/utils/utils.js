@@ -1057,7 +1057,18 @@ export function parseEncodedConfig(encodedConfig) {
   return null;
 }
 
+function isElementInView(element) {
+  const rect = element.getBoundingClientRect();
+  return (
+    rect.top >= 0
+    && rect.left >= 0
+    && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    && rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+}
+
 export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
+  if (isElementInView(el)) return callback(el);
   const io = new IntersectionObserver((entries, observer) => {
     entries.forEach(async (entry) => {
       if (entry.isIntersecting) {

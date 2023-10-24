@@ -15,6 +15,7 @@
  */
 import { parseEncodedConfig, loadScript, createTag, createIntersectionObserver } from '../../utils/utils.js';
 
+const ROOT_MARGIN = 1000;
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
@@ -91,6 +92,8 @@ const readyForm = (form) => {
   }, true);
   form.onValidate(() => formValidate(form));
   form.onSuccess(() => formSuccess(form));
+  performance.mark('MarketoBlockFormReady-end');
+  performance.measure('MarketoBlockFormReady', 'MarketoBlockFormReady-start', 'MarketoBlockFormReady-end');
 };
 
 const setPreference = (key, value) => {
@@ -111,6 +114,7 @@ export const setPreferences = (formData) => {
 };
 
 export const loadMarketo = (el, formData) => {
+  performance.mark('MarketoBlockForms2-start');
   const baseURL = formData[BASE_URL];
 
   loadScript(`https://${baseURL}/js/forms2/js/forms2.min.js`)
@@ -118,8 +122,15 @@ export const loadMarketo = (el, formData) => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
-      MktoForms2.loadForm(`//${baseURL}`, formData[MUNCHKIN_ID], formData[FORM_ID]);
+      performance.mark('MarketoBlockLoadForm-start');
+      MktoForms2.loadForm(`//${baseURL}`, formData[MUNCHKIN_ID], formData[FORM_ID], () => {
+        performance.mark('MarketoBlockLoadForm-end');
+        performance.measure('MarketoBlockLoadForm', 'MarketoBlockLoadForm-start', 'MarketoBlockLoadForm-end');
+        performance.mark('MarketoBlockFormReady-start');
+      });
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
+      performance.mark('MarketoBlockForms2-end');
+      performance.measure('MarketoBlockForms2', 'MarketoBlockForms2-start', 'MarketoBlockForms2-end');
     })
     .catch(() => {
       /* c8 ignore next */
@@ -128,6 +139,7 @@ export const loadMarketo = (el, formData) => {
 };
 
 export default function init(el) {
+  performance.mark('MarketoBlock-start');
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
   const link = encodedConfigDiv.querySelector('a');
@@ -199,5 +211,9 @@ export default function init(el) {
     callback: (target) => {
       loadMarketo(target, formData);
     },
+    options: { rootMargin: `${ROOT_MARGIN}px` },
   });
+
+  performance.mark('MarketoBlock-end');
+  performance.measure('MarketoBlock', 'MarketoBlock-start', 'MarketoBlock-end');
 }
