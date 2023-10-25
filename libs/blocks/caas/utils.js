@@ -9,7 +9,7 @@ import {
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
-const LOCALES = {
+export const LOCALES = {
   // Americas
   ar: { ietf: 'es-AR' },
   br: { ietf: 'pt-BR' },
