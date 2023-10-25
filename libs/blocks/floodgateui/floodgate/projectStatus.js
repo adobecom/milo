@@ -121,7 +121,9 @@ export function ProjectStatus(actionType) {
           <h3 class="fgui-subproject-name">${action.toUpperCase()}</h3>
           <p class="fgui-project-label">Last Run</p>
           <h3 class="fgui-subproject-name">
-            ${new Date(allActionStatus.value[actionNameStatus]?.payload?.action?.startTime).toLocaleString() || '-'}
+          ${allActionStatus.value[actionNameStatus]?.payload?.action?.startTime
+            ? new Date(allActionStatus.value[actionNameStatus]?.payload?.action?.startTime).toLocaleString()
+            : '-'}
           </h3>
           <p class="fgui-project-label">Description</p>
           <h3 class="fgui-subproject-name">
