@@ -1,6 +1,6 @@
 import { html, useEffect } from '../../../deps/htm-preact.js';
 import { autoSetup, setup } from './index.js';
-import { showLogin, heading, urls, serviceStatus } from '../utils/state.js';
+import { showLogin, heading, urls, serviceStatus, renderSignal } from '../utils/state.js';
 import { account } from '../../../tools/sharepoint/state.js';
 import Heading from '../heading/view.js';
 import Actions from '../actions/view.js';
@@ -27,15 +27,17 @@ export default function Floodgate() {
     <div>${heading.value.editUrl && html`<${Heading} />`}</div>
 
     <div class=fgui-section>
-    <div class=fgui-section-heading>
-      <h2 class=fgui-section-label>PROJECT STATUS</h2>
+      <div class=fgui-section-heading>
+        <h2 class=fgui-section-label>PROJECT STATUS</h2>
+      </div>
+      <div key=${renderSignal.value}>
+        <ul class=fgui-subprojects>
+          <${ProjectStatus} action="copy" />
+          <${ProjectStatus} action="promote" />
+          <${ProjectStatus} action="delete" />
+        </ul>
+      </div>
     </div>
-    <ul class=fgui-subprojects>
-    <${ProjectStatus} action="copy" />
-    <${ProjectStatus} action="promote" />
-    <${ProjectStatus} action="delete" />
-  </ul>
-  </div>
 
     <div>${urls.value.length > 0 && html`<${Actions} />`}</div>
     <div>${urls.value.length > 0 && html`<${Urls} />`}</div>

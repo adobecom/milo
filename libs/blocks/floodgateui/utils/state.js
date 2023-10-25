@@ -32,6 +32,7 @@ export const cssStatusCopy = signal();
 export const cssStatusPromote = signal();
 export const cssStatusDelete = signal();
 export const fgColor = signal();
+export const renderSignal = signal(0);
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');
