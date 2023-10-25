@@ -122,7 +122,7 @@
 .inset.text-block .foreground ul,
 .inset.text-block .foreground ol {
   list-style: outside;
-  padding-left: var(--spacing-xs);;
+  padding-left: var(--spacing-xs);
 }
 
 /* Legal */
