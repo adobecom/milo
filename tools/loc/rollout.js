@@ -118,7 +118,7 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
         const { children } = content;
         for (let i = 0; i < children.length; i += 1) {
           const child = children[i];
-          if (child.type === 'text' || child.type === 'gtRow' || child.type === 'image') {
+          if (child.type === 'text' || child.type === 'gtRow' || child.type === 'image' || child.type === 'html') {
             child.author = author;
             child.action = action;
           }
