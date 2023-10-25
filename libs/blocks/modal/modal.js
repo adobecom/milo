@@ -34,7 +34,6 @@ export function sendAnalytics(event) {
 function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
-  document.body.classList.remove('commerce-modal-open');
   window.dispatchEvent(closeEvent);
   const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
   const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
@@ -43,6 +42,7 @@ function closeModal(modal) {
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
+      document.body.classList.remove('disable-scroll');
       mod.nextElementSibling.remove();
     }
     if (mod.classList.contains('dialog-modal')) {
@@ -166,6 +166,7 @@ export async function getModal(details, custom) {
 
   if (!dialog.classList.contains('curtain-off')) {
     const curtain = createTag('div', { class: 'modal-curtain is-open' });
+    document.body.classList.add('disable-scroll');
     curtain.addEventListener('click', (e) => {
       if (e.target === curtain) closeModal(dialog);
     });
@@ -174,7 +175,6 @@ export async function getModal(details, custom) {
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
   if (dialog.classList.contains('commerce-frame')) {
-    document.body.classList.add('commerce-modal-open');
     if (isInitialPageLoad) {
       window.addEventListener('message', (messageInfo) => {
         sendViewportDimensionsOnRequest(messageInfo);
