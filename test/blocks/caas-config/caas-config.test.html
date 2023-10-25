@@ -188,10 +188,8 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=985be96f-2d15-4350-a17c-b3a07fde5c81&environment=&draft=false&size=10';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=985be96f-2d15-4350-a17c-b3a07fde5c81&environment=&draft=false&size=10';
         expectedConfig.featuredCards = ['985be96f-2d15-4350-a17c-b3a07fde5c81'];
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=a-featured-card-id&environment=&draft=false&size=10';
-        expectedConfig.featuredCards = ['a-featured-card-id'];
         expect(config).to.eql(expectedConfig);
       });
 
