@@ -237,7 +237,11 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
-export function localizeLink(href, originHostName = window.location.hostname) {
+export function localizeLink(
+  href,
+  originHostName = window.location.hostname,
+  overrideDomain = false,
+) {
   try {
     const url = new URL(href);
     const relative = url.hostname === originHostName;
@@ -250,7 +254,8 @@ export function localizeLink(href, originHostName = window.location.hostname) {
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, prodDomains } = getConfig();
     if (!locale || !locales) return processedHref;
-    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
+      || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
       .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));

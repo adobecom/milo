@@ -167,14 +167,14 @@
         featuredCardAdd.click();
 
         const contentIdEl = await waitForElement('#contentId');
-        contentIdEl.value = 'a-featured-card-id';
+        contentIdEl.value = '985be96f-2d15-4350-a17c-b3a07fde5c81';
         contentIdEl.dispatchEvent(new Event('change'));
         await delay(150);
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=a-featured-card-id&environment=&draft=false&size=10';
-        expectedConfig.featuredCards = ['a-featured-card-id'];
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=985be96f-2d15-4350-a17c-b3a07fde5c81&environment=&draft=false&size=10';
+        expectedConfig.featuredCards = ['985be96f-2d15-4350-a17c-b3a07fde5c81'];
         expect(config).to.eql(expectedConfig);
       });
 
