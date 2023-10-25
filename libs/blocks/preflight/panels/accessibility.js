@@ -21,10 +21,10 @@ async function checkAlt() {
   });
   if (!imagesWithoutAlt.length) {
     result.icon = pass;
-    result.description = 'Reason: All Image are valid';
+    result.description = 'Reason: All images are valid';
   } else {
     result.icon = fail;
-    result.description = 'Reason: Alt attribute or values are missing for below images on the page';
+    result.description = 'Reason: Alt text missing for the following images:';
   }
   content.value = imagesWithoutAlt;
   altResult.value = result;
