@@ -16,7 +16,7 @@ describe('text block', () => {
     });
 
     it('has body copy', () => {
-      const body = textBlocks[0].querySelector('.body-m');
+      const body = textBlocks[0].querySelector('[class*="body-"]');
       expect(body).to.exist;
     });
   });
@@ -27,11 +27,20 @@ describe('text block', () => {
     });
 
     it('has body copy', () => {
-      const body = textBlocks[1].querySelector('.body-m');
+      const body = textBlocks[1].querySelector('[class*="body-"]');
       expect(body).to.exist;
     });
   });
-
+  describe('text block legal', () => {
+    it('is present', () => {
+      const element = document.querySelector('.legal');
+      expect(element).to.exist;
+    });
+    it('has xxs body copy', () => {
+      const body = document.querySelector('.legal .body-xxs');
+      expect(body).to.exist;
+    });
+  });
   describe('Link Farm', () => {
     it('is present', () => {
       const element = document.querySelector('.link-farm');

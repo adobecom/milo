@@ -50,14 +50,21 @@ const DATA_TYPE = {
 };
 
 const createFrag = (el, url, manifestId) => {
-  const a = createTag('a', { href: url }, url);
+  let href = url;
+  try {
+    const { pathname, search, hash } = new URL(url);
+    href = `${pathname}${search}${hash}`;
+  } catch {
+    // ignore
+  }
+  const a = createTag('a', { href }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
   let frag = createTag('p', undefined, a);
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
     frag = createTag('div', undefined, frag);
   }
-  loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  loadLink(`${href}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return frag;
 };
 
