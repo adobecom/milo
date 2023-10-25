@@ -150,10 +150,6 @@
   column-count: 1;
 }
 
-.commerce-modal-open {
-  overflow: hidden;
-}
-
 @media (min-width: 600px) {
   .dialog-modal {
     max-width: 80vw;
