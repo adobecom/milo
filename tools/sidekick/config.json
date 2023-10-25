@@ -121,7 +121,7 @@
       "containerId": "tools",
       "title": "Send to CaaS",
       "id": "sendtocaas",
-      "environments": ["dev","preview", "live", "prod"],
+      "environments": ["live", "prod"],
       "event": "send-to-caas",
       "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
     },
