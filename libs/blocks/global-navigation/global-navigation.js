@@ -4,6 +4,8 @@ import {
   getMetadata,
   loadIms,
   decorateLinks,
+  loadBlock as loadMiloBlock,
+  decorateAutoBlock,
 } from '../../utils/utils.js';
 import {
   toFragment,
@@ -182,6 +184,7 @@ class Gnav {
       loadBaseStyles,
       this.decorateMainNav,
       this.decorateTopNav,
+      this.decorateAside,
       this.decorateTopnavWrapper,
       this.ims,
       this.addChangeEventListeners,
@@ -231,7 +234,7 @@ class Gnav {
         ${breadcrumbs}
       </div>`;
 
-    this.el.append(this.elements.curtain, this.elements.topnavWrapper);
+    this.el.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
   };
 
   addChangeEventListeners = () => {
@@ -477,6 +480,35 @@ class Gnav {
     if (!renderLabel && link.textContent.length) decoratedElem.setAttribute('aria-label', link.textContent);
 
     return decoratedElem;
+  };
+
+  decorateAside = async () => {
+    this.elements.aside = '';
+    const promoPath = getMetadata('gnav-promo-source');
+    if (!promoPath) return this.elements.aside;
+
+    const onError = () => {
+      this.el.classList.remove('has-promo');
+      lanaLog({ message: 'Gnav Promo fragment not replaced, potential CLS' });
+      return this.elements.aside;
+    };
+
+    const fragLink = toFragment`<a href="${promoPath}">${promoPath}</a>`;
+    const fragTemplate = toFragment`<div>${fragLink}</div>`;
+    decorateAutoBlock(fragLink);
+    if (!fragLink.classList.contains('fragment')) return onError();
+    await loadMiloBlock(fragLink);
+    const aside = fragTemplate.querySelector('.aside');
+    if (fragTemplate.contains(fragLink) || !aside) return onError();
+
+    this.elements.aside = aside;
+    this.elements.aside.removeAttribute('data-block');
+    this.elements.aside.setAttribute('daa-lh', 'Promo');
+    this.elements.aside.querySelectorAll('a').forEach((link, index) => {
+      link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
+    });
+
+    return this.elements.aside;
   };
 
   decorateBrand = () => this.decorateGenericLogo({

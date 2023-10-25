@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
-import { isDesktop, isTangentToViewport } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
@@ -57,6 +57,51 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+    });
+  });
+
+  describe('Promo', () => {
+    it('doesn\'t exist if metadata is not defined', async () => {
+      const nav = await createFullGlobalNavigation();
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+    });
+
+    it('attaches a special modifier class to the header', async () => {
+      // This is just to check that the setup is correct for the following few steps
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.true;
+    });
+
+    it('doesn\'t exist if metadata is not referencing a fragment', async () => {
+      const wrongPromoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/path/to/promo">`;
+      document.head.append(wrongPromoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      wrongPromoMeta.remove();
+    });
+
+    it('doesn\'t exist if fragment doesn\'t contain an aside block', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/wrong-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      promoMeta.remove();
+    });
+
+    it('is available if set up correctly', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.true;
+      const asideElem = nav.el.querySelector('.aside.promobar');
+      expect(asideElem).to.exist;
+      expect(asideElem.getAttribute('daa-lh')).to.equal('Promo');
+      asideElem.querySelectorAll('a').forEach((linkElem) => {
+        expect(linkElem.hasAttribute('daa-ll')).to.be.true;
+      });
+      promoMeta.remove();
     });
   });
 
@@ -858,10 +903,6 @@ describe('global navigation', () => {
         expect(isElementVisible(logo)).to.equal(false);
       });
     });
-  });
-
-  describe('Breadcrumbs', () => {
-
   });
 
   describe('Viewport changes', () => {
