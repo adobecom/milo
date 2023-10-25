@@ -20,6 +20,8 @@ import {
   decodeCompressedString,
   defaultState,
   initCaas,
+  isValidHtmlUrl,
+  isValidUuid,
   loadCaasFiles,
   loadCaasTags,
   loadStrings,
@@ -40,8 +42,6 @@ const updateObj = (obj, defaultObj) => {
   });
   return obj;
 };
-
-const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
 const getHashConfig = async () => {
   const { hash } = window.location;
@@ -456,9 +456,9 @@ const CardsPanel = ({ tagsData }) => {
       className="featuredCards"
       values=${context.state.featuredCards}
       title="Featured Cards"
-      subTitle="UUIDs for featured cards"
+      subTitle="URLS or UUIDs for featured cards"
     >
-      <${FormInput} name="contentId" onValidate=${isValidUuid} />
+      <${FormInput} name="contentId" onValidate=${(value) => isValidHtmlUrl(value) || isValidUuid(value)} />
     <//>
     <${MultiField}
       onChange=${onChange('excludedCards')}
@@ -1047,7 +1047,6 @@ export {
   init as default,
   cloneObj,
   getHashConfig,
-  isValidUuid,
   loadCaasTags,
   updateObj,
 };
