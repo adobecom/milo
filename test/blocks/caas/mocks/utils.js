@@ -6,6 +6,8 @@ export const loadStyle = stub();
 
 export const loadScript = stub();
 
+export const localizeLink = (e) => e;
+
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 
 export const b64ToUtf8 = (str) => decodeURIComponent(escape(window.atob(str)));
