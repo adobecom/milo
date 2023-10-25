@@ -2,7 +2,7 @@
 import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 
-const LOCALES = {
+export const LOCALES = {
   // Americas
   ar: { ietf: 'es-AR' },
   br: { ietf: 'pt-BR' },
