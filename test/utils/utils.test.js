@@ -133,7 +133,7 @@ describe('Utils', () => {
 
     it('Does not setup nofollow links', async () => {
       window.fetch = mockFetch({ payload: { data: [] } });
-      await utils.loadDeferred(document, [], { links: 'on' });
+      await utils.loadDeferred(document, [], { links: 'on' }, () => {});
       const gaLink = document.querySelector('a[href="https://analytics.google.com/"]');
       expect(gaLink.getAttribute('rel')).to.be.null;
     });
@@ -148,7 +148,7 @@ describe('Utils', () => {
       metaPath.content = '/test/utils/mocks/nofollow.json';
 
       document.head.append(metaOn, metaPath);
-      await utils.loadDeferred(document, [], { contentRoot: '' });
+      await utils.loadDeferred(document, [], { contentRoot: '' }, () => {});
       const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
       expect(gaLink).to.exist;
     });
@@ -232,6 +232,15 @@ describe('Utils', () => {
       expect(newTabLink.target).to.contain('_blank');
       newTabLink.href = newTabLink.href.replace('#_blank', '');
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
+    });
+
+    it('Sets up milo.deferredPromise', async () => {
+      window.milo = {};
+      const resolveDeferred = utils.setupDeferredPromise();
+      expect(window.milo.deferredPromise).to.exist;
+      utils.loadDeferred(document, [], {}, resolveDeferred);
+      const result = await window.milo.deferredPromise;
+      expect(result).to.be.true;
     });
 
     describe('SVGs', () => {
@@ -357,6 +366,15 @@ describe('Utils', () => {
         expect(utils.localizeLink('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
           .to
           .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+      });
+
+      it('Live domain html link which is not in prod domains is absolute and localized', () => {
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
 
       it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
