@@ -237,7 +237,11 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
-export function localizeLink(href, originHostName = window.location.hostname) {
+export function localizeLink(
+  href,
+  originHostName = window.location.hostname,
+  overrideDomain = false,
+) {
   try {
     const url = new URL(href);
     const relative = url.hostname === originHostName;
@@ -250,7 +254,8 @@ export function localizeLink(href, originHostName = window.location.hostname) {
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, prodDomains } = getConfig();
     if (!locale || !locales) return processedHref;
-    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
+      || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
       .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
@@ -485,10 +490,11 @@ export function decorateImageLinks(el) {
     const [source, alt, icon] = img.alt.split('|');
     try {
       const url = new URL(source.trim());
+      const href = url.hostname.includes('.hlx.') ? `${url.pathname}${url.hash}` : url.href;
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: url, class: 'image-link' });
+      const aTag = createTag('a', { href, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
       if (icon) {
         import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));

@@ -368,6 +368,15 @@ describe('Utils', () => {
           .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
 
+      it('Live domain html link which is not in prod domains is absolute and localized', () => {
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+      });
+
       it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
         expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
           .to
