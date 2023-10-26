@@ -59,7 +59,7 @@ export async function getParamsFg(config) {
     fgShareUrl: fgShareUrlColor,
     rootFolder: config.sharepoint.site.rootFolder,
     fgRootFolder: fgRootFolderColor,
-    promoteIgnorePaths: config.sharepoint.site.promoteIgnorePaths || [],
+    promoteIgnorePaths: config.promoteIgnorePaths || [],
     driveId: config.sharepoint.site.driveId || '',
     fgColor: fgColor.value,
   };
@@ -69,7 +69,7 @@ export async function getParamsFg(config) {
 export async function postData(url, params) {
   const urlEncodedParams = new URLSearchParams(params).toString();
   const resp = await fetch(url, {
-    method: 'POST', 
+    method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
@@ -118,10 +118,10 @@ export async function copyToFloodgateTree() {
       if (newCopyStatus.payload.action.status !== 'IN PROGRESS') {
         copyStatusCheck.value = newCopyStatus.payload.action.status;
         allActionStatus.value.copyStatus = newCopyStatus;
-        cssStatusCopy.value = newCopyStatus.payload.action.status; 
+        cssStatusCopy.value = newCopyStatus.payload.action.status;
         clearInterval(intervalId);
       } else {
-        cssStatusCopy.value = newCopyStatus.payload.action.status; 
+        cssStatusCopy.value = newCopyStatus.payload.action.status;
         allActionStatus.value.copyStatus = newCopyStatus;
       }
     }, 3000);
@@ -221,7 +221,11 @@ export async function getServiceConfigFg(origin) {
       configs[confEnv][confService][confType][confUrl] = conf.value;
     } else {
       configs[confEnv][confService][confType] = conf.value;
-}
+    }
+  });
+  configs.promoteIgnorePaths = [];
+  json.promoteignorepaths.data.forEach((path) => {
+    configs.promoteIgnorePaths.push(path.FilesToIgnoreFromPromote);
   });
   return configs;
 }
