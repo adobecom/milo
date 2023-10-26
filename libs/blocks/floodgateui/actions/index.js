@@ -1,5 +1,5 @@
 import { heading, urls, languages } from '../utils/state.js';
-import { setStatus } from '../utils/status.js';
+import { setStatus, setExcelStatus } from '../utils/status.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import { signal } from '../../../deps/htm-preact.js';
@@ -8,6 +8,26 @@ import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../../locui/loc/index.js';
 
 export const showRolloutOptions = signal(false);
+
+function getSanitizedUrl(link) {
+  const url = new URL(link);
+  return new URL(`${origin}${url.pathname}`);
+}
+
+function isReferencedAsset(link, baseUrlOrigin) {
+  return link && link.startsWith(baseUrlOrigin) && (link.endsWith('.svg') || link.endsWith('.pdf'));
+}
+
+function updateDomWithBaseUrl(dom, url) {
+  const baseEl = dom.createElement('base');
+  baseEl.setAttribute('href', url);
+  dom.head.append(baseEl);
+}
+
+function getOriginFromLink(link) {
+  const url = new URL(link);
+  return url.origin;
+}
 
 async function updateExcelJson() {
   let count = 1;
@@ -32,6 +52,24 @@ async function findPageFragments(path) {
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
+
+  const { links } = doc;
+  updateDomWithBaseUrl(doc, resp.url);
+  const baseUrlOrigin = getOriginFromLink(resp.url);
+  const assestsList = [];
+  for (let i = 0; i < links.length; i += 1) {
+    const linkHref = links[i].href;
+    // Check if it's a referenced asset
+    if (isReferencedAsset(linkHref, baseUrlOrigin)) {
+      const pathname = new URL(linkHref).pathname;
+      // Check for duplicates against the original URLs
+      if (!urls.value.some((originalUrl) => originalUrl.pathname === pathname)) {
+        const sanitizedUrl = getSanitizedUrl(linkHref);
+        assestsList.push(sanitizedUrl);
+      }
+    }
+  }
+
   // Decorate the doc without loading any blocks (i.e., do not use loadArea)
   decorateSections(doc, true);
   const fragments = [...doc.querySelectorAll('.fragment, .modal.link-block')];
@@ -48,13 +86,16 @@ async function findPageFragments(path) {
     acc.push(fragmentUrl);
     return acc;
   }, []);
-  if (fragmentUrls.length === 0) return [];
-  return getUrls(fragmentUrls);
+  const combinedUrls = Array.from(new Set([...fragmentUrls, ...assestsList]));
+  if (combinedUrls.length === 0) return [];
+  return combinedUrls;
 }
 
 export async function findFragments() {
   setStatus('fragments', 'info', 'Finding fragments.');
-  const found = urls.value.map((url) => findPageFragments(url.pathname));
+  const found = urls.value
+    .filter((url) => !url.pathname.endsWith('.svg') && !url.pathname.endsWith('.pdf'))
+    .map((url) => findPageFragments(url.pathname));
   const pageFragments = await Promise.all(found);
 
   // For each page, loop through all the found fragments
@@ -74,6 +115,7 @@ export async function findFragments() {
     return acc;
   }, []);
   setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
+  setExcelStatus(`Found ${forExcel.length} fragments.`);
 
   if (forExcel.length > 0) {
     urls.value = [...urls.value];

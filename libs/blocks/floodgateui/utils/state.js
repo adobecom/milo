@@ -27,6 +27,7 @@ export const serviceStatusDate = signal();
 export const copyStatusCheck = signal();
 export const promoteStatusCheck = signal();
 export const deleteStatusCheck = signal();
+export const fragmentStatusCheck = signal();
 export const allActionStatus = signal();
 export const cssStatusCopy = signal();
 export const cssStatusPromote = signal();

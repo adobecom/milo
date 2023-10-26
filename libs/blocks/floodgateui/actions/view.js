@@ -2,7 +2,7 @@ import { h, Component, html } from '../../../deps/htm-preact.js';
 import ConfirmationModal from './confirmationModal.js';
 import { findFragments } from './index.js';
 import { copyToFloodgateTree, promoteFiles, deleteFgTree } from '../utils/miloc.js';
-import { urls, copyStatusCheck } from '../utils/state.js';
+import { urls, copyStatusCheck, fragmentStatusCheck } from '../utils/state.js';
 
 const PromoteFilesConfirmationModal = () => h(ConfirmationModal, {
   actionName: "Promote Files",
@@ -20,6 +20,7 @@ const DeleteConfirmationModal = () => h(ConfirmationModal, {
 
 const urlLimitExceededTitle = 'Number of URLs has exceeded the limit of 500. Please reduce the number of URLs.';
 const inProgressTitle = 'Copy operation is in progress already. Please wait.';
+const inProgressTitleFragment = 'Fragments and Assets are being updated. Please wait.';
 
 export default function Actions() {
 
@@ -30,9 +31,13 @@ export default function Actions() {
       </div>
       <div class="fgui-url-heading-actions">
         ${html`
-          <button 
+          <button
             class="fgui-urls-heading-action"
-            onClick=${findFragments}>Find Fragments
+            onClick=${findFragments}
+            title=${fragmentStatusCheck.value === 'IN PROGRESS' ? inProgressTitleFragment : ''}
+            disabled=${fragmentStatusCheck.value === 'IN PROGRESS'}
+          >
+            Update Fragments and Assets
           </button>
           <button
             class="fgui-urls-heading-action"

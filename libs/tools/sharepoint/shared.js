@@ -14,7 +14,7 @@ export async function getSharePointDetails(hlxOrigin) {
 }
 
 export function getItemId() {
-  const referrer = new URLSearchParams(window.location.search).get('referrer') || MOCK_REFERRER;;
+  const referrer = new URLSearchParams(window.location.search).get('referrer') || MOCK_REFERRER;
   const sourceDoc = referrer?.match(/sourcedoc=([^&]+)/)[1];
   const sourceId = decodeURIComponent(sourceDoc);
   return sourceId.slice(1, -1);
