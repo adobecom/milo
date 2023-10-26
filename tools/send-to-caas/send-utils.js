@@ -422,10 +422,7 @@ const props = {
   cardtitle: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
-  contentid: (_, options) => {
-    const floodGateColor = options.floodgatecolor || getMetadata('floodgatecolor') || '';
-    return getUuid(`${options.prodUrl}${floodGateColor}`);
-  },
+  contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
@@ -461,7 +458,11 @@ const props = {
   cta2url: (s) => checkUrl(s, `Invalid Cta2Url: ${s}`),
   description: (s) => s || getMetaContent('name', 'description') || '',
   details: 0,
-  entityid: (_, options) => getUuid(options.prodUrl),
+  entityid: (_, options) => {
+    const floodGateColor = options.floodgatecolor || getMetadata('floodgatecolor') || '';
+    const salt = floodGateColor === 'default' || floodGateColor === '' ? '' : floodGateColor;
+    return getUuid(`${options.prodUrl}${salt}`);
+  },
   env: (s) => s || '',
   eventduration: 0,
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
