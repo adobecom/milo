@@ -1,7 +1,7 @@
 /*** Variables ***/
 
  :root {
-  --global-height-nav: 65px;
+  --global-height-nav: 64px;
   --global-height-breadcrumbs: 33px;
   --global-height-navPromo: 65px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
