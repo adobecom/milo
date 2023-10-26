@@ -1,4 +1,4 @@
-import { heading, urls, languages } from '../utils/state.js';
+import { heading, urls, fragmentStatusCheck } from '../utils/state.js';
 import { setStatus, setExcelStatus } from '../utils/status.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
@@ -40,6 +40,7 @@ async function updateExcelJson() {
     if (count > 10 || json.urls.data.length === urls.value.length) {
       clearInterval(excelUpdated);
       setStatus('excel', 'info', 'Excel refreshed.', null, 1500);
+      fragmentStatusCheck.value = 'COMPLETED';
     }
   }, 1000);
 }
@@ -92,6 +93,7 @@ async function findPageFragments(path) {
 }
 
 export async function findFragments() {
+  fragmentStatusCheck.value = 'IN PROGRESS';
   setStatus('fragments', 'info', 'Finding fragments.');
   const found = urls.value
     .filter((url) => !url.pathname.endsWith('.svg') && !url.pathname.endsWith('.pdf'))
@@ -120,16 +122,15 @@ export async function findFragments() {
   if (forExcel.length > 0) {
     urls.value = [...urls.value];
     // Update language cards count
-    languages.value = [...languages.value.map((lang) => {
-      lang.size = urls.value.length;
-      return lang;
-    })];
     const itemId = getItemId();
     const resp = await updateExcelTable({ itemId, tablename: 'URL', values: forExcel });
     if (resp.status !== 201) {
       setStatus('fragments', 'error', 'Couldn\'t add to Excel.');
+      fragmentStatusCheck.value = 'ERROR';
       return;
     }
     updateExcelJson();
-  }
+  } else {
+    fragmentStatusCheck.value = 'COMPLETED';
+  }  
 }
