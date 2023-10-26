@@ -531,21 +531,21 @@ describe('Utils', () => {
       document.head.innerHTML = oldHead;
     });
 
-    it('loads from metadata without tag-based meta', async () => {
+    it('loads from metadata', async () => {
       document.head.innerHTML = favicon + ccxVideo;
       await utils.decorateFooterPromo(promoConfig);
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
 
-    it('loads from tag in order on sheet', async () => {
+    it('loads from taxonomy in order on sheet', async () => {
       document.head.innerHTML = ccxVideo + typeTaxonomy + analytics + commerce + summit;
       await utils.decorateFooterPromo(promoConfig);
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/commerce');
     });
 
-    it('loads backup from metadata when tag has no promo', async () => {
+    it('loads backup from tag when taxonomy has no promo', async () => {
       document.head.innerHTML = ccxVideo + typeTaxonomy + summit;
       await utils.decorateFooterPromo(promoConfig);
       const a = document.querySelector('main > div:last-of-type a');
