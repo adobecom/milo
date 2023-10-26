@@ -9,6 +9,7 @@ import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
+import noBrandImageOnlyNav from './mocks/global-navigation-only-brand-no-explicit-image.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 
 const ogFetch = window.fetch;
@@ -151,6 +152,12 @@ describe('global navigation', () => {
         await createFullGlobalNavigation({ globalNavigation: noLogoBrandOnlyNav });
         const brandImage = document.querySelector(`${selectors.brandImage}`);
         expect(isElementVisible(brandImage)).to.equal(false);
+      });
+
+      it('should render a default image if the one defined is invalid', async () => {
+        await createFullGlobalNavigation({ globalNavigation: noBrandImageOnlyNav });
+        const brandImage = document.querySelector(`${selectors.brandImage}`);
+        expect(isElementVisible(brandImage)).to.equal(true);
       });
     });
 
