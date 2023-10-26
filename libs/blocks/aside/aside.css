@@ -144,8 +144,9 @@
   margin-bottom: var(--spacing-s);
 }
 
-.aside .foreground.container .icon-area .icon {
-  color: transparent;
+.aside .foreground.container a.icon-area {
+  height: auto;
+  margin-bottom: 0;
 }
 
 .aside.split .split-image img,
