@@ -3,7 +3,7 @@ import { toFragment, lanaLog, getAnalyticsValue } from '../../utilities/utilitie
 
 export default async function decorateAside({ headerElem, promoPath } = {}) {
   const onError = () => {
-    headerElem.classList.remove('has-promo');
+    headerElem?.classList.remove('has-promo');
     lanaLog({ message: 'Gnav Promo fragment not replaced, potential CLS' });
     return '';
   };
