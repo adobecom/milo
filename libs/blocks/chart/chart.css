@@ -3,6 +3,10 @@
   to { transform: scale(1); }
 }
 
+.chart-section {
+  gap: var(--spacing-xs);
+}
+
 .chart-section > * {
   width: 100%
 }

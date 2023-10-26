@@ -582,11 +582,9 @@ export const getOversizedNumberSize = (charLength) => {
 
 const handleDeferredSections = (section, upNumberStyle) => {
   const loadLazySection = () => {
-    const upClasses = [];
-    upClasses.push(...[...section.classList].filter((c) => c.endsWith('-up')));
-    // if authored with a section-metadata:style two-up, three-up...
+    const upClasses = [...section.classList].filter((className) => className.endsWith('-up'));
+    // if authored with a section-metadata:style two-up, three-up... it takes priority
     if (upClasses.length === 2 && upClasses[0] === upNumberStyle) {
-      // remove chart-section.children upNumberStyle
       section.classList.remove(upNumberStyle);
     }
   };
@@ -608,10 +606,10 @@ const init = (el) => {
   const sectionChildren = section?.querySelectorAll(':scope > div:not(.section-metadata)');
   const upNumber = (sectionChildren?.length <= 3) ? sectionChildren.length : 3;
   const upNumberStyle = sectionUpStyles[upNumber - 1];
-  section?.classList.add(SECTION_CLASSNAME);
-  section?.classList.add(upNumberStyle);
-  if (section && upNumber) handleDeferredSections(section, upNumberStyle);
-
+  if (section) {
+    section.classList.add(SECTION_CLASSNAME, upNumberStyle);
+    handleDeferredSections(section, upNumberStyle);
+  }
   let authoredSize = SMALL;
   if (upNumber === 1) authoredSize = LARGE;
   if (upNumber === 2) authoredSize = MEDIUM;
