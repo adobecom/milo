@@ -67,12 +67,6 @@ describe('global navigation', () => {
       expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
     });
 
-    it('attaches a special modifier class to the header', async () => {
-      // This is just to check that the setup is correct for the following few steps
-      const nav = await createFullGlobalNavigation({ hasPromo: true });
-      expect(nav.el.classList.contains('has-promo')).to.be.true;
-    });
-
     it('doesn\'t exist if metadata is not referencing a fragment', async () => {
       const wrongPromoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/path/to/promo">`;
       document.head.append(wrongPromoMeta);
@@ -103,6 +97,15 @@ describe('global navigation', () => {
         expect(linkElem.hasAttribute('daa-ll')).to.be.true;
       });
       promoMeta.remove();
+    });
+
+    it('doesn\'t exist on mobile', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ viewport: 'mobile', hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      const asideElem = nav.el.querySelector('.aside.promobar');
+      expect(asideElem).to.not.exist;
     });
   });
 

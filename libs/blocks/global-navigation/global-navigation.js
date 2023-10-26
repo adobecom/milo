@@ -483,7 +483,10 @@ class Gnav {
   decorateAside = async () => {
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');
-    if (!promoPath) return this.elements.aside;
+    if (!isDesktop.matches || !promoPath) {
+      this.el.classList.remove('has-promo');
+      return this.elements.aside;
+    }
 
     const { default: decorate } = await import('./features/aside/aside.js');
     if (!decorate) return this.elements.aside;

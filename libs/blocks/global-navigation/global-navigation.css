@@ -84,7 +84,7 @@ header.global-navigation {
 
 /* Promo */
 .global-navigation .aside.promobar {
-  display: none;
+  display: none; /* For when someone switches from desktop to mobile */
 }
 
 /* Hamburger toggle */
