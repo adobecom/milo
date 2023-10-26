@@ -1,29 +1,40 @@
+import { createIntersectionObserver, getConfig } from '../../utils/utils.js';
 import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
 
-const callback = (entries, observer) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      observer.unobserve(entry.target);
-      entry.target.removeAttribute('preload');
-      const source = createTag('source', { type: 'video/mp4', src: entry.target.getAttribute('data-src') });
-      entry.target.appendChild(source);
-      entry.target.removeAttribute('data-src');
-    }
-  });
-};
+const ROOT_MARGIN = 1000;
 
-const videoObserver = new IntersectionObserver(callback, {});
-
-export default function init(a) {
+const loadVideo = (a) => {
   const { pathname, hash } = a;
+  let videoPath = `.${pathname}`;
+  if (pathname.match('media_.*.mp4')) {
+    const { codeRoot } = getConfig();
+    const root = codeRoot.endsWith('/')
+      ? codeRoot
+      : `${codeRoot}/`;
+    const mediaFilename = pathname.split('/').pop();
+    videoPath = `${root}${mediaFilename}`;
+  }
+
   const attrs = getVideoAttrs(hash);
-  const video = `<video ${attrs} preload="none" data-src=".${pathname}">
+  const video = `<video ${attrs}>
+        <source src="${videoPath}" type="video/mp4" />
       </video>`;
   if (!a.parentNode) return;
   a.insertAdjacentHTML('afterend', video);
-  const videoElem = a.nextSibling;
-  videoObserver.observe(videoElem);
+  const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
   applyHoverPlay(videoElem);
   a.remove();
+};
+
+export default function init(a) {
+  a.classList.add('hide-video');
+  if (a.textContent.includes('no-lazy')) {
+    loadVideo(a);
+  } else {
+    createIntersectionObserver({
+      el: a,
+      options: { rootMargin: `${ROOT_MARGIN}px` },
+      callback: loadVideo,
+    });
+  }
 }

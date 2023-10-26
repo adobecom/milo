@@ -1,3 +1,4 @@
+/* eslint-disable compat/compat */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* global ClipboardItem */
 import {
@@ -13,10 +14,18 @@ import {
   getConfig,
   parseEncodedConfig,
   loadStyle,
-  utf8ToB64,
 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
-import { defaultState, initCaas, loadCaasFiles, loadCaasTags, loadStrings } from '../caas/utils.js';
+import {
+  decodeCompressedString,
+  defaultState,
+  initCaas,
+  isValidHtmlUrl,
+  isValidUuid,
+  loadCaasFiles,
+  loadCaasTags,
+  loadStrings,
+} from '../caas/utils.js';
 import { Input as FormInput, Select as FormSelect } from '../../ui/controls/formControls.js';
 import TagSelect from '../../ui/controls/TagSelector.js';
 import MultiField from '../../ui/controls/MultiField.js';
@@ -34,15 +43,16 @@ const updateObj = (obj, defaultObj) => {
   return obj;
 };
 
-const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
-
-const getHashConfig = () => {
+const getHashConfig = async () => {
   const { hash } = window.location;
   if (!hash) return null;
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  return parseEncodedConfig(encodedConfig);
+  const config = encodedConfig.startsWith('~~')
+    ? await decodeCompressedString(encodedConfig.substring(2))
+    : parseEncodedConfig(encodedConfig);
+  return config;
 };
 
 const caasFilesLoaded = loadCaasFiles();
@@ -378,6 +388,10 @@ const TagsPanel = ({ tagsData }) => {
     });
   };
 
+  const secondarySourcePanel = html`
+    <${DropdownSelect} options=${defaultOptions.source} prop="secondarySource" label="Secondary Source" />
+    <${DropdownSelect} options=${contentTypeTags} prop="secondaryTags" label="Secondary Content Type Tags" />`;
+
   return html`
     <${DropdownSelect}
       options=${contentTypeTags}
@@ -386,6 +400,7 @@ const TagsPanel = ({ tagsData }) => {
     />
     <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
     <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
+    <label>Complex Queries (Include & Exclude)</label>
     <${MultiField}
       onChange=${onLogicTagChange('andLogicTags')}
       className="andLogicTags"
@@ -409,6 +424,23 @@ const TagsPanel = ({ tagsData }) => {
     >
       <${TagSelect} id="orTags" options=${allTags} label="Tags"
     /><//>
+    <${MultiField}
+      onChange=${onLogicTagChange('notLogicTags')}
+      className="notLogicTags"
+      values=${context.state.notLogicTags}
+      title="NOT logic Tags"
+      subTitle=""
+    >
+    <${FormSelect}
+      label="Intra Tag Logic"
+      name="intraTagLogicExclude"
+      options=${defaultOptions.intraTagLogicOptions}
+    />
+    <${TagSelect} id="notTags" options=${allTags} label="Tags"
+  /><//>
+    <label>Advanced Tag Configurations</label>
+    <${Input} label="Use a secondary source for some content types" prop="showSecondarySource" type="checkbox" />
+    ${context.state.showSecondarySource && secondarySourcePanel}
   `;
 };
 
@@ -431,9 +463,9 @@ const CardsPanel = ({ tagsData }) => {
       className="featuredCards"
       values=${context.state.featuredCards}
       title="Featured Cards"
-      subTitle="UUIDs for featured cards"
+      subTitle="URLS or UUIDs for featured cards"
     >
-      <${FormInput} name="contentId" onValidate=${isValidUuid} />
+      <${FormInput} name="contentId" onValidate=${(value) => isValidHtmlUrl(value) || isValidUuid(value)} />
     <//>
     <${MultiField}
       onChange=${onChange('excludedCards')}
@@ -685,14 +717,16 @@ const reducer = (state, action) => {
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
       return cloneObj(defaultState);
+    case 'SET_STATE':
+      return cloneObj(action.value);
     /* c8 ignore next 2 */
     default:
       return state;
   }
 };
 
-const getInitialState = () => {
-  let state = getHashConfig();
+const getInitialState = async () => {
+  let state = await getHashConfig();
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
@@ -726,6 +760,34 @@ const saveStateToLocalStorage = (state) => {
  */
 const fgKeyReplacer = (key, value) => (key === 'fetchCardsFromFloodgateTree' ? undefined : value);
 
+const getEncodedObject = async (obj, replacer = null) => {
+  if (!window.CompressionStream) {
+    await import('../../deps/compression-streams-pollyfill.js');
+  }
+
+  const objToStream = (data) => new Blob(
+    [JSON.stringify(data, replacer)],
+    { type: 'text/plain' },
+  ).stream();
+
+  const compressStream = async (stream) => new Response(
+    // eslint-disable-next-line no-undef
+    stream.pipeThrough(new CompressionStream('gzip')),
+  );
+
+  const responseToBuffer = async (res) => {
+    const blob = await res.blob();
+    return blob.arrayBuffer();
+  };
+
+  const b64encode = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+
+  const stream = objToStream(obj);
+  const compressedResponse = await compressStream(stream);
+  const buffer = await responseToBuffer(compressedResponse);
+  return b64encode(buffer);
+};
+
 /* c8 ignore start */
 const CopyBtn = () => {
   const { state } = useContext(ConfiguratorContext);
@@ -741,22 +803,25 @@ const CopyBtn = () => {
     }, 2000);
   };
 
-  const getUrl = () => {
+  const getUrl = async () => {
     const url = new URL(window.location.href);
     url.search = '';
-    url.hash = utf8ToB64(JSON.stringify(state, fgKeyReplacer));
+    const hashStr = await getEncodedObject(state, fgKeyReplacer);
+    // starts with ~~ to differentiate from old hash format
+    url.hash = `~~${hashStr}`;
     return url.href;
   };
 
-  const copyConfig = () => {
-    setConfigUrl(getUrl());
+  const copyConfig = async () => {
+    const url = await getUrl();
+    setConfigUrl(url);
     if (!navigator?.clipboard) {
       setTempStatus(setIsError);
       return;
     }
 
     const link = document.createElement('a');
-    link.href = getUrl();
+    link.href = url;
     const dateStr = new Date().toLocaleString('us-EN', {
       weekday: 'long',
       year: 'numeric',
@@ -767,7 +832,7 @@ const CopyBtn = () => {
       hour12: false,
     });
     const collectionName = state.collectionName ? `- ${state.collectionName} ` : '';
-    link.textContent = `Content as a Service ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
+    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
@@ -884,7 +949,7 @@ const idOverlayMO = () => {
 };
 
 const Configurator = ({ rootEl }) => {
-  const [state, dispatch] = useReducer(reducer, getInitialState() || cloneObj(defaultState));
+  const [state, dispatch] = useReducer(reducer, {});
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
   const [strings, setStrings] = useState();
   const [panels, setPanels] = useState([]);
@@ -902,6 +967,15 @@ const Configurator = ({ rootEl }) => {
         // eslint-disable-next-line no-console
         console.log('Error loading script: ', e);
       });
+  }, []);
+
+  useEffect(() => {
+    const setInitialState = async () => {
+      const initialState = await getInitialState();
+      dispatch({ type: 'SET_STATE', value: initialState });
+    };
+
+    setInitialState();
   }, []);
 
   useEffect(() => {
@@ -980,7 +1054,6 @@ export {
   init as default,
   cloneObj,
   getHashConfig,
-  isValidUuid,
   loadCaasTags,
   updateObj,
 };
