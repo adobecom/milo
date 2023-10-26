@@ -722,12 +722,12 @@ function decorateSections(el, isDoc) {
 }
 
 export async function decorateFooterPromo() {
-  const urlBasedPromo = getMetadata('footer-promo-tag');
-  const tagBasedPromo = getMetadata('tag-based-footer-promo');
-  if ((!urlBasedPromo || urlBasedPromo === 'off') && tagBasedPromo !== 'on') return;
+  const footerPromoTag = getMetadata('footer-promo-tag');
+  const footerPromoType = getMetadata('footer-promo-type');
+  if (!footerPromoTag && footerPromoType !== 'taxonomy') return;
 
   const { default: initFooterPromo } = await import('../features/footer-promo.js');
-  await initFooterPromo(urlBasedPromo, tagBasedPromo);
+  await initFooterPromo(footerPromoTag, footerPromoType);
 }
 
 let imsLoaded;

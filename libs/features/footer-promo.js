@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../utils/utils.js';
 
-async function getFooterPromoByTag(contentRoot) {
+async function getPromoFromTaxonomy(contentRoot) {
   const NAME_KEY = 'Name';
   const FOOTER_PROMO_LINK_KEY = 'Footer Promo Link';
   const taxonomyUrl = `${contentRoot}/taxonomy.json`;
@@ -23,13 +23,13 @@ async function getFooterPromoByTag(contentRoot) {
   return undefined;
 }
 
-export default async function initFooterPromo(urlBasedPromo, tagBasedPromo) {
+export default async function initFooterPromo(footerPromoTag, footerPromoType) {
   const { locale: { contentRoot } } = getConfig();
-  let href = urlBasedPromo && `${contentRoot}/fragments/footer-promos/${urlBasedPromo}`;
+  let href = footerPromoTag && `${contentRoot}/fragments/footer-promos/${footerPromoTag}`;
 
-  if (tagBasedPromo === 'on') {
-    const linkFromTag = await getFooterPromoByTag(contentRoot);
-    if (linkFromTag) href = linkFromTag;
+  if (footerPromoType === 'taxonomy') {
+    const promo = await getPromoFromTaxonomy(contentRoot);
+    if (promo) href = promo;
   }
 
   if (!href) return;
