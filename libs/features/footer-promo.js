@@ -18,6 +18,7 @@ async function getPromoFromTaxonomy(contentRoot) {
     });
     if (primaryTag) return primaryTag[FOOTER_PROMO_LINK_KEY];
   } catch (error) {
+    /* c8 ignore next 2 */
     window.lana.log(`Footer Promo - Taxonomy error: ${error}`);
   }
   return undefined;
