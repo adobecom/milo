@@ -143,9 +143,16 @@ const prefixHttps = (url) => {
   return url;
 };
 
+const flattenLink = (link) => {
+  const htmlElement = document.createElement('div');
+  htmlElement.innerHTML = link;
+  return htmlElement.querySelector('a').getAttribute('href');
+};
+
 const checkUrl = (url, errorMsg) => {
   if (url === undefined) return url;
-  return isValidUrl(url) ? prefixHttps(url) : { error: errorMsg };
+  const flatUrl = url.includes('href=') ? flattenLink(url) : url;
+  return isValidUrl(flatUrl) ? prefixHttps(flatUrl) : { error: errorMsg };
 };
 
 // Case-insensitive search through tag name, path, id and title for the searchStr
@@ -614,6 +621,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
 };
 
 export {
+  checkUrl,
   getCardMetadata,
   getCaasProps,
   getConfig,
