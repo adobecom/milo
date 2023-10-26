@@ -88,7 +88,7 @@ async function findPageFragments(path) {
   }, []);
   const combinedUrls = Array.from(new Set([...fragmentUrls, ...assestsList]));
   if (combinedUrls.length === 0) return [];
-  return combinedUrls;
+  return getUrls(combinedUrls);
 }
 
 export async function findFragments() {
