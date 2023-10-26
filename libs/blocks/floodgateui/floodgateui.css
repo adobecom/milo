@@ -1,5 +1,5 @@
 body {
-  background: url('../locui/img/bg.png');
+  background: url('./img/bg.png');
   background-size: 100%;
   background-repeat: no-repeat;
   margin: 150px;
@@ -821,7 +821,7 @@ helix-sidekick {
 
 
 .search-box .clear-icon:hover {
-  color: red; 
+  color: red;
   cursor: pointer;/* Change the color as desired */
 }
 
