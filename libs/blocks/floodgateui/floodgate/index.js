@@ -7,6 +7,7 @@ import {
   canRefresh,
   fgColor,
   loadHeadingCheck,
+  loadDetailsCheck,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../../locui/utils/franklin.js';
@@ -55,6 +56,7 @@ async function loadDetails() {
     const jsonUrls = json.urls.data.map((item) => new URL(item.URL));
     const projectUrls = getUrls(jsonUrls, true);
     urls.value = projectUrls;
+    loadDetailsCheck.value = true;
     if (json.settings) loadProjectSettings(json.settings.data);
     setStatus('details');
   } catch {

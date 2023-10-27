@@ -35,6 +35,7 @@ export const cssStatusDelete = signal();
 export const fgColor = signal();
 export const renderSignal = signal(0);
 export const loadHeadingCheck = signal();
+export const loadDetailsCheck = signal();
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');
