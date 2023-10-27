@@ -188,7 +188,7 @@ export function trigger({ element, event, type } = {}) {
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-//Common used LANA logs tags:
+// Common used LANA logs tags:
 // info - network issues
 // warn - authoring related misconfigs or similar
 // error - actual error ( ex. cannot read Y of undefind )
@@ -196,9 +196,9 @@ export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 
 
 const composeLanaTags = (tags = ['default']) => {
   if (
-    !Array.isArray(tags) ||
-    tags.length === 0 ||
-    tags.some((t) => typeof t !== 'string')
+    !Array.isArray(tags)
+    || tags.length === 0
+    || tags.some((t) => typeof t !== 'string')
   ) {
     return ['default'];
   }
@@ -210,7 +210,7 @@ export const lanaLog = ({ message, e = '', tags }) => {
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
     clientId: 'feds-milo',
     sampleRate: 1,
-    tags: composeLanaTags(tags) 
+    tags: composeLanaTags(tags),
   });
 };
 

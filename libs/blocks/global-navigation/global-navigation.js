@@ -206,7 +206,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'GNAV: Error with IMS', e , tags: ['info', 'global-navigation']});
+      lanaLog({ message: 'GNAV: Error with IMS', e, tags: ['info', 'global-navigation'] });
     });
 
   decorateTopNav = () => {
@@ -295,7 +295,7 @@ class Gnav {
         this.Search = Search;
         resolve();
       } catch (e) {
-        lanaLog({ message: 'GNAV: Error within loadDelayed', e , tags: ['info', 'global-navigation']});
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: ['info', 'global-navigation'] });
         resolve();
       }
     });
@@ -313,7 +313,7 @@ class Gnav {
         await task();
       }
     } catch (e) {
-      lanaLog({ message: 'GNAV: issues within onReady', e ,  tags: ['info', 'global-navigation']});
+      lanaLog({ message: 'GNAV: issues within onReady', e, tags: ['info', 'global-navigation'] });
     }
   };
 
@@ -412,7 +412,7 @@ class Gnav {
       if (isExpanded) setHamburgerPadding();
     };
 
-    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed',['error', 'global-navigation'] ));
+    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', ['error', 'global-navigation']));
 
     const onDeviceChange = () => {
       if (isDesktop.matches) {
@@ -686,7 +686,7 @@ export default async function init(header) {
     header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
     return gnav;
   } catch (e) {
-    lanaLog({ message: 'Could not create global navigation.', e,  tags: ['error', 'global-navigation'] });
+    lanaLog({ message: 'Could not create global navigation.', e, tags: ['error', 'global-navigation'] });
     return null;
   }
 }
