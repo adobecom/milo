@@ -25,6 +25,12 @@ class ConfirmationModal extends Component {
     this.closeModal();
     if (this.props.onConfirm) {
       const doPublish = this.state.promotePublishOption === 'promotePublish';
+        if (this.props.confirmMessage === 'Promote') {
+        promoteStatusCheck.value = 'IN PROGRESS';
+      } else if (this.props.confirmMessage === 'Delete') {
+        deleteStatusCheck.value = 'IN PROGRESS';
+      }
+  
       this.props.onConfirm(doPublish);
     }
   };

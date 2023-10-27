@@ -96,6 +96,7 @@ export async function fetchStatusAction() {
 
 export async function copyToFloodgateTree() {
   try {
+    copyStatusCheck.value = 'IN PROGRESS';
     setStatus('details', 'info', 'Copying files to the Floodgate Tree. Check the status card for further updates.');
     const config = await getServiceConfigFg(origin);
     const params = { ...await getParamsFg(config), spToken: accessToken };
@@ -127,6 +128,7 @@ export async function copyToFloodgateTree() {
     }, 3000);
 
   } catch {
+    copyStatusCheck.value = 'ERROR';
     setStatus('details', 'error', 'Error copying files to Floodgate Tree. Please check the excel sheet for further details.');
   }
 }
@@ -164,6 +166,7 @@ export async function promoteFiles(doPublish) {
     }, 3000);
 
   } catch {
+    promoteStatusCheck.value = 'ERROR';
     setStatus('details', 'error', 'Error while promoting files to Floodgate Tree.');
   }
 }
@@ -201,6 +204,7 @@ export async function deleteFgTree() {
     }, 3000);
 
   } catch {
+    deleteStatusCheck.value = 'ERROR';
     setStatus('details', 'error', 'Error while deleting the Floodgate Tree.');
   }
 }
