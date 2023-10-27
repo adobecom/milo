@@ -903,3 +903,7 @@ helix-sidekick {
   border-color: #ccc; /* Add border color for focus state */
 }
 
+.page-button.current-page {
+  background-color: #71b271; /* Use your desired background color here */
+  color: #333333; /* Use your desired text color here */
+}
