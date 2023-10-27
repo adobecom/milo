@@ -90,7 +90,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -104,7 +104,22 @@
         ]);
         await delay(50);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Should be able to send a secondary source and content-type tag', async () => {
+        const expectedConfig = cloneObj(defaultConfig);
+        const enableAdvancedTags = findByLabel('Use a secondary source for some content types');
+        enableAdvancedTags.checked = true;
+        enableAdvancedTags.dispatchEvent(new Event('change'));
+        await delay(50);
+    
+        await tagSelectorDropdownChoose('Secondary Source', 'Bacom');
+        await tagSelectorDropdownChoose('Secondary Content Type Tags', 'Customer Story');
+
+        expectedConfig.collection.endpoint = 
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=bacom&secondaryTags=caas:content-type/customer-story&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
         expect(config).to.eql(expectedConfig);
       });
 
@@ -116,7 +131,7 @@
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.country = 'ca';
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
         await delay(50)
         expect(config).to.eql(expectedConfig);
       });
@@ -133,7 +148,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10&flatFile=false';
+        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10&flatFile=false';
         expectedConfig.target.enabled = true;
         expect(config).to.eql(expectedConfig);
       });
@@ -157,7 +172,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -167,14 +182,14 @@
         featuredCardAdd.click();
 
         const contentIdEl = await waitForElement('#contentId');
-        contentIdEl.value = 'a-featured-card-id';
+        contentIdEl.value = '985be96f-2d15-4350-a17c-b3a07fde5c81';
         contentIdEl.dispatchEvent(new Event('change'));
         await delay(150);
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=a-featured-card-id&environment=&draft=false&size=10';
-        expectedConfig.featuredCards = ['a-featured-card-id'];
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=985be96f-2d15-4350-a17c-b3a07fde5c81&environment=&draft=false&size=10';
+        expectedConfig.featuredCards = ['985be96f-2d15-4350-a17c-b3a07fde5c81'];
         expect(config).to.eql(expectedConfig);
       });
 
@@ -189,7 +204,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
         expectedConfig.hideCtaIds = ['hide-cta-id'];
         expect(config).to.eql(expectedConfig);
       });
@@ -209,10 +224,16 @@
         const tagUrlInput = findByLabel('Tags Url', configPanelEl);
         tagUrlInput.value = 'https://not.the.right.url/tags';
         tagUrlInput.dispatchEvent(new Event('change'));
-        const errorEl = await waitForElement('.tool-error');
-        expect(errorEl).to.not.be.null;
-        expect(errorEl.textContent).to.be.equal('Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel');
+        const toolErrorEl = await waitForElement('.tool-error');
+        expect(toolErrorEl).to.not.be.null;
 
+        // Due to a race condition, the error message may be one of two things
+        let correctErrorMsg = false;
+        if (toolErrorEl.textContent === 'Tags url is not defined in the Advanced Panel'
+          || toolErrorEl.textContent === 'Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel') {
+            correctErrorMsg = true;
+        }
+        expect(correctErrorMsg).to.be.true;
         const expectedConfig = cloneObj(defaultConfig);
         expect(config).to.eql(expectedConfig);
       });
@@ -275,7 +296,7 @@
         const openedOnLoadCb = findByLabel('Opened on load');
         openedOnLoadCb.checked = true;
         openedOnLoadCb.dispatchEvent(new Event('change'));
-        await delay(50);
+        await delay(100);
 
         expect(openedOnLoadCb.checked).to.be.true;
       });
@@ -285,7 +306,24 @@
         copyBtn.click();
         await delay(50);
         const copyTextArea = document.querySelector('.copy-text');
-        expect(copyTextArea.value.split('#')[1]).to.equal('eyJhZGRpdGlvbmFsUmVxdWVzdFBhcmFtcyI6W10sImFuYWx5dGljc0NvbGxlY3Rpb25OYW1lIjoiIiwiYW5hbHl0aWNzVHJhY2tJbXByZXNzaW9uIjpmYWxzZSwiYW5kTG9naWNUYWdzIjpbXSwiYXV0b0NvdW50cnlMYW5nIjpmYWxzZSwiYm9va21hcmtJY29uU2VsZWN0IjoiIiwiYm9va21hcmtJY29uVW5zZWxlY3QiOiIiLCJjYXJkU3R5bGUiOiJoYWxmLWhlaWdodCIsImNhcmRUaXRsZUFjY2Vzc2liaWxpdHlMZXZlbCI6NiwiY29sbGVjdGlvbkJ0blN0eWxlIjoicHJpbWFyeSIsImNvbGxlY3Rpb25OYW1lIjoiIiwiY29sbGVjdGlvblRpdGxlIjoiIiwiY29sbGVjdGlvblNpemUiOiIiLCJjb250YWluZXIiOiIxMjAwTWF4V2lkdGgiLCJjb250ZW50VHlwZVRhZ3MiOltdLCJjb3VudHJ5IjoiY2Fhczpjb3VudHJ5L3VzIiwiY3VzdG9tQ2FyZCI6IiIsImN0YUFjdGlvbiI6Il9zZWxmIiwiZG9Ob3RMYXp5TG9hZCI6ZmFsc2UsImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImVuZHBvaW50Ijoid3d3LmFkb2JlLmNvbS9jaGltZXJhLWFwaS9jb2xsZWN0aW9uIiwiZW52aXJvbm1lbnQiOiIiLCJleGNsdWRlZENhcmRzIjpbXSwiZXhjbHVkZVRhZ3MiOltdLCJmYWxsYmFja0VuZHBvaW50IjoiIiwiZmVhdHVyZWRDYXJkcyI6W10sImZpbHRlckV2ZW50IjoiIiwiZmlsdGVyQnVpbGRQYW5lbCI6ImF1dG9tYXRpYyIsImZpbHRlckxvY2F0aW9uIjoibGVmdCIsImZpbHRlckxvZ2ljIjoib3IiLCJmaWx0ZXJzIjpbXSwiZmlsdGVyc0N1c3RvbSI6W10sImZpbHRlcnNTaG93RW1wdHkiOmZhbHNlLCJndXR0ZXIiOiI0eCIsImhlYWRlcnMiOltdLCJoaWRlQ3RhSWRzIjpbXSwiaGlkZUN0YVRhZ3MiOltdLCJpbmNsdWRlVGFncyI6W10sImxhbmd1YWdlIjoiY2FhczpsYW5ndWFnZS9lbiIsImxheW91dFR5cGUiOiI0dXAiLCJsb2FkTW9yZUJ0blN0eWxlIjoicHJpbWFyeSIsIm9ubHlTaG93Qm9va21hcmtlZENhcmRzIjpmYWxzZSwib3JMb2dpY1RhZ3MiOltdLCJwYWdpbmF0aW9uQW5pbWF0aW9uU3R5bGUiOiJwYWdlZCIsInBhZ2luYXRpb25FbmFibGVkIjpmYWxzZSwicGFnaW5hdGlvblF1YW50aXR5U2hvd24iOmZhbHNlLCJwYWdpbmF0aW9uVHlwZSI6InBhZ2luYXRvciIsInBhZ2luYXRpb25Vc2VUaGVtZTMiOmZhbHNlLCJwbGFjZWhvbGRlclVybCI6IiIsInJlc3VsdHNQZXJQYWdlIjo1LCJzZWFyY2hGaWVsZHMiOltdLCJzZXRDYXJkQm9yZGVycyI6ZmFsc2UsInNob3dCb29rbWFya3NGaWx0ZXIiOmZhbHNlLCJzaG93Qm9va21hcmtzT25DYXJkcyI6ZmFsc2UsInNob3dGaWx0ZXJzIjpmYWxzZSwic2hvd1NlYXJjaCI6ZmFsc2UsInNob3dUb3RhbFJlc3VsdHMiOmZhbHNlLCJzb3J0RGF0ZUFzYyI6ZmFsc2UsInNvcnREYXRlRGVzYyI6ZmFsc2UsInNvcnREYXRlTW9kaWZpZWQiOmZhbHNlLCJzb3J0RGVmYXVsdCI6ImRhdGVEZXNjIiwic29ydEVuYWJsZVBvcHVwIjpmYWxzZSwic29ydEVuYWJsZVJhbmRvbVNhbXBsaW5nIjpmYWxzZSwic29ydEV2ZW50U29ydCI6ZmFsc2UsInNvcnRGZWF0dXJlZCI6ZmFsc2UsInNvcnRNb2RpZmllZEFzYyI6ZmFsc2UsInNvcnRNb2RpZmllZERlc2MiOmZhbHNlLCJzb3J0UmFuZG9tIjpmYWxzZSwic29ydFJlc2Vydm9pclBvb2wiOjEwMDAsInNvcnRSZXNlcnZvaXJTYW1wbGUiOjMsInNvcnRUaXRsZUFzYyI6ZmFsc2UsInNvcnRUaXRsZURlc2MiOmZhbHNlLCJzb3VyY2UiOlsiaGF3a3MiXSwidGFnc1VybCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvdGFncyIsInRhcmdldEFjdGl2aXR5IjoiIiwidGFyZ2V0RW5hYmxlZCI6ZmFsc2UsInRoZW1lIjoibGlnaHRlc3QiLCJkZXRhaWxzVGV4dE9wdGlvbiI6ImRlZmF1bHQiLCJ0aXRsZUhlYWRpbmdMZXZlbCI6ImgzIiwidG90YWxDYXJkc1RvU2hvdyI6MTAsInVzZUxpZ2h0VGV4dCI6ZmFsc2UsInVzZU92ZXJsYXlMaW5rcyI6ZmFsc2UsImNvbGxlY3Rpb25CdXR0b25TdHlsZSI6InByaW1hcnkiLCJ1c2VySW5mbyI6W119')
+
+        // Windows/Linux encodes the hash very slightly differently than OSX
+        // This is due to different header values in the zip output
+        // Note the start of each hash:
+        // Win: ~~H4sIAAAAAAAAA3
+        // Osx: ~~H4sIAAAAAAAAE3
+
+        // This does not affect the decoded hash value,
+        // so either of these are valid hashes for the same content
+
+        const windowsHash = '~~H4sIAAAAAAAAA3VVTXPbOAz9Lzqnjdu0e/AtdpJpZpzEGzvTw85OByYhi2OK0JKUHXVn//sC+pbr3qQHAiAeHsB/E9DaREMO7Cv+U2KIa/CQh2T+199XCTBcRaPCkqxFJeeeIcdkniQj49aDOjzmhccQ+EQyT8EGlAN6RXujtrDv4pWRllS66KsVuH1/ckd0yMEfHhW5DUqmJsUYf3NhZFHg9SZWVu6SgU0/ZGj2WWwtWxMt3iolF9oZa2K1wiPaZP4H2/tSFtF1IQpvOE+VjM1DpQNWBz4HN+Znj7kIxqHn30+fZ7MneP9udMxaE7q4rQoc+FANF3xaAYR5+3tdBnEoQ6R8ydW0sSPc1un49wdTkTKm6ZniCn5WKwLds6lNgJ3FBTi+SRhgD2m82/X/6HRBxgmhp9PpI2ja4UdF+bXKTI4ePkBhrocqE/E4Gk8uR9d2Ad+VLTVquWVbUgsNNXI2u2OB3A/p2DNFiKWfeKbGRvT3xz56AyxKY/UanLSvFlAOLLrevCIFLSsW0zjCWXkMku+hSZ6wrPmdQJuMTvd5Eaueo30ZY93NL+8cJkPQfZjMaFxGeNTT/6Fw486YsCz5EvbYtbv7v0Yh10JFZa0PSVcWAnFXn8jjRaE67vx0usjZSkpYtFPTs9sWQ/7MoYC9cTV7t87k9Uefh++lk/GReyeiGlQ2WP4swUWeMcntLtjbmlqgbshgfAu4zTDHm8HRgsKMLFP95m0jBV4tpY1hjX5dE/j1KgkIXmUPBm3XgYA8ZJrZGSrsoQ2VXmEHRiFmQV6P5yOMqAsPtSIu217clFcxPnQKG2Gb+oYTaEtRFm1dzGAgH+8g4m1Qv2B3eAF8Im1SM+pFbcAUOCzzpTu/xtA0bk0Fa2rs0OCvvKUp30BeWDPayPUBGcUNf0zQh3ZyJ2B3o/MSOvyXMpq0UwgD+iMZvybitn+azWZnhvqW3MSbBm+2/FngGjxL17aeH4rTISSsgMgCabT1+80nZxI56vcYZfMejSyGpMfOByKKjGUNyUPED6nsZ+TnwIYtvseXot1Suu0TO8hVv/FOYeLb9ynJbsQgKqk1tiUZKiHjKikDriS0ROuTMvhyRM/LY2XcYdDU6JXjFUYX9gd7+keXkszEf/8DE9gKqwgIAAA=';
+        const osxHash = '~~H4sIAAAAAAAAE3VVTXPbOAz9Lzqnjdu0e/AtdpJpZpzEGzvTw85OByYhi2OK0JKUHXVn//sC+pbr3qQHAiAeHsB/E9DaREMO7Cv+U2KIa/CQh2T+199XCTBcRaPCkqxFJeeeIcdkniQj49aDOjzmhccQ+EQyT8EGlAN6RXujtrDv4pWRllS66KsVuH1/ckd0yMEfHhW5DUqmJsUYf3NhZFHg9SZWVu6SgU0/ZGj2WWwtWxMt3iolF9oZa2K1wiPaZP4H2/tSFtF1IQpvOE+VjM1DpQNWBz4HN+Znj7kIxqHn30+fZ7MneP9udMxaE7q4rQoc+FANF3xaAYR5+3tdBnEoQ6R8ydW0sSPc1un49wdTkTKm6ZniCn5WKwLds6lNgJ3FBTi+SRhgD2m82/X/6HRBxgmhp9PpI2ja4UdF+bXKTI4ePkBhrocqE/E4Gk8uR9d2Ad+VLTVquWVbUgsNNXI2u2OB3A/p2DNFiKWfeKbGRvT3xz56AyxKY/UanLSvFlAOLLrevCIFLSsW0zjCWXkMku+hSZ6wrPmdQJuMTvd5Eaueo30ZY93NL+8cJkPQfZjMaFxGeNTT/6Fw486YsCz5EvbYtbv7v0Yh10JFZa0PSVcWAnFXn8jjRaE67vx0usjZSkpYtFPTs9sWQ/7MoYC9cTV7t87k9Uefh++lk/GReyeiGlQ2WP4swUWeMcntLtjbmlqgbshgfAu4zTDHm8HRgsKMLFP95m0jBV4tpY1hjX5dE/j1KgkIXmUPBm3XgYA8ZJrZGSrsoQ2VXmEHRiFmQV6P5yOMqAsPtSIu217clFcxPnQKG2Gb+oYTaEtRFm1dzGAgH+8g4m1Qv2B3eAF8Im1SM+pFbcAUOCzzpTu/xtA0bk0Fa2rs0OCvvKUp30BeWDPayPUBGcUNf0zQh3ZyJ2B3o/MSOvyXMpq0UwgD+iMZvybitn+azWZnhvqW3MSbBm+2/FngGjxL17aeH4rTISSsgMgCabT1+80nZxI56vcYZfMejSyGpMfOByKKjGUNyUPED6nsZ+TnwIYtvseXot1Suu0TO8hVv/FOYeLb9ynJbsQgKqk1tiUZKiHjKikDriS0ROuTMvhyRM/LY2XcYdDU6JXjFUYX9gd7+keXkszEf/8DE9gKqwgIAAA=';
+        let isCorrectHash = false;
+        const hash = copyTextArea.value.split('#')[1];
+        if (hash === windowsHash || hash === osxHash) {
+          isCorrectHash = true;
+        }
+        expect(isCorrectHash).to.be.true;
       });
 
       it('Clones an object', () => {
@@ -305,11 +343,19 @@
         expect(updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
       });
 
-      it('Converts Base 64 to UTF-8', () => {
+      it('Converts Verson1 Hash Base 64 to UTF-8', async () => {
         const hash = 'eyJhZGRpdGlvbmFsUmVxdWVzdFBhcmFtcyI6W10sImFuYWx5dGljc0NvbGxlY3Rpb25OYW1lIjoiIiwiYW5hbHl0aWNzVHJhY2tJbXByZXNzaW9uIjpmYWxzZSwiYW5kTG9naWNUYWdzIjpbXSwiYXV0b0NvdW50cnlMYW5nIjpmYWxzZSwiYm9va21hcmtJY29uU2VsZWN0IjoiIiwiYm9va21hcmtJY29uVW5zZWxlY3QiOiIiLCJjYXJkU3R5bGUiOiJoYWxmLWhlaWdodCIsImNhcmRUaXRsZUFjY2Vzc2liaWxpdHlMZXZlbCI6NiwiY29sbGVjdGlvbkJ0blN0eWxlIjoicHJpbWFyeSIsImNvbGxlY3Rpb25OYW1lIjoiIiwiY29sbGVjdGlvblRpdGxlIjoiIiwiY29sbGVjdGlvblNpemUiOiIiLCJjb250YWluZXIiOiIxMjAwTWF4V2lkdGgiLCJjb250ZW50VHlwZVRhZ3MiOltdLCJjb3VudHJ5IjoiY2Fhczpjb3VudHJ5L3VzIiwiY3VzdG9tQ2FyZCI6IiIsImN0YUFjdGlvbiI6Il9ibGFuayIsImRvTm90TGF6eUxvYWQiOmZhbHNlLCJkaXNhYmxlQmFubmVycyI6ZmFsc2UsImRyYWZ0RGIiOmZhbHNlLCJlbmRwb2ludCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvY29sbGVjdGlvbiIsImVudmlyb25tZW50IjoiIiwiZXhjbHVkZWRDYXJkcyI6W10sImV4Y2x1ZGVUYWdzIjpbXSwiZmFsbGJhY2tFbmRwb2ludCI6IiIsImZlYXR1cmVkQ2FyZHMiOltdLCJmaWx0ZXJFdmVudCI6IiIsImZpbHRlckJ1aWxkUGFuZWwiOiJhdXRvbWF0aWMiLCJmaWx0ZXJMb2NhdGlvbiI6ImxlZnQiLCJmaWx0ZXJMb2dpYyI6Im9yIiwiZmlsdGVycyI6W10sImZpbHRlcnNDdXN0b20iOltdLCJmaWx0ZXJzU2hvd0VtcHR5IjpmYWxzZSwiZ3V0dGVyIjoiNHgiLCJoZWFkZXJzIjpbXSwiaGVhZGVycyI6W10sImhpZGVDdGFJZHMiOltdLCJpbmNsdWRlVGFncyI6W10sImxhbmd1YWdlIjoiY2FhczpsYW5ndWFnZS9lbiIsImxheW91dFR5cGUiOiI0dXAiLCJsb2FkTW9yZUJ0blN0eWxlIjoicHJpbWFyeSIsIm9ubHlTaG93Qm9va21hcmtlZENhcmRzIjpmYWxzZSwib3JMb2dpY1RhZ3MiOltdLCJwYWdpbmF0aW9uQW5pbWF0aW9uU3R5bGUiOiJwYWdlZCIsInBhZ2luYXRpb25FbmFibGVkIjpmYWxzZSwicGFnaW5hdGlvblF1YW50aXR5U2hvd24iOmZhbHNlLCJwYWdpbmF0aW9uVHlwZSI6InBhZ2luYXRvciIsInBhZ2luYXRpb25Vc2VUaGVtZTMiOmZhbHNlLCJwbGFjZWhvbGRlclVybCI6IiIsInJlc3VsdHNQZXJQYWdlIjo1LCJzZWFyY2hGaWVsZHMiOltdLCJzZXRDYXJkQm9yZGVycyI6ZmFsc2UsInNob3dCb29rbWFya3NGaWx0ZXIiOmZhbHNlLCJzaG93Qm9va21hcmtzT25DYXJkcyI6ZmFsc2UsInNob3dGaWx0ZXJzIjpmYWxzZSwic2hvd1NlYXJjaCI6ZmFsc2UsInNob3dUb3RhbFJlc3VsdHMiOmZhbHNlLCJzb3J0RGF0ZUFzYyI6ZmFsc2UsInNvcnREYXRlRGVzYyI6ZmFsc2UsInNvcnREYXRlTW9kaWZpZWQiOmZhbHNlLCJzb3J0RGVmYXVsdCI6ImRhdGVEZXNjIiwic29ydEVuYWJsZVBvcHVwIjpmYWxzZSwic29ydEVuYWJsZVJhbmRvbVNhbXBsaW5nIjpmYWxzZSwic29ydEV2ZW50U29ydCI6ZmFsc2UsInNvcnRGZWF0dXJlZCI6ZmFsc2UsInNvcnRNb2RpZmllZEFzYyI6ZmFsc2UsInNvcnRNb2RpZmllZERlc2MiOmZhbHNlLCJzb3J0UmFuZG9tIjpmYWxzZSwic29ydFJlc2Vydm9pclBvb2wiOjEwMDAsInNvcnRSZXNlcnZvaXJTYW1wbGUiOjMsInNvcnRUaXRsZUFzYyI6ZmFsc2UsInNvcnRUaXRsZURlc2MiOmZhbHNlLCJzb3VyY2UiOlsiaGF3a3MiXSwidGFnc1VybCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvdGFncyIsInRhcmdldEFjdGl2aXR5IjoiIiwidGFyZ2V0RW5hYmxlZCI6ZmFsc2UsInRoZW1lIjoibGlnaHRlc3QiLCJkZXRhaWxzVGV4dE9wdGlvbiI6ImRlZmF1bHQiLCJ0aXRsZUhlYWRpbmdMZXZlbCI6ImgzIiwidG90YWxDYXJkc1RvU2hvdyI6MTAsInVzZUxpZ2h0VGV4dCI6ZmFsc2UsInVzZU92ZXJsYXlMaW5rcyI6ZmFsc2UsImNvbGxlY3Rpb25CdXR0b25TdHlsZSI6InByaW1hcnkiLCJ1c2VySW5mbyI6W119';
         window.location.hash = hash;
-        const hashConfig = getHashConfig();
+        const hashConfig = await getHashConfig();
         expect(hashConfig.cardStyle).to.equal('half-height');
+      });
+
+      it('Converts Verson2 Gzipped Hash Base 64 to UTF-8', async () => {
+        const hash = '~~H4sIAAAAAAAAE3VVTXPbNhD9Lzw7sVK3PehmyfbEM3KsRvL0kOl0VsBSxAjEsgAomen0v3cX/JSi3Ii32K+3D8t/M9DaREMO7Ff8p8YQ1+ChDNn82183GTDcRKPCkqxFJfe+QInZPMsmxq0HdXguK48h8I1snoMNKBf0ivZGbWHfx6sjLal20TcrcPvh5o7oUII/PCtyG5RMbYop/ubCxKLA601srNSS19Z+EKDDtyZavFdKytkZa2KzwiPabP4724dGFtH1ASpvOEuTTc1jnyOWAl+CG/N9wFwE49Dz8dMvs9kLvP9pdCw6E7q4bSoc2VAtE3xbAYR5d7ytgzjUIVK5lKba2BHuUzo+/s1E5Ixp+kJxBd+bFYEeuNQmwM7iAhxXEkbYQx4fdsMZna7IOKHzdDp9BE07/KiovFWFKdHDB6jM7dhlJh5H48mV6LoZ4LuytUYtVXYtddDYI2ezO5bH45iOPXOEWPszz9zYiP7xOERvgUVtrF6Dk/El+ZTAkhvMK1LQsWIxjxOcdccg+QE6yxOWid8zaFPQ6bGsYjNwtK9jTNP89Z3DFAh6CFMYjcsIz/r8PDZu3AUTlgVfwx77cffnWxRyLTRUJ31IuroSiKf6Qh6vCpWcbaTgRfdCBi670slfPL0K9sYlru6dKdPHEJWrkLczXnl0IqFRU6Pljxpc5Bclud0Ve9dBByT6R+NbwG2BJd6NjhYUFmSZ2Ddv28HzGqltDGv060TXbzdZQPCqeDJoe74DRml4QV5PVR4mlISnNNfrtld3zpcYn3qdTLBNynwGbSnKskxFjgby8QEi3gf1A/aAV8AX0iY3E46TAXPgsMyD7v1aQzuQNVWsjKlDi3/lTUvlBsrKmslWTRfkQW344wx96t7fGdhXdNlCj//QRpv2HMKA/kjGr4l4nJ9ms9mFIVXJU71r8XZXXwRO4EW62iv2+pYVcDqEjBUQWdqtZn6+v+ROJlf9HqPsz6OR550N2KXQo8hTlonZF5F/hrJlkZe6DVt8j69Vt2t0Nyd2kFI/82Zg4ru/TFbciUFUkjS2JXksQsZNVgdcSWiJNiRl8PWInlfAyrjDqKnJv4oXEV3ZAuzpn11O7Ztw/DeYPvr//gcuiyqz3gcAAA==';
+        window.location.hash = hash;
+        // v2 getHashConfig is async
+        const hashConfig = await getHashConfig();
+        expect(hashConfig.cardStyle).to.equal('full-card');
       });
 
     });
