@@ -1,9 +1,12 @@
-import { createTag, loadArea, localizeLink } from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
 
-const removeHash = (url) => url?.endsWith('#_dnt') ? url : url?.split('#')[0];
+const removeHash = (url) => {
+  const urlNoHash = url.split('#')[0];
+  return url.includes('#_dnt') ? `${urlNoHash}#_dnt` : urlNoHash;
+};
 
 const isCircularRef = (href) => [...Object.values(fragMap)]
   .some((tree) => {
@@ -28,31 +31,74 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
+const setManifestIdOnChildren = (sections, manifestId) => {
+  [...sections[0].children].forEach(
+    (child) => (child.dataset.manifestId = manifestId),
+  );
+};
+
+const insertInlineFrag = (sections, a) => {
+  // Inline fragments only support one section, other sections are ignored
+  const fragChildren = [...sections[0].children];
+  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
+    a.parentElement.replaceWith(...fragChildren);
+  } else {
+    a.replaceWith(...fragChildren);
+  }
+};
+
 export default async function init(a) {
-  const relHref = localizeLink(a.href);
+  const { expFragments } = getConfig();
+  let relHref = localizeLink(a.href);
+  let inline = false;
+  if (expFragments?.[relHref]) {
+    a.href = expFragments[relHref];
+    relHref = expFragments[relHref];
+  }
   if (isCircularRef(relHref)) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
   }
+  if (a.href.includes('#_inline')) {
+    inline = true;
+    a.href = a.href.replace('#_inline', '');
+  }
   const resp = await fetch(`${a.href}.plain.html`);
-  if (resp.ok) {
-    const html = await resp.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const sections = doc.querySelectorAll('body > div');
-    if (sections.length > 0) {
-      const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
-      fragment.append(...sections);
 
-      updateFragMap(fragment, a, relHref);
-
-      a.parentElement.replaceChild(fragment, a);
-
-      await loadArea(fragment);
-    } else {
-      window.lana?.log(`Could not make fragment: ${a.href}.plain.html`);
-    }
-  } else {
+  if (!resp.ok) {
     window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
+    return;
+  }
+
+  const html = await resp.text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const sections = doc.querySelectorAll('body > div');
+
+  if (!sections.length) {
+    window.lana?.log(`Could not make fragment: ${a.href}.plain.html`);
+    return;
+  }
+
+  const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
+
+  if (!inline) {
+    fragment.append(...sections);
+  }
+
+  updateFragMap(fragment, a, relHref);
+
+  if (a.dataset.manifestId) {
+    if (inline) {
+      setManifestIdOnChildren(sections, a.dataset.manifestId);
+    } else {
+      fragment.dataset.manifestId = a.dataset.manifestId;
+    }
+  }
+
+  if (inline) {
+    insertInlineFrag(sections, a);
+  } else {
+    a.parentElement.replaceChild(fragment, a);
+    await loadArea(fragment);
   }
 }

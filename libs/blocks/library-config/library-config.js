@@ -22,6 +22,11 @@ async function loadAssets(content, list) {
   assets(content, list);
 }
 
+async function loadPersonalization(content, list) {
+  const { default: personalization } = await import('./lists/personalization.js');
+  personalization(content, list);
+}
+
 function addSearch(content, list) {
   const skLibrary = list.closest('.sk-library');
   const header = skLibrary.querySelector('.sk-library-header');
@@ -69,6 +74,9 @@ async function loadList(type, content, list) {
     case 'assets':
       loadAssets(content, list);
       break;
+    case 'personalization_tags':
+      loadPersonalization(content, list);
+      break;
     default:
       await import('../../utils/lana.js');
       window.lana?.log(`Library type not supported: ${type}`, { clientId: 'milo' });
@@ -79,10 +87,13 @@ async function fetchLibrary(domain) {
   const { searchParams } = new URL(window.location.href);
   const suppliedLibrary = searchParams.get('library');
   const library = suppliedLibrary || `${domain}${LIBRARY_PATH}`;
-
-  const resp = await fetch(library);
-  if (!resp.ok) return null;
-  return resp.json();
+  try {
+    const resp = await fetch(library);
+    if (!resp.ok) return null;
+    return resp.json();
+  } catch {
+    return null;
+  }
 }
 
 async function getSuppliedLibrary() {
@@ -109,10 +120,11 @@ async function combineLibraries(base, supplied) {
   const assetsPath = url.searchParams.get('assets');
 
   const library = {
-    blocks: base.blocks.data,
-    placeholders: base.placeholders?.data,
-    icons: base.icons?.data,
     assets: await fetchAssetsData(assetsPath),
+    blocks: base.blocks.data,
+    icons: base.icons?.data,
+    personalization_tags: base.personalization?.data,
+    placeholders: base.placeholders?.data,
   };
 
   if (supplied) {
@@ -137,7 +149,7 @@ function createList(libraries) {
   Object.keys(libraries).forEach((type) => {
     if (!libraries[type] || libraries[type].length === 0) return;
 
-    const item = createTag('li', { class: 'content-type' }, type);
+    const item = createTag('li', { class: 'content-type' }, type.replace('_', ' '));
     libraryList.append(item);
 
     const list = document.createElement('ul');
@@ -146,7 +158,7 @@ function createList(libraries) {
 
     item.addEventListener('click', (e) => {
       const skLibrary = e.target.closest('.sk-library');
-      skLibrary.querySelector('.sk-library-title-text').textContent = type;
+      skLibrary.querySelector('.sk-library-title-text').textContent = type.replace('_', ' ');
       libraryList.classList.add('inset');
       list.classList.add('inset');
       skLibrary.classList.add('allow-back');

@@ -1,34 +1,52 @@
+import { selectors as baseSelectors } from '../utilities.js';
+
 const selectors = {
+  ...baseSelectors,
+  globalFooter: '.global-footer',
   mainNavItems:
     '.feds-navItem > a, .feds-navItem > .feds-cta-wrapper > .feds-cta',
   brand: '.feds-brand',
-  mainNavToggle: '.gnav-toggle',
+  mainNavToggle: '.feds-toggle',
   searchTrigger: '.feds-search-trigger',
   searchField: '.feds-search-input',
-  signIn: '.feds-signin',
+  signIn: '.feds-signIn',
+  signInDropdown: '.feds-signIn-dropdown',
   profileButton: '.feds-profile-button, .feds-signIn',
-  logo: '.gnav-logo',
+  logo: '.feds-logo',
+  profileMenu: '.feds-profile-menu',
+  profile: '.feds-profile',
   breadCrumbItems: '.feds-breadcrumbs li > a',
   expandedPopupTrigger: '.feds-navLink[aria-expanded = "true"]',
-  navLink: '.feds-navLink',
   promoLink: '.feds-promo-link',
   imagePromo: 'a.feds-promo-image',
   fedsNav: '.feds-nav',
   popup: '.feds-popup',
-  headline: '.feds-popup-headline',
-  section: '.feds-popup-section',
-  column: '.feds-popup-column',
+  headline: '.feds-menu-headline',
+  section: '.feds-menu-section',
+  column: '.feds-menu-column',
   cta: '.feds-cta',
-  curtain: '.feds-curtain',
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
-  globalNav: '.global-navigation',
+  regionPicker: '.feds-regionPicker',
+  socialLink: '.feds-social-link',
+  privacyLink: '.feds-footer-privacyLink',
+  menuContent: '.feds-menu-content',
 };
+
+selectors.profileDropdown = `
+  ${selectors.signInDropdown} a[href],
+  ${selectors.signInDropdown} button:not([disabled]),
+  ${selectors.profileMenu} a[href],
+  ${selectors.profileMenu} button:not([disabled])
+`;
 
 selectors.popupItems = `
   ${selectors.navLink},
   ${selectors.promoLink},
   ${selectors.imagePromo},
-  ${selectors.cta}
+  ${selectors.cta},
+  ${selectors.regionPicker},
+  ${selectors.socialLink},
+  ${selectors.privacyLink}
 `;
 
 const isElementVisible = (elem) => !!(

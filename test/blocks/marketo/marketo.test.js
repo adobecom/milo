@@ -1,96 +1,80 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement } from '../../helpers/waitfor.js';
-import { setConfig } from '../../../libs/utils/utils.js';
-import init, { formValidate, formSuccess } from '../../../libs/blocks/marketo/marketo.js';
+import { delay } from '../../helpers/waitfor.js';
+import init, { setPreferences, decorateURL } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
-const config = {
-  marketoBaseURL: '//app-aba.marketo.com',
-  marketoFormID: '1761',
-  marketoMunchkinID: '345-TTI-184',
-};
 
 describe('marketo', () => {
-  it('hide form if no base url', async () => {
-    setConfig({});
+  beforeEach(() => {
+    document.body.innerHTML = innerHTML;
+  });
+
+  afterEach(() => {
+    window.mcz_marketoForm_pref = undefined;
+  });
+
+  it('hides form if no data url', async () => {
     document.body.innerHTML = innerHTML;
     const el = document.querySelector('.marketo');
-    init(el);
+    el.querySelector('a').remove();
 
+    init(el);
+    await delay(10);
     expect(el.style.display).to.equal('none');
   });
 
-  it('init marketo form', async () => {
-    setConfig(config);
-    document.body.innerHTML = innerHTML;
-    const el = document.querySelector('.marketo');
-    init(el);
+  it('sets preferences on the data layer', async () => {
+    const formData = {
+      'first.key': 'value1',
+      'second.key': 'value2',
+    };
 
-    const wrapper = await waitForElement('.marketo-form-wrapper');
-    expect(wrapper).to.exist;
+    setPreferences(formData);
 
-    const title = el.querySelector('.marketo-title');
-    expect(title).to.exist;
+    expect(window.mcz_marketoForm_pref).to.have.property('first');
+    expect(window.mcz_marketoForm_pref.first).to.have.property('key');
+    expect(window.mcz_marketoForm_pref.first.key).to.equal('value1');
+    expect(window.mcz_marketoForm_pref).to.have.property('second');
+    expect(window.mcz_marketoForm_pref.second).to.have.property('key');
+    expect(window.mcz_marketoForm_pref.second.key).to.equal('value2');
+  });
+});
+
+describe('marketo decorateURL', () => {
+  it('decorates absolute URL with local base URL', () => {
+    const baseURL = new URL('http://localhost:6456/marketo-block');
+    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('http://localhost:6456/marketo-block/thank-you');
   });
 
-  it('load marketo disables stylesheets', async () => {
-    const formRow = await waitForElement('.mktoFormRow');
-    expect(formRow).to.exist;
-
-    const styleSheets = [...document.styleSheets];
-    const styleSheet = styleSheets.find((sheet) => sheet.href === `http:${config.marketoBaseURL}/js/forms2/css/forms2.css`);
-    expect(styleSheet.disabled).to.be.true;
+  it('decorates relative URL with absolute base URL', () => {
+    const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
+    const result = decorateURL('/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
   });
 
-  it('marketo hidden fields', async () => {
-    const hiddenInput = await waitForElement('input[name="hiddenField"]');
-    expect(hiddenInput).to.exist;
+  it('decorates absolute URL with matching base URL', () => {
+    const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
+    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
   });
 
-  it('validate marketo fields error', async () => {
-    const error = await waitForElement('.marketo-error');
-    const errorMessage = 'There are some fields that require your attention';
-
-    expect(error).to.exist;
-
-    expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
-
-    formValidate(form, false, error, errorMessage);
-    expect(error.classList.contains('alert')).to.be.true;
+  it('decorates absolute URL with .html base URL', () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
   });
 
-  it('marketo field error visible', async () => {
-    const button = await waitForElement('.marketo button');
-    button.click();
-
-    const firstField = document.querySelector('.mktoField');
-    const bounding = firstField.getBoundingClientRect();
-
-    expect(bounding.top >= 0 && bounding.bottom <= window.innerHeight).to.be.true;
+  it('keeps identical absolute URL with .html base URL', () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = decorateURL('https://business.adobe.com/marketo-block/thank-you.html', baseURL);
+    expect(result.href).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
   });
 
-  it('validate marketo fields success', async () => {
-    const error = await waitForElement('.marketo-error');
-    const errorMessage = 'There are some fields that require your attention';
-
-    expect(error).to.exist;
-
-    expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
-
-    formValidate(form, true, error, errorMessage);
-    expect(error.classList.contains('alert')).to.be.false;
-  });
-
-  it('marketo form formSuccess', async () => {
-    const redirectUrl = '';
-
-    expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
-
-    formSuccess(form, redirectUrl);
-    expect(window.mktoSubmitted).to.be.true;
+  it('returns null when provided a malformed URL', () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = decorateURL('tps://business', baseURL);
+    expect(result).to.be.null;
   });
 });

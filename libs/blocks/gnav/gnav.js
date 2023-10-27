@@ -4,7 +4,7 @@ import {
   decorateLinks,
   getConfig,
   getMetadata,
-  loadScript,
+  loadIms,
   localizeLink,
 } from '../../utils/utils.js';
 
@@ -13,27 +13,19 @@ import {
   analyticsGetLabel,
 } from '../../martech/attributes.js';
 
-const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
-const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"><defs><style>.cls-1{fill:#fa0f00;}.cls-2{fill:#fff;}</style></defs><rect class="cls-1" width="240" height="234" rx="42.5"/><path id="_256" data-name="256" class="cls-2" d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"/></svg>';
+const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#eb1000;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
+const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"><defs><style>.cls-1{fill:#eb1000;}.cls-2{fill:#fff;}</style></defs><rect class="cls-1" width="240" height="234" rx="42.5"/><path id="_256" data-name="256" class="cls-2" d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"/></svg>';
 const SEARCH_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>';
 const SEARCH_DEBOUNCE_MS = 300;
 export const IS_OPEN = 'is-open';
 const SEARCH_TYPE_CONTEXTUAL = 'contextual';
 
-const getLocale = () => document.documentElement.getAttribute('lang') || 'en-US';
+const getLocale = () => getConfig()?.locale?.ietf || 'en-US';
 const getCountry = () => getLocale()?.split('-').pop() || 'US';
 const isHeading = (el) => el?.nodeName.startsWith('H');
 const childIndexOf = (el) => [...el.parentElement.children]
   .filter((e) => (e.nodeName === 'DIV' || e.nodeName === 'P'))
   .indexOf(el);
-
-const debounce = (func, timeout = 300) => {
-  let timer;
-  return async (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(async () => func.apply(this, args), timeout);
-  };
-};
 
 function getBlockClasses(className) {
   const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
@@ -56,9 +48,6 @@ class Gnav {
     this.curtain = createTag('div', { class: 'gnav-curtain' });
     const nav = createTag('nav', { class: 'gnav', 'aria-label': 'Main' });
 
-    const mobileToggle = this.decorateToggle(nav);
-    nav.append(mobileToggle);
-
     const brand = this.decorateBrand();
     if (brand) {
       nav.append(brand);
@@ -67,7 +56,9 @@ class Gnav {
     const scrollWrapper = createTag('div', { class: 'mainnav-wrapper' });
 
     const mainNav = this.decorateMainNav();
-    if (mainNav) {
+    if (mainNav && mainNav.childElementCount) {
+      const mobileToggle = this.decorateToggle();
+      nav.prepend(mobileToggle);
       scrollWrapper.append(mainNav);
     }
 
@@ -107,6 +98,7 @@ class Gnav {
     const { onSearchInput, getHelpxLink } = await import('./gnav-search.js');
     this.getHelpxLink = getHelpxLink;
 
+    const { debounce } = await import('../../utils/action.js');
     if (this.searchType === SEARCH_TYPE_CONTEXTUAL) {
       const { default: onContextualSearchInput } = await import('./gnav-contextual-search.js');
       this.onSearchInput = debounce(onContextualSearchInput, SEARCH_DEBOUNCE_MS);
@@ -413,7 +405,9 @@ class Gnav {
     const searchResults = createTag('div', { class: 'gnav-search-results' });
     const searchResultsUl = createTag('ul');
     searchResults.append(searchResultsUl);
-    const locale = getLocale();
+    const { locale } = getConfig();
+
+    locale.geo = getCountry();
 
     searchInput.addEventListener('input', (e) => {
       this.onSearchInput({
@@ -427,7 +421,7 @@ class Gnav {
 
     searchInput.addEventListener('keydown', (e) => {
       if (e.code === 'Enter') {
-        window.open(this.getHelpxLink(e.target.value, getCountry()));
+        window.open(this.getHelpxLink(e.target.value, locale.prefix, locale.geo));
       }
     });
 
@@ -453,22 +447,15 @@ class Gnav {
     const profileEl = createTag('div', { class: 'gnav-profile' });
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
-    const defaultOnReady = () => {
-      this.imsReady(blockEl, profileEl);
-    };
-
-    const { locale, imsClientId, env, onReady } = getConfig();
+    const { imsClientId } = getConfig();
     if (!imsClientId) return null;
-    window.adobeid = {
-      client_id: imsClientId,
-      scope: 'AdobeID,openid,gnav',
-      locale: locale?.ietf?.replace('-', '_') || 'en_US',
-      autoValidateToken: true,
-      environment: env.ims,
-      useLocalStorage: false,
-      onReady: onReady || defaultOnReady,
-    };
-    loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+
+    loadIms()
+      .then(() => {
+        this.imsReady(blockEl, profileEl);
+      })
+      .catch(() => {});
+
     return profileEl;
   };
 

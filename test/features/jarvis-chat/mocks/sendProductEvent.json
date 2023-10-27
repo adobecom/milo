@@ -1,0 +1,12 @@
+{
+  "events": [
+    {
+      "data": {
+        "event.workflow": "product",
+        "event.subtype": "sub",
+        "event.type": "type",
+        "content.name": "auth-subproduct"
+      }
+    }
+  ]
+}

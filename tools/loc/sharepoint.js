@@ -15,6 +15,7 @@ import { getConfig as getFloodgateConfig } from '../floodgate/js/config.js';
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
 const BATCH_DELAY_TIME = 200;
+const itemIdMap = {};
 
 const getAccessToken = () => accessToken;
 
@@ -86,7 +87,7 @@ function getAuthorizedRequestOption({
 let nextCallAfter = 0;
 const reqThresh = 5;
 let retryFlag = false;
-const TOO_MANY_REQUESTS = "429";
+const TOO_MANY_REQUESTS = '429';
 
 function enableRetry() {
   retryFlag = true;
@@ -187,11 +188,10 @@ async function getFilesData(filePaths, isFloodgate) {
   // process data in batches
   const fileJsonResp = [];
   for (let i = 0; i < batchArray.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     fileJsonResp.push(...await Promise.all(
       batchArray[i].map((file) => getFileData(file, isFloodgate)),
     ));
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    // eslint-disable-next-line no-promise-executor-return
     await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_TIME));
   }
   return fileJsonResp;
@@ -380,8 +380,7 @@ async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloo
   validateConnection();
   await createFolder(destinationFolder, isFloodgate);
   const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
-  const baseURI = sp.api.file.copy.baseURI;
-  const fgBaseURI = sp.api.file.copy.fgBaseURI;
+  const { baseURI, fgBaseURI } = sp.api.file.copy;
   const rootFolder = isFloodgate ? fgBaseURI.split('/').pop() : baseURI.split('/').pop();
 
   const payload = { ...sp.api.file.copy.payload, parentReference: { path: `${rootFolder}${destinationFolder}` } };
@@ -396,15 +395,13 @@ async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloo
   // locked file copy happens in the floodgate content location
   // So baseURI is updated to reflect the destination accordingly
   const contentURI = isFloodgate && isFloodgateLockedFile ? fgBaseURI : baseURI;
-  const copyStatusInfo = await fetchWithRetry(`${contentURI}${srcPath}:/copy`, options);
+  const copyStatusInfo = await fetchWithRetry(`${contentURI}${srcPath}:/copy?@microsoft.graph.conflictBehavior=replace`, options);
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copySuccess = false;
   let copyStatusJson = {};
   while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
-    // eslint-disable-next-line no-await-in-loop
     const status = await fetchWithRetry(statusUrl);
     if (status.ok) {
-      // eslint-disable-next-line no-await-in-loop
       copyStatusJson = await status.json();
       copySuccess = copyStatusJson.status === 'completed';
     }
@@ -469,22 +466,31 @@ async function saveFileAndUpdateMetadata(srcPath, file, dest, customMetadata = {
   throw new Error(`Could not upload file ${dest}`);
 }
 
+async function executeGQL(url, opts) {
+  const options = await getAuthorizedRequestOption(opts);
+  const res = await fetchWithRetry(url, options);
+  if (!res.ok) {
+    throw new Error(`Failed to execute ${url}`);
+  }
+  return res.json();
+}
+
+async function getItemId(uri, path) {
+  const key = `~${uri}~${path}~`;
+  itemIdMap[key] = itemIdMap[key] || await executeGQL(`${uri}${path}?$select=id`);
+  return itemIdMap[key]?.id;
+}
+
 async function updateExcelTable(excelPath, tableName, values) {
   const { sp } = await getConfig();
-
-  const options = getAuthorizedRequestOption({
-    body: JSON.stringify({ values }),
-    method: sp.api.excel.update.method,
-  });
-
-  const res = await fetchWithRetry(
-    `${sp.api.excel.update.baseURI}${excelPath}:/workbook/tables/${tableName}/rows/add`,
-    options,
-  );
-  if (res.ok) {
-    return res.json();
+  const itemId = await getItemId(sp.api.file.get.baseURI, excelPath);
+  if (itemId) {
+    return executeGQL(`${sp.api.excel.update.baseItemsURI}/${itemId}/workbook/tables/${tableName}/rows`, {
+      body: JSON.stringify({ values }),
+      method: sp.api.excel.update.method,
+    });
   }
-  throw new Error(`Failed to update excel sheet ${excelPath} table ${tableName}.`);
+  return {};
 }
 
 async function addWorksheetToExcel(excelPath, worksheetName) {
@@ -526,4 +532,6 @@ export {
   createFolder,
   enableRetry,
   fetchWithRetry,
+  getFileNameFromPath,
+  getFolderFromPath,
 };

@@ -51,6 +51,7 @@ export function getDocPathFromUrl(url) {
   if (!path) {
     return undefined;
   }
+  if (path.endsWith('.json')) return path.replace(/\.json$/, '.xlsx');
   if (path.endsWith('/')) {
     path += 'index';
   } else if (path.endsWith('.html')) {
@@ -88,18 +89,18 @@ export function getUrlInfo() {
   return urlInfo;
 }
 
-export async function simulatePreview(path, retryAttempt = 1, isFloodgate) {
+export async function simulatePreview(path, retryAttempt = 1, isFloodgate, fgColor) {
   const previewStatus = { success: true, path };
   try {
     getUrlInfo();
-    const repo = isFloodgate ? `${urlInfo.repo}-pink` : urlInfo.repo;
+    const repo = isFloodgate ? `${urlInfo.repo}-${fgColor}` : urlInfo.repo;
     const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${repo}/${urlInfo.ref}${path}`;
     const response = await fetch(
       `${previewUrl}`,
       { method: 'POST' },
     );
     if (!response.ok && retryAttempt <= MAX_RETRIES) {
-      await simulatePreview(path, retryAttempt + 1, isFloodgate);
+      await simulatePreview(path, retryAttempt + 1, isFloodgate, fgColor);
     }
     previewStatus.responseJson = await response.json();
   } catch (error) {

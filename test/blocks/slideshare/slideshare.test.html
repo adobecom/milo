@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <!-- the import map to use in our test -->
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "../instagram/mocks/embed-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a href="https://www.slideshare.net/slideshow/embed_code/key/z7jDceGX088IiB">https://www.slideshare.net/slideshow/embed_code/key/z7jDceGX088IiB</a>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import { loadScript } from '../../../libs/utils/utils.js';
+    import init from '../../../libs/blocks/slideshare/slideshare.js';
+
+    runTests(() => {
+      describe('slideshare', () => {
+        it('renders embed for slideshare link', () => {
+          const slideshare = document.querySelector('a');
+          init(slideshare);
+          const iframe = document.querySelector("iframe")
+          const div = document.querySelector("#slideshare")
+          expect(iframe).to.exist;
+          expect(div).to.exist;
+        });
+      });
+    });
+  </script>
+</html>

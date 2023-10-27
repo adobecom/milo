@@ -6,13 +6,14 @@ const defaultConfig = {
     collectionButtonStyle: 'primary',
     resultsPerPage: 5,
     endpoint:
-      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
+      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
     fallbackEndpoint: '',
     totalCardsToShow: 10,
     cardStyle: 'half-height',
     showTotalResults: false,
     i18n: {
       cardTitleAccessibilityLevel: 6,
+      lastModified: 'Last modified {date}',
       prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
       totalResultsText: '{total} results',
       title: '',
@@ -20,8 +21,8 @@ const defaultConfig = {
       onErrorDescription:
         'Please try reloading the page or try coming back to the page another time.',
       titleHeadingLevel: 'h3',
-
     },
+    detailsTextOption: 'default',
     setCardBorders: false,
     useOverlayLinks: false,
     banner: {
@@ -33,9 +34,14 @@ const defaultConfig = {
     useLightText: false,
     disableBanners: false,
     reservoir: { sample: 3, pool: 1000 },
-    ctaAction: '_blank',
-    additionalRequestParams: {}
+    ctaAction: '_self',
+    additionalRequestParams: {},
   },
+  headers: [],
+  hideCtaIds: [
+    '',
+  ],
+  hideCtaTags: [],
   featuredCards: [
     '',
   ],
@@ -127,9 +133,9 @@ const defaultConfig = {
   analytics: { trackImpressions: '', collectionIdentifier: '' },
   target: {
     enabled: '',
-    lastViewedSession: ''
+    lastViewedSession: '',
   },
-  customCard: ["card","return ``"]
+  customCard: ['card', 'return ``'],
 };
 
 export default defaultConfig;

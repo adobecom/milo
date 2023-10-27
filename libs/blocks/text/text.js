@@ -1,4 +1,5 @@
-import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -15,6 +16,7 @@ const blockTypeSizes = {
     xlarge: ['xl', 'xxl'],
   },
   text: {
+    xxsmall: ['xxs', 'xxs'],
     small: ['m', 's', 's'],
     medium: ['l', 'm', 'm'],
     large: ['xl', 'm', 'l'],
@@ -33,27 +35,33 @@ export default function init(el) {
   }
   const helperClasses = [];
   let blockType = 'text';
-  const size = getBlockSize(el);
-  const longFormVariants = ['inset', 'long-form', 'bio'];
-  longFormVariants.forEach((variant, index) => {
+  const size = el.classList.contains('legal') ? 'xxsmall' : getBlockSize(el);
+  ['inset', 'long-form', 'bio'].forEach((variant, index) => {
     if (el.classList.contains(variant)) {
       helperClasses.push('max-width-8-desktop');
       blockType = (index > 0) ? 'standard' : variant;
     }
   });
-  const config = blockTypeSizes[blockType][size];
-  const overrides = ['-heading', '-body', '-detail'];
-  overrides.forEach((override, index) => {
-    const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
-    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toLowerCase();
+  rows.forEach((row) => {
+    row.classList.add('foreground');
+    decorateBlockText(row, blockTypeSizes[blockType][size]);
   });
-  decorateBlockText(el, config);
-  rows.forEach((row) => { row.classList.add('foreground'); });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-s');
   }
+  if (el.classList.contains('link-farm')) {
+    const foregroundDiv = el.querySelectorAll('.foreground')[1];
+    const count = foregroundDiv.querySelectorAll('h3').length;
+    foregroundDiv.querySelectorAll('div').forEach((divElem) => {
+      if (!divElem.querySelector('h3') && count) {
+        const headingElem = createTag('h3', { class: 'no-heading' });
+        divElem.insertBefore(headingElem, divElem.firstChild);
+      }
+    });
+  }
   el.classList.add(...helperClasses);
+  decorateTextOverrides(el);
 }

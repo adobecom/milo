@@ -43,7 +43,7 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 }
 
 .quote blockquote {
-  margin: 0 auto var(--spacing-s);
+  margin: 0 auto;
 }
 
 .quote blockquote .quote-copy {
@@ -53,6 +53,7 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 
 .quote figcaption .figcaption {
   font-size: var(--type-body-s-size);
+  margin-top: var(--spacing-s);
 }
 
 .quote figcaption cite {
@@ -73,7 +74,7 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 
 /* inline */
 .quote.inline figure {
-  text-align: left;
+  text-align: start;
   padding: var(--spacing-m);
 }
 

@@ -14,6 +14,7 @@ import { useEffect, useState, useRef } from '../deps/htm-preact.js';
 const useHover = ({ refToAttachTo = null, useMouseLeave = false } = {}) => {
   const [hoverState, setHoverState] = useState(false);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const ref = refToAttachTo || useRef(null);
 
   const handleMouseOver = (ev) => setHoverState({ hovering: true, event: ev });
@@ -35,7 +36,7 @@ const useHover = ({ refToAttachTo = null, useMouseLeave = false } = {}) => {
       }
       return undefined;
     },
-    [ref.current] // Recall only if ref changes
+    [ref.current], // Recall only if ref changes
   );
 
   return [ref, hoverState];

@@ -1,11 +1,21 @@
+/* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
+import {
+  getConfig as pageConfigHelper,
+  loadScript,
+  loadStyle,
+  localizeLink,
+} from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
+import getUuid from '../../utils/getUuid.js';
 
 const URL_ENCODED_COMMA = '%2C';
+export const fgHeaderName = 'X-Adobe-Floodgate';
+export const fgHeaderValue = 'pink';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
+const requestHeaders = [];
 
 export function getPageLocale(currentPath, locales = pageLocales) {
   const possibleLocale = currentPath.split('/')[1];
@@ -15,6 +25,12 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   // defaults to en_US
   return '';
 }
+
+export const isValidHtmlUrl = (url) => {
+  const regex = /^https:\/\/[^\s]+$/;
+  return regex.test(url);
+};
+export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
 export const loadStrings = async (
   url,
@@ -51,6 +67,35 @@ export const loadStrings = async (
   } catch (err) {
     return {};
   }
+};
+
+export const decodeCompressedString = async (txt) => {
+  if (!window.DecompressionStream) {
+    await import('../../deps/compression-streams-pollyfill.js');
+  }
+  const b64decode = (str) => {
+    const binaryStr = window.atob(str);
+    const bytes = new Uint8Array(new ArrayBuffer(binaryStr.length));
+    binaryStr?.split('')
+      .forEach((c, i) => (bytes[i] = c.charCodeAt(0)));
+    return bytes;
+  };
+
+  const b64toStream = (b64) => new Blob([b64decode(b64)], { type: 'text/plain' }).stream();
+
+  const decompressStream = async (stream) => new Response(
+    // eslint-disable-next-line no-undef
+    stream.pipeThrough(new DecompressionStream('gzip')),
+  );
+
+  const responseToJSON = async (response) => {
+    const blob = await response.blob();
+    return JSON.parse(await blob.text());
+  };
+
+  const stream = b64toStream(txt);
+  const resp = await decompressStream(stream);
+  return responseToJSON(resp);
 };
 
 export const loadCaasFiles = async () => {
@@ -108,7 +153,7 @@ const getContentIdStr = (cardStr, card) => {
 
 const wrapInParens = (s) => `(${s})`;
 
-const buildComplexQuery = (andLogicTags, orLogicTags) => {
+const buildComplexQuery = (andLogicTags, orLogicTags, notLogicTags) => {
   let andQuery = andLogicTags
     .filter((tag) => tag.intraTagLogic !== '' && tag.andTags.length)
     .map((tag) => wrapInParens(tag.andTags.map((val) => `"${val}"`).join(`+${tag.intraTagLogic}+`)))
@@ -119,10 +164,20 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
     .map((tag) => wrapInParens(tag.orTags.map((val) => `"${val}"`).join('+AND+')))
     .join('+OR+');
 
+  let notQuery = notLogicTags
+    .filter((tag) => tag.intraTagLogicExclude !== '' && tag.notTags.length)
+    .map((tag) => wrapInParens(tag.notTags.map((val) => `"${val}"`).join(`+${tag.intraTagLogicExclude}+`)))
+    .join('+AND+');
+
   andQuery = andQuery.length ? wrapInParens(andQuery) : '';
   orQuery = orQuery.length ? wrapInParens(orQuery) : '';
+  notQuery = notQuery.length ? wrapInParens(notQuery) : '';
 
-  return encodeURIComponent(`${andQuery}${andQuery && orQuery ? '+AND+' : ''}${orQuery}`);
+  return (andQuery || orQuery)
+    ? encodeURIComponent(`${andQuery}${
+      andQuery && orQuery ? '+AND+' : ''}${orQuery}${
+      (andQuery || orQuery) && notQuery ? '+AND+NOT+' : ''}${notQuery}`)
+    : '';
 };
 
 const getSortOptions = (state, strs) => {
@@ -175,20 +230,24 @@ const getLocalTitle = (tag, country, lang) => tag[`title.${lang}_${country}`]
   || tag[`title.${lang}`]
   || tag.title;
 
-const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, state) => {
+const getFilterObj = (
+  { excludeTags, filterTag, icon, openedOnLoad },
+  tags,
+  state,
+  country,
+  lang,
+) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
   if (!tag) return null;
-  const country = state.country.split('/')[1];
-  const lang = state.language.split('/')[1];
   const items = Object.values(tag.tags)
     .map((itemTag) => {
-      if (excludeTags.includes(itemTag.tagID)) return null;
-      const label = getLocalTitle(itemTag, country, lang);
+      if (excludeTags?.includes(itemTag.tagID)) return null;
+      const titleLabel = getLocalTitle(itemTag, country, lang);
       return {
         id: itemTag.tagID,
-        label: label.replace('&amp;', '&'),
+        label: titleLabel.replace('&amp;', '&'),
       };
     })
     .filter((i) => i !== null)
@@ -208,31 +267,90 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
   return filterObj;
 };
 
-const getFilterArray = async (state) => {
-  if (!state.showFilters || state.filters.length === 0) {
+const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = {}) => {
+  if (!group) return null;
+
+  const IN_BRACKETS_RE = /^{.*}$/;
+
+  const items = filtersCustomItems.map((item) => ({
+    id: item.customFilterTag[0],
+    label: item.filtersCustomLabel?.match(IN_BRACKETS_RE)
+      ? strs[item.filtersCustomLabel.replace(/{|}/g, '')]
+      : item.filtersCustomLabel || '',
+  }));
+
+  const filterObj = {
+    id: group,
+    openedOnLoad: !!openedOnLoad,
+    items,
+    group: group?.match(IN_BRACKETS_RE)
+      ? strs[group.replace(/{|}/g, '')]
+      : group || '',
+  };
+
+  return filterObj;
+};
+
+const getFilterArray = async (state, country, lang, strs) => {
+  if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
 
   const { tags } = await getTags(state.tagsUrl);
-  const filters = state.filters
-    .map((filter) => getFilterObj(filter, tags, state))
-    .filter((filter) => filter !== null);
+  const useCustomFilters = state.filterBuildPanel === 'custom';
+
+  let filters = [];
+  if (!useCustomFilters) {
+    filters = state.filters
+      .map((filter) => getFilterObj(filter, tags, state, country, lang))
+      .filter((filter) => filter !== null);
+  } else {
+    filters = state.filtersCustom.length > 0
+      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
+      : [];
+  }
+
   return filters;
 };
 
-const getCountryAndLang = ({ autoCountryLang, country, language }) => {
+export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
-    const htmlLang = document.documentElement.getAttribute('lang')?.toLowerCase() || 'en-us';
-    const [lang, cntry] = htmlLang.split('-');
+    const locale = pageConfigHelper()?.locale;
     return {
-      country: cntry,
-      language: lang,
+      country: locale.region?.toLowerCase() || 'us',
+      language: locale.ietf?.toLowerCase() || 'en-us',
     };
   }
   return {
     country: country ? country.split('/').pop() : 'us',
     language: language ? language.split('/').pop() : 'en',
   };
+}
+
+/**
+ * Finds the matching tuple and returns its index.
+ * Looks for 'X-Adobe-Floodgate' in [['X-Adobe-Floodgate', 'pink'], ['a','b']]
+ * @param {*} fgHeader fgHeader
+ * @returns tupleIndex
+ */
+const findTupleIndex = (fgHeader) => {
+  const matchingTupleIndex = requestHeaders.findIndex((element) => element[0] === fgHeader);
+  return matchingTupleIndex;
+};
+
+/**
+ * Adds the floodgate header to the Config of ConsonantCardCollection
+ * headers: [['X-Adobe-Floodgate', 'pink'], ['OtherHeader', 'Value']]
+ * @param {*} state state
+ * @returns requestHeaders
+ */
+const addFloodgateHeader = (state) => {
+  // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
+  requestHeaders.splice(findTupleIndex(fgHeaderName, 1));
+  if (state.fetchCardsFromFloodgateTree) {
+    requestHeaders.push([fgHeaderName, fgHeaderValue]);
+  }
+  return requestHeaders;
 };
 
 export function arrayToObj(input = []) {
@@ -249,18 +367,58 @@ export function arrayToObj(input = []) {
   return obj;
 }
 
-export const getConfig = async (state, strs = {}) => {
+const addMissingStateProps = (state) => {
+  // eslint-disable-next-line no-use-before-define
+  Object.entries(defaultState).forEach(([key, val]) => {
+    if (state[key] === undefined) {
+      state[key] = val;
+    }
+  });
+  return state;
+};
+
+const fetchUuidForCard = async (card) => {
+  if (!card.contentId) {
+    return null;
+  }
+  if (isValidUuid(card.contentId)) {
+    return card.contentId;
+  }
+  try {
+    const url = new URL(card.contentId);
+    const localizedLink = localizeLink(url, window.location.hostname, true);
+    const substr = String(localizedLink).split('https://').pop();
+    return await getUuid(substr);
+  } catch (error) {
+    return null;
+  }
+};
+
+const getCardsString = async (cards = []) => {
+  const uuids = await Promise.all(cards.map(async (card) => {
+    const uuid = await fetchUuidForCard(card);
+    return uuid !== null ? uuid : undefined;
+  }));
+  return uuids.filter(Boolean).join('%2C');
+};
+
+export const getConfig = async (originalState, strs = {}) => {
+  const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const { country, language } = getCountryAndLang(state);
-  const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
+  const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
+  const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
+  const hideCtaTags = state.hideCtaTags ? state.hideCtaTags : [];
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
-  const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
+  const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags, state.notLogicTags);
+
+  const caasRequestHeaders = addFloodgateHeader(state);
 
   const config = {
     collection: {
@@ -276,7 +434,9 @@ export const getConfig = async (state, strs = {}) => {
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
         ',',
-      )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
+      )}&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
+        ',',
+      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
@@ -293,7 +453,9 @@ export const getConfig = async (state, strs = {}) => {
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
+        lastModified: strs.lastModified || 'Last modified {date}',
       },
+      detailsTextOption: state.detailsTextOption,
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
       collectionButtonStyle: state.collectionBtnStyle,
@@ -315,13 +477,15 @@ export const getConfig = async (state, strs = {}) => {
       ctaAction: state.ctaAction,
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
+    hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
+    hideCtaTags,
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
-      filters: await getFilterArray(state),
+      filters: await getFilterArray(state, country, language, strs),
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
@@ -427,6 +591,7 @@ export const getConfig = async (state, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
+    headers: caasRequestHeaders,
   };
   return config;
 };
@@ -457,6 +622,7 @@ export const defaultState = {
   analyticsTrackImpression: false,
   andLogicTags: [],
   autoCountryLang: false,
+  fetchCardsFromFloodgateTree: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
@@ -469,7 +635,7 @@ export const defaultState = {
   contentTypeTags: [],
   country: 'caas:country/us',
   customCard: '',
-  ctaAction: '_blank',
+  ctaAction: '_self',
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
@@ -480,15 +646,21 @@ export const defaultState = {
   fallbackEndpoint: '',
   featuredCards: [],
   filterEvent: '',
+  filterBuildPanel: 'automatic',
   filterLocation: 'left',
   filterLogic: 'or',
   filters: [],
+  filtersCustom: [],
   filtersShowEmpty: false,
   gutter: '4x',
+  headers: [],
+  hideCtaIds: [],
+  hideCtaTags: [],
   includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',
   loadMoreBtnStyle: 'primary',
+  notLogicTags: [],
   onlyShowBookmarkedCards: false,
   orLogicTags: [],
   paginationAnimationStyle: 'paged',
@@ -499,6 +671,8 @@ export const defaultState = {
   placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],
+  secondaryTags: [],
+  secondarySource: [],
   setCardBorders: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
@@ -525,6 +699,7 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useLightText: false,

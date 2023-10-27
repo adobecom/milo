@@ -16,7 +16,7 @@ describe('text block', () => {
     });
 
     it('has body copy', () => {
-      const body = textBlocks[0].querySelector('.body-m');
+      const body = textBlocks[0].querySelector('[class*="body-"]');
       expect(body).to.exist;
     });
   });
@@ -27,8 +27,39 @@ describe('text block', () => {
     });
 
     it('has body copy', () => {
-      const body = textBlocks[1].querySelector('.body-m');
+      const body = textBlocks[1].querySelector('[class*="body-"]');
       expect(body).to.exist;
+    });
+  });
+  describe('text block legal', () => {
+    it('is present', () => {
+      const element = document.querySelector('.legal');
+      expect(element).to.exist;
+    });
+    it('has xxs body copy', () => {
+      const body = document.querySelector('.legal .body-xxs');
+      expect(body).to.exist;
+    });
+  });
+  describe('Link Farm', () => {
+    it('is present', () => {
+      const element = document.querySelector('.link-farm');
+      expect(element).to.exist;
+    });
+
+    it('adds h3 elements when necessary', () => {
+      const headingElements = document.querySelectorAll('.link-farm .foreground h3');
+      expect(headingElements.length).to.equal(4);
+    });
+    it('adds no-heading class to the h3 element', () => {
+      const headingElem = document.querySelector('.link-farm .foreground .no-heading');
+      expect(headingElem).to.exist;
+    });
+    it('adds h3 as the first element in the div', () => {
+      const divElements = document.querySelectorAll('.link-farm .foreground:nth-child(2) div');
+      divElements.forEach((div) => {
+        expect(div.children[0].tagName).to.equal('H3');
+      });
     });
   });
 });
