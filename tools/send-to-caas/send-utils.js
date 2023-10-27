@@ -258,13 +258,22 @@ const getDateProp = (dateStr, errorMsg) => {
   }
 };
 
-const getOrigin = () => {
-  const origin = getConfig().project || getConfig().repo;
+const processRepoForFloodgate = (repo, fgColor) => {
+  if (repo && fgColor) {
+    return repo.slice(0, repo.lastIndexOf(`-${fgColor}`));
+  }
+  return repo;
+};
+
+const getOrigin = (fgColor) => {
+  const bulkPublisherRepo = processRepoForFloodgate(getConfig().repo, fgColor);
+  const origin = getConfig().project || bulkPublisherRepo;
+
   if (origin) return origin;
 
   if (window.location.hostname.endsWith('.hlx.page')) {
     const [, repo] = window.location.hostname.split('.')[0].split('--');
-    return repo;
+    return processRepoForFloodgate(repo, fgColor);
   }
 
   throw new Error('No Project or Repo defined in config');
@@ -479,7 +488,12 @@ const props = {
       ? getDateProp(s, `Invalid Modified Date: ${s}`)
       : getDateProp(lastModified || doc.lastModified, `document.lastModified is not a valid date: ${doc.lastModified}`);
   },
-  origin: (s) => s || getOrigin(),
+  origin: (s, options) => {
+    if (s) return s;
+    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
+    return getOrigin(fgColor);
+  },
+
   playurl: (s) => checkUrl(s, `Invalid PlayURL: ${s}`),
   primarytag: (s) => {
     const tag = getTag(s);
