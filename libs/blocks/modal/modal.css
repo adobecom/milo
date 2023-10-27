@@ -192,6 +192,6 @@
   }
 }
 
-disable-scroll {
+.disable-scroll {
   overflow: hidden;
 }
