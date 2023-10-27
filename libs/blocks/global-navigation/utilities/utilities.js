@@ -188,18 +188,36 @@ export function trigger({ element, event, type } = {}) {
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-export const lanaLog = ({ message, e = '' }) => {
+//Common used LANA logs tags:
+// info - network issues
+// warn - authoring related misconfigs or similar
+// error - actual error ( ex. cannot read Y of undefind )
+// <module> - extra tag to help centralise all logs related to a specific module
+
+const composeLanaTags = (tags = ['default']) => {
+  if (
+    !Array.isArray(tags) ||
+    tags.length === 0 ||
+    tags.some((t) => typeof t !== 'string')
+  ) {
+    return ['default'];
+  }
+  return tags;
+};
+
+export const lanaLog = ({ message, e = '', tags }) => {
   const url = getMetadata('gnav-source');
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
     clientId: 'feds-milo',
     sampleRate: 1,
+    tags: composeLanaTags(tags) 
   });
 };
 
-export const logErrorFor = async (fn, message) => {
+export const logErrorFor = async (fn, message, tags) => {
   try {
     await fn();
   } catch (e) {
-    lanaLog({ message, e });
+    lanaLog({ message, e, tags });
   }
 };

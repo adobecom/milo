@@ -34,7 +34,7 @@ class Search {
       this.clearSearchForm();
     });
     observer.observe(this.trigger, { attributeFilter: ['aria-expanded'] });
-    logErrorFor(this.init.bind(this), 'Search has failed loading');
+    logErrorFor(this.init.bind(this), 'Search has failed loading', ['error', 'gnav-search']);
   }
 
   async init() {

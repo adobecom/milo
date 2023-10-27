@@ -86,7 +86,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         signIn();
       });
     } else {
-      lanaLog({ message: 'Sign in link not found in dropdown.' });
+      lanaLog({ message: 'Sign in link not found in dropdown.', tags: ['error', 'global-navigation'] });
     }
 
     decoratedElem.append(dropdownElem);
@@ -197,7 +197,7 @@ class Gnav {
 
     document.addEventListener('click', closeOnClickOutside);
     isDesktop.addEventListener('change', closeAllDropdowns);
-  }, 'Error in global navigation init');
+  }, 'Error in global navigation init', ['error', 'global-navigation']);
 
   ims = async () => loadIms()
     .then(() => this.imsReady())
@@ -206,7 +206,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'GNAV: Error with IMS', e });
+      lanaLog({ message: 'GNAV: Error with IMS', e , tags: ['info', 'global-navigation']});
     });
 
   decorateTopNav = () => {
@@ -295,7 +295,7 @@ class Gnav {
         this.Search = Search;
         resolve();
       } catch (e) {
-        lanaLog({ message: 'GNAV: Error within loadDelayed', e });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e , tags: ['info', 'global-navigation']});
         resolve();
       }
     });
@@ -313,7 +313,7 @@ class Gnav {
         await task();
       }
     } catch (e) {
-      lanaLog({ message: 'GNAV: issues within onReady', e });
+      lanaLog({ message: 'GNAV: issues within onReady', e ,  tags: ['info', 'global-navigation']});
     }
   };
 
@@ -412,7 +412,7 @@ class Gnav {
       if (isExpanded) setHamburgerPadding();
     };
 
-    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed'));
+    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed',['error', 'global-navigation'] ));
 
     const onDeviceChange = () => {
       if (isDesktop.matches) {
@@ -424,7 +424,7 @@ class Gnav {
       }
     };
 
-    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change'));
+    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change', ['error', 'global-navigation']));
 
     return toggle;
   };
@@ -555,7 +555,7 @@ class Gnav {
           template,
           type: itemType,
         });
-      }, 'Decorate dropdown failed');
+      }, 'Decorate dropdown failed', ['info', 'global-navigation']);
 
       template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
@@ -686,7 +686,7 @@ export default async function init(header) {
     header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
     return gnav;
   } catch (e) {
-    lanaLog({ message: 'Could not create global navigation.', e });
+    lanaLog({ message: 'Could not create global navigation.', e,  tags: ['error', 'global-navigation'] });
     return null;
   }
 }

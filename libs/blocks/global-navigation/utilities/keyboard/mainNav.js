@@ -83,7 +83,7 @@ class MainNavItem {
           default:
             break;
         }
-      }, `mainNav key failed ${e.code}`));
+      }, `mainNav key failed ${e.code}`, ['error', 'gnav-keyboard']));
   }
 
   getState = () => {
