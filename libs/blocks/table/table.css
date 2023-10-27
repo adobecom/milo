@@ -100,6 +100,10 @@
   border-top-right-radius: 0;
 }
 
+.table .row-heading .col-heading.heading-icon-m img {
+  width: var(--icon-size-m);
+}
+
 .table .section-row .col.section-row-title,
 .table .section-row .col.section-row-title p {
   font-size: var(--type-body-xs-size);
@@ -373,7 +377,7 @@ header.global-navigation {
 }
 
 .table.merch .row-heading .col.col-heading .buttons-wrapper.align-right {
-  justify-content: flex-end;
+  justify-content: right;
 }
 
 .table.merch .row-heading .col.col-heading .buttons-wrapper > * {

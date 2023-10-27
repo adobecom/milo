@@ -17,10 +17,10 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function handleHeading(headingCols, alignButtonRight, isPriceBottom) {
+function handleHeading(headingCols, alignButtonRight, isPriceBottom, isMediumHeadingIcon) {
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
-
+    isMediumHeadingIcon && col.classList.add('heading-icon-m');
     if (!col.innerHTML) {
       col.classList.add('hidden');
       return;
@@ -43,10 +43,14 @@ function handleHeading(headingCols, alignButtonRight, isPriceBottom) {
       if (pricingElem) {
         pricingElem.classList.add('pricing');
       }
- 
-      isPriceBottom && pricingElem.parentNode.insertBefore(elements[textStartIndex + 2], elements[textStartIndex + 1]);
-      decorateButtons(col, 'button-l');
 
+     
+ 
+      if( isPriceBottom) {
+        pricingElem.parentNode.insertBefore(elements[textStartIndex + 2], elements[textStartIndex + 1]);
+      }
+
+      decorateButtons(col, 'button-l');
       const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
       alignButtonRight && buttonsWrapper.classList.add('align-right')
       col.append(buttonsWrapper);
@@ -67,7 +71,8 @@ function handleHighlight(table) {
   const secondRow = table.querySelector('.row-2');
   const secondRowCols = secondRow.querySelectorAll('.col');
   const alignButtonRight = table.classList.contains('button-right');
-  const isPriceBottom = table.classList.contains('price-bottom');
+  const isPriceBottom = table.classList.contains('pricing-bottom');
+  const isMediumHeadingIcon = table.classList.contains('heading-icon-m')
   let headingCols = null;
 
   if (isHighlightTable) {
@@ -96,7 +101,7 @@ function handleHighlight(table) {
     firstRow.classList.add('row-heading');
   }
 
-  handleHeading(headingCols, alignButtonRight, isPriceBottom);
+  handleHeading(headingCols, alignButtonRight, isPriceBottom, isMediumHeadingIcon);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
