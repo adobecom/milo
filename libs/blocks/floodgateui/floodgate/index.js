@@ -6,9 +6,10 @@ import {
   allowFindFragments,
   canRefresh,
   fgColor,
+  loadHeadingCheck,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
-import { getStatus } from '../../locui/utils/franklin.js';
+import { getStatus, preview } from '../../locui/utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
 import { getServiceUpdates } from '../utils/miloc.js';
 import { getUrls } from '../../locui/loc/index.js';
@@ -72,7 +73,8 @@ async function loadHeading() {
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
   window.document.title = `${projectName} - FgUI`;
-  // await preview(`${path}.json`);
+  await preview(`${path}.json`);
+  loadHeadingCheck.value = true;
 }
 
 async function loginToSharePoint() {

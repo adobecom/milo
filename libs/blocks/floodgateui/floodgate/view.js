@@ -1,6 +1,6 @@
 import { html, useEffect } from '../../../deps/htm-preact.js';
 import { autoSetup, setup } from './index.js';
-import { showLogin, heading, urls, serviceStatus, renderSignal } from '../utils/state.js';
+import { showLogin, heading, urls, serviceStatus, renderSignal, loadHeadingCheck } from '../utils/state.js';
 import { account } from '../../../tools/sharepoint/state.js';
 import Heading from '../heading/view.js';
 import Actions from '../actions/view.js';
@@ -24,8 +24,14 @@ export default function Floodgate() {
   return html`
     ${serviceStatus.value && html`<${Sync} />`}
     <h1>Milo Floodgate</h1>
-    <div>${heading.value.editUrl && html`<${Heading} />`}</div>
+    <div>
+      ${heading.value.editUrl
+        ? html`<${Heading} />`
+        : html`<div class="fgui-project-heading"></div>`}
+    </div>
 
+    ${loadHeadingCheck.value
+      && html`
     <div class=fgui-section>
       <div class=fgui-section-heading>
         <h2 class=fgui-section-label>PROJECT STATUS</h2>
@@ -37,7 +43,7 @@ export default function Floodgate() {
           <${ProjectStatus} action="delete" />
         </ul>
       </div>
-    </div>
+    </div>`}
 
     <div>${urls.value.length > 0 && html`<${Actions} />`}</div>
     <div>${urls.value.length > 0 && html`<${Urls} />`}</div>
