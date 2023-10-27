@@ -40,13 +40,9 @@ function handleHeading(headingCols, alignButtonRight, isPriceBottom, isMediumHea
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       let pricingElem = elements[textStartIndex + 1]
-      if (pricingElem) {
-        pricingElem.classList.add('pricing');
-      }
+      pricingElem && pricingElem.classList.add('pricing');
 
-     
- 
-      if( isPriceBottom) {
+      if (isPriceBottom) {
         pricingElem.parentNode.insertBefore(elements[textStartIndex + 2], elements[textStartIndex + 1]);
       }
 
