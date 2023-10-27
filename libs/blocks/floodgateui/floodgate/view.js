@@ -43,10 +43,10 @@ export default function Floodgate() {
           <${ProjectStatus} action="delete" />
         </ul>
       </div>
-    </div>`}
+    </div>
 
     <div>${urls.value.length > 0 && html`<${Actions} />`}</div>
     <div>${urls.value.length > 0 && html`<${Urls} />`}</div>
-    <div><${Status} /></div>
+    <div><${Status} /></div>`}
   `;
 }
