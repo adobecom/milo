@@ -181,14 +181,14 @@ const processRepoForFloodgate = (repo, fgColor) => {
 };
 
 const getOrigin = (fgColor) => {
-  const bulkPublisherRepo = processRepoForFloodgate(getConfig().repo, fgColor);
-  const origin = getConfig().project || bulkPublisherRepo;
+  const { project, repo } = getConfig();
+  const origin = project || processRepoForFloodgate(repo, fgColor);
 
   if (origin) return origin;
 
   if (window.location.hostname.endsWith('.hlx.page')) {
-    const [, repo] = window.location.hostname.split('.')[0].split('--');
-    return processRepoForFloodgate(repo, fgColor);
+    const [, singlePageRepo] = window.location.hostname.split('.')[0].split('--');
+    return processRepoForFloodgate(singlePageRepo, fgColor);
   }
 
   throw new Error('No Project or Repo defined in config');
