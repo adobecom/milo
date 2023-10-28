@@ -166,6 +166,10 @@
   display: block;
 }
 
+.marquee:is(.center, .centered) .icon-area img {
+  margin: 0 auto;
+}
+
 .marquee.large .icon-area img {
   height: 64px;
 }
