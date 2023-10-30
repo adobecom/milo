@@ -125,11 +125,11 @@
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
 
-    /* border-radius sizes */
-    --rounded-corners-s: 4px;
-    --rounded-corners-m: 8px;
-    --rounded-corners-l: 16px;
-    --rounded-corners-full: 50%;
+  /* border-radius sizes */
+  --rounded-corners-s: 4px;
+  --rounded-corners-m: 8px;
+  --rounded-corners-l: 16px;
+  --rounded-corners-full: 50%;
 }
 
 :root:lang(ko-KR) {
