@@ -54,7 +54,7 @@ class ProfileDropdown {
     this.sections = sections;
     this.openOnInit = openOnInit;
     this.localMenu = rawElem.querySelector('h5')?.parentElement;
-    logErrorFor(this.init.bind(this), 'ProfileDropdown.init()', ['error', 'gnav-dropdown']);
+    logErrorFor(this.init.bind(this), 'ProfileDropdown.init()', ['error', 'gnav-profile']);
   }
 
   async init() {
