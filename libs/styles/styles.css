@@ -126,10 +126,10 @@
   --icon-size-xxs: 16px;
 
     /* border-radius sizes */
-    --border-radius-s: 4px;
-    --border-radius-l: 8px;
-    --border-radius-xl: 16px;
-    --full-border-radius: 50%;
+    --rounded-corners-s: 4px;
+    --rounded-corners-m: 8px;
+    --rounded-corners-l: 16px;
+    --rounded-corners-full: 50%;
 }
 
 :root:lang(ko-KR) {
@@ -458,6 +458,36 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 .con-button.button-l span.icon.margin-left { margin-left: 12px; }
 
 .con-button.button-xl span.icon.margin-left { margin-left: 14px; }
+
+/* rounder border styles*/
+
+.rounded-corners-s {
+  border-radius: var(--rounded-corners-s);
+}
+
+.rounded-corners-m {
+  border-radius: var(--rounded-corners-m);
+}
+
+.rounded-corners-l {
+  border-radius: var(--rounded-corners-l);
+}
+
+.image-rounded-corners-s > .foreground picture img {
+  border-radius: var(--rounded-corners-s);
+}
+
+.image-rounded-corners-m > .foreground picture img {
+  border-radius: var(--rounded-corners-m);
+}
+
+.image-rounded-corners-l > .foreground picture img {
+  border-radius: var(--rounded-corners-l);
+}
+
+.image-rounded-corners-full > .foreground picture img {
+  border-radius: var(--rounded-corners-full);
+}
 
 /* Con Block Utils */
 .con-block.xs-spacing { padding: var(--spacing-xs) 0; }

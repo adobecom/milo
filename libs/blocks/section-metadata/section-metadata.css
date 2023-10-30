@@ -137,46 +137,6 @@
   gap: var(--spacing-xxxl);
 }
 
-.section.border-radius-block-s > div,
-.section.border-radius-block-s > div .background picture img {
-  border-radius: var(--border-radius-s);
-}
-
-.section.border-radius-block-l > div,
-.section.border-radius-block-l > div .background picture img {
-  border-radius: var(--border-radius-l);
-}
-
-.section.border-radius-block-xl > div,
-.section.border-radius-block-xl > div .background picture img {
-  border-radius: var(--border-radius-xl);
-}
-
-.section.no-border-radius-block > div,
-.section.no-border-radius-block > div .background picture img {
-  border-radius: 0;
-}
-
-.section.border-radius-image-s > div .foreground picture img{
-  border-radius: var(--border-radius-s);
-}
-
-.section.border-radius-image-l > div .foreground picture img {
-  border-radius: var(--border-radius-l);
-}
-
-.section.border-radius-image-xl > div .foreground picture img {
-  border-radius: var(--border-radius-xl);
-}
-
-.section.no-border-radius-image > div .foreground picture img {
-  border-radius: 0;
-}
-
-.section.full-border-radius-image > div .foreground picture img{
-  border-radius: var(--full-border-radius);
-}
-
 .section.two-up,
 .section.three-up,
 .section.four-up,
