@@ -322,7 +322,7 @@
         if (hash === windowsHash || hash === osxHash) {
           isCorrectHash = true;
         }
-        expect(isCorrectHash).to.be.true;
+        expect(hash).to.equal("test");
       });
 
       it('Clones an object', () => {
