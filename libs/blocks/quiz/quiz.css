@@ -10,10 +10,6 @@
   text-align: center;
 }
 
-.quiz {
-  min-height: calc(100vh - 131px); /* window height minus global nav + global footer heights */
-}
-
 .quiz-container {
   align-items: center;
   color: var(--color-white);
@@ -232,7 +228,7 @@
 }
 
 .quiz-step:last-of-type {
-  width:12px;
+  width:17px;
 }
 
 .quiz-step-container.top {
@@ -265,6 +261,11 @@
 
 .quiz-footer {
   margin: 0 0 24px;
+}
+
+.quiz-footer .section,
+.quiz-footer .section.dark {
+  background: inherit;
 }
 
 @media screen and (min-width: 768px) {
