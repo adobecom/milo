@@ -36,7 +36,7 @@ const CONFIG = {
   },
   delays: {
     mainNavDropdowns: 800,
-    loadDelayed: 2000,
+    loadDelayed: 3000,
     keyboardNav: 8000,
   },
   features: [

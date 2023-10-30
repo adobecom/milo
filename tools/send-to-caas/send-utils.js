@@ -143,9 +143,16 @@ const prefixHttps = (url) => {
   return url;
 };
 
+const flattenLink = (link) => {
+  const htmlElement = document.createElement('div');
+  htmlElement.innerHTML = link;
+  return htmlElement.querySelector('a').getAttribute('href');
+};
+
 const checkUrl = (url, errorMsg) => {
   if (url === undefined) return url;
-  return isValidUrl(url) ? prefixHttps(url) : { error: errorMsg };
+  const flatUrl = url.includes('href=') ? flattenLink(url) : url;
+  return isValidUrl(flatUrl) ? prefixHttps(flatUrl) : { error: errorMsg };
 };
 
 // Case-insensitive search through tag name, path, id and title for the searchStr
@@ -415,10 +422,7 @@ const props = {
   cardtitle: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
-  contentid: (_, options) => {
-    const floodGateColor = getMetadata('floodgatecolor') || '';
-    return getUuid(`${options.prodUrl}${floodGateColor}`);
-  },
+  contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
@@ -454,12 +458,16 @@ const props = {
   cta2url: (s) => checkUrl(s, `Invalid Cta2Url: ${s}`),
   description: (s) => s || getMetaContent('name', 'description') || '',
   details: 0,
-  entityid: (_, options) => getUuid(options.prodUrl),
+  entityid: (_, options) => {
+    const floodGateColor = options.floodgatecolor || getMetadata('floodgatecolor') || '';
+    const salt = floodGateColor === 'default' || floodGateColor === '' ? '' : floodGateColor;
+    return getUuid(`${options.prodUrl}${salt}`);
+  },
   env: (s) => s || '',
   eventduration: 0,
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
-  floodgatecolor: (s) => s || getMetadata('floodgatecolor') || 'default',
+  floodgatecolor: (s, options) => s || options.floodgatecolor || getMetadata('floodgatecolor') || 'default',
   lang: async (s, options) => {
     if (s) return s;
     const { lang } = await getCountryAndLang(options);
@@ -614,6 +622,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
 };
 
 export {
+  checkUrl,
   getCardMetadata,
   getCaasProps,
   getConfig,
