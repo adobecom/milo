@@ -459,8 +459,7 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 
 .con-button.button-xl span.icon.margin-left { margin-left: 14px; }
 
-/* rounder border styles*/
-
+/* rounded border styles*/
 .rounded-corners-s {
   border-radius: var(--rounded-corners-s);
 }
