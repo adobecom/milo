@@ -206,7 +206,7 @@ class Popup {
         const element = getOpenPopup();
         if (!e.target.closest(selectors.popup) || !element || this.desktop.matches) return;
         this.handleKeyDown({ e, element, popupEl: element, isFooter: false });
-      }, `popup key failed ${e.code}`, ['error', 'gnav-keyboard']));
+      }, `popup key failed ${e.code}`, 'errorType=error,module=gnav-keyboard'));
 
     document.querySelector(selectors.globalFooter)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
@@ -233,7 +233,7 @@ class Popup {
           element,
           isFooter: true,
         });
-      }, `footer key failed ${e.code}`, ['error', 'gnav-keyboard']));
+      }, `footer key failed ${e.code}`, 'errorType=error,module=gnav-keyboard'));
   };
 }
 
