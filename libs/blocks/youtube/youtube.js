@@ -14,12 +14,13 @@ export default function init(a) {
         webkitallowfullscreen mozallowfullscreen allowfullscreen
         allow="encrypted-media; accelerometer; gyroscope; picture-in-picture"
         scrolling="no"
+        id='player-${id}'
         title="${title}">
       </iframe>
     </div>`;
     a.insertAdjacentHTML('afterend', embedHTML);
     a.remove();
   };
-
+  window._satellite.track('trackYoutube');
   createIntersectionObserver({ el: a, callback: embedVideo });
 }
