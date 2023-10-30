@@ -100,6 +100,11 @@
   border-radius: 0;
 }
 
+.dialog-modal.locale-modal-v2 .tabs button:focus-visible {
+  outline: 2px solid var(--color-accent-focus-ring);
+  text-decoration: none;
+}
+
 .dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button:not(:first-of-type) {
   margin-inline-start: 24px;
 }
