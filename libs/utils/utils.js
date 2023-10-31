@@ -727,13 +727,13 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map(decorateSection);
 }
 
-function decorateFooterPromo(config) {
-  const footerPromo = getMetadata('footer-promo-tag');
-  if (!footerPromo) return;
-  const href = `${config.locale.contentRoot}/fragments/footer-promos/${footerPromo}`;
-  const para = createTag('p', {}, createTag('a', { href }, href));
-  const section = createTag('div', null, para);
-  document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+export async function decorateFooterPromo() {
+  const footerPromoTag = getMetadata('footer-promo-tag');
+  const footerPromoType = getMetadata('footer-promo-type');
+  if (!footerPromoTag && footerPromoType !== 'taxonomy') return;
+
+  const { default: initFooterPromo } = await import('../features/footer-promo.js');
+  await initFooterPromo(footerPromoTag, footerPromoType);
 }
 
 let imsLoaded;
@@ -944,10 +944,9 @@ function decorateMeta() {
   });
 }
 
-function decorateDocumentExtras(config) {
+function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
-  decorateFooterPromo(config);
 
   import('./samplerum.js').then(({ addRumListeners }) => {
     addRumListeners();
@@ -961,6 +960,9 @@ async function documentPostSectionLoading(config) {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
+
+  decorateFooterPromo();
+
   const appendage = getMetadata('title-append');
   if (appendage) {
     import('../features/title-append/title-append.js').then((module) => module.default(appendage));
@@ -1040,7 +1042,7 @@ export async function loadArea(area = document) {
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
-    decorateDocumentExtras(config);
+    decorateDocumentExtras();
   }
 
   const sections = decorateSections(area, isDoc);
