@@ -368,6 +368,15 @@ describe('Utils', () => {
           .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
 
+      it('Live domain html link which is not in prod domains is absolute and localized', () => {
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+      });
+
       it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
         expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
           .to
@@ -379,11 +388,6 @@ describe('Utils', () => {
           .to
           .equal('not-a-url');
       });
-    });
-
-    it('decorates footer promo fragment', () => {
-      const a = document.querySelector('main > div:last-of-type .fragment');
-      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
 
     it('creates an IntersectionObserver', (done) => {
@@ -502,6 +506,59 @@ describe('Utils', () => {
       htmlLinks.forEach((link) => {
         expect(link.href).to.not.contain('.html');
       });
+    });
+  });
+
+  describe('footer promo', () => {
+    const favicon = '<link rel="icon" href="data:,">';
+    const typeTaxonomy = '<meta name="footer-promo-type" content="taxonomy">';
+    const ccxVideo = '<meta name="footer-promo-tag" content="ccx-video-links">';
+    const analytics = '<meta property="article:tag" content="Analytics">';
+    const commerce = '<meta property="article:tag" content="Commerce">';
+    const summit = '<meta property="article:tag" content="Summit">';
+    const promoConfig = { locale: { contentRoot: '/test/utils/mocks' } };
+    let oldHead;
+    let promoBody;
+    let taxonomyData;
+
+    before(async () => {
+      oldHead = document.head.innerHTML;
+      promoBody = await readFile({ path: './mocks/body-footer-promo.html' });
+      taxonomyData = await readFile({ path: './mocks/taxonomy.json' });
+    });
+
+    beforeEach(() => {
+      document.body.innerHTML = promoBody;
+      window.fetch = mockFetch({ payload: JSON.parse(taxonomyData) });
+    });
+
+    afterEach(() => {
+      window.fetch = ogFetch;
+    });
+
+    after(() => {
+      document.head.innerHTML = oldHead;
+    });
+
+    it('loads from metadata', async () => {
+      document.head.innerHTML = favicon + ccxVideo;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
+    it('loads from taxonomy in order on sheet', async () => {
+      document.head.innerHTML = ccxVideo + typeTaxonomy + analytics + commerce + summit;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/commerce');
+    });
+
+    it('loads backup from tag when taxonomy has no promo', async () => {
+      document.head.innerHTML = ccxVideo + typeTaxonomy + summit;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
   });
 });
