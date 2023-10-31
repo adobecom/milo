@@ -55,9 +55,6 @@ const App = ({ strings }) => html`
       visitorId=${getVisitorId()}
       reviewPath=${getReviewPath(strings.postUrl)}
       initialValue=${strings.initialValue}
-      onRatingSet=${(/* { rating, comment } */) => {}}
-      onRatingHover=${(/* { rating } */) => {}}
-      onReviewLoad=${(/* { hasRated, rating } */) => {}}
     />
   `;
 
@@ -122,10 +119,15 @@ export default async function init(el) {
   loadStyle(`${base}/ui/page/page.css`);
   const metaData = getMetaData(el);
   const strings = getStrings(metaData);
-  strings.postUrl = strings.postUrl ? checkPostUrl(strings.postUrl, env) : strings.postUrl;
-  removeMetaDataElements(el);
 
-  const app = html` <${App} strings="${strings}" /> `;
+  if (strings.postUrl) {
+    strings.postUrl = checkPostUrl(strings.postUrl, env);
+    removeMetaDataElements(el);
 
-  render(app, el);
+    const app = html` <${App} strings="${strings}" /> `;
+
+    render(app, el);
+  } else {
+    throw new Error('Invalid postUrl. Initialization aborted.');
+  }
 }
