@@ -33,7 +33,6 @@ function extendButtonsClass(el) {
   const buttons = el.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
-    button.classList.add('button-justified-mobile');
     if (btnClass) button.classList.add(btnClass);
   });
 }
