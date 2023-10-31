@@ -25,13 +25,6 @@ function decorateBadge(el) {
   }
 }
 
-function extendButtonsClass(e) {
-  const buttons = e.querySelectorAll('.con-button');
-  console.log('extendButtonsClass', e, buttons);
-  if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-l button-justified-mobile'); });
-}
-
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');

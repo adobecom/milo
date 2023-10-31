@@ -23,13 +23,13 @@ const blockTypeSizes = {
   },
 };
 
-function findClassWithPrefix(el, prefix) {
-  const matchingClass = [...el.classList].find((c) => c.startsWith(prefix));
+function findClassWithSufix(el, sufix) {
+  const matchingClass = [...el.classList].find((c) => c.endsWith(sufix));
   return matchingClass;
 }
 
 function extendButtonsClass(el) {
-  const btnClass = findClassWithPrefix(el, 'button-');
+  const btnClass = findClassWithSufix(el, '-button');
   const buttons = el.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {

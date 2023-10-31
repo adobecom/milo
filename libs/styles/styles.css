@@ -316,6 +316,7 @@
   text-decoration: none;
 }
 
+.con-button.l-button,
 .con-button.button-l {
   border-radius: 20px;
   font-size: 17px;
@@ -324,6 +325,7 @@
   padding: 7px 18px 8px;
 }
 
+.con-button.xl-button,
 .con-button.button-xl {
   border-radius: 25px;
   font-size: 19px;

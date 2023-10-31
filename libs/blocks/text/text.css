@@ -200,6 +200,11 @@
   margin-top: 0;
 }
 
+.text-block.icon-inline .icon-area picture img {
+  min-height: var(--icon-size-s);
+  max-height: var(--icon-size-s);
+}
+
 .text-block .foreground > .mobile-up {
   display: grid;
 }

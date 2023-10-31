@@ -55,12 +55,11 @@
   white-space: no-wrap;
 }
 
-.quiz-marquee.split .asset {
-  /* position: absolute;
-  width: 50vw;
-  height: 100%;
-  right: 0; */
+/* content asset hidden on mobile/tablet */
+.quiz-marquee .background-split,
+.quiz-marquee .asset {
   visibility: hidden;
+  height: 0;
 }
 
 .quiz-marquee .background-split picture img {
@@ -127,23 +126,34 @@
   grid-template-columns: repeat(auto-fit, minmax(275px, max-content));
 }
 
+/* stylelint-disable-next-line selector-class-pattern */
 .quiz-marquee .commerce-card .consonant-Wrapper--1200MaxWidth .consonant-Wrapper-inner {
   width: auto;
 }
 
-/* tablet up */
-@media screen and (min-width: 600px) {
+/* desktop up */
+@media screen and (min-width: 1200px) {
   .quiz-marquee {
     align-items: center;
     display: flex;
     min-height: 700px;
+  }
+  
+  .quiz-marquee > .foreground {
+    min-width: var(--grid-container-width);
   }
 
   .quiz-marquee > .foreground.has-asset {
     grid-template-columns: minmax(50%, 1fr) minmax(50%, 1fr);
     align-items: center;
   }
-  
+
+  .quiz-marquee .background-split,
+  .quiz-marquee .asset {
+    visibility: visible;
+    height: unset;
+  }
+
   .quiz-marquee .background-split {
     position: absolute;
     width: calc(50vw - var(--spacing-m));
@@ -158,12 +168,5 @@
 
   .quiz-marquee .aside.notification.small .foreground.container .text .icon-area {
     margin-top: 2px;
-  }
-}
-
-/* desktop up */
-@media screen and (min-width: 600px) {
-  .quiz-marquee > .foreground {
-    min-width: var(--grid-container-width);
   }
 }
