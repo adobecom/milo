@@ -15,7 +15,8 @@ import {
   stripExtension,
 } from './utils.js';
 
-const SIX_DASH_HASH = 'cea073fb9b2173bba877383ad9e65d8a2b437458';
+// hash for 'Block-group' and 'block-group'
+const BLOCK_GROUP_HASH = ['810f8c13eebbbafd1250076cdf62df34cef281f4', '902d21c609c495a462a49396155ffbf89656f342'];
 
 async function persistDoc(srcPath, docx, dstPath) {
   try {
@@ -68,14 +69,14 @@ function processMdast(nodes) {
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     const hash = objectHash.sha1(node);
-    if (hash === SIX_DASH_HASH) {
+    if (BLOCK_GROUP_HASH.includes(hash)) {
       const groupArray = [];
       groupArray.push(node);
       for (let j = i + 1; j < nodes.length; j++) {
         const nextNode = nodes[j];
         const nextHash = objectHash.sha1(nextNode);
         i = j;
-        if (nextHash !== SIX_DASH_HASH) {
+        if (!BLOCK_GROUP_HASH.includes(nextHash)) {
           groupArray.push(nextNode);
         } else {
           groupArray.push(nextNode);

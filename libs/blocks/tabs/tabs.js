@@ -57,15 +57,6 @@ function configTabs(config, rootElem) {
   }
 }
 
-function hideDashes(elm) {
-  const pTags = elm.querySelectorAll('p');
-  pTags.forEach((p) => {
-    if (p.innerHTML === '------') {
-      p.classList.add('hide-block');
-    }
-  });
-}
-
 function initTabs(elm, config, rootElem) {
   const tabs = elm.querySelectorAll('[role="tab"]');
   const tabLists = elm.querySelectorAll('[role="tablist"]');
@@ -91,7 +82,6 @@ function initTabs(elm, config, rootElem) {
     tab.addEventListener('click', changeTabs);
   });
   if (config) configTabs(config, rootElem);
-  hideDashes(rootElem);
 }
 
 const handleDeferredImages = (block) => {
