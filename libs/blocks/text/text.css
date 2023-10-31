@@ -201,6 +201,7 @@
 }
 
 .text-block.icon-inline .icon-area picture img {
+  min-width: var(--icon-size-s);
   max-width: var(--icon-size-s);
 }
 
