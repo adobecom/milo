@@ -263,8 +263,8 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
   const locales = getMetadata('caas-locales');
   if (locales) {
     return {
-      country: '',
-      language: '',
+      country: 'en',
+      language: 'US',
       locales,
     };
   }
