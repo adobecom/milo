@@ -47,11 +47,12 @@ function closeModal(modal) {
     if (mod.classList.contains('dialog-modal')) {
       mod.remove();
     }
-    if (!document.querySelectorAll('.modal-curtain').length) {
-      document.body.classList.remove('disable-scroll');
-    }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
   });
+
+  if (!document.querySelectorAll('.modal-curtain').length) {
+    document.body.classList.remove('disable-scroll');
+  }
 
   [...document.querySelectorAll('header, main, footer')]
     .forEach((element) => element.removeAttribute('aria-disabled'));
