@@ -1,6 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import { decorateBlockAnalytics } from '../../martech/attributes.js';
+import { processTrackingLabels } from '../../martech/analytics.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 const mediaCollection = {};
@@ -74,7 +74,7 @@ function createItem(accordion, id, heading, num, edit) {
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
   const hTag = heading.querySelector('h1, h2, h3, h4, h5, h6');
-  const analyticsString = `open-${num}|${heading.textContent.trim().slice(0, 30)}|accordion`;
+  const analyticsString = `open-${num}|${processTrackingLabels(heading.textContent)}`;
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
@@ -150,5 +150,4 @@ export default function init(el) {
     el.append(accordionMedia);
     defalutOpen(el);
   }
-  decorateBlockAnalytics(el);
 }

@@ -24,11 +24,12 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
 
 function handleStickyPromobar(section) {
   const main = document.querySelector('main');
-  section.classList.add('hide-sticky-section');
+  section.classList.add('promo-sticky-section', 'hide-sticky-section');
   let stickySectionEl = null;
-  if (main.children[0] !== section) {
+  const hasScrollControl = section.querySelector('.promobar').classList.contains('no-delay');
+  if (!hasScrollControl && main.children[0] !== section) {
     stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
-    main.insertBefore(stickySectionEl, section);
+    section.parentElement.insertBefore(stickySectionEl, section);
   }
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);

@@ -36,10 +36,6 @@ dd.content .sort-options > .field {
   top: 12px;
 }
 
-dd.content.is-expanded {
-  max-height: 999999px; /* needed for transition animation */
-}
-
 .multifield .multifield {
   padding: 0 0 15px;
   margin: 0 -15px 9px 0;

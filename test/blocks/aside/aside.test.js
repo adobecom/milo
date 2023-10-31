@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/aside/aside.js');
 
-const types = ['simple', 'split', 'inline', 'notification'];
+const types = ['simple', 'split', 'inline', 'notification', 'promobar'];
 
 describe('aside', () => {
   const asides = document.querySelectorAll('.aside');
@@ -24,8 +24,7 @@ describe('aside', () => {
         });
 
         it('icon has a wrapper', () => {
-          const icon = aside.querySelector('.text picture');
-
+          const icon = aside.querySelector('.text picture, .promo-text picture');
           if (icon) {
             expect(icon.closest('.icon-area')).to.exist;
           }
@@ -37,9 +36,8 @@ describe('aside', () => {
         });
 
         it('button has a wrapper', () => {
-          const button = aside.querySelector('.text .con-button');
-
-          if (aside.querySelector('.text .con-button')) {
+          const button = aside.querySelector('.text .con-button, .promo-text .con-button');
+          if (button) {
             expect(button.closest('p')).to.exist;
           }
         });
@@ -80,6 +78,38 @@ describe('aside', () => {
           const body = aside.querySelector('.split-image');
           expect(body).to.exist;
         });
+      }
+
+      if (type === 'promobar') {
+        it('has viewport content', () => {
+          const viewportContent = aside.querySelectorAll('.promo-text');
+          expect(viewportContent.length).to.equal(3);
+        });
+
+        if (aside.classList.contains('popup')) {
+          it('has promo close button', () => {
+            const closeBtn = aside.querySelector('.promo-close');
+            expect(closeBtn).to.exist;
+          });
+
+          if (aside.classList.contains('mobile-promo-only')) {
+            it('has empty tablet block hidden', () => {
+              const tabletBlock = aside.querySelector('.tablet-up.hide-block');
+              expect(tabletBlock).to.exist;
+            });
+
+            it('has empty desktop block hidden', () => {
+              const desktopBlock = aside.querySelector('.tablet-up.hide-block');
+              expect(desktopBlock).to.exist;
+            });
+          }
+
+          it('close button click closes the popup', () => {
+            const closeBtn = aside.querySelector('.promo-close');
+            closeBtn.click();
+            expect(aside.closest('.section').classList.contains('close-sticky-section')).to.be.true;
+          });
+        }
       }
     });
   });

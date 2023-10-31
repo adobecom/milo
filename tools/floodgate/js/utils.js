@@ -1,11 +1,11 @@
 import { fetchWithRetry } from '../../loc/sharepoint.js';
 
-export function getFloodgateUrl(url) {
+export function getFloodgateUrl(url, fgColor) {
   if (!url) {
     return undefined;
   }
   const urlArr = url.split('--');
-  urlArr[1] += '-pink';
+  urlArr[1] += `-${fgColor}`;
   return urlArr.join('--');
 }
 
@@ -46,7 +46,7 @@ export function getDocPathFromUrl(url) {
     path = path.slice(0, -5);
     return `${path}.xlsx`;
   }
-  if (path.endsWith('.svg')) {
+  if (path.endsWith('.svg') || path.endsWith('.pdf')) {
     return path;
   }
   if (path.endsWith('/')) {
@@ -82,5 +82,6 @@ export function getParams(project, config) {
     fgRootFolder: config.sp.fgRootFolder,
     promoteIgnorePaths: config.promoteIgnorePaths || [],
     driveId: config.sp.driveId || '',
+    fgColor: project.fgColor,
   };
 }
