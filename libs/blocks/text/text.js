@@ -23,20 +23,6 @@ const blockTypeSizes = {
   },
 };
 
-function findClassWithSufix(el, sufix) {
-  const matchingClass = [...el.classList].find((c) => c.endsWith(sufix));
-  return matchingClass;
-}
-
-function extendButtonsClass(el) {
-  const btnClass = findClassWithSufix(el, '-button');
-  const buttons = el.querySelectorAll('.con-button');
-  if (buttons.length === 0) return;
-  buttons.forEach((button) => {
-    if (btnClass) button.classList.add(btnClass);
-  });
-}
-
 function addNode(sourceEl, parent) {
   const node = sourceEl.cloneNode(true);
   parent.appendChild(node);
@@ -98,7 +84,6 @@ export default function init(el) {
     });
   }
   el.classList.add(...helperClasses);
-  extendButtonsClass(el);
   decorateTextOverrides(el);
   decorateMultiViewport(el);
 }

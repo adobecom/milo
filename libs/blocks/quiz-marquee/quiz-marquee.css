@@ -83,15 +83,9 @@
   padding: 0;
 }
 
-.quiz-marquee .text-block .icon-area picture img {
-  min-height: var(--icon-size-s);
-  max-height: var(--icon-size-s);
-}
-
 .quiz-marquee .aside.notification .foreground.container .icon-area img {
-  min-height: var(--icon-size-xs);
-  max-height: var(--icon-size-xs);
-  height: var(--icon-size-xs);
+  max-width: var(--icon-size-xs);
+  height: auto;
 }
 
 .quiz-marquee .aside.notification.small {

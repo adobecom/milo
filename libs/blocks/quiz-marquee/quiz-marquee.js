@@ -1,5 +1,5 @@
 import { decorateBlockBg, decorateBlockHrs, decorateBlockText } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 
 // function decorateBadge(el) {
 //   const header = el.querySelector('h1', 'h2', 'h3', 'h4', 'h5', 'h6');
@@ -8,7 +8,6 @@ import { createTag } from '../../utils/utils.js';
 // }
 
 function decorateBadge(el) {
-  // Use a regular expression to match text between '[[', ']]'
   const regex = /\[\[(.*?)\]\]/g;
   const header = el.querySelector('h1', 'h2', 'h3', 'h4', 'h5', 'h6');
   const matches = header.innerHTML.match(regex);
@@ -19,7 +18,6 @@ function decorateBadge(el) {
         const badge = createTag('span', { class: 'badge' }, found);
         header.innerHTML = header.innerHTML.replace(regex, '');
         header.append(badge);
-        console.log('decorateBadge - foundMatch', found, header);
       }
     });
   }
@@ -75,7 +73,6 @@ export default async function init(el) {
     const isFragRow = cols[0].textContent.trim() === 'nested-fragments';
     if (isFragRow) {
       cols[0].parentElement.classList.add('nested', cols[1].textContent.trim());
-      // row.append(fragRows);
       const wrapper = createTag('div', { class: 'copy-wrapper' });
       row.append(wrapper);
       wrapper.append(...cols);
