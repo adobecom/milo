@@ -414,30 +414,21 @@ const getFilterArray = async (state, country, lang, strs) => {
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
-  const locales = getMetadata('caas-locales');
-  if (locales) {
-    return {
-      country: 'US',
-      language: 'en',
-      locales,
-    };
-  }
+  const locales = getMetadata('caas-locales') || '';
   if (autoCountryLang) {
     const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
     const locale = LOCALES[prefix]?.ietf || 'en-us';
-    /* eslint-disable-next-line prefer-const */
-    let [currLang, currCountry] = locale.split('-');
 
     return {
       country: locale.region?.toLowerCase() || 'us',
       language: locale.ietf?.toLowerCase() || 'en-us',
-      locales: '',
+      locales,
     };
   }
   return {
     country: country ? country.split('/').pop() : 'us',
     language: language ? language.split('/').pop() : 'en',
-    locales: '',
+    locales,
   };
 }
 

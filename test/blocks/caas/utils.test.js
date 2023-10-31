@@ -558,6 +558,7 @@ describe('getCountryAndLang', () => {
     expect(expected).to.deep.eq({
       country: 'ec',
       language: 'es',
+      locales: '',
     });
   });
 
@@ -567,6 +568,7 @@ describe('getCountryAndLang', () => {
     expect(expected).to.deep.eq({
       country: 'us',
       language: 'en',
+      locales: '',
     });
   });
 
@@ -579,6 +581,7 @@ describe('getCountryAndLang', () => {
     expect(expected).to.deep.eq({
       country: 'BE',
       language: 'fr',
+      locales: '',
     });
   });
 
@@ -594,6 +597,7 @@ describe('getCountryAndLang', () => {
     expect(expected).to.deep.eq({
       country: 'US',
       language: 'en',
+      locales: '',
     });
   });
 });
