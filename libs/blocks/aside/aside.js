@@ -173,7 +173,8 @@ function decorateLayout(el) {
   const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
-  if (media && !el.classList.contains('notification')) {
+  const isNotification = el.classList.contains('notification');
+  if (media && !isNotification) {
     media.classList.add('image');
     const video = media.querySelector('video');
     if (video) applyHoverPlay(video);
@@ -197,7 +198,8 @@ function decorateLayout(el) {
       el.classList.add(`split${!position ? '-right' : '-left'}`);
       foreground.parentElement.appendChild(asideMedia);
     }
-  } else if (!iconArea) {
+  }
+  if (!iconArea && isNotification) {
     foreground?.classList.add('no-image');
   }
   if (el.classList.contains('split')
