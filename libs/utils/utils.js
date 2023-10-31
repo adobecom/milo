@@ -822,7 +822,7 @@ async function checkForPageMods() {
   }
 
   if (targetEnabled) {
-    await loadMartech({ persEnabled: true, persManifests, targetMd });
+    loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
     loadIms().catch(() => {});
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
