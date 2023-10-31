@@ -992,7 +992,7 @@ async function documentPostSectionLoading(config) {
 }
 
 async function processSection(section, config, isDoc) {
-  const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')].filter((link) => link.classList.contains('fragment'));
+  const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"][class~="fragment"]')];
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
