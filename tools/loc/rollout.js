@@ -15,8 +15,10 @@ import {
   stripExtension,
 } from './utils.js';
 
-// hash for 'Block-group' and 'block-group'
-const BLOCK_GROUP_HASH = ['810f8c13eebbbafd1250076cdf62df34cef281f4', '902d21c609c495a462a49396155ffbf89656f342'];
+// hash for 'Block-group-start', 'block-group-start'
+const BLOCK_GROUP_START_HASH = ['295d2550b26a034bd7d8d46a3a8ca79813232ece', '1226d6aac887d92fe5432b6c05f016920b791b44'];
+// hash for 'Block-group-end', 'block-group-end'
+const BLOCK_GROUP_END_HASH = ['6eff4533648892f3c185ca1bde4e09eb69d353e6', '652a99bad6e6c79f5d8d35a4ee1d65b9deb57362'];
 
 async function persistDoc(srcPath, docx, dstPath) {
   try {
@@ -69,14 +71,14 @@ function processMdast(nodes) {
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     const hash = objectHash.sha1(node);
-    if (BLOCK_GROUP_HASH.includes(hash)) {
+    if (BLOCK_GROUP_START_HASH.includes(hash)) {
       const groupArray = [];
       groupArray.push(node);
       for (let j = i + 1; j < nodes.length; j++) {
         const nextNode = nodes[j];
         const nextHash = objectHash.sha1(nextNode);
         i = j;
-        if (!BLOCK_GROUP_HASH.includes(nextHash)) {
+        if (!BLOCK_GROUP_END_HASH.includes(nextHash)) {
           groupArray.push(nextNode);
         } else {
           groupArray.push(nextNode);
