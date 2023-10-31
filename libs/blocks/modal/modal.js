@@ -42,11 +42,13 @@ function closeModal(modal) {
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
-      document.body.classList.remove('disable-scroll');
       mod.nextElementSibling.remove();
     }
     if (mod.classList.contains('dialog-modal')) {
       mod.remove();
+    }
+    if(!document.querySelectorAll('.modal-curtain').length) {
+      document.body.classList.remove('disable-scroll');
     }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
   });
