@@ -198,9 +198,13 @@ export default function init(el) {
 // Click-based modal
 window.addEventListener('hashchange', (e) => {
   if (!window.location.hash) {
-    const url = new URL(e.oldURL);
-    const dialog = document.querySelector(`.dialog-modal${url.hash}`);
-    if (dialog) closeModal(dialog);
+    try {
+      const url = new URL(e.oldURL);
+      const dialog = document.querySelector(`.dialog-modal${url.hash}`);
+      if (dialog) closeModal(dialog);
+    } catch (error) {
+      /* do nothing */
+    }
   } else {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
