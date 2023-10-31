@@ -66,6 +66,11 @@
   padding-bottom: 0;
 }
 
+.aside.notification.medium .foreground.container .text,
+.aside.notification.large .foreground.container .text {
+  flex-direction: column;
+}
+
 .aside .foreground.container .image {
   position: relative;
 }
