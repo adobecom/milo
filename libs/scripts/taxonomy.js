@@ -68,7 +68,6 @@ async function fetchTaxonomy(target) {
 }
 
 function parseTaxonomyJson(data, root, route) {
-  console.log(data, route, root)
   let level1; let level2;
   return data?.reduce((taxonomy, row) => {
     const level3 = removeLineBreaks(row[TAXONOMY_FIELDS.level3]);
