@@ -29,7 +29,8 @@
   display: contents;
 }
 
-.marquee:is(.mobile-dark, .quiet.dark) a:is(:not(.con-button), :not(.con-button):hover) {
+.marquee:is(.mobile-dark, .quiet.dark) a:not(.con-button),
+.marquee:is(.mobile-dark, .quiet.dark) a:not(.con-button):hover {
   color: var(--link-color-dark);
 }
 
@@ -361,7 +362,8 @@
     color: var(--link-color);
   }
 
-  .marquee.tablet-dark a:is(:not(.con-button), :not(.con-button):hover) {
+  .marquee.tablet-dark a:not(.con-button),
+  .marquee.tablet-dark a:not(.con-button):hover {
     color: var(--link-color-dark);
   }
 
