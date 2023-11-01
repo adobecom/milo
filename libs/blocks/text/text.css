@@ -190,6 +190,7 @@
 
 /* icon inline */
 .text-block.icon-inline .foreground > div {
+  display: grid;
   column-gap: var(--spacing-xs);
   align-items: center;
   grid-template-columns: auto 1fr;
@@ -206,7 +207,11 @@
 }
 
 .text-block .foreground > .mobile-up {
-  display: grid;
+  display: block;
+}
+
+.text-block.icon-inline .foreground > .mobile-up {
+  display: flex;
   justify-content: start;
 }
 
@@ -252,14 +257,18 @@
   }
   
   .text-block .foreground > .tablet-up {
-    display: grid;
+    display: block;
   }
   
-  .text-block.center .foreground > .tablet-up {
+  .text-block.icon-inline .foreground > .tablet-up {
+    display: flex;
+  }
+
+  .text-block.icon-inline.center .foreground > .tablet-up {
     justify-content: center;
   }
   
-  .text-block.right .foreground > .tablet-up {
+  .text-block.icon-inline.right .foreground > .tablet-up {
     justify-content: end;
   }
   
@@ -276,14 +285,18 @@
   }
   
   .text-block .foreground > .desktop-up {
-    display: grid;
+    display: block;
   }
   
-  .text-block.center .foreground > .desktop-up {
+  .text-block.icon-inline .foreground > .desktop-up {
+    display: flex;
+  }
+
+  .text-block.icon-inline.center .foreground > .desktop-up {
     justify-content: center;
   }
   
-  .text-block.right .foreground > .desktop-up {
+  .text-block.icon-inline.right .foreground > .desktop-up {
     justify-content: end;
   }
   
