@@ -23,24 +23,15 @@ const blockTypeSizes = {
   },
 };
 
-function addNode(sourceEl, parent) {
-  const node = sourceEl.cloneNode(true);
-  parent.appendChild(node);
-}
-
-function checkViewport(foreground) {
-  const { children, childElementCount: childCount } = foreground;
-  if (childCount < 2) addNode(children[childCount - 1], foreground);
-  if (childCount < 3) addNode(children[childCount - 1], foreground);
-}
-
 function decorateMultiViewport(el) {
   const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
   const foreground = el.querySelector('.foreground');
-  if (foreground.childElementCount !== 3) checkViewport(foreground);
-  [...foreground.children].forEach((child, index) => {
-    child.className = viewports[index];
-  });
+  if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
+    [...foreground.children].forEach((child, index) => {
+      child.className = viewports[index];
+      if (foreground.childElementCount === 2 && index === 1) child.className = 'tablet-up desktop-up';
+    });
+  }
   return foreground;
 }
 

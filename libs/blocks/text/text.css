@@ -194,6 +194,7 @@
   column-gap: var(--spacing-xs);
   align-items: center;
   grid-template-columns: auto 1fr;
+  justify-content: start;
 }
 
 .text-block.icon-inline .foreground [class^="body-"] {
@@ -201,18 +202,13 @@
   margin-top: 0;
 }
 
+.text-block.icon-inline .icon-area {
+  margin-bottom: var(--spacing-xs);
+}
+
 .text-block.icon-inline .icon-area picture img {
   min-width: var(--icon-size-s);
   max-width: var(--icon-size-s);
-}
-
-.text-block .foreground > .mobile-up {
-  display: block;
-}
-
-.text-block.icon-inline .foreground > .mobile-up {
-  display: flex;
-  justify-content: start;
 }
 
 .text-block.center .foreground > .mobile-up {
@@ -224,7 +220,9 @@
 }
 
 .text-block .foreground > .desktop-up,
-.text-block .foreground > .tablet-up {
+.text-block .foreground > .tablet-up,
+.text-block.icon-inline .foreground > .desktop-up,
+.text-block.icon-inline .foreground > .tablet-up {
   display: none;
 }
 
@@ -256,24 +254,28 @@
     margin: 0 0 var(--spacing-l);
   }
   
-  .text-block .foreground > .tablet-up {
+  .text-block .foreground > .tablet-up,
+  .text-block .foreground > .tablet-up.desktop-up {
     display: block;
   }
-  
-  .text-block.icon-inline .foreground > .tablet-up {
-    display: flex;
+
+  .text-block.icon-inline .foreground > .tablet-up,
+  .text-block.icon-inline .foreground > .tablet-up.desktop-up {
+    display: grid;
   }
 
-  .text-block.icon-inline.center .foreground > .tablet-up {
+  .text-block.center .foreground > .tablet-up {
     justify-content: center;
   }
   
-  .text-block.icon-inline.right .foreground > .tablet-up {
+  .text-block.right .foreground > .tablet-up {
     justify-content: end;
   }
   
   .text-block .foreground > .mobile-up,
-  .text-block .foreground > .desktop-up {
+  .text-block .foreground > .desktop-up,
+  .text-block.icon-inline .foreground > .mobile-up,
+  .text-block.icon-inline .foreground > .desktop-up {
     display: none;
   }
 }
@@ -284,24 +286,28 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   
-  .text-block .foreground > .desktop-up {
+  .text-block .foreground > .desktop-up,
+  .text-block .foreground > .tablet-up.desktop-up {
     display: block;
   }
-  
-  .text-block.icon-inline .foreground > .desktop-up {
-    display: flex;
+
+  .text-block.icon-inline .foreground > .desktop-up,
+  .text-block.icon-inline .foreground > .tablet-up.desktop-up {
+    display: grid;
   }
 
-  .text-block.icon-inline.center .foreground > .desktop-up {
+  .text-block.center .foreground > .desktop-up {
     justify-content: center;
   }
   
-  .text-block.icon-inline.right .foreground > .desktop-up {
+  .text-block.right .foreground > .desktop-up {
     justify-content: end;
   }
   
   .text-block .foreground > .mobile-up,
-  .text-block .foreground > .tablet-up {
+  .text-block .foreground > .tablet-up,
+  .text-block.icon-inline .foreground > .mobile-up,
+  .text-block.icon-inline .foreground > .tablet-up {
     display: none;
   }
 }
