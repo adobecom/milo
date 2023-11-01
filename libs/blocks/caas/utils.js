@@ -516,6 +516,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
+  const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
@@ -541,7 +542,7 @@ export const getConfig = async (originalState, strs = {}) => {
         ',',
       ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
@@ -780,6 +781,7 @@ export const defaultState = {
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
   showFilters: false,
+  showIds: false,
   showSearch: false,
   showTotalResults: false,
   sortDateAsc: false,

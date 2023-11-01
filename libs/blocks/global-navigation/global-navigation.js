@@ -86,7 +86,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         signIn();
       });
     } else {
-      lanaLog({ message: 'Sign in link not found in dropdown.' });
+      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });
     }
 
     decoratedElem.append(dropdownElem);
@@ -182,6 +182,7 @@ class Gnav {
       loadBaseStyles,
       this.decorateMainNav,
       this.decorateTopNav,
+      this.decorateAside,
       this.decorateTopnavWrapper,
       this.ims,
       this.addChangeEventListeners,
@@ -197,7 +198,7 @@ class Gnav {
 
     document.addEventListener('click', closeOnClickOutside);
     isDesktop.addEventListener('change', closeAllDropdowns);
-  }, 'Error in global navigation init');
+  }, 'Error in global navigation init', 'errorType=error,module=gnav');
 
   ims = async () => loadIms()
     .then(() => this.imsReady())
@@ -206,7 +207,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'GNAV: Error with IMS', e });
+      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
     });
 
   decorateTopNav = () => {
@@ -231,7 +232,7 @@ class Gnav {
         ${breadcrumbs}
       </div>`;
 
-    this.el.append(this.elements.curtain, this.elements.topnavWrapper);
+    this.el.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
   };
 
   addChangeEventListeners = () => {
@@ -295,7 +296,7 @@ class Gnav {
         this.Search = Search;
         resolve();
       } catch (e) {
-        lanaLog({ message: 'GNAV: Error within loadDelayed', e });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'errorType=warn,module=gnav' });
         resolve();
       }
     });
@@ -313,7 +314,7 @@ class Gnav {
         await task();
       }
     } catch (e) {
-      lanaLog({ message: 'GNAV: issues within onReady', e });
+      lanaLog({ message: 'GNAV: issues within onReady', e, tags: 'errorType=info,module=gnav' });
     }
   };
 
@@ -412,7 +413,7 @@ class Gnav {
       if (isExpanded) setHamburgerPadding();
     };
 
-    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed'));
+    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'errorType=error,module=gnav'));
 
     const onDeviceChange = () => {
       if (isDesktop.matches) {
@@ -424,7 +425,7 @@ class Gnav {
       }
     };
 
-    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change'));
+    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change', 'errorType=error,module=gnav'));
 
     return toggle;
   };
@@ -477,6 +478,20 @@ class Gnav {
     if (!renderLabel && link.textContent.length) decoratedElem.setAttribute('aria-label', link.textContent);
 
     return decoratedElem;
+  };
+
+  decorateAside = async () => {
+    this.elements.aside = '';
+    const promoPath = getMetadata('gnav-promo-source');
+    if (!isDesktop.matches || !promoPath) {
+      this.el.classList.remove('has-promo');
+      return this.elements.aside;
+    }
+
+    const { default: decorate } = await import('./features/aside/aside.js');
+    if (!decorate) return this.elements.aside;
+    this.elements.aside = await decorate({ headerElem: this.el, promoPath });
+    return this.elements.aside;
   };
 
   decorateBrand = () => this.decorateGenericLogo({
@@ -555,7 +570,7 @@ class Gnav {
           template,
           type: itemType,
         });
-      }, 'Decorate dropdown failed');
+      }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
 
       template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
@@ -686,7 +701,7 @@ export default async function init(header) {
     header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
     return gnav;
   } catch (e) {
-    lanaLog({ message: 'Could not create global navigation.', e });
+    lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });
     return null;
   }
 }
