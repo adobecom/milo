@@ -174,7 +174,7 @@ const getDateProp = (dateStr, errorMsg) => {
 };
 
 const processRepoForFloodgate = (repo, fgColor) => {
-  if (repo && fgColor) {
+  if (repo && fgColor && fgColor !== 'default') {
     return repo.slice(0, repo.lastIndexOf(`-${fgColor}`));
   }
   return repo;
