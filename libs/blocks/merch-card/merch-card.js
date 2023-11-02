@@ -78,7 +78,7 @@ const addInner = (el, altCta, cardType, merchCard) => {
   const styles = [...el.classList];
   const merch = styles.includes('merch-card');
   const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
-  const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
+  const links = pElement ? pElement.querySelectorAll('a:not([data-dnd]), checkout-link') : el.querySelectorAll('a:not([data-dnd]), checkout-link');
   const list = el.querySelector('ul');
 
   const inner = el.querySelector(':scope > div:not([class])');
