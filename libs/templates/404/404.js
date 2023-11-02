@@ -13,7 +13,7 @@ async function get404(path) {
   main.append(section);
   await loadArea(main);
   import('../../martech/analytics.js').then((analytics) => {
-    document.querySelectorAll('main > div').forEach((block, idx) => analytics.decorateSectionAnalytics(block, idx));
+    document.querySelectorAll('main > div').forEach((area, idx) => analytics.decorateSectionAnalytics(area, idx));
   });
 }
 
