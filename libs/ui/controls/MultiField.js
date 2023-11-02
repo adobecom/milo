@@ -8,8 +8,8 @@ loadStyle(`${miloLibs || codeRoot}/ui/controls/multifield.css`);
 const FieldSet = ({ fields, onDelete, onMoveUp, onMoveDown }) => html`
     <div class="multifield-set">
       <div class="up-down">
-        <button class="move-up" title="Move Up" onClick=${onMoveUp}>^</button>
-        <button class="move-down" title="Move Down" onClick=${onMoveDown}>^</button>
+        <button class="move-up" title="Move Up" onClick=${onMoveUp}>▲</button>
+        <button class="move-down" title="Move Down" onClick=${onMoveDown}>▲</button>
       </div>
       <div class="multifield-fields">${fields}</div>
       <button class="multifield-delete" onClick=${onDelete}></button>
@@ -115,35 +115,6 @@ const MultiField = ({
   }, [fieldValues]);
 
   return html`
-    <style>
-    [class^="multifield filters"] .multifield-header h3 {
-        display: flex; justify-content: space-between;
-      }
-      [class^="multifield filters"] .multifield-set {
-        position: relative;
-      }
-      [class^="multifield filters"] .multifield-set .up-down {
-        display:flex;
-        font-weight: 300;
-        position: absolute;
-        top: 12px;
-        right: 10px;
-        flex-direction: column;
-      }
-      [class^="multifield filters"] + .multifield-header ~ .multifield-set .up-down .move-up {
-        display: none !important;
-      }
-      [class^="multifield filters"] .multifield-set .up-down button{
-        height: 15px !important;
-        margin: 0;
-        clip-path: none;
-        padding: 0 6px;
-      }
-      [class^="multifield filters"] .move-down {
-        transform: rotate(180deg);
-        display: inline-block;
-      }
-    </style>
     <div class=${`multifield ${className}`}>
       <div class=${`multifield-header ${className}`}>
         <h3>${title}</h3>
@@ -154,7 +125,7 @@ const MultiField = ({
     (fields, idx) => {
       fields.forEach((field) => (field.props.parentIndex = idx));
       // return html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)} />`;
-      return html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)} 
+      return html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)}
       onMoveUp=${moveFieldUp(idx)} onMoveDown=${moveFieldDown(idx)} />`;
     },
   )}
