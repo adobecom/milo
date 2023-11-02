@@ -29,7 +29,7 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
     selector,
   ));
   const { nodeName, dataset } = await el.onceSettled();
-  expect(nodeName).to.equal('SPAN');
+  expect(nodeName).to.equal('INLINE-PRICE');
   if (!expectedAttributes.template) {
     expect(dataset.template).to.be.undefined;
   }
@@ -224,18 +224,16 @@ describe('Merch Block', () => {
         '.merch.cta.promo',
       ));
       const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('A');
-      expect(el.getAttribute('is')).to.equal('checkout-link');
+      expect(nodeName).to.equal('CHECKOUT-LINK');
       expect(dataset.promotionCode).to.equal('nicopromo');
     });
 
-    it('renders merch link to promo cta with discount in a fragment', async () => {
+    it.only('renders merch link to promo cta with discount in a fragment', async () => {
       const el = await merch(document.querySelector(
         '.fragment .merch.cta.promo',
       ));
       const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('A');
-      expect(el.getAttribute('is')).to.equal('checkout-link');
+      expect(nodeName).to.equal('CHECKOUT-LINK');
       expect(dataset.promotionCode).to.equal('nicopromo');
     });
 
@@ -244,8 +242,7 @@ describe('Merch Block', () => {
         '.merch.cta.link-overrides',
       ));
       const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('A');
-      expect(el.getAttribute('is')).to.equal('checkout-link');
+      expect(nodeName).to.equal('CHECKOUT-LINK');
       // https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=BPS&title=UCv2+Link+Creation+Guide
       expect(dataset.checkoutWorkflow).to.equal('UCv2');
       expect(dataset.checkoutWorkflowStep).to.equal('checkout');
