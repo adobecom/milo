@@ -7,7 +7,7 @@ inline-price[data-wcs-osi] {
   display: inline-block;
 }
 
-inline-price.placeholder-resolved[data-template="priceStrikethrough"], inline-price.price.price-strikethrough {
+inline-price.placeholder-resolved[data-template="priceStrikethrough"], span.price.price-strikethrough {
   text-decoration: line-through;
 }
 
