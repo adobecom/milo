@@ -130,7 +130,10 @@ const App = ({
         const userSelectionString = JSON.stringify(userSelection);
         const userSelectionStringEncoded = encodeURIComponent(userSelectionString);
         const cleanURL = window.location.href.split('?')[0];
-        navigator.clipboard.writeText(`${cleanURL}?debug-results=${userSelectionStringEncoded}`);
+        const debugURL = `${cleanURL}?debug-results=${userSelectionStringEncoded}`;
+        navigator.clipboard.writeText(debugURL);
+        // eslint-disable-next-line no-console
+        console.log(debugURL);
       }
       handleResultFlow(transformToFlowData(userSelection));
     }
