@@ -78,20 +78,14 @@ const App = ({
           updateUserSelection(quizDebugValueDecodedJSON);
         }
       }
-    }
+    };
     if (isDataLoaded) {
       if (debugBuild === false) {
         handleDebugResults();
       }
-      function handlePopState() {
-        window.location.reload();
-      }      
-      window.addEventListener('popstate', handlePopState);
-      return () => {
-        window.removeEventListener('popstate', handlePopState);
-      };
     }
     return () => {};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDataLoaded, debugBuild, userSelection]);
 
   useEffect(() => {
@@ -139,6 +133,7 @@ const App = ({
       }
       handleResultFlow(transformToFlowData(userSelection));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSelection, nextQuizViewsExist]);
 
   /**
@@ -213,7 +208,7 @@ const App = ({
         setTotalSteps(totalSteps);
       }
     }
-    resetFocus();   
+    resetFocus();
   };
   let minSelections = 0;
   let maxSelections = 10;
