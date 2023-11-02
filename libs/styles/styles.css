@@ -460,15 +460,18 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 .con-button.button-xl span.icon.margin-left { margin-left: 14px; }
 
 /* rounded border styles*/
-.s-rounded-corners {
+.s-rounded-corners,
+.s-rounded-corners > .background img {
   border-radius: var(--s-rounded-corners);
 }
 
-.m-rounded-corners {
+.m-rounded-corners,
+.m-rounded-corners > .background img {
   border-radius: var(--m-rounded-corners);
 }
 
-.l-rounded-corners {
+.l-rounded-corners,
+.l-rounded-corners > .background img {
   border-radius: var(--l-rounded-corners);
 }
 
