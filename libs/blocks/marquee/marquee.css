@@ -8,7 +8,7 @@
   min-height: 560px;
 }
 
-.marquee:is(.small, .inline, .large.compact) {
+.marquee.small, .marquee.quiet, .marquee.inline, .marquee.large.compact {
   min-height: 360px;
 }
 
@@ -17,36 +17,25 @@
   margin-bottom: 0;
 }
 
-.marquee:is(.light, .mobile-light, .quiet, .inline) {
+.marquee.light, .marquee.mobile-light, .marquee.quiet, .marquee.inline {
   color: var(--text-color);
 }
 
-.marquee:is(.mobile-dark, .quiet.dark) {
+.marquee.mobile-dark {
   color: var(--color-white);
-}
-
-.marquee .icon-area :is(picture, a) {
-  display: contents;
-}
-
-.marquee:is(.mobile-dark, .quiet.dark) a:not(.con-button),
-.marquee:is(.mobile-dark, .quiet.dark) a:not(.con-button):hover {
-  color: var(--link-color-dark);
 }
 
 .marquee.mobile-light a:not(.con-button) {
   color: var(--link-color);
 }
 
-.marquee.static-links a:not(.con-button),
-.static-links .marquee a:not(.con-button),
-.marquee.static-links a:not(.con-button):hover,
-.static-links .marquee a:not(.con-button):hover {
-  color: inherit;
-}
-
 .marquee.mobile-light a:not(.con-button):hover {
   color: var(--link-hover-color);
+}
+
+.marquee.mobile-dark a:not(.con-button),
+.marquee.mobile-dark a:not(.con-button):hover {
+  color: var(--link-color-dark);
 }
 
 .marquee.mobile-light a.con-button.outline {
@@ -103,6 +92,11 @@
 
 .marquee .icon-area {
   margin-bottom: var(--spacing-s);
+}
+
+.marquee .icon-area picture,
+.marquee .icon-area a {
+  display: contents;
 }
 
 .marquee .icon-area img {
@@ -362,13 +356,13 @@
     color: var(--link-color);
   }
 
+  .marquee.tablet-light a:not(.con-button):hover {
+    color: var(--link-hover-color);
+  }
+
   .marquee.tablet-dark a:not(.con-button),
   .marquee.tablet-dark a:not(.con-button):hover {
     color: var(--link-color-dark);
-  }
-
-  .marquee.tablet-light a:not(.con-button):hover {
-    color: var(--link-hover-color);
   }
 
   .marquee.tablet-light a.con-button.outline {
@@ -421,10 +415,6 @@
   .marquee.center .foreground .text,
   .marquee.centered .foreground .text {
     margin: 0 auto;
-  }
-
-  .marquee.quiet.large .foreground .text {
-    max-width: 800px;
   }
   
   .marquee.split .foreground.container .text {
@@ -527,12 +517,13 @@
     color: var(--link-color);
   }
 
-  .marquee.desktop-dark a:is(:not(.con-button), :not(.con-button):hover) {
-    color: var(--link-color-dark);
-  }
-
   .marquee.desktop-light a:not(.con-button):hover {
     color: var(--link-hover-color);
+  }
+
+  .marquee.desktop-dark a:not(.con-button),
+  .marquee.desktop-dark a:not(.con-button):hover {
+    color: var(--link-color-dark);
   }
 
   .marquee.desktop-light a.con-button.outline {
@@ -711,4 +702,12 @@
   .marquee.large .foreground.container {
     max-width: var(--grid-container-width);
   }
+}
+
+
+.marquee.static-links a:not(.con-button),
+.marquee.static-links a:not(.con-button):hover,
+.static-links .marquee a:not(.con-button),
+.static-links .marquee a:not(.con-button):hover {
+  color: inherit;
 }
