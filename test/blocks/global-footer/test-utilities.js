@@ -1,6 +1,7 @@
+import { setViewport } from '@web/test-runner-commands';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { config, loadStyles, waitForElement as waitForVisibleElement } from '../global-navigation/test-utilities.js';
-import { waitForElement as waitForElementRender } from '../../helpers/waitfor.js';
+import { config, isElementVisible, loadStyles, viewports } from '../global-navigation/test-utilities.js';
+import { waitForElement } from '../../helpers/waitfor.js';
 
 export const containerSelector = '.global-footer';
 
@@ -31,10 +32,7 @@ export const socialLinksSelectors = {
   socialItem: '.feds-social-item',
 };
 
-export const regionPickerSelectors = {
-  regionPickerWrapper: '.feds-regionPicker-wrapper',
-  regionPickerGlobe: '.feds-regionPicker-globe',
-};
+export const regionPickerSelectors = { regionPickerWrapper: '.feds-regionPicker-wrapper' };
 
 export const legalSelectors = {
   legalWrapper: '.feds-footer-legalWrapper',
@@ -52,18 +50,38 @@ export const selectors = {
   ...legalSelectors,
 };
 
-export const allElementsVisible = async (givenSelectors, parentEl) => {
+export const alwaysVisibleSelectorsMobile = {
+  footerWrapper: '.feds-footer-wrapper',
+  menuContent: '.feds-menu-content',
+  menuColumn: '.feds-menu-column',
+  menuSection: '.feds-menu-section',
+  ...socialLinksSelectors,
+  ...regionPickerSelectors,
+  ...legalSelectors,
+};
+
+// for small desktop and above
+export const alwaysVisibleSelectorsDesktop = {
+  footerWrapper: '.feds-footer-wrapper',
+  menuContent: '.feds-menu-content',
+  menuColumn: '.feds-menu-column',
+  menuSection: '.feds-menu-section',
+  ...featuredProductsSelectors,
+  ...socialLinksSelectors,
+  ...regionPickerSelectors,
+  ...legalSelectors,
+};
+
+export const allElementsVisible = (givenSelectors, parentEl) => {
   const waitForElements = [];
 
   const selectorsKeys = Object.keys(givenSelectors);
   for (const selectorKey of selectorsKeys) {
-    const targetEl = document.querySelector(givenSelectors[selectorKey]);
-    if (targetEl) {
-      waitForElements.push(waitForVisibleElement(givenSelectors[selectorKey], parentEl));
-    }
+    const targetEl = parentEl.querySelector(givenSelectors[selectorKey]);
+    waitForElements.push(isElementVisible(targetEl));
   }
-  const visibleElements = await Promise.all(waitForElements);
-  return !!visibleElements;
+
+  return waitForElements.every((el) => el);
 };
 
 export const waitForFooterToDecorate = async () => {
@@ -71,13 +89,14 @@ export const waitForFooterToDecorate = async () => {
 
   const selectorsKeys = Object.keys(selectors);
   for (const selectorKey of selectorsKeys) {
-    waitForElements.push(waitForElementRender(selectors[selectorKey]));
+    waitForElements.push(waitForElement(selectors[selectorKey]));
   }
   const elementsAreRendered = await Promise.all(waitForElements);
   return !!elementsAreRendered;
 };
 
-export const createFullGlobalFooter = async ({ waitForDecoration }) => {
+export const createFullGlobalFooter = async ({ waitForDecoration, viewport = 'desktop' }) => {
+  await setViewport(viewports[viewport]);
   setConfig(config);
   // we need to import the footer class in here so it can use the config we have set above
   // if we import it at the top of the file, an empty config will be defined and used by the footer
