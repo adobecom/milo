@@ -126,10 +126,10 @@
   --icon-size-xxs: 16px;
 
   /* border-radius sizes */
-  --rounded-corners-s: 4px;
-  --rounded-corners-m: 8px;
-  --rounded-corners-l: 16px;
-  --rounded-corners-full: 50%;
+  --s-rounded-corners: 4px;
+  --m-rounded-corners: 8px;
+  --l-rounded-corners: 16px;
+  --full-rounded-corners: 50%;
 }
 
 :root:lang(ko-KR) {
@@ -460,32 +460,32 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 .con-button.button-xl span.icon.margin-left { margin-left: 14px; }
 
 /* rounded border styles*/
-.rounded-corners-s {
-  border-radius: var(--rounded-corners-s);
+.s-rounded-corners {
+  border-radius: var(--s-rounded-corners);
 }
 
-.rounded-corners-m {
-  border-radius: var(--rounded-corners-m);
+.m-rounded-corners {
+  border-radius: var(--m-rounded-corners);
 }
 
-.rounded-corners-l {
-  border-radius: var(--rounded-corners-l);
+.l-rounded-corners {
+  border-radius: var(--l-rounded-corners);
 }
 
-.image-rounded-corners-s > .foreground picture img {
-  border-radius: var(--rounded-corners-s);
+.s-image-rounded-corners > .foreground picture img {
+  border-radius: var(--s-rounded-corners);
 }
 
-.image-rounded-corners-m > .foreground picture img {
-  border-radius: var(--rounded-corners-m);
+.m-image-rounded-corners > .foreground picture img {
+  border-radius: var(--m-rounded-corners);
 }
 
-.image-rounded-corners-l > .foreground picture img {
-  border-radius: var(--rounded-corners-l);
+.l-image-rounded-corners > .foreground picture img {
+  border-radius: var(--l-rounded-corners);
 }
 
-.image-rounded-corners-full > .foreground picture img {
-  border-radius: var(--rounded-corners-full);
+.full-image-rounded-corners > .foreground picture img {
+  border-radius: var(--full-rounded-corners);
 }
 
 /* Con Block Utils */
