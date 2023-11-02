@@ -6,13 +6,8 @@ import {
   alwaysVisibleSelectorsMobile,
   containerSelector,
   createFullGlobalFooter,
-  featuredProductsSelectors,
   insertDummyElementOnTop,
-  legalSelectors,
-  menuSelectors,
-  regionPickerSelectors,
   selectors,
-  socialLinksSelectors,
   waitForFooterToDecorate,
 } from './test-utilities.js';
 import baseFooter from './mocks/base-footer.js';
