@@ -129,7 +129,8 @@ const App = ({
       if (debugParam) {
         const userSelectionString = JSON.stringify(userSelection);
         const userSelectionStringEncoded = encodeURIComponent(userSelectionString);
-        navigator.clipboard.writeText(`${window.location.href}=${userSelectionStringEncoded}`);
+        const cleanURL = window.location.href.split('?')[0];
+        navigator.clipboard.writeText(`${cleanURL}?debug-results=${userSelectionStringEncoded}`);
       }
       handleResultFlow(transformToFlowData(userSelection));
     }
