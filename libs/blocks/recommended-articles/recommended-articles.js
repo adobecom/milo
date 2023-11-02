@@ -20,8 +20,7 @@ async function getArticleDetails(article) {
   const ending = trimEndings.find((el) => title.endsWith(el));
   [title] = title.split(ending);
 
-  const metaCategory = getMetadata('category', doc);
-  const category = metaCategory || getMetadata('article:tag', doc);
+  const category = getMetadata('category', doc) || getMetadata('article:tag', doc);
 
   return {
     title,

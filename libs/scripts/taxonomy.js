@@ -83,7 +83,7 @@ function parseTaxonomyJson(data, root, route) {
       : (level2 ? LEVEL_INDEX.level2
         : LEVEL_INDEX.level1);
 
-    const name = level3?.toLowerCase() || level2?.toLowerCase() || level1?.toLowerCase();
+    const name = (level3 || level2 || level1)?.toLowerCase();
     const category = row[TAXONOMY_FIELDS.type]?.trim().toLowerCase() || INTERNALS;
 
     // skip duplicates
