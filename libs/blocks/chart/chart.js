@@ -584,7 +584,8 @@ const handleDeferredSections = (section, upNumberStyle) => {
   const loadLazySection = () => {
     const upClasses = [...section.classList].filter((className) => className.endsWith('-up'));
     // if authored with a section-metadata:style two-up, three-up... it takes priority
-    if (upClasses.length === 2 && upClasses[0] === upNumberStyle) {
+    if ((upClasses.length && upClasses.includes(upNumberStyle))
+    || (upClasses.length && upNumberStyle === 'container')) {
       section.classList.remove(upNumberStyle);
     }
   };
