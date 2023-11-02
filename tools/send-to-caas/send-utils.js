@@ -188,7 +188,7 @@ const getOrigin = (fgColor) => {
     cc: 'hawks',
     dc: 'doccloud',
   };
-  if (mappings[origin]) {
+  if (mappings[origin] || origin) {
     return mappings[origin] || origin;
   }
 
