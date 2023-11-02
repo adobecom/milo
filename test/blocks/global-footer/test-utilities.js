@@ -1,99 +1,71 @@
 import { setViewport } from '@web/test-runner-commands';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { config, isElementVisible, loadStyles, viewports } from '../global-navigation/test-utilities.js';
+import { config, loadStyles, viewports } from '../global-navigation/test-utilities.js';
 import { waitForElement } from '../../helpers/waitfor.js';
 
 export const containerSelector = '.global-footer';
 
-export const baseSelectors = {
+export const allSelectors = {
   footerIcons: '.feds-footer-icons',
   footerWrapper: '.feds-footer-wrapper',
-};
-
-export const menuSelectors = {
   menuContent: '.feds-menu-content',
   menuColumn: '.feds-menu-column',
   menuSection: '.feds-menu-section',
   menuHeadline: '.feds-menu-headline',
   menuItems: '.feds-menu-items',
-};
-
-export const featuredProductsSelectors = {
   featuredProducts: '.feds-featuredProducts',
   featuredProductsLabel: '.feds-featuredProducts-label',
   navLink: '.feds-navLink',
   navLinkImage: '.feds-navLink-image',
   navLinkContent: '.feds-navLink-content',
   navLinkTitle: '.feds-navLink-title',
-};
-
-export const socialLinksSelectors = {
   social: '.feds-social',
   socialItem: '.feds-social-item',
-};
-
-export const regionPickerSelectors = { regionPickerWrapper: '.feds-regionPicker-wrapper' };
-
-export const legalSelectors = {
+  regionPickerWrapper: '.feds-regionPicker-wrapper',
   legalWrapper: '.feds-footer-legalWrapper',
   privacySection: '.feds-footer-privacySection',
   copyright: '.feds-footer-copyright',
   privacyLink: '.feds-footer-privacyLink',
 };
 
-export const selectors = {
-  ...baseSelectors,
-  ...menuSelectors,
-  ...featuredProductsSelectors,
-  ...socialLinksSelectors,
-  ...regionPickerSelectors,
-  ...legalSelectors,
-};
-
-export const alwaysVisibleSelectorsMobile = {
-  footerWrapper: '.feds-footer-wrapper',
-  menuContent: '.feds-menu-content',
-  menuColumn: '.feds-menu-column',
-  menuSection: '.feds-menu-section',
-  ...socialLinksSelectors,
-  ...regionPickerSelectors,
-  ...legalSelectors,
-};
+export const visibleSelectorsMobile = Object.fromEntries(
+  Object.entries(allSelectors).filter(([key]) => ![
+    'footerIcons',
+    'featuredProducts',
+    'featuredProductsLabel',
+    'navLink',
+    'navLinkImage',
+    'navLinkContent',
+    'navLinkTitle',
+    'menuItems',
+    'menuHeadline',
+  ].includes(key)),
+);
 
 // for small desktop and above
-export const alwaysVisibleSelectorsDesktop = {
-  footerWrapper: '.feds-footer-wrapper',
-  menuContent: '.feds-menu-content',
-  menuColumn: '.feds-menu-column',
-  menuSection: '.feds-menu-section',
-  ...featuredProductsSelectors,
-  ...socialLinksSelectors,
-  ...regionPickerSelectors,
-  ...legalSelectors,
+export const visibleSelectorsDesktop = Object.fromEntries(
+  Object.entries(allSelectors).filter(([key]) => !['footerIcons'].includes(key)),
+);
+
+export const isElementVisible = (elem) => {
+  const computedStyle = window.getComputedStyle(elem);
+  return !!(
+    (elem.offsetWidth && elem.offsetHeight)
+  && elem.getClientRects().length
+  && computedStyle.getPropertyValue('visibility') !== 'hidden')
+  && computedStyle.getPropertyValue('opacity') > 0;
 };
 
-export const allElementsVisible = (givenSelectors, parentEl) => {
-  const waitForElements = [];
+export const allElementsVisible = (givenSelectors, parentEl) => Object
+  .keys(givenSelectors)
+  .map((key) => isElementVisible(parentEl.querySelector(givenSelectors[key])))
+  .every((el) => el);
 
-  const selectorsKeys = Object.keys(givenSelectors);
-  for (const selectorKey of selectorsKeys) {
-    const targetEl = parentEl.querySelector(givenSelectors[selectorKey]);
-    waitForElements.push(isElementVisible(targetEl));
-  }
-
-  return waitForElements.every((el) => el);
-};
-
-export const waitForFooterToDecorate = async () => {
-  const waitForElements = [];
-
-  const selectorsKeys = Object.keys(selectors);
-  for (const selectorKey of selectorsKeys) {
-    waitForElements.push(waitForElement(selectors[selectorKey]));
-  }
-  const elementsAreRendered = await Promise.all(waitForElements);
-  return !!elementsAreRendered;
-};
+export const waitForFooterToDecorate = () => Promise.all(
+  Object
+    .keys(allSelectors)
+    .map((key) => waitForElement(allSelectors[key])),
+);
 
 export const createFullGlobalFooter = async ({ waitForDecoration, viewport = 'desktop' }) => {
   await setViewport(viewports[viewport]);
@@ -110,16 +82,12 @@ export const createFullGlobalFooter = async ({ waitForDecoration, viewport = 'de
   ]);
 
   const instance = initFooter(document.querySelector('footer'));
-  if (waitForDecoration) {
-    await waitForFooterToDecorate();
-  }
-
+  if (waitForDecoration) await waitForFooterToDecorate();
   return instance;
 };
 
 export const insertDummyElementOnTop = ({ height }) => {
-  const { firstChild } = document.body;
   const dummyElement = document.createElement('div');
   dummyElement.style.height = `${height}px`;
-  document.body.insertBefore(dummyElement, firstChild);
+  document.body.insertBefore(dummyElement, document.body.firstChild);
 };

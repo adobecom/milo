@@ -2,18 +2,19 @@ import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import {
   allElementsVisible,
-  alwaysVisibleSelectorsDesktop,
-  alwaysVisibleSelectorsMobile,
+  visibleSelectorsDesktop,
+  visibleSelectorsMobile,
   containerSelector,
   createFullGlobalFooter,
   insertDummyElementOnTop,
-  selectors,
+  isElementVisible,
   waitForFooterToDecorate,
+  allSelectors,
 } from './test-utilities.js';
 import baseFooter from './mocks/base-footer.js';
 import fetchedFooter from './mocks/fetched-footer.js';
 import icons from './mocks/icons.js';
-import { isElementVisible, mockRes } from '../global-navigation/test-utilities.js';
+import { mockRes } from '../global-navigation/test-utilities.js';
 import placeholders from './mocks/placeholders.js';
 
 const originalFetch = window.fetch;
@@ -51,38 +52,33 @@ describe('global footer', () => {
 
   describe('wide screen', async () => {
     it('should render the footer on wide screen', async () => {
-      const footer = await createFullGlobalFooter({ waitForDecoration: true, viewport: 'wide' });
+      await createFullGlobalFooter({ waitForDecoration: true, viewport: 'wide' });
 
-      expect(footer).to.exist;
-
-      Object.keys(selectors).forEach((key) => expect(
-        document.querySelector(selectors[key]) instanceof HTMLElement,
+      Object.keys(allSelectors).forEach((key) => expect(
+        document.querySelector(allSelectors[key]) instanceof HTMLElement,
       ).to.equal(true));
 
-      const elementsAreVisible = allElementsVisible(
-        alwaysVisibleSelectorsDesktop,
+      expect(allElementsVisible(
+        visibleSelectorsDesktop,
         document.querySelector(containerSelector),
-      );
-      expect(elementsAreVisible).to.equal(true);
+      )).to.equal(true);
     });
   });
 
   describe('desktop', () => {
     describe('basic sanity tests', () => {
       it('should have footer', async () => {
-        const footer = await createFullGlobalFooter({ waitForDecoration: true });
-        expect(footer).to.exist;
+        await createFullGlobalFooter({ waitForDecoration: true });
         expect(document.querySelector('footer')).to.exist;
 
-        Object.keys(selectors).forEach((key) => expect(
-          document.querySelector(selectors[key]) instanceof HTMLElement,
+        Object.keys(allSelectors).forEach((key) => expect(
+          document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(true));
 
-        const elementsAreVisible = allElementsVisible(
-          alwaysVisibleSelectorsDesktop,
+        expect(allElementsVisible(
+          visibleSelectorsDesktop,
           document.querySelector(containerSelector),
-        );
-        expect(elementsAreVisible).to.equal(true);
+        )).to.equal(true);
       });
     });
 
@@ -90,65 +86,61 @@ describe('global footer', () => {
       it('should render the footer when in viewport', async () => {
         await createFullGlobalFooter({ waitForDecoration: true });
 
-        Object.keys(selectors).forEach((key) => expect(
-          document.querySelector(selectors[key]) instanceof HTMLElement,
+        Object.keys(allSelectors).forEach((key) => expect(
+          document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(true));
 
-        const elementsAreVisible = allElementsVisible(
-          alwaysVisibleSelectorsDesktop,
+        expect(allElementsVisible(
+          visibleSelectorsDesktop,
           document.querySelector(containerSelector),
-        );
-        expect(elementsAreVisible).to.equal(true);
+        )).to.equal(true);
       });
 
       it('should render the footer after 3s when outside of the 300px range of the viewport', async () => {
-        const viewportHeight = window.innerHeight;
-        insertDummyElementOnTop({ height: viewportHeight + 400 });
+        insertDummyElementOnTop({ height: window.innerHeight + 400 });
 
         await createFullGlobalFooter({ waitForDecoration: false });
 
-        Object.keys(selectors).forEach((key) => expect(
-          document.querySelector(selectors[key]) instanceof HTMLElement,
+        Object.keys(allSelectors).forEach((key) => expect(
+          document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(false));
 
         clock.tick(3000);
         await waitForFooterToDecorate();
 
-        Object.keys(selectors).forEach((key) => expect(
-          document.querySelector(selectors[key]) instanceof HTMLElement,
+        Object.keys(allSelectors).forEach((key) => expect(
+          document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(true));
       });
 
       it('should render the footer when outside of the viewport, but within 300px range', async () => {
-        const viewportHeight = window.innerHeight;
-        insertDummyElementOnTop({ height: viewportHeight + 200 });
+        insertDummyElementOnTop({ height: window.innerHeight + 200 });
         const startTime = performance.now();
         await createFullGlobalFooter({ waitForDecoration: true });
         const endTime = performance.now();
         const timeDiff = endTime - startTime;
 
-        Object.keys(selectors).forEach((key) => expect(
-          document.querySelector(selectors[key]) instanceof HTMLElement,
+        Object.keys(allSelectors).forEach((key) => expect(
+          document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(true));
         // footer decoration should take less than 3s if within 300px range of viewport
         expect(timeDiff < 3000).to.equal(true);
       });
 
       it('should render the footer when outside of the 300px viewport range, but scrolled into view earlier than 3s', async () => {
-        const viewportHeight = window.innerHeight;
-        insertDummyElementOnTop({ height: viewportHeight + 400 });
+        insertDummyElementOnTop({ height: window.innerHeight + 400 });
         const startTime = performance.now();
         await createFullGlobalFooter({ waitForDecoration: false });
 
-        Object.keys(selectors).forEach((key) => expect(
-          document.querySelector(selectors[key]) instanceof HTMLElement,
+        Object.keys(allSelectors).forEach((key) => expect(
+          document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(false));
 
-        window.scrollBy(0, viewportHeight);
+        window.scrollBy(0, window.innerHeight);
         await waitForFooterToDecorate();
 
-        Object.keys(selectors).forEach((key) => expect(
-          document.querySelector(selectors[key]) instanceof HTMLElement,
+        Object.keys(allSelectors).forEach((key) => expect(
+          document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(true));
 
         const endTime = performance.now();
@@ -156,11 +148,10 @@ describe('global footer', () => {
         // footer decoration should take less than 3s when scrolled into view
         expect(timeDiff < 3000).to.equal(true);
 
-        const elementsAreVisible = allElementsVisible(
-          alwaysVisibleSelectorsDesktop,
+        expect(allElementsVisible(
+          visibleSelectorsDesktop,
           document.querySelector(containerSelector),
-        );
-        expect(elementsAreVisible).to.equal(true);
+        )).to.equal(true);
       });
     });
 
@@ -206,44 +197,37 @@ describe('global footer', () => {
 
   describe('small desktop', async () => {
     it('should render the footer on small desktop', async () => {
-      const footer = await createFullGlobalFooter({ waitForDecoration: true, viewport: 'smallDesktop' });
+      await createFullGlobalFooter({ waitForDecoration: true, viewport: 'smallDesktop' });
 
-      expect(footer).to.exist;
-
-      Object.keys(selectors).forEach((key) => expect(
-        document.querySelector(selectors[key]) instanceof HTMLElement,
+      Object.keys(allSelectors).forEach((key) => expect(
+        document.querySelector(allSelectors[key]) instanceof HTMLElement,
       ).to.equal(true));
 
-      const elementsAreVisible = allElementsVisible(
-        alwaysVisibleSelectorsDesktop,
+      expect(allElementsVisible(
+        visibleSelectorsDesktop,
         document.querySelector(containerSelector),
-      );
-      expect(elementsAreVisible).to.equal(true);
+      )).to.equal(true);
     });
   });
 
   describe('mobile', () => {
     it('should render the footer on mobile', async () => {
-      const footer = await createFullGlobalFooter({ waitForDecoration: true, viewport: 'mobile' });
+      await createFullGlobalFooter({ waitForDecoration: true, viewport: 'mobile' });
 
-      expect(footer).to.exist;
-
-      Object.keys(selectors).forEach((key) => expect(
-        document.querySelector(selectors[key]) instanceof HTMLElement,
+      Object.keys(allSelectors).forEach((key) => expect(
+        document.querySelector(allSelectors[key]) instanceof HTMLElement,
       ).to.equal(true));
 
-      const elementsAreVisible = allElementsVisible(
-        alwaysVisibleSelectorsMobile,
+      expect(allElementsVisible(
+        visibleSelectorsMobile,
         document.querySelector(containerSelector),
-      );
-      expect(elementsAreVisible).to.equal(true);
+      )).to.equal(true);
     });
 
     it('should open/close dropdowns on click', async () => {
       await createFullGlobalFooter({ waitForDecoration: true, viewport: 'mobile' });
-      const dropdowns = Array.from(document.getElementsByClassName('feds-menu-section'));
 
-      for (const dropdown of dropdowns) {
+      for (const dropdown of Array.from(document.getElementsByClassName('feds-menu-section'))) {
         const header = dropdown.querySelector('.feds-menu-headline');
         const links = Array.from(dropdown.getElementsByClassName('feds-navLink'));
 
