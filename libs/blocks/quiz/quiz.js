@@ -295,14 +295,14 @@ const App = ({
   };
 
   return html`<div class="quiz-container">
-                  ${selectedQuestion.questions && getStringValue('background') !== '' && html`<${StepIndicator}
+                  ${selectedQuestion.questions && html`<${StepIndicator}
                     currentStep=${currentStep} 
                     totalSteps=${totalSteps} 
                     prevStepIndicator=${prevStepIndicator}
                     top="${true}" />
                   `}
 
-                  ${selectedQuestion.questions && html`<div class="quiz-background">
+                  ${selectedQuestion.questions && getStringValue('background') !== '' && html`<div class="quiz-background">
                       ${DecorateBlockBackground(getStringValue)}
                   </div>`}
 
