@@ -9,6 +9,105 @@ import {
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
+export const LOCALES = {
+  // Americas
+  ar: { ietf: 'es-AR' },
+  br: { ietf: 'pt-BR' },
+  ca: { ietf: 'en-CA' },
+  ca_fr: { ietf: 'fr-CA' },
+  cl: { ietf: 'es-CL' },
+  co: { ietf: 'es-CO' },
+  cr: { ietf: 'es-CR' },
+  ec: { ietf: 'es-EC' },
+  el: { ietf: 'es-EL' },
+  gt: { ietf: 'es-GT' },
+  la: { ietf: 'es-LA' },
+  mx: { ietf: 'es-MX' },
+  pe: { ietf: 'es-PE' },
+  pr: { ietf: 'es-PR' },
+  '': { ietf: 'en-US' },
+  langstore: { ietf: 'en-US' },
+  // EMEA
+  africa: { ietf: 'en-africa' },
+  be_fr: { ietf: 'fr-BE' },
+  be_en: { ietf: 'en-BE' },
+  be_nl: { ietf: 'nl-BE' },
+  cy_en: { ietf: 'en-CY' },
+  dk: { ietf: 'da-DK' },
+  de: { ietf: 'de-DE' },
+  ee: { ietf: 'et-EE' },
+  eg_ar: { ietf: 'ar-EG' },
+  eg_en: { ietf: 'en-GB' },
+  es: { ietf: 'es-ES' },
+  fr: { ietf: 'fr-FR' },
+  gr_en: { ietf: 'en-GR' },
+  gr_el: { ietf: 'el-GR' },
+  ie: { ietf: 'en-IE' },
+  il_en: { ietf: 'en-IL' },
+  il_he: { ietf: 'he-il' },
+  it: { ietf: 'it-IT' },
+  kw_ar: { ietf: 'ar-KW' },
+  kw_en: { ietf: 'en-GB' },
+  lv: { ietf: 'lv-LV' },
+  lt: { ietf: 'lt-LT' },
+  lu_de: { ietf: 'de-LU' },
+  lu_en: { ietf: 'en-LU' },
+  lu_fr: { ietf: 'fr-LU' },
+  hu: { ietf: 'hu-HU' },
+  mt: { ietf: 'en-MT' },
+  mena_en: { ietf: 'en-mena' },
+  mena_ar: { ietf: 'ar-mena' },
+  ng: { ietf: 'en-NG' },
+  nl: { ietf: 'nl-NL' },
+  no: { ietf: 'no-NO' },
+  pl: { ietf: 'pl-PL' },
+  pt: { ietf: 'pt-PT' },
+  qa_ar: { ietf: 'ar-QA' },
+  qa_en: { ietf: 'en-GB' },
+  ro: { ietf: 'ro-RO' },
+  sa_en: { ietf: 'en-sa' },
+  ch_fr: { ietf: 'fr-CH' },
+  ch_de: { ietf: 'de-CH' },
+  ch_it: { ietf: 'it-CH' },
+  si: { ietf: 'sl-SI' },
+  sk: { ietf: 'sk-SK' },
+  fi: { ietf: 'fi-FI' },
+  se: { ietf: 'sv-SE' },
+  tr: { ietf: 'tr-TR' },
+  ae_en: { ietf: 'en-ae' },
+  uk: { ietf: 'en-GB' },
+  at: { ietf: 'de-AT' },
+  cz: { ietf: 'cs-CZ' },
+  bg: { ietf: 'bg-BG' },
+  ru: { ietf: 'ru-RU' },
+  ua: { ietf: 'uk-UA' },
+  ae_ar: { ietf: 'ar-ae' },
+  sa_ar: { ietf: 'ar-sa' },
+  za: { ietf: 'en-ZA' },
+  // Asia Pacific
+  au: { ietf: 'en-AU' },
+  hk_en: { ietf: 'en-HK' },
+  in: { ietf: 'en-in' },
+  id_id: { ietf: 'id-id' },
+  id_en: { ietf: 'en-id' },
+  my_ms: { ietf: 'ms-my' },
+  my_en: { ietf: 'en-my' },
+  nz: { ietf: 'en-nz' },
+  ph_en: { ietf: 'en-ph' },
+  ph_fil: { ietf: 'fil-PH' },
+  sg: { ietf: 'en-SG' },
+  th_en: { ietf: 'en-th' },
+  in_hi: { ietf: 'hi-in' },
+  th_th: { ietf: 'th-th' },
+  cn: { ietf: 'zh-CN' },
+  hk_zh: { ietf: 'zh-HK' },
+  tw: { ietf: 'zh-TW' },
+  jp: { ietf: 'ja-JP' },
+  kr: { ietf: 'ko-KR' },
+  vn_en: { ietf: 'en-vn' },
+  vn_vi: { ietf: 'vi-VN' },
+};
+
 const URL_ENCODED_COMMA = '%2C';
 export const fgHeaderName = 'X-Adobe-Floodgate';
 export const fgHeaderValue = 'pink';
@@ -315,10 +414,14 @@ const getFilterArray = async (state, country, lang, strs) => {
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
-    const locale = pageConfigHelper()?.locale;
+    const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
+    const locale = LOCALES[prefix]?.ietf || 'en-us';
+    /* eslint-disable-next-line prefer-const */
+    let [currLang, currCountry] = locale.split('-');
+
     return {
-      country: locale.region?.toLowerCase() || 'us',
-      language: locale.ietf?.toLowerCase() || 'en-us',
+      country: currCountry,
+      language: currLang,
     };
   }
   return {
@@ -413,6 +516,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
+  const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
@@ -438,7 +542,7 @@ export const getConfig = async (originalState, strs = {}) => {
         ',',
       ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
@@ -677,6 +781,7 @@ export const defaultState = {
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
   showFilters: false,
+  showIds: false,
   showSearch: false,
   showTotalResults: false,
   sortDateAsc: false,
