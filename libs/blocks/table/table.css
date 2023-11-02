@@ -160,6 +160,10 @@
   margin: var(--spacing-xxs) 0;
 }
 
+.table .row-heading .col-heading .body {
+  font-size: var(--type-body-m-size);
+}
+
 /* section */
 .table .divider {
   display: none;

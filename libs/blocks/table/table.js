@@ -40,7 +40,9 @@ function handleHeading(headingCols, isPriceBottom) {
       elements[textStartIndex]?.classList.add('tracking-header');
       let pricingElem = elements[textStartIndex + 1]
       pricingElem && pricingElem.classList.add('pricing');
-
+      if (elements[textStartIndex + 2]) {
+        elements[textStartIndex + 2].classList.add('body');
+      }
       if (isPriceBottom) {
         pricingElem.parentNode.insertBefore(elements[textStartIndex + 2], elements[textStartIndex + 1]);
       }
@@ -54,8 +56,21 @@ function handleHeading(headingCols, isPriceBottom) {
         const btnWrapper = btn.closest('P');
         buttonsWrapper.append(btnWrapper);
       });
+
+      if (isPriceBottom) {
+        const firstThree = Array.from(elements).slice(0, 3);
+        const lastTwo = Array.from(elements).slice(3);
+        const firstWrapper = document.createElement('div');
+        const secondWrapper = document.createElement('div');
+
+        firstThree.forEach((child) => firstWrapper.appendChild(child));
+        lastTwo.forEach((child) => secondWrapper.appendChild(child));
+        col.innerHTML = '';
+        col.append(wrapper1, wrapper2)
+      }
     }
   });
+
 }
 
 function handleHighlight(table) {
@@ -329,7 +344,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
 
     if ((!isMerch && !table.querySelector('.col-3'))
-    || (isMerch && !table.querySelector('.col-2'))) return;
+      || (isMerch && !table.querySelector('.col-2'))) return;
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
