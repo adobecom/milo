@@ -92,20 +92,22 @@ function Urls() {
                   onkeypress=${handleInputKeyPress}
                   ref=${searchInputRef}
                 />
-                ${searchTerm && html`<span class="clear-icon" onclick=${handleClearSearch}>×</span>`}
+                ${searchTerm &&
+                html`
+                  <span class="clear-icon" onclick=${handleClearSearch} style=${{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)' }}>×</span>
+                `}
               </div>
             </div>
           </div>
           <div class="pagination">
             <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1}>Previous</button>
-            ${displayPages().map((page) => html`
-              <button
-                class="page-button ${currentPage === page ? 'current-page' : ''}"
-                onclick=${() => handlePageChange(page)}
-              >
-                ${page}
-              </button>
-            `)}
+            ${displayPages().map((page) =>
+              html`
+                <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page}>
+                  ${page}
+                </button>
+              `
+            )}
             <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages}>Next</button>
           </div>
         </div>
@@ -124,18 +126,16 @@ function Urls() {
     </div>
     <div class="pagination-bottom">
       <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1}>Previous</button>
-      ${displayPages().map((page) => html`
-        <button
-          class="page-button ${currentPage === page ? 'current-page' : ''}"
-          onclick=${() => handlePageChange(page)}
-        >
-          ${page}
-        </button>
-      `)}
+      ${displayPages().map((page) =>
+        html`
+          <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page}>
+            ${page}
+          </button>
+        `
+      )}
       <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages}>Next</button>
     </div>
   `;
 }
 
 export default Urls;
-
