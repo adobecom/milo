@@ -767,6 +767,7 @@ helix-sidekick {
 .search-box-pagination-container {
   display: flex;
   justify-content: space-between;
+  align-items: flex-end;
 }
 
 .search-box-container { /* Add the border to the container */
