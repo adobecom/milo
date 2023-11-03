@@ -649,6 +649,8 @@ function decorateHeader() {
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
   if (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
+  const promo = getMetadata('gnav-promo-source');
+  if (promo?.length) header.classList.add('has-promo');
 }
 
 async function decorateIcons(area, config) {

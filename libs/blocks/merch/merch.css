@@ -1,13 +1,13 @@
-span[is='inline-price'],
+inline-price,
 a[href^="/tools/ost"] {
   visibility: hidden; 
 }
 
-span[data-wcs-osi] {
+inline-price[data-wcs-osi] {
   display: inline-block;
 }
 
-span.placeholder-resolved[data-template="priceStrikethrough"], span.price.price-strikethrough {
+inline-price.placeholder-resolved[data-template="priceStrikethrough"], span.price.price-strikethrough {
   text-decoration: line-through;
 }
 
