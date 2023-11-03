@@ -89,11 +89,20 @@
 
 .dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tab-list-container {
   padding: initial;
-  margin: initial;
+  margin: 2px;
 }
 
 .dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-text-color);
+}
+
+.dialog-modal.locale-modal-v2 .tabs button {
+  border-radius: 0;
+}
+
+.dialog-modal.locale-modal-v2 .tabs button:focus-visible {
+  outline: 2px solid var(--color-accent-focus-ring);
+  text-decoration: none;
 }
 
 .dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button:not(:first-of-type) {
