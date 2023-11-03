@@ -5,16 +5,25 @@ export function decorateButtons(el, size) {
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
-    const parent = button.parentElement;
+    let parent = button.parentElement;
+    const isCheckoutLink = parent.nodeName === 'CHECKOUT-LINK';
+    if (isCheckoutLink) {
+      // eslint-disable-next-line no-param-reassign
+      button = parent;
+      parent = button.parentElement;
+    }
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
       parent.classList.add('con-button', buttonType);
       if (size) parent.classList.add(size); /* button-l, button-xl */
     } else {
-      button.classList.add('con-button', buttonType);
-      if (size) button.classList.add(size); /* button-l, button-xl */
-      parent.insertAdjacentElement('afterend', button);
-      parent.remove();
+      const target = isCheckoutLink ? button.firstElementChild : button;
+      target.classList.add('con-button', buttonType);
+      if (size) target.classList.add(size); /* button-l, button-xl */
+      if (!isCheckoutLink) {
+        parent.insertAdjacentElement('afterend', target);
+        parent.remove();
+      }
     }
     const actionArea = button.closest('p, div');
     if (actionArea) {
