@@ -97,11 +97,16 @@ export default async function onSearchInput({ value, resultsEl, searchInputEl, a
 
   if (currentSearch === lastSearch) {
     if (!hits.length) {
-      const advancedLink = advancedSearchEl.querySelector('a');
-      const href = new URL(advancedLink.href);
-      href.searchParams.set('q', value);
-      advancedLink.href = href.toString();
-      resultsEl.replaceChildren(advancedSearchEl);
+      const emptyMessage = createTag('p', {}, 'No results');
+      let emptyList = createTag('li', null, emptyMessage);
+      if (advancedSearchEl) {
+        const advancedLink = advancedSearchEl.querySelector('a');
+        const href = new URL(advancedLink.href);
+        href.searchParams.set('q', value);
+        advancedLink.href = href.toString();
+        emptyList = advancedSearchEl;
+      }
+      resultsEl.replaceChildren(emptyList);
       resultsEl.classList.add('no-results');
       return;
     }

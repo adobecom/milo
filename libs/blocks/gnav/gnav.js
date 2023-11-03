@@ -420,7 +420,7 @@ class Gnav {
     });
 
     searchInput.addEventListener('keydown', (e) => {
-      if (e.code === 'Enter') {
+      if (advancedSearchEl && e.code === 'Enter') {
         window.open(this.getHelpxLink(e.target.value, locale.prefix, locale.geo));
       }
     });
