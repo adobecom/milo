@@ -57,17 +57,16 @@ function handleHeading(headingCols, isPriceBottom) {
         buttonsWrapper.append(btnWrapper);
       });
 
-      if (isPriceBottom) {
-        const firstThree = Array.from(elements).slice(0, 3);
-        const lastTwo = Array.from(elements).slice(3);
-        const firstWrapper = document.createElement('div');
-        const secondWrapper = document.createElement('div');
-
-        firstThree.forEach((child) => firstWrapper.appendChild(child));
-        lastTwo.forEach((child) => secondWrapper.appendChild(child));
-        col.innerHTML = '';
-        col.append(wrapper1, wrapper2)
-      }
+      const row1 = document.createElement('div');
+      const row2 = document.createElement('div');
+      const row1LastIdx = isPriceBottom ? 3 : 4;
+      const row1Nodes = Array.from(elements).slice(0, row1LastIdx);
+      const row2Nodes = Array.from(elements).slice(row1LastIdx);
+    
+      row1Nodes.forEach((child) => row1.appendChild(child));
+      row2Nodes.forEach((child) => row2.appendChild(child));
+      col.innerHTML = '';
+      col.append(row1, row2);
     }
   });
 
