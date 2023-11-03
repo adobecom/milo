@@ -134,7 +134,7 @@ const App = ({
         window.history.replaceState('', '', debugURL);
         navigator.clipboard.writeText(debugURL).then(() => {
           // eslint-disable-next-line no-console
-          console.log(debugURL)
+          console.log(debugURL);
         }).catch((err) => {
           // eslint-disable-next-line no-console
           console.log(`Error copying URL: ${err} URL: ${debugURL}`);
