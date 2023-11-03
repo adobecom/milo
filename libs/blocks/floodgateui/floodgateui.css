@@ -372,6 +372,7 @@ button.fgui-urls-heading-action {
   padding: 0 18px;
   clip-path: polygon(0% 0%, 12px 0%, calc(100% - 12px) 0%, 100% 12px, 100% calc(100% - 12px), 100% 100%, 0% 100%, 0% 100%);
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 li.fgui-subproject.fgui-subproject-translated button.fgui-urls-heading-action {
