@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="143.131" height="123.756" viewBox="0 0 143.131 123.756">
+  <defs>
+    <filter id="Mouse" x="83.533" y="65.859" width="59.598" height="57.897" filterUnits="userSpaceOnUse">
+      <feOffset dx="5" dy="5" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feFlood flood-opacity="0.231"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_597783" data-name="Group 597783" transform="translate(-1481.639 -362.626)">
+    <g transform="matrix(1, 0, 0, 1, 1481.64, 362.63)" filter="url(#Mouse)">
+      <path id="Mouse-2" data-name="Mouse" d="M6.364,2.095A.213.213,0,0,0,6,2.246V17.073a.213.213,0,0,0,.364.15l4.548-4.562h5.538a.213.213,0,0,0,.15-.364Z" transform="translate(105.65 104.48) rotate(-120)" fill="#1f1f1f" stroke="#fff" stroke-width="8"/>
+    </g>
+    <path id="Path_615920" data-name="Path 615920" d="M-6.861.626S19.062,1.943,27.577,29.159s-4.516,39.933-4.516,39.933" transform="translate(1570.5 380.5)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="5"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45">
+  <g id="PSW_-_Image" data-name="PSW - Image" transform="translate(0 6)">
+    <rect id="Background" width="32" height="32" rx="4" fill="#323232" opacity="0"/>
+    <g id="Icon" transform="translate(0 -6)">
+      <rect id="Frame" width="45" height="45" fill="#323232" opacity="0"/>
+      <g id="Group_151371" data-name="Group 151371" transform="translate(0 4.955)">
+        <circle id="Ellipse_9923" data-name="Ellipse 9923" cx="3.097" cy="3.097" r="3.097" transform="translate(27.624 8.795)" fill="currentColor"/>
+        <path id="Path_35710" data-name="Path 35710" d="M2,4.739V39.424a1.239,1.239,0,0,0,1.239,1.239H45.356A1.239,1.239,0,0,0,46.6,39.424V4.739A1.239,1.239,0,0,0,45.356,3.5H3.239A1.239,1.239,0,0,0,2,4.739ZM42.879,7.216v19.82c-2.23-1.311-3.248-2.478-5.18-2.478-3.639,0-6.783,4.955-10.425,4.955S19,19.6,15.359,19.6c-3.307,0-9.642,9.91-9.642,9.91V7.216Z" transform="translate(-2 -3.5)" fill="currentColor"/>
+      </g>
+    </g>
+  </g>
+</svg>

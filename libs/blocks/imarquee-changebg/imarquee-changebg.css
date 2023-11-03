@@ -1,9 +1,30 @@
-.interactive-marquee img {
+.imarquee-changebg {
+  position: relative;
+  background-color: black;
+}
+
+ft-changebackgroundmarquee {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* opacity: 0.5; */
+}
+
+ft-changebackgroundmarquee:not(.loaded) {
+  display: none;
+}
+
+.imarquee-changebg img {
   display: block;
 }
 
 .imarquee-mobile {
   display: block;
+}
+
+.imarquee-mobile > picture > img {
+  width: 274px;
 }
 
 .imarquee-tablet {
@@ -14,18 +35,27 @@
   display: none;
 }
 
-.interactive-marquee .imarquee-composite {
+.imarquee-changebg .imarquee-composite {
   position: relative;
 }
 
-.interactive-marquee .imarquee-composite picture {
+.imarquee-changebg .imarquee-composite picture {
   top: 0;
   position: absolute;
 }
 
-.interactive-marquee .imarquee-composite picture:first-child {
+.imarquee-changebg .imarquee-composite picture:first-child {
   top: unset;
   position: unset;
+}
+
+.imarquee-gradient {
+  background: linear-gradient(90deg, #333, #fff);
+  mix-blend-mode: multiply;
+  top: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
 /* Tablet */
