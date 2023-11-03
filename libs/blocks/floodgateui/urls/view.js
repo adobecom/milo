@@ -1,4 +1,4 @@
-import { html, useState, useEffect } from '../../../deps/htm-preact.js';
+import { html, useState, useEffect, useRef } from '../../../deps/htm-preact.js';
 import { urls } from '../utils/state.js';
 import Url from '../url/view.js';
 
@@ -8,6 +8,7 @@ function Urls() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUrls, setFilteredUrls] = useState([]);
   const [message, setMessage] = useState('');
+  const searchInputRef = useRef(null);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -17,21 +18,24 @@ function Urls() {
   };
 
   const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+    const term = event.target.value;
+    setSearchTerm(term);
+    handleSearch(term);
   };
 
-  const handleSearch = () => {
-    setCurrentPage(1); // Set current page to 1 when performing a search
+  const handleSearch = (term) => {
+    setCurrentPage(1);
 
-    const filtered = urls.value.filter((url) => url.pathname.includes(searchTerm));
+    const filtered = urls.value.filter((url) => url.pathname.includes(term));
     setFilteredUrls(filtered);
-    showMessage(`Filtered URLs for: ${searchTerm}`);
+    showMessage(`Filtered URLs for: ${term}`);
   };
 
   const handleClearSearch = () => {
     setFilteredUrls([]);
     setSearchTerm('');
     showMessage('Exited filtered view');
+    searchInputRef.current.focus(); // Set focus back to the search input
   };
 
   const showMessage = (text) => {
@@ -41,7 +45,7 @@ function Urls() {
 
   const handleInputKeyPress = (event) => {
     if (event.key === 'Enter') {
-      handleSearch();
+      handleSearch(searchTerm);
     }
   };
 
@@ -61,13 +65,11 @@ function Urls() {
   const totalPages = Math.ceil((searchTerm ? filteredUrls.length : urls.value.length) / itemsPerPage);
 
   const displayPages = () => {
-    const visiblePages = 10; // Number of page buttons to display
+    const visiblePages = 10;
 
     if (totalPages <= visiblePages) {
-      // Display all pages if there are not many
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     } else {
-      // Display ten pages at a time with ellipsis (...) in between
       const startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
       const endPage = Math.min(totalPages, startPage + visiblePages - 1);
 
@@ -88,6 +90,7 @@ function Urls() {
                   value=${searchTerm}
                   oninput=${handleSearchChange}
                   onkeypress=${handleInputKeyPress}
+                  ref=${searchInputRef}
                 />
                 ${searchTerm && html`<span class="clear-icon" onclick=${handleClearSearch}>×</span>`}
               </div>
