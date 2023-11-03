@@ -517,6 +517,7 @@ button.fgui-url-action {
 
 button.fgui-url-action[disabled] {
   opacity: 0.25;
+  cursor: auto;
 }
 
 .fgui-urls-heading-action:disabled {
