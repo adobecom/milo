@@ -56,8 +56,8 @@ async function loadDetails() {
     const jsonUrls = json.urls.data.map((item) => new URL(item.URL));
     const projectUrls = getUrls(jsonUrls, true);
     urls.value = projectUrls;
-    loadDetailsCheck.value = true;
     if (json.settings) loadProjectSettings(json.settings.data);
+    loadDetailsCheck.value = true;
     setStatus('details');
   } catch {
     setStatus('details', 'error', 'Error loading Project Status and URLs.');

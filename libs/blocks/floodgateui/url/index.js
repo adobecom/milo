@@ -15,7 +15,7 @@ export function handleAction(url) {
 }
 
 async function getDetails(path, suffix) {
-  const json = await (suffix === 'source' ? getStatus(path) : getStatus(path, 'auto', true, fgColor));
+  const json = await (suffix === 'source' ? getStatus(path) : getStatus(path, 'auto', true, fgColor.value));
   return {
     preview: {
       url: json.preview.url,
@@ -37,7 +37,7 @@ async function getDetails(path, suffix) {
 
 export async function openWord(e, parent, suffix) {
   e.target.classList.add('fgui-action-loading');
-  const details = await (suffix === 'source' ? getStatus(parent.value.path) : getStatus(parent.value.path, 'auto', true, fgColor));
+  const details = await (suffix === 'source' ? getStatus(parent.value.path) : getStatus(parent.value.path, 'auto', true, fgColor.value));
   e.target.classList.remove('fgui-action-loading');
   if (details.edit.url) window.open(details.edit.url, '_blank');
 }
