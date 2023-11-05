@@ -182,17 +182,17 @@ const App = ({
   /**
    * Handler of the next button click. Checks whether any next view exists or not.
    * Takes care of the user flow and updates the state accordingly.
-   * @param {Object} selCards - Selected cards
+   * @param {Object} selectedCards - Selected cards
    * @returns {void}
    */
-  const handleOnNextClick = (selCards) => {
-    if (selCards?.fi_code) {
-      selCards = { 'illustrator_cc' : true };
+  const handleOnNextClick = (selectedCards) => {
+    if (selectedCards?.fi_code) {
+      selectedCards = { 'illustrator_cc' : true };
     }
     const { nextQuizViews } = handleNext(
       questionData,
       selectedQuestion,
-      selCards,
+      selectedCards,
       userFlow,
     );
     const nextQuizViewsLen = nextQuizViews.length;
