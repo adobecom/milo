@@ -186,6 +186,9 @@ const App = ({
    * @returns {void}
    */
   const handleOnNextClick = (selCards) => {
+    if (selCards?.fi_code) {
+      selCards = { 'illustrator_cc' : true };
+    }
     const { nextQuizViews } = handleNext(
       questionData,
       selectedQuestion,
