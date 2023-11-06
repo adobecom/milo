@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
-import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
+import { getConfig, loadBlock, setConfig } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
@@ -21,6 +21,10 @@ const setFetchResponse = (data, type = 'json') => {
 
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional Test', () => {
+  before(() => {
+    setConfig({ codeRoot: '' });
+  });
+
   it('replaceContent should replace an element with a fragment', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestReplace.json' });
     manifestJson = JSON.parse(manifestJson);
@@ -114,7 +118,6 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-
     expect(getConfig().expBlocks).to.deep.equal({ myblock: '/test/features/personalization/mocks/myblock' });
     const myBlock = document.querySelector('.myblock');
     expect(myBlock.textContent?.trim()).to.equal('This block does not exist');
