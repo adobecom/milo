@@ -475,19 +475,19 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
   border-radius: var(--l-rounded-corners);
 }
 
-.s-image-rounded-corners > .foreground picture img {
+.s-image-rounded-corners .foreground picture img {
   border-radius: var(--s-rounded-corners);
 }
 
-.m-image-rounded-corners > .foreground picture img {
+.m-image-rounded-corners .foreground picture img {
   border-radius: var(--m-rounded-corners);
 }
 
-.l-image-rounded-corners > .foreground picture img {
+.l-image-rounded-corners .foreground picture img {
   border-radius: var(--l-rounded-corners);
 }
 
-.full-image-rounded-corners > .foreground picture img {
+.full-image-rounded-corners .foreground picture img {
   border-radius: var(--full-rounded-corners);
 }
 
