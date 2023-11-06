@@ -5,16 +5,25 @@ export function decorateButtons(el, size) {
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
-    const parent = button.parentElement;
+    let parent = button.parentElement;
+    const isCheckoutLink = parent.nodeName === 'CHECKOUT-LINK';
+    if (isCheckoutLink) {
+      // eslint-disable-next-line no-param-reassign
+      button = parent;
+      parent = button.parentElement;
+    }
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
       parent.classList.add('con-button', buttonType);
       if (size) parent.classList.add(size); /* button-l, button-xl */
     } else {
-      button.classList.add('con-button', buttonType);
-      if (size) button.classList.add(size); /* button-l, button-xl */
-      parent.insertAdjacentElement('afterend', button);
-      parent.remove();
+      const target = isCheckoutLink ? button.firstElementChild : button;
+      target.classList.add('con-button', buttonType);
+      if (size) target.classList.add(size); /* button-l, button-xl */
+      if (!isCheckoutLink) {
+        parent.insertAdjacentElement('afterend', target);
+        parent.remove();
+      }
     }
     const actionArea = button.closest('p, div');
     if (actionArea) {
@@ -54,20 +63,18 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
-      headings.forEach((h) => {
-        h.classList.add(`heading-${config[0]}`);
-      });
+      headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
         headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
         decorateIconArea(el);
       }
     }
     const emptyPs = el.querySelectorAll(':scope p:not([class])');
-    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
-    if (!headings?.length && !emptyPs?.length) {
-      const wrapper = el.querySelector(':scope > div');
-      [...wrapper.children]
-        .filter((child) => child.textContent.trim() !== '')
+    if (emptyPs.length) {
+      emptyPs.forEach((p) => p.classList.add(`body-${config[1]}`));
+    } else {
+      [...el.querySelectorAll(':scope div:not([class])')]
+        .filter((emptyDivs) => emptyDivs.textContent.trim() !== '')
         .forEach((text) => text.classList.add(`body-${config[1]}`));
     }
   }
@@ -75,7 +82,26 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
   if (type === 'merch') decorateIconStack(el);
 }
 
-export function decorateBlockBg(block, node) {
+export function handleFocalpoint(pic, child, removeChild) {
+  const image = pic.querySelector('img');
+  if (!child || !image) return;
+  let text = '';
+  if (child.childElementCount === 2) {
+    const dataElement = child.querySelectorAll('p')[1];
+    text = dataElement?.textContent;
+    if (removeChild) dataElement?.remove();
+  } else if (child.textContent) {
+    text = child.textContent;
+    const childData = child.childNodes;
+    if (removeChild) childData.forEach((c) => c.nodeType === Node.TEXT_NODE && c.remove());
+  }
+  if (!text) return;
+  const directions = text.trim().toLowerCase().split(',');
+  const [x, y = ''] = directions;
+  image.style.objectPosition = `${x} ${y}`;
+}
+
+export async function decorateBlockBg(block, node, { useHandleFocalpoint = false } = {}) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
     node.classList.add('background');
@@ -83,7 +109,14 @@ export function decorateBlockBg(block, node) {
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
     [...node.children].forEach((child, i) => {
+      const videoLink = child.querySelector('a[href*=".mp4"]');
+      if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
       if (childCount > 1) child.classList.add(...viewports[i]);
+      const pic = child.querySelector('picture');
+      if (useHandleFocalpoint && pic
+        && (child.childElementCount === 2 || child.textContent?.trim())) {
+        handleFocalpoint(pic, child, true);
+      }
       if (!child.querySelector('img, video, a[href*=".mp4"]')) {
         child.style.background = child.textContent;
         child.textContent = '';
