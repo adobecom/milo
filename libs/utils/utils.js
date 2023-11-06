@@ -421,7 +421,7 @@ export async function loadBlock(block) {
   const expBlock = checkForExpBlock(name, expBlocks);
   if (expBlock) {
     name = expBlock.blockName;
-    path = expBlock.blockPath;
+    path = `${base}${expBlock.blockPath}`;
   }
 
   const blockPath = `${path}/${name}`;
