@@ -100,15 +100,15 @@ function Urls() {
             </div>
           </div>
           <div class="pagination">
-            <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1}>Previous</button>
+            <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1} style=${{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>Previous</button>
             ${displayPages().map((page) =>
               html`
-                <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page}>
+                <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page} style=${{ cursor: currentPage === page ? 'not-allowed' : 'pointer' }}>
                   ${page}
                 </button>
               `
             )}
-            <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages}>Next</button>
+            <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages} style=${{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>Next</button>
           </div>
         </div>
         <div class=${`message ${message ? 'message-show' : ''}`}>${message}</div>
@@ -125,15 +125,15 @@ function Urls() {
       </ul>
     </div>
     <div class="pagination-bottom">
-      <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1}>Previous</button>
+      <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1} style=${{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>Previous</button>
       ${displayPages().map((page) =>
         html`
-          <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page}>
+          <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page} style=${{ cursor: currentPage === page ? 'not-allowed' : 'pointer' }}>
             ${page}
           </button>
         `
       )}
-      <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages}>Next</button>
+      <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages} style=${{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>Next</button>
     </div>
   `;
 }
