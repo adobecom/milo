@@ -100,15 +100,15 @@ function Urls() {
             </div>
           </div>
           <div class="pagination">
-            <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1} style=${{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>Previous</button>
+            <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1} style=${{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' },  "margin-bottom: 5px;"}>Previous</button>
             ${displayPages().map((page) =>
               html`
-                <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page} style=${{ cursor: currentPage === page ? 'not-allowed' : 'pointer' }}>
+                <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page} style=${{ cursor: currentPage === page ? 'not-allowed' : 'pointer' },  "margin-bottom: 5px;"}>
                   ${page}
                 </button>
               `
             )}
-            <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages} style=${{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>Next</button>
+            <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages} style=${{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' },  "margin-bottom: 5px;"}>Next</button>
           </div>
         </div>
         <div class=${`message ${message ? 'message-show' : ''}`}>${message}</div>
