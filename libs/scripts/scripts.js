@@ -21,10 +21,11 @@ const prodDomains = ['milo.adobe.com'];
 
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  ae_ar: { ietf: 'ar-AE', tk: 'dis2dpj.css', dir: 'rtl' },
   ae_en: { ietf: 'en', tk: 'pps7abe.css' },
   africa: { ietf: 'en', tk: 'pps7abe.css' },
-  ar: { ietf: 'es-AR', tk: 'oln4yqj.css' },
+  ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
+  ar_es: { ietf: 'es-AR', tk: 'oln4yqj.css' },
   at: { ietf: 'de-AT', tk: 'vin7zsi.css' },
   au: { ietf: 'en-AU', tk: 'pps7abe.css' },
   be_en: { ietf: 'en-BE', tk: 'pps7abe.css' },

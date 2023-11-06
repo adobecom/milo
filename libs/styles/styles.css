@@ -5,6 +5,7 @@
   --global-height-breadcrumbs: 33px;
   --global-height-navPromo: 65px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
+  --arabic-font-size-multiplier: 1.25;
 
   /* Colors */
   --link-color: #035fe6;
@@ -127,6 +128,14 @@
   --icon-size-xxs: 16px;
 }
 
+:root:lang(ar) {
+  --body-font-family: adobe-arabic, myriad-arabic, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+:lang(ar) body {
+  font-size: calc(var(--type-body-m-size) * var(--arabic-font-size-multiplier));
+}
+
 :root:lang(ko-KR) {
   --body-font-family: adobe-clean-han-korean, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
@@ -203,9 +212,17 @@
   line-height: var(--type-heading-xxxl-lh);
 }
 
+:lang(ar) .heading-xxxl  {
+  font-size: calc(var(--type-heading-xxxl-size) * var(--arabic-font-size-multiplier));
+}
+
 .heading-xxl {
   font-size: var(--type-heading-xxl-size);
   line-height: var(--type-heading-xxl-lh);
+}
+
+:lang(ar) .heading-xxl  {
+  font-size: calc(var(--type-heading-xxl-size) * var(--arabic-font-size-multiplier));
 }
 
 .heading-xl {
@@ -213,9 +230,17 @@
   line-height: var(--type-heading-xl-lh);
 }
 
+:lang(ar) .heading-xl  {
+  font-size: calc(var(--type-heading-xl-size) * var(--arabic-font-size-multiplier));
+}
+
 .heading-l {
   font-size: var(--type-heading-l-size);
   line-height: var(--type-heading-l-lh);
+}
+
+:lang(ar) .heading-l  {
+  font-size: calc(var(--type-heading-l-size) * var(--arabic-font-size-multiplier));
 }
 
 .heading-m {
@@ -223,9 +248,17 @@
   line-height: var(--type-heading-m-lh);
 }
 
+:lang(ar) .heading-m  {
+  font-size: calc(var(--type-heading-m-size) * var(--arabic-font-size-multiplier));
+}
+
 .heading-s {
   font-size: var(--type-heading-s-size);
   line-height: var(--type-heading-s-lh);
+}
+
+:lang(ar) .heading-s  {
+  font-size: calc(var(--type-heading-s-size) * var(--arabic-font-size-multiplier));
 }
 
 .heading-xs {
@@ -233,9 +266,17 @@
   line-height: var(--type-heading-xs-lh);
 }
 
+:lang(ar) .heading-xs  {
+  font-size: calc(var(--type-heading-xs-size) * var(--arabic-font-size-multiplier));
+}
+
 .body-xxl {
   font-size: var(--type-body-xxl-size);
   line-height: var(--type-body-xxl-lh);
+}
+
+:lang(ar) .body-xxl  {
+  font-size: calc(var(--type-body-xxl-size) * var(--arabic-font-size-multiplier));
 }
 
 .body-xl {
@@ -243,9 +284,17 @@
   line-height: var(--type-body-xl-lh);
 }
 
+:lang(ar) .body-xl  {
+  font-size: calc(var(--type-body-xl-size) * var(--arabic-font-size-multiplier));
+}
+
 .body-l {
   font-size: var(--type-body-l-size);
   line-height: var(--type-body-l-lh);
+}
+
+:lang(ar) .body-l  {
+  font-size: calc(var(--type-body-l-size) * var(--arabic-font-size-multiplier));
 }
 
 .body-m {
@@ -253,9 +302,17 @@
   line-height: var(--type-body-m-lh);
 }
 
+:lang(ar) .body-m   {
+  font-size: calc(var(--type-body-m-size) * var(--arabic-font-size-multiplier));
+}
+
 .body-s {
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
+}
+
+:lang(ar) .body-s  {
+  font-size: calc(var(--type-body-s-size) * var(--arabic-font-size-multiplier));
 }
 
 .body-xs {
@@ -263,9 +320,17 @@
   line-height: var(--type-body-xs-lh);
 }
 
+:lang(ar) .body-xs  {
+  font-size: calc(var(--type-body-xs-size) * var(--arabic-font-size-multiplier));
+}
+
 .body-xxs {
   font-size: var(--type-body-xxs-size);
   line-height: var(--type-body-xxs-lh);
+}
+
+:lang(ar) .body-xxs  {
+  font-size: calc(var(--type-body-xxs-size) * var(--arabic-font-size-multiplier));
 }
 
 .detail-xl {
@@ -273,9 +338,17 @@
   line-height: var(--type-detail-l-lh);
 }
 
+:lang(ar) .detail-xl  {
+  font-size: calc(var(--type-detail-l-size) * var(--arabic-font-size-multiplier));
+}
+
 .detail-l {
   font-size: var(--type-detail-l-size);
   line-height: var(--type-detail-l-lh);
+}
+
+:lang(ar) .detail-l  {
+  font-size: calc(var(--type-detail-l-size) * var(--arabic-font-size-multiplier));
 }
 
 .detail-m {
@@ -283,15 +356,27 @@
   line-height: var(--type-detail-m-lh);
 }
 
+:lang(ar) .detail-m  {
+  font-size: calc(var(--type-detail-m-size) * var(--arabic-font-size-multiplier));
+}
+
 .detail-s {
   font-size: var(--type-detail-s-size);
   line-height: var(--type-detail-s-lh);
+}
+
+:lang(ar) .detail-s  {
+  font-size: calc(var(--type-detail-s-size) * var(--arabic-font-size-multiplier));
 }
 
 .detail-xs {
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
   font-weight: 700;
+}
+
+:lang(ar) .detail-xs  {
+  font-size: calc(var(--type-detail-xs-size) * var(--arabic-font-size-multiplier));
 }
 
 .detail-xl,
