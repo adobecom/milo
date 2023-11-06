@@ -118,6 +118,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
     expect(getConfig().expBlocks).to.deep.equal({ myblock: '/test/features/personalization/mocks/myblock' });
     const myBlock = document.querySelector('.myblock');
     expect(myBlock.textContent?.trim()).to.equal('This block does not exist');
