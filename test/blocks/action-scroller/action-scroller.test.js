@@ -51,6 +51,7 @@ describe('action scrollers', () => {
           const scrolled = scrollArea.scrollLeft > 0;
           expect(scrolled).to.be.true;
         });
+
         it('can scroll previous', async () => {
           const scrollArea = scroller.querySelector('.scroller');
           const prevBtn = scroller.querySelector('.previous-button');

@@ -4,8 +4,6 @@ const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
 const defaultItemWidth = (cols) => (cols === 3 ? 160 : 147);
-const defaultGridGap = 16;
-
 const PREVBUTTON = `<button class="nav-button previous-button"><img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg"></button>`;
 const NEXTBUTTON = `<button class="nav-button next-button"><img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg"></button>`;
 
@@ -36,15 +34,11 @@ function setBlockProps(el, columns) {
 }
 
 function handleScroll(el, btn) {
-  const itemWidth = el.parentElement?.style?.getPropertyValue('--action-scroller-item-width')
-    ?? defaultItemWidth;
+  const itemWidth = el.parentElement?.style?.getPropertyValue('--action-scroller-item-width');
   const gapStyle = window
     .getComputedStyle(el, null)
     .getPropertyValue('column-gap');
-  const gridGap = gapStyle
-    ? parseInt(gapStyle.replace('px', ''), 10)
-    : defaultGridGap;
-  const scrollDistance = parseInt(itemWidth, 10) + gridGap;
+  const scrollDistance = parseInt(itemWidth, 10) + parseInt(gapStyle.replace('px', ''), 10);
   el.scrollLeft = btn[1].includes('next-button')
     ? el.scrollLeft + scrollDistance
     : el.scrollLeft - scrollDistance;
