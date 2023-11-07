@@ -26,7 +26,7 @@ const getQuizTutorialsList = async (inputText, fiCode, numOfItems) => {
   return res;
 };
 
-export const getQuizTutorialsDetails = async (
+const getQuizTutorialsDetails = async (
   inputText,
   fiCode,
   numOfItems,
@@ -55,3 +55,5 @@ export const getQuizTutorialsDetails = async (
     .catch((error) => console.log('Error:', error));
   return res;
 };
+
+export default getQuizTutorialsDetails;
