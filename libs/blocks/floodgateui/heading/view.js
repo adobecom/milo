@@ -15,8 +15,11 @@ export default function Heading() {
               <a class=fgui-project-details-edit
                  href="${heading.value.editUrl}"
                  target="_blank">Edit</a>`}
-          ${heading.value.name && html`
-            <button class=fgui-project-details-refresh onClick=${handleRefresh}>Refresh</a>`}
+                 ${heading.value.name && html`
+                 <button class="fgui-project-details-refresh" onclick=${handleRefresh} style=${"cursor: pointer;"}>
+                   Refresh
+                 </button>
+               `}               
         </div>
       </div>
       <div class=fgui-project-heading-column>
