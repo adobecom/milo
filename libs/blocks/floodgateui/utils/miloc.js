@@ -211,7 +211,6 @@ export async function deleteFgTree() {
 
 export async function getServiceConfigFg(origin) {
   const resp = await fetch(`${origin}${DOT_MILO}`);
-  console.log(`${origin}${DOT_MILO}`)
   if (!resp.ok) return { error: 'Could not fetch .milo/config.' };
   const json = await resp.json();
   const configs = {};
