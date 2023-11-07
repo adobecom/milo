@@ -185,13 +185,52 @@ const App = ({
    * @param {Object} selectedCards - Selected cards
    * @returns {void}
    */
+  const getProductCodes = async (inputText, numOfItems) => {
+    const apiUrl = 'https://cchome-dev.adobe.io/int/v1/models';
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'x-api-key': 'CCHomeMLRepo1',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        endpoint: 'acom-prd-recom-v1',
+        contentType: 'application/json',
+        payload: {
+          data: {
+            input: inputText,
+            num_items: numOfItems
+          },
+        },
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {return data})
+      .catch((error) => console.log('Error:', error));
+
+    return res;
+  };
+
+  /**
+   * Handler of the next button click. Checks whether any next view exists or not.
+   * Takes care of the user flow and updates the state accordingly.
+   * @param {Object} selectedCards - Selected cards
+   * @returns {void}
+   */
   const handleOnNextClick = (selectedCards) => {
     if (selectedCards?.fi_code) {
       let customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input').value
       console.log("customerInput:" + customerInput);
       // Call the ML API with customerInput
       // Set selectedCards to an array of return values
-      if (customerInput.length > 0) selectedCards = { 'illustrator_cc' : true, 'photoshop_cc' : true };
+      if (customerInput.length > 0) {
+        let productCodes = getProductCodes(customerInput,3);
+        console.log("productCodes:");
+        console.log(productCodes);
+        if (!productCodes) {
+          selectedCards = { 'illustrator_cc' : true, 'photoshop_cc' : true };
+        }
+      }
       // Or, do do nothing and let the fi_code value display q-category-fallback
     }
     const { nextQuizViews } = handleNext(
