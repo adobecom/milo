@@ -1,8 +1,31 @@
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
+export function polyfills() {
+  /* c8 ignore start */
+  if (!polyfills.promise) {
+    let isSupported = false;
+    document.createElement('div', {
+      // eslint-disable-next-line getter-return
+      get is() {
+        isSupported = true;
+      },
+    });
+    if (isSupported) {
+      polyfills.promise = Promise.resolve();
+    } else {
+      const { codeRoot, miloLibs } = getConfig();
+      const base = miloLibs || codeRoot;
+      polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
+    }
+  }
+  return polyfills.promise;
+  /* c8 ignore stop */
+}
+
 export async function initService() {
+  await polyfills();
   const commerce = await import('../../deps/commerce.js');
   return commerce.init(() => ({
     ...getConfig(),
