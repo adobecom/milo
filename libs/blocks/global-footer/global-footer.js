@@ -15,9 +15,12 @@ import {
   getAnalyticsValue,
   loadBaseStyles,
   yieldToMain,
+  lanaLog,
+  logErrorFor,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey, replaceText } from '../../features/placeholders.js';
+import { isValidUrl } from './utilities.js';
 
 const { miloLibs, codeRoot, locale } = getConfig();
 const base = miloLibs || codeRoot;
@@ -36,7 +39,7 @@ class Footer {
     this.init();
   }
 
-  init = async () => {
+  init = logErrorFor(async () => {
     // We initialize the footer decoration logic when either 3s have passed
     // OR when the footer element is close to coming into view
     let decorationTimeout;
@@ -61,14 +64,16 @@ class Footer {
       observer.disconnect();
       this.decorateContent();
     }, CONFIG.delays.decoration);
-  };
+  }, 'Error in global footer init', 'errorType=error,module=global-footer');
 
   decorateContent = async () => {
     // Fetch footer content
     this.body = await this.fetchContent();
 
-    // TODO: log to LANA if Footer content could not be found
-    if (!this.body) return;
+    if (!this.body) {
+      lanaLog({ message: 'Footer content could not be found', tags: 'errorType=error,module=global-footer' });
+      return;
+    }
     // TODO: revisit region picker and social links decoration logic
     const regionAnchor = this.body.querySelector('.region-selector a');
     if (regionAnchor?.href) {
@@ -105,6 +110,9 @@ class Footer {
 
   fetchContent = async () => {
     const resp = await fetch(`${this.contentUrl}.plain.html`);
+
+    if (!resp.ok) lanaLog({ message: `Failed to fetch footer content: ${resp.statusText}`, tags: 'errorType=error,module=global-footer' });
+
     const html = await resp.text();
 
     if (!html) return null;
@@ -114,20 +122,25 @@ class Footer {
     try {
       return new DOMParser().parseFromString(parsedHTML, 'text/html').body;
     } catch (e) {
-      // TODO: log to LANA if Footer could not be instantiated
+      lanaLog({ message: 'Footer could not be instantiated', tags: 'errorType=error,module=global-footer' });
       return null;
     }
   };
 
   loadMenuLogic = async () => {
-    this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
-      const menuLogic = await loadDecorateMenu();
-      this.decorateMenu = menuLogic.decorateMenu;
-      this.decorateLinkGroup = menuLogic.decorateLinkGroup;
-      resolve();
-    });
+    try {
+      this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
+        const menuLogic = await loadDecorateMenu();
+        this.decorateMenu = menuLogic.decorateMenu;
+        this.decorateLinkGroup = menuLogic.decorateLinkGroup;
+        resolve();
+      });
 
-    return this.menuLogic;
+      return this.menuLogic;
+    } catch (e) {
+      lanaLog({ message: `Failed to load menu logic: ${e.message}`, tags: 'errorType=error,module=global-footer' });
+      return Promise.reject(e);
+    }
   };
 
   decorateGrid = async () => {
@@ -152,7 +165,13 @@ class Footer {
   };
 
   loadIcons = async () => {
-    const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
+    const loadIconsUrl = `${base}/blocks/global-footer/icons.svg`;
+    if (!isValidUrl(loadIconsUrl)) lanaLog({ message: `Invalid URL provided to loadIcons method. Url: ${loadIconsUrl}`, tags: 'errorType=error,module=global-footer' });
+
+    const file = await fetch(loadIconsUrl);
+
+    if (!file.ok) lanaLog({ message: `Failed to load icons: ${file.statusText}`, tags: 'errorType=error,module=global-footer' });
+
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
     this.footerEl.append(elem);
@@ -195,7 +214,7 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      // TODO: Log to Lana if URL could not be created
+      lanaLog({ message: 'Could not create URL for region picker', tags: 'errorType=error,module=global-footer' });
     }
 
     if (!url) return this.elements.regionPicker;
@@ -273,7 +292,10 @@ class Footer {
 
     CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
-      if (!link) return;
+      if (!link) {
+        lanaLog({ message: `Missing link for platform: ${platform}`, tags: 'errorType=warning,module=global-footer' });
+        return;
+      }
 
       const iconElem = toFragment`<li class="feds-social-item">
           <a
