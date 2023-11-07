@@ -207,8 +207,8 @@
 }
 
 .text-block.icon-inline .icon-area picture img {
-  min-width: var(--icon-size-s);
-  max-width: var(--icon-size-s);
+  min-width: var(--icon-size-m);
+  max-width: var(--icon-size-m);
 }
 
 .text-block.center .foreground > .mobile-up {

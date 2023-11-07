@@ -540,9 +540,7 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 
 /* mobile only */
 @media (max-width: 600px) {
-  .con-button.button-justified-mobile,
-  .xl-button .con-button,
-  .l-button .con-button {
+  .con-button.button-justified-mobile {
     display: block;
     text-align: center;
     width: 100%;

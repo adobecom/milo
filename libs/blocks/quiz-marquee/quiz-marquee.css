@@ -84,7 +84,7 @@
 }
 
 .quiz-marquee .aside.notification .foreground.container .icon-area img {
-  max-width: var(--icon-size-xs);
+  max-width: var(--icon-size-s);
   height: auto;
 }
 
@@ -125,6 +125,15 @@
   width: auto;
 }
 
+/* mobile only */
+@media (max-width: 600px) {
+  .quiz-marquee .con-button {
+    display: block;
+    text-align: center;
+    width: 100%;
+  }
+}
+
 /* desktop up */
 @media screen and (min-width: 1200px) {
   .quiz-marquee {
@@ -132,7 +141,7 @@
     display: flex;
     min-height: 700px;
   }
-  
+
   .quiz-marquee > .foreground {
     min-width: var(--grid-container-width);
   }
