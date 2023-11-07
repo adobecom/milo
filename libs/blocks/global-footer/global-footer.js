@@ -293,7 +293,7 @@ class Footer {
     CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
       if (!link) {
-        lanaLog({ message: `Missing link for platform: ${platform}`, tags: 'errorType=warning,module=global-footer' });
+        lanaLog({ message: `Missing link for platform: ${platform}`, tags: 'errorType=warn,module=global-footer' });
         return;
       }
 
