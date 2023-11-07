@@ -39,7 +39,7 @@ class Footer {
     this.init();
   }
 
-  init = logErrorFor(async () => {
+  init = () => logErrorFor(async () => {
     // We initialize the footer decoration logic when either 3s have passed
     // OR when the footer element is close to coming into view
     let decorationTimeout;
