@@ -20,10 +20,12 @@ async function getArticleDetails(article) {
   const ending = trimEndings.find((el) => title.endsWith(el));
   [title] = title.split(ending);
 
+  const category = getMetadata('category', doc) || getMetadata('article:tag', doc);
+
   return {
     title,
     path,
-    category: getMetadata('article:tag', doc),
+    category,
     description: getMetadata('description', doc),
     imageEl: doc.querySelector('picture'),
     date: getMetadata('publication-date', doc),
