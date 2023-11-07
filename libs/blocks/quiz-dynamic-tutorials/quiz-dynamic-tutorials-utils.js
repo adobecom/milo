@@ -1,5 +1,3 @@
-const API_WAIT_TIMEOUT = 10000;
-
 const getQuizTutorialsList = async (inputText, fiCode, numOfItems) => {
   const apiUrl = 'https://cchome-stage.adobe.io/int/v1/models';
   const res = await fetch(apiUrl, {
@@ -23,10 +21,7 @@ const getQuizTutorialsList = async (inputText, fiCode, numOfItems) => {
     }),
   })
     .then((response) => response.json())
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => console.error('Error:', error));
+    .catch((error) => console.log('Error:', error));
 
   return res;
 };
@@ -34,12 +29,12 @@ const getQuizTutorialsList = async (inputText, fiCode, numOfItems) => {
 export const getQuizTutorialsDetails = async (
   inputText,
   fiCode,
-  numOfItems
+  numOfItems,
 ) => {
   const tutorialsList = await getQuizTutorialsList(
     inputText,
     fiCode,
-    numOfItems
+    numOfItems,
   );
 
   const contentIds = tutorialsList.data.map((item) => item.content_id);
@@ -57,9 +52,6 @@ export const getQuizTutorialsDetails = async (
 
   const res = await fetch(`${baseUrl}?${queryParams.toString()}`)
     .then((response) => response.json())
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => console.error('Error:', error));
+    .catch((error) => console.log('Error:', error));
   return res;
 };
