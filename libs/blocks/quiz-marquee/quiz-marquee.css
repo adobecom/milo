@@ -39,7 +39,7 @@
 }
 
 .quiz-marquee .has-divider {
-  margin: var(--spacing-xs) 0;
+  margin: var(--spacing-xxs) 0;
 }
 
 .quiz-marquee .badge {
@@ -105,7 +105,7 @@
 
 .quiz-marquee .nested.icon-bullet {
   display: grid;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-xxs);
 }
 
 .quiz-marquee .nested.check-bullet p {
@@ -118,6 +118,15 @@
   gap: var(--spacing-m);
   width: 100%;
   grid-template-columns: repeat(auto-fit, minmax(275px, max-content));
+}
+
+/* CLS */
+.quiz-marquee .nested.check-bullet {
+  min-height: 27px;
+}
+
+.quiz-marquee .nested.marquee-plan {
+  min-height: 136px;
 }
 
 /* stylelint-disable-next-line selector-class-pattern */
