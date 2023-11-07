@@ -40,7 +40,7 @@ const App = ({
   const [userFlow, setUserFlow] = useState([]);
   const validQuestions = useMemo(() => [], []);
   const [debugBuild, setDebugBuild] = useState(null);
-
+  
   useEffect(() => {
     (async () => {
       const [questions, dataStrings] = await getQuizData();
@@ -217,18 +217,26 @@ const App = ({
    * @param {Object} selectedCards - Selected cards
    * @returns {void}
    */
-  const handleOnNextClick = (selectedCards) => {
+  const handleOnNextClick = async (selectedCards) => {
     if (selectedCards?.fi_code) {
       let customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input').value
       console.log("customerInput:" + customerInput);
       // Call the ML API with customerInput
       // Set selectedCards to an array of return values
       if (customerInput.length > 0) {
-        let productCodes = getProductCodes(customerInput,3);
+        let productCodes = await getProductCodes(customerInput,3);
         console.log("productCodes:");
         console.log(productCodes);
         if (!productCodes) {
           selectedCards = { 'illustrator_cc' : true, 'photoshop_cc' : true };
+        }
+        else {
+          selectedCards = {};
+          Object.entries(productCodes.data).forEach(entry => {
+            const [key, value] = entry;
+            console.log(key, value);
+            selectedCards[value.ficode] = true;
+          });
         }
       }
       // Or, do do nothing and let the fi_code value display q-category-fallback
@@ -281,14 +289,30 @@ const App = ({
   const onOptionClick = (option) => () => {
     const newState = { ...selectedCards };
 
+    const customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input');
+
     if (Object.keys(newState).length >= maxSelections && !newState[option.options]) {
       return;
     }
 
+    if (Object.keys(newState).length > 0 && selectedCards.fi_code && option.options != 'fi_code') {
+      return;
+    }
+
+    if (selectedCards.fi_code && option.options !== "fi_code") {
+      customerInput.focus();
+      return;
+    }
+    
     if (!newState[option.options]) {
       newState[option.options] = true;
+      if (option.options == 'fi_code' ) {
+        customerInput.focus();
+      }
     } else {
-      delete newState[option.options];
+      if (option.options != 'fi_code' || (option.options == 'fi_code') && !customerInput.value.length) {
+        delete newState[option.options];
+      }
     }
 
     setSelectedCards(newState);

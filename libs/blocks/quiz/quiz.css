@@ -181,6 +181,11 @@ html[dir="rtl"] .quiz-option-image {
 
 .quiz-option-text-container input {
   width: 100%;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
 .quiz-button[disabled] {
