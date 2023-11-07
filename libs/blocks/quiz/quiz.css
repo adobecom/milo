@@ -179,6 +179,10 @@ html[dir="rtl"] .quiz-option-image {
   line-height: 22px;
 }
 
+.quiz-option-text-container input {
+  width: 100%;
+}
+
 .quiz-button[disabled] {
   background: transparent;
   cursor: not-allowed;

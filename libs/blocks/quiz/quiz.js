@@ -187,7 +187,12 @@ const App = ({
    */
   const handleOnNextClick = (selectedCards) => {
     if (selectedCards?.fi_code) {
-      selectedCards = { 'illustrator_cc' : true };
+      let customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input').value
+      console.log("customerInput:" + customerInput);
+      // Call the ML API with customerInput
+      // Set selectedCards to an array of return values
+      if (customerInput.length > 0) selectedCards = { 'illustrator_cc' : true, 'photoshop_cc' : true };
+      // Or, do do nothing and let the fi_code value display q-category-fallback
     }
     const { nextQuizViews } = handleNext(
       questionData,

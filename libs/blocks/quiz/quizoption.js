@@ -12,7 +12,19 @@ export const OptionCard = ({
       style="background-image: url('${coverImage}')">
     </div>`;
 
-  return html`<button class="quiz-option ${disabled}${selected}" data-option-name="${options}" 
+  if (options == 'fi_code')
+  return html`<button class="quiz-option ${disabled}${selected}" data-option-name="${options}" id="${options}" 
+        data-option-type="${cardIcon ? 'icon' : ''}${coverImage ? 'cover-image' : ''}"
+        aria-pressed="${!!selected}" tabindex="${disabled ? '-1' : '0'}">
+        ${cardIcon && cardIconHtml}
+        ${coverImage && coverImageHtml}
+        <div class="quiz-option-text-container">  
+          <h3 class="quiz-option-title">${title}</h3>
+          <p class="quiz-option-text">${text}</p>
+          <input type="text"/>
+        </div>
+    </button>`;
+  else return html`<button class="quiz-option ${disabled}${selected}" data-option-name="${options}" id="${options}" 
         data-option-type="${cardIcon ? 'icon' : ''}${coverImage ? 'cover-image' : ''}"
         aria-pressed="${!!selected}" tabindex="${disabled ? '-1' : '0'}">
         ${cardIcon && cardIconHtml}
@@ -37,7 +49,7 @@ export const CreateOptions = ({
             coverImage=${getOptionsIcons(option.options, 'cover')}
             options=${option.options}
             selected=${selectedCards[option.options] ? 'selected' : ''}
-            disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) ? 'disabled' : ''}/>
+            disabled=${((selectedCards.fi_code && option.options !== 'fi_code') || (countSelectedCards > 0 && !selectedCards.fi_code && option.options == 'fi_code') || (!selectedCards.fi_code  && countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections)) ? 'disabled' : ''}/>
         </div>`
   ))}`;
 
