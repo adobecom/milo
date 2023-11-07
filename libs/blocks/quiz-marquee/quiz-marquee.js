@@ -1,11 +1,5 @@
 import { decorateBlockBg, decorateBlockHrs, decorateBlockText } from '../../utils/decorate.js';
-import { createTag, MILO_EVENTS } from '../../utils/utils.js';
-
-// function decorateBadge(el) {
-//   const header = el.querySelector('h1', 'h2', 'h3', 'h4', 'h5', 'h6');
-//   const brackets = header.innerHTML.indexOf('[[');
-//   console.log('decorateBadge el', el, 'header.innerHTML', header.innerHTML);
-// }
+import { createTag } from '../../utils/utils.js';
 
 function decorateBadge(el) {
   const regex = /\[\[(.*?)\]\]/g;
