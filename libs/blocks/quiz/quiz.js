@@ -294,8 +294,10 @@ const App = ({
       if (option.options === 'fi_code') {
         customerInput.focus();
       }
-    } else if ((option.options !== 'fi_code') || (((option.options === 'fi_code')) && (!customerInput.value.length))) {
-      delete newState[option.options];
+    } else {
+      if (option.options != 'fi_code' || (option.options == 'fi_code') && !customerInput.value.length) {
+        delete newState[option.options];
+      }
     }
 
     setSelectedCards(newState);
