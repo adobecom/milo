@@ -21,7 +21,7 @@
   color: var(--text-color);
 }
 
-.marquee:is(.mobile-dark, .quiet.dark) {
+.marquee.mobile-dark {
   color: var(--color-white);
 }
 
@@ -29,13 +29,13 @@
   display: contents;
 }
 
-.marquee:is(.mobile-dark, .quiet.dark) a:not(.con-button),
-.marquee:is(.mobile-dark, .quiet.dark) a:not(.con-button):hover {
-  color: var(--link-color-dark);
-}
-
 .marquee.mobile-light a:not(.con-button) {
   color: var(--link-color);
+}
+
+.marquee.mobile-dark a:not(.con-button),
+.marquee.mobile-dark a:not(.con-button):hover {
+  color: var(--link-color-dark);
 }
 
 .marquee.static-links a:not(.con-button),
