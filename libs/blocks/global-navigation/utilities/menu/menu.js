@@ -292,6 +292,6 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 
   config.template?.append(menuTemplate);
-}, 'Decorate menu failed');
+}, 'Decorate menu failed', 'errorType=info,module=gnav-menu');
 
 export default { decorateMenu, decorateLinkGroup };

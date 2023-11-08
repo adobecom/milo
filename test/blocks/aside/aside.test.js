@@ -85,6 +85,31 @@ describe('aside', () => {
           const viewportContent = aside.querySelectorAll('.promo-text');
           expect(viewportContent.length).to.equal(3);
         });
+
+        if (aside.classList.contains('popup')) {
+          it('has promo close button', () => {
+            const closeBtn = aside.querySelector('.promo-close');
+            expect(closeBtn).to.exist;
+          });
+
+          if (aside.classList.contains('mobile-promo-only')) {
+            it('has empty tablet block hidden', () => {
+              const tabletBlock = aside.querySelector('.tablet-up.hide-block');
+              expect(tabletBlock).to.exist;
+            });
+
+            it('has empty desktop block hidden', () => {
+              const desktopBlock = aside.querySelector('.tablet-up.hide-block');
+              expect(desktopBlock).to.exist;
+            });
+          }
+
+          it('close button click closes the popup', () => {
+            const closeBtn = aside.querySelector('.promo-close');
+            closeBtn.click();
+            expect(aside.closest('.section').classList.contains('close-sticky-section')).to.be.true;
+          });
+        }
       }
     });
   });
