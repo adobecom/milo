@@ -3,14 +3,20 @@
   display: flex;
   text-size-adjust: none;
   min-height: 384px;
+}
+
+.basic-brick,
+.basic-brick.click a.foreground {
   color: inherit;
 }
 
-.light.basic-brick {
+.light.basic-brick,
+.light.basic-brick.click a.foreground {
   color: var(--text-color);
 }
 
-.dark.basic-brick {
+.dark.basic-brick,
+.dark.basic-brick.click a.foreground {
   color: var(--color-white);
 }
 
@@ -35,8 +41,8 @@
 }
 
 .basic-brick.align-center .foreground,
-.basic-brick.center .foreground,
 .basic-brick.align-center .foreground .action-area,
+.basic-brick.center .foreground,
 .basic-brick.center .foreground .action-area {
   align-items: center;
   text-align: center;
@@ -113,55 +119,58 @@
   text-decoration: none;
 }
 
-.basic-brick.click a.foreground {
-  color: inherit;
-}
-
-.basic-brick.click a.foreground a:not([class*="button"]),
-.basic-brick.click a.foreground div.first-link:not([class*="button"]) {
+.basic-brick.click a.foreground .first-link:not([class*="button"]) {
   color: var(--link-color);
   text-decoration: none;
 }
 
-.basic-brick a.foreground a:not([class*="button"]):hover,
-.basic-brick.click:hover a.foreground div.first-link:not([class*="button"]) {
+.basic-brick.click:hover a.foreground .first-link:not([class*="button"]) {
   text-decoration: underline;
   color: var(--link-hover-color);
 }
 
-.static-links .basic-brick.click a.foreground div.first-link:not([class*="button"]),
-.static-links.basic-brick.click a.foreground div.first-link:not([class*="button"]),
+.static-links .basic-brick.click a.foreground .first-link:not([class*="button"]),
+.static-links.basic-brick.click a.foreground .first-link:not([class*="button"]),
 .static-links .basic-brick.click a.foreground a:not([class*="button"]),
 .static-links.basic-brick.click a.foreground a:not([class*="button"]) {
   color: inherit;
   text-decoration: underline;
 }
 
-.basic-brick.click:hover div.first-link.con-button.blue,
-.basic-brick.click:active div.first-link.con-button.blue {
+.basic-brick.click:hover .first-link.con-button.blue,
+.basic-brick.click:active .first-link.con-button.blue {
   background: var(--color-accent-hover);
   border-color: var(--color-accent-hover);
   color: var(--color-white);
 }
 
-.basic-brick.click:hover div.first-link.con-button {
-  background-color: var(--color-black);
-  border-color: var(--color-black);
-  color: var(--color-white);
-  text-decoration: none;
-}
-
-.light .basic-brick.click:hover div.first-link.con-button,
-.light .basic-brick.click:active div.first-link.con-button {
+.basic-brick.click:hover .first-link.con-button,
+.basic-brick.click:active .first-link.con-button,
+.light .basic-brick.click:hover .first-link.con-button,
+.light .basic-brick.click:active .first-link.con-button,
+.light.basic-brick.click:hover .first-link.con-button,
+.light.basic-brick.click:active .first-link.con-button {
   background-color: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
 }
 
-.dark .basic-brick.click:hover div.first-link.con-button {
+.dark .basic-brick.click:hover .first-link.con-button,
+.dark.basic-brick.click:active .first-link.con-button {
   background-color: var(--color-white);
   color: var(--color-black);
   text-decoration: none;
+}
+
+.basic-brick .icon-stack-area {
+  display: flex;
+  flex-flow: row wrap;
+  flex-direction: column;
+  gap: 12px;
+  margin: -8px 0 var(--spacing-s);
+  width: 100%;
+  padding: 0;
+  list-style-type: none;
 }
 
 .basic-brick .icon-stack-area li,
@@ -176,26 +185,12 @@
   display: flex;
   margin: 0;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .basic-brick .icon-stack-area li img {
   width: var(--icon-size-m);
   height: auto;
-}
-
-.basic-brick .icon-stack-area li picture {
-  flex-shrink: 0;
-}
-
-.basic-brick .icon-stack-area {
-  display: flex;
-  flex-flow: row wrap;
-  flex-direction: column;
-  gap: 12px;
-  margin: -8px 0 var(--spacing-s);
-  width: 100%;
-  padding: 0;
-  list-style-type: none;
 }
 
 @media screen and (max-width: 600px) {
@@ -209,6 +204,7 @@
     padding: var(--spacing-l);
   }
 }
+
 @media screen and (min-width: 600px) and (max-width: 1199px) {
   .basic-brick .tablet-only {
     display: block;

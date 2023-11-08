@@ -1,5 +1,6 @@
 import { decorateTextOverrides, decorateBlockText, decorateBlockBg, decorateIconStack } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig} from '../../utils/utils.js';
+import { processTrackingLabels } from '../../martech/analytics.js';
 
 const blockTypeSizes = {
   full: ['xxl', 'm', 'l'],
@@ -14,6 +15,7 @@ function getBlockSize(el) {
 }
 
 function handleBrickFragment(el) {
+  if (!el.closest('.fragment')) return;
   const gridVariant = [...el.classList]?.find((c) => c.match(/-grid/));
   if (!gridVariant || !el.closest('.section.masonry-layout')) return;
   if (!el.parentNode.classList.contains('.section.masonry-layout')) {
@@ -21,7 +23,7 @@ function handleBrickFragment(el) {
   }
 }
 
-function decorateDefaultButton(el, foreground) {
+function decorateDefaultButton(foreground) {
   if (!foreground.querySelector('.action-area')) return;
   const btns = foreground.querySelectorAll('.con-button');
   [...btns].forEach((btn) => btn.classList.add('button-l'));
@@ -44,12 +46,15 @@ function handleObjectFit(bgRow) {
   });
 }
 
-function handleClickableBrick(el, foreground) {
+async function handleClickableBrick(el, foreground) {
   if (!el.classList.contains('click')) return;
-  const a = foreground.querySelector('a');
-  if (!a) return;
-  const linkDiv = createTag('div', { class: [...a.classList, 'first-link'].join(' ') }, a.innerHTML);
-  a.insertAdjacentElement('afterend', linkDiv);
+  const links = foreground.querySelectorAll('a');
+  if (links.length === 0 || links.length !== 1) return el.classList.remove('click');
+  const { decorateDefaultLinkAnalytics } = await import('../../martech/analytics.js');
+  decorateDefaultLinkAnalytics(el);
+  const a = links[0];
+  const linkDiv = createTag('span', { class: [...a.classList, 'first-link'].join(' ') }, a.innerHTML);
+  a.replaceWith(linkDiv, a);
   a.className = 'foreground';
   el.appendChild(a);
   a.innerHTML = foreground.innerHTML;
@@ -62,7 +67,7 @@ function decorateSupplementalText(el) {
   supplementalEl.className = `body-xs ${supplementalEl}`;
 }
 
-function decorateBricks(el) {
+async function decorateBricks(el) {
   handleBrickFragment(el);
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) {
@@ -78,15 +83,15 @@ function decorateBricks(el) {
   const hasIconArea = foreground.querySelector('p')?.querySelector('img');
   if (hasIconArea) foreground.querySelector('p').classList.add('icon-area');
   const blockFormatting = getBlockSize(el);
-  decorateBlockText(foreground, blockFormatting);
+  decorateBlockText(foreground, blockFormatting, 'basic-brick');
   decorateIconStack(el);
-  decorateDefaultButton(el, foreground);
-  handleClickableBrick(el, foreground);
+  decorateDefaultButton(foreground);
+  await handleClickableBrick(el, foreground);
   return foreground;
 }
 
 export default async function init(el) {
-  decorateBricks(el);
+  await decorateBricks(el);
   decorateTextOverrides(el);
   decorateSupplementalText(el);
 }
