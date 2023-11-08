@@ -75,7 +75,7 @@ export async function fetchFiCodes(input, numberOfItems) {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    window.lana?.log(`ERROR: Fetching fi codes ${response.status} ${response.statusText}`);
   }
   const result = await response.json();
   return result;
@@ -92,7 +92,7 @@ export const getUrlParams = () => {
 
 export const handleResultFlow = async (answers = [], mlFlowData = {}) => {
   const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers, mlFlowData);
-  // window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
 };
 
 /**
