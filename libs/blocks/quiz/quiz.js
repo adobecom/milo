@@ -6,7 +6,7 @@ import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
 import {
   initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData,
-  getAnalyticsDataForBtn, getUrlParams, isValidUrl,
+  getAnalyticsDataForBtn, getUrlParams, isValidUrl, fetchFiCodes,
 } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
@@ -40,7 +40,8 @@ const App = ({
   const [userFlow, setUserFlow] = useState([]);
   const validQuestions = useMemo(() => [], []);
   const [debugBuild, setDebugBuild] = useState(null);
-  
+  const [mlFlowData, setMlFlowData] = useState({});
+
   useEffect(() => {
     (async () => {
       const [questions, dataStrings] = await getQuizData();
@@ -140,7 +141,7 @@ const App = ({
           console.log(`Error copying URL: ${err} URL: ${debugURL}`);
         });
       }
-      handleResultFlow(transformToFlowData(userSelection));
+      handleResultFlow(transformToFlowData(userSelection), mlFlowData);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSelection, nextQuizViewsExist]);
@@ -185,61 +186,41 @@ const App = ({
    * @param {Object} selectedCards - Selected cards
    * @returns {void}
    */
-  const getProductCodes = async (inputText, numOfItems) => {
-    const apiUrl = 'https://cchome-dev.adobe.io/int/v1/models';
-    const res = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'x-api-key': 'CCHomeMLRepo1',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        endpoint: 'acom-prd-recom-v1',
-        contentType: 'application/json',
-        payload: {
-          data: {
-            input: inputText,
-            num_items: numOfItems
-          },
-        },
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {return data})
-      .catch((error) => console.log('Error:', error));
-
-    return res;
-  };
-
-  /**
-   * Handler of the next button click. Checks whether any next view exists or not.
-   * Takes care of the user flow and updates the state accordingly.
-   * @param {Object} selectedCards - Selected cards
-   * @returns {void}
-   */
   const handleOnNextClick = async (selectedCards) => {
+    const validFiCodes = ['acrobat_dc_pro',
+      'aftereffects_cc',
+      'audition_cc',
+      'characteranimator_cc',
+      'illustrator_cc',
+      'indesign_cc',
+      'lightroom_cc',
+      'photoshop_cc',
+      'premierepro_cc',
+      'sbst_stager',
+      'sbst_painter',
+      'sbst_alchemist',
+      'sbst_shaper',
+      'sbst_designer'];
     if (selectedCards?.fi_code) {
-      let customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input').value
-      console.log("customerInput:" + customerInput);
-      // Call the ML API with customerInput
-      // Set selectedCards to an array of return values
+      const customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input').value;
       if (customerInput.length > 0) {
-        let productCodes = await getProductCodes(customerInput,3);
-        console.log("productCodes:");
-        console.log(productCodes);
-        if (!productCodes) {
-          selectedCards = { 'illustrator_cc' : true, 'photoshop_cc' : true };
-        }
-        else {
-          selectedCards = {};
-          Object.entries(productCodes.data).forEach(entry => {
-            const [key, value] = entry;
-            console.log(key, value);
-            selectedCards[value.ficode] = true;
-          });
+        const productCodes = await fetchFiCodes(customerInput, 3);
+        const allFiCodes = productCodes?.data?.flatMap((item) => item.ficode);
+        const filteredFiCodes = allFiCodes.filter((item) => validFiCodes.includes(item));
+        setMlFlowData(
+          {
+            fiCodes: filteredFiCodes,
+            userInput: customerInput,
+          },
+        );
+        filteredFiCodes?.forEach((item) => {
+          selectedCards[item] = true;
+        });
+
+        if (filteredFiCodes.length > 0) {
+          delete selectedCards.fi_code;
         }
       }
-      // Or, do do nothing and let the fi_code value display q-category-fallback
     }
     const { nextQuizViews } = handleNext(
       questionData,
@@ -295,23 +276,22 @@ const App = ({
       return;
     }
 
-    if (Object.keys(newState).length > 0 && selectedCards.fi_code && option.options != 'fi_code') {
+    if (Object.keys(newState).length > 0 && selectedCards.fi_code && option.options !== 'fi_code') {
       customerInput.focus();
       return;
     }
 
-    if (Object.keys(newState).length > 0 && !selectedCards.fi_code && option.options == 'fi_code') {
+    if (Object.keys(newState).length > 0 && !selectedCards.fi_code && option.options === 'fi_code') {
       return;
     }
 
-    if (selectedCards.fi_code && option.options !== "fi_code") {
+    if (selectedCards.fi_code && option.options !== 'fi_code') {
       customerInput.focus();
       return;
     }
-    
     if (!newState[option.options]) {
       newState[option.options] = true;
-      if (option.options == 'fi_code' ) {
+      if (option.options === 'fi_code') {
         customerInput.focus();
       }
     } else {
