@@ -205,8 +205,8 @@ const App = ({
       const customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input').value;
       if (customerInput.length > 0) {
         const productCodes = await fetchFiCodes(customerInput, 3);
-        const allFiCodes = productCodes?.data?.flatMap((item) => item.ficode);
-        const filteredFiCodes = allFiCodes.filter((item) => validFiCodes.includes(item));
+        const allFiCodes = productCodes?.data?.flatMap((item) => item.ficode) || [];
+        const filteredFiCodes = allFiCodes?.filter((item) => validFiCodes.includes(item));
         setMlFlowData(
           {
             fiCodes: filteredFiCodes,

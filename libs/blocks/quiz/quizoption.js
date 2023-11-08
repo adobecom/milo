@@ -21,7 +21,7 @@ export const OptionCard = ({
         <div class="quiz-option-text-container">
           <h3 class="quiz-option-title">${title}</h3>
           <p class="quiz-option-text">${text}</p>
-          <input type="text" placeholder="${text}"/>
+          <input type="text" placeholder="${text}" onkeypress=${(event) => { if (event.key === 'Enter') { document.querySelector('.quiz-button').click(); } }}/>
         </div>
     </button>`;
   }
