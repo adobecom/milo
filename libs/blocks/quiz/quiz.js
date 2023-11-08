@@ -296,6 +296,11 @@ const App = ({
     }
 
     if (Object.keys(newState).length > 0 && selectedCards.fi_code && option.options != 'fi_code') {
+      customerInput.focus();
+      return;
+    }
+
+    if (Object.keys(newState).length > 0 && !selectedCards.fi_code && option.options == 'fi_code') {
       return;
     }
 
