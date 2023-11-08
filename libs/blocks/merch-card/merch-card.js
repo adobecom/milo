@@ -6,7 +6,6 @@ import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/commerce.js';
 import '../../deps/merch-card.js';
-import { initLegacyMerchCard } from './legacy-merch-card.js';
 
 const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'product'];
 
@@ -95,13 +94,19 @@ const init = (el) => {
   let section = el.closest('.section');
   let upClass = getUpFromSectionMetadata(section);
   if (upClass) {
-    initLegacyMerchCard(el);
+    import('./legacy-merch-card.js')
+    .then(module => {
+      module.initLegacyMerchCard(el);
+    })
+    .catch(err => {
+      console.error('Failed to load legacy merch card module: ', err);
+    });
   } else {
     if (section.parentElement.classList.contains('fragment')) {
-      section.style.display = 'contents';
       const fragment = section.parentElement;
-      fragment.style.display = 'contents';
       const fragmentParent = fragment.parentElement;
+      section.style.display = 'contents';
+      fragment.style.display = 'contents';
       fragmentParent.style.display = 'contents';
       section = fragmentParent.parentElement;
     }

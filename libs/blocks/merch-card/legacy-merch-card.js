@@ -181,3 +181,5 @@ export const initLegacyMerchCard = (el) => {
   const innerCleanup = inner.querySelectorAll(':scope > div')[1];
   if (innerCleanup.classList.length === 0) innerCleanup.remove();
 };
+
+export default initLegacyMerchCard;

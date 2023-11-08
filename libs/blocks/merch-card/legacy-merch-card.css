@@ -148,15 +148,15 @@
   flex-grow: 1;
 }
 
-.merch-card .consonant-SegmentBlade-description inline-price.placeholder-resolved,
-.merch-card .consonant-SpecialOffers-description inline-price.placeholder-resolved,
-.merch-card .consonant-PlansCard-description inline-price.placeholder-resolved {
-  font-size: var(--type-heading-xs-size);;
+.merch-card .consonant-SegmentBlade-description span.placeholder-resolved,
+.merch-card .consonant-SpecialOffers-description span.placeholder-resolved,
+.merch-card .consonant-PlansCard-description span.placeholder-resolved {
+  font-size: var(--type-heading-xs-size);
 }
 
-.merch-card .consonant-SegmentBlade-description inline-price.placeholder-resolved[data-template="priceStrikethrough"],
-.merch-card .consonant-SpecialOffers-description inline-price.placeholder-resolved[data-template="priceStrikethrough"],
-.merch-card .consonant-PlansCard-description inline-price.placeholder-resolved[data-template="priceStrikethrough"] {
+.merch-card .consonant-SegmentBlade-description span.placeholder-resolved[data-template="priceStrikethrough"],
+.merch-card .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"],
+.merch-card .consonant-PlansCard-description span.placeholder-resolved[data-template="priceStrikethrough"] {
   font-size: var(--type-body-xs-size);
 }
 
