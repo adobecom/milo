@@ -42,7 +42,7 @@ export const CreateOptions = ({
   getOptionsIcons,
 }) => html`
       ${options?.data.map((option, index) => (
-    html`<div key=${index} onClick=${handleCardSelection(option)}>
+    html`<div key=${index} onClick=${handleCardSelection(option)} id=card-${option.options}>
           <${OptionCard} 
             text=${option.text}
             title=${option.title} 
