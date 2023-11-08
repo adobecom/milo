@@ -52,6 +52,35 @@ export const getQuizData = async () => {
   return [];
 };
 
+export async function fetchFiCodes(input, numberOfItems) {
+  const apiUrl = 'https://cchome-dev.adobe.io/int/v1/models';
+  const params = {
+    endpoint: 'acom-prd-recom-v1',
+    contentType: 'application/json',
+    payload: {
+      data: {
+        input,
+        num_items: numberOfItems || 10,
+      },
+    },
+  };
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': 'CCHomeMLRepo1',
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    window.lana?.log(`ERROR: Fetching fi codes ${response.status} ${response.statusText}`);
+  }
+  const result = await response.json();
+  return result;
+}
+
 export const getUrlParams = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const params = {};
@@ -61,8 +90,8 @@ export const getUrlParams = () => {
   return params;
 };
 
-export const handleResultFlow = async (answers = []) => {
-  const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
+export const handleResultFlow = async (answers = [], mlFlowData = {}) => {
+  const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers, mlFlowData);
   window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
 };
 
@@ -70,7 +99,7 @@ export const handleResultFlow = async (answers = []) => {
  * Handling the result flow from here. Will need to make sure we capture all
  * the data so that we can come back.
  */
-export const findAndStoreResultData = async (answers = []) => {
+export const findAndStoreResultData = async (answers = [], mlFlowData = {}) => {
   const entireResultData = await parseResultData(answers);
   const resultData = entireResultData.filteredResults;
   const { resultResources } = entireResultData;
@@ -93,6 +122,7 @@ export const findAndStoreResultData = async (answers = []) => {
     primaryProductCodes,
     secondaryProductCodes,
     umbrellaProduct,
+    mlFlowData,
   );
   return {
     destinationPage,
@@ -107,6 +137,7 @@ export const storeResultInLocalStorage = (
   primaryProducts,
   secondaryProductCodes,
   umbrellaProduct,
+  mlFlowData,
 ) => {
   const nestedFragsPrimary = resultData.matchedResults[0]['nested-fragments-primary'];
   const nestedFragsSecondary = resultData.matchedResults[0]['nested-fragments-secondary'];
@@ -134,6 +165,7 @@ export const storeResultInLocalStorage = (
       umbrellaProduct,
     ),
     pageloadHash: getAnalyticsDataForLocalStorage(answers),
+    mlFlowData,
   };
   localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
