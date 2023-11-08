@@ -47,7 +47,7 @@ async function loadCards(el, tutorials) {
     card.append(cardInner);
 
     el.append(card);
-    console.log(tutorial.metadata, image, title, text, href);
+    // console.log(tutorial.metadata, image, title, text, href);
   }
 }
 
@@ -61,15 +61,34 @@ export default async function init(el) {
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/deps/caas.css`);
 
-  const data = getMetadata(el);
-  const tutorials = await loadTutorials(data.text.text, data.ficode.text, Number(data['total-tutorials'].text));
+  const metadata = getMetadata(el);
+  const params = new URL(document.location).searchParams;
+  const localStoreKey = params.get('quizKey');
+
+  let results = localStorage.getItem(localStoreKey);
+  if (!results) {
+    window.lana.log('Local storage data missing');
+  }
+
+  try {
+    results = JSON.parse(results);
+  } catch (e) {
+    window.lana.log('Invalid JSON in local storage');
+  }
+
+  const mlKey = results?.mlFlowData || {};
+  const textInput = mlKey?.userInput || metadata.text.text || 'creative cloud';
+  const ficode = metadata.ficode.text;
+  const total = Number(metadata['total-tutorials'].text) || 1;
+
+  const data = await loadTutorials(textInput, ficode, total);
 
   el.replaceChildren();
-  loadCards(el, tutorials.tutorials);
+  loadCards(el, data.tutorials);
 
-  if (data.style) {
+  if (metadata.style) {
     el.classList.add('section');
-    handleStyle(data.style.text, el);
+    handleStyle(metadata.style.text, el);
   }
   el.classList.add('show');
 }
