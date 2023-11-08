@@ -12,7 +12,7 @@ const { default: init } = await import('../../../libs/blocks/quiz-marquee/quiz-m
 describe('Biz Markie got what you need', () => {
   before(() => {
     const marquees = document.querySelectorAll('.quiz-marquee');
-    marquees.forEach( async (marquee) => {
+    marquees.forEach(async (marquee) => {
       await init(marquee);
     });
   });
@@ -26,6 +26,6 @@ describe('Biz Markie got what you need', () => {
   });
   it('it has a horizontal rule friend', async () => {
     const hr = await waitForElement('.has-divider');
-    expect(hr).to.exist
+    expect(hr).to.exist;
   });
 });
