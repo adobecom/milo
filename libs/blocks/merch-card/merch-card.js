@@ -1,7 +1,7 @@
 /* eslint-disable prefer-destructuring */
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
-import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
- import { getUpFromSectionMetadata } from '../card/cardUtils.js';
+import { getConfig, createTag } from '../../utils/utils.js';
+import { getUpFromSectionMetadata } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/commerce.js';
@@ -92,15 +92,12 @@ function getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent) {
 
 const init = (el) => {
   let section = el.closest('.section');
-  let upClass = getUpFromSectionMetadata(section);
+  const upClass = getUpFromSectionMetadata(section);
   if (upClass) {
     import('./legacy-merch-card.js')
-    .then(module => {
-      module.initLegacyMerchCard(el);
-    })
-    .catch(err => {
-      console.error('Failed to load legacy merch card module: ', err);
-    });
+      .then((module) => {
+        module.initLegacyMerchCard(el);
+      });
   } else {
     if (section.parentElement.classList.contains('fragment')) {
       const fragment = section.parentElement;
