@@ -198,23 +198,6 @@ html[dir="rtl"] .quiz-option-image {
   cursor: pointer;
 }
 
-/* .quiz-option-text-container input {
-  width: 100%;
-  height: 40px;
-  padding: 2px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  margin-top: 1rem;
-  background-size: 1rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 16 16' width='16'%3E%3Ctitle%3EMagnifier%3C/title%3E%3Crect id='ToDelete' fill='%23ff13dc' opacity='0' width='16' height='16' /%3E%3Cpath fill='%23666666' transform='scale(-1, 1) translate(-16, 0)' d='M15.77,14.70942l-4.53431-4.53431a6.01393,6.01393,0,1,0-1.06055,1.06055L14.70942,15.77A.74992.74992,0,1,0,15.77,14.70942ZM6.5,11A4.5,4.5,0,1,1,11,6.5,4.50508,4.50508,0,0,1,6.5,11Z' /%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: left;
-  cursor: pointer;
-} */
 .quiz-option-text-container input::placeholder {
   text-align: left;
   padding-left: 1rem;
@@ -366,15 +349,6 @@ html[dir="rtl"] .quiz-step::after {
     width: 172px;
   }
 
-  /* #card-fi_code, #card-fi_code button {
-    width:100%;
-  } */
-
-  /* #card-fi_code::after {
-    flex-basis: 100%;
-    height: 0;
-  } */
-
   .quiz-option-icon {
     align-items: center;
     justify-content: center;
@@ -463,7 +437,6 @@ html[dir="rtl"] .quiz-step::after {
     background-size: 1rem;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 16 16' width='16'%3E%3Ctitle%3EMagnifier%3C/title%3E%3Crect id='ToDelete' fill='%23ff13dc' opacity='0' width='16' height='16' /%3E%3Cpath fill='%23666666' transform='scale(-1, 1) translate(-16, 0)' d='M15.77,14.70942l-4.53431-4.53431a6.01393,6.01393,0,1,0-1.06055,1.06055L14.70942,15.77A.74992.74992,0,1,0,15.77,14.70942ZM6.5,11A4.5,4.5,0,1,1,11,6.5,4.50508,4.50508,0,0,1,6.5,11Z' /%3E%3C/svg%3E" );
     background-repeat: no-repeat;
-    /* background-position: left; */
     background-position-x: calc(100% - 110px);
     background-position-y: center;
     cursor: pointer;
@@ -478,22 +451,4 @@ html[dir="rtl"] .quiz-step::after {
   .quiz-step-container.wide {
     width: 360px;
   }
-
-  /* .quiz-option-text-container input {
-    width: 100%;
-    height: 40px;
-    padding: 2px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    margin-top: 1rem;
-    background-size: 1rem;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 16 16' width='16'%3E%3Ctitle%3EMagnifier%3C/title%3E%3Crect id='ToDelete' fill='%23ff13dc' opacity='0' width='16' height='16' /%3E%3Cpath fill='%23666666' transform='scale(-1, 1) translate(-16, 0)' d='M15.77,14.70942l-4.53431-4.53431a6.01393,6.01393,0,1,0-1.06055,1.06055L14.70942,15.77A.74992.74992,0,1,0,15.77,14.70942ZM6.5,11A4.5,4.5,0,1,1,11,6.5,4.50508,4.50508,0,0,1,6.5,11Z' /%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: left;
-    cursor: pointer;
-  } */
 }
