@@ -53,4 +53,11 @@ describe('text block', () => {
       });
     });
   });
+
+  describe('per-viewport content', () => {
+    it('two content rows has viewport classes', () => {
+      const mobileEl = document.querySelector('.text-block .mobile-up');
+      expect(mobileEl).to.exist;
+    });
+  });
 });
