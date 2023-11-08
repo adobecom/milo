@@ -187,20 +187,39 @@ const App = ({
    * @returns {void}
    */
   const handleOnNextClick = async (selectedCards) => {
+    const validFiCodes = ['acrobat_dc_pro',
+      'aftereffects_cc',
+      'audition_cc',
+      'characteranimator_cc',
+      'illustrator_cc',
+      'indesign_cc',
+      'lightroom_cc',
+      'photoshop_cc',
+      'premierepro_cc',
+      'sbst_stager',
+      'sbst_painter',
+      'sbst_alchemist',
+      'sbst_shaper',
+      'sbst_designer'];
     if (selectedCards?.fi_code) {
       const customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input').value;
       if (customerInput.length > 0) {
         const productCodes = await fetchFiCodes(customerInput, 3);
+        const allFiCodes = productCodes?.data?.flatMap((item) => item.ficode);
+        const filteredFiCodes = allFiCodes.filter((item) => validFiCodes.includes(item));
         setMlFlowData(
           {
-            fiCodes: productCodes?.data?.flatMap((item) => item.ficode),
+            fiCodes: filteredFiCodes,
             userInput: customerInput,
           },
         );
-        productCodes?.data.forEach((item) => {
-          selectedCards[item.ficode] = true;
+        filteredFiCodes?.forEach((item) => {
+          selectedCards[item] = true;
         });
-        delete selectedCards.fi_code;
+
+        if (filteredFiCodes.length > 0) {
+          delete selectedCards.fi_code;
+        }
       }
     }
     const { nextQuizViews } = handleNext(
@@ -257,29 +276,26 @@ const App = ({
       return;
     }
 
-    if (Object.keys(newState).length > 0 && selectedCards.fi_code && option.options != 'fi_code') {
+    if (Object.keys(newState).length > 0 && selectedCards.fi_code && option.options !== 'fi_code') {
       customerInput.focus();
       return;
     }
 
-    if (Object.keys(newState).length > 0 && !selectedCards.fi_code && option.options == 'fi_code') {
+    if (Object.keys(newState).length > 0 && !selectedCards.fi_code && option.options === 'fi_code') {
       return;
     }
 
-    if (selectedCards.fi_code && option.options !== "fi_code") {
+    if (selectedCards.fi_code && option.options !== 'fi_code') {
       customerInput.focus();
       return;
     }
-    
     if (!newState[option.options]) {
       newState[option.options] = true;
-      if (option.options == 'fi_code' ) {
+      if (option.options === 'fi_code') {
         customerInput.focus();
       }
-    } else {
-      if (option.options != 'fi_code' || (option.options == 'fi_code') && !customerInput.value.length) {
-        delete newState[option.options];
-      }
+    } else if ((option.options !== 'fi_code') || (((option.options === 'fi_code')) && (!customerInput.value.length))) {
+      delete newState[option.options];
     }
 
     setSelectedCards(newState);
