@@ -190,6 +190,9 @@ html[dir="rtl"] .quiz-option-image {
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .quiz-button[disabled] {
