@@ -10,6 +10,13 @@ import {
 } from '../utils/state.js';
 import { fetchStatusAction } from '../utils/miloc.js';
 
+function truncateMessage(message, maxLength = 80) {
+  if (message && message.length > maxLength) {
+    return message.slice(0, maxLength) + '...';
+  }
+  return message;
+}
+
 export function ProjectStatus(actionType) {
   function Badge() {
     return html`<div class="fgui-subproject-badge">${getCssStatus(actionType.action)}</div>`;
@@ -126,8 +133,8 @@ export function ProjectStatus(actionType) {
             : '-'}
           </h3>
           <p class="fgui-project-label">Description</p>
-          <h3 class="fgui-subproject-name">
-            ${allActionStatus.value[actionNameStatus]?.payload?.action?.message || '-'}
+          <h3 class="fgui-subproject-name" title=${allActionStatus.value[actionNameStatus]?.payload?.action?.message || '-'}>
+            ${truncateMessage(allActionStatus.value[actionNameStatus]?.payload?.action?.message) || '-'}
           </h3>
         </li>
       `;
