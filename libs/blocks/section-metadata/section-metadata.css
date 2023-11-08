@@ -101,6 +101,10 @@
   border-bottom: 1px solid;
 }
 
+.section.center[class*='-up'] {
+  justify-items: center;
+}
+
 .section[class*='-up'].no-gap {
   gap: 0;
 }
@@ -167,6 +171,11 @@
   gap: var(--spacing-m);
 }
 
+.section.sticky-bottom.promo-sticky-section {
+  background: none;
+  z-index: 4;
+}
+
 .section[class*='grid-width-'] > .content,
 main > .section[class*='-up'] > .content {
   max-width: initial;
@@ -223,7 +232,7 @@ main > .section[class*='-up'] > .content {
     grid-template-columns: repeat(5, 1fr);
   }
 
-  .section.center-desktop[class*='-up'] {
+  .section.center[class*='-up'] {
     grid-template-columns: auto;
     grid-auto-flow: column;
     justify-content: center;
