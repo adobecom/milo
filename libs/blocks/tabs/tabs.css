@@ -8,8 +8,10 @@
   --tabs-bg-color: #f1f1f1;
   --tabs-active-bg-color: #fff;
   --tabs-list-bg-gradient: linear-gradient(rgb(255 255 255 / 0%) 60%, rgb(245 245 245 / 80%));
-  --tabs-pill-bg-color: #fff;
-  --tabs-pill-text-color: #000;
+  --tabs-pill-bg-color: #e1e1e1;
+  --tabs-pill-bg-color-hover: #dadada;
+  --tabs-pill-bg-color-active: #c6c6c6;
+  --tabs-pill-text-color: #131313;
 }
 
 :root .dark {
@@ -20,7 +22,9 @@
   --tabs-bg-color: #1a1a1a;
   --tabs-active-bg-color: #111;
   --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 80%));
-  --tabs-pill-bg-color: #000;
+  --tabs-pill-bg-color: #333;
+  --tabs-pill-bg-color-hover: #222;
+  --tabs-pill-bg-color-active: #111;
   --tabs-pill-text-color: #fff;
 }
 
@@ -177,37 +181,30 @@
   margin-inline-start: 16px;
 }
 
-.tabs.pill {
+.tabs[class*='pill'] {
   background: unset;
 }
 
-.tabs.pill .tab-content {
+.tabs[class*='pill'] .tab-content {
   border-bottom: none;
 }
 
-.tabs.pill div[role="tablist"] {
+.tabs[class*='pill'] div[role="tablist"] {
   box-shadow: unset;
   background: unset;
   margin-bottom: var(--spacing-xxs);
 }
 
-.tabs.pill div[role="tablist"] button {
-  border-width: 1px;
-  border-color: var(--tabs-pill-text-color);
+.tabs[class*='pill'] div[role="tablist"] button {
   color: var(--tabs-pill-text-color);
-  background: var(--tabs-pill-bg-color);
   margin: 0;
   margin-inline-start: 16px;
-  border-radius: 20px;
-  font-size: 17px;
-  line-height: 20px;
-  min-height: 21px;
-  padding: 7px 18px 8px;
-
+  border-radius: 75px;
+  font-weight: 400;
 }
 
 .tabs.quiet div[role="tablist"] button:first-of-type,
-.tabs.pill div[role="tablist"] button:first-of-type {
+.tabs[class*='pill'] div[role="tablist"] button:first-of-type {
   margin-inline-start: 0;
 }
 
@@ -219,15 +216,44 @@
   border-bottom-color: var(--tabs-active-color);
 }
 
-.tabs.pill div[role="tablist"] button:active {
-  color: var(--tabs-active-color);
+.tabs[class*='pill'] div[role="tablist"] button[aria-selected="true"] {
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color);
+  font-weight: 700;
 }
 
-.tabs.pill div[role="tablist"] button[aria-selected="true"] {
-  background-color: var(--tabs-pill-text-color);
-  color: var(--tabs-pill-bg-color);
+.tabs[class*='pill'] div[role="tablist"] button:hover {
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color-hover);
 }
 
+.tabs[class*='pill'] div[role="tablist"] button:focus {
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color-hover);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button:active {
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color-active);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button.pill-l {
+  font-size: 16px;
+  line-height: 20.8px;
+  padding: 8px 16px;
+}
+
+.tabs[class*='pill'] div[role="tablist"] button.pill-m {
+  font-size: 14px;
+  line-height: 18.2px;
+  padding: 6px 14px;
+}
+
+.tabs[class*='pill'] div[role="tablist"] button.pill-s {
+  font-size: 12px;
+  line-height: 15.6px;
+  padding: 5px 12px;
+}
 
 /* Section Metadata */
 .tabs-background-transparent .tabs,
