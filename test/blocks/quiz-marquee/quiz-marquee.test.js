@@ -7,10 +7,10 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
 
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/quiz-marquee/quiz-marquee.js');
 describe('Biz Markie got what you need', () => {
-  before(() => {
+  before(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    const { default: init } = await import('../../../libs/blocks/quiz-marquee/quiz-marquee.js');
     const marquees = document.querySelectorAll('.quiz-marquee');
     marquees.forEach(async (marquee) => {
       await init(marquee);

@@ -3,68 +3,71 @@ import { createTag } from '../../utils/utils.js';
 
 function decorateBadge(el) {
   const regex = /\[\[(.*?)\]\]/g;
-  const header = el.querySelector('h1', 'h2', 'h3', 'h4', 'h5', 'h6');
+  const header = el.querySelector('h1, h2, h3, h4, h5, h6');
   const matches = header.innerHTML.match(regex);
-  if (matches) {
-    [...matches].forEach((match) => {
-      const found = match.substring(2, match.length - 2);
-      if (found !== '') {
-        const badge = createTag('span', { class: 'badge' }, found);
-        header.innerHTML = header.innerHTML.replace(regex, '');
-        header.append(badge);
-      }
-    });
-  }
+  if (!matches) return;
+  matches.forEach((match) => {
+    const found = match.substring(2, match.length - 2);
+    if (!found) return;
+    const badge = createTag('span', { class: 'badge' }, found);
+    header.innerHTML = header.innerHTML.replace(regex, '');
+    header.append(badge);
+  });
 }
 
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
   const { default: quizResults } = await import('../quiz-results/quiz-results.js');
-  if (rows.length > 1) {
-    if (rows[0].textContent !== '') el.classList.add('has-bg');
+
+  if (rows.length > 1 && rows[0].textContent !== '') {
+    el.classList.add('has-bg');
     const [head, ...tail] = rows;
     decorateBlockBg(el, head);
     rows = tail;
   }
+
   const foreground = rows[0];
+  foreground.classList.add('foreground');
   const fRows = foreground.querySelectorAll(':scope > div');
   let copy = fRows[0];
-  if (fRows.length === 2) {
-    const anyTag = foreground.querySelector('p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6');
-    copy = anyTag.closest('div');
-    const asset = foreground.querySelector('div > picture', 'div > video');
-    if (asset) {
-      asset.parentElement.classList.add('asset');
-      foreground.classList.add('has-asset');
-      if (el.classList.contains('split')) {
-        const bgSplit = createTag('div', { class: 'background-split' }, asset);
-        el.append(bgSplit);
-      }
-    } else {
-      [...fRows].forEach((row) => {
-        if (row.childElementCount === 0) {
-          row.classList.add('empty-asset');
-          foreground.classList.add('has-asset');
-        }
-      });
-    }
-  }
+
+  const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
+  const asset = foreground.querySelector('div > picture', 'div > video');
+  copy = anyTag.closest('div');
   copy.classList.add('copy');
+
+  if (asset) {
+    asset.parentElement.classList.add('asset');
+    foreground.classList.add('has-asset');
+    if (el.classList.contains('split')) {
+      el.appendChild(createTag('div', { class: 'background-split' }, asset));
+    }
+  } else {
+    [...fRows].forEach((row) => {
+      if (row.childElementCount === 0) {
+        row.classList.add('empty-asset');
+        foreground.classList.add('has-asset');
+      }
+    });
+  }
+
   if (fRows.length === 1) foreground.classList.add('fw');
   decorateBlockText(copy, ['xxl', 'm', 'l']); // heading, body, detail
   const assetRow = foreground.querySelector(':scope > div').classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
   const staticCopy = createTag('div', { class: 'static' }, copy.innerHTML);
-  copy.innerHTML = '';
   decorateBadge(staticCopy);
-  copy.append(staticCopy);
-  foreground.classList.add('foreground');
   rows.shift();
+
+  copy.innerHTML = '';
+  copy.append(staticCopy);
   copy.append(...rows);
+
   [...rows].forEach(async (row) => {
     const cols = row.querySelectorAll(':scope > div');
     const isFragRow = cols[0].textContent.trim() === 'nested-fragments';
+
     if (isFragRow) {
       cols[0].parentElement.classList.add('nested', cols[1].textContent.trim());
       const wrapper = createTag('div', { class: 'copy-wrapper' });

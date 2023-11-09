@@ -48,15 +48,15 @@ export function decorateIconArea(el, headings = null) {
     icon.parentElement.classList.add('icon-area');
     if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
   });
-  // better icon area
   if (headings) {
     headings.forEach((h) => {
       const hPrevElem = h.previousElementSibling;
       if (hPrevElem?.childElementCount) {
-        let picCount = 0;
-        [...hPrevElem.children].forEach((child) => {
-          if (child.nodeName === 'PICTURE') picCount += 1;
-        });
+        const picCount = [...hPrevElem.children].reduce((result, item) => {
+          let count = result;
+          if (item.nodeName === 'PICTURE') count += 1;
+          return count;
+        }, 0);
         if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
       }
     });
