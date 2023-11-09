@@ -351,6 +351,10 @@
   .marquee.tablet-dark {
     color: var(--color-white);
   }
+
+  .marquee.quiet.large .foreground .text {
+    max-width: 800px;
+  }
   
   .marquee.tablet-light a:not(.con-button) {
     color: var(--link-color);
