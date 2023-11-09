@@ -166,9 +166,9 @@
   display: flex;
   flex-flow: row wrap;
   flex-direction: column;
-  gap: 12px;
-  margin: -8px 0 var(--spacing-s);
+  gap: var(--spacing-xs);
   width: 100%;
+  margin: 0;
   padding: 0;
   list-style-type: none;
 }
@@ -177,7 +177,7 @@
 .basic-brick .icon-stack-area li a {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-xs);
   font-weight: bold;
 }
 
@@ -189,7 +189,7 @@
 }
 
 .basic-brick .icon-stack-area li img {
-  width: var(--icon-size-m);
+  width: var(--icon-size-s);
   height: auto;
 }
 

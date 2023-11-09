@@ -45,7 +45,7 @@ function handleObjectFit(bgRow) {
   });
 }
 
-async function handleClickableBrick(el, foreground) {
+function handleClickableBrick(el, foreground) {
   if (!el.classList.contains('click')) return;
   const links = foreground.querySelectorAll('a');
   if (links.length !== 1) return el.classList.remove('click');
@@ -64,7 +64,7 @@ function decorateSupplementalText(el) {
   supplementalEl.className = `body-xs ${supplementalEl}`;
 }
 
-async function decorateBricks(el) {
+function decorateBricks(el) {
   handleBrickFragment(el);
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) {
@@ -83,12 +83,12 @@ async function decorateBricks(el) {
   decorateBlockText(foreground, blockFormatting, 'basic-brick');
   decorateIconStack(el);
   decorateDefaultButton(foreground);
-  await handleClickableBrick(el, foreground);
+  handleClickableBrick(el, foreground);
   return foreground;
 }
 
 export default async function init(el) {
-  await decorateBricks(el);
+  decorateBricks(el);
   decorateTextOverrides(el);
   decorateSupplementalText(el);
 }

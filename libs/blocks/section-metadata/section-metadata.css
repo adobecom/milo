@@ -299,6 +299,6 @@ main > .section[class*='-up'] > .content {
 
   .section.masonry-layout > div { grid-column: span 4; }
   .section.masonry-layout .full-grid {grid-column: span 12; }
-  .section.masonry-layout .two-thirds-grid { grid-column: span 8; }
+  .section.masonry-layout .two-third-grid { grid-column: span 8; }
   .section.masonry-layout .half-grid { grid-column: span 6; }
 }
