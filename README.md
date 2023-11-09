@@ -4,7 +4,7 @@ Milo is a shared set of features and services to power Franklin-based websites o
 [![codecov](https://codecov.io/gh/adobecom/milo/branch/main/graph/badge.svg?token=a7ZTCbitBt)](https://codecov.io/gh/adobecom/milo)
 
 ## Environments
-[Preview](https://main--milo--adobecom.hlx.page) | [Live](https://milo.adobe.com)
+[Preview](https://main--milo--adobecom.hlx.page) | [Stage](https://milo.stage.adobe.com/) | [Live](https://milo.adobe.com)
 
 ## Getting started
 
