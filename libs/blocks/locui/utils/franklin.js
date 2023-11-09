@@ -13,12 +13,7 @@ export async function preview(path) {
 }
 
 export async function getStatus(path = '', editUrl = 'auto', fgFlag = false, fgColor = null) {
-  let repoPath = `${repo}`;
-  // Check if repo is 'cc'
-  if (repo === 'cc') {
-    repoPath = `${repo}/www`;
-  }
-  let url = `${ADMIN}/status/${owner}/${fgFlag ? `${repoPath}-${fgColor}` : repo}/main${path}`;
+  let url = `${ADMIN}/status/${owner}/${fgFlag ? `${repo}-${fgColor}` : repo}/main${path}`;
   url = editUrl ? `${url}?editUrl=${editUrl}` : url;
   const resp = await fetch(url, { cache: 'reload' });
   const json = await resp.json();
