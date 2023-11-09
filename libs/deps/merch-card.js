@@ -1,5 +1,5 @@
-// Wed, 08 Nov 2023 21:33:54 GMT
-import{html as r,LitElement as T}from"./lit-all.min.js";import{css as R,unsafeCSS as v}from"./lit-all.min.js";var f="(max-width: 899px)",h="(min-width: 900px)",m="(min-width: 1200px)",u="(min-width: 1440px)";var y=R`
+// Thu, 09 Nov 2023 02:42:00 GMT
+import{html as r,LitElement as T}from"./lit-all.min.js";import{css as R,unsafeCSS as v}from"./lit-all.min.js";var u="(max-width: 899px)",h="(min-width: 900px)",m="(min-width: 1200px)",f="(min-width: 1440px)";var y=R`
     :host {
         position: relative;
         display: flex;
@@ -210,14 +210,21 @@ import{html as r,LitElement as T}from"./lit-all.min.js";import{css as R,unsafeCS
 
     :host([variant='special-offers']) {
         min-height: 438px;
+        width: 378px;
     }
 
-    :host([variant='special-offers'][type='wide']) {
+    :host([variant='special-offers'].center) {
+        text-align: center;
+    }
+
+    :host([variant='special-offers'].wide) {
+        grid-column: span 3;
         width: auto;
         min-height: 438px;
     }
 
-    :host([variant='special-offers'][type='super-wide']) {
+    :host([variant='special-offers'].super-wide) {
+        grid-column: span 3;
         width: auto;
         min-height: 438px;
     }
@@ -361,7 +368,7 @@ merch-cards > button:hover {
     gap: var(--spacing-m);
 }
 
-@media screen and ${f} {
+@media screen and ${u} {
     .one-merch-card,
     .two-merch-cards,
     .three-merch-cards,
@@ -398,7 +405,7 @@ merch-cards > button:hover {
 }
 
 /* Large desktop */
-    @media screen and ${u} {
+    @media screen and ${f} {
     :root {
 
     }
@@ -469,7 +476,7 @@ merch-card p, merch-card h3, merch-card h4 {
     margin: 0;
 }
 
-merch-card [is=inline-price] {
+merch-card span[is=inline-price] {
     display: inline-block;
 }
 
@@ -537,25 +544,6 @@ merch-card [slot="body-l"] {
 merch-card [slot="body-xl"] {
     font-size: var(--consonant-merch-card-body-xl-font-size);
     line-height: var(--consonant-merch-card-body-xl-line-height);
-}
-
-merch-card[variant="special-offers"] [slot="list"] ul {
-    padding-left: 0;
-    padding-bottom: var(--consonant-merch-spacing-xxs);
-    margin-top: 0;
-    margin-bottom: 0;
-    list-style-position: inside;
-    list-style-type: '\u2022 ';
-}
-
-merch-card[variant="special-offers"] ul li {
-    padding-left: 0;
-    line-height: var(--consonant-merch-card-body-line-height);
-    font-size: var(--consonant-merch-card-body-xxs-font-size);
-}
-
-merch-card[variant="special-offers"] ul li ::marker {
-    margin-right: 0;
 }
 
 merch-card[variant="catalog"] [slot="action-menu-content"] {
