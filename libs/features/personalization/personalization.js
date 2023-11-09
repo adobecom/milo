@@ -416,19 +416,28 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   return matchingVariant;
 }
 
-export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
+export async function getPersConfig(info) {
+  const {
+    name,
+    manifestData,
+    manifestPath,
+    manifestPlaceholders,
+    manifestInfo,
+    variantLabel,
+  } = info;
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
     if (fetchData) data = fetchedData;
   }
-  const placeholders = data?.placeholders?.data || false;
-  const manifestType = data?.info?.data?.find((element) => element.key?.toLowerCase() === 'manifest type')?.value?.toLowerCase() || 'personalization';
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
   const config = parseConfig(persData);
-  config.manifestType = manifestType;
+
+  const infoTab = manifestInfo || data?.info?.data;
+  config.manifestType = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase() || 'personalization';
+  config.manifestOverrideName = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')?.value?.toLowerCase() || 'personalization';
 
   if (!config) {
     /* c8 ignore next 3 */
@@ -452,6 +461,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariant = 'default';
   }
 
+  const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
       parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
@@ -474,14 +484,9 @@ const normalizeFragPaths = ({ selector, val }) => ({
 });
 
 export async function runPersonalization(info, config) {
-  const {
-    name,
-    manifestData,
-    manifestPath,
-    variantLabel,
-  } = info;
+  const { manifestPath } = info;
 
-  const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath);
+  const experiment = await getPersConfig(info);
 
   if (!experiment) return null;
 
