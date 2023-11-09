@@ -26,8 +26,10 @@ function decorateDefaultButton(foreground) {
   if (!foreground.querySelector('.action-area')) return;
   const btns = foreground.querySelectorAll('.con-button');
   [...btns].forEach((btn) => btn.classList.add('button-l'));
-  foreground.querySelector('.action-area + p').className = '';
-  foreground.querySelector('p:last-child').className = 'supplemental-text';
+  const nextP = foreground.querySelector('.action-area + p');
+  const lastP = foreground.querySelector('.action-area ~ p:last-child');
+  if (nextP) nextP.className = '';
+  if (lastP) lastP.className = 'supplemental-text';
 }
 
 function handleObjectFit(bgRow) {
@@ -61,7 +63,7 @@ function handleClickableBrick(el, foreground) {
 function decorateSupplementalText(el) {
   const supplementalEl = el.querySelector('.foreground p.supplemental-text');
   if (!supplementalEl) return;
-  supplementalEl.className = `body-xs ${supplementalEl}`;
+  supplementalEl.className = 'body-xs supplemental-text';
 }
 
 function decorateBricks(el) {

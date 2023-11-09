@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   text-size-adjust: none;
-  min-height: 384px;
+  min-height: 300px;
 }
 
 .basic-brick,
@@ -18,10 +18,6 @@
 .dark.basic-brick,
 .dark.basic-brick.click a.foreground {
   color: var(--color-white);
-}
-
-.basic-brick.full-grid {
-  min-height: 500px;
 }
 
 .basic-brick .background {
@@ -200,6 +196,10 @@
 }
 
 @media screen and (min-width: 600px) {
+  .basic-brick {
+    min-height: 384px;
+  }
+
   .basic-brick .foreground {
     padding: var(--spacing-l);
   }
@@ -214,5 +214,9 @@
 @media screen and (min-width: 1200px) {
   .basic-brick .desktop-only {
     display: block;
+  }
+
+  .basic-brick.full-grid {
+    min-height: 500px;
   }
 }
