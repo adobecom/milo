@@ -13,7 +13,7 @@ import baseFooter from './mocks/base-footer.js';
 import fetchedFooter from './mocks/fetched-footer.js';
 import icons from './mocks/icons.js';
 import { isElementVisible, mockRes } from '../global-navigation/test-utilities.js';
-import placeholders from './mocks/placeholders.js';
+import placeholders from '../global-navigation/mocks/placeholders.js';
 
 describe('global footer', () => {
   let clock = null;
