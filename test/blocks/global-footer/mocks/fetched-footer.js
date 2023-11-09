@@ -1,4 +1,4 @@
-const fetchFooter = ({ regionPickerHash = '/fragments/regions#langnav' }) => `<div>
+export default ({ regionPickerHash = '/fragments/regions#langnav' }) => `<div>
 <h2 id="contact-us">Contact Us</h2>
 <ul>
   <li><a href="https://business.adobe.com/request-consultation/experience-cloud.html">Request a demo</a></li>
@@ -142,5 +142,3 @@ const fetchFooter = ({ regionPickerHash = '/fragments/regions#langnav' }) => `<d
 <div>
 <p><em>All rights reserved.</em> / <a href="https://www.adobe.com/privacy.html">Privacy</a> / <a href="https://www.adobe.com/legal/terms.html">Terms of Use</a> / <a href="https://www.adobe.com/#openPrivacy">Cookie preferences</a> / <a href="https://www.adobe.com/privacy/ca-rights.html">Do not sell my personal information</a> / <a href="https://www.adobe.com/privacy/opt-out.html#interest-based-ads">AdChoices</a></p>
 </div>`;
-
-export default fetchFooter;
