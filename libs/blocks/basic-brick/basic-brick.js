@@ -1,6 +1,5 @@
 import { decorateTextOverrides, decorateBlockText, decorateBlockBg, decorateIconStack } from '../../utils/decorate.js';
-import { createTag, getConfig} from '../../utils/utils.js';
-import { processTrackingLabels } from '../../martech/analytics.js';
+import { createTag } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   full: ['xxl', 'm', 'l'],
@@ -49,9 +48,7 @@ function handleObjectFit(bgRow) {
 async function handleClickableBrick(el, foreground) {
   if (!el.classList.contains('click')) return;
   const links = foreground.querySelectorAll('a');
-  if (links.length === 0 || links.length !== 1) return el.classList.remove('click');
-  const { decorateDefaultLinkAnalytics } = await import('../../martech/analytics.js');
-  decorateDefaultLinkAnalytics(el);
+  if (links.length !== 1) return el.classList.remove('click');
   const a = links[0];
   const linkDiv = createTag('span', { class: [...a.classList, 'first-link'].join(' ') }, a.innerHTML);
   a.replaceWith(linkDiv, a);
