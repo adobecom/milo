@@ -84,6 +84,7 @@ function decorateBricks(el) {
   const blockFormatting = getBlockSize(el);
   decorateBlockText(foreground, blockFormatting, 'basic-brick');
   decorateIconStack(el);
+  el.querySelector('.icon-stack-area')?.classList.add('body-xs');
   decorateDefaultButton(foreground);
   handleClickableBrick(el, foreground);
   return foreground;
