@@ -78,7 +78,7 @@ export default async function init(el, debug = null, localStoreKey = null) {
     const basic = results[BASIC_KEY];
     const pageloadHash = results[HASH_KEY];
 
-    if (!basic) {
+    if (!basic || basic.length === 0) {
       redirectPage(quizUrl, debug, `${LOADING_ERROR} Basic fragments are missing`);
       return;
     }
