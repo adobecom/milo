@@ -461,28 +461,19 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 
 /* rounded border styles*/
 .s-rounded-corners,
-.s-rounded-corners > .background img {
-  border-radius: var(--s-rounded-corners);
-}
-
-.m-rounded-corners,
-.m-rounded-corners > .background img {
-  border-radius: var(--m-rounded-corners);
-}
-
-.l-rounded-corners,
-.l-rounded-corners > .background img {
-  border-radius: var(--l-rounded-corners);
-}
-
+.s-rounded-corners > .background img,
 .s-image-rounded-corners .foreground picture img {
   border-radius: var(--s-rounded-corners);
 }
 
+.m-rounded-corners,
+.m-rounded-corners > .background img,
 .m-image-rounded-corners .foreground picture img {
   border-radius: var(--m-rounded-corners);
 }
 
+.l-rounded-corners,
+.l-rounded-corners > .background img,
 .l-image-rounded-corners .foreground picture img {
   border-radius: var(--l-rounded-corners);
 }
