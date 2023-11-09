@@ -10,7 +10,7 @@ import {
 } from '../utils/state.js';
 import { fetchStatusAction } from '../utils/miloc.js';
 
-function truncateMessage(message, maxLength = 95) {
+function truncateMessage(message, maxLength = 100) {
   if (message && message.length > maxLength) {
     return message.slice(0, maxLength) + '...';
   }
