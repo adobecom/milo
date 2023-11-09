@@ -1,11 +1,11 @@
 import { createIntersectionObserver, isInTextNode } from '../../utils/utils.js';
 
 export default function init(a) {
+  const searchParams = new URLSearchParams(a.search);
+  const id = searchParams.get('v') || a.pathname.split('/').pop();
   const embedVideo = () => {
     if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
     const title = !a.textContent.includes('http') ? a.textContent : 'Youtube Video';
-    const searchParams = new URLSearchParams(a.search);
-    const id = searchParams.get('v') || a.pathname.split('/').pop();
     searchParams.delete('v');
     const src = `https://www.youtube.com/embed/${id}?${searchParams.toString()}`;
     const embedHTML = `
@@ -19,8 +19,8 @@ export default function init(a) {
       </iframe>
     </div>`;
     a.insertAdjacentHTML('afterend', embedHTML);
+    window._satellite.track('trackYoutube');
     a.remove();
   };
-  window._satellite.track('trackYoutube');
   createIntersectionObserver({ el: a, callback: embedVideo });
 }
