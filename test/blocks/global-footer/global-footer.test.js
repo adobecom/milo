@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
+import { readFile } from '@web/test-runner-commands';
 import {
   allElementsVisible,
   visibleSelectorsDesktop,
@@ -24,7 +25,7 @@ describe('global footer', () => {
       shouldAdvanceTime: true,
     });
 
-    stub(window, 'fetch').callsFake((url) => {
+    stub(window, 'fetch').callsFake(async (url) => {
       if (url.includes('/footer')) {
         return mockRes({
           payload: fetchedFooter(
@@ -36,6 +37,8 @@ describe('global footer', () => {
       if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
 
       if (url.includes('icons.svg')) return mockRes({ payload: icons });
+
+      if (url.includes('/regions.plain.html')) return mockRes({ payload: await readFile({ path: '../region-nav/mocks/regions.html' }) });
 
       return null;
     });
@@ -162,11 +165,14 @@ describe('global footer', () => {
 
         expect(regionPickerElem.getAttribute('href') === '#langnav').to.equal(true);
         expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('true');
+
+        window.dispatchEvent(new Event('milo:modal:closed'));
+        expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('false');
       });
 
       it('should handle empty hash', async () => {
         window.fetch.restore();
-        stub(window, 'fetch').callsFake((url) => {
+        stub(window, 'fetch').callsFake(async (url) => {
           if (url.includes('/footer')) {
             return mockRes({
               payload: fetchedFooter(
@@ -188,6 +194,9 @@ describe('global footer', () => {
 
         regionPickerElem.dispatchEvent(new Event('click'));
         expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('true');
+
+        document.body.dispatchEvent(new Event('click', { bubbles: true }));
+        expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('false');
       });
     });
   });
