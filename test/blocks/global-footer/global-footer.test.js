@@ -274,7 +274,8 @@ describe('global footer', () => {
     });
 
     it('should send log when footer cannot be fetched', async () => {
-      window.fetch = stub().callsFake((url) => {
+      window.fetch.restore();
+      stub(window, 'fetch').callsFake((url) => {
         if (url.includes('/footer')) {
           return mockRes({
             payload: null,
@@ -299,7 +300,8 @@ describe('global footer', () => {
     });
 
     it('should send log if failed to load icons', async () => {
-      window.fetch = stub().callsFake((url) => {
+      window.fetch.restore();
+      stub(window, 'fetch').callsFake((url) => {
         if (url.includes('/footer')) {
           return mockRes({
             payload: fetchedFooter(
