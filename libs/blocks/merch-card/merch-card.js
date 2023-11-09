@@ -1,15 +1,10 @@
 /* eslint-disable prefer-destructuring */
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
-import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
+import { getConfig, createTag } from '../../utils/utils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/commerce.js';
-import '../../deps/commerce-web-components.js';
-
-const { miloLibs, codeRoot } = getConfig();
-const base = miloLibs || codeRoot;
-
-loadStyle(`${base}/deps/commerce-web-components.css`);
+import '../../deps/merch-card.js';
 
 const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'evergreen'];
 
@@ -104,8 +99,6 @@ function getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent) {
 }
 
 const init = (el) => {
-  const section = el.closest('.section');
-  section.classList.add('merch-card-collection');
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   const images = el.querySelectorAll('picture');
@@ -136,6 +129,7 @@ const init = (el) => {
   });
 
   const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
+  merchCard.setAttribute('filters', 'all');
   if (ribbonMetadata !== null) {
     const badge = returnRibbonStyle(ribbonMetadata);
     if (badge !== null) {
@@ -157,7 +151,9 @@ const init = (el) => {
     image.remove();
   }
   if (!icons || icons.length > 0) {
-    merchCard.setAttribute('icons', JSON.stringify(Array.from(icons).map((icon) => icon.querySelector('img').src)));
+    merchCard.setAttribute('icons', JSON.stringify(Array.from(icons)
+      .map((icon) => icon.querySelector('img'))
+      .map(({ src, alt }) => ({ src, alt }))));
     icons.forEach((icon) => icon.remove());
   }
   if (styles.includes('secure')) {

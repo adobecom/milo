@@ -1,0 +1,4 @@
+main > div[class*="-merch-card"],
+main > div[class*="-merch-cards"] {
+  display: grid;
+}
