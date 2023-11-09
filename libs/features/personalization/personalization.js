@@ -422,14 +422,13 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
     if (fetchData) data = fetchedData;
   }
-  let placeholders = false;
-  if (data?.placeholders?.data) {
-    placeholders = data.placeholders.data;
-  }
+  const placeholders = data?.placeholders?.data || false;
+  const manifestType = data?.info?.data?.find((element) => element.key?.toLowerCase() === 'manifest type')?.value?.toLowerCase() || 'personalization';
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
   const config = parseConfig(persData);
+  config.manifestType = manifestType;
 
   if (!config) {
     /* c8 ignore next 3 */
@@ -572,9 +571,21 @@ export async function applyPers(manifests) {
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
-  const trackingManifests = results.map((r) => r.experiment.manifest.split('/').pop().replace('.json', ''));
-  const trackingVariants = results.map((r) => r.experiment.selectedVariantName);
-  document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
+  const personalizedManifests = results.filter((r) => (r.experiment.manifestType !== 'test or promo'));
+  if (!personalizedManifests.length) {
+    document.body.dataset.mep = 'nopzn|nopzn';
+  } else {
+    const trackingVariants = personalizedManifests.map((r) => {
+      const val = r.experiment.selectedVariantName.replace('target-', '').trim().slice(0, 15);
+      return val === 'default' ? 'nopzn' : val;
+    });
+    const trackingManifests = personalizedManifests.map((r) => {
+      const val = r.experiment.manifest.split('/').pop().replace('.json', '').trim()
+        .slice(0, 20);
+      return val === 'default' ? 'nopzn' : val;
+    });
+    document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
+  }
 
   decoratePreviewCheck(config, experiments);
 }

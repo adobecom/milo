@@ -834,7 +834,7 @@ async function checkForPageMods() {
 
     await applyPers(manifests);
   } else {
-    document.body.dataset.mep = 'default|default';
+    document.body.dataset.mep = 'nopzn|nopzn';
   }
 }
 
@@ -991,7 +991,7 @@ async function documentPostSectionLoading(config) {
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
   import('../martech/analytics.js').then((analytics) => {
-    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
 }
 
