@@ -4,20 +4,16 @@ import {
   allElementsVisible,
   visibleSelectorsDesktop,
   visibleSelectorsMobile,
-  containerSelector,
   createFullGlobalFooter,
   insertDummyElementOnTop,
-  isElementVisible,
   waitForFooterToDecorate,
   allSelectors,
 } from './test-utilities.js';
 import baseFooter from './mocks/base-footer.js';
 import fetchedFooter from './mocks/fetched-footer.js';
 import icons from './mocks/icons.js';
-import { mockRes } from '../global-navigation/test-utilities.js';
+import { isElementVisible, mockRes } from '../global-navigation/test-utilities.js';
 import placeholders from './mocks/placeholders.js';
-
-const originalFetch = window.fetch;
 
 describe('global footer', () => {
   let clock = null;
@@ -28,7 +24,7 @@ describe('global footer', () => {
       shouldAdvanceTime: true,
     });
 
-    window.fetch = stub().callsFake((url) => {
+    stub(window, 'fetch').callsFake((url) => {
       if (url.includes('/footer')) {
         return mockRes({
           payload: fetchedFooter(
@@ -47,7 +43,8 @@ describe('global footer', () => {
 
   afterEach(() => {
     clock.restore();
-    window.fetch = originalFetch;
+    window.fetch.restore();
+    document.body.innerHTML = '';
   });
 
   describe('wide screen', async () => {
@@ -60,7 +57,7 @@ describe('global footer', () => {
 
       expect(allElementsVisible(
         visibleSelectorsDesktop,
-        document.querySelector(containerSelector),
+        document.querySelector(allSelectors.container),
       )).to.equal(true);
     });
   });
@@ -77,12 +74,13 @@ describe('global footer', () => {
 
         expect(allElementsVisible(
           visibleSelectorsDesktop,
-          document.querySelector(containerSelector),
+          document.querySelector(allSelectors.container),
         )).to.equal(true);
       });
     });
 
     describe('conditional render tests', () => {
+      const { container, ...childSelectors } = allSelectors;
       it('should render the footer when in viewport', async () => {
         await createFullGlobalFooter({ waitForDecoration: true });
 
@@ -92,7 +90,7 @@ describe('global footer', () => {
 
         expect(allElementsVisible(
           visibleSelectorsDesktop,
-          document.querySelector(containerSelector),
+          document.querySelector(allSelectors.container),
         )).to.equal(true);
       });
 
@@ -101,7 +99,7 @@ describe('global footer', () => {
 
         await createFullGlobalFooter({ waitForDecoration: false });
 
-        Object.keys(allSelectors).forEach((key) => expect(
+        Object.keys(childSelectors).forEach((key) => expect(
           document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(false));
 
@@ -132,7 +130,7 @@ describe('global footer', () => {
         const startTime = performance.now();
         await createFullGlobalFooter({ waitForDecoration: false });
 
-        Object.keys(allSelectors).forEach((key) => expect(
+        Object.keys(childSelectors).forEach((key) => expect(
           document.querySelector(allSelectors[key]) instanceof HTMLElement,
         ).to.equal(false));
 
@@ -150,7 +148,7 @@ describe('global footer', () => {
 
         expect(allElementsVisible(
           visibleSelectorsDesktop,
-          document.querySelector(containerSelector),
+          document.querySelector(allSelectors.container),
         )).to.equal(true);
       });
     });
@@ -159,16 +157,16 @@ describe('global footer', () => {
       it('should handle non-empty hash', async () => {
         await createFullGlobalFooter({ waitForDecoration: true });
 
-        const regionPickerElem = document.querySelector('.feds-regionPicker');
+        const regionPickerElem = document.querySelector(allSelectors.regionPicker);
         regionPickerElem.dispatchEvent(new Event('click'));
 
         expect(regionPickerElem.getAttribute('href') === '#langnav').to.equal(true);
-        expect(regionPickerElem.hasAttribute('aria-expanded')).to.equal(true);
-        expect(regionPickerElem.getAttribute('aria-expanded') === 'true').to.equal(true);
+        expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('true');
       });
 
       it('should handle empty hash', async () => {
-        window.fetch = stub().callsFake((url) => {
+        window.fetch.restore();
+        stub(window, 'fetch').callsFake((url) => {
           if (url.includes('/footer')) {
             return mockRes({
               payload: fetchedFooter(
@@ -185,12 +183,11 @@ describe('global footer', () => {
         });
 
         await createFullGlobalFooter({ waitForDecoration: true });
-        const regionPickerElem = document.querySelector('.feds-regionPicker');
+        const regionPickerElem = document.querySelector(allSelectors.regionPicker);
         expect(regionPickerElem.getAttribute('href') === '#').to.equal(true);
 
         regionPickerElem.dispatchEvent(new Event('click'));
-        expect(regionPickerElem.hasAttribute('aria-expanded')).to.equal(true);
-        expect(regionPickerElem.getAttribute('aria-expanded') === 'true').to.equal(true);
+        expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('true');
       });
     });
   });
@@ -205,7 +202,7 @@ describe('global footer', () => {
 
       expect(allElementsVisible(
         visibleSelectorsDesktop,
-        document.querySelector(containerSelector),
+        document.querySelector(allSelectors.container),
       )).to.equal(true);
     });
   });
@@ -220,7 +217,7 @@ describe('global footer', () => {
 
       expect(allElementsVisible(
         visibleSelectorsMobile,
-        document.querySelector(containerSelector),
+        document.querySelector(allSelectors.container),
       )).to.equal(true);
     });
 
