@@ -15,6 +15,7 @@
  */
 import { parseEncodedConfig, loadScript, createTag, createIntersectionObserver } from '../../utils/utils.js';
 
+const ROOT_MARGIN = 1000;
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
@@ -199,5 +200,6 @@ export default function init(el) {
     callback: (target) => {
       loadMarketo(target, formData);
     },
+    options: { rootMargin: `${ROOT_MARGIN}px` },
   });
 }
