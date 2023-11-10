@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/basic-brick/basic-brick.js');
+const { default: init } = await import('../../../libs/blocks/brick/brick.js');
 const { default: getFragment } = await import('../../../libs/blocks/fragment/fragment.js');
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -16,7 +16,7 @@ const config = {
 setConfig(config);
 
 describe('basic brick', () => {
-  const bricks = document.querySelectorAll('.basic-brick');
+  const bricks = document.querySelectorAll('.brick');
   bricks.forEach((brick) => {
     init(brick);
   });
@@ -28,12 +28,12 @@ describe('basic brick', () => {
   });
 
   it('has a body-m', () => {
-    const bodyCopy = document.body.querySelector('.basic-brick .foreground .body-m');
+    const bodyCopy = document.body.querySelector('.brick .foreground .body-m');
     expect(bodyCopy).to.exist;
   });
 
   it('has a detail-l', () => {
-    const bodyCopy = document.body.querySelector('.basic-brick .foreground .detail-l');
+    const bodyCopy = document.body.querySelector('.brick .foreground .detail-l');
     expect(bodyCopy).to.exist;
   });
 
@@ -50,12 +50,12 @@ describe('basic brick', () => {
   });
 
   it('supports gradient color', () => {
-    const bgColor = document.body.querySelector('.basic-brick .background');
+    const bgColor = document.body.querySelector('.brick .background');
     expect(bgColor.style.background).to.not.be.null;
   });
 
   it('has background image', () => {
-    const bgImage = document.body.querySelector('.basic-brick .background');
+    const bgImage = document.body.querySelector('.brick .background');
     expect(bgImage.querySelector('picture')).to.exist;
   });
 

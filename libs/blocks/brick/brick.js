@@ -82,7 +82,7 @@ function decorateBricks(el) {
   const hasIconArea = foreground.querySelector('p')?.querySelector('img');
   if (hasIconArea) foreground.querySelector('p').classList.add('icon-area');
   const blockFormatting = getBlockSize(el);
-  decorateBlockText(foreground, blockFormatting, 'basic-brick');
+  decorateBlockText(foreground, blockFormatting);
   decorateIconStack(el);
   el.querySelector('.icon-stack-area')?.classList.add('body-xs');
   decorateDefaultButton(foreground);
