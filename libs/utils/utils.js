@@ -200,7 +200,6 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
-      config.decorateArea = conf.decorateArea || false;
       return config;
     },
     (conf) => (config = conf),
@@ -650,8 +649,6 @@ function decorateHeader() {
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
   if (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
-  const promo = getMetadata('gnav-promo-source');
-  if (promo?.length) header.classList.add('has-promo');
 }
 
 async function decorateIcons(area, config) {
@@ -730,13 +727,13 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map(decorateSection);
 }
 
-export async function decorateFooterPromo() {
-  const footerPromoTag = getMetadata('footer-promo-tag');
-  const footerPromoType = getMetadata('footer-promo-type');
-  if (!footerPromoTag && footerPromoType !== 'taxonomy') return;
-
-  const { default: initFooterPromo } = await import('../features/footer-promo.js');
-  await initFooterPromo(footerPromoTag, footerPromoType);
+function decorateFooterPromo(config) {
+  const footerPromo = getMetadata('footer-promo-tag');
+  if (!footerPromo) return;
+  const href = `${config.locale.contentRoot}/fragments/footer-promos/${footerPromo}`;
+  const para = createTag('p', {}, createTag('a', { href }, href));
+  const section = createTag('div', null, para);
+  document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
 }
 
 let imsLoaded;
@@ -947,9 +944,10 @@ function decorateMeta() {
   });
 }
 
-function decorateDocumentExtras() {
+function decorateDocumentExtras(config) {
   decorateMeta();
   decorateHeader();
+  decorateFooterPromo(config);
 
   import('./samplerum.js').then(({ addRumListeners }) => {
     addRumListeners();
@@ -963,9 +961,6 @@ async function documentPostSectionLoading(config) {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
-
-  decorateFooterPromo();
-
   const appendage = getMetadata('title-append');
   if (appendage) {
     import('../features/title-append/title-append.js').then((module) => module.default(appendage));
@@ -997,7 +992,7 @@ async function documentPostSectionLoading(config) {
 }
 
 async function processSection(section, config, isDoc) {
-  const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
+  const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"][class~="fragment"]')];
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
@@ -1042,13 +1037,10 @@ export async function loadArea(area = document) {
   }
 
   const config = getConfig();
-
-  if (config.decorateArea) config.decorateArea();
-
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
-    decorateDocumentExtras();
+    decorateDocumentExtras(config);
   }
 
   const sections = decorateSections(area, isDoc);
