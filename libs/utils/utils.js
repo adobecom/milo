@@ -200,7 +200,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
-      config.mediaPrefix = conf.mediaPrefix || '';
+      config.decorateArea = conf.decorateArea || false;
       return config;
     },
     (conf) => (config = conf),
@@ -1042,6 +1042,9 @@ export async function loadArea(area = document) {
   }
 
   const config = getConfig();
+
+  if (config.decorateArea) config.decorateArea();
+
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
