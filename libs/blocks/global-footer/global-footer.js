@@ -20,7 +20,6 @@ import {
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey, replaceText } from '../../features/placeholders.js';
-import { isValidUrl } from './utilities.js';
 
 const { miloLibs, codeRoot, locale } = getConfig();
 const base = miloLibs || codeRoot;
@@ -66,12 +65,11 @@ class Footer {
     }, CONFIG.delays.decoration);
   }, 'Error in global footer init', 'errorType=error,module=global-footer');
 
-  decorateContent = async () => {
+  decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
     this.body = await this.fetchContent();
 
     if (!this.body) {
-      lanaLog({ message: 'Footer content could not be found', tags: 'errorType=error,module=global-footer' });
       return;
     }
     // TODO: revisit region picker and social links decoration logic
@@ -106,12 +104,12 @@ class Footer {
     this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
 
     this.footerEl.append(this.elements.footer);
-  };
+  }, 'Failed to decorate footer content', 'errorType=error,module=global-footer');
 
   fetchContent = async () => {
     const resp = await fetch(`${this.contentUrl}.plain.html`);
 
-    if (!resp.ok) lanaLog({ message: `Failed to fetch footer content: ${resp.statusText}`, tags: 'errorType=error,module=global-footer' });
+    if (!resp.ok) lanaLog({ message: `Failed to fetch footer content; content url: ${this.contentUrl}, status: ${resp.statusText}`, tags: 'errorType=warn,module=global-footer' });
 
     const html = await resp.text();
 
@@ -128,19 +126,14 @@ class Footer {
   };
 
   loadMenuLogic = async () => {
-    try {
-      this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
-        const menuLogic = await loadDecorateMenu();
-        this.decorateMenu = menuLogic.decorateMenu;
-        this.decorateLinkGroup = menuLogic.decorateLinkGroup;
-        resolve();
-      });
+    this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
+      const menuLogic = await loadDecorateMenu();
+      this.decorateMenu = menuLogic.decorateMenu;
+      this.decorateLinkGroup = menuLogic.decorateLinkGroup;
+      resolve();
+    });
 
-      return this.menuLogic;
-    } catch (e) {
-      lanaLog({ message: `Failed to load menu logic: ${e.message}`, tags: 'errorType=error,module=global-footer' });
-      return Promise.reject(e);
-    }
+    return this.menuLogic;
   };
 
   decorateGrid = async () => {
@@ -166,11 +159,8 @@ class Footer {
 
   loadIcons = async () => {
     const loadIconsUrl = `${base}/blocks/global-footer/icons.svg`;
-    if (!isValidUrl(loadIconsUrl)) lanaLog({ message: `Invalid URL provided to loadIcons method. Url: ${loadIconsUrl}`, tags: 'errorType=error,module=global-footer' });
 
     const file = await fetch(loadIconsUrl);
-
-    if (!file.ok) lanaLog({ message: `Failed to load icons: ${file.statusText}`, tags: 'errorType=error,module=global-footer' });
 
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
@@ -214,7 +204,8 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      lanaLog({ message: 'Could not create URL for region picker', tags: 'errorType=error,module=global-footer' });
+      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'errorType=error,module=global-footer' });
+      throw e;
     }
 
     if (!url) return this.elements.regionPicker;
