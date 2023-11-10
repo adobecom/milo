@@ -60,7 +60,7 @@ export async function getParamsFg(config) {
     rootFolder: config.sharepoint.site.rootFolder,
     fgRootFolder: fgRootFolderColor,
     promoteIgnorePaths: config.promoteIgnorePaths || [],
-    driveId: config.sharepoint.site.driveId || '',
+    driveId: config.driveId || '',
     fgColor: fgColor.value,
   };
   return params;
@@ -214,6 +214,11 @@ export async function getServiceConfigFg(origin) {
   if (!resp.ok) return { error: 'Could not fetch .milo/config.' };
   const json = await resp.json();
   const configs = {};
+  const rowIndex = json.configs.data.findIndex((row) => row.key === 'prod.sharepoint.driveId');
+  let configDriveId;
+  if (rowIndex !== -1) {
+    configDriveId = json.configs.data[rowIndex].value;
+  } 
   json.floodgate.data.forEach((conf) => {
     const [confEnv, confService, confType, confUrl] = conf.key.split('.');
     configs[confEnv] ??= {};
@@ -228,6 +233,9 @@ export async function getServiceConfigFg(origin) {
     }
   });
   configs.promoteIgnorePaths = [];
+  if (rowIndex !== -1) {
+    configs.driveId = configDriveId;
+  }
   json.promoteignorepaths.data.forEach((path) => {
     configs.promoteIgnorePaths.push(path.FilesToIgnoreFromPromote);
   });
