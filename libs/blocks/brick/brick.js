@@ -37,7 +37,7 @@ function handleObjectFit(bgRow) {
   [...bgConfig].forEach((r) => {
     const image = r.querySelector('img');
     if (!image) return;
-    const pchild = r.querySelectorAll(':scope > p');
+    const pchild = r.querySelectorAll(':scope > p:not(:empty)');
     if (pchild.length < 2) return;
     const backgroundConfig = pchild[1].textContent.split(',').map((c) => c.toLowerCase().trim());
     const fitOption = objFitOptions.filter((c) => backgroundConfig.includes(c));
