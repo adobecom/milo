@@ -58,10 +58,4 @@ describe('Fragments', () => {
     expect(cols.querySelector('.aside').style.background).to.equal('rgb(238, 238, 238)');
     expect(cols.innerHTML.includes('Hello World!!!')).to.be.true;
   });
-
-  it('Image test', async () => {
-    const a = document.querySelector('a.frag-image');
-    await loadArea(a);
-    console.log(document);
-  });
 });
