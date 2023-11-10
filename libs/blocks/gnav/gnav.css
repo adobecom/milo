@@ -1184,7 +1184,7 @@ header .app-launcher {
   }
 
   .gnav .gnav-logo svg {
-    width: 25px;
+    width: 100%;
   }
 
   /* Search Bar */
