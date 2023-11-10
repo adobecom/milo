@@ -48,7 +48,7 @@ const insertInlineFrag = (sections, a) => {
 };
 
 export default async function init(a) {
-  const { expFragments } = getConfig();
+  const { expFragments, mediaPrefix } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
   if (expFragments?.[relHref]) {
@@ -72,6 +72,14 @@ export default async function init(a) {
 
   const html = await resp.text();
   const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  if (mediaPrefix) {
+    doc.querySelectorAll('source').forEach((source) => {
+      const { pathname, search } = new URL(`${window.location.origin}${source.srcset.substring(1)}`);
+      if (pathname.startsWith('/media_')) source.srcset = `${mediaPrefix}${pathname}${search}`;
+    });
+  }
+
   const sections = doc.querySelectorAll('body > div');
 
   if (!sections.length) {
