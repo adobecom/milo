@@ -3,118 +3,204 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag } from '../../utils/utils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
-import '../../deps/commerce.js';
 import '../../deps/merch-card.js';
 
-const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'evergreen'];
+const PRODUCT_NAMES = [
+  'acrobat-pdf-pack',
+  'acrobat-pro-2020',
+  'acrobat-reader-dc-mobile',
+  'acrobat-reader-dc',
+  'acrobat-sign-solutions-mobile',
+  'acrobat-sign-solutions',
+  'acrobat-standard-2020',
+  'acrobat-standard-dc',
+  'acrobat',
+  'adobe-connect',
+  'adobe-export-pdf',
+  'adobe-firefly',
+  'adobe-scan',
+  'advertising-cloud',
+  'aero',
+  'aftereffects',
+  'analytics',
+  'animate',
+  'audience-manager',
+  'audition',
+  'behance',
+  'bridge',
+  'campaign',
+  'captivate-prime',
+  'captivate',
+  'capture',
+  'all-apps',
+  'express',
+  'character-animator',
+  'cloud-service',
+  'coldfusion-aws',
+  'coldfusion-builder',
+  'coldfusion-enterprise',
+  'coldfusion',
+  'color',
+  'commerce-cloud',
+  'content-server',
+  'customer-journey-analytics',
+  'design-to-print',
+  'digital-editions',
+  'dreamweaver',
+  'embedded-print-engine',
+  'experience-manager-assets',
+  'experience-manager-forms',
+  'experience-manager-sites',
+  'experience-manager',
+  'experience-platform',
+  'fill-sign',
+  'fonts',
+  'frame',
+  'framemaker-publishing-server',
+  'framemaker',
+  'fresco',
+  'http-dynamic-streaming',
+  'illustrator',
+  'incopy',
+  'indesign-server',
+  'indesign',
+  'intelligent-services',
+  'journey-orchestration',
+  'lightroom-classic',
+  'lightroom',
+  'magento',
+  'marketo',
+  'media-encoder',
+  'media-server-aws',
+  'media-server-extended',
+  'media-server-professional',
+  'media-server-standard',
+  'mixamo',
+  'pdf-print-engine',
+  'pepe',
+  'photoshop-elements',
+  'photoshop-express',
+  'photoshop',
+  'portfolio',
+  'postscript',
+  'premiere-elements',
+  'premierepro',
+  'presenter-video-express',
+  'real-time-customer-data-platform',
+  'robohelp-server',
+  'robohelp',
+  'stock',
+  'substance-3d-designer',
+  'substance-3d-modeler',
+  'substance-3d-painter',
+  'substance-3d-sampler',
+  'substance-3d-stager',
+  'target',
+  'technical-communication-suite',
+  'type',
+  'xml-documentation',
+];
+
+const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
+
+const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'product'];
 
 const textStyles = {
   H5: 'detail-m',
   H4: 'body-xxs',
   H3: 'heading-xs',
   H2: 'heading-m',
-  H1: 'heading-l',
 };
 
 const getPodType = (styles) => styles?.find((style) => cardTypes.includes(style));
 
-const checkBoxLabel = (ctas, altCtaMetaData) => {
-  const altCtaRegex = /href=".*"/;
-  if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return null;
-  const allButtons = ctas.querySelectorAll('a');
-  const originalCtaButton = allButtons[allButtons.length - 1];
-  const altCtaButtonData = altCtaMetaData[1];
-  const altCtaButton = createTag('a', { class: [...originalCtaButton.classList, 'alt-cta', 'button--inactive'].join(' ') }, altCtaButtonData.textContent);
-  originalCtaButton.classList.add('active');
-  decorateButtons(altCtaButton);
-  ctas.appendChild(altCtaButton);
-  return altCtaMetaData[0].textContent;
-};
-
-const isHeadingTag = (tagName) => /^H[1-5]$/.test(tagName);
+const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
-const isListTag = (tagName) => tagName === 'UL';
 
-const createAndAppendTag = (tagName, attributes, content, parent) => {
-  const newElement = createTag(tagName, attributes, content);
-  parent.append(newElement);
-  return newElement;
-};
-
-const parseContent = (el, altCta, cardType, merchCard) => {
-  const innerElements = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul')];
+const parseContent = (el, merchCard) => {
+  const innerElements = [
+    ...el.querySelectorAll('h2, h3, h4, h5, p, ul'),
+  ];
   const bodySlot = createTag('div', { slot: 'body-xs' });
 
   innerElements.forEach((element) => {
     const { tagName } = element;
     if (isHeadingTag(tagName)) {
-      createAndAppendTag(tagName, { slot: textStyles[tagName] }, element.innerHTML, merchCard);
-      element.remove();
-      return;
-    } if (isParagraphTag(tagName)) {
-      bodySlot.append(element);
+      const slotName = textStyles[tagName];
+      if (slotName) {
+        element.setAttribute('slot', slotName);
+        merchCard.append(element);
+      }
       return;
     }
-
-    if (isListTag(tagName)) {
-      const lastChildOfBody = bodySlot.lastElementChild;
-      if (lastChildOfBody) {
-        bodySlot.removeChild(lastChildOfBody);
-        element.prepend(lastChildOfBody);
-      }
-      createAndAppendTag('div', { slot: 'list' }, element, merchCard);
+    if (isParagraphTag(tagName)) {
+      bodySlot.append(element);
     }
   });
   merchCard.append(bodySlot);
 };
 
 const returnRibbonStyle = (ribbonMetadata) => {
-  const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
-  if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return null;
-  const style = ribbonMetadata[0].innerText;
-  const ribbonWrapper = ribbonMetadata[0].parentNode;
-  const value = ribbonMetadata[1].innerText;
-  ribbonWrapper.remove();
-  return { style, value };
+  const style = ribbonMetadata.firstElementChild.innerText;
+  const badgeBackgroundColor = style.split(',')[0].trim();
+  const badgeColor = style.split(',')[1].trim();
+  const badgeText = ribbonMetadata.lastElementChild.innerText;
+  return { badgeBackgroundColor, badgeColor, badgeText };
 };
 
-const getActionMenuContent = (el, ribbonMetadata) => {
-  const index = (ribbonMetadata !== null) ? 1 : 0;
-  const expectedChildren = (ribbonMetadata !== null) ? 3 : 2;
-  if (el.childElementCount !== expectedChildren) {
-    return null;
-  }
-  const actionMenuContentWrapper = el.children[index];
-  const actionMenuContent = actionMenuContentWrapper.children[0];
+const getActionMenuContent = (el) => {
+  const actionMenuContentWrapper = [...el.children].find((child) => child.querySelector('ul') && child.querySelector('h2') === null);
+  if (!actionMenuContentWrapper) return undefined;
   actionMenuContentWrapper.remove();
-  return actionMenuContent;
+  return actionMenuContentWrapper?.firstElementChild;
 };
 
-function getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent) {
-  if (cardType === 'catalog') {
-    const index = ribbonMetadata === null ? 0 : 1;
-    return actionMenuContent !== null ? rows[index + 1] : rows[index];
-  }
-  return rows[ribbonMetadata === null ? 0 : 1];
-}
+const extractTags = (container) => [...container.querySelectorAll('p')]
+  .map((tag) => tag.innerText?.trim())
+  .filter((item) => TAG_PATTERN.test(item))
+  .reduce((acc, item) => {
+    const [, tag] = item.split(':');
+    if (!tag) return acc;
+    const parts = tag.split('/');
+    if (!acc[parts[0]]) return acc;
+    acc[parts[0]].push(parts.pop());
+    return acc;
+  }, { categories: ['all'], types: [] });
 
-const init = (el) => {
+// stock offers.
+let stock;
+
+const init = async (el) => {
+  const styles = [...el.classList];
+  const lastClass = styles[styles.length - 1];
+  const name = PRODUCT_NAMES.includes(lastClass) ? lastClass : undefined;
+  if (name) {
+    // if product name is found, remove it from the class list.
+    styles.pop();
+  }
+
+  let section = el.closest('.section');
+  if (section?.parentElement.classList.contains('fragment')) {
+    const fragment = section.parentElement;
+    const fragmentParent = fragment.parentElement;
+    section.style.display = 'contents';
+    fragment.style.display = 'contents';
+    fragmentParent.style.display = 'contents';
+    section = fragmentParent.parentElement;
+  }
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
-  const rows = el.querySelectorAll(':scope > *');
-  const styles = [...el.classList];
   const cardType = getPodType(styles);
-  const ribbonMetadata = rows[0].children?.length === 2 ? rows[0].children : null;
-  const actionMenuContent = cardType === 'catalog' ? getActionMenuContent(el, ribbonMetadata) : null;
-  const row = getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent);
-  const altCta = rows[rows.length - 1].children?.length === 2
-    ? rows[rows.length - 1].children : null;
-  const allPElems = row.querySelectorAll('p');
-  const ctas = allPElems[allPElems.length - 1];
-  decorateBlockHrs(el);
+
+  const merchCard = createTag('merch-card', {
+    class: styles.join(' '),
+    name,
+    variant: cardType,
+  });
+
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
     const { width, height } = imgNode;
@@ -128,18 +214,47 @@ const init = (el) => {
     }
   });
 
-  const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
-  merchCard.setAttribute('filters', 'all');
-  if (ribbonMetadata !== null) {
-    const badge = returnRibbonStyle(ribbonMetadata);
-    if (badge !== null) {
-      merchCard.setAttribute('badge', JSON.stringify(badge));
+  let tags = {};
+  if (el.lastElementChild) {
+    tags = extractTags(el.lastElementChild);
+    if (tags.categories?.length > 1 || tags.types?.length > 0) {
+    // this div contains tags, remove it from further processing.
+      el.lastElementChild.remove();
     }
   }
-  if (actionMenuContent !== null) {
-    merchCard.setAttribute('action-menu', true);
-    merchCard.append(createTag('div', { slot: 'action-menu-content' }, actionMenuContent.innerHTML));
+  const { categories = ['all'], types = [] } = tags;
+
+  if (el.firstElementChild) {
+    const ribbonMetadata = el.firstElementChild.querySelector('ul,h2') === null
+  && el.firstElementChild.innerText.includes('#') ? el.firstElementChild : null;
+
+    if (ribbonMetadata !== null) {
+      const badge = returnRibbonStyle(ribbonMetadata);
+      if (badge !== null) {
+        merchCard.setAttribute(
+          'badge-background-color',
+          badge.badgeBackgroundColor,
+        );
+        merchCard.setAttribute('badge-color', badge.badgeColor);
+        merchCard.setAttribute('badge-text', badge.badgeText);
+      }
+    }
   }
+
+  const actionMenuContent = cardType === 'catalog'
+    ? getActionMenuContent(el)
+    : null;
+  if (actionMenuContent) {
+    merchCard.setAttribute('action-menu', true);
+    merchCard.append(
+      createTag(
+        'div',
+        { slot: 'action-menu-content' },
+        actionMenuContent.innerHTML,
+      ),
+    );
+  }
+  const ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
   if (ctas) {
     const footer = createTag('div', { slot: 'footer' });
     decorateButtons(ctas);
@@ -151,23 +266,42 @@ const init = (el) => {
     image.remove();
   }
   if (!icons || icons.length > 0) {
-    merchCard.setAttribute('icons', JSON.stringify(Array.from(icons)
-      .map((icon) => icon.querySelector('img'))
-      .map(({ src, alt }) => ({ src, alt }))));
+    const iconImgs = Array.from(icons).map((icon) => {
+      const img = {
+        src: icon.querySelector('img').src,
+        alt: icon.querySelector('img').alt,
+      };
+      return img;
+    });
+    merchCard.setAttribute(
+      'icons',
+      JSON.stringify(Array.from(iconImgs)),
+    );
     icons.forEach((icon) => icon.remove());
   }
-  if (styles.includes('secure')) {
-    replaceKey('secure-transaction', getConfig())
-      .then((key) => merchCard.setAttribute('secure-label', key));
-  }
-  if (altCta) {
-    const label = checkBoxLabel(ctas, altCta);
-    if (label !== null) {
-      merchCard.setAttribute('checkbox-label', label);
+  if (styles.includes('add-stock')) {
+    if (stock === undefined) {
+      const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
+      const [label, ...rest] = [...document.querySelectorAll(selector)];
+      if (label) {
+        const offers = rest.filter(({ dataset: { wcsOsi } }) => wcsOsi);
+        stock = { label: label?.innerText, offers: offers?.map((offer) => offer.dataset.wcsOsi).join(',') };
+      }
+    }
+    if (stock !== undefined) {
+      merchCard.setAttribute('checkbox-label', stock.label);
+      merchCard.setAttribute('stock-offer-osis', stock.offers);
     }
   }
-  parseContent(el, altCta, cardType, merchCard);
+  if (styles.includes('secure')) {
+    await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
+  }
+  merchCard.setAttribute('filters', categories.join(','));
+  merchCard.setAttribute('types', types.join(','));
+  parseContent(el, merchCard);
+  decorateBlockHrs(merchCard);
   el.replaceWith(merchCard);
+  return merchCard;
 };
 
 export default init;

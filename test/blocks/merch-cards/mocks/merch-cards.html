@@ -1,65 +1,104 @@
-<div id="default" class="merch-cards">
-</div>
+<style>
+  .merch-cards, #cards {
+    display: none;
+  }
+</style>
+<main>
+  <div class="section">
+    <div id="default" class="merch-cards">
+    </div>
 
-<div id="defaultFilter" class="merch-cards catalog">
-</div>
+    <div id="defaultFilter" class="merch-cards catalog">
+    </div>
 
-<div id="filterShowMoreText" class="merch-cards catalog">
-  <div>
-    <div>all, Show more</div>
-  </div>
-</div>
+    <div id="filterShowMoreText" class="merch-cards catalog">
+      <div>
+        <div>all, Show more</div>
+      </div>
+    </div>
 
-<div id="filterShowMoreTextLimit" class="merch-cards catalog">
-  <div>
-    <div>all, Show more, 9</div>
-  </div>
-</div>
+    <div id="filterShowMoreTextLimit" class="merch-cards catalog">
+      <div>
+        <div>all, Show more, 9</div>
+      </div>
+    </div>
 
-<div id="onlyPhoto" class="merch-cards catalog">
-  <div>
-    <div><strong>photo</strong></div>
-  </div>
-  <div>
-    <div>
-      <p><strong>Photoshop</strong></p>
-      <p>Creative Coud All Apps</p>
-      <p>Express</p>
+    <div id="onlyPhoto" class="merch-cards catalog">
+      <div>
+        <div><strong>photo</strong></div>
+      </div>
+      <div>
+        <div>
+          <p><strong>Photoshop</strong></p>
+          <p>Creative Cloud All Apps</p>
+          <p>Express</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="multipleFilters" class="merch-cards catalog">
+      <div>
+        <div>all, Show more, 9</div>
+      </div>
+      <div>
+        <div>all</div>
+        <div>
+          <p><strong><u>Creative Cloud All Apps</u></strong></p>
+          <p>Photoshop</p>
+          <p>Adobe Express</p>
+        </div>
+      </div>
+      <div>
+        <div>photo</div>
+        <div>
+          <p><strong>Photoshop</strong></p>
+          <p>Creative Cloud All Apps</p>
+          <p>Adobe Express</p>
+        </div>
+      </div>
+      <div>
+        <div>video</div>
+        <div>
+          <p><strong>Premier Pro</strong></p>
+          <p>Creative Cloud All Apps</p>
+        </div>
+      </div>
     </div>
   </div>
-</div>
-
-<merch-cards id="merchCardsToFilter" filtered="photo">
-  <merch-card filters="video"></merch-card>
-  <merch-card filters="photo"></merch-card>
-  <merch-card filters="video,photo"></merch-card>
-</merch-cards>
-
-<div id="catalog" class="merch-cards catalog">
-  <div>
-    <div>all, Show more, 9</div>
   </div>
-  <div>
-    <div>all</div>
-    <div>
-      <p><strong><u>Creative Coud All Apps</u></strong></p>
-      <p>Photoshop</p>
-      <p>Acrobat Pro</p>
+  <div id="cards">
+    <div class="merch-card catalog express">
+      <div>
+        <h3>Adobe Express</h3>
+      </div>
+      <div>
+        <p>catalog:categories/creativity-design/photo</p>
+      </div>
+    </div>
+    <div class="merch-card catalog photoshop">
+      <div>
+        <h3>Photoshop</h3>
+      </div>
+      <div>
+        <p>catalog:categories/creativity-design/photo</p>
+      </div>
+    </div>
+    <div class="merch-card catalog all-apps">
+      <div>
+        <h3>Creative Cloud All Apps</h3>
+      </div>
+      <div>
+        <p>catalog:categories/creativity-design/photo</p>
+        <p>catalog:categories/creativity-design/video</p>
+      </div>
+    </div>
+    <div class="merch-card catalog premierepro">
+      <div>
+        <h3>Premier Pro</h3>
+      </div>
+      <div>
+        <p>catalog:categories/creativity-design/video</p>
+      </div>
     </div>
   </div>
-  <div>
-    <div>photo</div>
-    <div>
-      <p><strong>Photoshop</strong></p>
-      <p>Creative Coud All Apps</p>
-      <p>Express</p>
-    </div>
-  </div>
-  <div>
-    <div>video</div>
-    <div>
-      <p><strong>Premier Pro</strong></p>
-      <p>Creative Coud All Apps</p>
-    </div>
-  </div>
-</div>
+</main>

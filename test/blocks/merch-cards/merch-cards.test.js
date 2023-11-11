@@ -1,16 +1,27 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 // eslint-disable-next-line no-promise-executor-return
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales, miloLibs: '/libs' };
+setConfig(conf);
+
+const getVisibleCards = (merchCards) => [...merchCards.querySelectorAll('merch-card')]
+  .filter((merchCard) => merchCard.style.display !== 'none')
+  .sort((a, b) => Number(a.style.order) - Number(b.style.order));
+
 describe('Merch Cards', async () => {
   let init;
-  let filterMerchCards;
+  let pageContent;
+
+  let cards = [];
 
   before(async () => {
     window.lana = { log: () => {} };
+    const originalFetch = window.fetch;
     window.fetch = sinon.stub(window, 'fetch').callsFake((url) => {
       let data;
       if (url) {
@@ -18,7 +29,7 @@ describe('Merch Cards', async () => {
           total: 0,
           offset: 0,
           limit: 0,
-          data: [],
+          data: cards,
         };
       }
       return Promise.resolve({
@@ -28,8 +39,14 @@ describe('Merch Cards', async () => {
         json: () => Promise.resolve(data),
       });
     });
-    ({ default: init, filterMerchCards } = await import('../../../libs/blocks/merch-cards/merch-cards.js'));
-    document.body.innerHTML = await readFile({ path: './mocks/merch-cards.html' });
+    ({ default: init } = await import('../../../libs/blocks/merch-cards/merch-cards.js'));
+    // this allows to run the test in the normal browser.
+    pageContent = await originalFetch(new URL('./mocks/merch-cards.html', import.meta.url).href).then((r) => r.text());
+  });
+
+  beforeEach(async () => {
+    document.location.hash = '';
+    document.body.innerHTML = pageContent;
   });
 
   it('should require a type', async () => {
@@ -63,22 +80,42 @@ describe('Merch Cards', async () => {
 
   it('should freeze the filter"', async () => {
     const el = document.getElementById('onlyPhoto');
+    cards = [...document.querySelectorAll('#cards .merch-card')]
+      .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
+
     const merchCards = await init(el);
-    expect(merchCards.getAttribute('filter')).to.equal('photo');
-    document.location.hash = 'filter=video';
+    expect(merchCards.getAttribute('filtered')).to.equal('photo');
+
+    document.location.hash = '#filter=video';
     await delay();
-    expect(merchCards.getAttribute('filter')).to.equal('photo');
+    expect(merchCards.filter).to.equal('photo');
+    expect(merchCards.filtered).to.equal('photo');
+
+    const [photoshop, cc, express] = getVisibleCards(merchCards);
+    expect(photoshop.name).to.be.equal('photoshop');
+    expect(cc.name).to.be.equal('all-apps');
+    expect(express.name).to.be.equal('express');
   });
 
-  it.only('should discard not matching cards if filtered', async () => {
-    const merchCards = document.getElementById('merchCardsToFilter');
-    filterMerchCards(merchCards);
-    expect(merchCards.children.length).to.equal(2);
-  });
+  it('should parse multiple filters"', async () => {
+    const el = document.getElementById('multipleFilters');
+    cards = [...document.querySelectorAll('#cards .merch-card')]
+      .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
 
-  it('should parse card preferences of filtered collection"', async () => {
-    const merchCards = document.getElementById('onlyPhoto');
-    
-    throw new Error('Not implemented');
+    const merchCards = await init(el);
+    expect(merchCards.filter).to.equal('all');
+
+    let [cc, photoshop, express] = getVisibleCards(merchCards);
+    expect(cc.size).to.be.equal('super-wide');
+    expect(photoshop.name).to.be.equal('photoshop');
+    expect(cc.name).to.be.equal('all-apps');
+    expect(express.name).to.be.equal('express');
+    document.location.hash = '#filter=photo';
+    await delay(500);
+    ([photoshop, cc, express] = getVisibleCards(merchCards));
+    expect(photoshop.name).to.be.equal('photoshop');
+    expect(cc.name).to.be.equal('all-apps');
+    expect(cc.size).to.undefined;
+    expect(express.name).to.be.equal('express');
   });
 });

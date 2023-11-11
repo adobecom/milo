@@ -22,9 +22,9 @@ export function filterMerchCards(merchCards) {
 export function parsePreferences(elements) {
   return [...elements].map((el) => {
     let size;
-    if (el.firstChildElement?.tagName === 'STRONG') {
+    if (el?.firstElementChild?.tagName === 'STRONG') {
       size = 'wide';
-      if (el.firstChildElement.firstChildElement?.tagName === 'U') {
+      if (el.firstElementChild.firstElementChild?.tagName === 'U') {
         size = 'super-wide';
       }
     }
@@ -38,25 +38,36 @@ export default async function main(el) {
     log('Missing collection type');
     return null; // return silently.
   }
+  if (!el.closest('main > .section[class*="-merch-card"]')) {
+    el.closest('main > .section').classList.add('four-merch-cards', 'xl-gap');
+  }
   const type = el.classList[1];
 
   const attributes = { filter: 'all' };
-  const settingsEl = el.querySelector(':scope > div > div');
+  const settingsEl = el.firstElementChild?.firstElementChild;
 
-  const filtered = settingsEl?.firstChild?.tagName === 'STRONG';
+  const filtered = settingsEl?.firstElementChild?.tagName === 'STRONG';
 
   const preferences = {};
-
-  if (filtered) {
-    attributes.filtered = true;
-    preferences[filtered] = parsePreferences(el.querySelectorAll(':scope > div > div:nth-child(2) > p'));
-  }
 
   if (settingsEl) {
     const [filter, showMoreText, limit = 24] = settingsEl
       .textContent.split(',').map((s) => s.trim());
-    if (filter) {
-      attributes.filter = filter;
+
+    settingsEl.parentElement.remove();
+
+    if (filtered) {
+      attributes.filtered = filter;
+      preferences[filter] = parsePreferences(el.querySelectorAll('p'));
+    } else {
+      if (filter) {
+        attributes.filter = filter;
+      }
+      [...el.children].forEach((filterElement) => {
+        const filterName = filterElement.firstElementChild.textContent?.trim();
+        const elements = [...filterElement.lastElementChild.querySelectorAll('p')];
+        preferences[filterName] = parsePreferences(elements);
+      });
     }
     if (showMoreText) {
       attributes['show-more-text'] = showMoreText;
@@ -67,7 +78,7 @@ export default async function main(el) {
   }
   const merchCards = createTag('merch-cards', attributes);
   try {
-    const resp = await fetch(`/query-index-cards.json?sheet=${type}`); // TODO locale
+    const resp = await fetch(`/cc-shared/assets/query-index-cards.json?sheet=${type}`); // TODO make locale
     if (!resp?.ok) {
       log(`Failed to initialize merch cards: ${resp.status}`);
     }
@@ -78,20 +89,23 @@ export default async function main(el) {
     const config = getConfig();
     // Replace placeholders
     merchCards.innerHTML = await replaceText(cards, config);
-    const autoBlocks = await decorateLinks(merchCards);
-    const blocks = [...merchCards.querySelectorAll(':scope > div'), ...autoBlocks];
-    const loadingBlocks = Promise.all(blocks.map(loadBlock));
-    await loadingBlocks;
+    const autoBlocks = await decorateLinks(merchCards).map(loadBlock);
+    await Promise.all(autoBlocks);
+    const blocks = [...merchCards.querySelectorAll(':scope > div')].map(loadBlock);
+    await Promise.all(blocks);
 
     filterMerchCards(merchCards);
+
+    // re-order cards, update card filters
     [...merchCards.children].filter((card) => card.tagName === 'MERCH-CARD').forEach((merchCard) => {
       const filters = { ...merchCard.filters };
       Object.keys(filters).forEach((key) => {
-        preferences[key]
-          .forEach(([cardTitle, cardType], index) => {
+        const preference = preferences[key];
+        if (!preference) return;
+        preference
+          .forEach(([cardTitle, cardSize], index) => {
             if (merchCard.title === cardTitle) {
-              filters[key] = index;
-              merchCard.type = cardType;
+              filters[key] = { order: index, size: cardSize };
             }
           });
       });
