@@ -23,7 +23,10 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   let manifests = targetManifests;
 
   manifests = manifests.concat(
-    persManifests.map((manifestPath) => ({ manifestPath: appendJsonExt(manifestPath) })),
+    persManifests.map((manifestPath) => ({
+      manifestPath: appendJsonExt(manifestPath),
+      manifestUrl: manifestPath,
+    })),
   );
 
   for (const manifest of manifests) {

@@ -421,6 +421,7 @@ export async function getPersConfig(info) {
     name,
     manifestData,
     manifestPath,
+    manifestUrl,
     manifestPlaceholders,
     manifestInfo,
     variantLabel,
@@ -437,7 +438,7 @@ export async function getPersConfig(info) {
 
   const infoTab = manifestInfo || data?.info?.data;
   config.manifestType = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase() || 'personalization';
-  config.manifestOverrideName = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')?.value?.toLowerCase() || 'personalization';
+  config.manifestOverrideName = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')?.value?.toLowerCase();
 
   if (!config) {
     /* c8 ignore next 3 */
@@ -470,6 +471,7 @@ export async function getPersConfig(info) {
 
   config.name = name;
   config.manifest = manifestPath;
+  config.manifestUrl = manifestUrl;
   return config;
 }
 
@@ -519,6 +521,7 @@ export async function runPersonalization(info, config) {
     experiment,
     blocks: selectedVariant.useblockcode,
     fragments: selectedVariant.replacefragment,
+
   };
 }
 
@@ -585,9 +588,9 @@ export async function applyPers(manifests) {
       return val === 'default' ? 'nopzn' : val;
     });
     const trackingManifests = personalizedManifests.map((r) => {
-      const val = r.experiment.manifest.split('/').pop().replace('.json', '').trim()
+      const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
+      return val.split('/').pop().replace('.json', '').trim()
         .slice(0, 20);
-      return val === 'default' ? 'nopzn' : val;
     });
     document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
   }

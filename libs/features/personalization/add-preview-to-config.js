@@ -17,8 +17,21 @@ export default async function addPreviewToConfig({
   });
 
   if (config.mep.override !== '') {
+    const persManifestPaths = persManifests.map((manifest) => {
+      if (manifest.startsWith('/')) return manifest;
+      try {
+        const url = new URL(manifest);
+        return url.pathname;
+      } catch (e) {
+        return manifest;
+      }
+    });
+
     config.mep.override.split(',').forEach((manifestPair) => {
-      persManifests.push(manifestPair.trim().toLowerCase().split('--')[0]);
+      const manifestPairManifest = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!persManifestPaths.includes(manifestPairManifest)) {
+        persManifests.push(manifestPairManifest);
+      }
     });
   }
 
