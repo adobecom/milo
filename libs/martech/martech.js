@@ -53,6 +53,7 @@ const handleAlloyResponse = (response) => {
 
       return {
         manifestPath: content.manifestLocation || content.manifestPath,
+        manifestUrl: content.manifestLocation,
         manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
         manifestPlaceholders: content.manifestContent?.placeholders?.data,
         manifestInfo: content.manifestContent?.info.data,
