@@ -95,11 +95,11 @@ const handleDeferredImages = (block) => {
   document.addEventListener(MILO_EVENTS.DEFERRED, loadLazyImages, { once: true, capture: true });
 };
 
-const handlePillSize = (config) => {
+const handlePillSize = (pill) => {
   const sizes = ['s', 'm', 'l'];
-  const variant = config.substring(0, config.indexOf('-pill'));
+  const variant = pill.substring(0, pill.indexOf('-pill'));
   const size = sizes.findIndex((tshirt) => variant.startsWith(tshirt));
-  return `pill-${sizes[size]?.[0] ?? 'm'}`;
+  return `${sizes[size]?.[0] ?? sizes[1]}-pill`;
 };
 
 const init = (block) => {

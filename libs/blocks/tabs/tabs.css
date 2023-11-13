@@ -192,6 +192,7 @@
 .tabs[class*='pill'] div[role="tablist"] {
   box-shadow: unset;
   background: unset;
+  margin-top: var(--spacing-xxs);
   margin-bottom: var(--spacing-xxs);
 }
 
@@ -201,6 +202,7 @@
   margin-inline-start: 16px;
   border-radius: 75px;
   font-weight: 400;
+  padding: 0.2em 1em;
 }
 
 .tabs.quiet div[role="tablist"] button:first-of-type,
@@ -219,7 +221,7 @@
 .tabs[class*='pill'] div[role="tablist"] button[aria-selected="true"] {
   color: var(--tabs-pill-text-color);
   background: var(--tabs-pill-bg-color);
-  font-weight: 700;
+  text-shadow: 0.4px 0 0 var(--tabs-pill-text-color);
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:hover {
@@ -237,22 +239,22 @@
   background: var(--tabs-pill-bg-color-active);
 }
 
-.tabs[class*='pill'] div[role="tablist"] button.pill-l {
+.tabs[class*='pill'] div[role="tablist"] button.l-pill {
   font-size: 16px;
   line-height: 20.8px;
-  padding: 8px 16px;
+  height: 40px;
 }
 
-.tabs[class*='pill'] div[role="tablist"] button.pill-m {
+.tabs[class*='pill'] div[role="tablist"] button.m-pill {
   font-size: 14px;
   line-height: 18.2px;
-  padding: 6px 14px;
+  height: 32px;
 }
 
-.tabs[class*='pill'] div[role="tablist"] button.pill-s {
+.tabs[class*='pill'] div[role="tablist"] button.s-pill {
   font-size: 12px;
   line-height: 15.6px;
-  padding: 5px 12px;
+  height: 24px;
 }
 
 /* Section Metadata */
