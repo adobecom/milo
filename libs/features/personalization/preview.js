@@ -172,7 +172,7 @@ function createPreviewPill(manifests) {
     const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
     let analyticsTitle = '';
     if (manifestType === 'test or promo') {
-      analyticsTitle = 'not included for this manifest type';
+      analyticsTitle = 'N/A for this manifest type';
     } else if (manifestOverrideName) {
       analyticsTitle = manifestOverrideName;
     } else {
