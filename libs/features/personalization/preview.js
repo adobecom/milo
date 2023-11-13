@@ -212,7 +212,7 @@ function createPreviewPill(manifests) {
       <div>
         <h4>${manifests.length} Manifest(s) served</h4>
         <span class="mep-close"></span>
-        <div>Page Info:</div>
+        <div class="mep-manifest-page-info-title">Page Info:</div>
         <div>Target integration feature is ${targetOnText}</div>
         <div>Personalization feature is ${personalizationOnText}</div>
         <div>Page's Locale is ${config.locale.ietf}</div>
