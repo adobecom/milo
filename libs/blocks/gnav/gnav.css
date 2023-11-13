@@ -1185,6 +1185,10 @@ header .app-launcher {
     box-sizing: border-box;
   }
 
+  .gnav .gnav-logo svg {
+    width: 100%;
+  }
+
   /* Search Bar */
   .gnav-search.is-open .gnav-search-bar {
     position: fixed;
