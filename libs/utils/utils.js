@@ -799,10 +799,6 @@ async function checkForPageMods() {
       `${base}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
-    loadLink(
-      `${base}/features/personalization/manifest-utils.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
   }
 
   if (persEnabled) {
