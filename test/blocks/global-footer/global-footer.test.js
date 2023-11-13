@@ -43,7 +43,7 @@ describe('global footer', () => {
 
   afterEach(() => {
     clock.restore();
-    window.fetch.restore();
+    sinon.restore();
     document.body.innerHTML = '';
   });
 
@@ -325,15 +325,18 @@ describe('global footer', () => {
     });
 
     it('should send log when could not create URL for region picker', async () => {
-      window.fetch.restore();
-      const urlConstructorStub = sinon.stub(window, 'URL').callsFake(() => {
+      const globalFooter = await createFullGlobalFooter({ waitForDecoration: true });
+      sinon.restore();
+      stub(window, 'URL').callsFake(() => {
         throw new Error('mocked error');
       });
-      await createFullGlobalFooter({ waitForDecoration: false });
-      await clock.runAllAsync();
+      try {
+        await globalFooter.decorateRegionPicker();
+      } catch (e) {
+        // should throw error
+      }
       expect(lanaLogSpy.getCalls().find((c) => c.args[0].includes('Could not create URL for region picker')));
       expect(lanaLogSpy.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
-      urlConstructorStub.restore();
     });
   });
 });
