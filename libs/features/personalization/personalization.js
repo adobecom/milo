@@ -164,28 +164,6 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   return propMap;
 }, {});
 
-/* c8 ignore start */
-function normalizePath(p) {
-  let path = p;
-
-  if (!path.includes('/')) {
-    return path;
-  }
-
-  const config = getConfig();
-
-  if (path.startsWith(config.codeRoot)
-    || path.includes('.hlx.')
-    || path.startsWith(`https://${config.productionDomain}`)) {
-    try {
-      path = new URL(path).pathname;
-    } catch (e) { /* return path below */ }
-  } else if (!path.startsWith('http') && !path.startsWith('/')) {
-    path = `/${path}`;
-  }
-  return path;
-}
-
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
   const reg = new RegExp(`^${pattern}$`, 'i'); // devtool bug needs this backtick: `
