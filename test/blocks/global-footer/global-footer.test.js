@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
+import { readFile } from '@web/test-runner-commands';
 import {
   allElementsVisible,
   visibleSelectorsDesktop,
@@ -13,7 +14,7 @@ import baseFooter from './mocks/base-footer.js';
 import fetchedFooter from './mocks/fetched-footer.js';
 import icons from './mocks/icons.js';
 import { isElementVisible, mockRes } from '../global-navigation/test-utilities.js';
-import placeholders from './mocks/placeholders.js';
+import placeholders from '../global-navigation/mocks/placeholders.js';
 import { logErrorFor } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 
 describe('global footer', () => {
@@ -25,7 +26,7 @@ describe('global footer', () => {
       shouldAdvanceTime: true,
     });
 
-    stub(window, 'fetch').callsFake((url) => {
+    stub(window, 'fetch').callsFake(async (url) => {
       if (url.includes('/footer')) {
         return mockRes({
           payload: fetchedFooter(
@@ -33,11 +34,9 @@ describe('global footer', () => {
           ),
         });
       }
-
       if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
-
       if (url.includes('icons.svg')) return mockRes({ payload: icons });
-
+      if (url.includes('/regions.plain.html')) return mockRes({ payload: await readFile({ path: '../region-nav/mocks/regions.html' }) });
       return null;
     });
   });
@@ -77,6 +76,35 @@ describe('global footer', () => {
           visibleSelectorsDesktop,
           document.querySelector(allSelectors.container),
         )).to.equal(true);
+      });
+
+      it('should handle failed fetch for footer content', async () => {
+        window.fetch.restore();
+        stub(window, 'fetch').callsFake((url) => {
+          if (url.includes('/footer')) {
+            return mockRes({
+              payload: null,
+              ok: false,
+              status: 400,
+            });
+          }
+          if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+          if (url.includes('icons.svg')) return mockRes({ payload: icons });
+          return null;
+        });
+
+        const globalFooter = await createFullGlobalFooter({ waitForDecoration: false });
+        expect(await globalFooter.decorateContent()).to.equal(undefined);
+      });
+
+      it('should handle missing elements', async () => {
+        const globalFooter = await createFullGlobalFooter({ waitForDecoration: true });
+        globalFooter.body = document.createElement('div');
+        expect(await globalFooter.decorateGrid()).to.equal('');
+        expect(await globalFooter.decorateProducts()).to.equal('');
+        expect(await globalFooter.decorateRegionPicker()).to.equal('');
+        expect(await globalFooter.decorateSocial()).to.equal('');
+        expect(await globalFooter.decoratePrivacy()).to.equal('');
       });
     });
 
@@ -163,11 +191,14 @@ describe('global footer', () => {
 
         expect(regionPickerElem.getAttribute('href') === '#langnav').to.equal(true);
         expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('true');
+
+        window.dispatchEvent(new Event('milo:modal:closed'));
+        expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('false');
       });
 
       it('should handle empty hash', async () => {
         window.fetch.restore();
-        stub(window, 'fetch').callsFake((url) => {
+        stub(window, 'fetch').callsFake(async (url) => {
           if (url.includes('/footer')) {
             return mockRes({
               payload: fetchedFooter(
@@ -175,11 +206,8 @@ describe('global footer', () => {
               ),
             });
           }
-
           if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
-
           if (url.includes('icons.svg')) return mockRes({ payload: icons });
-
           return null;
         });
 
@@ -189,6 +217,9 @@ describe('global footer', () => {
 
         regionPickerElem.dispatchEvent(new Event('click'));
         expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('true');
+
+        document.body.dispatchEvent(new Event('click', { bubbles: true }));
+        expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('false');
       });
     });
   });

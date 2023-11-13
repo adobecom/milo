@@ -41,7 +41,8 @@ const getMobileVisibleSelectors = () => {
     navLinkContent,
     navLinkTitle,
     menuItems,
-    menuHeadline, ...mobileSelectors
+    menuHeadline,
+    ...mobileSelectors
   } = allSelectors;
   return mobileSelectors;
 };
