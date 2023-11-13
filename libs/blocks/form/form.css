@@ -57,6 +57,10 @@ main .form .field-wrapper {
   margin-bottom: var(--spacing-m);
 }
 
+main .form .field-wrapper.hidden {
+  display: none;
+}
+
 main .form .form-checkbox-wrapper {
   display: flex;
   align-items: center;

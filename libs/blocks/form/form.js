@@ -1,5 +1,14 @@
 // import { addInViewAnimationToSingleElement } from '../../utils/helpers.js';
 
+const RULE_OPERATORS = {
+  equal: 'eq',
+  notEqual: 'ne',
+  lessThan: 'lt',
+  lessThanOrEqual: 'le',
+  greaterThan: 'gt',
+  greaterThanOrEqual: 'ge',
+};
+
 function createSelect(fd) {
   const select = document.createElement('select');
   select.id = fd.Field;
@@ -44,12 +53,10 @@ async function submitForm(form) {
     body: JSON.stringify({ data: payload }),
   });
   await resp.text();
-  console.log('payload', payload);
   return payload;
 }
 
 function createButton(fd, thankYou) {
-  console.log('fd', fd);
   const button = document.createElement('button');
   button.textContent = fd.Label;
   button.classList.add('button');
@@ -111,19 +118,80 @@ function createLabel(fd) {
   return label;
 }
 
+function processNumRule(tf, operator, a, b) {
+  if (!tf.dataset.type.match(/(?:number|date)/)) {
+    throw new Error(`Comparison field must be of type number or date for ${operator} rules`);
+  }
+  const { type } = tf.dataset;
+  const a2 = type === 'number' ? parseInt(a, 10) : Date.parse(a);
+  const b2 = type === 'number' ? parseInt(b, 10) : Date.parse(b);
+  return [a2, b2];
+}
+
 function applyRules(form, rules) {
   const payload = constructPayload(form);
   rules.forEach((field) => {
     const { type, condition: { key, operator, value } } = field.rule;
-    if (type === 'visible') {
-      if (operator === 'eq') {
-        if (payload[key] === value) {
-          form.querySelector(`.${field.fieldId}`).classList.remove('hidden');
-        } else {
-          form.querySelector(`.${field.fieldId}`).classList.add('hidden');
+    const fw = form.querySelector(`[data-field-id=${field.fieldId}]`);
+    const tf = form.querySelector(`[data-field-id=${key}]`);
+    let force = false;
+    switch (operator) {
+      case RULE_OPERATORS.equal:
+        force = (payload[key] === value);
+        break;
+      case RULE_OPERATORS.notEqual:
+        force = (payload[key] !== value);
+        break;
+      case RULE_OPERATORS.lessThan:
+        if (payload[key] === '') return;
+        try {
+          const [a, b] = processNumRule(tf, operator, payload[key], value);
+          force = a < b;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn(`Invalid rule, ${e}`);
+          return;
         }
-      }
+        break;
+      case RULE_OPERATORS.lessThanOrEqual:
+        if (payload[key] === '') return;
+        try {
+          const [a, b] = processNumRule(tf, operator, payload[key], value);
+          force = a <= b;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn(`Invalid rule, ${e}`);
+          return;
+        }
+        break;
+      case RULE_OPERATORS.greaterThan:
+        if (payload[key] === '') return;
+        try {
+          const [a, b] = processNumRule(tf, operator, payload[key], value);
+          force = a > b;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn(`Invalid rule, ${e}`);
+          return;
+        }
+        break;
+      case RULE_OPERATORS.greaterThanOrEqual:
+        if (payload[key] === '') return;
+        try {
+          const [a, b] = processNumRule(tf, operator, payload[key], value);
+          force = a >= b;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn(`Invalid rule, ${e}`);
+          return;
+        }
+        break;
+      default:
+        // eslint-disable-next-line no-console
+        console.warn(`Unsupported operator ${operator}`);
+        return;
     }
+    fw.classList.toggle(type, force);
   });
 }
 
@@ -148,9 +216,9 @@ async function createForm(formURL, thankYou) {
     fd.Type = fd.Type || 'text';
     const fieldWrapper = document.createElement('div');
     const style = fd.Style ? ` form-${fd.Style}` : '';
-    const fieldId = `form-${fd.Type}-wrapper${style}`;
-    fieldWrapper.className = fieldId;
-    fieldWrapper.classList.add('field-wrapper');
+    fieldWrapper.className = `field-wrapper form-${fd.Type}-wrapper${style}`;
+    fieldWrapper.dataset.fieldId = fd.Field;
+    fieldWrapper.dataset.type = fd.Type;
     switch (fd.Type) {
       case 'select':
         fieldWrapper.append(createLabel(fd));
@@ -180,7 +248,7 @@ async function createForm(formURL, thankYou) {
 
     if (fd.Rules) {
       try {
-        rules.push({ fieldId, rule: JSON.parse(fd.Rules) });
+        rules.push({ fieldId: fd.Field, rule: JSON.parse(fd.Rules) });
       } catch (e) {
         // eslint-disable-next-line no-console
         console.warn(`Invalid Rule ${fd.Rules}: ${e}`);
@@ -189,7 +257,7 @@ async function createForm(formURL, thankYou) {
     form.append(fieldWrapper);
   });
 
-  form.addEventListener('change', () => applyRules(form, rules));
+  form.addEventListener('keyup', () => applyRules(form, rules));
   applyRules(form, rules);
   fill(form);
   return (form);
