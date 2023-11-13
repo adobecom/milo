@@ -33,13 +33,9 @@ describe('global footer', () => {
           ),
         });
       }
-
       if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
-
       if (url.includes('icons.svg')) return mockRes({ payload: icons });
-
       if (url.includes('/regions.plain.html')) return mockRes({ payload: await readFile({ path: '../region-nav/mocks/regions.html' }) });
-
       return null;
     });
   });
@@ -79,6 +75,35 @@ describe('global footer', () => {
           visibleSelectorsDesktop,
           document.querySelector(allSelectors.container),
         )).to.equal(true);
+      });
+
+      it('should handle failed fetch for footer content', async () => {
+        window.fetch.restore();
+        stub(window, 'fetch').callsFake((url) => {
+          if (url.includes('/footer')) {
+            return mockRes({
+              payload: null,
+              ok: false,
+              status: 400,
+            });
+          }
+          if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+          if (url.includes('icons.svg')) return mockRes({ payload: icons });
+          return null;
+        });
+
+        const globalFooter = await createFullGlobalFooter({ waitForDecoration: false });
+        expect(await globalFooter.decorateContent()).to.equal(undefined);
+      });
+
+      it('should handle missing elements', async () => {
+        const globalFooter = await createFullGlobalFooter({ waitForDecoration: true });
+        globalFooter.body = document.createElement('div');
+        expect(await globalFooter.decorateGrid()).to.equal('');
+        expect(await globalFooter.decorateProducts()).to.equal('');
+        expect(await globalFooter.decorateRegionPicker()).to.equal('');
+        expect(await globalFooter.decorateSocial()).to.equal('');
+        expect(await globalFooter.decoratePrivacy()).to.equal('');
       });
     });
 
@@ -180,11 +205,8 @@ describe('global footer', () => {
               ),
             });
           }
-
           if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
-
           if (url.includes('icons.svg')) return mockRes({ payload: icons });
-
           return null;
         });
 
