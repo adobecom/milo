@@ -11,6 +11,47 @@ const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
 const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
 const PAGE_URL = new URL(window.location.href);
 
+export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
+
+export const normalizePath = (p) => {
+  let path = p;
+
+  if (!path.includes('/')) {
+    return path;
+  }
+
+  if (path.startsWith('http')) {
+    try {
+      path = new URL(path).pathname;
+    } catch (e) { /* return path below */ }
+  } else if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  return path;
+};
+
+export const preloadManifests = ({ targetManifests = [], persManifests = [] }) => {
+  let manifests = targetManifests;
+
+  manifests = manifests.concat(
+    persManifests.map((manifestPath) => ({
+      manifestPath: appendJsonExt(manifestPath),
+      manifestUrl: manifestPath,
+    })),
+  );
+
+  for (const manifest of manifests) {
+    if (!manifest.manifestData && manifest.manifestPath) {
+      manifest.manifestPath = normalizePath(manifest.manifestPath);
+      loadLink(
+        manifest.manifestPath,
+        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
+      );
+    }
+  }
+  return manifests;
+};
+
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
   all: () => true,
