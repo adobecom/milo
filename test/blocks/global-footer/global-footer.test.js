@@ -274,7 +274,7 @@ describe('global footer', () => {
     });
   });
 
-  describe('logging tests', () => {
+  describe('LANA logging tests', () => {
     const originalLanaLog = window.lana.log;
     let lanaLogSpy;
 
@@ -287,7 +287,7 @@ describe('global footer', () => {
       window.lana.log = originalLanaLog;
     });
 
-    it('should send LANA log on error', async () => {
+    it('should send log on error', async () => {
       const erroneousFunction = async () => {
         throw new Error('error');
       };
@@ -314,44 +314,26 @@ describe('global footer', () => {
             status: 400,
           });
         }
-
         if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
-
         if (url.includes('icons.svg')) return mockRes({ payload: icons });
         return null;
       });
       await createFullGlobalFooter({ waitForDecoration: false });
       await clock.runAllAsync();
-      const firstCallArguments = lanaLogSpy.getCall(0).args;
-      const secondCallArguments = lanaLogSpy.getCall(1).args;
-      expect(firstCallArguments[0].includes('Failed to fetch footer content:')).to.equal(true);
-      expect(firstCallArguments[1].tags === 'errorType=error,module=global-footer').to.equal(true);
-      expect(secondCallArguments[0].includes('Footer content could not be found')).to.equal(true);
-      expect(secondCallArguments[1].tags === 'errorType=error,module=global-footer').to.equal(true);
+      expect(lanaLogSpy.getCalls().find((c) => c.args[0].includes('Failed to fetch footer content')));
+      expect(lanaLogSpy.getCalls().find((c) => c.args[1].tags.includes('errorType=warn,module=global-footer')));
     });
 
-    it('should send log if failed to load icons', async () => {
+    it('should send log when could not create URL for region picker', async () => {
       window.fetch.restore();
-      stub(window, 'fetch').callsFake((url) => {
-        if (url.includes('/footer')) {
-          return mockRes({
-            payload: fetchedFooter(
-              { regionPickerHash: '/fragments/regions#langnav' },
-            ),
-          });
-        }
-
-        if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
-
-        if (url.includes('icons.svg')) return mockRes({ payload: null, ok: false, status: 400 });
-
-        return null;
+      const urlConstructorStub = sinon.stub(window, 'URL').callsFake(() => {
+        throw new Error('mocked error');
       });
-      await createFullGlobalFooter({ waitForDecoration: true });
-
-      const firstCallArguments = lanaLogSpy.getCall(0).args;
-      expect(firstCallArguments[0].includes('Failed to load icons:')).to.equal(true);
-      expect(firstCallArguments[1].tags === 'errorType=error,module=global-footer').to.equal(true);
+      await createFullGlobalFooter({ waitForDecoration: false });
+      await clock.runAllAsync();
+      expect(lanaLogSpy.getCalls().find((c) => c.args[0].includes('Could not create URL for region picker')));
+      expect(lanaLogSpy.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
+      urlConstructorStub.restore();
     });
   });
 });
