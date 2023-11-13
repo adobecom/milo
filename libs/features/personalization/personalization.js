@@ -403,7 +403,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   }
 
   const matchVariant = (name) => {
-    if (name === variantLabel.toLowerCase()) return true;
+    if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
     if (entitlementKeys.includes(name)) {
