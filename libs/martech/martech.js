@@ -108,10 +108,6 @@ export default async function init({ persEnabled = false, persManifests }) {
       `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
-    loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/manifest-utils.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
   }
 
   setDeep(
@@ -139,7 +135,6 @@ export default async function init({ persEnabled = false, persManifests }) {
     const targetManifests = await getTargetPersonalization();
     if (targetManifests?.length || persManifests?.length) {
       const [{ preloadManifests }, { applyPers, getEntitlements }] = await Promise.all([
-        import('../features/personalization/manifest-utils.js'),
         import('../features/personalization/personalization.js'),
       ]);
       getEntitlements();
