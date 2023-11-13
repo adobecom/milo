@@ -15,10 +15,10 @@ import {
   stripExtension,
 } from './utils.js';
 
-// hash for 'Block-group-start', 'block-group-start'
-const BLOCK_GROUP_START_HASH = ['295d2550b26a034bd7d8d46a3a8ca79813232ece', '1226d6aac887d92fe5432b6c05f016920b791b44'];
-// hash for 'Block-group-end', 'block-group-end'
-const BLOCK_GROUP_END_HASH = ['6eff4533648892f3c185ca1bde4e09eb69d353e6', '652a99bad6e6c79f5d8d35a4ee1d65b9deb57362'];
+// hash for 'block-group-start(hide-block)'
+const BLOCK_GROUP_START_HASH = '070c0d15290c13db479b4d7fc0fe0803e9f6f019';
+// hash for 'block-group-end(hide-block)'
+const BLOCK_GROUP_END_HASH = '240a1f97e3537f37eaa256d5f00b06c9f182e404';
 
 async function persistDoc(srcPath, docx, dstPath) {
   try {
@@ -56,10 +56,15 @@ const getLeaf = (node, type, parent = null) => {
 const addBoldHeaders = (mdast) => {
   const tables = mdast.children.filter((child) => child.type === 'gridTable'); // gets all block
   const tableMap = tables.forEach((table) => {
-    var { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
+    const { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
     if (parent.type !== 'strong') {
       let idx = parent.children.indexOf(node);
       parent.children[idx] = { type: 'strong', children: [node] };
+    }
+    // MWPW-138178: remove spaces and make lowercase for block-group blocks to get consistent hash
+    if (node.value.toLowerCase().startsWith('block-group')) {
+      const newStr = node.value.replace(/\s/g, '').toLowerCase();
+      node.value = newStr;
     }
   });
   return tableMap;
@@ -67,23 +72,23 @@ const addBoldHeaders = (mdast) => {
 
 const hashToContentMap = new Map();
 function processMdast(nodes) {
-  const arrayWithContentHash = [];  
+  const arrayWithContentHash = [];
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     const hash = objectHash.sha1(node);
-    if (BLOCK_GROUP_START_HASH.includes(hash)) {
+    if (BLOCK_GROUP_START_HASH === hash) {
       const groupArray = [];
       groupArray.push(node);
       for (let j = i + 1; j < nodes.length; j++) {
         const nextNode = nodes[j];
         const nextHash = objectHash.sha1(nextNode);
         i = j;
-        if (!BLOCK_GROUP_END_HASH.includes(nextHash)) {
+        if (BLOCK_GROUP_END_HASH !== nextHash) {
           groupArray.push(nextNode);
         } else {
           groupArray.push(nextNode);
           break;
-        }        
+        }
       }
       const hashOfGroupArray = objectHash.sha1(groupArray);
       arrayWithContentHash.push(hashOfGroupArray);
@@ -222,17 +227,17 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
     if (elem.classType === 'deleted') {
       if (Array.isArray(newContent))
         newContent.forEach((el) => addTrackChangesInfo('Langstore Version', elem.classType, el));
-      else 
+      else
         addTrackChangesInfo('Langstore Version', elem.classType, newContent);
     } else if (elem.classType === 'added') {
       if (Array.isArray(newContent))
         newContent.forEach((el) => addTrackChangesInfo('Regional Version', elem.classType, el));
-      else 
-        addTrackChangesInfo('Regional Version', elem.classType, newContent);      
+      else
+        addTrackChangesInfo('Regional Version', elem.classType, newContent);
     }
     if (Array.isArray(newContent))
       mergedMdast.children.push(...newContent);
-    else 
+    else
       mergedMdast.children.push(newContent);
   });
   return mergedMdast;
