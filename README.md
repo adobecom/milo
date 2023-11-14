@@ -47,7 +47,7 @@ Milo will run at:
 ```
 http://localhost:6456
 ```
-You can then test any of the following:
+You can then test any of the following commands:
 ```
 http://localhost:3000/?milolibs=local (local code, stage content)
 
