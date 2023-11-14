@@ -152,7 +152,8 @@
   }
 
   .feds-navLink-image picture {
-    width: 25px;
+    width: max-content;
+    max-width: 25px;
   }
 
   .feds-navLink-description {
@@ -164,5 +165,42 @@
   .feds-navLink:hover .feds-navLink-description,
   .feds-navLink:focus .feds-navLink-description {
     color: var(--feds-color-navLink-description--light);
+  }
+
+  /* Nav Link special styles for A/B test */
+  .feds-navLink[class *= '-gradient'] {
+    border-radius: 4px;
+  }
+
+  .feds-navLink[class *= '-gradient']:not(:first-child) {
+    margin-top: 12px;
+  }
+
+  .feds-navLink[class *= '-gradient'] .feds-navLink-title:after {
+    content: ' ›';
+  }
+
+  .feds-navLink--photo-gradient {
+    background: linear-gradient(90deg, #d0e8fa, #cef4f4);
+  }
+
+  .feds-navLink--design-gradient {
+    background: linear-gradient(90deg, #fccbfc, #ffe9d0);
+  }
+
+  .feds-navLink--3d-gradient {
+    background: linear-gradient(90deg, #e1f5cb, #edefb5);
+  }
+
+  .feds-navLink--pdf-gradient {
+    background: linear-gradient(90deg, #ffbfbf, #fde6d3);
+  }
+
+  .feds-navLink--video-gradient {
+    background: linear-gradient(90deg, #dcd9ff, #d5f1fd);
+  }
+
+  .feds-navLink--ai-gradient {
+    background: linear-gradient(90deg, #bce3ff, #ffe9d3, #f8d5e4);
   }
 }

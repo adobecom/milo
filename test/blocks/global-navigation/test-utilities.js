@@ -3,14 +3,11 @@
 import sinon, { stub } from 'sinon';
 import { setViewport } from '@web/test-runner-commands';
 import initGnav from '../../../libs/blocks/global-navigation/global-navigation.js';
-import {
-  getLocale,
-  setConfig,
-  loadStyle,
-} from '../../../libs/utils/utils.js';
+import { getLocale, setConfig, loadStyle } from '../../../libs/utils/utils.js';
 import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
+import largeMenuWideColumnMock from './mocks/large-menu-wide-column.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import correctPromoFragmentMock from './mocks/correctPromoFragment.plain.js';
 import { isElementVisible, selectors as keyboardSelectors } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
@@ -131,6 +128,7 @@ export const createFullGlobalNavigation = async ({
     if (url.includes('profile')) { return mockRes({ payload: defaultProfile }); }
     if (url.includes('placeholders')) { return mockRes({ payload: placeholders || defaultPlaceholders }); }
     if (url.endsWith('large-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
+    if (url.endsWith('large-menu-wide-column.plain.html')) { return mockRes({ payload: largeMenuWideColumnMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }
     if (url.includes('wrong-promo-fragment')) { return mockRes({ payload: '<div>Non-promo content</div>' }); }
