@@ -20,6 +20,10 @@
   color: var(--color-white);
 }
 
+.brick .foreground a:not([class]) {
+  font-weight: 700;
+}
+
 .brick.rounded-corners,
 .brick.rounded-corners .background,
 .brick.rounded-corners .foreground {
@@ -149,7 +153,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  font-weight: bold;
 }
 
 .brick.click a.foreground .first-link:not([class*="button"]) {
