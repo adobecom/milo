@@ -808,8 +808,10 @@ async function checkForPageMods() {
   }
 
   const { env } = getConfig();
+  let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
   if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
+    previewOn = true;
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
@@ -829,6 +831,11 @@ async function checkForPageMods() {
     await applyPers(manifests);
   } else {
     document.body.dataset.mep = 'nopzn|nopzn';
+  }
+
+  if (previewOn) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
 }
 

@@ -35,9 +35,5 @@ export default async function addPreviewToConfig({
     });
   }
 
-  if (config.mep.preview && !persManifests.length) {
-    import('./preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode([]));
-  }
   return persManifests;
 }

@@ -565,21 +565,10 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
-const decoratePreviewCheck = async (config, experiments) => {
-  if (config.mep?.preview) {
-    const { default: decoratePreviewMode } = await import('./preview.js');
-    decoratePreviewMode(experiments);
-  }
-};
-
 export async function applyPers(manifests) {
   const config = getConfig();
 
-  if (!manifests?.length) {
-    /* c8 ignore next */
-    decoratePreviewCheck(config, []);
-    return;
-  }
+  if (!manifests?.length) return;
 
   getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
@@ -613,6 +602,4 @@ export async function applyPers(manifests) {
     });
     document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
   }
-
-  decoratePreviewCheck(config, experiments);
 }
