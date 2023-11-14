@@ -1,9 +1,17 @@
 main .form {
+  --input-border-radius: 4px;
+
   background-color: var(--color-white);
-  padding: var(--spacing-s);
+  padding: var(--spacing-l) var(--spacing-xxl);
   border-radius: var(--card-border-radius-l);
   filter: var(--image-filter-drop-shadow-small);
   border: solid 1px var(--bg-color-grey);
+}
+
+main .form form {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 main .form h2 {
@@ -22,7 +30,6 @@ main .form select {
   border: solid 1px var(--bg-color-grey);
   padding: var(--spacing-xxs) var(--spacing-xs);
   width: 100%;
-  max-width: 50rem;
   box-sizing: border-box;
   border-radius: var(--input-border-radius);
   font-size: var(--type-body-s-size);
@@ -117,13 +124,139 @@ main .form-legal-wrapper p {
 
 main .form button {
   font-family: var(--body-font-family);
+  font-size: var(--type-body-s-size);
+  background-color: #1373E5;
+  min-width: 114px;
+  height: 40px;
+  line-height: 20px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 24px;
+  color: #fff;
+  font-weight: 700;
+  width: initial;
+  box-shadow: none;
+  margin: 0 auto;
+  cursor: pointer;
 }
 
-@media screen and (min-width: 900px) {
-  main .form {
-    padding: var(--spacing-ml);
+/* 
+
+FAAS styles for quick POC
+*/
+
+main .form {
+  box-sizing: border-box;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px;
+  background-color: #FBFBFB;
+  color: #2C2C2C;
+}
+
+main .form .field-wrapper {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+main .form label,
+main .form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
+main .form select,
+main .form textarea {
+  box-sizing: border-box;
+}
+
+main .form label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+main .form label .required {
+  display: none;
+}
+
+input[type="checkbox"] + label {
+  width: 95%;
+  font-weight: normal;
+}
+
+main .form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
+main .form select,
+main .form textarea {
+  appearance: none;
+  outline: 0;
+  padding: 0.5rem 1rem;
+  font-size: 18px;
+  line-height: 38px;
+  border: 1px solid var(--color-gray-600);
+}
+
+main .form select {
+  appearance: none;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+') no-repeat 128% 54%;
+  background-color: inherit;
+  background-position: 100% 50%;
+  background-size: 1em 1em;
+}
+
+main .form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]),
+main .form .error select {
+  box-shadow: inset 1px 1px 0 0 #d9534f, inset -1px -1px 0 0 #d9534f;
+}
+
+main .form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]) {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCI+PHBhdGggZD0iTTguNTY0IDEuMjg5LjIgMTYuMjU2QS41LjUgMCAwIDAgLjYzNiAxN2gxNi43MjhhLjUuNSAwIDAgMCAuNS0uNS40OTQuNDk0IDAgMCAwLS4wNjQtLjI0NEw5LjQzNiAxLjI4OWEuNS41IDAgMCAwLS44NzIgMFpNMTAgMTQuNzVhLjI1LjI1IDAgMCAxLS4yNS4yNWgtMS41YS4yNS4yNSAwIDAgMS0uMjUtLjI1di0xLjVhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVabTAtM2EuMjUuMjUgMCAwIDEtLjI1LjI1aC0xLjVhLjI1LjI1IDAgMCAxLS4yNS0uMjV2LTZhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVaIiBmaWxsPSIjZDczNzNmIi8+PC9zdmc+');
+  background-position: 96%;
+  background-repeat: no-repeat;
+  background-size: 18px;
+  padding-right: 2rem;
+}
+
+main .form .error select {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCI+PHBhdGggZD0iTTguNTY0IDEuMjg5LjIgMTYuMjU2QS41LjUgMCAwIDAgLjYzNiAxN2gxNi43MjhhLjUuNSAwIDAgMCAuNS0uNS40OTQuNDk0IDAgMCAwLS4wNjQtLjI0NEw5LjQzNiAxLjI4OWEuNS41IDAgMCAwLS44NzIgMFpNMTAgMTQuNzVhLjI1LjI1IDAgMCAxLS4yNS4yNWgtMS41YS4yNS4yNSAwIDAgMS0uMjUtLjI1di0xLjVhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVabTAtM2EuMjUuMjUgMCAwIDEtLjI1LjI1aC0xLjVhLjI1LjI1IDAgMCAxLS4yNS0uMjV2LTZhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVaIiBmaWxsPSIjZDczNzNmIi8+PC9zdmc+'),url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+');
+  background-position: calc(100% - 20px),100% 50%;
+  background-repeat: no-repeat;
+  background-size: 18px,1em 1em;
+  padding-right: 2.5rem;
+}
+
+main .form input:not([type=checkbox]):not([type=radio]):not([type=submit]):hover,
+main .form select:hover,
+main .form textarea:hover {
+  box-shadow: inset 1px 1px 0 0 #4b4b4b, inset -1px -1px 0 0 #4b4b4b;
+}
+
+main .form input:not([type=checkbox]):not([type=radio]):not([type=submit]):active,main .form input:not([type=checkbox]):not([type=radio]):not([type=submit]):focus,main .form input:not([type=checkbox]):not([type=radio]):not([type=submit]):focus-visible,
+main .form select:active,main .form select:focus,main .form select:focus-visible,
+main .form textarea:active, main .form textarea:focus,main .form textarea:focus-visible {
+  box-shadow: inset 1px 1px 0 0 rgb(0 157 245 / 60%), inset -1px -1px 0 0 rgb(0 157 245 / 60%), inset 1px 1px 0 0 rgb(0 157 245 / 60%), inset -1px -1px 0 0 rgb(0 157 245 / 60%), 0 0 0.125rem rgb(82 168 236 / 60%);
+}
+
+main .form .row.error {
+  color: #d9534f;
+}
+
+/* 
+
+END FAAS STYLES
+*/
+
+@media screen and (min-width: 600px) {
+  main .form form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-l);
   }
-  
+
+  main .form .form-submit-wrapper {
+    grid-column: 1 / 3;
+  }
+}
+
+@media screen and (min-width: 900px) { 
   main .form .field-wrapper {
     display: flex;
   }
