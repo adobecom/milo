@@ -44,7 +44,7 @@ function getPromoteIgnorePaths(config) {
   let promoteIgnorePaths = config.promoteIgnorePaths.get(fgColor.value);
   if (promoteIgnorePaths === undefined
       || (Array.isArray(promoteIgnorePaths) && promoteIgnorePaths.length === 0)) {
-    promoteIgnorePaths = config.promoteIgnorePaths.get('pink') || ['/.milo', '/.helix'];
+    promoteIgnorePaths = config.promoteIgnorePaths.get('pink') || ['/.milo', '/.helix', '/metadata.xlsx'];
   }
   return promoteIgnorePaths;
 }
