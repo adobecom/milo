@@ -179,23 +179,10 @@
   gap: var(--spacing-m);
 }
 
-.section.container[class*='-up'] {
-  width: auto;
-  margin: 0;
-}
-
 .section[class*='grid-width-'] > .content,
-main > .section[class*='-up'] > .content,
-.section[class*='grid-width-'] > .contained {
+main > .section[class*='-up'] > .content {
   max-width: initial;
   margin: 0;
-}
-
-.section[class*='grid-width-'].milo-card-section {
-  padding-left: unset;
-  padding-right: unset;
-  display: initial;
-  gap: initial;
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
