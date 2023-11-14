@@ -40,26 +40,36 @@ async function getMilocUrl() {
   return miloc.url;
 }
 
+function getPromoteIgnorePaths(config) {
+  let promoteIgnorePaths = config.promoteIgnorePaths.get(fgColor.value);
+  if (promoteIgnorePaths === undefined
+      || (Array.isArray(promoteIgnorePaths) && promoteIgnorePaths.length === 0)) {
+    promoteIgnorePaths = config.promoteIgnorePaths.get('pink') || ['/.milo', '/.helix'];
+  }
+  return promoteIgnorePaths;
+}
+
 export async function getParamsFg(config) {
   await loadFgColor();
   const editUrl = urlParams.get('referrer') || MOCK_REFERRER;
   const json = await getStatus('', editUrl);
-  const resourcePath = json.resourcePath;
+  const { resourcePath } = json;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
-  let projectPath = path + '.xlsx';
+  const projectPath = `${path}.xlsx`;
   const adminPageUri = 'https://main--milo--adobecom.hlx.page?project=milo--adobecom&referrer=https://main--milo--adobecom.hlx.page';
-  const fgShareUrl = config.sharepoint.site.fgShareUrl;
+  const { fgShareUrl } = config.sharepoint.site;
   const fgShareUrlColor = fgShareUrl.replace(/<fgColor>/g, fgColor.value);
-  const fgRootFolder = config.sharepoint.site.fgRootFolder;
+  const { fgRootFolder } = config.sharepoint.site;
   const fgRootFolderColor = fgRootFolder.replace(/<fgColor>/g, fgColor.value);
+  const promoteIgnorePaths = getPromoteIgnorePaths(config);
   const params = {
-    adminPageUri: adminPageUri,
+    adminPageUri,
     projectExcelPath: projectPath,
     shareUrl: config.sharepoint.site.shareUrl,
     fgShareUrl: fgShareUrlColor,
     rootFolder: config.sharepoint.site.rootFolder,
     fgRootFolder: fgRootFolderColor,
-    promoteIgnorePaths: config.promoteIgnorePaths || [],
+    promoteIgnorePaths,
     driveId: config.driveId || '',
     fgColor: fgColor.value,
   };
@@ -218,7 +228,7 @@ export async function getServiceConfigFg(origin) {
   let configDriveId;
   if (rowIndex !== -1) {
     configDriveId = json.configs.data[rowIndex].value;
-  } 
+  }
   json.floodgate.data.forEach((conf) => {
     const [confEnv, confService, confType, confUrl] = conf.key.split('.');
     configs[confEnv] ??= {};
@@ -232,12 +242,13 @@ export async function getServiceConfigFg(origin) {
       configs[confEnv][confService][confType] = conf.value;
     }
   });
-  configs.promoteIgnorePaths = [];
   if (rowIndex !== -1) {
     configs.driveId = configDriveId;
   }
-  json.promoteignorepaths.data.forEach((path) => {
-    configs.promoteIgnorePaths.push(path.FilesToIgnoreFromPromote);
+  configs.promoteIgnorePaths = new Map();
+  json.promoteignorepaths.data.forEach((color) => {
+    const paths = (color.paths.trim() === '') ? [] : color.paths.trim().split(',').map((item) => item.trim());
+    configs.promoteIgnorePaths.set(color.color, paths);
   });
   return configs;
 }
