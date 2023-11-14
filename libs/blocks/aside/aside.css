@@ -143,6 +143,11 @@
   align-items: center;
 }
 
+.aside.notification .icon-area {
+  display: flex;
+  align-items: center;
+}
+
 .aside .foreground.container .icon-area {
   height: 56px;
   max-width: 234px;
