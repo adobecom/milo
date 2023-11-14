@@ -20,7 +20,8 @@
   color: var(--color-white);
 }
 
-.brick .foreground a:not([class]) {
+.brick .foreground a:not([class]),
+.brick .foreground span.first-link {
   font-weight: 700;
 }
 
