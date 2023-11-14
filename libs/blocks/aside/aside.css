@@ -355,7 +355,8 @@
 }
 
 .aside.notification .foreground.container .icon-area img {
-  height: 40px;
+  max-height: 40px;
+  height: auto;
 }
 
 .aside.notification.extra-small .foreground.container {
