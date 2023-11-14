@@ -1,4 +1,4 @@
-import { decorateTextOverrides, decorateBlockText, decorateBlockBg, decorateIconStack } from '../../utils/decorate.js';
+import { decorateTextOverrides, decorateBlockText, decorateBlockBg, decorateIconStack, decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 const blockTypeSizes = {
@@ -22,10 +22,8 @@ function handleBrickFragment(el) {
   }
 }
 
-function decorateDefaultButton(foreground) {
+function handleSupplementalText(foreground) {
   if (!foreground.querySelector('.action-area')) return;
-  const btns = foreground.querySelectorAll('.con-button');
-  [...btns].forEach((btn) => btn.classList.add('button-l'));
   const nextP = foreground.querySelector('.action-area + p');
   const lastP = foreground.querySelector('.action-area ~ p:last-child');
   if (nextP) nextP.className = '';
@@ -82,10 +80,11 @@ function decorateBricks(el) {
   const hasIconArea = foreground.querySelector('p')?.querySelector('img');
   if (hasIconArea) foreground.querySelector('p').classList.add('icon-area');
   const blockFormatting = getBlockSize(el);
+  decorateButtons(foreground, 'button-l');
   decorateBlockText(foreground, blockFormatting);
   decorateIconStack(el);
   el.querySelector('.icon-stack-area')?.classList.add('body-xs');
-  decorateDefaultButton(foreground);
+  handleSupplementalText(foreground);
   handleClickableBrick(el, foreground);
   return foreground;
 }
