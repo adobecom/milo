@@ -61,7 +61,12 @@ main .form label.required::after {
 }
 
 main .form .field-wrapper {
-  margin-bottom: var(--spacing-m);
+  margin-bottom: var(--spacing-s);
+}
+
+main .form .form-heading-wrapper {
+  justify-content: center;
+  margin: 0;
 }
 
 main .form .field-wrapper.hidden {
@@ -158,7 +163,6 @@ main .form .field-wrapper {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   padding: 12px 0;
 }
 
@@ -248,10 +252,10 @@ END FAAS STYLES
   main .form form {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-l);
+    gap: 0 var(--spacing-l);
   }
 
-  main .form .form-submit-wrapper {
+  main .form :is(.form-submit-wrapper, .form-heading-wrapper) {
     grid-column: 1 / 3;
   }
 }

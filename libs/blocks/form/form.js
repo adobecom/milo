@@ -192,6 +192,9 @@ function applyRules(form, rules) {
         return;
     }
     fw.classList.toggle(type, force);
+    if (fw.classList.contains('hidden')) {
+      fw.querySelector(`#${fw.dataset.fieldId}`).removeAttribute('required');
+    }
   });
 }
 
