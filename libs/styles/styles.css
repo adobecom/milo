@@ -3,6 +3,7 @@
  :root {
   --global-height-nav: 64px;
   --global-height-breadcrumbs: 33px;
+  --global-height-navPromo: 65px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
 
   /* Colors */
@@ -263,8 +264,8 @@
 }
 
 .body-xxs {
-  font-size: var(--type-heading-xxs-size);
-  line-height: var(--type-body-xs-lh);
+  font-size: var(--type-body-xxs-size);
+  line-height: var(--type-body-xxs-lh);
 }
 
 .detail-xl {
@@ -285,6 +286,12 @@
 .detail-s {
   font-size: var(--type-detail-s-size);
   line-height: var(--type-detail-s-lh);
+}
+
+.detail-xs {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+  font-weight: 700;
 }
 
 .detail-xl,
@@ -336,6 +343,14 @@
   display: block;
   text-align: center;
   width: 100%;
+}
+
+.xxl-button .con-button {
+  border-radius: 30px;
+  font-size: 22px;
+  line-height: 27px;
+  min-height: 27px;
+  padding: 14px 30px 15px;
 }
 
 .dark .con-button {
@@ -634,13 +649,18 @@ header:not(.global-navigation) ~ main {
   all of the ':not(.global-navigation)' rules can be entirely removed.
  */
 header.global-navigation {
-  height: var(--global-height-nav); /* TODO better approach for value? */
+  height: var(--global-height-nav);
   visibility: hidden;
 }
 
 @media (min-width: 900px) {
+  header.global-navigation.has-promo {
+    height: auto;
+    min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
+  }
+
   header.global-navigation.has-breadcrumbs {
-    padding-bottom: var(--global-height-breadcrumbs); /* TODO better approach for value? */
+    padding-bottom: var(--global-height-breadcrumbs);
   }
 }
 

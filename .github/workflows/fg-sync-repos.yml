@@ -1,0 +1,46 @@
+name: Floodgate Repo Sync
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.FG_SYNC_APP_ID }}
+          private-key: ${{ secrets.FG_SYNC_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: "milo-pink"
+
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Clone Floodgate Repository
+        run: |
+          git clone https://github.com/adobecom/milo-pink.git ../milo-pink
+
+      - name: Overwrite floodgate repo files with latest from source repo
+        run: |
+          rsync -av --exclude='fstab.yaml' --exclude='.github' --exclude='.git' --exclude='.idea' ./ ../milo-pink/
+
+      - name: Commit and Push Changes to Floodgate Repository
+        run: |
+          cd ../milo-pink
+          git config user.email "$FG_SYNC_BOT_EMAIL"
+          git config user.name "$FG_SYNC_BOT_NAME"
+          git status          
+          git remote set-url origin https://oauth2:$GITHUB_TOKEN@github.com/adobecom/milo-pink.git
+          git remote -v
+          git add .
+          git commit -m "Syncing milo to milo-pink"
+          git push origin main --force
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          FG_SYNC_BOT_EMAIL: ${{ secrets.FG_SYNC_BOT_EMAIL }}
+          FG_SYNC_BOT_NAME: ${{ secrets.FG_SYNC_BOT_NAME }}

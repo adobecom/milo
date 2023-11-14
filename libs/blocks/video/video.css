@@ -1,4 +1,4 @@
-a[href*='.mp4'].hide {
+a[href*='.mp4'].hide-video {
   visibility: hidden !important;
 }
 

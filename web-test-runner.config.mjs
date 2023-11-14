@@ -34,6 +34,7 @@ export default {
       '**/special/tacocat/**',
     ],
   },
+  testFramework: { config: { retries: 1 } },
   plugins: [importMapsPlugin({})],
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),
@@ -43,6 +44,7 @@ export default {
   testRunnerHtml: (testFramework) => `
     <html>
       <head>
+        <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
         <script type='module'>
           const oldFetch = window.fetch;
           window.fetch = async (resource, options) => {
