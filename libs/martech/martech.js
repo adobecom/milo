@@ -119,7 +119,7 @@ export default async function init({ persEnabled = false, persManifests }) {
 
   window.marketingtech = {
     adobe: {
-      launch: { url, controlPageLoad: false },
+      launch: { url, controlPageLoad: true },
       alloy: { edgeConfigId },
       target: false,
     },
