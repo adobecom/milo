@@ -168,6 +168,12 @@
   height: 512px;
 }
 
+@media only screen and (min-width: 600px) {
+  .chart-section.two-up { 
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media only screen and (min-width: 1200px) {
   .chart [data-chart-type="area"] > div {
     height: 900px;
