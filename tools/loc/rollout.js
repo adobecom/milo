@@ -15,11 +15,6 @@ import {
   stripExtension,
 } from './utils.js';
 
-// hash for 'block-group-start(hide-block)' with one row and two rows
-const BLOCK_GROUP_START_HASH = ['070c0d15290c13db479b4d7fc0fe0803e9f6f019', 'f9dc40f9d162fca365fb8a43dff396f29a29244c'];
-// hash for 'block-group-end(hide-block)'
-const BLOCK_GROUP_END_HASH = ['240a1f97e3537f37eaa256d5f00b06c9f182e404', '132ffa710189ce6d7b7f023b4d4212d3fb33fe77'];
-
 async function persistDoc(srcPath, docx, dstPath) {
   try {
     await saveFileAndUpdateMetadata(srcPath, docx, dstPath, { RolloutStatus: 'Merged' });
@@ -61,11 +56,6 @@ const addBoldHeaders = (mdast) => {
       let idx = parent.children.indexOf(node);
       parent.children[idx] = { type: 'strong', children: [node] };
     }
-    // MWPW-138178: remove spaces and make lowercase for block-group blocks to get consistent hash
-    if (node.value.toLowerCase().startsWith('block-group')) {
-      const newStr = node.value.replace(/\s/g, '').toLowerCase();
-      node.value = newStr;
-    }
   });
   return tableMap;
 };
@@ -75,15 +65,16 @@ function processMdast(nodes) {
   const arrayWithContentHash = [];
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
+    const blockName = getLeaf(node, 'text')?.node?.value;
     const hash = objectHash.sha1(node);
-    if (BLOCK_GROUP_START_HASH.includes(hash)) {
+    if (blockName?.toLowerCase().startsWith('block-group-start')) {
       const groupArray = [];
       groupArray.push(node);
       for (let j = i + 1; j < nodes.length; j++) {
         const nextNode = nodes[j];
-        const nextHash = objectHash.sha1(nextNode);
+        const nextBlockName = getLeaf(nextNode, 'text')?.node?.value;
         i = j;
-        if (!BLOCK_GROUP_END_HASH.includes(nextHash)) {
+        if (!nextBlockName?.toLowerCase().startsWith('block-group-end')) {
           groupArray.push(nextNode);
         } else {
           groupArray.push(nextNode);
