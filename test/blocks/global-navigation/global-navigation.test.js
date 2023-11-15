@@ -19,7 +19,7 @@ const ogFetch = window.fetch;
 
 describe('global navigation', () => {
   before(() => {
-    document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    document.head.innerHTML = '<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any"><script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
   });
 
   describe('basic sanity tests', () => {
