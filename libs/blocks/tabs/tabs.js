@@ -95,6 +95,13 @@ const handleDeferredImages = (block) => {
   document.addEventListener(MILO_EVENTS.DEFERRED, loadLazyImages, { once: true, capture: true });
 };
 
+const handlePillSize = (pill) => {
+  const sizes = ['s', 'm', 'l'];
+  const variant = pill.substring(0, pill.indexOf('-pill'));
+  const size = sizes.findIndex((tshirt) => variant.startsWith(tshirt));
+  return `${sizes[size]?.[0] ?? sizes[1]}-pill`;
+};
+
 const init = (block) => {
   const rootElem = block.closest('.fragment') || document;
   const rows = block.querySelectorAll(':scope > div');
@@ -130,7 +137,8 @@ const init = (block) => {
   tabListContainer.classList.add('tab-list-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
-    const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
+    const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
+    const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const tabBtnAttributes = {
