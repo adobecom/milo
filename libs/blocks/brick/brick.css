@@ -10,12 +10,12 @@
   color: inherit;
 }
 
-.light.brick,
-.light.brick.click a.foreground {
+.brick.light,
+.brick.light.click a.foreground {
   color: var(--text-color);
 }
 
-.dark.brick,
+.brick.dark,
 .dark.brick.click a.foreground {
   color: var(--color-white);
 }
@@ -167,9 +167,9 @@
 }
 
 .static-links .brick.click a.foreground .first-link:not([class*="button"]),
-.static-links.brick.click a.foreground .first-link:not([class*="button"]),
 .static-links .brick.click a.foreground a:not([class*="button"]),
-.static-links.brick.click a.foreground a:not([class*="button"]) {
+.brick.static-links.click a.foreground .first-link:not([class*="button"]),
+.brick.static-links.click a.foreground a:not([class*="button"]) {
   color: inherit;
   text-decoration: underline;
 }
@@ -183,17 +183,17 @@
 
 .brick.click:hover .first-link.con-button,
 .brick.click:active .first-link.con-button,
+.brick.light.click:hover .first-link.con-button,
+.brick.light.click:active .first-link.con-button,
 .light .brick.click:hover .first-link.con-button,
-.light .brick.click:active .first-link.con-button,
-.light.brick.click:hover .first-link.con-button,
-.light.brick.click:active .first-link.con-button {
+.light .brick.click:active .first-link.con-button {
   background-color: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
 }
 
 .dark .brick.click:hover .first-link.con-button,
-.dark.brick.click:active .first-link.con-button {
+.brick.dark.click:active .first-link.con-button {
   background-color: var(--color-white);
   color: var(--color-black);
   text-decoration: none;
