@@ -21,9 +21,9 @@
   --tabs-bg-color: #1a1a1a;
   --tabs-active-bg-color: #111;
   --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 80%));
-  --tabs-pill-bg-color: #333;
-  --tabs-pill-bg-color-hover: #222;
-  --tabs-pill-bg-color-active: #111;
+  --tabs-pill-bg-color: #555;
+  --tabs-pill-bg-color-hover: #666;
+  --tabs-pill-bg-color-active: #444;
   --tabs-pill-text-color: #fff;
 }
 
