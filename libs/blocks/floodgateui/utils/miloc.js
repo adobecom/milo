@@ -56,7 +56,7 @@ export async function getParamsFg(config) {
   const { resourcePath } = json;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
   const projectPath = `${path}.xlsx`;
-  const adminPageUri = 'https://main--milo--adobecom.hlx.page?project=milo--adobecom&referrer=https://main--milo--adobecom.hlx.page';
+  const adminPageUri = window.location.href;
   const { fgShareUrl } = config.sharepoint.site;
   const fgShareUrlColor = fgShareUrl.replace(/<fgColor>/g, fgColor.value);
   const { fgRootFolder } = config.sharepoint.site;
