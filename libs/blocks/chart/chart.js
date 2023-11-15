@@ -1,4 +1,4 @@
-import { loadScript, getConfig, createTag } from '../../utils/utils.js';
+import { loadScript, getConfig, createTag, MILO_EVENTS } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -40,7 +40,6 @@ const chartTypes = [
   'pie',
   'oversized-number',
 ];
-const sectionUpStyles = ['container', 'two-up', 'three-up'];
 
 export function processDataset(data) {
   const dataset = {};
@@ -580,6 +579,16 @@ export const getOversizedNumberSize = (charLength) => {
   return [fontSize, titleY, subtitleY];
 };
 
+const handleDeferredSections = (el, upNumber) => {
+  const loadLazySection = () => {
+    const section = el.parentElement?.matches('.section') ? el.parentElement : null;
+    const upClasses = [...section.classList].filter((className) => className.endsWith('-up'));
+    // if authored with a section-metadata:style two-up, three-up... it takes priority
+    if (upClasses.length) section.classList.remove(upNumber);
+  };
+  document.addEventListener(MILO_EVENTS.DEFERRED, loadLazySection, { once: true, capture: true });
+};
+
 const init = (el) => {
   const children = el.querySelectorAll(':scope > div');
   const chartContainer = children[2];
@@ -593,8 +602,9 @@ const init = (el) => {
   const chartStyles = el.classList;
   const section = el.parentElement?.matches('.section') ? el.parentElement : null;
   const sectionChildren = section?.querySelectorAll(':scope > div:not(.section-metadata)');
-  const upNumber = (sectionChildren?.length <= 3) ? sectionChildren.length : 3;
-  if (section) section.classList.add(SECTION_CLASSNAME, sectionUpStyles[upNumber - 1]);
+  const upNumber = (sectionChildren.length <= 3) ? sectionChildren.length : 3;
+  section?.classList.add(SECTION_CLASSNAME, `up-${upNumber}`);
+  handleDeferredSections(el, `up-${upNumber}`);
 
   let authoredSize = SMALL;
   if (upNumber === 1) authoredSize = LARGE;
