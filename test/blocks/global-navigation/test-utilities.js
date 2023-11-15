@@ -12,6 +12,7 @@ import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import correctPromoFragmentMock from './mocks/correctPromoFragment.plain.js';
 import { isElementVisible, selectors as keyboardSelectors } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
 import { selectors as baseSelectors, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 
@@ -117,6 +118,7 @@ export const createFullGlobalNavigation = async ({
   customConfig = config,
   breadcrumbsEl = defaultBreadcrumbsEl(),
   globalNavigation,
+  hasPromo,
 } = {}) => {
   const clock = sinon.useFakeTimers({
     // Intercept setTimeout and call the function immediately
@@ -130,6 +132,8 @@ export const createFullGlobalNavigation = async ({
     if (url.includes('placeholders')) { return mockRes({ payload: placeholders || defaultPlaceholders }); }
     if (url.endsWith('large-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
+    if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }
+    if (url.includes('wrong-promo-fragment')) { return mockRes({ payload: '<div>Non-promo content</div>' }); }
     return null;
   });
   window.adobeIMS = {
@@ -146,7 +150,7 @@ export const createFullGlobalNavigation = async ({
   };
 
   document.body.replaceChildren(toFragment`
-    <header class="global-navigation has-breadcrumbs" daa-im="true" daa-lh="gnav|milo">
+    <header class="global-navigation has-breadcrumbs${hasPromo ? ' has-promo' : ''}" daa-im="true" daa-lh="gnav|milo">
       ${breadcrumbsEl}
     </header>`);
 

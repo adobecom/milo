@@ -166,6 +166,10 @@
   display: block;
 }
 
+.marquee:is(.center, .centered) .icon-area img {
+  margin: 0 auto;
+}
+
 .marquee.large .icon-area img {
   height: 64px;
 }
@@ -346,6 +350,10 @@
 
   .marquee.tablet-dark {
     color: var(--color-white);
+  }
+
+  .marquee.quiet.large .foreground .text {
+    max-width: 800px;
   }
   
   .marquee.tablet-light a:not(.con-button) {

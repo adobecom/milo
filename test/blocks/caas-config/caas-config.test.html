@@ -90,7 +90,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -104,7 +104,22 @@
         ]);
         await delay(50);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Should be able to send a secondary source and content-type tag', async () => {
+        const expectedConfig = cloneObj(defaultConfig);
+        const enableAdvancedTags = findByLabel('Use a secondary source for some content types');
+        enableAdvancedTags.checked = true;
+        enableAdvancedTags.dispatchEvent(new Event('change'));
+        await delay(50);
+    
+        await tagSelectorDropdownChoose('Secondary Source', 'Bacom');
+        await tagSelectorDropdownChoose('Secondary Content Type Tags', 'Customer Story');
+
+        expectedConfig.collection.endpoint = 
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=bacom&secondaryTags=caas:content-type/customer-story&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
         expect(config).to.eql(expectedConfig);
       });
 
@@ -116,7 +131,7 @@
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.country = 'ca';
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
         await delay(50)
         expect(config).to.eql(expectedConfig);
       });
@@ -133,7 +148,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10&flatFile=false';
+        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10&flatFile=false';
         expectedConfig.target.enabled = true;
         expect(config).to.eql(expectedConfig);
       });
@@ -157,7 +172,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -167,14 +182,14 @@
         featuredCardAdd.click();
 
         const contentIdEl = await waitForElement('#contentId');
-        contentIdEl.value = 'a-featured-card-id';
+        contentIdEl.value = '985be96f-2d15-4350-a17c-b3a07fde5c81';
         contentIdEl.dispatchEvent(new Event('change'));
         await delay(150);
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=a-featured-card-id&environment=&draft=false&size=10';
-        expectedConfig.featuredCards = ['a-featured-card-id'];
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=985be96f-2d15-4350-a17c-b3a07fde5c81&environment=&draft=false&size=10';
+        expectedConfig.featuredCards = ['985be96f-2d15-4350-a17c-b3a07fde5c81'];
         expect(config).to.eql(expectedConfig);
       });
 
@@ -189,7 +204,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
         expectedConfig.hideCtaIds = ['hide-cta-id'];
         expect(config).to.eql(expectedConfig);
       });
@@ -301,8 +316,8 @@
         // This does not affect the decoded hash value,
         // so either of these are valid hashes for the same content
 
-        const windowsHash = '~~H4sIAAAAAAAAA3VVTXPbNhD9Lzw7sVK3PehmyfbEM3KsRvL0kOl0VsBSxAjEsgAomen0v3cXpPihKDfiLfbr7cPy3wy0NtGQA/sV/6kxxDV4KEM2//bXTQYMN9GosCRrUcm9L1BiNs+ykXHrQR2ey8pjCHwjm+dgA8oFvaK9UVvYn+PVkZZUu+ibFbh9f3NHdCjBH54VuQ1KpjbFGH9zYWRR4PUmNlZqKcDmHwo0+yJ2lq2JFu+VkoJ2xprYrPCINpv/zva+lUV05xCVN5ynycbmodMBS4EvwY353mMugnHo+fjpl9nsBd7/NDoWnQld3DYVDnyolgu+rQDCvDve1kEc6hCpXHI3XewI9ykdH/9mKnLGNH2huILvzYpA92xqE2BncQGOKwkD7CGPD7v+jE5XZJwQejqdPoKmHX5UVN6qwpTo4QNU5nboMhOPo/HkSnTdFPBd2Vqjliq7ljpo6JGz2R0L5HFIx545Qqz9xDM3NqJ/PPbRW2BRG6vX4GR8SUAlsOh684oUdKxYzOMIZ+UxSL6HJnnCMvE7gTYFnR7LKjY9R/s6xjTNX985TIGg+zCF0biM8Kyn56Fx4y6YsCz5GvZ4Hvf5fItCroWG6qQPSVdXAvFUX8jjVaE6nvz0dZGzjbSw6F5Nz27XDPkLhwr2xiX27p0p00efh+vS2fjKoxNRDSobLH/U4CK/Mcntrti7njogDWQwvgXcFlji3eBoQWFBlql+87aVAq+W2sawRr9OBP52kwUEr4ong/Y8gYBRGl6Q12PdhxEl4SlN+rrt1U35EuPTWTkjbJMyT6AtRVmgqcjBQD4+QMT7oH7AHvAK+ELa5GbEcTJgDhyWedBnv9bQDmRNFWtl7NDiX3n7UrmBsrJmtGnTBXliG/6YoE/di5yA54ouWzjjP7TRpp1CGNAfyfg1EY/z02w2uzCkKnmqdy3ebu+LwAm8SFd7xV7f+AdwOoSMFRBZ2q1mfr7R5E4mV/0eo2zUo5EHn/XYpdCjyFPWi/xg+Acpexd5zduwxff4WnXbR3dzYgcp9TPvCia+++9kxZ0YRCVJY1uSxyJk3GR1wJWElmh9UgZfj+h5KayMOwyaGv29eDXRlb3Anv7Z5SRv4r//Ac4t/CbgBwAA';
-        const osxHash = '~~H4sIAAAAAAAAE3VVTXPbNhD9Lzw7sVK3PehmyfbEM3KsRvL0kOl0VsBSxAjEsgAomen0v3cXpPihKDfiLfbr7cPy3wy0NtGQA/sV/6kxxDV4KEM2//bXTQYMN9GosCRrUcm9L1BiNs+ykXHrQR2ey8pjCHwjm+dgA8oFvaK9UVvYn+PVkZZUu+ibFbh9f3NHdCjBH54VuQ1KpjbFGH9zYWRR4PUmNlZqKcDmHwo0+yJ2lq2JFu+VkoJ2xprYrPCINpv/zva+lUV05xCVN5ynycbmodMBS4EvwY353mMugnHo+fjpl9nsBd7/NDoWnQld3DYVDnyolgu+rQDCvDve1kEc6hCpXHI3XewI9ykdH/9mKnLGNH2huILvzYpA92xqE2BncQGOKwkD7CGPD7v+jE5XZJwQejqdPoKmHX5UVN6qwpTo4QNU5nboMhOPo/HkSnTdFPBd2Vqjliq7ljpo6JGz2R0L5HFIx545Qqz9xDM3NqJ/PPbRW2BRG6vX4GR8SUAlsOh684oUdKxYzOMIZ+UxSL6HJnnCMvE7gTYFnR7LKjY9R/s6xjTNX985TIGg+zCF0biM8Kyn56Fx4y6YsCz5GvZ4Hvf5fItCroWG6qQPSVdXAvFUX8jjVaE6nvz0dZGzjbSw6F5Nz27XDPkLhwr2xiX27p0p00efh+vS2fjKoxNRDSobLH/U4CK/Mcntrti7njogDWQwvgXcFlji3eBoQWFBlql+87aVAq+W2sawRr9OBP52kwUEr4ong/Y8gYBRGl6Q12PdhxEl4SlN+rrt1U35EuPTWTkjbJMyT6AtRVmgqcjBQD4+QMT7oH7AHvAK+ELa5GbEcTJgDhyWedBnv9bQDmRNFWtl7NDiX3n7UrmBsrJmtGnTBXliG/6YoE/di5yA54ouWzjjP7TRpp1CGNAfyfg1EY/z02w2uzCkKnmqdy3ebu+LwAm8SFd7xV7f+AdwOoSMFRBZ2q1mfr7R5E4mV/0eo2zUo5EHn/XYpdCjyFPWi/xg+Acpexd5zduwxff4WnXbR3dzYgcp9TPvCia+++9kxZ0YRCVJY1uSxyJk3GR1wJWElmh9UgZfj+h5KayMOwyaGv29eDXRlb3Anv7Z5SRv4r//Ac4t/CbgBwAA';
+        const windowsHash = '~~H4sIAAAAAAAAA3VVTXPbOAz9LzqnjbvZ3YNvsZNMPeM0bu1MDzs7OzAJWRxThJak7Kid/vcC+pbr3qSHL+LhEfyegNYmGnJgv+D/JYa4AQ95SOb//HuTAMNVNCosyVpU4vcJckzmSTIy7jyo4yovPIbAHsk8BRtQHPSaDkbt4NDlKyMtqXTRV2twh95zT3TMwR9XitwWpVJTYoy/ujCyKPB6GysrZ8nApu8yNIcstpadiRbvlZID7Y01sVrjCW0y/5vtfSuL6LoUhTdcp0rG5qHTAasTX4Jb863HXATj0PPvhz9ms2d4+2p0zFoTurirChz4UA0X7K0Awrz9vS2DBJQhUr7kbtrcEe7rcvz7H1ORMqbpE8U1fKvWBLpnU5sAe4sLcHySMMAe0viw7//R6YKME0LP5/N70LTH94ryW5WZHD28g8LcDl0mEnEynlyOrp0CvilbatRyyralFhp65Gp2zwJ5HMpxZIoQSz+JTI2N6B9PffYGWJTG6g04GV8toBxYdL15TQpaViymcYSz8hgk30OTOmFZ8zuBthmdH/MiVj1HhzLGepp/vnGaDEH3aTKjcRlhpaf/Q+PGXTBhWfIlHLAbd/d/i0KuhYrKWh9SriwE4qk+k8erQnU8+entImcraWHR3pqe3bYZ8hcBBRyMq9m7dyavP/o6fC6djF0enYhqUNlg+VyCi3zHpLa7Ym97aoF6IIPxNeAuwxzvhkALCjOyTPWrt40UeLWUNoYN+k1N4F83SUDwKnsyaLsJBORLppmdocMe2lLpFXZgFGIW5PX4foQRdeGpVsR124ub8irGp05hI2x14bOtTzyBdhRl8dbNDQby8QEi3gf1C/aAV8Bn0iY1o9nUBkyB0zJ/uotrDM0gN1SwxsYBDf6FtzblW8gLa0YbunaQq7nljwn61N7kCdid6LKFDv+ljabsFMKA/kTGb4hYBh9ms9mFoT4lD/WuwZutf5G4Bi/KtVLgh+N8DAkrIrJgGq39fhOKTyKu/oBRNvHJyKJIeuzygkSRtawleZj4YZV9jfw82LDDt/hStFtLt3PiADnqR94xTHz7XiXZnRhEJbXmdiSXTMi4ScqAa0kt2fqiDL6c0PMyWRt3HDQ1evV4pdGVfcKRfuVSkjvy4ycPPCPAGAgAAA==';
+        const osxHash = '~~H4sIAAAAAAAAE3VVTXPbOAz9LzqnjbvZ3YNvsZNMPeM0bu1MDzs7OzAJWRxThJak7Kid/vcC+pbr3qSHL+LhEfyegNYmGnJgv+D/JYa4AQ95SOb//HuTAMNVNCosyVpU4vcJckzmSTIy7jyo4yovPIbAHsk8BRtQHPSaDkbt4NDlKyMtqXTRV2twh95zT3TMwR9XitwWpVJTYoy/ujCyKPB6GysrZ8nApu8yNIcstpadiRbvlZID7Y01sVrjCW0y/5vtfSuL6LoUhTdcp0rG5qHTAasTX4Jb863HXATj0PPvhz9ms2d4+2p0zFoTurirChz4UA0X7K0Awrz9vS2DBJQhUr7kbtrcEe7rcvz7H1ORMqbpE8U1fKvWBLpnU5sAe4sLcHySMMAe0viw7//R6YKME0LP5/N70LTH94ryW5WZHD28g8LcDl0mEnEynlyOrp0CvilbatRyyralFhp65Gp2zwJ5HMpxZIoQSz+JTI2N6B9PffYGWJTG6g04GV8toBxYdL15TQpaViymcYSz8hgk30OTOmFZ8zuBthmdH/MiVj1HhzLGepp/vnGaDEH3aTKjcRlhpaf/Q+PGXTBhWfIlHLAbd/d/i0KuhYrKWh9SriwE4qk+k8erQnU8+entImcraWHR3pqe3bYZ8hcBBRyMq9m7dyavP/o6fC6djF0enYhqUNlg+VyCi3zHpLa7Ym97aoF6IIPxNeAuwxzvhkALCjOyTPWrt40UeLWUNoYN+k1N4F83SUDwKnsyaLsJBORLppmdocMe2lLpFXZgFGIW5PX4foQRdeGpVsR124ub8irGp05hI2x14bOtTzyBdhRl8dbNDQby8QEi3gf1C/aAV8Bn0iY1o9nUBkyB0zJ/uotrDM0gN1SwxsYBDf6FtzblW8gLa0YbunaQq7nljwn61N7kCdid6LKFDv+ljabsFMKA/kTGb4hYBh9ms9mFoT4lD/WuwZutf5G4Bi/KtVLgh+N8DAkrIrJgGq39fhOKTyKu/oBRNvHJyKJIeuzygkSRtawleZj4YZV9jfw82LDDt/hStFtLt3PiADnqR94xTHz7XiXZnRhEJbXmdiSXTMi4ScqAa0kt2fqiDL6c0PMyWRt3HDQ1evV4pdGVfcKRfuVSkjvy4ycPPCPAGAgAAA==';
         let isCorrectHash = false;
         const hash = copyTextArea.value.split('#')[1];
         if (hash === windowsHash || hash === osxHash) {
