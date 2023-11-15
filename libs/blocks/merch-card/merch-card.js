@@ -34,7 +34,6 @@ const checkBoxLabel = (ctas, altCtaMetaData) => {
 
 const isHeadingTag = (tagName) => /^H[1-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
-const isListTag = (tagName) => tagName === 'UL' || tagName === 'OL';
 
 const createAndAppendTag = (tagName, attributes, content, parent) => {
   const newTag = createTag(tagName, attributes, content);
@@ -52,7 +51,7 @@ const parseContent = (el, altCta, cardType, merchCard) => {
       createAndAppendTag(tagName, { slot: textStyles[tagName] }, element.innerHTML, merchCard);
       return;
     }
-    if (isParagraphTag(tagName) || isListTag(tagName)) {
+    if (isParagraphTag(tagName)) {
       bodySlot.append(element);
     }
   });
