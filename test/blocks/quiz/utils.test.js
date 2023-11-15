@@ -151,6 +151,17 @@ describe('Quiz', () => {
     expect(structuredFrags).to.include('express');
   });
 
+  it('Testing result flow with invalid selections', async () => {
+    const selectionData = await readFile({ path: './mocks/invalid-user-selection.json' });
+    const selections = [];
+    selections[0] = JSON.parse(selectionData);
+    const { destinationPage, primaryProductCodes } = await findAndStoreResultData(
+      transformToFlowData(selections),
+    );
+    expect(destinationPage).to.be.an('string');
+    expect(primaryProductCodes).to.be.an('array').of.length(0);
+  });
+
   it('Testing result flow', async () => {
     const { destinationPage, primaryProductCodes } = await findAndStoreResultData(
       transformToFlowData(userSelection),
@@ -182,8 +193,31 @@ describe('Quiz', () => {
     expect(flowData).to.be.an('array').of.length(5);
   });
 
+  it('Testing storeResultInLocalStorage with empty results', async () => {
+    const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
+    const resultResources = JSON.parse(resultResourcesData);
+    const primaryProducts = [];
+    const secondaryProductCodes = [];
+    const umbrellaProduct = '';
+    const pageLoad = 'type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
+    const resultToDelegate = storeResultInLocalStorage(
+      answers,
+      resultData,
+      resultResources,
+      primaryProducts,
+      secondaryProductCodes,
+      umbrellaProduct,
+    );
+    expect(resultToDelegate).to.be.an('object');
+    expect(resultToDelegate).to.haveOwnProperty('primaryProducts').to.be.an('array').of.length(0);
+    expect(resultToDelegate).to.haveOwnProperty('secondaryProducts').to.be.an('array').of.length(0);
+    expect(resultToDelegate).to.haveOwnProperty('umbrellaProduct').to.eq(umbrellaProduct);
+    expect(resultToDelegate).to.haveOwnProperty('pageloadHash').to.eq(pageLoad);
+  });
+
   it('Testing storeResultInLocalStorage', async () => {
-    const resultResources = await readFile({ path: './mocks/result-resources.json' });
+    const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
+    const resultResources = JSON.parse(resultResourcesData);
     const primaryProducts = [
       'lr-ind',
       'pr-ind',
@@ -192,10 +226,20 @@ describe('Quiz', () => {
       'ps-ind',
       'au-ind',
     ];
-    const resultToDelegate = storeResultInLocalStorage(answers, resultData, JSON.parse(resultResources), primaryProducts, secondaryProductCodes, 'cc');
+    const umbrellaProduct = 'cc';
+    const pageLoad = 'type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
+    const resultToDelegate = storeResultInLocalStorage(
+      answers,
+      resultData,
+      resultResources,
+      primaryProducts,
+      secondaryProductCodes,
+      umbrellaProduct,
+    );
     expect(resultToDelegate).to.be.an('object');
-    expect(resultToDelegate).to.haveOwnProperty('umbrellaProduct').eq('cc');
     expect(resultToDelegate).to.haveOwnProperty('primaryProducts').include('lr-ind');
     expect(resultToDelegate).to.haveOwnProperty('secondaryProducts').include('ps-ind');
+    expect(resultToDelegate).to.haveOwnProperty('umbrellaProduct').to.eq(umbrellaProduct);
+    expect(resultToDelegate).to.haveOwnProperty('pageloadHash').to.eq(pageLoad);
   });
 });

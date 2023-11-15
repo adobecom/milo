@@ -84,16 +84,18 @@ export const findAndStoreResultData = async (answers = []) => {
     primaryProductCodes = resultData.primary;
     secondaryProductCodes = resultData.secondary;
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result'];
+    storeResultInLocalStorage(
+      answers,
+      resultData,
+      resultResources,
+      primaryProductCodes,
+      secondaryProductCodes,
+      umbrellaProduct,
+    );
+  } else {
+    window.lana?.log(`ERROR: No results found for ${answers}`);
   }
 
-  storeResultInLocalStorage(
-    answers,
-    resultData,
-    resultResources,
-    primaryProductCodes,
-    secondaryProductCodes,
-    umbrellaProduct,
-  );
   return {
     destinationPage,
     primaryProductCodes,
@@ -108,9 +110,9 @@ export const storeResultInLocalStorage = (
   secondaryProductCodes,
   umbrellaProduct,
 ) => {
-  const nestedFragsPrimary = resultData.matchedResults[0]['nested-fragments-primary'];
-  const nestedFragsSecondary = resultData.matchedResults[0]['nested-fragments-secondary'];
-  const structureFrags = resultData.matchedResults[0]['basic-fragments'];
+  const nestedFragsPrimary = resultData?.matchedResults?.[0]?.['nested-fragments-primary'] || '';
+  const nestedFragsSecondary = resultData?.matchedResults?.[0]?.['nested-fragments-secondary'] || '';
+  const structureFrags = resultData?.matchedResults?.[0]?.['basic-fragments'] || '';
 
   const structureFragsArray = structureFrags?.split(',');
   const nestedFragsPrimaryArray = nestedFragsPrimary?.split(',');
