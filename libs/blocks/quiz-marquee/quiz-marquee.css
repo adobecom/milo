@@ -5,7 +5,7 @@
 
 .dark .quiz-marquee,
 .quiz-marquee.dark {
-  color: white;
+  color: var(--color-white);
 }
 
 .quiz-marquee .static p { margin: var(--spacing-xs) 0; }
@@ -50,7 +50,7 @@
   padding: 4px 8px;
   margin-left: 4px;
   border-radius: 4px;
-  background-color: yellow;
+  background-color: #FFEB00;
   color: var(--text-color);
   white-space: no-wrap;
 }
