@@ -172,7 +172,7 @@
   z-index: 4;
 }
 
-.section.sticky-bottom.popup-sticky-section {
+.section.sticky-bottom.popup {
   bottom: var(--spacing-xs);
 }
 
