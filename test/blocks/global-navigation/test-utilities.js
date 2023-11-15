@@ -33,6 +33,7 @@ export const selectors = {
   searchClear: '.feds-search-clear',
   navWrapper: '.feds-nav-wrapper',
   popupItems: '.feds-menu-items',
+  promo: '.feds-promo',
   promoImage: '.feds-promo-image',
   topNavWrapper: '.feds-topnav-wrapper',
   breadcrumbsWrapper: '.feds-breadcrumbs-wrapper',

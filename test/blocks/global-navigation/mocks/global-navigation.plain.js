@@ -65,7 +65,7 @@ export default `<div>
           Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas
           porttitor congue massa.
         </p>
-        <p><a href="https://adobe.com/">Check it out</a></p>
+        <p><strong><a href="https://adobe.com/">Check it out</a></strong></p>
       </div>
     </div>
     <div>
