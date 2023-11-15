@@ -26,7 +26,7 @@ function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
 
   const displayEmail = decorateEmail(email);
   const avatarImg = createTag('img', { class: 'gnav-profile-img', src: avatar });
-  const accountLink = blockEl.querySelector('div > div > p:nth-child(2) a');
+  const accountLink = blockEl.querySelector('div > div > p:nth-child(2) p');
 
   const profileButton = createTag(
     'button',
@@ -51,25 +51,25 @@ function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
   const profileImg = avatarImg.cloneNode(true);
   const profileName = createTag('p', { class: 'gnav-profile-name' }, displayName);
   const profileEmail = createTag('p', { class: 'gnav-profile-email' }, displayEmail);
-  const accountText = blockEl.querySelector('div > div > p:nth-child(2) a').innerHTML;
+  const accountText = blockEl.querySelector('div > div > p:nth-child(2) p').innerHTML;
   const profileViewAccount = createTag('p', { class: 'gnav-profile-account' }, accountText);
   profileDetails.append(profileName, profileEmail, profileViewAccount);
 
   if (sections.manage.items.team?.id) {
-    const teamLink = blockEl.querySelector('div > div > p:nth-child(3) a');
+    const teamLink = blockEl.querySelector('div > div > p:nth-child(3) div');
     teamLink.href = decorateProfileLink(teamLink.href, 'adminconsole');
     const manageTeam = createTag('li', { class: 'gnav-profile-action' }, teamLink);
     profileActions.append(manageTeam);
   }
 
   if (sections.manage.items.enterprise?.id) {
-    const manageLink = blockEl.querySelector('div > div > p:nth-child(4) a');
+    const manageLink = blockEl.querySelector('div > div > p:nth-child(4) div');
     manageLink.href = decorateProfileLink(manageLink.href, 'adminconsole');
     const manageEnt = createTag('li', { class: 'gnav-profile-action' }, manageLink);
     profileActions.append(manageEnt);
   }
 
-  const signOutLink = blockEl.querySelector('div > div > p:nth-child(5) a');
+  const signOutLink = blockEl.querySelector('div > div > p:nth-child(5) div');
   signOutLink.addEventListener('click', (e) => {
     e.preventDefault();
     window.adobeIMS.signOut();

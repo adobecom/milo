@@ -1,6 +1,6 @@
 {
-  "project": "Milo",
-  "host": "milo.adobe.com",
+  "project": "SKO",
+  "host": "sko.corp.adobe.com",
   "libraries": [
     {
       "text": "Blocks",

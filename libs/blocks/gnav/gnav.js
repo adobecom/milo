@@ -481,7 +481,7 @@ class Gnav {
   decorateSignIn = (blockEl, profileEl) => {
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     decorateLinks(blockEl);
-    const signIn = blockEl.querySelector('a');
+    const signIn = blockEl.querySelector('div');
 
     signIn.classList.add('gnav-signin');
     signIn.setAttribute('daa-ll', 'Sign In');
