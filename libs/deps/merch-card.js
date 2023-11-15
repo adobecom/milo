@@ -1,4 +1,4 @@
-// Wed, 15 Nov 2023 18:19:14 GMT
+// Wed, 15 Nov 2023 19:43:48 GMT
 import{html as a,LitElement as C}from"./lit-all.min.js";import{css as S,unsafeCSS as b}from"./lit-all.min.js";var p="(max-width: 899px)",l="(min-width: 900px)",h="(min-width: 1200px)",x="(min-width: 1440px)";var f=S`
     :host {
         position: relative;
@@ -282,9 +282,6 @@ import{html as a,LitElement as C}from"./lit-all.min.js";import{css as S,unsafeCS
     --consonant-merch-card-body-font-size: 14px;
     --consonant-merch-card-body-line-height: 21px;
 
-    /* responsive width */
-    --consonant-merch-card-mobile-width: 300px;
-
     /* spacing */
     --consonant-merch-spacing-xxxs: 4px;
     --consonant-merch-spacing-xxs: 8px;
@@ -399,6 +396,9 @@ merch-cards > button:hover {
 }
 
 @media screen and ${p} {
+    :root {
+        --consonant-merch-card-mobile-width: 300px;
+    }
     .one-merch-card,
     .two-merch-cards,
     .three-merch-cards,
@@ -422,10 +422,6 @@ merch-cards > button:hover {
     .three-merch-cards,
     .four-merch-cards {
         grid-template-columns: repeat(2, fit-content(100%));
-    }
-
-    merch-card {
-        width: var(--consonant-merch-card-mobile-width);
     }
 }
 
@@ -600,7 +596,7 @@ merch-card [slot="body-xl"] {
 
 merch-card[variant="catalog"] [slot="action-menu-content"] {
     background-color: #000;
-    color: #fff;
+    color: var(--color-white, #fff);
     font-size: var(--consonant-merch-card-body-xs-font-size);
     width: fit-content;
     padding: var(--consonant-merch-spacing-xs);
@@ -627,6 +623,10 @@ merch-card[variant="catalog"] [slot="action-menu-content"] ul li {
 
 merch-card[variant="catalog"] [slot="action-menu-content"] ::marker {
     margin-right: 0;
+}
+
+merch-card[variant="catalog"] [slot="action-menu-content"] p {
+    color: var(--color-white, #fff);
 }
 
 merch-card[variant="catalog"] [slot="action-menu-content"] a {

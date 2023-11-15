@@ -13,14 +13,16 @@ div[data-removed-manifest-id] {
   display: none;
 }
 
-@media screen and (max-width: 899px) {
+/* mobile - content mixed with merch card */
+@media screen and (max-width: 599px) {
   div[class*="-merch-card"] > div,
   div[class*="-merch-cards"] > div {
     grid-column: span 1;
   }
 }
 
-@media screen and (min-width: 900px) {
+/* tablet - content mixed with merch card */
+@media screen and (min-width: 600px) and (max-width: 1024px) {
   div[class*="-merch-card"] > div,
   div[class*="-merch-cards"] > div {
     grid-column: span 2;

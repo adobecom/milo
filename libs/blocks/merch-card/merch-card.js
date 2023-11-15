@@ -158,8 +158,9 @@ const init = (el) => {
       merchCard.appendChild(footer);
     }
     if (image !== undefined) {
-      merchCard.setAttribute('image', image.querySelector('img').src);
-      image.remove();
+      const imageSlot = createTag('div', { slot: 'bg-image' });
+      imageSlot.appendChild(image);
+      merchCard.appendChild(imageSlot);
     }
     if (!icons || icons.length > 0) {
       const iconImgs = Array.from(icons).map((icon) => {
