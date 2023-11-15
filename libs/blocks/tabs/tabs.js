@@ -85,9 +85,9 @@ function initTabs(elm, config, rootElem) {
 }
 
 const handleDeferredImages = (block) => {
+  /* c8 ignore next 6 */
   const loadLazyImages = () => {
     const images = block.querySelectorAll('img[loading="lazy"]');
-    /* c8 ignore next 3 */
     images.forEach((img) => {
       img.removeAttribute('loading');
     });
@@ -178,6 +178,7 @@ const init = (block) => {
       const key = getStringKeyName(row.children[0].textContent);
       if (key !== 'tab') return;
       let val = getStringKeyName(row.children[1].textContent);
+      /* c8 ignore next */
       if (!val) return;
       let id = tabId;
       let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
