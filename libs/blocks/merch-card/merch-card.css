@@ -12,3 +12,17 @@ main > div[class*="-merch-cards"] {
 div[data-removed-manifest-id] {
   display: none;
 }
+
+@media screen and (max-width: 899px) {
+  div[class*="-merch-card"] > div,
+  div[class*="-merch-cards"] > div {
+    grid-column: span 1;
+  }
+}
+
+@media screen and (min-width: 900px) {
+  div[class*="-merch-card"] > div,
+  div[class*="-merch-cards"] > div {
+    grid-column: span 2;
+  }
+}
