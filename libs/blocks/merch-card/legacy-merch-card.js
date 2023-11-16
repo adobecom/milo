@@ -62,12 +62,18 @@ const decorateFooter = (el, altCtaMetaData, cardType) => {
     const checkboxContainer = createCheckbox(altCtaMetaData[0]);
     const altCtaButtonData = altCtaMetaData[1];
     decorateButtons(altCtaButtonData);
-    const altCtaButton = createTag('div', { class: originalCtaButton.classList }, altCtaButtonData.innerHTML);
+    const altCtaButton = createTag(
+      'div',
+      { class: originalCtaButton.classList },
+      altCtaButtonData.innerHTML,
+    );
     altCtaButton.classList.add('button--inactive');
-    checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', ({ target: { checked } }) => {
-      originalCtaButton.classList.toggle('button--inactive', checked);
-      altCtaButton.classList.toggle('button--inactive', !checked);
-    });
+    checkboxContainer
+      .querySelector('input[type="checkbox"]')
+      .addEventListener('change', ({ target: { checked } }) => {
+        originalCtaButton.classList.toggle('button--inactive', checked);
+        altCtaButton.classList.toggle('button--inactive', !checked);
+      });
     cardFooterRow.append(altCtaButton);
     cardFooter.prepend(checkboxContainer);
     altCtaMetaData[0].parentNode.remove();
@@ -84,7 +90,9 @@ const addInner = (el, altCta, cardType, merchCard) => {
   const styles = [...el.classList];
   const merch = styles.includes('merch-card');
   const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
-  const links = pElement ? pElement.querySelectorAll('a:not([data-dnd]), checkout-link') : el.querySelectorAll('a:not([data-dnd]), checkout-link');
+  const links = pElement
+    ? pElement.querySelectorAll('a:not([data-dnd]), checkout-link')
+    : el.querySelectorAll('a:not([data-dnd]), checkout-link');
   const list = el.querySelector('ul');
 
   const inner = el.querySelector(':scope > div:not([class])');
@@ -95,7 +103,9 @@ const addInner = (el, altCta, cardType, merchCard) => {
     if (element.tagName.match(/^P$/)) element.classList.add(`consonant-${cardType}-description`);
     if (element.tagName.match(/^UL$/)) {
       list.classList.add(`consonant-${cardType}-list`);
-      list.querySelectorAll('li').forEach((li) => li.classList.add(`consonant-${cardType}-list-item`));
+      list.querySelectorAll('li').forEach((li) => {
+        li.classList.add(`consonant-${cardType}-list-item`);
+      });
     }
   });
 
@@ -137,7 +147,13 @@ const decorateIcon = (el, icons, cardType) => {
   const iconWrapper = createTag('div', { class: `consonant-${cardType}-iconWrapper` });
   icons.forEach((icon) => {
     const url = icon.querySelector('img').src;
-    const iconDiv = createTag('div', { class: 'consonant-MerchCard-ProductIcon', style: `background-image: url(${url})` });
+    const iconDiv = createTag(
+      'div',
+      {
+        class: 'consonant-MerchCard-ProductIcon',
+        style: `background-image: url(${url})`,
+      },
+    );
     iconWrapper.appendChild(iconDiv);
     icon.parentNode?.remove();
   });
