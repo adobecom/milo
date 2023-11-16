@@ -42,7 +42,6 @@ describe('global footer', () => {
   });
 
   afterEach(() => {
-    clock.restore();
     sinon.restore();
     document.body.innerHTML = '';
   });

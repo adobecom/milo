@@ -69,9 +69,8 @@ class Footer {
     // Fetch footer content
     this.body = await this.fetchContent();
 
-    if (!this.body) {
-      return;
-    }
+    if (!this.body) return;
+
     // TODO: revisit region picker and social links decoration logic
     const regionAnchor = this.body.querySelector('.region-selector a');
     if (regionAnchor?.href) {
@@ -158,9 +157,7 @@ class Footer {
   };
 
   loadIcons = async () => {
-    const loadIconsUrl = `${base}/blocks/global-footer/icons.svg`;
-
-    const file = await fetch(loadIconsUrl);
+    const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
 
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
