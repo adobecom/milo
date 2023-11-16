@@ -42,25 +42,12 @@ export function decorateIconStack(el) {
   });
 }
 
-export function decorateIconArea(el, headings = null) {
+export function decorateIconArea(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
     if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
   });
-  if (headings) {
-    headings.forEach((h) => {
-      const hPrevElem = h.previousElementSibling;
-      if (hPrevElem?.childElementCount) {
-        const picCount = [...hPrevElem.children].reduce((result, item) => {
-          let count = result;
-          if (item.nodeName === 'PICTURE') count += 1;
-          return count;
-        }, 0);
-        if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
-      }
-    });
-  }
 }
 
 export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
@@ -70,7 +57,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
       headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
         headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
-        decorateIconArea(el, headings);
+        decorateIconArea(el);
       }
     }
     const emptyPs = el.querySelectorAll(':scope p:not([class])');

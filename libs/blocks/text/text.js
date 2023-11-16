@@ -36,6 +36,22 @@ function decorateMultiViewport(el) {
   return foreground;
 }
 
+function decorateBlockIconArea(el) {
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (!headings) return;
+  headings.forEach((h) => {
+    const hPrevElem = h.previousElementSibling;
+    if (hPrevElem?.childElementCount) {
+      const picCount = [...hPrevElem.children].reduce((result, item) => {
+        let count = result;
+        if (item.nodeName === 'PICTURE') count += 1;
+        return count;
+      }, 0);
+      if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
+    }
+  });
+}
+
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -57,6 +73,7 @@ export default function init(el) {
   rows.forEach((row) => {
     row.classList.add('foreground');
     decorateBlockText(row, blockTypeSizes[blockType][size]);
+    decorateBlockIconArea(row);
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
