@@ -44,7 +44,6 @@ describe('Gnav', () => {
   it('test wrong gnav', async () => {
     gnav = await mod.default(document.querySelector('header'));
     window.adobeid.onReady();
-
     expect(gnav).to.be.not.null;
   });
 
