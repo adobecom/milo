@@ -22,6 +22,7 @@ const getPodType = (styles) => {
 
 const decorateFooter = (el, altCtaMetaData, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
+
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
     const label = createTag('span', { class: 'secure-transaction-label' });
@@ -129,7 +130,7 @@ const decorateIcon = (el, icons, cardType) => {
   if (!icons) return;
   const inner = el.querySelector(`.consonant-${cardType}-inner`);
   const iconWrapper = createTag('div', { class: `consonant-${cardType}-iconWrapper` });
-  icons?.forEach((icon) => {
+  icons.forEach((icon) => {
     const url = icon.querySelector('img').src;
     const iconDiv = createTag('div', { class: 'consonant-MerchCard-ProductIcon', style: `background-image: url(${url})` });
     iconWrapper.appendChild(iconDiv);

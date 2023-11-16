@@ -169,8 +169,7 @@
   flex-grow: 1;
   position: relative;
   width: 100%;
-  min-height: 213px;
-  max-height: 213px;
+  height: 213px;
   background-color: var(--background-color);
   background-position: 50% 50%;
   background-repeat: no-repeat;
@@ -343,11 +342,12 @@
   width: auto;
 }
 
-.dark .merch-card .consonant-CardFooter .con-button.outline {
-  border-color: var(--color-black);
-  color: var(--color-black);
-}
 
 .merch-card .consonant-CardFooter-row .button--inactive {
   display: none;
+}
+
+.dark .merch-card .consonant-CardFooter .con-button.outline {
+  border-color: var(--color-black);
+  color: var(--color-black);
 }

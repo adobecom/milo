@@ -72,7 +72,7 @@ const returnRibbonStyle = (ribbonMetadata) => {
 };
 
 const getActionMenuContent = (el, ribbonMetadata) => {
-  const index = (ribbonMetadata !== null) ? 1 : 0;
+  const index = ribbonMetadata !== null ? 1 : 0;
   const expectedChildren = ribbonMetadata !== null ? 3 : 2;
   if (el.childElementCount !== expectedChildren) {
     return null;
@@ -84,11 +84,11 @@ const getActionMenuContent = (el, ribbonMetadata) => {
 };
 
 function getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent) {
+  const index = ribbonMetadata === null ? 0 : 1;
   if (cardType === 'catalog') {
-    const index = ribbonMetadata === null ? 0 : 1;
     return actionMenuContent !== null ? rows[index + 1] : rows[index];
   }
-  return rows[ribbonMetadata === null ? 0 : 1];
+  return rows[index];
 }
 
 function addMerchCardGridsIfMissing(section) {
