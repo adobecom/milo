@@ -8,8 +8,6 @@ import '../../deps/commerce.js';
 import '../../deps/merch-card.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
-
-
 const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading'];
 const merchCardGrids = ['one-merch-card', 'two-merch-cards', 'three-merch-cards', 'four-merch-cards'];
 
