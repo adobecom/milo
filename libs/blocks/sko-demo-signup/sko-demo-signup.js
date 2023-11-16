@@ -31,7 +31,7 @@ export default async function init(blockEl) {
   blockEl.append(wrapper);
 }
 
-function onSubmit() {
+async function onSubmit() {
   const fieldCollection = document.querySelectorAll('.sko-form-input');
   const payload = {};
   fieldCollection.forEach(item => {
@@ -42,13 +42,21 @@ function onSubmit() {
     }
     
   }); 
-  fetch("https://prod-148.westus.logic.azure.com:443/workflows/b99189fde390438f82ea53b71daed118/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aHHtKCMxZ0vLxQzQDoOlJdDE3l6su8a7uJRnxtAcbdE", {
+  const response = await fetch("https://prod-148.westus.logic.azure.com:443/workflows/b99189fde390438f82ea53b71daed118/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aHHtKCMxZ0vLxQzQDoOlJdDE3l6su8a7uJRnxtAcbdE", {
 				  method: "POST",
 				  body: JSON.stringify(payload),
 				  headers: {
 				    "Content-type": "application/json; charset=UTF-8"
 				  }
 				});
+
+        if(response.ok) {
+          const wrapper = document.querySelector('.sko-form');
+          const parent = wrapper.parentNode;
+          wrapper.remove();
+          const message = createTag('h1',{},'Thank you for your submission ' + payload.firstName);
+          parent.append(message);
+        }
 }
 
 function getBase64() {      
