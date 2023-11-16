@@ -337,5 +337,13 @@ describe('global footer', () => {
       expect(lanaLogSpy.getCalls().find((c) => c.args[0].includes('Could not create URL for region picker')));
       expect(lanaLogSpy.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
     });
+
+    it('should send log when footer cannot be instantiated ', async () => {
+      sinon.stub(window, 'DOMParser').callsFake(() => ({ parseFromString: sinon.stub().throws(new Error('Parsing error')) }));
+      await createFullGlobalFooter({ waitForDecoration: false });
+      await clock.runAllAsync();
+      expect(lanaLogSpy.getCalls().find((c) => c.args[0].includes('Footer could not be instantiated')));
+      expect(lanaLogSpy.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
+    });
   });
 });
