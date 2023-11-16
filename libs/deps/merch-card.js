@@ -1,5 +1,5 @@
-// Thu, 16 Nov 2023 17:49:00 GMT
-import{html as a,LitElement as C}from"./lit-all.min.js";import{css as S,unsafeCSS as b}from"./lit-all.min.js";var p="(max-width: 899px)",l="(min-width: 900px)",h="(min-width: 1200px)",x="(min-width: 1440px)";var f=S`
+// Thu, 16 Nov 2023 17:53:02 GMT
+import{html as a,LitElement as C}from"./lit-all.min.js";import{css as S,unsafeCSS as b}from"./lit-all.min.js";var p="(max-width: 899px)",l="(min-width: 600px) and (max-width: 1024px)",h="(min-width: 1200px)",x="(min-width: 1440px)";var f=S`
     :host {
         position: relative;
         display: flex;
@@ -456,13 +456,6 @@ merch-card[variant="catalog"] {
         grid-template-columns: repeat(2, fit-content(100%));
     }
 
-    merch-card[variant="special-offers"],
-    merch-card[variant="segment"],
-    merch-card[variant="plans"],
-    merch-card[variant="catalog"],
-    merch-card[variant="inline-heading"] {
-        width: var(--consonant-merch-card-mobile-width);
-    }
 }
 
 /* desktop */
