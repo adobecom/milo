@@ -274,16 +274,8 @@ describe('global footer', () => {
   });
 
   describe('LANA logging tests', () => {
-    const originalLanaLog = window.lana.log;
-    let lanaLogSpy;
-
     beforeEach(async () => {
-      lanaLogSpy = sinon.spy();
-      window.lana.log = lanaLogSpy;
-    });
-
-    afterEach(() => {
-      window.lana.log = originalLanaLog;
+      window.lana.log = sinon.spy();
     });
 
     it('should send log on error', async () => {
@@ -295,9 +287,9 @@ describe('global footer', () => {
       const logTags = 'errorType=error,module=global-footer';
       await logErrorFor(erroneousFunction, logMessage, logTags);
 
-      expect(lanaLogSpy.calledOnce).to.be.true;
+      expect(window.lana.log.calledOnce).to.be.true;
 
-      const firstCallArguments = lanaLogSpy.getCall(0).args;
+      const firstCallArguments = window.lana.log.getCall(0).args;
 
       expect(firstCallArguments[0].includes(logMessage)).to.equal(true);
       expect(firstCallArguments[1].tags === logTags).to.equal(true);
@@ -319,8 +311,8 @@ describe('global footer', () => {
       });
       await createFullGlobalFooter({ waitForDecoration: false });
       await clock.runAllAsync();
-      expect(lanaLogSpy.getCalls().find((c) => c.args[0].includes('Failed to fetch footer content')));
-      expect(lanaLogSpy.getCalls().find((c) => c.args[1].tags.includes('errorType=warn,module=global-footer')));
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Failed to fetch footer content')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=warn,module=global-footer')));
     });
 
     it('should send log when could not create URL for region picker', async () => {
@@ -334,16 +326,16 @@ describe('global footer', () => {
       } catch (e) {
         // should throw error
       }
-      expect(lanaLogSpy.getCalls().find((c) => c.args[0].includes('Could not create URL for region picker')));
-      expect(lanaLogSpy.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Could not create URL for region picker')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
     });
 
     it('should send log when footer cannot be instantiated ', async () => {
       sinon.stub(window, 'DOMParser').callsFake(() => ({ parseFromString: sinon.stub().throws(new Error('Parsing error')) }));
       await createFullGlobalFooter({ waitForDecoration: false });
       await clock.runAllAsync();
-      expect(lanaLogSpy.getCalls().find((c) => c.args[0].includes('Footer could not be instantiated')));
-      expect(lanaLogSpy.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Footer could not be instantiated')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
     });
   });
 });

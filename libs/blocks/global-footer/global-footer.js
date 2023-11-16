@@ -108,7 +108,12 @@ class Footer {
   fetchContent = async () => {
     const resp = await fetch(`${this.contentUrl}.plain.html`);
 
-    if (!resp.ok) lanaLog({ message: `Failed to fetch footer content; content url: ${this.contentUrl}, status: ${resp.statusText}`, tags: 'errorType=warn,module=global-footer' });
+    if (!resp.ok) {
+      lanaLog({
+        message: `Failed to fetch footer content; content url: ${this.contentUrl}, status: ${resp.statusText}`,
+        tags: 'errorType=warn,module=global-footer',
+      });
+    }
 
     const html = await resp.text();
 
@@ -280,10 +285,7 @@ class Footer {
 
     CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
-      if (!link) {
-        lanaLog({ message: `Missing link for platform: ${platform}`, tags: 'errorType=warn,module=global-footer' });
-        return;
-      }
+      if (!link) return;
 
       const iconElem = toFragment`<li class="feds-social-item">
           <a
