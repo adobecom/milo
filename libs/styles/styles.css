@@ -430,6 +430,14 @@
   width: 100%;
 }
 
+.xxl-button .con-button {
+  border-radius: 30px;
+  font-size: 22px;
+  line-height: 27px;
+  min-height: 27px;
+  padding: 14px 30px 15px;
+}
+
 .dark .con-button {
   border-color: var(--color-white);
   color: var(--color-white);
