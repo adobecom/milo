@@ -17,6 +17,7 @@ const cardTypes = {
 };
 const getPodType = (styles) => {
   const authoredType = styles?.find((style) => style in cardTypes);
+
   return cardTypes[authoredType] || SEGMENT_BLADE;
 };
 
@@ -39,6 +40,7 @@ const decorateFooter = (el, altCtaMetaData, cardType) => {
     const input = createTag('input', { id: 'alt-cta', type: 'checkbox' });
     const checkmark = createTag('span', { class: 'checkmark' });
     const label = createTag('span', { class: 'checkbox-label' }, checkBoxText.innerHTML);
+
     container.append(input, checkmark, label);
     return container;
   };
@@ -47,6 +49,7 @@ const decorateFooter = (el, altCtaMetaData, cardType) => {
     const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
     const standardWrapper = createTag('div', { class: 'standard-wrapper' });
     const secureTransactionWrapper = decorateWithSecureTransactionSign();
+
     standardWrapper.append(secureTransactionWrapper, cardFooterRow);
     cardFooter?.append(standardWrapper);
   };
@@ -71,7 +74,9 @@ const decorateFooter = (el, altCtaMetaData, cardType) => {
   };
   if (altCtaMetaData !== null) decorateAlternativeCta();
   if (el.classList.contains('secure')) createSecureSign();
-  cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
+  cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach(
+    (cell) => cell.classList.add(`consonant-${cardType}-cell`),
+  );
 };
 
 const addInner = (el, altCta, cardType, merchCard) => {
@@ -103,7 +108,7 @@ const addInner = (el, altCta, cardType, merchCard) => {
 const decorateRibbon = (el, ribbonMetadata, cardType) => {
   const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
   if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return;
-  const ribbonStyle = ribbonMetadata[0].innerText;
+  const ribbonStyle = ribbonMetadata[0].innerText.trim();
   const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
   const ribbonWrapper = ribbonMetadata[0].parentNode;
   const ribbon = ribbonMetadata[1];

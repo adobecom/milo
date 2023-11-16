@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring */
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 import { getUpFromSectionMetadata } from '../card/cardUtils.js';
@@ -8,8 +7,8 @@ import '../../deps/commerce.js';
 import '../../deps/merch-card.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
-const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading'];
-const merchCardGrids = ['one-merch-card', 'two-merch-cards', 'three-merch-cards', 'four-merch-cards'];
+const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading'];
+const MERCH_CARD_GRIDS = ['one-merch-card', 'two-merch-cards', 'three-merch-cards', 'four-merch-cards'];
 
 const textStyles = {
   H5: 'detail-m',
@@ -18,7 +17,7 @@ const textStyles = {
   H2: 'heading-m',
 };
 
-const getPodType = (styles) => styles?.find((style) => cardTypes.includes(style));
+const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style));
 
 const checkBoxLabel = (ctas, altCtaMetaData) => {
   const altCtaRegex = /href=".*"/;
@@ -98,7 +97,7 @@ function addMerchCardGridsIfMissing(section) {
     const metadata = getMetadata(el);
     styleClasses = metadata?.style?.text?.split(',').map((token) => token.split(' ').join('-')) ?? [];
   }
-  if (!merchCardGrids.some((styleClass) => styleClasses.includes(styleClass))) {
+  if (!MERCH_CARD_GRIDS.some((styleClass) => styleClasses.includes(styleClass))) {
     section.classList.add('three-merch-cards');
   }
 }
