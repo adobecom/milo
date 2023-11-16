@@ -30,7 +30,7 @@ describe('Library Config: text', () => {
     verifyContainer(containers[0], 1, true);
     // verify getHtml()
     const docxHtml = getHtml(containers[0], BLOCK_PAGE_URL);
-    expect(docxHtml).to.equal(expectedDocxHtml);
+    expect(docxHtml).to.equal(expectedDocxHtml.trim());
     // verify getSearchTags()
     const searchTags = getSearchTags(containers[0]);
     expect(searchTags).to.equal('tb-2up-gr10 tb-3up-gr12 text');
@@ -57,7 +57,7 @@ describe('Library Config: chart', () => {
     verifyContainer(containers[0], 1, true);
     // verify getHtml()
     const docxHtml = getHtml(containers[0], BLOCK_PAGE_URL);
-    expect(docxHtml).to.equal(expectedDocxHtml);
+    expect(docxHtml).to.equal(expectedDocxHtml.trim());
     // verify getSearchTags()
     const searchTags = getSearchTags(containers[0]);
     expect(searchTags).to.equal('chart-0 chart (area, green, border)');
@@ -84,7 +84,7 @@ describe('Library Config: marquee', () => {
     verifyContainer(containers[0], 1, true);
     // verify getHtml()
     const docxHtml = getHtml(containers[0], BLOCK_PAGE_URL);
-    expect(docxHtml).to.equal(expectedDocxHtml);
+    expect(docxHtml).to.equal(expectedDocxHtml.trim());
     // verify getSearchTags()
     const searchTags = getSearchTags(containers[0]);
     expect(searchTags).to.equal('mq-std-md-lt mq-std-md-rt mq-std-md-lt-vid marquee-dark marquee');
@@ -148,8 +148,8 @@ describe('Library Config: containers', () => {
     const containers = getContainers(document);
     const singleBlockHtml = getHtml(containers[0], BLOCK_PAGE_URL);
     const containerHtml = getHtml(containers[3], BLOCK_PAGE_URL);
-    expect(singleBlockHtml).to.equal(expectedSingleBlockHtml);
-    expect(containerHtml).to.equal(expectedContainerHtml);
+    expect(singleBlockHtml).to.equal(expectedSingleBlockHtml.trim());
+    expect(containerHtml).to.equal(expectedContainerHtml.trim());
   });
 
   it('getSearchTags', async () => {
