@@ -30,18 +30,27 @@ function handleSupplementalText(foreground) {
   if (lastP) lastP.className = 'supplemental-text';
 }
 
+function setObjectFitAndPos(text, pic, bgEl) {
+  const backgroundConfig = text.split(',').map((c) => c.toLowerCase().trim());
+  const fitOption = objFitOptions.filter((c) => backgroundConfig.includes(c));
+  const focusOption = backgroundConfig.filter((c) => !fitOption.includes(c));
+  if (fitOption) [pic.querySelector('img').style.objectFit] = fitOption;
+  bgEl.innerHTML = '';
+  bgEl.append(pic);
+  bgEl.append(document.createTextNode(focusOption.join(',')));
+}
+
 function handleObjectFit(bgRow) {
   const bgConfig = bgRow.querySelectorAll('div');
   [...bgConfig].forEach((r) => {
-    const image = r.querySelector('img');
-    if (!image) return;
-    const pchild = r.querySelectorAll(':scope > p:not(:empty)');
-    if (pchild.length < 2) return;
-    const backgroundConfig = pchild[1].textContent.split(',').map((c) => c.toLowerCase().trim());
-    const fitOption = objFitOptions.filter((c) => backgroundConfig.includes(c));
-    const focusOption = backgroundConfig.filter((c) => !fitOption.includes(c));
-    pchild[1].innerText = focusOption.join(',');
-    if (fitOption.length) [image.style.objectFit] = fitOption;
+    const pic = r.querySelector('picture');
+    if (!pic) return;
+    let text = '';
+    const pchild = r.querySelectorAll('p:not(:empty)');
+    if (pchild.length > 2) text = pchild[1]?.textContent.trim();
+    if (!text && r.textContent) text = r.textContent;
+    if (!text) return;
+    setObjectFitAndPos(text, pic, r);
   });
 }
 
