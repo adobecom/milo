@@ -1,6 +1,6 @@
 /* eslint-disable prefer-destructuring */
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
-import { getConfig, createTag, setConfig } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { getUpFromSectionMetadata } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
@@ -8,10 +8,7 @@ import '../../deps/commerce.js';
 import '../../deps/merch-card.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
-const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const conf = { locales };
-setConfig(conf);
-const config = getConfig();
+
 
 const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading'];
 const merchCardGrids = ['one-merch-card', 'two-merch-cards', 'three-merch-cards', 'four-merch-cards'];
@@ -190,7 +187,7 @@ const init = (el) => {
       icons.forEach((icon) => icon.remove());
     }
     if (styles.includes('secure')) {
-      replaceKey('secure-transaction', config)
+      replaceKey('secure-transaction', getConfig())
         .then((key) => merchCard.setAttribute('secure-label', key));
     }
     if (altCta) {
