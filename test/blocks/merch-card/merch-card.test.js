@@ -1,7 +1,12 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
+
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales };
+setConfig(conf);
 
 describe('Merch Card', () => {
   it('Shows segment card', async () => {
