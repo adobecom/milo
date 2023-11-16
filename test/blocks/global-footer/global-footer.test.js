@@ -43,7 +43,7 @@ describe('global footer', () => {
 
   afterEach(() => {
     clock.restore();
-    sinon.restore();
+    window.fetch.restore();
     document.body.innerHTML = '';
   });
 
