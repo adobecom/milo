@@ -5,26 +5,9 @@ main > div[class*="-merch-cards"] {
 
  div[class*="-merch-card"] > div,
  div[class*="-merch-cards"] > div {
-  grid-column: span 3;
-  width: 100%;
+  grid-column: 1 / -1;
 }
 
 div[data-removed-manifest-id] {
   display: none;
-}
-
-/* mobile - content mixed with merch card */
-@media screen and (max-width: 599px) {
-  div[class*="-merch-card"] > div,
-  div[class*="-merch-cards"] > div {
-    grid-column: span 1;
-  }
-}
-
-/* tablet - content mixed with merch card */
-@media screen and (min-width: 600px) and (max-width: 1024px) {
-  div[class*="-merch-card"] > div,
-  div[class*="-merch-cards"] > div {
-    grid-column: span 2;
-  }
 }
