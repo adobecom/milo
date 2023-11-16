@@ -1,11 +1,17 @@
 /* eslint-disable prefer-destructuring */
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
-import { getConfig, createTag } from '../../utils/utils.js';
+import { getConfig, createTag, setConfig } from '../../utils/utils.js';
 import { getUpFromSectionMetadata } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/commerce.js';
 import '../../deps/merch-card.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
+
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales };
+setConfig(conf);
+const config = getConfig();
 
 const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading'];
 const merchCardGrids = ['one-merch-card', 'two-merch-cards', 'three-merch-cards', 'four-merch-cards'];
@@ -90,6 +96,18 @@ function getMerchCardRows(rows, ribbonMetadata, cardType, actionMenuContent) {
   return rows[ribbonMetadata === null ? 0 : 1];
 }
 
+function addMerchCardGridsIfMissing(section) {
+  let styleClasses = [];
+  const el = section.querySelector('.section-metadata');
+  if (el) {
+    const metadata = getMetadata(el);
+    styleClasses = metadata?.style?.text?.split(',').map((token) => token.split(' ').join('-')) ?? [];
+  }
+  if (!merchCardGrids.some((styleClass) => styleClasses.includes(styleClass))) {
+    section.classList.add('three-merch-cards');
+  }
+}
+
 const init = (el) => {
   let section = el.closest('.section');
   const upClass = getUpFromSectionMetadata(section);
@@ -107,9 +125,7 @@ const init = (el) => {
       fragmentParent.style.display = 'contents';
       section = fragmentParent.parentElement;
     }
-    if (!merchCardGrids.some((grid) => section.classList.contains(grid))) {
-      section.classList.add('three-merch-cards');
-    }
+    addMerchCardGridsIfMissing(section);
     const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
     decorateLinkAnalytics(el, headings);
     const images = el.querySelectorAll('picture');
@@ -174,7 +190,7 @@ const init = (el) => {
       icons.forEach((icon) => icon.remove());
     }
     if (styles.includes('secure')) {
-      replaceKey('secure-transaction', getConfig())
+      replaceKey('secure-transaction', config)
         .then((key) => merchCard.setAttribute('secure-label', key));
     }
     if (altCta) {
