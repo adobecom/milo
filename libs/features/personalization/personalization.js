@@ -16,9 +16,7 @@ export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}
 export const normalizePath = (p) => {
   let path = p;
 
-  if (!path.includes('/')) {
-    return path;
-  }
+  if (!path.includes('/')) return path;
 
   if (path.startsWith('http')) {
     try {
