@@ -1,0 +1,13 @@
+.sko-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sko-form button {
+  max-width: 10%;
+}
+
+.sko-form-input {
+  font-size: medium;
+}
