@@ -11,7 +11,7 @@ export default async function init(blockEl) {
       const spectrumLabel = createTag('label', {class: 'sko-form-label'},item.innerText);
       let formField;
       const fieldID = generateFieldName(item.innerText);
-      if(item.innerText == 'Picture') {
+      if(item.innerText.startsWith('Picture')) {
         formField = createTag('input', {id: fieldID, class: 'sko-form-input spectrum-Textfield-input',type:"file", accept:".png, .jpg",capture:"camera" });
         formField.addEventListener("change", getBase64, false);
       } else {
