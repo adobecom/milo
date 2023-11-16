@@ -1,5 +1,5 @@
 import { getConfig, getMetadata, loadStyle, loadLana } from '../../../utils/utils.js';
-import { processTrackingLabels } from '../../../martech/analytics.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
 
 loadLana();
 
