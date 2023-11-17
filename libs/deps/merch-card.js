@@ -1,4 +1,4 @@
-// Fri, 17 Nov 2023 13:17:30 GMT
+// Fri, 17 Nov 2023 13:24:47 GMT
 import{html as r,LitElement as $}from"./lit-all.min.js";import{css as A,unsafeCSS as f}from"./lit-all.min.js";var x="(max-width: 899px)",s="(min-width: 900px)",d="(min-width: 1200px)",b="(min-width: 1440px)";var u=A`
     :host {
         position: relative;
@@ -261,6 +261,14 @@ import{html as r,LitElement as $}from"./lit-all.min.js";import{css as A,unsafeCS
         min-height: 348px;
     }
 
+    :host([variant='segment']) {
+        width: var(--consonant-merch-card-segment-width);
+    }
+
+    :host([variant='inline-heading']) {
+        width: var(--consonant-merch-card-inline-heading-width);
+    }
+
     :host([size='super-wide']) {
         grid-column: span 4;
         width: initial;
@@ -350,6 +358,12 @@ import{html as r,LitElement as $}from"./lit-all.min.js";import{css as A,unsafeCS
 
     /* inline-heading */
     --consonant-merch-card-inline-heading-max-width: 378px;
+
+    /* segment */
+    --consonant-merch-card-segment-width: 378px;
+
+    /* inline-heading */
+    --consonant-merch-card-inline-heading-width: 378px;
 
     /* plans */
     --consonant-merch-card-plans-width: 300px;
@@ -477,14 +491,6 @@ merch-card.has-divider hr {
 
 merch-card[variant="special-offers"] span[is="inline-price"][data-template="priceStrikethrough"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
-}
-
-merch-card[variant="segment"] {
-    max-width: var(--consonant-merch-card-segment-max-width);
-}
-
-merch-card[variant="inline-heading"] {
-    max-width: var(--consonant-merch-card-inline-heading-max-width);
 }
 
 merch-card p, merch-card h3, merch-card h4 {
