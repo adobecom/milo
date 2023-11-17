@@ -1,4 +1,8 @@
- div[class*="-merch-card"]>div,
+main > div[class*="-merch-card"] {
+  display: grid;
+}
+
+div[class*="-merch-card"]>div,
  div[class*="-merch-cards"]>div {
    width: 100%;
    grid-column: 1 / -1;

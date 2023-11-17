@@ -142,10 +142,14 @@ const parseContent = (el, merchCard) => {
 };
 
 const returnRibbonStyle = (ribbonMetadata) => {
-  const style = ribbonMetadata.firstElementChild.innerText;
+  const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return null;
+  const style = ribbonMetadata[0].innerText;
   const badgeBackgroundColor = style.split(',')[0].trim();
   const badgeColor = style.split(',')[1].trim();
-  const badgeText = ribbonMetadata.lastElementChild.innerText;
+  const ribbonWrapper = ribbonMetadata[0].parentNode;
+  const badgeText = ribbonMetadata[1].innerText;
+  ribbonWrapper.remove();
   return { badgeBackgroundColor, badgeColor, badgeText };
 };
 
