@@ -453,6 +453,7 @@ class Gnav {
 
     loadIms()
       .then(() => {
+        console.log('IMS Ready');
         this.imsReady(blockEl, profileEl);
       })
       .catch(() => {});

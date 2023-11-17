@@ -201,7 +201,9 @@ class Gnav {
   }, 'Error in global navigation init', 'errorType=error,module=gnav');
 
   ims = async () => loadIms()
-    .then(() => this.imsReady())
+    .then(() => {
+      this.imsReady();
+    })
     .catch((e) => {
       if (e?.message === 'IMS timeout') {
         window.addEventListener('onImsLibInstance', () => this.imsReady());

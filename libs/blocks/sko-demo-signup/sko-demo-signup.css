@@ -1,13 +1,15 @@
 .sko-form {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 20px;
+  width: 100%;
 }
 
-.sko-form button {
-  max-width: 10%;
+.submit-button {
+  min-width: 400px;
 }
-
 .sko-form-input {
   font-size: medium;
+  min-width: 400px;
 }
