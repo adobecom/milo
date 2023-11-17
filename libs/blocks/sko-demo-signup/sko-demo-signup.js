@@ -25,7 +25,7 @@ export default async function init(blockEl) {
 }
 
 function decorateFormField(fieldJson, el) {
-  const fieldWapper = createTag('div');
+  const fieldWapper = createTag('div', {class:'field-group'});
   const fieldLabel = createTag('label', {class: 'sko-form-label'},fieldJson.label + " *");
   const fieldID = fieldJson.id;
   let formField;

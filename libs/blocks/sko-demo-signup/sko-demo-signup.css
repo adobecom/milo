@@ -37,9 +37,11 @@
 }
 
 @media only screen and (max-device-width: 768px) {
+  .field-group {
+    width:100%;
+  }
   .sko-form {
     display: flex;
-    flex-direction: column;
     gap: 10px;
   }
 
@@ -50,4 +52,10 @@
    .sko-form select {
     min-width: 100%;
    }
+
+   .submit-button {
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+  }
 }
