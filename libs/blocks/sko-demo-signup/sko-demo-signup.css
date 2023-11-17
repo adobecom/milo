@@ -29,3 +29,9 @@
 .confirmation-message {
   padding: 100px;
 }
+
+
+.invalid {
+  border-color: red;
+  color: red;
+}

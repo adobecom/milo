@@ -1,8 +1,8 @@
 {
-    "name": "Milo",
+    "name": "Adobe Experience Cloud",
     "display": "standalone",
     "icons": [
-        { "src": "/libs/img/favicons/favicon-192.png", "sizes": "192x192", "type": "image/png" },
-        { "src": "/libs/img/favicons/favicon-512.png", "sizes": "512x512", "type": "image/png" }
+        { "src": "/img/favicons/favicon-192.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "/img/favicons/favicon-512.png", "sizes": "512x512", "type": "image/png" }
     ]
 }
