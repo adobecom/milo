@@ -6,49 +6,22 @@ export default async function init(blockEl) {
   blockEl.classList.add('content');
   const formFields = await fetch('/signup-form-fields.json');
   const results = await formFields.json();
-  //console.log(data.data);
   const fieldList = results.data;
 
   const wrapper = createTag('div', { class: 'sko-form spectrum-form' });
-  console.log(fieldList);
+
   fieldList.forEach(item => {
     decorateFormField(item, wrapper);
   })
-
-  
   
   window.addEventListener('onImsLibInstance',getCreds);
   
-  /*
-  const fieldNames = blockEl.querySelectorAll(':scope > div div');
-  
-    fieldNames.forEach((item, i) => {
-      const fieldWapper = createTag('div');
-      const spectrumLabel = createTag('label', {class: 'sko-form-label'},item.innerText);
-      let formField;
-      const fieldID = generateFieldName(item.innerText);
-      if(item.innerText.startsWith('Picture')) {
-        formField = createTag('input', {id: fieldID, class: 'sko-form-input spectrum-Textfield-input',type:"file", accept:".png, .jpg",capture:"camera" });
-        formField.addEventListener("change", getBase64, false);
-      } else {
-        
-        formField= createTag('input', {id: fieldID, class: 'sko-form-input spectrum-Textfield-input'});
-      }
-      const inputWrapper = createTag('div');
-      inputWrapper.append(formField);
-      fieldWapper.append(spectrumLabel)
-      fieldWapper.append(inputWrapper);
-      wrapper.append(fieldWapper);
-      item.remove();
-  });
-  */
   blockEl.append(wrapper);
   const buttonWapper = createTag('div', {class:'submit-button'});
   const submitButton = createTag('button', {class:'con-button blue button-justified-mobile'},'Submit')
   submitButton.addEventListener('click', onSubmit);
   buttonWapper.append(submitButton);
   blockEl.append(buttonWapper);
-  
 }
 
 function decorateFormField(fieldJson, el) {
@@ -77,6 +50,7 @@ function decorateFormField(fieldJson, el) {
       break;
     case 'file':
       formField = createTag('input', {id: fieldID, class: 'sko-form-input',type:'file', accept:'.png, .jpg',capture:'camera'});
+      formField.addEventListener("change", getBase64, false);
       break;
   }
 
@@ -108,10 +82,10 @@ async function onSubmit() {
 				});
 
         if(response.ok) {
-          const wrapper = document.querySelector('.sko-form');
+          const wrapper = document.querySelector('.sko-demo-signup');
           const parent = wrapper.parentNode;
           wrapper.remove();
-          const message = createTag('h1',{},'Thank you for your submission ' + payload.firstName);
+          const message = createTag('h1',{class:'content confirmation-message'},'Thank you for your submission ' + payload.firstName);
           parent.append(message);
         }
 }
@@ -120,7 +94,13 @@ const getCreds = () => {
   if(window.adobeIMS.isSignedInUser()) {
     getProfileInfo()
   }
+}
 
+async function getProfileInfo() {
+  const profile = await window.adobeIMS.getProfile();
+  document.getElementById('firstName').value = profile.first_name;
+  document.getElementById('lastName').value = profile.last_name;
+  document.getElementById('email').value = profile.email;
 }
 
 function getBase64() {      
@@ -134,14 +114,4 @@ function getBase64() {
   };   
 }
 
-function generateFieldName(str) {
-  const concatString = str.replace(/\s/g, "");
-  return concatString[0].toLowerCase() + concatString.slice(1);
-}
 
-async function getProfileInfo() {
-  const profile = await window.adobeIMS.getProfile();
-  document.getElementById('firstName').value = profile.first_name;
-  document.getElementById('lastName').value = profile.last_name;
-  document.getElementById('email').value = profile.email;
-}
