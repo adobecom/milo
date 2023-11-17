@@ -86,7 +86,7 @@ const decorateLinkGroup = (elem, index) => {
   return linkGroup;
 };
 
-const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, itemIndex = { position: 0 } } = {}) => {
+const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { position: 0 } } = {}) => {
   const decorateLink = (link) => {
     // Increase analytics index every time a link is decorated
     itemIndex.position += 1;
@@ -97,8 +97,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, 
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
-    if (parseCtas
-      && (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM')) {
+    if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
       const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
       // Remove its 'em' or 'strong' wrapper
       link.parentElement.replaceWith(link);
@@ -135,7 +134,7 @@ const decoratePromo = (elem, index) => {
   const isImageOnly = elem.matches('.image-only');
   const imageElem = elem.querySelector('picture');
 
-  decorateElements({ elem, className: 'feds-promo-link', parseCtas: false, index });
+  decorateElements({ elem, className: 'feds-promo-link', index });
 
   const decorateImage = () => {
     const linkElem = elem.querySelector('a');
