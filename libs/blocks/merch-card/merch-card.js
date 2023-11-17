@@ -328,6 +328,9 @@ const init = async (el) => {
   merchCard.setAttribute('types', types.join(','));
   parseContent(el, merchCard);
   decorateBlockHrs(merchCard);
+  if (merchCard.classList.contains('has-divider')) {
+    merchCard.setAttribute('custom-hr', true);
+  }
   el.replaceWith(merchCard);
   return merchCard;
 };
