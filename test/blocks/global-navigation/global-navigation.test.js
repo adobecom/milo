@@ -11,6 +11,7 @@ import longNav from './mocks/global-navigation-long.plain.js';
 import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
 import noBrandImageOnlyNav from './mocks/global-navigation-only-brand-no-explicit-image.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -421,6 +422,12 @@ describe('global navigation', () => {
 
         const hasLinkgroupModifier = document.querySelector(`${selectors.navLink}--blue`) instanceof HTMLElement;
         expect(hasLinkgroupModifier).to.equal(true);
+      });
+
+      it('should render popups with wide columns', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationWideColumnMock });
+        expect(document.querySelector('.feds-navItem--section .feds-menu-column--group .feds-menu-column + .feds-menu-column')).to.exist;
+        expect(document.querySelector('.column-break')).to.not.exist;
       });
 
       it('should render the promo', async () => {
