@@ -39,10 +39,7 @@
 @media only screen and (max-device-width: 768px) {
   .sko-form {
     display: flex;
-    flex-direction: row;
-    justify-content:left;
-    align-items: left;
-    flex-wrap:wrap;
+    flex-direction: column;
     gap: 10px;
   }
 
