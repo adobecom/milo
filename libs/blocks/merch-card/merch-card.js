@@ -1,6 +1,6 @@
-/* eslint-disable prefer-destructuring */
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag } from '../../utils/utils.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/merch-card.js';
@@ -103,7 +103,8 @@ const PRODUCT_NAMES = [
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
-const cardTypes = ['segment', 'special-offers', 'plans', 'catalog', 'product'];
+const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading'];
+const MERCH_CARD_GRIDS = ['one-merch-card', 'two-merch-cards', 'three-merch-cards', 'four-merch-cards'];
 
 const textStyles = {
   H5: 'detail-m',
@@ -112,7 +113,7 @@ const textStyles = {
   H2: 'heading-m',
 };
 
-const getPodType = (styles) => styles?.find((style) => cardTypes.includes(style));
+const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style));
 
 const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
@@ -170,6 +171,24 @@ const extractTags = (container) => [...container.querySelectorAll('p')]
 // stock offers.
 let stock;
 
+function addMerchCardGridIfMissing(section) {
+  if (section?.matches('[class*="-merch-card"]')) return true;
+  if (!section?.matches('[class*="-up"]')) return false;
+  // this is a milo grid with -up stles.
+  let styleClasses = [];
+  const el = section.querySelector('.section-metadata');
+  if (el) {
+    const metadata = getMetadata(el);
+    styleClasses = metadata?.style?.text?.split(',').map((token) => token.split(' ').join('-')) ?? [];
+  }
+  if (!MERCH_CARD_GRIDS.some((styleClass) => styleClasses.includes(styleClass))) {
+    // no merch card grid found, add the default one.
+    section.classList.add('three-merch-cards');
+    return true;
+  }
+  return false;
+}
+
 const init = async (el) => {
   const styles = [...el.classList];
   const lastClass = styles[styles.length - 1];
@@ -180,7 +199,8 @@ const init = async (el) => {
   }
 
   let section = el.closest('.section');
-  if (section?.parentElement.classList.contains('fragment')) {
+  const merchCards = addMerchCardGridIfMissing(section);
+  if (!merchCards && section?.parentElement.classList.contains('fragment')) {
     const fragment = section.parentElement;
     const fragmentParent = fragment.parentElement;
     section.style.display = 'contents';
@@ -197,9 +217,12 @@ const init = async (el) => {
 
   const merchCard = createTag('merch-card', {
     class: styles.join(' '),
-    name,
     variant: cardType,
   });
+
+  if (name) {
+    merchCard.setAttribute('name', name);
+  }
 
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
@@ -262,8 +285,9 @@ const init = async (el) => {
     merchCard.appendChild(footer);
   }
   if (image !== undefined) {
-    merchCard.setAttribute('image', image.querySelector('img').src);
-    image.remove();
+    const imageSlot = createTag('div', { slot: 'bg-image' });
+    imageSlot.appendChild(image);
+    merchCard.appendChild(imageSlot);
   }
   if (!icons || icons.length > 0) {
     const iconImgs = Array.from(icons).map((icon) => {
