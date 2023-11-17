@@ -172,6 +172,10 @@
   z-index: 4;
 }
 
+.section.sticky-bottom.popup {
+  bottom: var(--spacing-xs);
+}
+
 .section[class*='grid-width-'] {
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);
