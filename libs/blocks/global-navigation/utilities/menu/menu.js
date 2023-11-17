@@ -12,6 +12,11 @@ import {
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
 
+const selectors = {
+  gnavPromo: '.gnav-promo',
+  columnBreak: '.column-break',
+};
+
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
 
@@ -134,7 +139,7 @@ const decoratePromo = (elem, index) => {
 
   const decorateImage = () => {
     const linkElem = elem.querySelector('a');
-    const imageWrapper = imageElem.closest('.gnav-promo > div');
+    const imageWrapper = imageElem.closest(`${selectors.gnavPromo} > div`);
     let promoImageElem;
 
     if (linkElem instanceof HTMLElement) {
@@ -208,7 +213,10 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
       await yieldToMain();
       const columnElem = column.firstElementChild;
 
-      if (columnElem.tagName === separatorTagName) {
+      if (columnElem.matches(selectors.columnBreak)) {
+        resetDestination();
+        columnElem.remove();
+      } else if (columnElem.tagName === separatorTagName) {
         headlineIndex += 1;
         // When encountering a separator (h5 for header, h2 for footer),
         // add the previous section to the column
@@ -220,8 +228,19 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
         // turning it into a simple div
         const sectionHeadline = decorateHeadline(columnElem, headlineIndex);
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
+
         itemDestination.append(sectionHeadline, menuItems);
-      } else if (columnElem.classList.contains('gnav-promo')) {
+
+        if (column.querySelector(selectors.columnBreak)) {
+          wrapper.classList.add(`${wrapperClass}--group`);
+          if (column.querySelectorAll(selectors.columnBreak).length > 1) wrapper.classList.add(`${wrapperClass}--wide`);
+
+          const wideColumn = document.createElement('div');
+          wideColumn.append(...column.childNodes);
+          menuItems.append(wideColumn);
+          await decorateColumns({ content: menuItems });
+        }
+      } else if (columnElem.matches(selectors.gnavPromo)) {
         // When encountering a promo, add the previous section to the column
         resetDestination();
         // Since the promo is alone on a column, reset the analytics index
