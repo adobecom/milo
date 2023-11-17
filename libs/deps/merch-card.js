@@ -1,4 +1,4 @@
-// Fri, 17 Nov 2023 12:49:48 GMT
+// Fri, 17 Nov 2023 13:17:30 GMT
 import{html as r,LitElement as $}from"./lit-all.min.js";import{css as A,unsafeCSS as f}from"./lit-all.min.js";var x="(max-width: 899px)",s="(min-width: 900px)",d="(min-width: 1200px)",b="(min-width: 1440px)";var u=A`
     :host {
         position: relative;
@@ -340,6 +340,7 @@ import{html as r,LitElement as $}from"./lit-all.min.js";import{css as A,unsafeCS
     --consonant-merch-card-border-color: #eaeaea;
     --color-accent: #1473E6;
     --color-black: #000;
+    --color-grey-80: #2c2c2c;
 
     /* merch card generic */
     --consonant-merch-card-max-width: 378px;
@@ -499,30 +500,35 @@ merch-card [slot='heading-xs'] {
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     margin: 0;
     margin-bottom: var(--consonant-merch-spacing-xxs);
+    color: var(--color-grey-80);
 }
 
 merch-card [slot='heading-s'] {
     font-size: var(--consonant-merch-card-heading-s-font-size);
     line-height: var(--consonant-merch-card-heading-s-line-height);
     margin: 0;
+    color: var(--color-grey-80);
 }
 
 merch-card [slot='heading-m'] {
     font-size: var(--consonant-merch-card-heading-m-font-size);
     line-height: var(--consonant-merch-card-heading-m-line-height);
     margin: 0;
+    color: var(--color-grey-80);
 }
 
 merch-card [slot='heading-l'] {
     font-size: var(--consonant-merch-card-heading-l-font-size);
     line-height: var(--consonant-merch-card-heading-l-line-height);
     margin: 0;
+    color: var(--color-grey-80);
 }
 
 merch-card [slot='heading-xl'] {
     font-size: var(--consonant-merch-card-heading-xl-font-size);
     line-height: var(--consonant-merch-card-heading-xl-line-height);
     margin: 0;
+    color: var(--color-grey-80);
 }
 
 merch-card [slot='detail-m'] {
@@ -531,6 +537,7 @@ merch-card [slot='detail-m'] {
     font-weight: var(--consonant-merch-card-detail-m-font-weight);
     text-transform: uppercase;
     margin: 0;
+    color: var(--color-grey-80);
 }
 
 merch-card [slot="body-xxs"] {
@@ -538,26 +545,31 @@ merch-card [slot="body-xxs"] {
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     font-weight: normal;
     letter-spacing: var(--consonant-merch-card-body-xxs-letter-spacing);
+    color: var(--color-grey-80);
 }
 
 merch-card [slot="body-xs"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
+    color: var(--color-grey-80);
 }
 
 merch-card [slot="body-m"] {
     font-size: var(--consonant-merch-card-body-m-font-size);
     line-height: var(--consonant-merch-card-body-m-line-height);
+    color: var(--color-grey-80);
 }
 
 merch-card [slot="body-l"] {
     font-size: var(--consonant-merch-card-body-l-font-size);
     line-height: var(--consonant-merch-card-body-l-line-height);
+    color: var(--color-grey-80);
 }
 
 merch-card [slot="body-xl"] {
     font-size: var(--consonant-merch-card-body-xl-font-size);
     line-height: var(--consonant-merch-card-body-xl-line-height);
+    color: var(--color-grey-80);
 }
 
 merch-card[variant="catalog"] [slot="action-menu-content"] {
