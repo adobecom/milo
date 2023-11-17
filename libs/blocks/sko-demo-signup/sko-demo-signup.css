@@ -38,10 +38,10 @@
 
 @media only screen and (max-device-width: 768px) {
   .sko-form-input {
-      min-width: auto;
+      min-width: 75%;
    }
 
    .sko-form select {
-    min-width: auto;
+    min-width: 75%;
   }
 }
