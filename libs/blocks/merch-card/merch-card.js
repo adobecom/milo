@@ -142,10 +142,14 @@ const parseContent = (el, merchCard) => {
 };
 
 const returnRibbonStyle = (ribbonMetadata) => {
-  const style = ribbonMetadata.firstElementChild.innerText;
+  const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return null;
+  const style = ribbonMetadata[0].innerText;
   const badgeBackgroundColor = style.split(',')[0].trim();
   const badgeColor = style.split(',')[1].trim();
-  const badgeText = ribbonMetadata.lastElementChild.innerText;
+  const ribbonWrapper = ribbonMetadata[0].parentNode;
+  const badgeText = ribbonMetadata[1].innerText;
+  ribbonWrapper.remove();
   return { badgeBackgroundColor, badgeColor, badgeText };
 };
 
@@ -168,12 +172,9 @@ const extractTags = (container) => [...container.querySelectorAll('p')]
     return acc;
   }, { categories: ['all'], types: [] });
 
-// stock offers.
-let stock;
-
 function addMerchCardGridIfMissing(section) {
   if (section?.matches('[class*="-merch-card"]')) return true;
-  if (!section?.matches('[class*="-up"]')) return false;
+  if (!section?.matches('[class*="-up"]') && section?.parentElement.tagName !== 'MAIN') return false;
   // this is a milo grid with -up stles.
   let styleClasses = [];
   const el = section.querySelector('.section-metadata');
@@ -200,6 +201,7 @@ const init = async (el) => {
 
   let section = el.closest('.section');
   const merchCards = addMerchCardGridIfMissing(section);
+  const cardType = getPodType(styles);
   if (!merchCards && section?.parentElement.classList.contains('fragment')) {
     const fragment = section.parentElement;
     const fragmentParent = fragment.parentElement;
@@ -207,18 +209,20 @@ const init = async (el) => {
     fragment.style.display = 'contents';
     fragmentParent.style.display = 'contents';
     section = fragmentParent.parentElement;
+  } else if (section && cardType) {
+    section.classList.add(cardType);
   }
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
-  const cardType = getPodType(styles);
 
-  const merchCard = createTag('merch-card', {
-    class: styles.join(' '),
-    variant: cardType,
-  });
+  const merchCard = createTag('merch-card', { class: styles.join(' ') });
+
+  if (cardType) {
+    merchCard.setAttribute('variant', cardType);
+  }
 
   if (name) {
     merchCard.setAttribute('name', name);
@@ -252,7 +256,7 @@ const init = async (el) => {
   && el.firstElementChild.innerText.includes('#') ? el.firstElementChild : null;
 
     if (ribbonMetadata !== null) {
-      const badge = returnRibbonStyle(ribbonMetadata);
+      const badge = returnRibbonStyle(ribbonMetadata.children);
       if (badge !== null) {
         merchCard.setAttribute(
           'badge-background-color',
@@ -304,13 +308,12 @@ const init = async (el) => {
     icons.forEach((icon) => icon.remove());
   }
   if (styles.includes('add-stock')) {
-    if (stock === undefined) {
-      const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
-      const [label, ...rest] = [...document.querySelectorAll(selector)];
-      if (label) {
-        const offers = rest.filter(({ dataset: { wcsOsi } }) => wcsOsi);
-        stock = { label: label?.innerText, offers: offers?.map((offer) => offer.dataset.wcsOsi).join(',') };
-      }
+    let stock;
+    const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
+    const [label, ...rest] = [...document.querySelectorAll(selector)];
+    if (label) {
+      const offers = rest.filter(({ dataset: { wcsOsi } }) => wcsOsi);
+      stock = { label: label?.innerText, offers: offers?.map((offer) => offer.dataset.wcsOsi).join(',') };
     }
     if (stock !== undefined) {
       merchCard.setAttribute('checkbox-label', stock.label);
@@ -324,6 +327,9 @@ const init = async (el) => {
   merchCard.setAttribute('types', types.join(','));
   parseContent(el, merchCard);
   decorateBlockHrs(merchCard);
+  if (merchCard.classList.contains('has-divider')) {
+    merchCard.setAttribute('custom-hr', true);
+  }
   el.replaceWith(merchCard);
   return merchCard;
 };

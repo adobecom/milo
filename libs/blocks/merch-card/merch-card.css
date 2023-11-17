@@ -1,4 +1,9 @@
- div[class*="-merch-card"]>div,
+main > div[class*="-merch-card"],
+main > div[class*="-merch-cards"] {
+  display: grid;
+}
+
+div[class*="-merch-card"]>div,
  div[class*="-merch-cards"]>div {
    width: 100%;
    grid-column: 1 / -1;
@@ -6,39 +11,4 @@
 
  div[data-removed-manifest-id] {
    display: none;
- }
-
- @media screen and (max-width: 899px) {
-   .section.one-merch-card,
-   .section.two-merch-cards,
-   .section.three-merch-cards,
-   .section.four-merch-cards {
-     display: grid;
-     grid-template-columns: fit-content(100%);
-   }
- }
-
- /* Tablet */
- @media screen and (min-width: 900px) {
-   .section.two-merch-cards,
-   .section.three-merch-cards,
-   .section.four-merch-cards {
-     display: grid;
-     grid-template-columns: repeat(2, fit-content(100%));
-   }
- }
-
- /* desktop */
- @media screen and (min-width: 1200px) {
-   .section.three-merch-cards,
-   .section.four-merch-cards {
-     grid-template-columns: repeat(3, fit-content(100%));
-   }
- }
-
- /* Large desktop */
- @media screen and (min-width: 1440px) {
-   .section.four-merch-cards {
-     grid-template-columns: repeat(4, fit-content(100%));
-   }
  }

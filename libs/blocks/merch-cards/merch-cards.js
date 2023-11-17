@@ -39,7 +39,7 @@ export default async function main(el) {
     return null; // return silently.
   }
   if (!el.closest('main > .section[class*="-merch-card"]')) {
-    el.closest('main > .section').classList.add('four-merch-cards', 'xl-gap');
+    el.closest('main > .section').classList.add('four-merch-cards');
   }
   const type = el.classList[1];
 
@@ -78,7 +78,8 @@ export default async function main(el) {
   }
   const merchCards = createTag('merch-cards', attributes);
   try {
-    const resp = await fetch(`/cc-shared/assets/query-index-cards.json?sheet=${type}`); // TODO make locale
+    const config = getConfig();
+    const resp = await fetch(`${config?.locale?.prefix ?? ''}/cc-shared/assets/query-index-cards.json?sheet=${type}`);
     if (!resp?.ok) {
       log(`Failed to initialize merch cards: ${resp.status}`);
     }
@@ -86,7 +87,6 @@ export default async function main(el) {
 
     // TODO add aditional parameters.
     const cards = cardsData.data.map(({ cardContent }) => cardContent).join('\n');
-    const config = getConfig();
     // Replace placeholders
     merchCards.innerHTML = await replaceText(cards, config);
     const autoBlocks = await decorateLinks(merchCards).map(loadBlock);
