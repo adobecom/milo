@@ -28,9 +28,9 @@ export default async function addPreviewToConfig({
     });
 
     config.mep.override.split(',').forEach((manifestPair) => {
-      const manifestPairManifest = manifestPair.trim().toLowerCase().split('--')[0];
-      if (!persManifestPaths.includes(manifestPairManifest)) {
-        persManifests.push(manifestPairManifest);
+      const manifestTitle = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!persManifestPaths.includes(manifestTitle)) {
+        persManifests.push(manifestTitle);
       }
     });
   }

@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+
 import {
   createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
 } from '../../utils/utils.js';
@@ -10,6 +11,8 @@ const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
 const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
 const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
 const PAGE_URL = new URL(window.location.href);
+
+export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
 
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
@@ -584,19 +587,19 @@ export async function applyPers(manifests) {
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
-  const personalizedManifests = results.filter((r) => (r.experiment.manifestType !== 'test or promo'));
-  if (!personalizedManifests.length) {
+  const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
+  if (!pznList.length) {
     document.body.dataset.mep = 'nopzn|nopzn';
-  } else {
-    const trackingVariants = personalizedManifests.map((r) => {
-      const val = r.experiment.selectedVariantName.replace('target-', '').trim().slice(0, 15);
-      return val === 'default' ? 'nopzn' : val;
-    });
-    const trackingManifests = personalizedManifests.map((r) => {
-      const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-      return val.split('/').pop().replace('.json', '').trim()
-        .slice(0, 20);
-    });
-    document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
+    return;
   }
+  const pznVariants = pznList.map((r) => {
+    const val = r.experiment.selectedVariantName.replace('target-', '').trim().slice(0, 15);
+    return val === 'default' ? 'nopzn' : val;
+  });
+  const pznManifests = pznList.map((r) => {
+    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
+    return val.split('/').pop().replace('.json', '').trim()
+      .slice(0, 15);
+  });
+  document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
