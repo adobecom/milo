@@ -172,9 +172,6 @@ const extractTags = (container) => [...container.querySelectorAll('p')]
     return acc;
   }, { categories: ['all'], types: [] });
 
-// stock offers.
-let stock;
-
 function addMerchCardGridIfMissing(section) {
   if (section?.matches('[class*="-merch-card"]')) return true;
   if (!section?.matches('[class*="-up"]') && section?.parentElement.tagName !== 'MAIN') return false;
@@ -308,13 +305,12 @@ const init = async (el) => {
     icons.forEach((icon) => icon.remove());
   }
   if (styles.includes('add-stock')) {
-    if (stock === undefined) {
-      const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
-      const [label, ...rest] = [...document.querySelectorAll(selector)];
-      if (label) {
-        const offers = rest.filter(({ dataset: { wcsOsi } }) => wcsOsi);
-        stock = { label: label?.innerText, offers: offers?.map((offer) => offer.dataset.wcsOsi).join(',') };
-      }
+    let stock;
+    const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
+    const [label, ...rest] = [...document.querySelectorAll(selector)];
+    if (label) {
+      const offers = rest.filter(({ dataset: { wcsOsi } }) => wcsOsi);
+      stock = { label: label?.innerText, offers: offers?.map((offer) => offer.dataset.wcsOsi).join(',') };
     }
     if (stock !== undefined) {
       merchCard.setAttribute('checkbox-label', stock.label);
