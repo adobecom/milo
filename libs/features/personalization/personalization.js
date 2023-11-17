@@ -538,7 +538,6 @@ export async function runPersonalization(info, config) {
     experiment,
     blocks: selectedVariant.useblockcode,
     fragments: selectedVariant.replacefragment,
-
   };
 }
 
