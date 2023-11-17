@@ -39,6 +39,7 @@ const MILO_BLOCKS = [
   'marketo',
   'marquee',
   'marquee-anchors',
+  'martech-attribute-metadata',
   'media',
   'merch',
   'merch-card',
@@ -992,7 +993,7 @@ async function documentPostSectionLoading(config) {
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
   import('../martech/attributes.js').then((analytics) => {
-    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, getConfig()));
   });
 }
 

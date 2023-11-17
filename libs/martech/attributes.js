@@ -1,12 +1,14 @@
-export function processTrackingLabels(text, config, charLimit = 20) {
+export function processTrackingLabels(text, config, charLimit = 20, dnt = false) {
   if (!config) {
     import('../utils/utils.js').then((utils) => {
       // eslint-disable-next-line no-param-reassign
       config = utils.getConfig();
     });
   }
-  const analyticsValue = text?.replace(/[^\w\s]+/g, ' ').replace(/\s+/g, ' ').replace(/^_+|_+$/g, '').trim()
+  const analyticsValue = text?.replace(/[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g, ' ').replace(/^_+|_+$/g, '').trim()
     .slice(0, charLimit);
+  const { locale, analyticLocalization } = config;
+  if (locale?.ietf !== 'en-US' && !dnt && analyticLocalization?.[analyticsValue]) return analyticLocalization?.[analyticsValue];
   return analyticsValue;
 }
 
@@ -18,7 +20,7 @@ export function decorateDefaultLinkAnalytics(block, config) {
     && block.nodeName === 'DIV') {
     let header = '';
     let linkCount = 1;
-    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .tracking-header')
+    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.link-block), button, .tracking-header')
       .forEach((item) => {
         if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
           if (!item.hasAttribute('daa-ll')) {

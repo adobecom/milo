@@ -52,7 +52,7 @@ export const getFedsPlaceholderConfig = () => {
 export function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
 
-  let analyticsValue = processTrackingLabels(str, false, 30);
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
   analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
 
   return analyticsValue;

@@ -5,7 +5,7 @@ export function processTrackingLabels(text, config, charLimit = 20) {
       config = utils.getConfig();
     });
   }
-  const analyticsValue = text?.replace(/[^\w\s]+/g, ' ').replace(/\s+/g, ' ').replace(/^_+|_+$/g, '').trim()
+  const analyticsValue = text?.replace(/[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g, ' ').replace(/^_+|_+$/g, '').trim()
     .slice(0, charLimit);
   return analyticsValue;
 }

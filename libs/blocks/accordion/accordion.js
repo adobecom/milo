@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 
@@ -74,7 +74,7 @@ function createItem(accordion, id, heading, num, edit) {
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
   const hTag = heading.querySelector('h1, h2, h3, h4, h5, h6');
-  const analyticsString = `open-${num}--${processTrackingLabels(heading.textContent)}`;
+  const analyticsString = `open-${num}--${processTrackingLabels(heading.textContent, getConfig())}`;
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
