@@ -69,16 +69,38 @@ class Footer {
 
     // TODO: log to LANA if Footer content could not be found
     if (!this.body) return;
-    // TODO: revisit region picker and social links decoration logic
+
     const regionAnchor = this.body.querySelector('.region-selector a');
-    if (regionAnchor?.href) {
-      regionAnchor.setAttribute('href', `${regionAnchor.getAttribute('href')}#_dnt#_dnb`);
-    }
-    const socialLinks = document.querySelectorAll('.social a');
-    socialLinks.forEach((socialLink) => {
-      socialLink.setAttribute('href', `${socialLink.getAttribute('href')}#_dnb`);
-    });
+    const regionNextSibling = regionAnchor?.nextSibling;
+    const regionParent = regionAnchor?.parentNode;
+    const detachedRegion = regionParent?.removeChild(regionAnchor);
+
+    const socialLinks = Array.from(document.querySelectorAll('.social a'));
+    const socialParents = socialLinks.map((link) => link.parentNode);
+    const socialNextSiblings = socialLinks.map((link) => link.nextSibling);
+    const detachedSocialLinks = socialLinks.map(
+      (link, index) => socialParents[index].removeChild(link),
+    );
+
     decorateLinks(this.body);
+
+    if (detachedRegion && regionParent) {
+      if (regionNextSibling) {
+        regionParent.insertBefore(detachedRegion, regionNextSibling);
+      } else {
+        regionParent.appendChild(detachedRegion);
+      }
+    }
+
+    detachedSocialLinks.forEach((link, index) => {
+      if (link && socialParents[index]) {
+        if (socialNextSiblings[index]) {
+          socialParents[index].insertBefore(link, socialNextSiblings[index]);
+        } else {
+          socialParents[index].appendChild(link);
+        }
+      }
+    });
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
