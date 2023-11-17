@@ -438,6 +438,11 @@ describe('global navigation', () => {
 
         expect(isElementVisible(document.querySelector(selectors.promoImage))).to.equal(true);
       });
+
+      it('should allow CTAs in Promo boxes', async () => {
+        await createFullGlobalNavigation();
+        expect(document.querySelector(`${selectors.promo}${selectors.promo}--dark ${selectors.cta}`)).to.exist;
+      });
     });
 
     describe('small desktop', () => {
