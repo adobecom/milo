@@ -42,12 +42,13 @@ export default async function init(blockEl) {
       item.remove();
   });
   */
+  blockEl.append(wrapper);
   const buttonWapper = createTag('div', {class:'submit-button'});
   const submitButton = createTag('button', {class:'con-button blue button-justified-mobile'},'Submit')
   submitButton.addEventListener('click', onSubmit);
   buttonWapper.append(submitButton);
-  wrapper.append(buttonWapper);
-  blockEl.append(wrapper);
+  blockEl.append(buttonWapper);
+  
 }
 
 function decorateFormField(fieldJson, el) {

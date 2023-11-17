@@ -1,15 +1,25 @@
+
+
 .sko-form {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content:center;
   align-items: center;
+  flex-wrap:wrap;
   gap: 20px;
-  width: 100%;
 }
 
 .submit-button {
-  min-width: 400px;
+  padding-top: 40px;
+  display: flex;
+  justify-content: center;
 }
 .sko-form-input {
   font-size: medium;
+  padding:5px;
   min-width: 400px;
+}
+
+.sko-form select {
+  min-width: 415px;
 }
