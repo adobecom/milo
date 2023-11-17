@@ -18,7 +18,7 @@ export default `<div>
     <div>
       <div>
         <h2 id="cloud-menu">
-          <a href="/large-menu">Cloud Menu</a>
+          <a href="/large-menu-wide-column">Cloud Menu</a>
         </h2>
       </div>
     </div>
@@ -65,7 +65,7 @@ export default `<div>
           Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas
           porttitor congue massa.
         </p>
-        <p><strong><a href="https://adobe.com/">Check it out</a></strong></p>
+        <p><a href="https://adobe.com/">Check it out</a></p>
       </div>
     </div>
     <div>
