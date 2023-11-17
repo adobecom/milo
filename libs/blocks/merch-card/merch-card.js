@@ -173,7 +173,7 @@ let stock;
 
 function addMerchCardGridIfMissing(section) {
   if (section?.matches('[class*="-merch-card"]')) return true;
-  if (!section?.matches('[class*="-up"]')) return false;
+  if (!section?.matches('[class*="-up"]') && section?.parentElement.tagName !== 'MAIN') return false;
   // this is a milo grid with -up stles.
   let styleClasses = [];
   const el = section.querySelector('.section-metadata');
