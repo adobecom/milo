@@ -37,11 +37,19 @@
 }
 
 @media only screen and (max-device-width: 768px) {
+  .sko-form {
+    display: flex;
+    flex-direction: row;
+    justify-content:center;
+    align-items: left;
+    flex-wrap:wrap;
+    gap: 10px;
+  }
+
   .sko-form-input {
-      min-width: 75%;
+      min-width: 100%;
    }
 
    .sko-form select {
-    min-width: 75%;
-  }
+    min-width: 100%
 }
