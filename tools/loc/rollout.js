@@ -77,6 +77,7 @@ function processMdast(nodes) {
         if (!nextBlockName?.toLowerCase().startsWith('block-group-end')) {
           groupArray.push(nextNode);
         } else {
+          nextNode.endNode = true;
           groupArray.push(nextNode);
           break;
         }
@@ -219,7 +220,10 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
       if (Array.isArray(newContent)) {
         newContent.forEach((el) =>  {
           addTrackChangesInfo('Langstore Version', elem.classType, el);
-          if (el.type === 'gridTable') el.group = true;
+          if (el.type === 'gridTable') {
+            if (el.endNode) delete el.endNode;
+            else el.group = true;
+          }
         });
       }
       else 
@@ -228,7 +232,10 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
       if (Array.isArray(newContent)) {
         newContent.forEach((el) => {
           addTrackChangesInfo('Regional Version', elem.classType, el);
-          if (el.type === 'gridTable') el.group = true;
+          if (el.type === 'gridTable') {
+            if (el.endNode) delete el.endNode;
+            else el.group = true;
+          }
         });
       }
       else 
