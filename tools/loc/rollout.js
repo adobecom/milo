@@ -77,6 +77,7 @@ function processMdast(nodes) {
         if (!nextBlockName?.toLowerCase().startsWith('block-group-end')) {
           groupArray.push(nextNode);
         } else {
+          nextNode.endNode = true;
           groupArray.push(nextNode);
           break;
         }
@@ -216,14 +217,28 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
     // Creating new object of langstoreContent to avoid mutation of original object
     const newContent = JSON.parse(JSON.stringify(content));
     if (elem.classType === 'deleted') {
-      if (Array.isArray(newContent))
-        newContent.forEach((el) => addTrackChangesInfo('Langstore Version', elem.classType, el));
-      else
+      if (Array.isArray(newContent)) {
+        newContent.forEach((el) =>  {
+          addTrackChangesInfo('Langstore Version', elem.classType, el);
+          if (el.type === 'gridTable') {
+            if (el.endNode) delete el.endNode;
+            else el.group = true;
+          }
+        });
+      }
+      else 
         addTrackChangesInfo('Langstore Version', elem.classType, newContent);
     } else if (elem.classType === 'added') {
-      if (Array.isArray(newContent))
-        newContent.forEach((el) => addTrackChangesInfo('Regional Version', elem.classType, el));
-      else
+      if (Array.isArray(newContent)) {
+        newContent.forEach((el) => {
+          addTrackChangesInfo('Regional Version', elem.classType, el);
+          if (el.type === 'gridTable') {
+            if (el.endNode) delete el.endNode;
+            else el.group = true;
+          }
+        });
+      }
+      else 
         addTrackChangesInfo('Regional Version', elem.classType, newContent);
     }
     if (Array.isArray(newContent))
