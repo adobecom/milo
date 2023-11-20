@@ -201,6 +201,7 @@ const init = async (el) => {
 
   let section = el.closest('.section');
   const merchCards = addMerchCardGridIfMissing(section);
+  const cardType = getPodType(styles);
   if (!merchCards && section?.parentElement.classList.contains('fragment')) {
     const fragment = section.parentElement;
     const fragmentParent = fragment.parentElement;
@@ -208,18 +209,20 @@ const init = async (el) => {
     fragment.style.display = 'contents';
     fragmentParent.style.display = 'contents';
     section = fragmentParent.parentElement;
+  } else if (section && cardType) {
+    section.classList.add(cardType);
   }
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
-  const cardType = getPodType(styles);
 
-  const merchCard = createTag('merch-card', {
-    class: styles.join(' '),
-    variant: cardType,
-  });
+  const merchCard = createTag('merch-card', { class: styles.join(' ') });
+
+  if (cardType) {
+    merchCard.setAttribute('variant', cardType);
+  }
 
   if (name) {
     merchCard.setAttribute('name', name);
@@ -253,7 +256,7 @@ const init = async (el) => {
   && el.firstElementChild.innerText.includes('#') ? el.firstElementChild : null;
 
     if (ribbonMetadata !== null) {
-      const badge = returnRibbonStyle(ribbonMetadata);
+      const badge = returnRibbonStyle(ribbonMetadata.children);
       if (badge !== null) {
         merchCard.setAttribute(
           'badge-background-color',
