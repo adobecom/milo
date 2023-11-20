@@ -253,7 +253,7 @@
   .feds-footer-wrapper .feds-menu-content {
     flex-wrap: wrap;
     width: auto;
-    max-width: auto;
+    max-width: var(--feds-maxWidth-nav);
   }
 
   .feds-footer-wrapper .feds-menu-headline {
@@ -261,6 +261,7 @@
   }
 
   .feds-footer-wrapper .feds-menu-column {
+    padding: 12px 0;
     row-gap: 15px;
   }
 

@@ -81,12 +81,9 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
-    max-width: var(--feds-maxWidth-nav);
+    max-width: 1200px;
   }
 
-  .feds-menu-column {
-    padding: 12px 0;
-  }
 
   .feds-menu-section + .feds-menu-section {
     margin-top: 12px;
@@ -127,7 +124,8 @@
     border: 1px solid var(--feds-borderColor--light);
     background: var(--feds-background-nav--light);
     white-space: normal;
-    box-sizing: content-box;
+    box-sizing: border-box;
+    padding: 24px 32px;
   }
 
   .feds-promo--dark {
