@@ -1,5 +1,6 @@
 <style>
-  .merch-cards, #cards {
+  .merch-cards,
+  #cards {
     display: none;
   }
 </style>
@@ -13,13 +14,13 @@
 
     <div id="filterShowMoreText" class="merch-cards catalog">
       <div>
-        <div>all, Show more</div>
+        <div>all</div>
       </div>
     </div>
 
     <div id="filterShowMoreTextLimit" class="merch-cards catalog">
       <div>
-        <div>all, Show more, 9</div>
+        <div>all, 9</div>
       </div>
     </div>
 
@@ -38,7 +39,7 @@
 
     <div id="multipleFilters" class="merch-cards catalog">
       <div>
-        <div>all, Show more, 9</div>
+        <div>all, 9</div>
       </div>
       <div>
         <div>all</div>
@@ -64,8 +65,43 @@
         </div>
       </div>
     </div>
+
+    <div id="placeholders" class="merch-cards catalog">
+      <div>
+        <div>all, 18</div>
+      </div>
+      <div>
+        <div>
+          <p>Sort</p>
+          <p>Popularity</p>
+          <p>Alphabetical</p>
+          <p>1 result</p>
+          <p><u>10</u> results</p>
+          <p>1 result for <strong><u>search</u></strong></p>
+          <p><u>10</u> results for <strong><u>search</u></strong></p>
+          <p>1 result for: <strong><u>search</u></strong></p>
+          <p><u>10</u> results for: <strong><u>search</u></strong></p>
+          <p>Your search for <strong><u>search</u></strong> did not yield any results</p>
+          <hr>
+          <p>Your search for <strong><u>search</u></strong> did not yield any results. Try a different search term.</p>
+          <p>Suggestions:</p>
+          <ul>
+            <li>Make sure all words are spelled correctly</li>
+            <li>Use quotes to search for an entire phrase, such as "crop an image"</li>
+          </ul>
+          <hr>
+          <p>Show more</p>
+        </div>
+      </div>
+    </div>
+
+    <!--this the expected merch-cards element -->
+    <merch-cards filter="all" limit="18" types="" search="" page="1"><p slot="sortText">Sort</p><p slot="popularityText">Popularity</p><p slot="alphabeticallyText">Alphabetical</p><p slot="resultText">1 result</p><p slot="resultsText"><span data-placeholder="resultCount"></span> results</p><p slot="searchResultText">1 result for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsText"><span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultMobileText">1 result for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsMobileText"><span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="noResultsText">Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p><span slot="noResultsMobileText"><p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul>
+            <li>Make sure all words are spelled correctly</li>
+            <li>Use quotes to search for an entire phrase, such as "crop an image"</li>
+          </ul></span><p slot="showMoreText">Show more</p></merch-cards>
   </div>
-  </div>
+
   <div id="cards">
     <div class="merch-card catalog express">
       <div>
