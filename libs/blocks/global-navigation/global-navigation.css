@@ -520,7 +520,6 @@ header.global-navigation {
     position: absolute;
     top: 100%;
     left: 0;
-    padding: 0;
     z-index: 1;
     box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
     transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
