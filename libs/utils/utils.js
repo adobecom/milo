@@ -664,12 +664,7 @@ async function decorateIcons(area, config) {
 }
 
 async function decoratePlaceholders(area, config) {
-  let el = area;
-  if (document.querySelector('main')) {
-    el = document.querySelector('main');
-  } else if (area.documentElement) {
-    el = area.body;
-  }
+  const el = area.querySelector('main') ? area.querySelector('main') : area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
