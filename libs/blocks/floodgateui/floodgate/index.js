@@ -42,9 +42,14 @@ export async function loadFgColor() {
     previewPath = jsonUrl.preview.url;
     const resp = await fetch(previewPath);
     const json = await resp.json();
-    fgColor.value = json.fgcolor.data[0]?.FloodgateColor || 'pink';
+    if (json.fgcolor) {
+      fgColor.value = json.fgcolor.data[0]?.FloodgateColor || 'pink';
+    } else {
+      const dataMap = new Map(json.settings.data.map((item) => [item.key, item.value]));
+      fgColor.value = dataMap.get('FloodgateColor') || 'pink';
+    }
   } catch {
-    setStatus('details', 'error', 'Error getting the floodgate folder');
+    setStatus('details', 'error', 'Error getting the floodgate color.');
   }
 }
 
