@@ -35,6 +35,10 @@
   margin-left: 16px;
 }
 
+.mep-popup-header > div > div:not(.mep-manifest-page-info-title) {
+  padding-left: 15px;
+}
+
 @media screen and (max-width: 599px) {
   .mep-hidden .mep-badge .mep-open {
     margin-left: 0;

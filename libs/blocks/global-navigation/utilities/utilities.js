@@ -1,4 +1,5 @@
 import { getConfig, getMetadata, loadStyle, loadLana } from '../../../utils/utils.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
 
 loadLana();
 
@@ -51,7 +52,7 @@ export const getFedsPlaceholderConfig = () => {
 export function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
 
-  let analyticsValue = str.trim().replace(/[^\w]+/g, '_').replace(/^_+|_+$/g, '');
+  let analyticsValue = processTrackingLabels(str, false, 30);
   analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
 
   return analyticsValue;
