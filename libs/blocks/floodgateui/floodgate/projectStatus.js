@@ -96,7 +96,7 @@ export function ProjectStatus(actionType) {
           if (updatedStatus[actionNameStatus]?.payload?.action?.status === 'COMPLETED' || updatedStatus[actionNameStatus].payload.action.status === 'COMPLETED WITH ERROR') {
             clearInterval(intervalId);
           }
-        }, 3000);
+        }, 30000);
       }
     };
 

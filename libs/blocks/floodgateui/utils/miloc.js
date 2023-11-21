@@ -135,7 +135,7 @@ export async function copyToFloodgateTree() {
         cssStatusCopy.value = newCopyStatus.payload.action.status;
         allActionStatus.value.copyStatus = newCopyStatus;
       }
-    }, 3000);
+    }, 30000);
 
   } catch {
     copyStatusCheck.value = 'ERROR';
@@ -173,7 +173,7 @@ export async function promoteFiles(doPublish) {
         cssStatusPromote.value = newPromoteStatus.payload.action.status;
         allActionStatus.value.promoteStatus = newPromoteStatus;
       }
-    }, 3000);
+    }, 30000);
 
   } catch {
     promoteStatusCheck.value = 'ERROR';
