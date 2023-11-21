@@ -56,10 +56,10 @@ export default async function main(el) {
     log('Missing collection type');
     return null; // return silently.
   }
-  if (!el.closest('main > .section[class*="-merch-card"]')) {
-    el.closest('main > .section').classList.add('four-merch-cards');
-  }
   const type = el.classList[1];
+  if (!el.closest('main > .section[class*="-merch-card"]')) {
+    el.closest('main > .section').classList.add('four-merch-cards', type);
+  }
 
   const attributes = { filter: 'all' };
   const settingsEl = el.firstElementChild?.firstElementChild;
@@ -99,6 +99,7 @@ export default async function main(el) {
   // parse literals
   const literalSlots = [];
   if (literalsEl && /filter/.test(literalsEl.querySelector('u')?.innerText)) {
+    await import('../../deps/merch-spectrum.min.js');
     literalsEl.querySelectorAll('u').forEach((u) => {
       const text = u.innerText.trim();
       if (DIGITS_ONLY.test(text)) {
