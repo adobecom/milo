@@ -542,7 +542,6 @@
   border-radius: var(--spacing-xs);
   width: var(--grid-container-width);
   margin: auto;
-  bottom: var(--spacing-xs);
   box-shadow: 0 3px 6px #707070;
 }
 
