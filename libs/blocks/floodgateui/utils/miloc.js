@@ -14,21 +14,19 @@ import {
   cssStatusCopy,
   cssStatusDelete,
   cssStatusPromote,
-  fgColor
+  fgColor,
 } from './state.js';
 import { accessToken } from '../../../tools/sharepoint/state.js';
-import { origin } from '../../locui/utils/franklin.js';
+import { origin, getStatus } from '../../locui/utils/franklin.js';
 import { setExcelStatus, setStatus } from './status.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import '../../../deps/md5.min.js';
-import { getStatus } from '../../locui/utils/franklin.js';
 import { loadFgColor } from '../floodgate/index.js';
 
 const DOT_MILO = '/.milo/config.json';
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B12F9079D-E580-4407-973D-2330B171B2CB%7D&file=DemoFgUI.xlsx&action=default&mobileredirect=true';
 
 const urlParams = new URLSearchParams(window.location.search);
-
 
 const INTERVAL = 3000;
 const MAX_COUNT = 1200; // 3000 x 1200 = 3600000s = 1 hour
@@ -80,143 +78,10 @@ export async function postData(url, params) {
   const urlEncodedParams = new URLSearchParams(params).toString();
   const resp = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: urlEncodedParams,
   });
   return resp.json();
-}
-
-export async function fetchStatusAction() {
-  // fetch copy status
-  const config = await getServiceConfigFg(origin);
-  const paramsFg = await getParamsFg(config);
-  const excelPath = paramsFg.projectExcelPath
-  let params = { type: 'copy', projectExcelPath: excelPath, fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value};
-  const copyStatus = await postData(config.stage.milofg.status.url, params);
-  // fetch promote status
-  params = { type: 'promote', fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value };
-  const promoteStatus = await postData(config.stage.milofg.status.url, params);
-  // fetch delete status
-  params = { type: 'delete', fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value };
-  const deleteStatus = await postData(config.stage.milofg.status.url, params);
-  return({ copyStatus, promoteStatus, deleteStatus });
-}
-
-export async function copyToFloodgateTree() {
-  try {
-    copyStatusCheck.value = 'IN PROGRESS';
-    setStatus('details', 'info', 'Copying files to the Floodgate Tree. Check the status card for further updates.');
-    const config = await getServiceConfigFg(origin);
-    const params = { ...await getParamsFg(config), spToken: accessToken };
-    const url = config.stage.milofg.copy.url;
-
-    const copyStatus = await postData(url, params);
-    allActionStatus.value.copyStatus = copyStatus;
-    copyStatusCheck.value = copyStatus.payload.action.status;
-    cssStatusCopy.value = copyStatus.payload.action.status;
-
-    setStatus('details', '', '');
-
-    const intervalId = setInterval(async () => {
-      const status = await fetchStatusAction();
-      const newCopyStatus = status.copyStatus;
-      allActionStatus.value = status;
-      copyStatusCheck.value = newCopyStatus.payload.action.status;
-      cssStatusCopy.value = newCopyStatus.payload.action.status;
-
-      if (newCopyStatus.payload.action.status !== 'IN PROGRESS') {
-        copyStatusCheck.value = newCopyStatus.payload.action.status;
-        allActionStatus.value.copyStatus = newCopyStatus;
-        cssStatusCopy.value = newCopyStatus.payload.action.status;
-        clearInterval(intervalId);
-      } else {
-        cssStatusCopy.value = newCopyStatus.payload.action.status;
-        allActionStatus.value.copyStatus = newCopyStatus;
-      }
-    }, 3000);
-
-  } catch {
-    copyStatusCheck.value = 'ERROR';
-    setStatus('details', 'error', 'Error copying files to Floodgate Tree. Please check the excel sheet for further details.');
-  }
-}
-
-export async function promoteFiles(doPublish) {
-  try {
-    setStatus('details', 'info', 'Promoting files to the Floodgate Tree. Check the status card for further updates.');
-    const config = await getServiceConfigFg(origin);
-    const params = { ...await getParamsFg(config), spToken: accessToken, doPublish };
-    const url = config.stage.milofg.promote.url;
-
-    const promoteStatus = await postData(url, params);
-    allActionStatus.value.promoteStatus = promoteStatus;
-    promoteStatusCheck.value = promoteStatus.payload.action.status;
-    cssStatusPromote.value = promoteStatus.payload.action.status;
-
-    setStatus('details', '', '');
-
-    const intervalId = setInterval(async () => {
-      const status = await fetchStatusAction();
-      const newPromoteStatus = status.promoteStatus;
-      allActionStatus.value = status;
-      promoteStatusCheck.value = newPromoteStatus.payload.action.status;
-      cssStatusPromote.value = newPromoteStatus.payload.action.status;
-
-      if (newPromoteStatus.payload.action.status !== 'IN PROGRESS') {
-        promoteStatusCheck.value = newPromoteStatus.payload.action.status;
-        allActionStatus.value.promoteStatus = newPromoteStatus;
-        cssStatusPromote.value = newPromoteStatus.payload.action.status;
-        clearInterval(intervalId);
-      } else {
-        cssStatusPromote.value = newPromoteStatus.payload.action.status;
-        allActionStatus.value.promoteStatus = newPromoteStatus;
-      }
-    }, 3000);
-
-  } catch {
-    promoteStatusCheck.value = 'ERROR';
-    setStatus('details', 'error', 'Error while promoting files to Floodgate Tree.');
-  }
-}
-
-export async function deleteFgTree() {
-  try {
-    setStatus('details', 'info', 'Deleting the Floodgate Tree. Check the status table for further updates.');
-    const config = await getServiceConfigFg(origin);
-    const params = { ...await getParamsFg(config), spToken: accessToken };
-    const url = config.stage.milofg.delete.url;
-
-    const deleteStatus = await postData(url, params);
-    allActionStatus.value.deleteStatus = deleteStatus;
-    deleteStatusCheck.value = deleteStatus.payload.action.status;
-    cssStatusDelete.value = deleteStatus.payload.action.status;
-
-    setStatus('details', '', '');
-
-    const intervalId = setInterval(async () => {
-      const status = await fetchStatusAction();
-      const newDeleteStatus = status.deleteStatus;
-      allActionStatus.value = status;
-      deleteStatusCheck.value = newDeleteStatus.payload.action.status;
-      cssStatusDelete.value = newDeleteStatus.payload.action.status;
-
-      if (newDeleteStatus.payload.action.status !== 'IN PROGRESS') {
-        deleteStatusCheck.value = newDeleteStatus.payload.action.status;
-        allActionStatus.value.deleteStatus = newDeleteStatus;
-        cssStatusDelete.value = newDeleteStatus.payload.action.status;
-        clearInterval(intervalId);
-      } else {
-        cssStatusDelete.value = newDeleteStatus.payload.action.status;
-        allActionStatus.value.deleteStatus = newDeleteStatus;
-      }
-    }, 3000);
-
-  } catch {
-    deleteStatusCheck.value = 'ERROR';
-    setStatus('details', 'error', 'Error while deleting the Floodgate Tree.');
-  }
 }
 
 export async function getServiceConfigFg(origin) {
@@ -251,6 +116,134 @@ export async function getServiceConfigFg(origin) {
     configs.promoteIgnorePaths.set(color.color, paths);
   });
   return configs;
+}
+
+export async function fetchStatusAction() {
+  // fetch copy status
+  const config = await getServiceConfigFg(origin);
+  const paramsFg = await getParamsFg(config);
+  const excelPath = paramsFg.projectExcelPath;
+  let params = { type: 'copy', projectExcelPath: excelPath, fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value};
+  const copyStatus = await postData(config.stage.milofg.status.url, params);
+  // fetch promote status
+  params = { type: 'promote', fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value };
+  const promoteStatus = await postData(config.stage.milofg.status.url, params);
+  // fetch delete status
+  params = { type: 'delete', fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value };
+  const deleteStatus = await postData(config.stage.milofg.status.url, params);
+  return ({ copyStatus, promoteStatus, deleteStatus });
+}
+
+export async function copyToFloodgateTree() {
+  try {
+    copyStatusCheck.value = 'IN PROGRESS';
+    setStatus('details', 'info', 'Copying files to the Floodgate Tree. Check the status card for further updates.');
+    const config = await getServiceConfigFg(origin);
+    const params = { ...await getParamsFg(config), spToken: accessToken };
+    const { url } = config.stage.milofg.copy;
+
+    const copyStatus = await postData(url, params);
+    allActionStatus.value.copyStatus = copyStatus;
+    copyStatusCheck.value = copyStatus.payload.action.status;
+    cssStatusCopy.value = copyStatus.payload.action.status;
+
+    setStatus('details', '', '');
+
+    const intervalId = setInterval(async () => {
+      const status = await fetchStatusAction();
+      const newCopyStatus = status.copyStatus;
+      allActionStatus.value = status;
+      copyStatusCheck.value = newCopyStatus.payload.action.status;
+      cssStatusCopy.value = newCopyStatus.payload.action.status;
+
+      if (newCopyStatus.payload.action.status !== 'IN PROGRESS') {
+        copyStatusCheck.value = newCopyStatus.payload.action.status;
+        allActionStatus.value.copyStatus = newCopyStatus;
+        cssStatusCopy.value = newCopyStatus.payload.action.status;
+        clearInterval(intervalId);
+      } else {
+        cssStatusCopy.value = newCopyStatus.payload.action.status;
+        allActionStatus.value.copyStatus = newCopyStatus;
+      }
+    }, 3000);
+  } catch {
+    copyStatusCheck.value = 'ERROR';
+    setStatus('details', 'error', 'Error copying files to Floodgate Tree. Please check the excel sheet for further details.');
+  }
+}
+
+export async function promoteFiles(doPublish) {
+  try {
+    setStatus('details', 'info', 'Promoting files to the Floodgate Tree. Check the status card for further updates.');
+    const config = await getServiceConfigFg(origin);
+    const params = { ...await getParamsFg(config), spToken: accessToken, doPublish };
+    const { url } = config.stage.milofg.promote;
+
+    const promoteStatus = await postData(url, params);
+    allActionStatus.value.promoteStatus = promoteStatus;
+    promoteStatusCheck.value = promoteStatus.payload.action.status;
+    cssStatusPromote.value = promoteStatus.payload.action.status;
+
+    setStatus('details', '', '');
+
+    const intervalId = setInterval(async () => {
+      const status = await fetchStatusAction();
+      const newPromoteStatus = status.promoteStatus;
+      allActionStatus.value = status;
+      promoteStatusCheck.value = newPromoteStatus.payload.action.status;
+      cssStatusPromote.value = newPromoteStatus.payload.action.status;
+
+      if (newPromoteStatus.payload.action.status !== 'IN PROGRESS') {
+        promoteStatusCheck.value = newPromoteStatus.payload.action.status;
+        allActionStatus.value.promoteStatus = newPromoteStatus;
+        cssStatusPromote.value = newPromoteStatus.payload.action.status;
+        clearInterval(intervalId);
+      } else {
+        cssStatusPromote.value = newPromoteStatus.payload.action.status;
+        allActionStatus.value.promoteStatus = newPromoteStatus;
+      }
+    }, 3000);
+  } catch {
+    promoteStatusCheck.value = 'ERROR';
+    setStatus('details', 'error', 'Error while promoting files to Floodgate Tree.');
+  }
+}
+
+export async function deleteFgTree() {
+  try {
+    setStatus('details', 'info', 'Deleting the Floodgate Tree. Check the status table for further updates.');
+    const config = await getServiceConfigFg(origin);
+    const params = { ...await getParamsFg(config), spToken: accessToken };
+    const { url } = config.stage.milofg.delete;
+
+    const deleteStatus = await postData(url, params);
+    allActionStatus.value.deleteStatus = deleteStatus;
+    deleteStatusCheck.value = deleteStatus.payload.action.status;
+    cssStatusDelete.value = deleteStatus.payload.action.status;
+
+    setStatus('details', '', '');
+
+    const intervalId = setInterval(async () => {
+      const status = await fetchStatusAction();
+      const newDeleteStatus = status.deleteStatus;
+      allActionStatus.value = status;
+      deleteStatusCheck.value = newDeleteStatus.payload.action.status;
+      cssStatusDelete.value = newDeleteStatus.payload.action.status;
+
+      if (newDeleteStatus.payload.action.status !== 'IN PROGRESS') {
+        deleteStatusCheck.value = newDeleteStatus.payload.action.status;
+        allActionStatus.value.deleteStatus = newDeleteStatus;
+        cssStatusDelete.value = newDeleteStatus.payload.action.status;
+        clearInterval(intervalId);
+      } else {
+        cssStatusDelete.value = newDeleteStatus.payload.action.status;
+        allActionStatus.value.deleteStatus = newDeleteStatus;
+      }
+    }, 3000);
+  } catch {
+    deleteStatusCheck.value = 'ERROR';
+    setStatus('details', 'error', 'Error while deleting the Floodgate Tree.');
+  }
 }
 
 function handleProjectStatusDetail(detail) {
