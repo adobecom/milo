@@ -5,31 +5,35 @@ import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
 async function getArticleDetails(article) {
   const path = new URL(article.href).pathname;
-  const resp = await fetch(path);
-  if (!resp || !resp.ok) {
-    // eslint-disable-next-line no-console
-    console.log(`Could not retrieve metadata for ${path}`);
+  try {
+    const resp = await fetch(path);
+    if (!resp || !resp.ok) {
+      window.lana.log(`Could not retrieve metadata for ${path}`);
+      return null;
+    }
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
+    let title = getMetadata('og:title', doc).trim();
+    const ending = trimEndings.find((el) => title.endsWith(el));
+    [title] = title.split(ending);
+
+    const category = getMetadata('category', doc) || getMetadata('article:tag', doc);
+
+    return {
+      title,
+      path,
+      category,
+      description: getMetadata('description', doc),
+      imageEl: doc.querySelector('picture'),
+      date: getMetadata('publication-date', doc),
+    };
+  } catch (error) {
+    window.lana.log(`Could not retrieve metadata for ${path}. ${error}`);
     return null;
   }
-  const html = await resp.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-
-  const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
-  let title = getMetadata('og:title', doc).trim();
-  const ending = trimEndings.find((el) => title.endsWith(el));
-  [title] = title.split(ending);
-
-  const category = getMetadata('category', doc) || getMetadata('article:tag', doc);
-
-  return {
-    title,
-    path,
-    category,
-    description: getMetadata('description', doc),
-    imageEl: doc.querySelector('picture'),
-    date: getMetadata('publication-date', doc),
-  };
 }
 
 function getDecoratedCards(articles, taxonomy) {
