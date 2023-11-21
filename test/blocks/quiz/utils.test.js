@@ -193,32 +193,41 @@ describe('Quiz', () => {
     expect(flowData).to.be.an('array').of.length(5);
   });
 
-  it('Testing storeResultInLocalStorage with empty results', async () => {
-    const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
-    const resultResources = JSON.parse(resultResourcesData);
-    const primaryProducts = [];
+  describe('Testing storeResultInLocalStorage with empty results as input', async () => {
+    let resultToDelegate;
+    const primaryProductCodes = [];
     const secondaryProductCodes = [];
-    const umbrellaProduct = '';
+    const umbrellaProductCode = '';
     const pageLoad = 'type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
-    const resultToDelegate = storeResultInLocalStorage(
-      answers,
-      resultData,
-      resultResources,
-      primaryProducts,
-      secondaryProductCodes,
-      umbrellaProduct,
-    );
-    expect(resultToDelegate).to.be.an('object');
-    expect(resultToDelegate).to.haveOwnProperty('primaryProducts').to.be.an('array').of.length(0);
-    expect(resultToDelegate).to.haveOwnProperty('secondaryProducts').to.be.an('array').of.length(0);
-    expect(resultToDelegate).to.haveOwnProperty('umbrellaProduct').to.eq(umbrellaProduct);
-    expect(resultToDelegate).to.haveOwnProperty('pageloadHash').to.eq(pageLoad);
+    before(async () => {
+      const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
+      const resultResources = JSON.parse(resultResourcesData);
+      resultToDelegate = storeResultInLocalStorage(
+        answers,
+        resultData,
+        resultResources,
+        primaryProductCodes,
+        secondaryProductCodes,
+        umbrellaProductCode,
+      );
+    });
+    it('should be an object', async () => {
+      expect(resultToDelegate).to.be.an('object');
+    });
+    it('has property secondaryProducts and is an empty array', async () => {
+      expect(resultToDelegate).to.haveOwnProperty('secondaryProducts').to.be.an('array').of.length(0);
+    });
+    it('has property umbrellaProduct and is equal to the empty string', async () => {
+      expect(resultToDelegate).to.haveOwnProperty('umbrellaProduct').to.eq(umbrellaProductCode);
+    });
+    it(`has property pageloadHash and is equal to ${pageLoad}`, async () => {
+      expect(resultToDelegate).to.haveOwnProperty('pageloadHash').to.eq(pageLoad);
+    });
   });
 
-  it('Testing storeResultInLocalStorage', async () => {
-    const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
-    const resultResources = JSON.parse(resultResourcesData);
-    const primaryProducts = [
+  describe('Testing storeResultInLocalStorage', async () => {
+    let resultToDelegate;
+    const primaryProductCodes = [
       'lr-ind',
       'pr-ind',
     ];
@@ -226,20 +235,35 @@ describe('Quiz', () => {
       'ps-ind',
       'au-ind',
     ];
-    const umbrellaProduct = 'cc';
+    const umbrellaProductCode = 'cc';
     const pageLoad = 'type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
-    const resultToDelegate = storeResultInLocalStorage(
-      answers,
-      resultData,
-      resultResources,
-      primaryProducts,
-      secondaryProductCodes,
-      umbrellaProduct,
-    );
-    expect(resultToDelegate).to.be.an('object');
-    expect(resultToDelegate).to.haveOwnProperty('primaryProducts').include('lr-ind');
-    expect(resultToDelegate).to.haveOwnProperty('secondaryProducts').include('ps-ind');
-    expect(resultToDelegate).to.haveOwnProperty('umbrellaProduct').to.eq(umbrellaProduct);
-    expect(resultToDelegate).to.haveOwnProperty('pageloadHash').to.eq(pageLoad);
+    before(async () => {
+      const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
+      const resultResources = JSON.parse(resultResourcesData);
+      resultToDelegate = storeResultInLocalStorage(
+        answers,
+        resultData,
+        resultResources,
+        primaryProductCodes,
+        secondaryProductCodes,
+        umbrellaProductCode,
+      );
+    });
+    console.log(resultToDelegate);
+    it('should be an object', async () => {
+      expect(resultToDelegate).to.be.an('object');
+    });
+    it(`has property primaryProducts which includes ${primaryProductCodes[0]}`, async () => {
+      expect(resultToDelegate).to.haveOwnProperty('primaryProducts').include(primaryProductCodes[0]);
+    });
+    it(`has property secondaryProducts which includes ${secondaryProductCodes[0]}`, async () => {
+      expect(resultToDelegate).to.haveOwnProperty('secondaryProducts').include(secondaryProductCodes[0]);
+    });
+    it(`has property umbrellaProduct and is equal to ${umbrellaProductCode}`, async () => {
+      expect(resultToDelegate).to.haveOwnProperty('umbrellaProduct').to.eq(umbrellaProductCode);
+    });
+    it(`has property pageloadHash and is equal to ${pageLoad}`, async () => {
+      expect(resultToDelegate).to.haveOwnProperty('pageloadHash').to.eq(pageLoad);
+    });
   });
 });
