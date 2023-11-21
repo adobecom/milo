@@ -6,6 +6,8 @@ const { log } = window.lana;
 const DIGITS_ONLY = /^\d+$/;
 
 const LITERAL_SLOTS = [
+  'searchText',
+  'filtersText',
   'sortText',
   'popularityText',
   'alphabeticallyText',
@@ -96,13 +98,15 @@ export default async function main(el) {
   const literalsEl = el.lastElementChild?.firstElementChild;
   // parse literals
   const literalSlots = [];
-  if (literalsEl && DIGITS_ONLY.test(literalsEl.querySelector('u')?.innerText)) {
+  if (literalsEl && /filter/.test(literalsEl.querySelector('u')?.innerText)) {
     literalsEl.querySelectorAll('u').forEach((u) => {
       const text = u.innerText.trim();
       if (DIGITS_ONLY.test(text)) {
         u.outerHTML = '<span data-placeholder="resultCount"></span>';
       } else if (text === 'search') {
         u.outerHTML = '<span data-placeholder="searchTerm"></span>';
+      } else if (text === 'filter') {
+        u.outerHTML = '<span data-placeholder="filter"></span>';
       }
     });
     let index = 0;
@@ -112,7 +116,7 @@ export default async function main(el) {
       if (literalEl.tagName === 'P') {
         slot = literalEl;
       } else if (literalEl.tagName === 'HR') {
-        slot = createTag('span');
+        slot = createTag('div');
         while (literalEl.nextElementSibling && literalEl.nextElementSibling?.tagName !== 'HR') {
           slot.appendChild(literalEl.nextElementSibling);
         }

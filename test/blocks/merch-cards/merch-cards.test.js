@@ -118,7 +118,7 @@ describe('Merch Cards', async () => {
     expect(express.name).to.be.equal('express');
   });
 
-  it('should parse literals', async () => {
+  it.only('should parse literals', async () => {
     const merchCards = await init(document.getElementById('placeholders'));
     await delay(500);
     expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
