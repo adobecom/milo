@@ -237,7 +237,8 @@
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:focus-visible {
-  outline-offset: 3px;
+  outline: 2px solid #4145ca;
+  outline-offset: 2px;
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:active {
