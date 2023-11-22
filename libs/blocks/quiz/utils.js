@@ -7,7 +7,7 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
-let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
+let configPath; let quizKey; let shortQuiz; let analyticsType; let analyticsQuiz; let metaData;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
@@ -33,11 +33,12 @@ async function fetchContentOfFile(path) {
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getMetadata(rootElement);
+  shortQuiz = metaData['short-quiz']?.text === 'true' ? true : false;
   configPath = initConfigPath(metaData);
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
-  return { configPath, quizKey, analyticsType, analyticsQuiz };
+  return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz};
 };
 
 export const getQuizData = async () => {
