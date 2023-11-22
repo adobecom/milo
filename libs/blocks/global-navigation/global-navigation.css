@@ -538,7 +538,6 @@ header.global-navigation {
     min-width: var(--feds-minWidth-menu);
   }
 
-
   /* Nav Links */
   .feds-navItem {
     flex-direction: initial;
