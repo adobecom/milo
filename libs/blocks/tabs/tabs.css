@@ -191,6 +191,9 @@
 .tabs[class*='pill'] div[role="tablist"] {
   box-shadow: unset;
   background: unset;
+}
+
+.tabs[class*='pill'] div[role="tablist"] .tab-list-container {
   margin-top: var(--spacing-xxs);
   margin-bottom: var(--spacing-xxs);
 }
@@ -231,6 +234,10 @@
 .tabs[class*='pill'] div[role="tablist"] button:focus {
   color: var(--tabs-pill-text-color);
   background: var(--tabs-pill-bg-color-hover);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button:focus-visible {
+  outline-offset: 3px;
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:active {
