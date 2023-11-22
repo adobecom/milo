@@ -253,7 +253,7 @@
   .feds-footer-wrapper .feds-menu-content {
     flex-wrap: wrap;
     width: auto;
-    max-width: var(--feds-maxWidth-nav);
+    max-width: auto;
   }
 
   .feds-footer-wrapper .feds-menu-headline {

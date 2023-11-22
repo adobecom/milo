@@ -173,6 +173,18 @@ const decoratePromo = (elem, index) => {
     elem.classList.add('feds-promo--dark');
   }
 
+  if (!isImageOnly) {
+    const imageElemMaybe = imageElem && elem.removeChild(elem.querySelector('.feds-promo-image'));
+    const innerContainer = document.createElement('div');
+    innerContainer.classList.add('feds-promo-inner-container');
+
+    while (elem.firstChild) innerContainer.appendChild(elem.firstChild);
+
+    elem.appendChild(innerContainer);
+
+    if (imageElemMaybe) elem.appendChild(imageElemMaybe);
+  }
+
   return toFragment`<div class="feds-promo-wrapper">
       ${elem}
     </div>`;
@@ -294,14 +306,15 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
     menuTemplate = toFragment`<div class="feds-popup">
-        <div class="feds-menu-content">
-          ${parsedContent}
+        <div class="feds-menu-container">
+          <div class="feds-menu-content">
+              ${parsedContent}
+          </div>
         </div>
       </div>`;
-
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
-    await decorateColumns({ content: menuTemplate.firstElementChild });
+    await decorateColumns({ content: menuTemplate.querySelector('.feds-menu-content') });
     config.template.classList.add('feds-navItem--megaMenu');
   }
 

@@ -501,6 +501,10 @@ header.global-navigation {
     min-height: var(--global-height-navPromo);
   }
 
+  .feds-promo .feds-promo-inner-container {
+    padding: 24px 32px;
+  }
+
   /* Brand block */
   .feds-brand-image + .feds-brand-label {
     display: flex;
@@ -529,6 +533,11 @@ header.global-navigation {
     left: auto;
     right: 0;
   }
+
+  .feds-menu-container{
+    min-width: var(--feds-minWidth-menu);
+  }
+
 
   /* Nav Links */
   .feds-navItem {
