@@ -12,11 +12,29 @@ export default async function login({ scopes, extraScopes, telemetry = {} }) {
   }
   const reqDetails = { account: tmpAccount, scopes };
   try {
-    const res = await pca.acquireTokenSilent(reqDetails);
+    const res = await pca.acquireTokenSilent(reqDetails).catch(async (error) => {
+      if (error instanceof msal.InteractionRequiredAuthError) {
+        return pca.acquireTokenPopup(reqDetails).catch((err) => {
+          console.error(err);
+        });
+      }
+      console.error(error);
+      return null;
+    });
     account.value = res.account;
     accessToken.value = res.accessToken;
     if (extraScopes) {
-      const extraRes = await pca.acquireTokenSilent({ account: tmpAccount, scopes: extraScopes });
+      const extraReq = { account: tmpAccount, scopes: extraScopes };
+      const extraRes = await pca.acquireTokenSilent(extraReq)
+        .catch(async (error) => {
+          if (error instanceof msal.InteractionRequiredAuthError) {
+            return pca.acquireTokenPopup(extraReq).catch((err) => {
+              console.error(err);
+            });
+          }
+          console.error(error);
+          return null;
+        });
       accessTokenExtra.value = extraRes.accessToken;
     }
   } catch (err) {

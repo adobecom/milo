@@ -15,10 +15,12 @@ let config;
  * @returns the config
  */
 export default async function getServiceConfig(origin, envName) {
-  if (config) return config;
-  const utilsConfig = getConfig();
   const queryEnv = new URLSearchParams(window.location.search).get('env');
+  const utilsConfig = getConfig();
   const env = queryEnv || envName || utilsConfig.env.name;
+  // Return the cached config if it exists.
+  if (config) return config[env];
+  // Start a new request.
   const resp = await fetch(`${origin}${DOT_MILO}`);
   if (!resp.ok) return { error: 'Could not fetch .milo/config.' };
   const json = await resp.json();
@@ -27,24 +29,17 @@ export default async function getServiceConfig(origin, envName) {
     const [confEnv, confService, confType] = conf.key.split('.');
     configs[confEnv] ??= {};
     configs[confEnv][confService] ??= {};
-    configs[confEnv][confService][confType] = conf.value;
+    configs[confEnv][confService][confType] ??= conf.value;
   });
-  config = configs.prod;
-  if (env === 'prod') return config;
+  config = {};
+  // Setup prod config
+  config.prod = configs.prod;
 
-  // Stage inheritance
-  Object.keys(config).forEach((key) => {
-    if (configs.stage && configs.stage[key]) {
-      config[key] = { ...config[key], ...configs.stage[key] };
-    }
-  });
-  if (env === 'stage') return config;
+  // Setup stage with prod inheritance
+  config.stage = { ...config.prod, ...configs.stage };
 
-  // Local inheritance
-  Object.keys(config).forEach((key) => {
-    if (configs.local && configs.local[key]) {
-      config[key] = { ...config[key], ...configs.local[key] };
-    }
-  });
-  return config;
+  // Setup local with stage & prod inheritance
+  config.local = { ...config.stage, ...configs.local };
+
+  return config[env];
 }

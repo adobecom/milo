@@ -29,4 +29,9 @@ describe('Service Config', () => {
     const { sharepoint } = await getServiceConfig(ORIGIN);
     expect(sharepoint.siteId).to.equal('milo-stage');
   });
+
+  it('Should only have prod value', async () => {
+    const { sharepoint } = await getServiceConfig(ORIGIN, 'prod');
+    expect(sharepoint.siteId).to.equal('milo-prod');
+  });
 });

@@ -5,8 +5,18 @@
     "limit": 11,
     "data": [
       {
+        "key": "prod.dexter.location",
+        "value": "dexter.prod.adobe.com",
+        "Comments": ""
+      },
+      {
         "key": "prod.glaas.clientId",
         "value": "prod-not-super-secret-client-id",
+        "Comments": ""
+      },
+      {
+        "key": "prod.sharepoint.siteId",
+        "value": "milo-prod",
         "Comments": ""
       },
       {
