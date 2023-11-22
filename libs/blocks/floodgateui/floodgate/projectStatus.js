@@ -129,7 +129,7 @@ export function ProjectStatus(actionType) {
           <p class="fgui-project-label">Last Run</p>
           <h3 class="fgui-subproject-name">
           ${allActionStatus.value[actionNameStatus]?.payload?.action?.startTime
-            ? new Date(allActionStatus.value[actionNameStatus]?.payload?.action?.startTime).toLocaleString('en-US', { timeZone: 'GMT' })  
+            ? new Date(allActionStatus.value[actionNameStatus]?.payload?.action?.startTime).toLocaleString(undefined, { timeZoneName: 'short' })
             : '-'}
           </h3>
           <p class="fgui-project-label">Description</p>

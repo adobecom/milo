@@ -5,9 +5,8 @@ function getPrettyDate(string) {
   if (!string) return ['Not available'];
   const rawDate = new Date(string);
   rawDate.setSeconds(0, 0);
-  const date = rawDate.toLocaleDateString();
-  const time = rawDate.toLocaleTimeString([], { hour12: false });
-  return [date, `${time} GMT`];
+  const date = rawDate.toLocaleString(undefined, { timeZoneName: 'short' });
+  return [date];
 }
 
 export function handleAction(url) {
