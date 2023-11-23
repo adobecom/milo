@@ -70,23 +70,14 @@ class Footer {
     // TODO: log to LANA if Footer content could not be found
     if (!this.body) return;
 
-    const regionAnchor = this.body.querySelector('.region-selector a');
-    const regionParent = regionAnchor?.parentNode;
-    const detachedRegion = regionParent?.removeChild(regionAnchor);
-
-    const socialLinks = [...this.body.querySelectorAll('.social a')];
-    const socialParents = socialLinks.map((link) => link.parentNode);
-    const detachedSocialLinks = socialLinks.map(
-      (link, index) => socialParents[index].removeChild(link),
-    );
+    const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
+    const [regionParent, socialParent] = [region.parentElement, social.parentElement];
+    [regionParent, socialParent].forEach((parent) => parent.replaceChildren());
 
     decorateLinks(this.body);
 
-    if (detachedRegion && regionParent) regionParent.appendChild(detachedRegion);
-
-    detachedSocialLinks.forEach((link, index) => {
-      if (link && socialParents[index]) socialParents[index].appendChild(link);
-    });
+    regionParent.appendChild(region);
+    socialParent.appendChild(social);
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
