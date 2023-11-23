@@ -534,7 +534,7 @@ header.global-navigation {
     right: 0;
   }
 
-  .feds-menu-container{
+  .feds-menu-container {
     min-width: var(--feds-minWidth-menu);
   }
 
