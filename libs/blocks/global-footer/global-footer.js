@@ -71,35 +71,21 @@ class Footer {
     if (!this.body) return;
 
     const regionAnchor = this.body.querySelector('.region-selector a');
-    const regionNextSibling = regionAnchor?.nextSibling;
     const regionParent = regionAnchor?.parentNode;
     const detachedRegion = regionParent?.removeChild(regionAnchor);
 
-    const socialLinks = Array.from(document.querySelectorAll('.social a'));
+    const socialLinks = [...this.body.querySelectorAll('.social a')];
     const socialParents = socialLinks.map((link) => link.parentNode);
-    const socialNextSiblings = socialLinks.map((link) => link.nextSibling);
     const detachedSocialLinks = socialLinks.map(
       (link, index) => socialParents[index].removeChild(link),
     );
 
     decorateLinks(this.body);
 
-    if (detachedRegion && regionParent) {
-      if (regionNextSibling) {
-        regionParent.insertBefore(detachedRegion, regionNextSibling);
-      } else {
-        regionParent.appendChild(detachedRegion);
-      }
-    }
+    if (detachedRegion && regionParent) regionParent.appendChild(detachedRegion);
 
     detachedSocialLinks.forEach((link, index) => {
-      if (link && socialParents[index]) {
-        if (socialNextSiblings[index]) {
-          socialParents[index].insertBefore(link, socialNextSiblings[index]);
-        } else {
-          socialParents[index].appendChild(link);
-        }
-      }
+      if (link && socialParents[index]) socialParents[index].appendChild(link);
     });
 
     // Order is important, decorateFooter makes use of elements
