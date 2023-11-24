@@ -186,4 +186,31 @@ describe('Modals', () => {
     // Test passing, means there was no error thrown
     await hashChangeTriggered;
   });
+
+  it('adjusts the modal height upon request', async () => {
+    const contentHeightDesktop = 714;
+    const contentHeightMobile = '100%';
+    const content = new DocumentFragment();
+    const miloIFrame = document.createElement('div');
+    miloIFrame.classList.add('milo-iframe');
+    miloIFrame.classList.add('modal');
+    content.append(miloIFrame);
+    getModal(null, { class: 'commerce-frame', id: 'modal-with-iframe', content, closeEvent: 'closeModal' });
+    window.location.hash = '#modal-with-iframe';
+    const modalWithIFrame = document.querySelector('#modal-with-iframe');
+    modalWithIFrame.classList.add('height-fit-content');
+    const miloIFrameModal = document.querySelector('.milo-iframe.modal');
+
+    await setViewport({ width: 1200, height: 1000 });
+    window.postMessage({ contentHeight: contentHeightDesktop }, '*');
+    await delay(50);
+    expect(modalWithIFrame.clientHeight).to.equal(contentHeightDesktop);
+    expect(miloIFrameModal.clientHeight).to.equal(contentHeightDesktop);
+
+    await setViewport({ width: 320, height: 600 });
+    window.postMessage({ contentHeight: contentHeightMobile }, '*');
+    await delay(50);
+    expect(modalWithIFrame.style.height).to.equal(contentHeightMobile);
+    expect(miloIFrameModal.style.height).to.equal(contentHeightMobile);
+  });
 });
