@@ -54,7 +54,7 @@ export async function getParamsFg(config) {
   const { resourcePath } = json;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
   const projectPath = `${path}.xlsx`;
-  const adminPageUri = 'https://main--milo--adobecom.hlx.page?project=milo--adobecom&referrer=https://main--milo--adobecom.hlx.page';
+  const adminPageUri = window.location.href;
   const { fgShareUrl } = config.sharepoint.site;
   const fgShareUrlColor = fgShareUrl.replace(/<fgColor>/g, fgColor.value);
   const { fgRootFolder } = config.sharepoint.site;
@@ -165,7 +165,7 @@ export async function copyToFloodgateTree() {
         cssStatusCopy.value = newCopyStatus.payload.action.status;
         allActionStatus.value.copyStatus = newCopyStatus;
       }
-    }, 3000);
+    }, 30000);
   } catch {
     copyStatusCheck.value = 'ERROR';
     setStatus('details', 'error', 'Error copying files to Floodgate Tree. Please check the excel sheet for further details.');
@@ -202,7 +202,7 @@ export async function promoteFiles(doPublish) {
         cssStatusPromote.value = newPromoteStatus.payload.action.status;
         allActionStatus.value.promoteStatus = newPromoteStatus;
       }
-    }, 3000);
+    }, 30000);
   } catch {
     promoteStatusCheck.value = 'ERROR';
     setStatus('details', 'error', 'Error while promoting files to Floodgate Tree.');
