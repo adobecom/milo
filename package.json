@@ -30,6 +30,7 @@
   "dependencies": {
     "@preact/signals": "1.0.4",
     "htm": "^3.1.1",
+    "lit": "^3.1.0",
     "preact": "^10.11.0"
   },
   "devDependencies": {
