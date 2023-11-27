@@ -19,8 +19,16 @@ export default function init(a) {
       </iframe>
     </div>`;
     a.insertAdjacentHTML('afterend', embedHTML);
-    window._satellite.track('trackYoutube');
+    // window._satellite.track('trackYoutube');
     a.remove();
   };
   createIntersectionObserver({ el: a, callback: embedVideo });
+  document.onreadystatechange = function () {
+    if (document.readyState === "complete" && window._satellite) {
+      console.log('check analytics');
+      // const closeEventAnalytics = new Event(`trackYoutube`);
+      window._satellite?.track('trackYoutube');
+      document.onreadystatechange = null;
+    }
+  };
 }
