@@ -18,13 +18,20 @@ import { getUrls } from '../../locui/loc/index.js';
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B12F9079D-E580-4407-973D-2330B171B2CB%7D&file=DemoFgUI.xlsx&action=default&mobileredirect=true';
 
 const urlParams = new URLSearchParams(window.location.search);
+const repo = urlParams.get('repo') || 'milo';
 
 let resourcePath;
 let previewPath;
 
 async function loadProjectSettings(projSettings) {
   const settings = projSettings.reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
-  heading.value = { ...heading.value, env: settings.env, projectId: settings['Project ID'] };
+  heading.value = {
+    ...heading.value,
+    env: settings.FloodgateIOEnv || 'stage',
+    fgColor: settings.FloodgateColor || 'pink',
+    source: `${repo}`,
+    floodgate: `${repo}-${settings.FloodgateColor || 'pink'}`,
+  };
   if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localization service.');
     await getServiceUpdates();
@@ -32,24 +39,6 @@ async function loadProjectSettings(projSettings) {
   } else {
     canRefresh.value = true;
     allowFindFragments.value = true;
-  }
-}
-
-export async function loadFgColor() {
-  try {
-    const editUrl = urlParams.get('referrer') || MOCK_REFERRER;
-    const jsonUrl = await getStatus('', editUrl);
-    previewPath = jsonUrl.preview.url;
-    const resp = await fetch(previewPath);
-    const json = await resp.json();
-    if (json.fgcolor) {
-      fgColor.value = json.fgcolor.data[0]?.FloodgateColor || 'pink';
-    } else {
-      const dataMap = new Map(json.settings.data.map((item) => [item.key, item.value]));
-      fgColor.value = dataMap.get('FloodgateColor') || 'pink';
-    }
-  } catch {
-    setStatus('details', 'error', 'Error getting the floodgate color.');
   }
 }
 

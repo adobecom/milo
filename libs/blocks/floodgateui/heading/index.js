@@ -26,7 +26,7 @@ export default async function handleRefresh() {
     languages.value = [];
     urls.value = [];
     statuses.value = {};
+    await autoSetup();
     renderSignal.value = renderSignal.value + 1;
-    autoSetup();
   }
 }

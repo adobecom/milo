@@ -15,11 +15,23 @@ export default function Heading() {
               <a class=fgui-project-details-edit
                  href="${heading.value.editUrl}"
                  target="_blank">Edit</a>`}
-                 ${heading.value.name && html`
-                 <button class="fgui-project-details-refresh" onclick=${handleRefresh} style=${"cursor: pointer;"}>
-                   Refresh
-                 </button>
-               `}               
+          ${heading.value.name && html`
+            <button class="fgui-project-details-refresh" onclick=${handleRefresh} style=${"cursor: pointer;"}>
+              Refresh
+            </button>
+          `}
+        </div>
+      </div>
+      <div class=fgui-project-heading-column>
+        <h2 class=fgui-section-label>SOURCE CONTENT:</h2>
+        <div class=fgui-project-details-name>
+          <span>${heading.value.source}</span>
+        </div>
+      </div>
+      <div class=fgui-project-heading-column>
+        <h2 class=fgui-section-label>FLOODGATE CONTENT:</h2>
+        <div class=fgui-project-details-name>
+          <span>${heading.value.floodgate}</span>
         </div>
       </div>
       <div class=fgui-project-heading-column>

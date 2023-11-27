@@ -14,14 +14,12 @@ import {
   cssStatusCopy,
   cssStatusDelete,
   cssStatusPromote,
-  fgColor,
 } from './state.js';
 import { accessToken } from '../../../tools/sharepoint/state.js';
 import { origin, getStatus } from '../../locui/utils/franklin.js';
 import { setExcelStatus, setStatus } from './status.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import '../../../deps/md5.min.js';
-import { loadFgColor } from '../floodgate/index.js';
 
 const DOT_MILO = '/.milo/config.json';
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B12F9079D-E580-4407-973D-2330B171B2CB%7D&file=DemoFgUI.xlsx&action=default&mobileredirect=true';
@@ -39,7 +37,7 @@ async function getMilocUrl() {
 }
 
 function getPromoteIgnorePaths(config) {
-  let promoteIgnorePaths = config.promoteIgnorePaths.get(fgColor.value);
+  let promoteIgnorePaths = config.promoteIgnorePaths.get(heading.value.fgColor);
   if (promoteIgnorePaths === undefined
       || (Array.isArray(promoteIgnorePaths) && promoteIgnorePaths.length === 0)) {
     promoteIgnorePaths = config.promoteIgnorePaths.get('pink') || ['/.milo', '/.helix', '/metadata.xlsx'];
@@ -48,7 +46,6 @@ function getPromoteIgnorePaths(config) {
 }
 
 export async function getParamsFg(config) {
-  await loadFgColor();
   const editUrl = urlParams.get('referrer') || MOCK_REFERRER;
   const json = await getStatus('', editUrl);
   const { resourcePath } = json;
@@ -56,9 +53,9 @@ export async function getParamsFg(config) {
   const projectPath = `${path}.xlsx`;
   const adminPageUri = window.location.href;
   const { fgShareUrl } = config.sharepoint.site;
-  const fgShareUrlColor = fgShareUrl.replace(/<fgColor>/g, fgColor.value);
+  const fgShareUrlColor = fgShareUrl.replace(/<fgColor>/g, heading.value.fgColor);
   const { fgRootFolder } = config.sharepoint.site;
-  const fgRootFolderColor = fgRootFolder.replace(/<fgColor>/g, fgColor.value);
+  const fgRootFolderColor = fgRootFolder.replace(/<fgColor>/g, heading.value.fgColor);
   const promoteIgnorePaths = getPromoteIgnorePaths(config);
   const params = {
     adminPageUri,
@@ -69,7 +66,7 @@ export async function getParamsFg(config) {
     fgRootFolder: fgRootFolderColor,
     promoteIgnorePaths,
     driveId: config.driveId || '',
-    fgColor: fgColor.value,
+    fgColor: heading.value.fgColor,
   };
   return params;
 }
@@ -123,14 +120,15 @@ export async function fetchStatusAction() {
   const config = await getServiceConfigFg(origin);
   const paramsFg = await getParamsFg(config);
   const excelPath = paramsFg.projectExcelPath;
-  let params = { type: 'copy', projectExcelPath: excelPath, fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value};
-  const copyStatus = await postData(config.stage.milofg.status.url, params);
+  const env = heading.value.env;
+  let params = { type: 'copy', projectExcelPath: excelPath, fgShareUrl: paramsFg.fgShareUrl, fgColor: heading.value.fgColor};
+  const copyStatus = await postData(config[env].milofg.status.url, params);
   // fetch promote status
-  params = { type: 'promote', fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value };
-  const promoteStatus = await postData(config.stage.milofg.status.url, params);
+  params = { type: 'promote', fgShareUrl: paramsFg.fgShareUrl, fgColor: heading.value.fgColor };
+  const promoteStatus = await postData(config[env].milofg.status.url, params);
   // fetch delete status
-  params = { type: 'delete', fgShareUrl: paramsFg.fgShareUrl, fgColor: fgColor.value };
-  const deleteStatus = await postData(config.stage.milofg.status.url, params);
+  params = { type: 'delete', fgShareUrl: paramsFg.fgShareUrl, fgColor: heading.value.fgColor };
+  const deleteStatus = await postData(config[env].milofg.status.url, params);
   return ({ copyStatus, promoteStatus, deleteStatus });
 }
 
@@ -140,7 +138,8 @@ export async function copyToFloodgateTree() {
     setStatus('details', 'info', 'Copying files to the Floodgate Tree. Check the status card for further updates.');
     const config = await getServiceConfigFg(origin);
     const params = { ...await getParamsFg(config), spToken: accessToken };
-    const { url } = config.stage.milofg.copy;
+    const env = heading.value.env;
+    const { url } = config[env].milofg.copy;
 
     const copyStatus = await postData(url, params);
     allActionStatus.value.copyStatus = copyStatus;
@@ -177,7 +176,8 @@ export async function promoteFiles(doPublish) {
     setStatus('details', 'info', 'Promoting files to the Floodgate Tree. Check the status card for further updates.');
     const config = await getServiceConfigFg(origin);
     const params = { ...await getParamsFg(config), spToken: accessToken, doPublish };
-    const { url } = config.stage.milofg.promote;
+    const env = heading.value.env;
+    const { url } = config[env].milofg.promote;
 
     const promoteStatus = await postData(url, params);
     allActionStatus.value.promoteStatus = promoteStatus;
@@ -214,7 +214,8 @@ export async function deleteFgTree() {
     setStatus('details', 'info', 'Deleting the Floodgate Tree. Check the status table for further updates.');
     const config = await getServiceConfigFg(origin);
     const params = { ...await getParamsFg(config), spToken: accessToken };
-    const { url } = config.stage.milofg.delete;
+    const env = heading.value.env;
+    const { url } = config[env].milofg.delete;
 
     const deleteStatus = await postData(url, params);
     allActionStatus.value.deleteStatus = deleteStatus;
