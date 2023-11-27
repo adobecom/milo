@@ -237,6 +237,12 @@ async function createForm(formURL, thankYou) {
         fieldWrapper.append(createInput(fd));
         fieldWrapper.append(createLabel(fd));
         break;
+      case 'checkbox-group':
+        // TODO
+        break;
+      case 'radio-group':
+        // TODO
+        break;
       case 'text-area':
         fieldWrapper.append(createLabel(fd));
         fieldWrapper.append(createTextArea(fd));
