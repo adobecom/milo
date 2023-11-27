@@ -33,12 +33,12 @@ async function fetchContentOfFile(path) {
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getMetadata(rootElement);
-  shortQuiz = metaData['short-quiz']?.text === 'true' ? true : false;
+  shortQuiz = metaData['short-quiz']?.text === 'true';
   configPath = initConfigPath(metaData);
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
-  return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz};
+  return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
 export const getQuizData = async () => {
