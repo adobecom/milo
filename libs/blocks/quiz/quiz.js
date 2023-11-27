@@ -317,8 +317,8 @@ const App = ({
 };
 
 export default async function init(
-  shortQuiz,
   el,
+  shortQuiz,
   initialIsDataLoaded = false,
   preQuestions = {},
   initialStrings = {},
