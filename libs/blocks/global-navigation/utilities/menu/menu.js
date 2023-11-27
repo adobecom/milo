@@ -178,7 +178,7 @@ const decoratePromo = (elem, index) => {
     const innerContainer = document.createElement('div');
     innerContainer.classList.add('feds-promo-inner-container');
 
-    innerContainer.append(...elem.childNodes);
+    innerContainer.append(...elem.children);
 
     elem.appendChild(innerContainer);
 
