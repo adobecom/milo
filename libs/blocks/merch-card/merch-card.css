@@ -1,5 +1,5 @@
-main > div.section[class*="-merch-card"],
-.fragment > div.section[class*="-merch-card"] {
+main > div.section[class*="-merch-card"]:not([data-status='decorated']),
+.fragment > div.section[class*="-merch-card"]:not([data-status='decorated']) {
   display: grid;
 }
 

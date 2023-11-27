@@ -132,44 +132,52 @@ export default async function main(el) {
     }
   }
 
+  let cardsData;
+  let err;
+  const config = getConfig();
   try {
-    const config = getConfig();
-    const resp = await fetch(`${config?.locale?.prefix ?? ''}/cc-shared/assets/query-index-cards.json?sheet=${type}`);
-    if (!resp?.ok) {
-      log(`Failed to initialize merch cards: ${resp.status}`);
+    const res = await fetch(`${config?.locale?.prefix ?? ''}/cc-shared/assets/query-index-cards.json?sheet=${type}`);
+    if (res.ok) {
+      cardsData = await res.json();
+    } else {
+      err = res.statusText || res.status;
     }
-    const cardsData = await resp.json();
-
-    // TODO add aditional parameters.
-    const cards = cardsData.data.map(({ cardContent }) => cardContent).join('\n');
-    // Replace placeholders
-    merchCards.innerHTML = await replaceText(cards, config);
-    const autoBlocks = await decorateLinks(merchCards).map(loadBlock);
-    await Promise.all(autoBlocks);
-    const blocks = [...merchCards.querySelectorAll(':scope > div')].map(loadBlock);
-    await Promise.all(blocks);
-    filterMerchCards(merchCards);
-    merchCards.append(...literalSlots);
-
-    // re-order cards, update card filters
-    [...merchCards.children].filter((card) => card.tagName === 'MERCH-CARD').forEach((merchCard) => {
-      const filters = { ...merchCard.filters };
-      Object.keys(filters).forEach((key) => {
-        const preference = preferences[key];
-        if (!preference) return;
-        preference
-          .forEach(([cardTitle, cardSize], index) => {
-            if (merchCard.title === cardTitle) {
-              filters[key] = { order: index, size: cardSize };
-            }
-          });
-      });
-      merchCard.filters = filters;
-    });
-
-    el.replaceWith(merchCards);
-    return merchCards;
-  } catch (err) {
-    log(`Failed to initialize merch cards: ${err?.message}`);
+  } catch (error) {
+    err = error.message;
   }
+  if (!cardsData) {
+    log(`Failed to initialize merch cards: ${err}`);
+    el.innerHTML = '';
+    return el;
+  }
+
+  // TODO add aditional parameters.
+  const cards = cardsData.data.map(({ cardContent }) => cardContent).join('\n');
+  // Replace placeholders
+  merchCards.innerHTML = await replaceText(cards, config);
+  const autoBlocks = await decorateLinks(merchCards).map(loadBlock);
+  await Promise.all(autoBlocks);
+  const blocks = [...merchCards.querySelectorAll(':scope > div')].map(loadBlock);
+  await Promise.all(blocks);
+  filterMerchCards(merchCards);
+  merchCards.append(...literalSlots);
+
+  // re-order cards, update card filters
+  [...merchCards.children].filter((card) => card.tagName === 'MERCH-CARD').forEach((merchCard) => {
+    const filters = { ...merchCard.filters };
+    Object.keys(filters).forEach((key) => {
+      const preference = preferences[key];
+      if (!preference) return;
+      preference
+        .forEach(([cardTitle, cardSize], index) => {
+          if (merchCard.title === cardTitle) {
+            filters[key] = { order: index, size: cardSize };
+          }
+        });
+    });
+    merchCard.filters = filters;
+  });
+
+  el.replaceWith(merchCards);
+  return merchCards;
 }
