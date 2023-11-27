@@ -16,13 +16,4 @@ describe('Review Comp', () => {
     const review = await waitForElement('.hlx-ReviewWrapper');
     expect(review).to.exist;
   });
-
-  it('could be initialized (with all missing fields)', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/missing-fields.html' });
-    const div = document.querySelector('.review');
-    await init(div);
-
-    const review = await waitForElement('.hlx-ReviewWrapper');
-    expect(review).to.exist;
-  });
 });

@@ -90,7 +90,7 @@ function loadArticleTaxonomy(article) {
 
     const articleTax = computeTaxonomyFromTopics(topics, path);
 
-    clonedArticle.category = articleTax.category;
+    clonedArticle.category ??= articleTax.category;
 
     // topics = tags as an array
     clonedArticle.topics = topics;

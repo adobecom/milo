@@ -34,7 +34,6 @@ export function sendAnalytics(event) {
 function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
-  document.body.classList.remove('commerce-modal-open');
   window.dispatchEvent(closeEvent);
   const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
   const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
@@ -42,14 +41,19 @@ function closeModal(modal) {
   sendAnalytics(closeEventAnalytics);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
-    if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
-      mod.nextElementSibling.remove();
-    }
     if (mod.classList.contains('dialog-modal')) {
+      const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
+      if (modalCurtain) {
+        modalCurtain.remove();
+      }
       mod.remove();
     }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
   });
+
+  if (!document.querySelectorAll('.modal-curtain').length) {
+    document.body.classList.remove('disable-scroll');
+  }
 
   [...document.querySelectorAll('header, main, footer')]
     .forEach((element) => element.removeAttribute('aria-disabled'));
@@ -165,6 +169,7 @@ export async function getModal(details, custom) {
   window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {
+    document.body.classList.add('disable-scroll');
     const curtain = createTag('div', { class: 'modal-curtain is-open' });
     curtain.addEventListener('click', (e) => {
       if (e.target === curtain) closeModal(dialog);
@@ -174,7 +179,6 @@ export async function getModal(details, custom) {
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
   if (dialog.classList.contains('commerce-frame')) {
-    document.body.classList.add('commerce-modal-open');
     if (isInitialPageLoad) {
       window.addEventListener('message', (messageInfo) => {
         sendViewportDimensionsOnRequest(messageInfo);
