@@ -317,19 +317,19 @@ const App = ({
 };
 
 export default async function init(
+  shortQuiz,
   el,
   initialIsDataLoaded = false,
   preQuestions = {},
   initialStrings = {},
-  shortQuiz,  
 ) {
   const configData = initConfigPathGlob(el);
-  shortQuiz = configData.shortQuiz;
+  const updatedShortQuiz = shortQuiz || configData.shortQuiz;
   el.replaceChildren();
   render(html`<${App} 
     initialIsDataLoaded=${initialIsDataLoaded} 
     preQuestions=${preQuestions} 
     initialStrings=${initialStrings}
-    shortQuiz=${shortQuiz}
+    shortQuiz=${updatedShortQuiz}
   />`, el);
 }
