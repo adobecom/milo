@@ -204,8 +204,8 @@ const init = async (el) => {
     section.style.display = 'contents';
     fragment.style.display = 'contents';
     fragmentParent.style.display = fragmentParent.classList.contains('nested')
-      ? 'contents'
-      : fragmentParent.style.display;
+      ? fragmentParent.style.display
+      : 'contents';
     section = fragmentParent.parentElement;
   }
 
