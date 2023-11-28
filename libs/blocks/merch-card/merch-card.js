@@ -203,7 +203,7 @@ const init = async (el) => {
     const fragmentParent = fragment.parentElement;
     section.style.display = 'contents';
     fragment.style.display = 'contents';
-    fragmentParent.style.display = fragmentParent.className.contains('nested')
+    fragmentParent.style.display = fragmentParent.classList.contains('nested')
       ? 'contents'
       : fragmentParent.style.display;
     section = fragmentParent.parentElement;
