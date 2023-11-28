@@ -191,6 +191,10 @@
   column-gap: var(--spacing-xxs);
 }
 
+.text-block .icon-area.con-button {
+  column-gap: unset;
+}
+
 .text-block .icon-area picture {
   line-height: 0em;
 }
