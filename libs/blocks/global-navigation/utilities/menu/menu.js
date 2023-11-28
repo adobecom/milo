@@ -287,7 +287,7 @@ const decorateLinksStrip = (content) => {
   const linksStripWrapper = toFragment`<div class="feds-links-strip-wrapper"></div>`;
   const linksStrip = toFragment`<div class="feds-links-strip"></div>`;
 
-  linksStrip.append(...[...linksStripEl.children].map((c) => decorateLink(c)));
+  linksStrip.append(...[...linksStripEl.children].map(decorateLink));
   linksStripWrapper.append(linksStrip);
   content.append(linksStripWrapper);
 };
