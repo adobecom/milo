@@ -122,7 +122,6 @@ const MultiField = ({
       ${fieldSets.map(
     (fields, idx) => {
       fields.forEach((field) => (field.props.parentIndex = idx));
-      // return html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)} />`;
       return html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)}
       onMoveUp=${moveFieldUp(idx)} onMoveDown=${moveFieldDown(idx)} />`;
     },
