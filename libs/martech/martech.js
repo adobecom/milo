@@ -90,8 +90,8 @@ const getDtmLib = (env) => ({
   edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
   url:
     env.name === 'prod'
-      ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
+      ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/2a8c5e902548/9a9187539552/launch-c311d36ba70b.min.js'
+      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/https://assets.adobedtm.com/2a8c5e902548/9a9187539552/launch-c311d36ba70b-development.min.js',
 });
 
 export default async function init({ persEnabled = false, persManifests }) {
