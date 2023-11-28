@@ -8,7 +8,7 @@ export default async function init(blockEl) {
   const results = await formFields.json();
   const fieldList = results.data;
 
-  const wrapper = createTag('div', { class: 'sko-form spectrum-form' });
+  const wrapper = createTag('form', { class: 'sko-form spectrum-form', action:'https://prod-149.westus.logic.azure.com:443/workflows/9617d5afd2e844159486024231f5dd75/trigger[…]1.0&sig=aH81nljMBnWzitSFGzYYkghXmPrwZl9j3reURjF30Wo', method:'post' });
 
   fieldList.forEach(item => {
     decorateFormField(item, wrapper);
@@ -16,7 +16,10 @@ export default async function init(blockEl) {
   
   window.addEventListener('onImsLibInstance',getCreds);
   
+  const submit = createTag('input',{type:'submit', value:'Submit'});
+  wrapper.append(submit);
   blockEl.append(wrapper);
+
   const buttonWapper = createTag('div', {class:'submit-button'});
   const submitButton = createTag('button', {class:'con-button blue button-justified-mobile'},'Submit')
   submitButton.addEventListener('click', onSubmit);
@@ -53,6 +56,8 @@ function decorateFormField(fieldJson, el) {
       formField.addEventListener("change", getBase64, false);
       break;
   }
+
+  //const submit = createTag('form', {action:'https://prod-149.westus.logic.azure.com/workflows/9617d5afd2e844159486024231f5dd75/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aH81nljMBnWzitSFGzYYkghXmPrwZl9j3reURjF30Wo', method:'post'})
 
   fieldWapper.append(fieldLabel);
   const inputWrapper = createTag('div');

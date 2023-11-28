@@ -9,6 +9,19 @@
   ],
   "plugins": [
     {
+      "id": "asset-library",
+      "title": "My Assets",
+      "environments": [
+        "edit"
+      ],
+      "url": "https://experience.adobe.com/solutions/CQ-assets-selectors/static-assets/resources/franklin/asset-selector.html",
+      "isPalette": true,
+      "includePaths": [
+        "**.docx**"
+      ],
+      "paletteRect": "top: 50px; bottom: 10px; right: 10px; left: auto; width:400px; height: calc(100vh - 60px)"
+    },
+    {
       "id": "library",
       "title": "Library",
       "environments": [ "edit" ],
@@ -42,32 +55,6 @@
       "passConfig": true,
       "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
-    },
-    {
-      "containerId": "tools",
-      "id": "floodgate",
-      "title": "Floodgate",
-      "environments": [ "edit" ],
-      "url": "/tools/floodgate/index.html?project=milo--adobecom",
-      "passReferrer": true,
-      "excludePaths": [ "/**" ],
-      "includePaths": [ "**/:x**" ]
-    },
-    {
-      "containerId": "tools",
-      "title": "Send to CaaS",
-      "id": "sendtocaas",
-      "environments": ["dev", "preview", "live", "prod"],
-      "event": "send-to-caas",
-      "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
-    },
-    {
-      "containerId": "tools",
-      "title": "Check Schema",
-      "id": "checkschema",
-      "environments": ["prod"],
-      "event": "check-schema",
-      "excludePaths": ["/tools**", "*.json"]
     },
     {
       "containerId": "tools",
@@ -119,14 +106,6 @@
     },
     {
       "containerId": "tools",
-      "title": "Send to CaaS",
-      "id": "sendtocaas",
-      "environments": ["live", "prod"],
-      "event": "send-to-caas",
-      "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
-    },
-    {
-      "containerId": "tools",
       "id": "version-history",
       "title": "Version History",
       "environments": [ "edit" ],
@@ -136,24 +115,6 @@
       "passConfig": true,
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 498px; width: 460px;",
       "includePaths": [ "**.docx**", "**.xlsx**" ]
-    },
-    {
-      "containerId": "tools",
-      "id": "caas-configurator",
-      "title": "CaaS Configurator",
-      "environments": [ "edit", "preview", "dev" ],
-      "url": "https://milo.adobe.com/tools/caas",
-      "isPalette": false,
-      "includePaths": [ "**.docx**"]
-    },
-    {
-      "containerId": "tools",
-      "id": "faas-configurator",
-      "title": "FaaS Configurator",
-      "environments": [ "edit", "preview", "dev" ],
-      "url": "https://milo.adobe.com/tools/faas",
-      "isPalette": false,
-      "includePaths": [ "**.docx**"]
     }
   ]
 }
