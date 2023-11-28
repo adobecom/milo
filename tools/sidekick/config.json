@@ -37,15 +37,6 @@
       "id": "floodgate",
       "title": "Floodgate",
       "environments": [ "edit" ],
-      "url": "/tools/floodgate/index.html?project=milo--adobecom",
-      "passReferrer": true,
-      "includePaths": [ "**/:x**" ]
-    },
-    {
-      "containerId": "tools",
-      "id": "floodgate-new",
-      "title": "Floodgate (New)",
-      "environments": [ "edit" ],
       "url": "https://floodgateui--milo--adobecom.hlx.page/tools/floodgate",
       "passReferrer": true,
       "passConfig": true,
