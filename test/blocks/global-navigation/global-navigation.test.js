@@ -439,7 +439,7 @@ describe('global navigation', () => {
   describe('main nav popups', () => {
     describe('desktop', () => {
       it('should render a popup properly', async () => {
-        await createFullGlobalNavigation();
+        await createFullGlobalNavigation({ hasLinksStrip: false });
 
         const navItem = document.querySelector(selectors.navItem);
         const navLink = navItem.querySelector(selectors.navLink);
@@ -487,7 +487,7 @@ describe('global navigation', () => {
 
     describe('small desktop', () => {
       it('should render a popup properly', async () => {
-        await createFullGlobalNavigation({ viewport: 'smallDesktop' });
+        await createFullGlobalNavigation({ viewport: 'smallDesktop', hasLinksStrip: false });
 
         const navItem = document.querySelector(selectors.navItem);
         const navLink = navItem.querySelector(selectors.navLink);
