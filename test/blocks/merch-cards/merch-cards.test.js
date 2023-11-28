@@ -46,6 +46,7 @@ describe('Merch Cards', async () => {
 
   beforeEach(async () => {
     document.location.hash = '';
+    cards = [];
     document.body.innerHTML = pageContent;
   });
 
@@ -66,7 +67,6 @@ describe('Merch Cards', async () => {
     const el = document.getElementById('filterShowMoreText');
     const merchCards = await init(el);
     expect(merchCards.getAttribute('filter')).to.equal('all');
-    expect(merchCards.getAttribute('show-more-text')).to.equal('Show more');
     expect(merchCards.getAttribute('limit')).to.equal('24');
   });
 
@@ -74,7 +74,6 @@ describe('Merch Cards', async () => {
     const el = document.getElementById('filterShowMoreTextLimit');
     const merchCards = await init(el);
     expect(merchCards.getAttribute('filter')).to.equal('all');
-    expect(merchCards.getAttribute('show-more-text')).to.equal('Show more');
     expect(merchCards.getAttribute('limit')).to.equal('9');
   });
 
@@ -117,5 +116,11 @@ describe('Merch Cards', async () => {
     expect(cc.name).to.be.equal('all-apps');
     expect(cc.size).to.undefined;
     expect(express.name).to.be.equal('express');
+  });
+
+  it('should parse literals', async () => {
+    const merchCards = await init(document.getElementById('placeholders'));
+    await delay(500);
+    expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
   });
 });

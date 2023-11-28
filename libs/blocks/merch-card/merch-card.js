@@ -194,10 +194,6 @@ const init = async (el) => {
   const styles = [...el.classList];
   const lastClass = styles[styles.length - 1];
   const name = PRODUCT_NAMES.includes(lastClass) ? lastClass : undefined;
-  if (name) {
-    // if product name is found, remove it from the class list.
-    styles.pop();
-  }
 
   let section = el.closest('.section');
   const merchCards = addMerchCardGridIfMissing(section);
@@ -209,9 +205,12 @@ const init = async (el) => {
     fragment.style.display = 'contents';
     fragmentParent.style.display = 'contents';
     section = fragmentParent.parentElement;
-  } else if (section && cardType) {
+  }
+
+  if (section && cardType) {
     section.classList.add(cardType);
   }
+
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
   const images = el.querySelectorAll('picture');

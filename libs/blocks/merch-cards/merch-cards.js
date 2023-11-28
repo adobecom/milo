@@ -3,6 +3,24 @@ import { createTag, decorateLinks, getConfig, loadBlock } from '../../utils/util
 import { replaceText } from '../../features/placeholders.js';
 
 const { log } = window.lana;
+const DIGITS_ONLY = /^\d+$/;
+
+const LITERAL_SLOTS = [
+  'searchText',
+  'filtersText',
+  'sortText',
+  'popularityText',
+  'alphabeticallyText',
+  'resultText',
+  'resultsText',
+  'searchResultText',
+  'searchResultsText',
+  'searchResultMobileText',
+  'searchResultsMobileText',
+  'noResultsText',
+  'noResultsMobileText',
+  'showMoreText',
+];
 
 /**
  * Removes merch cards from the DOM if they are not meant to be displayed in this merch cards block.
@@ -10,7 +28,7 @@ const { log } = window.lana;
  */
 export function filterMerchCards(merchCards) {
   if (!merchCards.filtered) return;
-  [...merchCards.children].filter((card) => card.tagName === 'MERCH-CARD')
+  [...merchCards.children].filter((child) => child.tagName === 'MERCH-CARD')
     .forEach((card) => {
       if (!Object.prototype.hasOwnProperty.call(card.filters, merchCards.filtered)) {
         card.remove();
@@ -34,14 +52,25 @@ export function parsePreferences(elements) {
 
 // eslint-disable-next-line consistent-return
 export default async function main(el) {
+  const fail = (err = '') => {
+    log(`Failed to initialize merch cards: ${err}`);
+    el.innerHTML = '';
+    return el;
+  };
+
   if (el.classList.length < 2) {
-    log('Missing collection type');
-    return null; // return silently.
+    return fail('Missing collection type');
   }
-  if (!el.closest('main > .section[class*="-merch-card"]')) {
-    el.closest('main > .section').classList.add('four-merch-cards');
+
+  const config = getConfig();
+  if (!config.queryIndexCardPath) {
+    return fail('Missing queryIndexCardPath config');
   }
+
   const type = el.classList[1];
+  if (!el.closest('main > .section[class*="-merch-card"]')) {
+    el.closest('main > .section').classList.add('four-merch-cards', type);
+  }
 
   const attributes = { filter: 'all' };
   const settingsEl = el.firstElementChild?.firstElementChild;
@@ -51,7 +80,7 @@ export default async function main(el) {
   const preferences = {};
 
   if (settingsEl) {
-    const [filter, showMoreText, limit = 24] = settingsEl
+    const [filter, limit = 24] = settingsEl
       .textContent.split(',').map((s) => s.trim());
 
     settingsEl.parentElement.remove();
@@ -69,52 +98,95 @@ export default async function main(el) {
         preferences[filterName] = parsePreferences(elements);
       });
     }
-    if (showMoreText) {
-      attributes['show-more-text'] = showMoreText;
-    }
+
     if (limit) {
       attributes.limit = limit;
     }
   }
+
   const merchCards = createTag('merch-cards', attributes);
-  try {
-    const config = getConfig();
-    const resp = await fetch(`${config?.locale?.prefix ?? ''}/cc-shared/assets/query-index-cards.json?sheet=${type}`);
-    if (!resp?.ok) {
-      log(`Failed to initialize merch cards: ${resp.status}`);
-    }
-    const cardsData = await resp.json();
 
-    // TODO add aditional parameters.
-    const cards = cardsData.data.map(({ cardContent }) => cardContent).join('\n');
-    // Replace placeholders
-    merchCards.innerHTML = await replaceText(cards, config);
-    const autoBlocks = await decorateLinks(merchCards).map(loadBlock);
-    await Promise.all(autoBlocks);
-    const blocks = [...merchCards.querySelectorAll(':scope > div')].map(loadBlock);
-    await Promise.all(blocks);
-
-    filterMerchCards(merchCards);
-
-    // re-order cards, update card filters
-    [...merchCards.children].filter((card) => card.tagName === 'MERCH-CARD').forEach((merchCard) => {
-      const filters = { ...merchCard.filters };
-      Object.keys(filters).forEach((key) => {
-        const preference = preferences[key];
-        if (!preference) return;
-        preference
-          .forEach(([cardTitle, cardSize], index) => {
-            if (merchCard.title === cardTitle) {
-              filters[key] = { order: index, size: cardSize };
-            }
-          });
-      });
-      merchCard.filters = filters;
+  const literalsEl = el.lastElementChild?.firstElementChild;
+  // parse literals
+  const literalSlots = [];
+  if (literalsEl && /filter/.test(literalsEl.querySelector('u')?.innerText)) {
+    await import('../../deps/merch-spectrum.min.js');
+    literalsEl.querySelectorAll('u').forEach((u) => {
+      const text = u.innerText.trim();
+      if (DIGITS_ONLY.test(text)) {
+        u.outerHTML = '<span data-placeholder="resultCount"></span>';
+      } else if (text === 'search') {
+        u.outerHTML = '<span data-placeholder="searchTerm"></span>';
+      } else if (text === 'filter') {
+        u.outerHTML = '<span data-placeholder="filter"></span>';
+      }
     });
-
-    el.replaceWith(merchCards);
-    return merchCards;
-  } catch (err) {
-    log(`Failed to initialize merch cards: ${err?.message}`);
+    let index = 0;
+    while (literalsEl.firstElementChild) {
+      const literalEl = literalsEl.firstElementChild;
+      let slot;
+      if (literalEl.tagName === 'P') {
+        slot = literalEl;
+      } else if (literalEl.tagName === 'HR') {
+        slot = createTag('div');
+        while (literalEl.nextElementSibling && literalEl.nextElementSibling?.tagName !== 'HR') {
+          slot.appendChild(literalEl.nextElementSibling);
+        }
+        literalEl.nextElementSibling?.remove?.();
+      }
+      literalEl.remove();
+      if (slot) {
+        slot.setAttribute('slot', LITERAL_SLOTS[index]);
+        index += 1;
+      }
+      literalSlots.push(slot);
+    }
   }
+
+  let cardsData;
+  let err;
+
+  try {
+    const res = await fetch(`${config?.locale?.prefix ?? ''}${config.queryIndexCardPath}.json?sheet=${type}`);
+    if (res.ok) {
+      cardsData = await res.json();
+    } else {
+      err = res.statusText || res.status;
+    }
+  } catch (error) {
+    err = error.message;
+  }
+  if (!cardsData) {
+    return fail(err);
+  }
+
+  // TODO add aditional parameters.
+  const cards = cardsData.data.map(({ cardContent }) => cardContent).join('\n');
+  // Replace placeholders
+  merchCards.innerHTML = await replaceText(cards, config);
+  const autoBlocks = await decorateLinks(merchCards).map(loadBlock);
+  await Promise.all(autoBlocks);
+  const blocks = [...merchCards.querySelectorAll(':scope > div')].map(loadBlock);
+  await Promise.all(blocks);
+  filterMerchCards(merchCards);
+  merchCards.append(...literalSlots);
+
+  // re-order cards, update card filters
+  [...merchCards.children].filter((card) => card.tagName === 'MERCH-CARD').forEach((merchCard) => {
+    const filters = { ...merchCard.filters };
+    Object.keys(filters).forEach((key) => {
+      const preference = preferences[key];
+      if (!preference) return;
+      preference
+        .forEach(([cardTitle, cardSize], index) => {
+          if (merchCard.title === cardTitle) {
+            filters[key] = { order: index, size: cardSize };
+          }
+        });
+    });
+    merchCard.filters = filters;
+  });
+
+  el.replaceWith(merchCards);
+  return merchCards;
 }
