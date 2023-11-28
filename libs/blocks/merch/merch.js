@@ -2,26 +2,30 @@ import { getConfig, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
-export async function polyfills() {
-  if (polyfills.done) return;
-  polyfills.done = true;
-  let isSupported = false;
-  document.createElement('div', {
-    // eslint-disable-next-line getter-return
-    get is() {
-      isSupported = true;
-    },
-  });
+export function polyfills() {
   /* c8 ignore start */
-  if (!isSupported) {
-    const { codeRoot, miloLibs } = getConfig();
-    const base = miloLibs || codeRoot;
-    await loadScript(`${base}/deps/custom-elements.js`);
+  if (!polyfills.promise) {
+    let isSupported = false;
+    document.createElement('div', {
+      // eslint-disable-next-line getter-return
+      get is() {
+        isSupported = true;
+      },
+    });
+    if (isSupported) {
+      polyfills.promise = Promise.resolve();
+    } else {
+      const { codeRoot, miloLibs } = getConfig();
+      const base = miloLibs || codeRoot;
+      polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
+    }
   }
+  return polyfills.promise;
   /* c8 ignore stop */
 }
 
 export async function initService() {
+  await polyfills();
   const commerce = await import('../../deps/commerce.js');
   return commerce.init(() => ({
     ...getConfig(),
@@ -93,7 +97,6 @@ export async function buildCta(el, params) {
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
-  await polyfills();
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
@@ -106,7 +109,6 @@ export async function buildCta(el, params) {
 async function buildPrice(el, params) {
   const context = await getPriceContext(el, params);
   if (!context) return null;
-  await polyfills();
   const service = await initService();
   const price = service.createInlinePrice(context);
   return price;

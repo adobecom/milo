@@ -97,4 +97,13 @@ describe('test the invalid article header', () => {
     const date = await waitForElement('.article-date-invalid');
     expect(date).to.exist;
   });
+
+  it('does not add invalid-date on prod', async () => {
+    setConfig({ ...conf, env: { name: 'prod' } });
+    await init(document.body.querySelector('.article-header'));
+
+    const date = await waitForElement('.article-date');
+    expect(date).to.exist;
+    expect(date.classList.contains('article-date-invalid')).to.be.false;
+  });
 });
