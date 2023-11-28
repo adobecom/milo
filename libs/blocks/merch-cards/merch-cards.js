@@ -136,7 +136,7 @@ export default async function main(el) {
   let err;
   const config = getConfig();
   try {
-    const res = await fetch(`${config?.locale?.prefix ?? ''}/cc-shared/assets/query-index-cards.json?sheet=${type}`);
+    const res = await fetch(`${config?.locale?.prefix ?? ''}${config.queryIndexCardPath}.json?sheet=${type}`);
     if (res.ok) {
       cardsData = await res.json();
     } else {
