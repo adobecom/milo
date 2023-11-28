@@ -7,9 +7,9 @@ function decorateBadge(el) {
   const matches = header.innerHTML.match(regex);
   if (!matches) return;
   matches.forEach((match) => {
-    const found = match.substring(2, match.length - 2);
-    if (!found) return;
-    const badge = createTag('span', { class: 'badge' }, found);
+    const badgeText = match.substring(2, match.length - 2);
+    if (!badgeText) return;
+    const badge = createTag('span', { class: 'badge' }, badgeText);
     header.innerHTML = header.innerHTML.replace(regex, '');
     header.append(badge);
   });

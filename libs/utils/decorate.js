@@ -129,8 +129,8 @@ export const decorateBlockHrs = (el) => {
   const pTags = el.querySelectorAll('p');
   let hasHr = false;
   const decorateHr = ((tag) => {
-    const startWith = tag.textContent.trim().startsWith('---');
-    if (!startWith) return;
+    const hrTag = tag.textContent.trim().startsWith('---');
+    if (!hrTag) return;
     hasHr = true;
     const bgStyle = tag.textContent.substring(3).trim();
     const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
