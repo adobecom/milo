@@ -322,12 +322,6 @@
   text-decoration: none;
 }
 
-.con-button:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--color-accent-focus-ring);
-  text-decoration: none;
-}
-
 .con-button.button-l {
   border-radius: 20px;
   font-size: 17px;
@@ -705,11 +699,9 @@ a {
   text-decoration: none;
 }
 
-a:hover,
-a:focus-visible {
+a:hover {
   text-decoration: underline;
   color: var(--link-hover-color);
-  outline: none;
 }
 
 /* Links Static */
