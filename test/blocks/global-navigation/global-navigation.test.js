@@ -62,6 +62,46 @@ describe('global navigation', () => {
     });
   });
 
+  describe('Links strip', () => {
+    describe('desktop', () => {
+      it('should render the links strip', async () => {
+        await createFullGlobalNavigation();
+        const linksStrip = document.querySelector(selectors.linksStripWrapper);
+        expect(linksStrip).to.exist;
+
+        expect(isElementVisible(linksStrip)).to.equal(false);
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+        expect(isElementVisible(linksStrip)).to.equal(true);
+      });
+
+      it('should not render links strip if not authored', async () => {
+        await createFullGlobalNavigation({ hasLinksStrip: false });
+        expect(document.querySelector(selectors.linksStripWrapper)).to.not.exist;
+      });
+    });
+
+    describe('small desktop', () => {
+      it('should render the links strip', async () => {
+        await createFullGlobalNavigation({ viewport: 'smallDesktop' });
+        const linksStrip = document.querySelector(selectors.linksStripWrapper);
+        expect(linksStrip).to.exist;
+
+        expect(isElementVisible(linksStrip)).to.equal(false);
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+        expect(isElementVisible(linksStrip)).to.equal(true);
+      });
+    });
+
+    describe('mobile', () => {
+      it('should not render links strip on mobile', async () => {
+        await createFullGlobalNavigation({ viewport: 'mobile' });
+        const linksStrip = document.querySelector(selectors.linksStripWrapper);
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+        expect(isElementVisible(linksStrip)).to.equal(false);
+      });
+    });
+  });
+
   describe('Promo', () => {
     it('doesn\'t exist if metadata is not defined', async () => {
       const nav = await createFullGlobalNavigation();

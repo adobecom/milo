@@ -267,6 +267,31 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
   }
 };
 
+const decorateLinksStrip = (content) => {
+  const linksStripEl = content.querySelector('.links-strip');
+  if (!linksStripEl) return;
+
+  const decorateLink = (el) => {
+    const image = el.querySelector('picture');
+    const link = el.querySelector('a');
+    const imageEl = image ? toFragment`<div class="feds-links-strip-image">${image}</div>` : '';
+    const contentEl = link ? `<span>${link.textContent}</span>` : '';
+    return toFragment`<div class="feds-links-strip-item">
+      <a href="${link.href}" class="feds-links-strip-item-content">
+      ${imageEl}
+      ${contentEl}
+      </a>
+    </div>`;
+  };
+
+  const linksStripWrapper = toFragment`<div class="feds-links-strip-wrapper"></div>`;
+  const linksStrip = toFragment`<div class="feds-links-strip"></div>`;
+
+  linksStrip.append(...[...linksStripEl.children].map((c) => decorateLink(c)));
+  linksStripWrapper.append(linksStrip);
+  content.append(linksStripWrapper);
+};
+
 // Current limitation: after an h5 (or h2 in the case of the footer)
 // is found in a menu column, no new sections can be created without a heading
 const decorateMenu = (config) => logErrorFor(async () => {
@@ -298,7 +323,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
           ${parsedContent}
         </div>
       </div>`;
-
+    decorateLinksStrip(menuTemplate);
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
     await decorateColumns({ content: menuTemplate.firstElementChild });

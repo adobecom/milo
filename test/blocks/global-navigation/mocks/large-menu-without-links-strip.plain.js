@@ -374,27 +374,5 @@ export default `<div>
       <div><a href="https://www.adobe.com/">https://www.adobe.com/</a></div>
     </div>
   </div>
-  <div class="links-strip">
-    <div>
-      <div>
-        <picture>
-          <img loading="lazy" alt="" src="http://localhost:2000/test/blocks/global-navigation/mocks/home_icon.png" width="18" height="18">
-        </picture>
-      </div>
-      <div><a href="https://www.adobe.com/index.html" daa-ll="Adobe_com-1" class="feds-navLink">Adobe.com</a></div>
-    </div>
-    <div>
-      <div><a href="https://www.adobe.com/creativecloud.html" daa-ll="Creativity_Design-2" class="feds-navLink">Creativity &amp; Design</a></div>
-    </div>
-    <div>
-      <div><a href="https://www.adobe.com/acrobat.html" daa-ll="PDF_E_signatures-3" class="feds-navLink">PDF &amp; E-signatures</a></div>
-    </div>
-    <div>
-      <div><a href="https://business.adobe.com/" daa-ll="Marketing_Commerce-4" class="feds-navLink">Marketing &amp; Commerce</a></div>
-    </div>
-    <div>
-      <div><a href="https://helpx.adobe.com/support.html" daa-ll="Help_Support-5" class="feds-navLink">Help &amp; Support</a></div>
-    </div>
-  </div>
 </div>
 `;

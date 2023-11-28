@@ -542,7 +542,16 @@ header.global-navigation {
   .feds-navItem--megaMenu .feds-popup {
     right: 0;
     justify-content: center;
-    padding: 32px 12px;
+    padding: 32px 0 0 0;
+  }
+
+  .feds-navItem--megaMenu .feds-popup .feds-menu-content {
+    padding-bottom: 32px;
+  }
+
+  .feds-nav .feds-navItem--megaMenu .feds-navLink--hoverCaret[aria-expanded = "true"] + .feds-popup {
+  flex-direction: column;
+  align-items: center;
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
