@@ -219,33 +219,33 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    }
+  }
 
-    .feds-links-strip > *:not(:last-child)::after {
-      content: '|';
-      margin: 0;
-    }
+  .feds-links-strip > *:not(:last-child)::after {
+    content: '|';
+    margin: 0;
+  }
 
-    .feds-links-strip-item {
+  .feds-links-strip-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .feds-popup .feds-navLink:hover {
+    background-color: transparent;
+  }
+
+  .feds-links-strip-image {
+    & picture {
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    .feds-popup .feds-navLink:hover {
-      background-color: transparent;
+    & img {
+      width: 25px;
+      object-fit: contain;
     }
-
-    .feds-links-strip-image {
-      & picture {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      & img {
-        width: 25px;
-        object-fit: contain;
-      }
-    }
+  }
 }
