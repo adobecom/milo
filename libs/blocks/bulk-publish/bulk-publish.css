@@ -1,5 +1,5 @@
 bulk-publish {
-  display: flex;
+  display: block;
   width: var(--grid-container-width);
   margin: 0 auto;
 }

@@ -1,0 +1,13 @@
+header {
+  padding: 10px 0;
+}
+
+.urls label {
+  display: block;
+}
+
+.urls textarea {
+  width: 100%;
+  height: 200px;
+  padding: 5px;
+}
