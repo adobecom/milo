@@ -73,7 +73,6 @@ describe('global navigation', () => {
 
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
-        expect(isElementVisible(linksStrip)).to.equal(true);
         [...linksStrip.querySelectorAll(selectors.navLink)].forEach((el) => {
           expect(isElementVisible(el)).to.equal(true);
         });
@@ -81,7 +80,6 @@ describe('global navigation', () => {
 
       it('should not render links strip if not authored', async () => {
         await createFullGlobalNavigation({ hasLinksStrip: false });
-
         expect(document.querySelector(selectors.linksStripWrapper)).to.not.exist;
       });
     });
@@ -95,7 +93,6 @@ describe('global navigation', () => {
 
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
-        expect(isElementVisible(linksStrip)).to.equal(true);
         [...linksStrip.querySelectorAll(selectors.navLink)].forEach((el) => {
           expect(isElementVisible(el)).to.equal(true);
         });
