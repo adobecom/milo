@@ -24,7 +24,6 @@ export default function init(a) {
   createIntersectionObserver({ el: a, callback: embedVideo });
   document.onreadystatechange = function () {
     if (document.readyState === "complete" && window._satellite) {
-      console.log('check analytics');
       window._satellite?.track('trackYoutube');
       document.onreadystatechange = null;
     }
