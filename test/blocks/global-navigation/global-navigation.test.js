@@ -68,10 +68,12 @@ describe('global navigation', () => {
         await createFullGlobalNavigation();
         const linksStrip = document.querySelector(selectors.linksStripWrapper);
         expect(linksStrip).to.exist;
-
         expect(isElementVisible(linksStrip)).to.equal(false);
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
         expect(isElementVisible(linksStrip)).to.equal(true);
+        [...linksStrip.querySelectorAll(selectors.navLink)].forEach((el) => {
+          expect(isElementVisible(el)).to.equal(true);
+        });
       });
 
       it('should not render links strip if not authored', async () => {
@@ -89,15 +91,18 @@ describe('global navigation', () => {
         expect(isElementVisible(linksStrip)).to.equal(false);
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
         expect(isElementVisible(linksStrip)).to.equal(true);
+        [...linksStrip.querySelectorAll(selectors.navLink)].forEach((el) => {
+          expect(isElementVisible(el)).to.equal(true);
+        });
       });
     });
 
     describe('mobile', () => {
       it('should not render links strip on mobile', async () => {
         await createFullGlobalNavigation({ viewport: 'mobile' });
-        const linksStrip = document.querySelector(selectors.linksStripWrapper);
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
-        expect(isElementVisible(linksStrip)).to.equal(false);
+        expect(isElementVisible(document.querySelector(selectors.linksStripWrapper)))
+          .to.equal(false);
       });
     });
   });

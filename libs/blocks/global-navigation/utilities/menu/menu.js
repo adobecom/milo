@@ -284,11 +284,8 @@ const decorateLinksStrip = (content) => {
     </div>`;
   };
 
-  const linksStripWrapper = toFragment`<div class="feds-links-strip-wrapper"></div>`;
-  const linksStrip = toFragment`<div class="feds-links-strip"></div>`;
-
-  linksStrip.append(...[...linksStripEl.children].map(decorateLink));
-  linksStripWrapper.append(linksStrip);
+  const linksStripWrapper = toFragment`<div class="feds-links-strip-wrapper"><div class="feds-links-strip"></div></div>`;
+  linksStripWrapper.querySelector('.feds-links-strip').append(...[...linksStripEl.children].map(decorateLink));
   content.append(linksStripWrapper);
 };
 

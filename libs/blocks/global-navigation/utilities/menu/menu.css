@@ -203,7 +203,7 @@
   }
 
 
-  .feds-links-strip-wrapper{
+  .feds-links-strip-wrapper {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -232,11 +232,11 @@
       align-items: center;
     }
 
-    .feds-popup .feds-navLink:hover{
+    .feds-popup .feds-navLink:hover {
       background-color: transparent;
     }
 
-    .feds-links-strip-image{
+    .feds-links-strip-image {
       & picture {
         display: flex;
         justify-content: center;

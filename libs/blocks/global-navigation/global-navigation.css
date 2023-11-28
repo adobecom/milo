@@ -549,7 +549,7 @@ header.global-navigation {
     padding-bottom: 32px;
   }
 
-  .feds-nav .feds-navItem--megaMenu .feds-navLink--hoverCaret[aria-expanded = "true"] + .feds-popup {
+  .feds-topnav .feds-nav-wrapper .feds-nav .feds-popup {
   flex-direction: column;
   align-items: center;
   }
