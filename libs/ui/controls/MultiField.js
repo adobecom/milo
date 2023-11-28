@@ -81,7 +81,6 @@ const MultiField = ({
 
   const moveFieldUp = (index) => () => {
     if (index === 0) return;
-    console.log('*** *** *** moveFieldUp', index);
     const newVals = [...fieldValues];
     [newVals[index], newVals[index - 1]] = [newVals[index - 1], newVals[index]];
     onChange(newVals);
@@ -89,7 +88,6 @@ const MultiField = ({
 
   const moveFieldDown = (index) => () => {
     if (index === fieldValues.length - 1) return;
-    console.log('*** *** *** moveFieldDown', index);
     const newVals = [...fieldValues];
     [newVals[index], newVals[index + 1]] = [newVals[index + 1], newVals[index]];
     onChange(newVals);
