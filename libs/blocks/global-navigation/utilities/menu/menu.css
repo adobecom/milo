@@ -231,24 +231,13 @@
       justify-content: center;
       align-items: center;
     }
- 
-    .feds-links-strip-item-content {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0 28px;
 
-
-      text-decoration: none;
-      color: var(--feds-color-link--light);
-      &:hover{
-        color: var(--link-color);
-      }
+    .feds-popup .feds-navLink:hover{
+      background-color: transparent;
     }
 
     .feds-links-strip-image{
       & picture {
-        margin-right: 15px;
         display: flex;
         justify-content: center;
         align-items: center;

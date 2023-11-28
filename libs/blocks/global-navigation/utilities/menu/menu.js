@@ -277,7 +277,7 @@ const decorateLinksStrip = (content) => {
     const imageEl = image ? toFragment`<div class="feds-links-strip-image">${image}</div>` : '';
     const contentEl = link ? `<span>${link.textContent}</span>` : '';
     return toFragment`<div class="feds-links-strip-item">
-      <a href="${link.href}" class="feds-links-strip-item-content">
+      <a href="${link.href}" class="feds-navLink">
       ${imageEl}
       ${contentEl}
       </a>
