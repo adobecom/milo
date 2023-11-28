@@ -149,6 +149,12 @@
   list-style-type: none;
 }
 
+.brick.center .icon-stack-area,
+.brick.align-center .icon-stack-area {
+  display: inline-flex;
+  width: auto;
+}
+
 .brick .icon-stack-area li,
 .brick .icon-stack-area li a {
   display: flex;
