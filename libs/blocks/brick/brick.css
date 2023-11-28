@@ -163,6 +163,11 @@
   text-align: left;
 }
 
+[dir="rtl"] .brick .icon-stack-area li,
+[dir="rtl"] .brick .icon-stack-area li a {
+  text-align: right;
+}
+
 .brick.click a.foreground .first-link:not([class*="button"]) {
   color: var(--link-color);
   text-decoration: none;
