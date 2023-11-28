@@ -46,7 +46,7 @@ function handleObjectFit(bgRow) {
     const pic = r.querySelector('picture');
     if (!pic) return;
     let text = '';
-    const pchild = r.querySelectorAll('p:not(:empty)');
+    const pchild = [...r.querySelectorAll('p:not(:empty)')].filter((p) => p.innerHTML.trim() !== '');
     if (pchild.length > 2) text = pchild[1]?.textContent.trim();
     if (!text && r.textContent) text = r.textContent;
     if (!text) return;
