@@ -38,13 +38,18 @@ function handleHeading(headingCols, isPriceBottom) {
         textStartIndex += 1;
       }
       elements[textStartIndex]?.classList.add('tracking-header');
-      let pricingElem = elements[textStartIndex + 1]
-      pricingElem && pricingElem.classList.add('pricing');
+      const pricingElem = elements[textStartIndex + 1];
+      if (pricingElem) {
+        pricingElem.classList.add('pricing');
+      }
       if (elements[textStartIndex + 2]) {
         elements[textStartIndex + 2].classList.add('body');
       }
       if (isPriceBottom) {
-        pricingElem.parentNode.insertBefore(elements[textStartIndex + 2], elements[textStartIndex + 1]);
+        pricingElem.parentNode.insertBefore(
+          elements[textStartIndex + 2],
+          elements[textStartIndex + 1],
+        );
       }
 
       decorateButtons(col, 'button-l');
@@ -62,14 +67,13 @@ function handleHeading(headingCols, isPriceBottom) {
       const row1LastIdx = isPriceBottom ? 3 : 4;
       const row1Nodes = Array.from(elements).slice(0, row1LastIdx);
       const row2Nodes = Array.from(elements).slice(row1LastIdx);
-    
+
       row1Nodes.forEach((child) => row1.appendChild(child));
       row2Nodes.forEach((child) => row2.appendChild(child));
       col.innerHTML = '';
       col.append(row1, row2);
     }
   });
-
 }
 
 function handleHighlight(table) {
