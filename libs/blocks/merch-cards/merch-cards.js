@@ -52,10 +52,21 @@ export function parsePreferences(elements) {
 
 // eslint-disable-next-line consistent-return
 export default async function main(el) {
+  const fail = (err = '') => {
+    log(`Failed to initialize merch cards: ${err}`);
+    el.innerHTML = '';
+    return el;
+  };
+
   if (el.classList.length < 2) {
-    log('Missing collection type');
-    return null; // return silently.
+    return fail('Missing collection type');
   }
+
+  const config = getConfig();
+  if (!config.queryIndexCardPath) {
+    return fail('Missing queryIndexCardPath config');
+  }
+
   const type = el.classList[1];
   if (!el.closest('main > .section[class*="-merch-card"]')) {
     el.closest('main > .section').classList.add('four-merch-cards', type);
@@ -134,7 +145,7 @@ export default async function main(el) {
 
   let cardsData;
   let err;
-  const config = getConfig();
+
   try {
     const res = await fetch(`${config?.locale?.prefix ?? ''}${config.queryIndexCardPath}.json?sheet=${type}`);
     if (res.ok) {
@@ -146,9 +157,7 @@ export default async function main(el) {
     err = error.message;
   }
   if (!cardsData) {
-    log(`Failed to initialize merch cards: ${err}`);
-    el.innerHTML = '';
-    return el;
+    return fail(err);
   }
 
   // TODO add aditional parameters.

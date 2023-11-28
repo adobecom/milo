@@ -1,4 +1,4 @@
-// Fri, 24 Nov 2023 15:35:24 GMT
+// Tue, 28 Nov 2023 12:50:55 GMT
 import{html as a,LitElement as L}from"./lit-all.min.js";import{css as u,unsafeCSS as s}from"./lit-all.min.js";var b="(max-width: 899px)";var l="(min-width: 900px)",d="(min-width: 1200px)",p="(min-width: 1440px)";var k=u`
     :host {
         position: relative;
@@ -653,11 +653,13 @@ ${m("plans")}
 ${m("segment")}
 ${m("inline-heading")}
 
-`;document.head.appendChild(S);var A="MERCH-CARD",T="merch-card",w=class extends L{static properties={name:{type:String},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color"},badgeBackgroundColor:{type:String,attribute:"badge-background-color"},badgeText:{type:String,attribute:"badge-text"},icons:{type:Array},actionmenu:{type:Boolean,attribute:"action-menu"},actionMenuContent:{type:String,attribute:"action-menu-content"},title:{type:String},description:{type:String},customHr:{type:Boolean,attribute:"custom-hr"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:e=>{let[n,t,o]=e.split(",");return{PUF:n,ABM:t,M2M:o}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:e=>Object.fromEntries(e.split(",").map(n=>{let[t,o,c]=n.split(":"),i=Number(o);return[t,{order:isNaN(i)?void 0:i,size:c}]})),toAttribute:e=>Object.entries(e).map(([n,{order:t,size:o}])=>[n,t,o].filter(c=>c!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0}};static styles=[k,...h("plans"),...h("catalog"),...h("special-offers",!1),...h("segment",!1),...h("inline-heading")];constructor(){super(),this.filters={},this.types=""}updated(e){e.has("badgeBackgroundColor")&&(this.style.border=`1px solid ${this.badgeBackgroundColor}`)}renderIcons(){return this.icons&&this.icons.length>0?a`
+`;document.head.appendChild(S);var A="MERCH-CARD",T="merch-card",w=class extends L{static properties={name:{type:String},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color"},badgeBackgroundColor:{type:String,attribute:"badge-background-color"},badgeText:{type:String,attribute:"badge-text"},icons:{type:Array},actionmenu:{type:Boolean,attribute:"action-menu"},actionMenuContent:{type:String,attribute:"action-menu-content"},title:{type:String},description:{type:String},customHr:{type:Boolean,attribute:"custom-hr"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:e=>{let[n,t,o]=e.split(",");return{PUF:n,ABM:t,M2M:o}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:e=>Object.fromEntries(e.split(",").map(n=>{let[t,o,c]=n.split(":"),i=Number(o);return[t,{order:isNaN(i)?void 0:i,size:c}]})),toAttribute:e=>Object.entries(e).map(([n,{order:t,size:o}])=>[n,t,o].filter(c=>c!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0}};static styles=[k,...h("plans"),...h("catalog"),...h("special-offers",!1),...h("segment",!1),...h("inline-heading")];constructor(){super(),this.filters={},this.types=""}updated(e){e.has("badgeBackgroundColor")&&(this.style.border=`1px solid ${this.badgeBackgroundColor}`)}renderIcons(){return this.icons?this.icons&&this.icons.length>0?a`
                   <div class="icons">
                       ${this.icons.map(e=>a`<img src="${e.src}" alt="${e.alt}" />`)}
                   </div>
-              `:""}get evergreen(){this.classList.contains("intro-pricing")}get stockCheckbox(){return this.checkboxLabel?a`<label id="stock-checkbox">
+              `:"":a`<div class="icons">
+                <slot name="icons"></slot>
+            </div>`}get evergreen(){this.classList.contains("intro-pricing")}get stockCheckbox(){return this.checkboxLabel?a`<label id="stock-checkbox">
                     <input type="checkbox" @change=${this.toggleStockOffer}></input>
                     <span></span>
                     ${this.checkboxLabel}
