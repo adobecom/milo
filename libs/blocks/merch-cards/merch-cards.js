@@ -67,11 +67,6 @@ export default async function main(el) {
     return fail('Missing queryIndexCardPath config');
   }
 
-  const type = el.classList[1];
-  if (!el.closest('main > .section[class*="-merch-card"]')) {
-    el.closest('main > .section').classList.add('four-merch-cards', type);
-  }
-
   const attributes = { filter: 'all' };
   const settingsEl = el.firstElementChild?.firstElementChild;
 
@@ -110,7 +105,6 @@ export default async function main(el) {
   // parse literals
   const literalSlots = [];
   if (literalsEl && /filter/.test(literalsEl.querySelector('u')?.innerText)) {
-    await import('../../deps/merch-spectrum.min.js');
     literalsEl.querySelectorAll('u').forEach((u) => {
       const text = u.innerText.trim();
       if (DIGITS_ONLY.test(text)) {
@@ -146,6 +140,7 @@ export default async function main(el) {
   let cardsData;
   let err;
 
+  const type = el.classList[1];
   try {
     const res = await fetch(`${config?.locale?.prefix ?? ''}${config.queryIndexCardPath}.json?sheet=${type}`);
     if (res.ok) {
@@ -187,6 +182,16 @@ export default async function main(el) {
     merchCard.filters = filters;
   });
 
-  el.replaceWith(merchCards);
+  const appContainer = el.closest('main > div.section')?.firstElementChild;
+  if (appContainer?.classList.contains('app')) {
+    merchCards.classList.add('four-merch-cards', type);
+    appContainer.appendChild(merchCards);
+    el.remove();
+  } else {
+    if (!el.closest('main > .section[class*="-merch-card"]')) {
+      el.closest('main > .section').classList.add('four-merch-cards', type);
+    }
+    el.replaceWith(merchCards);
+  }
   return merchCards;
 }
