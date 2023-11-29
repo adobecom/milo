@@ -14,7 +14,7 @@ export const OptionCard = ({
   };
 
   const getIconHtml = (iconUrl, iconClass) => html`<div class="quiz-option-icon ${iconClass}">
-    <img src="${iconUrl}" alt="Quiz Option Icon" />
+    <img src="${iconUrl}" alt="${text || title || 'Quiz Option Icon'}" />
   </div>`;
 
   const imageHtml = html`
