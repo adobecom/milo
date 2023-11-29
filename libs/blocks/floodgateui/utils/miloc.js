@@ -14,6 +14,7 @@ import {
   cssStatusCopy,
   cssStatusDelete,
   cssStatusPromote,
+  copyCompleteRender,
 } from './state.js';
 import { accessToken } from '../../../tools/sharepoint/state.js';
 import { origin, getStatus } from '../../locui/utils/franklin.js';
@@ -159,6 +160,7 @@ export async function copyToFloodgateTree() {
         copyStatusCheck.value = newCopyStatus.payload.action.status;
         allActionStatus.value.copyStatus = newCopyStatus;
         cssStatusCopy.value = newCopyStatus.payload.action.status;
+        copyCompleteRender.value = copyCompleteRender.value + 1;
         clearInterval(intervalId);
       } else {
         cssStatusCopy.value = newCopyStatus.payload.action.status;

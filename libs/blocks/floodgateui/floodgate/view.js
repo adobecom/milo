@@ -1,6 +1,6 @@
 import { html, useEffect } from '../../../deps/htm-preact.js';
 import { autoSetup, setup } from './index.js';
-import { showLogin, heading, urls, serviceStatus, renderSignal, loadHeadingCheck, loadDetailsCheck, fgColor } from '../utils/state.js';
+import { showLogin, heading, urls, serviceStatus, renderSignal, loadHeadingCheck, loadDetailsCheck, copyCompleteRender } from '../utils/state.js';
 import { account } from '../../../tools/sharepoint/state.js';
 import Heading from '../heading/view.js';
 import Actions from '../actions/view.js';
@@ -48,7 +48,7 @@ export default function Floodgate() {
     ${loadDetailsCheck.value && heading.value.fgColor
       && html`
     <div>${urls.value.length > 0 && html`<${Actions} />`}</div>
-    <div>${urls.value.length > 0 && html`<${Urls} />`}</div> `}
+    <div key=${copyCompleteRender.value}>${urls.value.length > 0 && html`<${Urls} />`}</div> `}
     <div><${Status} /></div>
   `;
 }
