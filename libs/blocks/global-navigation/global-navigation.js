@@ -381,6 +381,7 @@ class Gnav {
 
     const toggle = toFragment`<button
       class="feds-toggle"
+      daa-ll="hamburgermenu|close|gnav"
       aria-expanded="false"
       aria-haspopup="true"
       aria-label="Navigation menu"
@@ -403,6 +404,7 @@ class Gnav {
       this.elements.navWrapper.classList.toggle('feds-nav-wrapper--expanded', !isExpanded);
       closeAllDropdowns();
       setCurtainState(!isExpanded);
+      toggle.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'close' : 'open'}|gnav`);
 
       if (this.blocks?.search?.instance) {
         this.blocks.search.instance.clearSearchForm();
