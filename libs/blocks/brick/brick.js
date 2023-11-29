@@ -74,7 +74,7 @@ function decorateSupplementalText(el) {
 }
 
 function decorateBricks(el) {
-  if (!el.classList.contains('light')) el.classList.add('dark');
+  // if (!el.classList.contains('light')) el.classList.add('dark');
   handleBrickFragment(el);
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) {
