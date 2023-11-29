@@ -22,8 +22,9 @@ export default function init(a) {
     a.remove();
   };
   createIntersectionObserver({ el: a, callback: embedVideo });
-  document.onreadystatechange = function () {
-    if (document.readyState === 'complete' && window._satellite) {
+  document.onreadystatechange = () => {
+    if (document.readyState === 'complete') {
+      /* eslint-disable-next-line no-underscore-dangle */
       window._satellite?.track('trackYoutube');
       document.onreadystatechange = null;
     }
