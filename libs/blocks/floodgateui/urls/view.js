@@ -3,7 +3,7 @@ import { urls } from '../utils/state.js';
 import Url from '../url/view.js';
 
 function Urls() {
-  const itemsPerPage = 10;
+  const itemsPerPage = 100;
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUrls, setFilteredUrls] = useState([]);
