@@ -49,6 +49,14 @@ function Urls() {
     }
   };
 
+  const handleFirstPage = () => {
+    handlePageChange(1);
+  };
+
+  const handleLastPage = () => {
+    handlePageChange(totalPages);
+  };
+
   useEffect(() => {
     const handleKeyPressEvent = (event) => handleInputKeyPress(event);
     window.addEventListener('keydown', handleKeyPressEvent);
@@ -65,7 +73,7 @@ function Urls() {
   const totalPages = Math.ceil((searchTerm ? filteredUrls.length : urls.value.length) / itemsPerPage);
 
   const displayPages = () => {
-    const visiblePages = 10;
+    const visiblePages = 5;
 
     if (totalPages <= visiblePages) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -100,6 +108,7 @@ function Urls() {
             </div>
           </div>
           <div class="pagination">
+          <button class="page-button" onclick=${handleFirstPage} disabled=${currentPage === 1} style=${`cursor: ${currentPage === 1 ? 'not-allowed' : 'pointer'}; margin-bottom: 5px;`}>«</button>
           <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1} style=${`cursor: ${currentPage === 1 ? 'not-allowed' : 'pointer'}; margin-bottom: 5px;`}>Previous</button>
           ${displayPages().map((page) =>
             html`
@@ -109,6 +118,7 @@ function Urls() {
             `
           )}
           <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages} style=${`cursor: ${currentPage === totalPages ? 'not-allowed' : 'pointer'}; margin-bottom: 5px;`}>Next</button>
+          <button class="page-button" onclick=${handleLastPage} disabled=${currentPage === totalPages} style=${`cursor: ${currentPage === totalPages ? 'not-allowed' : 'pointer'}; margin-bottom: 5px;`}>»</button>
         </div>
         
         </div>
@@ -126,15 +136,17 @@ function Urls() {
       </ul>
     </div>
     <div class="pagination-bottom">
-      <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1} style=${{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>Previous</button>
-      ${displayPages().map((page) =>
-        html`
-          <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page} style=${{ cursor: currentPage === page ? 'not-allowed' : 'pointer' }}>
-            ${page}
-          </button>
-        `
-      )}
-      <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages} style=${{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>Next</button>
+    <button class="page-button" onclick=${handleFirstPage} disabled=${currentPage === 1} style=${`cursor: ${currentPage === 1 ? 'not-allowed' : 'pointer'}; margin-bottom: 5px;`}>«</button>
+    <button class="prev-page" onclick=${() => handlePageChange(currentPage - 1)} disabled=${currentPage === 1} style=${{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>Previous</button>
+    ${displayPages().map((page) =>
+      html`
+        <button class="page-button ${currentPage === page ? 'current-page' : ''}" onclick=${() => handlePageChange(page)} disabled=${currentPage === page} style=${{ cursor: currentPage === page ? 'not-allowed' : 'pointer' }}>
+          ${page}
+        </button>
+      `
+    )}
+    <button class="next-page" onclick=${() => handlePageChange(currentPage + 1)} disabled=${currentPage === totalPages} style=${{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>Next</button>
+    <button class="page-button" onclick=${handleLastPage} disabled=${currentPage === totalPages} style=${{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>»</button>
     </div>
   `;
 }
