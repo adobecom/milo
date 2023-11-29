@@ -16,9 +16,9 @@ export default async function init(blockEl) {
   
   window.addEventListener('onImsLibInstance',getCreds);
   
-  const submit = createTag('input',{type:'submit', value:'Submit'});
-  wrapper.append(submit);
-  blockEl.append(wrapper);
+  //const submit = createTag('input',{type:'submit', value:'Submit'});
+  //wrapper.append(submit);
+  //blockEl.append(wrapper);
 
   const buttonWapper = createTag('div', {class:'submit-button'});
   const submitButton = createTag('button', {class:'con-button blue button-justified-mobile'},'Submit')
