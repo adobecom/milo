@@ -1,4 +1,4 @@
-// import { addInViewAnimationToSingleElement } from '../../utils/helpers.js';
+import sanitizeComment from '../../utils/sanitizeComment.js';
 
 const RULE_OPERATORS = {
   equal: 'eq',
@@ -39,6 +39,8 @@ function constructPayload(form) {
     if (fe.type.match(/(?:checkbox|radio)/)) {
       if (fe.checked) {
         payload[fe.name] = payload[fe.name] ? `${fe.value}, ${payload[fe.name]}` : fe.value;
+      } else if (fe.closest('.group-container').classList.contains('required')) {
+        payload[fe.name] = 'required-not-checked';
       }
     } else if (fe.id) {
       payload[fe.id] = fe.value;
@@ -49,7 +51,23 @@ function constructPayload(form) {
 
 async function submitForm(form) {
   const payload = constructPayload(form);
+  const keys = Object.keys(payload);
   payload.timestamp = new Date().toJSON();
+  for (const key of keys) {
+    if (payload[key] === 'required-not-checked') {
+      const el = form.querySelector(`input[name="${key}"]`);
+      el.setCustomValidity('This box must be checked');
+      el.reportValidity();
+      const cb = () => {
+        el.setCustomValidity('');
+        el.reportValidity();
+        el.removeEventListener('input', cb);
+      };
+      el.addEventListener('input', cb);
+      return false;
+    }
+    payload[key] = sanitizeComment(payload[key]);
+  }
   const resp = await fetch(form.dataset.action, {
     method: 'POST',
     cache: 'no-cache',
@@ -77,15 +95,19 @@ function createButton(fd, thankYou) {
   if (fd.Type === 'submit') {
     button.addEventListener('click', async (event) => {
       const form = button.closest('form');
-      if (fd.Placeholder) form.dataset.action = fd.Placeholder;
       if (form.checkValidity()) {
         event.preventDefault();
         button.setAttribute('disabled', '');
-        await submitForm(form);
-
+        const submission = await submitForm(form);
+        if (!submission) return;
+        button.removeAttribute('disabled');
+        clearForm(form);
         const handleThankYou = thankYou.querySelector('a') ? thankYou.querySelector('a').href : thankYou.innerHTML;
         if (!thankYou.innerHTML.includes('href')) {
-          form.append(handleThankYou);
+          const thanksText = document.createElement('h4');
+          thanksText.className = 'thank-you';
+          thanksText.textContent = handleThankYou;
+          form.append(thanksText);
         } else {
           window.location.href = handleThankYou;
         }
@@ -165,10 +187,14 @@ function createCheckItem(item, type, { Field: id, Default: def }) {
 
 function createCheckGroup(fd, type) {
   const group = document.createElement('div');
+  const options = fd.Options.split(',');
   group.className = `group-container ${type}-group-container`;
-  fd.Options.split(',').forEach((item) => {
+  options.forEach((item) => {
     group.append(createCheckItem(item.trim(), type, fd));
   });
+  if (options.length === 1 && fd.Required === 'x') {
+    group.classList.add('required');
+  }
   return group;
 }
 
