@@ -11,14 +11,15 @@ const LITERAL_SLOTS = [
   'sortText',
   'popularityText',
   'alphabeticallyText',
+  'noResultText',
   'resultText',
   'resultsText',
   'searchResultText',
   'searchResultsText',
   'searchResultMobileText',
   'searchResultsMobileText',
-  'noResultsText',
-  'noResultsMobileText',
+  'noSearchResultsText',
+  'noSearchResultsMobileText',
   'showMoreText',
 ];
 
