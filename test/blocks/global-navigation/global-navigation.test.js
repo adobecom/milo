@@ -11,6 +11,7 @@ import longNav from './mocks/global-navigation-long.plain.js';
 import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
 import noBrandImageOnlyNav from './mocks/global-navigation-only-brand-no-explicit-image.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -19,7 +20,7 @@ const ogFetch = window.fetch;
 
 describe('global navigation', () => {
   before(() => {
-    document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    document.head.innerHTML = '<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any"><script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
   });
 
   describe('basic sanity tests', () => {
@@ -423,6 +424,12 @@ describe('global navigation', () => {
         expect(hasLinkgroupModifier).to.equal(true);
       });
 
+      it('should render popups with wide columns', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationWideColumnMock });
+        expect(document.querySelector('.feds-navItem--section .feds-menu-column--group .feds-menu-column + .feds-menu-column')).to.exist;
+        expect(document.querySelector('.column-break')).to.not.exist;
+      });
+
       it('should render the promo', async () => {
         await createFullGlobalNavigation();
 
@@ -430,6 +437,11 @@ describe('global navigation', () => {
         document.querySelector(selectors.navLink).click();
 
         expect(isElementVisible(document.querySelector(selectors.promoImage))).to.equal(true);
+      });
+
+      it('should allow CTAs in Promo boxes', async () => {
+        await createFullGlobalNavigation();
+        expect(document.querySelector(`${selectors.promo}${selectors.promo}--dark ${selectors.cta}`)).to.exist;
       });
     });
 

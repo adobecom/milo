@@ -489,7 +489,7 @@ const fetchUuidForCard = async (card) => {
   }
   try {
     const url = new URL(card.contentId);
-    const localizedLink = localizeLink(url, window.location.hostname, true);
+    const localizedLink = localizeLink(url, null, true);
     const substr = String(localizedLink).split('https://').pop();
     return await getUuid(substr);
   } catch (error) {
