@@ -1,7 +1,6 @@
 main .form {
   --input-border-radius: 4px;
 
-  background-color: var(--color-white);
   padding: var(--spacing-l) var(--spacing-xxl);
   border-radius: var(--card-border-radius-l);
   filter: var(--image-filter-drop-shadow-small);
@@ -64,6 +63,10 @@ main .form .field-wrapper {
   margin-bottom: var(--spacing-s);
 }
 
+main .form .field-group-wrapper {
+  flex-direction: column;
+}
+
 main .form .form-heading-wrapper {
   justify-content: center;
   margin: 0;
@@ -73,51 +76,84 @@ main .form .field-wrapper.hidden {
   display: none;
 }
 
-main .form .form-checkbox-wrapper {
-  display: flex;
-  align-items: center;
-  margin: var(--spacing-xs) 0;
-}
-
-main .form .form-checkbox-wrapper input[type='checkbox'] {
-  appearance: none;
-
-  /* stylelint-disable */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  /* stylelint-enable */
-  height: 20px;
-  width: 20px;
+main .form .check-item-wrap {
   position: relative;
-  border: unset;
-  padding: unset;
-  margin-right: var(--spacing-xxs);
-  margin-left: 0;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
 }
 
-main .form .form-checkbox-wrapper input[type='checkbox']::after {
+main .form .check-item-input {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+main .form .check-item-button {
+  position: relative;
+  inline-size: 14px;
+  block-size: 14px;
+}
+
+main .form .check-item-button::before {
+  content: '';
+  display: block;
+  background-color: var(--color-white);
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 2px;
+  border-color: var(--color-font-grey);
+  block-size: 14px;
+  inline-size: 14px;
+  position: absolute;
+  transition: border 0.13s ease-in-out, box-shadow 0.13s ease-in-out;
+}
+
+main .form .radio-button::before {
+  border-radius: 50%;
+}
+
+main .form .checkbox-button::before {
+  border-radius: 2px;
+}
+
+main .form .checkbox-button::after {
+  content: '';
   display: block;
   position: absolute;
-  top: 0;
-  left: 0;
-  height: 20px;
-  width: 20px;
-  content: ' ';
-  background: url('./checkbox.svg');
-  background-size: contain;
+  box-sizing: border-box;
+  block-size: 10px;
+  inline-size: 10px;
+  inset: 0;
+  margin: auto;
+  scale: 0;
+  opacity: 0;
+  transition: scale 0.13s ease-in-out, opacity 0.13s;
 }
 
-main .form .form-checkbox-wrapper input[type='checkbox']:checked::after {
+main .form .checkbox-input:checked + .checkbox-button::after {
+  opacity: 1;
+  scale: 1;
   background: url('./checkbox-checked.svg');
   background-size: contain;
-  content: ' ';
 }
 
-main .form .form-checkbox-wrapper label {
-  display: block;
-  font-size: var(--type-body-xxs-size);
-  line-height: var(--type-body-xxs-lh);
+main .form .radio-input:checked + .radio-button::before {
+  border-width: 5px;
+  border-color: var(--color-gray-700);
+}
+
+main .form .checkbox-input:checked + .checkbox-button::before {
+  border-width: 7px;
+  border-color: var(--color-gray-700);
+}
+
+main .form .check-item-label {
+  font-size: var(--type-body-xs-size);
+  font-weight: normal;
+  margin-left: var(--spacing-xxs);
   padding-bottom: 0;
 }
 
@@ -130,7 +166,7 @@ main .form-legal-wrapper p {
 main .form button {
   font-family: var(--body-font-family);
   font-size: var(--type-body-s-size);
-  background-color: #1373E5;
+  background-color: var(--link-color);
   min-width: 114px;
   height: 40px;
   line-height: 20px;
@@ -145,6 +181,12 @@ main .form button {
   cursor: pointer;
 }
 
+main .form button.outline {
+  background-color: transparent;
+  border: 2px solid var(--link-color);
+  color: var(--link-color);
+}
+
 /* 
 
 FAAS styles for quick POC
@@ -155,7 +197,6 @@ main .form {
   max-width: 800px;
   margin: 0 auto;
   padding: 48px;
-  background-color: #FBFBFB;
   color: #2C2C2C;
 }
 
@@ -201,7 +242,7 @@ main .form textarea {
 main .form select {
   appearance: none;
   background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+') no-repeat 128% 54%;
-  background-color: inherit;
+  background-color: var(--color-white);
   background-position: 100% 50%;
   background-size: 1em 1em;
 }
@@ -253,10 +294,23 @@ END FAAS STYLES
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 var(--spacing-l);
+    align-items: start;
   }
 
-  main .form :is(.form-submit-wrapper, .form-heading-wrapper) {
+  main .form :is(.form-submit-wrapper:last-child, .form-heading-wrapper) {
     grid-column: 1 / 3;
+    justify-self: center;
+  }
+
+  main .form .field-button-wrapper {
+    grid-column: 1;
+    justify-self: self-end;
+    width: auto;
+  }
+
+  main .form .field-button-wrapper + .field-button-wrapper {
+    grid-column: 2;
+    justify-self: self-start;
   }
 }
 

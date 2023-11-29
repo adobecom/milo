@@ -21,9 +21,11 @@ function createSelect(fd) {
   }
   fd.Options.split(',').forEach((o) => {
     const option = document.createElement('option');
-    option.textContent = o.trim();
-    option.value = o.trim();
+    const text = o.trim();
+    option.textContent = text;
+    option.value = text;
     select.append(option);
+    if (fd.Default === text) select.value = text;
   });
   if (fd.Required === 'x') {
     select.setAttribute('required', 'required');
@@ -34,8 +36,10 @@ function createSelect(fd) {
 function constructPayload(form) {
   const payload = {};
   [...form.elements].forEach((fe) => {
-    if (fe.type === 'checkbox') {
-      if (fe.checked) payload[fe.id] = fe.value;
+    if (fe.type.match(/(?:checkbox|radio)/)) {
+      if (fe.checked) {
+        payload[fe.name] = payload[fe.name] ? `${fe.value}, ${payload[fe.name]}` : fe.value;
+      }
     } else if (fe.id) {
       payload[fe.id] = fe.value;
     }
@@ -54,6 +58,16 @@ async function submitForm(form) {
   });
   await resp.text();
   return payload;
+}
+
+function clearForm(form) {
+  [...form.elements].forEach((fe) => {
+    if (fe.type.match(/(?:checkbox|radio)/)) {
+      fe.checked = false;
+    } else {
+      fe.value = '';
+    }
+  });
 }
 
 function createButton(fd, thankYou) {
@@ -76,6 +90,13 @@ function createButton(fd, thankYou) {
           window.location.href = handleThankYou;
         }
       }
+    });
+  } else if (fd.Type === 'clear') {
+    button.classList.add('outline');
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const form = button.closest('form');
+      clearForm(form);
     });
   }
   return button;
@@ -116,6 +137,39 @@ function createLabel(fd) {
     label.classList.add('required');
   }
   return label;
+}
+
+function createCheckItem(item, type, { Field: id, Default: def }) {
+  const wrap = document.createElement('div');
+  const input = document.createElement('input');
+  const pseudoEl = document.createElement('span');
+  const label = document.createElement('label');
+  const itemKebab = item.toLowerCase().replaceAll(' ', '-');
+  const defList = def.split(',').map((defItem) => defItem.trim());
+  wrap.className = `check-item-wrap ${type}-input-wrap`;
+  input.type = type;
+  input.name = id;
+  input.value = item;
+  input.checked = defList.includes(item);
+  input.className = `check-item-input ${type}-input`;
+  input.id = `${id}-${itemKebab}`;
+  pseudoEl.className = `check-item-button ${type}-button`;
+  label.className = `check-item-label ${type}-label`;
+  label.for = `${id}-${itemKebab}`;
+  label.textContent = item;
+  wrap.append(input);
+  wrap.append(pseudoEl);
+  wrap.append(label);
+  return wrap;
+}
+
+function createCheckGroup(fd, type) {
+  const group = document.createElement('div');
+  group.className = `group-container ${type}-group-container`;
+  fd.Options.split(',').forEach((item) => {
+    group.append(createCheckItem(item.trim(), type, fd));
+  });
+  return group;
 }
 
 function processNumRule(tf, operator, a, b) {
@@ -234,20 +288,23 @@ async function createForm(formURL, thankYou) {
         fieldWrapper.append(createHeading(fd, 'p'));
         break;
       case 'checkbox':
-        fieldWrapper.append(createInput(fd));
-        fieldWrapper.append(createLabel(fd));
-        break;
       case 'checkbox-group':
-        // TODO
+        fieldWrapper.append(createLabel(fd));
+        fieldWrapper.append(createCheckGroup(fd, 'checkbox'));
+        fieldWrapper.classList.add('field-group-wrapper');
         break;
       case 'radio-group':
-        // TODO
+        fieldWrapper.append(createLabel(fd));
+        fieldWrapper.append(createCheckGroup(fd, 'radio'));
+        fieldWrapper.classList.add('field-group-wrapper');
         break;
       case 'text-area':
         fieldWrapper.append(createLabel(fd));
         fieldWrapper.append(createTextArea(fd));
         break;
       case 'submit':
+      case 'clear':
+        fieldWrapper.classList.add('field-button-wrapper');
         fieldWrapper.append(createButton(fd, thankYou));
         break;
       default:
@@ -266,7 +323,7 @@ async function createForm(formURL, thankYou) {
     form.append(fieldWrapper);
   });
 
-  form.addEventListener('keyup', () => applyRules(form, rules));
+  form.addEventListener('input', () => applyRules(form, rules));
   applyRules(form, rules);
   fill(form);
   return (form);
