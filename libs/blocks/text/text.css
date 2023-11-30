@@ -84,14 +84,16 @@
   align-items: center;
 }
 
-.text-block.center .action-area { justify-content: center; }
+.text-block.center .action-area,
+.text-block.center .icon-area { justify-content: center; }
 
 .text-block.right {
   text-align: right;
   align-items: end;
 }
 
-.text-block.right .action-area { justify-content: end; }
+.text-block.right .action-area,
+.text-block.right .icon-area { justify-content: end; }
 
 /* Vertical */
 .vertical.text-block .foreground {
