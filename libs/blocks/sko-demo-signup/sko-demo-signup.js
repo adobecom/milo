@@ -73,12 +73,12 @@ async function onSubmit() {
   const fieldCollection = document.querySelectorAll('.sko-form-input');
   
   const submitButton = document.querySelector('#submit-btn');
-  submitButton.label='Submitting...';
+  submitButton.textContent='Submitting...';
   submitButton.disabled = true;
   submitButton.classList.remove('blue');
   submitButton.classList.add('submitted');
 
-/*
+
   let isValid = true;
   const payload = {};
   fieldCollection.forEach(item => {
@@ -141,8 +141,6 @@ async function onSubmit() {
       }
       
     }
-    */
-    
 }
 
 function displayMessage(message, parent) {
