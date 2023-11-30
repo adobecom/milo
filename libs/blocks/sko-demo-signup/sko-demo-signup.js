@@ -75,7 +75,7 @@ async function onSubmit() {
   const submitButton = document.querySelector('#submit-button');
   submitButton.label='Submitting...';
   submitButton.disabled = true;
-  submitButton.classList.remove('con-button.blue');
+  submitButton.classList.remove('blue');
   submitButton.classList.add('submitted');
 
 /*
