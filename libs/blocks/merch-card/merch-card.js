@@ -1,7 +1,7 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
-import { decorateLinkAnalytics } from '../../martech/attributes.js';
+import { processTrackingLabels } from '../../martech/analytics.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/merch-card.js';
 
@@ -190,6 +190,14 @@ function addMerchCardGridIfMissing(section) {
   return false;
 }
 
+const decorateMerchCardLinkAnalytics = (el) => {
+  [...el.querySelectorAll('a')].forEach((link, index) => {
+    const heading = el.querySelector('h3');
+    const analyticsString = `${processTrackingLabels(link.textContent)}-${index + 1}|${heading.textContent}`;
+    link.setAttribute('daa-ll', analyticsString);
+  });
+};
+
 const init = async (el) => {
   const styles = [...el.classList];
   const lastClass = styles[styles.length - 1];
@@ -213,13 +221,11 @@ const init = async (el) => {
     section.classList.add(cardType);
   }
 
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  decorateLinkAnalytics(el, headings);
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
 
-  const merchCard = createTag('merch-card', { class: styles.join(' ') });
+  const merchCard = createTag('merch-card', { class: styles.join(' '), 'data-block': '' });
 
   if (cardType) {
     merchCard.setAttribute('variant', cardType);
@@ -332,6 +338,7 @@ const init = async (el) => {
     merchCard.setAttribute('custom-hr', true);
   }
   el.replaceWith(merchCard);
+  decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
 };
 
