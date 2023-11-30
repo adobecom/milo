@@ -17,6 +17,7 @@
   display: flex;
   justify-content: center;
 }
+
 .sko-form-input {
   font-size: medium;
   padding:5px;
@@ -36,10 +37,20 @@
   border-color: var(--color-gray-300);
 }
 
-.submitted :hover {
-  background-color: var(--color-gray-300);
-  border-color: var(--color-gray-300);
+#submit-btn {
+    background-color: transparent;
+    border-radius: 16px;
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
+    display: inline-block;
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 16px;
+    padding: 5px 14px;
+    text-decoration: none;
 }
+
 
 
 .invalid {

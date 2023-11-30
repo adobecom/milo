@@ -21,7 +21,7 @@ export default async function init(blockEl) {
   blockEl.append(wrapper);
 
   const buttonWapper = createTag('div', {class:'submit-button'});
-  const submitButton = createTag('button', {class:'con-button blue button-justified-mobile'},'Submit');
+  const submitButton = createTag('button', {class:'blue button-justified-mobile'},'Submit');
   submitButton.id='submit-button';
 
   submitButton.addEventListener('click', onSubmit);
@@ -72,7 +72,7 @@ function decorateFormField(fieldJson, el) {
 async function onSubmit() {
   const fieldCollection = document.querySelectorAll('.sko-form-input');
   
-  const submitButton = document.querySelector('#submit-button');
+  const submitButton = document.querySelector('#submit-btn');
   submitButton.label='Submitting...';
   submitButton.disabled = true;
   submitButton.classList.remove('blue');
