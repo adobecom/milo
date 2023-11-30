@@ -570,6 +570,38 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   }
 
   .con-block .background .tablet-only { display: block; }
+
+  /* spacing */
+  .con-block.xs-spacing-tablet { padding: var(--spacing-xs) 0; }
+  .con-block.s-spacing-tablet { padding: var(--spacing-s) 0; }
+  .con-block.m-spacing-tablet { padding: var(--spacing-m) 0; }
+  .con-block.l-spacing-tablet { padding: var(--spacing-l) 0; }
+  .con-block.xl-spacing-tablet { padding: var(--spacing-xl) 0; }
+  .con-block.xxl-spacing-tablet { padding: var(--spacing-xxl) 0; }
+  .con-block.xxxl-spacing-tablet { padding: var(--spacing-xxxl) 0; }
+  .con-block.no-spacing-tablet { padding: 0; }
+
+  .con-block.xs-spacing-top-tablet { padding-top: var(--spacing-xs); }
+  .con-block.s-spacing-top-tablet { padding-top: var(--spacing-s); }
+  .con-block.m-spacing-top-tablet { padding-top: var(--spacing-m); }
+  .con-block.l-spacing-top-tablet { padding-top: var(--spacing-l); }
+  .con-block.xl-spacing-top-tablet { padding-top: var(--spacing-xl); }
+  .con-block.xxl-spacing-top-tablet { padding-top: var(--spacing-xxl); }
+  .con-block.xxxl-spacing-top-tablet { padding-top: var(--spacing-xxxl); }
+  .con-block.no-spacing-top-tablet { padding-top: 0; }
+
+  .con-block.xs-spacing-bottom-tablet { padding-bottom: var(--spacing-xs); }
+  .con-block.s-spacing-bottom-tablet { padding-bottom: var(--spacing-s); }
+  .con-block.m-spacing-bottom-tablet { padding-bottom: var(--spacing-m); }
+  .con-block.l-spacing-bottom-tablet { padding-bottom: var(--spacing-l); }
+  .con-block.xl-spacing-bottom-tablet { padding-bottom: var(--spacing-xl); }
+  .con-block.xxl-spacing-bottom-tablet { padding-bottom: var(--spacing-xxl); }
+  .con-block.xxxl-spacing-bottom-tablet { padding-bottom: var(--spacing-xxxl); }
+  .con-block.no-spacing-bottom-tablet { padding-bottom: 0; }
+
+  .con-block.xl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xl-static); }
+  .con-block.xxl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xxl-static); }
+  .con-block.xxxl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xxxl-static); }
 }
 
 /* desktop up */
@@ -585,6 +617,39 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   }
 
   .con-block .background .desktop-only { display: block; }
+
+  /* spacing */
+  .con-block.xs-spacing-desktop { padding: var(--spacing-xs) 0; }
+  .con-block.s-spacing-desktop { padding: var(--spacing-s) 0; }
+  .con-block.m-spacing-desktop { padding: var(--spacing-m) 0; }
+  .con-block.l-spacing-desktop { padding: var(--spacing-l) 0; }
+  .con-block.xl-spacing-desktop { padding: var(--spacing-xl) 0; }
+  .con-block.xxl-spacing-desktop { padding: var(--spacing-xxl) 0; }
+  .con-block.xxxl-spacing-desktop { padding: var(--spacing-xxxl) 0; }
+  .con-block.no-spacing-desktop { padding: 0; }
+
+  .con-block.xs-spacing-top-desktop { padding-top: var(--spacing-xs); }
+  .con-block.s-spacing-top-desktop { padding-top: var(--spacing-s); }
+  .con-block.m-spacing-top-desktop { padding-top: var(--spacing-m); }
+  .con-block.l-spacing-top-desktop { padding-top: var(--spacing-l); }
+  .con-block.xl-spacing-top-desktop { padding-top: var(--spacing-xl); }
+  .con-block.xxl-spacing-top-desktop { padding-top: var(--spacing-xxl); }
+  .con-block.xxxl-spacing-top-desktop { padding-top: var(--spacing-xxxl); }
+  .con-block.no-spacing-top-desktop { padding-top: 0; }
+
+  .con-block.xs-spacing-bottom-desktop { padding-bottom: var(--spacing-xs); }
+  .con-block.s-spacing-bottom-desktop { padding-bottom: var(--spacing-s); }
+  .con-block.m-spacing-bottom-desktop { padding-bottom: var(--spacing-m); }
+  .con-block.l-spacing-bottom-desktop { padding-bottom: var(--spacing-l); }
+  .con-block.xl-spacing-bottom-desktop { padding-bottom: var(--spacing-xl); }
+  .con-block.xxl-spacing-bottom-desktop { padding-bottom: var(--spacing-xxl); }
+  .con-block.xxxl-spacing-bottom-desktop { padding-bottom: var(--spacing-xxxl); }
+  .con-block.no-spacing-bottom-desktop { padding-bottom: 0; }
+
+  .con-block.xl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xl-static); }
+  .con-block.xxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxl-static); }
+  .con-block.xxxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxxl-static); }
+
 }
 
 /* desktop large < 1440 */
