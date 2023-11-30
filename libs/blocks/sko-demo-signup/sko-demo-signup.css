@@ -37,7 +37,7 @@
   border-color: var(--color-gray-300);
 }
 
-#submit-btn :hover {
+.con-button :hover {
   background-color: var(--color-gray-300);
   border-color: var(--color-gray-300);
 }
