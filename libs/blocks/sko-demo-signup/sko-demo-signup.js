@@ -22,7 +22,7 @@ export default async function init(blockEl) {
 
   const buttonWapper = createTag('div', {class:'submit-button'});
   const submitButton = createTag('button', {class:'blue button-justified-mobile'},'Submit');
-  submitButton.id='submit-button';
+  submitButton.id='submit-btn';
 
   submitButton.addEventListener('click', onSubmit);
   buttonWapper.append(submitButton);
