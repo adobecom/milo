@@ -31,6 +31,10 @@
   padding: 100px;
 }
 
+.submitted {
+  background-color: grey;
+}
+
 
 .invalid {
   border-color: red;
