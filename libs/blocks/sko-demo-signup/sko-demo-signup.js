@@ -93,6 +93,9 @@ async function onSubmit() {
     
   }); 
     if(isValid) {
+      const submitButton = document.querySelector('.submit-button > button');
+      console.log(submitButton);
+      /*
       try {
         const response = await fetch("https://prod-149.westus.logic.azure.com/workflows/9617d5afd2e844159486024231f5dd75/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aH81nljMBnWzitSFGzYYkghXmPrwZl9j3reURjF30Wo", {
         method: "POST",
@@ -126,6 +129,7 @@ async function onSubmit() {
           }
           displayMessage(message, parent);
       }
+      */
     }
     
 }
