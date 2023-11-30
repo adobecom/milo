@@ -36,6 +36,11 @@
   border-color: var(--color-gray-300);
 }
 
+.submitted :hover {
+  background-color: var(--color-gray-300);
+  border-color: var(--color-gray-300);
+}
+
 
 .invalid {
   border-color: red;
