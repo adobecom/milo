@@ -28,7 +28,7 @@
         "edit"
       ],
       "url": "https://experience-qa.adobe.com/?unified-shell_version=PR-7687-c3be237b706409e1036402f590209a8cfb75b821&shell_ims=prod&ref=genai&repo=express-website&owner=vtsaplin#/@acxpevangelist/aem/generate-content-variations/",
-      "isPalette": true,
+      "isPalette": false,
       "includePaths": [
         "**.docx**"
       ],
