@@ -32,7 +32,7 @@
   padding: 100px;
 }
 
-#submit-btn {
+.submitted {
   background-color: var(--color-gray-300);
   border-color: var(--color-gray-300);
 }
