@@ -1,5 +1,8 @@
-bulk-publish {
-  display: block;
-  width: var(--grid-container-width);
-  margin: 0 auto;
+.bulk-publish {
+  --panel-height: 80vh;
+
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
 }
