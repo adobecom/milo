@@ -19,23 +19,21 @@ export default async function init(blockEl) {
 
       if(destination && emailAddress) {
         header.innerHTML = "Sit back, we're taking you to the right place shortly";
-        const manualButton = createTag('button', {class:'con-button blue button-justified-mobile', onclick:redirect()},'Take me now');
+        const manualButton = createTag('button', {class:'con-button blue button-justified-mobile', onclick:'redirect()'},'Take me now');
 
         wrapper.append(headerWrapper);
         wrapper.append(timerMessage);
         wrapper.append(manualButton);
-        
+
         blockEl.append(wrapper);
         updateTimer();
 
       } else {
-        console.log('there')
         decorateError(wrapper, blockEl);
         
       }
 		
 		} else {
-      console.log('here')
       decorateError(wrapper, blockEl);
     }
 }
