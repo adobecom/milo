@@ -4,7 +4,7 @@ let destination, emailAddress = null ;
 let count = 10;
 const headerWrapper = createTag('div');
 const header = createTag('h1');
-headerWrapper.apped(header);
+headerWrapper.append(header);
 const timerMessage = createTag('div', {id:'timer'});
 
 export default async function init(blockEl) {
