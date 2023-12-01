@@ -22,6 +22,7 @@ header h1 {
 .publish-form {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   flex-grow: 1;
   gap: 16px;
   height: var(--panel-height);
@@ -39,10 +40,26 @@ header h1 {
 }
 
 .publish-form .panel {
-  transition: all 0.5s;
+  transition: all 0.8s;
 }
 
-.publish-form .panel[active='true'] {
+.publish-form .panel-title {
+  color: var(--accent);
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.panel-title .title strong {
+  background-color: white;
+  color: var(--accent);
+  padding: 5px;
+  border-radius: 75px;
+}
+
+.publish-form .panel[active='true'],
+.publish-form .panel[active='true'] .panel.results {
   flex-grow: 1;
 }
 
@@ -64,7 +81,7 @@ header h1 {
 .urls textarea {
   display: block;
   width: calc(100% - 23px);
-  max-height: 70vh;
+  max-height: 60vh;
   padding: 10px 50px 15px 13px;
   border-radius: 3px;
   scroll-behavior: smooth;
@@ -92,6 +109,7 @@ header h1 {
   flex-direction: row;
   padding: 10px 15px;
   align-items: center;
+  justify-content: space-between;
 }
 
 .url-tools .errors .fix-btn {
@@ -114,7 +132,19 @@ header h1 {
   font-size: 0.79em;
 }
 
+.results .path-table {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
+  padding: 0 18px;
+  background: #999;
+  color: white;
+  font-weight: bold;
+}
+
 .paths .path {
+  display: flex;
+  justify-content: space-between;
   cursor: pointer;
   background-color: white;
   border-bottom: 1px solid #eee;
@@ -216,11 +246,16 @@ header h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 11px;
+  margin-top: 17px;
+  background: #eee;
+  padding: 6px 10px;
+  border-radius: 4px 4px 0 0;
 }
 
-.job-meta.hide {
+.job-meta.hide,
+.path-table.hide {
   display: none;
+  transition: all 1s;
 }
 
 .job-meta h4 {
@@ -237,8 +272,8 @@ header h1 {
   overflow-y: auto;
   padding: 10px;
   border-radius: 3px;
-  max-height: calc(var(--panel-height) - 220px);
-  transition: max-height 0.25s ease-in-out;
+  max-height: calc(var(--panel-height) - 226px);
+  transition: max-height 0.65s ease-in-out;
 }
 
 .publish-form .panel[active='false'].results .paths {

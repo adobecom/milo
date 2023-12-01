@@ -54,24 +54,12 @@ const selectOverage = (elem, paths) => {
   }
 };
 
-const runBulkJob = async (data) => {
-  const testSuccess = {
-    status: 202,
-    name: `job-${new Date().getTime()}`,
-    state: 'created',
-    startTime: new Date().toLocaleDateString('en-US'),
-    data: data.paths.map((path) => ({ path })),
-  };
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(testSuccess), 3000);
-  });
-};
-
-const handleResize = (textarea) => {
+const handlePanelSize = (textarea) => {
   const wrapper = document.querySelector('.bulk-publish');
   const prefs = preferences();
-  if (prefs.get('height')) {
-    wrapper.style.setProperty('--panel-height', prefs.get('height'));
+  const heightPref = prefs.get('height');
+  if (heightPref) {
+    wrapper.style.setProperty('--panel-height', heightPref);
   }
   const resized = () => {
     const calc = 100 * ((textarea.offsetHeight + 170) / window.innerHeight);
@@ -84,6 +72,20 @@ const handleResize = (textarea) => {
   new MutationObserver(resized).observe(textarea, { attributes: true, attributeFilter: ['style'] });
 };
 
+const runBulkJob = async (data) => {
+  const testSuccess = {
+    status: 202,
+    topic: data.type,
+    name: `job-${new Date().getTime()}`,
+    state: 'created',
+    startTime: new Date().toLocaleDateString('en-US'),
+    data: data.paths.map((path) => ({ path })),
+  };
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(testSuccess), 3000);
+  });
+};
+
 export {
   editEntry,
   validPath,
@@ -91,5 +93,5 @@ export {
   TYPES,
   runBulkJob,
   selectOverage,
-  handleResize,
+  handlePanelSize,
 };

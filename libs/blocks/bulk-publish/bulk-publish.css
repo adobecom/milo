@@ -1,8 +1,8 @@
 .bulk-publish {
-  --panel-height: 80vh;
+  --panel-height: 60vh;
 
   position: relative;
-  height: 100vh;
+  height: 95vh;
   display: flex;
   align-items: center;
 }

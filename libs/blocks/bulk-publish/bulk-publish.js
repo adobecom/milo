@@ -7,7 +7,7 @@ import {
   validPath,
   runBulkJob,
   selectOverage,
-  handleResize,
+  handlePanelSize,
 } from './utils.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/bulk-publish-wc.css');
@@ -17,22 +17,24 @@ class BulkPublish extends LitElement {
   static properties = {
     urls: { state: true },
     processType: { state: true },
-    results: { state: true },
-    openPanel: { state: true },
     disabled: { state: true },
-    processing: { state: true },
     editing: { state: true },
+    processing: { state: true },
+    results: { state: true },
+    openResults: { state: true },
+    openResult: { state: true },
   };
 
   constructor() {
     super();
     this.urls = [];
     this.processType = 'choose';
-    this.results = null;
-    this.openPanel = 0;
     this.disabled = true;
     this.processing = false;
     this.editing = false;
+    this.results = [];
+    this.openResults = false;
+    this.openResult = 0;
   }
 
   connectedCallback() {
@@ -41,8 +43,8 @@ class BulkPublish extends LitElement {
   }
 
   updated() {
-    if (!this.openPanel) {
-      handleResize(
+    if (!this.openResults) {
+      handlePanelSize(
         this.renderRoot.getElementById('Urls'),
         this.renderRoot.getElementById('Panel'),
       );
@@ -96,7 +98,7 @@ class BulkPublish extends LitElement {
       <div class="errors">
         <span>${counter}: <strong>${text}</strong></span>
         <div class="fix-btn" @click=${edit}>
-          ${this.editing ? 'Next' : 'Select'}
+          ${this.editing ? 'Next Error' : 'Select Line'}
         </div>
       </div>
     `;
@@ -109,11 +111,11 @@ class BulkPublish extends LitElement {
   }
 
   processForm() {
-    if (this.openPanel === 1) return html`<div class="" @click=${() => { this.openPanel = 0; }}>Start New Process</div>`;
+    if (this.openResults) return html`<div class="panel-title" @click=${() => { this.openResults = false; }}>Start New Job</div>`;
     return html`
       <div class="process">
         <div class="processor">
-          <select id="process" name="select" value=${this.processType} @change=${this.setType}>
+          <select id="Process" name="select" value=${this.processType} @change=${this.setType}>
             <option disabled selected value="choose">Choose Process</option>
             ${TYPES.map((type) => (html`<option value=${type}>${type}</option>`))}
           </select>
@@ -136,41 +138,58 @@ class BulkPublish extends LitElement {
     `;
   }
 
-  resultsPanel() {
-    const getResults = () => {
-      if (this.results) return this.results;
-      return { name: null, status: null, startTime: null, data: [] };
-    };
-    const { name, status, startTime, data } = getResults();
+  jobResult(result) {
+    const { name, status, startTime, topic, data } = result;
+    const statusName = status === 202 ? 'success' : 'error';
+    const hide = this.openResults ? '' : ' hide';
     return html`
-      <div class="" @click=${() => { this.openPanel = this.results ? 1 : 0; }}>My Processes</div>
-      <div class="job-meta${this.openPanel === 1 ? '' : ' hide'}">
+      <div class="job-meta${hide}">
         <h4><span>name:</span> ${name}</h4>
-        <h4><span>started:</span> ${startTime}</h4>
-        <h4><span>status:</span> ${status}</h4>
+        <h4><span>type:</span> ${topic}</h4>
+        <h4 class="${statusName}"><span>status:</span> ${statusName}</h4>
+      </div>
+      <div class="path-table${hide}">
+        <span>URL</span>
+        <span>Completed</span>
       </div>
       <div class="paths">
-        ${data.map((entry) => html`<div class="path">${entry.path}</div>`)}
+        ${data.map((entry) => html`
+          <div class="path">
+            <span>${entry.path}</span>
+            <span>${startTime}</span>
+          </div>
+        `)}
       </div>
+    `;
+  }
+
+  resultsPanel() {
+    return html`
+      <div class="panel-title" @click=${() => { this.openResults = this.results.length; }}>
+        <span class="title">My Jobs ${this.results.length ? html`<strong>${this.results.length}</strong>` : ''}</span>
+        <div class="view-results">
+          ${this.results.length > 1 ? html`<div @click=${() => { this.openResult += this.openResult; }}>Next</div>` : ''}
+        </div>
+      </div>
+      ${this.results.map((result) => this.jobResult(result)).filter((r, i) => this.openResult === i)}
     `;
   }
 
   async runJob() {
     if (!this.disabled) {
       this.processing = true;
-      this.results = null;
-      const process = await runBulkJob({
+      const job = await runBulkJob({
         type: this.processType,
         paths: this.urls,
       });
-      this.openPanel = 1;
-      this.results = process;
+      this.openResults = true;
+      this.results = [...this.results, ...[job]];
       this.processing = false;
       this.disabled = true;
       this.urls = [];
       this.processType = 'choose';
-      this.renderRoot.querySelector('#urls').value = '';
-      this.renderRoot.querySelector('#process').value = 'choose';
+      this.renderRoot.querySelector('#Urls').value = '';
+      this.renderRoot.querySelector('#Process').value = 'choose';
     }
   }
 
@@ -180,8 +199,8 @@ class BulkPublish extends LitElement {
         <h1>Milo Bulk Publishing</h1>
       </header>
       <div id="Panel" class="publish-form">
-        <div active=${this.openPanel === 0} class="panel form">${this.processForm()}</div>
-        <div active=${this.openPanel === 1} class="panel results">${this.resultsPanel()}</div>
+        <div active=${!this.openResults} class="panel form">${this.processForm()}</div>
+        <div active=${!!this.openResults} class="panel results">${this.resultsPanel()}</div>
       </div>
     `;
   }
