@@ -12,7 +12,7 @@ describe('Merch Card', () => {
   it('Shows segment card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/segment-card.html' });
     const merchCard = await init(document.querySelector('.segment'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
+    const heading = merchCard.querySelector('h3[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
     const buttons = footer.querySelectorAll('.con-button');
@@ -50,10 +50,8 @@ describe('Merch Card', () => {
     expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
-  describe('Plans Card', () => {
-    before(async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
-    });
+  describe('Plans Card', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
 
     it('Supports COM Plans card', async () => {
       document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
@@ -295,10 +293,9 @@ describe('Merch Card', () => {
     });
   });
 
-  describe('UAR Card', () => {
-    before(async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/uar-card.html' });
-    });
+  describe('UAR Card', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/uar-card.html' });
+
     it('handles decorated <hr>', async () => {
       const cards = document.querySelectorAll('.merch-card');
       for (const card of cards) {
