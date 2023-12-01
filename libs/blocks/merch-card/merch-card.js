@@ -282,13 +282,13 @@ const init = async (el) => {
       ),
     );
   }
+  const footer = createTag('div', { slot: 'footer' });
   const ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
   if (ctas) {
-    const footer = createTag('div', { slot: 'footer' });
     decorateButtons(ctas);
     footer.append(ctas);
-    merchCard.appendChild(footer);
   }
+  merchCard.appendChild(footer);
   if (image !== undefined) {
     const imageSlot = createTag('div', { slot: 'bg-image' });
     imageSlot.appendChild(image);
@@ -327,6 +327,11 @@ const init = async (el) => {
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
   parseContent(el, merchCard);
+  const offerSelection = cardType === 'plans' ? el.querySelector('ul') : null;
+  if (offerSelection) {
+    const { initOfferSelection } = await import('./offer-selection.js');
+    initOfferSelection(merchCard, offerSelection);
+  }
   decorateBlockHrs(merchCard);
   if (merchCard.classList.contains('has-divider')) {
     merchCard.setAttribute('custom-hr', true);
