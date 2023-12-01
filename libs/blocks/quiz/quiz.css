@@ -93,8 +93,7 @@ html[dir="rtl"] .quiz-option-icon {
   border-radius: 0 0.5rem 0.5rem 0;
 }
 
-.quiz-option-icon.icon-tablet,
-.quiz-option-icon.icon-desktop {
+.quiz-option.has-icon .no-icon-default {
   display: none;
 }
 
@@ -361,14 +360,14 @@ html[dir="rtl"] .quiz-step::after {
     width: auto;
   }
 
-  .quiz-option-icon.icon-tablet {
-    display: flex;
+  .quiz-option.has-icon.quiz-option.has-image .no-icon-tablet,
+  .quiz-option.has-icon .quiz-option-image {
+    display: none;
   }
 
-  .quiz-option-icon.icon-default ~ .quiz-option-image, 
-  .quiz-option-icon.icon-tablet ~ .quiz-option-image, 
-  .quiz-option-icon.icon-tablet ~ .quiz-option-icon.icon-default {
-    display: none;
+  .quiz-option.has-icon .no-icon-tablet ~ .quiz-option-image,
+  .quiz-option.has-icon .no-icon-default {
+    display: flex;
   }
 
   .quiz-option-text-container {
@@ -411,16 +410,12 @@ html[dir="rtl"] .quiz-step::after {
 
 /* Desktop */
 @media screen and (min-width: 1024px) {
-  .quiz-option-icon.icon-default ~ .quiz-option-image, 
-  .quiz-option-icon.icon-tablet ~ .quiz-option-image, 
-  .quiz-option-icon.icon-desktop {
-    display: flex;
+  .quiz-option.has-image .quiz-option-icon {
+    display: none;
   }
 
-  .quiz-option.has-image .icon-default,
-  .quiz-option-icon.icon-desktop ~ .quiz-option-icon.icon-default,
-  .quiz-option-icon.icon-tablet {
-    display: none;
+  .quiz-option.has-icon .quiz-option-image {
+    display: flex;
   }
 }
 

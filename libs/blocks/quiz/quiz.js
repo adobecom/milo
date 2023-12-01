@@ -260,7 +260,7 @@ const App = ({
     }
     const iconBg = getStringValue('icon-background-color');
     if (iconBg) {
-      document.documentElement.style.setProperty('--quiz-icon-bg', iconBg);
+      document.querySelector('.quiz-container').style.setProperty('--quiz-icon-bg', iconBg);
     }
   }, [selectedQuestion, stringQList]);
 
