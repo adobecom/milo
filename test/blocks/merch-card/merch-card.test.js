@@ -12,7 +12,7 @@ describe('Merch Card', () => {
   it('Shows segment card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/segment-card.html' });
     const merchCard = await init(document.querySelector('.segment'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
+    const heading = merchCard.querySelector('h3[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
     const buttons = footer.querySelectorAll('.con-button');
