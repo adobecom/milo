@@ -2,7 +2,9 @@ import { createTag, getConfig } from '../../utils/utils.js';
 
 let destination, emailAddress = null ;
 let count = 10;
+const headerWrapper = createTag('div');
 const header = createTag('h1');
+headerWrapper.apped(header);
 const timerMessage = createTag('div', {id:'timer'});
 
 export default async function init(blockEl) {
@@ -17,7 +19,7 @@ export default async function init(blockEl) {
 
       if(destination && emailAddress) {
         header.innerHTML = "Sit back, we're taking you to the right place shortly";
-        wrapper.append(header);
+        wrapper.append(headerWrapper);
         wrapper.append(timerMessage);
         blockEl.append(wrapper);
         updateTimer();
@@ -37,7 +39,7 @@ export default async function init(blockEl) {
 function decorateError (wrapper, blockEl){
   header.innerHTML = "Oooops! Something bad happened";
   timerMessage.innerHTML = "The url and email parameters were not provided."
-  wrapper.append(header);
+  wrapper.append(headerWrapper);
   wrapper.append(timerMessage);
   blockEl.append(wrapper);
 }
