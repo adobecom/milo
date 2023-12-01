@@ -21,12 +21,13 @@ export async function loadFragments(fragmentURL) {
 const App = ({
   initialIsDataLoaded = false,
   preQuestions = {}, initialStrings = {}, shortQuiz: isShortQuiz = false,
+  preselections = [], nextQuizViewsExist: preNextQuizViewsExist = true,
 }) => {
   const [btnAnalytics, setBtnAnalytics] = useState(null);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isDataLoaded, setDataLoaded] = useState(initialIsDataLoaded);
-  const [nextQuizViewsExist, setNextQuizViewsExist] = useState(true);
+  const [nextQuizViewsExist, setNextQuizViewsExist] = useState(preNextQuizViewsExist);
   const [prevStepIndicator, setPrevStepIndicator] = useState([]);
   const [questionData, setQuestionData] = useState(preQuestions.questionData || {});
   const [questionList, setQuestionList] = useState(preQuestions.questionList || {});
@@ -36,7 +37,7 @@ const App = ({
   const [stringQList, setStringQList] = useState(preQuestions.stringQList || {});
   const [totalSteps, setTotalSteps] = useState(isShortQuiz ? 2 : 3);
   const initialUrlParams = getUrlParams();
-  const [userSelection, updateUserSelection] = useState([]);
+  const [userSelection, updateUserSelection] = useState(preselections);
   const [userFlow, setUserFlow] = useState([]);
   const validQuestions = useMemo(() => [], []);
   const [debugBuild, setDebugBuild] = useState(null);
@@ -322,6 +323,8 @@ export default async function init(
   initialIsDataLoaded = false,
   preQuestions = {},
   initialStrings = {},
+  preselections = [],
+  nextQuizViewsExist = true,
 ) {
   const configData = initConfigPathGlob(el);
   const updatedShortQuiz = shortQuiz || configData.shortQuiz;
@@ -331,5 +334,7 @@ export default async function init(
     preQuestions=${preQuestions} 
     initialStrings=${initialStrings}
     shortQuiz=${updatedShortQuiz}
+    preselections=${preselections}
+    nextQuizViewsExist=${nextQuizViewsExist}
   />`, el);
 }

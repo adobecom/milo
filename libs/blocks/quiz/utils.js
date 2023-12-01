@@ -62,9 +62,44 @@ export const getUrlParams = () => {
   return params;
 };
 
-export const handleResultFlow = async (answers = []) => {
+// export const handleResultFlow = async (answers = []) => {
+//   const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
+//   window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+// };
+
+// export const handleResultFlow = async (answers = []) => {
+//   const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
+//   const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+//   window.location.assign(redirectUrl); // Call assign as a function
+//   // window.location.href = redirectUrl; // Call assign as a function
+// };
+
+// export function redirectTo(url) {
+//   window.location.assign(url);
+// }
+
+// export const redirectStub = {
+//   redirect(url) {
+//     window.location.assign(url);
+//   },
+// };
+
+// export const handleResultFlow = async (answers = []) => {
+//   const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
+//   const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+//   redirectStub.redirect(redirectUrl);
+// };
+
+// Define the default redirect behavior
+export const defaultRedirect = (url) => {
+  window.location.href = url;
+};
+
+// Modify handleResultFlow to accept the redirect function as a parameter
+export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect) => {
   const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
-  window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  redirectFunc(redirectUrl); // Use the provided redirect function
 };
 
 /**
