@@ -35,7 +35,7 @@ export default async function init(blockEl) {
 
 }
 
-function updateTimer() {
+export function updateTimer() {
   let element = document.getElementById('timer')
   if (count > 0) {
     count--;
