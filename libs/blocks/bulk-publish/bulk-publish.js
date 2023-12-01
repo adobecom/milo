@@ -92,6 +92,7 @@ class BulkPublish extends LitElement {
     if (typeof this.disabled === 'boolean') return html``;
     const isLimit = this.disabled[0] === 'limit';
     const { text, edit } = this.getEdit(isLimit);
+    edit();
     const count = this.disabled.length;
     const counter = count > 1 ? `1/${count} Errors` : '1 Error';
     return html`
@@ -198,7 +199,7 @@ class BulkPublish extends LitElement {
       <header>
         <h1>Milo Bulk Publishing</h1>
       </header>
-      <div id="Panel" class="publish-form">
+      <div id="Panel" slot="panel" class="publish-form">
         <div active=${!this.openResults} class="panel form">${this.processForm()}</div>
         <div active=${!!this.openResults} class="panel results">${this.resultsPanel()}</div>
       </div>

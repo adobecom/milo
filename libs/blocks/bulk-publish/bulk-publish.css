@@ -4,5 +4,6 @@
   position: relative;
   height: 95vh;
   display: flex;
-  align-items: center;
+  align-items: start;
+  padding-top: 100px;
 }

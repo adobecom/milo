@@ -8,14 +8,16 @@ const TYPES = [
   'Index',
 ];
 
-const preferences = () => {
-  const store = localStorage.getItem('bulk-pub-user-prefs');
-  const prefs = store ? JSON.parse(store) : { height: 0 };
+const defaultPrefs = { height: 0 };
+
+const preferences = (storeKey, prefsDefault) => {
+  const store = localStorage.getItem(storeKey);
+  const prefs = store ? JSON.parse(store) : prefsDefault;
   return {
     get: (key) => (prefs[key]),
     set: (key, value) => {
       prefs[key] = value;
-      localStorage.setItem('bulk-pub-user-prefs', JSON.stringify(prefs));
+      localStorage.setItem(storeKey, JSON.stringify(prefs));
     },
   };
 };
@@ -56,7 +58,7 @@ const selectOverage = (elem, paths) => {
 
 const handlePanelSize = (textarea) => {
   const wrapper = document.querySelector('.bulk-publish');
-  const prefs = preferences();
+  const prefs = preferences(defaultPrefs);
   const heightPref = prefs.get('height');
   if (heightPref) {
     wrapper.style.setProperty('--panel-height', heightPref);
