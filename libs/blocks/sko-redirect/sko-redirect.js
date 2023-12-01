@@ -39,7 +39,7 @@ function updateTimer(element) {
   if (count > 0) {
     count--;
     element.innerHTML = "This page will redirect in " + count + " seconds."; // Timer Message
-    setTimeout("updateTimer(element)", 1000);
+    setTimeout(updateTimer(element), 1000);
   } else {
     window.location.href = destination;
   }
