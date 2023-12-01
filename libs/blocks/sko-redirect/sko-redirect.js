@@ -1,7 +1,9 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 
-let destination, emailAddress = null;
+let destination, emailAddress = null ;
 let count = 10;
+const header = createTag('h1');
+const timerMessage = createTag('text', {id:'timer'});
 
 export default async function init(blockEl) {
 
@@ -12,8 +14,7 @@ export default async function init(blockEl) {
     if(window.location.search.length > 1) {
       destination = getQueryVariable('frameURL');
       emailAddress = getQueryVariable('email');
-      const header = createTag('h1');
-      const timerMessage = createTag('text', {id:'timer'});
+      
 
       if(destination && emailAddress) {
         header.innerHTML = "Sit back, we're taking you to the right place shortly";
@@ -23,16 +24,23 @@ export default async function init(blockEl) {
         updateTimer();
 
       } else {
-        header.innerHTML = "Oooops! Something bad happened";
-        timerMessage.innerHTML = "The url and email parameters were not provided."
-        wrapper.append(header);
-        wrapper.append(timerMessage);
-        blockEl.append(wrapper);
+        decorateError(wrapper, blockEl);
+        
       }
 		
-		 }
+		} else {
+      decorateError(wrapper, blockEl);
+    }
   }
 
+}
+
+function decorateError (wrapper, blockEl){
+  header.innerHTML = "Oooops! Something bad happened";
+  timerMessage.innerHTML = "The url and email parameters were not provided."
+  wrapper.append(header);
+  wrapper.append(timerMessage);
+  blockEl.append(wrapper);
 }
 
 export function updateTimer() {
