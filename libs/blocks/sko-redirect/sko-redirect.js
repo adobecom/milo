@@ -11,7 +11,6 @@ export default async function init(blockEl) {
 
   // Get the destination URL and user email from the request
   if(window.location.search.length > 1) {
-    if(window.location.search.length > 1) {
       destination = getQueryVariable('frameURL');
       emailAddress = getQueryVariable('email');
       
@@ -33,8 +32,6 @@ export default async function init(blockEl) {
       console.log('here')
       decorateError(wrapper, blockEl);
     }
-  }
-
 }
 
 function decorateError (wrapper, blockEl){
