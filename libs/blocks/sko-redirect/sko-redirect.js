@@ -19,8 +19,12 @@ export default async function init(blockEl) {
 
       if(destination && emailAddress) {
         header.innerHTML = "Sit back, we're taking you to the right place shortly";
+        const manualButton = createTag('button', {class:'con-button blue button-justified-mobile', onclick:redirect()},'Take me now');
+
         wrapper.append(headerWrapper);
         wrapper.append(timerMessage);
+        wrapper.append(manualButton);
+        
         blockEl.append(wrapper);
         updateTimer();
 
@@ -36,9 +40,13 @@ export default async function init(blockEl) {
     }
 }
 
+function redirect() {
+  window.location.href = destination;
+}
+
 function decorateError (wrapper, blockEl){
   header.innerHTML = "Oooops! Something bad happened";
-  timerMessage.innerHTML = "The url and email parameters were not provided."
+  timerMessage.innerHTML = "The frameURL and email parameters were not provided."
   wrapper.append(headerWrapper);
   wrapper.append(timerMessage);
   blockEl.append(wrapper);
@@ -51,7 +59,7 @@ export function updateTimer() {
     element.innerHTML = "This page will redirect in " + count + " seconds."; // Timer Message
     setTimeout(updateTimer, 1000);
   } else {
-    window.location.href = destination;
+    redirect();
   }
 }
 
