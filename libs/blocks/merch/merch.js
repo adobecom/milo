@@ -83,7 +83,14 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
-  const type = params.get('type');
+  const typeMapping = {
+    priceOptical: 'optical',
+    priceStrikethrough: 'strikethrough',
+  };
+
+  let type = params.get('type');
+  type = typeMapping[type] || type;
+
   const template = type === 'price' ? undefined : type;
   return {
     ...context,
