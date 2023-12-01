@@ -6,7 +6,7 @@ import { setConfig } from '../../../libs/utils/utils.js';
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const conf = { locales, miloLibs: '/libs' };
+const conf = { locales, miloLibs: '/libs', queryIndexCardPath: '/test' };
 setConfig(conf);
 
 const getVisibleCards = (merchCards) => [...merchCards.querySelectorAll('merch-card')]
@@ -53,7 +53,7 @@ describe('Merch Cards', async () => {
   it('should require a type', async () => {
     const el = document.getElementById('default');
     const merchCards = await init(el);
-    expect(merchCards).to.null;
+    expect(merchCards.tagName).to.equal('DIV');
   });
 
   it('should set "all" as default filter', async () => {
@@ -96,7 +96,7 @@ describe('Merch Cards', async () => {
     expect(express.name).to.be.equal('express');
   });
 
-  it('should parse multiple filters"', async () => {
+  it('should parse multiple filters', async () => {
     const el = document.getElementById('multipleFilters');
     cards = [...document.querySelectorAll('#cards .merch-card')]
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards

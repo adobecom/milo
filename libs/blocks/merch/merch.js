@@ -24,6 +24,10 @@ export function polyfills() {
   /* c8 ignore stop */
 }
 
+/**
+ * Activates commerce service and returns its ready-to-use instance.
+ * @returns {Promise<Commerce.Instance>}
+ */
 export async function initService() {
   await polyfills();
   const commerce = await import('../../deps/commerce.js');
@@ -127,7 +131,7 @@ export default async function init(el) {
   const isCta = searchParams.get('type') === 'checkoutUrl';
   const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
   const service = await initService();
-  const log = service.log.module('merch');
+  const log = service.Log.module('merch');
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
     el.replaceWith(merch);
