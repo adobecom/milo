@@ -96,7 +96,7 @@ describe('Merch Cards', async () => {
     expect(express.name).to.be.equal('express');
   });
 
-  it('should parse multiple filters"', async () => {
+  it('should parse multiple filters', async () => {
     const el = document.getElementById('multipleFilters');
     cards = [...document.querySelectorAll('#cards .merch-card')]
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
