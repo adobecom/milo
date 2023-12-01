@@ -24,11 +24,13 @@ export default async function init(blockEl) {
         updateTimer();
 
       } else {
+        console.log('there')
         decorateError(wrapper, blockEl);
         
       }
 		
 		} else {
+      console.log('here')
       decorateError(wrapper, blockEl);
     }
   }
