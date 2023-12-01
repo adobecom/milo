@@ -19,7 +19,9 @@ export default async function init(blockEl) {
 
       if(destination && emailAddress) {
         header.innerHTML = "Sit back, we're taking you to the right place shortly";
+    
         const manualButton = createTag('button', {class:'con-button blue button-justified-mobile', onclick:'redirect()'},'Take me now');
+
 
         wrapper.append(headerWrapper);
         wrapper.append(timerMessage);
