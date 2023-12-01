@@ -12,3 +12,8 @@ div[class*="-merch-card"] > div,
  div[data-removed-manifest-id] {
    display: none;
  }
+ 
+ .merch-card-price {
+  margin-top: 8px; 
+  margin-bottom: 16px; 
+}
