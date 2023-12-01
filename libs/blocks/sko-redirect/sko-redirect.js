@@ -13,14 +13,14 @@ export default async function init(blockEl) {
       destination = getQueryVariable('frameURL');
       emailAddress = getQueryVariable('email');
       const header = createTag('h1');
-      const timerMessage = createTag('text');
+      const timerMessage = createTag('text', {id:'timer'});
 
       if(destination && emailAddress) {
         header.innerHTML = "Sit back, we're taking you to the right place shortly";
         wrapper.append(header);
         wrapper.append(timerMessage);
         blockEl.append(wrapper);
-        updateTimer(timerMessage);
+        updateTimer();
 
       } else {
         header.innerHTML = "Oooops! Something bad happened";
@@ -35,11 +35,12 @@ export default async function init(blockEl) {
 
 }
 
-function updateTimer(element) {
+function updateTimer() {
+  let element = document.getElementById('timer')
   if (count > 0) {
     count--;
     element.innerHTML = "This page will redirect in " + count + " seconds."; // Timer Message
-    setTimeout(updateTimer(element), 1000);
+    setTimeout(updateTimer(), 1000);
   } else {
     window.location.href = destination;
   }
