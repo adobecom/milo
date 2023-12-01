@@ -288,13 +288,7 @@ const init = async (el) => {
       ),
     );
   }
-  const footer = createTag('div', { slot: 'footer' });
   const ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
-  if (ctas) {
-    decorateButtons(ctas);
-    footer.append(ctas);
-  }
-  merchCard.appendChild(footer);
   if (image !== undefined) {
     const imageSlot = createTag('div', { slot: 'bg-image' });
     imageSlot.appendChild(image);
@@ -333,6 +327,12 @@ const init = async (el) => {
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
   parseContent(el, merchCard);
+  const footer = createTag('div', { slot: 'footer' });
+  if (ctas) {
+    decorateButtons(ctas);
+    footer.append(ctas);
+  }
+  merchCard.appendChild(footer);
   const offerSelection = cardType === 'plans' ? el.querySelector('ul') : null;
   if (offerSelection) {
     const { initOfferSelection } = await import('./offer-selection.js');
