@@ -37,7 +37,7 @@ describe('Offer Selection', () => {
     } else {
       expect(card.shadowRoot.querySelector('div.plans-ribbon')).not.to.exist;
     }
-    expect(card.querySelector('div[slot="body-xs"]').innerText).to.equal(description);
+    expect(card.querySelector('div[slot="body-xs"] p[slot="description"]').innerText).to.equal(description);
     expect(card.querySelector('div[slot="footer"] a[is="checkout-link"]').dataset.wcsOsi).to.equal(osi);
     expect(card.querySelector('div[slot="body-xs"] span[is="inline-price"]').dataset.wcsOsi).to.equal(osi);
   }
