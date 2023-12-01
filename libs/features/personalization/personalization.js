@@ -41,10 +41,10 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   let manifests = targetManifests;
 
   manifests = manifests.concat(
-    persManifests.map((manifestPath) => ({
+    persManifests.map((manifest) => ({
       ...manifest,
-      manifestPath: appendJsonExt(manifestPath),
-      manifestUrl: manifestPath,
+      manifestPath: appendJsonExt(manifest.manifestPath),
+      manifestUrl: manifest.manifestPath,
     })),
   );
 
@@ -572,13 +572,14 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
-const createDefaultExperiment(manifest) => ({  
-  isabled: manifest.disabled,
+const createDefaultExperiment = (manifest) => ({
+  disabled: manifest.disabled,
   event: manifest.event,
   manifest: manifest.manifestPath,
   variantNames: ['all'],
   selectedVariantName: 'default',
-  selectedVariant: { commands: [] }, });
+  selectedVariant: { commands: [] },
+});
 
 export async function applyPers(manifests) {
   const config = getConfig();
