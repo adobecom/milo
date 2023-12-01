@@ -3,7 +3,7 @@ import { createTag, getConfig } from '../../utils/utils.js';
 let destination, emailAddress = null ;
 let count = 10;
 const header = createTag('h1');
-const timerMessage = createTag('text', {id:'timer'});
+const timerMessage = createTag('div', {id:'timer'});
 
 export default async function init(blockEl) {
 
