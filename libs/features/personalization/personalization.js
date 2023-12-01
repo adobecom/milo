@@ -42,13 +42,14 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
 
   manifests = manifests.concat(
     persManifests.map((manifestPath) => ({
+      ...manifest,
       manifestPath: appendJsonExt(manifestPath),
       manifestUrl: manifestPath,
     })),
   );
 
   for (const manifest of manifests) {
-    if (!manifest.manifestData && manifest.manifestPath) {
+    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
       manifest.manifestPath = normalizePath(manifest.manifestPath);
       loadLink(
         manifest.manifestPath,
@@ -571,6 +572,14 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
+const createDefaultExperiment(manifest) => ({  
+  isabled: manifest.disabled,
+  event: manifest.event,
+  manifest: manifest.manifestPath,
+  variantNames: ['all'],
+  selectedVariantName: 'default',
+  selectedVariant: { commands: [] }, });
+
 export async function applyPers(manifests) {
   const config = getConfig();
 
@@ -579,14 +588,22 @@ export async function applyPers(manifests) {
   getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
+  const override = config.mep?.override;
   let results = [];
+  const experiments = [];
   for (const manifest of cleanedManifests) {
-    results.push(await runPersonalization(manifest, config));
+    if (manifest.disabled && !override) {
+      experiments.push(createDefaultExperiment(manifest));
+    } else {
+      const result = await runPersonalization(manifest, config);
+      if (result) {
+        results.push(result);
+        experiments.push(result.experiment);
+      }
+    }
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
-
-  const experiments = results.map((r) => r.experiment);
   updateConfig({
     ...config,
     experiments,
