@@ -1,6 +1,7 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 
 let destination, emailAddress = '';
+let count = 10;
 
 export default async function init(blockEl) {
 
