@@ -72,7 +72,7 @@ describe('Quiz Fragment Tests', () => {
       if (url === 'https://example.com/fragment.plain.html') {
         return Promise.resolve({
           ok: true,
-          text: () => Promise.resolve('Mocked Fragment Content')
+          text: () => Promise.resolve('Mocked Fragment Content'),
         });
       }
       return Promise.reject(new Error('Unexpected URL'));
