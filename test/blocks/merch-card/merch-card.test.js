@@ -1,64 +1,60 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
+
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales };
+setConfig(conf);
 
 describe('Merch Card', () => {
   it('Shows segment card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/segment-card.html' });
-    await init(document.querySelector('.merch-card'));
-    const inner = document.querySelector('.consonant-SegmentBlade-inner');
-    const cardFooter = inner.querySelector('.consonant-CardFooter');
-    const buttons = cardFooter.querySelectorAll('.con-button');
-
-    expect(document.querySelector('.consonant-ProductCard')).to.exist;
-    expect(inner.querySelector('.consonant-SegmentBlade-title')).to.exist;
-    expect(inner.querySelector('.consonant-SegmentBlade-description')).to.exist;
-    expect(cardFooter.querySelector('.con-button')).to.exist;
+    await init(document.querySelector('.segment'));
+    const merchCard = document.querySelector('merch-card');
+    const fragment = document.querySelector('.fragment');
+    const section = document.querySelector('.section');
+    const heading = merchCard.querySelector('h3[slot="heading-xs"]');
+    const body = merchCard.querySelector('div[slot="body-xs"]');
+    const footer = merchCard.querySelector('div[slot="footer"]');
+    const buttons = footer.querySelectorAll('.con-button');
+    expect(merchCard).to.exist;
+    expect(body).to.exist;
+    expect(heading).to.exist;
+    expect(merchCard.getAttribute('variant')).to.be.equal('segment');
+    expect(heading.textContent).to.be.equal('Lorem ipsum dolor sit amet');
+    expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See what\'s included | Learn more');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Learn More');
     expect(buttons[1].textContent).to.be.equal('Save now');
-  });
 
-  describe('Wrapper', async () => {
-    before(async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/segment-card.html' });
-      const merchCards = document.querySelectorAll('.segment');
-      await init(merchCards[0]);
-      await init(merchCards[1]);
-    });
+    expect(fragment).to.exist;
+    expect(fragment.style.display).to.be.equal('contents');
 
-    it('Has one per section', () => {
-      expect(document.querySelectorAll('.consonant-Wrapper').length).to.equal(1);
-    });
-
-    it('Is in correct position', async () => {
-      const wrapper = document.querySelector('.consonant-Wrapper');
-      expect(wrapper.previousElementSibling).to.equal(document.querySelector('.before'));
-      expect(wrapper.nextElementSibling).to.equal(document.querySelector('.after'));
-    });
+    expect(section).to.exist;
+    expect(section.style.display).to.be.equal('contents');
   });
 
   it('Supports Special Offers card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
-    await init(document.querySelector('.special-offers'));
-    const inner = document.querySelector('.consonant-SpecialOffers-inner');
-    const cardFooter = inner.querySelector('.consonant-CardFooter');
-    const ribbon = document.querySelector('.consonant-SpecialOffers-ribbon');
-    const buttons = cardFooter.querySelectorAll('.con-button');
+    await init(document.querySelector('.merch-card.special-offers'));
+    const merchCard = document.querySelector('merch-card');
+    const heading = merchCard.querySelector('h2[slot="heading-m"]');
+    const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+    const body = merchCard.querySelector('div[slot="body-xs"]');
+    const footer = merchCard.querySelector('div[slot="footer"]');
+    const buttons = footer.querySelectorAll('.con-button');
 
-    expect(document.querySelector('.consonant-ProductCard')).to.exist;
-    expect(inner.querySelector('.consonant-SpecialOffers-title')).to.exist;
-    expect(inner.querySelector('.consonant-SpecialOffers-description')).to.exist;
-    expect(document.querySelector('.consonant-SpecialOffers-iconWrapper')).to.exist;
-    expect(ribbon).to.exist;
-    expect(ribbon.style.backgroundColor).to.be.equal('');
-    expect(ribbon.style.color).to.be.equal('rgb(0, 0, 0)');
-    expect(ribbon.textContent).to.be.equal('LOREM IPSUM DOLOR');
-    expect(ribbon.style.borderLeft).to.be.equal('1px solid rgb(237, 204, 45)');
-    expect(ribbon.style.borderRight).to.be.equal('none');
-    expect(ribbon.style.borderTop).to.be.equal('1px solid rgb(237, 204, 45)');
-    expect(ribbon.style.borderBottom).to.be.equal('1px solid rgb(237, 204, 45)');
+    expect(merchCard).to.exist;
+    expect(heading).to.exist;
+    expect(headingOne).to.exist;
+    expect(body).to.exist;
+    expect(merchCard.getAttribute('variant')).to.be.equal('special-offers');
+    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
+    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
+    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+    expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.Best for:See terms');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Learn More');
     expect(buttons[1].textContent).to.be.equal('Save now');
@@ -71,85 +67,183 @@ describe('Merch Card', () => {
 
     it('Supports Plans card', async () => {
       document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
-      await init(document.querySelector('.plans.icons'));
-      const inner = document.querySelector('.consonant-PlansCard-inner');
-      const cardFooter = inner.querySelector('.consonant-CardFooter');
-      const ribbon = document.querySelector('.consonant-PlansCard-ribbon');
-      const buttons = cardFooter.querySelectorAll('.con-button');
-      const inactiveButton = cardFooter.querySelector('.button--inactive');
-      const secureWrapper = cardFooter.querySelector('.secure-transaction-wrapper');
-      const checkBoxContainer = cardFooter.querySelector('.checkbox-container');
-      const plansCard = document.querySelector('.consonant-ProductCard');
-      const iconsWrapper = document.querySelector('.consonant-PlansCard-iconWrapper');
-      const icons = iconsWrapper.querySelectorAll('.consonant-MerchCard-ProductIcon');
-      const list = document.querySelector('.consonant-PlansCard-list');
-      const listItems = list.querySelectorAll('li');
+      await init(document.querySelector('.merch-card.plans.icons.secure'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h4[slot="body-xxs"]');
+      const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+      const body = merchCard.querySelector('div[slot="body-xs"]');
+      const detail = merchCard.querySelector('h5[slot="detail-m"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
 
-      expect(plansCard).to.exist;
-      expect(plansCard.style.border).to.be.equal('1px solid rgb(237, 204, 45)');
-      expect(inner.querySelector('.consonant-PlansCard-title')).to.exist;
-      expect(inner.querySelector('.consonant-PlansCard-description')).to.exist;
-      expect(iconsWrapper).to.exist;
-      expect(icons.length).to.be.equal(2);
-      expect(ribbon).to.exist;
-      expect(ribbon.style.backgroundColor).to.be.equal('rgb(237, 204, 45)');
-      expect(ribbon.style.color).to.be.equal('rgb(0, 0, 0)');
-      expect(ribbon.textContent).to.be.equal('LOREM IPSUM DOLOR');
-      expect(buttons.length).to.be.equal(2);
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(detail).to.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('plans');
+      expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+      expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
+      expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
+      expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
+      expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Lorem ipsum dolor sit amet');
+      expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
+      expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
+      expect(buttons.length).to.be.equal(3);
       expect(buttons[0].textContent).to.be.equal('Learn More');
       expect(buttons[1].textContent).to.be.equal('Save now');
-      expect(secureWrapper).to.exist;
-      expect(list).to.exist;
-      expect(list.classList.contains('consonant-PlansCard-list')).to.be.true;
-      expect(listItems.length).to.be.equal(2);
-      expect(listItems[0].textContent).to.be.equal('Maecenas porttitor congue massa');
-      expect(listItems[1].textContent).to.be.equal('Nunc viverra imperdiet enim.');
-
-      expect(checkBoxContainer.querySelector('.checkMark')).to.exist;
-      expect(checkBoxContainer.querySelector('.checkbox-label').textContent).to.be.equal('Lorem ipsum dolor sit amet');
-      expect(secureWrapper.querySelector('.secure-transaction-icon').classList).to.exist;
-      expect(secureWrapper.querySelector('.secure-transaction-label')).to.exist;
-
-      expect(inactiveButton.classList.contains('button--inactive')).to.be.true;
-      checkBoxContainer.querySelector('.checkMark').click();
-      expect(inactiveButton.classList.contains('button--inactive')).to.be.false;
-      checkBoxContainer.querySelector('.checkMark').click();
-      expect(inactiveButton.classList.contains('button--inactive')).to.be.true;
+      expect(buttons[2].textContent).to.be.equal('free-trial');
     });
 
     it('should skip ribbon and altCta creation', async () => {
       document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
       await init(document.querySelector('.plans.icons.skip-ribbon.skip-altCta'));
-      const inner = document.querySelector('.consonant-PlansCard-inner');
-      const cardFooter = inner.querySelector('.consonant-CardFooter');
-      const ribbon = document.querySelector('.consonant-PlansCard-ribbon');
-      const buttons = cardFooter.querySelectorAll('.con-button');
-      const inactiveButton = cardFooter.querySelectorAll('.button--inactiive');
-      const secureWrapper = cardFooter.querySelector('.secure-transaction-wrapper');
-      const checkBoxContainer = cardFooter.querySelector('.checkbox-container');
-      const plansCard = document.querySelector('.consonant-ProductCard');
-      const iconsWrapper = document.querySelector('.consonant-PlansCard-iconWrapper');
-      const icons = iconsWrapper.querySelectorAll('.consonant-MerchCard-ProductIcon');
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h3[slot=heading-xs]');
+      const headingOne = merchCard.querySelector('h2[slot=heading-m]');
+      const body = merchCard.querySelector('div[slot=body-xs]');
+      const detail = merchCard.querySelector('h4[slot="body-xxs"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
 
-      expect(plansCard).to.exist;
-      console.log(plansCard.style.border);
-      expect(inner.querySelector('.consonant-PlansCard-title')).to.exist;
-      expect(inner.querySelector('.consonant-PlansCard-description')).to.exist;
-      expect(iconsWrapper).to.exist;
-      expect(icons.length).to.be.equal(2);
-      expect(ribbon).to.not.exist;
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(detail).to.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('plans');
+      expect(merchCard.getAttribute('badge')).to.not.exist;
+      expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
+      expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum');
+      expect(detail.textContent).to.be.equal('Lorem ipsum dolor sit');
       expect(buttons.length).to.be.equal(2);
       expect(buttons[0].textContent).to.be.equal('Learn More');
       expect(buttons[1].textContent).to.be.equal('Save now');
-      expect(inactiveButton).to.exist;
-      expect(secureWrapper).to.not.exist;
-      expect(checkBoxContainer).to.not.exist;
     });
 
     it('does not display undefined if no content', async () => {
       const el = document.querySelector('.merch-card.empty');
       await init(el);
       expect(el.outerHTML.includes('undefined')).to.be.false;
+    });
+  });
+
+  describe('Catalog Card', () => {
+    it('Supports Catalog card', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+      await init(document.querySelector('.merch-card.ribbon'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h4[slot="body-xxs"]');
+      const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+      const detail = merchCard.querySelector('h5[slot="detail-m"]');
+      const body = merchCard.querySelector('div[slot="body-xs"]');
+      const actionMenu = merchCard.querySelector('div[slot="action-menu-content"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
+
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(actionMenu).to.exist;
+      expect(detail).to.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+      expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+      expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
+      expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
+      expect(merchCard.getAttribute('action-menu')).to.be.equal('true');
+      // expect(merchCard.getAttribute('image')).to.exist;
+      expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+      expect(detail.textContent).to.be.equal('Desktop + Mobile');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
+    });
+
+    it('Supports Catalog card without badge', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+      await init(document.querySelector('.merch-card.catalog.empty-badge'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h3[slot="heading-xs"]');
+      const headingM = merchCard.querySelector('h2[slot="heading-m"]');
+      const detailM = merchCard.querySelector('h5[slot="detail-m"]');
+      const body = merchCard.querySelector('div[slot="body-xs"]');
+      const actionMenu = merchCard.querySelector('div[slot="action-menu-content"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
+      console.log('MERCH_CARD-empty', merchCard);
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingM).to.exist;
+      expect(body).to.exist;
+      expect(actionMenu).to.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+      expect(merchCard.getAttribute('badge')).to.not.exist;
+      expect(merchCard.getAttribute('action-menu')).to.be.equal('true');
+      // expect(merchCard.getAttribute('image')).to.exist;
+      expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+      expect(detailM.textContent).to.be.equal('Desktop + Mobile');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
+    });
+
+    it('Supports Catalog card without badge and action-menu', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+      await init(document.querySelector('.merch-card.catalog.empty-action-menu'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h3[slot="heading-xs"]');
+      const headingOne = merchCard.querySelector('h2[slot="heading-m"]');
+      const body = merchCard.querySelector('div[slot="body-xs"]');
+      const actionMenu = merchCard.querySelector('div[slot="action-menu-content"]');
+      const detail = merchCard.querySelector('h5[slot="detail-m"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
+      console.log('MERCH_CARD-empty-action', merchCard);
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(detail).to.exist;
+      expect(actionMenu).to.not.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+      expect(merchCard.getAttribute('badge')).to.not.exist;
+      expect(merchCard.getAttribute('action-menu')).to.not.exist;
+      // expect(merchCard.getAttribute('image')).to.exist;
+      expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+      expect(detail.textContent).to.be.equal('Desktop + Mobile');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
+    });
+
+    it('Supports Catalog card with badge without action-menu', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+      await init(document.querySelector('.merch-card.catalog.empty-badge.action-menu-exist'));
+      const merchCard = document.querySelector('merch-card');
+      const heading = merchCard.querySelector('h2[slot="heading-m"]');
+      const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+      const body = merchCard.querySelector('div[slot="body-xs"]');
+      const actionMenu = merchCard.querySelector('div[slot="action-menu-content"]');
+      const detail = merchCard.querySelector('h5[slot="detail-m"]');
+      const footer = merchCard.querySelector('div[slot="footer"]');
+      const buttons = footer.querySelectorAll('.con-button');
+      console.log('MERCH_CARD-action', merchCard);
+      expect(merchCard).to.exist;
+      expect(heading).to.exist;
+      expect(headingOne).to.exist;
+      expect(body).to.exist;
+      expect(detail).to.exist;
+      expect(actionMenu).to.not.exist;
+      expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+      expect(merchCard.getAttribute('badge')).to.not.exist;
+      expect(merchCard.getAttribute('action-menu')).to.not.exist;
+      // expect(merchCard.getAttribute('image')).to.exist;
+      expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
+      expect(detail.textContent).to.be.equal('Desktop + Mobile');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
     });
   });
 
