@@ -12,7 +12,7 @@ export const getMetadata = (el, config) => [...el.childNodes].reduce((rdx, row) 
 
 export default async function init(el) {
   let config = getConfig();
-  if (config.locale.ietf !== 'en-US') {
+  if (config.locale?.ietf !== 'en-US') {
     const analyticLocalization = getMetadata(el, config);
     config = {
       ...config,
