@@ -205,3 +205,18 @@ export const logErrorFor = async (fn, message, tags) => {
     lanaLog({ message, e, tags });
   }
 };
+
+export function processMartechAttributeMetadata(html) {
+  try {
+    const dom = new DOMParser().parseFromString(html, 'text/html').body;
+    const blocks = dom.querySelectorAll('.martech-attribute-metadata');
+    blocks.forEach((block) => {
+      import('../../martech-attribute-metadata/martech-attribute-metadata.js')
+        .then(({ default: decorate }) => decorate(block));
+    });
+    return null;
+  } catch (e) {
+    lanaLog({ message: 'Could not process martech attributes in gnav.', e, tags: 'errorType=error,module=gnav' });
+    return null;
+  }
+}

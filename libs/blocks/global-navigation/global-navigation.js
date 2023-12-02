@@ -25,6 +25,7 @@ import {
   selectors,
   logErrorFor,
   lanaLog,
+  processMartechAttributeMetadata,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray, replaceText } from '../../features/placeholders.js';
@@ -693,6 +694,7 @@ export default async function init(header) {
   const html = await resp.text();
   if (!html) return null;
   const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
+  processMartechAttributeMetadata(parsedHTML);
 
   try {
     const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);

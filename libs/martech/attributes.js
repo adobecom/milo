@@ -1,14 +1,8 @@
-export function processTrackingLabels(text, config, charLimit = 20, dnt = false) {
-  if (!config) {
-    import('../utils/utils.js').then((utils) => {
-      // eslint-disable-next-line no-param-reassign
-      config = utils.getConfig();
-    });
-  }
-  const analyticsValue = text?.replace(/[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g, ' ').replace(/^_+|_+$/g, '').trim()
-    .slice(0, charLimit);
-  const { locale, analyticLocalization } = config;
-  if (locale?.ietf !== 'en-US' && !dnt && analyticLocalization?.[analyticsValue]) return analyticLocalization?.[analyticsValue];
+export function processTrackingLabels(text, config = {}, charLimit = 20) {
+  let analyticsValue = text?.replace(/[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g, ' ').replace(/^_+|_+$/g, '').trim();
+  const { locale, analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
+  if (charLimit && locale?.ietf !== 'en-US' && loc) analyticsValue = loc;
+  if (charLimit) analyticsValue = analyticsValue.slice(0, charLimit);
   return analyticsValue;
 }
 

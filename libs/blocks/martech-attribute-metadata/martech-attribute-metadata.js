@@ -2,11 +2,10 @@ import { updateConfig, getConfig } from '../../utils/utils.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 
 export const getMetadata = (el, config) => [...el.childNodes].reduce((rdx, row) => {
-  if (row.children) {
-    const key = processTrackingLabels(row.children[0].textContent, config, 20, true);
-    const content = row.children[1];
-    const text = processTrackingLabels(content.textContent, config, 20, true);
-    if (key && text) rdx[key] = text;
+  if (row.children?.length > 1) {
+    const key = processTrackingLabels(row.children[0].textContent, config, false);
+    const value = processTrackingLabels(row.children[1].textContent, config, false);
+    if (key && value) rdx[key] = value;
   }
   return rdx;
 }, {});

@@ -8,6 +8,7 @@ import {
   setActiveDropdown,
   trigger,
   isDesktop,
+  processMartechAttributeMetadata,
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
@@ -275,6 +276,8 @@ const decorateMenu = (config) => logErrorFor(async () => {
     if (res.status !== 200) return;
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
+    processMartechAttributeMetadata(parsedContent);
+
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-content">
           ${parsedContent}
