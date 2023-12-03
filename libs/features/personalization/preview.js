@@ -1,4 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
+import { NON_TRACKED_MANIFEST_TYPE } from './personalization.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -171,7 +172,7 @@ function createPreviewPill(manifests) {
     const manifestFileName = manifestPath.split('/').pop();
     const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
     let analyticsTitle = '';
-    if (manifestType === 'test or promo') {
+    if (manifestType === NON_TRACKED_MANIFEST_TYPE) {
       analyticsTitle = 'N/A for this manifest type';
     } else if (manifestOverrideName) {
       analyticsTitle = manifestOverrideName;

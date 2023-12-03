@@ -54,9 +54,11 @@ export async function decorateSectionAnalytics(section, idx, config) {
 export function decorateBlockAnalytics() { return false; }
 export function decorateLinkAnalytics() { return false; }
 
+const RE_ALPHANUM = /[^0-9a-z]/gi;
+const RE_TRIM_UNDERSCORE = /^_+|_+$/g;
 export const analyticsGetLabel = (txt) => txt.replaceAll('&', 'and')
-  .replace(/[^0-9a-z]/gi, '_')
-  .replace(/^_+|_+$/g, '');
+  .replace(RE_ALPHANUM, '_')
+  .replace(RE_TRIM_UNDERSCORE, '');
 
 export const analyticsDecorateList = (li, idx) => {
   const link = li.firstChild?.nodeName === 'A' && li.firstChild;
