@@ -1,9 +1,16 @@
-export function processTrackingLabels(text, charLimit = 20) {
-  return text?.trim().replace(/\s+/g, ' ').split('|').join(' ')
+export function processTrackingLabels(text, config, charLimit = 20) {
+  if (!config) {
+    import('../utils/utils.js').then((utils) => {
+      // eslint-disable-next-line no-param-reassign
+      config = utils.getConfig();
+    });
+  }
+  const analyticsValue = text?.replace(/[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g, ' ').replace(/^_+|_+$/g, '').trim()
     .slice(0, charLimit);
+  return analyticsValue;
 }
 
-export function decorateDefaultLinkAnalytics(block) {
+export function decorateDefaultLinkAnalytics(block, config) {
   if (block.classList.length
     && !block.className.includes('metadata')
     && !block.classList.contains('link-block')
@@ -22,18 +29,18 @@ export function decorateDefaultLinkAnalytics(block) {
                 || item.querySelector('img')?.getAttribute('alt')
                 || 'no label';
             }
-            label = processTrackingLabels(label);
-            item.setAttribute('daa-ll', `${label}-${linkCount}|${header}`);
+            label = processTrackingLabels(label, config);
+            item.setAttribute('daa-ll', `${label}-${linkCount}--${header}`);
           }
           linkCount += 1;
         } else {
-          header = processTrackingLabels(item.textContent);
+          header = processTrackingLabels(item.textContent, config);
         }
       });
   }
 }
 
-export async function decorateSectionAnalytics(section, idx) {
+export async function decorateSectionAnalytics(section, idx, config) {
   document.querySelector('main')?.setAttribute('daa-im', 'true');
   section.setAttribute('daa-lh', `s${idx + 1}`);
   section.querySelectorAll('[data-block] [data-block]').forEach((block) => {
@@ -41,8 +48,8 @@ export async function decorateSectionAnalytics(section, idx) {
   });
   section.querySelectorAll('[data-block]').forEach((block, blockIdx) => {
     const blockName = block.classList[0] || '';
-    block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName}|${document.body.dataset.mep}`);
-    decorateDefaultLinkAnalytics(block);
+    block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName.slice(0, 15)}|${document.body.dataset.mep}`);
+    decorateDefaultLinkAnalytics(block, config);
     block.removeAttribute('data-block');
   });
 }

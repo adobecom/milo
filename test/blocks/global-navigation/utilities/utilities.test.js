@@ -57,8 +57,8 @@ describe('global navigation utilities', () => {
 
   it('getAnalyticsValue should return a string', () => {
     expect(getAnalyticsValue('test')).to.equal('test');
-    expect(getAnalyticsValue('test test')).to.equal('test_test');
-    expect(getAnalyticsValue('test test 1', 2)).to.equal('test_test_1-2');
+    expect(getAnalyticsValue('test test?')).to.equal('test test');
+    expect(getAnalyticsValue('test test 1?', 2)).to.equal('test test 1-2');
   });
 
   describe('decorateCta', () => {
