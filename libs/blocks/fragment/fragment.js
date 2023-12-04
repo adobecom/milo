@@ -48,7 +48,7 @@ const insertInlineFrag = (sections, a) => {
 };
 
 export default async function init(a) {
-  const { expFragments } = getConfig();
+  const { expFragments, decorateArea } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
   if (expFragments?.[relHref]) {
@@ -72,6 +72,9 @@ export default async function init(a) {
 
   const html = await resp.text();
   const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  if (decorateArea) decorateArea(doc);
+
   const sections = doc.querySelectorAll('body > div');
 
   if (!sections.length) {
