@@ -437,7 +437,7 @@ class Gnav {
     if (!rawBlock) return '';
 
     // Get all non-image links
-    const imgRegex = /(\.png|\.jpg|\.jpeg)/;
+    const imgRegex = /(\.png|\.jpg|\.jpeg|\.svg)/;
     const blockLinks = [...rawBlock.querySelectorAll('a')];
     const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
       && !imgRegex.test(blockLink.textContent));
