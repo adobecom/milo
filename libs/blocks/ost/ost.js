@@ -12,6 +12,7 @@ const OST_VERSION = '1.14.1';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
+const OST_URL = 'https://milo.adobe.com/tools/ost';
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
@@ -62,8 +63,7 @@ export const createLinkMarkup = (defaults) => (
       params.set('tax', displayTax);
       params.set('exclusive', forceTaxExclusive);
     }
-    const { location } = window;
-    return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
+    return `${OST_URL}?${params.toString()}`;
   };
 
   const link = document.createElement('a');
@@ -83,6 +83,7 @@ export async function loadOstEnv() {
   searchParameters.delete('token');
   const environment = searchParameters.get('env') ?? WCS_ENV;
   const owner = searchParameters.get('owner');
+  const promotionCode = searchParameters.get('promo');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
 
@@ -132,6 +133,7 @@ export async function loadOstEnv() {
     environment,
     language,
     searchParameters,
+    promotionCode,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
   };
