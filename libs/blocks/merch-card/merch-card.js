@@ -105,7 +105,8 @@ function addMerchCardGridsIfMissing(section) {
 const decorateMerchCardLinkAnalytics = (el) => {
   [...el.querySelectorAll('a')].forEach((link, index) => {
     const heading = el.querySelector('h3');
-    const analyticsString = `${processTrackingLabels(link.textContent)}-${index + 1}|${heading.textContent}`;
+    const headingText = heading.textContent ? heading.textContent : '';
+    const analyticsString = `${processTrackingLabels(link.textContent)}-${index + 1}|${headingText}`;
     link.setAttribute('daa-ll', analyticsString);
   });
 };
@@ -183,6 +184,13 @@ const init = (el) => {
       merchCard.setAttribute('icons', JSON.stringify(Array.from(iconImgs)));
       icons.forEach((icon) => icon.remove());
     }
+    parseContent(el, altCta, cardType, merchCard);
+    const footer = createTag('div', { slot: 'footer' });
+    if (ctas) {
+      decorateButtons(ctas);
+      footer.append(ctas);
+      merchCard.appendChild(footer);
+    }
     if (styles.includes('secure')) {
       replaceKey('secure-transaction', getConfig())
         .then((key) => merchCard.setAttribute('secure-label', key));
@@ -192,13 +200,6 @@ const init = (el) => {
       if (label !== null) {
         merchCard.setAttribute('checkbox-label', label);
       }
-    }
-    parseContent(el, altCta, cardType, merchCard);
-    const footer = createTag('div', { slot: 'footer' });
-    if (ctas) {
-      decorateButtons(ctas);
-      footer.append(ctas);
-      merchCard.appendChild(footer);
     }
     decorateBlockHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) {
