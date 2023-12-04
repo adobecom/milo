@@ -177,7 +177,7 @@ function addMerchCardGridIfMissing(section) {
     const metadata = getMetadata(el);
     let styleClasses = [];
     styleClasses = metadata?.style?.text?.split(',').map((token) => token.split(' ').join('-')) ?? [];
-    if (!styleClasses.some((styleClass) => !/-merch-card/.test(styleClass) && /-up/.test(styleClass))) {
+    if (styleClasses.some((styleClass) => /-up/.test(styleClass) && !/-merch-card/.test(styleClass))) {
       section.classList.add('three-merch-cards');
       return true;
     }
