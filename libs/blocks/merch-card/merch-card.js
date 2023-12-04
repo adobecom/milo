@@ -172,7 +172,7 @@ const extractTags = (container) => [...container.querySelectorAll('p')]
   }, { categories: ['all'], types: [] });
 
 function addMerchCardGridIfMissing(section, cardType) {
-  const el = section.querySelector('.section-metadata');
+  const el = section?.querySelector('.section-metadata');
   if (el) {
     const metadata = getMetadata(el);
     let styleClasses = [];
@@ -201,24 +201,26 @@ const init = async (el) => {
   const lastClass = styles[styles.length - 1];
   const name = PRODUCT_NAMES.includes(lastClass) ? lastClass : undefined;
 
-  let section = el.closest('.section');
   const cardType = getPodType(styles);
-  const merchCards = addMerchCardGridIfMissing(section, cardType);
-  if (!merchCards && section?.parentElement.classList.contains('fragment')) {
-    const fragment = section.parentElement;
-    const fragmentParent = fragment.parentElement;
-    section.style.display = 'contents';
-    fragment.style.display = 'contents';
-    fragmentParent.style.display = fragmentParent.classList.contains('nested')
-      ? fragmentParent.style.display
-      : 'contents';
-    section = fragmentParent.parentElement;
-  } else {
-    section.classList.add('three-merch-cards', cardType);
-  }
+  let section = el.closest('.section');
+  if (section) {
+    const merchCards = addMerchCardGridIfMissing(section, cardType);
+    if (!merchCards && section?.parentElement.classList.contains('fragment')) {
+      const fragment = section.parentElement;
+      const fragmentParent = fragment.parentElement;
+      section.style.display = 'contents';
+      fragment.style.display = 'contents';
+      fragmentParent.style.display = fragmentParent.classList.contains('nested')
+        ? fragmentParent.style.display
+        : 'contents';
+      section = fragmentParent.parentElement;
+    } else {
+      section.classList.add('three-merch-cards', cardType);
+    }
 
-  if (section && cardType) {
-    section.classList.add(cardType);
+    if (section && cardType) {
+      section.classList.add(cardType);
+    }
   }
 
   const images = el.querySelectorAll('picture');
