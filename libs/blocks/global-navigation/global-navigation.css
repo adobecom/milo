@@ -144,6 +144,10 @@ header.global-navigation {
   display: block;
 }
 
+.feds-menu-section img {
+  width: 100px;
+}
+
 .feds-brand-label,
 .feds-logo-label {
   flex-shrink: 0;
