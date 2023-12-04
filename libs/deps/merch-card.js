@@ -1,5 +1,5 @@
-// Fri, 01 Dec 2023 14:14:07 GMT
-import{html as o,LitElement as R}from"./lit-all.min.js";import{css as b,unsafeCSS as s}from"./lit-all.min.js";var u="(max-width: 767px)";var h="(min-width: 768px)",l="(min-width: 1200px)",p="(min-width: 1600px)";var k=b`
+// Mon, 04 Dec 2023 13:13:44 GMT
+import{html as o,LitElement as R}from"./lit-all.min.js";import{css as b,unsafeCSS as s}from"./lit-all.min.js";var u="(max-width: 767px)";var l="(min-width: 768px)",h="(min-width: 1200px)",p="(min-width: 1600px)";var k=b`
     :host {
         position: relative;
         display: flex;
@@ -260,7 +260,7 @@ import{html as o,LitElement as R}from"./lit-all.min.js";import{css as b,unsafeCS
     }
 `,d=(r,e=!0)=>{let t=[b`
         /* Tablet */
-        @media screen and ${s(h)} {
+        @media screen and ${s(l)} {
             :host([variant='${s(r)}'][size='wide']),
             :host([variant='${s(r)}'][size='super-wide']) {
                 grid-column: span 2;
@@ -269,7 +269,7 @@ import{html as o,LitElement as R}from"./lit-all.min.js";import{css as b,unsafeCS
         }
 
         /* Laptop */
-        @media screen and ${s(l)} {
+        @media screen and ${s(h)} {
             :host([variant='${s(r)}'][size='super-wide']) {
                 grid-column: span 3;
             }
@@ -291,9 +291,9 @@ import{html as o,LitElement as R}from"./lit-all.min.js";import{css as b,unsafeCS
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${l} {
     :root {
-        --consonant-merch-card-special-offer-width: 302px;
+        --consonant-merch-card-special-offers-width: 302px;
         --consonant-merch-card-catalog-width: 302px;
         --consonant-merch-card-plans-width: 302px;
     }
@@ -307,9 +307,9 @@ import{html as o,LitElement as R}from"./lit-all.min.js";import{css as b,unsafeCS
 }
 
 /* desktop */
-@media screen and ${l} {
+@media screen and ${h} {
     :root {
-        --consonant-merch-card-special-offer-width: 378px;
+        --consonant-merch-card-special-offers-width: 378px;
         --consonant-merch-card-catalog-width: 276px;
         --consonant-merch-card-plans-width: 276px;
     }
@@ -394,11 +394,8 @@ import{html as o,LitElement as R}from"./lit-all.min.js";import{css as b,unsafeCS
     --consonant-merch-card-max-width: 378px;
     --transition: cmax-height 0.3s linear, opacity 0.3s linear;
 
-    /* special offers mobile */
-    --consonant-merch-card-special-offer-width: 300px;
-
     /* special offers */
-    --consonant-merch-card-special-offers-width: 378px;
+    --consonant-merch-card-special-offers-width: 300px;
 
     /* image */
     --consonant-merch-card-image-width: 378px;
@@ -453,7 +450,7 @@ merch-cards > div[slot] p {
     gap: var(--spacing-m);
 }
 
-@media screen and ${l} {
+@media screen and ${h} {
     .one-merch-card,
     .two-merch-cards,
     .three-merch-cards,
@@ -634,6 +631,8 @@ div[slot='bg-image'] img {
     min-height: var(--consonant-merch-card-image-height);
     max-height: var(--consonant-merch-card-image-height);
     object-fit: cover;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
 }
 
 /* grid styles for legacy cards */
@@ -647,7 +646,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${l} {
     .two-merch-cards,
     .three-merch-cards,
     .four-merch-cards {
@@ -656,7 +655,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${l} {
+@media screen and ${h} {
     .three-merch-cards,
     .four-merch-cards {
         grid-template-columns: repeat(3, var(--consonant-merch-card-default-width));
