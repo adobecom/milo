@@ -1,7 +1,7 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 import { getUpFromSectionMetadata } from '../card/cardUtils.js';
-import { decorateLinkAnalytics } from '../../martech/attributes.js';
+import { processTrackingLabels } from '../../martech/analytics.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/commerce.js';
 import '../../deps/merch-card.js';
@@ -102,6 +102,16 @@ function addMerchCardGridsIfMissing(section) {
   }
 }
 
+const decorateMerchCardLinkAnalytics = (el) => {
+  [...el.querySelectorAll('a')].forEach((link, index) => {
+    const heading = el.querySelector('h3');
+    const linkText = `${processTrackingLabels(link.textContent)}-${index + 1}`;
+    const headingText = heading ? `${heading.textContent}` : '';
+    const analyticsString = heading ? `${linkText}|${headingText}` : linkText;
+    link.setAttribute('daa-ll', analyticsString);
+  });
+};
+
 const init = (el) => {
   let section = el.closest('.section');
   const upClass = getUpFromSectionMetadata(section);
@@ -120,8 +130,6 @@ const init = (el) => {
       section = fragmentParent.parentElement;
     }
     addMerchCardGridsIfMissing(section);
-    const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    decorateLinkAnalytics(el, headings);
     const images = el.querySelectorAll('picture');
     let image;
     const icons = [];
@@ -148,7 +156,7 @@ const init = (el) => {
       }
     });
 
-    const merchCard = createTag('merch-card', { class: el.className, variant: cardType });
+    const merchCard = createTag('merch-card', { class: el.className, variant: cardType, 'data-block': '' });
     if (ribbonMetadata !== null) {
       const badge = returnRibbonStyle(ribbonMetadata);
       if (badge !== null) {
@@ -160,12 +168,6 @@ const init = (el) => {
     if (actionMenuContent !== null) {
       merchCard.setAttribute('action-menu', true);
       merchCard.append(createTag('div', { slot: 'action-menu-content' }, actionMenuContent.innerHTML));
-    }
-    if (ctas) {
-      const footer = createTag('div', { slot: 'footer' });
-      decorateButtons(ctas);
-      footer.append(ctas);
-      merchCard.appendChild(footer);
     }
     if (image !== undefined) {
       const imageSlot = createTag('div', { slot: 'bg-image' });
@@ -183,6 +185,13 @@ const init = (el) => {
       merchCard.setAttribute('icons', JSON.stringify(Array.from(iconImgs)));
       icons.forEach((icon) => icon.remove());
     }
+    parseContent(el, altCta, cardType, merchCard);
+    const footer = createTag('div', { slot: 'footer' });
+    if (ctas) {
+      decorateButtons(ctas);
+      footer.append(ctas);
+      merchCard.appendChild(footer);
+    }
     if (styles.includes('secure')) {
       replaceKey('secure-transaction', getConfig())
         .then((key) => merchCard.setAttribute('secure-label', key));
@@ -193,12 +202,12 @@ const init = (el) => {
         merchCard.setAttribute('checkbox-label', label);
       }
     }
-    parseContent(el, altCta, cardType, merchCard);
     decorateBlockHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) {
       merchCard.setAttribute('custom-hr', true);
     }
     el.replaceWith(merchCard);
+    decorateMerchCardLinkAnalytics(merchCard);
   }
 };
 
