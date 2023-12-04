@@ -134,6 +134,15 @@ const decoratePromo = (elem, index) => {
   const isImageOnly = elem.matches('.image-only');
   const imageElem = elem.querySelector('picture');
 
+  if (!isImageOnly) {
+    const imageElemMaybe = imageElem && elem.removeChild(imageElem.parentElement.parentElement);
+    const innerContainer = toFragment`<div class="feds-promo-content"></div>`;
+
+    innerContainer.append(...elem.children);
+    elem.appendChild(innerContainer);
+    if (imageElemMaybe) elem.appendChild(imageElemMaybe);
+  }
+
   decorateElements({ elem, className: 'feds-promo-link', index });
 
   const decorateImage = () => {
@@ -171,18 +180,6 @@ const decoratePromo = (elem, index) => {
 
   if (isDarkTheme) {
     elem.classList.add('feds-promo--dark');
-  }
-
-  if (!isImageOnly) {
-    const imageElemMaybe = imageElem && elem.removeChild(elem.querySelector('.feds-promo-image'));
-    const innerContainer = document.createElement('div');
-    innerContainer.classList.add('feds-promo-inner-container');
-
-    innerContainer.append(...elem.children);
-
-    elem.appendChild(innerContainer);
-
-    if (imageElemMaybe) elem.appendChild(imageElemMaybe);
   }
 
   return toFragment`<div class="feds-promo-wrapper">
@@ -305,16 +302,15 @@ const decorateMenu = (config) => logErrorFor(async () => {
     if (res.status !== 200) return;
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
+    const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
-          <div class="feds-menu-content">
-              ${parsedContent}
-          </div>
+          ${menuContent}
         </div>
       </div>`;
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
-    await decorateColumns({ content: menuTemplate.querySelector('.feds-menu-content') });
+    await decorateColumns({ content: menuContent });
     config.template.classList.add('feds-navItem--megaMenu');
   }
 

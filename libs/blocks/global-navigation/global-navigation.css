@@ -501,7 +501,7 @@ header.global-navigation {
     min-height: var(--global-height-navPromo);
   }
 
-  .feds-promo .feds-promo-inner-container {
+  .feds-promo .feds-promo-content {
     padding: 24px 32px;
   }
 
@@ -532,6 +532,10 @@ header.global-navigation {
   [dir = "rtl"] .feds-popup {
     left: auto;
     right: 0;
+  }
+
+  .feds-menu-container {
+    min-width: 100%;
   }
 
   /* Nav Links */
@@ -653,10 +657,6 @@ header.global-navigation {
 @media (min-width: 900px) and (max-width: 1199px) {
   .feds-brand-image + .feds-brand-label {
     display: none;
-  }
-
-  .feds-menu-container {
-    width: 100%;
   }
 }
 
