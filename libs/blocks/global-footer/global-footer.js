@@ -71,16 +71,14 @@ class Footer {
 
     if (!this.body) return;
 
-    // TODO: revisit region picker and social links decoration logic
-    const regionAnchor = this.body.querySelector('.region-selector a');
-    if (regionAnchor?.href) {
-      regionAnchor.setAttribute('href', `${regionAnchor.getAttribute('href')}#_dnt#_dnb`);
-    }
-    const socialLinks = document.querySelectorAll('.social a');
-    socialLinks.forEach((socialLink) => {
-      socialLink.setAttribute('href', `${socialLink.getAttribute('href')}#_dnb`);
-    });
+    const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
+    const [regionParent, socialParent] = [region.parentElement, social.parentElement];
+    [regionParent, socialParent].forEach((parent) => parent.replaceChildren());
+
     decorateLinks(this.body);
+
+    regionParent.appendChild(region);
+    socialParent.appendChild(social);
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
