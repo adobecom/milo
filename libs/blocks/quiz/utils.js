@@ -62,9 +62,14 @@ export const getUrlParams = () => {
   return params;
 };
 
-export const handleResultFlow = async (answers = []) => {
+export const defaultRedirect = (url) => {
+  window.location.href = url;
+};
+
+export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect) => {
   const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
-  window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  redirectFunc(redirectUrl);
 };
 
 /**
