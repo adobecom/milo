@@ -30,9 +30,6 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
   ));
   const { nodeName, dataset } = await el.onceSettled();
   expect(nodeName).to.equal('SPAN');
-  if (!expectedAttributes.template) {
-    expect(dataset.template).to.be.undefined;
-  }
   Object.keys(expectedAttributes).forEach((key) => {
     const value = expectedAttributes[key];
     expect(dataset[key], ` ${key} should equal ${value}`).to.equal(value);
@@ -91,11 +88,11 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to strikethrough price with term, seat and tax', async () => {
-      await validatePriceSpan('.merch.price.strikethrough', { template: 'strikethrough' });
+      await validatePriceSpan('.merch.price.strikethrough', { template: 'priceStrikethrough' });
     });
 
     it('renders merch link to optical price with term, seat and tax', async () => {
-      await validatePriceSpan('.merch.price.optical', { template: 'optical' });
+      await validatePriceSpan('.merch.price.optical', { template: 'priceOptical' });
     });
 
     it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {
@@ -109,7 +106,7 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to promo price without discount', async () => {
-      await validatePriceSpan('.merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
+      await validatePriceSpan('.merch.strikethrough.oldprice', { template: 'priceStrikethrough', promotionCode: undefined });
     });
 
     it('renders merch link to promo price with discount', async () => {
@@ -127,7 +124,7 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to promo price without discount', async () => {
-      await validatePriceSpan('.fragment .merch.strikethrough.oldprice', { template: 'strikethrough', promotionCode: undefined });
+      await validatePriceSpan('.fragment .merch.strikethrough.oldprice', { template: 'priceStrikethrough', promotionCode: undefined });
     });
 
     it('renders merch link to promo price with discount', async () => {
