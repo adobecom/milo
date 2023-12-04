@@ -104,7 +104,6 @@ const PRODUCT_NAMES = [
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
 const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading'];
-const MERCH_CARD_GRIDS = ['one-merch-card', 'two-merch-cards', 'three-merch-cards', 'four-merch-cards'];
 
 const textStyles = {
   H5: 'detail-m',
@@ -173,20 +172,19 @@ const extractTags = (container) => [...container.querySelectorAll('p')]
   }, { categories: ['all'], types: [] });
 
 function addMerchCardGridIfMissing(section) {
-  if (section?.matches('[class*="-merch-card"]')) return true;
-  if (!section?.matches('[class*="-up"]') && section?.parentElement.tagName !== 'MAIN') return false;
-  // this is a milo grid with -up stles.
-  let styleClasses = [];
   const el = section.querySelector('.section-metadata');
   if (el) {
     const metadata = getMetadata(el);
+    let styleClasses = [];
     styleClasses = metadata?.style?.text?.split(',').map((token) => token.split(' ').join('-')) ?? [];
+    if (!styleClasses.some((styleClass) => /-merch-card/.test(styleClass))) {
+      section.classList.add('three-merch-cards');
+      return true;
+    }
   }
-  if (!MERCH_CARD_GRIDS.some((styleClass) => styleClasses.includes(styleClass))) {
-    // no merch card grid found, add the default one.
-    section.classList.add('three-merch-cards');
-    return true;
-  }
+
+  if (!section?.matches('[class*="-up"]') && section?.parentElement.tagName !== 'MAIN') return false;
+  // this is a milo grid with -up stles.
   return false;
 }
 
@@ -215,6 +213,10 @@ const init = async (el) => {
       ? fragmentParent.style.display
       : 'contents';
     section = fragmentParent.parentElement;
+  }
+
+  if (section && cardType) {
+    section.classList.add(cardType);
   }
 
   const images = el.querySelectorAll('picture');
@@ -340,12 +342,6 @@ const init = async (el) => {
   }
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
-
-  if (cardType) {
-    setTimeout(() => {
-      merchCard.closest('[class*="-merch-card"]')?.classList.add(cardType);
-    }, 1);
-  }
   return merchCard;
 };
 
