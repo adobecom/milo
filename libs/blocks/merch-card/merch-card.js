@@ -1,7 +1,7 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 import { getUpFromSectionMetadata } from '../card/cardUtils.js';
-import { processTrackingLabels } from '../../martech/analytics.js';
+import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/commerce.js';
 import '../../deps/merch-card.js';
@@ -104,10 +104,11 @@ function addMerchCardGridsIfMissing(section) {
 
 const decorateMerchCardLinkAnalytics = (el) => {
   [...el.querySelectorAll('a')].forEach((link, index) => {
+    const config = getConfig();
     const heading = el.querySelector('h3');
-    const linkText = `${processTrackingLabels(link.textContent)}-${index + 1}`;
-    const headingText = heading ? `${heading.textContent}` : '';
-    const analyticsString = heading ? `${linkText}|${headingText}` : linkText;
+    const linkText = `${processTrackingLabels(link.textContent, config)}-${index + 1}`;
+    const headingText = heading ? `${processTrackingLabels(heading.textContent, config)}` : '';
+    const analyticsString = heading ? `${linkText}--${headingText}` : linkText;
     link.setAttribute('daa-ll', analyticsString);
   });
 };
