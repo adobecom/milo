@@ -99,8 +99,12 @@ export async function syncToLangstore(e) {
   e.target.disabled = true;
   if (!heading.value.projectId) {
     const status = await createProject();
-    if (status === 201) await startSync();
-    getServiceUpdates();
+    console.log(new Date().toString());
+    setTimeout(async () => {
+      console.log(new Date().toString());
+      if (status === 201) await startSync();
+      getServiceUpdates();
+    }, 3000);
   } else {
     await startSync();
   }
