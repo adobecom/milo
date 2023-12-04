@@ -15,6 +15,8 @@ import {
   getAnalyticsValue,
   loadBaseStyles,
   yieldToMain,
+  lanaLog,
+  logErrorFor,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey, replaceText } from '../../features/placeholders.js';
@@ -36,7 +38,7 @@ class Footer {
     this.init();
   }
 
-  init = async () => {
+  init = () => logErrorFor(async () => {
     // We initialize the footer decoration logic when either 3s have passed
     // OR when the footer element is close to coming into view
     let decorationTimeout;
@@ -61,14 +63,14 @@ class Footer {
       observer.disconnect();
       this.decorateContent();
     }, CONFIG.delays.decoration);
-  };
+  }, 'Error in global footer init', 'errorType=error,module=global-footer');
 
-  decorateContent = async () => {
+  decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
     this.body = await this.fetchContent();
 
-    // TODO: log to LANA if Footer content could not be found
     if (!this.body) return;
+
     // TODO: revisit region picker and social links decoration logic
     const regionAnchor = this.body.querySelector('.region-selector a');
     if (regionAnchor?.href) {
@@ -101,10 +103,18 @@ class Footer {
     this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
 
     this.footerEl.append(this.elements.footer);
-  };
+  }, 'Failed to decorate footer content', 'errorType=error,module=global-footer');
 
   fetchContent = async () => {
     const resp = await fetch(`${this.contentUrl}.plain.html`);
+
+    if (!resp.ok) {
+      lanaLog({
+        message: `Failed to fetch footer content; content url: ${this.contentUrl}, status: ${resp.statusText}`,
+        tags: 'errorType=warn,module=global-footer',
+      });
+    }
+
     const html = await resp.text();
 
     if (!html) return null;
@@ -114,7 +124,7 @@ class Footer {
     try {
       return new DOMParser().parseFromString(parsedHTML, 'text/html').body;
     } catch (e) {
-      // TODO: log to LANA if Footer could not be instantiated
+      lanaLog({ message: 'Footer could not be instantiated', tags: 'errorType=error,module=global-footer' });
       return null;
     }
   };
@@ -153,6 +163,7 @@ class Footer {
 
   loadIcons = async () => {
     const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
+
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
     this.footerEl.append(elem);
@@ -195,7 +206,8 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      // TODO: Log to Lana if URL could not be created
+      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'errorType=error,module=global-footer' });
+      throw e;
     }
 
     if (!url) return this.elements.regionPicker;
