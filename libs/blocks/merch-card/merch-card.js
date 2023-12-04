@@ -105,7 +105,9 @@ function addMerchCardGridsIfMissing(section) {
 const decorateMerchCardLinkAnalytics = (el) => {
   [...el.querySelectorAll('a')].forEach((link, index) => {
     const heading = el.querySelector('h3');
-    const analyticsString = `${processTrackingLabels(link.textContent)}-${index + 1}|${heading?.textContent || ''}`;
+    const linkText = `${processTrackingLabels(link.textContent)}-${index + 1}`;
+    const headingText = heading ? `${heading.textContent}` : '';
+    const analyticsString = heading ? `${linkText}|${headingText}` : linkText;
     link.setAttribute('daa-ll', analyticsString);
   });
 };
