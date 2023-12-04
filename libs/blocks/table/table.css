@@ -132,8 +132,8 @@
 }
 
 .table.button-right.merch .row-heading .col.col-heading .buttons-wrapper {
-  justify-content: right;
-  -webkit-justify-content: right;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
 }
 
 .table.merch.button-right .row-heading .col.col-heading .buttons-wrapper > * {
