@@ -83,13 +83,12 @@
 }
 
 .feds-footer-options {
-  color: #909090;
   /* justify-content: space-between; */
   align-items: flex-start;
   /* padding: 0 var(--feds-gutter-footer); */
   flex-wrap: wrap;
   row-gap: 12px;
-  /*column-gap: 40px;/*
+  /*column-gap: 40px; */
 }
 
 .feds-footer-miscLinks {
