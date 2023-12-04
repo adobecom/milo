@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 describe('Analytics', async () => {
   beforeEach(async () => {
     await readFile({ path: './mocks/body.html' });
-    const analytics = await import('../../libs/martech/analytics.js');
+    const analytics = await import('../../libs/martech/attributes.js');
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
     document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
   });
