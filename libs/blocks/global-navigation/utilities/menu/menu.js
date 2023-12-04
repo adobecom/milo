@@ -270,13 +270,13 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 const decorateLinksStrip = (content) => {
   const linksStripEl = content.querySelector('.links-strip');
   if (!linksStripEl) return;
-
+  linksStripEl.parentElement.removeChild(linksStripEl);
   const decorateLink = (el) => {
     const image = el.querySelector('picture');
     const link = el.querySelector('a');
-    const imageEl = image ? toFragment`<div class="feds-links-strip-image">${image}</div>` : '';
+    const imageEl = image ? toFragment`<div class="feds-linksStrip-image">${image}</div>` : '';
     const contentEl = link ? `<span>${link.textContent}</span>` : '';
-    return toFragment`<div class="feds-links-strip-item">
+    return toFragment`<div class="feds-linksStrip-item">
       <a href="${link.href}" class="feds-navLink">
       ${imageEl}
       ${contentEl}
@@ -284,8 +284,8 @@ const decorateLinksStrip = (content) => {
     </div>`;
   };
 
-  const linksStripWrapper = toFragment`<div class="feds-links-strip-wrapper"><div class="feds-links-strip"></div></div>`;
-  linksStripWrapper.querySelector('.feds-links-strip').append(...[...linksStripEl.children].map(decorateLink));
+  const linksStripWrapper = toFragment`<div class="feds-linksStrip-wrapper"><div class="feds-linksStrip"></div></div>`;
+  linksStripWrapper.querySelector('.feds-linksStrip').append(...[...linksStripEl.children].map(decorateLink));
   content.append(linksStripWrapper);
 };
 

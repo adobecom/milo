@@ -40,7 +40,7 @@ export const selectors = {
   breadcrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',
   imsSignIn: '.feds-signIn',
-  linksStripWrapper: '.feds-links-strip-wrapper',
+  linksStripWrapper: '.feds-linksStrip-wrapper',
 };
 
 export const viewports = {
