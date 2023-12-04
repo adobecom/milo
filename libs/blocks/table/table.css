@@ -133,6 +133,7 @@
 
 .table.button-right.merch .row-heading .col.col-heading .buttons-wrapper {
   justify-content: right;
+  -webkit-justify-content: right;
 }
 
 .table.merch.button-right .row-heading .col.col-heading .buttons-wrapper > * {
