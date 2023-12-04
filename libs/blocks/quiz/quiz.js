@@ -20,7 +20,7 @@ export async function loadFragments(fragmentURL) {
 
 const App = ({
   initialIsDataLoaded = false,
-  preQuestions = {}, initialStrings = {},
+  preQuestions = {}, initialStrings = {}, shortQuiz: isShortQuiz = false,
 }) => {
   const [btnAnalytics, setBtnAnalytics] = useState(null);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
@@ -34,7 +34,7 @@ const App = ({
   const [selectedQuestion, setSelectedQuestion] = useState(preQuestions || null);
   const [stringData, setStringData] = useState(initialStrings || {});
   const [stringQList, setStringQList] = useState(preQuestions.stringQList || {});
-  const [totalSteps, setTotalSteps] = useState(3);
+  const [totalSteps, setTotalSteps] = useState(isShortQuiz ? 2 : 3);
   const initialUrlParams = getUrlParams();
   const [userSelection, updateUserSelection] = useState([]);
   const [userFlow, setUserFlow] = useState([]);
@@ -323,15 +323,18 @@ const App = ({
 
 export default async function init(
   el,
+  shortQuiz,
   initialIsDataLoaded = false,
   preQuestions = {},
   initialStrings = {},
 ) {
-  initConfigPathGlob(el);
+  const configData = initConfigPathGlob(el);
+  const updatedShortQuiz = shortQuiz || configData.shortQuiz;
   el.replaceChildren();
   render(html`<${App} 
     initialIsDataLoaded=${initialIsDataLoaded} 
     preQuestions=${preQuestions} 
-    initialStrings=${initialStrings} 
+    initialStrings=${initialStrings}
+    shortQuiz=${updatedShortQuiz}
   />`, el);
 }
