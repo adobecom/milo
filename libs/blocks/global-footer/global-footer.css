@@ -238,8 +238,8 @@
   display: flex;
   column-gap: 5px;
   align-items: center;
-  color: var(--feds-color-link--light);
-  fill: var(--feds-color-link--light);
+  color: #909090;
+  fill: #909090;
 }
 
 .feds-footer-privacyLink:hover {
