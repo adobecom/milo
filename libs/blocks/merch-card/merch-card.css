@@ -1,14 +1,20 @@
-main > div[class*="-merch-card"],
-main > div[class*="-merch-cards"] {
+main > div.section[class*="-merch-card"]:not([data-status='decorated']),
+.fragment > div.section[class*="-merch-card"]:not([data-status='decorated']) {
   display: grid;
+  padding-bottom: var(--spacing-m);
 }
 
- div[class*="-merch-card"] > div,
+div[class*="-merch-card"] > div,
  div[class*="-merch-cards"] > div {
-  width: 100%;
-  grid-column: 1 / -1;
-}
+   width: 100%;
+   grid-column: 1 / -1;
+ }
 
-div[data-removed-manifest-id] {
-  display: none;
+ div[data-removed-manifest-id] {
+   display: none;
+ }
+ 
+ .merch-card-price {
+  margin-top: 8px; 
+  margin-bottom: 16px; 
 }
