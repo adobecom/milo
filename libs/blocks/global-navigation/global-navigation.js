@@ -442,7 +442,7 @@ class Gnav {
     const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
       && !imgRegex.test(blockLink.textContent));
 
-    if (!link) return '';
+    //if (!link) return '';
 
     // Check which elements should be rendered
     const renderImage = !rawBlock.matches('.no-logo');
