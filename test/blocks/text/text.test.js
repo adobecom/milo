@@ -62,4 +62,11 @@ describe('text block', () => {
       });
     });
   });
+
+  describe('two content rows', () => {
+    it('has viewport classes', () => {
+      const mobileEl = document.querySelector('.text-block .mobile-up');
+      expect(mobileEl).to.exist;
+    });
+  });
 });
