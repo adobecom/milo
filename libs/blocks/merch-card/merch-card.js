@@ -171,20 +171,18 @@ const extractTags = (container) => [...container.querySelectorAll('p')]
     return acc;
   }, { categories: ['all'], types: [] });
 
-function addMerchCardGridIfMissing(section) {
+function addMerchCardGridIfMissing(section, cardType) {
   const el = section.querySelector('.section-metadata');
   if (el) {
     const metadata = getMetadata(el);
     let styleClasses = [];
     styleClasses = metadata?.style?.text?.split(',').map((token) => token.split(' ').join('-')) ?? [];
     if (styleClasses.some((styleClass) => /-up/.test(styleClass) && !/-merch-card/.test(styleClass))) {
-      section.classList.add('three-merch-cards');
-      return true;
+      section.classList.add('three-merch-cards', cardType);
     }
+    section.classList.add(cardType);
+    return true;
   }
-
-  if (!section?.matches('[class*="-up"]') && section?.parentElement.tagName !== 'MAIN') return false;
-  // this is a milo grid with -up stles.
   return false;
 }
 
@@ -204,8 +202,8 @@ const init = async (el) => {
   const name = PRODUCT_NAMES.includes(lastClass) ? lastClass : undefined;
 
   let section = el.closest('.section');
-  const merchCards = addMerchCardGridIfMissing(section);
   const cardType = getPodType(styles);
+  const merchCards = addMerchCardGridIfMissing(section, cardType);
   if (!merchCards && section?.parentElement.classList.contains('fragment')) {
     const fragment = section.parentElement;
     const fragmentParent = fragment.parentElement;
@@ -215,6 +213,8 @@ const init = async (el) => {
       ? fragmentParent.style.display
       : 'contents';
     section = fragmentParent.parentElement;
+  } else {
+    section.classList.add('three-merch-cards', cardType);
   }
 
   if (section && cardType) {
