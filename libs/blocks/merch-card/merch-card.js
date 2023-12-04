@@ -217,10 +217,6 @@ const init = async (el) => {
     section = fragmentParent.parentElement;
   }
 
-  if (section && cardType) {
-    section.classList.add(cardType);
-  }
-
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
@@ -344,6 +340,12 @@ const init = async (el) => {
   }
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
+
+  if (cardType) {
+    setTimeout(() => {
+      merchCard.closest('[class*="-merch-card"]')?.classList.add(cardType);
+    }, 1);
+  }
   return merchCard;
 };
 
