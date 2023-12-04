@@ -466,7 +466,8 @@ class Gnav {
 
     // Create label element
     const labelEl = renderLabel
-      ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
+      //? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
+      ? ''
       : '';
 
     // Create final template
