@@ -145,9 +145,9 @@ class Footer {
     this.elements.footerMenu = toFragment`<div class="feds-menu-content"></div>`;
 
     const footerLogo = this.body.querySelector(':scope > div > p img');
-    console.log('Footer Image: ' + footerLogo.href);
+    console.log('Footer Image: ' + footerLogo.src);
     if (footerLogo) {
-      const footerImage = toFragment `<div class="footer-brand-logo"><img src="${footerLogo.href}"/></div>`
+      const footerImage = toFragment `<div class="footer-brand-logo"><img src="${footerLogo.src}"/></div>`
       //const logoWrapper = createTag('div', {class: 'footer-logo-wrapper'});
       //const 
       this.elements.footerMenu.appendChild(footerImage);
