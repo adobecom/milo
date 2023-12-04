@@ -59,6 +59,7 @@
   box-shadow: 0 -1px 0 inset var(--tabs-border-color);
   display: flex;
   z-index: 2;
+  margin: 0 32px;
 
   /* ScrollProps - If content exceeds height of container, overflow! */
   overflow: auto;
@@ -81,12 +82,11 @@
 }
 
 .tabs.center .tab-headline {
-    text-align: center;
+  text-align: center;
 }
 
 .tabs div[role="tablist"] .tab-list-container {
   display: flex;
-  padding: 0 8.3%;
   width: var(--grid-container-width);
   margin: 0 auto;
   box-sizing: content-box;
@@ -101,7 +101,6 @@
 
 .tabs.center div[role="tablist"] .tab-list-container {
   width: auto;
-  margin: 0;
 }
 
 .tabs .tab-content {
@@ -264,6 +263,61 @@
   height: 24px;
 }
 
+.tabs .tab-paddles {
+  position: relative;
+  z-index: 3;
+}
+
+.tabs .tab-paddles .paddle {
+  position: absolute;
+  width: 32px;
+  height: 48px;
+  bottom: 0;
+  background: #fff;
+  border: 0;
+}
+
+.tabs .tab-paddles .paddle:disabled {
+  box-shadow: 0 -1px 0 inset var(--tabs-border-color);
+  background: var(--tabs-list-bg-gradient);
+}
+
+.tabs .tab-paddles .paddle-left {
+  box-shadow: 0 -1px 0 inset var(--tabs-border-color), 4px 0 4px -2px #0000001a;
+  left: 0;
+}
+
+.tabs .tab-paddles .paddle-right {
+  box-shadow: 0 -1px 0 inset var(--tabs-border-color), -4px 0 4px -2px #0000001a;
+  right: 0;
+}
+
+.tabs .tab-paddles .paddle::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 9px;
+  right: 17px;
+  opacity: 100;
+  transition: opacity 150ms ease;
+}
+
+.tabs .tab-paddles .paddle:disabled::after {
+  opacity: 0;
+}
+
+.tabs .tab-paddles .paddle-left::after {
+  background: url("data:image/svg+xml,%3Csvg width='8' height='14' viewBox='0 0 8 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M6.5 0.750003C6.77979 0.750003 7.06006 0.856933 7.27344 1.0708C7.70069 1.49805 7.70069 2.19043 7.27344 2.61768L2.89063 7L7.27344 11.3823C7.70069 11.8096 7.70069 12.502 7.27344 12.9292C6.84668 13.3569 6.15332 13.3569 5.72656 12.9292L0.570308 7.77344C0.365228 7.56836 0.249998 7.29004 0.249998 7C0.249998 6.70996 0.365228 6.43164 0.570308 6.22656L5.72656 1.0708C5.93994 0.856933 6.22021 0.750493 6.5 0.750003Z' fill='%236D6D6D'/%3E%3C/svg%3E%0A") no-repeat center center;
+  width: 8px;
+  height: 14px;
+}
+
+.tabs .tab-paddles .paddle-right::after {
+  background: url("data:image/svg+xml,%3Csvg width='8' height='14' viewBox='0 0 8 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z' fill='%236D6D6D'/%3E%3C/svg%3E%0A") no-repeat center center;
+  width: 8px;
+  height: 14px;
+}
+
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs div[role="tablist"],
@@ -289,5 +343,13 @@
   .tabs.quiet div[role="tablist"] button {
     padding-top: 18px;
     padding-bottom: 18px;
+  }
+
+  .tabs .tab-paddles .paddle {
+    height: 62px;
+  }
+
+  .tabs .tab-paddles .paddle::after {
+    top: 24px;
   }
 }
