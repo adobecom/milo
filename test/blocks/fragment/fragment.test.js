@@ -64,6 +64,13 @@ describe('Fragments', () => {
     expect(cols.innerHTML.includes('Hello World!!!')).to.be.true;
   });
 
+  it('Makes media relative to fragment', async () => {
+    const section = document.querySelector('.default-section');
+    await loadArea(section);
+    expect(section.querySelector('source[srcset^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
+    expect(section.querySelector('img[src^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
+  });
+
   it('"decorated" class added by decorateArea()', async () => {
     const a = document.querySelector('a.frag-image');
     await getFragment(a);
