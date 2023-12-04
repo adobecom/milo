@@ -5,6 +5,7 @@ import {
   getMetadata,
   loadBlock,
   decorateLinks,
+  createTag,
 } from '../../utils/utils.js';
 
 import {
@@ -134,9 +135,24 @@ class Footer {
     this.elements.footerMenu = '';
     const columns = this.body.querySelectorAll(':scope > div > h2:first-child');
 
+    
+   
+    
+
+
     if (!columns || !columns.length) return this.elements.footerMenu;
 
     this.elements.footerMenu = toFragment`<div class="feds-menu-content"></div>`;
+
+    const footerLogo = this.body.querySelectorAll(':scope > div > p > a:first-child');
+    if (footerLogo) {
+      const footerImage = toFragment `<div class="footer-brand-logo"><img src="${footerLogo.href}"/></div>`
+      //const logoWrapper = createTag('div', {class: 'footer-logo-wrapper'});
+      //const 
+      this.elements.footerMenu.appendChild(footerImage);
+    }
+
+
     columns.forEach((column) => this.elements.footerMenu.appendChild(column.parentElement));
 
     await this.loadMenuLogic();

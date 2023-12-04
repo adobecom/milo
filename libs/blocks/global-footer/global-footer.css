@@ -4,7 +4,7 @@
   display: flex;
   justify-content: center;
   font-size: 12px;
-  background: var(--feds-background-footer--light);
+  background: var(--feds-background-promo--dark);
 }
 
 .global-footer ul {
@@ -83,9 +83,9 @@
 }
 
 .feds-footer-options {
-  justify-content: space-between;
+  /* justify-content: space-between; */
   align-items: flex-start;
-  padding: 0 var(--feds-gutter-footer);
+  /* padding: 0 var(--feds-gutter-footer); */
   flex-wrap: wrap;
   row-gap: 12px;
   column-gap: 40px;

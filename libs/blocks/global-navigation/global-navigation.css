@@ -134,7 +134,7 @@ header.global-navigation {
 
 .feds-brand-image,
 .feds-logo-image {
-  width: 25px;
+  width: 100px;
   flex-shrink: 0;
 }
 
