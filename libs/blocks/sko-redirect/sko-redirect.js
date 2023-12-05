@@ -33,7 +33,7 @@ export default async function init(blockEl) {
         wrapper.append(manualButton);
 
         blockEl.append(wrapper);
-        //updateTimer();
+        updateTimer();
 
       } else {
         decorateError(wrapper, blockEl);
