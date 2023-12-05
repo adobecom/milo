@@ -55,6 +55,7 @@ const MILO_BLOCKS = [
   'preflight',
   'promo',
   'quiz',
+  'quiz-marquee',
   'quiz-results',
   'tabs',
   'table-of-contents',
@@ -799,10 +800,6 @@ async function checkForPageMods() {
       `${base}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
-    loadLink(
-      `${base}/features/personalization/manifest-utils.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
   }
 
   if (persEnabled) {
@@ -812,8 +809,10 @@ async function checkForPageMods() {
   }
 
   const { env } = getConfig();
+  let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
   if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
+    previewOn = true;
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
@@ -827,14 +826,17 @@ async function checkForPageMods() {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
     loadIms().catch(() => {});
-    const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
+    const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
-
-    const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests);
   } else {
-    document.body.dataset.mep = 'default|default';
+    document.body.dataset.mep = 'nopzn|nopzn';
+  }
+
+  if (previewOn) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
 }
 
@@ -990,8 +992,8 @@ async function documentPostSectionLoading(config) {
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
-  import('../martech/analytics.js').then((analytics) => {
-    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
+  import('../martech/attributes.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
 }
 
