@@ -172,7 +172,7 @@ function createCheckItem(item, type, { Field: id, Default: def }) {
   input.type = type;
   input.name = id;
   input.value = item;
-  input.checked = defList.includes(item);
+  input.checked = item && defList.includes(item);
   input.className = `check-item-input ${type}-input`;
   input.id = `${id}-${itemKebab}`;
   pseudoEl.className = `check-item-button ${type}-button`;
