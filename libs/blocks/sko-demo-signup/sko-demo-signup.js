@@ -107,18 +107,28 @@ async function onSubmit() {
 
       
       try {
+        /*
         const response = await fetch("https://prod-56.westus.logic.azure.com/workflows/58fe7b1a791c4b068c43c535fac5d703/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YXIJ9-vicUvmWpfOchMqtS0zACqe_iRCFPWjWUDTyDU", {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          "Content-type": "application/json; charset=UTF-8"
-        }
-      });
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8"
+          }
+        });
+        */
 
-      if(response.ok) {
+      const messages = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
+
+
+
+      if(true) {
         const wrapper = document.querySelector('.sko-demo-signup');
         const parent = wrapper.parentNode;
         wrapper.remove();
+
+        const heading = message.querySelector('.sko-submit-success > div > div > p');
+        console.log(heading);
+
         const message = {
           heading:'Thank you for your submission ' + payload.firstName,
           subHeading: 'A bunch of stuff is happening which we will tell you all about at SKO.',
