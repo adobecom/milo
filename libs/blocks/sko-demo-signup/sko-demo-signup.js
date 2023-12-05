@@ -130,6 +130,11 @@ async function onSubmit() {
         const heading = messages.querySelector('.sko-submit-success > div > div > h1');
         const updatedHeading = heading.textContent.replace('[NAME]', payload.firstName);
         const subHeadings = messages.querySelectorAll('.sko-submit-success > div > div > p');
+        let concat
+
+        subHeadings.forEach(subHeading => {
+
+        })
 
         const message = {
           heading: updatedHeading,
@@ -161,7 +166,10 @@ function displayMessage(message, parent) {
   const container = createTag('div', {class:'foreground container'});
   const text = createTag('div', {class:'text', 'data-valign':'middle'});
   const heading = createTag('h2', {class: 'heading-xl'},message.heading);
-  const subHeading = createTag('p', {class:'body-m'},message.subHeading);
+  const subHeading = createTag('div', {class:'body-m'});
+  message.subHeading.forEach(line => {
+    subHeading.append(line);
+  })
 
   text.append(heading);
   text.append(subHeading);
