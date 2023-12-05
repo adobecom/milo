@@ -117,12 +117,14 @@ async function onSubmit() {
         });
         */
 
-      const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
-      const html = await resp.text();
-      const messages = new DOMParser().parseFromString(html, 'text/html').body;
+     
         throw "ERROR";
 
       if(true) {
+        const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
+        const html = await resp.text();
+        const messages = new DOMParser().parseFromString(html, 'text/html').body;
+
         const wrapper = document.querySelector('.sko-demo-signup');
         const parent = wrapper.parentNode;
         wrapper.remove();
@@ -144,6 +146,10 @@ async function onSubmit() {
         const wrapper = document.querySelector('.sko-demo-signup');
           const parent = wrapper.parentNode;
           wrapper.remove();
+
+          const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
+          const html = await resp.text();
+          const messages = new DOMParser().parseFromString(html, 'text/html').body;
 
           const heading = messages.querySelector('.sko-submit-error > div > div > h1');
           const updatedHeading = heading.textContent;
