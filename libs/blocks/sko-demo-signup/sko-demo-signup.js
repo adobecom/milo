@@ -119,7 +119,7 @@ async function onSubmit() {
 
       const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
       const html = await resp.text();
-      const messages = DOMParser().parseFromString(html, 'text/html').body;
+      const messages = new DOMParser().parseFromString(html, 'text/html').body;
 
 
       if(true) {
