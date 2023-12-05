@@ -78,7 +78,7 @@ function createItem(accordion, id, heading, num, edit) {
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
-    class: 'accordion-trigger',
+    class: 'accordion-trigger tracking-header',
     'aria-expanded': 'false',
     'aria-controls': panelId,
     'daa-ll': analyticsString,
