@@ -17,6 +17,7 @@ export function decorateDefaultLinkAnalytics(block, config) {
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.link-block), button, .tracking-header')
       .forEach((item) => {
         if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
+          if (item.classList.includes('tracking-header')) header = processTrackingLabels(item.textContent, config);
           if (item.hasAttribute('daa-ll')) {
             const labelArray = item.getAttribute('daa-ll').split('-').map((part) => {
               if (part === '') return '';
