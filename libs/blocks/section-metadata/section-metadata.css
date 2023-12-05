@@ -197,12 +197,6 @@ main > .section[class*='-up'] > .content {
   padding-right: var(--grid-margins-width);
 }
 
-.section.masonry-layout > div:not([class]),
-.section.masonry-layout > div:not([class]) > div.fragment,
-.section.masonry-layout > div:not([class]) > div.fragment > div.section {
-  display: grid;
-}
-
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -298,8 +292,16 @@ main > .section[class*='-up'] > .content {
     grid-template-columns: repeat(12, 1fr);
   }
 
-  .section.masonry-layout > div { grid-column: span 4; }
-  .section.masonry-layout .full-grid {grid-column: span 12; }
-  .section.masonry-layout .two-third-grid { grid-column: span 8; }
-  .section.masonry-layout .half-grid { grid-column: span 6; }
+  .section.masonry-layout .grid-full-width {grid-column: span 12; }
+  .section.masonry-layout .grid-half-width {grid-column: span 6; }
+  .section.masonry-layout .grid-span-1 {grid-column: span 1; }
+  .section.masonry-layout .grid-span-2 {grid-column: span 2; }
+  .section.masonry-layout .grid-span-3 {grid-column: span 3; }
+  .section.masonry-layout .grid-span-4 {grid-column: span 4; }
+  .section.masonry-layout .grid-span-5 {grid-column: span 5; }
+  .section.masonry-layout .grid-span-7 {grid-column: span 7; }
+  .section.masonry-layout .grid-span-8 {grid-column: span 8; }
+  .section.masonry-layout .grid-span-9 {grid-column: span 9; }
+  .section.masonry-layout .grid-span-10 {grid-column: span 10; }
+  .section.masonry-layout .grid-span-11 {grid-column: span 11; }
 }
