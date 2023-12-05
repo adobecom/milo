@@ -309,5 +309,4 @@ main > .section[class*='-up'] > .content {
   .section.masonry-layout .grid-span-9 {grid-column: span 9; }
   .section.masonry-layout .grid-span-10 {grid-column: span 10; }
   .section.masonry-layout .grid-span-11 {grid-column: span 11; }
-  .section.masonry-layout .grid-span-12 {grid-column: span 12; }
 }
