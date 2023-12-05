@@ -35,7 +35,13 @@ document.body.classList.add('tool', 'tool-ost');
 /**
  * @param {Commerce.Defaults} defaults
  */
-export const createLinkMarkupFactory = (defaults) => (offerSelectorId, type, offer, options, promo) => {
+export const createLinkMarkupFactory = (defaults) => (
+  offerSelectorId,
+  type,
+  offer,
+  options,
+  promo,
+) => {
   const isCta = !!type?.startsWith('checkout');
 
   const params = new URLSearchParams([
