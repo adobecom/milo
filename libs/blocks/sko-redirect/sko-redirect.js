@@ -7,9 +7,13 @@ const header = createTag('h1');
 headerWrapper.append(header);
 const timerMessage = createTag('div', {id:'timer'});
 
+
+
+
 export default async function init(blockEl) {
 
   const wrapper = createTag('div', {class:'redirect-wrapper'});
+
 
   // Get the destination URL and user email from the request
   if(window.location.search.length > 1) {
@@ -20,7 +24,8 @@ export default async function init(blockEl) {
       if(destination && emailAddress) {
         header.innerHTML = "Sit back, we're taking you to the right place shortly";
     
-        const manualButton = createTag('button', {class:'con-button blue button-justified-mobile', onclick:'redirect()'},'Take me now');
+        const manualButton = createTag('button', {class:'con-button blue button-justified-mobile'},'Take me now');
+        manualButton.addEventListener("click", redirect);
 
 
         wrapper.append(headerWrapper);
@@ -28,7 +33,7 @@ export default async function init(blockEl) {
         wrapper.append(manualButton);
 
         blockEl.append(wrapper);
-        updateTimer();
+        //updateTimer();
 
       } else {
         decorateError(wrapper, blockEl);
@@ -43,6 +48,7 @@ export default async function init(blockEl) {
 function redirect() {
   window.location.href = destination;
 }
+
 
 function decorateError (wrapper, blockEl){
   header.innerHTML = "Oooops! Something bad happened";
