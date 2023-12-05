@@ -9,7 +9,9 @@ const isDisabled = (event) => {
 };
 
 export default function getPromoManifests(manifestNames) {
-  const attachedManifests = manifestNames ? manifestNames.split(',') : [];
+  const attachedManifests = manifestNames
+    ? manifestNames.split(',')?.map((manifest) => manifest?.trim())
+    : [];
   const schedule = getMetadata('schedule');
   if (!schedule) {
     return [];
