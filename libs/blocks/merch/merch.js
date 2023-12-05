@@ -46,7 +46,7 @@ export async function getCommerceContext(el, params) {
   if (!wcsOsi) return null;
   const perpetual = params.get('perp') === 'true' || undefined;
   const promotionCode = (
-    params.get('promo') ?? el.closest('[data-promotion-code]')?.dataset.promotionCode
+    params.get('promo') ?? params.get('promotionCode') ?? el.closest('[data-promotion-code]')?.dataset.promotionCode
   ) || undefined;
   return { promotionCode, perpetual, wcsOsi };
 }
