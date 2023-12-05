@@ -120,7 +120,7 @@ async function onSubmit() {
       const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
       const html = await resp.text();
       const messages = new DOMParser().parseFromString(html, 'text/html').body;
-
+        throw "ERROR";
 
       if(true) {
         const wrapper = document.querySelector('.sko-demo-signup');
@@ -145,10 +145,15 @@ async function onSubmit() {
           const parent = wrapper.parentNode;
           wrapper.remove();
 
+          const heading = messages.querySelector('.sko-submit-error > div > div > h1');
+          const updatedHeading = heading.textContent;
+          const subHeadings = messages.querySelectorAll('.sko-submit-error > div > div > p');
+          const image = messages.querySelector('.sko-submit-success > div > div > picture');
+
           const message = {
-            heading:'Oops... This is embarrassing.',
-            subHeading: 'Something bad must have happened. Let us know so we can fix it.',
-            image: 'error.png'
+            heading: updatedHeading,
+            subHeading: subHeadings,
+            image: image
           }
           displayMessage(message, parent);
       }
@@ -170,7 +175,6 @@ function displayMessage(message, parent) {
   text.append(subHeading);
 
   const image = createTag('div', {class:'media image', 'data-valign':'middle'});
-  //const picture = createTag('img',{src:`${codeRoot}/blocks/sko-demo-signup/img/${message.image}`});
 
   image.append(message.image);
   container.append(text);
