@@ -1,5 +1,11 @@
 import ctaTextOption from './ctaTextOption.js';
-import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
+import {
+  getConfig,
+  getLocale,
+  getMetadata,
+  loadScript,
+  loadStyle,
+} from '../../utils/utils.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -8,7 +14,7 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.14.1';
+const OST_VERSION = '1.14.2-preview';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
@@ -29,55 +35,73 @@ document.body.classList.add('tool', 'tool-ost');
 /**
  * @param {Commerce.Defaults} defaults
  */
-export const createLinkMarkup = (defaults) => (
-  offerSelectorId,
-  type,
-  offer,
-  options,
-  promo,
-) => {
+export const createLinkMarkupFactory = (defaults) => (offerSelectorId, type, offer, options, promo) => {
   const isCta = !!type?.startsWith('checkout');
 
-  const createHref = () => {
-    const params = new URLSearchParams([
-      ['osi', offerSelectorId],
-      ['type', type],
-    ]);
-    if (promo) params.set('promo', promo);
-    if (offer.commitment === 'PERPETUAL') params.set('perp', true);
+  const params = new URLSearchParams([
+    ['osi', offerSelectorId],
+    ['type', type],
+  ]);
+  if (promo) params.set('promo', promo);
+  if (offer.commitment === 'PERPETUAL') params.set('perp', true);
 
-    if (isCta) {
-      const { workflow, workflowStep } = options;
-      params.set('text', options.ctaText ?? DEFAULT_CTA_TEXT);
-      if (workflow && workflow !== defaults.checkoutWorkflow) {
-        params.set('workflow', workflow);
-      }
-      if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
-        params.set('workflowStep', workflowStep);
-      }
-    } else {
-      const { displayRecurrence, displayPerUnit, displayTax, forceTaxExclusive } = options;
-      params.set('term', displayRecurrence);
-      params.set('seat', displayPerUnit);
-      params.set('tax', displayTax);
-      params.set('exclusive', forceTaxExclusive);
+  if (isCta) {
+    const { workflow, workflowStep } = options;
+    params.set('text', options.ctaText ?? DEFAULT_CTA_TEXT);
+    if (workflow && workflow !== defaults.checkoutWorkflow) {
+      params.set('workflow', workflow);
     }
-    const { location } = window;
-    return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
-  };
+    if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
+      params.set('workflowStep', workflowStep);
+    }
+  } else {
+    const {
+      displayRecurrence,
+      displayPerUnit,
+      displayTax,
+      forceTaxExclusive,
+    } = options;
+    params.set('term', displayRecurrence);
+    params.set('seat', displayPerUnit);
+    params.set('tax', displayTax);
+    params.set('exclusive', forceTaxExclusive);
+  }
+  const href = `https://milo.adobe.com/tools/ost?${params.toString()}`;
 
   const link = document.createElement('a');
   link.textContent = isCta
     ? `CTA {{${options.ctaText ?? DEFAULT_CTA_TEXT}}}`
     : `PRICE - ${offer.planType} - ${offer.name}`;
-  link.href = createHref();
+  link.href = href;
   return link;
 };
 
-export async function loadOstEnv() {
-  /* c8 ignore next */
-  const { Log, Defaults, getLocaleSettings } = await import('../../deps/commerce.js');
+const onSelectHandler = (createLinkMarkup) => (
+  offerSelectorId,
+  type,
+  offer,
+  options,
+  promoOverride,
+) => {
+  const link = createLinkMarkup(
+    offerSelectorId,
+    type,
+    offer,
+    options,
+    promoOverride,
+  );
+  if (!link) {
+    console.log('no link created, probably test context');
+    return;
+  }
+  console.log(`Use Link: ${link.outerHTML}`);
+  const blob = new Blob([link.outerHTML], { type: 'text/html' });
+  // eslint-disable-next-line no-undef
+  const data = [new ClipboardItem({ [blob.type]: blob })];
+  navigator.clipboard.write(data, console.log, console.error);
+};
 
+export async function loadOstEnv(Log, getLocaleSettings) {
   const searchParameters = new URLSearchParams(window.location.search);
   const aosAccessToken = searchParameters.get('token');
   searchParameters.delete('token');
@@ -94,7 +118,9 @@ export async function loadOstEnv() {
 
   if (owner && referrer && repo) {
     try {
-      const res = await fetch(`//admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`);
+      const res = await fetch(
+        `//admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`,
+      );
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const json = await res.json();
       url = new URL(json.preview.url);
@@ -110,12 +136,10 @@ export async function loadOstEnv() {
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
         const parser = new DOMParser();
         const doc = parser.parseFromString(await res.text(), 'text/html');
-        Object.entries(METADATA_MAPPINGS).forEach(
-          ([key, value]) => {
-            const content = getMetadata(key, doc);
-            if (content) metadata[value] = content;
-          },
-        );
+        Object.entries(METADATA_MAPPINGS).forEach(([key, value]) => {
+          const content = getMetadata(key, doc);
+          if (content) metadata[value] = content;
+        });
       } catch (error) {
         log.error('Unable to fetch page metadata:', error);
       }
@@ -127,7 +151,6 @@ export async function loadOstEnv() {
     aosAccessToken,
     aosApiKey: AOS_API_KEY,
     checkoutClientId: CHECKOUT_CLIENT_ID,
-    createLinkMarkup: createLinkMarkup(Defaults),
     country,
     environment,
     language,
@@ -143,15 +166,23 @@ export default async function init(el) {
   loadStyle(OST_STYLE_URL);
   loadStyle('https://use.typekit.net/pps7abe.css');
 
+  /* c8 ignore next */
+  const { Log, Defaults, getLocaleSettings } = await import(
+    '../../deps/commerce.js'
+  );
+
   const [ostEnv] = await Promise.all([
-    loadOstEnv(),
+    loadOstEnv(Log, getLocaleSettings),
     loadScript(OST_SCRIPT_URL),
   ]);
+
+  const createLinkMarkup = createLinkMarkupFactory(Defaults);
 
   function openOst() {
     window.ost.openOfferSelectorTool({
       ...ostEnv,
       rootElement: el.firstElementChild,
+      onSelectHandler: onSelectHandler(createLinkMarkup),
     });
   }
 

@@ -1,6 +1,10 @@
 import { expect } from '@esm-bundle/chai';
+import { stub } from 'sinon';
 
 import { mockOstDeps, unmockOstDeps } from './mocks/ost-utils.js';
+
+const getLocaleSettings = (country = 'US', language = 'en') => () => ({ country, language });
+const log = { module: () => ({ error: stub() }) };
 
 afterEach(() => {
   unmockOstDeps();
@@ -21,7 +25,7 @@ describe('loadOstEnv', async () => {
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
 
-    expect(await loadOstEnv()).to.include({
+    expect(await loadOstEnv(log, getLocaleSettings('CH', 'de'))).to.include({
       aosAccessToken: params.token,
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
@@ -44,7 +48,7 @@ describe('loadOstEnv', async () => {
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
 
-    expect(await loadOstEnv()).to.include({
+    expect(await loadOstEnv(log, getLocaleSettings('CH', 'de'))).to.include({
       aosAccessToken: null,
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,
@@ -66,7 +70,7 @@ describe('loadOstEnv', async () => {
       loadOstEnv,
     } = await import('../../../libs/blocks/ost/ost.js');
 
-    expect(await loadOstEnv()).to.include({
+    expect(await loadOstEnv(log, getLocaleSettings())).to.include({
       aosAccessToken: null,
       aosApiKey: AOS_API_KEY,
       checkoutClientId: CHECKOUT_CLIENT_ID,

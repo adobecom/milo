@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 
 const { CheckoutWorkflow, CheckoutWorkflowStep } = await import('../../../libs/deps/commerce.js');
-const { DEFAULT_CTA_TEXT, createLinkMarkup } = await import('../../../libs/blocks/ost/ost.js');
+const { DEFAULT_CTA_TEXT, createLinkMarkupFactory } = await import('../../../libs/blocks/ost/ost.js');
 
 const data = await readFile({ path: './mocks/wcs-artifacts-mock.json' });
 const { perpM2M } = JSON.parse(data);
@@ -36,7 +36,7 @@ function assertLink(link, offer, params, text = texts.buy) {
 }
 
 function createLink(params = {}) {
-  return createLinkMarkup(defaults)(
+  return createLinkMarkupFactory(defaults)(
     params.osi ?? osi,
     params.type,
     perpM2M,
