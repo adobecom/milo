@@ -156,7 +156,7 @@ main .form .checkbox-button::after {
 main .form .checkbox-input:checked + .checkbox-button::after {
   opacity: 1;
   scale: 1;
-  background: url('./checkbox-checked.svg');
+  background-image: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI2LjUuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBhdGggZD0iTTMuNSA5LjVhLjk5OS45OTkgMCAwMS0uNzc0LS4zNjhsLTIuNDUtM2ExIDEgMCAxMTEuNTQ4LTEuMjY0bDEuNjU3IDIuMDI4IDQuNjgtNi4wMUExIDEgMCAwMTkuNzQgMi4xMTRsLTUuNDUgN2ExIDEgMCAwMS0uNzc3LjM4NnoiIGZpbGw9IiNmZmYiPjwvcGF0aD4KPC9zdmc+Cg==");
   background-size: contain;
 }
 

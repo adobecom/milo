@@ -99,8 +99,8 @@ function createButton(fd, thankYou) {
         event.preventDefault();
         button.setAttribute('disabled', '');
         const submission = await submitForm(form);
-        if (!submission) return;
         button.removeAttribute('disabled');
+        if (!submission) return;
         clearForm(form);
         const handleThankYou = thankYou.querySelector('a') ? thankYou.querySelector('a').href : thankYou.innerHTML;
         if (!thankYou.innerHTML.includes('href')) {
@@ -223,53 +223,53 @@ function applyRules(form, rules) {
         force = (payload[key] !== value);
         break;
       case RULE_OPERATORS.lessThan:
-        if (payload[key] === '') return;
+        if (payload[key] === '') return true;
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
           force = a < b;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`Invalid rule, ${e}`);
-          return;
+          return true;
         }
         break;
       case RULE_OPERATORS.lessThanOrEqual:
-        if (payload[key] === '') return;
+        if (payload[key] === '') return true;
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
           force = a <= b;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`Invalid rule, ${e}`);
-          return;
+          return true;
         }
         break;
       case RULE_OPERATORS.greaterThan:
-        if (payload[key] === '') return;
+        if (payload[key] === '') return true;
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
           force = a > b;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`Invalid rule, ${e}`);
-          return;
+          return true;
         }
         break;
       case RULE_OPERATORS.greaterThanOrEqual:
-        if (payload[key] === '') return;
+        if (payload[key] === '') return true;
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
           force = a >= b;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`Invalid rule, ${e}`);
-          return;
+          return true;
         }
         break;
       default:
         // eslint-disable-next-line no-console
         console.warn(`Unsupported operator ${operator}`);
-        return;
+        return true;
     }
     fw.classList.toggle(type, force);
     if (fw.classList.contains('hidden')) {
