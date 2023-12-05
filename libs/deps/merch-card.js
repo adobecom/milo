@@ -526,7 +526,7 @@ merch-card.has-divider hr {
     margin-bottom: var(--spacing-xxs);
 }
 
-merch-card[variant="special-offers"] span[is="inline-price"][data-template="priceStrikethrough"] {
+merch-card[variant="special-offers"] span[is="inline-price"][data-template="strikethrough"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
 }
 

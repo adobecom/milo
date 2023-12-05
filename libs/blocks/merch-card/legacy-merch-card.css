@@ -154,9 +154,9 @@
   font-size: var(--type-heading-xs-size);
 }
 
-.merch-card .consonant-SegmentBlade-description span.placeholder-resolved[data-template="priceStrikethrough"],
-.merch-card .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"],
-.merch-card .consonant-PlansCard-description span.placeholder-resolved[data-template="priceStrikethrough"] {
+.merch-card .consonant-SegmentBlade-description span.placeholder-resolved[data-template="strikethrough"],
+.merch-card .consonant-SpecialOffers-description span.placeholder-resolved[data-template="strikethrough"],
+.merch-card .consonant-PlansCard-description span.placeholder-resolved[data-template="strikethrough"] {
   font-size: var(--type-body-xs-size);
 }
 
