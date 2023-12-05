@@ -84,7 +84,7 @@ export default async function interlink(path, language, limit = 1000) {
                 a.title = item.Keyword;
                 a.href = item.URL;
                 a.setAttribute('data-origin', 'interlink');
-                a.setAttribute('daa-ll', `${a.title}|interlinks_p_${item.Keyword}`);
+                a.setAttribute('daa-ll', `${a.title}--interlinks_p_${item.Keyword}`);
                 a.appendChild(document.createTextNode(text.substring(start, end)));
                 p.insertBefore(a, textNode.nextSibling);
                 p.insertBefore(document.createTextNode(text.substring(end)), a.nextSibling);
