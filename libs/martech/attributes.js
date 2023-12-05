@@ -1,8 +1,8 @@
 export function processTrackingLabels(text, config = {}, charLimit = 20) {
   let analyticsValue = text?.replace(/[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g, ' ').replace(/^_+|_+$/g, '').trim();
-  const { locale, analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
-  if (charLimit && locale?.ietf !== 'en-US' && loc) analyticsValue = loc;
-  if (charLimit) analyticsValue = analyticsValue.slice(0, charLimit);
+  const { analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
+  if (loc) analyticsValue = loc;
+  if (charLimit) return analyticsValue.slice(0, charLimit);
   return analyticsValue;
 }
 
@@ -17,7 +17,13 @@ export function decorateDefaultLinkAnalytics(block, config) {
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.link-block), button, .tracking-header')
       .forEach((item) => {
         if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
-          if (!item.hasAttribute('daa-ll')) {
+          if (item.hasAttribute('daa-ll')) {
+            const labelArray = item.getAttribute('daa-ll').split('-').map((part) => {
+              if (part === '') return '';
+              return processTrackingLabels(part, config);
+            });
+            item.setAttribute('daa-ll', labelArray.join('-'));
+          } else {
             let label = item.textContent?.trim();
             if (label === '') {
               label = item.getAttribute('title')
