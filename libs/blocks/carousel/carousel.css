@@ -114,6 +114,10 @@
   will-change: transform;
 }
 
+html[dir="rtl"] .carousel-slides {
+  flex-direction: row-reverse;
+}
+
 .carousel-slides.is-reversing {
   transform: translateX(-100%);
 }
@@ -123,6 +127,10 @@
   order: 1;
   opacity: .3;
   transition: opacity 0.5s ease-in-out;
+}
+
+html[dir="rtl"] .carousel-slides .section.carousel-slide {
+  direction: rtl;
 }
 
 .none .carousel-slide {
@@ -418,7 +426,7 @@
   .carousel .carousel-next {
     right: 1rem;
   }
-  
+
   .carousel .carousel-previous {
     left:1rem;
   }
@@ -426,9 +434,33 @@
   .container .carousel-previous {
     left: -3rem;
   }
-  
+
   .container .carousel-next {
     right: -3rem;
+  }
+
+  html[dir="rtl"] .carousel .carousel-next {
+    left: 1rem;
+    right: initial;
+    transform: rotate(180deg);
+  }
+
+  html[dir="rtl"] .carousel .carousel-previous {
+    right: 1rem;
+    left: initial;
+    transform: rotate(180deg);
+  }
+
+  html[dir="rtl"] .container .carousel-previous {
+    right: -3rem;
+    left: initial;
+    transform: rotate(180deg);
+  }
+
+  html[dir="rtl"] .container .carousel-next {
+    left: -3rem;
+    right: initial;
+    transform: rotate(180deg);
   }
 
   .carousel.lightbox-active.container .carousel-previous {
