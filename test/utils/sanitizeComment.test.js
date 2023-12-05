@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import sanitizeComment from '../../../../libs/blocks/review/utils/sanitizeComment.js';
+import sanitizeComment from '../../libs/utils/sanitizeComment.js';
 
 describe('sanitizeComment Util', () => {
   it('could sanitize a comment', () => {
