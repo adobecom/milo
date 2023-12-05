@@ -201,6 +201,14 @@ main > .section[class*='-up'] > .content {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
+
+  .section.masonry-layout {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }  
+  
+  .section.masonry-layout .grid-full-width:first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 @media screen and (min-width: 720px) {
@@ -227,16 +235,6 @@ main > .section[class*='-up'] > .content {
   .section.grid-width-10 {
     padding-left: calc((100vw - 1000px) / 2);
     padding-right: calc((100vw - 1000px) / 2);
-  }
-}
-
-@media screen and (min-width: 768px) and (max-width: 1199px) {
-  .section.masonry-layout {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .section.masonry-layout .full-grid:first-child {
-    grid-column: span 2;
   }
 }
 
