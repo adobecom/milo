@@ -191,7 +191,7 @@ const addMerchCardGridIfMissing = (section, cardType) =>  {
   }
 
   return false;
-}
+};
 
 const decorateMerchCardLinkAnalytics = (el) => {
   [...el.querySelectorAll('a')].forEach((link, index) => {
