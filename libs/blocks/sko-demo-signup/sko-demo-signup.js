@@ -128,10 +128,10 @@ async function onSubmit() {
         wrapper.remove();
 
         const heading = messages.querySelector('.sko-submit-success > div > div > p');
-        console.log(heading);
+        const updatedHeading = heading.textContent.replace('[NAME]', payload.firstName);
 
         const message = {
-          heading:'Thank you for your submission ' + payload.firstName,
+          heading: updatedHeading,
           subHeading: 'A bunch of stuff is happening which we will tell you all about at SKO.',
           image: 'success.png'
         }
