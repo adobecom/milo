@@ -130,16 +130,12 @@ async function onSubmit() {
         const heading = messages.querySelector('.sko-submit-success > div > div > h1');
         const updatedHeading = heading.textContent.replace('[NAME]', payload.firstName);
         const subHeadings = messages.querySelectorAll('.sko-submit-success > div > div > p');
-        let concat
-
-        subHeadings.forEach(subHeading => {
-
-        })
+        const image = messages.querySelector('.sko-submit-success > div > div');
 
         const message = {
           heading: updatedHeading,
           subHeading: subHeadings,
-          image: 'success.png'
+          image: image
         }
         displayMessage(message, parent)
       }
@@ -175,9 +171,9 @@ function displayMessage(message, parent) {
   text.append(subHeading);
 
   const image = createTag('div', {class:'media image', 'data-valign':'middle'});
-  const picture = createTag('img',{src:`${codeRoot}/blocks/sko-demo-signup/img/${message.image}`});
+  //const picture = createTag('img',{src:`${codeRoot}/blocks/sko-demo-signup/img/${message.image}`});
 
-  image.append(picture)
+  image.append(message.image);
   container.append(text);
   container.append(image);
   marqueeWrapper.append(container);
