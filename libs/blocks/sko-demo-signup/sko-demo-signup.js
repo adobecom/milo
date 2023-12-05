@@ -153,8 +153,8 @@ async function onSubmit() {
 
           const heading = messages.querySelector('.sko-submit-error > div > div > h1');
           const updatedHeading = heading.textContent;
-          const subHeadings = messages.querySelectorAll('.sko-submit-error > div > div > p');
-          const image = messages.querySelector('.sko-submit-success > div > div > picture');
+          const subHeadings = messages.querySelectorAll('.sko-submit-error > div > div > div');
+          const image = messages.querySelector('.sko-submit-error > div > div > picture');
 
           const message = {
             heading: updatedHeading,
