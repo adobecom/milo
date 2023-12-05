@@ -1,7 +1,9 @@
-export function processTrackingLabels(text, config = {}, charLimit = 20) {
+export function processTrackingLabels(text, config, charLimit) {
   let analyticsValue = text?.replace(/[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g, ' ').replace(/^_+|_+$/g, '').trim();
-  const { analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
-  if (loc) analyticsValue = loc;
+  if (config) {
+    const { analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
+    if (loc) analyticsValue = loc;
+  }
   if (charLimit) return analyticsValue.slice(0, charLimit);
   return analyticsValue;
 }
@@ -17,11 +19,11 @@ export function decorateDefaultLinkAnalytics(block, config) {
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.link-block), button, .tracking-header')
       .forEach((item) => {
         if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
-          if (item.classList.contains('tracking-header')) header = processTrackingLabels(item.textContent, config);
+          if (item.classList.contains('tracking-header')) header = processTrackingLabels(item.textContent, config, 20);
           if (item.hasAttribute('daa-ll')) {
             const labelArray = item.getAttribute('daa-ll').split('-').map((part) => {
               if (part === '') return '';
-              return processTrackingLabels(part, config);
+              return processTrackingLabels(part, config, 20);
             });
             item.setAttribute('daa-ll', labelArray.join('-'));
           } else {
@@ -32,12 +34,12 @@ export function decorateDefaultLinkAnalytics(block, config) {
                 || item.querySelector('img')?.getAttribute('alt')
                 || 'no label';
             }
-            label = processTrackingLabels(label, config);
+            label = processTrackingLabels(label, config, 20);
             item.setAttribute('daa-ll', `${label}-${linkCount}--${header}`);
           }
           linkCount += 1;
         } else {
-          header = processTrackingLabels(item.textContent, config);
+          header = processTrackingLabels(item.textContent, config, 20);
         }
       });
   }

@@ -69,12 +69,12 @@ function defalutOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('dd'), 1, 0);
 }
 
-function createItem(accordion, id, heading, num, edit) {
+function createItem(accordion, id, heading, num, edit, config) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
   const hTag = heading.querySelector('h1, h2, h3, h4, h5, h6');
-  const analyticsString = `open-${num}--${processTrackingLabels(heading.textContent, getConfig(), false)}`;
+  const analyticsString = `open-${num}--${processTrackingLabels(heading.textContent, config)}`;
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
@@ -134,8 +134,10 @@ export default function init(el) {
   }
 
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
+  const config = getConfig();
   const items = [...headings].map(
-    (heading, idx) => createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia),
+    // eslint-disable-next-line max-len
+    (heading, idx) => createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia, config),
   );
 
   if (isSeo) { setSEO(items); }

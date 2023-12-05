@@ -19,8 +19,10 @@ export default async function decorateAside({ headerElem, promoPath } = {}) {
 
   aside.removeAttribute('data-block');
   aside.setAttribute('daa-lh', 'Promo');
+
+  const config = getConfig();
   aside.querySelectorAll('a').forEach((link, index) => {
-    link.setAttribute('daa-ll', `${processTrackingLabels(link.textContent, getConfig())}--${index + 1}`);
+    link.setAttribute('daa-ll', `${processTrackingLabels(link.textContent, config)}--${index + 1}`);
   });
 
   return aside;
