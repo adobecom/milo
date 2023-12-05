@@ -15,6 +15,7 @@ import fetchedFooter from './mocks/fetched-footer.js';
 import icons from './mocks/icons.js';
 import { isElementVisible, mockRes } from '../global-navigation/test-utilities.js';
 import placeholders from '../global-navigation/mocks/placeholders.js';
+import { logErrorFor } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 
 describe('global footer', () => {
   let clock = null;
@@ -41,8 +42,7 @@ describe('global footer', () => {
   });
 
   afterEach(() => {
-    clock.restore();
-    window.fetch.restore();
+    sinon.restore();
     document.body.innerHTML = '';
   });
 
@@ -270,6 +270,72 @@ describe('global footer', () => {
           expect(isElementVisible(link)).to.equal(false);
         }
       }
+    });
+  });
+
+  describe('LANA logging tests', () => {
+    beforeEach(async () => {
+      window.lana.log = sinon.spy();
+    });
+
+    it('should send log on error', async () => {
+      const erroneousFunction = async () => {
+        throw new Error('error');
+      };
+
+      const logMessage = 'test message';
+      const logTags = 'errorType=error,module=global-footer';
+      await logErrorFor(erroneousFunction, logMessage, logTags);
+
+      expect(window.lana.log.calledOnce).to.be.true;
+
+      const firstCallArguments = window.lana.log.getCall(0).args;
+
+      expect(firstCallArguments[0].includes(logMessage)).to.equal(true);
+      expect(firstCallArguments[1].tags === logTags).to.equal(true);
+    });
+
+    it('should send log when footer cannot be fetched', async () => {
+      window.fetch.restore();
+      stub(window, 'fetch').callsFake((url) => {
+        if (url.includes('/footer')) {
+          return mockRes({
+            payload: null,
+            ok: false,
+            status: 400,
+          });
+        }
+        if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+        if (url.includes('icons.svg')) return mockRes({ payload: icons });
+        return null;
+      });
+      await createFullGlobalFooter({ waitForDecoration: false });
+      await clock.runAllAsync();
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Failed to fetch footer content')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=warn,module=global-footer')));
+    });
+
+    it('should send log when could not create URL for region picker', async () => {
+      const globalFooter = await createFullGlobalFooter({ waitForDecoration: true });
+      sinon.restore();
+      stub(window, 'URL').callsFake(() => {
+        throw new Error('mocked error');
+      });
+      try {
+        await globalFooter.decorateRegionPicker();
+      } catch (e) {
+        // should throw error
+      }
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Could not create URL for region picker')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
+    });
+
+    it('should send log when footer cannot be instantiated ', async () => {
+      sinon.stub(window, 'DOMParser').callsFake(() => ({ parseFromString: sinon.stub().throws(new Error('Parsing error')) }));
+      await createFullGlobalFooter({ waitForDecoration: false });
+      await clock.runAllAsync();
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Footer could not be instantiated')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
     });
   });
 });
