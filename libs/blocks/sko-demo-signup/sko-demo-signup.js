@@ -157,8 +157,7 @@ async function onSubmit() {
 }
 
 function displayMessage(message, parent) {
-  const { codeRoot } = getConfig();
-  const marqueeWrapper = createTag('div', {class:'marquee light'});
+  const marqueeWrapper = createTag('div', {class:'marquee light submit-message'});
   const container = createTag('div', {class:'foreground container'});
   const text = createTag('div', {class:'text', 'data-valign':'middle'});
   const heading = createTag('h2', {class: 'heading-xl'},message.heading);
