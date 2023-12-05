@@ -2,6 +2,11 @@ import { getConfig, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
+export const PRICE_TEMPLATE_DISCOUNT = 'discount';
+export const PRICE_TEMPLATE_OPTICAL = 'optical';
+export const PRICE_TEMPLATE_REGULAR = 'price';
+export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
+
 export function polyfills() {
   /* c8 ignore start */
   if (!polyfills.promise) {
@@ -82,9 +87,24 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
-  let type = params.get('type');
-  if (type && type !== 'price') type = type[0].toUpperCase() + type.slice(1);
-  else type = '';
+  let template = PRICE_TEMPLATE_REGULAR;
+  // This mapping also supports legacy OST links
+  switch (params.get('type')) {
+    case PRICE_TEMPLATE_DISCOUNT:
+    case 'priceDiscount':
+      template = PRICE_TEMPLATE_DISCOUNT;
+      break;
+    case PRICE_TEMPLATE_OPTICAL:
+    case 'priceOptical':
+      template = PRICE_TEMPLATE_OPTICAL;
+      break;
+    case PRICE_TEMPLATE_STRIKETHROUGH:
+    case 'priceStrikethrough':
+      template = PRICE_TEMPLATE_STRIKETHROUGH;
+      break;
+    default:
+      break;
+  }
   return {
     ...context,
     displayOldPrice,
@@ -92,7 +112,7 @@ export async function getPriceContext(el, params) {
     displayRecurrence,
     displayTax,
     forceTaxExclusive,
-    template: `price${type}`,
+    template,
   };
 }
 

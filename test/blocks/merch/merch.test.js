@@ -2,6 +2,9 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 import merch, {
+  PRICE_TEMPLATE_DISCOUNT,
+  PRICE_TEMPLATE_OPTICAL,
+  PRICE_TEMPLATE_STRIKETHROUGH,
   buildCta,
   getCheckoutContext,
   priceLiteralsURL,
@@ -66,7 +69,7 @@ describe('Merch Block', () => {
     expect(await merch(el)).to.be.null;
   });
 
-  describe('Prices', () => {
+  describe('prices', () => {
     it('renders merch link to price without term (new)', async () => {
       await validatePriceSpan('.merch.price.hide-term', { displayRecurrence: 'false' });
     });
@@ -88,11 +91,15 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to strikethrough price with term, seat and tax', async () => {
-      await validatePriceSpan('.merch.price.strikethrough', { template: 'priceStrikethrough' });
+      await validatePriceSpan('.merch.price.strikethrough', { template: PRICE_TEMPLATE_STRIKETHROUGH });
     });
 
     it('renders merch link to optical price with term, seat and tax', async () => {
-      await validatePriceSpan('.merch.price.optical', { template: 'priceOptical' });
+      await validatePriceSpan('.merch.price.optical', { template: PRICE_TEMPLATE_OPTICAL });
+    });
+
+    it('renders merch link to discount price', async () => {
+      await validatePriceSpan('.merch.price.discount', { template: PRICE_TEMPLATE_DISCOUNT });
     });
 
     it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {
@@ -100,13 +107,16 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('Promo Prices', () => {
+  describe('promo prices', () => {
     it('renders merch link to promo price with discount', async () => {
       await validatePriceSpan('.merch.price.oldprice', { promotionCode: undefined });
     });
 
     it('renders merch link to promo price without discount', async () => {
-      await validatePriceSpan('.merch.strikethrough.oldprice', { template: 'priceStrikethrough', promotionCode: undefined });
+      await validatePriceSpan('.merch.strikethrough.oldprice', {
+        template: PRICE_TEMPLATE_STRIKETHROUGH,
+        promotionCode: undefined,
+      });
     });
 
     it('renders merch link to promo price with discount', async () => {
@@ -118,13 +128,16 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('Promo Prices in a fragment', () => {
+  describe('promo prices in a fragment', () => {
     it('renders merch link to promo price with discount', async () => {
       await validatePriceSpan('.fragment .merch.price.oldprice', { promotionCode: undefined });
     });
 
     it('renders merch link to promo price without discount', async () => {
-      await validatePriceSpan('.fragment .merch.strikethrough.oldprice', { template: 'priceStrikethrough', promotionCode: undefined });
+      await validatePriceSpan('.fragment .merch.strikethrough.oldprice', {
+        template: PRICE_TEMPLATE_STRIKETHROUGH,
+        promotionCode: undefined,
+      });
     });
 
     it('renders merch link to promo price with discount', async () => {
@@ -276,7 +289,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('Function "getCheckoutContext"', () => {
+  describe('function "getCheckoutContext"', () => {
     it('returns null if context params do not have osi', async () => {
       const el = document.createElement('a');
       const params = new URLSearchParams();
@@ -284,7 +297,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('Function "buildCta"', () => {
+  describe('function "buildCta"', () => {
     it('returns null if context params do not have osi', async () => {
       const el = document.createElement('a');
       const params = new URLSearchParams();
