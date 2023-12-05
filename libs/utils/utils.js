@@ -84,6 +84,7 @@ const AUTO_BLOCKS = [
   { slideshare: 'https://www.slideshare.net' },
   { tiktok: 'https://www.tiktok.com' },
   { twitter: 'https://twitter.com' },
+  { twitter: 'https://x.com' },
   { vimeo: 'https://vimeo.com' },
   { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },

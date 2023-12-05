@@ -3,7 +3,8 @@ import { createIntersectionObserver, createTag, loadScript, isInTextNode } from 
 export default function init(a) {
   if (isInTextNode(a)) return;
   const embedTwitter = () => {
-    const anchor = createTag('a', { href: a.href });
+    const url = a.href.replace('https://x.com', 'https://twitter.com');
+    const anchor = createTag('a', { href: url });
     const blockquote = createTag('blockquote', { class: 'twitter-tweet' }, anchor);
     const wrapper = createTag('div', { class: 'embed-twitter' }, blockquote);
     a.parentElement.replaceChild(wrapper, a);

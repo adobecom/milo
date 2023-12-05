@@ -9,7 +9,9 @@
     </script>
   </head>
   <body>
-    <a href="https://twitter.com/AdobePrint/status/1555212165346254848?s=20&t=5y2vpznI_ZwECs0l_hc1mw">https://twitter.com/AdobePrint/status/1555212165346254848?s=20&amp;t=5y2vpznI_ZwECs0l_hc1mw</a>
+    <a href="https://twitter.com/AdobePrint/status/1555212165346254848?s=20&t=5y2vpznI_ZwECs0l_hc1mw">https://twitter.com/AdobePrint/status/1555212165346254848?s=20&t=5y2vpznI_ZwECs0l_hc1mw</a>
+    <a href="https://x.com/Adobe/status/1714718693161312496?s=20">https://x.com/Adobe/status/1714718693161312496?s=20</a>
+  </body>
   </body>
   <script type="module">
     import { runTests } from '@web/test-runner-mocha';
@@ -20,14 +22,16 @@
 
     runTests(() => {
       describe('twitter', () => {
-        it('renders embed tweet for twitter link', () => {
-          const twitter = document.querySelector('a');
-          init(twitter);
-          const blockquote = document.querySelector('.twitter-tweet');
-          const wrapper = document.querySelector('.embed-twitter');
+        it('renders embed tweet for both twitter links', async () => {
+          const twitterLink = document.querySelectorAll('a');
+          twitterLink.forEach(async (link) => { 
+          init(link)
+          const blockquote = document.querySelectorAll('.twitter-tweet');
+          const wrapper = document.querySelectorAll('.embed-twitter');
           expect(blockquote).to.not.be.null;
           expect(wrapper).to.not.be.null;
-          expect(loadScript.callCount).to.equal(1);
+          });
+          expect(loadScript.callCount).to.equal(2);
         });
       });
     });
