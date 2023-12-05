@@ -107,7 +107,7 @@ async function onSubmit() {
 
       
       try {
-        /*
+        
         const response = await fetch("https://prod-56.westus.logic.azure.com/workflows/58fe7b1a791c4b068c43c535fac5d703/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YXIJ9-vicUvmWpfOchMqtS0zACqe_iRCFPWjWUDTyDU", {
           method: "POST",
           body: JSON.stringify(payload),
@@ -115,12 +115,11 @@ async function onSubmit() {
             "Content-type": "application/json; charset=UTF-8"
           }
         });
-        */
+        
 
      
-        throw "ERROR";
 
-      if(true) {
+      if(response.ok) {
         const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
         const html = await resp.text();
         const messages = new DOMParser().parseFromString(html, 'text/html').body;
