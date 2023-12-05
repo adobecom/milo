@@ -29,7 +29,7 @@ export async function handleStyle(text, section) {
 
 function handleMasonry(text, section) {
   section.classList.add(...['masonry-layout', 'course-up']);
-  const divs = section.querySelectorAll(':scope > div');
+  const divs = section.querySelectorAll(":scope > div:not([class*='metadata'])");
   const spans = [];
   text.split('\n').forEach((line) => spans.push(...line.trim().split(',')));
   [...divs].forEach((div, i) => {
