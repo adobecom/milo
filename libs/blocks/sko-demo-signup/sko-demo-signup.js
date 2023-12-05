@@ -126,7 +126,7 @@ async function onSubmit() {
         const parent = wrapper.parentNode;
         wrapper.remove();
 
-        const heading = message.querySelector('.sko-submit-success > div > div > p');
+        const heading = messages.querySelector('.sko-submit-success > div > div > p');
         console.log(heading);
 
         const message = {
