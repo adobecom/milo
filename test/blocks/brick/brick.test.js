@@ -22,8 +22,8 @@ describe('basic brick', () => {
   });
   const fullCopy = document.querySelector('#full-copy');
 
-  it('has a heading-xxl for full-grid', () => {
-    const heading = document.body.querySelector('.full-grid .heading-xxl');
+  it('has a heading-xxl for large brick', () => {
+    const heading = document.body.querySelector('.large .heading-xxl');
     expect(heading).to.exist;
   });
 
@@ -81,7 +81,7 @@ describe('basic brick', () => {
   it('fragment labels grid in section', async () => {
     const fragment = document.querySelector('.fragment');
     init(fragment);
-    const fullGrids = fragment.closest('.section.masonry-layout').querySelectorAll('.full-grid');
+    const fullGrids = fragment.closest('.section.masonry-layout').querySelectorAll('.large');
     expect(fullGrids.length > 2).to.be.true;
   });
 });
