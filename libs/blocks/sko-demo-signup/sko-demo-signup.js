@@ -127,12 +127,13 @@ async function onSubmit() {
         const parent = wrapper.parentNode;
         wrapper.remove();
 
-        const heading = messages.querySelector('.sko-submit-success > div > div > p');
+        const heading = messages.querySelector('.sko-submit-success > div > div > h1');
         const updatedHeading = heading.textContent.replace('[NAME]', payload.firstName);
+        const subHeadings = messages.querySelectorAll('.sko-submit-success > div > div > p');
 
         const message = {
           heading: updatedHeading,
-          subHeading: 'A bunch of stuff is happening which we will tell you all about at SKO.',
+          subHeading: subHeadings,
           image: 'success.png'
         }
         displayMessage(message, parent)
