@@ -297,9 +297,11 @@ main > .section[class*='-up'] > .content {
   .section.masonry-layout .grid-span-3 {grid-column: span 3; }
   .section.masonry-layout .grid-span-4 {grid-column: span 4; }
   .section.masonry-layout .grid-span-5 {grid-column: span 5; }
+  .section.masonry-layout .grid-span-6 {grid-column: span 6; }
   .section.masonry-layout .grid-span-7 {grid-column: span 7; }
   .section.masonry-layout .grid-span-8 {grid-column: span 8; }
   .section.masonry-layout .grid-span-9 {grid-column: span 9; }
   .section.masonry-layout .grid-span-10 {grid-column: span 10; }
   .section.masonry-layout .grid-span-11 {grid-column: span 11; }
+  .section.masonry-layout .grid-span-12 {grid-column: span 12; }
 }
