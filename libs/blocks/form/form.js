@@ -284,9 +284,6 @@ function applyRules(form, rules) {
         return false;
     }
     fw.classList.toggle(type, force);
-    if (fw.classList.contains('hidden')) {
-      fw.querySelector(`#${fw.dataset.fieldId}`).removeAttribute('required');
-    }
     return false;
   });
 }
