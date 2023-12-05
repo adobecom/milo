@@ -108,7 +108,10 @@ async function onSubmit() {
       
       try {
         
-        const response = await fetch("https://prod-56.westus.logic.azure.com/workflows/58fe7b1a791c4b068c43c535fac5d703/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YXIJ9-vicUvmWpfOchMqtS0zACqe_iRCFPWjWUDTyDU", {
+        const submitURL = 'https://exio.azurewebsites.net/api/ko24submit';
+        const paURL = 'https://prod-56.westus.logic.azure.com/workflows/58fe7b1a791c4b068c43c535fac5d703/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YXIJ9-vicUvmWpfOchMqtS0zACqe_iRCFPWjWUDTyDU';
+
+        const response = await fetch(submitURL, {
           method: "POST",
           body: JSON.stringify(payload),
           headers: {
