@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+
 import {
   createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
 } from '../../utils/utils.js';
@@ -10,6 +11,53 @@ const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
 const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
 const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
 const PAGE_URL = new URL(window.location.href);
+
+export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
+
+export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
+
+export const normalizePath = (p) => {
+  let path = p;
+
+  if (!path.includes('/')) {
+    return path;
+  }
+
+  const config = getConfig();
+
+  if (path.startsWith(config.codeRoot)
+    || path.includes('.hlx.')
+    || path.startsWith(`https://${config.productionDomain}`)) {
+    try {
+      path = new URL(path).pathname;
+    } catch (e) { /* return path below */ }
+  } else if (!path.startsWith('http') && !path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  return path;
+};
+
+export const preloadManifests = ({ targetManifests = [], persManifests = [] }) => {
+  let manifests = targetManifests;
+
+  manifests = manifests.concat(
+    persManifests.map((manifestPath) => ({
+      manifestPath: appendJsonExt(manifestPath),
+      manifestUrl: manifestPath,
+    })),
+  );
+
+  for (const manifest of manifests) {
+    if (!manifest.manifestData && manifest.manifestPath) {
+      manifest.manifestPath = normalizePath(manifest.manifestPath);
+      loadLink(
+        manifest.manifestPath,
+        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
+      );
+    }
+  }
+  return manifests;
+};
 
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
@@ -122,28 +170,6 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   });
   return propMap;
 }, {});
-
-/* c8 ignore start */
-function normalizePath(p) {
-  let path = p;
-
-  if (!path.includes('/')) {
-    return path;
-  }
-
-  const config = getConfig();
-
-  if (path.startsWith(config.codeRoot)
-    || path.includes('.hlx.')
-    || path.startsWith(`https://${config.productionDomain}`)) {
-    try {
-      path = new URL(path).pathname;
-    } catch (e) { /* return path below */ }
-  } else if (!path.startsWith('http') && !path.startsWith('/')) {
-    path = `/${path}`;
-  }
-  return path;
-}
 
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
@@ -403,7 +429,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   }
 
   const matchVariant = (name) => {
-    if (name === variantLabel) return true;
+    if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
     if (entitlementKeys.includes(name)) {
@@ -416,20 +442,29 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   return matchingVariant;
 }
 
-export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
+export async function getPersConfig(info) {
+  const {
+    name,
+    manifestData,
+    manifestPath,
+    manifestUrl,
+    manifestPlaceholders,
+    manifestInfo,
+    variantLabel,
+  } = info;
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
     if (fetchData) data = fetchedData;
   }
-  let placeholders = false;
-  if (data?.placeholders?.data) {
-    placeholders = data.placeholders.data;
-  }
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
   const config = parseConfig(persData);
+
+  const infoTab = manifestInfo || data?.info?.data;
+  config.manifestType = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase() || 'personalization';
+  config.manifestOverrideName = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')?.value?.toLowerCase();
 
   if (!config) {
     /* c8 ignore next 3 */
@@ -453,6 +488,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariant = 'default';
   }
 
+  const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
       parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
@@ -461,6 +497,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
 
   config.name = name;
   config.manifest = manifestPath;
+  config.manifestUrl = manifestUrl;
   return config;
 }
 
@@ -475,14 +512,9 @@ const normalizeFragPaths = ({ selector, val }) => ({
 });
 
 export async function runPersonalization(info, config) {
-  const {
-    name,
-    manifestData,
-    manifestPath,
-    variantLabel,
-  } = info;
+  const { manifestPath } = info;
 
-  const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath);
+  const experiment = await getPersConfig(info);
 
   if (!experiment) return null;
 
@@ -539,21 +571,10 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
-const decoratePreviewCheck = async (config, experiments) => {
-  if (config.mep?.preview) {
-    const { default: decoratePreviewMode } = await import('./preview.js');
-    decoratePreviewMode(experiments);
-  }
-};
-
 export async function applyPers(manifests) {
   const config = getConfig();
 
-  if (!manifests?.length) {
-    /* c8 ignore next */
-    decoratePreviewCheck(config, []);
-    return;
-  }
+  if (!manifests?.length) return;
 
   getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
@@ -572,9 +593,19 @@ export async function applyPers(manifests) {
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
-  const trackingManifests = results.map((r) => r.experiment.manifest.split('/').pop().replace('.json', ''));
-  const trackingVariants = results.map((r) => r.experiment.selectedVariantName);
-  document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
-
-  decoratePreviewCheck(config, experiments);
+  const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
+  if (!pznList.length) {
+    document.body.dataset.mep = 'nopzn|nopzn';
+    return;
+  }
+  const pznVariants = pznList.map((r) => {
+    const val = r.experiment.selectedVariantName.replace('target-', '').trim().slice(0, 15);
+    return val === 'default' ? 'nopzn' : val;
+  });
+  const pznManifests = pznList.map((r) => {
+    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
+    return val.split('/').pop().replace('.json', '').trim()
+      .slice(0, 15);
+  });
+  document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
