@@ -1,5 +1,7 @@
 main > div[class*="-merch-card"],
-main > div[class*="-merch-cards"] {
+main > div[class*="-merch-cards"],
+.fragment > div[class*="-merch-card"],
+.fragment > div[class*="-merch-cards"] {
   display: grid;
 }
 
