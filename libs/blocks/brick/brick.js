@@ -2,24 +2,15 @@ import { decorateTextOverrides, decorateBlockText, decorateBlockBg, decorateIcon
 import { createTag } from '../../utils/utils.js';
 
 const blockTypeSizes = {
-  full: ['xxl', 'm', 'l'],
+  large: ['xxl', 'm', 'l'],
   default: ['xl', 'm', 'l'],
 };
 const objFitOptions = ['fill', 'contain', 'cover', 'none', 'scale-down'];
 
 function getBlockSize(el) {
   const sizes = Object.keys(blockTypeSizes);
-  const size = sizes.find((s) => el.classList.contains(`${s}-grid`)) || 'default';
+  const size = sizes.find((s) => el.classList.contains(`${s}`)) || 'default';
   return blockTypeSizes[size];
-}
-
-function handleBrickFragment(el) {
-  if (!el.closest('.fragment')) return;
-  const gridVariant = [...el.classList]?.find((c) => c.match(/-grid/));
-  if (!gridVariant || !el.closest('.section.masonry-layout')) return;
-  if (!el.parentNode.classList.contains('.section.masonry-layout')) {
-    el.closest('.section.masonry-layout div:not([class])')?.classList.add(gridVariant);
-  }
 }
 
 function handleSupplementalText(foreground) {
@@ -75,7 +66,6 @@ function decorateSupplementalText(el) {
 
 function decorateBricks(el) {
   if (!el.classList.contains('light')) el.classList.add('dark');
-  handleBrickFragment(el);
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) {
     handleObjectFit(elems[elems.length - 2]);
