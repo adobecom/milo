@@ -239,7 +239,7 @@
     display: block;
   }
 
-  .brick.full-grid {
+  .brick.large {
     min-height: 500px;
   }
 }
