@@ -4,6 +4,7 @@ import {
   getMetadata,
   loadIms,
   decorateLinks,
+  createTag,
 } from '../../utils/utils.js';
 import {
   toFragment,
@@ -229,7 +230,9 @@ class Gnav {
 
   decorateTopnavWrapper = async () => {
     const breadcrumbs = isDesktop.matches ? await this.decorateBreadcrumbs() : '';
+    const stripe = createTag('div', {class:'stripe'});
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
+        ${stripe}
         ${this.elements.topnav}
         ${breadcrumbs}
       </div>`;
