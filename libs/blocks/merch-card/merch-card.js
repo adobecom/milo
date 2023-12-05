@@ -171,7 +171,7 @@ const extractTags = (container) => [...container.querySelectorAll('p')]
     return acc;
   }, { categories: ['all'], types: [] });
 
-function addMerchCardGridIfMissing(section, cardType) {
+const addMerchCardGridIfMissing = (section, cardType) =>  {
   const el = section?.querySelector('.section-metadata');
   const directSection = section?.parentElement?.tagName === 'MAIN';
   if (el) {
@@ -201,6 +201,22 @@ const decorateMerchCardLinkAnalytics = (el) => {
     const analyticsString = heading ? `${linkText}|${headingText}` : linkText;
     link.setAttribute('daa-ll', analyticsString);
   });
+};
+
+const addStock = (merchCard, styles) => {
+  if (styles.includes('add-stock')) {
+    let stock;
+    const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
+    const [label, ...rest] = [...document.querySelectorAll(selector)];
+    if (label) {
+      const offers = rest.filter(({ dataset: { wcsOsi } }) => wcsOsi);
+      stock = { label: label?.innerText, offers: offers?.map((offer) => offer.dataset.wcsOsi).join(',') };
+    }
+    if (stock !== undefined) {
+      merchCard.setAttribute('checkbox-label', stock.label);
+      merchCard.setAttribute('stock-offer-osis', stock.offers);
+    }
+  }
 };
 
 const init = async (el) => {
@@ -316,19 +332,8 @@ const init = async (el) => {
     );
     icons.forEach((icon) => icon.remove());
   }
-  if (styles.includes('add-stock')) {
-    let stock;
-    const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
-    const [label, ...rest] = [...document.querySelectorAll(selector)];
-    if (label) {
-      const offers = rest.filter(({ dataset: { wcsOsi } }) => wcsOsi);
-      stock = { label: label?.innerText, offers: offers?.map((offer) => offer.dataset.wcsOsi).join(',') };
-    }
-    if (stock !== undefined) {
-      merchCard.setAttribute('checkbox-label', stock.label);
-      merchCard.setAttribute('stock-offer-osis', stock.offers);
-    }
-  }
+
+  addStock(merchCard, styles);
   if (styles.includes('secure')) {
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
   }
