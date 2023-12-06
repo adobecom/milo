@@ -21,6 +21,15 @@ const setFetchResponse = (data, type = 'json') => {
 
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional Test', () => {
+  it('test or promo manifest', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestTestOrPromo.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.body.dataset.mep).to.equal('nopzn|nopzn');
+  });
+
   it('replaceContent should replace an element with a fragment', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestReplace.json' });
     manifestJson = JSON.parse(manifestJson);
