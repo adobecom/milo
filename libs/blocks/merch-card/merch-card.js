@@ -348,7 +348,7 @@ const init = async (el) => {
   merchCard.appendChild(footer);
   const offerSelection = cardType === 'plans' ? el.querySelector('ul') : null;
   if (offerSelection) {
-    const { initOfferSelection } = await import('./offer-selection.js');
+    const { initOfferSelection } = await import('./merch-offer-select.js');
     initOfferSelection(merchCard, offerSelection);
   }
   decorateBlockHrs(merchCard);

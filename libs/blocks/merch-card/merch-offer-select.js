@@ -1,6 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import '../../deps/merch-offers.js';
+import '../../deps/merch-offer-select.js';
 
 function createDynamicSlots(el, bodySlot) {
   const price = createTag('h5', { class: 'merch-card-price' });

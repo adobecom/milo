@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 const { default: initCard } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
-describe('Offer Selection', () => {
+describe('Merch Offer Select', () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
     document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
@@ -42,7 +42,7 @@ describe('Offer Selection', () => {
     expect(card.querySelector('div[slot="body-xs"] span[is="inline-price"]').dataset.wcsOsi).to.equal(osi);
   }
 
-  it('Should render offer selection and inital card state', async () => {
+  it('Should render offer select and inital card state', async () => {
     const merchCard = document.querySelector('merch-card');
     const merchOffers = merchCard.querySelector('merch-offers').querySelectorAll('merch-offer');
     expect(merchOffers.length).to.equal(3);
