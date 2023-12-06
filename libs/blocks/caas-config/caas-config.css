@@ -103,7 +103,8 @@ dd.content .sort-options > .field {
 
 /* Extends multifield */
 [class^="multifield filters"] .multifield-header h3 {
-  display: flex; justify-content: space-between;
+  display: flex; 
+  justify-content: space-between;
 }
 
 [class^="multifield filters"] .multifield-set {
@@ -111,7 +112,7 @@ dd.content .sort-options > .field {
 }
 
 [class^="multifield filters"] .multifield-set .up-down {
-  display:flex;
+  display: flex;
   font-weight: 300;
   position: absolute;
   top: 20px;
