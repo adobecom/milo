@@ -395,14 +395,6 @@ html[dir="rtl"] .quiz-step::after {
     margin: var(--spacing-xxxl) 0;
   }
 
-  .quiz-step-container.top {
-    display: flex;
-  }
-  
-  .quiz-step-container.bottom{
-    display: none;
-  }
-
   .quiz-footer {
     margin: 0 0 40px;
   }
@@ -416,6 +408,14 @@ html[dir="rtl"] .quiz-step::after {
 
   .quiz-option.has-icon .quiz-option-image {
     display: flex;
+  }
+
+  .quiz-step-container.top {
+    display: flex;
+  }
+  
+  .quiz-step-container.bottom{
+    display: none;
   }
 }
 
