@@ -7,7 +7,6 @@ const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve,
 describe('Merch Offer Select', () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
-    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
     await initCard(document.querySelector('.acrobat'));
     await delay();
   });
