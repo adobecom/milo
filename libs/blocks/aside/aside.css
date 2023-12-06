@@ -143,6 +143,11 @@
   align-items: center;
 }
 
+.aside.notification .icon-area {
+  display: flex;
+  align-items: center;
+}
+
 .aside .foreground.container .icon-area {
   height: 56px;
   max-width: 234px;
@@ -350,7 +355,8 @@
 }
 
 .aside.notification .foreground.container .icon-area img {
-  height: 40px;
+  max-height: 40px;
+  height: auto;
 }
 
 .aside.notification.extra-small .foreground.container {
@@ -544,7 +550,6 @@
   border-radius: var(--spacing-xs);
   width: var(--grid-container-width);
   margin: auto;
-  bottom: var(--spacing-xs);
   box-shadow: 0 3px 6px #707070;
 }
 
@@ -859,7 +864,6 @@
   }
 
   .aside.notification.small .foreground.container .text .icon-area {
-    width: 40px;
     height: 40px;
   }
 
@@ -998,13 +1002,14 @@
     flex-direction: row;
   }
 
+  .aside.promobar .foreground.container .icon-area,
+  .aside.promobar .foreground.container .icon-area img {
+    height: var(--icon-size-xxl);
+  }
+
   .aside.promobar.popup .promo-text .icon-area,
   .aside.promobar.popup .promo-text .icon-area img {
     height: var(--icon-size-m);
-  }
-
-  .aside.promobar .foreground.container .icon-area img {
-    height: var(--icon-size-xxl);
   }
 
   .aside.center:not(.notification) .foreground.container .text .icon-area img {
@@ -1064,10 +1069,6 @@
 
   .aside.notification.medium .foreground.container .text+.image {
     margin-right: 0;
-  }
-
-  .aside.promobar .foreground.container .icon-area {
-    height: var(--icon-size-xxl);
   }
 
   .aside.promobar .promo-text .content-area {

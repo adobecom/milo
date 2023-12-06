@@ -1,7 +1,7 @@
 let fetched = false;
 let linkData = null;
 
-const getLinks = async (path) => {
+const fetchSeoLinks = async (path) => {
   if (!path) return null;
   if (!fetched) {
     const resp = await fetch(path);
@@ -15,14 +15,17 @@ const getLinks = async (path) => {
 };
 
 export default async function init(path, area = document) {
-  const data = await getLinks(path);
-  if (!data) return;
-  const links = area.querySelectorAll('a:not([href^="/"])');
-  [...links].forEach((link) => {
-    data.filter((s) => link.href.startsWith(s.domain))
+  const seoLinks = await fetchSeoLinks(path);
+  if (!seoLinks) return;
+  const { origin } = window.location;
+  const pageLinks = area.querySelectorAll('a:not([href^="/"])');
+  [...pageLinks].forEach((link) => {
+    seoLinks
+      .filter((s) => link.href.startsWith(s.domain)
+        || (s.domain === 'off-origin' && !link.href.startsWith(origin)))
       .forEach((s) => {
         if (s.rel) link.setAttribute('rel', s.rel);
-        if (s.window) link.setAttribute('target', s.window);
+        if (s.window && !link.getAttribute('target')) link.setAttribute('target', s.window);
       });
   });
 }
