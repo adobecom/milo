@@ -304,7 +304,7 @@ const init = async (el) => {
   let ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
   if (!ctas) {
     const candidate = el.querySelector('p:last-of-type');
-    if (candidate.querySelector('a')) {
+    if (candidate?.querySelector('a')) {
       ctas = candidate;
     }
   }
