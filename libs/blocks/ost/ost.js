@@ -109,8 +109,21 @@ const onSelectHandler = (createLinkMarkup) => (
 
 export async function loadOstEnv(Log, getLocaleSettings) {
   const searchParameters = new URLSearchParams(window.location.search);
-  const aosAccessToken = searchParameters.get('token');
-  searchParameters.delete('token');
+  let aosAccessToken = searchParameters.get('token');
+  if (aosAccessToken) {
+    sessionStorage.setItem('AOS_ACCESS_TOKEN', aosAccessToken);
+    searchParameters.delete('token');
+  } else {
+    aosAccessToken = sessionStorage.getItem('AOS_ACCESS_TOKEN');
+  }
+  const osi = searchParameters.get('osi');
+  if (osi) {
+    searchParameters.delete('osi');
+  }
+
+  const newUrl = `${window.location.pathname}${window.location.hash}`;
+  window.history.pushState(null, '', newUrl);
+
   const environment = searchParameters.get('env') ?? WCS_ENV;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
