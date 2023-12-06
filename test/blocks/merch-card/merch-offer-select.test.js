@@ -33,9 +33,9 @@ describe('Merch Offer Select', () => {
 
   function validateMerchCard(card, badge, description, osi) {
     if (badge) {
-      expect(card.shadowRoot.querySelector('div.plans-ribbon').innerText).to.equal(badge);
+      expect(card.shadowRoot.querySelector('div.plans-badge').innerText).to.equal(badge);
     } else {
-      expect(card.shadowRoot.querySelector('div.plans-ribbon')).not.to.exist;
+      expect(card.shadowRoot.querySelector('div.plans-badge')).not.to.exist;
     }
     expect(card.querySelector('div[slot="body-xs"] p[slot="description"]').innerText).to.equal(description);
     expect(card.querySelector('div[slot="footer"] a[is="checkout-link"]').dataset.wcsOsi).to.equal(osi);
@@ -44,7 +44,7 @@ describe('Merch Offer Select', () => {
 
   it('Should render offer select and inital card state', async () => {
     const merchCard = document.querySelector('merch-card');
-    const merchOffers = merchCard.querySelector('merch-offers').querySelectorAll('merch-offer');
+    const merchOffers = merchCard.querySelector('merch-offer-select').querySelectorAll('merch-offer');
     expect(merchOffers.length).to.equal(3);
     validateMerchOffer(merchOffers[0], 'true', 'Annual, monthly payment', 'Recommended', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
     validateMerchOffer(merchOffers[1], 'false', 'Annual, one-time payment', 'Best Offer', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', 'New Description');
@@ -56,7 +56,7 @@ describe('Merch Offer Select', () => {
     merchCard.querySelectorAll('merch-offer')[1].click();
     await delay();
 
-    const merchOffers = merchCard.querySelector('merch-offers').querySelectorAll('merch-offer');
+    const merchOffers = merchCard.querySelector('merch-offer-select').querySelectorAll('merch-offer');
     validateMerchOffer(merchOffers[0], 'false', 'Annual, monthly payment', 'Recommended', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
     validateMerchOffer(merchOffers[1], 'true', 'Annual, one-time payment', 'Best Offer', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', 'New Description');
     validateMerchCard(merchCard, 'Best Offer', 'New Description', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA');

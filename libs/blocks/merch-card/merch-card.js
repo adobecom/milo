@@ -140,15 +140,15 @@ const parseContent = (el, merchCard) => {
   merchCard.append(bodySlot);
 };
 
-const returnRibbonStyle = (ribbonMetadata) => {
-  const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
-  if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return null;
-  const style = ribbonMetadata[0].innerText;
+const getBadgeStyle = (badgeMetadata) => {
+  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  if (!badgeStyleRegex.test(badgeMetadata[0]?.innerText)) return null;
+  const style = badgeMetadata[0].innerText;
   const badgeBackgroundColor = style.split(',')[0].trim();
   const badgeColor = style.split(',')[1].trim();
-  const ribbonWrapper = ribbonMetadata[0].parentNode;
-  const badgeText = ribbonMetadata[1].innerText;
-  ribbonWrapper.remove();
+  const badgeWrapper = badgeMetadata[0].parentNode;
+  const badgeText = badgeMetadata[1].innerText;
+  badgeWrapper.remove();
   return { badgeBackgroundColor, badgeColor, badgeText };
 };
 
@@ -171,7 +171,7 @@ const extractTags = (container) => [...container.querySelectorAll('p')]
     return acc;
   }, { categories: ['all'], types: [] });
 
-const addMerchCardGridIfMissing = (section, cardType) =>  {
+const addMerchCardGridIfMissing = (section, cardType) => {
   const el = section?.querySelector('.section-metadata');
   const directSection = section?.parentElement?.tagName === 'MAIN';
   if (el) {
@@ -223,12 +223,10 @@ const init = async (el) => {
   const styles = [...el.classList];
   const lastClass = styles[styles.length - 1];
   const name = PRODUCT_NAMES.includes(lastClass) ? lastClass : undefined;
-
   const cardType = getPodType(styles) || 'product';
   if (!styles.includes(cardType)) {
     styles.push(cardType);
   }
-
   let section = el.closest('.section');
   if (section) {
     const merchCards = addMerchCardGridIfMissing(section, cardType);
@@ -246,19 +244,14 @@ const init = async (el) => {
       }
     }
   }
-
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
-
   const merchCard = createTag('merch-card', { class: styles.join(' '), 'data-block': '' });
-
   merchCard.setAttribute('variant', cardType);
-
   if (name) {
     merchCard.setAttribute('name', name);
   }
-
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
     const { width, height } = imgNode;
@@ -271,7 +264,6 @@ const init = async (el) => {
       }
     }
   });
-
   let tags = {};
   if (el.lastElementChild) {
     tags = extractTags(el.lastElementChild);
@@ -281,13 +273,11 @@ const init = async (el) => {
     }
   }
   const { categories = ['all'], types = [] } = tags;
-
   if (el.firstElementChild) {
-    const ribbonMetadata = el.firstElementChild.querySelector('ul,h2') === null
+    const badgeMetadata = el.firstElementChild.querySelector('ul,h2') === null
   && el.firstElementChild.innerText.includes('#') ? el.firstElementChild : null;
-
-    if (ribbonMetadata !== null) {
-      const badge = returnRibbonStyle(ribbonMetadata.children);
+    if (badgeMetadata !== null) {
+      const badge = getBadgeStyle(badgeMetadata.children);
       if (badge !== null) {
         merchCard.setAttribute(
           'badge-background-color',
@@ -298,7 +288,6 @@ const init = async (el) => {
       }
     }
   }
-
   const actionMenuContent = cardType === 'catalog'
     ? getActionMenuContent(el)
     : null;
