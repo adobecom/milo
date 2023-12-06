@@ -1,7 +1,7 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
-import { processTrackingLabels } from '../../martech/analytics.js';
+import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/merch-card.js';
 
