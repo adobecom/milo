@@ -185,11 +185,11 @@ const App = ({
    * @param {Object} selCards - Selected cards
    * @returns {void}
    */
-  const handleOnNextClick = (selCards) => {
+  const handleOnNextClick = () => {
     const { nextQuizViews } = handleNext(
       questionData,
       selectedQuestion,
-      selCards,
+      selectedCards,
       userFlow,
     );
     const nextQuizViewsLen = nextQuizViews.length;
