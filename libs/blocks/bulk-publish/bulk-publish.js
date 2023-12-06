@@ -170,7 +170,7 @@ class BulkPublish extends LitElement {
           <div class="job-url">URL</div>
           <div class="job-meta">
             <span>STATUS</span>
-            <span>COMPLETED</span>
+            <span>DATE/TIME</span>
           </div>
         </div>
         <div class="job-list">

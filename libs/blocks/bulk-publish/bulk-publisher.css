@@ -175,7 +175,7 @@ label[for='urls'] i {
 }
 
 .job-list {
-  background: white;
+  background: rgba(255 255 255 / 50%);
   border: 1px solid #ddd;
   overflow-y: auto;
   font-size: 0.79em;

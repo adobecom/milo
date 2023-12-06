@@ -8,26 +8,26 @@ class BulkProcess extends LitElement {
   static get properties() {
     return {
       process: { type: Object },
-      status: { state: true },
+      jobStatus: { state: true },
       viewError: { state: true },
     };
   }
 
   constructor() {
     super();
-    this.status = undefined;
+    this.jobStatus = undefined;
     this.viewError = false;
   }
 
   async connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styles];
-    this.status = await pollJobStatus(this.process);
+    this.jobStatus = await pollJobStatus(this.process);
   }
 
-  viewResult({ url, result }, indx) {
-    if (this.status) {
-      if (result.status !== 202) this.viewError = this.viewError === indx ? false : indx;
+  viewResult({ url, status }, indx) {
+    if (this.jobStatus) {
+      if (status !== 200) this.viewError = this.viewError === indx ? false : indx;
       else window.open(url, '_blank');
     }
   }
@@ -36,15 +36,21 @@ class BulkProcess extends LitElement {
     const { result, origin } = this.process;
     const { job } = result;
     const url = `${origin}${path}`;
-    const { status } = this.status?.resources
-      ? this.status.resources.find((p) => p.path === url)
+    const { status } = this.jobStatus?.data?.resources
+      ? this.jobStatus.data.resources.find((p) => p.path === path)
       : job;
     return {
       url,
       status,
-      state: this.status?.state ?? job.state,
-      time: this.status?.stopTime ?? job.startTime,
+      state: this.jobStatus?.state ?? job.state,
+      time: this.jobStatus?.stopTime ?? job.createTime,
     };
+  }
+
+  getJobStatus(status, state) {
+    return this.jobStatus
+      ? `${state === 'stopped' ? 'Completed' : state}`
+      : html`<span class="loader-text">Working</span>`;
   }
 
   render() {
@@ -52,12 +58,13 @@ class BulkProcess extends LitElement {
     const { job } = result;
     return job.data.paths.map((path, index) => {
       const { url, status, state, time } = this.getJobMeta(path);
+      const success = status === 200;
       return html`
-        <div class="result" @click=${() => this.viewResult({ url, result }, index)}>
+        <div class="result" @click=${() => this.viewResult({ url, status }, index)}>
           <div class="job-url">${url}</div>
           <div class="result-meta">
-            <span class="${status === 202 ? 'success' : 'error'}">
-              ${this.status ? `${status} - ${state}` : state}
+            <span class="${success ? 'success' : ''}">
+              ${this.getJobStatus(status, state)}
             </span>
             <span>${new Date(time).toLocaleString()}</span>
           </div>

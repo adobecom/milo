@@ -1,9 +1,11 @@
-// TODO Remove testing
-import { testJob, testStatus } from './testing.js';
-
 const BASE_URL = 'https://admin.hlx.page';
 const DEFAULT_PREFS = { height: 0 };
 const MAX = 1000;
+const HEADERS = {
+  Accept: 'application/json',
+  'Content-Type': 'application/json',
+  'User-Agent': 'Milo Bulk Publisher',
+};
 const TYPES = [
   'Preview',
   'Publish',
@@ -66,7 +68,6 @@ const panelSize = (textarea, header) => {
     wrapper.style.setProperty('--panel-height', heightPref);
   }
   const resized = () => {
-    // get virtual height
     const calc = 100 * ((textarea.offsetHeight + header.offsetHeight) / window.innerHeight);
     const newHeight = `${calc}vh`;
     if (wrapper.style.getPropertyValue('--panel-height') !== newHeight) {
@@ -88,7 +89,6 @@ const getJobEp = (url, type) => {
 const prepJobs = (process, urls) => {
   const urlList = urls.map((url) => (new URL(url)));
   return Object.values(urlList.reduce((jobs, url) => {
-    // shape some job request payload
     const job = {
       endpoint: getJobEp(url, process.toLowerCase()),
       origin: url.origin,
@@ -106,35 +106,28 @@ const prepJobs = (process, urls) => {
 const createJobs = async (process, urls) => {
   const groups = prepJobs(process, urls);
   const jobs = groups.flatMap(async ({ endpoint, body, origin }) => {
-    // const batch = await fetch(endpoint, {
-    //   method: 'POST',
-    //   headers: {
-    //     Accept: 'application/json',
-    //     'Content-Type': 'application/json',
-    //     'User-Agent': 'Milo Bulk Publisher',
-    //   },
-    //   body: JSON.stringify(body),
-    // });
-    // const json = await batch.json();
-    const result = await testJob(process, body.paths);
+    const batch = await fetch(endpoint, {
+      method: 'POST',
+      headers: HEADERS,
+      body: JSON.stringify(body),
+    });
+    const result = await batch.json();
+    // const result = await testJob(process, body.paths);
     return { origin, endpoint, result };
   });
-
   const results = await Promise.all(jobs);
   return results;
 };
 
-const wait = (delay = 5000) => new Promise((resolve) => { setTimeout(() => resolve(), delay); });
-const getJobStatus = async (link, paths) => {
+const wait = (delay = 5000) => new Promise((resolve) => {
+  setTimeout(() => resolve(), delay);
+});
+
+const getJobStatus = async (link) => {
   await wait();
-  // const status = await fetch(link, {
-  //   headers: {
-  //     Accept: 'application/json',
-  //     'User-Agent': 'Milo Bulk Publisher',
-  //   },
-  // });
-  // const result = await status.json();
-  const result = await testStatus(paths, link);
+  const status = await fetch(link, { headers: HEADERS });
+  const result = await status.json();
+  // const result = await testStatus(paths, link);
   return result;
 };
 
@@ -142,7 +135,7 @@ const pollJobStatus = async ({ result }) => {
   let status;
   let finished = false;
   while (!finished) {
-    const details = await getJobStatus(`${result.links.self}/details`, result.job.data.paths);
+    const details = await getJobStatus(`${result.link.self}/details`);
     if (details.stopTime) {
       status = details;
       finished = true;

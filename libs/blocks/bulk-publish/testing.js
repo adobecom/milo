@@ -21,7 +21,7 @@ const testJob = (topic, paths) => (new Promise((resolve) => {
         status: [202, 400][Math.floor(Math.random() * 2)],
         data: { paths },
       },
-      links: {
+      link: {
         self: 'https://admin.hlx.page/job/adobe/blog/main/preview/job-123',
         list: 'https://admin.hlx.page/job/adobe/blog/main/preview',
       },
