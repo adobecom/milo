@@ -114,15 +114,13 @@ export async function loadOstEnv(Log, getLocaleSettings) {
   if (aosAccessToken) {
     sessionStorage.setItem('AOS_ACCESS_TOKEN', aosAccessToken);
     searchParameters.delete('token');
+    let search = searchParameters.toString();
+    search = search ? `?${search}` : '';
+    const newUrl = `${window.location.pathname}${search}`;
+    window.location.href = newUrl;
   } else {
     aosAccessToken = sessionStorage.getItem('AOS_ACCESS_TOKEN');
   }
-
-  let search = searchParameters.toString();
-  search = search ? `?${search}` : '';
-
-  const newUrl = `${window.location.pathname}${search}`;
-  window.history.pushState(null, '', newUrl);
 
   const environment = searchParameters.get('env') ?? WCS_ENV;
   const owner = searchParameters.get('owner');
