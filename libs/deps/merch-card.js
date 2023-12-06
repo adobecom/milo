@@ -1,4 +1,4 @@
-// Wed, 06 Dec 2023 11:22:31 GMT
+// Wed, 06 Dec 2023 11:33:49 GMT
 import{html as n,LitElement as T}from"./lit-all.min.js";import{css as x,unsafeCSS as p}from"./lit-all.min.js";var s="(min-width: 768px)",c="(min-width: 1200px)",i="(min-width: 1600px)";var v=x`
     :host {
         position: relative;
@@ -77,7 +77,7 @@ import{html as n,LitElement as T}from"./lit-all.min.js";import{css as x,unsafeCS
         padding: var(--consonant-merch-spacing-xs);
     }
 
-    :host hr {
+    hr {
         background-color: var(--color-gray-200);
         border: none;
         height: 1px;
@@ -88,7 +88,7 @@ import{html as n,LitElement as T}from"./lit-all.min.js";import{css as x,unsafeCS
         margin-right: var(--consonant-merch-spacing-xs);
     }
 
-    :host div[class$='-badge'] {
+    div[class$='-badge'] {
         position: absolute;
         top: 16px;
         right: 0;
@@ -381,14 +381,6 @@ merch-card.background-opacity-70 {
     background-color: rgba(255 255 255 / 70%);
 }
 
-merch-card hr {
-    background-color: var(--color-gray-200);
-    border: none;
-    height: 1px;
-    width: 100%;
-    margin-bottom: var(--consonant-merch-card-spacing-xs);
-}
-
 merch-card.has-divider hr {
     margin-bottom: var(--spacing-xxs);
 }
@@ -524,10 +516,6 @@ merch-card[variant="catalog"] [slot="action-menu-content"] p {
 merch-card[variant="catalog"] [slot="action-menu-content"] a {
     color: var(--consonant-merch-card-background-color);
     text-decoration: underline;
-}
-
-.button--inactive {
-    display: none;
 }
 
 div[slot="footer"] a.con-button {
