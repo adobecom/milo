@@ -37,7 +37,7 @@ export const initOfferSelection = (merchCard, offerSelection) => {
   const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
   if (!bodySlot) return;
   createDynamicSlots(merchCard, bodySlot);
-  const merchOffers = createTag('merch-offers', { container: 'merch-card' });
+  const merchOffers = createTag('merch-offer-select', { container: 'merch-card' });
   [...offerSelection.children].forEach((option) => {
     merchOffers.append(createMerchOffer(option));
   });
