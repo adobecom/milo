@@ -11,6 +11,7 @@ import {
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
+import { CONFIG } from '../../global-navigation.js';
 
 const selectors = {
   gnavPromo: '.gnav-promo',
@@ -270,22 +271,19 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 const decorateLinksStrip = (content) => {
   const linksStripEl = content.querySelector('.links-strip');
   if (!linksStripEl) return;
-  linksStripEl.parentElement.removeChild(linksStripEl);
-  const decorateLink = (el) => {
-    const image = el.querySelector('picture');
-    const link = el.querySelector('a');
-    const imageEl = image ? toFragment`<div class="feds-linksStrip-image">${image}</div>` : '';
-    const contentEl = link ? `<span>${link.textContent}</span>` : '';
+  linksStripEl.remove();
+
+  const decorateLink = (el, index) => {
+    const decoratedLink = decorateLinkGroup(el, index);
+    if (index === 0) decoratedLink.prepend(toFragment`${CONFIG.icons.home}`);
     return toFragment`<div class="feds-linksStrip-item">
-      <a href="${link.href}" class="feds-navLink">
-      ${imageEl}
-      ${contentEl}
-      </a>
+      ${decoratedLink}
     </div>`;
   };
 
-  const linksStripWrapper = toFragment`<div class="feds-linksStrip-wrapper"><div class="feds-linksStrip"></div></div>`;
-  linksStripWrapper.querySelector('.feds-linksStrip').append(...[...linksStripEl.children].map(decorateLink));
+  const linksStripContent = toFragment`<div class="feds-linksStrip"></div>`;
+  const linksStripWrapper = toFragment`<div class="feds-linksStrip-wrapper">${linksStripContent}</div>`;
+  linksStripContent.append(...[...linksStripEl.children].map(decorateLink));
   content.append(linksStripWrapper);
 };
 
