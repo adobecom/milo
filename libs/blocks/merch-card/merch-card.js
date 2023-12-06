@@ -301,7 +301,13 @@ const init = async (el) => {
       ),
     );
   }
-  const ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
+  let ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
+  if (!ctas) {
+    const candidate = el.querySelector('p:last-of-type');
+    if (candidate.querySelector('a')) {
+      ctas = candidate;
+    }
+  }
   if (image !== undefined) {
     const imageSlot = createTag('div', { slot: 'bg-image' });
     imageSlot.appendChild(image);
