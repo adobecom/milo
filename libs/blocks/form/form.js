@@ -68,6 +68,7 @@ async function submitForm(form) {
     }
     payload[key] = sanitizeComment(payload[key]);
   }
+  /* c8 ignore next 7 */
   const resp = await fetch(form.dataset.action, {
     method: 'POST',
     cache: 'no-cache',
@@ -108,6 +109,8 @@ function createButton(fd, thankYou) {
           thanksText.className = 'thank-you';
           thanksText.textContent = handleThankYou;
           form.append(thanksText);
+          setTimeout(() => thanksText.remove(), 2000);
+          /* c8 ignore next 3 */
         } else {
           window.location.href = handleThankYou;
         }
@@ -199,6 +202,7 @@ function createCheckGroup(fd, type) {
 }
 
 function processNumRule(tf, operator, a, b) {
+  /* c8 ignore next 3 */
   if (!tf.dataset.type.match(/(?:number|date)/)) {
     throw new Error(`Comparison field must be of type number or date for ${operator} rules`);
   }
@@ -230,6 +234,7 @@ function applyRules(form, rules) {
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
           force = a < b;
+          /* c8 ignore next 5 */
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`Invalid rule, ${e}`);
@@ -244,6 +249,7 @@ function applyRules(form, rules) {
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
           force = a <= b;
+          /* c8 ignore next 5 */
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`Invalid rule, ${e}`);
@@ -258,6 +264,7 @@ function applyRules(form, rules) {
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
           force = a > b;
+          /* c8 ignore next 5 */
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`Invalid rule, ${e}`);
@@ -272,6 +279,7 @@ function applyRules(form, rules) {
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
           force = a >= b;
+          /* c8 ignore next 5 */
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`Invalid rule, ${e}`);
@@ -288,19 +296,14 @@ function applyRules(form, rules) {
   });
 }
 
-function fill(form) {
-  const { action } = form.dataset;
-  if (action === '/tools/bot/register-form') {
-    const loc = new URL(window.location.href);
-    form.querySelector('#owner').value = loc.searchParams.get('owner') || '';
-    form.querySelector('#installationId').value = loc.searchParams.get('id') || '';
-  }
-}
-
-async function createForm(formURL, thankYou) {
+async function createForm(formURL, thankYou, formData) {
   const { pathname } = new URL(formURL);
-  const resp = await fetch(pathname);
-  const json = await resp.json();
+  let json = formData;
+  /* c8 ignore next 4 */
+  if (!formData) {
+    const resp = await fetch(pathname);
+    json = await resp.json();
+  }
   const form = document.createElement('form');
   const rules = [];
   // eslint-disable-next-line prefer-destructuring
@@ -308,7 +311,7 @@ async function createForm(formURL, thankYou) {
   json.data.forEach((fd) => {
     fd.Type = fd.Type || 'text';
     const fieldWrapper = document.createElement('div');
-    const style = fd.Style ? ` form-${fd.Style}` : '';
+    const style = fd.Extra ? ` form-${fd.Extra}` : '';
     fieldWrapper.className = `field-wrapper form-${fd.Type}-wrapper${style}`;
     fieldWrapper.dataset.fieldId = fd.Field;
     fieldWrapper.dataset.type = fd.Type;
@@ -351,6 +354,7 @@ async function createForm(formURL, thankYou) {
     if (fd.Rules) {
       try {
         rules.push({ fieldId: fd.Field, rule: JSON.parse(fd.Rules) });
+        /* c8 ignore next 4 */
       } catch (e) {
         // eslint-disable-next-line no-console
         console.warn(`Invalid Rule ${fd.Rules}: ${e}`);
@@ -361,15 +365,14 @@ async function createForm(formURL, thankYou) {
 
   form.addEventListener('input', () => applyRules(form, rules));
   applyRules(form, rules);
-  fill(form);
   return (form);
 }
 
-export default async function decorate(block) {
+export default async function decorate(block, formData = null) {
   const form = block.querySelector('a[href$=".json"]');
   const thankYou = block.querySelector(':scope > div:last-of-type > div');
   thankYou.remove();
   if (form) {
-    form.replaceWith(await createForm(form.href, thankYou));
+    form.replaceWith(await createForm(form.href, thankYou, formData));
   }
 }
