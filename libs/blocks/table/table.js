@@ -41,15 +41,15 @@ function handleHeading(headingCols, isPriceBottom) {
       const pricingElem = elements[textStartIndex + 1];
       if (pricingElem) {
         pricingElem.classList.add('pricing');
+        if (isPriceBottom) {
+          pricingElem.parentNode.insertBefore(
+            elements[textStartIndex + 2],
+            elements[textStartIndex + 1],
+          );
+        }
       }
       if (elements[textStartIndex + 2]) {
         elements[textStartIndex + 2].classList.add('body');
-      }
-      if (isPriceBottom) {
-        pricingElem.parentNode.insertBefore(
-          elements[textStartIndex + 2],
-          elements[textStartIndex + 1],
-        );
       }
 
       decorateButtons(col, 'button-l');
