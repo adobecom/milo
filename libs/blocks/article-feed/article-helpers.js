@@ -302,7 +302,7 @@ export function buildArticleCard(article, type = 'article', eager = false) {
         ${categoryTag}
       </p>
       <h3>${title}</h3>
-      <p class="${type}-card-description">${description}</p>
+      <p class="${type}-card-description">${description && description !== '0' ? description : ''}</p>
       <p class="${type}-card-date">${formatCardLocaleDate(date)}
     </div>`;
   return card;

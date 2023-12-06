@@ -21,12 +21,13 @@ export async function loadFragments(fragmentURL) {
 const App = ({
   initialIsDataLoaded = false,
   preQuestions = {}, initialStrings = {}, shortQuiz: isShortQuiz = false,
+  preselections = [], nextQuizViewsExist: preNextQuizViewsExist = true,
 }) => {
   const [btnAnalytics, setBtnAnalytics] = useState(null);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isDataLoaded, setDataLoaded] = useState(initialIsDataLoaded);
-  const [nextQuizViewsExist, setNextQuizViewsExist] = useState(true);
+  const [nextQuizViewsExist, setNextQuizViewsExist] = useState(preNextQuizViewsExist);
   const [prevStepIndicator, setPrevStepIndicator] = useState([]);
   const [questionData, setQuestionData] = useState(preQuestions.questionData || {});
   const [questionList, setQuestionList] = useState(preQuestions.questionList || {});
@@ -36,7 +37,7 @@ const App = ({
   const [stringQList, setStringQList] = useState(preQuestions.stringQList || {});
   const [totalSteps, setTotalSteps] = useState(isShortQuiz ? 2 : 3);
   const initialUrlParams = getUrlParams();
-  const [userSelection, updateUserSelection] = useState([]);
+  const [userSelection, updateUserSelection] = useState(preselections);
   const [userFlow, setUserFlow] = useState([]);
   const validQuestions = useMemo(() => [], []);
   const [debugBuild, setDebugBuild] = useState(null);
@@ -258,6 +259,10 @@ const App = ({
     if (fragmentURL) {
       loadFragments(fragmentURL);
     }
+    const iconBg = getStringValue('icon-background-color');
+    if (iconBg) {
+      document.querySelector('.quiz-container').style.setProperty('--quiz-icon-bg', iconBg);
+    }
   }, [selectedQuestion, stringQList]);
 
   if (!isDataLoaded || !selectedQuestion) {
@@ -297,7 +302,8 @@ const App = ({
                     btnText=${getStringValue('btn')} 
                     minSelections=${minSelections} 
                     maxSelections=${maxSelections} 
-                    options=${stringData[selectedQuestion.questions]} 
+                    options=${stringData[selectedQuestion.questions]}
+                    background=${getStringValue('icon-background-color')}
                     countSelectedCards=${countSelectedCards}
                     selectedCards=${selectedCards}
                     onOptionClick=${onOptionClick}
@@ -322,6 +328,8 @@ export default async function init(
   initialIsDataLoaded = false,
   preQuestions = {},
   initialStrings = {},
+  preselections = [],
+  nextQuizViewsExist = true,
 ) {
   const configData = initConfigPathGlob(el);
   const updatedShortQuiz = shortQuiz || configData.shortQuiz;
@@ -331,5 +339,7 @@ export default async function init(
     preQuestions=${preQuestions} 
     initialStrings=${initialStrings}
     shortQuiz=${updatedShortQuiz}
+    preselections=${preselections}
+    nextQuizViewsExist=${nextQuizViewsExist}
   />`, el);
 }
