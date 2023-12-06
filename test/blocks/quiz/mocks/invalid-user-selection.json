@@ -1,0 +1,8 @@
+{
+  "selectedQuestion": {
+  "questions": "q-category",
+  "max-selections": "3",
+  "min-selections": "1"
+  },
+  "selectedCards": { "invalid-option": true }
+}
