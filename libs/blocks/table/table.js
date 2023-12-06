@@ -65,11 +65,10 @@ function handleHeading(headingCols, isPriceBottom) {
       const row1 = document.createElement('div');
       const row2 = document.createElement('div');
       const row1LastIdx = isPriceBottom ? 3 : 4;
-      const row1Nodes = Array.from(elements).slice(0, row1LastIdx);
-      const row2Nodes = Array.from(elements).slice(row1LastIdx);
-
-      row1Nodes.forEach((child) => row1.appendChild(child));
-      row2Nodes.forEach((child) => row2.appendChild(child));
+      [...elements].forEach((e, idx) => {
+        if (idx < row1LastIdx) row1.appendChild(e);
+        else row2.appendChild(e);
+      });
       col.innerHTML = '';
       col.append(row1, row2);
     }
