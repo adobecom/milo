@@ -1,4 +1,4 @@
-import { loadBlock, decorateAutoBlock, getConfig } from '../../../../utils/utils.js';
+import { loadBlock, decorateAutoBlock } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 
@@ -20,9 +20,8 @@ export default async function decorateAside({ headerElem, promoPath } = {}) {
   aside.removeAttribute('data-block');
   aside.setAttribute('daa-lh', 'Promo');
 
-  const config = getConfig();
   aside.querySelectorAll('a').forEach((link, index) => {
-    link.setAttribute('daa-ll', `${processTrackingLabels(link.textContent, config)}--${index + 1}`);
+    link.setAttribute('daa-ll', `${processTrackingLabels(link.textContent)}--${index + 1}`);
   });
 
   return aside;

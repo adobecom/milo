@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 
@@ -69,12 +69,12 @@ function defalutOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('dd'), 1, 0);
 }
 
-function createItem(accordion, id, heading, num, edit, config) {
+function createItem(accordion, id, heading, num, edit) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
   const hTag = heading.querySelector('h1, h2, h3, h4, h5, h6');
-  const analyticsString = `open-${num}--${processTrackingLabels(heading.textContent, config)}`;
+  const analyticsString = `open-${num}--${processTrackingLabels(heading.textContent)}`;
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
@@ -134,10 +134,9 @@ export default function init(el) {
   }
 
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
-  const config = getConfig();
   const items = [...headings].map(
     // eslint-disable-next-line max-len
-    (heading, idx) => createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia, config),
+    (heading, idx) => createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia),
   );
 
   if (isSeo) { setSEO(items); }
