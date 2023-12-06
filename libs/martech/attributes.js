@@ -1,5 +1,8 @@
+const INVALID_CHARACTERS = /[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g;
+const LEAD_UNDERSCORES = /^_+|_+$/g;
+
 export function processTrackingLabels(text, config, charLimit) {
-  let analyticsValue = text?.replace(/[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g, ' ').replace(/^_+|_+$/g, '').trim();
+  let analyticsValue = text?.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '').trim();
   if (config) {
     const { analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
     if (loc) analyticsValue = loc;
@@ -19,7 +22,9 @@ export function decorateDefaultLinkAnalytics(block, config) {
     block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.link-block), button, .tracking-header')
       .forEach((item) => {
         if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
-          if (item.classList.contains('tracking-header')) header = processTrackingLabels(item.textContent, config, 20);
+          if (item.classList.contains('tracking-header')) {
+            header = processTrackingLabels(item.textContent, config, 20);
+          }
           if (item.hasAttribute('daa-ll')) {
             const labelArray = item.getAttribute('daa-ll').split('-').map((part) => {
               if (part === '') return '';
