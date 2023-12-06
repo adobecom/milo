@@ -1,4 +1,4 @@
-// Wed, 06 Dec 2023 11:33:49 GMT
+// Wed, 06 Dec 2023 13:18:01 GMT
 import{html as n,LitElement as T}from"./lit-all.min.js";import{css as x,unsafeCSS as p}from"./lit-all.min.js";var s="(min-width: 768px)",c="(min-width: 1200px)",i="(min-width: 1600px)";var v=x`
     :host {
         position: relative;
@@ -385,7 +385,7 @@ merch-card.has-divider hr {
     margin-bottom: var(--spacing-xxs);
 }
 
-merch-card[variant="special-offers"] span[is="inline-price"][data-template="priceStrikethrough"] {
+merch-card[variant="special-offers"] span[is="inline-price"][data-template="strikethrough"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
 }
 
