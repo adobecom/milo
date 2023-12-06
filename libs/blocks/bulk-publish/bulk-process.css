@@ -1,0 +1,38 @@
+.result {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  background-color: white;
+  border-bottom: 1px solid #eee;
+  padding: 5px 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: all 0.65s ease-in-out;
+}
+
+.result:hover {
+  background-color: #eee;
+}
+
+.result-meta {
+  display: flex;
+  justify-content: space-between;
+  min-width: 35%;
+}
+
+.result-meta .success {
+  color: var(--success);
+}
+
+.result-meta .error {
+  color: var(--error);
+}
+
+.result-meta > *:first-child {
+  width: 100px;
+}
+
+.result-meta > *:last-child {
+  text-align: right;
+}

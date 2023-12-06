@@ -35,6 +35,14 @@
   animation-delay: 0s;
 }
 
+button .loader {
+  margin-left: 20px;
+}
+
+.loader.hide {
+  display: none;
+}
+
 @keyframes animate {
   0% {
     height: var(--height-tall)

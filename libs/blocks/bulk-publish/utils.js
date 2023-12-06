@@ -1,18 +1,20 @@
+// TODO Remove testing
+import { testJob, testStatus } from './testing.js';
+
+const BASE_URL = 'https://admin.hlx.page';
+const DEFAULT_PREFS = { height: 0 };
 const MAX = 1000;
 const TYPES = [
   'Preview',
   'Publish',
-  'Preview & Publish',
   'Unpublish',
   'Delete',
   'Index',
 ];
 
-const defaultPrefs = { height: 0 };
-
-const preferences = (storeKey, prefsDefault) => {
+const prefered = (storeKey) => {
   const store = localStorage.getItem(storeKey);
-  const prefs = store ? JSON.parse(store) : prefsDefault;
+  const prefs = store ? JSON.parse(store) : DEFAULT_PREFS;
   return {
     get: (key) => (prefs[key]),
     set: (key, value) => {
@@ -23,13 +25,13 @@ const preferences = (storeKey, prefsDefault) => {
 };
 
 const validPath = (str) => {
-  let url;
+  let validUrl;
   try {
-    url = new URL(str);
+    validUrl = new URL(str);
   } catch (_) {
     return false;
   }
-  return url.protocol === 'https:';
+  return validUrl.protocol === 'https:';
 };
 
 const editEntry = (elem, str) => {
@@ -56,36 +58,97 @@ const selectOverage = (elem, paths) => {
   }
 };
 
-const handlePanelSize = (textarea) => {
+const panelSize = (textarea, header) => {
   const wrapper = document.querySelector('.bulk-publish');
-  const prefs = preferences(defaultPrefs);
+  const prefs = prefered('bulk-pub-prefs');
   const heightPref = prefs.get('height');
   if (heightPref) {
     wrapper.style.setProperty('--panel-height', heightPref);
   }
   const resized = () => {
-    const calc = 100 * ((textarea.offsetHeight + 170) / window.innerHeight);
-    const newHeight = `${Math.floor(calc)}vh`;
+    // get virtual height
+    const calc = 100 * ((textarea.offsetHeight + header.offsetHeight) / window.innerHeight);
+    const newHeight = `${calc}vh`;
     if (wrapper.style.getPropertyValue('--panel-height') !== newHeight) {
       wrapper.style.setProperty('--panel-height', newHeight);
       prefs.set('height', newHeight);
     }
   };
-  new MutationObserver(resized).observe(textarea, { attributes: true, attributeFilter: ['style'] });
+  new MutationObserver(resized).observe(textarea, {
+    attributes: true,
+    attributeFilter: ['style'],
+  });
 };
 
-const runBulkJob = async (data) => {
-  const testSuccess = {
-    status: 202,
-    topic: data.type,
-    name: `job-${new Date().getTime()}`,
-    state: 'created',
-    startTime: new Date().toLocaleDateString('en-US'),
-    data: data.paths.map((path) => ({ path })),
-  };
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(testSuccess), 3000);
+const getJobEp = (url, type) => {
+  const [ref, repo, owner] = url.hostname.split('.')[0].split('--');
+  return `${BASE_URL}/${type}/${owner}/${repo}/${ref}/*`;
+};
+
+const prepJobs = (process, urls) => {
+  const urlList = urls.map((url) => (new URL(url)));
+  return Object.values(urlList.reduce((jobs, url) => {
+    // shape some job request payload
+    const job = {
+      endpoint: getJobEp(url, process.toLowerCase()),
+      origin: url.origin,
+      body: {
+        forceUpdate: true,
+        paths: [],
+      },
+    };
+    if (!jobs[url.host]) jobs[url.host] = job;
+    jobs[url.host].body.paths.push(url.pathname);
+    return jobs;
+  }, {}));
+};
+
+const createJobs = async (process, urls) => {
+  const groups = prepJobs(process, urls);
+  const jobs = groups.flatMap(async ({ endpoint, body, origin }) => {
+    // const batch = await fetch(endpoint, {
+    //   method: 'POST',
+    //   headers: {
+    //     Accept: 'application/json',
+    //     'Content-Type': 'application/json',
+    //     'User-Agent': 'Milo Bulk Publisher',
+    //   },
+    //   body: JSON.stringify(body),
+    // });
+    // const json = await batch.json();
+    const result = await testJob(process, body.paths);
+    return { origin, endpoint, result };
   });
+
+  const results = await Promise.all(jobs);
+  return results;
+};
+
+const wait = (delay = 5000) => new Promise((resolve) => { setTimeout(() => resolve(), delay); });
+const getJobStatus = async (link, paths) => {
+  await wait();
+  // const status = await fetch(link, {
+  //   headers: {
+  //     Accept: 'application/json',
+  //     'User-Agent': 'Milo Bulk Publisher',
+  //   },
+  // });
+  // const result = await status.json();
+  const result = await testStatus(paths, link);
+  return result;
+};
+
+const pollJobStatus = async ({ result }) => {
+  let status;
+  let finished = false;
+  while (!finished) {
+    const details = await getJobStatus(`${result.links.self}/details`, result.job.data.paths);
+    if (details.stopTime) {
+      status = details;
+      finished = true;
+    }
+  }
+  return status;
 };
 
 export {
@@ -93,7 +156,8 @@ export {
   validPath,
   MAX,
   TYPES,
-  runBulkJob,
+  createJobs,
   selectOverage,
-  handlePanelSize,
+  panelSize,
+  pollJobStatus,
 };
