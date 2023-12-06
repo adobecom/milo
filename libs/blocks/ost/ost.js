@@ -16,7 +16,8 @@ const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
 const OST_VERSION = '1.14.2-preview';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
-const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
+// const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
+const OST_SCRIPT_URL = 'http://local.adobe.com:9007/index.js';
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
@@ -116,12 +117,11 @@ export async function loadOstEnv(Log, getLocaleSettings) {
   } else {
     aosAccessToken = sessionStorage.getItem('AOS_ACCESS_TOKEN');
   }
-  const osi = searchParameters.get('osi');
-  if (osi) {
-    searchParameters.delete('osi');
-  }
 
-  const newUrl = `${window.location.pathname}${window.location.hash}`;
+  let search = searchParameters.toString();
+  search = search ? `?${search}` : '';
+
+  const newUrl = `${window.location.pathname}${search}`;
   window.history.pushState(null, '', newUrl);
 
   const environment = searchParameters.get('env') ?? WCS_ENV;

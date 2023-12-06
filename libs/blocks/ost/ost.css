@@ -31,3 +31,12 @@ body.tool-ost .ost>div {
 .price-unit-type::before {
   content: " ";
 }
+
+.ost h1,
+.ost h2,
+.ost h3,
+.ost h5,
+.ost h4,
+.ost h6 {
+    font-size: initial;
+}
