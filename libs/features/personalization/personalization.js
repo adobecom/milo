@@ -434,7 +434,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     entitlements = await getFlatEntitlements();
   }
 
-  const matchVariantCondition = (name) => {
+  const hasMatch = (name) => {
     if (name === '') return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
@@ -446,10 +446,10 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   };
 
   const matchVariant = (name) => {
-    if (name.startsWith(TARGET_EXP_PREFIX)) return matchVariantCondition(name);
+    if (name.startsWith(TARGET_EXP_PREFIX)) return hasMatch(name);
     const processedList = name.split('&').map((condition) => {
       const reverse = condition.trim().startsWith(COLUMN_NOT_OPERATOR);
-      const match = matchVariantCondition(condition.replace(COLUMN_NOT_OPERATOR, '').trim());
+      const match = hasMatch(condition.replace(COLUMN_NOT_OPERATOR, '').trim());
       return reverse ? !match : match;
     });
     return !processedList.includes(false);
