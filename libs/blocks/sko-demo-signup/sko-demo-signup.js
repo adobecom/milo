@@ -139,7 +139,7 @@ async function onSubmit() {
 
         const subHeadings = messages.querySelectorAll('.sko-submit-success > div > div > p');
         const jobDetails = createTag('p', {class: 'jobId'});
-        jobDetails.innerText = `Your submission is is: ${data.jobId}. And it being processed.`;
+        jobDetails.innerText = `Your submission ID is: ${data.jobId}.`;
         //subHeadings.push(jobDetails);
     
 
@@ -158,6 +158,7 @@ async function onSubmit() {
 
     } catch (e) {
         const wrapper = document.querySelector('.sko-demo-signup');
+          const parent = wrapper.parent;
           wrapper.remove();
 
           const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
