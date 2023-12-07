@@ -1,0 +1,21 @@
+.aside-video {
+  display: flex;
+  width: 100%;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: rgb(238,238,238);
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.container video {
+  width: 100%;
+}
