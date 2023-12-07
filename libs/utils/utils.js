@@ -553,7 +553,7 @@ export function decorateAutoBlock(a) {
       }
 
       // previewing a fragment page with mp4 video
-      if (a.textContent.match('media_.*.mp4')) {
+      if (a.textContent.match('media_.*.(?:mp4|m4v)')) {
         a.className = 'video link-block';
         return false;
       }
@@ -569,7 +569,7 @@ export function decorateAutoBlock(a) {
     }
 
     // slack uploaded mp4s
-    if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+    if (key === 'video' && !a.textContent.match('media_.*.(?:mp4|m4v)')) {
       return false;
     }
 

@@ -94,13 +94,13 @@ export function handleFocalpoint(pic, child, removeChild) {
 
 export async function decorateBlockBg(block, node, { useHandleFocalpoint = false } = {}) {
   const childCount = node.childElementCount;
-  if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
+  if (node.querySelector('img, video, a[href*=".mp4"], a[href*=".m4v"]') || childCount > 1) {
     node.classList.add('background');
     const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
     [...node.children].forEach((child, i) => {
-      const videoLink = child.querySelector('a[href*=".mp4"]');
+      const videoLink = child.querySelector('a[href*=".mp4"], a[href*=".m4v"]');
       if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
       if (childCount > 1) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
@@ -108,7 +108,7 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
         && (child.childElementCount === 2 || child.textContent?.trim())) {
         handleFocalpoint(pic, child, true);
       }
-      if (!child.querySelector('img, video, a[href*=".mp4"]')) {
+      if (!child.querySelector('img, video, a[href*=".mp4"], a[href*=".m4v"]')) {
         child.style.background = child.textContent;
         child.textContent = '';
       }
