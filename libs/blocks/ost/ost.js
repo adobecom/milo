@@ -8,7 +8,7 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.14.1';
+const OST_VERSION = '1.14.2-rc1';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
@@ -62,8 +62,7 @@ export const createLinkMarkup = (defaults) => (
       params.set('tax', displayTax);
       params.set('exclusive', forceTaxExclusive);
     }
-    const { location } = window;
-    return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
+    return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
 
   const link = document.createElement('a');
@@ -79,8 +78,52 @@ export async function loadOstEnv() {
   const { Log, Defaults, getLocaleSettings } = await import('../../deps/commerce.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
-  const aosAccessToken = searchParameters.get('token');
-  searchParameters.delete('token');
+  const ostSearchParameters = new URLSearchParams();
+
+  const defaultPlaceholderOptions = Object.fromEntries([
+    ['term', 'displayRecurrence'],
+    ['seat', 'displayPerUnit'],
+    ['tax', 'displayTax'],
+    ['old', 'displayOldPrice'],
+    ['exclusive', 'forceTaxExclusive'],
+  ].map(([key, targetKey]) => {
+    const value = searchParameters.get(key);
+    searchParameters.delete(key);
+    return [targetKey, value === 'true'];
+  }));
+
+  const searchOfferSelectorId = searchParameters.get('osi');
+  searchParameters.delete('osi');
+
+  [
+    ['type'],
+    ['text'],
+    ['promo', 'storedPromoOverride', true],
+    ['workflow', 'checkoutType'],
+    ['workflowStep'],
+  ].forEach(([key, targetKey, skip = false]) => {
+    const value = searchParameters.get(key);
+    if (value === null && skip) {
+      return;
+    }
+    ostSearchParameters.set(targetKey ?? key, value);
+    searchParameters.delete(key);
+  });
+
+  const workflowStep = ostSearchParameters.get('workflowStep');
+  ostSearchParameters.set('workflowStep', workflowStep?.replace('/', '_'));
+
+  let aosAccessToken = searchParameters.get('token');
+  if (aosAccessToken) {
+    sessionStorage.setItem('AOS_ACCESS_TOKEN', aosAccessToken);
+    searchParameters.delete('token');
+  } else {
+    aosAccessToken = sessionStorage.getItem('AOS_ACCESS_TOKEN');
+  }
+  const search = searchParameters.toString();
+  const newURL = `//${window.location.host}${window.location.pathname}${search ? `?${search}` : ''}`;
+  window.history.replaceState({}, null, newURL);
+
   const environment = searchParameters.get('env') ?? WCS_ENV;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
@@ -131,7 +174,9 @@ export async function loadOstEnv() {
     country,
     environment,
     language,
-    searchParameters,
+    searchParameters: ostSearchParameters,
+    searchOfferSelectorId,
+    defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
   };
