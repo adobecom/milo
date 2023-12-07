@@ -1,0 +1,245 @@
+.brick {
+  position: relative;
+  display: flex;
+  text-size-adjust: none;
+  min-height: 300px;
+}
+
+.brick,
+.brick.click a.foreground {
+  color: inherit;
+}
+
+.brick.light,
+.brick.light.click a.foreground {
+  color: var(--text-color);
+}
+
+.brick.dark,
+.dark.brick.click a.foreground {
+  color: var(--color-white);
+}
+
+.brick .background {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  overflow: hidden;
+}
+
+.brick .foreground {
+  position: relative; 
+  display: flex;
+  flex-grow: 1;
+  padding: var(--spacing-m);
+}
+
+.brick.rounded-corners,
+.brick.rounded-corners .background,
+.brick.rounded-corners .foreground {
+  border-radius: var(--spacing-xs);
+}
+
+.brick.align-center .foreground,
+.brick.align-center .foreground .action-area,
+.brick.center .foreground,
+.brick.center .foreground .action-area {
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.brick.center .foreground {
+  align-items: flex-start;
+}
+
+.brick .background div,
+.brick .background p,
+.brick .background picture {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.brick .background p,
+.brick .background picture {
+  display: block;
+}
+
+.brick .background img {
+  object-fit: contain;
+  object-position: bottom center;
+  width: 100%;
+  height: 100%;
+}
+
+.brick .mobile-only,
+.brick .tablet-only,
+.brick .desktop-only {
+  display: none;
+}
+
+.brick .foreground p {
+  padding: 0;
+  margin: 0;
+}
+
+.brick .foreground div > * {
+  margin-top: var(--spacing-xs);
+}
+
+.brick .foreground p:first-child,
+.brick .foreground p.icon-area,
+.brick .foreground p.icon-area + p {
+  margin-top: 0;
+}
+
+.brick .foreground p.icon-area {
+  display: inline-block;
+  margin-bottom: var(--spacing-s);
+}
+
+.brick .foreground p.action-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: var(--spacing-s);
+}
+
+.brick .icon-stack-area li picture {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.brick .foreground .icon-area picture {
+  display: flex;
+}
+
+.brick .icon-stack-area li img {
+  width: var(--icon-size-s);
+  height: auto;
+}
+
+.brick .foreground .icon-area img {
+  height: var(--icon-size-l);
+  width: auto;
+}
+
+.brick.click > a {
+  text-decoration: none;
+}
+
+.brick .icon-stack-area {
+  display: flex;
+  flex-flow: row wrap;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.brick.center .icon-stack-area,
+.brick.align-center .icon-stack-area {
+  display: inline-flex;
+  width: auto;
+}
+
+.brick .icon-stack-area li,
+.brick .icon-stack-area li a {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  text-align: left;
+}
+
+.brick .foreground a:not([class]),
+.brick .foreground span.first-link {
+  font-weight: 700;
+}
+
+[dir="rtl"] .brick .icon-stack-area li,
+[dir="rtl"] .brick .icon-stack-area li a {
+  text-align: right;
+}
+
+.brick.click a.foreground .first-link:not([class*="button"]) {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.brick.click:hover a.foreground .first-link:not([class*="button"]) {
+  text-decoration: underline;
+  color: var(--link-hover-color);
+}
+
+.static-links .brick.click a.foreground .first-link:not([class*="button"]),
+.static-links .brick.click a.foreground a:not([class*="button"]),
+.brick.static-links.click a.foreground .first-link:not([class*="button"]),
+.brick.static-links.click a.foreground a:not([class*="button"]) {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.brick.click:hover .first-link.con-button.blue,
+.brick.click:active .first-link.con-button.blue {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: var(--color-white);
+}
+
+.brick.click:hover .first-link.con-button,
+.brick.click:active .first-link.con-button,
+.brick.light.click:hover .first-link.con-button,
+.brick.light.click:active .first-link.con-button,
+.light .brick.click:hover .first-link.con-button,
+.light .brick.click:active .first-link.con-button {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.dark .brick.click:hover .first-link.con-button,
+.brick.dark.click:active .first-link.con-button {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  text-decoration: none;
+}
+
+
+@media screen and (max-width: 600px) {
+  .brick .mobile-only {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .brick {
+    min-height: 384px;
+  }
+
+  .brick .foreground {
+    padding: var(--spacing-l);
+  }
+}
+
+@media screen and (min-width: 600px) and (max-width: 1199px) {
+  .brick .tablet-only {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .brick .desktop-only {
+    display: block;
+  }
+
+  .brick.large {
+    min-height: 500px;
+  }
+}

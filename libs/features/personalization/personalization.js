@@ -186,6 +186,8 @@ export async function replaceInner(path, element) {
   if (!html) return false;
 
   element.innerHTML = html;
+  const { decorateArea } = getConfig();
+  if (decorateArea) decorateArea(element);
   return true;
 }
 /* c8 ignore stop */
