@@ -7,7 +7,7 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
 
-describe('Quiz Marquee (Biz Markie) got what you need', async () => {
+describe('Quiz Marquee (Biz Markie) got what you need', () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const { default: init } = await import('../../../libs/blocks/quiz-marquee/quiz-marquee.js');
