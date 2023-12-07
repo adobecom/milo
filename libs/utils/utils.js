@@ -13,6 +13,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'brick',
   'bulk-publish',
   'caas',
   'caas-config',
@@ -790,13 +791,16 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 
 async function checkForPageMods() {
   const persMd = getMetadata('personalization');
+  const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
   let persManifests = [];
   const search = new URLSearchParams(window.location.search);
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
+  const promoEnabled = promoMd && promoMd !== 'off';
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
-  if (persEnabled || targetEnabled) {
+  if (mepEnabled) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
@@ -807,20 +811,25 @@ async function checkForPageMods() {
   if (persEnabled) {
     persManifests = persMd.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim());
+      .filter((path) => path?.trim())
+      .map((manifestPath) => ({ manifestPath }));
+  }
+
+  if (promoEnabled) {
+    const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
+    persManifests = persManifests.concat(getPromoManifests(promoMd));
   }
 
   const { env } = getConfig();
   let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
-  if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
+  if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
     previewOn = true;
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
-      persEnabled,
+      mepEnabled,
       persManifests,
-      targetEnabled,
     });
   }
 
