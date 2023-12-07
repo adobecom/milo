@@ -439,6 +439,9 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
+    if (entitlementKeys.includes(name)) {
+      return ENTITLEMENT_TAGS[name](entitlements);
+    }
     return personalizationKeys.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
