@@ -1,4 +1,5 @@
 import sanitizeComment from '../../utils/sanitizeComment.js';
+import { createTag } from '../../utils/utils.js';
 
 const RULE_OPERATORS = {
   equal: '=',
@@ -9,27 +10,16 @@ const RULE_OPERATORS = {
   greaterThanOrEqual: '>=',
 };
 
-function createSelect(fd) {
-  const select = document.createElement('select');
-  select.id = fd.Field;
-  if (fd.Placeholder) {
-    const ph = document.createElement('option');
-    ph.textContent = fd.Placeholder;
-    ph.setAttribute('selected', '');
-    ph.setAttribute('disabled', '');
-    select.append(ph);
-  }
-  fd.Options.split(',').forEach((o) => {
-    const option = document.createElement('option');
+function createSelect({ Field, Placeholder, Options, Default, Required }) {
+  const select = createTag('select', { id: Field });
+  if (Placeholder) select.append(createTag('option', { selected: '', disabled: '' }, Placeholder));
+  Options.split(',').forEach((o) => {
     const text = o.trim();
-    option.textContent = text;
-    option.value = text;
+    const option = createTag('option', { value: text }, text);
     select.append(option);
-    if (fd.Default === text) select.value = text;
+    if (Default === text) select.value = text;
   });
-  if (fd.Required === 'x') {
-    select.setAttribute('required', 'required');
-  }
+  if (Required === 'x') select.setAttribute('required', 'required');
   return select;
 }
 
@@ -89,11 +79,9 @@ function clearForm(form) {
   });
 }
 
-function createButton(fd, thankYou) {
-  const button = document.createElement('button');
-  button.textContent = fd.Label;
-  button.classList.add('button');
-  if (fd.Type === 'submit') {
+function createButton({ Type, Label }, thankYou) {
+  const button = createTag('button', { class: 'button' }, Label);
+  if (Type === 'submit') {
     button.addEventListener('click', async (event) => {
       const form = button.closest('form');
       if (form.checkValidity()) {
@@ -105,9 +93,7 @@ function createButton(fd, thankYou) {
         clearForm(form);
         const handleThankYou = thankYou.querySelector('a') ? thankYou.querySelector('a').href : thankYou.innerHTML;
         if (!thankYou.innerHTML.includes('href')) {
-          const thanksText = document.createElement('h4');
-          thanksText.className = 'thank-you';
-          thanksText.textContent = handleThankYou;
+          const thanksText = createTag('h4', { class: 'thank-you' }, handleThankYou);
           form.append(thanksText);
           setTimeout(() => thanksText.remove(), 2000);
           /* c8 ignore next 3 */
@@ -117,7 +103,7 @@ function createButton(fd, thankYou) {
       }
     });
   }
-  if (fd.Type === 'clear') {
+  if (Type === 'clear') {
     button.classList.add('outline');
     button.addEventListener('click', (e) => {
       e.preventDefault();
@@ -128,78 +114,46 @@ function createButton(fd, thankYou) {
   return button;
 }
 
-function createHeading(fd, el) {
-  const heading = document.createElement(el);
-  heading.textContent = fd.Label;
-  return heading;
+function createHeading({ Label }, el) {
+  return createTag(el, {}, Label);
 }
 
-function createInput(fd) {
-  const input = document.createElement('input');
-  input.type = fd.Type;
-  input.id = fd.Field;
-  input.setAttribute('placeholder', fd.Placeholder);
-  if (fd.Required === 'x') {
-    input.setAttribute('required', 'required');
-  }
+function createInput({ Type, Field, Placeholder, Required, Default }) {
+  const input = createTag('input', { type: Type, id: Field, placeholder: Placeholder, value: Default });
+  if (Required === 'x') input.setAttribute('required', 'required');
   return input;
 }
 
-function createTextArea(fd) {
-  const input = document.createElement('textarea');
-  input.id = fd.Field;
-  input.setAttribute('placeholder', fd.Placeholder);
-  if (fd.Required === 'x') {
-    input.setAttribute('required', 'required');
-  }
+function createTextArea({ Field, Placeholder, Required, Default }) {
+  const input = createTag('textarea', { id: Field, placeholder: Placeholder, value: Default });
+  if (Required === 'x') input.setAttribute('required', 'required');
   return input;
 }
 
-function createLabel(fd) {
-  const label = document.createElement('label');
-  label.setAttribute('for', fd.Field);
-  label.textContent = fd.Label;
-  if (fd.Required === 'x') {
-    label.classList.add('required');
-  }
-  return label;
+function createLabel({ Field, Label, Required }) {
+  return createTag('label', { for: Field, class: Required ? 'required' : '' }, Label);
 }
 
-function createCheckItem(item, type, { Field: id, Default: def }) {
-  const wrap = document.createElement('div');
-  const input = document.createElement('input');
-  const pseudoEl = document.createElement('span');
-  const label = document.createElement('label');
+function createCheckItem(item, type, id, def) {
   const itemKebab = item.toLowerCase().replaceAll(' ', '-');
   const defList = def.split(',').map((defItem) => defItem.trim());
-  wrap.className = `check-item-wrap ${type}-input-wrap`;
-  input.type = type;
-  input.name = id;
-  input.value = item;
-  input.checked = item && defList.includes(item);
-  input.className = `check-item-input ${type}-input`;
-  input.id = `${id}-${itemKebab}`;
-  pseudoEl.className = `check-item-button ${type}-button`;
-  label.className = `check-item-label ${type}-label`;
-  label.for = `${id}-${itemKebab}`;
-  label.textContent = item;
-  wrap.append(input);
-  wrap.append(pseudoEl);
-  wrap.append(label);
-  return wrap;
+  const pseudoEl = createTag('span', { class: `check-item-button ${type}-button` });
+  const label = createTag('label', { class: `check-item-label ${type}-label`, for: `${id}-${itemKebab}` }, item);
+  const input = createTag(
+    'input',
+    { type, name: id, value: item, class: `check-item-input ${type}-input`, id: `${id}-${itemKebab}` },
+  );
+  if (item && defList.includes(item)) input.setAttribute('checked', '');
+  return createTag('div', { class: `check-item-wrap ${type}-input-wrap` }, [input, pseudoEl, label]);
 }
 
-function createCheckGroup(fd, type) {
-  const group = document.createElement('div');
-  const options = fd.Options.split(',');
-  group.className = `group-container ${type}-group-container`;
-  options.forEach((item) => {
-    group.append(createCheckItem(item.trim(), type, fd));
-  });
-  if (options.length === 1 && fd.Required === 'x') {
-    group.classList.add('required');
-  }
-  return group;
+function createCheckGroup({ Options, Field, Default, Required }, type) {
+  const options = Options.split(',').map((item) => createCheckItem(item.trim(), type, Field, Default));
+  return createTag(
+    'div',
+    { class: `group-container ${type}-group-container${Required === 'x' ? ' required' : ''}` },
+    options,
+  );
 }
 
 function processNumRule(tf, operator, a, b) {
@@ -305,17 +259,17 @@ async function createForm(formURL, thankYou, formData) {
     const resp = await fetch(pathname);
     json = await resp.json();
   }
-  const form = document.createElement('form');
+  const form = createTag('form');
   const rules = [];
   // eslint-disable-next-line prefer-destructuring
   form.dataset.action = pathname.split('.json')[0];
   json.data.forEach((fd) => {
     fd.Type = fd.Type || 'text';
-    const fieldWrapper = document.createElement('div');
     const style = fd.Extra ? ` form-${fd.Extra}` : '';
-    fieldWrapper.className = `field-wrapper form-${fd.Type}-wrapper${style}`;
-    fieldWrapper.dataset.fieldId = fd.Field;
-    fieldWrapper.dataset.type = fd.Type;
+    const fieldWrapper = createTag(
+      'div',
+      { class: `field-wrapper form-${fd.Type}-wrapper${style}`, 'data-field-id': fd.Field, 'data-type': fd.Type },
+    );
     switch (fd.Type) {
       case 'select':
         fieldWrapper.append(createLabel(fd));
@@ -373,7 +327,5 @@ export default async function decorate(block, formData = null) {
   const form = block.querySelector('a[href$=".json"]');
   const thankYou = block.querySelector(':scope > div:last-of-type > div');
   thankYou.remove();
-  if (form) {
-    form.replaceWith(await createForm(form.href, thankYou, formData));
-  }
+  if (form) form.replaceWith(await createForm(form.href, thankYou, formData));
 }
