@@ -103,9 +103,6 @@ async function onSubmit() {
     
   }); 
     if(isValid) {
-      
-
-      
       try {
         
         const submitURL = 'https://exio.azurewebsites.net/api/ko24submit';
@@ -128,7 +125,7 @@ async function onSubmit() {
         const html = await resp.text();
         const messages = new DOMParser().parseFromString(html, 'text/html').body;
 
-        const wrapper = document.querySelector('.sko-demo-signup');
+        const wrapper = document.querySelector('.sko-demo-signup').firstChild;
         const parent = wrapper.parentNode;
         wrapper.remove();
 
@@ -153,6 +150,9 @@ async function onSubmit() {
       }
 
     } catch (e) {
+          const wrapper = document.querySelector('.sko-demo-signup').firstChild;
+          const parent = wrapper.parentNode;
+          wrapper.remove();
           const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
           const html = await resp.text();
           const messages = new DOMParser().parseFromString(html, 'text/html').body;
