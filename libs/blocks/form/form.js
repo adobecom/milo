@@ -39,12 +39,12 @@ function constructPayload(form) {
     if (fe.type.match(/(?:checkbox|radio)/)) {
       if (fe.checked) {
         payload[fe.name] = payload[fe.name] ? `${fe.value}, ${payload[fe.name]}` : fe.value;
-      } else if (fe.closest('.group-container').classList.contains('required')) {
+      } else if (!payload[fe.name] && fe.closest('.group-container').classList.contains('required')) {
         payload[fe.name] = 'required-not-checked';
       }
-    } else if (fe.id) {
-      payload[fe.id] = fe.value;
+      return;
     }
+    payload[fe.id] = fe.value;
   });
   return payload;
 }
@@ -116,7 +116,8 @@ function createButton(fd, thankYou) {
         }
       }
     });
-  } else if (fd.Type === 'clear') {
+  }
+  if (fd.Type === 'clear') {
     button.classList.add('outline');
     button.addEventListener('click', (e) => {
       e.preventDefault();
