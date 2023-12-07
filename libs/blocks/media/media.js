@@ -1,7 +1,7 @@
 /* media - consonant v6 */
 
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, loadStyle } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
@@ -20,6 +20,11 @@ function decorateAvatar(el) {
 }
 
 export default function init(el) {
+  el.classList.forEach((ele) => {
+    if (/\brounded-corners\b/.test(ele)) {
+      loadStyle('/libs/styles/rounded-corners.css');
+    }
+  });
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {

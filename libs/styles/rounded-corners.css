@@ -1,29 +1,36 @@
 :root {
   /* border-radius sizes */
+  --rounded-corners: 0;
   --s-rounded-corners: 4px;
   --m-rounded-corners: 8px;
   --l-rounded-corners: 16px;
   --full-rounded-corners: 50%;
 }
 
+.rounded-corners,
+.rounded-corners > .background img,
+.rounded-corners-image .foreground .image picture img {
+  border-radius: var(--rounded-corners);
+}
+
 .s-rounded-corners,
 .s-rounded-corners > .background img,
-.s-image-rounded-corners .foreground .image picture img {
+.s-rounded-corners-image .foreground .image picture img {
   border-radius: var(--s-rounded-corners);
 }
 
 .m-rounded-corners,
 .m-rounded-corners > .background img,
-.m-image-rounded-corners .foreground .image picture img {
+.m-rounded-corners-image .foreground .image picture img {
   border-radius: var(--m-rounded-corners);
 }
 
 .l-rounded-corners,
 .l-rounded-corners > .background img,
-.l-image-rounded-corners .foreground .image picture img {
+.l-rounded-corners-image .foreground .image picture img {
   border-radius: var(--l-rounded-corners);
 }
 
-.full-image-rounded-corners .foreground .image picture img {
+.full-rounded-corners-image .foreground .image picture img {
   border-radius: var(--full-rounded-corners);
 }
