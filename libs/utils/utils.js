@@ -92,6 +92,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
+  { video: '.m4v' },
   { merch: '/tools/ost?' },
   { 'offer-preview': '/tools/commerce' },
 ];

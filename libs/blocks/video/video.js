@@ -6,7 +6,7 @@ const ROOT_MARGIN = 1000;
 const loadVideo = (a) => {
   const { pathname, hash } = a;
   let videoPath = `.${pathname}`;
-  if (pathname.match('media_.*.mp4')) {
+  if (pathname.match('media_.*.(?:mp4|m4v)')) {
     const { codeRoot } = getConfig();
     const root = codeRoot.endsWith('/')
       ? codeRoot
