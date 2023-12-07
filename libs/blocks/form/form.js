@@ -1,12 +1,12 @@
 import sanitizeComment from '../../utils/sanitizeComment.js';
 
 const RULE_OPERATORS = {
-  equal: 'eq',
-  notEqual: 'ne',
-  lessThan: 'lt',
-  lessThanOrEqual: 'le',
-  greaterThan: 'gt',
-  greaterThanOrEqual: 'ge',
+  equal: '=',
+  notEqual: '!=',
+  lessThan: '<',
+  lessThanOrEqual: '<=',
+  greaterThan: '>',
+  greaterThanOrEqual: '>=',
 };
 
 function createSelect(fd) {

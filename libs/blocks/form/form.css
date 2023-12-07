@@ -1,4 +1,4 @@
-main .form {
+.form {
   --input-border-radius: 4px;
 
   padding: var(--spacing-xl);
@@ -11,23 +11,23 @@ main .form {
   color: #2C2C2C;
 }
 
-main .form form {
+.form form {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
 }
 
-main .form h2 {
+.form h2 {
   padding: var(--spacing-s) 0;
   font-size: var(--type-heading-l-lh);
 }
 
-main .form h3 {
+.form h3 {
   padding-top: var(--spacing-s);
   font-size: var(--type-heading-m-size);
 }
 
-main .form :is(input, textarea, select) {
+.form :is(input, textarea, select) {
   border: solid 1px var(--color-gray-500);
   padding: var(--spacing-xxs) var(--spacing-xs);
   width: 100%;
@@ -38,21 +38,21 @@ main .form :is(input, textarea, select) {
   font-family: var(--body-font-family);
 }
 
-main .form textarea {
+.form textarea {
   min-height: 100px;
 }
 
-main .form :is(input, textarea, select):hover {
+.form :is(input, textarea, select):hover {
   border-color: var(--color-gray-600);
 }
 
-main .form :is(input, textarea, select):is(:focus, :focus-visible, :focus-within, :active) {
+.form :is(input, textarea, select):is(:focus, :focus-visible, :focus-within, :active) {
   border-color: var(--color-gray-700);
   outline-color: var(--color-accent);
   outline-offset: 4px;
 }
 
-main .form select {
+.form select {
   appearance: none;
   background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+') no-repeat 128% 54%;
   background-color: var(--color-white);
@@ -60,7 +60,7 @@ main .form select {
   background-size: 1em 1em;
 }
 
-main .form label {
+.form label {
   display: block;
   padding-bottom: var(--spacing-xxs);
   box-sizing: border-box;
@@ -69,13 +69,13 @@ main .form label {
   font-weight: 600;
 }
 
-main .form label.required::after {
+.form label.required::after {
   content: "*";
   color: var(--color-black);
   padding-left: var(--spacing-xxxs);
 }
 
-main .form .field-wrapper {
+.form .field-wrapper {
   margin-bottom: var(--spacing-xxs);
   width: 100%;
   display: flex;
@@ -83,27 +83,27 @@ main .form .field-wrapper {
   padding: var(--spacing-xs) 0;
 }
 
-main .form .field-group-wrapper {
+.form .field-group-wrapper {
   flex-direction: column;
 }
 
-main .form .form-heading-wrapper {
+.form .form-heading-wrapper {
   justify-content: center;
   margin: 0;
 }
 
-main .form .field-wrapper.hidden {
+.form .field-wrapper.hidden {
   display: none;
 }
 
-main .form .check-item-wrap {
+.form .check-item-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
   width: 100%;
 }
 
-main .form .check-item-input {
+.form .check-item-input {
   opacity: 0;
   position: absolute;
   inset: 0;
@@ -111,13 +111,13 @@ main .form .check-item-input {
   z-index: 1;
 }
 
-main .form .check-item-button {
+.form .check-item-button {
   position: relative;
   inline-size: 14px;
   block-size: 14px;
 }
 
-main .form .check-item-button::before {
+.form .check-item-button::before {
   content: '';
   display: block;
   background-color: var(--color-white);
@@ -131,15 +131,15 @@ main .form .check-item-button::before {
   transition: border 0.13s ease-in-out, box-shadow 0.13s ease-in-out;
 }
 
-main .form .radio-button::before {
+.form .radio-button::before {
   border-radius: 50%;
 }
 
-main .form .checkbox-button::before {
+.form .checkbox-button::before {
   border-radius: 2px;
 }
 
-main .form .checkbox-button::after {
+.form .checkbox-button::after {
   content: '';
   display: block;
   position: absolute;
@@ -153,41 +153,41 @@ main .form .checkbox-button::after {
   transition: scale 0.13s ease-in-out, opacity 0.13s;
 }
 
-main .form .checkbox-input:checked + .checkbox-button::after {
+.form .checkbox-input:checked + .checkbox-button::after {
   opacity: 1;
   scale: 1;
   background-image: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI2LjUuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBhdGggZD0iTTMuNSA5LjVhLjk5OS45OTkgMCAwMS0uNzc0LS4zNjhsLTIuNDUtM2ExIDEgMCAxMTEuNTQ4LTEuMjY0bDEuNjU3IDIuMDI4IDQuNjgtNi4wMUExIDEgMCAwMTkuNzQgMi4xMTRsLTUuNDUgN2ExIDEgMCAwMS0uNzc3LjM4NnoiIGZpbGw9IiNmZmYiPjwvcGF0aD4KPC9zdmc+Cg==");
   background-size: contain;
 }
 
-main .form .radio-input:checked + .radio-button::before {
+.form .radio-input:checked + .radio-button::before {
   border-width: 5px;
   border-color: var(--color-gray-700);
 }
 
-main .form .checkbox-input:checked + .checkbox-button::before {
+.form .checkbox-input:checked + .checkbox-button::before {
   border-width: 7px;
   border-color: var(--color-gray-700);
 }
 
-main .form .check-item-label {
+.form .check-item-label {
   font-size: var(--type-body-xs-size);
   font-weight: normal;
   margin-left: var(--spacing-xxs);
   padding-bottom: 0;
 }
 
-main .form-legal-wrapper p {
+.form .form-legal-wrapper p {
   font-size: var(--type-body-xxs-size);
   line-height: var(--type-body-xxs-lh);
   font-style: italic;
 }
 
-main .form .field-button-wrapper {
+.form .field-button-wrapper {
   margin-bottom: 0;
 }
 
-main .form button {
+.form button {
   font-family: var(--body-font-family);
   font-size: var(--type-body-s-size);
   background-color: var(--link-color);
@@ -206,58 +206,58 @@ main .form button {
   transition: background-color 0.13s, color 0.13s;
 }
 
-main .form button:disabled {
+.form button:disabled {
   background-color: var(--color-gray-200);
   color: var(--color-gray-400);
   cursor: progress;
 }
 
-main .form button.outline {
+.form button.outline {
   background-color: transparent;
   border: 2px solid var(--link-color);
   color: var(--link-color);
 }
 
-main .form .thank-you {
+.form .thank-you {
   text-align: center;
 }
 
 @media screen and (min-width: 600px) {
-  main .form form {
+  .form form {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 var(--spacing-l);
     align-items: start;
   }
 
-  main .form :is(.form-submit-wrapper:last-child, .form-heading-wrapper, .thank-you, .form-full-width) {
+  .form :is(.form-submit-wrapper:last-child, .form-heading-wrapper, .thank-you, .form-full-width) {
     grid-column: 1 / 3;
     justify-self: center;
   }
 
-  main .form .field-button-wrapper {
+  .form .field-button-wrapper {
     grid-column: 1;
     justify-self: self-end;
     width: auto;
     margin-top: var(--spacing-s);
   }
 
-  main .form .field-button-wrapper + .field-button-wrapper {
+  .form .field-button-wrapper + .field-button-wrapper {
     grid-column: 2;
     justify-self: self-start;
   }
 
-  main .form button {
+  .form button {
     width: initial;
   }
 }
 
 @media screen and (min-width: 900px) { 
-  main .form .field-wrapper {
+  .form .field-wrapper {
     display: flex;
   }
 
-  main .form label {
+  .form label {
     width: 72%;
   }
 }
