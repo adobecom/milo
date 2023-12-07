@@ -30,10 +30,10 @@ dl.accordion {
   font-size: var(--type-heading-xs-size);
   font-weight: 700;
   line-height: var(--type-heading-s-lh);
-  position: relative;
-  width: 100%;
-  text-align: left;
   padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
+  position: relative;
+  text-align: left;
+  width: 100%;
 }
 
 html[dir="rtl"] .accordion dt button {
@@ -51,12 +51,12 @@ html[dir="rtl"] .accordion dt button {
 
 .accordion-icon {
   position: absolute;
+  right: var(--spacing-xs);
   top: 50%;
   margin-top: -6px;
   width: 12px;
   height: 12px;
   pointer-events: none;
-  right: var(--spacing-xs);
 }
 
 html[dir="rtl"] .accordion-icon {
@@ -92,9 +92,9 @@ html[dir="rtl"] .accordion-icon {
   position: absolute;
   width: 2px;
   height: 100%;
+  left: 0;
   top: 0;
   background-color: transparent;
-  left: 0;
 }
 
 html[dir="rtl"] .accordion dt button::before {
