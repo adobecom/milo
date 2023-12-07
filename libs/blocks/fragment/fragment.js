@@ -83,7 +83,7 @@ export default async function init(a) {
   const html = await resp.text();
   const doc = new DOMParser().parseFromString(html, 'text/html');
   replaceDotMedia(a.href, doc);
-  if (decorateArea) decorateArea(doc);
+  if (decorateArea) decorateArea(doc, { fragmentLink: a });
 
   const sections = doc.querySelectorAll('body > div');
 

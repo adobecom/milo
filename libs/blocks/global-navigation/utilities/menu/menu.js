@@ -134,6 +134,15 @@ const decoratePromo = (elem, index) => {
   const isImageOnly = elem.matches('.image-only');
   const imageElem = elem.querySelector('picture');
 
+  if (!isImageOnly) {
+    const cachedImageElem = imageElem && elem.removeChild(imageElem.closest(`${selectors.gnavPromo} > div`));
+    const innerContainer = toFragment`<div class="feds-promo-content"></div>`;
+
+    innerContainer.append(...elem.children);
+    elem.appendChild(innerContainer);
+    if (cachedImageElem) elem.appendChild(cachedImageElem);
+  }
+
   decorateElements({ elem, className: 'feds-promo-link', index });
 
   const decorateImage = () => {
@@ -293,15 +302,15 @@ const decorateMenu = (config) => logErrorFor(async () => {
     if (res.status !== 200) return;
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
+    const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
-        <div class="feds-menu-content">
-          ${parsedContent}
+        <div class="feds-menu-container">
+          ${menuContent}
         </div>
       </div>`;
-
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
-    await decorateColumns({ content: menuTemplate.firstElementChild });
+    await decorateColumns({ content: menuContent });
     config.template.classList.add('feds-navItem--megaMenu');
   }
 
