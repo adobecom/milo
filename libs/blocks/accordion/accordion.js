@@ -135,8 +135,14 @@ export default function init(el) {
 
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
   const items = [...headings].map(
-    // eslint-disable-next-line max-len
-    (heading, idx) => createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia),
+    (heading, idx) => createItem(
+      accordion,
+      id,
+      heading,
+      idx + 1,
+      isEditorial,
+      accordionMedia,
+    ),
   );
 
   if (isSeo) { setSEO(items); }
