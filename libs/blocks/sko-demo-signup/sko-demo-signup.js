@@ -84,7 +84,10 @@ async function onSubmit() {
         item.classList.remove('invalid')
         payload[item.id] = _fileContents;
       } else {
-        item.classList.add('invalid')
+        item.classList.add('invalid');
+        submitButton.classList.add('blue');
+        submitButton.classList.remove('submitted');
+        submitButton.textContent='Submit';
         isValid = false;
       }
     } else {
