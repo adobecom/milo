@@ -20,17 +20,6 @@
   color: var(--color-white);
 }
 
-.brick .foreground a:not([class]),
-.brick .foreground span.first-link {
-  font-weight: 700;
-}
-
-.brick.rounded-corners,
-.brick.rounded-corners .background,
-.brick.rounded-corners .foreground {
-  border-radius: var(--spacing-xs);
-}
-
 .brick .background {
   position: absolute;
   bottom: 0;
@@ -45,6 +34,12 @@
   display: flex;
   flex-grow: 1;
   padding: var(--spacing-m);
+}
+
+.brick.rounded-corners,
+.brick.rounded-corners .background,
+.brick.rounded-corners .foreground {
+  border-radius: var(--spacing-xs);
 }
 
 .brick.align-center .foreground,
@@ -86,10 +81,6 @@
   display: none;
 }
 
-.brick .foreground .icon-area picture {
-  display: flex;
-}
-
 .brick .foreground p {
   padding: 0;
   margin: 0;
@@ -122,6 +113,10 @@
   margin: 0;
   padding: 0;
   flex-shrink: 0;
+}
+
+.brick .foreground .icon-area picture {
+  display: flex;
 }
 
 .brick .icon-stack-area li img {
@@ -161,6 +156,11 @@
   align-items: center;
   gap: var(--spacing-xs);
   text-align: left;
+}
+
+.brick .foreground a:not([class]),
+.brick .foreground span.first-link {
+  font-weight: 700;
 }
 
 [dir="rtl"] .brick .icon-stack-area li,
