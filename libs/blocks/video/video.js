@@ -4,7 +4,8 @@ import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
 const ROOT_MARGIN = 1000;
 
 const loadVideo = (a) => {
-  const { pathname, hash } = a;
+  //const { pathname, hash, href } = a;
+  /*
   let videoPath = `.${pathname}`;
   if (pathname.match('media_.*.mp4')) {
     const { codeRoot } = getConfig();
@@ -16,14 +17,19 @@ const loadVideo = (a) => {
   }
 
   const attrs = getVideoAttrs(hash);
-  const video = `<video ${attrs}>
-        <source src="${videoPath}" type="video/mp4" />
+  */
+  const video = `<video controls>
+        <source src="${a.innerText}" type="video/mp4" />
       </video>`;
+      
   if (!a.parentNode) return;
   a.insertAdjacentHTML('afterend', video);
+
+      
+a.remove();
   const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
   applyHoverPlay(videoElem);
-  a.remove();
+
 };
 
 export default function init(a) {
