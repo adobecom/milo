@@ -135,11 +135,12 @@ async function onSubmit() {
         const heading = messages.querySelector('.sko-submit-success > div > div > h1');
         const updatedHeading = heading.textContent.replace('[NAME]', payload.firstName);
 
-        const jobDetails = createTag('p', {class: 'jobId'});
-        jobDetails.innerText = `Your submission is is: ${data.jobId}. And it being processed.`;
-        messages.append(jobDetails);
+       
 
         const subHeadings = messages.querySelectorAll('.sko-submit-success > div > div > p');
+        const jobDetails = createTag('p', {class: 'jobId'});
+        jobDetails.innerText = `Your submission is is: ${data.jobId}. And it being processed.`;
+        subHeadings.push(jobDetails);
         
         
         const image = messages.querySelector('.sko-submit-success > div > div > picture');
