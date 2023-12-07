@@ -140,7 +140,8 @@ async function onSubmit() {
         const subHeadings = messages.querySelectorAll('.sko-submit-success > div > div > p');
         const jobDetails = createTag('p', {class: 'jobId'});
         jobDetails.innerText = `Your submission is is: ${data.jobId}. And it being processed.`;
-        subHeadings.push(jobDetails);
+        //subHeadings.push(jobDetails);
+        console.log(typeof subHeadings);
         
         
         const image = messages.querySelector('.sko-submit-success > div > div > picture');
