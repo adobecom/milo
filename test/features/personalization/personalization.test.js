@@ -163,4 +163,30 @@ describe('Functional Test', () => {
     expect(fragment).to.not.be.null;
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
   });
+
+  it('scheduled manifest should apply changes if active (bts)', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestScheduledActive.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    expect(document.querySelector('a[href="/fragments/insertafter3"]')).to.be.null;
+    const event = { name: 'bts', start: new Date('2023-11-24T13:00:00+00:00'), end: new Date('2222-11-24T13:00:00+00:00') };
+    await applyPers([{ manifestPath: '/promos/bts/manifest.json', disabled: false, event }]);
+
+    const fragment = document.querySelector('a[href="/fragments/insertafter3"]');
+    expect(fragment).to.not.be.null;
+
+    expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
+  });
+
+  it('scheduled manifest should not apply changes if not active (blackfriday)', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestScheduledInactive.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    expect(document.querySelector('a[href="/fragments/insertafter4"]')).to.be.null;
+    const event = { name: 'blackfriday', start: new Date('2022-11-24T13:00:00+00:00'), end: new Date('2022-11-24T13:00:00+00:00') };
+    await applyPers([{ manifestPath: '/promos/blackfriday/manifest.json', disabled: true, event }]);
+
+    const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
+    expect(fragment).to.be.null;
+  });
 });
