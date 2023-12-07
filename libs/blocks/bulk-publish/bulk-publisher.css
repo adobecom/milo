@@ -2,6 +2,7 @@
   --accent: #ff2095;
   --success: #7cca7c;
   --error: #db4437;
+  --panel-bg: rgba(255 255 255 / 60%);
 
   display: flex;
   flex-direction: column;
@@ -21,7 +22,7 @@ header h1 {
   margin: 100px 0 20px 10px;
 }
 
-.publish-form {
+.bulk-publisher {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -41,13 +42,12 @@ label[for='urls'] i {
   font-weight: normal;
 }
 
-.publish-form .panel {
+.bulk-publisher .panel {
   display: flex;
   flex-direction: column;
-  background-color: rgba(255 255 255 / 60%);
+  background-color: var(--panel-bg);
   border-radius: 10px;
   transition: flex-grow 0.8s;
-  overflow: hidden;
 }
 
 .panel-title {
@@ -83,18 +83,19 @@ label[for='urls'] i {
   line-height: 16px;
 }
 
-.publish-form .panel[active='true'] {
+.bulk-publisher .panel[active='true'] {
   flex-grow: 1;
+  overflow: hidden;
 }
 
-.publish-form .form {
+.bulk-publisher .form {
   display: flex;
   flex-direction: column;
   gap: 10px;
   border-radius: 10px;
 }
 
-.publish-form .form[active='true'] {
+.bulk-publisher .form[active='true'] {
   padding: 15px 20px 20px;
 }
 
@@ -115,12 +116,12 @@ label[for='urls'] i {
   display: block;
   width: calc(100% - 23px);
   max-height: 55vh;
+  font-size: 0.75em;
   padding: 10px 50px 15px 13px;
   border-radius: 3px;
-  scroll-behavior: smooth;
   border-color: #ddd;
+  scroll-behavior: smooth;
   resize: vertical;
-  font-size: 0.75em;
 }
 
 .url-tools {
@@ -160,40 +161,46 @@ label[for='urls'] i {
   background-color: #f9f9f9;
 }
 
+.checkmark {
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-image: url('/libs/blocks/bulk-publish/img/checkmark.svg');
+  background-repeat: no-repeat;
+  opacity: 1;
+  transition: opacity 0.6s;
+}
+
 .job {
   position: relative;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  transition: all 0.6s;
-}
-
-.job.hide,
-.view-error.hide {
-  display: none;
-  transition: all 0.6s;
+  transition: flex-grow 0.6s;
 }
 
 .job-list {
-  background: rgba(255 255 255 / 50%);
+  background: var(--panel-bg);
   border: 1px solid #ddd;
-  overflow-y: auto;
   font-size: 0.79em;
-  flex-grow: 1;
   height: 100px;
-  transition: all 0.6s;
+  overflow-y: auto;
+  flex-grow: 1;
+  transition: flex-grow 0.6s;
 }
 
 .job-head {
   display: flex;
   justify-content: space-between;
+  height: 19px;
   font-size: 0.8em;
+  font-weight: bold;
+  line-height: 17px;
   padding: 0 10px;
   background: var(--accent);
   color: white;
-  font-weight: bold;
-  height: 19px;
-  line-height: 17px;
 }
 
 .results[active='false'] .job-list {
@@ -205,7 +212,7 @@ label[for='urls'] i {
 .job-meta {
   display: flex;
   justify-content: space-between;
-  min-width: 35%;
+  min-width: 25%;
 }
 
 .job-meta > *:first-child {
@@ -243,8 +250,9 @@ label[for='urls'] i {
   font-weight: bold;
   padding: 7px 29px 7px 15px;
   border-radius: 3px;
+  border-color: #999;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url('/libs/blocks/bulk-publish/img/downarrow.svg');
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 1em;
@@ -290,17 +298,13 @@ label[for='urls'] i {
   cursor: not-allowed;
 }
 
-.view-error {
-  position: absolute;
-  background: white;
-  width: 50%;
-  padding: 20px;
-  border-radius: 16px;
-  border: 10px solid rgba(219 68 55 / 65%);
-  margin: 0 auto;
-  left: 0;
-  right: 0;
-  top: 15%;
+.job.hide {
+  display: none;
+  transition: all 0.6s;
+}
+
+.checkmark.hide {
+  opacity: 0;
 }
 
 @media screen and (min-width: 640px) {

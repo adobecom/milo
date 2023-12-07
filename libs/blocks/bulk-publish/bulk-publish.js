@@ -1,18 +1,18 @@
-import './bulk-process.js';
+import './components/import.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
 import {
-  MAX,
-  TYPES,
-  editEntry,
-  validPath,
   createJobs,
-  selectOverage,
+  editEntry,
+  PROCESS_MAX,
+  PROCESS_TYPES,
   panelSize,
+  selectOverage,
+  validUrl,
 } from './utils.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/bulk-publisher.css');
-const loader = await getSheet('/libs/blocks/bulk-publish/loader.css');
+const loader = await getSheet('/libs/blocks/bulk-publish/components/loader.css');
 
 class BulkPublish extends LitElement {
   static properties = {
@@ -21,9 +21,8 @@ class BulkPublish extends LitElement {
     disabled: { state: true },
     editing: { state: true },
     processing: { state: true },
-    processes: { state: true },
-    openJobsPanel: { state: true },
-    viewError: { state: true },
+    jobs: { state: true },
+    openJobs: { state: true },
   };
 
   constructor() {
@@ -33,9 +32,8 @@ class BulkPublish extends LitElement {
     this.disabled = true;
     this.processing = false;
     this.editing = false;
-    this.processes = [];
-    this.openJobsPanel = false;
-    this.viewError = false;
+    this.jobs = [];
+    this.openJobs = false;
   }
 
   connectedCallback() {
@@ -44,7 +42,7 @@ class BulkPublish extends LitElement {
   }
 
   updated() {
-    if (!this.openJobsPanel) {
+    if (!this.openJobs) {
       panelSize(
         this.renderRoot.getElementById('Urls'),
         this.renderRoot.getElementById('Header'),
@@ -67,30 +65,18 @@ class BulkPublish extends LitElement {
 
   validateUrls() {
     let errors = [];
-    const urls = this.urls.filter((url) => !validPath(url) && url.length);
+    const urls = this.urls.filter((url) => !validUrl(url) && url.length);
     if (urls?.length) errors = [...errors, ...urls];
-    if (this.urls.length > MAX) errors.push('limit');
+    if (this.urls.length > PROCESS_MAX) errors.push('limit');
     if (errors.length === 0) errors = this.urls.length === 0;
     this.disabled = errors;
     this.editing = false;
   }
 
-  getError(isMax) {
-    const textarea = this.renderRoot.getElementById('Urls');
-    return {
-      text: isMax ? 'Max Limit' : 'Invalid Url',
-      startEdit: () => {
-        this.editing = !this.editing;
-        if (isMax) selectOverage(textarea, this.urls);
-        else editEntry(textarea, this.disabled[0]);
-      },
-    };
-  }
-
-  validateTool() {
+  validationTools() {
     if (typeof this.disabled === 'boolean') return html``;
     const isMax = this.disabled[0] === 'limit';
-    const { text, startEdit } = this.getError(isMax);
+    const { text, startEdit } = this.getErrorProps(isMax);
     startEdit();
     const count = this.disabled.length;
     const counter = count > 1 ? `1/${count} Errors` : '1 Error';
@@ -104,16 +90,22 @@ class BulkPublish extends LitElement {
     `;
   }
 
-  disableSubmit() {
-    return this.disabled === true
-      || typeof this.disabled !== 'boolean'
-      || this.processType === 'choose';
+  getErrorProps(isMax) {
+    const textarea = this.renderRoot.getElementById('Urls');
+    return {
+      text: isMax ? 'Max Processes' : 'Invalid Url',
+      startEdit: () => {
+        this.editing = !this.editing;
+        if (isMax) selectOverage(textarea, this.urls);
+        else editEntry(textarea, this.disabled[0]);
+      },
+    };
   }
 
-  formPanel() {
-    if (this.openJobsPanel) {
+  renderForm() {
+    if (this.openJobs) {
       return html`
-        <div class="panel-title" @click=${() => { this.openJobsPanel = false; }}>
+        <div class="panel-title" @click=${() => { this.openJobs = false; }}>
           <span class="title">
             <strong>+</strong>
             Start New Job
@@ -124,17 +116,17 @@ class BulkPublish extends LitElement {
       <div class="process">
         <div class="processor">
           <select 
-            id="Process"
+            id="ProcessSelect"
             name="select"
             value=${this.processType}
             @change=${this.setType}>
             <option disabled selected value="choose">Choose Process</option>
-            ${TYPES.map((type) => (html`<option value=${type}>${type}</option>`))}
+            ${PROCESS_TYPES.map((type) => (html`<option value=${type}>${type}</option>`))}
           </select>
           <button
-            disable=${this.disableSubmit()} 
+            disable=${this.disableSubmitBtn()} 
             @click=${this.submitJob}>
-            Run Process
+            Run Job
             <span class="loader${this.processing ? '' : ' hide'}"></span>
           </button>
         </div>
@@ -143,7 +135,8 @@ class BulkPublish extends LitElement {
         </label>
       </div>
       <div class="urls${typeof this.disabled !== 'boolean' ? ' invalid' : ''}">
-        <div class="url-tools">${this.validateTool()}</div>
+        <div class="url-tools">${this.validationTools()}</div>
+        <div class="checkmark${this.disabled ? ' hide' : ''}"></div>
         <textarea 
           id="Urls"
           placeholder="Example: https://main--milo--adobecom.hlx.page/mypage"
@@ -152,20 +145,20 @@ class BulkPublish extends LitElement {
     `;
   }
 
-  jobsPanel() {
+  renderJobs() {
     return html`
       <div
         class="panel-title"
-        @click=${() => { this.openJobsPanel = this.processes.length; }}>
+        @click=${() => { this.openJobs = this.jobs.length; }}>
         <span class="title">
-          ${this.processes.length ? html`
+          ${this.jobs.length ? html`
             <strong>
-              ${this.processes.reduce((c, { result }) => c + result.job.data.paths.length, 0)}
+              ${this.jobs.reduce((c, { result }) => c + result.job.data.paths.length, 0)}
             </strong>` : ''}
           My Jobs
         </span>
       </div>
-      <div class="job${!this.openJobsPanel ? ' hide' : ''}">
+      <div class="job${!this.openJobs ? ' hide' : ''}">
         <div class="job-head">
           <div class="job-url">URL</div>
           <div class="job-meta">
@@ -174,43 +167,60 @@ class BulkPublish extends LitElement {
           </div>
         </div>
         <div class="job-list">
-          ${this.processes.map((process) => html`
-            <bulk-process .process="${process}"></bulk-process>
+          ${this.jobs.map((job) => html`
+            <job-process .job="${job}"></job-process>
           `)}
         </div>
       </div>
     `;
   }
 
-  clearForm() {
+  disableSubmitBtn() {
+    return this.disabled === true
+      || typeof this.disabled !== 'boolean'
+      || this.processType === 'choose';
+  }
+
+  resetForm() {
     this.disabled = true;
     this.urls = [];
     this.processType = 'choose';
     const urls = this.renderRoot.querySelector('#Urls');
     if (urls) urls.value = '';
-    const process = this.renderRoot.querySelector('#Process');
+    const process = this.renderRoot.querySelector('#ProcessSelect');
     if (process) process.value = 'choose';
   }
 
   async submitJob() {
     if (!this.disabled) {
       this.processing = true;
-      const newJobs = await createJobs(this.processType, this.urls);
-      this.openJobsPanel = true;
-      this.processes = [...this.processes, ...newJobs];
+      const newJobs = await createJobs({
+        urls: this.urls,
+        process: this.processType,
+      });
+      this.openJobs = true;
+      this.jobs = [...this.jobs, ...newJobs];
       this.processing = false;
-      this.clearForm();
+      this.resetForm();
     }
   }
 
   render() {
+    const jobsPopupText = this.jobs.length
+      ? `${this.jobs.length} Job${this.jobs.length > 1 ? 's' : ''} Completed`
+      : 'Completed Jobs will show in this panel';
     return html`
       <header id="Header">
         <h1>Bulk Publishing</h1>
       </header>
-      <div id="Publish" class="publish-form">
-        <div active=${!this.openJobsPanel} class="panel form">${this.formPanel()}</div>
-        <div active=${!!this.openJobsPanel} class="panel results">${this.jobsPanel()}</div>
+      <div id="BulkPublish" class="bulk-publisher">
+        <div active=${!this.openJobs} class="panel form">
+          ${this.renderForm()}
+        </div>
+        <div active=${!!this.openJobs} class="panel results">
+          <pop-up .text=${jobsPopupText} .disable=${this.openJobs}></pop-up>
+          ${this.renderJobs()}
+        </div>
       </div>
     `;
   }

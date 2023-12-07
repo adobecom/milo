@@ -10,7 +10,7 @@
 
 .bulk-publish::before {
   content: '';
-  background: url('img/mesh.svg') no-repeat;
+  background: url('/libs/blocks/bulk-publish/img/background.svg') no-repeat;
   opacity: .05;
   position: absolute;
   top: 0;
