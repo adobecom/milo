@@ -1,11 +1,7 @@
-const BASE_URL = 'https://admin.hlx.page';
+import { getHostDetails } from './services.js';
+
 const PROCESS_MAX = 1000;
 const DEFAULT_PREFS = { height: 0 };
-const HEADERS = {
-  Accept: 'application/json',
-  'Content-Type': 'application/json',
-  'User-Agent': 'Milo Bulk Publisher',
-};
 const PROCESS_TYPES = [
   'Preview',
   'Publish',
@@ -14,7 +10,7 @@ const PROCESS_TYPES = [
   'Index',
 ];
 
-const getPrefered = (storeKey) => {
+const userPrefs = (storeKey) => {
   const store = localStorage.getItem(storeKey);
   const prefs = store ? JSON.parse(store) : DEFAULT_PREFS;
   return {
@@ -25,8 +21,6 @@ const getPrefered = (storeKey) => {
     },
   };
 };
-
-const getHostDetails = (url) => url.hostname.split('.')[0].split('--');
 
 const validUrl = (str) => {
   let url;
@@ -65,7 +59,7 @@ const selectOverage = (elem, paths) => {
 
 const panelSize = (textarea, header) => {
   const wrapper = document.querySelector('.bulk-publish');
-  const prefs = getPrefered('bulk-pub-prefs');
+  const prefs = userPrefs('bulk-pub-prefs');
   const heightPref = prefs.get('height');
   if (heightPref) {
     wrapper.style.setProperty('--panel-height', heightPref);
@@ -84,72 +78,34 @@ const panelSize = (textarea, header) => {
   });
 };
 
-const getJobEp = (url, type) => {
-  const [ref, repo, owner] = getHostDetails(url);
-  return `${BASE_URL}/${type}/${owner}/${repo}/${ref}/*`;
+const getError = (code) => {
+  const codes = [400, 401, 403, 404];
+  const errorText = [
+    'Invalid URL',
+    'Not authenticated',
+    'Missing permissions',
+    'Resource not found',
+  ];
+  return `- ${errorText[codes.indexOf(code)]}`;
 };
 
-const prepareJobs = (jobs) => {
-  const { urls, process } = jobs;
-  const all = urls.map((url) => (new URL(url)));
-  return Object.values(all.reduce((newJobs, url) => {
-    const job = {
-      origin: url.origin,
-      endpoint: getJobEp(url, process.toLowerCase()),
-      body: { forceUpdate: true, paths: [] },
-    };
-    if (!newJobs[url.host]) newJobs[url.host] = job;
-    newJobs[url.host].body.paths.push(url.pathname);
-    return newJobs;
-  }, {}));
-};
-
-const createJobs = async (jobs) => {
-  const newJobs = prepareJobs(jobs);
-  const requests = newJobs.flatMap(async ({ endpoint, body, origin }) => {
-    const job = await fetch(endpoint, {
-      method: 'POST',
-      headers: HEADERS,
-      body: JSON.stringify(body),
-    });
-    const result = await job.json();
-    return { origin, endpoint, result };
-  });
-  const results = await Promise.all(requests);
-  return results;
-};
-
-const wait = (delay = 5000) => new Promise((resolve) => {
-  setTimeout(() => resolve(), delay);
-});
-
-const getJobStatus = async (link) => {
-  await wait();
-  const status = await fetch(link, { headers: HEADERS });
-  const result = await status.json();
-  return result;
-};
-
-const pollJobStatus = async ({ result }) => {
-  let jobStatus;
-  let stopped = false;
-  while (!stopped) {
-    const status = await getJobStatus(`${result.link.self}/details`);
-    if (status.stopTime) {
-      jobStatus = status;
-      stopped = true;
-    }
+const jobStatus = (status, state) => {
+  const code = status;
+  let text = 'Working';
+  let color = text.toLowerCase();
+  if (state === 'stopped') {
+    text = status === 200 ? '- Completed' : getError(code);
+    color = status === 200 ? 'success' : 'error';
   }
-  return jobStatus;
+  return { code, text, color };
 };
 
 export {
-  createJobs,
   editEntry,
   PROCESS_MAX,
   PROCESS_TYPES,
   panelSize,
-  pollJobStatus,
   selectOverage,
+  jobStatus,
   validUrl,
 };

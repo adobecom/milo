@@ -14,17 +14,31 @@
   background-color: #f9f9f9;
 }
 
+.result .process {
+  font-style: italic;
+  color: #666;
+}
+
+.result .process .url {
+  font-style: normal;
+  color: black;
+}
+
+.result .process .url.success {
+  color: var(--link-color);
+}
+
 .meta {
   display: flex;
   justify-content: space-between;
-  min-width: 25%;
+  min-width: 30%;
 }
 
-.meta .success {
+.meta .success .code {
   color: var(--success);
 }
 
-.meta .error {
+.meta .error .code {
   color: var(--error);
 }
 
@@ -36,7 +50,7 @@
   text-align: right;
 }
 
-.loader-text::after {
+.working::after {
   overflow: hidden;
   display: inline-block;
   vertical-align: bottom;

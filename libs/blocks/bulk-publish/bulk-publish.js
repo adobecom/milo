@@ -1,8 +1,8 @@
 import './components/import.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
+import { createJobs } from './services.js';
 import {
-  createJobs,
   editEntry,
   PROCESS_MAX,
   PROCESS_TYPES,
@@ -160,7 +160,7 @@ class BulkPublish extends LitElement {
       </div>
       <div class="job${!this.openJobs ? ' hide' : ''}">
         <div class="job-head">
-          <div class="job-url">URL</div>
+          <div class="job-url">JOB</div>
           <div class="job-meta">
             <span>STATUS</span>
             <span>DATE/TIME</span>
@@ -196,7 +196,7 @@ class BulkPublish extends LitElement {
       this.processing = true;
       const newJobs = await createJobs({
         urls: this.urls,
-        process: this.processType,
+        process: this.processType.toLowerCase(),
       });
       this.openJobs = true;
       this.jobs = [...this.jobs, ...newJobs];
@@ -206,9 +206,6 @@ class BulkPublish extends LitElement {
   }
 
   render() {
-    const jobsPopupText = this.jobs.length
-      ? `${this.jobs.length} Job${this.jobs.length > 1 ? 's' : ''} Completed`
-      : 'Completed Jobs will show in this panel';
     return html`
       <header id="Header">
         <h1>Bulk Publishing</h1>
@@ -218,7 +215,9 @@ class BulkPublish extends LitElement {
           ${this.renderForm()}
         </div>
         <div active=${!!this.openJobs} class="panel results">
-          <pop-up .text=${jobsPopupText} .disable=${this.openJobs}></pop-up>
+          <pop-up 
+            .text=${'Completed Jobs will show in this panel'} 
+            .disable=${this.openJobs || this.jobs.length}></pop-up>
           ${this.renderJobs()}
         </div>
       </div>
