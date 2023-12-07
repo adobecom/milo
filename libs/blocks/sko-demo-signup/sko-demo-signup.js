@@ -123,6 +123,7 @@ async function onSubmit() {
      
 
       if(response.ok) {
+        const data = await response.json();
         const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
         const html = await resp.text();
         const messages = new DOMParser().parseFromString(html, 'text/html').body;
@@ -134,6 +135,10 @@ async function onSubmit() {
         const heading = messages.querySelector('.sko-submit-success > div > div > h1');
         const updatedHeading = heading.textContent.replace('[NAME]', payload.firstName);
         const subHeadings = messages.querySelectorAll('.sko-submit-success > div > div > p');
+        const jobDetails = createTag('p', {class: 'jobId'});
+        jobDetails.innerText = `Your submission is is: ${data.jobId}. And it being processed.`;
+        subHeadings.append(jobDetails)
+        
         const image = messages.querySelector('.sko-submit-success > div > div > picture');
 
         const message = {

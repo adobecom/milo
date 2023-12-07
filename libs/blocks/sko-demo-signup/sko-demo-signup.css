@@ -47,6 +47,10 @@
   padding-bottom: 40px;
 }
 
+.jobId {
+  color: var(--color-gray-300);
+}
+
 
 
 
