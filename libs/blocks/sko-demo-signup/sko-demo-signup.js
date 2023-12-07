@@ -158,7 +158,7 @@ async function onSubmit() {
 
     } catch (e) {
         const wrapper = document.querySelector('.sko-demo-signup');
-          const parent = wrapper.parent;
+          const parent = wrapper.parentNode;
           wrapper.remove();
 
           const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
