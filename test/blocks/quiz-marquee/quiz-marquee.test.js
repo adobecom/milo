@@ -7,13 +7,13 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
 
-describe('Biz Markie got what you need', () => {
+describe('Quiz Marquee (Biz Markie) got what you need', async () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const { default: init } = await import('../../../libs/blocks/quiz-marquee/quiz-marquee.js');
     const marquees = document.querySelectorAll('.quiz-marquee');
     marquees.forEach(async (marquee) => {
-      await init(marquee);
+      await init(marquee, 'quiz-results', 'quiz-result-test');
     });
   });
   it('it has a static copy friend', async () => {
