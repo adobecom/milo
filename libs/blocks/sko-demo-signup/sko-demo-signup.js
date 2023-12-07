@@ -141,8 +141,7 @@ async function onSubmit() {
         const jobDetails = createTag('p', {class: 'jobId'});
         jobDetails.innerText = `Your submission is is: ${data.jobId}. And it being processed.`;
         //subHeadings.push(jobDetails);
-        console.log('test');
-        console.log(typeof subHeadings);
+    
 
         
         
@@ -151,7 +150,8 @@ async function onSubmit() {
         const message = {
           heading: updatedHeading,
           subHeading: subHeadings,
-          image: image
+          image: image,
+          jobId: jobDetails
         }
         displayMessage(message, parent)
       }
@@ -191,8 +191,14 @@ function displayMessage(message, parent) {
     subHeading.append(line);
   })
 
+ 
+
   text.append(heading);
   text.append(subHeading);
+
+  if(message.jobId) {
+    text.append(jobDetails);
+  }
 
   const image = createTag('div', {class:'media image', 'data-valign':'middle'});
 
