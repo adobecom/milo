@@ -184,7 +184,7 @@ function applyRules(form, rules) {
       case RULE_OPERATORS.lessThan:
         if (payload[key] === '') {
           force = true;
-          return true;
+          break;
         }
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
@@ -199,7 +199,7 @@ function applyRules(form, rules) {
       case RULE_OPERATORS.lessThanOrEqual:
         if (payload[key] === '') {
           force = true;
-          return true;
+          break;
         }
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
@@ -214,7 +214,7 @@ function applyRules(form, rules) {
       case RULE_OPERATORS.greaterThan:
         if (payload[key] === '') {
           force = true;
-          return true;
+          break;
         }
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
@@ -229,7 +229,7 @@ function applyRules(form, rules) {
       case RULE_OPERATORS.greaterThanOrEqual:
         if (payload[key] === '') {
           force = true;
-          return true;
+          break;
         }
         try {
           const [a, b] = processNumRule(tf, operator, payload[key], value);
