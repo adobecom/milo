@@ -190,14 +190,14 @@ function displayMessage(message, parent) {
     subHeading.append(line);
   })
 
- 
+  if(message.jobId) {
+    subHeading.append(jobId);
+  }
 
   text.append(heading);
   text.append(subHeading);
 
-  if(message.jobId) {
-    text.append(jobDetails);
-  }
+
 
   const image = createTag('div', {class:'media image', 'data-valign':'middle'});
 
