@@ -48,7 +48,8 @@
 }
 
 .jobId {
-  color: var(--color-gray-300);
+  padding-top: 20px;
+  color: var(--color-gray-400);
 }
 
 

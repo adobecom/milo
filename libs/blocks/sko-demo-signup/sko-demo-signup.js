@@ -15,9 +15,6 @@ export default async function init(blockEl) {
   })
   
   window.addEventListener('onImsLibInstance',getCreds);
-  
-  //const submit = createTag('input',{type:'submit', value:'Submit'});
-  //wrapper.append(submit);
   blockEl.append(wrapper);
 
   const buttonWapper = createTag('div', {class:'submit-button'});
@@ -95,7 +92,10 @@ async function onSubmit() {
         item.classList.remove('invalid')
         payload[item.id] = item.value;
       } else {
-        item.classList.add('invalid')
+        item.classList.add('invalid');
+        submitButton.classList.add('blue');
+        submitButton.classList.remove('submitted');
+        submitButton.textContent='Submit';
         isValid = false;
       }
       
@@ -121,13 +121,17 @@ async function onSubmit() {
 
       if(response.ok) {
         const data = await response.json();
-        const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
+        const resp = await fetch('/form-messages.plain.html');
         const html = await resp.text();
         const messages = new DOMParser().parseFromString(html, 'text/html').body;
 
-        const wrapper = document.querySelector('.sko-demo-signup').firstChild;
-        const parent = wrapper.parentNode;
-        wrapper.remove();
+        const parent = document.querySelector('.sko-demo-signup').parentNode;
+
+        document.querySelector('.sko-demo-signup').remove();
+
+        if(parent.querySelector('.legal')) {
+          parent.querySelector('.legal').remove();
+        }
 
         const heading = messages.querySelector('.sko-submit-success > div > div > h1');
         const updatedHeading = heading.textContent.replace('[NAME]', payload.firstName);
@@ -135,9 +139,8 @@ async function onSubmit() {
        
 
         const subHeadings = messages.querySelectorAll('.sko-submit-success > div > div > p');
-        const jobDetails = createTag('p', {class: 'jobId'});
-        jobDetails.innerText = `Your submission ID is: ${data.jobId}.`;
-        //subHeadings.push(jobDetails);
+        const jobDetails = createTag('div', {class: 'jobId'});
+        jobDetails.innerHTML = `<p>Your submission ID is: ${data.jobId}.</p>`;
         const image = messages.querySelector('.sko-submit-success > div > div > picture');
 
         const message = {
@@ -150,9 +153,18 @@ async function onSubmit() {
       }
 
     } catch (e) {
-          const parent = document.querySelector('.sko-demo-signup');
+          const parent = document.querySelector('.section:nth-child(2)');
           
-          const resp = await fetch('https://main--milo-sko-landing--mboucher.hlx.page/form-messages.plain.html');
+          if(parent.firstChild){
+            parent.firstChild.remove();
+          }
+
+          if(parent.querySelector('.legal')) {
+            parent.querySelector('.legal').remove();
+          }
+         
+          
+          const resp = await fetch('/form-messages.plain.html');
           const html = await resp.text();
           const messages = new DOMParser().parseFromString(html, 'text/html').body;
 
@@ -182,8 +194,8 @@ function displayMessage(message, parent) {
     subHeading.append(line);
   })
 
-  if(message.jobId) {
-    subHeading.append(jobId);
+  if(message['jobId']) {
+    subHeading.appendChild(message.jobId);
   }
 
   text.append(heading);
