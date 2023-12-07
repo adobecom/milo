@@ -45,8 +45,8 @@ describe('getPromoManifests', () => {
       disabled: false,
       event: {
         name: 'pre-black-friday-global',
-        start: new Date('2023-11-01T00:00:00.000Z'),
-        end: new Date('2023-12-15T00:00:00.000Z'),
+        start: new Date('2000-11-01T00:00:00.000Z'),
+        end: new Date('2300-12-15T00:00:00.000Z'),
       },
     },
     {
@@ -54,8 +54,8 @@ describe('getPromoManifests', () => {
       disabled: true,
       event: {
         name: 'black-friday-global',
-        start: new Date('2023-12-15T00:00:00.000Z'),
-        end: new Date('2023-12-31T00:00:00.000Z'),
+        start: new Date('2000-12-15T00:00:00.000Z'),
+        end: new Date('2000-12-31T00:00:00.000Z'),
       },
     },
   ];
@@ -64,5 +64,17 @@ describe('getPromoManifests', () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-schedule.html' });
     const manifestNames = 'pre-black-friday-global,black-friday-global,cyber-monday';
     expect(getPromoManifests(manifestNames)).to.deep.eq(expectedManifests);
+  });
+
+  it('should return an empty array if no schedule', async () => {
+    document.head.innerHTML = '';
+    const manifestNames = 'pre-black-friday-global,black-friday-global,cyber-monday';
+    expect(getPromoManifests(manifestNames).length).to.be.equal(0);
+  });
+
+  it('should return an empty array if no manifestnames', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-schedule.html' });
+    const manifestNames = '';
+    expect(getPromoManifests(manifestNames).length).to.be.equal(0);
   });
 });
