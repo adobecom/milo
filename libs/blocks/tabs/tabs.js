@@ -3,19 +3,21 @@
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
 import { createTag, MILO_EVENTS } from '../../utils/utils.js';
-import { debounce } from '../../utils/action.js';
 
-const isTabInTabListView = (tab, partial = false) => {
+const LEFT_PADDLE = '<svg viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 0.750003C6.77979 0.750003 7.06006 0.856933 7.27344 1.0708C7.70069 1.49805 7.70069 2.19043 7.27344 2.61768L2.89063 7L7.27344 11.3823C7.70069 11.8096 7.70069 12.502 7.27344 12.9292C6.84668 13.3569 6.15332 13.3569 5.72656 12.9292L0.570308 7.77344C0.365228 7.56836 0.249998 7.29004 0.249998 7C0.249998 6.70996 0.365228 6.43164 0.570308 6.22656L5.72656 1.0708C5.93994 0.856933 6.22021 0.750493 6.5 0.750003Z" fill="currentColor"/></svg>';
+const RIGHT_PADDLE = '<svg viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
+
+const isTabInTabListView = (tab) => {
   const tabList = tab.closest('[role="tablist"]');
   const tabRect = tab.getBoundingClientRect();
   const tabListRect = tabList.getBoundingClientRect();
-  if (partial) {
-    return Math.round(tabRect.left) < Math.round(tabListRect.right)
-      && Math.round(tabRect.right) > Math.round(tabListRect.left);
-  }
 
-  return Math.round(tabRect.left) >= Math.round(tabListRect.left)
-    && Math.round(tabRect.right) <= Math.round(tabListRect.right);
+  const tabLeft = Math.round(tabRect.left);
+  const tabRight = Math.round(tabRect.right);
+  const tabListLeft = Math.round(tabListRect.left);
+  const tabListRight = Math.round(tabListRect.right);
+
+  return (tabLeft >= tabListLeft && tabRight <= tabListRight);
 };
 
 const scrollTabIntoView = (e, inline = 'center') => {
@@ -86,14 +88,16 @@ function initTabs(elm, config, rootElem) {
   if (config) configTabs(config, rootElem);
 }
 
+// Check if current tab is not visible and next tab is visible
 function previousTab(item, i, arr) {
   const next = arr[i + 1];
-  return (!isTabInTabListView(item) && next && isTabInTabListView(next, true));
+  return (!isTabInTabListView(item) && next && isTabInTabListView(next));
 }
 
+// Check if previous tab is visible and current tab is not visible
 function nextTab(item, i, arr) {
   const previous = arr[i - 1];
-  return (!isTabInTabListView(item) && previous && isTabInTabListView(previous, true));
+  return (previous && isTabInTabListView(previous) && !isTabInTabListView(item));
 }
 
 function initPaddles(tabList, tabPaddles) {
@@ -125,27 +129,34 @@ function initPaddles(tabList, tabPaddles) {
     }
   });
 
-  function updatePaddles() {
-    if (isTabInTabListView(firstTab)) {
-      left.setAttribute('disabled', '');
-    } else {
-      left.removeAttribute('disabled');
-    }
-    if (isTabInTabListView(lastTab)) {
-      right.setAttribute('disabled', '');
-    } else {
-      right.removeAttribute('disabled');
-    }
-    window.removeEventListener(MILO_EVENTS.DEFERRED, updatePaddles, true);
-  }
-
-  window.addEventListener(MILO_EVENTS.DEFERRED, updatePaddles, true);
-  window.addEventListener('resize', debounce(updatePaddles));
-
-  tabList.onscroll = () => {
-    clearTimeout(window.scrollEndTimer);
-    window.scrollEndTimer = setTimeout(updatePaddles, 100);
+  const options = {
+    root: tabList,
+    rootMargin: '0px',
+    threshold: 0.9,
   };
+
+  const callback = (entries) => {
+    entries.forEach((entry) => {
+      if (entry.target === firstTab) {
+        if (entry.isIntersecting) {
+          left.setAttribute('disabled', '');
+        } else {
+          left.removeAttribute('disabled');
+        }
+      } else if (entry.target === lastTab) {
+        if (entry.isIntersecting) {
+          right.setAttribute('disabled', '');
+        } else {
+          right.removeAttribute('disabled');
+        }
+      }
+    });
+  };
+
+  const observer = new IntersectionObserver(callback, options);
+
+  observer.observe(firstTab);
+  observer.observe(lastTab);
 }
 
 const handleDeferredImages = (block) => {
@@ -236,8 +247,10 @@ const init = (block) => {
   const tabPaddles = createTag('div', { class: 'tab-paddles', role: 'scrollbar' });
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '' });
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '' });
+  paddleLeft.innerHTML = LEFT_PADDLE;
+  paddleRight.innerHTML = RIGHT_PADDLE;
   tabPaddles.append(paddleLeft, paddleRight);
-  tabList.insertAdjacentElement('afterend', tabPaddles);
+  tabList.after(tabPaddles);
   initPaddles(tabList, tabPaddles);
 
   // Tab Sections
