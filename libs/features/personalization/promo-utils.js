@@ -2,10 +2,12 @@ import { getMetadata } from '../../utils/utils.js';
 
 const GMTStringToLocalDate = (gmtString) => new Date(`${gmtString}+00:00`);
 
-const isDisabled = (event) => {
+export const isDisabled = (event) => {
+  if (!event) return false;
   const currentDate = new Date();
-  return event.start && event.end
-    && (currentDate < event.start || currentDate > event.end);
+  if ((!event.start && event.end) || (!event.end && event.start)) return true;
+  return Boolean(event.start && event.end
+    && (currentDate < event.start || currentDate > event.end));
 };
 
 export default function getPromoManifests(manifestNames) {
