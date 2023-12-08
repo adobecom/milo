@@ -27,6 +27,7 @@ const MILO_BLOCKS = [
   'faq',
   'featured-article',
   'figure',
+  'form',
   'fragment',
   'featured-article',
   'global-footer',
