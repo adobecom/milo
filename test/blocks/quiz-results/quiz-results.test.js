@@ -61,6 +61,6 @@ describe('Quiz Results', () => {
     await init(el, 'quiz-results', 'quiz-result-test');
 
     /* eslint-disable no-underscore-dangle */
-    expect(window.alloy_all.data._acpxevanglist.digitalData.page.pageInfo.customHash).to.equal('test analytics value');
+    expect(window.alloy_all.data._acxpevangelist.digitalData.page.pageInfo.customHash).to.equal('test analytics value');
   });
 });

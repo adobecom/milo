@@ -32,11 +32,11 @@ function setAnalytics(hashValue, debug) {
   window.alloy_load.data ??= {};
   window.alloy_all ??= {};
   window.alloy_all.data ??= {};
-  window.alloy_all.data._acpxevanglist ??= {};
-  window.alloy_all.data._acpxevanglist.digitalData ??= {};
-  window.alloy_all.data._acpxevanglist.digitalData.page ??= {};
-  window.alloy_all.data._acpxevanglist.digitalData.page.pageInfo ??= {};
-  window.alloy_all.data._acpxevanglist.digitalData.page.pageInfo.customHash = hashValue;
+  window.alloy_all.data._acxpevangelist ??= {};
+  window.alloy_all.data._acxpevangelist.digitalData ??= {};
+  window.alloy_all.data._acxpevangelist.digitalData.page ??= {};
+  window.alloy_all.data._acxpevangelist.digitalData.page.pageInfo ??= {};
+  window.alloy_all.data._acxpevangelist.digitalData.page.pageInfo.customHash = hashValue;
   if (debug === 'quiz-results') {
     // eslint-disable-next-line no-console
     console.log('Setting a custom hash for pageload to: ', hashValue);

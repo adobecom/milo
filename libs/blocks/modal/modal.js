@@ -26,7 +26,7 @@ export function sendAnalytics(event) {
     xdm: {},
     data: {
       web: { webInteraction: { name: event?.type } },
-      _acpxevanglist: { digitalData: event?.data },
+      _acxpevangelist: { digitalData: event?.data },
     },
   });
 }
