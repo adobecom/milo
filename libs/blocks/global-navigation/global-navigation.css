@@ -536,6 +536,7 @@ header.global-navigation {
 
   .feds-menu-container {
     min-width: 100%;
+    padding: 0 12px 40px 12px;
   }
 
   /* Nav Links */
@@ -551,10 +552,6 @@ header.global-navigation {
     right: 0;
     justify-content: center;
     padding: 40px 0 0 0;
-  }
-
-  .feds-navItem--megaMenu .feds-menu-content {
-    padding-bottom: 40px;
   }
 
   .feds-topnav .feds-nav-wrapper .feds-nav .feds-popup {

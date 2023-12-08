@@ -277,23 +277,23 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
   }
 };
 
-const decorateLinksStrip = (content) => {
-  const linksStripEl = content.querySelector('.links-strip');
-  if (!linksStripEl) return;
-  linksStripEl.remove();
+const decorateCrossCloudMenu = (content) => {
+  const crossCloudMenuEl = content.querySelector('.cross-cloud-menu');
+  if (!crossCloudMenuEl) return;
+  crossCloudMenuEl.remove();
 
   const decorateLink = (el, index) => {
     const decoratedLink = decorateLinkGroup(el, index);
     if (index === 0) decoratedLink.prepend(toFragment`${CONFIG.icons.home}`);
-    return toFragment`<div class="feds-linksStrip-item">
+    return toFragment`<div class="feds-crossCloudMenu-item">
       ${decoratedLink}
     </div>`;
   };
 
-  const linksStripContent = toFragment`<div class="feds-linksStrip"></div>`;
-  const linksStripWrapper = toFragment`<div class="feds-linksStrip-wrapper">${linksStripContent}</div>`;
-  linksStripContent.append(...[...linksStripEl.children].map(decorateLink));
-  content.append(linksStripWrapper);
+  const crossCloudMenuContent = toFragment`<div class="feds-crossCloudMenu"></div>`;
+  const crossCloudMenuWrapper = toFragment`<div class="feds-crossCloudMenu-wrapper">${crossCloudMenuContent}</div>`;
+  crossCloudMenuContent.append(...[...crossCloudMenuEl.children].map(decorateLink));
+  content.append(crossCloudMenuWrapper);
 };
 
 // Current limitation: after an h5 (or h2 in the case of the footer)
@@ -328,7 +328,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
           ${menuContent}
         </div>
       </div>`;
-    decorateLinksStrip(menuTemplate);
+    decorateCrossCloudMenu(menuTemplate);
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
     await decorateColumns({ content: menuContent });

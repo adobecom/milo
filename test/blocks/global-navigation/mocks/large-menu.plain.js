@@ -374,7 +374,7 @@ export default `<div>
       <div><a href="https://www.adobe.com/">https://www.adobe.com/</a></div>
     </div>
   </div>
-  <div class="links-strip">
+  <div class="cross-cloud-menu">
     <div>
       <div><a href="https://www.adobe.com/index.html">Adobe.com</a></div>
     </div>
