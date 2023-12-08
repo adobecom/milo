@@ -7,6 +7,7 @@ import {
   cssStatusCopy,
   cssStatusPromote,
   cssStatusDelete,
+  renderModal,
 } from '../utils/state.js';
 import { fetchStatusAction } from '../utils/miloc.js';
 
@@ -18,14 +19,6 @@ function truncateMessage(message, maxLength = 105) {
 }
 
 export function ProjectStatus(actionType) {
-  function Badge() {
-    return html`<div class="fgui-subproject-badge">${getCssStatus(actionType.action)}</div>`;
-  }
-
-  const [loading, setLoading] = useState(true);
-  const action = actionType.action;
-  const actionNameStatus = action + 'Status';
-
   const getCssStatus = (type) => {
     switch (type) {
       case 'copy':
@@ -38,6 +31,14 @@ export function ProjectStatus(actionType) {
         throw new Error('Invalid action type.');
     }
   };
+
+  function Badge() {
+    return html`<div class="fgui-subproject-badge">${getCssStatus(actionType.action)}</div>`;
+  }
+
+  const [loading, setLoading] = useState(true);
+  const action = actionType.action;
+  const actionNameStatus = action + 'Status';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,13 +125,35 @@ export function ProjectStatus(actionType) {
     : html`
         <li class="fgui-subproject fgui-subproject-${getCssStatus(action)}">
           ${html`<${Badge} />`}
+          ${actionType.action === 'promote'
+            ? html`
+                <div class="fgui-subproject-badge" style="
+                  background: none;
+                  bottom: -4px;
+                  right: -4px;
+                  position: absolute;
+                ">
+                  ${getCssStatus(actionType.action) !== 'NOT STARTED'
+                    ? html`
+                        <a href="#" onClick=${() => renderModal.value = renderModal.value + 1}>
+                          <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 18 18" width="18"> 
+                            <title>InfoMedium</title> 
+                            <rect id="ToDelete" fill="#ff13dc" opacity="0" width="18" height="18"></rect>
+                            <path d="M9,1a8,8,0,1,0,8,8A8,8,0,0,0,9,1ZM8.85,3.15a1.359,1.359,0,0,1,1.43109,1.28286q.00352.06452.00091.12914A1.332,1.332,0,0,1,8.85,5.994,1.353,1.353,0,0,1,7.418,4.561,1.359,1.359,0,0,1,8.72191,3.14905Q8.78595,3.14652,8.85,3.15ZM11,13.5a.5.5,0,0,1-.5.5h-3a.5.5,0,0,1-.5-.5v-1a.5.5,0,0,1,.5-.5H8V9H7.5A.5.5,0,0,1,7,8.5v-1A.5.5,0,0,1,7.5,7h2a.5.5,0,0,1,.5.5V12h.5a.5.5,0,0,1,.5.5Z"></path> 
+                          </svg>
+                        </a>
+                      `
+                    : ''}
+                </div>
+              `
+            : ''}
           <p class="fgui-project-label">Action</p>
           <h3 class="fgui-subproject-name">${action.toUpperCase()}</h3>
           <p class="fgui-project-label">Last Run</p>
           <h3 class="fgui-subproject-name">
-          ${allActionStatus.value[actionNameStatus]?.payload?.action?.startTime
-            ? new Date(allActionStatus.value[actionNameStatus]?.payload?.action?.startTime).toLocaleString(undefined, { timeZoneName: 'short' })
-            : '-'}
+            ${allActionStatus.value[actionNameStatus]?.payload?.action?.startTime
+              ? new Date(allActionStatus.value[actionNameStatus]?.payload?.action?.startTime).toLocaleString(undefined, { timeZoneName: 'short' })
+              : '-'}
           </h3>
           <p class="fgui-project-label">Description</p>
           <h3 class="fgui-subproject-name" title=${allActionStatus.value[actionNameStatus]?.payload?.action?.message || '-'}>
