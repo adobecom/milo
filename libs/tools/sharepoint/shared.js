@@ -22,5 +22,5 @@ export function getSiteOrigin() {
   const search = new URLSearchParams(window.location.search);
   const repo = search.get('repo');
   const owner = search.get('owner');
-  return repo && owner ? `https://main--${repo}--${owner}.hlx.live` : window.location.origin;
+  return repo && owner ? `https://main--${repo}--${owner}.hlx.page` : window.location.origin;
 }
