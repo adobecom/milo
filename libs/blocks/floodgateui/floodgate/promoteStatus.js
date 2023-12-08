@@ -27,7 +27,6 @@ class PromoteStatusModal extends Component {
   }
 
   openModal = async () => {
-    console.log('Open Modal Clicked');
     this.setState({
       modalVisible: true,
       loading: true,
@@ -129,7 +128,6 @@ class PromoteStatusModal extends Component {
     const paramsFg = await getParamsFg(config);
     let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, batchFiles: batchNumber };
     const batchFilesData = await postData('https://14257-milofg-stage.adobeioruntime.net/api/v1/web/milo-fg/promote-status.json', params);
-    console.log(batchFilesData.batchFiles[0]);
     return batchFilesData.batchFiles;
   };
 
@@ -171,13 +169,10 @@ class PromoteStatusModal extends Component {
   };
 
   failedPages = async (batchNumber) => {
-    console.log('Fetching failed pages for batch:', batchNumber);
     const config = await getServiceConfigFg(origin);
     const paramsFg = await getParamsFg(config);
     let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, batchResults: batchNumber };
     const failedPagesData = await postData('https://14257-milofg-stage.adobeioruntime.net/api/v1/web/milo-fg/promote-status.json', params);
-
-    console.log('Failed Pages:', failedPagesData);
     const { failedPromotes, failedPreviews, failedPublishes } = failedPagesData.batchResults;
 
     return { failedPromotes, failedPreviews, failedPublishes };
