@@ -69,7 +69,7 @@ function Review({
       setIsInteractive(false);
       if (hideTitleOnReload !== 'false') setDisplayTitle(false);
     }
-  }, [staticRating]);
+  }, [staticRating, hideTitleOnReload]);
 
   useEffect(() => {
     if (initialRating) {
