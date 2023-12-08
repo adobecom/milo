@@ -113,7 +113,7 @@ export default async function init({ persEnabled = false, persManifests }) {
 
   setDeep(
     window,
-    'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
+    'alloy_all.data._acpxevanglist.digitalData.page.pageInfo.language',
     config.locale.ietf,
   );
   setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');

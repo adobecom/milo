@@ -76,7 +76,7 @@ const sendEvent = (data) => {
     xdm: {},
     data: {
       web: { webInteraction: { name: window.digitalData.primaryEvent?.eventInfo?.eventName } },
-      _adobe_corpnew: {
+      _acpxevanglist: {
         digitalData: {
           primaryEvent: window.digitalData.primaryEvent,
           chat: window.digitalData.chat,

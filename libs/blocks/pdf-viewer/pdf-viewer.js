@@ -64,7 +64,7 @@ const init = async (a) => {
           xdm: {},
           data: {
             web: { webInteraction: { name: event.type } },
-            _adobe_corpnew: { digitalData: event.data },
+            _acpxevanglist: { digitalData: event.data },
           },
         });
       },
