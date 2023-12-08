@@ -46,6 +46,11 @@ export async function getProjectStatus() {
       allowSyncToLangstore.value = false;
     }
 
+    if (json.projectStatus === 'created') {
+      allowSyncToLangstore.value = true;
+      allowSendForLoc.value = true;
+    }
+
     if (json.projectStatus === 'sync'
       || json.projectStatus === 'download'
       || json.projectStatus === 'start-glaas') {
@@ -82,12 +87,15 @@ export async function startSync() {
   return resp.status;
 }
 
-export async function startProject() {
-  const url = await getMilocUrl();
-  setStatus('service', 'info', 'Sending to translation service.');
+export async function startProject({ skipSync }) {
+  let url = await getMilocUrl();
+  setStatus('service', 'info', 'Starting project.');
   const opts = { method: 'POST' };
-  const resp = await fetch(`${url}start-project?project=${heading.value.projectId}`, opts);
+  url = `${url}start-project?project=${heading.value.projectId}`;
+  if (skipSync) url = `${url}&skipsync=true`;
+  const resp = await fetch(url, opts);
   if (resp.status === 201) setExcelStatus('Sent to localization service.', '');
+  setStatus('service');
   return resp.status;
 }
 
@@ -114,8 +122,7 @@ export async function createProject() {
     const values = [['Project ID', projectId]];
     const itemId = getItemId();
     await updateExcelTable({ itemId, tablename: 'settings', values });
-    preview(`${heading.value.path}.json`);
-    return startSync(url);
+    await preview(`${heading.value.path}.json`);
   }
   return resp.status;
 }

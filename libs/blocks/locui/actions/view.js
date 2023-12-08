@@ -38,7 +38,7 @@ export default function Actions() {
           <button
             onClick=${sendForLoc}
             class=locui-urls-heading-action>
-            Send for translation
+            Start project
           </button>
         `}
         ${allowRollout.value && html`

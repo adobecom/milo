@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import { heading, urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout } from '../utils/state.js';
+import { heading, urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout, allowFindFragments } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
@@ -95,26 +95,52 @@ export async function findFragments() {
   }
 }
 
-export async function syncToLangstore(e) {
-  e.target.disabled = true;
+export async function syncToLangstore() {
+  // Disable finding fragments
+  allowFindFragments.value = false;
+
+  // Disable all langstore syncing, the project is being sent.
+  allowSyncToLangstore.value = false;
+
+  // Disable sending for loc as this is in progress.
+  allowSendForLoc.value = false;
+
   if (!heading.value.projectId) {
     const status = await createProject();
-    if (status === 201) await startSync();
-    getServiceUpdates();
+    setTimeout(async () => {
+      if (status === 201) await startSync();
+      getServiceUpdates();
+    }, 3000);
   } else {
     await startSync();
   }
-  e.target.disabled = false;
 }
 
-export async function sendForLoc(e) {
-  e.target.disabled = true;
+export async function sendForLoc() {
+  // Disable finding fragments
+  allowFindFragments.value = false;
+
+  // Disable all langstore syncing, the project is being sent.
   allowSyncToLangstore.value = false;
-  const status = await startProject();
-  if (status === 201) {
-    allowSendForLoc.value = false;
+
+  // Disable sending for loc as this is in progress.
+  allowSendForLoc.value = false;
+
+  // If no Project ID, create project first.
+  if (!heading.value.projectId) {
+    const status = await createProject();
+    if (status !== 201) {
+      setStatus('service', 'error', 'Error creating new project.');
+      return;
+    }
+    setStatus('service', 'info', 'Starting project.');
+    // Give the service time to digest and error check creating a project
   }
-  e.target.disabled = false;
+
+  await startProject({ skipSync: true });
+  setStatus('service');
+  // Start polling for updates since this has not been kicked off.
+  getServiceUpdates();
 }
 
 export function showRollout() {
