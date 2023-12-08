@@ -41,14 +41,15 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   let manifests = targetManifests;
 
   manifests = manifests.concat(
-    persManifests.map((manifestPath) => ({
-      manifestPath: appendJsonExt(manifestPath),
-      manifestUrl: manifestPath,
+    persManifests.map((manifest) => ({
+      ...manifest,
+      manifestPath: appendJsonExt(manifest.manifestPath),
+      manifestUrl: manifest.manifestPath,
     })),
   );
 
   for (const manifest of manifests) {
-    if (!manifest.manifestData && manifest.manifestPath) {
+    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
       manifest.manifestPath = normalizePath(manifest.manifestPath);
       loadLink(
         manifest.manifestPath,
@@ -185,6 +186,8 @@ export async function replaceInner(path, element) {
   if (!html) return false;
 
   element.innerHTML = html;
+  const { decorateArea } = getConfig();
+  if (decorateArea) decorateArea(element);
   return true;
 }
 /* c8 ignore stop */
@@ -571,6 +574,15 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
+const createDefaultExperiment = (manifest) => ({
+  disabled: manifest.disabled,
+  event: manifest.event,
+  manifest: manifest.manifestPath,
+  variantNames: ['all'],
+  selectedVariantName: 'default',
+  selectedVariant: { commands: [] },
+});
+
 export async function applyPers(manifests) {
   const config = getConfig();
 
@@ -579,14 +591,22 @@ export async function applyPers(manifests) {
   getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
+  const override = config.mep?.override;
   let results = [];
+  const experiments = [];
   for (const manifest of cleanedManifests) {
-    results.push(await runPersonalization(manifest, config));
+    if (manifest.disabled && !override) {
+      experiments.push(createDefaultExperiment(manifest));
+    } else {
+      const result = await runPersonalization(manifest, config);
+      if (result) {
+        results.push(result);
+        experiments.push(result.experiment);
+      }
+    }
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
-
-  const experiments = results.map((r) => r.experiment);
   updateConfig({
     ...config,
     experiments,
