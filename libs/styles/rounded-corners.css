@@ -1,6 +1,5 @@
 :root {
   /* border-radius sizes */
-  --rounded-corners: 0;
   --s-rounded-corners: 4px;
   --m-rounded-corners: 8px;
   --l-rounded-corners: 16px;
@@ -10,7 +9,7 @@
 .rounded-corners,
 .rounded-corners > .background img,
 .rounded-corners-image .foreground .image picture img {
-  border-radius: var(--rounded-corners);
+  border-radius: var(--m-rounded-corners);
 }
 
 .s-rounded-corners,
