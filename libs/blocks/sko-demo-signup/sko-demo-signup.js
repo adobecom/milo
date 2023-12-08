@@ -36,7 +36,7 @@ function decorateFormField(fieldJson, el) {
       formField = createTag('input', {id: fieldID, class: 'sko-form-input', required:true, type:'text'});
       break;
     case 'email':
-      formField = createTag('input', {id: fieldID, class: 'sko-form-input', type:'email'});
+      formField = createTag('input', {id: fieldID, class: 'sko-form-input', type:'email', placeholder: 'you@adobe.com'});
       break;
     case 'dropdown':
       if(fieldJson.options !== '') {
@@ -68,12 +68,6 @@ function decorateFormField(fieldJson, el) {
 
 async function onSubmit() {
   const fieldCollection = document.querySelectorAll('.sko-form-input');
-  
-  const submitButton = document.querySelector('#submit-btn');
-  submitButton.textContent='Submitting...';
-  submitButton.disabled = true;
-  submitButton.classList.remove('blue');
-  submitButton.classList.add('submitted');
 
 
   let isValid = true;
@@ -85,20 +79,22 @@ async function onSubmit() {
         payload[item.id] = _fileContents;
       } else {
         item.classList.add('invalid');
-        submitButton.classList.add('blue');
-        submitButton.classList.remove('submitted');
-        submitButton.textContent='Submit';
         isValid = false;
       }
+    } else if(item.type === 'email'){
+        if(validateEmail(item.value)) {
+          item.classList.remove('invalid');
+          payload[item.id] = item.value;
+        } else {
+          item.classList.add('invalid');
+          isValid = false;
+        }
     } else {
       if(item.value !== "" && item.value !== null) {
-        item.classList.remove('invalid')
+        item.classList.remove('invalid');
         payload[item.id] = item.value;
       } else {
         item.classList.add('invalid');
-        submitButton.classList.add('blue');
-        submitButton.classList.remove('submitted');
-        submitButton.textContent='Submit';
         isValid = false;
       }
       
@@ -107,6 +103,11 @@ async function onSubmit() {
   }); 
     if(isValid) {
       try {
+        const submitButton = document.querySelector('#submit-btn');
+        submitButton.textContent='Submitting...';
+        submitButton.disabled = true;
+        submitButton.classList.remove('blue');
+        submitButton.classList.add('submitted');
         
         const submitURL = 'https://exio.azurewebsites.net/api/ko24submit';
         const paURL = 'https://prod-56.westus.logic.azure.com/workflows/58fe7b1a791c4b068c43c535fac5d703/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YXIJ9-vicUvmWpfOchMqtS0zACqe_iRCFPWjWUDTyDU';
@@ -213,6 +214,10 @@ function displayMessage(message, parent) {
   container.append(image);
   marqueeWrapper.append(container);
   parent.append(marqueeWrapper);
+}
+
+function validateEmail(emailAddress) {
+  return emailAddress.toLowerCase().includes('@adobe.com');
 }
 
 
