@@ -21,6 +21,7 @@
 /libs/blocks/commerce/ @Axelcureno @VKniaz
 /libs/blocks/faas/ @seanchoi-dev
 /libs/blocks/faas-config/ @seanchoi-dev
+/libs/blocks/form/ @elan-tbx @rgclayton
 /libs/blocks/fragment-personalization/ @chrischrischris
 /libs/blocks/global-footer/ @overmyheadandbody @mokimo @narcis-radu
 /libs/blocks/global-navigation/ @overmyheadandbody @mokimo @narcis-radu
