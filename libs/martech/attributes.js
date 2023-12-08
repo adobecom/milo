@@ -19,34 +19,33 @@ export function decorateDefaultLinkAnalytics(block, config) {
     && block.nodeName === 'DIV') {
     let header = '';
     let linkCount = 1;
-    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.link-block), button, .tracking-header')
-      .forEach((item) => {
-        if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
-          if (item.classList.contains('tracking-header')) {
-            header = processTrackingLabels(item.textContent, config, 20);
-          }
-          if (item.hasAttribute('daa-ll')) {
-            const labelArray = item.getAttribute('daa-ll').split('-').map((part) => {
-              if (part === '') return '';
-              return processTrackingLabels(part, config, 20);
-            });
-            item.setAttribute('daa-ll', labelArray.join('-'));
-          } else {
-            let label = item.textContent?.trim();
-            if (label === '') {
-              label = item.getAttribute('title')
+    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .tracking-header').forEach((item) => {
+      if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
+        if (item.classList.contains('tracking-header')) {
+          header = processTrackingLabels(item.textContent, config, 20);
+        }
+        if (item.hasAttribute('daa-ll')) {
+          const labelArray = item.getAttribute('daa-ll').split('-').map((part) => {
+            if (part === '') return '';
+            return processTrackingLabels(part, config, 20);
+          });
+          item.setAttribute('daa-ll', labelArray.join('-'));
+        } else {
+          let label = item.textContent?.trim();
+          if (label === '') {
+            label = item.getAttribute('title')
                 || item.getAttribute('aria-label')
                 || item.querySelector('img')?.getAttribute('alt')
                 || 'no label';
-            }
-            label = processTrackingLabels(label, config, 20);
-            item.setAttribute('daa-ll', `${label}-${linkCount}--${header}`);
           }
-          linkCount += 1;
-        } else {
-          header = processTrackingLabels(item.textContent, config, 20);
+          label = processTrackingLabels(label, config, 20);
+          item.setAttribute('daa-ll', `${label}-${linkCount}--${header}`);
         }
-      });
+        linkCount += 1;
+      } else {
+        header = processTrackingLabels(item.textContent, config, 20);
+      }
+    });
   }
 }
 
