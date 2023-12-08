@@ -27,6 +27,13 @@ describe('Quiz Results', () => {
 
     expect(window.lana.log.args[1][0]).to.equal(`${LOADING_ERROR} Basic fragments are missing`);
   });
+  it('Doesnt load data when block is misconfigured', async () => {
+    const el = document.body.querySelector('.block-three');
+
+    await init(el, 'quiz-results', 'quiz-result-test');
+
+    expect(window.lana.log.args[1][0]).to.equal(`${LOADING_ERROR} Basic fragments are missing`);
+  });
   it('Loads basic fragments', async () => {
     const el = document.body.querySelector('.basic-one');
     localStorage.setItem('quiz-result-test', JSON.stringify(mockData.mockTwo));

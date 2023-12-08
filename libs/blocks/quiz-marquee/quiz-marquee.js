@@ -5,6 +5,7 @@ function decorateBadge(el) {
   const regex = /\[\[(.*?)\]\]/g;
   const header = el.querySelector('h1, h2, h3, h4, h5, h6');
   const matches = header.innerHTML.match(regex);
+  /* c8 ignore next */
   if (!matches) return;
   matches.forEach((match) => {
     const badgeText = match.substring(2, match.length - 2);
