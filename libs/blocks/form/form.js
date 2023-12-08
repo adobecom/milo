@@ -10,16 +10,16 @@ const RULE_OPERATORS = {
   greaterThanOrEqual: '>=',
 };
 
-function createSelect({ Field, Placeholder, Options, Default, Required }) {
-  const select = createTag('select', { id: Field });
-  if (Placeholder) select.append(createTag('option', { selected: '', disabled: '' }, Placeholder));
-  Options.split(',').forEach((o) => {
+function createSelect({ field, placeholder, options, defval, required }) {
+  const select = createTag('select', { id: field });
+  if (placeholder) select.append(createTag('option', { selected: '', disabled: '' }, placeholder));
+  options.split(',').forEach((o) => {
     const text = o.trim();
     const option = createTag('option', { value: text }, text);
     select.append(option);
-    if (Default === text) select.value = text;
+    if (defval === text) select.value = text;
   });
-  if (Required === 'x') select.setAttribute('required', 'required');
+  if (required === 'x') select.setAttribute('required', 'required');
   return select;
 }
 
@@ -62,7 +62,7 @@ async function submitForm(form) {
   const resp = await fetch(form.dataset.action, {
     method: 'POST',
     cache: 'no-cache',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({ data: payload }),
   });
   await resp.text();
@@ -79,13 +79,13 @@ function clearForm(form) {
   });
 }
 
-function createButton({ Type, Label }, thankYou) {
-  const button = createTag('button', { class: 'button' }, Label);
-  if (Type === 'submit') {
+function createButton({ type, label }, thankYou) {
+  const button = createTag('button', { class: 'button' }, label);
+  if (type === 'submit') {
     button.addEventListener('click', async (event) => {
       const form = button.closest('form');
       if (form.checkValidity()) {
-        event.preventDefault();
+        event.preventdefval();
         button.setAttribute('disabled', '');
         const submission = await submitForm(form);
         button.removeAttribute('disabled');
@@ -103,10 +103,10 @@ function createButton({ Type, Label }, thankYou) {
       }
     });
   }
-  if (Type === 'clear') {
+  if (type === 'clear') {
     button.classList.add('outline');
     button.addEventListener('click', (e) => {
-      e.preventDefault();
+      e.preventdefval();
       const form = button.closest('form');
       clearForm(form);
     });
@@ -114,24 +114,24 @@ function createButton({ Type, Label }, thankYou) {
   return button;
 }
 
-function createHeading({ Label }, el) {
-  return createTag(el, {}, Label);
+function createHeading({ label }, el) {
+  return createTag(el, {}, label);
 }
 
-function createInput({ Type, Field, Placeholder, Required, Default }) {
-  const input = createTag('input', { type: Type, id: Field, placeholder: Placeholder, value: Default });
-  if (Required === 'x') input.setAttribute('required', 'required');
+function createInput({ type, field, placeholder, required, defval }) {
+  const input = createTag('input', { type, id: field, placeholder, value: defval });
+  if (required === 'x') input.setAttribute('required', 'required');
   return input;
 }
 
-function createTextArea({ Field, Placeholder, Required, Default }) {
-  const input = createTag('textarea', { id: Field, placeholder: Placeholder, value: Default });
-  if (Required === 'x') input.setAttribute('required', 'required');
+function createTextArea({ field, placeholder, required, defval }) {
+  const input = createTag('textarea', { id: field, placeholder, value: defval });
+  if (required === 'x') input.setAttribute('required', 'required');
   return input;
 }
 
-function createLabel({ Field, Label, Required }) {
-  return createTag('label', { for: Field, class: Required ? 'required' : '' }, Label);
+function createlabel({ field, label, required }) {
+  return createTag('label', { for: field, class: required ? 'required' : '' }, label);
 }
 
 function createCheckItem(item, type, id, def) {
@@ -147,12 +147,12 @@ function createCheckItem(item, type, id, def) {
   return createTag('div', { class: `check-item-wrap ${type}-input-wrap` }, [input, pseudoEl, label]);
 }
 
-function createCheckGroup({ Options, Field, Default, Required }, type) {
-  const options = Options.split(',').map((item) => createCheckItem(item.trim(), type, Field, Default));
+function createCheckGroup({ options, field, defval, required }, type) {
+  const optionsMap = options.split(',').map((item) => createCheckItem(item.trim(), type, field, defval));
   return createTag(
     'div',
-    { class: `group-container ${type}-group-container${Required === 'x' ? ' required' : ''}` },
-    options,
+    { class: `group-container ${type}-group-container${required === 'x' ? ' required' : ''}` },
+    optionsMap,
   );
 }
 
@@ -165,6 +165,19 @@ function processNumRule(tf, operator, a, b) {
   const a2 = type === 'number' ? parseInt(a, 10) : Date.parse(a);
   const b2 = type === 'number' ? parseInt(b, 10) : Date.parse(b);
   return [a2, b2];
+}
+
+function processRule(tf, operator, payloadKey, value, comparisonFunction) {
+  if (payloadKey === '') return true;
+  try {
+    const [a, b] = processNumRule(tf, operator, payloadKey, value);
+    return comparisonFunction(a, b);
+    /* c8 ignore next 5 */
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn(`Invalid rule, ${e}`);
+    return false;
+  }
 }
 
 function applyRules(form, rules) {
@@ -182,64 +195,16 @@ function applyRules(form, rules) {
         force = (payload[key] !== value);
         break;
       case RULE_OPERATORS.lessThan:
-        if (payload[key] === '') {
-          force = true;
-          break;
-        }
-        try {
-          const [a, b] = processNumRule(tf, operator, payload[key], value);
-          force = a < b;
-          /* c8 ignore next 5 */
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.warn(`Invalid rule, ${e}`);
-          return false;
-        }
+        force = processRule(tf, operator, payload[key], value, (a, b) => a < b);
         break;
       case RULE_OPERATORS.lessThanOrEqual:
-        if (payload[key] === '') {
-          force = true;
-          break;
-        }
-        try {
-          const [a, b] = processNumRule(tf, operator, payload[key], value);
-          force = a <= b;
-          /* c8 ignore next 5 */
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.warn(`Invalid rule, ${e}`);
-          return false;
-        }
+        force = processRule(tf, operator, payload[key], value, (a, b) => a <= b);
         break;
       case RULE_OPERATORS.greaterThan:
-        if (payload[key] === '') {
-          force = true;
-          break;
-        }
-        try {
-          const [a, b] = processNumRule(tf, operator, payload[key], value);
-          force = a > b;
-          /* c8 ignore next 5 */
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.warn(`Invalid rule, ${e}`);
-          return false;
-        }
+        force = processRule(tf, operator, payload[key], value, (a, b) => a > b);
         break;
       case RULE_OPERATORS.greaterThanOrEqual:
-        if (payload[key] === '') {
-          force = true;
-          break;
-        }
-        try {
-          const [a, b] = processNumRule(tf, operator, payload[key], value);
-          force = a >= b;
-          /* c8 ignore next 5 */
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.warn(`Invalid rule, ${e}`);
-          return false;
-        }
+        force = processRule(tf, operator, payload[key], value, (a, b) => a >= b);
         break;
       default:
         // eslint-disable-next-line no-console
@@ -251,6 +216,13 @@ function applyRules(form, rules) {
   });
 }
 
+function lowercaseKeys(obj) {
+  return Object.keys(obj).reduce((acc, key) => {
+    acc[key.toLowerCase() === 'default' ? 'defval' : key.toLowerCase()] = obj[key];
+    return acc;
+  }, {});
+}
+
 async function createForm(formURL, thankYou, formData) {
   const { pathname } = new URL(formURL);
   let json = formData;
@@ -259,60 +231,45 @@ async function createForm(formURL, thankYou, formData) {
     const resp = await fetch(pathname);
     json = await resp.json();
   }
+  json.data = json.data.map((obj) => lowercaseKeys(obj));
   const form = createTag('form');
   const rules = [];
-  // eslint-disable-next-line prefer-destructuring
-  form.dataset.action = pathname.split('.json')[0];
+  const [action] = pathname.split('.json');
+  form.dataset.action = action;
+
+  const typeToElement = {
+    select: { fn: createSelect, params: [], label: true, classes: [] },
+    heading: { fn: createHeading, params: ['h3'], label: false, classes: [] },
+    legal: { fn: createHeading, params: ['p'], label: false, classes: [] },
+    checkbox: { fn: createCheckGroup, params: ['checkbox'], label: true, classes: ['field-group-wrapper'] },
+    'checkbox-group': { fn: createCheckGroup, params: ['checkbox'], label: true, classes: ['field-group-wrapper'] },
+    'radio-group': { fn: createCheckGroup, params: ['radio'], label: true, classes: ['field-group-wrapper'] },
+    'text-area': { fn: createTextArea, params: [], label: true, classes: [] },
+    submit: { fn: createButton, params: [thankYou], label: false, classes: ['field-button-wrapper'] },
+    clear: { fn: createButton, params: [thankYou], label: false, classes: ['field-button-wrapper'] },
+    default: { fn: createInput, params: [], label: true, classes: [] },
+  };
+
   json.data.forEach((fd) => {
-    fd.Type = fd.Type || 'text';
-    const style = fd.Extra ? ` form-${fd.Extra}` : '';
+    fd.type = fd.type || 'text';
+    const style = fd.extra ? ` form-${fd.extra}` : '';
     const fieldWrapper = createTag(
       'div',
-      { class: `field-wrapper form-${fd.Type}-wrapper${style}`, 'data-field-id': fd.Field, 'data-type': fd.Type },
+      { class: `field-wrapper form-${fd.type}-wrapper${style}`, 'data-field-id': fd.field, 'data-type': fd.type },
     );
-    switch (fd.Type) {
-      case 'select':
-        fieldWrapper.append(createLabel(fd));
-        fieldWrapper.append(createSelect(fd));
-        break;
-      case 'heading':
-        fieldWrapper.append(createHeading(fd, 'h3'));
-        break;
-      case 'legal':
-        fieldWrapper.append(createHeading(fd, 'p'));
-        break;
-      case 'checkbox':
-      case 'checkbox-group':
-        fieldWrapper.append(createLabel(fd));
-        fieldWrapper.append(createCheckGroup(fd, 'checkbox'));
-        fieldWrapper.classList.add('field-group-wrapper');
-        break;
-      case 'radio-group':
-        fieldWrapper.append(createLabel(fd));
-        fieldWrapper.append(createCheckGroup(fd, 'radio'));
-        fieldWrapper.classList.add('field-group-wrapper');
-        break;
-      case 'text-area':
-        fieldWrapper.append(createLabel(fd));
-        fieldWrapper.append(createTextArea(fd));
-        break;
-      case 'submit':
-      case 'clear':
-        fieldWrapper.classList.add('field-button-wrapper');
-        fieldWrapper.append(createButton(fd, thankYou));
-        break;
-      default:
-        fieldWrapper.append(createLabel(fd));
-        fieldWrapper.append(createInput(fd));
-    }
 
-    if (fd.Rules) {
+    const elParams = typeToElement[fd.type] || typeToElement.default;
+    if (elParams.label) fieldWrapper.append(createlabel(fd));
+    fieldWrapper.append(elParams.fn(fd, ...elParams.params));
+    fieldWrapper.classList.add(...elParams.classes);
+
+    if (fd.rules?.length) {
       try {
-        rules.push({ fieldId: fd.Field, rule: JSON.parse(fd.Rules) });
+        rules.push({ fieldId: fd.field, rule: JSON.parse(fd.rules) });
         /* c8 ignore next 4 */
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.warn(`Invalid Rule ${fd.Rules}: ${e}`);
+        console.warn(`Invalid Rule ${fd.rules}: ${e}`);
       }
     }
     form.append(fieldWrapper);
@@ -320,7 +277,7 @@ async function createForm(formURL, thankYou, formData) {
 
   form.addEventListener('input', () => applyRules(form, rules));
   applyRules(form, rules);
-  return (form);
+  return form;
 }
 
 export default async function decorate(block, formData = null) {
