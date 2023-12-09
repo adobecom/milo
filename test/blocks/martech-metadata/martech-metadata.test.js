@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/martech-attribute-metadata/martech-attribute-metadata.js');
+const { default: init } = await import('../../../libs/blocks/martech-metadata/martech-metadata.js');
 const { setConfig } = await import('../../../libs/utils/utils.js');
 
 describe('martech-attribute-metadata', () => {
@@ -14,7 +14,7 @@ describe('martech-attribute-metadata', () => {
       locale: { ietf: 'es-ES' },
     };
     setConfig(origConfig);
-    const blocks = document.querySelectorAll('.martech-attribute-metadata');
+    const blocks = document.querySelectorAll('.martech-metadata');
     blocks.forEach((block) => {
       config = init(block);
     });
@@ -22,7 +22,7 @@ describe('martech-attribute-metadata', () => {
   });
 
   it('removes the block afterwards.', () => {
-    const blockCheck = document.querySelectorAll('.martech-attribute-metadata');
+    const blockCheck = document.querySelectorAll('.martech-metadata');
     expect(blockCheck.length).to.equal(0);
   });
 });

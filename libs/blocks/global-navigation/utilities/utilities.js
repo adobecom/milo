@@ -208,9 +208,9 @@ export const logErrorFor = async (fn, message, tags) => {
 
 export function processMartechAttributeMetadata(html) {
   const dom = new DOMParser().parseFromString(html, 'text/html').body;
-  const blocks = dom.querySelectorAll('.martech-attribute-metadata');
+  const blocks = dom.querySelectorAll('.martech-metadata');
   blocks.forEach((block) => {
-    import('../../martech-attribute-metadata/martech-attribute-metadata.js')
+    import('../../martech-metadata/martech-metadata.js')
       .then(({ default: decorate }) => decorate(block));
   });
   return null;
