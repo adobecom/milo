@@ -27,7 +27,7 @@ function createSelect({ field, placeholder, options, defval, required }) {
 
 function constructPayload(form) {
   const payload = {};
-[...form.elements].filter((el) => el.tagName !== 'BUTTON').forEach((fe) => {
+  [...form.elements].filter((el) => el.tagName !== 'BUTTON').forEach((fe) => {
     if (fe.type.match(/(?:checkbox|radio)/)) {
       if (fe.checked) {
         payload[fe.name] = payload[fe.name] ? `${fe.value}, ${payload[fe.name]}` : fe.value;
