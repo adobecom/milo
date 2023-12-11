@@ -58,6 +58,8 @@ export async function getParamsFg(config) {
   const { fgRootFolder } = config.sharepoint.site;
   const fgRootFolderColor = fgRootFolder.replace(/<fgColor>/g, heading.value.fgColor);
   const promoteIgnorePaths = getPromoteIgnorePaths(config);
+  const { promoteDraftsOnly } = config.sharepoint.site;
+  const draftsOnly = promoteDraftsOnly === undefined || promoteDraftsOnly === 'true' || promoteDraftsOnly === '';
   const params = {
     adminPageUri,
     projectExcelPath: projectPath,
@@ -66,6 +68,7 @@ export async function getParamsFg(config) {
     rootFolder: config.sharepoint.site.rootFolder,
     fgRootFolder: fgRootFolderColor,
     promoteIgnorePaths,
+    draftsOnly,
     driveId: config.driveId || '',
     fgColor: heading.value.fgColor,
   };
