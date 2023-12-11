@@ -105,4 +105,32 @@ describe('marquee', () => {
       expect(marquee.querySelector('.icon-area-multiple')).to.exist;
     });
   });
+
+  describe('catalog marquee', () => {
+    const marquee = document.getElementById('catalog-marquee');
+    const productList = marquee.querySelector('.catalog-product-list');
+    it('has a catalog-product-list', () => {
+      init(marquee);
+      expect(productList).to.exist;
+    });
+    it('has a catalog product', () => {
+      init(marquee);
+      const product = marquee.querySelector('.catalog-product');
+      expect(product).to.exist;
+    });
+    it('has a catalog product with a title', () => {
+      init(marquee);
+      const product = productList.querySelectorAll('.catalog-product')[0];
+      const title = product.querySelector('strong');
+      expect(title).to.exist;
+    });
+    it('has a catalog product with an image and title', () => {
+      init(marquee);
+      const product = productList.querySelectorAll('.catalog-product')[1];
+      const title = product.querySelector('strong');
+      const mnemonic = product.querySelector('picture');
+      expect(title).to.exist;
+      expect(mnemonic).to.exist;
+    });
+  });
 });

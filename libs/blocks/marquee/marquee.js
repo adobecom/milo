@@ -64,12 +64,12 @@ const decorateImage = (media) => {
   }
 };
 
-const decorateCatalogProductList = (el, foreground) => {
-  if (!el.classList.contains('catalog') && !foreground) return;
+const decorateCatalogProductList = (classList, foreground) => {
+  if (!classList.contains('catalog') && !foreground) return;
   const paragraphs = foreground.querySelectorAll(':scope p:not([class])');
   if (paragraphs.length < 1) return;
   const productList = createTag('div', { class: 'catalog-product-list' });
-  paragraphs.forEach((paragraph) => {
+  [...paragraphs].forEach((paragraph) => {
     const title = paragraph.querySelector('strong');
     const picture = paragraph.querySelector('picture');
     const product = createTag('div', { class: 'catalog-product' });
@@ -134,5 +134,5 @@ export default function init(el) {
       media?.lastChild.remove();
     }
   }
-  decorateCatalogProductList(el, foreground);
+  decorateCatalogProductList(el.classList, foreground);
 }
