@@ -8,7 +8,7 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.14.2-rc1';
+const OST_VERSION = '1.14.4-rc1';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
@@ -29,7 +29,8 @@ document.body.classList.add('tool', 'tool-ost');
 /**
  * @param {Commerce.Defaults} defaults
  */
-export const createLinkMarkup = (defaults) => (
+export const createLinkMarkup = (
+  defaults,
   offerSelectorId,
   type,
   offer,
@@ -56,11 +57,19 @@ export const createLinkMarkup = (defaults) => (
         params.set('workflowStep', workflowStep);
       }
     } else {
-      const { displayRecurrence, displayPerUnit, displayTax, forceTaxExclusive } = options;
+      console.log(options);
+      const {
+        displayRecurrence,
+        displayPerUnit,
+        displayTax,
+        displayOldPrice,
+        forceTaxExclusive,
+      } = options;
       params.set('term', displayRecurrence);
       params.set('seat', displayPerUnit);
       params.set('tax', displayTax);
-      params.set('exclusive', forceTaxExclusive);
+      params.set('old', displayOldPrice);
+      params.set('exclusive', !forceTaxExclusive);
     }
     return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
@@ -165,12 +174,37 @@ export async function loadOstEnv() {
     }
   }
 
+  const onSelect = (
+    offerSelectorId,
+    type,
+    offer,
+    options,
+    promoOverride,
+  ) => {
+    log.debug(offerSelectorId, type, offer, options, promoOverride);
+    const link = createLinkMarkup(
+      Defaults,
+      offerSelectorId,
+      type,
+      offer,
+      options,
+      promoOverride,
+    );
+
+    log.debug(`Use Link: ${link.outerHTML}`);
+    const linkBlob = new Blob([link.outerHTML], { type: 'text/html' });
+    const textBlob = new Blob([link.href], { type: 'text/plain' });
+    // eslint-disable-next-line no-undef
+    const data = [new ClipboardItem({ [linkBlob.type]: linkBlob, [textBlob.type]: textBlob })];
+    navigator.clipboard.write(data, log.debug, log.error);
+  };
+
   return {
     ...metadata,
     aosAccessToken,
     aosApiKey: AOS_API_KEY,
     checkoutClientId: CHECKOUT_CLIENT_ID,
-    createLinkMarkup: createLinkMarkup(Defaults),
+    onSelect,
     country,
     environment,
     language,
