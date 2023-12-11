@@ -25,7 +25,7 @@ export default function init(a) {
         /* eslint-disable-next-line no-underscore-dangle */
         window._satellite?.track('trackYoutube');
       }
-    })
+    });
   };
   createIntersectionObserver({ el: a, callback: embedVideo });
 }
