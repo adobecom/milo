@@ -21,6 +21,7 @@
 /libs/blocks/commerce/ @Axelcureno @VKniaz
 /libs/blocks/faas/ @seanchoi-dev
 /libs/blocks/faas-config/ @seanchoi-dev
+/libs/blocks/form/ @elan-tbx @rgclayton
 /libs/blocks/fragment-personalization/ @chrischrischris
 /libs/blocks/global-footer/ @overmyheadandbody @mokimo @narcis-radu
 /libs/blocks/global-navigation/ @overmyheadandbody @mokimo @narcis-radu
@@ -32,10 +33,12 @@
 /libs/blocks/marquee/ @ryanmparrish @Sartxi @auniverseaway
 /libs/blocks/media/ @ryanmparrish
 /libs/blocks/merch/ @3ch023 @honstar @VKniaz @npeltier @Axelcureno
-/libs/blocks/merch-card/ @VKniaz @Axelcureno @ryanmparrish
+/libs/blocks/merch-card/ @VKniaz @Axelcureno @ryanmparrish @yesil @3ch023
+/libs/blocks/merch-offers/ @yesil @vladen
 /libs/blocks/ost/ @Axelcureno @3ch023 @honstar @VKniaz @vladen @yesil @npeltier
 /libs/blocks/pdf-vewer/ @sanjayms01
 /libs/blocks/quiz/ @colloyd @sabyamon @fullcolorcoder @JackySun9 @elaineskpt @echampio-at-adobe
+/libs/blocks/quiz-marquee/ @ryanmparrish
 /libs/blocks/quiz-results/ @colloyd @sabyamon @fullcolorcoder @JackySun9 @elaineskpt @echampio-at-adobe
 /libs/blocks/quote/ @ryanmparrish
 /libs/blocks/review/ @nkthakur48 @chrischrischris @auniverseaway
