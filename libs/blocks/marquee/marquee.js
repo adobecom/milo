@@ -99,9 +99,9 @@ export default function init(el) {
   text.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
 
-  if (media && !media.querySelector('video, a[href*=".mp4"]')) {
+  if (media) {
     media.classList.add('media');
-    decorateImage(media);
+    if (!media.querySelector('video, a[href*=".mp4"]')) decorateImage(media);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
