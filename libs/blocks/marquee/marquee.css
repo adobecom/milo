@@ -718,3 +718,37 @@
     max-width: var(--grid-container-width);
   }
 }
+
+/* catalog marquee */
+
+@media screen and (min-width: 800px) {
+  .marquee.catalog .foreground .text {
+    max-width: 800px;
+  }
+}
+
+.marquee.catalog .foreground .catalog-product-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  margin: 0 0 var(--spacing-s);
+}
+
+.marquee.catalog .foreground .catalog-product {
+  display: flex;
+  flex: none;
+  gap: var(--spacing-xxs);
+}
+
+.marquee.catalog .foreground .catalog-product-list .catalog-product strong {
+  font-size: var(--type-heading-xxs-size);
+  line-height: var(--type-heading-xs-lh);
+}
+
+.marquee.catalog .foreground .catalog-product-list .catalog-product picture img {
+  width: var(--icon-size-xs);
+}
