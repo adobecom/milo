@@ -13,6 +13,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'brick',
   'bulk-publish',
   'caas',
   'caas-config',
@@ -26,6 +27,7 @@ const MILO_BLOCKS = [
   'faq',
   'featured-article',
   'figure',
+  'form',
   'fragment',
   'featured-article',
   'global-footer',
@@ -42,6 +44,7 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'merch-card',
+  'merch-offers',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -55,6 +58,7 @@ const MILO_BLOCKS = [
   'preflight',
   'promo',
   'quiz',
+  'quiz-marquee',
   'quiz-results',
   'tabs',
   'table-of-contents',
@@ -664,7 +668,7 @@ async function decorateIcons(area, config) {
 }
 
 async function decoratePlaceholders(area, config) {
-  const el = area.documentElement ? document.querySelector('main') : area;
+  const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
@@ -787,20 +791,19 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 
 async function checkForPageMods() {
   const persMd = getMetadata('personalization');
+  const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
   let persManifests = [];
   const search = new URLSearchParams(window.location.search);
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
+  const promoEnabled = promoMd && promoMd !== 'off';
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
-  if (persEnabled || targetEnabled) {
+  if (mepEnabled) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-    loadLink(
-      `${base}/features/personalization/manifest-utils.js`,
       { as: 'script', rel: 'modulepreload' },
     );
   }
@@ -808,18 +811,25 @@ async function checkForPageMods() {
   if (persEnabled) {
     persManifests = persMd.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim());
+      .filter((path) => path?.trim())
+      .map((manifestPath) => ({ manifestPath }));
+  }
+
+  if (promoEnabled) {
+    const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
+    persManifests = persManifests.concat(getPromoManifests(promoMd));
   }
 
   const { env } = getConfig();
+  let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
-  if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
+  if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
+    previewOn = true;
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
-      persEnabled,
+      mepEnabled,
       persManifests,
-      targetEnabled,
     });
   }
 
@@ -827,14 +837,17 @@ async function checkForPageMods() {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
     loadIms().catch(() => {});
-    const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
+    const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
-
-    const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests);
   } else {
-    document.body.dataset.mep = 'default|default';
+    document.body.dataset.mep = 'nopzn|nopzn';
+  }
+
+  if (previewOn) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
 }
 
@@ -990,8 +1003,8 @@ async function documentPostSectionLoading(config) {
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
-  import('../martech/analytics.js').then((analytics) => {
-    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
+  import('../martech/attributes.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
 }
 
