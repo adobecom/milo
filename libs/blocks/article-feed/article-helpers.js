@@ -90,7 +90,7 @@ function loadArticleTaxonomy(article) {
 
     const articleTax = computeTaxonomyFromTopics(topics, path);
 
-    clonedArticle.category = articleTax.category;
+    clonedArticle.category ??= articleTax.category;
 
     // topics = tags as an array
     clonedArticle.topics = topics;
@@ -281,7 +281,9 @@ export function getLinkForTopic(topic, path) {
  * @returns card Generated card
  */
 export function buildArticleCard(article, type = 'article', eager = false) {
-  const { title, description, image, imageAlt, date } = article;
+  const {
+    title, h1, description, image, imageAlt, date,
+  } = article;
 
   const path = article.path.split('.')[0];
 
@@ -301,8 +303,8 @@ export function buildArticleCard(article, type = 'article', eager = false) {
       <p class="${type}-card-category">
         ${categoryTag}
       </p>
-      <h3>${title}</h3>
-      <p class="${type}-card-description">${description}</p>
+      <h3>${h1 || title}</h3>
+      <p class="${type}-card-description">${description && description !== '0' ? description : ''}</p>
       <p class="${type}-card-date">${formatCardLocaleDate(date)}
     </div>`;
   return card;

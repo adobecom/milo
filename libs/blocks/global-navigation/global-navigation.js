@@ -182,6 +182,7 @@ class Gnav {
       loadBaseStyles,
       this.decorateMainNav,
       this.decorateTopNav,
+      this.decorateAside,
       this.decorateTopnavWrapper,
       this.ims,
       this.addChangeEventListeners,
@@ -231,7 +232,7 @@ class Gnav {
         ${breadcrumbs}
       </div>`;
 
-    this.el.append(this.elements.curtain, this.elements.topnavWrapper);
+    this.el.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
   };
 
   addChangeEventListeners = () => {
@@ -380,6 +381,7 @@ class Gnav {
 
     const toggle = toFragment`<button
       class="feds-toggle"
+      daa-ll="hamburgermenu|open"
       aria-expanded="false"
       aria-haspopup="true"
       aria-label="Navigation menu"
@@ -402,6 +404,7 @@ class Gnav {
       this.elements.navWrapper.classList.toggle('feds-nav-wrapper--expanded', !isExpanded);
       closeAllDropdowns();
       setCurtainState(!isExpanded);
+      toggle.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
 
       if (this.blocks?.search?.instance) {
         this.blocks.search.instance.clearSearchForm();
@@ -477,6 +480,20 @@ class Gnav {
     if (!renderLabel && link.textContent.length) decoratedElem.setAttribute('aria-label', link.textContent);
 
     return decoratedElem;
+  };
+
+  decorateAside = async () => {
+    this.elements.aside = '';
+    const promoPath = getMetadata('gnav-promo-source');
+    if (!isDesktop.matches || !promoPath) {
+      this.el.classList.remove('has-promo');
+      return this.elements.aside;
+    }
+
+    const { default: decorate } = await import('./features/aside/aside.js');
+    if (!decorate) return this.elements.aside;
+    this.elements.aside = await decorate({ headerElem: this.el, promoPath });
+    return this.elements.aside;
   };
 
   decorateBrand = () => this.decorateGenericLogo({

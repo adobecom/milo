@@ -44,6 +44,7 @@ export default {
   testRunnerHtml: (testFramework) => `
     <html>
       <head>
+        <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
         <script type='module'>
           const oldFetch = window.fetch;
           window.fetch = async (resource, options) => {

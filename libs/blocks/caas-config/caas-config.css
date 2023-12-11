@@ -50,7 +50,7 @@ dd.content .sort-options > .field {
 }
 
 .multifield.filtersCustom > .multifield-set:nth-child(2) {
-  margin-top: -30px;
+  margin-top: -16px;
 }
 
 .multifield .multifield > .multifield-set:not(:nth-child(2)) {
@@ -97,6 +97,51 @@ dd.content .sort-options > .field {
   margin-bottom: 20px;
 }
 
-.config-panel::-webkit-scrollbar { 
+.config-panel::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
+}
+
+/* Extends multifield */
+[class^="multifield filters"] .multifield-header h3 {
+  display: flex; 
+  justify-content: space-between;
+}
+
+[class^="multifield filters"] .multifield-set {
+  position: relative;
+}
+
+[class^="multifield filters"] .multifield-set .up-down {
+  display: flex;
+  font-weight: 300;
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  flex-direction: column;
+}
+
+[class^="multifield filtersCustomItems"] .multifield-set .up-down {
+  top: 10px;
+}
+
+[class^="multifield"] + .multifield-header ~ .multifield-set .up-down .move-up {
+  display: none !important;
+}
+
+[class^="multifield"] .multifield-set .up-down button{
+  height: 17px !important;
+  margin: 0;
+  clip-path: none;
+  padding: 0 6px;
+  background-color: transparent !important;
+  color: #bbb !important;
+}
+
+[class^="multifield"] .multifield-set .up-down button:hover{
+  color: #fff !important;
+}
+
+[class^="multifield"] .move-down {
+  transform: rotate(180deg);
+  display: inline-block;
 }

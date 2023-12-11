@@ -3,13 +3,15 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
-import { isDesktop, isTangentToViewport } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
+import noBrandImageOnlyNav from './mocks/global-navigation-only-brand-no-explicit-image.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -18,7 +20,7 @@ const ogFetch = window.fetch;
 
 describe('global navigation', () => {
   before(() => {
-    document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    document.head.innerHTML = '<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any"><script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
   });
 
   describe('basic sanity tests', () => {
@@ -57,6 +59,54 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+    });
+  });
+
+  describe('Promo', () => {
+    it('doesn\'t exist if metadata is not defined', async () => {
+      const nav = await createFullGlobalNavigation();
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+    });
+
+    it('doesn\'t exist if metadata is not referencing a fragment', async () => {
+      const wrongPromoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/path/to/promo">`;
+      document.head.append(wrongPromoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      wrongPromoMeta.remove();
+    });
+
+    it('doesn\'t exist if fragment doesn\'t contain an aside block', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/wrong-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      promoMeta.remove();
+    });
+
+    it('is available if set up correctly', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.true;
+      const asideElem = nav.el.querySelector('.aside.promobar');
+      expect(asideElem).to.exist;
+      expect(asideElem.getAttribute('daa-lh')).to.equal('Promo');
+      asideElem.querySelectorAll('a').forEach((linkElem) => {
+        expect(linkElem.hasAttribute('daa-ll')).to.be.true;
+      });
+      promoMeta.remove();
+    });
+
+    it('doesn\'t exist on mobile', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ viewport: 'mobile', hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      const asideElem = nav.el.querySelector('.aside.promobar');
+      expect(asideElem).to.not.exist;
     });
   });
 
@@ -106,6 +156,12 @@ describe('global navigation', () => {
         await createFullGlobalNavigation({ globalNavigation: noLogoBrandOnlyNav });
         const brandImage = document.querySelector(`${selectors.brandImage}`);
         expect(isElementVisible(brandImage)).to.equal(false);
+      });
+
+      it('should render a default image if the one defined is invalid', async () => {
+        await createFullGlobalNavigation({ globalNavigation: noBrandImageOnlyNav });
+        const brandImage = document.querySelector(`${selectors.brandImage}`);
+        expect(isElementVisible(brandImage)).to.equal(true);
       });
     });
 
@@ -368,6 +424,12 @@ describe('global navigation', () => {
         expect(hasLinkgroupModifier).to.equal(true);
       });
 
+      it('should render popups with wide columns', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationWideColumnMock });
+        expect(document.querySelector('.feds-navItem--section .feds-menu-column--group .feds-menu-column + .feds-menu-column')).to.exist;
+        expect(document.querySelector('.column-break')).to.not.exist;
+      });
+
       it('should render the promo', async () => {
         await createFullGlobalNavigation();
 
@@ -375,6 +437,11 @@ describe('global navigation', () => {
         document.querySelector(selectors.navLink).click();
 
         expect(isElementVisible(document.querySelector(selectors.promoImage))).to.equal(true);
+      });
+
+      it('should allow CTAs in Promo boxes', async () => {
+        await createFullGlobalNavigation();
+        expect(document.querySelector(`${selectors.promo}${selectors.promo}--dark ${selectors.cta}`)).to.exist;
       });
     });
 
@@ -858,10 +925,6 @@ describe('global navigation', () => {
         expect(isElementVisible(logo)).to.equal(false);
       });
     });
-  });
-
-  describe('Breadcrumbs', () => {
-
   });
 
   describe('Viewport changes', () => {

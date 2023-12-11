@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 
-const { throttle } = await import('../../../libs/blocks/chart/utils.js');
+const { throttle, parseValue } = await import('../../../libs/blocks/chart/utils.js');
 
 describe('chart utils', () => {
   describe('throttle', () => {
@@ -32,6 +32,18 @@ describe('chart utils', () => {
       throttled();
       clock.tick(200);
       expect(callback.calledTwice).to.be.true;
+    });
+  });
+
+  describe('parseValue', () => {
+    it('parses a number', () => {
+      expect(parseValue('1')).to.equal(1);
+    });
+    it('parses a number with a decimal', () => {
+      expect(parseValue('1.1')).to.equal(1.1);
+    });
+    it('parses a non-number', () => {
+      expect(parseValue('foo')).to.equal('foo');
     });
   });
 });

@@ -3,6 +3,7 @@
  :root {
   --global-height-nav: 64px;
   --global-height-breadcrumbs: 33px;
+  --global-height-navPromo: 65px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
 
   /* Colors */
@@ -322,6 +323,7 @@
   text-decoration: none;
 }
 
+.l-button .con-button,
 .con-button.button-l {
   border-radius: 20px;
   font-size: 17px;
@@ -330,6 +332,7 @@
   padding: 7px 18px 8px;
 }
 
+.xl-button .con-button,
 .con-button.button-xl {
   border-radius: 25px;
   font-size: 19px;
@@ -342,6 +345,14 @@
   display: block;
   text-align: center;
   width: 100%;
+}
+
+.xxl-button .con-button {
+  border-radius: 30px;
+  font-size: 22px;
+  line-height: 27px;
+  min-height: 27px;
+  padding: 14px 30px 15px;
 }
 
 .dark .con-button {
@@ -455,8 +466,10 @@ span.icon.margin-left { margin-left: 8px; }
 
 span.icon.margin-inline-end { margin-inline-end: 8px; }
 
+.button-l .con-button span.icon.margin-left,
 .con-button.button-l span.icon.margin-left { margin-left: 12px; }
 
+.button-xl .con-button span.icon.margin-left,
 .con-button.button-xl span.icon.margin-left { margin-left: 14px; }
 
 /* Con Block Utils */
@@ -640,13 +653,18 @@ header:not(.global-navigation) ~ main {
   all of the ':not(.global-navigation)' rules can be entirely removed.
  */
 header.global-navigation {
-  height: var(--global-height-nav); /* TODO better approach for value? */
+  height: var(--global-height-nav);
   visibility: hidden;
 }
 
 @media (min-width: 900px) {
+  header.global-navigation.has-promo {
+    height: auto;
+    min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
+  }
+
   header.global-navigation.has-breadcrumbs {
-    padding-bottom: var(--global-height-breadcrumbs); /* TODO better approach for value? */
+    padding-bottom: var(--global-height-breadcrumbs);
   }
 }
 

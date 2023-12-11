@@ -1,6 +1,7 @@
 import { fetchBlogArticleIndex } from '../article-feed/article-feed.js';
 import { getArticleTaxonomy, buildArticleCard } from '../article-feed/article-helpers.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 let abortController;
 let articles = [];
@@ -97,11 +98,17 @@ export default async function onSearchInput({ value, resultsEl, searchInputEl, a
 
   if (currentSearch === lastSearch) {
     if (!hits.length) {
-      const advancedLink = advancedSearchEl.querySelector('a');
-      const href = new URL(advancedLink.href);
-      href.searchParams.set('q', value);
-      advancedLink.href = href.toString();
-      resultsEl.replaceChildren(advancedSearchEl);
+      const noResults = await replaceKey('no-results', getConfig());
+      const emptyMessage = createTag('p', {}, noResults);
+      let emptyList = createTag('li', null, emptyMessage);
+      if (advancedSearchEl) {
+        const advancedLink = advancedSearchEl.querySelector('a');
+        const href = new URL(advancedLink.href);
+        href.searchParams.set('q', value);
+        advancedLink.href = href.toString();
+        emptyList = advancedSearchEl;
+      }
+      resultsEl.replaceChildren(emptyList);
       resultsEl.classList.add('no-results');
       return;
     }

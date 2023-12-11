@@ -12,6 +12,11 @@ import {
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
 
+const selectors = {
+  gnavPromo: '.gnav-promo',
+  columnBreak: '.column-break',
+};
+
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
 
@@ -81,7 +86,7 @@ const decorateLinkGroup = (elem, index) => {
   return linkGroup;
 };
 
-const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, itemIndex = { position: 0 } } = {}) => {
+const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { position: 0 } } = {}) => {
   const decorateLink = (link) => {
     // Increase analytics index every time a link is decorated
     itemIndex.position += 1;
@@ -92,8 +97,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, 
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
-    if (parseCtas
-      && (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM')) {
+    if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
       const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
       // Remove its 'em' or 'strong' wrapper
       link.parentElement.replaceWith(link);
@@ -130,11 +134,20 @@ const decoratePromo = (elem, index) => {
   const isImageOnly = elem.matches('.image-only');
   const imageElem = elem.querySelector('picture');
 
-  decorateElements({ elem, className: 'feds-promo-link', parseCtas: false, index });
+  if (!isImageOnly) {
+    const cachedImageElem = imageElem && elem.removeChild(imageElem.closest(`${selectors.gnavPromo} > div`));
+    const innerContainer = toFragment`<div class="feds-promo-content"></div>`;
+
+    innerContainer.append(...elem.children);
+    elem.appendChild(innerContainer);
+    if (cachedImageElem) elem.appendChild(cachedImageElem);
+  }
+
+  decorateElements({ elem, className: 'feds-promo-link', index });
 
   const decorateImage = () => {
     const linkElem = elem.querySelector('a');
-    const imageWrapper = imageElem.closest('.gnav-promo > div');
+    const imageWrapper = imageElem.closest(`${selectors.gnavPromo} > div`);
     let promoImageElem;
 
     if (linkElem instanceof HTMLElement) {
@@ -208,7 +221,10 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
       await yieldToMain();
       const columnElem = column.firstElementChild;
 
-      if (columnElem.tagName === separatorTagName) {
+      if (columnElem.matches(selectors.columnBreak)) {
+        resetDestination();
+        columnElem.remove();
+      } else if (columnElem.tagName === separatorTagName) {
         headlineIndex += 1;
         // When encountering a separator (h5 for header, h2 for footer),
         // add the previous section to the column
@@ -220,8 +236,19 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
         // turning it into a simple div
         const sectionHeadline = decorateHeadline(columnElem, headlineIndex);
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
+
         itemDestination.append(sectionHeadline, menuItems);
-      } else if (columnElem.classList.contains('gnav-promo')) {
+
+        if (column.querySelector(selectors.columnBreak)) {
+          wrapper.classList.add(`${wrapperClass}--group`);
+          if (column.querySelectorAll(selectors.columnBreak).length > 1) wrapper.classList.add(`${wrapperClass}--wide`);
+
+          const wideColumn = document.createElement('div');
+          wideColumn.append(...column.childNodes);
+          menuItems.append(wideColumn);
+          await decorateColumns({ content: menuItems });
+        }
+      } else if (columnElem.matches(selectors.gnavPromo)) {
         // When encountering a promo, add the previous section to the column
         resetDestination();
         // Since the promo is alone on a column, reset the analytics index
@@ -275,15 +302,15 @@ const decorateMenu = (config) => logErrorFor(async () => {
     if (res.status !== 200) return;
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
+    const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
-        <div class="feds-menu-content">
-          ${parsedContent}
+        <div class="feds-menu-container">
+          ${menuContent}
         </div>
       </div>`;
-
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
-    await decorateColumns({ content: menuTemplate.firstElementChild });
+    await decorateColumns({ content: menuContent });
     config.template.classList.add('feds-navItem--megaMenu');
   }
 
