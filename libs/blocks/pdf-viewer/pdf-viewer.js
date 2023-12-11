@@ -52,6 +52,7 @@ const init = async (a) => {
         content: { location: { url } },
         metaData: { fileName },
       },
+      { embedMode: 'IN_LINE' },
     );
 
     adobeDCView.registerCallback(
