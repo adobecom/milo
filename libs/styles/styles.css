@@ -328,6 +328,7 @@
   text-decoration: none;
 }
 
+.l-button .con-button,
 .con-button.button-l {
   border-radius: 20px;
   font-size: 17px;
@@ -336,6 +337,7 @@
   padding: 7px 18px 8px;
 }
 
+.xl-button .con-button,
 .con-button.button-xl {
   border-radius: 25px;
   font-size: 19px;
@@ -469,8 +471,10 @@ span.icon.margin-left { margin-left: 8px; }
 
 span.icon.margin-inline-end { margin-inline-end: 8px; }
 
+.button-l .con-button span.icon.margin-left,
 .con-button.button-l span.icon.margin-left { margin-left: 12px; }
 
+.button-xl .con-button span.icon.margin-left,
 .con-button.button-xl span.icon.margin-left { margin-left: 14px; }
 
 /* Con Block Utils */
