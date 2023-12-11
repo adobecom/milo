@@ -5,8 +5,12 @@ import { getConfig, loadStyle } from '../../utils/utils.js';
 const { miloLibs, codeRoot } = getConfig();
 loadStyle(`${miloLibs || codeRoot}/ui/controls/multifield.css`);
 
-const FieldSet = ({ fields, onDelete }) => html`
+const FieldSet = ({ fields, onDelete, onMoveUp, onMoveDown }) => html`
     <div class="multifield-set">
+      <div class="up-down">
+        <button class="move-up" title="Move Up" onClick=${onMoveUp}>▲</button>
+        <button class="move-down" title="Move Down" onClick=${onMoveDown}>▲</button>
+      </div>
       <div class="multifield-fields">${fields}</div>
       <button class="multifield-delete" onClick=${onDelete}></button>
     </div>
@@ -75,6 +79,20 @@ const MultiField = ({
     onChange(newVals);
   };
 
+  const moveFieldUp = (index) => () => {
+    if (index === 0) return;
+    const newVals = [...fieldValues];
+    [newVals[index], newVals[index - 1]] = [newVals[index - 1], newVals[index]];
+    onChange(newVals);
+  };
+
+  const moveFieldDown = (index) => () => {
+    if (index === fieldValues.length - 1) return;
+    const newVals = [...fieldValues];
+    [newVals[index], newVals[index + 1]] = [newVals[index + 1], newVals[index]];
+    onChange(newVals);
+  };
+
   useEffect(() => {
     if (parentValues) {
       setFieldValues([...parentValues[parentIndex][name] ?? []]);
@@ -104,7 +122,8 @@ const MultiField = ({
       ${fieldSets.map(
     (fields, idx) => {
       fields.forEach((field) => (field.props.parentIndex = idx));
-      return html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)} />`;
+      return html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)}
+      onMoveUp=${moveFieldUp(idx)} onMoveDown=${moveFieldDown(idx)} />`;
     },
   )}
     </div>

@@ -183,14 +183,13 @@ const App = ({
   /**
    * Handler of the next button click. Checks whether any next view exists or not.
    * Takes care of the user flow and updates the state accordingly.
-   * @param {Object} selCards - Selected cards
    * @returns {void}
    */
-  const handleOnNextClick = (selCards) => {
+  const handleOnNextClick = () => {
     const { nextQuizViews } = handleNext(
       questionData,
       selectedQuestion,
-      selCards,
+      selectedCards,
       userFlow,
     );
     const nextQuizViewsLen = nextQuizViews.length;

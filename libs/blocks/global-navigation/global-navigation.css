@@ -501,6 +501,10 @@ header.global-navigation {
     min-height: var(--global-height-navPromo);
   }
 
+  .feds-promo .feds-promo-content {
+    padding: 24px 32px;
+  }
+
   /* Brand block */
   .feds-brand-image + .feds-brand-label {
     display: flex;
@@ -530,6 +534,10 @@ header.global-navigation {
     right: 0;
   }
 
+  .feds-menu-container {
+    min-width: 100%;
+  }
+
   /* Nav Links */
   .feds-navItem {
     flex-direction: initial;
@@ -542,7 +550,7 @@ header.global-navigation {
   .feds-navItem--megaMenu .feds-popup {
     right: 0;
     justify-content: center;
-    padding: 32px 12px;
+    padding: 40px 12px;
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
@@ -660,5 +668,9 @@ header.global-navigation {
 
   .feds-topnav--overflowing .feds-logo {
     display: none;
+  }
+
+  .feds-menu-container {
+    min-width: var(--feds-minWidth-menu);
   }
 }
