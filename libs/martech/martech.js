@@ -105,21 +105,27 @@ const setupEntitlementCallback = () => {
     return parseEntitlements(destinations);
   };
 
-  const handleEntitlements = (e) => {
-    if (e.detail?.result?.destinations?.length) {
-      window.milo ||= {};
-      window.milo.entitlements ||= [];
-      window.milo.entitlements = setEntitlements(e.detail.result.destinations);
-    }
-    window.removeEventListener(ALLOY_SEND_EVENT, handleEntitlements);
-  };
+  const getEntitlements = () => new Promise((resolve, reject) => {
+    const handleEntitlements = (e) => {
+      window.removeEventListener(ALLOY_SEND_EVENT, handleEntitlements);
+
+      if (e.detail?.result?.destinations?.length) {
+        resolve(setEntitlements(e.detail.result.destinations));
+      } else {
+        resolve([]);
+      }
+    };
+    window.addEventListener(ALLOY_SEND_EVENT, handleEntitlements);
+  });
 
   const { miloLibs, codeRoot } = getConfig();
   loadLink(
     `${miloLibs || codeRoot}/features/personalization/entitlements.js`,
     { as: 'script', rel: 'modulepreload' },
   );
-  window.addEventListener(ALLOY_SEND_EVENT, handleEntitlements);
+
+  window.milo ||= {};
+  window.milo.entitlements = getEntitlements();
 };
 
 let filesLoadedPromise = false;
@@ -155,7 +161,7 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   return filesLoadedPromise;
 };
 
-export default async function init({ persEnabled = false, persManifests }) {
+export default async function init({ persEnabled = false, persManifests = [] }) {
   const config = getConfig();
 
   const { url, edgeConfigId } = getDtmLib(config.env);
@@ -179,4 +185,5 @@ export default async function init({ persEnabled = false, persManifests }) {
   } else {
     document.body.dataset.mep = 'nopzn|nopzn';
   }
+  return undefined;
 }

@@ -1,15 +1,10 @@
 /* eslint-disable no-console */
 
 import {
-  createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
+  createTag, getConfig, loadLink, loadScript, updateConfig,
 } from '../../utils/utils.js';
 import { ENTITLEMENT_MAP } from './entitlements.js';
 
-const CLASS_EL_DELETE = 'p13n-deleted';
-const CLASS_EL_REPLACE = 'p13n-replaced';
-const COLUMN_NOT_OPERATOR = 'not';
-const TARGET_EXP_PREFIX = 'target-';
-const PAGE_URL = new URL(window.location.href);
 
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
@@ -23,11 +18,32 @@ export const PERSONALIZATION_TAGS = {
   darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
   lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
 };
+const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 /* c8 ignore stop */
 
-const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
+const CLASS_EL_DELETE = 'p13n-deleted';
+const CLASS_EL_REPLACE = 'p13n-replaced';
+const COLUMN_NOT_OPERATOR = 'not';
+const TARGET_EXP_PREFIX = 'target-';
+const PAGE_URL = new URL(window.location.href);
 
 export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
+
+// Replace any non-alpha chars except comma, space, ampersand and hyphen
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
+
+const MANIFEST_KEYS = [
+  'action',
+  'selector',
+  'pagefilter',
+  'page filter',
+  'page filter optional',
+];
+
+const DATA_TYPE = {
+  JSON: 'json',
+  TEXT: 'text',
+};
 
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
@@ -73,44 +89,6 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
     }
   }
   return manifests;
-};
-
-/* c8 ignore start */
-export const PERSONALIZATION_TAGS = {
-  all: () => true,
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
-  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
-  android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
-  loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => window.adobeIMS?.isSignedInUser(),
-  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
-  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
-};
-
-export const ENTITLEMENT_TAGS = {
-  photoshop: (ents) => ents.photoshop_cc,
-  lightroom: (ents) => ents.lightroom_cc,
-};
-/* c8 ignore stop */
-
-const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
-const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
-
-// Replace any non-alpha chars except comma, space, ampersand and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
-
-const MANIFEST_KEYS = [
-  'action',
-  'selector',
-  'pagefilter',
-  'page filter',
-  'page filter optional',
-];
-
-const DATA_TYPE = {
-  JSON: 'json',
-  TEXT: 'text',
 };
 
 const createFrag = (el, url, manifestId) => {
@@ -419,8 +397,13 @@ export async function getPersConfig(info) {
   const config = parseConfig(persData);
 
   const infoTab = manifestInfo || data?.info?.data;
-  config.manifestType = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase() || 'personalization';
-  config.manifestOverrideName = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')?.value?.toLowerCase();
+  config.manifestType = infoTab
+    ?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase()
+    || 'personalization';
+
+  config.manifestOverrideName = infoTab
+    ?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')
+    ?.value?.toLowerCase();
 
   if (!config) {
     /* c8 ignore next 3 */
