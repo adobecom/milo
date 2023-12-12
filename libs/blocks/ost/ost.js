@@ -57,7 +57,6 @@ export const createLinkMarkup = (
         params.set('workflowStep', workflowStep);
       }
     } else {
-      console.log(options);
       const {
         displayRecurrence,
         displayPerUnit,
@@ -69,7 +68,7 @@ export const createLinkMarkup = (
       params.set('seat', displayPerUnit);
       params.set('tax', displayTax);
       params.set('old', displayOldPrice);
-      params.set('exclusive', !forceTaxExclusive);
+      params.set('exclusive', forceTaxExclusive);
     }
     return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
@@ -94,12 +93,16 @@ export async function loadOstEnv() {
     ['seat', 'displayPerUnit', 'true'],
     ['tax', 'displayTax'],
     ['old', 'displayOldPrice'],
-    ['exclusive', 'forceTaxExclusive'],
   ].map(([key, targetKey, defaultValue = false]) => {
     const value = searchParameters.get(key) ?? defaultValue;
     searchParameters.delete(key);
     return [targetKey, value === 'true'];
   }));
+
+  // value inversed for legacy compatibility reasons.
+  const exclusive = !(searchParameters.get('exclusive') === 'true');
+  searchParameters.delete('exclusive');
+  defaultPlaceholderOptions.forceTaxExclusive = exclusive;
 
   const searchOfferSelectorId = searchParameters.get('osi');
   searchParameters.delete('osi');
