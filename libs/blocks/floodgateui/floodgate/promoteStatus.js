@@ -3,6 +3,7 @@ import { accessToken } from '../../../tools/sharepoint/state.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import { getServiceConfigFg, getParamsFg, postData } from '../utils/miloc.js';
 import { origin } from '../../locui/utils/franklin.js';
+import { heading } from '../utils/state.js';
 
 class PromoteStatusModal extends Component {
   constructor() {
@@ -127,24 +128,30 @@ class PromoteStatusModal extends Component {
   batchFiles = async (batchNumber) => {
     const config = await getServiceConfigFg(origin);
     const paramsFg = await getParamsFg(config);
+    const env = heading.value.env;
+    const { url } = config[env].milofg.promotestatus;
     let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, batchFiles: batchNumber };
-    const batchFilesData = await postData('https://14257-milofg-stage.adobeioruntime.net/api/v1/web/milo-fg/promote-status.json', params);
+    const batchFilesData = await postData(url, params);
     return batchFilesData.batchFiles;
   };
 
   fetchBatchesData = async () => {
     const config = await getServiceConfigFg(origin);
     const paramsFg = await getParamsFg(config);
+    const env = heading.value.env;
+    const { url } = config[env].milofg.promotestatus;
     let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, promoteStatus: true };
-    const promoteStatus = await postData('https://14257-milofg-stage.adobeioruntime.net/api/v1/web/milo-fg/promote-status.json', params);
+    const promoteStatus = await postData(url, params);
     return promoteStatus.promoteStatus.batchesInfo;
   };
 
   overallData = async () => {
     const config = await getServiceConfigFg(origin);
     const paramsFg = await getParamsFg(config);
+    const env = heading.value.env;
+    const { url } = config[env].milofg.promotestatus;
     let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, promoteResults: true };
-    const overallStatus = await postData('https://14257-milofg-stage.adobeioruntime.net/api/v1/web/milo-fg/promote-status.json', params);
+    const overallStatus = await postData(url, params);
     const { failedPromotes, failedPreviews, failedPublishes } = overallStatus.promoteResults;
 
     return { failedPromotes, failedPreviews, failedPublishes };
