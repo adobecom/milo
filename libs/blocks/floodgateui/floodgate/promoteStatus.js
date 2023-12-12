@@ -2,6 +2,7 @@ import { html, useEffect, useState, Component } from '../../../deps/htm-preact.j
 import { accessToken } from '../../../tools/sharepoint/state.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import { getServiceConfigFg, getParamsFg, postData } from '../utils/miloc.js';
+import { origin } from '../../locui/utils/franklin.js';
 
 class PromoteStatusModal extends Component {
   constructor() {
