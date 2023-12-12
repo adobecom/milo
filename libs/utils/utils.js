@@ -1005,7 +1005,7 @@ async function documentPostSectionLoading(config) {
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
   import('../martech/attributes.js').then((analytics) => {
-    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, getConfig()));
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
 }
 
@@ -1078,7 +1078,7 @@ export async function loadArea(area = document) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) await documentPostSectionLoading(config);
+  if (isDoc) await documentPostSectionLoading(getConfig());
 
   await loadDeferred(area, areaBlocks, config, resolveDeferredFn);
 }
