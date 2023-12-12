@@ -1,21 +1,25 @@
-import './components/import.js';
+import './job.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
 import { createJobs } from './services.js';
 import {
+  DISABLE_MODE,
   editEntry,
+  FORM_MODES,
   PROCESS_MAX,
   PROCESS_TYPES,
   panelSize,
   selectOverage,
   validUrl,
+  userPrefs,
 } from './utils.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/bulk-publisher.css');
-const loader = await getSheet('/libs/blocks/bulk-publish/components/loader.css');
+const loader = await getSheet('/libs/blocks/bulk-publish/loader.css');
 
 class BulkPublish extends LitElement {
   static properties = {
+    mode: { state: true },
     urls: { state: true },
     processType: { state: true },
     disabled: { state: true },
@@ -23,10 +27,12 @@ class BulkPublish extends LitElement {
     processing: { state: true },
     jobs: { state: true },
     openJobs: { state: true },
+    jobErrors: { state: true },
   };
 
   constructor() {
     super();
+    this.mode = userPrefs().get('mode');
     this.urls = [];
     this.processType = 'choose';
     this.disabled = true;
@@ -34,6 +40,7 @@ class BulkPublish extends LitElement {
     this.editing = false;
     this.jobs = [];
     this.openJobs = false;
+    this.jobErrors = false;
   }
 
   connectedCallback() {
@@ -41,12 +48,10 @@ class BulkPublish extends LitElement {
     this.renderRoot.adoptedStyleSheets = [styles, loader];
   }
 
-  updated() {
-    if (!this.openJobs) {
-      panelSize(
-        this.renderRoot.getElementById('Urls'),
-        this.renderRoot.getElementById('Header'),
-      );
+  async updated() {
+    panelSize(this.renderRoot);
+    if (userPrefs().get('mode') !== this.mode) {
+      userPrefs().set('mode', this.mode);
     }
   }
 
@@ -57,7 +62,6 @@ class BulkPublish extends LitElement {
   }
 
   setUrls(e) {
-    this.urlsValue = e.target.value;
     const urls = e.target.value.replace(/\n/g, ' ').split(' ').filter((ur) => (ur.length));
     this.urls = [...new Set(urls)];
     this.validateUrls();
@@ -65,10 +69,21 @@ class BulkPublish extends LitElement {
 
   validateUrls() {
     let errors = [];
-    const urls = this.urls.filter((url) => !validUrl(url) && url.length);
-    if (urls?.length) errors = [...errors, ...urls];
-    if (this.urls.length > PROCESS_MAX) errors.push('limit');
-    if (errors.length === 0) errors = this.urls.length === 0;
+    const invalid = this.jobErrors.length
+      ? this.urls.filter((url) => this.jobErrors.includes(url))
+      : this.urls.filter((url) => !validUrl(url) && url.length);
+
+    if (invalid?.length) {
+      errors = [...errors, ...invalid];
+    }
+
+    if (this.urls.length > PROCESS_MAX) {
+      errors.push('limit');
+    }
+
+    if (errors.length === 0) {
+      errors = this.urls.length === 0;
+    }
     this.disabled = errors;
     this.editing = false;
   }
@@ -83,7 +98,7 @@ class BulkPublish extends LitElement {
     return html`
       <div class="errors">
         <span>${counter}: <strong>${text}</strong></span>
-        <div class="fix-btn" @click=${startEdit}>
+        <div class="fix-btn">
           ${this.editing ? 'Next Error' : 'Select Line'}
         </div>
       </div>
@@ -103,7 +118,7 @@ class BulkPublish extends LitElement {
   }
 
   renderForm() {
-    if (this.openJobs) {
+    if (this.openJobs && this.mode === 'full') {
       return html`
         <div class="panel-title" @click=${() => { this.openJobs = false; }}>
           <span class="title">
@@ -131,7 +146,7 @@ class BulkPublish extends LitElement {
           </button>
         </div>
         <label class="process-title" for="Urls">
-          <strong>PAGE URLs</strong> - <i>Max 1000 per process</i>
+          <strong>PAGE URLs</strong> - <i>Max 1000 per job</i>
         </label>
       </div>
       <div class="urls${typeof this.disabled !== 'boolean' ? ' invalid' : ''}">
@@ -139,22 +154,26 @@ class BulkPublish extends LitElement {
         <div class="checkmark${this.disabled ? ' hide' : ''}"></div>
         <textarea 
           id="Urls"
-          placeholder="Example: https://main--milo--adobecom.hlx.page/mypage"
+          placeholder="Example: https://main--milo--adobecom.hlx.page/path/to/page"
           @change=${this.setUrls}></textarea>
       </div>
     `;
+  }
+
+  jobsTotal() {
+    return this.jobs.reduce((count, { result }) => {
+      const paths = result?.job?.data?.paths?.length ?? 0;
+      return count + paths;
+    }, 0);
   }
 
   renderJobs() {
     return html`
       <div
         class="panel-title"
-        @click=${() => { this.openJobs = this.jobs.length; }}>
+        @click=${() => { this.openJobs = !!this.jobs.length; }}>
         <span class="title">
-          ${this.jobs.length ? html`
-            <strong>
-              ${this.jobs.reduce((c, { result }) => c + result.job.data.paths.length, 0)}
-            </strong>` : ''}
+          ${this.jobs.length ? html`<strong>${this.jobsTotal()}</strong>` : ''}
           My Jobs
         </span>
       </div>
@@ -168,7 +187,7 @@ class BulkPublish extends LitElement {
         </div>
         <div class="job-list">
           ${this.jobs.map((job) => html`
-            <job-process .job="${job}"></job-process>
+            <job-process .job=${job}></job-process>
           `)}
         </div>
       </div>
@@ -183,12 +202,26 @@ class BulkPublish extends LitElement {
 
   resetForm() {
     this.disabled = true;
+    this.jobErrors = false;
     this.urls = [];
     this.processType = 'choose';
     const urls = this.renderRoot.querySelector('#Urls');
     if (urls) urls.value = '';
     const process = this.renderRoot.querySelector('#ProcessSelect');
     if (process) process.value = 'choose';
+  }
+
+  setJobErrors(errors) {
+    const urls = [];
+    errors.forEach((error) => {
+      const { origin } = error;
+      const matched = this.urls.filter((url) => url.includes(origin));
+      matched.forEach((match) => urls.push(match));
+    });
+    const textarea = this.renderRoot.querySelector('#Urls');
+    textarea.value = urls.join('\r\n');
+    this.disabled = urls;
+    this.jobErrors = urls;
   }
 
   async submitJob() {
@@ -198,26 +231,46 @@ class BulkPublish extends LitElement {
         urls: this.urls,
         process: this.processType.toLowerCase(),
       });
-      this.openJobs = true;
-      this.jobs = [...this.jobs, ...newJobs];
+      const errors = newJobs.filter((job) => job.error);
+      this.jobs = [...this.jobs, ...newJobs.filter((job) => !job.error)];
       this.processing = false;
-      this.resetForm();
+      if (errors.length) {
+        this.setJobErrors(errors);
+      } else {
+        if (this.mode === 'full') {
+          this.openJobs = true;
+        }
+        this.resetForm();
+      }
     }
   }
 
+  modeProps() {
+    return {
+      mode: DISABLE_MODE ? ' none' : '',
+      full: this.mode === 'full' ? 'on' : 'off',
+      half: this.mode === 'half' ? 'on' : 'off',
+      toggleMode: (modeIndex) => {
+        this.mode = FORM_MODES[modeIndex];
+      },
+    };
+  }
+
   render() {
+    const { mode, full, half, toggleMode } = this.modeProps();
     return html`
       <header id="Header">
         <h1>Bulk Publishing</h1>
+        <div class="mode-switcher${mode}">
+          <div class="switch full ${full}" @click=${() => toggleMode(0)}></div>
+          <div class="switch half ${half}" @click=${() => toggleMode(1)}></div>
+        </div>
       </header>
-      <div id="BulkPublish" class="bulk-publisher">
+      <div id="BulkPublish" class="bulk-publisher ${this.mode}">
         <div active=${!this.openJobs} class="panel form">
           ${this.renderForm()}
         </div>
         <div active=${!!this.openJobs} class="panel results">
-          <pop-up 
-            .text=${'Completed Jobs will show in this panel'} 
-            .disable=${this.openJobs || this.jobs.length}></pop-up>
           ${this.renderJobs()}
         </div>
       </div>

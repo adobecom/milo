@@ -1,16 +1,16 @@
 .result {
   display: flex;
   justify-content: space-between;
-  cursor: pointer;
   background-color: white;
   border-bottom: 1px solid #eee;
-  padding: 5px 10px;
+  padding: 7px 10px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.result:hover {
+.result.success:hover {
+  cursor: pointer;
   background-color: #f9f9f9;
 }
 
@@ -19,26 +19,27 @@
   color: #666;
 }
 
-.result .process .url {
+.result .url {
+  margin-left: 5px;
   font-style: normal;
   color: black;
 }
 
-.result .process .url.success {
+.result.success .url {
   color: var(--link-color);
 }
 
 .meta {
   display: flex;
   justify-content: space-between;
-  min-width: 30%;
+  min-width: var(--meta-width);
 }
 
-.meta .success .code {
+.meta .success {
   color: var(--success);
 }
 
-.meta .error .code {
+.meta .error {
   color: var(--error);
 }
 
