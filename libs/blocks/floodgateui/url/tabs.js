@@ -1,5 +1,13 @@
-import { html, signal, useEffect, useMemo } from '../../../deps/htm-preact.js';
+import { html, signal, useEffect, useMemo, useRef, useState } from '../../../deps/htm-preact.js';
 import { setActions, openWord, handleAction } from './index.js';
+
+function debounce(func, delay) {
+  let timer;
+  return function () {
+    clearTimeout(timer);
+    timer = setTimeout(() => func.apply(this, arguments), delay);
+  };
+}
 
 function useSignal(value) {
   return useMemo(() => signal(value), []);
@@ -107,16 +115,45 @@ export default function Tabs({ suffix, path, idx }) {
   ]);
 
   const item = useSignal({ path });
+  const [processedUrls, setProcessedUrls] = useState([]);
 
-  useEffect(() => { setActions(item, suffix, idx); }, [item, idx]);
+  const itemRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = debounce(() => {
+      const element = itemRef.current;
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const isInViewport = rect.top < window.innerHeight && rect.bottom >= 0;
+
+        if (isInViewport) {
+          const currentUrl = item.value?.path;
+
+          if (currentUrl && !processedUrls.includes(currentUrl)) {
+            setActions(item, suffix, idx);
+            setProcessedUrls((prevUrls) => [...prevUrls, currentUrl]);
+          }
+        }
+      }
+    }, 200);
+
+    handleScroll(); 
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [item, processedUrls, setProcessedUrls, suffix, idx]);
+
   return html`
-    <div class=fgui-tabs>
+    <div ref=${itemRef} class=fgui-tabs>
       <div class=fgui-tab-buttons>
         ${tabs.value.map((tab, idx) => html`<${TabButton} tabs=${tabs} tab=${tab} idx=${idx} />`)}
         <span class=fgui-tab-buttons-suffix>(${suffix})</span>
       </div>
       <div class=fgui-tab-content>
-        ${item.value.preview && html`
+        ${item.value && item.value.preview && html`
           ${tabs.value.map((tab, idx) => html`<${TabPanel} tab=${tab} idx=${idx} item=${item} suffix=${suffix}/>`)}
         `}
       </div>
