@@ -7,6 +7,8 @@ import { ENTITLEMENT_MAP } from './entitlements.js';
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
+const COLUMN_NOT_OPERATOR = 'not';
+const TARGET_EXP_PREFIX = 'target-';
 const PAGE_URL = new URL(window.location.href);
 
 /* c8 ignore start */
@@ -73,8 +75,30 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   return manifests;
 };
 
-// Replace any non-alpha chars except comma, space and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,=]/g;
+/* c8 ignore start */
+export const PERSONALIZATION_TAGS = {
+  all: () => true,
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
+  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
+  android: () => navigator.userAgent.includes('Android'),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  loggedout: () => !window.adobeIMS?.isSignedInUser(),
+  loggedin: () => window.adobeIMS?.isSignedInUser(),
+  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
+};
+
+export const ENTITLEMENT_TAGS = {
+  photoshop: (ents) => ents.photoshop_cc,
+  lightroom: (ents) => ents.lightroom_cc,
+};
+/* c8 ignore stop */
+
+const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
+const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
+
+// Replace any non-alpha chars except comma, space, ampersand and hyphen
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -336,7 +360,9 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   }
 
   const variantInfo = variantNames.reduce((acc, name) => {
-    const vNames = name.split(',').map((v) => v.trim()).filter(Boolean);
+    let nameArr = [name];
+    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
+    const vNames = nameArr.map((v) => v.trim()).filter(Boolean);
     acc[name] = vNames;
     acc.allNames = [...acc.allNames, ...vNames];
     return acc;
@@ -350,11 +376,22 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     userEntitlements = await window.milo.entitlements;
   }
 
-  const matchVariant = (name) => {
+  const hasMatch = (name) => {
+    if (name === '') return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (userEntitlements.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
+  };
+
+  const matchVariant = (name) => {
+    if (name.startsWith(TARGET_EXP_PREFIX)) return hasMatch(name);
+    const processedList = name.split('&').map((condition) => {
+      const reverse = condition.trim().startsWith(COLUMN_NOT_OPERATOR);
+      const match = hasMatch(condition.replace(COLUMN_NOT_OPERATOR, '').trim());
+      return reverse ? !match : match;
+    });
+    return !processedList.includes(false);
   };
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
@@ -534,7 +571,7 @@ export async function applyPers(manifests) {
     return;
   }
   const pznVariants = pznList.map((r) => {
-    const val = r.experiment.selectedVariantName.replace('target-', '').trim().slice(0, 15);
+    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
   });
   const pznManifests = pznList.map((r) => {
