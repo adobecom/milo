@@ -10,6 +10,7 @@ import {
   toFragment,
   trigger,
   yieldToMain,
+  processMartechAttributeMetadata,
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
