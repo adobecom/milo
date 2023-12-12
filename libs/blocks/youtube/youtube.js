@@ -14,7 +14,7 @@ export default function init(a) {
         webkitallowfullscreen mozallowfullscreen allowfullscreen
         allow="encrypted-media; accelerometer; gyroscope; picture-in-picture"
         scrolling="no"
-        id='player-${id}'
+        id="player-${id}"
         title="${title}">
       </iframe>
     </div>`;
