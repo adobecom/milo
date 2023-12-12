@@ -8,7 +8,7 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.14.4-rc1';
+const OST_VERSION = '1.14.4';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
@@ -90,13 +90,13 @@ export async function loadOstEnv() {
   const ostSearchParameters = new URLSearchParams();
 
   const defaultPlaceholderOptions = Object.fromEntries([
-    ['term', 'displayRecurrence'],
-    ['seat', 'displayPerUnit'],
+    ['term', 'displayRecurrence', 'true'],
+    ['seat', 'displayPerUnit', 'true'],
     ['tax', 'displayTax'],
     ['old', 'displayOldPrice'],
     ['exclusive', 'forceTaxExclusive'],
-  ].map(([key, targetKey]) => {
-    const value = searchParameters.get(key);
+  ].map(([key, targetKey, defaultValue = false]) => {
+    const value = searchParameters.get(key) ?? defaultValue;
     searchParameters.delete(key);
     return [targetKey, value === 'true'];
   }));
