@@ -5,7 +5,6 @@ import {
   telemetry,
   allowFindFragments,
   canRefresh,
-  fgColor,
   loadHeadingCheck,
   loadDetailsCheck,
 } from '../utils/state.js';
@@ -16,6 +15,7 @@ import { getServiceUpdates } from '../utils/miloc.js';
 import { getUrls } from '../../locui/loc/index.js';
 
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B12F9079D-E580-4407-973D-2330B171B2CB%7D&file=DemoFgUI.xlsx&action=default&mobileredirect=true';
+const REQUIRED_KEYS = ['ref', 'repo', 'owner', 'host', 'project', 'referrer'];
 
 const urlParams = new URLSearchParams(window.location.search);
 const repo = urlParams.get('repo') || 'milo';
@@ -53,13 +53,23 @@ async function loadDetails() {
     if (json.settings) loadProjectSettings(json.settings.data);
     loadDetailsCheck.value = true;
     setStatus('details');
-  } catch {
+  } catch (error) {
     setStatus('details', 'error', 'Error loading Project Status and URLs.');
+    const missingKeys = REQUIRED_KEYS.filter(key => !urlParams.has(key));
+    if (missingKeys.length > 0) {
+      setStatus('details', 'error', 'Missing required URL parameter(s)');
+    } else {
+      console.error(error); 
+    }
   }
 }
 
 async function loadHeading() {
   setStatus('details', 'info', 'Getting latest project info.');
+  const missingKeys = REQUIRED_KEYS.filter(key => !urlParams.has(key));
+  if (missingKeys.length > 0) {
+    return;
+  }
   const editUrl = urlParams.get('referrer') || MOCK_REFERRER;
   const json = await getStatus('', editUrl);
   resourcePath = json.resourcePath;
