@@ -3,12 +3,10 @@ import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
 import { createJobs } from './services.js';
 import {
-  DISABLE_MODE,
   editEntry,
   FORM_MODES,
   PROCESS_MAX,
   PROCESS_TYPES,
-  panelSize,
   selectOverage,
   validUrl,
   userPrefs,
@@ -49,7 +47,6 @@ class BulkPublish extends LitElement {
   }
 
   async updated() {
-    panelSize(this.renderRoot);
     if (userPrefs().get('mode') !== this.mode) {
       userPrefs().set('mode', this.mode);
     }
@@ -247,7 +244,6 @@ class BulkPublish extends LitElement {
 
   modeProps() {
     return {
-      mode: DISABLE_MODE ? ' none' : '',
       full: this.mode === 'full' ? 'on' : 'off',
       half: this.mode === 'half' ? 'on' : 'off',
       toggleMode: (modeIndex) => {
@@ -257,11 +253,11 @@ class BulkPublish extends LitElement {
   }
 
   render() {
-    const { mode, full, half, toggleMode } = this.modeProps();
+    const { full, half, toggleMode } = this.modeProps();
     return html`
       <header id="Header">
         <h1>Bulk Publishing</h1>
-        <div class="mode-switcher${mode}">
+        <div class="mode-switcher">
           <div class="switch full ${full}" @click=${() => toggleMode(0)}></div>
           <div class="switch half ${half}" @click=${() => toggleMode(1)}></div>
         </div>

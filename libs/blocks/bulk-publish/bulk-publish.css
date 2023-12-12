@@ -1,6 +1,4 @@
 .bulk-publish {
-  --panel-height: 50vh;
-
   position: relative;
   background: linear-gradient(169deg, rgb(91 192 246 / 100%) 0%, rgb(15 228 240 / 100%) 50%, rgb(255 255 255 / 100%) 100%) no-repeat;
   height: 100vh;

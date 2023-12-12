@@ -59,7 +59,7 @@ class JobProcess extends LitElement {
     const current = this.jobStatus ?? this.job.result.job;
     const { state, status, createTime, stopTime, data } = current;
     let currentStatus = this.jobStatus
-      ? data.resources.find((source) => source.path === path).status
+      ? data.resources.find((source) => source.path === path)?.status
       : status;
     let jobState = state;
     const inQueue = this.queue?.find((item) => item.path === path);

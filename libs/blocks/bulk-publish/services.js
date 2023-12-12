@@ -4,7 +4,6 @@ const USES_BULK = ['preview', 'publish', 'unpublish', 'delete'];
 const headers = {
   Accept: 'application/json',
   'Content-Type': 'application/json',
-  'User-Agent': 'Milo Bulk Publisher',
 };
 
 const isLive = (type) => (['publish', 'unpublish'].includes(type) ? 'live' : null);
