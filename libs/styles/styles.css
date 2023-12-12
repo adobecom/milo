@@ -134,6 +134,8 @@
 
 :root:lang(ko-KR) {
   --body-font-family: adobe-clean-han-korean, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+
+  word-break: keep-all;
 }
 
 :root:lang(ja-JP),
