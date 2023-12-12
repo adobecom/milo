@@ -6,6 +6,7 @@
 const SYNTHETIC_BLOCKS = [
   'adobe-logo',
   'breadcrumbs',
+  'column-break',
   'gnav-brand',
   'gnav-promo',
   'large-menu',
