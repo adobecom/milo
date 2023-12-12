@@ -105,7 +105,7 @@ const setupEntitlementCallback = () => {
     return parseEntitlements(destinations);
   };
 
-  const getEntitlements = () => new Promise((resolve, reject) => {
+  const getEntitlements = () => new Promise((resolve) => {
     const handleEntitlements = (e) => {
       window.removeEventListener(ALLOY_SEND_EVENT, handleEntitlements);
 
@@ -167,23 +167,23 @@ export default async function init({ persEnabled = false, persManifests = [] }) 
   const { url, edgeConfigId } = getDtmLib(config.env);
   loadLink(url, { as: 'script', rel: 'preload' });
 
-  if (!persEnabled) {
-    return loadMartechFiles(config, url, edgeConfigId);
+  const martechPromise = loadMartechFiles(config, url, edgeConfigId);
+
+  if (persEnabled) {
+    loadLink(
+      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
+      { as: 'script', rel: 'modulepreload' },
+    );
+
+    const targetManifests = await getTargetPersonalization();
+    if (targetManifests?.length || persManifests?.length) {
+      const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
+      const manifests = preloadManifests({ targetManifests, persManifests });
+      await applyPers(manifests);
+    } else {
+      document.body.dataset.mep = 'nopzn|nopzn';
+    }
   }
 
-  loadLink(
-    `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
-    { as: 'script', rel: 'modulepreload' },
-  );
-
-  loadMartechFiles(config, url, edgeConfigId);
-  const targetManifests = await getTargetPersonalization();
-  if (targetManifests?.length || persManifests?.length) {
-    const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-    const manifests = preloadManifests({ targetManifests, persManifests });
-    await applyPers(manifests);
-  } else {
-    document.body.dataset.mep = 'nopzn|nopzn';
-  }
-  return undefined;
+  return martechPromise;
 }
