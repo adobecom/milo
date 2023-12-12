@@ -1,5 +1,6 @@
 import { getConfig, loadLink, loadScript } from '../utils/utils.js';
 
+const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const TARGET_TIMEOUT_MS = 2000;
 
 const setDeep = (obj, path, value) => {
@@ -75,7 +76,7 @@ const getTargetPersonalization = async () => {
 
   let response;
   try {
-    response = await waitForEventOrTimeout('alloy_sendEvent', timeout);
+    response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.log(e);
@@ -92,10 +93,67 @@ const getTargetPersonalization = async () => {
 const getDtmLib = (env) => ({
   edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
   url:
-    env.name === 'prod'
+    // env.name === 'prod'
+    true
       ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
       : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
 });
+
+const setupEntitlementCallback = () => {
+  const setEntitlements = async (destinations) => {
+    const { default: parseEntitlements } = await import('../features/personalization/entitlements.js');
+    return parseEntitlements(destinations);
+  };
+
+  const handleEntitlements = (e) => {
+    if (e.detail?.result?.destinations?.length) {
+      window.milo ||= {};
+      window.milo.entitlements ||= [];
+      window.milo.entitlements = setEntitlements(e.detail.result.destinations);
+    }
+    window.removeEventListener(ALLOY_SEND_EVENT, handleEntitlements);
+  };
+
+  const { miloLibs, codeRoot } = getConfig();
+  loadLink(
+    `${miloLibs || codeRoot}/features/personalization/entitlements.js`,
+    { as: 'script', rel: 'modulepreload' },
+  );
+  window.addEventListener(ALLOY_SEND_EVENT, handleEntitlements);
+};
+
+let filesLoadedPromise = false;
+const loadMartechFiles = async (config, url, edgeConfigId) => {
+  if (filesLoadedPromise) return filesLoadedPromise;
+
+  filesLoadedPromise = async () => {
+    setupEntitlementCallback();
+
+    setDeep(
+      window,
+      'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
+      config.locale.ietf,
+    );
+    setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
+
+    window.marketingtech = {
+      adobe: {
+        launch: { url, controlPageLoad: true },
+        alloy: { edgeConfigId },
+        target: false,
+      },
+      milo: true,
+    };
+    window.edgeConfigId = edgeConfigId;
+
+    await loadScript(`${config.miloLibs || config.codeRoot}/deps/martech.main.standard.min.js`);
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite.track('pageload');
+  };
+
+  await filesLoadedPromise();
+  return filesLoadedPromise;
+};
 
 export default async function init({ persEnabled = false, persManifests }) {
   const config = getConfig();
@@ -103,43 +161,22 @@ export default async function init({ persEnabled = false, persManifests }) {
   const { url, edgeConfigId } = getDtmLib(config.env);
   loadLink(url, { as: 'script', rel: 'preload' });
 
-  if (persEnabled) {
-    loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
+  if (!persEnabled) {
+    return loadMartechFiles(config, url, edgeConfigId);
   }
 
-  setDeep(
-    window,
-    'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
-    config.locale.ietf,
+  loadLink(
+    `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
+    { as: 'script', rel: 'modulepreload' },
   );
-  setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
 
-  window.marketingtech = {
-    adobe: {
-      launch: { url, controlPageLoad: true },
-      alloy: { edgeConfigId },
-      target: false,
-    },
-    milo: true,
-  };
-  window.edgeConfigId = edgeConfigId;
-
-  await loadScript(`${config.miloLibs || config.codeRoot}/deps/martech.main.standard.min.js`);
-  // eslint-disable-next-line no-underscore-dangle
-  window._satellite.track('pageload');
-
-  if (persEnabled) {
-    const targetManifests = await getTargetPersonalization();
-    if (targetManifests?.length || persManifests?.length) {
-      const { preloadManifests, applyPers, getEntitlements } = await import('../features/personalization/personalization.js');
-      getEntitlements();
-      const manifests = preloadManifests({ targetManifests, persManifests });
-      await applyPers(manifests);
-    } else {
-      document.body.dataset.mep = 'nopzn|nopzn';
-    }
+  loadMartechFiles(config, url, edgeConfigId);
+  const targetManifests = await getTargetPersonalization();
+  if (targetManifests?.length || persManifests?.length) {
+    const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
+    const manifests = preloadManifests({ targetManifests, persManifests });
+    await applyPers(manifests);
+  } else {
+    document.body.dataset.mep = 'nopzn|nopzn';
   }
 }

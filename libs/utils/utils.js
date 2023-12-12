@@ -271,13 +271,14 @@ export function localizeLink(
   }
 }
 
-export function loadLink(href, { as, callback, crossorigin, rel } = {}) {
+export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
     if (as) link.setAttribute('as', as);
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
+    if (fetchpriority) link.setAttribute('fetchpriority', fetchpriority);
     link.setAttribute('href', href);
     if (callback) {
       link.onload = (e) => callback(e.type);
@@ -798,7 +799,7 @@ async function checkForPageMods() {
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
   const promoEnabled = promoMd && promoMd !== 'off';
-  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled || true;
 
   if (mepEnabled) {
     const { base } = getConfig();
@@ -836,6 +837,7 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
+    loadMartech();
     loadIms().catch(() => {});
     const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });

@@ -1,0 +1,173 @@
+{
+  "requestId": "69e94b32-c0de-4203-b21d-5466d6862c9c",
+  "handle": [
+    {
+      "payload": [
+        {
+          "id": "90726431134384290963170633579860979890",
+          "namespace": {
+            "code": "ECID"
+          }
+        }
+      ],
+      "type": "identity:result"
+    },
+    {
+      "payload": [
+        {
+          "type": "url",
+          "id": 3178253,
+          "spec": {
+            "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/1056822678/?guid=ON&script=0&data=aam=16647381;aam=1306742",
+            "hideReferrer": false,
+            "ttlMinutes": 10080
+          }
+        },
+        {
+          "type": "url",
+          "id": 3178278,
+          "spec": {
+            "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/864947348/?guid=ON&script=0&data=aam=937674;aam=8605035;aam=8578226;aam=5100834;aam=8590562;aam=1753277;aam=17659234;aam=17735938;aam=18110599;aam=16194569;aam=16012974;aam=23319809;aam=23319835;aam=23452184;aam=23740511;aam=23838352;aam=23838497;aam=23839270;aam=23839263;aam=13597466;aam=24230046;aam=24230024;aam=24423324;aam=24221575;aam=25387446;aam=25482911;aam=25482913;aam=25482915;aam=25521562",
+            "hideReferrer": false,
+            "ttlMinutes": 10080
+          }
+        },
+        {
+          "type": "url",
+          "id": 3262068,
+          "spec": {
+            "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/951224271/?guid=ON&script=0&data=aam=3050014;aam=9300373;aam=7213925;aam=7302215;aam=1905180;aam=510678",
+            "hideReferrer": false,
+            "ttlMinutes": 10080
+          }
+        },
+        {
+          "type": "url",
+          "id": 3262433,
+          "spec": {
+            "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/1047257100/?guid=ON&script=0&data=aam=442210;aam=1520098;aam=441790;aam=498434;aam=510678;aam=441797;aam=441803;aam=438839;aam=20469875;aam=20470039;aam=11835750;aam=24013715;aam=24141524;aam=24139340;aam=24739769;aam=25124249;aam=24963472;aam=24592725;aam=25361606;aam=25361608;aam=25540265;aam=25561786;aam=25561799;aam=25725600;aam=25732128;aam=25749469;aam=25861765;aam=25880149;aam=25866994;aam=25902577;aam=25902592;aam=25902587;aam=25953299",
+            "hideReferrer": false,
+            "ttlMinutes": 10080
+          }
+        },
+        {
+          "type": "url",
+          "id": 3353806,
+          "spec": {
+            "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/1056816978/?guid=ON&script=0&data=aam=498434",
+            "hideReferrer": false,
+            "ttlMinutes": 10080
+          }
+        },
+        {
+          "type": "url",
+          "id": 3471128,
+          "spec": {
+            "url": "https://www.facebook.com/tr?id=284553705878265&ev=Adobe-Audience-Manager-Segment&cd[segID]=17735938,20469875,20470039,13790513,16647381&noscript=1",
+            "hideReferrer": false,
+            "ttlMinutes": 10080
+          }
+        },
+        {
+          "type": "url",
+          "id": 5067799,
+          "spec": {
+            "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/792267474/?value=0&guid=ON&script=0&data=aam=2716002;aam=24331852",
+            "hideReferrer": true,
+            "ttlMinutes": 10080
+          }
+        },
+        {
+          "type": "url",
+          "id": 5467299,
+          "spec": {
+            "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/987390658/?value=0&guid=ON&script=0&data=aam=24423324;aam=7302213;aam=24241150;aam=24576221;aam=24230024;aam= 24230046;aam= 24221575;aam=24726427;aam=23838352;aam=442210;aam=24141524;aam=24080840;aam=25124249;aam=24963472;aam=25361606;aam=25361608;aam=25387446;aam=25482911;aam=25482913;aam=25482915;aam=25521562;aam=25540265;aam=25561786;aam=25561799;aam=25561741;aam=25561744;aam=25561746;aam=25561752;aam=25581796;aam=25581798;aam=25581800;aam=25581801;aam=25725600;aam=25749469;aam=25861765;aam=25880149;aam=25872385;aam=25866994;aam=25872389;aam=25902577;aam=25902592;aam=25902587;aam=25906031;aam=25906029;aam=25943284;aam=25987289;aam=25953299;aam=2716002;aam=25973244",
+            "hideReferrer": true,
+            "ttlMinutes": 10080
+          }
+        }
+      ],
+      "type": "activation:push",
+      "eventIndex": 0
+    },
+    {
+      "payload": [
+        {
+          "type": "cookie",
+          "spec": {
+            "name": "fltk",
+            "value": "segID=13330890",
+            "domain": "adobe.com",
+            "ttlDays": 30
+          }
+        },
+        {
+          "type": "cookie",
+          "spec": {
+            "name": "sparkAudienceManager",
+            "value": "CC:Free,EDU:Behavioral,Photo:Pro,SMB:Behavior",
+            "domain": "spark.adobe.com",
+            "ttlDays": 30
+          }
+        },
+        {
+          "type": "cookie",
+          "spec": {
+            "name": "sparkAudienceManager",
+            "value": "CC:Free",
+            "domain": ".adobeprojectm.com",
+            "ttlDays": 30
+          }
+        }
+      ],
+      "type": "activation:push",
+      "eventIndex": 0
+    },
+    {
+      "payload": [
+        {
+          "type": "profileLookup",
+          "destinationId": "c928fd38-cdcc-4e55-8619-76dfcae952a9",
+          "alias": "XLG Custom Personalization",
+          "segments": [
+            {
+              "id": "9565ef55-faad-430b-b661-596ba7a036c4",
+              "namespace": "ups"
+            },
+            {
+              "id": "c8d50cc2-491e-48df-a1b0-1509f0ca7323",
+              "namespace": "ups"
+            }
+          ]
+        }
+      ],
+      "type": "activation:pull",
+      "eventIndex": 0
+    },
+    {
+      "payload": [],
+      "type": "personalization:decisions",
+      "eventIndex": 0
+    },
+    {
+      "payload": [
+        {
+          "scope": "Target",
+          "hint": "35",
+          "ttlSeconds": 1800
+        },
+        {
+          "scope": "AAM",
+          "hint": "9",
+          "ttlSeconds": 1800
+        },
+        {
+          "scope": "EdgeNetwork",
+          "hint": "or2",
+          "ttlSeconds": 1800
+        }
+      ],
+      "type": "locationHint:result"
+    }
+  ]
+}

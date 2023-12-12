@@ -3,14 +3,27 @@
 import {
   createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
 } from '../../utils/utils.js';
+import { ENTITLEMENT_MAP } from './entitlements.js';
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
-const LS_ENT_KEY = 'milo:entitlements';
-const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
-const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
-const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
 const PAGE_URL = new URL(window.location.href);
+
+/* c8 ignore start */
+export const PERSONALIZATION_TAGS = {
+  all: () => true,
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
+  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
+  android: () => navigator.userAgent.includes('Android'),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  loggedout: () => !window.adobeIMS?.isSignedInUser(),
+  loggedin: () => window.adobeIMS?.isSignedInUser(),
+  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
+};
+/* c8 ignore stop */
+
+const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 
 export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
 
@@ -59,28 +72,6 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   }
   return manifests;
 };
-
-/* c8 ignore start */
-export const PERSONALIZATION_TAGS = {
-  all: () => true,
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
-  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
-  android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
-  loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => window.adobeIMS?.isSignedInUser(),
-  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
-  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
-};
-
-export const ENTITLEMENT_TAGS = {
-  photoshop: (ents) => ents.photoshop_cc,
-  lightroom: (ents) => ents.lightroom_cc,
-};
-/* c8 ignore stop */
-
-const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
-const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
 
 // Replace any non-alpha chars except comma, space and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- _,=]/g;
@@ -314,78 +305,6 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   }
   return config;
 }
-
-const fetchEntitlements = async () => {
-  const [{ default: getUserEntitlements }] = await Promise.all([
-    import('../../blocks/global-navigation/utilities/getUserEntitlements.js'),
-    loadIms(),
-  ]);
-  return getUserEntitlements();
-};
-
-const setEntLocalStorage = (ents) => {
-  localStorage.setItem(LS_ENT_KEY, JSON.stringify(ents));
-  localStorage.setItem(LS_ENT_EXPIRE_KEY, Date.now());
-};
-
-const loadEntsFromLocalStorage = () => {
-  const ents = localStorage.getItem(LS_ENT_KEY);
-  const expireDate = localStorage.getItem(LS_ENT_EXPIRE_KEY);
-  const now = Date.now();
-  if (!ents || !expireDate || (now - expireDate) > ENT_CACHE_EXPIRE) return null;
-  if ((now - expireDate) > ENT_CACHE_REFRESH) {
-    // refresh entitlements in background
-    setTimeout(() => {
-      fetchEntitlements().then((newEnts) => {
-        setEntLocalStorage(newEnts);
-      });
-    }, 5000);
-  }
-  return JSON.parse(ents);
-};
-
-const clearEntLocalStorage = () => {
-  localStorage.removeItem(LS_ENT_KEY);
-  localStorage.removeItem(LS_ENT_EXPIRE_KEY);
-};
-
-export const getEntitlements = (() => {
-  let ents;
-  let logoutEventSet;
-  return (async () => {
-    if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) {
-      clearEntLocalStorage();
-      return {};
-    }
-    if (!ents) {
-      ents = loadEntsFromLocalStorage();
-    }
-    if (!ents) {
-      ents = await fetchEntitlements();
-      setEntLocalStorage(ents);
-    }
-    if (!logoutEventSet) {
-      window.addEventListener('feds:signOut', clearEntLocalStorage);
-      logoutEventSet = true;
-    }
-    return ents;
-  });
-})();
-
-const getFlatEntitlements = async () => {
-  const ents = await getEntitlements();
-  return {
-    ...ents.arrangement_codes,
-    ...ents.clouds,
-    ...ents.fulfilled_codes,
-  };
-};
-
-const checkForEntitlementMatch = (name, entitlements) => {
-  const entName = name.split('ent-')[1];
-  if (!entName) return false;
-  return entitlements[entName];
-};
 /* c8 ignore stop */
 
 const checkForParamMatch = (paramStr) => {
@@ -423,22 +342,19 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     return acc;
   }, { allNames: [] });
 
-  const hasEntitlementPrefix = variantInfo.allNames.some((name) => name.startsWith('ent-'));
+  const entitlementKeys = Object.values(ENTITLEMENT_MAP);
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
-  let entitlements = {};
-  if (hasEntitlementPrefix || hasEntitlementTag) {
-    entitlements = await getFlatEntitlements();
+  let userEntitlements = [];
+  if (hasEntitlementTag) {
+    userEntitlements = await window.milo.entitlements;
   }
 
   const matchVariant = (name) => {
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
-    if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
-    if (entitlementKeys.includes(name)) {
-      return ENTITLEMENT_TAGS[name](entitlements);
-    }
-    return personalizationKeys.includes(name) && PERSONALIZATION_TAGS[name]();
+    if (userEntitlements.includes(name)) return true;
+    return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
@@ -588,7 +504,6 @@ export async function applyPers(manifests) {
 
   if (!manifests?.length) return;
 
-  getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
   const override = config.mep?.override;
