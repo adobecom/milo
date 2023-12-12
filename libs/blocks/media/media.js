@@ -22,8 +22,9 @@ function decorateAvatar(el) {
 export default function init(el) {
   const { miloLibs, codeRoot } = getConfig();
   const regex = /rounded-corners/g;
+  const base = miloLibs || codeRoot;
   if ([...el.classList].some((c) => regex.test(c))) {
-    loadStyle(`${miloLibs || codeRoot}/styles/rounded-corners.css`);
+    loadStyle(`${base}/styles/rounded-corners.css`);
   }
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
