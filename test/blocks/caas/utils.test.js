@@ -566,7 +566,7 @@ describe('getCountryAndLang', () => {
     setConfig(cfg);
     const expected = getCountryAndLang({ autoCountryLang: false });
     expect(expected).to.deep.eq({
-      country: 'us',
+      country: 'US',
       language: 'en',
       locales: '',
     });

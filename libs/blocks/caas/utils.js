@@ -417,16 +417,18 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
   const locales = getMetadata('caas-locales') || '';
   if (autoCountryLang) {
     const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
-    const locale = LOCALES[prefix]?.ietf || 'en-us';
+    const locale = LOCALES[prefix]?.ietf || 'en-US';
+    /* eslint-disable-next-line prefer-const */
+    let [currLang, currCountry] = locale.split('-');
 
     return {
-      country: locale.region?.toLowerCase() || 'us',
-      language: locale.ietf?.toLowerCase() || 'en-us',
+      country: currCountry,
+      language: currLang,
       locales,
     };
   }
   return {
-    country: country ? country.split('/').pop() : 'us',
+    country: country ? country.split('/').pop() : 'US',
     language: language ? language.split('/').pop() : 'en',
     locales,
   };
