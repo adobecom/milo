@@ -217,7 +217,10 @@ function displayMessage(message, parent) {
 }
 
 function validateEmail(emailAddress) {
-  return emailAddress.toLowerCase().includes('@adobe.com');
+  if(emailAddress.toLowerCase().includes('@adobe.com') || emailAddress.toLowerCase().includes('@adobetest.com'))  {
+    return true;
+  }
+  //return emailAddress.toLowerCase().includes('@adobe.com');
 }
 
 
