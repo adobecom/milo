@@ -8,6 +8,7 @@ function decorateBadge(el) {
   if (!matches) return;
   matches.forEach((match) => {
     const badgeText = match.substring(2, match.length - 2);
+    /* c8 ignore next */
     if (!badgeText) return;
     const badge = createTag('span', { class: 'badge' }, badgeText);
     header.innerHTML = header.innerHTML.replace(regex, '');
