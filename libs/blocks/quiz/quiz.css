@@ -414,7 +414,7 @@ html[dir="rtl"] .quiz-step::after {
     display: flex;
   }
   
-  .quiz-step-container.bottom{
+  .quiz-step-container.bottom {
     display: none;
   }
 }
