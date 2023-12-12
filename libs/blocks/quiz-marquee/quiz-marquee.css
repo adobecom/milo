@@ -8,6 +8,15 @@
   color: var(--color-white);
 }
 
+/* Alignment */
+.quiz-marquee.center .static {
+  text-align: center;
+  align-items: center;
+}
+
+.quiz-marquee.center .static .action-area,
+.quiz-marquee.center .static .icon-area { justify-content: center; }
+
 .quiz-marquee .static p { margin: var(--spacing-xs) 0; }
 .quiz-marquee .static p:only-child { margin: 0; }
 .quiz-marquee .static p:first-child { margin-top: 0; }

@@ -8,6 +8,8 @@ const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
 const LS_ENT_KEY = 'milo:entitlements';
 const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
+const COLUMN_NOT_OPERATOR = 'not';
+const TARGET_EXP_PREFIX = 'target-';
 const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
 const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
 const PAGE_URL = new URL(window.location.href);
@@ -41,14 +43,15 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   let manifests = targetManifests;
 
   manifests = manifests.concat(
-    persManifests.map((manifestPath) => ({
-      manifestPath: appendJsonExt(manifestPath),
-      manifestUrl: manifestPath,
+    persManifests.map((manifest) => ({
+      ...manifest,
+      manifestPath: appendJsonExt(manifest.manifestPath),
+      manifestUrl: manifest.manifestPath,
     })),
   );
 
   for (const manifest of manifests) {
-    if (!manifest.manifestData && manifest.manifestPath) {
+    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
       manifest.manifestPath = normalizePath(manifest.manifestPath);
       loadLink(
         manifest.manifestPath,
@@ -81,8 +84,8 @@ export const ENTITLEMENT_TAGS = {
 const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
 const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
 
-// Replace any non-alpha chars except comma, space and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,=]/g;
+// Replace any non-alpha chars except comma, space, ampersand and hyphen
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -416,7 +419,9 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   }
 
   const variantInfo = variantNames.reduce((acc, name) => {
-    const vNames = name.split(',').map((v) => v.trim()).filter(Boolean);
+    let nameArr = [name];
+    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
+    const vNames = nameArr.map((v) => v.trim()).filter(Boolean);
     acc[name] = vNames;
     acc.allNames = [...acc.allNames, ...vNames];
     return acc;
@@ -430,7 +435,8 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     entitlements = await getFlatEntitlements();
   }
 
-  const matchVariant = (name) => {
+  const hasMatch = (name) => {
+    if (name === '') return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
@@ -438,6 +444,16 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
       return ENTITLEMENT_TAGS[name](entitlements);
     }
     return personalizationKeys.includes(name) && PERSONALIZATION_TAGS[name]();
+  };
+
+  const matchVariant = (name) => {
+    if (name.startsWith(TARGET_EXP_PREFIX)) return hasMatch(name);
+    const processedList = name.split('&').map((condition) => {
+      const reverse = condition.trim().startsWith(COLUMN_NOT_OPERATOR);
+      const match = hasMatch(condition.replace(COLUMN_NOT_OPERATOR, '').trim());
+      return reverse ? !match : match;
+    });
+    return !processedList.includes(false);
   };
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
@@ -573,6 +589,15 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
+const createDefaultExperiment = (manifest) => ({
+  disabled: manifest.disabled,
+  event: manifest.event,
+  manifest: manifest.manifestPath,
+  variantNames: ['all'],
+  selectedVariantName: 'default',
+  selectedVariant: { commands: [] },
+});
+
 export async function applyPers(manifests) {
   const config = getConfig();
 
@@ -581,14 +606,22 @@ export async function applyPers(manifests) {
   getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
+  const override = config.mep?.override;
   let results = [];
+  const experiments = [];
   for (const manifest of cleanedManifests) {
-    results.push(await runPersonalization(manifest, config));
+    if (manifest.disabled && !override) {
+      experiments.push(createDefaultExperiment(manifest));
+    } else {
+      const result = await runPersonalization(manifest, config);
+      if (result) {
+        results.push(result);
+        experiments.push(result.experiment);
+      }
+    }
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
-
-  const experiments = results.map((r) => r.experiment);
   updateConfig({
     ...config,
     experiments,
@@ -601,7 +634,7 @@ export async function applyPers(manifests) {
     return;
   }
   const pznVariants = pznList.map((r) => {
-    const val = r.experiment.selectedVariantName.replace('target-', '').trim().slice(0, 15);
+    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
   });
   const pznManifests = pznList.map((r) => {

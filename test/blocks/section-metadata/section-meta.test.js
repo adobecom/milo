@@ -49,6 +49,13 @@ describe('Section Metdata', () => {
     expect(sec.classList.contains('grid-template-columns-1-2')).to.be.true;
   });
 
+  it('Adds class based on masonry input', async () => {
+    const sec = document.querySelector('.section.masonrysec');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.classList.contains('masonry-layout')).to.be.true;
+  });
+
   it('gets section metadata', () => {
     const metadata = getMetadata(document.querySelector('.section.color .section-metadata'));
     expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
