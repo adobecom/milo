@@ -211,6 +211,8 @@ export const loadCaasFiles = async () => {
   }
 
   loadStyle(cssFile);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
   await loadScript(jsFile);
 };
 
