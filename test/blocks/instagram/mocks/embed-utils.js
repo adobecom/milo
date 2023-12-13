@@ -22,7 +22,7 @@ export function createTag(tag, attributes, html, options = {}) {
       el.setAttribute(key, val);
     });
   }
-  if (options?.parent) {
+  if (options.parent) {
     options.parent.append(el);
   }
   return el;
