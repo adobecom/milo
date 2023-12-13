@@ -1,7 +1,7 @@
 /* media - consonant v6 */
 
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
@@ -20,12 +20,6 @@ function decorateAvatar(el) {
 }
 
 export default function init(el) {
-  const { miloLibs, codeRoot } = getConfig();
-  const regex = /rounded-corners/g;
-  const base = miloLibs || codeRoot;
-  if ([...el.classList].some((c) => regex.test(c))) {
-    loadStyle(`${base}/styles/rounded-corners.css`);
-  }
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
@@ -72,7 +66,7 @@ export default function init(el) {
 
     // qr code
     if (row.closest('.qr-code')) {
-      const imgQRCode = row.querySelector('.text > p.body-s > picture > img');
+      const imgQRCode = row.querySelector('.text img');
       if (imgQRCode) {
         imgQRCode.classList.add('qr-code-img');
       }
