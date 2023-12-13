@@ -94,7 +94,7 @@ export const GetQuizOption = ({
           aria-label="Next" 
           class="quiz-button" 
           daa-ll="${btnAnalyticsData}"
-          onClick=${() => { handleOnNextClick(selectedCards); }}>
+          onClick=${() => { handleOnNextClick(); }}>
             <span class="quiz-button-label">${btnText}</span>
         </button>
       </div>
