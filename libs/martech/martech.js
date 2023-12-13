@@ -106,15 +106,13 @@ const setupEntitlementCallback = () => {
 
   const getEntitlements = () => new Promise((resolve) => {
     const handleEntitlements = (e) => {
-      window.removeEventListener(ALLOY_SEND_EVENT, handleEntitlements);
-
       if (e.detail?.result?.destinations?.length) {
         resolve(setEntitlements(e.detail.result.destinations));
       } else {
         resolve([]);
       }
     };
-    window.addEventListener(ALLOY_SEND_EVENT, handleEntitlements);
+    window.addEventListener(ALLOY_SEND_EVENT, handleEntitlements, { once: true });
   });
 
   const { miloLibs, codeRoot } = getConfig();
