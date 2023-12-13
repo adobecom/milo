@@ -799,7 +799,7 @@ async function checkForPageMods() {
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
   const promoEnabled = promoMd && promoMd !== 'off';
-  const mepEnabled = persEnabled || targetEnabled || promoEnabled || true;
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
   if (mepEnabled) {
     const { base } = getConfig();
