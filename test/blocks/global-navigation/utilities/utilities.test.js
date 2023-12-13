@@ -5,6 +5,9 @@ import {
   getFedsPlaceholderConfig,
   getAnalyticsValue,
   decorateCta,
+  hasActiveLink,
+  setActiveLink,
+  getActiveLink,
   closeAllDropdowns,
   trigger,
   getExperienceName,
@@ -57,8 +60,8 @@ describe('global navigation utilities', () => {
 
   it('getAnalyticsValue should return a string', () => {
     expect(getAnalyticsValue('test')).to.equal('test');
-    expect(getAnalyticsValue('test test')).to.equal('test_test');
-    expect(getAnalyticsValue('test test 1', 2)).to.equal('test_test_1-2');
+    expect(getAnalyticsValue('test test?')).to.equal('test test');
+    expect(getAnalyticsValue('test test 1?', 2)).to.equal('test test 1-2');
   });
 
   describe('decorateCta', () => {
@@ -84,6 +87,32 @@ describe('global navigation utilities', () => {
       expect(el.children[0].getAttribute('href')).to.equal('test');
       expect(el.children[0].getAttribute('daa-ll')).to.equal('test');
       expect(el.children[0].textContent.trim()).to.equal('test');
+    });
+  });
+
+  describe('active logic', () => {
+    it('can have its state updated', () => {
+      const currentState = hasActiveLink();
+      setActiveLink(!currentState);
+      expect(hasActiveLink()).to.equal(!currentState);
+      setActiveLink(currentState);
+      expect(hasActiveLink()).to.equal(currentState);
+    });
+
+    it('finds the active link from an area', () => {
+      setActiveLink(false);
+
+      const area = toFragment`<div>
+          <a href="https://www.adobe.com/">Home</a>
+        </div>`;
+
+      expect(getActiveLink(area)).to.be.null;
+      expect(hasActiveLink()).to.be.false;
+
+      area.append(toFragment`<a href="${window.location.href}">Current</a>`);
+
+      expect(getActiveLink(area) instanceof HTMLElement).to.be.true;
+      expect(hasActiveLink()).to.be.true;
     });
   });
 

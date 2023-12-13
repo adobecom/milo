@@ -47,8 +47,18 @@ const insertInlineFrag = (sections, a) => {
   }
 };
 
+function replaceDotMedia(path, doc) {
+  const resetAttributeBase = (tag, attr) => {
+    doc.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((el) => {
+      el[attr] = new URL(el.getAttribute(attr), new URL(path, window.location)).href;
+    });
+  };
+  resetAttributeBase('img', 'src');
+  resetAttributeBase('source', 'srcset');
+}
+
 export default async function init(a) {
-  const { expFragments } = getConfig();
+  const { expFragments, decorateArea } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
   if (expFragments?.[relHref]) {
@@ -72,6 +82,9 @@ export default async function init(a) {
 
   const html = await resp.text();
   const doc = new DOMParser().parseFromString(html, 'text/html');
+  replaceDotMedia(a.href, doc);
+  if (decorateArea) decorateArea(doc, { fragmentLink: a });
+
   const sections = doc.querySelectorAll('body > div');
 
   if (!sections.length) {

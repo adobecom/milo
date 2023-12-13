@@ -1,0 +1,18 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "insertContentAfter",
+      "selector": ".marquee",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/insertafter3",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

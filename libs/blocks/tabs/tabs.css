@@ -8,6 +8,10 @@
   --tabs-bg-color: #f1f1f1;
   --tabs-active-bg-color: #fff;
   --tabs-list-bg-gradient: linear-gradient(rgb(255 255 255 / 0%) 60%, rgb(245 245 245 / 80%));
+  --tabs-pill-bg-color: #e1e1e1;
+  --tabs-pill-bg-color-hover: #dadada;
+  --tabs-pill-bg-color-active: #c6c6c6;
+  --tabs-pill-text-color: #131313;
 }
 
 :root .dark {
@@ -17,6 +21,10 @@
   --tabs-bg-color: #1a1a1a;
   --tabs-active-bg-color: #111;
   --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 80%));
+  --tabs-pill-bg-color: #555;
+  --tabs-pill-bg-color-hover: #666;
+  --tabs-pill-bg-color-active: #444;
+  --tabs-pill-text-color: #fff;
 }
 
 .tabs {
@@ -162,7 +170,7 @@
   color: var(--tabs-active-text-color);
 }
 
-/* Tabs: .quiet */
+/* Tabs: .quiet, .pill */
 .tabs.quiet div[role="tablist"] button {
   border-width: 0 0 2px;
   border-color: transparent;
@@ -172,7 +180,35 @@
   margin-inline-start: 16px;
 }
 
-.tabs.quiet div[role="tablist"] button:first-of-type {
+.tabs[class*='pill'] {
+  background: unset;
+}
+
+.tabs[class*='pill'] .tab-content {
+  border-bottom: none;
+}
+
+.tabs[class*='pill'] div[role="tablist"] {
+  box-shadow: unset;
+  background: unset;
+}
+
+.tabs[class*='pill'] div[role="tablist"] .tab-list-container {
+  margin-top: var(--spacing-xxs);
+  margin-bottom: var(--spacing-xxs);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button {
+  color: var(--tabs-pill-text-color);
+  margin: 0;
+  margin-inline-start: 16px;
+  border-radius: 75px;
+  font-weight: 400;
+  padding: 0.2em 1em;
+}
+
+.tabs.quiet div[role="tablist"] button:first-of-type,
+.tabs[class*='pill'] div[role="tablist"] button:first-of-type {
   margin-inline-start: 0;
 }
 
@@ -182,6 +218,50 @@
 
 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-color);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button[aria-selected="true"] {
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color);
+  text-shadow: 0.4px 0 0 var(--tabs-pill-text-color);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button:hover {
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color-hover);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button:focus {
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color-hover);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button:focus-visible {
+  outline: 2px solid #4145ca;
+  outline-offset: 2px;
+}
+
+.tabs[class*='pill'] div[role="tablist"] button:active {
+  color: var(--tabs-pill-text-color);
+  background: var(--tabs-pill-bg-color-active);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button.l-pill {
+  font-size: 16px;
+  line-height: 20.8px;
+  height: 40px;
+}
+
+.tabs[class*='pill'] div[role="tablist"] button.m-pill {
+  font-size: 14px;
+  line-height: 18.2px;
+  height: 32px;
+}
+
+.tabs[class*='pill'] div[role="tablist"] button.s-pill {
+  font-size: 12px;
+  line-height: 15.6px;
+  height: 24px;
 }
 
 /* Section Metadata */

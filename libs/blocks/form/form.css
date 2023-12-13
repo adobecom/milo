@@ -1,0 +1,264 @@
+.form {
+  --input-border-radius: 4px;
+
+  padding: var(--spacing-xl);
+  border-radius: var(--card-border-radius-l);
+  filter: var(--image-filter-drop-shadow-small);
+  border: solid 1px var(--bg-color-grey);
+  box-sizing: border-box;
+  max-width: 800px;
+  margin: 0 auto;
+  color: #2C2C2C;
+}
+
+.form form {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.form h2 {
+  padding: var(--spacing-s) 0;
+  font-size: var(--type-heading-l-lh);
+}
+
+.form h3 {
+  padding-top: var(--spacing-s);
+  font-size: var(--type-heading-m-size);
+}
+
+.form :is(input, textarea, select) {
+  border: solid 1px var(--color-gray-500);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--input-border-radius);
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+  font-family: var(--body-font-family);
+}
+
+.form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form :is(input, textarea, select):hover {
+  border-color: var(--color-gray-600);
+}
+
+.form :is(input, textarea, select):is(:focus, :focus-visible, :focus-within, :active) {
+  border-color: var(--color-gray-700);
+  outline-color: var(--color-accent);
+  outline-offset: 4px;
+}
+
+.form select {
+  appearance: none;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+') no-repeat 128% 54%;
+  background-color: var(--color-white);
+  background-position: 98% 50%;
+  background-size: 1em 1em;
+}
+
+.form label {
+  display: block;
+  padding-bottom: var(--spacing-xxs);
+  box-sizing: border-box;
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  font-weight: 600;
+}
+
+.form label.required::after {
+  content: "*";
+  color: var(--color-black);
+  padding-left: var(--spacing-xxxs);
+}
+
+.form .field-wrapper {
+  margin-bottom: var(--spacing-xxs);
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  padding: var(--spacing-xs) 0;
+}
+
+.form .field-group-wrapper {
+  flex-direction: column;
+}
+
+.form .form-heading-wrapper {
+  justify-content: center;
+  margin: 0;
+}
+
+.form .field-wrapper.hidden {
+  display: none;
+}
+
+.form .check-item-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.form .check-item-input {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.form .check-item-button {
+  position: relative;
+  inline-size: 14px;
+  block-size: 14px;
+}
+
+.form .check-item-button::before {
+  content: '';
+  display: block;
+  background-color: var(--color-white);
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 2px;
+  border-color: var(--color-font-grey);
+  block-size: 14px;
+  inline-size: 14px;
+  position: absolute;
+  transition: border 0.13s ease-in-out, box-shadow 0.13s ease-in-out;
+}
+
+.form .radio-button::before {
+  border-radius: 50%;
+}
+
+.form .checkbox-button::before {
+  border-radius: 2px;
+}
+
+.form .checkbox-button::after {
+  content: '';
+  display: block;
+  position: absolute;
+  box-sizing: border-box;
+  block-size: 10px;
+  inline-size: 10px;
+  inset: 0;
+  margin: auto;
+  scale: 0;
+  opacity: 0;
+  transition: scale 0.13s ease-in-out, opacity 0.13s;
+}
+
+.form .checkbox-input:checked + .checkbox-button::after {
+  opacity: 1;
+  scale: 1;
+  background-image: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI2LjUuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBhdGggZD0iTTMuNSA5LjVhLjk5OS45OTkgMCAwMS0uNzc0LS4zNjhsLTIuNDUtM2ExIDEgMCAxMTEuNTQ4LTEuMjY0bDEuNjU3IDIuMDI4IDQuNjgtNi4wMUExIDEgMCAwMTkuNzQgMi4xMTRsLTUuNDUgN2ExIDEgMCAwMS0uNzc3LjM4NnoiIGZpbGw9IiNmZmYiPjwvcGF0aD4KPC9zdmc+Cg==");
+  background-size: contain;
+}
+
+.form .radio-input:checked + .radio-button::before {
+  border-width: 5px;
+  border-color: var(--color-gray-700);
+}
+
+.form .checkbox-input:checked + .checkbox-button::before {
+  border-width: 7px;
+  border-color: var(--color-gray-700);
+}
+
+.form .check-item-label {
+  font-size: var(--type-body-xs-size);
+  font-weight: normal;
+  margin-left: var(--spacing-xxs);
+  padding-bottom: 0;
+}
+
+.form .form-legal-wrapper p {
+  font-size: var(--type-body-xxs-size);
+  line-height: var(--type-body-xxs-lh);
+  font-style: italic;
+}
+
+.form .field-button-wrapper {
+  margin-bottom: 0;
+}
+
+.form button {
+  font-family: var(--body-font-family);
+  font-size: var(--type-body-s-size);
+  background-color: var(--link-color);
+  min-width: 114px;
+  height: 40px;
+  line-height: 20px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 24px;
+  color: #fff;
+  font-weight: 700;
+  width: 100%;
+  box-shadow: none;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: background-color 0.13s, color 0.13s;
+}
+
+.form button:disabled {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-400);
+  cursor: progress;
+}
+
+.form button.outline {
+  background-color: transparent;
+  border: 2px solid var(--link-color);
+  color: var(--link-color);
+}
+
+.form .thank-you {
+  text-align: center;
+}
+
+@media screen and (min-width: 600px) {
+  .form form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 var(--spacing-l);
+    align-items: start;
+  }
+
+  .form :is(.form-submit-wrapper:last-child, .form-heading-wrapper, .thank-you, .form-full-width) {
+    grid-column: 1 / 3;
+    justify-self: center;
+  }
+
+  .form .field-button-wrapper {
+    grid-column: 1;
+    justify-self: self-end;
+    width: auto;
+    margin-top: var(--spacing-s);
+  }
+
+  .form .field-button-wrapper + .field-button-wrapper {
+    grid-column: 2;
+    justify-self: self-start;
+  }
+
+  .form button {
+    width: initial;
+  }
+}
+
+@media screen and (min-width: 900px) { 
+  .form .field-wrapper {
+    display: flex;
+  }
+
+  .form label {
+    width: 72%;
+  }
+}

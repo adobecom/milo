@@ -20,13 +20,14 @@ export async function loadFragments(fragmentURL) {
 
 const App = ({
   initialIsDataLoaded = false,
-  preQuestions = {}, initialStrings = {},
+  preQuestions = {}, initialStrings = {}, shortQuiz: isShortQuiz = false,
+  preselections = [], nextQuizViewsExist: preNextQuizViewsExist = true,
 }) => {
   const [btnAnalytics, setBtnAnalytics] = useState(null);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isDataLoaded, setDataLoaded] = useState(initialIsDataLoaded);
-  const [nextQuizViewsExist, setNextQuizViewsExist] = useState(true);
+  const [nextQuizViewsExist, setNextQuizViewsExist] = useState(preNextQuizViewsExist);
   const [prevStepIndicator, setPrevStepIndicator] = useState([]);
   const [questionData, setQuestionData] = useState(preQuestions.questionData || {});
   const [questionList, setQuestionList] = useState(preQuestions.questionList || {});
@@ -34,9 +35,9 @@ const App = ({
   const [selectedQuestion, setSelectedQuestion] = useState(preQuestions || null);
   const [stringData, setStringData] = useState(initialStrings || {});
   const [stringQList, setStringQList] = useState(preQuestions.stringQList || {});
-  const [totalSteps, setTotalSteps] = useState(3);
+  const [totalSteps, setTotalSteps] = useState(isShortQuiz ? 2 : 3);
   const initialUrlParams = getUrlParams();
-  const [userSelection, updateUserSelection] = useState([]);
+  const [userSelection, updateUserSelection] = useState(preselections);
   const [userFlow, setUserFlow] = useState([]);
   const validQuestions = useMemo(() => [], []);
   const [debugBuild, setDebugBuild] = useState(null);
@@ -182,14 +183,13 @@ const App = ({
   /**
    * Handler of the next button click. Checks whether any next view exists or not.
    * Takes care of the user flow and updates the state accordingly.
-   * @param {Object} selCards - Selected cards
    * @returns {void}
    */
-  const handleOnNextClick = (selCards) => {
+  const handleOnNextClick = () => {
     const { nextQuizViews } = handleNext(
       questionData,
       selectedQuestion,
-      selCards,
+      selectedCards,
       userFlow,
     );
     const nextQuizViewsLen = nextQuizViews.length;
@@ -258,6 +258,10 @@ const App = ({
     if (fragmentURL) {
       loadFragments(fragmentURL);
     }
+    const iconBg = getStringValue('icon-background-color');
+    if (iconBg) {
+      document.querySelector('.quiz-container').style.setProperty('--quiz-icon-bg', iconBg);
+    }
   }, [selectedQuestion, stringQList]);
 
   if (!isDataLoaded || !selectedQuestion) {
@@ -297,7 +301,8 @@ const App = ({
                     btnText=${getStringValue('btn')} 
                     minSelections=${minSelections} 
                     maxSelections=${maxSelections} 
-                    options=${stringData[selectedQuestion.questions]} 
+                    options=${stringData[selectedQuestion.questions]}
+                    background=${getStringValue('icon-background-color')}
                     countSelectedCards=${countSelectedCards}
                     selectedCards=${selectedCards}
                     onOptionClick=${onOptionClick}
@@ -318,15 +323,22 @@ const App = ({
 
 export default async function init(
   el,
+  shortQuiz,
   initialIsDataLoaded = false,
   preQuestions = {},
   initialStrings = {},
+  preselections = [],
+  nextQuizViewsExist = true,
 ) {
-  initConfigPathGlob(el);
+  const configData = initConfigPathGlob(el);
+  const updatedShortQuiz = shortQuiz || configData.shortQuiz;
   el.replaceChildren();
   render(html`<${App} 
     initialIsDataLoaded=${initialIsDataLoaded} 
     preQuestions=${preQuestions} 
-    initialStrings=${initialStrings} 
+    initialStrings=${initialStrings}
+    shortQuiz=${updatedShortQuiz}
+    preselections=${preselections}
+    nextQuizViewsExist=${nextQuizViewsExist}
   />`, el);
 }
