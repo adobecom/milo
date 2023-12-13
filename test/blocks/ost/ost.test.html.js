@@ -7,6 +7,9 @@ afterEach(() => {
 });
 
 describe('loadOstEnv', async () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
   it('fetches and returns page status and metadata', async () => {
     const {
       options: { country, language, workflow },
@@ -79,6 +82,9 @@ describe('loadOstEnv', async () => {
 });
 
 describe('init', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
   it('opens OST without waiting for IMS if query string includes token', async () => {
     const {
       options: { country, language, workflow },
