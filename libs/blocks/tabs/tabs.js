@@ -126,7 +126,7 @@ const init = (block) => {
 
   // Tab Content
   const tabContentContainer = createTag('div', { class: 'tab-content-container' });
-  createTag('div', { class: 'tab-content' }, tabContentContainer, { parent: block });
+  createTag('div', { class: 'tab-content' }, tabContentContainer, { parent: block });
 
   // Tab List
   const tabList = rows[0];

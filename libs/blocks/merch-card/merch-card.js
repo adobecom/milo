@@ -298,7 +298,7 @@ const init = async (el) => {
       'div',
       { slot: 'action-menu-content' },
       actionMenuContent.innerHTML,
-      { parent: merchCard },
+      { parent: merchCard },
     );
   }
   let ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
