@@ -87,3 +87,26 @@
 .milo-tooltip:hover::after {
   display: block;
 }
+
+svg.icon-milo.icon-type-ui,
+svg.icon-milo.icon-type-app {
+  margin-inline-end: var(--spacing-xxs);
+}
+
+svg.icon-milo.icon-type-app {
+  /* height: initial;
+  top: 0;
+  width: initial; */
+}
+
+svg.icon-milo.icon-size-initial { 
+  height: initial; width: initial;
+}
+
+svg.icon-milo.icon-size-xxs { height: var(--icon-size-xxs); }
+svg.icon-milo.icon-size-xs { height: var(--icon-size-xs); }
+svg.icon-milo.icon-size-s { height: var(--icon-size-s); }
+svg.icon-milo.icon-size-m { height: var(--icon-size-m); }
+svg.icon-milo.icon-size-l { height: var(--icon-size-l); }
+svg.icon-milo.icon-size-xl { height: var(--icon-size-xl); }
+svg.icon-milo.icon-size-xxl { height: var(--icon-size-xxl); }
