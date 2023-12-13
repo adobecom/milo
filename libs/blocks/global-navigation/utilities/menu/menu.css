@@ -122,6 +122,11 @@
     margin-bottom: 12px;
   }
 
+  .feds-menu-column--group .feds-menu-headline {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
   .feds-menu-headline:after {
     content: none;
   }
