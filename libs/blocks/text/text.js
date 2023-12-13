@@ -24,6 +24,20 @@ const blockTypeSizes = {
   },
 };
 
+function defineDeviceByScreenSize() {
+  const DESKTOP_SIZE = 1200;
+  const MOBILE_SIZE = 600;
+  const screenWidth = window.innerWidth;
+  if (screenWidth >= DESKTOP_SIZE) {
+    return 'DESKTOP';
+  }
+  if (screenWidth <= MOBILE_SIZE) {
+    return 'MOBILE';
+  }
+  return 'TABLET';
+}
+
+
 function decorateMultiViewport(el) {
   const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
   const foreground = el.querySelector('.foreground');
@@ -84,12 +98,34 @@ export default function init(el) {
   if (el.classList.contains('link-farm')) {
     const foregroundDiv = el.querySelectorAll('.foreground')[1];
     const count = foregroundDiv.querySelectorAll('h3').length;
-    foregroundDiv.querySelectorAll('div').forEach((divElem) => {
-      if (!divElem.querySelector('h3') && count) {
+    foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
+    const h3 = divElem.querySelector('h3');
+      if (h3 && count >= 1) {
+        divElem.previousElementSibling?.lastElementChild?.classList.add('before-h3');
+      }
+      if (!h3 && count) {
         const headingElem = createTag('h3', { class: 'no-heading' });
         divElem.insertBefore(headingElem, divElem.firstChild);
       }
+      if (defineDeviceByScreenSize() === 'TABLET' && h3 && count === 1) {
+        switch(index) {
+          case 0:
+            divElem.nextElementSibling?.classList.add('tab-1');
+            break;
+          case 1:
+            divElem.previousElementSibling?.classList.add('tab-1');
+            break;
+          case 2:
+            divElem.nextElementSibling?.classList.add('tab-1');
+            divElem.parentElement.classList.add('sp-xl');
+            break;
+          case 3:
+            divElem.previousElementSibling?.classList.add('tab-1');
+            break;
+        }
+      }
     });
+    foregroundDiv.classList.add(`headings-${count}`);
   }
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
