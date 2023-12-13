@@ -205,7 +205,7 @@ export const loadCaasFiles = async () => {
   let jsFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`;
 
   // for caas local development
-  const host = searchParams?.get('caas-host');
+  const host = searchParams?.get('caashost');
   if (host) {
     cssFile = `http://${host}.corp.adobe.com:5000/dist/app.css`;
     jsFile = `http://${host}.corp.adobe.com:5000/dist/main.js`;
