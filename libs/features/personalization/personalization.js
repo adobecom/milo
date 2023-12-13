@@ -1,10 +1,7 @@
 /* eslint-disable no-console */
 
-import {
-  createTag, getConfig, loadLink, loadScript, updateConfig,
-} from '../../utils/utils.js';
+import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
 import { ENTITLEMENT_MAP } from './entitlements.js';
-
 
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
