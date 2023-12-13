@@ -36,7 +36,7 @@ export const loadScript = stub().returns(new Promise((resolve) => {
   resolve();
 }));
 
-export function createTag(tag, attributes, html, options) {
+export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
     if (html instanceof HTMLElement

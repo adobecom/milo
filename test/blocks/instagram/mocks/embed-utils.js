@@ -4,7 +4,7 @@ export function isInTextNode() {
   return false;
 }
 
-export function createTag(tag, attributes, html, options) {
+export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
     if (html instanceof HTMLElement
