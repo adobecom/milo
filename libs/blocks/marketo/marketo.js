@@ -178,13 +178,11 @@ export default function init(el) {
   const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
 
   if (formData.title) {
-    const title = createTag('h3', { class: 'marketo-title' }, formData.title);
-    formWrapper.append(title);
+    createTag('h3', { class: 'marketo-title' }, formData.title, { parent: formWrapper });
   }
 
   if (formData.description) {
-    const description = createTag('p', { class: 'marketo-description' }, formData.description);
-    formWrapper.append(description);
+    createTag('p', { class: 'marketo-description' }, formData.description, { parent: formWrapper });
   }
 
   const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors', style: 'opacity:0;visibility:hidden;' });

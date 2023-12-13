@@ -71,8 +71,7 @@ export default async function init(el) {
 
     if (isFragRow) {
       cols[0].parentElement.classList.add('nested', cols[1].textContent.trim());
-      const wrapper = createTag('div', { class: 'copy-wrapper' });
-      row.append(wrapper);
+      const wrapper = createTag('div', { class: 'copy-wrapper' }, null, { parent: row });
       wrapper.append(...cols);
       await quizResults(row);
     } else {

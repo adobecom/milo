@@ -404,8 +404,7 @@ class Gnav {
       'daa-ll': 'search-results:standard search',
     });
     const searchResults = createTag('div', { class: 'gnav-search-results' });
-    const searchResultsUl = createTag('ul');
-    searchResults.append(searchResultsUl);
+    const searchResultsUl = createTag('ul', null, null, { parent: searchResults });
     const { locale } = getConfig();
 
     locale.geo = getCountry();
@@ -521,8 +520,7 @@ class Gnav {
         item: link?.href,
       });
     });
-    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO));
-    document.head.append(script);
+    createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO), { parent: document.head });
   };
 
   decorateBreadcrumbs = () => {

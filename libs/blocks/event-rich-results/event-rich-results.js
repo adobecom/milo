@@ -84,7 +84,6 @@ function getEvent(el) {
 export default function init(el) {
   const event = getEvent(el);
   logNullValues(event);
-  const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(event));
-  document.head.append(script);
+  createTag('script', { type: 'application/ld+json' }, JSON.stringify(event), { parent: document.head });
   el.remove();
 }

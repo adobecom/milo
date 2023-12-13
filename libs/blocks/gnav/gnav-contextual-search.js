@@ -33,8 +33,7 @@ function highlightTextElements(terms, elements) {
       if (textBefore) {
         acc.appendChild(document.createTextNode(textBefore));
       }
-      const markedTerm = createTag('mark', { class: 'gnav-search-highlight' }, term);
-      acc.appendChild(markedTerm);
+      createTag('mark', { class: 'gnav-search-highlight' }, term, { parent: acc });
       currentIndex = offset + term.length;
       return acc;
     }, document.createDocumentFragment());
@@ -116,8 +115,7 @@ export default async function onSearchInput({ value, resultsEl, searchInputEl, a
     const fragment = document.createDocumentFragment();
     hits.forEach((hit) => {
       const card = buildArticleCard(hit);
-      const listItemEl = createTag('li', null, card);
-      fragment.appendChild(listItemEl);
+      createTag('li', null, card, { parent: fragment });
     });
     resultsEl.innerHTML = '';
     resultsEl.appendChild(fragment);

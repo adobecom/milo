@@ -189,8 +189,7 @@ describe('Merch Block', () => {
     it('renders merch link to CTA, metadata values', async () => {
       const { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, init, reset } = await import('../../../libs/deps/commerce.js');
       reset();
-      const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 });
-      document.head.appendChild(metadata);
+      const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 }, null, { parent: document.head});
       await init(() => config);
       const el = await merch(document.querySelector(
         '.merch.cta.metadata',

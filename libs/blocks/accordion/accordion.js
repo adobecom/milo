@@ -8,8 +8,7 @@ const mediaCollection = {};
 function setSEO(questions) {
   faq.mainEntity.push(questions.map(({ name, text }) => (
     { '@type': 'Question', name, acceptedAnswer: { text, '@type': 'Answer' } })));
-  const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(faq));
-  document.head.append(script);
+  createTag('script', { type: 'application/ld+json' }, JSON.stringify(faq), { parent: document.head });
 }
 
 function toggleMedia(con, trig, status) {

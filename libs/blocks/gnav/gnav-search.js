@@ -62,8 +62,7 @@ const updateSearchResults = (value, suggestions, locale, resultsEl, searchInputE
       'aria-label': suggestion,
     });
     const linkEl = wrapValueInSpan(value, suggestion, a);
-    const li = createTag('li', {}, linkEl);
-    df.appendChild(li);
+    createTag('li', {}, linkEl, { parent: df });
   });
   resultsEl.replaceChildren(df);
 };

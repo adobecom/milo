@@ -103,7 +103,7 @@ export default async function decorate(block) {
   };
   if (!block.classList.contains('inline')) {
     const heading = toSentenceCase(await replaceKey('share-this-page', config));
-    block.append(createTag('p', { class: 'tracking-header' }, heading));
+    createTag('p', { class: 'tracking-header' }, heading, { parent: block });
   }
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
@@ -120,8 +120,8 @@ export default async function decorate(block) {
         href: obj.href,
       },
       svg.svg,
+      { parent: container },
     );
-    container.append(shareLink);
     shareLink.addEventListener('click', (e) => {
       /* c8 ignore next 2 */
       e.preventDefault();
@@ -144,8 +144,8 @@ export default async function decorate(block) {
         'data-copied': `${copiedTooltip}!`,
       },
       clipboardSvg.svg,
+      { parent: container },
     );
-    container.append(copyButton);
     copyButton.addEventListener('click', (e) => {
       /* c8 ignore next 6 */
       e.preventDefault();

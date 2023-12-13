@@ -32,8 +32,12 @@ function getItem(title, description, target) {
   const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
 
   if (title) {
-    const link = createTag('a', { class: 'section-title', href: `#${target?.id}`, target: '_self' }, title);
-    linkText.append(link);
+    const link = createTag(
+      'a',
+      { class: 'section-title', href: `#${target?.id}`, target: '_self' },
+      title,
+      { parent: linkText },
+    );
     item.addEventListener('click', () => {
       const isTextSelected = window.getSelection().toString();
 
@@ -52,9 +56,9 @@ function getItem(title, description, target) {
     });
   }
 
-  if (description) linkText.append(createTag('p', { class: 'section-description' }, description));
+  if (description) createTag('p', { class: 'section-description' }, description, { parent: linkText });
   item.append(linkText);
-  if (target) item.append(createTag('div', { class: 'toc-arrow' }, DOWN_ARROW_ICON));
+  if (target) createTag('div', { class: 'toc-arrow' }, DOWN_ARROW_ICON, { parent: item });
 
   return item;
 }

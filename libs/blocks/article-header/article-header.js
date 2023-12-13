@@ -107,8 +107,7 @@ async function buildSharing() {
 
   const sharing = createTag('div', { class: 'article-byline-sharing' });
   allAnchorTags.forEach((anchorTag) => {
-    const span = createTag('span', null, anchorTag);
-    sharing.append(span);
+    createTag('span', null, anchorTag, { parent: sharing });
   });
 
   sharing.querySelectorAll('[data-href]').forEach((link) => {

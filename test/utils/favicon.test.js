@@ -15,8 +15,7 @@ describe('Favicon', () => {
   });
 
   it('sets metadata favicon', async () => {
-    const meta = createTag('meta', { name: 'favicon', content: 'otis' });
-    document.head.append(meta);
+    createTag('meta', { name: 'favicon', content: 'otis' }, null, { parent: document.head });
     const config = setConfig({});
     const favicon = document.head.querySelector('link[rel="icon"]');
     loadFavIcons(createTag, config, getMetadata);

@@ -143,8 +143,7 @@ async function combineLibraries(base, supplied) {
 function createList(libraries) {
   const container = createTag('div', { class: 'con-container' });
 
-  const libraryList = createTag('ul', { class: 'sk-library-list' });
-  container.append(libraryList);
+  const libraryList = createTag('ul', { class: 'sk-library-list' }, null, { parent: container });
 
   Object.keys(libraries).forEach((type) => {
     if (!libraries[type] || libraries[type].length === 0) return;
@@ -172,7 +171,7 @@ function createList(libraries) {
 function createHeader() {
   const nav = createTag('button', { class: 'sk-library-logo' }, 'Franklin Library');
   const title = createTag('div', { class: 'sk-library-title' }, nav);
-  title.append(createTag('p', { class: 'sk-library-title-text' }, 'Pick a library'));
+  createTag('p', { class: 'sk-library-title-text' }, 'Pick a library', { parent: title });
   const header = createTag('div', { class: 'sk-library-header' }, title);
 
   nav.addEventListener('click', (e) => {

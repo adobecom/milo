@@ -8,8 +8,12 @@ export async function copyToClipboard(button, copyTxt) {
     button.setAttribute('alt', copyTxt);
     button.setAttribute('aria-label', copyTxt);
 
-    const tooltip = createTag('div', { role: 'status', 'aria-live': 'polite', class: 'copied-to-clipboard' }, copyTxt);
-    button.append(tooltip);
+    const tooltip = createTag(
+      'div',
+      { role: 'status', 'aria-live': 'polite', class: 'copied-to-clipboard' },
+      copyTxt,
+      { parent: button },
+    );
 
     setTimeout(() => {
       tooltip.remove();

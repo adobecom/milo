@@ -42,8 +42,7 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
     ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
 
   const append = (obj) => {
-    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
-    document.head.append(script);
+    createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj), { parent: document.head });
   };
 
   const promises = [];

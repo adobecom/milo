@@ -17,9 +17,7 @@
 import { createTag } from '../../utils/utils.js';
 
 function decorateLayout(el) {
-  const foreground = createTag('div', { class: 'foreground' });
-  el.appendChild(foreground);
-  return foreground;
+  return createTag('div', { class: 'foreground' }, null, { parent: el });
 }
 
 function decorateImage(block) {

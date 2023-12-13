@@ -61,8 +61,7 @@ export default function init(block) {
   block.innerHTML = '';
 
   if (parameters['data-wallurl']) {
-    const script = createTag('script', parameters, null);
-    block.appendChild(script);
+    createTag('script', parameters, null, { parent: block });
   } else {
     block.innerHTML = 'The Walls.io block requires a valid Walls.io URL to function.';
   }

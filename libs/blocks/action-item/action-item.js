@@ -32,8 +32,7 @@ function getContent(el, variants, link) {
   if (variants.contains('float-icon') && pictures.length > 1) floatIcon(picture, pictures[1]);
   if (variants.contains('float-button') && link) floatButton(picture, link);
   if (variants.contains('static-links')) attrs.class = 'static';
-  const content = createTag(tag, attrs, picture.closest('div'));
-  return content;
+  return createTag(tag, attrs, picture.closest('div'));
 }
 
 export default function init(el) {

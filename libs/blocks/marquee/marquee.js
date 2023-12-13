@@ -108,8 +108,7 @@ export default function init(el) {
     }
 
     if (mediaCreditInner) {
-      const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
-      el.appendChild(mediaCredit);
+      createTag('div', { class: 'media-credit container' }, mediaCreditInner, { parent: el });
       el.classList.add('has-credit');
       media?.lastChild.remove();
     }

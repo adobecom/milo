@@ -17,8 +17,7 @@ function createSelect({ field, placeholder, options, defval, required }) {
   if (placeholder) select.append(createTag('option', { selected: '', disabled: '' }, placeholder));
   options.split(',').forEach((o) => {
     const text = o.trim();
-    const option = createTag('option', { value: text }, text);
-    select.append(option);
+    createTag('option', { value: text }, text, { parent: select });
     if (defval === text) select.value = text;
   });
   if (required === 'x') select.setAttribute('required', 'required');
@@ -96,8 +95,7 @@ function createButton({ type, label }, thankYou) {
         clearForm(form);
         const handleThankYou = thankYou.querySelector('a') ? thankYou.querySelector('a').href : thankYou.innerHTML;
         if (!thankYou.innerHTML.includes('href')) {
-          const thanksText = createTag('h4', { class: 'thank-you' }, handleThankYou);
-          form.append(thanksText);
+          const thanksText = createTag('h4', { class: 'thank-you' }, handleThankYou, { parent: form });
           setTimeout(() => thanksText.remove(), 2000);
           /* c8 ignore next 3 */
         } else {

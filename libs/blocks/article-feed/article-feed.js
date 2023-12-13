@@ -427,15 +427,13 @@ async function decorateArticleFeed(
   let articleCards = articleFeedEl.querySelector('.article-cards');
 
   if (!articleCards) {
-    articleCards = createTag('div', { class: 'article-cards' });
-    articleFeedEl.append(articleCards);
+    articleCards = createTag('div', { class: 'article-cards' }, null, { parent: articleFeedEl });
   }
 
   const container = createTag('div', { class: 'article-cards-empty' });
 
   // display spinner
-  const spinner = createTag('div', { class: 'spinner' });
-  container.append(spinner);
+  const spinner = createTag('div', { class: 'spinner' }, null, { parent: container });
   articleCards.append(container);
 
   const pageEnd = offset + limit;

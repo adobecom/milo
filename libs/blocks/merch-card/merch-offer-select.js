@@ -4,11 +4,11 @@ import '../../deps/merch-offer-select.js';
 
 function createDynamicSlots(el, bodySlot) {
   const price = createTag('h5', { class: 'merch-card-price' });
-  price.append(createTag('span', { slot: 'price', is: 'inline-price' }));
+  createTag('span', { slot: 'price', is: 'inline-price' }, null, { parent: price });
   bodySlot.append(price);
 
   const p = createTag('p', { class: 'action-area' });
-  p.append(createTag('a', { slot: 'cta', is: 'checkout-link' }));
+  createTag('a', { slot: 'cta', is: 'checkout-link' }, null, { parent: p });
   const footer = el.querySelector('div[slot="footer"]');
   footer.append(p);
   bodySlot.querySelector('p')?.setAttribute('slot', 'description');

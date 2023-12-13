@@ -8,8 +8,7 @@ let sendAnalyticsFunc;
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
   tabNames.forEach((name) => {
-    const li = createTag('li', null, name);
-    ol.appendChild(li);
+    createTag('li', null, name, { parent: ol });
   });
   const olDiv = createTag('div', null, ol);
   const outerDiv = createTag('div', null, olDiv);
@@ -169,8 +168,7 @@ function openPicker(button, locales, country, event, dir) {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
     decorateForOnLinkClick(a, l.prefix);
-    const li = createTag('li', {}, a);
-    list.appendChild(li);
+    createTag('li', {}, a, { parent: list });
   });
   button.parentNode.insertBefore(list, button.nextSibling);
   const buttonRect = button.getBoundingClientRect();

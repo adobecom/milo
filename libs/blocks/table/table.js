@@ -53,8 +53,7 @@ function handleHeading(headingCols, isPriceBottom) {
       }
 
       decorateButtons(col, 'button-l');
-      const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
-      col.append(buttonsWrapper);
+      const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' }, null, { parent: col });
       const buttons = col.querySelectorAll('.con-button');
 
       buttons.forEach((btn) => {
@@ -162,8 +161,7 @@ function handleSection(sectionParams) {
     }
 
     if (isCollapseTable) {
-      const iconTag = createTag('span', { class: 'icon expand' });
-      sectionHeadTitle.appendChild(iconTag);
+      const iconTag = createTag('span', { class: 'icon expand' }, null, { parent: sectionHeadTitle });
 
       if (expandSection) {
         iconTag.setAttribute('aria-expanded', 'true');
@@ -398,9 +396,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       headingsFromOrigin.forEach((heading, index) => {
         const title = heading.querySelector('.tracking-header');
         if (!title || (!isMerch && title.closest('.col-1'))) return;
-
-        const option = createTag('option', { value: index }, title.innerText);
-        colSelect0.append(option);
+        createTag('option', { value: index }, title.innerText, { parent: colSelect0 });
       });
       const colSelect1 = colSelect0.cloneNode(true);
       colSelect0.dataset.filterIndex = 0;

@@ -94,7 +94,7 @@ const getHowToSteps = (el) => {
 
   const steps = [...list.children].reduce(
     (stepInfo, step, idx) => {
-      step.append(createTag('div', {}, [...step.childNodes]));
+      createTag('div', {}, [...step.childNodes], { parent: step });
       stepInfo.steps.push(step);
       const img = getImage(step);
       if (img) {
@@ -126,7 +126,7 @@ export default function init(el) {
 
   if (mainImage) {
     const imageClass = `how-to-image${isLargeImage ? ' how-to-image-large' : ''}`;
-    el.append(createTag('div', { class: imageClass }, mainImage));
+    createTag('div', { class: imageClass }, mainImage, { parent: el });
   }
 
   if (isSeo) {

@@ -9,8 +9,12 @@ async function createCategoryLink(el, category = 'News') {
     const taxonomyRoot = config.taxonomyRoot || '/topics';
     const taxonomy = await fetchTaxonomy(config, taxonomyRoot);
     const categoryTaxonomy = taxonomy.get(category);
-    const categoryLink = createTag('a', { href: updateLinkWithLangRoot(categoryTaxonomy?.link) }, categoryTaxonomy?.name);
-    el.append(categoryLink);
+    createTag(
+      'a',
+      { href: updateLinkWithLangRoot(categoryTaxonomy?.link) },
+      categoryTaxonomy?.name,
+      { parent: el },
+    );
   });
 }
 

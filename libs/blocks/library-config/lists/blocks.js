@@ -51,7 +51,7 @@ function getTable(block) {
   const table = document.createElement('table');
   table.setAttribute('border', 1);
   const headerRow = document.createElement('tr');
-  headerRow.append(createTag('th', { colspan: maxCols }, name));
+  createTag('th', { colspan: maxCols }, name, { parent: headerRow });
   table.append(headerRow);
   rows.forEach((row) => {
     const tr = document.createElement('tr');
@@ -252,12 +252,10 @@ export default async function loadBlocks(blocks, list, query) {
     if (query) {
       title.classList.add('is-hidden');
     }
-    const previewButton = createTag('button', { class: 'preview-group' }, 'Preview');
-    title.append(previewButton);
+    const previewButton = createTag('button', { class: 'preview-group' }, 'Preview', { parent: title });
     list.append(title);
 
-    const blockList = createTag('ul', { class: 'block-group-list' });
-    list.append(blockList);
+    const blockList = createTag('ul', { class: 'block-group-list' }, null, { parent: list });
 
     title.addEventListener('click', () => {
       title.classList.toggle('is-open');

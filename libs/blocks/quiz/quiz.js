@@ -12,8 +12,7 @@ import StepIndicator from './stepIndicator.js';
 
 export async function loadFragments(fragmentURL) {
   const quizSections = document.querySelector('.quiz-footer');
-  const a = createTag('a', { href: fragmentURL });
-  quizSections.append(a);
+  const a = createTag('a', { href: fragmentURL }, null, { parent: quizSections });
   const { default: createFragment } = await import('../fragment/fragment.js');
   await createFragment(a);
 }

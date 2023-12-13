@@ -8,8 +8,7 @@ async function loadFragments(el, experiences) {
   // eslint-disable-next-line no-restricted-syntax
   for (const href of experiences) {
     /* eslint-disable no-await-in-loop */
-    const a = createTag('a', { href });
-    el.append(a);
+    const a = createTag('a', { href }, null, { parent: el });
     await createFragment(a);
   }
 }

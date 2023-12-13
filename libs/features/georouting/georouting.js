@@ -69,8 +69,7 @@ function buildText(locales, config, createTag) {
   const wrapper = createTag('div', { class: 'text-wrapper' });
   locales.forEach((locale) => {
     const lang = config.locales[locale.prefix]?.ietf ?? '';
-    const text = createTag('p', { class: 'locale-text', lang }, locale.text);
-    wrapper.append(text);
+    createTag('p', { class: 'locale-text', lang }, locale.text, { parent: wrapper });
   });
   fragment.append(wrapper);
   return fragment;

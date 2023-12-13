@@ -61,8 +61,7 @@ function addToDom(richResults, createTag) {
   if (!richResults) {
     return;
   }
-  const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(richResults));
-  document.head.append(script);
+  createTag('script', { type: 'application/ld+json' }, JSON.stringify(richResults), { parent: document.head });
 }
 
 // createTag and getMetadata are passed in to avoid circular dependencies

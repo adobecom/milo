@@ -43,8 +43,7 @@ const getCurrentDetails = async () => {
 
 const getStatus = async (li, localePath) => {
   const page = await getDetails(localePath);
-  const actions = createTag('div', { class: 'actions' }, [page.edit, page.preview, page.live]);
-  li.append(actions);
+  createTag('div', { class: 'actions' }, [page.edit, page.preview, page.live], { parent: li });
 };
 
 const decorateLocales = (current) => {
@@ -90,8 +89,7 @@ const decorateHeader = (el, page) => {
   header.append(currentHeading, actionsHeading);
   const currentLocale = page.locale.prefix.replace('/', '') || 'us';
   const currentPage = createTag('div', { class: 'current-page detail' }, `<span>${currentLocale}</span>`);
-  const currentActions = createTag('div', { class: 'actions' }, [page.edit, page.preview, page.live]);
-  currentPage.append(currentActions);
+  createTag('div', { class: 'actions' }, [page.edit, page.preview, page.live], { parent: currentPage });
   el.append(header, currentPage);
 };
 

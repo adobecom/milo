@@ -115,6 +115,5 @@ export default function init(el) {
   el.remove();
   const obj = createVideoObject(metadata);
   if (!obj) return;
-  const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
-  document.head.append(script);
+  createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj), { parent: document.head });
 }

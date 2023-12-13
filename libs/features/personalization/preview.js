@@ -123,8 +123,7 @@ function addPillEventListeners(div) {
 }
 
 function createPreviewPill(manifests) {
-  const overlay = createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
-  document.body.append(overlay);
+  const overlay = createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' }, null, { parent: document.body });
   const div = document.createElement('div');
   div.classList.add('mep-hidden');
   let manifestList = '';

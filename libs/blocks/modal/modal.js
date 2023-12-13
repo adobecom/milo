@@ -86,8 +86,7 @@ function getCustomModal(custom, dialog) {
 }
 
 async function getPathModal(path, dialog) {
-  const block = createTag('a', { href: path });
-  dialog.append(block);
+  const block = createTag('a', { href: path }, null, { parent: dialog });
 
   // eslint-disable-next-line import/no-cycle
   const { default: getFragment } = await import('../fragment/fragment.js');
