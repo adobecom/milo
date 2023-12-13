@@ -1,4 +1,5 @@
 import { expect } from '@esm-bundle/chai';
+import { getConfig } from '../../../libs/utils/utils.js';
 import getEntitlements, { ENTITLEMENT_MAP } from '../../../libs/features/personalization/entitlements.js';
 
 // Modify the entitlement map with custom keys so the test doesn't rely on real data
@@ -48,6 +49,30 @@ describe('entitlements', () => {
     ];
 
     const expectedEntitlements = [];
+    const entitlements = getEntitlements(destinations);
+    expect(entitlements).to.deep.equal(expectedEntitlements);
+  });
+
+  it('Should be able to use consumer defined entitlements in the config', () => {
+    const config = getConfig();
+    config.entitlements = { 'consumer-defined-entitlement': 'consumer-defined' };
+
+    const destinations = [
+      {
+        segments: [
+          {
+            id: '11111111-aaaa-bbbb-6666-cccccccccccc',
+            namespace: 'ups',
+          },
+          {
+            id: 'consumer-defined-entitlement',
+            namespace: 'ups',
+          },
+        ],
+      },
+    ];
+
+    const expectedEntitlements = ['my-special-app', 'consumer-defined'];
     const entitlements = getEntitlements(destinations);
     expect(entitlements).to.deep.equal(expectedEntitlements);
   });
