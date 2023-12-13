@@ -1,6 +1,7 @@
 .result {
   display: flex;
   justify-content: space-between;
+  gap: 10px;
   background-color: white;
   border-bottom: 1px solid #eee;
   padding: 7px 10px;
@@ -9,7 +10,7 @@
   text-overflow: ellipsis;
 }
 
-.result.success:hover {
+.result.success.link:hover {
   cursor: pointer;
   background-color: #f9f9f9;
 }
@@ -17,6 +18,13 @@
 .result .process {
   font-style: italic;
   color: #666;
+  white-space: nowrap;
+  width: 65%;
+  overflow-x: scroll;
+}
+
+.result .process::-webkit-scrollbar {
+  display: none;
 }
 
 .result .url {
@@ -25,7 +33,7 @@
   color: black;
 }
 
-.result.success .url {
+.result.success.link .url {
   color: var(--link-color);
 }
 

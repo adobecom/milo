@@ -67,7 +67,7 @@ header .mode-switcher {
   justify-content: space-between;
   flex-grow: 1;
   gap: 16px;
-  height: 73vh;
+  height: 72vh;
 }
 
 label[for='urls'] {
@@ -315,6 +315,10 @@ label[for='urls'] i {
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 1em;
+}
+
+.processor select option {
+  text-transform: capitalize;
 }
 
 .urls textarea:focus,

@@ -1,10 +1,8 @@
-const BASE_URL = 'https://admin.hlx.page';
-const USES_BULK = ['preview', 'publish', 'unpublish', 'delete'];
+import { getErrorText } from './utils.js';
 
-const headers = {
-  Accept: 'application/json',
-  'Content-Type': 'application/json',
-};
+const BASE_URL = 'https://admin.hlx.page';
+const USES_BULK = ['preview', 'publish'];
+const headers = { 'Content-Type': 'application/json' };
 
 const isLive = (type) => (['publish', 'unpublish'].includes(type) ? 'live' : null);
 const isIndex = (type) => (['index', 'deindex'].includes(type) ? 'index' : null);
@@ -25,11 +23,13 @@ const getBulkJobEp = (url, type) => {
 const prepareProcesses = (jobs) => {
   const all = jobs.urls.map((url) => (new URL(url)));
   return all.map((url) => ({
+    href: url.href,
     origin: url.origin,
+    path: url.pathname,
     endpoint: getProcessEp(url, jobs.process),
     options: {
       headers,
-      method: ['unpublish', 'delete', 'deindex'].includes(jobs.process) ? 'DELETE' : 'POST',
+      method: ['unpublish', 'delete'].includes(jobs.process) ? 'DELETE' : 'POST',
     },
   }));
 };
@@ -39,17 +39,17 @@ const prepareBulkJobs = (jobs) => {
   const all = urls.map((url) => (new URL(url)));
   return Object.values(all.reduce((newJobs, url) => {
     const isDelete = process === 'delete' || process === 'unpublish';
-    const job = {
-      origin: url.origin,
-      endpoint: getBulkJobEp(url, process),
-      options: {
-        headers,
-        method: isDelete ? 'DELETE' : 'POST',
-        body: { paths: [] },
-      },
-    };
     if (!newJobs[url.host]) {
-      newJobs[url.host] = job;
+      newJobs[url.host] = {
+        href: url.href,
+        origin: url.origin,
+        endpoint: getBulkJobEp(url, process),
+        options: {
+          headers,
+          method: isDelete ? 'DELETE' : 'POST',
+          body: { paths: [] },
+        },
+      };
     }
     if (!isDelete) {
       newJobs[url.host].options.body.forceUpdate = true;
@@ -59,24 +59,50 @@ const prepareBulkJobs = (jobs) => {
   }, {}));
 };
 
+const mockJob = (jobs, topic) => {
+  const { completed, errors } = jobs.reduce((list, job) => {
+    if (!job.error) list.completed.push(job);
+    else list.errors.push(job);
+    return list;
+  }, { completed: [], errors: [] });
+  const paths = completed.map((item) => (item.result.job.path));
+  return [{
+    origin: jobs[0].origin,
+    useBulk: jobs[0].useBulk,
+    result: {
+      job: {
+        topic,
+        state: 'stopped',
+        stopTime: new Date(),
+        progress: { failed: completed.filter((item) => ![200, 204].includes(item.status)).length },
+        data: { paths, resources: completed.map((item) => (item.result.job)) },
+      },
+    },
+  }, ...errors];
+};
+
 const createJobs = async (jobs) => {
   const useBulk = USES_BULK.includes(jobs.process);
   const newJobs = useBulk ? prepareBulkJobs(jobs) : prepareProcesses(jobs);
-  const requests = newJobs.flatMap(async ({ endpoint, options, origin }) => {
+  const requests = newJobs.flatMap(async ({ endpoint, options, origin, path, href }) => {
     if (options.body) {
       options.body = JSON.stringify(options.body);
     }
     try {
       const job = await fetch(endpoint, options);
-      if (!job.ok) throw new Error('Job Failed', { cause: job.status }, origin);
-      const result = await job.json();
-      return { origin, result };
+      if (!job.ok && (useBulk || job.status === 403)) {
+        throw new Error(getErrorText(job.status), { cause: job.status }, origin);
+      }
+      const result = useBulk
+        ? await job.json()
+        : { job: { origin, path, status: job.status, href } };
+      return { origin, result, useBulk, href };
     } catch (error) {
-      return { origin, error: error.cause, message: error.message };
+      return { href, origin, error: error.cause, message: error.message };
     }
   });
   const results = await Promise.all(requests);
-  return results;
+  return useBulk ? results : mockJob(results, jobs.process);
 };
 
 const wait = (delay = 5000) => new Promise((resolve) => {
@@ -113,7 +139,7 @@ const processRetryQueue = async ({ queue, urls, process }) => {
     try {
       const job = await fetch(endpoint, options);
       if (!job.ok) {
-        throw new Error('Process Failed', { cause: job.status }, origin);
+        throw new Error(getErrorText(job.status), { cause: job.status }, origin);
       }
       const result = await job.json();
       return { origin, result };
@@ -135,5 +161,4 @@ export {
   createJobs,
   pollJobStatus,
   processRetryQueue,
-  wait,
 };

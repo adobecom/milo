@@ -8,7 +8,7 @@ import {
   PROCESS_MAX,
   PROCESS_TYPES,
   selectOverage,
-  validUrl,
+  validMiloURL,
   userPrefs,
 } from './utils.js';
 
@@ -50,6 +50,10 @@ class BulkPublish extends LitElement {
     if (userPrefs().get('mode') !== this.mode) {
       userPrefs().set('mode', this.mode);
     }
+    if (this.mode === 'full' && !this.openJobs && this.urls.length) {
+      const textarea = this.renderRoot.querySelector('#Urls');
+      textarea.value = this.urls.join('\r\n');
+    }
   }
 
   setType(e) {
@@ -66,18 +70,16 @@ class BulkPublish extends LitElement {
 
   validateUrls() {
     let errors = [];
-    const invalid = this.jobErrors.length
-      ? this.urls.filter((url) => this.jobErrors.includes(url))
-      : this.urls.filter((url) => !validUrl(url) && url.length);
+    const invalid = this.jobErrors?.urls?.length
+      ? this.urls.filter((url) => this.jobErrors.urls.includes(url))
+      : this.urls.filter((url) => !validMiloURL(url) && url.length);
 
     if (invalid?.length) {
       errors = [...errors, ...invalid];
     }
-
     if (this.urls.length > PROCESS_MAX) {
       errors.push('limit');
     }
-
     if (errors.length === 0) {
       errors = this.urls.length === 0;
     }
@@ -92,11 +94,12 @@ class BulkPublish extends LitElement {
     startEdit();
     const count = this.disabled.length;
     const counter = count > 1 ? `1/${count} Errors` : '1 Error';
+    const btnText = this.editing ? 'Next Error' : 'Select Line';
     return html`
       <div class="errors">
         <span>${counter}: <strong>${text}</strong></span>
-        <div class="fix-btn">
-          ${this.editing ? 'Next Error' : 'Select Line'}
+        <div class="fix-btn" @click=${() => startEdit(true)}>
+          ${count === 1 ? 'Finish' : btnText}
         </div>
       </div>
     `;
@@ -104,12 +107,31 @@ class BulkPublish extends LitElement {
 
   getErrorProps(isMax) {
     const textarea = this.renderRoot.getElementById('Urls');
+    let text = isMax ? 'Invalid Quantity (max 1000 per job)' : 'Invalid Url';
+    if (this.jobErrors) {
+      const [message] = this.jobErrors.messages;
+      text = message;
+      if (['unpublish', 'delete'].includes(this.processType) && message === 'Forbidden') {
+        text = `Failed to ${this.processType} - has the SharePoint document been deleted?`;
+      }
+    }
     return {
-      text: isMax ? 'Max Processes' : 'Invalid Url',
-      startEdit: () => {
+      text,
+      startEdit: (tapped = null) => {
         this.editing = !this.editing;
-        if (isMax) selectOverage(textarea, this.urls);
-        else editEntry(textarea, this.disabled[0]);
+        if (tapped) {
+          if (this.jobErrors.length === 1) {
+            this.jobErrors = false;
+          } else {
+            Object.keys(this.jobErrors).forEach((key) => {
+              this.jobErrors[key].shift();
+            });
+          }
+          this.validateUrls();
+        } else {
+          if (isMax) selectOverage(textarea, this.urls);
+          editEntry(textarea, this.disabled[0]);
+        }
       },
     };
   }
@@ -152,6 +174,7 @@ class BulkPublish extends LitElement {
         <textarea 
           id="Urls"
           placeholder="Example: https://main--milo--adobecom.hlx.page/path/to/page"
+          @blur=${this.setUrls}
           @change=${this.setUrls}></textarea>
       </div>
     `;
@@ -211,14 +234,15 @@ class BulkPublish extends LitElement {
   setJobErrors(errors) {
     const urls = [];
     errors.forEach((error) => {
-      const { origin } = error;
-      const matched = this.urls.filter((url) => url.includes(origin));
+      const { href } = error;
+      const matched = this.urls.filter((url) => url.includes(href));
       matched.forEach((match) => urls.push(match));
     });
     const textarea = this.renderRoot.querySelector('#Urls');
     textarea.value = urls.join('\r\n');
+    this.urls = urls;
     this.disabled = urls;
-    this.jobErrors = urls;
+    this.jobErrors = { urls, messages: errors.map((error) => (error.message)) };
   }
 
   async submitJob() {

@@ -5,12 +5,11 @@ const PROCESS_MAX = 1000;
 const PREFS_KEY = 'bulk-pub-prefs';
 const DEFAULT_PREFS = { height: 0, mode: FORM_MODES[0] };
 const PROCESS_TYPES = [
-  'Preview',
-  'Delete',
-  'Publish',
-  'Unpublish',
-  'Index',
-  'Deindex',
+  'preview',
+  'publish',
+  'unpublish',
+  'delete',
+  'index',
 ];
 
 const userPrefs = () => {
@@ -25,7 +24,7 @@ const userPrefs = () => {
   };
 };
 
-const validUrl = (str) => {
+const validMiloURL = (str) => {
   let url;
   try {
     url = new URL(str);
@@ -60,14 +59,14 @@ const selectOverage = (elem, paths) => {
   }
 };
 
-const getError = (code) => {
+const getErrorText = (code) => {
   const codes = [400, 401, 403, 404, 503];
   const errorText = [
     'Invalid URL',
-    'Not authenticated',
-    'Missing permissions',
-    'Resource not found',
-    'Request Timed Out',
+    'Unauthorized',
+    'Forbidden',
+    'Not Found',
+    'Timed Out',
   ];
   return errorText[codes.indexOf(code)];
 };
@@ -81,8 +80,9 @@ const jobStatus = (status, state, count) => {
     code = null;
   }
   if (state === 'stopped') {
-    text = status === 200 ? 'Completed' : getError(code);
-    color = status === 200 ? 'success' : 'error';
+    const success = status === 200 || status === 204;
+    text = success ? 'Completed' : getErrorText(code);
+    color = success ? 'success' : 'error';
   }
   return { code, text, color };
 };
@@ -90,10 +90,11 @@ const jobStatus = (status, state, count) => {
 export {
   editEntry,
   FORM_MODES,
+  getErrorText,
   PROCESS_MAX,
   PROCESS_TYPES,
   selectOverage,
   jobStatus,
   userPrefs,
-  validUrl,
+  validMiloURL,
 };
