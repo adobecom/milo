@@ -53,7 +53,10 @@ const handleAlloyResponse = (response) => {
 
       return {
         manifestPath: content.manifestLocation || content.manifestPath,
+        manifestUrl: content.manifestLocation,
         manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
+        manifestPlaceholders: content.manifestContent?.placeholders?.data,
+        manifestInfo: content.manifestContent?.info.data,
         name: item.meta['activity.name'],
         variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
         meta: item.meta,
@@ -105,10 +108,6 @@ export default async function init({ persEnabled = false, persManifests }) {
       `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
-    loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/manifest-utils.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
   }
 
   setDeep(
@@ -120,10 +119,11 @@ export default async function init({ persEnabled = false, persManifests }) {
 
   window.marketingtech = {
     adobe: {
-      launch: { url, controlPageLoad: false },
+      launch: { url, controlPageLoad: true },
       alloy: { edgeConfigId },
       target: false,
     },
+    milo: true,
   };
   window.edgeConfigId = edgeConfigId;
 
@@ -133,14 +133,13 @@ export default async function init({ persEnabled = false, persManifests }) {
 
   if (persEnabled) {
     const targetManifests = await getTargetPersonalization();
-    if (targetManifests || persManifests?.length) {
-      const [{ preloadManifests }, { applyPers, getEntitlements }] = await Promise.all([
-        import('../features/personalization/manifest-utils.js'),
-        import('../features/personalization/personalization.js'),
-      ]);
+    if (targetManifests?.length || persManifests?.length) {
+      const { preloadManifests, applyPers, getEntitlements } = await import('../features/personalization/personalization.js');
       getEntitlements();
       const manifests = preloadManifests({ targetManifests, persManifests });
       await applyPers(manifests);
+    } else {
+      document.body.dataset.mep = 'nopzn|nopzn';
     }
   }
 }

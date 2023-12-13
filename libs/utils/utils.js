@@ -13,6 +13,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'brick',
   'bulk-publish',
   'caas',
   'caas-config',
@@ -26,6 +27,7 @@ const MILO_BLOCKS = [
   'faq',
   'featured-article',
   'figure',
+  'form',
   'fragment',
   'featured-article',
   'global-footer',
@@ -42,6 +44,7 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'merch-card',
+  'merch-offers',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -55,6 +58,7 @@ const MILO_BLOCKS = [
   'preflight',
   'promo',
   'quiz',
+  'quiz-marquee',
   'quiz-results',
   'tabs',
   'table-of-contents',
@@ -74,7 +78,7 @@ const MILO_BLOCKS = [
   'reading-time',
 ];
 const AUTO_BLOCKS = [
-  { adobetv: 'https://video.tv.adobe.com' },
+  { adobetv: 'tv.adobe.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
@@ -237,7 +241,11 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
-export function localizeLink(href, originHostName = window.location.hostname) {
+export function localizeLink(
+  href,
+  originHostName = window.location.hostname,
+  overrideDomain = false,
+) {
   try {
     const url = new URL(href);
     const relative = url.hostname === originHostName;
@@ -250,7 +258,8 @@ export function localizeLink(href, originHostName = window.location.hostname) {
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, prodDomains } = getConfig();
     if (!locale || !locales) return processedHref;
-    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
+      || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
       .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
@@ -485,10 +494,11 @@ export function decorateImageLinks(el) {
     const [source, alt, icon] = img.alt.split('|');
     try {
       const url = new URL(source.trim());
+      const href = url.hostname.includes('.hlx.') ? `${url.pathname}${url.hash}` : url.href;
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: url, class: 'image-link' });
+      const aTag = createTag('a', { href, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
       if (icon) {
         import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
@@ -643,6 +653,8 @@ function decorateHeader() {
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
   if (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
+  const promo = getMetadata('gnav-promo-source');
+  if (promo?.length) header.classList.add('has-promo');
 }
 
 async function decorateIcons(area, config) {
@@ -656,7 +668,7 @@ async function decorateIcons(area, config) {
 }
 
 async function decoratePlaceholders(area, config) {
-  const el = area.documentElement ? area.body : area;
+  const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
@@ -721,13 +733,13 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map(decorateSection);
 }
 
-function decorateFooterPromo(config) {
-  const footerPromo = getMetadata('footer-promo-tag');
-  if (!footerPromo) return;
-  const href = `${config.locale.contentRoot}/fragments/footer-promos/${footerPromo}`;
-  const para = createTag('p', {}, createTag('a', { href }, href));
-  const section = createTag('div', null, para);
-  document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+export async function decorateFooterPromo() {
+  const footerPromoTag = getMetadata('footer-promo-tag');
+  const footerPromoType = getMetadata('footer-promo-type');
+  if (!footerPromoTag && footerPromoType !== 'taxonomy') return;
+
+  const { default: initFooterPromo } = await import('../features/footer-promo.js');
+  await initFooterPromo(footerPromoTag, footerPromoType);
 }
 
 let imsLoaded;
@@ -779,20 +791,19 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 
 async function checkForPageMods() {
   const persMd = getMetadata('personalization');
+  const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
   let persManifests = [];
   const search = new URLSearchParams(window.location.search);
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
+  const promoEnabled = promoMd && promoMd !== 'off';
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
-  if (persEnabled || targetEnabled) {
+  if (mepEnabled) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-    loadLink(
-      `${base}/features/personalization/manifest-utils.js`,
       { as: 'script', rel: 'modulepreload' },
     );
   }
@@ -800,18 +811,25 @@ async function checkForPageMods() {
   if (persEnabled) {
     persManifests = persMd.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim());
+      .filter((path) => path?.trim())
+      .map((manifestPath) => ({ manifestPath }));
+  }
+
+  if (promoEnabled) {
+    const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
+    persManifests = persManifests.concat(getPromoManifests(promoMd));
   }
 
   const { env } = getConfig();
+  let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
-  if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
+  if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
+    previewOn = true;
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
-      persEnabled,
+      mepEnabled,
       persManifests,
-      targetEnabled,
     });
   }
 
@@ -819,14 +837,17 @@ async function checkForPageMods() {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
     loadIms().catch(() => {});
-    const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
+    const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
-
-    const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests);
   } else {
-    document.body.dataset.mep = 'default|default';
+    document.body.dataset.mep = 'nopzn|nopzn';
+  }
+
+  if (previewOn) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
 }
 
@@ -861,9 +882,24 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-export async function loadDeferred(area, blocks, config) {
+export function setupDeferredPromise() {
+  let resolveFn;
+  window.milo.deferredPromise = new Promise((resolve) => {
+    resolveFn = resolve;
+  });
+  return resolveFn;
+}
+
+export async function loadDeferred(area, blocks, config, resolveDeferred) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
+
+  if (area !== document) {
+    return;
+  }
+
+  resolveDeferred(true);
+
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
     import('../features/links.js').then((mod) => mod.default(path, area));
@@ -923,10 +959,9 @@ function decorateMeta() {
   });
 }
 
-function decorateDocumentExtras(config) {
+function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
-  decorateFooterPromo(config);
 
   import('./samplerum.js').then(({ addRumListeners }) => {
     addRumListeners();
@@ -940,6 +975,9 @@ async function documentPostSectionLoading(config) {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
+
+  decorateFooterPromo();
+
   const appendage = getMetadata('title-append');
   if (appendage) {
     import('../features/title-append/title-append.js').then((module) => module.default(appendage));
@@ -965,8 +1003,8 @@ async function documentPostSectionLoading(config) {
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
-  import('../martech/analytics.js').then((analytics) => {
-    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
+  import('../martech/attributes.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
 }
 
@@ -1006,17 +1044,20 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  let resolveDeferredFn;
 
   if (isDoc) {
+    window.milo = {};
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
+    resolveDeferredFn = setupDeferredPromise();
   }
 
   const config = getConfig();
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
-    decorateDocumentExtras(config);
+    decorateDocumentExtras();
   }
 
   const sections = decorateSections(area, isDoc);
@@ -1038,7 +1079,7 @@ export async function loadArea(area = document) {
 
   if (isDoc) await documentPostSectionLoading(config);
 
-  await loadDeferred(area, areaBlocks, config);
+  await loadDeferred(area, areaBlocks, config, resolveDeferredFn);
 }
 
 export function loadDelayed() {

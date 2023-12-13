@@ -2,26 +2,38 @@ import { getConfig, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
-export async function polyfills() {
-  if (polyfills.done) return;
-  polyfills.done = true;
-  let isSupported = false;
-  document.createElement('div', {
-    // eslint-disable-next-line getter-return
-    get is() {
-      isSupported = true;
-    },
-  });
+export const PRICE_TEMPLATE_DISCOUNT = 'discount';
+export const PRICE_TEMPLATE_OPTICAL = 'optical';
+export const PRICE_TEMPLATE_REGULAR = 'price';
+export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
+
+export function polyfills() {
   /* c8 ignore start */
-  if (!isSupported) {
-    const { codeRoot, miloLibs } = getConfig();
-    const base = miloLibs || codeRoot;
-    await loadScript(`${base}/deps/custom-elements.js`);
+  if (!polyfills.promise) {
+    let isSupported = false;
+    document.createElement('div', {
+      // eslint-disable-next-line getter-return
+      get is() {
+        isSupported = true;
+      },
+    });
+    if (isSupported) {
+      polyfills.promise = Promise.resolve();
+    } else {
+      const { codeRoot, miloLibs } = getConfig();
+      const base = miloLibs || codeRoot;
+      polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
+    }
   }
+  return polyfills.promise;
   /* c8 ignore stop */
 }
 
+/**
+ * Activates commerce service and returns a promise resolving to its ready-to-use instance.
+ */
 export async function initService() {
+  await polyfills();
   const commerce = await import('../../deps/commerce.js');
   return commerce.init(() => ({
     ...getConfig(),
@@ -34,7 +46,7 @@ export async function getCommerceContext(el, params) {
   if (!wcsOsi) return null;
   const perpetual = params.get('perp') === 'true' || undefined;
   const promotionCode = (
-    params.get('promo') ?? el.closest('[data-promotion-code]')?.dataset.promotionCode
+    params.get('promo') ?? params.get('promotionCode') ?? el.closest('[data-promotion-code]')?.dataset.promotionCode
   ) || undefined;
   return { promotionCode, perpetual, wcsOsi };
 }
@@ -75,8 +87,24 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
-  const type = params.get('type');
-  const template = type === 'price' ? undefined : type;
+  let template = PRICE_TEMPLATE_REGULAR;
+  // This mapping also supports legacy OST links
+  switch (params.get('type')) {
+    case PRICE_TEMPLATE_DISCOUNT:
+    case 'priceDiscount':
+      template = PRICE_TEMPLATE_DISCOUNT;
+      break;
+    case PRICE_TEMPLATE_OPTICAL:
+    case 'priceOptical':
+      template = PRICE_TEMPLATE_OPTICAL;
+      break;
+    case PRICE_TEMPLATE_STRIKETHROUGH:
+    case 'priceStrikethrough':
+      template = PRICE_TEMPLATE_STRIKETHROUGH;
+      break;
+    default:
+      break;
+  }
   return {
     ...context,
     displayOldPrice,
@@ -93,7 +121,6 @@ export async function buildCta(el, params) {
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
-  await polyfills();
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
@@ -106,7 +133,6 @@ export async function buildCta(el, params) {
 async function buildPrice(el, params) {
   const context = await getPriceContext(el, params);
   if (!context) return null;
-  await polyfills();
   const service = await initService();
   const price = service.createInlinePrice(context);
   return price;
@@ -118,7 +144,7 @@ export default async function init(el) {
   const isCta = searchParams.get('type') === 'checkoutUrl';
   const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
   const service = await initService();
-  const log = service.log.module('merch');
+  const log = service.Log.module('merch');
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
     el.replaceWith(merch);

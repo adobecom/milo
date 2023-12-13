@@ -109,6 +109,7 @@ class Gnav {
 
   decorateToggle = () => {
     const toggle = createTag('button', { class: 'gnav-toggle', 'aria-label': 'Navigation menu', 'aria-expanded': false });
+    let onMediaChange;
     const closeToggleOnDocClick = ({ target }) => {
       if (target !== toggle && !target.closest('.mainnav-wrapper')) {
         this.el.classList.remove(IS_OPEN);
@@ -116,7 +117,7 @@ class Gnav {
         document.removeEventListener('click', closeToggleOnDocClick);
       }
     };
-    const onMediaChange = (e) => {
+    onMediaChange = (e) => {
       if (e.matches) {
         this.el.classList.remove(IS_OPEN);
         document.removeEventListener('click', closeToggleOnDocClick);
@@ -186,7 +187,7 @@ class Gnav {
   buildMainNav = (mainNav, navLinks) => {
     navLinks.forEach((navLink, idx) => {
       if (navLink.parentElement.nodeName === 'STRONG') {
-        const cta = this.decorateCta(navLink);
+        const cta = Gnav.decorateCta(navLink);
         mainNav.append(cta);
         return;
       }
@@ -203,7 +204,7 @@ class Gnav {
         const id = `navmenu-${idx}`;
         menu.id = id;
         navItem.classList.add('has-menu');
-        this.setNavLinkAttributes(id, navLink);
+        Gnav.setNavLinkAttributes(id, navLink);
       }
       // Small and medium menu types
       if (menu.childElementCount > 0) {
@@ -223,7 +224,7 @@ class Gnav {
     return mainNav;
   };
 
-  setNavLinkAttributes = (id, navLink) => {
+  static setNavLinkAttributes = (id, navLink) => {
     navLink.setAttribute('role', 'button');
     navLink.setAttribute('aria-expanded', false);
     navLink.setAttribute('aria-controls', id);
@@ -231,7 +232,7 @@ class Gnav {
     navLink.setAttribute('daa-lh', 'header|Open');
   };
 
-  decorateLinkGroups = (menu) => {
+  static decorateLinkGroups = (menu) => {
     const linkGroups = menu.querySelectorAll('.link-group');
     linkGroups.forEach((linkGroup) => {
       const image = linkGroup.querySelector('picture');
@@ -280,7 +281,7 @@ class Gnav {
 
   decorateAnalytics = (menu) => [...menu.children].forEach((child) => this.setMenuAnalytics(child));
 
-  decorateButtons = (menu) => {
+  static decorateButtons = (menu) => {
     const buttons = menu.querySelectorAll('strong a');
     buttons.forEach((btn) => {
       btn.classList.add('con-button', 'filled', 'blue', 'button-m');
@@ -302,7 +303,7 @@ class Gnav {
       decorateLinks(container);
       menu.append(container);
     }
-    this.decorateLinkGroups(menu);
+    Gnav.decorateLinkGroups(menu);
     this.decorateAnalytics(menu);
     navLink.addEventListener('focus', () => {
       window.addEventListener('keydown', this.toggleOnSpace);
@@ -314,7 +315,7 @@ class Gnav {
       e.preventDefault();
       this.toggleMenu(navItem);
     });
-    this.decorateButtons(menu);
+    Gnav.decorateButtons(menu);
     return menu;
   };
 
@@ -343,7 +344,7 @@ class Gnav {
     });
   };
 
-  decorateCta = (cta) => {
+  static decorateCta = (cta) => {
     if (cta) {
       const { origin } = new URL(cta.href);
       if (origin !== window.location.origin) {
@@ -420,7 +421,7 @@ class Gnav {
     });
 
     searchInput.addEventListener('keydown', (e) => {
-      if (e.code === 'Enter') {
+      if (advancedSearchEl && e.code === 'Enter') {
         window.open(this.getHelpxLink(e.target.value, locale.prefix, locale.geo));
       }
     });
@@ -430,7 +431,7 @@ class Gnav {
     return searchBar;
   };
 
-  getNoResultsEl = (advancedSearchEl) => createTag('li', null, advancedSearchEl);
+  static getNoResultsEl = (advancedSearchEl) => createTag('li', null, advancedSearchEl);
 
   /* c8 ignore start */
   getAppLauncher = async (profileEl) => {
@@ -495,7 +496,7 @@ class Gnav {
       profileEl.insertAdjacentElement('beforeend', dropDown);
 
       this.decorateMenu(profileEl, signIn, dropDown);
-      this.setNavLinkAttributes(id, signIn);
+      Gnav.setNavLinkAttributes(id, signIn);
     }
     signInEl.addEventListener('click', (e) => {
       e.preventDefault();
@@ -658,6 +659,7 @@ export default async function init(header) {
     header.setAttribute('daa-lh', `gnav${name}`);
     return gnav;
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.log('Could not create global navigation:', e);
     return null;
   }

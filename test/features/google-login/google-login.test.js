@@ -1,12 +1,15 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import initGoogleLogin from '../../../libs/features/google-login.js';
+import { viewports } from '../../blocks/global-navigation/test-utilities.js';
 
 describe('Google Login', () => {
   let initializeSpy;
   let promptSpy;
+  let clock;
   beforeEach(async () => {
+    clock = sinon.useFakeTimers();
     document.body.innerHTML = await readFile({ path: './mocks/google-login.html' });
     window.google = window.google || {
       accounts: {
@@ -30,6 +33,7 @@ describe('Google Login', () => {
     promptSpy.restore();
     delete window.adobeid;
     delete window.google;
+    clock.restore();
   });
 
   it('should create a placeholder to inject DOM markup', async () => {
@@ -82,5 +86,65 @@ describe('Google Login', () => {
     await initGoogleLogin(Promise.reject, sinon.stub(), sinon.stub());
     expect(document.getElementById('feds-googleLogin')).not.to.exist;
     loggedInStub.restore();
+  });
+
+  describe('desktop', () => {
+    before(async () => {
+      await setViewport(viewports.desktop);
+    });
+
+    it('should load yolo metadata set to "desktop"', async () => {
+      const { loadGoogleLogin } = await import('../../../libs/scripts/delayed.js');
+      loadGoogleLogin(sinon.stub().returns('desktop'), sinon.stub(), sinon.stub());
+      await clock.runAllAsync();
+      expect(initializeSpy.called).to.be.true;
+    });
+
+    it('should not load yolo with metadata set to "mobile"', async () => {
+      const { loadGoogleLogin } = await import('../../../libs/scripts/delayed.js');
+      loadGoogleLogin(sinon.stub().returns('mobile'), sinon.stub(), sinon.stub());
+      await clock.runAllAsync();
+      expect(initializeSpy.called).to.be.false;
+    });
+  });
+
+  describe('tablet', () => {
+    before(async () => {
+      await setViewport(viewports.smallDesktop);
+    });
+
+    it('should load yolo with metadata set to "desktop"', async () => {
+      const { loadGoogleLogin } = await import('../../../libs/scripts/delayed.js');
+      loadGoogleLogin(sinon.stub().returns('desktop'), sinon.stub(), sinon.stub());
+      await clock.runAllAsync();
+      expect(initializeSpy.called).to.be.true;
+    });
+
+    it('should not load yolo with metadata set to "mobile"', async () => {
+      const { loadGoogleLogin } = await import('../../../libs/scripts/delayed.js');
+      loadGoogleLogin(sinon.stub().returns('mobile'), sinon.stub(), sinon.stub());
+      await clock.runAllAsync();
+      expect(initializeSpy.called).to.be.false;
+    });
+  });
+
+  describe('mobile', () => {
+    before(async () => {
+      await setViewport(viewports.mobile);
+    });
+
+    it('should load yolo metadata set to "mobile"', async () => {
+      const { loadGoogleLogin } = await import('../../../libs/scripts/delayed.js');
+      loadGoogleLogin(sinon.stub().returns('mobile'), sinon.stub(), sinon.stub());
+      await clock.runAllAsync();
+      expect(initializeSpy.called).to.be.true;
+    });
+
+    it('should not load yolo with metadata set to "desktop"', async () => {
+      const { loadGoogleLogin } = await import('../../../libs/scripts/delayed.js');
+      loadGoogleLogin(sinon.stub().returns('desktop'), sinon.stub(), sinon.stub());
+      await clock.runAllAsync();
+      expect(initializeSpy.called).to.be.false;
+    });
   });
 });

@@ -42,6 +42,11 @@
   line-height: 42px;
 }
 
+html[dir="rtl"] .how-to ol > li::before {
+  margin-left: 20px;
+  margin-right: 0;
+}
+
 .how-to-heading {
   grid-area: heading;
 }

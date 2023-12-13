@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+
 import {
   createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
 } from '../../utils/utils.js';
@@ -7,9 +8,59 @@ const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
 const LS_ENT_KEY = 'milo:entitlements';
 const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
+const COLUMN_NOT_OPERATOR = 'not';
+const TARGET_EXP_PREFIX = 'target-';
 const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
 const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
 const PAGE_URL = new URL(window.location.href);
+
+export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
+
+export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
+
+export const normalizePath = (p) => {
+  let path = p;
+
+  if (!path.includes('/')) {
+    return path;
+  }
+
+  const config = getConfig();
+
+  if (path.startsWith(config.codeRoot)
+    || path.includes('.hlx.')
+    || path.startsWith(`https://${config.productionDomain}`)) {
+    try {
+      path = new URL(path).pathname;
+    } catch (e) { /* return path below */ }
+  } else if (!path.startsWith('http') && !path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  return path;
+};
+
+export const preloadManifests = ({ targetManifests = [], persManifests = [] }) => {
+  let manifests = targetManifests;
+
+  manifests = manifests.concat(
+    persManifests.map((manifest) => ({
+      ...manifest,
+      manifestPath: appendJsonExt(manifest.manifestPath),
+      manifestUrl: manifest.manifestPath,
+    })),
+  );
+
+  for (const manifest of manifests) {
+    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
+      manifest.manifestPath = normalizePath(manifest.manifestPath);
+      loadLink(
+        manifest.manifestPath,
+        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
+      );
+    }
+  }
+  return manifests;
+};
 
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
@@ -33,8 +84,8 @@ export const ENTITLEMENT_TAGS = {
 const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
 const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
 
-// Replace any non-alpha chars except comma, space and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,=]/g;
+// Replace any non-alpha chars except comma, space, ampersand and hyphen
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -50,14 +101,21 @@ const DATA_TYPE = {
 };
 
 const createFrag = (el, url, manifestId) => {
-  const a = createTag('a', { href: url }, url);
+  let href = url;
+  try {
+    const { pathname, search, hash } = new URL(url);
+    href = `${pathname}${search}${hash}`;
+  } catch {
+    // ignore
+  }
+  const a = createTag('a', { href }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
   let frag = createTag('p', undefined, a);
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
     frag = createTag('div', undefined, frag);
   }
-  loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  loadLink(`${href}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return frag;
 };
 
@@ -116,28 +174,6 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   return propMap;
 }, {});
 
-/* c8 ignore start */
-function normalizePath(p) {
-  let path = p;
-
-  if (!path.includes('/')) {
-    return path;
-  }
-
-  const config = getConfig();
-
-  if (path.startsWith(config.codeRoot)
-    || path.includes('.hlx.')
-    || path.startsWith(`https://${config.productionDomain}`)) {
-    try {
-      path = new URL(path).pathname;
-    } catch (e) { /* return path below */ }
-  } else if (!path.startsWith('http') && !path.startsWith('/')) {
-    path = `/${path}`;
-  }
-  return path;
-}
-
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
   const reg = new RegExp(`^${pattern}$`, 'i'); // devtool bug needs this backtick: `
@@ -152,6 +188,8 @@ export async function replaceInner(path, element) {
   if (!html) return false;
 
   element.innerHTML = html;
+  const { decorateArea } = getConfig();
+  if (decorateArea) decorateArea(element);
   return true;
 }
 /* c8 ignore stop */
@@ -381,7 +419,9 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   }
 
   const variantInfo = variantNames.reduce((acc, name) => {
-    const vNames = name.split(',').map((v) => v.trim()).filter(Boolean);
+    let nameArr = [name];
+    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
+    const vNames = nameArr.map((v) => v.trim()).filter(Boolean);
     acc[name] = vNames;
     acc.allNames = [...acc.allNames, ...vNames];
     return acc;
@@ -395,8 +435,9 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     entitlements = await getFlatEntitlements();
   }
 
-  const matchVariant = (name) => {
-    if (name === variantLabel) return true;
+  const hasMatch = (name) => {
+    if (name === '') return true;
+    if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
     if (entitlementKeys.includes(name)) {
@@ -405,24 +446,43 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     return personalizationKeys.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
+  const matchVariant = (name) => {
+    if (name.startsWith(TARGET_EXP_PREFIX)) return hasMatch(name);
+    const processedList = name.split('&').map((condition) => {
+      const reverse = condition.trim().startsWith(COLUMN_NOT_OPERATOR);
+      const match = hasMatch(condition.replace(COLUMN_NOT_OPERATOR, '').trim());
+      return reverse ? !match : match;
+    });
+    return !processedList.includes(false);
+  };
+
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
 }
 
-export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
+export async function getPersConfig(info) {
+  const {
+    name,
+    manifestData,
+    manifestPath,
+    manifestUrl,
+    manifestPlaceholders,
+    manifestInfo,
+    variantLabel,
+  } = info;
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
     if (fetchData) data = fetchedData;
   }
-  let placeholders = false;
-  if (data?.placeholders?.data) {
-    placeholders = data.placeholders.data;
-  }
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
   const config = parseConfig(persData);
+
+  const infoTab = manifestInfo || data?.info?.data;
+  config.manifestType = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase() || 'personalization';
+  config.manifestOverrideName = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')?.value?.toLowerCase();
 
   if (!config) {
     /* c8 ignore next 3 */
@@ -446,6 +506,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selectedVariant = 'default';
   }
 
+  const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
       parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
@@ -454,6 +515,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
 
   config.name = name;
   config.manifest = manifestPath;
+  config.manifestUrl = manifestUrl;
   return config;
 }
 
@@ -468,14 +530,9 @@ const normalizeFragPaths = ({ selector, val }) => ({
 });
 
 export async function runPersonalization(info, config) {
-  const {
-    name,
-    manifestData,
-    manifestPath,
-    variantLabel,
-  } = info;
+  const { manifestPath } = info;
 
-  const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath);
+  const experiment = await getPersConfig(info);
 
   if (!experiment) return null;
 
@@ -532,42 +589,58 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
-const decoratePreviewCheck = async (config, experiments) => {
-  if (config.mep?.preview) {
-    const { default: decoratePreviewMode } = await import('./preview.js');
-    decoratePreviewMode(experiments);
-  }
-};
+const createDefaultExperiment = (manifest) => ({
+  disabled: manifest.disabled,
+  event: manifest.event,
+  manifest: manifest.manifestPath,
+  variantNames: ['all'],
+  selectedVariantName: 'default',
+  selectedVariant: { commands: [] },
+});
 
 export async function applyPers(manifests) {
   const config = getConfig();
 
-  if (!manifests?.length) {
-    /* c8 ignore next */
-    decoratePreviewCheck(config, []);
-    return;
-  }
+  if (!manifests?.length) return;
 
   getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
+  const override = config.mep?.override;
   let results = [];
+  const experiments = [];
   for (const manifest of cleanedManifests) {
-    results.push(await runPersonalization(manifest, config));
+    if (manifest.disabled && !override) {
+      experiments.push(createDefaultExperiment(manifest));
+    } else {
+      const result = await runPersonalization(manifest, config);
+      if (result) {
+        results.push(result);
+        experiments.push(result.experiment);
+      }
+    }
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
-
-  const experiments = results.map((r) => r.experiment);
   updateConfig({
     ...config,
     experiments,
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
-  const trackingManifests = results.map((r) => r.experiment.manifest.split('/').pop().replace('.json', ''));
-  const trackingVariants = results.map((r) => r.experiment.selectedVariantName);
-  document.body.dataset.mep = `${trackingVariants.join('--')}|${trackingManifests.join('--')}`;
-
-  decoratePreviewCheck(config, experiments);
+  const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
+  if (!pznList.length) {
+    document.body.dataset.mep = 'nopzn|nopzn';
+    return;
+  }
+  const pznVariants = pznList.map((r) => {
+    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
+    return val === 'default' ? 'nopzn' : val;
+  });
+  const pznManifests = pznList.map((r) => {
+    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
+    return val.split('/').pop().replace('.json', '').trim()
+      .slice(0, 15);
+  });
+  document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }

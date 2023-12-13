@@ -21,7 +21,7 @@ describe('Section Metdata', () => {
   });
 
   it('Handles background image focal point', async () => {
-    const sec = document.querySelector('.section.image');
+    const sec = document.querySelector('.section.image-focalpoint');
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
     const image = sec.querySelector('img');
@@ -47,6 +47,13 @@ describe('Section Metdata', () => {
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
     expect(sec.classList.contains('grid-template-columns-1-2')).to.be.true;
+  });
+
+  it('Adds class based on masonry input', async () => {
+    const sec = document.querySelector('.section.masonrysec');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.classList.contains('masonry-layout')).to.be.true;
   });
 
   it('gets section metadata', () => {

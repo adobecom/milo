@@ -87,9 +87,10 @@
 
 /* heading */
 .table .row-heading .col-heading.hidden {
-  border-top: none;
-  border-left: none;
-  border-right: none;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-radius: 0 !important;
 }
 
 .table .row-heading .col-heading:last-child {
@@ -98,6 +99,11 @@
 
 .table .row-heading .col-heading.no-rounded:last-child {
   border-top-right-radius: 0;
+}
+
+.table.m-heading-icon .row-heading .col-heading img {
+  height: var(--icon-size-m);
+  width: auto;
 }
 
 .table .section-row .col.section-row-title,
@@ -125,6 +131,14 @@
   flex-wrap: wrap;
 }
 
+.table.button-right.merch .row-heading .col.col-heading .buttons-wrapper {
+  justify-content: flex-end;
+}
+
+.table.merch.button-right .row-heading .col.col-heading .buttons-wrapper > * {
+  margin: 12px 0 12px 12px;
+}
+
 .table .row-heading .col.col-heading .buttons-wrapper > * {
   margin: 12px 6px;
 }
@@ -145,14 +159,18 @@
   font-size: var(--type-heading-s-size);
   line-height: var(--type-heading-s-lh);
   font-weight: bold;
-  margin: var(--spacing-xxs) 0;
+  padding: var(--spacing-xxs) 0;
 }
 
 .table .row-heading .col-heading .pricing {
   font-size: var(--type-heading-m-size);
   line-height: var(--type-heading-m-lh);
   font-weight: bold;
-  margin: var(--spacing-xxs) 0;
+  padding: var(--spacing-xxs) 0;
+}
+
+.table .row-heading .col-heading .body {
+  font-size: var(--type-body-m-size);
 }
 
 /* section */
@@ -246,6 +264,45 @@
 .table .row-highlight .col-highlight.transparent-border {
   border-color: transparent;
 }
+
+/* rtl */
+[dir="rtl"] .table .col {
+  border-right: 1px var(--border-color) solid;
+  border-left: 0;
+}
+
+[dir="rtl"] .table.merch .col {
+  border-left: 1px var(--border-color) solid;
+}
+
+[dir="rtl"] .table .col:first-child {
+  border-right: 1px var(--border-color) solid;
+}
+
+[dir="rtl"] .table .col:last-child:not(.hover) {
+  border-left: 1px var(--border-color) solid;
+}
+
+[dir="rtl"] .table .row-heading .col-heading:last-child {
+  border-top-right-radius: 0;
+  border-top-left-radius: 16px;
+}
+
+[dir="rtl"] .table .row-heading .col-heading.top-left-rounded {
+  border-top-right-radius: 16px;
+  border-top-left-radius: 0;
+}
+
+[dir="rtl"] .table .row-heading .col-heading.top-right-rounded {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 0;
+}
+
+[dir="rtl"] .table .row-heading .col.no-rounded {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 
 /* hover */
 @media (min-width: 900px) {
