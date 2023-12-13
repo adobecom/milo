@@ -220,6 +220,72 @@ describe('global footer', () => {
         document.body.dispatchEvent(new Event('click', { bubbles: true }));
         expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('false');
       });
+
+      it('should render the footer when region picker is missing', async () => {
+        window.fetch.restore();
+        stub(window, 'fetch').callsFake(async (url) => {
+          if (url.includes('/footer')) {
+            return mockRes({
+              payload: fetchedFooter(
+                { hasRegionPicker: false },
+              ),
+            });
+          }
+          if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+          if (url.includes('icons.svg')) return mockRes({ payload: icons });
+          if (url.includes('/regions.plain.html')) return mockRes({ payload: await readFile({ path: '../region-nav/mocks/regions.html' }) });
+          return null;
+        });
+
+        await createFullGlobalFooter({ waitForDecoration: false });
+        const { regionPicker, regionPickerWrapper, ...decorationSelectors } = allSelectors;
+        const {
+          regionPicker: visibleRegionPicker,
+          regionPickerWrapper: visibleRegionPickerWrapper,
+          ...visibleSelectors
+        } = visibleSelectorsDesktop;
+        await waitForFooterToDecorate({ ...decorationSelectors });
+
+        expect(document.querySelector(allSelectors.regionPicker)).to.equal(null);
+        expect(allElementsVisible(
+          visibleSelectors,
+          document.querySelector(allSelectors.container),
+        )).to.equal(true);
+      });
+    });
+
+    describe('social links tests', () => {
+      it('should render the footer when social links are missing', async () => {
+        window.fetch.restore();
+        stub(window, 'fetch').callsFake(async (url) => {
+          if (url.includes('/footer')) {
+            return mockRes({
+              payload: fetchedFooter(
+                { hasSocialLinks: false },
+              ),
+            });
+          }
+          if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+          if (url.includes('icons.svg')) return mockRes({ payload: icons });
+          if (url.includes('/regions.plain.html')) return mockRes({ payload: await readFile({ path: '../region-nav/mocks/regions.html' }) });
+          return null;
+        });
+
+        await createFullGlobalFooter({ waitForDecoration: false });
+        const { social, socialItem, ...decorationSelectors } = allSelectors;
+        const {
+          social: visibleSocial,
+          socialItem: visibleSocialItem,
+          ...visibleSelectors
+        } = visibleSelectorsDesktop;
+        await waitForFooterToDecorate({ ...decorationSelectors });
+
+        expect(document.querySelector(allSelectors.social)).to.equal(null);
+        expect(allElementsVisible(
+          visibleSelectors,
+          document.querySelector(allSelectors.container),
+        )).to.equal(true);
+      });
     });
   });
 
