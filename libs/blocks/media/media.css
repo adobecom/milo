@@ -341,8 +341,8 @@ div[class*="-up"] .media .foreground > .media-row {
 
   .media.qr-code img.qr-code-img {
     display: flex;
-    width: 150px;
-    height: 170px;
+    width: 140px;
+    height: 140px;
   }
 
   .media.qr-code .qr-button-container {
