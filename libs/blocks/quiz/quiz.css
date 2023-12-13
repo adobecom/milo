@@ -120,7 +120,7 @@ html[dir="rtl"] .quiz-option-icon {
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
   margin: 0;
-  text-align: center;
+  text-align: left;
 }
 
 .quiz-option:hover {
@@ -381,6 +381,10 @@ html[dir="rtl"] .quiz-step::after {
 
   .quiz-option-title {
     display: block;
+  }
+
+  .quiz-option-text {
+    text-align: center;
   }
 
   .quiz-option.selected .quiz-option-text {
