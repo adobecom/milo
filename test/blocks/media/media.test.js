@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -57,15 +57,33 @@ describe('media', () => {
   describe('media with qr-code', () => {
     it('does have qr-code image', () => {
       const qrCodeImg = medias[5].querySelector('img.qr-code-img');
-      expect(qrCodeImg).to.exist;
+      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('visibility') === 'hidden');
     });
     it('does have CTA for google-play', () => {
       const googlePlayCta = medias[5].querySelector('a.google-play');
-      expect(googlePlayCta).to.exist;
+      expect(window.getComputedStyle(googlePlayCta).getPropertyValue('visibility') !== 'hidden');
     });
     it('does have CTA for app-store', () => {
       const appStoreCta = medias[5].querySelector('a.app-store');
-      expect(appStoreCta).to.exist;
+      expect(window.getComputedStyle(appStoreCta).getPropertyValue('visibility') !== 'hidden');
+    });
+    it('mobile view has google-play and app-store CTA and no qr code image', async () => {
+      await setViewport({ width: 600, height: 100 });
+      const qrCodeImg = medias[5].querySelector('img.qr-code-img');
+      const googlePlayCta = medias[5].querySelector('a.google-play');
+      const appStoreCta = medias[5].querySelector('a.app-store');
+      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('visibility') !== 'hidden');
+      expect(window.getComputedStyle(googlePlayCta).getPropertyValue('visibility') === 'hidden');
+      expect(window.getComputedStyle(appStoreCta).getPropertyValue('visibility') === 'hidden');
+    });
+    it('tablet view has google-play and app-store CTA and no qr code image', async () => {
+      await setViewport({ width: 1199, height: 100 });
+      const qrCodeImg = medias[5].querySelector('img.qr-code-img');
+      const googlePlayCta = medias[5].querySelector('a.google-play');
+      const appStoreCta = medias[5].querySelector('a.app-store');
+      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('visibility') !== 'hidden');
+      expect(window.getComputedStyle(googlePlayCta).getPropertyValue('visibility') === 'hidden');
+      expect(window.getComputedStyle(appStoreCta).getPropertyValue('visibility') === 'hidden');
     });
   });
   describe('with bio variant', () => {
