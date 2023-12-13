@@ -6,16 +6,16 @@ const headers = { 'Content-Type': 'application/json' };
 
 const isLive = (type) => (['publish', 'unpublish'].includes(type) ? 'live' : null);
 const isIndex = (type) => (['index', 'deindex'].includes(type) ? 'index' : null);
-const getHostDetails = (url) => url.hostname.split('.')[0].split('--');
+const getMiloUrl = (url) => url.hostname.split('.')[0].split('--');
 
 const getProcessEp = (url, type) => {
-  const [ref, repo, owner] = getHostDetails(url);
+  const [ref, repo, owner] = getMiloUrl(url);
   const process = isLive(type) ?? isIndex(type) ?? 'preview';
   return `${BASE_URL}/${process}/${owner}/${repo}/${ref}${url.pathname}`;
 };
 
 const getBulkJobEp = (url, type) => {
-  const [ref, repo, owner] = getHostDetails(url);
+  const [ref, repo, owner] = getMiloUrl(url);
   const process = isLive(type) ?? 'preview';
   return `${BASE_URL}/${process}/${owner}/${repo}/${ref}/*`;
 };
@@ -157,7 +157,7 @@ const processRetryQueue = async ({ queue, urls, process }) => {
 };
 
 export {
-  getHostDetails,
+  getMiloUrl,
   createJobs,
   pollJobStatus,
   processRetryQueue,

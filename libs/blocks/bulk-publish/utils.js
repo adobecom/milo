@@ -1,4 +1,4 @@
-import { getHostDetails } from './services.js';
+import { getMiloUrl } from './services.js';
 
 const FORM_MODES = ['full', 'half'];
 const PROCESS_MAX = 1000;
@@ -31,7 +31,7 @@ const validMiloURL = (str) => {
   } catch (_) {
     return false;
   }
-  const [ref, repo, owner] = getHostDetails(url);
+  const [ref, repo, owner] = getMiloUrl(url);
   return url.protocol === 'https:' && ref && repo && owner;
 };
 
@@ -57,6 +57,15 @@ const selectOverage = (elem, paths) => {
     elem.setSelectionRange(start, end);
     elem.focus();
   }
+};
+
+const getJobErrorText = (errors, process) => {
+  const [message] = errors.messages;
+  let text = message;
+  if (['unpublish', 'delete'].includes(process) && message === 'Forbidden') {
+    text = `Failed to ${process} - has the SharePoint document been deleted?`;
+  }
+  return text;
 };
 
 const getErrorText = (code) => {
@@ -91,6 +100,7 @@ export {
   editEntry,
   FORM_MODES,
   getErrorText,
+  getJobErrorText,
   PROCESS_MAX,
   PROCESS_TYPES,
   selectOverage,

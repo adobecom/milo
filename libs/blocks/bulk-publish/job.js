@@ -49,9 +49,14 @@ class JobProcess extends LitElement {
     }
   }
 
-  viewResult({ url, code }) {
-    if (this.jobStatus && (code === 200 || code === 204)) {
+  viewResult({ url, code }, topic) {
+    const isPublished = !['delete', 'unpublish'].includes(topic);
+    if (this.jobStatus && (code === 200 || code === 204) && isPublished) {
       window.open(url, '_blank');
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        this.copied = true;
+      });
     }
   }
 
@@ -59,7 +64,7 @@ class JobProcess extends LitElement {
     const current = this.jobStatus ?? this.job.result.job;
     const { state, status, createTime, stopTime, data } = current;
     const statusResource = this.jobStatus && data.resources.find((source) => source.path === path);
-    let currentStatus = statusResource ? statusResource.status : status;
+    let currentStatus = statusResource?.status ?? status;
     let jobState = state;
     const queued = this.queue?.find((item) => item.path === path);
     if (queued) {
@@ -67,7 +72,7 @@ class JobProcess extends LitElement {
       jobState = ![200, 204].includes(queued.status) && queued.count < 3 ? 'queued' : 'stopped';
     }
     const jobstatus = jobStatus(currentStatus, jobState, queued?.count);
-    const isLinked = ['delete', 'unpublish'].includes(current.topic) ? ' link' : '';
+    const isLinked = ['delete', 'unpublish'].includes(current.topic) ? '' : ' link';
     const isCompleted = [200, 204].includes(status) ? ` success${isLinked}` : '';
     return {
       url: statusResource?.href ?? `${this.job.origin}${path}`,
@@ -80,13 +85,13 @@ class JobProcess extends LitElement {
 
   render() {
     const { job } = this.job.result;
-    return job.data.paths.map((path, pathIndex) => {
+    return job.data.paths.map((path) => {
       const jobPath = typeof path === 'object' ? path.path : path;
       const { url, status, time, topic, isCompleted } = this.jobDetails(jobPath);
       return html`
         <div 
           class="result${isCompleted}"
-          @click=${() => this.viewResult({ url, code: status.code }, pathIndex)}>
+          @click=${() => this.viewResult({ url, code: status.code }, topic)}>
           <div class="process">
             ${topic} <span class="url">${url}</span>
           </div>

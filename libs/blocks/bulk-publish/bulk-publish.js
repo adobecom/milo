@@ -10,6 +10,7 @@ import {
   selectOverage,
   validMiloURL,
   userPrefs,
+  getJobErrorText,
 } from './utils.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/bulk-publisher.css');
@@ -109,11 +110,7 @@ class BulkPublish extends LitElement {
     const textarea = this.renderRoot.getElementById('Urls');
     let text = isMax ? 'Invalid Quantity (max 1000 per job)' : 'Invalid Url';
     if (this.jobErrors) {
-      const [message] = this.jobErrors.messages;
-      text = message;
-      if (['unpublish', 'delete'].includes(this.processType) && message === 'Forbidden') {
-        text = `Failed to ${this.processType} - has the SharePoint document been deleted?`;
-      }
+      text = getJobErrorText(this.jobErrors, this.processType);
     }
     return {
       text,
@@ -123,9 +120,7 @@ class BulkPublish extends LitElement {
           if (this.jobErrors.length === 1) {
             this.jobErrors = false;
           } else {
-            Object.keys(this.jobErrors).forEach((key) => {
-              this.jobErrors[key].shift();
-            });
+            Object.keys(this.jobErrors).forEach((key) => this.jobErrors[key].shift());
           }
           this.validateUrls();
         } else {
@@ -196,6 +191,11 @@ class BulkPublish extends LitElement {
           ${this.jobs.length ? html`<strong>${this.jobsTotal()}</strong>` : ''}
           My Jobs
         </span>
+        <div class="jobs-tools${!this.openJobs && this.mode === 'full' ? ' hide' : ''}">
+          <div 
+            class="clear-jobs${this.jobs.length ? '' : ' hide'}"
+            @click=${() => { this.jobs = []; }}></div>
+        </div>
       </div>
       <div class="job${!this.openJobs ? ' hide' : ''}">
         <div class="job-head">
