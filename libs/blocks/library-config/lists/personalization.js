@@ -37,7 +37,6 @@ export default async function loadPersonalization(content, list) {
   Object.entries(tagsObj).forEach(([category, tags]) => {
     const titleTextEl = createTag('p', { class: 'item-title' }, category);
     const titleEl = createTag('li', { class: 'block-group' }, titleTextEl, { parent: list });
-    list.append(titleEl);
 
     const tagListEl = createTag('ul', { class: 'block-group-list' }, { parent: list });
 
