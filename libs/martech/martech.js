@@ -2,6 +2,7 @@ import { getConfig, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const TARGET_TIMEOUT_MS = 2000;
+const ENTITLEMENT_TIMEOUT = 3000;
 
 const setDeep = (obj, path, value) => {
   const pathArr = path.split('.');
@@ -17,9 +18,13 @@ const setDeep = (obj, path, value) => {
   currentObj[pathArr[pathArr.length - 1]] = value;
 };
 
-const waitForEventOrTimeout = (eventName, timeout) => new Promise((resolve, reject) => {
+const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((resolve, reject) => {
   const timer = setTimeout(() => {
-    reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
+    if (timeoutVal !== undefined) {
+      resolve(timeoutVal);
+    } else {
+      reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
+    }
   }, timeout);
 
   window.addEventListener(eventName, (event) => {
@@ -105,14 +110,15 @@ const setupEntitlementCallback = () => {
   };
 
   const getEntitlements = () => new Promise((resolve) => {
-    const handleEntitlements = (e) => {
-      if (e.detail?.result?.destinations?.length) {
-        resolve(setEntitlements(e.detail.result.destinations));
+    const handleEntitlements = (detail) => {
+      if (detail?.result?.destinations?.length) {
+        resolve(setEntitlements(detail.result.destinations));
       } else {
         resolve([]);
       }
     };
-    window.addEventListener(ALLOY_SEND_EVENT, handleEntitlements, { once: true });
+    waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, [])
+      .then((e) => handleEntitlements(e));
   });
 
   const { miloLibs, codeRoot } = getConfig();
