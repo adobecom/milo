@@ -282,11 +282,12 @@ const decorateCrossCloudMenu = (content) => {
   if (!crossCloudMenuEl) return;
 
   const crossCloudMenuContent = toFragment`<div class="feds-crossCloudMenu"></div>`;
-  crossCloudMenuContent.append(...[...crossCloudMenuEl.children].map((el, index) => {
+
+  [...crossCloudMenuEl.children].forEach((el, index) => {
     const decoratedLink = decorateLinkGroup(el, index);
     if (index === 0) decoratedLink.prepend(toFragment`${CONFIG.icons.home}`);
-    return toFragment`<div class="feds-crossCloudMenu-item">${decoratedLink}</div>`;
-  }));
+    crossCloudMenuContent.append(toFragment`<div class="feds-crossCloudMenu-item">${decoratedLink}</div>`);
+  });
 
   content.append(toFragment`<div class="feds-crossCloudMenu-wrapper">${crossCloudMenuContent}</div>`);
   crossCloudMenuEl.remove();
@@ -319,7 +320,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
     const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
-    menuTemplate = toFragment`<div class="feds-popup" id="feds-popup">
+    menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
           ${menuContent}
         </div>

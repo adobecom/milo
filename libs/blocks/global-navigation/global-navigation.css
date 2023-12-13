@@ -554,10 +554,6 @@ header.global-navigation {
     padding: 40px 0 0 0;
   }
 
-  #feds-popup {
-    flex-direction: column;
-  }
-
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
     left: 0;
   }
@@ -679,7 +675,7 @@ header.global-navigation {
     min-width: var(--feds-minWidth-menu);
   }
 
-  #feds-popup {
+  .feds-navItem--megaMenu .feds-popup {
     align-items: center;
   }
 }

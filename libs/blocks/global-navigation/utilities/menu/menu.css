@@ -14,12 +14,6 @@
   transform: rotateZ(-135deg);
 }
 
-@media (min-width: 900px) {
-  .feds-navLink--hoverCaret[aria-expanded = "true"] + .feds-popup {
-    flex-direction: row;
-  }
-}
-
 /* General menu styles */
 .feds-menu-column .feds-cta-wrapper {
   padding: 6px 32px;

@@ -8,7 +8,7 @@ import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
 import largeMenuWideColumnMock from './mocks/large-menu-wide-column.plain.js';
-import largeMenuWithoutCrossCloudMenu from './mocks/large-menu-without-cross-cloud-menu.plain.js';
+import largeMenuCrossCloud from './mocks/large-menu-cross-cloud.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import correctPromoFragmentMock from './mocks/correctPromoFragment.plain.js';
 import { isElementVisible, selectors as keyboardSelectors } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
@@ -119,7 +119,6 @@ export const createFullGlobalNavigation = async ({
   breadcrumbsEl = defaultBreadcrumbsEl(),
   globalNavigation,
   hasPromo,
-  hasCrossCloudMenu = true,
 } = {}) => {
   const clock = sinon.useFakeTimers({
     // Intercept setTimeout and call the function immediately
@@ -131,7 +130,8 @@ export const createFullGlobalNavigation = async ({
   window.fetch = stub().callsFake((url) => {
     if (url.includes('profile')) { return mockRes({ payload: defaultProfile }); }
     if (url.includes('placeholders')) { return mockRes({ payload: placeholders || defaultPlaceholders }); }
-    if (url.endsWith('large-menu.plain.html')) { return mockRes({ payload: hasCrossCloudMenu ? largeMenuMock : largeMenuWithoutCrossCloudMenu }); }
+    if (url.endsWith('large-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
+    if (url.endsWith('large-menu-cross-cloud.plain.html')) { return mockRes({ payload: largeMenuCrossCloud }); }
     if (url.endsWith('large-menu-wide-column.plain.html')) { return mockRes({ payload: largeMenuWideColumnMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }

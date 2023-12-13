@@ -12,6 +12,7 @@ import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.pl
 import noBrandImageOnlyNav from './mocks/global-navigation-only-brand-no-explicit-image.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
+import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -65,7 +66,7 @@ describe('global navigation', () => {
   describe('Cross Clound Menu', () => {
     describe('desktop', () => {
       it('should render the Cross Clound Menu', async () => {
-        await createFullGlobalNavigation();
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud });
         const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
 
         expect(crossCloudMenu).to.exist;
@@ -79,14 +80,14 @@ describe('global navigation', () => {
       });
 
       it('should not render Cross Clound Menu if not authored', async () => {
-        await createFullGlobalNavigation({ hasCrossCloudMenu: false });
+        await createFullGlobalNavigation();
         expect(document.querySelector(selectors.crossCloudMenuWrapper)).to.not.exist;
       });
     });
 
     describe('small desktop', () => {
       it('should render the Cross Clound Menu', async () => {
-        await createFullGlobalNavigation({ viewport: 'smallDesktop' });
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud, viewport: 'smallDesktop' });
         const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
 
         expect(isElementVisible(crossCloudMenu)).to.equal(false);
@@ -447,7 +448,7 @@ describe('global navigation', () => {
   describe('main nav popups', () => {
     describe('desktop', () => {
       it('should render a popup properly', async () => {
-        await createFullGlobalNavigation({ hasCrossCloudMenu: false });
+        await createFullGlobalNavigation();
 
         const navItem = document.querySelector(selectors.navItem);
         const navLink = navItem.querySelector(selectors.navLink);
@@ -495,7 +496,7 @@ describe('global navigation', () => {
 
     describe('small desktop', () => {
       it('should render a popup properly', async () => {
-        await createFullGlobalNavigation({ viewport: 'smallDesktop', hasCrossCloudMenu: false });
+        await createFullGlobalNavigation({ viewport: 'smallDesktop' });
 
         const navItem = document.querySelector(selectors.navItem);
         const navLink = navItem.querySelector(selectors.navLink);
