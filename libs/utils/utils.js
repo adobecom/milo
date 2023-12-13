@@ -866,7 +866,7 @@ async function loadPostLCP(config) {
 
 export function scrollToHashedElement(hash) {
   if (!hash) return;
-  const elementId = hash.slice(1);
+  const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
   try {
     targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
