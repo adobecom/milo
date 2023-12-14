@@ -209,6 +209,23 @@ class PromoteStatusModal extends Component {
     }
   };
 
+refreshModalContent = async () => {
+  this.setState({ loading: true });
+
+  try {
+    const batchesData = await this.fetchBatchesData();
+    this.setState({
+      batches: batchesData,
+      loading: false,
+    });
+  } catch (error) {
+    console.error(error);
+    this.setState({
+      loading: false,
+    });
+  }
+};
+
   render() {
     const { modalVisible, batches, selectedBatch, loading, batchFiles, showBatchFiles, showFailedPagesModal, failedPages, getCategoryHeading, overallDataModalVisible, overallData, } = this.state;
 
@@ -219,6 +236,7 @@ class PromoteStatusModal extends Component {
     <div class="modal-content larger-modal" style="position: relative; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); max-height: 80vh; overflow-y: auto; width: auto; max-width: 90%; min-height: 150px; min-width: 500px">
       <div style="text-align: center;">
         <strong style="font-size: larger; font-weight: bold;">Promote Status</strong>
+        <button class="fgui-project-promote-refresh" onclick=${this.refreshModalContent} style=${"cursor: pointer;"}></button>
         ${errorSymbolVisible && html`
           <span class="error-symbol" style="font-size: 24px; cursor: pointer; margin-left: 10px;" onClick=${this.openOverallDataModal}>⚠️</span>
         `}

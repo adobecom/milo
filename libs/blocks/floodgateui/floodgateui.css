@@ -110,6 +110,18 @@ span.fgui-sync-badge-mono {
   border-radius: 2px;
 }
 
+.fgui-project-promote-refresh {
+  background: url(../locui/img/spectrum-refresh.svg);
+  width: 22px;
+  background-color: #0f7c41;
+  height: 22px;
+  background-repeat: no-repeat;
+  border-radius: 2px;
+  border: none;
+  background-position: 50%;
+  margin-left: 10px;
+}
+
 .fgui-status-toast-section {
   position: fixed;
   top: 20px;
