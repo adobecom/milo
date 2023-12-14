@@ -1,4 +1,4 @@
-import { updateConfig, getConfig } from '../../utils/utils.js';
+import { getConfig } from '../../utils/utils.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 
 export const getMetadata = (el, config) => [...el.childNodes].reduce((rdx, row) => {
@@ -11,17 +11,13 @@ export const getMetadata = (el, config) => [...el.childNodes].reduce((rdx, row) 
 }, {});
 
 export default function init(el) {
-  let config = getConfig();
+  const config = getConfig();
   if (config.locale?.ietf !== 'en-US') {
     const analyticLocalization = getMetadata(el, config);
-    config = {
-      ...config,
-      analyticLocalization: {
-        ...config.analyticLocalization,
-        ...analyticLocalization,
-      },
+    config.analyticLocalization = {
+      ...config.analyticLocalization,
+      ...analyticLocalization,
     };
-    updateConfig(config);
   }
   el.remove();
   return config;

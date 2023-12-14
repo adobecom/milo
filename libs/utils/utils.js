@@ -1078,7 +1078,7 @@ export async function loadArea(area = document) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) await documentPostSectionLoading(getConfig());
+  if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config, resolveDeferredFn);
 }
