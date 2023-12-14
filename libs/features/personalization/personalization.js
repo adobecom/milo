@@ -530,10 +530,11 @@ const normalizeFragPaths = ({ selector, val }) => ({
 });
 
 export async function runPersonalization(info, config) {
-  const { manifestPath } = info;
+  const { manifestPath, event, disabled } = info;
 
   const experiment = await getPersConfig(info);
-
+  experiment.event = event;
+  experiment.disabled = disabled;
   if (!experiment) return null;
 
   const { selectedVariant } = experiment;
