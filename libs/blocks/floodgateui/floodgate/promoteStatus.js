@@ -229,7 +229,7 @@ refreshModalContent = async () => {
   render() {
     const { modalVisible, batches, selectedBatch, loading, batchFiles, showBatchFiles, showFailedPagesModal, failedPages, getCategoryHeading, overallDataModalVisible, overallData, } = this.state;
 
-    const errorSymbolVisible = batches.some(batch => batch.status === 'COMPLETED WITH ERROR');
+    const errorSymbolVisible = batches.some(batch => batch.status === 'COMPLETED WITH ERROR') && batches.every(batch => batch.status === 'COMPLETED' || batch.status === 'COMPLETED WITH ERROR');
 
     const modalContent = modalVisible && html`
     <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
