@@ -179,8 +179,10 @@ class PromoteStatusModal extends Component {
   failedPages = async (batchNumber) => {
     const config = await getServiceConfigFg(origin);
     const paramsFg = await getParamsFg(config);
+    const env = heading.value.env;
+    const { url } = config[env].milofg.promotestatus;
     let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, batchResults: batchNumber };
-    const failedPagesData = await postData('https://14257-milofg-stage.adobeioruntime.net/api/v1/web/milo-fg/promote-status.json', params);
+    const failedPagesData = await postData(url, params);
     const { failedPromotes, failedPreviews, failedPublishes } = failedPagesData.batchResults;
 
     return { failedPromotes, failedPreviews, failedPublishes };
