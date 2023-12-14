@@ -170,6 +170,7 @@ div[class*="-up"] .media .foreground > .media-row {
   padding-bottom: 0;
   padding-top: 0;
   display: inline-flex;
+  margin-top: var(--spacing-xxs);
 }
 
 .media.qr-code .google-play {
@@ -343,6 +344,7 @@ div[class*="-up"] .media .foreground > .media-row {
     display: flex;
     width: 140px;
     height: 140px;
+    margin-top: var(--spacing-s);
   }
 
   .media.qr-code .qr-button-container {
