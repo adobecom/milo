@@ -469,6 +469,8 @@ export async function getPersConfig(info) {
     manifestPlaceholders,
     manifestInfo,
     variantLabel,
+    disabled,
+    event,
   } = info;
   let data = manifestData;
   if (!data) {
@@ -516,6 +518,8 @@ export async function getPersConfig(info) {
   config.name = name;
   config.manifest = manifestPath;
   config.manifestUrl = manifestUrl;
+  config.disabled = disabled;
+  config.event = event;
   return config;
 }
 
@@ -533,7 +537,6 @@ export async function runPersonalization(info, config) {
   const { manifestPath } = info;
 
   const experiment = await getPersConfig(info);
-
   if (!experiment) return null;
 
   const { selectedVariant } = experiment;
