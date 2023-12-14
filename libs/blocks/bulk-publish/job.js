@@ -29,7 +29,7 @@ class JobProcess extends LitElement {
   }
 
   async updated() {
-    if (this.jobStatus) this.dispatchEvent(new CustomEvent('processed'));
+    if (this.jobStatus) this.dispatchEvent(new CustomEvent('processed', { detail: this.jobStatus }));
     if (this.jobStatus && this.jobStatus.progress.failed !== 0) {
       const timeouts = this.jobStatus.data.resources.filter((job) => job.status === 503);
       if (timeouts.length) {

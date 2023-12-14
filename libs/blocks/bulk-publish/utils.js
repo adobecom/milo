@@ -12,6 +12,10 @@ const PROCESS_TYPES = [
   'index',
 ];
 
+const wait = (delay = 5000) => new Promise((resolve) => {
+  setTimeout(() => resolve(), delay);
+});
+
 const userPrefs = () => {
   const store = localStorage.getItem(PREFS_KEY);
   const prefs = store ? JSON.parse(store) : DEFAULT_PREFS;
@@ -107,4 +111,5 @@ export {
   jobStatus,
   userPrefs,
   validMiloURL,
+  wait,
 };

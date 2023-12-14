@@ -166,7 +166,7 @@ label[for='urls'] i {
   resize: none;
 }
 
-.url-tools {
+.error-bar {
   position: absolute;
   left: 0;
   width: 100%;
@@ -174,14 +174,14 @@ label[for='urls'] i {
   color: white;
 }
 
-.url-tools .btn {
+.error-bar .btn {
   width: 35px;
   height: 35px;
   padding: 15px;
   cursor: pointer;
 }
 
-.url-tools .errors {
+.error-bar .errors {
   display: flex;
   flex-direction: row;
   padding: 10px 15px;
@@ -189,7 +189,7 @@ label[for='urls'] i {
   justify-content: space-between;
 }
 
-.url-tools .fix-btn {
+.error-bar .fix-btn {
   background-color: white;
   color: var(--error);
   padding: 3px 8px;
@@ -199,7 +199,7 @@ label[for='urls'] i {
   font-size: 0.8em;
 }
 
-.url-tools .fix-btn:hover {
+.error-bar .fix-btn:hover {
   background-color: #f9f9f9;
 }
 

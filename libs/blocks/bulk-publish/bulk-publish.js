@@ -69,6 +69,20 @@ class BulkPublish extends LitElement {
     this.validateUrls();
   }
 
+  setJobErrors(errors) {
+    const urls = [];
+    errors.forEach((error) => {
+      const { href } = error;
+      const matched = this.urls.filter((url) => url.includes(href));
+      matched.forEach((match) => urls.push(match));
+    });
+    const textarea = this.renderRoot.querySelector('#Urls');
+    textarea.value = urls.join('\r\n');
+    if (['delete', 'unpublish'].includes(this.processType)) this.urls = urls;
+    this.disabled = urls;
+    this.jobErrors = { urls, messages: errors.map((error) => (error.message)) };
+  }
+
   validateUrls() {
     let errors = [];
     const invalid = this.jobErrors?.urls?.length
@@ -88,7 +102,7 @@ class BulkPublish extends LitElement {
     this.editing = false;
   }
 
-  validationTools() {
+  renderErrorBar() {
     if (typeof this.disabled === 'boolean') return html``;
     const isMax = this.disabled[0] === 'limit';
     const { text, startEdit } = this.getErrorProps(isMax);
@@ -160,11 +174,11 @@ class BulkPublish extends LitElement {
           </button>
         </div>
         <label class="process-title" for="Urls">
-          <strong>PAGE URLs</strong> - <i>Max 1000 per job</i>
+          <strong>PAGE URLs</strong> - <i>Max ${this.urls.length ? `${this.urls.length}/` : ''}1000 per job</i>
         </label>
       </div>
       <div class="urls${typeof this.disabled !== 'boolean' ? ' invalid' : ''}">
-        <div class="url-tools">${this.validationTools()}</div>
+        <div class="error-bar">${this.renderErrorBar()}</div>
         <div class="checkmark${this.disabled ? '' : ' show'}"></div>
         <textarea 
           id="Urls"
@@ -175,35 +189,40 @@ class BulkPublish extends LitElement {
     `;
   }
 
-  jobsTotal() {
-    return this.jobs.reduce((count, { result }) => {
+  getJobState() {
+    const jobState = {
+      showList: this.mode === 'half' || this.openJobs,
+      showClear: this.jobs.length && this.processing !== 'job',
+      loading: this.processing === 'job',
+    };
+    Object.keys(jobState).forEach((key) => (jobState[key] = `${jobState[key] ? '' : ' hide'}`));
+    jobState.count = this.jobs.reduce((count, { result }) => {
       const paths = result?.job?.data?.paths?.length ?? 0;
       return count + paths;
     }, 0);
+    return jobState;
   }
 
-  getJobState() {
-    const state = {
-      showList: this.mode === 'half' || this.openJobs,
-      showClear: this.jobs.length && this.processing !== 'job',
-      showTools: this.mode === 'half' || this.openJobs,
-      loading: this.processing === 'job',
-    };
-    Object.keys(state).forEach((key) => (state[key] = `${state[key] ? '' : ' hide'}`));
-    return state;
+  jobProcessed(event) {
+    const status = event.detail;
+    const updateJob = this.jobs.find(({ result }) => result.job.name === status.name);
+    updateJob.status = status;
+    if (this.jobs.filter((job) => !job.status).length === 0) {
+      this.processing = false;
+    }
   }
 
   renderJobs() {
-    const { showList, showClear, showTools, loading } = this.getJobState();
+    const { showList, showClear, loading, count } = this.getJobState();
     return html`
       <div
         class="panel-title"
         @click=${() => { this.openJobs = !!this.jobs.length; }}>
         <span class="title">
-          ${this.jobs.length ? html`<strong>${this.jobsTotal()}</strong>` : ''}
-          My Jobs
+          ${this.jobs.length ? html`<strong>${count}</strong>` : ''}
+          Job Results
         </span>
-        <div class="jobs-tools${showTools}">
+        <div class="jobs-tools${showList}">
           <div class="loading-jobs${loading}">
             <div class="loader"></div>
           </div>
@@ -224,7 +243,7 @@ class BulkPublish extends LitElement {
           ${this.jobs.map((job) => html`
             <job-process 
               .job=${job} 
-              @processed="${() => { this.processing = false; }}"></job-process>
+              @processed="${this.jobProcessed}"></job-process>
           `)}
         </div>
       </div>
@@ -248,20 +267,6 @@ class BulkPublish extends LitElement {
     if (process) process.value = 'choose';
   }
 
-  setJobErrors(errors) {
-    const urls = [];
-    errors.forEach((error) => {
-      const { href } = error;
-      const matched = this.urls.filter((url) => url.includes(href));
-      matched.forEach((match) => urls.push(match));
-    });
-    const textarea = this.renderRoot.querySelector('#Urls');
-    textarea.value = urls.join('\r\n');
-    this.urls = urls;
-    this.disabled = urls;
-    this.jobErrors = { urls, messages: errors.map((error) => (error.message)) };
-  }
-
   async submitJob() {
     if (!this.disabled) {
       this.processing = 'launch';
@@ -283,7 +288,7 @@ class BulkPublish extends LitElement {
     }
   }
 
-  modeProps() {
+  getModeState() {
     return {
       full: this.mode === 'full' ? 'on' : 'off',
       half: this.mode === 'half' ? 'on' : 'off',
@@ -294,7 +299,7 @@ class BulkPublish extends LitElement {
   }
 
   render() {
-    const { full, half, toggleMode } = this.modeProps();
+    const { full, half, toggleMode } = this.getModeState();
     return html`
       <header id="Header">
         <h1>Bulk Publishing</h1>
