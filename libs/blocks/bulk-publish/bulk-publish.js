@@ -5,12 +5,12 @@ import { createJobs } from './services.js';
 import {
   editEntry,
   FORM_MODES,
+  getJobErrorText,
   PROCESS_MAX,
   PROCESS_TYPES,
   selectOverage,
   validMiloURL,
   userPrefs,
-  getJobErrorText,
 } from './utils.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/bulk-publisher.css');
