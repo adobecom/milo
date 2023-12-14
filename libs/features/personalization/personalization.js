@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
-import { ENTITLEMENT_MAP } from './entitlements.js';
+import { getEntitlementsPromise, ENTITLEMENT_MAP } from './entitlements.js';
 
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
@@ -348,7 +348,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
-    userEntitlements = await window.milo.entitlements;
+    userEntitlements = await getEntitlementsPromise();
   }
 
   const hasMatch = (name) => {
