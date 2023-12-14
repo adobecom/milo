@@ -36,7 +36,8 @@ function assertLink(link, offer, params, text = texts.buy) {
 }
 
 function createLink(params = {}) {
-  return createLinkMarkup(defaults)(
+  return createLinkMarkup(
+    defaults,
     params.osi ?? osi,
     params.type,
     perpM2M,
