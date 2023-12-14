@@ -66,7 +66,7 @@ const processJob = (jobs, topic) => {
   }, { complete: [], error: [] });
 
   const { origin, useBulk } = jobs[0];
-  const paths = complete.map(({ result }) => (result.job.path));
+  const paths = complete.map(({ result }) => (result?.job?.path));
   return [{
     origin,
     useBulk,
@@ -100,7 +100,13 @@ const createJobs = async (jobs) => {
 
       return { origin, result, useBulk, href };
     } catch (error) {
-      return { href, origin, error: error.cause, message: error.message };
+      return {
+        href,
+        path,
+        origin,
+        error: error.cause ?? 400,
+        message: error.message,
+      };
     }
   });
   const results = await Promise.all(requests);
@@ -135,10 +141,11 @@ const pollJobStatus = async ({ result }) => {
   return jobStatus;
 };
 
-const processRetryQueue = async ({ queue, urls, process }) => {
+const attemptRetry = async ({ queue, urls, process }) => {
   const prepped = prepareProcesses({ urls, process });
   const processes = prepped.flatMap(async ({ endpoint, options, origin }) => {
     try {
+      await wait(4000);
       const job = await fetch(endpoint, options);
       if (!job.ok) {
         throw new Error(getErrorText(job.status), { cause: job.status }, origin);
@@ -159,8 +166,8 @@ const processRetryQueue = async ({ queue, urls, process }) => {
 };
 
 export {
-  getMiloUrl,
+  attemptRetry,
   createJobs,
+  getMiloUrl,
   pollJobStatus,
-  processRetryQueue,
 };

@@ -1,7 +1,7 @@
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
 import { jobStatus } from './utils.js';
-import { pollJobStatus, processRetryQueue } from './services.js';
+import { pollJobStatus, attemptRetry } from './services.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/job.css');
 
@@ -38,7 +38,7 @@ class JobProcess extends LitElement {
         } else {
           const queue = this.queue.filter((item) => item.count < 3 && item.status === 503);
           if (queue.length) {
-            const newQueue = await processRetryQueue({
+            const newQueue = await attemptRetry({
               queue,
               urls: queue.map((item) => `${this.job.origin}${item.path}`),
               process: this.jobStatus.topic,
@@ -50,14 +50,15 @@ class JobProcess extends LitElement {
     }
   }
 
-  viewResult({ url, code }, topic) {
+  async viewResult({ url, code, topic }, pathIndex) {
     const isPOST = !['delete', 'unpublish'].includes(topic);
     if (this.jobStatus && (code === 200 || code === 204) && isPOST) {
       window.open(url, '_blank');
     } else {
-      navigator.clipboard.writeText(url).then(() => {
-        // TODO url copied tooltip
-      });
+      await navigator.clipboard.writeText(url);
+      const results = this.renderRoot.querySelectorAll('.result');
+      results[pathIndex].classList.add('copied');
+      setTimeout(() => results[pathIndex].classList.remove('copied'), 3000);
     }
   }
 
@@ -74,10 +75,14 @@ class JobProcess extends LitElement {
       jobState = !isOK.includes(queued.status) && queued.count < 3 ? 'queued' : 'stopped';
     }
     const jobstatus = jobStatus(currentStatus, jobState, queued?.count);
-    const success = ` success${['delete', 'unpublish'].includes(current.topic) ? '' : ' link'}`;
-    const style = isOK.includes(currentStatus) ? success : '';
+    const okStyle = ` success${['delete', 'unpublish'].includes(current.topic) ? '' : ' link'}`;
+    const style = isOK.includes(currentStatus) ? okStyle : '';
+    const origin = current.topic === 'publish' && statusResource?.status && isOK.includes(statusResource.status)
+      ? this.job.origin.replace('.page', '.live')
+      : this.job.origin;
+
     return {
-      url: statusResource?.href ?? `${this.job.origin}${path}`,
+      url: statusResource?.href ?? `${origin}${path}`,
       status: jobstatus,
       time: stopTime ?? createTime,
       topic: current.topic,
@@ -87,13 +92,13 @@ class JobProcess extends LitElement {
 
   render() {
     const { job } = this.job.result;
-    return job.data.paths.map((path) => {
+    return job.data.paths.map((path, pathIndex) => {
       const pathcheck = typeof path === 'object' ? path.path : path;
       const { style, status, topic, url, time } = this.jobDetails(pathcheck);
       return html`
         <div 
           class="result${style}"
-          @click=${() => this.viewResult({ url, code: status.code }, topic)}>
+          @click=${() => this.viewResult({ url, code: status.code, topic }, pathIndex)}>
           <div class="process">
             ${topic} <span class="url">${url}</span>
           </div>
