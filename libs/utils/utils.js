@@ -858,7 +858,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  loadMartech(config);
+  loadMartech();
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
