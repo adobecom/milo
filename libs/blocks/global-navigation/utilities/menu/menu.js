@@ -280,7 +280,7 @@ const decorateCrossCloudMenu = (content) => {
 
   const crossCloudMenuContent = toFragment`<div class="feds-crossCloudMenu"></div>`;
 
-  [...crossCloudMenuEl.children].forEach((el, index) => {
+  [...crossCloudMenuEl.querySelector('ul').children].forEach((el, index) => {
     const decoratedLink = decorateLinkGroup(el, index);
     if (index === 0) decoratedLink.prepend(toFragment`${CONFIG.icons.home}`);
     crossCloudMenuContent.append(toFragment`<div class="feds-crossCloudMenu-item">${decoratedLink}</div>`);
