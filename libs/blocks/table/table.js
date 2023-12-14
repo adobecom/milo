@@ -39,6 +39,8 @@ function handleHeading(headingCols, isPriceBottom) {
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
+      let bodyElem = elements[textStartIndex + 2];
+
       if (pricingElem) {
         pricingElem.classList.add('pricing');
         if (isPriceBottom) {
@@ -46,10 +48,11 @@ function handleHeading(headingCols, isPriceBottom) {
             elements[textStartIndex + 2],
             elements[textStartIndex + 1],
           );
+          bodyElem = elements[textStartIndex + 1];
         }
       }
-      if (elements[textStartIndex + 2]) {
-        elements[textStartIndex + 2].classList.add('body');
+      if (bodyElem) {
+        bodyElem.classList.add('body');
       }
 
       decorateButtons(col, 'button-l');
