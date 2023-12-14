@@ -12,11 +12,12 @@ export const getMetadata = (el, config) => [...el.childNodes].reduce((rdx, row) 
 
 export default function init(el) {
   const config = getConfig();
-  if (config.locale?.ietf !== 'en-US') {
-    const analyticLocalization = getMetadata(el, config);
+  const { locale, ietf = locale?.ietf, analyticLocalization } = config;
+  if (ietf !== 'en-US') {
+    const metadata = getMetadata(el, config);
     config.analyticLocalization = {
-      ...config.analyticLocalization,
       ...analyticLocalization,
+      ...metadata,
     };
   }
   el.remove();
