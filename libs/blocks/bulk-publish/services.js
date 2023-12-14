@@ -59,26 +59,27 @@ const prepareBulkJobs = (jobs) => {
   }, {}));
 };
 
-const mockJob = (jobs, topic) => {
-  const { completed, errors } = jobs.reduce((list, job) => {
-    if (!job.error) list.completed.push(job);
-    else list.errors.push(job);
+const processJob = (jobs, topic) => {
+  const { complete, error } = jobs.reduce((list, job) => {
+    list[!job.error ? 'complete' : 'error'].push(job);
     return list;
-  }, { completed: [], errors: [] });
-  const paths = completed.map((item) => (item.result.job.path));
+  }, { complete: [], error: [] });
+
+  const { origin, useBulk } = jobs[0];
+  const paths = complete.map(({ result }) => (result.job.path));
   return [{
-    origin: jobs[0].origin,
-    useBulk: jobs[0].useBulk,
+    origin,
+    useBulk,
     result: {
       job: {
         topic,
         state: 'stopped',
         stopTime: new Date(),
-        progress: { failed: completed.filter((item) => ![200, 204].includes(item.status)).length },
-        data: { paths, resources: completed.map((item) => (item.result.job)) },
+        progress: { failed: complete.filter(({ status }) => ![200, 204].includes(status)).length },
+        data: { paths, resources: complete.map((item) => (item.result.job)) },
       },
     },
-  }, ...errors];
+  }, ...error];
 };
 
 const createJobs = async (jobs) => {
@@ -96,13 +97,14 @@ const createJobs = async (jobs) => {
       const result = useBulk
         ? await job.json()
         : { job: { origin, path, status: job.status, href } };
+
       return { origin, result, useBulk, href };
     } catch (error) {
       return { href, origin, error: error.cause, message: error.message };
     }
   });
   const results = await Promise.all(requests);
-  return useBulk ? results : mockJob(results, jobs.process);
+  return useBulk ? results : processJob(results, jobs.process);
 };
 
 const wait = (delay = 5000) => new Promise((resolve) => {

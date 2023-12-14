@@ -29,6 +29,7 @@ class JobProcess extends LitElement {
   }
 
   async updated() {
+    if (this.jobStatus) this.dispatchEvent(new CustomEvent('processed'));
     if (this.jobStatus && this.jobStatus.progress.failed !== 0) {
       const timeouts = this.jobStatus.data.resources.filter((job) => job.status === 503);
       if (timeouts.length) {
@@ -50,12 +51,12 @@ class JobProcess extends LitElement {
   }
 
   viewResult({ url, code }, topic) {
-    const isPublished = !['delete', 'unpublish'].includes(topic);
-    if (this.jobStatus && (code === 200 || code === 204) && isPublished) {
+    const isPOST = !['delete', 'unpublish'].includes(topic);
+    if (this.jobStatus && (code === 200 || code === 204) && isPOST) {
       window.open(url, '_blank');
     } else {
       navigator.clipboard.writeText(url).then(() => {
-        this.copied = true;
+        // TODO url copied tooltip
       });
     }
   }
@@ -66,31 +67,32 @@ class JobProcess extends LitElement {
     const statusResource = this.jobStatus && data.resources.find((source) => source.path === path);
     let currentStatus = statusResource?.status ?? status;
     let jobState = state;
+    const isOK = [200, 204];
     const queued = this.queue?.find((item) => item.path === path);
     if (queued) {
       currentStatus = queued.status;
-      jobState = ![200, 204].includes(queued.status) && queued.count < 3 ? 'queued' : 'stopped';
+      jobState = !isOK.includes(queued.status) && queued.count < 3 ? 'queued' : 'stopped';
     }
     const jobstatus = jobStatus(currentStatus, jobState, queued?.count);
-    const isLinked = ['delete', 'unpublish'].includes(current.topic) ? '' : ' link';
-    const isCompleted = [200, 204].includes(status) ? ` success${isLinked}` : '';
+    const success = ` success${['delete', 'unpublish'].includes(current.topic) ? '' : ' link'}`;
+    const style = isOK.includes(currentStatus) ? success : '';
     return {
       url: statusResource?.href ?? `${this.job.origin}${path}`,
       status: jobstatus,
       time: stopTime ?? createTime,
       topic: current.topic,
-      isCompleted,
+      style,
     };
   }
 
   render() {
     const { job } = this.job.result;
     return job.data.paths.map((path) => {
-      const jobPath = typeof path === 'object' ? path.path : path;
-      const { url, status, time, topic, isCompleted } = this.jobDetails(jobPath);
+      const pathcheck = typeof path === 'object' ? path.path : path;
+      const { style, status, topic, url, time } = this.jobDetails(pathcheck);
       return html`
         <div 
-          class="result${isCompleted}"
+          class="result${style}"
           @click=${() => this.viewResult({ url, code: status.code }, topic)}>
           <div class="process">
             ${topic} <span class="url">${url}</span>

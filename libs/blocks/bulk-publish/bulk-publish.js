@@ -156,7 +156,7 @@ class BulkPublish extends LitElement {
             disable=${this.disableSubmitBtn()} 
             @click=${this.submitJob}>
             Run Job
-            <span class="loader${this.processing ? '' : ' hide'}"></span>
+            <span class="loader${this.processing === 'launch' ? '' : ' hide'}"></span>
           </button>
         </div>
         <label class="process-title" for="Urls">
@@ -165,7 +165,7 @@ class BulkPublish extends LitElement {
       </div>
       <div class="urls${typeof this.disabled !== 'boolean' ? ' invalid' : ''}">
         <div class="url-tools">${this.validationTools()}</div>
-        <div class="checkmark${this.disabled ? ' hide' : ''}"></div>
+        <div class="checkmark${this.disabled ? '' : ' show'}"></div>
         <textarea 
           id="Urls"
           placeholder="Example: https://main--milo--adobecom.hlx.page/path/to/page"
@@ -182,7 +182,19 @@ class BulkPublish extends LitElement {
     }, 0);
   }
 
+  getJobState() {
+    const state = {
+      showList: this.mode === 'half' || this.openJobs,
+      showClear: this.jobs.length && this.processing !== 'job',
+      showTools: this.mode === 'half' || this.openJobs,
+      loading: this.processing === 'job',
+    };
+    Object.keys(state).forEach((key) => (state[key] = `${state[key] ? '' : ' hide'}`));
+    return state;
+  }
+
   renderJobs() {
+    const { showList, showClear, showTools, loading } = this.getJobState();
     return html`
       <div
         class="panel-title"
@@ -191,13 +203,16 @@ class BulkPublish extends LitElement {
           ${this.jobs.length ? html`<strong>${this.jobsTotal()}</strong>` : ''}
           My Jobs
         </span>
-        <div class="jobs-tools${!this.openJobs && this.mode === 'full' ? ' hide' : ''}">
+        <div class="jobs-tools${showTools}">
+          <div class="loading-jobs${loading}">
+            <div class="loader"></div>
+          </div>
           <div 
-            class="clear-jobs${this.jobs.length ? '' : ' hide'}"
+            class="clear-jobs${showClear}"
             @click=${() => { this.jobs = []; }}></div>
         </div>
       </div>
-      <div class="job${!this.openJobs ? ' hide' : ''}">
+      <div class="job${showList}">
         <div class="job-head">
           <div class="job-url">JOB</div>
           <div class="job-meta">
@@ -207,7 +222,9 @@ class BulkPublish extends LitElement {
         </div>
         <div class="job-list">
           ${this.jobs.map((job) => html`
-            <job-process .job=${job}></job-process>
+            <job-process 
+              .job=${job} 
+              @processed="${() => { this.processing = false; }}"></job-process>
           `)}
         </div>
       </div>
@@ -247,14 +264,14 @@ class BulkPublish extends LitElement {
 
   async submitJob() {
     if (!this.disabled) {
-      this.processing = true;
+      this.processing = 'launch';
       const newJobs = await createJobs({
         urls: this.urls,
         process: this.processType.toLowerCase(),
       });
       const errors = newJobs.filter((job) => job.error);
       this.jobs = [...this.jobs, ...newJobs.filter((job) => !job.error)];
-      this.processing = false;
+      this.processing = 'job';
       if (errors.length) {
         this.setJobErrors(errors);
       } else {

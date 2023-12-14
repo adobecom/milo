@@ -67,7 +67,7 @@ header .mode-switcher {
   justify-content: space-between;
   flex-grow: 1;
   gap: 16px;
-  height: 72vh;
+  height: 69vh;
 }
 
 label[for='urls'] {
@@ -211,7 +211,7 @@ label[for='urls'] i {
   right: 10px;
   background-image: url('/libs/blocks/bulk-publish/img/checkmark.svg');
   background-repeat: no-repeat;
-  opacity: 1;
+  opacity: 0;
   transition: opacity 0.6s;
 }
 
@@ -254,17 +254,21 @@ label[for='urls'] i {
 }
 
 .bulk-publisher.half .panel {
-  flex-grow: 1.5;
+  flex-grow: 1;
 }
 
 .bulk-publisher.full .job.hide {
-  display: none;
   transition: all 0.6s;
 }
 
 .jobs-tools {
   display: flex;
-  align-items: end;
+  align-items: center;
+}
+
+.jobs-tools .loading-jobs {
+  width: 25px;
+  right: 10px;
 }
 
 .jobs-tools .clear-jobs {
@@ -377,13 +381,11 @@ label[for='urls'] i {
   cursor: not-allowed;
 }
 
-.checkmark.hide {
-  opacity: 0;
+.checkmark.show {
+  opacity: 1;
 }
 
-.mode-switcher.hide,
-.jobs-tools.hide,
-.clear-jobs.hide {
+.results .hide {
   display: none;
 }
 
