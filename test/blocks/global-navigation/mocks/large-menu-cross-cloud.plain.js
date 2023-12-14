@@ -376,19 +376,15 @@ export default `<div>
   </div>
   <div class="cross-cloud-menu">
     <div>
-      <div><a href="https://www.adobe.com/index.html">Adobe.com</a></div>
-    </div>
-    <div>
-      <div><a href="https://www.adobe.com/creativecloud.html">Creativity &amp; Design</a></div>
-    </div>
-    <div>
-      <div><a href="https://www.adobe.com/acrobat.html">PDF &amp; E-signatures</a></div>
-    </div>
-    <div>
-      <div><a href="https://business.adobe.com/">Marketing &amp; Commerce</a></div>
-    </div>
-    <div>
-      <div><a href="https://helpx.adobe.com/support.html">Help &amp; Support</a></div>
+      <div>
+        <ul>
+          <li><a href="https://www.adobe.com/index.html"><u>Adobe.com</u></a></li>
+          <li><a href="https://www.adobe.com/creativecloud.html"><u>Creativity &amp; Design</u></a></li>
+          <li><a href="https://www.adobe.com/acrobat.html"><u>PDF &amp; E-signatures</u></a></li>
+          <li><a href="https://business.adobe.com/"><u>Marketing &amp; Commerce</u></a></li>
+          <li><a href="https://helpx.adobe.com/support.html"><u>Help &amp; Support</u></a></li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
