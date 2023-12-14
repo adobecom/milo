@@ -110,7 +110,7 @@ div[class*="-up"] .media .foreground > .media-row {
 .media ul {
   padding-left: 20px;
   margin-top: var(--spacing-xs);
-  margin-bottom: var(--spacing-s);
+  margin-bottom: var(--spacing-xs);
 }
 
 .media ul > li::before {
