@@ -64,26 +64,6 @@ const decorateImage = (media) => {
   }
 };
 
-const decorateCatalogProductList = (classList, foreground) => {
-  if (!classList.contains('catalog') && !foreground) return;
-  const paragraphs = foreground.querySelectorAll(':scope p:not([class])');
-  if (paragraphs.length < 1) return;
-  const productList = createTag('div', { class: 'catalog-product-list' });
-  [...paragraphs].forEach((paragraph) => {
-    const title = paragraph.querySelector('strong');
-    const picture = paragraph.querySelector('picture');
-    const product = createTag('div', { class: 'catalog-product' });
-    if (title.innerText === 'Includes:') {
-      product.appendChild(title);
-    } else if (picture) {
-      product.appendChild(picture);
-      product.appendChild(title);
-    }
-    productList.appendChild(product);
-    paragraph.replaceWith(productList);
-  });
-};
-
 export default function init(el) {
   const isLight = el.classList.contains('light');
   if (!isLight) el.classList.add('dark');
@@ -134,5 +114,13 @@ export default function init(el) {
       media?.lastChild.remove();
     }
   }
-  decorateCatalogProductList(el.classList, foreground);
+  if (el.classList.contains('mnemonic-list')) {
+    import('./mnemonic-list.js')
+      .then((module) => {
+        module.decorateMnemonicList(foreground);
+      })
+      .catch((err) => {
+        console.error('Failed to load module: ', err);
+      });
+  }
 }

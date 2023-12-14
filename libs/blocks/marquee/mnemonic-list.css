@@ -1,0 +1,33 @@
+/* Mnemonic list marquee */
+
+@media screen and (min-width: 800px) {
+  .marquee.mnemonic-list .foreground .text {
+    max-width: 800px;
+  }
+}
+
+.mnemonic-list .foreground .product-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  margin: 0 0 var(--spacing-s);
+}
+
+.mnemonic-list .foreground .product-item {
+  display: flex;
+  flex: none;
+  gap: var(--spacing-xxs);
+}
+
+.mnemonic-list .foreground .product-list .product-item strong {
+  font-size: var(--type-heading-xxs-size);
+  line-height: var(--type-heading-xs-lh);
+}
+
+.mnemonic-list .foreground .product-list .product-item picture img {
+  width: var(--icon-size-xs);
+}

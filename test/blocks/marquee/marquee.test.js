@@ -106,27 +106,26 @@ describe('marquee', () => {
     });
   });
 
-  describe('catalog marquee', () => {
-    const marquee = document.getElementById('catalog-marquee');
-    const productList = marquee.querySelector('.catalog-product-list');
-    it('has a catalog-product-list', () => {
-      init(marquee);
+  describe('marquee light with mnemonic list', () => {
+    const marquee = document.getElementById('mnemonic-list');
+    init(marquee);
+    it('has a product-item-list', () => {
+      const productList = marquee.querySelector('.product-list');
       expect(productList).to.exist;
     });
-    it('has a catalog product', () => {
-      init(marquee);
-      const product = marquee.querySelector('.catalog-product');
+    it('has a product item', () => {
+      const product = marquee.querySelector('.product-item');
       expect(product).to.exist;
     });
-    it('has a catalog product with a title', () => {
-      init(marquee);
-      const product = productList.querySelectorAll('.catalog-product')[0];
+    it('has a product product with a title', () => {
+      const productList = marquee.querySelector('.product-list');
+      const product = productList.querySelectorAll('.product-item')[0];
       const title = product.querySelector('strong');
       expect(title).to.exist;
     });
-    it('has a catalog product with an image and title', () => {
-      init(marquee);
-      const product = productList.querySelectorAll('.catalog-product')[1];
+    it('has a product with an image and title', () => {
+      const productList = marquee.querySelector('.product-list');
+      const product = productList.querySelectorAll('.product-item')[1];
       const title = product.querySelector('strong');
       const mnemonic = product.querySelector('picture');
       expect(title).to.exist;
