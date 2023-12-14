@@ -200,7 +200,9 @@
   .feds-promo--dark a:hover {
     text-decoration: underline;
   }
+}
 
+@media (min-width: 1200px) {
   .feds-crossCloudMenu-wrapper {
     width: 100%;
     display: flex;
@@ -227,5 +229,9 @@
 
   .feds-crossCloudMenu .feds-navLink:hover {
     background-color: transparent;
+  }
+
+  .feds-crossCloudMenu .feds-navLink {
+    padding: 0 28px;
   }
 }

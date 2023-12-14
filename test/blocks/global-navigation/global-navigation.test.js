@@ -75,7 +75,7 @@ describe('global navigation', () => {
 
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
-        [...crossCloudMenu.querySelectorAll(selectors.navLink)].forEach((el) => {
+        crossCloudMenu.querySelectorAll(selectors.navLink).forEach((el) => {
           expect(isElementVisible(el)).to.equal(true);
         });
       });
@@ -87,22 +87,17 @@ describe('global navigation', () => {
     });
 
     describe('small desktop', () => {
-      it('should render the Cross Clound Menu', async () => {
+      it('should not render the Cross Clound Menu', async () => {
         await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud, viewport: 'smallDesktop' });
-        const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
-
-        expect(isElementVisible(crossCloudMenu)).to.equal(false);
-
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
-        [...crossCloudMenu.querySelectorAll(selectors.navLink)].forEach((el) => {
-          expect(isElementVisible(el)).to.equal(true);
-        });
+        expect(isElementVisible(document.querySelector(selectors.crossCloudMenuWrapper)))
+          .to.equal(false);
       });
     });
 
     describe('mobile', () => {
-      it('should not render Cross Clound Menu on mobile', async () => {
+      it('should not render the Cross Clound Menu', async () => {
         await createFullGlobalNavigation({ viewport: 'mobile' });
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
