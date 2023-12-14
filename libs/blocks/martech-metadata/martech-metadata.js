@@ -14,10 +14,9 @@ export default function init(el) {
   const config = getConfig();
   const { locale, ietf = locale?.ietf, analyticLocalization } = config;
   if (ietf !== 'en-US') {
-    const metadata = getMetadata(el, config);
     config.analyticLocalization = {
       ...analyticLocalization,
-      ...metadata,
+      ...getMetadata(el, config),
     };
   }
   el.remove();
