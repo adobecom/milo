@@ -355,7 +355,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     if (name === '') return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
-    if (userEntitlements.includes(name)) return true;
+    if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
