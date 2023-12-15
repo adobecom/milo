@@ -1,5 +1,5 @@
 import { decorateTextOverrides, decorateBlockText, decorateBlockBg, decorateIconStack, decorateButtons } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   large: ['xxl', 'm', 'l'],
@@ -72,7 +72,7 @@ function decorateBricks(el) {
     decorateBlockBg(el, elems[elems.length - 2], { useHandleFocalpoint: true });
   }
   if (elems.length > 2) {
-    el.querySelector('.background').style.background = elems[0].textContent;
+    el.style.background = elems[0].textContent;
     elems[0].remove();
   }
   const foreground = elems[elems.length - 1];
@@ -90,6 +90,12 @@ function decorateBricks(el) {
 }
 
 export default async function init(el) {
+  const { miloLibs, codeRoot } = getConfig();
+  const regex = /rounded-corners/g;
+  const base = miloLibs || codeRoot;
+  if ([...el.classList].some((c) => regex.test(c))) {
+    loadStyle(`${base}/styles/rounded-corners.css`);
+  }
   decorateBricks(el);
   decorateTextOverrides(el);
   decorateSupplementalText(el);
