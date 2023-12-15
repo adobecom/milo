@@ -924,7 +924,7 @@ export async function loadDeferred(area, blocks, config) {
     return;
   }
 
-  config.resolveDeferred(true);
+  config.resolveDeferred?.(true);
 
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;

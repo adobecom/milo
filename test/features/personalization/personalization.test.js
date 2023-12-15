@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
-import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { ENTITLEMENT_MAP } from '../../../libs/features/personalization/entitlements.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
@@ -212,9 +212,10 @@ describe('Functional Test', () => {
   });
 
   it('should read and use entitlement data', async () => {
-    // setup entitlement promise
-    window.milo ||= {};
-    window.milo.entitlements = Promise.resolve(['some-app', 'fireflies']);
+    setConfig(getConfig());
+    const { entitlements } = getConfig();
+
+    entitlements(['some-app', 'fireflies']);
     let manifestJson = await readFile({ path: './mocks/manifestUseEntitlements.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);

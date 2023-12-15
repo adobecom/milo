@@ -235,8 +235,7 @@ describe('Utils', () => {
     });
 
     it('Sets up milo.deferredPromise', async () => {
-      window.milo = {};
-      const resolveDeferred = utils.setupDeferredPromise();
+      const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
       utils.loadDeferred(document, [], {}, resolveDeferred);
       const result = await window.milo.deferredPromise;
