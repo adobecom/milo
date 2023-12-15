@@ -156,7 +156,7 @@ label[for='urls'] i {
   width: 100%;
   max-height: 60vh;
   font-size: 0.75em;
-  padding: 10px 50px 15px 13px;
+  padding: 10px 35px 15px 13px;
   box-sizing: border-box;
   border-radius: 3px;
   border-color: white;
@@ -213,6 +213,20 @@ label[for='urls'] i {
   background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 0.6s;
+}
+
+.entered-count {
+  color: #ddd;
+  position: absolute;
+  bottom: 0;
+  font-size: 0.8em;
+  right: 7px;
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+
+.entered-count.show {
+  opacity: 1;
 }
 
 .job {

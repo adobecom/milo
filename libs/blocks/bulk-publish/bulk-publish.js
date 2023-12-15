@@ -6,11 +6,10 @@ import {
   editEntry,
   FORM_MODES,
   getJobErrorText,
-  PROCESS_MAX,
   PROCESS_TYPES,
-  selectOverage,
   validMiloURL,
-  userPrefs,
+  sticky,
+  wait,
 } from './utils.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/bulk-publisher.css');
@@ -31,7 +30,7 @@ class BulkPublish extends LitElement {
 
   constructor() {
     super();
-    this.mode = userPrefs().get('mode');
+    this.mode = sticky().get('mode');
     this.urls = [];
     this.processType = 'choose';
     this.disabled = true;
@@ -42,14 +41,25 @@ class BulkPublish extends LitElement {
     this.jobErrors = false;
   }
 
-  connectedCallback() {
+  async connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styles, loader];
+    const resume = sticky().get('resume');
+    if (resume.length) {
+      this.jobs = resume;
+      await wait(1000);
+      this.openJobs = true;
+    }
   }
 
   async updated() {
-    if (userPrefs().get('mode') !== this.mode) {
-      userPrefs().set('mode', this.mode);
+    const prefs = sticky();
+    if (prefs.get('mode') !== this.mode) {
+      prefs.set('mode', this.mode);
+    }
+    if (this.jobs.length) {
+      const unfinished = this.jobs.filter((job) => !job.status);
+      prefs.set('resume', unfinished);
     }
     if (this.mode === 'full' && !this.openJobs && this.urls.length) {
       const textarea = this.renderRoot.querySelector('#Urls');
@@ -92,9 +102,6 @@ class BulkPublish extends LitElement {
     if (invalid?.length) {
       errors = [...errors, ...invalid];
     }
-    if (this.urls.length > PROCESS_MAX) {
-      errors.push('limit');
-    }
     if (errors.length === 0) {
       errors = this.urls.length === 0;
     }
@@ -104,8 +111,7 @@ class BulkPublish extends LitElement {
 
   renderErrorBar() {
     if (typeof this.disabled === 'boolean') return html``;
-    const isMax = this.disabled[0] === 'limit';
-    const { text, startEdit } = this.getErrorProps(isMax);
+    const { text, startEdit } = this.getErrorProps();
     startEdit();
     const count = this.disabled.length;
     const counter = count > 1 ? `1/${count} Errors` : '1 Error';
@@ -120,9 +126,9 @@ class BulkPublish extends LitElement {
     `;
   }
 
-  getErrorProps(isMax) {
+  getErrorProps() {
     const textarea = this.renderRoot.getElementById('Urls');
-    let text = isMax ? 'Invalid Quantity (max 1000 per job)' : 'Invalid Url';
+    let text = 'Invalid Url';
     if (this.jobErrors) {
       text = getJobErrorText(this.jobErrors, this.processType);
     }
@@ -138,7 +144,6 @@ class BulkPublish extends LitElement {
           }
           this.validateUrls();
         } else {
-          if (isMax) selectOverage(textarea, this.urls);
           editEntry(textarea, this.disabled[0]);
         }
       },
@@ -174,12 +179,13 @@ class BulkPublish extends LitElement {
           </button>
         </div>
         <label class="process-title" for="Urls">
-          <strong>PAGE URLs</strong> - <i>Max ${this.urls.length ? `${this.urls.length}/` : ''}1000 per job</i>
+          <strong>PAGE URLs</strong>
         </label>
       </div>
       <div class="urls${typeof this.disabled !== 'boolean' ? ' invalid' : ''}">
         <div class="error-bar">${this.renderErrorBar()}</div>
         <div class="checkmark${this.disabled ? '' : ' show'}"></div>
+        <div class="entered-count${this.urls.length ? ' show' : ''}">${this.urls.length}</div>
         <textarea 
           id="Urls"
           placeholder="Example: https://main--milo--adobecom.hlx.page/path/to/page"
@@ -209,6 +215,7 @@ class BulkPublish extends LitElement {
     updateJob.status = status;
     if (this.jobs.filter((job) => !job.status).length === 0) {
       this.processing = false;
+      sticky().set('resume', []);
     }
   }
 

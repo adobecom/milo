@@ -1,9 +1,8 @@
 import { getMiloUrl } from './services.js';
 
 const FORM_MODES = ['full', 'half'];
-const PROCESS_MAX = 1000;
 const PREFS_KEY = 'bulk-pub-prefs';
-const DEFAULT_PREFS = { height: 0, mode: FORM_MODES[0] };
+const DEFAULT_PREFS = { mode: FORM_MODES[0], resume: [] };
 const PROCESS_TYPES = [
   'preview',
   'publish',
@@ -16,7 +15,7 @@ const wait = (delay = 5000) => new Promise((resolve) => {
   setTimeout(() => resolve(), delay);
 });
 
-const userPrefs = () => {
+const sticky = () => {
   const store = localStorage.getItem(PREFS_KEY);
   const prefs = store ? JSON.parse(store) : DEFAULT_PREFS;
   return {
@@ -48,18 +47,6 @@ const editEntry = (elem, str) => {
     elem.setSelectionRange(start, end);
     elem.focus();
     elem.scrollTop = position;
-  }
-};
-
-const selectOverage = (elem, paths) => {
-  if (elem?.value) {
-    const { value } = elem;
-    const overage = paths.length - PROCESS_MAX;
-    const selectable = paths.slice(-[overage]);
-    const start = value.indexOf(selectable[0]);
-    const end = value.indexOf(selectable[selectable.length]);
-    elem.setSelectionRange(start, end);
-    elem.focus();
   }
 };
 
@@ -105,11 +92,9 @@ export {
   FORM_MODES,
   getErrorText,
   getJobErrorText,
-  PROCESS_MAX,
   PROCESS_TYPES,
-  selectOverage,
   jobStatus,
-  userPrefs,
+  sticky,
   validMiloURL,
   wait,
 };
