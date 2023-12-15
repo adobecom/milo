@@ -313,6 +313,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
 
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
+    const isFederatedMenu = pathElement?.href.includes('/federal/');
     if (!(pathElement instanceof HTMLElement)) return;
     let content;
 
@@ -336,7 +337,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
       </div>`;
     decorateCrossCloudMenu(menuTemplate);
 
-    if (config.isFederatedMenu || config.isFederatedGnav) federatePictureSources(menuTemplate);
+    if (isFederatedMenu || config.isFederatedGnav) federatePictureSources(menuTemplate);
 
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);

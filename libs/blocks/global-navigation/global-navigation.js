@@ -580,11 +580,7 @@ class Gnav {
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
     // All dropdown decoration is delayed
-    const delayDropdownDecoration = ({
-      template,
-      isFederatedGnav,
-      isFederatedMenu,
-    } = {}) => {
+    const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
 
       const decorateDropdown = () => logErrorFor(async () => {
@@ -597,8 +593,7 @@ class Gnav {
           item,
           template,
           type: itemType,
-          isFederatedGnav,
-          isFederatedMenu,
+          isFederatedGnav: this.useFederatedContent,
         });
       }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
 
@@ -641,11 +636,7 @@ class Gnav {
         });
         observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
 
-        delayDropdownDecoration({
-          template: triggerTemplate,
-          isFederatedGnav: this.useFederatedContent,
-          isFederatedMenu: item.closest('.feds') instanceof HTMLElement,
-        });
+        delayDropdownDecoration({ template: triggerTemplate });
         return triggerTemplate;
       }
       case 'primaryCta':
