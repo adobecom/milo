@@ -1,4 +1,4 @@
-import { getConfig, loadLink, loadScript } from '../utils/utils.js';
+import { getConfig, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const TARGET_TIMEOUT_MS = 2000;
@@ -135,7 +135,11 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
-    setupEntitlementCallback();
+    loadIms()
+      .then(() => {
+        if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
+      })
+      .catch(() => {});
 
     setDeep(
       window,
