@@ -118,7 +118,8 @@ const setupEntitlementCallback = () => {
       }
     };
     waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, [])
-      .then(handleEntitlements);
+      .then(handleEntitlements)
+      .catch(() => resolve([]));
   };
 
   const { miloLibs, codeRoot, entitlements: resolveEnt } = getConfig();
