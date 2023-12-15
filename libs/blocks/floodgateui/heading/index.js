@@ -1,4 +1,4 @@
-import { heading, languages, urls, statuses, renderSignal } from '../utils/state.js';
+import { heading, languages, urls, statuses, renderSignal, shouldOpenModalOnMount } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { autoSetup } from '../floodgate/index.js';
 import getServiceConfig from '../../../utils/service-config.js';
@@ -26,6 +26,7 @@ export default async function handleRefresh() {
     languages.value = [];
     urls.value = [];
     statuses.value = {};
+    shouldOpenModalOnMount.value = false;
     await autoSetup();
     renderSignal.value = renderSignal.value + 1;
   }

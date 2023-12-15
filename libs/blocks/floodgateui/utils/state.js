@@ -38,6 +38,7 @@ export const loadHeadingCheck = signal();
 export const loadDetailsCheck = signal();
 export const copyCompleteRender = signal();
 export const renderModal = signal(0);
+export const shouldOpenModalOnMount = signal(true);
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');

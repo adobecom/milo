@@ -1,6 +1,6 @@
 import { html, useEffect } from '../../../deps/htm-preact.js';
 import { autoSetup, setup } from './index.js';
-import { showLogin, heading, urls, serviceStatus, renderSignal, loadHeadingCheck, loadDetailsCheck, renderModal } from '../utils/state.js';
+import { showLogin, heading, urls, serviceStatus, renderSignal, loadHeadingCheck, loadDetailsCheck, renderModal, shouldOpenModalOnMount } from '../utils/state.js';
 import { account } from '../../../tools/sharepoint/state.js';
 import Heading from '../heading/view.js';
 import Actions from '../actions/view.js';
@@ -52,7 +52,7 @@ export default function Floodgate() {
     <div>${urls.value.length > 0 && html`<${Urls} />`}</div> 
     ${renderModal.value && html`
         <div key=${renderModal.value}>
-          <${PromoteStatusModal} />
+          <${PromoteStatusModal} openModalOnMount=${shouldOpenModalOnMount.value} />
         </div>
       `}`}
     <div><${Status} /></div>
