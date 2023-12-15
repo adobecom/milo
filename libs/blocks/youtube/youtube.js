@@ -20,12 +20,16 @@ export default function init(a) {
     </div>`;
     a.insertAdjacentHTML('afterend', embedHTML);
     a.remove();
-    document.addEventListener('readystatechange', () => {
-      if (document.readyState === 'complete') {
-        /* eslint-disable-next-line no-underscore-dangle */
-        window._satellite?.track('trackYoutube');
-      }
-    });
+    if (document.readyState === 'complete') {
+      window._satellite?.track('trackYoutube');
+    } else {
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState === 'complete') {
+          /* eslint-disable-next-line no-underscore-dangle */
+          window._satellite?.track('trackYoutube');
+        }
+      });
+    }
   };
   createIntersectionObserver({ el: a, callback: embedVideo });
 }
