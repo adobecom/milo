@@ -6,13 +6,7 @@ export const ENTITLEMENT_MAP = {
   'fd30e9c7-9ae9-44db-8e70-5c652a5bb1d2': 'cc-all-apps',
 };
 
-let entitlementsResolve;
-
-const entitlementsPromise = new Promise((resolve) => {
-  entitlementsResolve = resolve;
-});
-
-const parseEntitlements = (data) => {
+const getEntitlements = (data) => {
   const { entitlements = {} } = getConfig();
   const entitlementMap = { ...entitlements, ...ENTITLEMENT_MAP };
 
@@ -26,11 +20,6 @@ const parseEntitlements = (data) => {
   });
 };
 
-export function getEntitlementsPromise() {
-  return entitlementsPromise;
-}
-
-export function setEntitlements(data) {
-  const entitlements = parseEntitlements(data);
-  entitlementsResolve(entitlements);
+export default function init(data) {
+  return getEntitlements(data);
 }

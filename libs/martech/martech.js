@@ -104,24 +104,31 @@ const getDtmLib = (env) => ({
 });
 
 const setupEntitlementCallback = () => {
+  const setEntitlements = async (destinations) => {
+    const { default: parseEntitlements } = await import('../features/personalization/entitlements.js');
+    return parseEntitlements(destinations);
+  };
+
+  const getEntitlements = () => new Promise((resolve) => {
+    const handleEntitlements = (detail) => {
+      if (detail?.result?.destinations?.length) {
+        resolve(setEntitlements(detail.result.destinations));
+      } else {
+        resolve([]);
+      }
+    };
+    waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, [])
+      .then((e) => handleEntitlements(e));
+  });
+
   const { miloLibs, codeRoot } = getConfig();
   loadLink(
     `${miloLibs || codeRoot}/features/personalization/entitlements.js`,
     { as: 'script', rel: 'modulepreload' },
   );
 
-  const handleEntitlements = async (detail) => {
-    const { setEntitlements } = await import('../features/personalization/entitlements.js');
-
-    if (detail?.result?.destinations?.length) {
-      setEntitlements(detail.result.destinations);
-    } else {
-      setEntitlements([]);
-    }
-  };
-
-  waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, [])
-    .then((e) => handleEntitlements(e));
+  window.milo ||= {};
+  window.milo.entitlements = getEntitlements();
 };
 
 let filesLoadedPromise = false;
