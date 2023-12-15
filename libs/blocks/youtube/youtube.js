@@ -21,6 +21,7 @@ export default function init(a) {
     a.insertAdjacentHTML('afterend', embedHTML);
     a.remove();
     if (document.readyState === 'complete') {
+      /* eslint-disable-next-line no-underscore-dangle */
       window._satellite?.track('trackYoutube');
     } else {
       document.addEventListener('readystatechange', () => {
