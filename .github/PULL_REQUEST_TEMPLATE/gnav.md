@@ -1,9 +1,11 @@
 ## Description
 
+
 ## Related Issue
 Resolves: [MWPW-111111](https://jira.corp.adobe.com/browse/MWPW-111111)
 
 ## Testing instructions
+
 
 ## Screenshots (if appropriate):
 
@@ -21,6 +23,15 @@ Resolves: [MWPW-111111](https://jira.corp.adobe.com/browse/MWPW-111111)
 - Before: https://main--cc--adobecom.hlx.live/?martech=off
 - After: https://main--cc--adobecom.hlx.live/?martech=off&milolibs=<branch>--milo--<owner>
 
+**Homepage:**
+- Before: https://main--homepage--adobecom.hlx.page/homepage/index-loggedout?martech=off
+- After: https://main--homepage--adobecom.hlx.page/homepage/index-loggedout?martech=off&milolibs=<branch>--milo--<owner>
+
 **Milo:**
 - Before: https://main--milo--adobecom.hlx.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off
 - After: https://<branch>--milo--<owner>.hlx.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off
+
+**Blog:**
+- Before: https://main--blog--adobecom.hlx.page/
+- After: https://main--blog--adobecom.hlx.page/?milolibs=<branch>--milo--<owner>
+

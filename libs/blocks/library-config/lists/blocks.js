@@ -5,6 +5,7 @@ import { getMetadata } from '../../section-metadata/section-metadata.js';
 const LIBRARY_METADATA = 'library-metadata';
 const LIBRARY_CONTAINER_START = 'library-container-start';
 const LIBRARY_CONTAINER_END = 'library-container-end';
+const BLOCK_SPACING = '<br>';
 // Block types:
 const CONTAINER_START_BLOCK = 0;
 const CONTAINER_END_BLOCK = 1;
@@ -287,7 +288,7 @@ export default async function loadBlocks(blocks, list, query) {
         const containerHtml = getHtml(container, block.path);
         e.target.classList.add('copied');
         setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
-        const blob = new Blob([containerHtml], { type: 'text/html' });
+        const blob = new Blob([`${BLOCK_SPACING}${containerHtml}${BLOCK_SPACING}`], { type: 'text/html' });
         createCopy(blob);
       });
       item.append(name, copy);
