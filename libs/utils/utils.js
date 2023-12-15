@@ -865,7 +865,18 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    loadIms().catch((e) => { console.log('Unable to load IMS:', e); });
+    const chain = PAGE_URL.searchParams.get('chain');
+    if (chain) {
+      loadIms()
+        .then(() => {
+          if (window.adobeIMS.isSignedInUser()) loadMartech();
+        })
+        .catch((e) => { console.log('Unable to load IMS:', e); });
+    } else {
+      loadIms().catch((e) => { console.log('Unable to load IMS:', e); });
+      loadMartech();
+    }
+
     const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
