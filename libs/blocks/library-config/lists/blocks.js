@@ -61,7 +61,6 @@ function getTable(block) {
         td.setAttribute('colspan', maxCols);
       }
       td.innerHTML = col.innerHTML;
-      td.style.backgroundColor = 'yellow';
       tr.append(td);
     });
     table.append(tr);
