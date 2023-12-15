@@ -176,6 +176,27 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+const handleEntitlements = (() => {
+  let entResolve;
+  const entPromise = new Promise((resolve) => {
+    entResolve = resolve;
+  });
+
+  return (resolveVal) => {
+    if (resolveVal !== undefined) {
+      entResolve(resolveVal);
+    }
+    return entPromise;
+  };
+})();
+
+function setupMiloObj(config) {
+  window.milo ||= {};
+  window.milo.deferredPromise = new Promise((resolve) => {
+    config.resolveDeferred = resolve;
+  });
+}
+
 export const [setConfig, updateConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -204,6 +225,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
+      config.entitlements = handleEntitlements;
+      setupMiloObj(config);
       return config;
     },
     (conf) => (config = conf),
@@ -766,7 +789,12 @@ export async function loadIms() {
       onError: reject,
     };
     loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+  }).then(() => {
+    if (!window.adobeIMS?.isSignedInUser()) {
+      getConfig().entitlements([]);
+    }
   });
+
   return imsLoaded;
 }
 
@@ -837,12 +865,7 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    loadIms()
-      .then(() => {
-        if (window.adobeIMS?.isSignedInUser()) {
-          loadMartech();
-        }
-      }).catch((e) => { console.log('Unable to load IMS:', e); });
+    loadIms().catch((e) => { console.log('Unable to load IMS:', e); });
     const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
@@ -888,15 +911,7 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-export function setupDeferredPromise() {
-  let resolveFn;
-  window.milo.deferredPromise = new Promise((resolve) => {
-    resolveFn = resolve;
-  });
-  return resolveFn;
-}
-
-export async function loadDeferred(area, blocks, config, resolveDeferred) {
+export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
 
@@ -904,7 +919,7 @@ export async function loadDeferred(area, blocks, config, resolveDeferred) {
     return;
   }
 
-  resolveDeferred(true);
+  config.resolveDeferred(true);
 
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
@@ -1050,16 +1065,13 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-  let resolveDeferredFn;
 
   if (isDoc) {
-    window.milo = {};
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
-    resolveDeferredFn = setupDeferredPromise();
   }
-
   const config = getConfig();
+
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
@@ -1085,7 +1097,7 @@ export async function loadArea(area = document) {
 
   if (isDoc) await documentPostSectionLoading(config);
 
-  await loadDeferred(area, areaBlocks, config, resolveDeferredFn);
+  await loadDeferred(area, areaBlocks, config);
 }
 
 export function loadDelayed() {

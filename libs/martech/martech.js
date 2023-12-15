@@ -109,7 +109,7 @@ const setupEntitlementCallback = () => {
     return parseEntitlements(destinations);
   };
 
-  const getEntitlements = () => new Promise((resolve) => {
+  const getEntitlements = (resolve) => {
     const handleEntitlements = (detail) => {
       if (detail?.result?.destinations?.length) {
         resolve(setEntitlements(detail.result.destinations));
@@ -118,17 +118,16 @@ const setupEntitlementCallback = () => {
       }
     };
     waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, [])
-      .then((e) => handleEntitlements(e));
-  });
+      .then(handleEntitlements);
+  };
 
-  const { miloLibs, codeRoot } = getConfig();
+  const { miloLibs, codeRoot, entitlements: resolveEnt } = getConfig();
+  getEntitlements(resolveEnt);
+
   loadLink(
     `${miloLibs || codeRoot}/features/personalization/entitlements.js`,
     { as: 'script', rel: 'modulepreload' },
   );
-
-  window.milo ||= {};
-  window.milo.entitlements = getEntitlements();
 };
 
 let filesLoadedPromise = false;

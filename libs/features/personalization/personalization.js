@@ -348,7 +348,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
-    userEntitlements = await window.milo.entitlements;
+    userEntitlements = await config.entitlements();
   }
 
   const hasMatch = (name) => {
