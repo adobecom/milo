@@ -199,12 +199,22 @@ export const decodeCompressedString = async (txt) => {
 };
 
 export const loadCaasFiles = async () => {
-  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'stable';
+  const searchParams = new URLSearchParams(document.location.search);
+  const version = searchParams?.get('caasver') || 'stable';
+  let cssFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`;
+  let jsFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`;
 
-  loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
+  // for caas local development
+  const host = searchParams?.get('caashost');
+  if (host) {
+    cssFile = `http://${host}.corp.adobe.com:5000/dist/app.css`;
+    jsFile = `http://${host}.corp.adobe.com:5000/dist/main.js`;
+  }
+
+  loadStyle(cssFile);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
+  await loadScript(jsFile);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
