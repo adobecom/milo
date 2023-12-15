@@ -536,7 +536,7 @@ header.global-navigation {
 
   .feds-menu-container {
     min-width: 100%;
-    padding: 0 12px 40px 12px;
+    padding: 0 12px 40px;
   }
 
   /* Nav Links */
@@ -551,7 +551,7 @@ header.global-navigation {
   .feds-navItem--megaMenu .feds-popup {
     right: 0;
     justify-content: center;
-    padding: 40px 0 0 0;
+    padding: 40px 0 0;
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {

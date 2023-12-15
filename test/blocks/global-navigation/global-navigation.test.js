@@ -64,9 +64,9 @@ describe('global navigation', () => {
     });
   });
 
-  describe('Cross Clound Menu', () => {
+  describe('Cross Cloud Menu', () => {
     describe('desktop', () => {
-      it('should render the Cross Clound Menu', async () => {
+      it('should render the Cross Cloud Menu', async () => {
         await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud });
         const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
 
@@ -80,14 +80,14 @@ describe('global navigation', () => {
         });
       });
 
-      it('should not render Cross Clound Menu if not authored', async () => {
+      it('should not render Cross Cloud Menu if not authored', async () => {
         await createFullGlobalNavigation();
         expect(document.querySelector(selectors.crossCloudMenuWrapper)).to.not.exist;
       });
     });
 
     describe('small desktop', () => {
-      it('should not render the Cross Clound Menu', async () => {
+      it('should not render the Cross Cloud Menu', async () => {
         await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud, viewport: 'smallDesktop' });
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
@@ -97,7 +97,7 @@ describe('global navigation', () => {
     });
 
     describe('mobile', () => {
-      it('should not render the Cross Clound Menu', async () => {
+      it('should not render the Cross Cloud Menu', async () => {
         await createFullGlobalNavigation({ viewport: 'mobile' });
         document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
