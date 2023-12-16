@@ -257,19 +257,33 @@ function createPreviewPill(manifests) {
   addPillEventListeners(div);
 }
 
-function addMarkerData(manifests) {
+function addHighlightData(manifests) {
   manifests.forEach((manifest) => {
-    manifest?.selectedVariant.useblockcode?.forEach((item) => {
-      if (item.selector) {
-        document.querySelectorAll(`.${item.selector}`).forEach((el) => {
-          el.dataset.codeManifestId = manifest.manifest;
+    const {
+      selectedVariant,
+      replacefragment = selectedVariant?.replacefragment,
+      useblockcode = selectedVariant?.useblockcode,
+      manifestName = manifest.manifest?.split('/').pop(),
+    } = manifest;
+    replacefragment?.forEach((item) => {
+      const { val } = item;
+      document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
+        el.dataset.manifestId = manifestName;
+      });
+    });
+    useblockcode?.forEach((item) => {
+      const { selector } = item;
+      if (selector) {
+        document.querySelectorAll(`.${selector}`).forEach((el) => {
+          el.dataset.codeManifestId = manifestName;
         });
       }
     });
     manifest?.selectedVariant.updatemetadata?.forEach((item) => {
-      if (item.selector === 'gnav-source') {
+      const { selector } = item;
+      if (selector === 'gnav-source') {
         document.querySelectorAll('header, footer').forEach((el) => {
-          el.dataset.manifestId = manifest.manifest;
+          el.dataset.manifestId = manifestName;
         });
       }
     });
@@ -279,8 +293,8 @@ function addMarkerData(manifests) {
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, experiments } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  if (experiments) addMarkerData(experiments);
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     createPreviewPill(experiments);
+    if (experiments) addHighlightData(experiments);
   }, { once: true });
 }

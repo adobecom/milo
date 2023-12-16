@@ -97,7 +97,7 @@ const createFrag = (el, url, manifestId) => {
     // ignore
   }
   const a = createTag('a', { href }, url);
-  if (manifestId) a.dataset.manifestId = manifestId;
+  if (manifestId) a.dataset.manifestId = manifestId.split('/').pop();
   let frag = createTag('p', undefined, a);
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
@@ -115,7 +115,8 @@ const COMMANDS = {
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
-      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
+      const div = createTag('div');
+      div.dataset.removedManifestId = manifestId.split('/').pop();
       el.insertAdjacentElement('beforebegin', div);
     }
     el.classList.add(CLASS_EL_DELETE);
