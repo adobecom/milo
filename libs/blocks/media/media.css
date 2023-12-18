@@ -87,6 +87,10 @@ div[class*="-up"] .media {
   width: 100%;
 }
 
+div[class*="-up"] .media.has-bg {  
+  width: initial;
+}
+
 .media[class*="-up"] .foreground {
   max-width: var(--grid-container-width);
   margin: 0 auto;
