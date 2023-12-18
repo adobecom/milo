@@ -215,7 +215,7 @@ function handleCommands(commands, manifestId, rootEl = document) {
       try {
         const selectorEl = rootEl.querySelector(cmd.selector);
         if (!selectorEl) return;
-        COMMANDS[cmd.action](selectorEl, cmd.target, getFileName(manifestId));
+        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
       } catch (e) {
         console.log('Invalid selector: ', cmd.selector);
       }
@@ -474,7 +474,7 @@ export async function runPersonalization(info, config) {
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  let manifestId = experiment.manifest;
+  let manifestId = getFileName(experiment.manifest);
   if (!config.mep?.preview) {
     manifestId = false;
   } else if (experiment.name) {
