@@ -215,7 +215,7 @@ function handleCommands(commands, manifestId, rootEl = document) {
       try {
         const selectorEl = rootEl.querySelector(cmd.selector);
         if (!selectorEl) return;
-        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
+        COMMANDS[cmd.action](selectorEl, cmd.target, getFileName(manifestId));
       } catch (e) {
         console.log('Invalid selector: ', cmd.selector);
       }
