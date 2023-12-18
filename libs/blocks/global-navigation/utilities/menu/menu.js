@@ -13,7 +13,8 @@ import {
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
-import { CONFIG } from '../../global-navigation.js';
+
+const homeIcon = '<svg xmlns="http://www.w3.org/2000/svg" height="25" viewBox="0 0 18 18" width="25"><path fill="#6E6E6E" d="M17.666,10.125,9.375,1.834a.53151.53151,0,0,0-.75,0L.334,10.125a.53051.53051,0,0,0,0,.75l.979.9785A.5.5,0,0,0,1.6665,12H2v4.5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5v-5a.5.5,0,0,1,.5-.5h3a.5.5,0,0,1,.5.5v5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5V12h.3335a.5.5,0,0,0,.3535-.1465l.979-.9785A.53051.53051,0,0,0,17.666,10.125Z"/></svg>';
 
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
@@ -278,16 +279,15 @@ const decorateCrossCloudMenu = (content) => {
   const crossCloudMenuEl = content.querySelector('.cross-cloud-menu');
   if (!crossCloudMenuEl) return;
 
-  const crossCloudMenuContent = toFragment`<div class="feds-crossCloudMenu"></div>`;
-
+  decorateElements({ elem: crossCloudMenuEl });
+  crossCloudMenuEl.className = 'feds-crossCloudMenu-wrapper';
+  crossCloudMenuEl.querySelector('div').className = 'feds-crossCloudMenu';
   crossCloudMenuEl.querySelectorAll('ul li').forEach((el, index) => {
-    const decoratedLink = decorateLinkGroup(el, index);
-    if (index === 0) decoratedLink.prepend(toFragment`${CONFIG.icons.home}`);
-    crossCloudMenuContent.append(toFragment`<div class="feds-crossCloudMenu-item">${decoratedLink}</div>`);
+    if (index === 0) el.querySelector('a')?.prepend(toFragment`${homeIcon}`);
+    el.className = 'feds-crossCloudMenu-item';
   });
 
-  content.append(toFragment`<div class="feds-crossCloudMenu-wrapper">${crossCloudMenuContent}</div>`);
-  crossCloudMenuEl.remove();
+  content.append(crossCloudMenuEl);
 };
 
 // Current limitation: after an h5 (or h2 in the case of the footer)

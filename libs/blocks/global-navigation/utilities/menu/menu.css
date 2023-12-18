@@ -213,8 +213,11 @@
 
   .feds-crossCloudMenu {
     width: 100%;
-    padding: 20px 0;
     max-width: var(--feds-maxWidth-nav);
+  }
+
+  .feds-crossCloudMenu ul{
+    padding: 20px 0;
     display: flex;
   }
 
@@ -225,6 +228,11 @@
   .feds-crossCloudMenu-item {
     display: flex;
     align-items: center;
+    list-style: none;
+  }
+
+  .feds-crossCloudMenu-item u {
+   text-decoration: none;
   }
 
   .feds-crossCloudMenu .feds-navLink:hover {
