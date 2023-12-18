@@ -148,8 +148,7 @@ function createList(libraries) {
   Object.keys(libraries).forEach((type) => {
     if (!libraries[type] || libraries[type].length === 0) return;
 
-    const item = createTag('li', { class: 'content-type' }, type.replace('_', ' '));
-    libraryList.append(item);
+    const item = createTag('li', { class: 'content-type' }, type.replace('_', ' '), { parent: libraryList });
 
     const list = document.createElement('ul');
     list.classList.add('con-type-list', `con-${type}-list`);
