@@ -164,17 +164,20 @@ export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
-  const setPoster = dataset?.videoPoster ? `poster='${dataset.videoPoster}'` : '';
+  const poster = dataset?.videoPoster ? `poster='${dataset.videoPoster}'` : '';
+  const globalAttrs = `playsinline ${poster}`;
+  const autoPlayAttrs = 'autoplay muted';
+
   if (isAutoplay && !isAutoplayOnce) {
-    return `playsinline autoplay loop muted ${setPoster}`;
+    return `${globalAttrs} ${autoPlayAttrs} loop`;
   }
   if (playOnHover && isAutoplayOnce) {
-    return `playsinline autoplay muted data-hoverplay ${setPoster}`;
+    return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
   }
   if (isAutoplayOnce) {
-    return `playsinline autoplay muted ${setPoster}`;
+    return `${globalAttrs} ${autoPlayAttrs}`;
   }
-  return `playsinline controls ${setPoster}`;
+  return `${globalAttrs} controls`;
 }
 
 export function applyHoverPlay(video) {
