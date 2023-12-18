@@ -27,6 +27,17 @@ export async function handleStyle(text, section) {
   section.classList.add(...styles);
 }
 
+function handleMasonry(text, section) {
+  section.classList.add(...['masonry-layout', 'masonry-up']);
+  const divs = section.querySelectorAll(":scope > div:not([class*='metadata'])");
+  const spans = [];
+  text.split('\n').forEach((line) => spans.push(...line.trim().split(',')));
+  [...divs].forEach((div, i) => {
+    const spanWidth = spans[i] ? spans[i] : 'span 4';
+    div.classList.add(`grid-${spanWidth.trim().replace(' ', '-')}`);
+  });
+}
+
 function handleLayout(text, section) {
   if (!(text || section)) return;
   const layoutClass = `grid-template-columns-${text.replaceAll(' | ', '-')}`;
@@ -49,4 +60,5 @@ export default async function init(el) {
   if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
+  if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
 }

@@ -126,17 +126,25 @@ export function getBlockSize(el, defaultSize = 1) {
 }
 
 export const decorateBlockHrs = (el) => {
-  const els = el.querySelectorAll('p');
+  const pTags = el.querySelectorAll('p');
   let hasHr = false;
-  [...els].forEach((e) => {
-    if (!e.textContent.startsWith('---')) return;
+  const decorateHr = ((tag) => {
+    const hrTag = tag.textContent.trim().startsWith('---');
+    if (!hrTag) return;
     hasHr = true;
-    const bgStyle = e.textContent.substring(3).trim();
+    const bgStyle = tag.textContent.substring(3).trim();
     const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
-    e.textContent = '';
-    e.appendChild(hrElem);
+    tag.textContent = '';
+    tag.appendChild(hrElem);
   });
-  if (hasHr && els.length) el.classList.add('has-divider');
+  [...pTags].forEach((p) => {
+    decorateHr(p);
+  });
+  const singleElementInRow = el.children[0].childElementCount === 0;
+  if (singleElementInRow) {
+    decorateHr(el.children[0]);
+  }
+  if (hasHr) el.classList.add('has-divider');
 };
 
 function applyTextOverrides(el, override) {
