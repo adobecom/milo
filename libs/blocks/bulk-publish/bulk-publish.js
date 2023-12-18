@@ -26,7 +26,7 @@ class BulkPublish extends LitElement {
     jobs: { state: true },
     openJobs: { state: true },
     jobErrors: { state: true },
-    openStatuses: { state: true },
+    openStatus: { state: true },
     filterJob: { state: true },
   };
 
@@ -41,7 +41,7 @@ class BulkPublish extends LitElement {
     this.jobs = [];
     this.openJobs = false;
     this.jobErrors = false;
-    this.openStatuses = false;
+    this.openStatus = false;
     this.filterJob = null;
   }
 
@@ -54,6 +54,7 @@ class BulkPublish extends LitElement {
       await wait(1000);
       this.openJobs = true;
     }
+    this.renderRoot.addEventListener('click', (e) => this.handlePopup(e));
   }
 
   async updated() {
@@ -65,8 +66,8 @@ class BulkPublish extends LitElement {
       const unfinished = this.jobs.filter((job) => !job.status);
       stored.set('resume', unfinished);
     }
-    if (this.mode === 'full' && !this.openJobs && this.urls.length) {
-      const textarea = this.renderRoot.querySelector('#Urls');
+    const textarea = this.renderRoot.querySelector('#Urls');
+    if (this.urls.length && textarea?.value === '') {
       textarea.value = this.urls.join('\r\n');
     }
   }
@@ -154,7 +155,7 @@ class BulkPublish extends LitElement {
     };
   }
 
-  renderForm() {
+  renderJobsForm() {
     if (this.openJobs && this.mode === 'full') {
       return html`
         <div class="panel-title" @click=${() => { this.openJobs = false; }}>
@@ -199,17 +200,40 @@ class BulkPublish extends LitElement {
     `;
   }
 
-  renderJobStatuses() {
+  renderFailed({ failed, status }) {
+    const setRework = () => {
+      if (this.mode === 'full' && this.openJobs) this.openJobs = false;
+      const { origin } = this.jobs.find((item) => item.result.job.name === status.name);
+      const paths = status.data.resources.filter((path) => ![200, 204].includes(path.status));
+      this.urls = paths.map(({ path }) => `${origin}${path}`);
+    };
+    return html`<span
+      @click=${setRework}
+      class="failed">${failed}</span>`;
+  }
+
+  handlePopup(event) {
+    if (this.openStatus) {
+      const elems = ['StatList', 'StatIcon'];
+      const clickables = elems.map((elem) => (this.renderRoot.getElementById(elem)));
+      const clicked = clickables.filter((element) => element?.contains(event.target));
+      if (!clicked.length) this.openStatus = false;
+    }
+  }
+
+  renderClipboard() {
     const jobStatuses = this.jobs.filter((job) => job.status).map((job) => (job.status));
     const getJobStatus = (status) => {
-      const { progress, name, topic } = status;
-      const { processed, failed, total } = progress;
+      const { progress, name, topic, data } = status;
+      const { failed, total } = progress;
+      const success = data.resources.filter((path) => [200, 204].includes(path.status)).length;
+      const fail = { failed, status };
       return html`
         <div class="status">
           <i>${topic} ~ ${name}</i>
           <div class="tools">
             <div class="stats">
-              <span>${processed}</span>-<span>${failed}</span>/<span>${total} pages</span>
+              <span>${success}</span>-${this.renderFailed(fail)}/<span>${total} pages</span>
             </div>
             <div class="actions">
             </div>
@@ -217,8 +241,10 @@ class BulkPublish extends LitElement {
       `;
     };
     return html`
-      <div class="statuses-icon" @click=${() => { this.openStatuses = !this.openStatuses; }}></div>
-      <div class="statuses-list${this.openStatuses ? '' : ' hide'}">
+      <div 
+        id="StatIcon" 
+        class="statuses-icon" @click=${() => { this.openStatus = !this.openStatus; }}></div>
+      <div id="StatList" class="statuses-list${this.openStatus ? '' : ' hide'}">
         <div class="statuses">${jobStatuses.map((status) => getJobStatus(status))}</div>
       </div>
     `;
@@ -239,7 +265,7 @@ class BulkPublish extends LitElement {
     return jobState;
   }
 
-  jobProcessed(event) {
+  completeProcess(event) {
     const status = event.detail;
     const updateJob = this.jobs.find(({ result }) => result.job.name === status.name);
     updateJob.status = status;
@@ -249,12 +275,15 @@ class BulkPublish extends LitElement {
     }
   }
 
-  renderJobs() {
+  renderResults() {
     const { showList, showClear, showStatusFilter, loading, count } = this.getJobState();
+    const handleToggle = () => {
+      if (!this.openJobs) this.openJobs = !!this.jobs.length;
+    };
     return html`
       <div
         class="panel-title"
-        @click=${() => { this.openJobs = !!this.jobs.length; }}>
+        @click=${handleToggle}>
         <span class="title">
           ${this.jobs.length ? html`<strong>${count}</strong>` : ''}
           Job Results
@@ -264,7 +293,7 @@ class BulkPublish extends LitElement {
             <div class="loader pink"></div>
           </div>
           <div class="job-statuses${showStatusFilter}">
-            ${this.renderJobStatuses()}
+            ${this.renderClipboard()}
           </div>
           <div 
             class="clear-jobs${showClear}"
@@ -283,7 +312,7 @@ class BulkPublish extends LitElement {
           ${this.jobs.map((job) => html`
             <job-process 
               .job=${job} 
-              @processed="${this.jobProcessed}"></job-process>
+              @processed="${this.completeProcess}"></job-process>
           `)}
         </div>
       </div>
@@ -308,7 +337,7 @@ class BulkPublish extends LitElement {
   }
 
   async submitJob() {
-    if (!this.disabled) {
+    if (!this.disableSubmitBtn()) {
       this.processing = 'launch';
       const newJobs = await createJobs({
         urls: this.urls,
@@ -350,10 +379,10 @@ class BulkPublish extends LitElement {
       </header>
       <div id="BulkPublish" class="bulk-publisher ${this.mode}">
         <div active=${!this.openJobs} class="panel form">
-          ${this.renderForm()}
+          ${this.renderJobsForm()}
         </div>
         <div active=${!!this.openJobs} class="panel results">
-          ${this.renderJobs()}
+          ${this.renderResults()}
         </div>
       </div>
     `;
