@@ -2,6 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 import {
   getConfig as pageConfigHelper,
+  getMetadata,
   loadScript,
   loadStyle,
   localizeLink,
@@ -198,12 +199,22 @@ export const decodeCompressedString = async (txt) => {
 };
 
 export const loadCaasFiles = async () => {
-  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'stable';
+  const searchParams = new URLSearchParams(document.location.search);
+  const version = searchParams?.get('caasver') || 'stable';
+  let cssFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`;
+  let jsFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`;
 
-  loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
+  // for caas local development
+  const host = searchParams?.get('caashost');
+  if (host) {
+    cssFile = `http://${host}.corp.adobe.com:5000/dist/app.css`;
+    jsFile = `http://${host}.corp.adobe.com:5000/dist/main.js`;
+  }
+
+  loadStyle(cssFile);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
+  await loadScript(jsFile);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
@@ -413,20 +424,23 @@ const getFilterArray = async (state, country, lang, strs) => {
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
+  const locales = getMetadata('caas-locales') || '';
   if (autoCountryLang) {
     const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
-    const locale = LOCALES[prefix]?.ietf || 'en-us';
+    const locale = LOCALES[prefix]?.ietf || 'en-US';
     /* eslint-disable-next-line prefer-const */
     let [currLang, currCountry] = locale.split('-');
 
     return {
       country: currCountry,
       language: currLang,
+      locales,
     };
   }
   return {
-    country: country ? country.split('/').pop() : 'us',
+    country: country ? country.split('/').pop() : 'US',
     language: language ? language.split('/').pop() : 'en',
+    locales,
   };
 }
 
@@ -489,7 +503,7 @@ const fetchUuidForCard = async (card) => {
   }
   try {
     const url = new URL(card.contentId);
-    const localizedLink = localizeLink(url, window.location.hostname, true);
+    const localizedLink = localizeLink(url, null, true);
     const substr = String(localizedLink).split('https://').pop();
     return await getUuid(substr);
   } catch (error) {
@@ -508,7 +522,7 @@ const getCardsString = async (cards = []) => {
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const { country, language } = getCountryAndLang(state);
+  const { country, language, locales } = getCountryAndLang(state);
   const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
@@ -516,6 +530,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
+  const localesQueryParam = locales ? `&locales=${locales}` : '';
   const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
@@ -542,7 +557,7 @@ export const getConfig = async (originalState, strs = {}) => {
         ',',
       ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${debug}${flatFile}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,

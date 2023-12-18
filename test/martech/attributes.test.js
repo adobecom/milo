@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 describe('Analytics', async () => {
   beforeEach(async () => {
     await readFile({ path: './mocks/body.html' });
-    const analytics = await import('../../libs/martech/analytics.js');
+    const analytics = await import('../../libs/martech/attributes.js');
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
     document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
   });
@@ -16,6 +16,6 @@ describe('Analytics', async () => {
     const block = section.querySelector(':scope > div')?.getAttribute('daa-lh');
     expect(block).to.equal('b1|icon-block|smb|hp');
     const link = section.querySelector('#unit-test')?.getAttribute('daa-ll');
-    expect(link).to.equal('Learn more-3|Do more with Adobe P');
+    expect(link).to.equal('Learn more-3--Learn more');
   });
 });

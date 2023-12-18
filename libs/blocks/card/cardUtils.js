@@ -20,7 +20,7 @@ export const addVideoBtn = (link, cardType, card) => {
   return cardImage.append(link);
 };
 
-const getUpFromSectionMetadata = (section) => {
+export const getUpFromSectionMetadata = (section) => {
   const sectionMetadata = section.querySelector('.section-metadata');
   if (!sectionMetadata) return null;
   const metadata = getMetadata(sectionMetadata);
