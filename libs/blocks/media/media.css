@@ -83,6 +83,10 @@
   width: 100%;
 }
 
+div[class*="-up"] .media {
+  width: 100%;
+}
+
 .media[class*="-up"] .foreground {
   max-width: var(--grid-container-width);
   margin: 0 auto;
