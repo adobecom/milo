@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
-import { NON_TRACKED_MANIFEST_TYPE } from './personalization.js';
+import { NON_TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -169,7 +169,7 @@ function createPreviewPill(manifests) {
       <label for="${manifestPath}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
-    const manifestFileName = manifestPath.split('/').pop();
+    const manifestFileName = getFileName(manifestPath);
     const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
     const scheduled = manifest.event
       ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
@@ -263,7 +263,7 @@ function addHighlightData(manifests) {
       selectedVariant,
       replacefragment = selectedVariant?.replacefragment,
       useblockcode = selectedVariant?.useblockcode,
-      manifestName = manifest.manifest?.split('/').pop(),
+      manifestName = getFileName(manifest.manifest),
     } = manifest;
     replacefragment?.forEach((item) => {
       const { val } = item;

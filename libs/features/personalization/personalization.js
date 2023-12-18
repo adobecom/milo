@@ -88,6 +88,8 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   return manifests;
 };
 
+export const getFileName = (path) => path?.split('/').pop();
+
 const createFrag = (el, url, manifestId) => {
   let href = url;
   try {
@@ -97,7 +99,7 @@ const createFrag = (el, url, manifestId) => {
     // ignore
   }
   const a = createTag('a', { href }, url);
-  if (manifestId) a.dataset.manifestId = manifestId.split('/').pop();
+  if (manifestId) a.dataset.manifestId = manifestId;
   let frag = createTag('p', undefined, a);
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
@@ -115,8 +117,7 @@ const COMMANDS = {
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
-      const div = createTag('div');
-      div.dataset.removedManifestId = manifestId.split('/').pop();
+      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
       el.insertAdjacentElement('beforebegin', div);
     }
     el.classList.add(CLASS_EL_DELETE);
@@ -560,8 +561,7 @@ export async function applyPers(manifests) {
   });
   const pznManifests = pznList.map((r) => {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return val.split('/').pop().replace('.json', '').trim()
-      .slice(0, 15);
+    return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
   document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
