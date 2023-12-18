@@ -236,8 +236,7 @@ describe('Utils', () => {
     });
 
     it('Sets up milo.deferredPromise', async () => {
-      window.milo = {};
-      const resolveDeferred = utils.setupDeferredPromise();
+      const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
       utils.loadDeferred(document, [], {}, resolveDeferred);
       const result = await window.milo.deferredPromise;
@@ -474,6 +473,17 @@ describe('Utils', () => {
       };
       utils.scrollToHashedElement('');
       expect(scrollToCalled).to.be.false;
+    });
+
+    it('should scroll to the hashed element with special character', () => {
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+
+      utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
+      expect(scrollToCalled).to.be.true;
+      expect(document.getElementById('tools-für-das-verhalten')).to.exist;
     });
   });
 

@@ -16,6 +16,6 @@ describe('Analytics', async () => {
     const block = section.querySelector(':scope > div')?.getAttribute('daa-lh');
     expect(block).to.equal('b1|icon-block|smb|hp');
     const link = section.querySelector('#unit-test')?.getAttribute('daa-ll');
-    expect(link).to.equal('Learn more-3--Do more with Adobe P');
+    expect(link).to.equal('Learn more-3--Learn more');
   });
 });

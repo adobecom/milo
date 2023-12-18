@@ -77,7 +77,7 @@ function createItem(accordion, id, heading, num, edit) {
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
-    class: 'accordion-trigger',
+    class: 'accordion-trigger tracking-header',
     'aria-expanded': 'false',
     'aria-controls': panelId,
     'daa-ll': analyticsString,
@@ -134,7 +134,14 @@ export default function init(el) {
 
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
   const items = [...headings].map(
-    (heading, idx) => createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia),
+    (heading, idx) => createItem(
+      accordion,
+      id,
+      heading,
+      idx + 1,
+      isEditorial,
+      accordionMedia,
+    ),
   );
 
   if (isSeo) { setSEO(items); }
