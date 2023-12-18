@@ -1,6 +1,8 @@
 import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
 import { NON_TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
+// permissions test
+
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
     '.mep-popup input[type="radio"]:checked, .mep-popup input[type="text"]',
