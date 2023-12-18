@@ -30,6 +30,12 @@
   animation: animate 0.3s 0.45s linear infinite alternate;
 }
 
+.loader.pink,
+.loader.pink::after,
+.loader.pink::before {
+  background: #ff2095;
+}
+
 .loader::before {
   left: -10px;
   animation-delay: 0s;

@@ -278,6 +278,7 @@ label[for='urls'] i {
 .jobs-tools {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .jobs-tools .loading-jobs {
@@ -293,17 +294,101 @@ label[for='urls'] i {
   cursor: pointer;
 }
 
+.jobs-tools .statuses-icon {
+  width: 25px;
+  height: 25px;
+  background-image: url('/libs/blocks/bulk-publish/img/clipboard-list.svg');
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.job-statuses {
+  position: relative;
+}
+
+.jobs-tools .statuses-list {
+  position: absolute;
+  background-color: white;
+  color: #666;
+  font-size: 0.8em;
+  border-radius: 5px;
+  z-index: 1;
+  width: 253px;
+  top: -5px;
+  right: 105%;
+  box-shadow: 0 0 8px -1px #999;
+}
+
+.jobs-tools .statuses-list::after {
+  content: " ";
+  position: absolute;
+  top: 18px;
+  left: 100%;
+  margin-top: -5px;
+  border-width: 9px;
+  border-style: solid;
+  border-color: transparent transparent transparent white;
+}
+
+.jobs-tools .statuses {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.jobs-tools .status {
+  border-bottom: 1px solid #eee;
+  padding: 11px 18px;
+}
+
+.jobs-tools .status i {
+  font-weight: 300;
+  line-height: 16px;
+}
+
+.jobs-tools .status:last-child {
+  border-bottom: 0;
+}
+
+.jobs-tools .status .tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.jobs-tools .stats {
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 6px;
+}
+
+.jobs-tools .stats span {
+  color: var(--error);
+  border-radius: 7px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.jobs-tools .stats span:first-child {
+  color: var(--success);
+}
+
+.jobs-tools .stats span:last-child {
+  color: #999;
+}
+
 .job-meta {
   display: flex;
   justify-content: space-between;
   min-width: var(--meta-width);
 }
 
-.job-meta>*:first-child {
+.job-meta > *:first-child {
   width: 100px;
 }
 
-.job-meta>*:last-child {
+.job-meta > *:last-child {
   width: 100px;
   text-align: right;
 }
@@ -338,7 +423,7 @@ label[for='urls'] i {
   font-weight: bold;
   padding: 7px 29px 7px 15px;
   border-radius: 3px;
-  border-color: #999;
+  border-color: white;
   border-style: solid;
   border-width: 2px;
   appearance: none;

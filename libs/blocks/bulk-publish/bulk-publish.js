@@ -26,6 +26,8 @@ class BulkPublish extends LitElement {
     jobs: { state: true },
     openJobs: { state: true },
     jobErrors: { state: true },
+    openStatuses: { state: true },
+    filterJob: { state: true },
   };
 
   constructor() {
@@ -39,6 +41,8 @@ class BulkPublish extends LitElement {
     this.jobs = [];
     this.openJobs = false;
     this.jobErrors = false;
+    this.openStatuses = false;
+    this.filterJob = null;
   }
 
   async connectedCallback() {
@@ -53,13 +57,13 @@ class BulkPublish extends LitElement {
   }
 
   async updated() {
-    const prefs = sticky();
-    if (prefs.get('mode') !== this.mode) {
-      prefs.set('mode', this.mode);
+    const stored = sticky();
+    if (stored.get('mode') !== this.mode) {
+      stored.set('mode', this.mode);
     }
     if (this.jobs.length) {
       const unfinished = this.jobs.filter((job) => !job.status);
-      prefs.set('resume', unfinished);
+      stored.set('resume', unfinished);
     }
     if (this.mode === 'full' && !this.openJobs && this.urls.length) {
       const textarea = this.renderRoot.querySelector('#Urls');
@@ -195,10 +199,36 @@ class BulkPublish extends LitElement {
     `;
   }
 
+  renderJobStatuses() {
+    const jobStatuses = this.jobs.filter((job) => job.status).map((job) => (job.status));
+    const getJobStatus = (status) => {
+      const { progress, name, topic } = status;
+      const { processed, failed, total } = progress;
+      return html`
+        <div class="status">
+          <i>${topic} ~ ${name}</i>
+          <div class="tools">
+            <div class="stats">
+              <span>${processed}</span>-<span>${failed}</span>/<span>${total} pages</span>
+            </div>
+            <div class="actions">
+            </div>
+        </div>
+      `;
+    };
+    return html`
+      <div class="statuses-icon" @click=${() => { this.openStatuses = !this.openStatuses; }}></div>
+      <div class="statuses-list${this.openStatuses ? '' : ' hide'}">
+        <div class="statuses">${jobStatuses.map((status) => getJobStatus(status))}</div>
+      </div>
+    `;
+  }
+
   getJobState() {
     const jobState = {
       showList: this.mode === 'half' || this.openJobs,
-      showClear: this.jobs.length && this.processing !== 'job',
+      showClear: this.jobs.length && this.processing === false,
+      showStatusFilter: this.jobs.length && this.processing === false,
       loading: this.processing === 'job',
     };
     Object.keys(jobState).forEach((key) => (jobState[key] = `${jobState[key] ? '' : ' hide'}`));
@@ -220,7 +250,7 @@ class BulkPublish extends LitElement {
   }
 
   renderJobs() {
-    const { showList, showClear, loading, count } = this.getJobState();
+    const { showList, showClear, showStatusFilter, loading, count } = this.getJobState();
     return html`
       <div
         class="panel-title"
@@ -231,7 +261,10 @@ class BulkPublish extends LitElement {
         </span>
         <div class="jobs-tools${showList}">
           <div class="loading-jobs${loading}">
-            <div class="loader"></div>
+            <div class="loader pink"></div>
+          </div>
+          <div class="job-statuses${showStatusFilter}">
+            ${this.renderJobStatuses()}
           </div>
           <div 
             class="clear-jobs${showClear}"
