@@ -216,7 +216,7 @@
     max-width: var(--feds-maxWidth-nav);
   }
 
-  .feds-crossCloudMenu ul{
+  .feds-crossCloudMenu ul {
     padding: 20px 0;
     display: flex;
   }
