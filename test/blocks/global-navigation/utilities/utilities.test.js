@@ -34,7 +34,7 @@ describe('global navigation utilities', () => {
     expect(fragment2.tagName).to.equal('SPAN');
   });
 
-  // Nno tests for using the the live url and .hlx. urls
+  // No tests for using the the live url and .hlx. urls
   // as mocking window.location.origin is not possible
   describe('getFedsContentRoot', () => {
     it('should return content source for localhost', () => {

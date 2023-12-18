@@ -52,18 +52,27 @@ export function toFragment(htmlStrings, ...values) {
   return fragment;
 }
 
-let fedsContentRoot;
+let federatedContentRoot;
 export const getFederatedContentRoot = () => {
-  if (fedsContentRoot) return fedsContentRoot;
+  if (federatedContentRoot) return federatedContentRoot;
 
   const { origin } = window.location;
-  fedsContentRoot = origin;
+  const allowedOrigins = [
+    'https://www.adobe.com',
+    'https://business.adobe.com',
+    'https://blog.adobe.com',
+    'https://milo.adobe.com',
+  ];
+
+  federatedContentRoot = allowedOrigins.some((o) => origin === o)
+    ? origin
+    : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    fedsContentRoot = `https://main--federal--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
+    federatedContentRoot = `https://main--federal--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
   }
 
-  return fedsContentRoot;
+  return federatedContentRoot;
 };
 
 export const getFederatedUrl = (url = '') => {
