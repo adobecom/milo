@@ -50,7 +50,7 @@ export default function Floodgate() {
       && html`
     <div>${urls.value.length > 0 && html`<${Actions} />`}</div>
     <div key=${copyCompleteRender.value}>${urls.value.length > 0 && html`<${Urls} />`}</div>
-    ${renderModal.value && html`
+    ${renderModal.value > 0 && html`
         <div key=${renderModal.value}>
           <${PromoteStatusModal} openModalOnMount=${shouldOpenModalOnMount.value} />
         </div>

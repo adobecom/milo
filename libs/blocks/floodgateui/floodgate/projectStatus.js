@@ -8,6 +8,7 @@ import {
   cssStatusPromote,
   cssStatusDelete,
   renderModal,
+  shouldOpenModalOnMount,
 } from '../utils/state.js';
 import { fetchStatusAction } from '../utils/miloc.js';
 
@@ -135,7 +136,10 @@ export function ProjectStatus(actionType) {
                 ">
                   ${getCssStatus(actionType.action) !== 'NOT STARTED'
                     ? html`
-                        <a href="#" onClick=${() => renderModal.value = renderModal.value + 1}>
+                        <a href="#" onClick=${() => {
+                          renderModal.value = renderModal.value + 1;
+                          shouldOpenModalOnMount.value = true;
+                        }}>
                           <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 18 18" width="18"> 
                             <title>InfoMedium</title> 
                             <rect id="ToDelete" fill="#ff13dc" opacity="0" width="18" height="18"></rect>
