@@ -842,7 +842,22 @@ async function checkForPageMods() {
     persManifests = persMd.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath }));
+      .map((path) => {
+        if (path.includes('%:')) {
+          const [percentage, manifestPath] = path.split('%:');
+          const percent = parseInt(percentage, 10);
+          if (!Number.isNaN(percent)) {
+            if (percent < 0 || percent > 100) {
+              throw new Error(`Invalid percentage for personalization manifest: ${path}`);
+            }
+            const randomPercent = Math.floor(Math.random() * 100) + 1;
+            if (randomPercent > percent) {
+              return null;
+            }
+          }
+        }
+        return { manifestPath };
+      });
   }
 
   if (promoEnabled) {
