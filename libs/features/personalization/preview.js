@@ -258,34 +258,23 @@ function createPreviewPill(manifests) {
 }
 
 function addHighlightData(manifests) {
-  manifests.forEach((manifest) => {
-    const {
-      selectedVariant,
-      replacefragment = selectedVariant?.replacefragment,
-      useblockcode = selectedVariant?.useblockcode,
-      manifestName = getFileName(manifest.manifest),
-    } = manifest;
-    replacefragment?.forEach((item) => {
-      const { val } = item;
-      document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
-        el.dataset.manifestId = manifestName;
-      });
+  manifests.forEach(({ selectedVariant, manifest }) => {
+    const manifestName = getFileName(manifest);
+
+    const updateManifestId = (selector, prop = 'manifestId') => {
+      document.querySelectorAll(selector).forEach((el) => (el.dataset[prop] = manifestName));
+    };
+
+    selectedVariant?.replacefragment?.forEach(
+      ({ val }) => updateManifestId(`[data-path*="${val}"]`),
+    );
+
+    selectedVariant?.useblockcode?.forEach(({ selector }) => {
+      if (selector) updateManifestId(`.${selector}`, 'codeManifestId');
     });
-    useblockcode?.forEach((item) => {
-      const { selector } = item;
-      if (selector) {
-        document.querySelectorAll(`.${selector}`).forEach((el) => {
-          el.dataset.codeManifestId = manifestName;
-        });
-      }
-    });
-    manifest?.selectedVariant.updatemetadata?.forEach((item) => {
-      const { selector } = item;
-      if (selector === 'gnav-source') {
-        document.querySelectorAll('header, footer').forEach((el) => {
-          el.dataset.manifestId = manifestName;
-        });
-      }
+
+    selectedVariant?.updatemetadata?.forEach(({ selector }) => {
+      if (selector === 'gnav-source') updateManifestId('header, footer');
     });
   });
 }
