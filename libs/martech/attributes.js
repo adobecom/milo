@@ -2,13 +2,13 @@ const INVALID_CHARACTERS = /[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g;
 const LEAD_UNDERSCORES = /^_+|_+$/g;
 
 export function processTrackingLabels(text, config, charLimit) {
-  let analyticsValue = text?.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '').trim();
+  let analyticsValue = text;
   if (config) {
-    const { analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
+    const { analyticLocalization, loc = analyticLocalization?.[analyticsValue.trim()] } = config;
     if (loc) analyticsValue = loc;
   }
-  //analyticsValue = analyticsValue.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '');
-  if (charLimit) return analyticsValue.slice(0, charLimit);
+  analyticsValue = analyticsValue?.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '').trim();
+  if (charLimit) return analyticsValue.slice(0, charLimit).trim();
   return analyticsValue;
 }
 
