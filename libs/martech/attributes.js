@@ -2,12 +2,12 @@ const INVALID_CHARACTERS = /[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g;
 const LEAD_UNDERSCORES = /^_+|_+$/g;
 
 export function processTrackingLabels(text, config, charLimit) {
-  let analyticsValue = text?.trim();
+  let analyticsValue = text?.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '').trim();
   if (config) {
     const { analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
     if (loc) analyticsValue = loc;
   }
-  analyticsValue = analyticsValue.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '');
+  //analyticsValue = analyticsValue.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '');
   if (charLimit) return analyticsValue.slice(0, charLimit);
   return analyticsValue;
 }
