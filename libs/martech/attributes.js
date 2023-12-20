@@ -8,7 +8,7 @@ export function processTrackingLabels(text, config, charLimit) {
     if (loc) analyticsValue = loc;
   }
   analyticsValue = analyticsValue.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '');
-  if (charLimit) return analyticsValue.slice(0, charLimit).trim();
+  if (charLimit) return analyticsValue.slice(0, charLimit);
   return analyticsValue.trim();
 }
 
