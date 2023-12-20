@@ -3,7 +3,7 @@
   --success: #7cca7c;
   --error: #db4437;
   --panel-bg: rgba(255 255 255 / 60%);
-  --meta-width: 35%;
+  --meta-width: 23%;
 
   display: flex;
   flex-direction: column;
@@ -91,6 +91,7 @@ label[for='urls'] i {
 
 .panel-title {
   color: var(--accent);
+  height: 28px;
   font-weight: bold;
   display: flex;
   justify-content: space-between;
@@ -110,6 +111,7 @@ label[for='urls'] i {
   display: flex;
   align-items: center;
   gap: 5px;
+  text-transform: capitalize;
 }
 
 .panel-title .title strong {
@@ -294,91 +296,47 @@ label[for='urls'] i {
   cursor: pointer;
 }
 
-.jobs-tools .statuses-icon {
-  width: 25px;
-  height: 25px;
-  background-image: url('/libs/blocks/bulk-publish/img/clipboard-list.svg');
-  background-repeat: no-repeat;
-  cursor: pointer;
-}
-
-.job-statuses {
+.status-filter {
   position: relative;
 }
 
-.jobs-tools .statuses-list {
-  position: absolute;
+.jobs-tools .status-icon {
+  width: 28px;
+  height: 28px;
+  background-image: url('/libs/blocks/bulk-publish/img/clipboard-list.svg');
+  background-repeat: no-repeat;
+  background-position: center 2px;
+  cursor: pointer;
+}
+
+.jobs-tools .status-icon.open {
   background-color: white;
-  color: #666;
-  font-size: 0.8em;
-  border-radius: 5px;
-  z-index: 1;
-  width: 253px;
-  top: -13px;
-  right: 105%;
-  box-shadow: 0 0 8px -1px #999;
+  z-index: 2;
+  position: relative;
+  border-radius: 6px;
 }
 
-.jobs-tools .statuses-list::after {
-  content: " ";
-  position: absolute;
-  top: 18px;
-  left: 100%;
-  margin-top: -5px;
-  border-width: 9px;
-  border-style: solid;
-  border-color: transparent transparent transparent white;
-}
-
-.jobs-tools .statuses {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.jobs-tools .status {
-  border-bottom: 1px solid #eee;
-  padding: 11px 18px;
-}
-
-.jobs-tools .status i {
-  font-weight: 300;
-  line-height: 16px;
-}
-
-.jobs-tools .status:last-child {
-  border-bottom: 0;
-}
-
-.jobs-tools .status .tools {
+.job-statuses {
   display: flex;
+}
+
+.title .stats {
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
+  color: #666;
+  margin-left: 4px;
+  line-height: 12px;
+  gap: 4px;
 }
 
-.jobs-tools .stats {
-  font-size: 1.1em;
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  gap: 6px;
-}
-
-.jobs-tools .stats span {
-  color: var(--error);
-  border-radius: 7px;
-  line-height: 16px;
-  text-align: center;
-}
-
-.jobs-tools .stats span:first-child {
+.title .stats span:first-child {
   color: var(--success);
 }
 
-.jobs-tools .stats span:last-child {
-  color: #999;
-}
-
-.failed {
+.failed.rework {
+  color: var(--error);
   cursor: url("data:image/svg+xml,%3Csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='20' height='20' x='0px' y='0px' viewBox='0 0 9.5 13' style='enable-background:new 0 0 9.5 13;' xml:space='preserve'%3E%3Cstyle type='text/css'%3E .st0%7Bfill:%23DB4437;%7D%0A%3C/style%3E%3Cpath class='st0' d='M7,5.6l1.5,0c0.4,0,0.7-0.3,0.7-0.8c0-0.4-0.3-0.5-0.5-0.7L5.4,0.9C5.1,0.7,5,0.5,4.6,0.5 C4.3,0.5,4.1,0.7,3.9,1L0.7,4.3C0.5,4.5,0.3,4.7,0.3,5.1c0,0.4,0.4,0.7,0.8,0.7l1.5,0l0,1.5c0,1.4-0.3,3.3-1.5,3.8 c-0.4,0.2-0.6,0.5-0.6,0.8c0,0.4,0.3,0.7,0.8,0.7C5.6,12.4,7.1,9.4,7,5.6z'/%3E%3C/svg%3E") 8 8, pointer;
 }
 
@@ -388,12 +346,7 @@ label[for='urls'] i {
   min-width: var(--meta-width);
 }
 
-.job-meta > *:first-child {
-  width: 100px;
-}
-
 .job-meta > *:last-child {
-  width: 100px;
   text-align: right;
 }
 

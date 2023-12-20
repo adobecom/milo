@@ -87,11 +87,29 @@ const jobStatus = (status, state, count) => {
   return { code, text, color };
 };
 
+const humanDateTime = (newDate) => {
+  const date = new Date(newDate);
+  const today = new Date();
+  const isToday = date.getDate() === today.getDate()
+    && date.getMonth() === today.getMonth()
+    && date.getFullYear() === today.getFullYear();
+  return isToday ? date.toLocaleTimeString() : date.toLocaleString().replace(',', '');
+};
+
+const getElapsedTime = (date1, date2) => {
+  const start = new Date(date1);
+  const end = new Date(date2);
+  const diff = Math.abs(end - start);
+  return (diff / 1000) > 60 ? `${Math.round(diff / (1000 * 60))}m` : `${Math.round(diff / 1000)}s`;
+};
+
 export {
   editEntry,
   FORM_MODES,
+  getElapsedTime,
   getErrorText,
   getJobErrorText,
+  humanDateTime,
   PROCESS_TYPES,
   jobStatus,
   sticky,

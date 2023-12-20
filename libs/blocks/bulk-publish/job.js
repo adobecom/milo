@@ -1,6 +1,6 @@
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { jobStatus } from './utils.js';
+import { humanDateTime, jobStatus } from './utils.js';
 import { pollJobStatus, attemptRetry } from './services.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/job.css');
@@ -9,6 +9,7 @@ class JobProcess extends LitElement {
   static get properties() {
     return {
       job: { type: Object },
+      filtered: { type: String },
       jobStatus: { state: true },
       viewError: { state: true },
       queue: { state: true },
@@ -92,6 +93,7 @@ class JobProcess extends LitElement {
 
   render() {
     const { job } = this.job.result;
+    if (this.filtered && this.filtered !== this.jobStatus?.invocationId) return html``;
     return job.data.paths.map((path, pathIndex) => {
       const pathcheck = typeof path === 'object' ? path.path : path;
       const { style, status, topic, url, time } = this.jobDetails(pathcheck);
@@ -104,7 +106,7 @@ class JobProcess extends LitElement {
           </div>
           <div class="meta">
             <span class="${status.color}">${status.text}</span>
-            <span>${new Date(time).toLocaleString().replace(',', '')}</span>
+            <span>${humanDateTime(time)}</span>
           </div>
         </div>
       `;

@@ -3,24 +3,21 @@ import { getErrorText, wait } from './utils.js';
 const BASE_URL = 'https://admin.hlx.page';
 const headers = { 'Content-Type': 'application/json' };
 
-const USES_BULK = ['preview', 'publish'];
-const isLive = (type) => (['publish', 'unpublish'].includes(type) ? 'live' : null);
-const isIndex = (type) => (['index', 'deindex'].includes(type) ? 'index' : null);
 const getMiloUrl = (url) => url.hostname.split('.')[0].split('--');
-
-const getProcessEp = (url, type) => {
-  const [ref, repo, owner] = getMiloUrl(url);
-  const process = isLive(type) ?? isIndex(type) ?? 'preview';
-  return `${BASE_URL}/${process}/${owner}/${repo}/${ref}${url.pathname}`;
+const getProcess = (type) => {
+  if (type === 'index') return type;
+  if (['publish', 'unpublish'].includes(type)) return 'live';
+  return 'preview';
 };
 
-const getBulkJobEp = (url, type) => {
+const getRequestEp = (url, type) => {
   const [ref, repo, owner] = getMiloUrl(url);
-  const process = isLive(type) ?? 'preview';
-  return `${BASE_URL}/${process}/${owner}/${repo}/${ref}/*`;
+  const process = getProcess(type);
+  const path = process === 'index' ? url.pathname : '*';
+  return `${BASE_URL}/${process}/${owner}/${repo}/${ref}/${path}`;
 };
 
-const prepareBulkJobs = (jobs) => {
+const prepareBulkJob = (jobs) => {
   const { urls, process } = jobs;
   const all = urls.map((url) => (new URL(url)));
   return Object.values(all.reduce((newJobs, url) => {
@@ -33,7 +30,7 @@ const prepareBulkJobs = (jobs) => {
       newJobs[job] = {
         href: url.href,
         origin: url.origin,
-        endpoint: getBulkJobEp(url, process),
+        endpoint: getRequestEp(url, process),
         options: {
           headers,
           method: isDelete ? 'DELETE' : 'POST',
@@ -49,13 +46,13 @@ const prepareBulkJobs = (jobs) => {
   }, {}));
 };
 
-const prepareItrJobs = (jobs) => {
+const prepareJob = (jobs) => {
   const all = jobs.urls.map((url) => (new URL(url)));
   return all.map((url) => ({
     href: url.href,
     origin: url.origin,
     path: url.pathname,
-    endpoint: getProcessEp(url, jobs.process),
+    endpoint: getRequestEp(url, jobs.process),
     options: {
       headers,
       method: ['unpublish', 'delete'].includes(jobs.process) ? 'DELETE' : 'POST',
@@ -63,12 +60,11 @@ const prepareItrJobs = (jobs) => {
   }));
 };
 
-const getItrJob = (jobs, topic) => {
-  const { complete, error } = jobs.reduce((list, job) => {
-    list[!job.error ? 'complete' : 'error'].push(job);
-    return list;
+const getJobResult = (jobs, topic) => {
+  const { complete, error } = jobs.reduce((result, job) => {
+    result[!job.error ? 'complete' : 'error'].push(job);
+    return result;
   }, { complete: [], error: [] });
-
   const { origin, useBulk } = jobs[0];
   const paths = complete.map(({ result }) => (result?.job?.path));
   return [{
@@ -86,9 +82,9 @@ const getItrJob = (jobs, topic) => {
   }, ...error];
 };
 
-const createJobs = async (jobs) => {
-  const useBulk = USES_BULK.includes(jobs.process);
-  const newJobs = useBulk ? prepareBulkJobs(jobs) : prepareItrJobs(jobs);
+const runJob = async (jobs) => {
+  const useBulk = jobs.process !== 'index';
+  const newJobs = useBulk ? prepareBulkJob(jobs) : prepareJob(jobs);
   const requests = newJobs.flatMap(async ({ endpoint, options, origin, path, href }) => {
     if (options.body) {
       options.body = JSON.stringify(options.body);
@@ -114,7 +110,7 @@ const createJobs = async (jobs) => {
     }
   });
   const results = await Promise.all(requests);
-  return useBulk ? results : getItrJob(results, jobs.process);
+  return useBulk ? results : getJobResult(results, jobs.process);
 };
 
 const getStatus = async (link) => {
@@ -142,7 +138,7 @@ const pollJobStatus = async ({ result }) => {
 };
 
 const attemptRetry = async ({ queue, urls, process }) => {
-  const prepped = prepareItrJobs({ urls, process });
+  const prepped = prepareJob({ urls, process });
   const processes = prepped.flatMap(async ({ endpoint, options, origin }) => {
     try {
       await wait(4000);
@@ -167,7 +163,7 @@ const attemptRetry = async ({ queue, urls, process }) => {
 
 export {
   attemptRetry,
-  createJobs,
+  runJob,
   getMiloUrl,
   pollJobStatus,
 };

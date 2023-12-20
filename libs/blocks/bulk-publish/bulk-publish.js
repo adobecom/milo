@@ -1,7 +1,7 @@
 import './job.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { createJobs } from './services.js';
+import { runJob } from './services.js';
 import {
   editEntry,
   FORM_MODES,
@@ -10,6 +10,7 @@ import {
   validMiloURL,
   sticky,
   wait,
+  getElapsedTime,
 } from './utils.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/bulk-publisher.css');
@@ -27,7 +28,6 @@ class BulkPublish extends LitElement {
     openJobs: { state: true },
     jobErrors: { state: true },
     openStatus: { state: true },
-    filterJob: { state: true },
   };
 
   constructor() {
@@ -42,7 +42,6 @@ class BulkPublish extends LitElement {
     this.openJobs = false;
     this.jobErrors = false;
     this.openStatus = false;
-    this.filterJob = null;
   }
 
   async connectedCallback() {
@@ -53,8 +52,8 @@ class BulkPublish extends LitElement {
       this.jobs = resume;
       await wait(1000);
       this.openJobs = true;
+      this.processing = 'job';
     }
-    this.renderRoot.addEventListener('click', (e) => this.handlePopup(e));
   }
 
   async updated() {
@@ -87,8 +86,7 @@ class BulkPublish extends LitElement {
   setJobErrors(errors) {
     const urls = [];
     errors.forEach((error) => {
-      const { href } = error;
-      const matched = this.urls.filter((url) => url.includes(href));
+      const matched = this.urls.filter((url) => url.includes(error.href));
       matched.forEach((match) => urls.push(match));
     });
     const textarea = this.renderRoot.querySelector('#Urls');
@@ -119,11 +117,10 @@ class BulkPublish extends LitElement {
     const { text, startEdit } = this.getErrorProps();
     startEdit();
     const count = this.disabled.length;
-    const counter = count > 1 ? `1/${count} Errors` : '1 Error';
     const btnText = this.editing ? 'Next Error' : 'Select Line';
     return html`
       <div class="errors">
-        <span>${counter}: <strong>${text}</strong></span>
+        <span>Error: <strong>${text}</strong></span>
         <div class="fix-btn" @click=${() => startEdit(true)}>
           ${count === 1 ? 'Finish' : btnText}
         </div>
@@ -178,7 +175,7 @@ class BulkPublish extends LitElement {
           </select>
           <button
             disable=${this.disableSubmitBtn()} 
-            @click=${this.submitJob}>
+            @click=${this.submitJobForm}>
             Run Job
             <span class="loader${this.processing === 'launch' ? '' : ' hide'}"></span>
           </button>
@@ -200,62 +197,68 @@ class BulkPublish extends LitElement {
     `;
   }
 
-  renderFailed({ failed, status }) {
+  errorReworkTool({ failed, status }) {
     const setRework = () => {
-      if (this.mode === 'full' && this.openJobs) this.openJobs = false;
       const { origin } = this.jobs.find((item) => item.result.job.name === status.name);
       const paths = status.data.resources.filter((path) => ![200, 204].includes(path.status));
       this.urls = paths.map(({ path }) => `${origin}${path}`);
     };
     return html`<span
       @click=${setRework}
-      class="failed">${failed}</span>`;
+      class="failed${failed > 0 ? ' rework' : ''}">${failed} Error</span>`;
   }
 
-  handlePopup(event) {
-    if (this.openStatus) {
-      const elems = ['StatList', 'StatIcon'];
-      const clickables = elems.map((elem) => (this.renderRoot.getElementById(elem)));
-      const clicked = clickables.filter((element) => element?.contains(event.target));
-      if (!clicked.length) this.openStatus = false;
-    }
-  }
-
-  renderClipboard() {
+  renderStatusFilter() {
     const jobStatuses = this.jobs.filter((job) => job.status).map((job) => (job.status));
-    const getJobStatus = (status) => {
-      const { progress, name, topic, data } = status;
-      const { failed, total } = progress;
-      const success = data.resources.filter((path) => [200, 204].includes(path.status)).length;
-      const fail = { failed, status };
+    return jobStatuses.map((status) => {
+      const showing = this.openStatus === status.invocationId;
+      const toggle = () => {
+        this.openStatus = showing ? false : status.invocationId;
+      };
       return html`
-        <div class="status">
-          <i>${topic} ~ ${name}</i>
-          <div class="tools">
-            <div class="stats">
-              <span>${success}</span>-${this.renderFailed(fail)}/<span>${total} pages</span>
-            </div>
-            <div class="actions">
-            </div>
+        <div class="status-filter">
+          <div class="status-icon${showing ? ' open' : ''}" @click=${toggle}></div>
         </div>
       `;
-    };
+    });
+  }
+
+  renderStatusStats(status) {
+    const { progress, startTime, stopTime, data } = status;
+    const { failed } = progress;
+    const success = data.resources.filter((path) => [200, 204].includes(path.status)).length;
     return html`
-      <div 
-        id="StatIcon" 
-        class="statuses-icon" @click=${() => { this.openStatus = !this.openStatus; }}></div>
-      <div id="StatList" class="statuses-list${this.openStatus ? '' : ' hide'}">
-        <div class="statuses">${jobStatuses.map((status) => getJobStatus(status))}</div>
+      <div class="stats">
+        ${getElapsedTime(startTime, stopTime)}
+        ${failed ? html`
+          • <span>${success} Success</span>
+          • ${this.errorReworkTool({ failed, status })}
+        ` : ''}
       </div>
     `;
+  }
+
+  renderJobStatus(allCount) {
+    const filteredJob = this.jobs.find(({ status }) => status?.invocationId === this.openStatus);
+    if (!filteredJob) {
+      return html`
+        ${allCount ? html`<strong>${allCount}</strong>` : ''}
+        Job Results
+      `;
+    }
+    const { topic, progress } = filteredJob.status;
+    return html`
+        <strong>${progress.total}</strong>
+        ${topic} ${this.renderStatusStats(filteredJob.status)}
+      `;
   }
 
   getJobState() {
     const jobState = {
       showList: this.mode === 'half' || this.openJobs,
       showClear: this.jobs.length && this.processing === false,
-      showStatusFilter: this.jobs.length && this.processing === false,
-      loading: this.processing === 'job',
+      showStatusFilter: this.jobs.filter((job) => job.status).length > 0,
+      loading: this.processing !== false,
     };
     Object.keys(jobState).forEach((key) => (jobState[key] = `${jobState[key] ? '' : ' hide'}`));
     jobState.count = this.jobs.reduce((count, { result }) => {
@@ -265,7 +268,7 @@ class BulkPublish extends LitElement {
     return jobState;
   }
 
-  completeProcess(event) {
+  processCompleted(event) {
     const status = event.detail;
     const updateJob = this.jobs.find(({ result }) => result.job.name === status.name);
     updateJob.status = status;
@@ -285,19 +288,18 @@ class BulkPublish extends LitElement {
         class="panel-title"
         @click=${handleToggle}>
         <span class="title">
-          ${this.jobs.length ? html`<strong>${count}</strong>` : ''}
-          Job Results
+          ${this.renderJobStatus(count)}
         </span>
         <div class="jobs-tools${showList}">
-          <div class="loading-jobs${loading}">
-            <div class="loader pink"></div>
-          </div>
           <div class="job-statuses${showStatusFilter}">
-            ${this.renderClipboard()}
+            ${this.renderStatusFilter()}
           </div>
           <div 
             class="clear-jobs${showClear}"
-            @click=${() => { this.jobs = []; }}></div>
+            @click=${() => { this.jobs = []; this.openStatus = false; }}></div>
+          <div class="loading-jobs${loading}">
+            <div class="loader pink"></div>
+          </div>
         </div>
       </div>
       <div class="job${showList}">
@@ -311,8 +313,9 @@ class BulkPublish extends LitElement {
         <div class="job-list">
           ${this.jobs.map((job) => html`
             <job-process 
-              .job=${job} 
-              @processed="${this.completeProcess}"></job-process>
+              .job=${job}
+              .filtered=${this.openStatus}
+              @processed="${this.processCompleted}"></job-process>
           `)}
         </div>
       </div>
@@ -325,7 +328,7 @@ class BulkPublish extends LitElement {
       || this.processType === 'choose';
   }
 
-  resetForm() {
+  resetJobForm() {
     this.disabled = true;
     this.jobErrors = false;
     this.urls = [];
@@ -336,10 +339,10 @@ class BulkPublish extends LitElement {
     if (process) process.value = 'choose';
   }
 
-  async submitJob() {
+  async submitJobForm() {
     if (!this.disableSubmitBtn()) {
       this.processing = 'launch';
-      const newJobs = await createJobs({
+      const newJobs = await runJob({
         urls: this.urls,
         process: this.processType.toLowerCase(),
       });
@@ -352,7 +355,7 @@ class BulkPublish extends LitElement {
         if (this.mode === 'full') {
           this.openJobs = true;
         }
-        this.resetForm();
+        this.resetJobForm();
       }
     }
   }
