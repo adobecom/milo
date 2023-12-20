@@ -52,9 +52,9 @@ function createTableWithHeaders() {
   return table;
 }
 
-function getFloodgatedContentInfoHtml(url, fgSpViewUrl, fgDocStatus) {
+function getFloodgatedContentInfoHtml(url, fgSpViewUrl, fgDocStatus, fgColor) {
   if (fgDocStatus.hasSourceFile) {
-    const fgPageUrl = getAnchorHtml(getFloodgateUrl(url), 'Url');
+    const fgPageUrl = getAnchorHtml(getFloodgateUrl(url, fgColor), 'Url');
     const fgDocDisplayText = getAnchorHtml(fgSpViewUrl.replace('<relativePath>', fgDocStatus.msg), 'File');
     return `${fgPageUrl}, ${fgDocDisplayText}`;
   }
@@ -72,6 +72,7 @@ async function updateProjectDetailsUI(projectDetail, config) {
   const table = createTableWithHeaders();
   const spViewUrl = config.sp.shareUrl;
   const fgSpViewUrl = config.sp.fgShareUrl;
+  const { fgColor } = projectDetail;
 
   projectDetail.urls.forEach((urlInfo, url) => {
     const tr = createTag('tr');
@@ -87,7 +88,9 @@ async function updateProjectDetailsUI(projectDetail, config) {
 
     // Floodgated file data
     const fgDocStatus = getSharepointStatus(urlInfo.doc, true);
-    tr.appendChild(createColumn(getFloodgatedContentInfoHtml(url, fgSpViewUrl, fgDocStatus)));
+    tr.appendChild(createColumn(
+      getFloodgatedContentInfoHtml(url, fgSpViewUrl, fgDocStatus, fgColor),
+    ));
     tr.appendChild(createColumn(fgDocStatus.modificationInfo));
 
     table.appendChild(tr);

@@ -21,6 +21,13 @@
             >My CaaS Collection</a
           >
         </p>
+        <p>
+          <a
+            id="v2-caaslink"
+            href="https://milo.adobe.com/tools/caas#~~H4sIAAAAAAAAE3VVTXPbNhD9Lzw7sVK3PehmyfbEM3KsRvL0kOl0VsBSxAjEsgAomen0v3cX/JSi3Ii32K+3D8t/M9DaREMO7Ff8p8YQ1+ChDNn82183GTDcRKPCkqxFJfe+QInZPMsmxq0HdXguK48h8I1snoMNKBf0ivZGbWHfx6sjLal20TcrcPvh5o7oUII/PCtyG5RMbYop/ubCxKLA601srNRSgM0/FGj2RewsWxMt3islBe2MNbFZ4RFtNv+d7UMri+j6EJU3nKfJpuax0xFLgS/Bjfk+YC6Ccej5+OmX2ewF3v80OhadCV3cNhWOfKiWC76tAMK8O97WQRzqEKlccjdd7Aj3KR0f/2YqcsY0faG4gu/NikAPbGoTYGdxAY4rCSPsIY8Pu+GMTldknBB6Op0+gqYdflRU3qrClOjhA1TmduwyE4+j8eRKdN0U8F3ZWqOWKruWOmjskbPZHQvkcUzHnjlCrP2ZZ25sRP94HKK3wKI2Vq/ByfiSgEpg0Q3mFSnoWLGYxwnOymOQ/ACd5QnLxO8ZtCno9FhWsRk42tcxpmn++s5hCgQ9hCmMxmWEZ31+Hhs37oIJy5KvYY/9uPvzLQq5Fhqqkz4kXV0JxFN9IY9XhUrONlLwonsjA5dd6eQvHl8Fe+MSV/fOlOljiMpV6Gx65dGJhEZNjZY/anCRX5TkdlfsXQcdkOgfjW8BtwWWeDc6WlBYkGVi37xtB8+LpLYxrNGvE12/3WQBwaviyaDt+Q4YpeEFeT1VeZhQEp7SXK/bXt05X2J86nUywTYp8xm0pSjrMhU5GsjHB4h4H9QP2ANeAV9Im9xMOE4GzIHDMg+692sN7UDWVLEypg4t/pV3LZUbKCtrJns1XZAHteGPM/Spe39nYF/RZQs9/kMbbdpzCAP6Ixm/JuJxfprNZheGVCVP9a7F2119ETiBF+lqr9jrG6/70yFkrIDI0m418/P9JXcyuer3GGV/Ho0872zALoUeRZ6yTOR3wr9D2bLIS92GLb7H16rbNbqbEztIqZ95MzDx3V8mK+7EICpJGtuSPBYh4yarA64ktEQbkjL4ekTPK2Bl3GHU1ORfxYuIrmwB9vTPLid5E//9DxyYdnXOBwAA"
+            >My CaaS Collection</a
+          >
+        </p>
       </div>
     </main>
   </body>
@@ -49,6 +56,11 @@
         const ogFetch = window.fetch;
 
         beforeEach(() => {
+          document.getElementById('caas')?.remove();
+          caasEl = null;
+          loadScript.reset();
+          loadStyle.reset();
+
           window.fetch = stub().returns(
             new Promise((resolve) => {
               resolve({
@@ -80,6 +92,16 @@
 
         it('inits the CaaS collection', async () => {
           const a = document.getElementById('caaslink');
+          await init(a);
+          await waitForElement('#caas');
+          await delay(5);
+          expect(loadScript.callCount).to.equal(3);
+          expect(loadStyle.callCount).to.equal(1);
+          expect(caasEl).to.equal(document.getElementById('caas'));
+        });
+
+        it('it can use the v2 hash format', async () => {
+          const a = document.getElementById('v2-caaslink');
           await init(a);
           await waitForElement('#caas');
           await delay(5);

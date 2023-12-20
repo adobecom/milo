@@ -67,7 +67,7 @@ async function fetchTaxonomy(target) {
   return fetch(target).then((response) => response.json());
 }
 
-function parseTaxonomyJson(data, root) {
+function parseTaxonomyJson(data, root, route) {
   let level1; let level2;
   return data?.reduce((taxonomy, row) => {
     const level3 = removeLineBreaks(row[TAXONOMY_FIELDS.level3]);
@@ -83,7 +83,7 @@ function parseTaxonomyJson(data, root) {
       : (level2 ? LEVEL_INDEX.level2
         : LEVEL_INDEX.level1);
 
-    const name = level3 || level2 || level1;
+    const name = (level3 || level2 || level1)?.toLowerCase();
     const category = row[TAXONOMY_FIELDS.type]?.trim().toLowerCase() || INTERNALS;
 
     // skip duplicates
@@ -94,7 +94,7 @@ function parseTaxonomyJson(data, root) {
       ? new URL([row[TAXONOMY_FIELDS.link]])
       : generateUri(name);
     const path = taxLink.pathname
-      ? taxLink.pathname?.replace('.html', '').split('/topics/').pop()
+      ? taxLink.pathname?.replace('.html', '').split(`${route}/`).pop()
       : taxLink;
     const link = `${root}/${path}`;
     const hidden = !!row[TAXONOMY_FIELDS.hidden]?.trim();
@@ -164,7 +164,7 @@ export default async (config, route, target) => {
 
   return fetchTaxonomy(path)
     .then((json) => {
-      const taxonomy = parseTaxonomyJson(json.data, root);
+      const taxonomy = parseTaxonomyJson(json.data, root, route);
 
       return {
         CATEGORIES,
@@ -181,7 +181,7 @@ export default async (config, route, target) => {
 
         get(topic, cat) {
           // take first one of the list
-          const item = findItem(topic, cat, taxonomy);
+          const item = findItem(topic?.toLowerCase(), cat?.toLowerCase(), taxonomy);
 
           if (!item) { return null; }
 

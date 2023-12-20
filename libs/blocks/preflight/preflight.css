@@ -313,3 +313,44 @@ span.preflight-time {
 .seo-item-description {
   margin: 0;
 }
+
+/* Accessibility css */
+.access-columns {
+  margin: 24px 48px;
+  gap: 48px;
+}
+
+.access-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+}
+
+.access-image-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 20px;
+  max-width: 100%;
+  margin: 20px;
+  margin-left: 72px;
+}
+
+.access-image-grid-item {
+  border: solid white 4px;
+  position: relative;
+  overflow: hidden;
+  width: 128px;
+  height: 128px;
+}
+
+.access-image-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.access-image-header {
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-left: 72px;
+}

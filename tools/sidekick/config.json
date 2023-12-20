@@ -25,11 +25,22 @@
     {
       "containerId": "tools",
       "id": "localize",
-      "title": "Localize project",
+      "title": "Localize",
+      "environments": [ "edit" ],
+      "url": "/tools/loc/index.html?project=milo--adobecom",
+      "passReferrer": true,
+      "excludePaths": [ "/**" ],
+      "includePaths": [ "**/:x**" ]
+    },
+    {
+      "containerId": "tools",
+      "id": "localize-v2",
+      "title": "Localize project (V2)",
       "environments": [ "edit" ],
       "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
       "passReferrer": true,
       "passConfig": true,
+      "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
     },
     {
@@ -40,6 +51,7 @@
       "url": "https://floodgateui--milo--adobecom.hlx.page/tools/floodgate",
       "passReferrer": true,
       "passConfig": true,
+      "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
     },
     {
@@ -110,7 +122,7 @@
       "containerId": "tools",
       "title": "Send to CaaS",
       "id": "sendtocaas",
-      "environments": ["dev","preview", "live", "prod"],
+      "environments": ["live", "prod"],
       "event": "send-to-caas",
       "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
     },
@@ -125,6 +137,24 @@
       "passConfig": true,
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 498px; width: 460px;",
       "includePaths": [ "**.docx**", "**.xlsx**" ]
+    },
+    {
+      "containerId": "tools",
+      "id": "caas-configurator",
+      "title": "CaaS Configurator",
+      "environments": [ "edit", "preview", "dev" ],
+      "url": "https://milo.adobe.com/tools/caas",
+      "isPalette": false,
+      "includePaths": [ "**.docx**"]
+    },
+    {
+      "containerId": "tools",
+      "id": "faas-configurator",
+      "title": "FaaS Configurator",
+      "environments": [ "edit", "preview", "dev" ],
+      "url": "https://milo.adobe.com/tools/faas",
+      "isPalette": false,
+      "includePaths": [ "**.docx**"]
     }
   ]
 }

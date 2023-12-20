@@ -63,6 +63,7 @@ export default async function loadIcons(icons, config) {
         icon.classList.add('margin-left');
       } else if (parent.firstChild === icon) {
         icon.classList.add('margin-right');
+        if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
       } else {
         icon.classList.add('margin-left', 'margin-right');
       }

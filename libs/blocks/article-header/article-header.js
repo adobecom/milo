@@ -124,6 +124,8 @@ async function buildSharing() {
 }
 
 async function validateDate(date) {
+  const { env } = getConfig();
+  if (env?.name === 'prod') return;
   if (date && !/^[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}$/.test(date.textContent.trim())) {
     // match publication date to MM-DD-YYYY format
     date.classList.add('article-date-invalid');

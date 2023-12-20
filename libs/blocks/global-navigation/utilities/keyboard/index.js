@@ -79,7 +79,7 @@ class KeyboardNavigation {
       this.mainNav = new MainNav();
       this.desktop = window.matchMedia('(min-width: 900px)');
     } catch (e) {
-      lanaLog({ message: 'Keyboard Navigation failed to load', e });
+      lanaLog({ message: 'Keyboard Navigation failed to load', e, tags: 'errorType=error,module=gnav-keyboard' });
     }
   }
 
@@ -125,7 +125,7 @@ class KeyboardNavigation {
             default:
               break;
           }
-        }, `KeyboardNavigation index failed. ${e.code}`));
+        }, `KeyboardNavigation index failed. ${e.code}`, 'errorType=error,module=gnav-keyboard'));
       });
   };
 }

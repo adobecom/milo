@@ -100,14 +100,14 @@ function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig) {
   };
 }
 
-function getSharepointConfig(config) {
+function getSharepointConfig(config, fgColor) {
   const sharepointConfig = config.sp.data[0];
   const { driveId } = sharepointConfig;
   const drive = driveId ? `/drives/${driveId}` : '/drive';
 
   // ${sharepointConfig.site} - MS Graph API Url with site pointers.
   const baseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.rootFolders}`;
-  const fgBaseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.fgRootFolder}`;
+  const fgBaseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.fgRootFolder}`.replace('<fgColor>', `${fgColor}`);
   const baseItemsURI = `${sharepointConfig.site}${drive}/items`;
   return {
     ...sharepointConfig,
@@ -119,7 +119,8 @@ function getSharepointConfig(config) {
       cache: { cacheLocation: 'sessionStorage' },
     },
     shareUrl: sharepointConfig.shareurl,
-    fgShareUrl: sharepointConfig.fgShareUrl,
+    fgShareUrl: `${sharepointConfig.fgShareUrl}`.replace('<fgColor>', `${fgColor}`),
+    fgRootFolder: `${sharepointConfig.fgRootFolder}`.replace('<fgColor>', `${fgColor}`),
     login: { redirectUri: '/tools/loc/spauth' },
     api: {
       url: GRAPH_API,

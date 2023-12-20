@@ -16,12 +16,41 @@ const blockTypeSizes = {
     xlarge: ['xl', 'xxl'],
   },
   text: {
+    xxsmall: ['xxs', 'xxs'],
     small: ['m', 's', 's'],
     medium: ['l', 'm', 'm'],
     large: ['xl', 'm', 'l'],
     xlarge: ['xxl', 'l', 'xl'],
   },
 };
+
+function decorateMultiViewport(el) {
+  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
+  const foreground = el.querySelector('.foreground');
+  if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
+    [...foreground.children].forEach((child, index) => {
+      child.className = viewports[index];
+      if (foreground.childElementCount === 2 && index === 1) child.className = 'tablet-up desktop-up';
+    });
+  }
+  return foreground;
+}
+
+function decorateBlockIconArea(el) {
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (!headings) return;
+  headings.forEach((h) => {
+    const hPrevElem = h.previousElementSibling;
+    if (hPrevElem?.childElementCount) {
+      const picCount = [...hPrevElem.children].reduce((result, item) => {
+        let count = result;
+        if (item.nodeName === 'PICTURE') count += 1;
+        return count;
+      }, 0);
+      if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
+    }
+  });
+}
 
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
@@ -34,17 +63,18 @@ export default function init(el) {
   }
   const helperClasses = [];
   let blockType = 'text';
-  const size = getBlockSize(el);
-  const longFormVariants = ['inset', 'long-form', 'bio'];
-  longFormVariants.forEach((variant, index) => {
+  const size = el.classList.contains('legal') ? 'xxsmall' : getBlockSize(el);
+  ['inset', 'long-form', 'bio'].forEach((variant, index) => {
     if (el.classList.contains(variant)) {
       helperClasses.push('max-width-8-desktop');
       blockType = (index > 0) ? 'standard' : variant;
     }
   });
-  const config = blockTypeSizes[blockType][size];
-  decorateBlockText(el, config);
-  rows.forEach((row) => { row.classList.add('foreground'); });
+  rows.forEach((row) => {
+    row.classList.add('foreground');
+    decorateBlockText(row, blockTypeSizes[blockType][size]);
+    decorateBlockIconArea(row);
+  });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
@@ -63,4 +93,5 @@ export default function init(el) {
   }
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
+  decorateMultiViewport(el);
 }

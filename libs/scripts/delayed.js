@@ -51,7 +51,10 @@ export const loadPrivacy = async (getConfig, loadScript) => {
 
 export const loadGoogleLogin = async (getMetadata, loadIms, loadScript) => {
   const googleLogin = getMetadata('google-login')?.toLowerCase();
-  if (googleLogin !== 'on' || window.adobeIMS?.isSignedInUser()) return;
+  if (window.adobeIMS?.isSignedInUser() || !['mobile', 'desktop', 'on'].includes(googleLogin)) return;
+  const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
+  if (googleLogin === 'mobile' && desktopViewport) return;
+  if (googleLogin === 'desktop' && !desktopViewport) return;
 
   const { default: initGoogleLogin } = await import('../features/google-login.js');
   initGoogleLogin(loadIms, getMetadata, loadScript);
