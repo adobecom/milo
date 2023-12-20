@@ -131,7 +131,7 @@ export async function getEventTimeFg() {
   endTime.setDate(endTime.getDate() + 1);
   heading.value = {
     ...heading.value,
-    endTimeString: endTimeUTCString,
+    endTimeUTCString: endTimeUTCString,
     endTime: endTime,
   };
 }
