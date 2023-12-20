@@ -9,7 +9,7 @@ export function processTrackingLabels(text, config, charLimit) {
   }
   analyticsValue = analyticsValue.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '');
   if (charLimit) return analyticsValue.slice(0, charLimit);
-  return analyticsValue.trim();
+  return analyticsValue;
 }
 
 export function decorateDefaultLinkAnalytics(block, config) {
