@@ -457,7 +457,9 @@ export async function runPersonalization(info, config) {
   const experiment = await getPersConfig(info);
   if (!experiment) return null;
 
-  const { selectedVariant } = experiment;
+  // const { selectedVariant } = experiment;
+  const selectedVariant = experiment.variants['target-mobile'];
+
   if (!selectedVariant) return {};
   if (selectedVariant === 'default') {
     return { experiment };
