@@ -2,6 +2,8 @@ import { h, Component } from '../../../deps/htm-preact.js';
 import {
   deleteStatusCheck,
   promoteStatusCheck,
+  heading,
+  enableActionButton,
 } from '../utils/state.js';
 
 class ConfirmationModal extends Component {
@@ -136,9 +138,11 @@ class ConfirmationModal extends Component {
                 : this.openModal,
             disabled:
               confirmMessage === 'Promote'
-                ? promoteStatusCheck.value === 'IN PROGRESS'
+                ? (promoteStatusCheck.value === 'IN PROGRESS'  ||
+                ((new Date() < new Date(heading.value.endTime) && !enableActionButton.value)))
                 : confirmMessage === 'Delete'
-                ? deleteStatusCheck.value === 'IN PROGRESS'
+                ? (deleteStatusCheck.value === 'IN PROGRESS' ||
+                ((new Date() < new Date(heading.value.endTime) && !enableActionButton.value)))
                 : false,
             title:
               (confirmMessage === 'Promote' &&

@@ -15,6 +15,7 @@ import {
   cssStatusDelete,
   cssStatusPromote,
   copyCompleteRender,
+  enableActionButton,
 } from './state.js';
 import { accessToken } from '../../../tools/sharepoint/state.js';
 import { origin, getStatus } from '../../locui/utils/franklin.js';
@@ -23,6 +24,7 @@ import getServiceConfig from '../../../utils/service-config.js';
 import '../../../deps/md5.min.js';
 
 const DOT_MILO = '/.milo/config.json';
+const DOT_EVENT = '/.milo/edge-worker-config.json';
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B12F9079D-E580-4407-973D-2330B171B2CB%7D&file=DemoFgUI.xlsx&action=default&mobileredirect=true';
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -119,6 +121,21 @@ export async function getServiceConfigFg(origin) {
   return configs;
 }
 
+export async function getEventTimeFg() {
+  const resp = await fetch(`${origin}${DOT_EVENT}`);
+  if (!resp.ok) return { error: 'Could not fetch .milo/config.' };
+  const json = await resp.json();
+  const releaseData = json.fgreleasetimeslots.data.find(data => data.release === heading.value.fgColor);
+  const endTime = new Date(releaseData.endTime+'Z');
+  const endTimeUTCString = endTime.toUTCString();
+  endTime.setDate(endTime.getDate() + 1);
+  heading.value = {
+    ...heading.value,
+    endTimeString: endTimeUTCString,
+    endTime: endTime,
+  };
+}
+
 export async function fetchStatusAction() {
   // fetch copy status
   const config = await getServiceConfigFg(origin);
@@ -181,6 +198,10 @@ export async function promoteFiles(doPublish) {
     setStatus('details', 'info', 'Promoting files to the Floodgate Tree. Check the status card for further updates.');
     const config = await getServiceConfigFg(origin);
     const params = { ...await getParamsFg(config), spToken: accessToken, doPublish };
+    if (enableActionButton.value = true) {
+      params.pdoverride = true;
+    }
+    params.edgeWorkerEndDate = heading.value.endTimeUTCString;
     const env = heading.value.env;
     const { url } = config[env].milofg.promote;
 
@@ -219,6 +240,10 @@ export async function deleteFgTree() {
     setStatus('details', 'info', 'Deleting the Floodgate Tree. Check the status table for further updates.');
     const config = await getServiceConfigFg(origin);
     const params = { ...await getParamsFg(config), spToken: accessToken };
+    if (enableActionButton.value = true) {
+      params.pdoverride = true;
+    }
+    params.edgeWorkerEndDate = heading.value.endTimeUTCString;
     const env = heading.value.env;
     const { url } = config[env].milofg.delete;
 
