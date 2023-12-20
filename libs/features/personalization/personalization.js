@@ -285,7 +285,7 @@ export function parseConfig(data) {
 }
 
 /* c8 ignore start */
-function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+async function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     'value',
@@ -296,8 +296,10 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   const [val] = Object.entries(placeholders[0])
     .find(([key]) => valueNames.includes(key.toLowerCase()));
   if (val) {
+    if (!config.analyticLocalization) config.analyticLocalization = {};
     const results = placeholders.reduce((res, item) => {
       res[item.key] = item[val];
+      config.analyticLocalization[item.value] = item.key;
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
@@ -429,7 +431,7 @@ export async function getPersConfig(info) {
   const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
-      parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
+      await parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
     );
   }
 

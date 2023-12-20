@@ -16,8 +16,10 @@ const fetchPlaceholders = (config, sheet) => {
       const json = resp.ok ? await resp.json() : { data: [] };
       if (json.data.length === 0) { resolve({}); return; }
       const placeholders = {};
+      if (!config.analyticLocalization) config.analyticLocalization = {};
       json.data.forEach((item) => {
         placeholders[item.key] = item.value;
+        config.analyticLocalization[item.value.trim()] = item.key;
       });
       resolve(placeholders);
     });
