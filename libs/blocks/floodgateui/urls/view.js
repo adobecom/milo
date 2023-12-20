@@ -28,7 +28,11 @@ function Urls() {
 
     const filtered = urls.value.filter((url) => url.pathname.includes(term));
     setFilteredUrls(filtered);
-    showMessage(`Filtered URLs for: ${term}`);
+    if (filtered.length === 0) {
+      showMessage('No results found');
+    } else {
+      showMessage(`Filtered URLs for: ${term}`);
+    }
   };
 
   const handleClearSearch = () => {
