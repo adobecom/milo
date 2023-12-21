@@ -460,14 +460,6 @@ header.global-navigation {
   right: auto;
 }
 
-.feds-menu-section > a:first-child {
-  margin-top: 12px;
-}
-
-.feds-menu-column > ul {
-  padding: 12px 0;
-}
-
 /* Desktop styles */
 @media (min-width: 900px) {
   /* General */
@@ -666,14 +658,6 @@ header.global-navigation {
 
   .feds-breadcrumbs a:hover {
     text-decoration: underline;
-  }
-
-  .feds-menu-section > a:first-child {
-    margin: 0;
-  }
-
-  .feds-menu-column > ul {
-    padding: 0;
   }
 }
 
