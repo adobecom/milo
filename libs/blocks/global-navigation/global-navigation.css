@@ -155,7 +155,6 @@ header.global-navigation {
 /* Popup */
 .feds-popup {
   display: none;
-  padding: 0;
   background-color: var(--feds-background-popup--light);
 }
 
@@ -461,15 +460,12 @@ header.global-navigation {
   right: auto;
 }
 
-/* Mobile styles */
-@media (max-width: 900px) {
-  .feds-menu-section > a:first-child {
-    margin-top: 12px;
-  }
+.feds-menu-section > a:first-child {
+  margin-top: 12px;
+}
 
-  .feds-menu-column > ul {
-    padding: 12px 0;
-  }
+.feds-menu-column > ul {
+  padding: 12px 0;
 }
 
 /* Desktop styles */
@@ -670,6 +666,14 @@ header.global-navigation {
 
   .feds-breadcrumbs a:hover {
     text-decoration: underline;
+  }
+
+  .feds-menu-section > a:first-child {
+    margin: 0;
+  }
+
+  .feds-menu-column > ul {
+    padding: 0;
   }
 }
 
