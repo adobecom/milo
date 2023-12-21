@@ -370,6 +370,11 @@ header.global-navigation {
   content: '/';
 }
 
+.feds-utilities {
+  display: flex;
+  align-items: center;
+}
+
 /* Profile styles - to be removed after IMS takes over the profile */
 .feds-profile {
   display: flex;

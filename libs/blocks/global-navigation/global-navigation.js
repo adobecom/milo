@@ -4,6 +4,8 @@ import {
   getMetadata,
   loadIms,
   decorateLinks,
+  loadScript,
+  loadStyle,
 } from '../../utils/utils.js';
 import {
   toFragment,
@@ -163,13 +165,23 @@ const closeOnClickOutside = (e) => {
 class Gnav {
   constructor(body, el) {
     this.blocks = {
-      profile: {
-        rawElem: body.querySelector('.profile'),
-        decoratedElem: toFragment`<div class="feds-profile"></div>`,
-      },
       search: { config: { icon: CONFIG.icons.search } },
       breadcrumbs: { wrapper: '' },
     };
+
+    // TODO: metadata + project config
+    // TODO: enhance universal-nav metadata to allow other than "on"
+    this.useUniversalNav = getMetadata('universal-nav')?.toLowerCase() === 'on';
+    // TODO: remove this once implementation is done
+    this.useUniversalNav = true;
+    if (this.useUniversalNav) {
+      this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
+    } else {
+      this.blocks.profile = {
+        rawElem: body.querySelector('.profile'),
+        decoratedElem: toFragment`<div class="feds-profile"></div>`,
+      };
+    }
 
     this.el = el;
     this.body = body;
@@ -223,7 +235,8 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
-        ${this.blocks.profile.rawElem ? this.blocks.profile.decoratedElem : ''}
+        ${this.useUniversalNav && this.blocks.universalNav}
+        ${!this.useUniversalNav && (this.blocks.profile.rawElem ? this.blocks.profile.decoratedElem : '')}
         ${this.decorateLogo()}
       </nav>
     `;
@@ -289,16 +302,21 @@ class Gnav {
         this.el.removeEventListener('click', this.loadDelayed);
         this.el.removeEventListener('keydown', this.loadDelayed);
         const [
-          ProfileDropdown,
           Search,
         ] = await Promise.all([
-          loadBlock('../features/profile/dropdown.js'),
           loadBlock('../features/search/gnav-search.js'),
-          loadStyles('features/profile/dropdown.css'),
           loadStyles('features/search/gnav-search.css'),
         ]);
-        this.ProfileDropdown = ProfileDropdown;
         this.Search = Search;
+
+        if (!this.useUniversalNav) {
+          const [ProfileDropdown] = await Promise.all([
+            loadBlock('../features/profile/dropdown.js'),
+            loadStyles('features/profile/dropdown.css'),
+          ]);
+          this.ProfileDropdown = ProfileDropdown;
+        }
+
         resolve();
       } catch (e) {
         lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'errorType=warn,module=gnav' });
@@ -310,9 +328,8 @@ class Gnav {
   };
 
   imsReady = async () => {
-    const tasks = [
-      this.decorateProfile,
-    ];
+    const tasks = [this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile];
+
     try {
       for await (const task of tasks) {
         await yieldToMain();
@@ -371,6 +388,56 @@ class Gnav {
 
     this.blocks.profile.buttonElem.addEventListener('click', decorateDropdown);
     decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
+  };
+
+  decorateUniversalNav = async () => {
+    const config = getConfig();
+    let language;
+    let region;
+    if (config.locale.ietf.includes('-')) {
+      [language, region] = config.locale.ietf.split('-');
+    } else {
+      [region, language] = config.locale.prefix.replace('/', '').split('_');
+    }
+    const locale = `${language.toLowerCase()}_${region.toUpperCase()}`;
+    const environment = config.env.name === 'prod' ? 'prod' : 'dev';
+    const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
+    const getDevice = () => {
+      const agent = navigator.userAgent;
+      if (agent.includes('Mac')) return 'macOS';
+      if (agent.includes('Win')) return 'windows';
+      if (agent.includes('Linux')) return 'linux';
+      if (agent.includes('CrOS')) return 'chromeOS';
+      if (agent.includes('Android')) return 'android';
+      if (agent.includes('iPad')) return 'iPadOS';
+      if (agent.includes('iPhone')) return 'iOS';
+
+      return 'linux';
+    };
+
+    await Promise.all([
+      loadScript(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.js`),
+      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.css`),
+    ]);
+
+    window.UniversalNav({
+      target: this.blocks.universalNav,
+      env: environment,
+      locale,
+      imsClientId: window.adobeid?.client_id,
+      analyticsContext: {
+        consumer: {
+          name: 'Adobe.com',
+          version: '1.0',
+          client_id: window.adobeid?.client_id,
+          platform: 'Web',
+          device: getDevice(),
+          os_version: navigator.platform,
+        },
+        event: { visitor_guid: visitorGuid },
+      },
+      children: [{ name: 'profile', attributes: { isSignUpRequired: true } }, { name: 'app-switcher' }],
+    });
   };
 
   loadSearch = () => {
