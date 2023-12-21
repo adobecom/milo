@@ -1,138 +1,213 @@
-let fetchedIcons;
-let fetched = false;
-const appIcons = {};
-const sizes = ['xxs', 'xs', 's', 'm', 'l', 'xl', 'xxl', 'initial'];
+/**
+ * @typedef Options
+ * @property {Boolean} debug Should we output messages to console
+ * @property {Boolean} lazy Load icons lazily
+ * @property {String} defaultDir Default icon set
+ * @property {Array.<string, iconType>} supportedPrefixTypes Supported Prefix Types
+ * @property {Array.<string, iconSize>} supportedSuffixSizes Supported Suffix Sizes
+ */
+const options = {
+  debug: true,
+  lazy: true,
+  defaultDir: 'core',
+  supportedPrefixTypes: ['ui-', 'test-'],
+  supportedSuffixSizes: ['-xxs', '-xs', '-s', '-m', '-l', '-xl', '-xxl', '-initial'],
+};
+const CACHE = {};
 
-async function getSVGsfromFile(path) {
-  /* c8 ignore next */
-  if (!path) return null;
-  const resp = await fetch(path);
-  /* c8 ignore next */
-  if (!resp.ok) return null;
-  const miloIcons = {};
-  const text = await resp.text();
-  const parser = new DOMParser();
-  const parsedText = parser.parseFromString(text, 'image/svg+xml');
-  const symbols = parsedText.querySelectorAll('symbol');
-  symbols.forEach((symbol) => {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    while (symbol.firstChild) svg.appendChild(symbol.firstChild);
-    [...symbol.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));
-    svg.classList.add('icon-milo', `icon-milo-${svg.id}`);
-    miloIcons[svg.id] = svg;
+/**
+ * @var {IntersectionObserver}
+ */
+const observer = new window.IntersectionObserver((entries, observerRef) => {
+  entries.forEach(async (entry) => {
+    if (entry.isIntersecting) {
+      observerRef.unobserve(entry.target);
+      entry.target.init();
+    }
   });
-  return miloIcons;
-}
-
-async function getSvgFromPath(path, type) {
-  /* c8 ignore next */
-  if (!path) return null;
-  const resp = await fetch(path);
-  /* c8 ignore next */
-  if (!resp.ok) return null;
-  const text = await resp.text();
-  const parser = new DOMParser();
-  const parsedText = parser.parseFromString(text, 'image/svg+xml');
-  const parsedSvg = parsedText.querySelector('svg');
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  while (parsedSvg.firstChild) svg.appendChild(parsedSvg.firstChild);
-  [...parsedSvg.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));
-  svg.classList.add('icon-milo', `icon-type-${type}`);
-  return svg;
-}
-
-// eslint-disable-next-line no-async-promise-executor
-export const fetchIcons = (config) => new Promise(async (resolve) => {
-  /* c8 ignore next */
-  if (!fetched) {
-    const { miloLibs, codeRoot } = config;
-    const base = miloLibs || codeRoot;
-    fetchedIcons = await getSVGsfromFile(`${base}/img/icons/icons.svg`);
-    fetched = true;
-  }
-  resolve(fetchedIcons);
 });
 
-// eslint-disable-next-line no-async-promise-executor
-function decorateToolTip(icon) {
-  const wrapper = icon.closest('em');
-  wrapper.className = 'tooltip-wrapper';
-  if (!wrapper) return;
-  const conf = wrapper.textContent.split('|');
-  // Text is the last part of a tooltip
-  const content = conf.pop().trim();
-  if (!content) return;
-  icon.dataset.tooltip = content;
-  // Position is the next to last part of a tooltip
-  const place = conf.pop()?.trim().toLowerCase() || 'right';
-  icon.className = `icon icon-info milo-tooltip ${place}`;
-  wrapper.parentElement.replaceChild(icon, wrapper);
-}
-
-async function fetchIconSprite(icons, config) {
-  const iconSVGs = await fetchIcons(config);
-  if (!iconSVGs) return;
-  icons.forEach(async (icon) => {
-    const { classList } = icon;
-    if (classList.contains('icon-tooltip')) decorateToolTip(icon);
-    const iconName = icon.classList[1].replace('icon-', '');
-    if (!iconSVGs[iconName]) return;
-    const parent = icon.parentElement;
-    if (parent.childNodes.length > 1) {
-      if (parent.lastChild === icon) {
-        icon.classList.add('margin-left');
-      } else if (parent.firstChild === icon) {
-        icon.classList.add('margin-right');
-        if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
-      } else {
-        icon.classList.add('margin-left', 'margin-right');
-      }
-    }
-    icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
-  });
-}
-
-const fetchIcon = async (name, config) => {
-  const { miloLibs, codeRoot } = config;
-  const base = miloLibs || codeRoot;
-  const [folderName, fileName] = name.split(/-(.*)/s);
-  // Check if the icon is already in the cache
-  if (appIcons[name]) return appIcons[name];
-  let foundSize = null;
-  sizes.some((size) => {
-    if (name.endsWith(`-${size}`)) foundSize = `-${size}`;
-    return foundSize;
-  });
-  let svgPath = `${base}/img/icons/${folderName}/${fileName}.svg`;
-  if (foundSize !== null) {
-    const nameSplit = fileName.split(foundSize);
-    svgPath = `${base}/img/icons/${folderName}/${nameSplit[0]}.svg`;
+function log(message) {
+  if (options.debug) {
+    console.log(`[📜] ${message}`);
   }
-  const fetchedIcon = await getSvgFromPath(svgPath, folderName);
-  if (foundSize !== null) fetchedIcon.iconSize = `icon-size${foundSize}`;
-  appIcons[name] = fetchedIcon;
-  return fetchedIcon;
-};
+}
 
-async function fetchAppIcons(icons, config) {
-  const iconsArray = [...icons];
-  iconsArray.forEach(async (icon) => {
-    const iconName = icon.classList[1].replace('icon-', '');
-    if (iconName.startsWith('app-') || iconName.startsWith('ui-')) {
-      try {
-        const appIcon = await fetchIcon(iconName, config);
-        if (appIcon) {
-          if (appIcon.iconSize) appIcon.classList.add(appIcon.iconSize);
-          icon.insertAdjacentHTML('afterbegin', appIcon.outerHTML);
-        }
-      } catch (error) {
-        console.error(`Error loading icon ${iconName}:`, error);
-      }
+/**
+ * @param {string} fileName
+ * @param {IconSet} iconSet
+ * @param {string} iconUrl
+ * @return {Promise<String, Error>}
+ */
+function getIconSvg(fileName, folderName, iconUrl) {
+  if (!folderName) {
+    throw Error(`Icon set ${folderName} does not exists`);
+  }
+  const cacheKey = `${fileName}`;
+
+  // If we have it in cache
+  if (iconUrl && CACHE[cacheKey]) {
+    log(`Fetching ${cacheKey} from cache`);
+    return CACHE[cacheKey];
+  }
+
+  // Or resolve
+  log(`Fetching ${cacheKey} from /${folderName}/ - url:${iconUrl}`);
+  CACHE[cacheKey] = fetch(iconUrl).then((response) => {
+    if (response.ok) {
+      return response.text();
     }
+    throw Error(response.status);
+  });
+  return CACHE[cacheKey];
+}
+
+/**
+ * @param {MiloIcon} miloIcon
+ * @param {string} fileName
+ * @param {string} folderName
+ * @param {string} iconUrl
+ */
+function refreshIcon(miloIcon, fileName, folderName, iconUrl) {
+  getIconSvg(fileName, folderName, iconUrl)
+    .then((iconData) => {
+      // Strip class attribute as it may be affected by css
+      // if (iconData.includes("class=")) {
+      //   iconData = iconData.replace(/ class="([a-z- ]*)"/g, "");
+      // }
+      // Fix fill to currentColor
+      let data = iconData;
+      if (folderName === 'ui') {
+        // TODO: is this ok?
+        data = data.replaceAll('var(--iconFill,#6E6E6E)', 'currentColor');
+      }
+      // If we have some html, pass it along (useful for svg anim)
+      if (miloIcon.defaultHTML) {
+        data = data.replace('</svg>', `${miloIcon.defaultHTML}</svg>`);
+      }
+      miloIcon.innerHTML = data;
+    })
+    .catch((error) => {
+      miloIcon.innerHTML = '<span>⚠️</span>';
+      console.error(`Failed to load icon ${fileName} (error ${error})`);
+    });
+}
+
+/**
+ * @param {HTMLElement} element
+ * @returns {Boolean}
+ */
+function isInViewport(element) {
+  const rect = element.getBoundingClientRect();
+  return (
+    rect.top >= 0
+    && rect.left >= 0
+    && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    && rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+}
+
+class MiloIconElement extends HTMLElement {
+  /**
+   * @param {object} opts
+   * @returns {Options} The updated option object
+   */
+
+  /**
+   * @return {String|null}
+   */
+  get type() {
+    return this.getAttribute('type') || null;
+  }
+
+  // This tells the browser we want to be told
+  // if the `name` attribute changes.
+  static get observedAttributes() {
+    return ['name'];
+  }
+
+  connectedCallback() {
+    // innerHTML is not available because not parsed yet
+    // setTimeout also allows whenDefined to kick in before init
+    setTimeout(() => {
+      if (options.lazy && !isInViewport(this)) {
+        // observer will call init when element is visible
+        observer.observe(this);
+      } else {
+        // init directly
+        this.init();
+      }
+    });
+  }
+
+  init() {
+    // Store default content as we will inject it back later
+    this.defaultHTML = this.innerHTML;
+    this.loadIcon();
+  }
+
+  loadIcon() {
+    const name = this.getAttribute('name');
+    if (!name) return;
+    const type = this.getAttribute('type');
+    const url = this.getAttribute('url');
+    this.innerHTML = '';
+    refreshIcon(this, name, type, url);
+  }
+
+  attributeChangedCallback(attr, oldVal, newVal) {
+    // Wait until properly loaded for the first time
+    if (typeof this.defaultHTML !== 'string') {
+      return;
+    }
+    log(`Attr ${attr} changed from ${oldVal} to ${newVal}`);
+    if (newVal) {
+      this.loadIcon();
+    }
+  }
+}
+
+customElements.define('milo-icon', MiloIconElement);
+
+function getIconAttributes(iconName, baseUrl) {
+  const attrs = {
+    name: iconName,
+    type: options.defaultDir,
+    url: `${baseUrl}/img/icons/${options.defaultDir}/${iconName}.svg`,
+  };
+
+  const prefixName = options.supportedPrefixTypes.filter((type) => iconName.startsWith(type));
+  const hasPrefix = (prefixName.length > 0);
+  if (hasPrefix) {
+    const newName = iconName.replace(prefixName, '');
+    const folderName = prefixName[0].replace('-', '');
+    attrs.type = folderName;
+    attrs.name = newName;
+    attrs.url = `${baseUrl}/img/icons/${folderName}/${newName}.svg`;
+  }
+
+  const suffixSize = options.supportedSuffixSizes.filter((size) => iconName.endsWith(size));
+  const hasSize = (suffixSize.length > 0);
+  if (hasSize) {
+    const newName = attrs.name.replace(suffixSize, '');
+    attrs.name = newName;
+    attrs.size = suffixSize[0].substring(1);
+    attrs.url = `${baseUrl}/img/icons/${attrs.type}/${newName}.svg`;
+  }
+
+  const props = Object.keys(attrs).map((k) => `${k}="${attrs[k]}"`).join(' ');
+  return props;
+}
+
+async function decorateIcons(icons, base) {
+  [...icons].forEach(async (icon) => {
+    const iconName = icon.classList[1].replace('icon-', '');
+    const attrs = getIconAttributes(iconName, base);
+    icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
+    return icon;
   });
 }
 
-export default async function loadIcons(icons, config) {
-  await fetchIconSprite(icons, config);
-  await fetchAppIcons(icons, config);
+export default async function loadIcons(icons, base) {
+  await decorateIcons(icons, base);
 }

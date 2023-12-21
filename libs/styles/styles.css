@@ -421,13 +421,6 @@
   color: var(--color-black);
 }
 
-svg.icon-milo, img.icon-milo {
-  height: 1em;
-  position: relative;
-  top: .1em;
-  width: auto;
-}
-
 .con-button svg.icon-milo {
   display: inline-block;
   height: 1em;

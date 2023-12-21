@@ -78,28 +78,6 @@
   inset: 0 100% auto auto;
 }
 
-/* Alignment */
-.text-block.center {
-  text-align: center;
-  align-items: center;
-}
-
-.text-block.center .action-area,
-.text-block.center .icon-area { justify-content: center; }
-
-.text-block.right {
-  text-align: right;
-  align-items: end;
-}
-
-.text-block.right .action-area,
-.text-block.right .icon-area { justify-content: end; }
-
-/* Vertical */
-.vertical.text-block .foreground {
-  padding-bottom: var(--spacing-m);
-}
-
 /* Inset */
 .inset.text-block .foreground {
   position: relative;
@@ -125,6 +103,11 @@
 .inset.text-block .foreground ol {
   list-style: outside;
   padding-left: var(--spacing-xs);
+}
+
+/* Vertical */
+.vertical.text-block .foreground {
+  padding-bottom: var(--spacing-m);
 }
 
 /* Legal */
@@ -193,13 +176,30 @@
   column-gap: var(--spacing-xxs);
 }
 
-.text-block .icon-area.con-button {
-  column-gap: unset;
+.text-block .icon-area milo-icon svg {
+  margin-inline-end: auto;
 }
 
 .text-block .icon-area picture {
   line-height: 0em;
 }
+
+/* Alignment */
+.text-block.center {
+  text-align: center;
+  align-items: center;
+}
+
+.text-block.center .action-area,
+.text-block.center .icon-area { justify-content: center; }
+
+.text-block.right {
+  text-align: right;
+  align-items: end;
+}
+
+.text-block.right .action-area,
+.text-block.right .icon-area { justify-content: end; }
 
 /* icon inline */
 .text-block.icon-inline .foreground > div {

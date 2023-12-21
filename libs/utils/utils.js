@@ -664,7 +664,7 @@ async function decorateIcons(area, config) {
   const base = miloLibs || codeRoot;
   await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
   const { default: loadIcons } = await import('../features/icons/icons.js');
-  await loadIcons(icons, config);
+  await loadIcons(icons, base);
 }
 
 async function decoratePlaceholders(area, config) {
