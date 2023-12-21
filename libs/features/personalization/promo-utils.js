@@ -1,4 +1,4 @@
-import { getMetadata } from '../../utils/utils.js';
+import { getMetadata, getConfig } from '../../utils/utils.js';
 
 const GMTStringToLocalDate = (gmtString) => new Date(`${gmtString}+00:00`);
 
@@ -10,7 +10,22 @@ export const isDisabled = (event) => {
     && (currentDate < event.start || currentDate > event.end));
 };
 
-export default function getPromoManifests(manifestNames) {
+function getManifestNames() {
+  const { locale } = getConfig();
+  switch (locale.region) {
+    case 'us':
+      return getMetadata('manifestsamericas');
+    case 'de':
+      return getMetadata('manifestsemea');
+    case 'kr':
+      return getMetadata('manifestsapac');
+    default:
+      return '';
+  }
+}
+
+export default function getPromoManifests() {
+  const manifestNames = getManifestNames();
   const attachedManifests = manifestNames
     ? manifestNames.split(',')?.map((manifest) => manifest?.trim())
     : [];

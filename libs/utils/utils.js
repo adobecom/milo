@@ -821,7 +821,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 
 async function checkForPageMods() {
   const persMd = getMetadata('personalization');
-  const promoMd = getMetadata('manifestnames');
+  const promoMd = getMetadata('schedule');
   const targetMd = getMetadata('target');
   let persManifests = [];
   const search = new URLSearchParams(window.location.search);
