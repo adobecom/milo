@@ -25,6 +25,14 @@
   padding: 6px 32px;
 }
 
+.feds-menu-column > ul {
+  padding: 12px 0;
+}
+
+.feds-menu-section > a:first-child {
+  margin-top: 12px;
+}
+
 .feds-menu-items {
   display: none;
   padding: 12px 0;
@@ -80,14 +88,6 @@
 
 .feds-promo {
   display: none;
-}
-
-.feds-menu-section > a:first-child {
-  margin-top: 12px;
-}
-
-.feds-menu-column > ul {
-  padding: 12px 0;
 }
 
 @media (min-width: 900px) {
