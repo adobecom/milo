@@ -68,6 +68,10 @@
   text-align: right;
 }
 
+.meta i {
+  color: #999;
+}
+
 .working::after {
   overflow: hidden;
   display: inline-block;

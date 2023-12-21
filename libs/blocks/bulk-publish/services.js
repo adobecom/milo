@@ -1,4 +1,4 @@
-import { getErrorText, wait } from './utils.js';
+import { getErrorText, processJobResult, wait } from './utils.js';
 
 const BASE_URL = 'https://admin.hlx.page';
 const headers = { 'Content-Type': 'application/json' };
@@ -28,7 +28,7 @@ const prepareBulkJob = (jobs) => {
     }
     if (!newJobs[job]) {
       newJobs[job] = {
-        href: url.href,
+        href: [url.href],
         origin: url.origin,
         endpoint: getRequestEp(url, process),
         options: {
@@ -42,6 +42,7 @@ const prepareBulkJob = (jobs) => {
       newJobs[job].options.body.forceUpdate = true;
     }
     newJobs[job].options.body.paths.push(url.pathname.toLowerCase());
+    newJobs[job].href.push(url.href);
     return newJobs;
   }, {}));
 };
@@ -60,11 +61,8 @@ const prepareJob = (jobs) => {
   }));
 };
 
-const getJobResult = (jobs, topic) => {
-  const { complete, error } = jobs.reduce((result, job) => {
-    result[!job.error ? 'complete' : 'error'].push(job);
-    return result;
-  }, { complete: [], error: [] });
+const createResults = (jobs, topic) => {
+  const { complete, error } = processJobResult(jobs);
   const { origin, useBulk } = jobs[0];
   const paths = complete.map(({ result }) => (result?.job?.path));
   return [{
@@ -85,7 +83,7 @@ const getJobResult = (jobs, topic) => {
 const runJob = async (jobs) => {
   const useBulk = jobs.process !== 'index';
   const newJobs = useBulk ? prepareBulkJob(jobs) : prepareJob(jobs);
-  const requests = newJobs.flatMap(async ({ endpoint, options, origin, path, href }) => {
+  const requests = newJobs.flatMap(async ({ endpoint, options, origin, href }) => {
     if (options.body) {
       options.body = JSON.stringify(options.body);
     }
@@ -96,13 +94,12 @@ const runJob = async (jobs) => {
       }
       const result = useBulk
         ? await job.json()
-        : { job: { origin, path, status: job.status, href } };
+        : { job: { origin, status: job.status, href } };
 
       return { origin, result, useBulk, href };
     } catch (error) {
       return {
         href,
-        path,
         origin,
         error: error.cause ?? 400,
         message: error.message,
@@ -110,7 +107,7 @@ const runJob = async (jobs) => {
     }
   });
   const results = await Promise.all(requests);
-  return useBulk ? results : getJobResult(results, jobs.process);
+  return useBulk ? results : createResults(results, jobs.process);
 };
 
 const getStatus = async (link) => {

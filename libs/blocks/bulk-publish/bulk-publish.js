@@ -11,6 +11,7 @@ import {
   sticky,
   wait,
   getElapsedTime,
+  processJobResult,
 } from './utils.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/bulk-publisher.css');
@@ -86,7 +87,12 @@ class BulkPublish extends LitElement {
   setJobErrors(errors) {
     const urls = [];
     errors.forEach((error) => {
-      const matched = this.urls.filter((url) => url.includes(error.href));
+      const matched = this.urls.filter((url) => {
+        if (Array.isArray(error.href)) {
+          return error.href.includes(url);
+        }
+        return url.includes(error.href);
+      });
       matched.forEach((match) => urls.push(match));
     });
     const textarea = this.renderRoot.querySelector('#Urls');
@@ -210,20 +216,21 @@ class BulkPublish extends LitElement {
 
   renderStatusFilter() {
     const jobStatuses = this.jobs.filter((job) => job.status).map((job) => (job.status));
-    return jobStatuses.map((status) => {
-      const showing = this.openStatus === status.invocationId;
+    return jobStatuses.map(({ invocationId }) => {
+      const filtered = this.openStatus === invocationId;
+      const open = filtered ? ' open' : '';
       const toggle = () => {
-        this.openStatus = showing ? false : status.invocationId;
+        this.openStatus = filtered ? false : invocationId;
       };
       return html`
         <div class="status-filter">
-          <div class="status-icon${showing ? ' open' : ''}" @click=${toggle}></div>
+          <div class="status-icon${open}" @click=${toggle}></div>
         </div>
       `;
     });
   }
 
-  renderStatusStats(status) {
+  renderJobStats(status) {
     const { progress, startTime, stopTime, data } = status;
     const { failed } = progress;
     const success = data.resources.filter((path) => [200, 204].includes(path.status)).length;
@@ -233,23 +240,23 @@ class BulkPublish extends LitElement {
         ${failed ? html`
           • <span>${success} Success</span>
           • ${this.errorReworkTool({ failed, status })}
-        ` : ''}
+        ` : 'Duration'}
       </div>
     `;
   }
 
   renderJobStatus(allCount) {
-    const filteredJob = this.jobs.find(({ status }) => status?.invocationId === this.openStatus);
-    if (!filteredJob) {
+    const filtered = this.jobs.find(({ status }) => status?.invocationId === this.openStatus);
+    if (!filtered) {
       return html`
         ${allCount ? html`<strong>${allCount}</strong>` : ''}
         Job Results
       `;
     }
-    const { topic, progress } = filteredJob.status;
+    const { topic, progress } = filtered.status;
     return html`
         <strong>${progress.total}</strong>
-        ${topic} ${this.renderStatusStats(filteredJob.status)}
+        ${topic} ${this.renderJobStats(filtered.status)}
       `;
   }
 
@@ -346,11 +353,11 @@ class BulkPublish extends LitElement {
         urls: this.urls,
         process: this.processType.toLowerCase(),
       });
-      const errors = newJobs.filter((job) => job.error);
-      this.jobs = [...this.jobs, ...newJobs.filter((job) => !job.error)];
-      this.processing = 'job';
-      if (errors.length) {
-        this.setJobErrors(errors);
+      const { complete, error } = processJobResult(newJobs);
+      this.jobs = [...this.jobs, ...complete];
+      this.processing = complete.length ? 'job' : false;
+      if (error.length) {
+        this.setJobErrors(error);
       } else {
         if (this.mode === 'full') {
           this.openJobs = true;

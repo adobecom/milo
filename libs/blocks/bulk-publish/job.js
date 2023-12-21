@@ -13,6 +13,7 @@ class JobProcess extends LitElement {
       jobStatus: { state: true },
       viewError: { state: true },
       queue: { state: true },
+      expandDate: { state: true },
     };
   }
 
@@ -21,6 +22,7 @@ class JobProcess extends LitElement {
     this.jobStatus = undefined;
     this.viewError = false;
     this.queue = [];
+    this.expandDate = false;
   }
 
   async connectedCallback() {
@@ -83,11 +85,14 @@ class JobProcess extends LitElement {
       : this.job.origin;
 
     return {
+      style,
       url: statusResource?.href ?? `${origin}${path}`,
       status: jobstatus,
-      time: stopTime ?? createTime,
       topic: current.topic,
-      style,
+      time: {
+        stamp: stopTime ?? createTime,
+        label: stopTime ? 'Finish' : 'Start',
+      },
     };
   }
 
@@ -106,7 +111,11 @@ class JobProcess extends LitElement {
           </div>
           <div class="meta">
             <span class="${status.color}">${status.text}</span>
-            <span>${humanDateTime(time)}</span>
+            <span
+              @mouseover=${() => { this.expandDate = url; }}
+              @mouseleave=${() => { this.expandDate = false; }}>
+              <i>${this.expandDate === url ? time.label : ''}</i> ${humanDateTime(time.stamp)}
+            </span>
           </div>
         </div>
       `;

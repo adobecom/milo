@@ -103,6 +103,11 @@ const getElapsedTime = (date1, date2) => {
   return (diff / 1000) > 60 ? `${Math.round(diff / (1000 * 60))}m` : `${Math.round(diff / 1000)}s`;
 };
 
+const processJobResult = (jobs) => jobs.reduce((result, job) => {
+  result[!job.error ? 'complete' : 'error'].push(job);
+  return result;
+}, { complete: [], error: [] });
+
 export {
   editEntry,
   FORM_MODES,
@@ -111,6 +116,7 @@ export {
   getJobErrorText,
   humanDateTime,
   PROCESS_TYPES,
+  processJobResult,
   jobStatus,
   sticky,
   validMiloURL,
