@@ -155,7 +155,7 @@ header.global-navigation {
 /* Popup */
 .feds-popup {
   display: none;
-  padding: 12px 0;
+  padding: 0;
   background-color: var(--feds-background-popup--light);
 }
 
@@ -461,6 +461,17 @@ header.global-navigation {
   right: auto;
 }
 
+/* Mobile styles */
+@media (max-width: 900px) {
+  .feds-menu-section > a:first-child {
+    margin-top: 12px;
+  }
+
+  .feds-menu-column > ul {
+    padding: 12px 0;
+  }
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
   /* General */
@@ -527,6 +538,7 @@ header.global-navigation {
     z-index: 1;
     box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
     transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
+    padding: 12px 0;
   }
 
   [dir = "rtl"] .feds-popup {
