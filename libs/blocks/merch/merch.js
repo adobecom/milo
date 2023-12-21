@@ -1,4 +1,4 @@
-import { getConfig, loadScript } from '../../utils/utils.js';
+import { getConfig, loadScript, loadIms, createTag } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
@@ -116,6 +116,56 @@ export async function getPriceContext(el, params) {
   };
 }
 
+const upgradeCta = (cta) => createTag(
+  'a',
+  {
+    href: '#upgrade',
+    'data-modal-path': '/drafts/mariia/fragments/cardfragment',
+    'data-modal-hash': '#upgrade',
+    class: 'modal link-block ',
+  },
+  cta?.textContent,
+);
+
+const getProductFamilyFromPA = (productArrangementCode) => {
+  if (!productArrangementCode) return null;
+  if (productArrangementCode === 'ccsn_direct_individual') {
+    return 'allapps';
+  }
+  if (productArrangementCode === 'DRAFTS') {
+    return 'photoshop';
+  }
+  return null;
+};
+
+const getProductFamily = async (placeholder) => {
+  const { value } = await placeholder.onceSettled();
+  if (!value || value.length === 0) return null;
+  const { productArrangementCode } = value[0];
+  return getProductFamilyFromPA(productArrangementCode);
+};
+
+const isUserEligibleForUpgrade = async (upgradeOffer) => {
+  const productFamily = await getProductFamily(upgradeOffer);
+  if (productFamily === 'photoshop') {
+    return true;
+  }
+};
+
+const handleUpgradeOffer = async (cta) => {
+  const upgradeOffer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
+  if (!upgradeOffer) return;
+
+  await loadIms();
+  const isSignedInUser = window.adobeIMS.isSignedInUser();
+  if (!isSignedInUser) return;
+  const productFamily = await getProductFamily(cta);
+  // todo all apps should be configurable
+  if (productFamily === 'allapps') {
+    const canUpgrade = await isUserEligibleForUpgrade(upgradeOffer);
+  }
+};
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
@@ -127,6 +177,7 @@ export async function buildCta(el, params) {
   cta.classList.add('con-button');
   cta.classList.toggle('button-l', large);
   cta.classList.toggle('blue', strong);
+  handleUpgradeOffer(cta);
   return cta;
 }
 
