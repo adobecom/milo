@@ -167,7 +167,7 @@
   background-color: transparent;
 }
 
-.section.sticky-bottom .popup {
+.section.sticky-bottom.popup {
   bottom: var(--spacing-xs);
 }
 

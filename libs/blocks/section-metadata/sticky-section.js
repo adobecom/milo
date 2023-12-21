@@ -26,6 +26,7 @@ function handleStickyShowHide(section) {
   const main = document.querySelector('main');
   section.classList.add(...['sticky-bottom', 'hide-sticky-section']);
   let stickySectionEl = null;
+  if (section.querySelector('.popup')) section.classList.add('popup');
   const hasScrollControl = section.querySelector('.no-delay');
   if (!hasScrollControl && main.children[0] !== section) {
     stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
