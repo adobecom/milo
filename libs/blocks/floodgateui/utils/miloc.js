@@ -198,7 +198,7 @@ export async function promoteFiles(doPublish) {
     setStatus('details', 'info', 'Promoting files to the Floodgate Tree. Check the status card for further updates.');
     const config = await getServiceConfigFg(origin);
     const params = { ...await getParamsFg(config), spToken: accessToken, doPublish };
-    if (enableActionButton.value = true) {
+    if (enableActionButton.value === true) {
       params.pdoverride = true;
     }
     params.edgeWorkerEndDate = heading.value.endTimeUTCString;
@@ -240,7 +240,7 @@ export async function deleteFgTree() {
     setStatus('details', 'info', 'Deleting the Floodgate Tree. Check the status table for further updates.');
     const config = await getServiceConfigFg(origin);
     const params = { ...await getParamsFg(config), spToken: accessToken };
-    if (enableActionButton.value = true) {
+    if (enableActionButton.value === true) {
       params.pdoverride = true;
     }
     params.edgeWorkerEndDate = heading.value.endTimeUTCString;
