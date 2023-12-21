@@ -157,7 +157,11 @@ function decoratePromobar(el) {
     if (!(textBlocks.length || iconArea || actionArea.length)) child.classList.add('hide-block');
     else if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index], variant);
   });
-  if (variant === 'popup') addCloseButton(el);
+  if (variant === 'popup') {
+    addCloseButton(el);
+    const stickySection = el.closest('.section.sticky-bottom') || el.closest('.section.sticky-bottom-hide');
+    if (stickySection) stickySection.classList.add('popup');
+  }
   return foreground;
 }
 
