@@ -79,7 +79,7 @@ describe('Section Metdata', () => {
 
   it('add promobar behaviour to section', async () => {
     const main = document.querySelector('main');
-    const sec = document.querySelector('.section.sticky-bottom .promobar').closest('.section');
+    const sec = document.querySelector('.section.sticky-bottom-hide .promobar').closest('.section');
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
     expect(main.lastElementChild.classList.contains('hide-sticky-section')).to.be.true;
