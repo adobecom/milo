@@ -120,7 +120,7 @@ const config = {
   geoRouting: 'on',
   fallbackRouting: 'on',
   links: 'on',
-  imsClientId: 'fedsmilo',
+  imsClientId: 'milo',
   imsScope: 'AdobeID,openid,gnav',
   codeRoot: '/libs',
   locales,

@@ -53,6 +53,48 @@ const CONFIG = {
     'app-launcher',
     'adobe-logo',
   ],
+  universalNav: {
+    components: {
+      profile: {
+        name: 'profile',
+        attributes: {
+          isSignUpRequired: false,
+          componentLoaderConfig: {
+            config: {
+              miniAppContext: {
+                logger: {
+                  trace: () => {},
+                  debug: () => {},
+                  info: () => {},
+                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'errorType=error,module=universalnav' }),
+                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'errorType=error,module=universalnav' }),
+                },
+              },
+            },
+          },
+          callbacks: {
+            onSignIn: () => { window.adobeIMS?.signIn(); },
+            onSignUp: () => { window.adobeIMS?.signIn(); },
+          },
+        },
+      },
+      appswitcher: { name: 'app-switcher' },
+      notifications: {
+        name: 'notifications',
+        attributes: { notificationsConfig: { applicationContext: { appID: 'adobecom' } } },
+      },
+      help: {
+        name: 'help',
+        attributes: {
+          children: [
+            { type: 'Support' },
+            { type: 'Community' },
+            // TODO: add Jarvis
+          ],
+        },
+      },
+    },
+  },
 };
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
@@ -170,10 +212,9 @@ class Gnav {
     };
 
     // TODO: metadata + project config
-    // TODO: enhance universal-nav metadata to allow other than "on"
-    this.useUniversalNav = getMetadata('universal-nav')?.toLowerCase() === 'on';
-    // TODO: remove this once implementation is done
-    this.useUniversalNav = true;
+    this.universalNavComponents = getMetadata('universal-nav')?.toLowerCase()?.split(',').map((option) => option.trim())
+      .filter((component) => Object.keys(CONFIG.universalNav.components).includes(component) || component === 'signup');
+    this.useUniversalNav = getMetadata('universal-nav')?.toLowerCase() === 'on' || !!this.universalNavComponents?.length;
     if (this.useUniversalNav) {
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
     } else {
@@ -420,7 +461,27 @@ class Gnav {
       loadStyle(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.css`),
     ]);
 
-    window.UniversalNav({
+    const getChildren = () => {
+      const children = [CONFIG.universalNav.components.profile];
+      // reset sign up value on change
+      children[0].attributes.isSignUpRequired = false;
+
+      if (isDesktop.matches) {
+        this.universalNavComponents?.forEach((component) => {
+          if (component === 'profile') return;
+          if (component === 'signup') {
+            children[0].attributes.isSignUpRequired = true;
+            return;
+          }
+
+          children.push(CONFIG.universalNav.components[component]);
+        });
+      }
+
+      return children;
+    };
+
+    const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
       locale,
@@ -429,14 +490,19 @@ class Gnav {
         consumer: {
           name: 'Adobe.com',
           version: '1.0',
-          client_id: window.adobeid?.client_id,
           platform: 'Web',
           device: getDevice(),
           os_version: navigator.platform,
         },
         event: { visitor_guid: visitorGuid },
       },
-      children: [{ name: 'profile', attributes: { isSignUpRequired: true } }, { name: 'app-switcher' }],
+      children: getChildren(),
+    });
+
+    window.UniversalNav(getConfiguration());
+
+    isDesktop.addEventListener('change', () => {
+      window.UniversalNav.reload(getConfiguration());
     });
   };
 
