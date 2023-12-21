@@ -24,7 +24,7 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
 
 function handleStickyShowHide(section) {
   const main = document.querySelector('main');
-  section.classList.add(...['sticky-bottom', 'hide-sticky-section']);
+  section.classList.add('sticky-bottom', 'hide-sticky-section');
   if (section.querySelector('.popup')) section.classList.add('popup');
   let stickySectionEl = null;
   const hasScrollControl = section.querySelector('.no-delay');
