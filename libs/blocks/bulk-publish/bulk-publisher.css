@@ -322,6 +322,7 @@ label[for='urls'] i {
 
 .title .stats {
   font-size: 0.9em;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: space-between;
