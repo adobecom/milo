@@ -67,6 +67,11 @@ describe('function "createLinkMarkup"', () => {
       const link = createLink({ type, workflow, workflowStep });
       assertLink(link, perpM2M, { osi, type, workflow, workflowStep });
     });
+    it('with format', async () => {
+      const format = 'format';
+      const link = createLink({ format, type });
+      assertLink(link, perpM2M, { osi, type, format });
+    });
   });
 
   describe('creates "price" link', () => {

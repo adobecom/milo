@@ -23,9 +23,16 @@ const ctaTextOption = {
 
   getSelectedText(searchParameters) {
     const ctaLabel = searchParameters.get('text');
+    if (ctaLabel && this.getCtaFormat(searchParameters) === 'text') {
+      return ctaLabel;
+    }
     return !!ctaLabel && this.ctaTexts.find((label) => label.id === ctaLabel)
       ? ctaLabel
       : this.getDefaultText();
+  },
+
+  getCtaFormat(searchParameters) {
+    return searchParameters.get('format') ? searchParameters.get('format') : 'cta';
   },
 };
 

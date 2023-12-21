@@ -50,6 +50,7 @@ export const createLinkMarkup = (
     if (isCta) {
       const { workflow, workflowStep } = options;
       params.set('text', options.ctaText ?? DEFAULT_CTA_TEXT);
+      if (options.format) params.set('format', options.format);
       if (workflow && workflow !== defaults.checkoutWorkflow) {
         params.set('workflow', workflow);
       }
@@ -74,8 +75,10 @@ export const createLinkMarkup = (
   };
 
   const link = document.createElement('a');
+  const ctaText = `${options.ctaText ?? DEFAULT_CTA_TEXT}`;
+  const content = options.format === 'text' ? ctaText : `CTA {{${ctaText}}}`;
   link.textContent = isCta
-    ? `CTA {{${options.ctaText ?? DEFAULT_CTA_TEXT}}}`
+    ? content
     : `PRICE - ${offer.planType} - ${offer.name}`;
   link.href = createHref();
   return link;
@@ -113,6 +116,7 @@ export async function loadOstEnv() {
     ['promo', 'storedPromoOverride', true],
     ['workflow', 'checkoutType'],
     ['workflowStep'],
+    ['format'],
   ].forEach(([key, targetKey, skip = false]) => {
     const value = searchParameters.get(key);
     if (value === null && skip) {

@@ -29,4 +29,10 @@ describe('test ctaTextOption', () => {
     const selectedText = ctaTextOption.getSelectedText(new Map().set('text', 'buy-now'));
     expect(EXPECTED_SELECTED_TEXT).to.equal(selectedText);
   });
+
+  it('get cta format', async () => {
+    const EXPECTED_CTA_FORMAT = 'cta';
+    const ctaFormat = ctaTextOption.getCtaFormat(new Map().set('format', 'cta'));
+    expect(EXPECTED_CTA_FORMAT).to.equal(ctaFormat);
+  });
 });
