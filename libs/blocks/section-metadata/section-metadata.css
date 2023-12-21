@@ -163,16 +163,11 @@
 .section.sticky-bottom {
   position: sticky;
   bottom: 0;
-  z-index: 1;
-  background-color: var(--color-white);
-}
-
-.section.sticky-bottom.promo-sticky-section {
-  background: none;
   z-index: 4;
+  background-color: none;
 }
 
-.section.sticky-bottom.popup {
+.section.sticky-bottom .popup {
   bottom: var(--spacing-xs);
 }
 

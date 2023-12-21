@@ -18,7 +18,8 @@ function handleBackground(div, section) {
 export async function handleStyle(text, section) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
-  const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
+  const stickyStyles = ['sticky-top', 'sticky-bottom', 'sticky-bottom-hide'];
+  const sticky = styles.find((style) => stickyStyles.includes(style));
   if (sticky) {
     const { default: handleStickySection } = await import('./sticky-section.js');
     await handleStickySection(sticky, section);

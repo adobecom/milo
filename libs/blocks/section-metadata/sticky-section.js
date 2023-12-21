@@ -22,12 +22,11 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
   return io;
 }
 
-function handleStickyPromobar(section) {
+function handleStickyShowHide(section) {
   const main = document.querySelector('main');
-  section.classList.add('promo-sticky-section', 'hide-sticky-section');
-  if (section.querySelector('.promobar.popup')) section.classList.add('popup');
+  section.classList.add(...['sticky-bottom', 'hide-sticky-section']);
   let stickySectionEl = null;
-  const hasScrollControl = section.querySelector('.promobar').classList.contains('no-delay');
+  const hasScrollControl = section.querySelector('.no-delay');
   if (!hasScrollControl && main.children[0] !== section) {
     stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
     section.parentElement.insertBefore(stickySectionEl, section);
@@ -48,9 +47,16 @@ export default async function handleStickySection(sticky, section) {
       break;
     }
     case 'sticky-bottom':
-      if (section.querySelector('.promobar')) handleStickyPromobar(section);
+    {
       main.append(section);
       break;
+    }
+    case 'sticky-bottom-hide':
+    {
+      handleStickyShowHide(section);
+      main.append(section);
+      break;
+    }
     default:
       break;
   }
