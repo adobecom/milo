@@ -197,9 +197,19 @@ export async function loadOstEnv() {
     log.debug(`Use Link: ${link.outerHTML}`);
     const linkBlob = new Blob([link.outerHTML], { type: 'text/html' });
     const textBlob = new Blob([link.href], { type: 'text/plain' });
-    // eslint-disable-next-line no-undef
-    const data = [new ClipboardItem({ [linkBlob.type]: linkBlob, [textBlob.type]: textBlob })];
-    navigator.clipboard.write(data, log.debug, log.error);
+    if (typeof (ClipboardItem) !== 'undefined') {
+      // eslint-disable-next-line no-undef
+      const data = [new ClipboardItem({ [linkBlob.type]: linkBlob, [textBlob.type]: textBlob })];
+      navigator.clipboard.write(data, log.debug, log.error);
+    } else if (typeof (document.execCommand) !== 'undefined') {
+      // using deprecated execCommand API as fallback for CLipboardItem not supported in FF
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = textBlob;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+    }
   };
 
   return {
