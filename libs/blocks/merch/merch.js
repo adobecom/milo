@@ -1,4 +1,5 @@
 import { getConfig, loadScript, loadIms, createTag } from '../../utils/utils.js';
+import getUserEntitlements from '../global-navigation/utilities/getUserEntitlements.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
@@ -145,11 +146,15 @@ const getProductFamily = async (placeholder) => {
   return getProductFamilyFromPA(productArrangementCode);
 };
 
-const isUserEligibleForUpgrade = async (upgradeOffer) => {
-  const productFamily = await getProductFamily(upgradeOffer);
+const isUserEligibleForUpgrade = async () => {
+  // const alreadyPurchased = !!productFamily.find(family => entitlements.offer_families[family.toLowerCase()]);
+  const entitlements = await getUserEntitlements();
+  // enti?.offer_families
+  const productFamily = '';
   if (productFamily === 'photoshop') {
     return true;
   }
+  return false;
 };
 
 const handleUpgradeOffer = async (cta) => {
@@ -160,9 +165,9 @@ const handleUpgradeOffer = async (cta) => {
   const isSignedInUser = window.adobeIMS.isSignedInUser();
   if (!isSignedInUser) return;
   const productFamily = await getProductFamily(cta);
-  // todo all apps should be configurable
+  // todo allapps should be configurable
   if (productFamily === 'allapps') {
-    const canUpgrade = await isUserEligibleForUpgrade(upgradeOffer);
+    const canUpgrade = await isUserEligibleForUpgrade();
   }
 };
 
