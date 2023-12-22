@@ -158,8 +158,9 @@ const isUserEligibleForUpgrade = async () => {
 };
 
 const handleUpgradeOffer = async (cta) => {
+  const entitlements = await getUserEntitlements();
   const upgradeOffer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
-  if (!upgradeOffer) return;
+  // if (!upgradeOffer) return;
 
   await loadIms();
   const isSignedInUser = window.adobeIMS.isSignedInUser();
