@@ -36,6 +36,10 @@ dl.accordion {
   width: 100%;
 }
 
+html[dir="rtl"] .accordion dt button {
+  padding: var(--spacing-s) var(--spacing-xs) var(--spacing-s) var(--spacing-m);
+}
+
 .accordion dt button:hover {
   cursor: pointer;
   color: var(--color-black);
@@ -53,6 +57,11 @@ dl.accordion {
   width: 12px;
   height: 12px;
   pointer-events: none;
+}
+
+html[dir="rtl"] .accordion-icon {
+  right: unset;
+  left: var(--spacing-xs);
 }
 
 .accordion-icon::before,
@@ -86,6 +95,10 @@ dl.accordion {
   left: 0;
   top: 0;
   background-color: transparent;
+}
+
+html[dir="rtl"] .accordion dt button::before {
+  right: 0;
 }
 
 .accordion dt button[aria-expanded="true"]::before {
@@ -158,17 +171,17 @@ dl.accordion {
 }
 
 
-@keyframes fade-in { 
-  0% { 
+@keyframes fade-in {
+  0% {
     opacity: 0;
   }
 
-  100% { 
-    opacity: 1; 
+  100% {
+    opacity: 1;
   }
 }
 
-.accordion-media > div.expanded, 
+.accordion-media > div.expanded,
 .accordion-media > div.expanded > img {
   display: inline;
   position: relative;
@@ -190,7 +203,7 @@ div.media-p {
     align-items: center;
     justify-content: center;
   }
-  
+
   .editorial .accordion {
     width: 50%;
     display: inline-block;

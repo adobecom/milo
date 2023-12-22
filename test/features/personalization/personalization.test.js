@@ -1,8 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
-import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
+import { ENTITLEMENT_MAP } from '../../../libs/features/personalization/entitlements.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -19,17 +20,12 @@ const setFetchResponse = (data, type = 'json') => {
   );
 };
 
+// Modify the entitlement map with custom keys so tests doesn't rely on real data
+ENTITLEMENT_MAP['11111111-aaaa-bbbb-6666-cccccccccccc'] = 'my-special-app';
+ENTITLEMENT_MAP['22222222-xxxx-bbbb-7777-cccccccccccc'] = 'fireflies';
+
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional Test', () => {
-  it('test or promo manifest', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestTestOrPromo.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
-
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(document.body.dataset.mep).to.equal('nopzn|nopzn');
-  });
-
   it('replaceContent should replace an element with a fragment', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestReplace.json' });
     manifestJson = JSON.parse(manifestJson);
@@ -188,5 +184,42 @@ describe('Functional Test', () => {
 
     const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
     expect(fragment).to.be.null;
+  });
+
+  it('test or promo manifest', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestTestOrPromo.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.body.dataset.mep).to.equal('nopzn|nopzn');
+  });
+
+  it('should choose chrome & logged out', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestWithAmpersand.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.body.dataset.mep).to.equal('chrome & logged|ampersand');
+  });
+
+  it('should choose not firefox', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestWithNot.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.body.dataset.mep).to.equal('not firefox|not');
+  });
+
+  it('should read and use entitlement data', async () => {
+    setConfig(getConfig());
+    const { entitlements } = getConfig();
+
+    entitlements(['some-app', 'fireflies']);
+    let manifestJson = await readFile({ path: './mocks/manifestUseEntitlements.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.body.dataset.mep).to.equal('fireflies|manifest');
   });
 });

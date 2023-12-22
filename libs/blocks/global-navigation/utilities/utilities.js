@@ -9,9 +9,13 @@ export const selectors = {
   navLink: '.feds-navLink',
   overflowingTopNav: '.feds-topnav--overflowing',
   navItem: '.feds-navItem',
+  activeNavItem: '.feds-navItem--active',
+  deferredActiveNavItem: '.feds-navItem--activeDeferred',
   activeDropdown: '.feds-dropdown--active',
   menuSection: '.feds-menu-section',
   menuColumn: '.feds-menu-column',
+  gnavPromo: '.gnav-promo',
+  columnBreak: '.column-break',
 };
 
 export function toFragment(htmlStrings, ...values) {
@@ -52,7 +56,7 @@ export const getFedsPlaceholderConfig = () => {
 export function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
 
-  let analyticsValue = processTrackingLabels(str, false, 30);
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
   analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
 
   return analyticsValue;
@@ -162,6 +166,30 @@ export function setActiveDropdown(elem) {
   });
 }
 
+export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
+  let activeLinkFound;
+
+  return [
+    () => activeLinkFound,
+    (val) => { activeLinkFound = !!val; },
+    (area) => {
+      if (hasActiveLink() || !(area instanceof HTMLElement)) return null;
+      const { origin, pathname } = window.location;
+      let activeLink;
+
+      [`${origin}${pathname}`, pathname].forEach((path) => {
+        if (activeLink) return;
+        activeLink = area.querySelector(`a[href = '${path}'], a[href ^= '${path}?'], a[href ^= '${path}#']`);
+      });
+
+      if (!activeLink) return null;
+
+      setActiveLink(true);
+      return activeLink;
+    },
+  ];
+})();
+
 export function closeAllDropdowns({ type } = {}) {
   const selector = type === 'headline'
     ? '.feds-menu-headline[aria-expanded="true"]'
@@ -205,3 +233,13 @@ export const logErrorFor = async (fn, message, tags) => {
     lanaLog({ message, e, tags });
   }
 };
+
+export function processMartechAttributeMetadata(html) {
+  const dom = new DOMParser().parseFromString(html, 'text/html').body;
+  const blocks = dom.querySelectorAll('.martech-metadata');
+  blocks.forEach((block) => {
+    import('../../martech-metadata/martech-metadata.js')
+      .then(({ default: decorate }) => decorate(block));
+  });
+  return null;
+}

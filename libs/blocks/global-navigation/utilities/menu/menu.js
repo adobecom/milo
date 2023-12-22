@@ -1,21 +1,19 @@
 import {
-  getAnalyticsValue,
-  toFragment,
   decorateCta,
-  yieldToMain,
+  getActiveLink,
+  getAnalyticsValue,
   getFedsPlaceholderConfig,
-  logErrorFor,
-  setActiveDropdown,
-  trigger,
   isDesktop,
+  logErrorFor,
+  selectors,
+  setActiveDropdown,
+  toFragment,
+  trigger,
+  yieldToMain,
+  processMartechAttributeMetadata,
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
-
-const selectors = {
-  gnavPromo: '.gnav-promo',
-  columnBreak: '.column-break',
-};
 
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
@@ -59,7 +57,7 @@ const decorateHeadline = (elem, index) => {
 };
 
 const decorateLinkGroup = (elem, index) => {
-  if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return null;
+  if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return '';
 
   // TODO: allow links with image and no label
   const image = elem.querySelector('picture');
@@ -302,6 +300,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     if (res.status !== 200) return;
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
+    processMartechAttributeMetadata(parsedContent);
     const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
@@ -311,6 +310,26 @@ const decorateMenu = (config) => logErrorFor(async () => {
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
     await decorateColumns({ content: menuContent });
+
+    if (getActiveLink(menuTemplate) instanceof HTMLElement) {
+      // Special handling on desktop, as content is loaded async;
+      // bolding the item text would normally push the content
+      // to the right, potentially causing CLS
+      const resetActiveState = () => {
+        config.template.style.width = '';
+        config.template.classList.remove(selectors.deferredActiveNavItem.slice(1));
+      };
+
+      if (isDesktop.matches) {
+        config.template.style.width = `${config.template.offsetWidth}px`;
+        config.template.classList.add(selectors.deferredActiveNavItem.slice(1));
+        isDesktop.addEventListener('change', resetActiveState, { once: true });
+        window.addEventListener('feds:navOverflow', resetActiveState, { once: true });
+      }
+
+      config.template.classList.add(selectors.activeNavItem.slice(1));
+    }
+
     config.template.classList.add('feds-navItem--megaMenu');
   }
 

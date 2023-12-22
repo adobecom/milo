@@ -129,7 +129,7 @@ function createPreviewPill(manifests) {
   div.classList.add('mep-hidden');
   let manifestList = '';
   const manifestParameter = [];
-  manifests.forEach((manifest) => {
+  manifests?.forEach((manifest) => {
     const {
       variantNames,
       manifestPath = manifest.manifest,
@@ -210,13 +210,13 @@ function createPreviewPill(manifests) {
 
   div.innerHTML = `
     <div class="mep-manifest mep-badge">
-      <div class="mep-manifest-count">${manifests.length} Manifest(s) served</div>
       <span class="mep-open"></span>
+      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>
     </div>
     <div class="mep-popup">
     <div class="mep-popup-header">
       <div>
-        <h4>${manifests.length} Manifest(s) served</h4>
+        <h4>${manifests?.length || 0} Manifest(s) served</h4>
         <span class="mep-close"></span>
         <div class="mep-manifest-page-info-title">Page Info:</div>
         <div>Target integration feature is ${targetOnText}</div>
@@ -279,7 +279,7 @@ function addMarkerData(manifests) {
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, experiments } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  addMarkerData(experiments);
+  if (experiments) addMarkerData(experiments);
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     createPreviewPill(experiments);
   }, { once: true });

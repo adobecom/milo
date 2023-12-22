@@ -72,13 +72,15 @@ class Footer {
     if (!this.body) return;
 
     const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
-    const [regionParent, socialParent] = [region.parentElement, social.parentElement];
-    [regionParent, socialParent].forEach((parent) => parent.replaceChildren());
+    const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
+    // We remove and add again the region and social elements from the body to make sure
+    // they don't get decorated twice
+    [regionParent, socialParent].forEach((parent) => parent?.replaceChildren());
 
     decorateLinks(this.body);
 
-    regionParent.appendChild(region);
-    socialParent.appendChild(social);
+    regionParent?.appendChild(region);
+    socialParent?.appendChild(social);
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
