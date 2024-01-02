@@ -285,6 +285,22 @@ class BulkPublish extends LitElement {
     }
   }
 
+  setProgress(event) {
+    const { name, progress } = event.detail;
+    const updateJob = this.jobs.find(({ result }) => result.job.name === name);
+    updateJob.progress = progress;
+    this.requestUpdate();
+  }
+
+  renderProgress(total) {
+    const processed = this.jobs.reduce((count, { progress }) => {
+      const paths = progress?.processed ?? 0;
+      return count + paths;
+    }, 0);
+    if (!total) return '';
+    return `${processed}/${total}`;
+  }
+
   renderResults() {
     const { showList, showClear, showStatusFilter, loading, count } = this.getJobState();
     const handleToggle = () => {
@@ -295,7 +311,8 @@ class BulkPublish extends LitElement {
         class="panel-title"
         @click=${handleToggle}>
         <span class="title">
-          ${this.renderJobStatus(count)}
+          ${count ? html`<strong>${count}</strong>` : ''}
+          Job Results
         </span>
         <div class="jobs-tools${showList}">
           <div class="job-statuses${showStatusFilter}">
@@ -304,6 +321,9 @@ class BulkPublish extends LitElement {
           <div 
             class="clear-jobs${showClear}"
             @click=${() => { this.jobs = []; this.openStatus = false; }}></div>
+          <div class="job-progress${loading}">
+            ${this.renderProgress(count)}
+          </div>
           <div class="loading-jobs${loading}">
             <div class="loader pink"></div>
           </div>
@@ -322,6 +342,7 @@ class BulkPublish extends LitElement {
             <job-process 
               .job=${job}
               .filtered=${this.openStatus}
+              @progress="${this.setProgress}"
               @processed="${this.processCompleted}"></job-process>
           `)}
         </div>
@@ -355,7 +376,9 @@ class BulkPublish extends LitElement {
       });
       const { complete, error } = processJobResult(newJobs);
       this.jobs = [...this.jobs, ...complete];
-      this.processing = complete.length ? 'job' : false;
+      this.processing = complete.length
+        ? complete.map(({ result }) => ({ name: result.job.name }))
+        : false;
       if (error.length) {
         this.setJobErrors(error);
       } else {

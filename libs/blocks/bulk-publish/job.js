@@ -28,11 +28,16 @@ class JobProcess extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styles];
-    this.jobStatus = this.job?.useBulk ? await pollJobStatus(this.job) : this.job.result.job;
+    const setProgress = (detail) => this.dispatchEvent(new CustomEvent('progress', { detail }));
+    this.jobStatus = this.job?.useBulk
+      ? await pollJobStatus(this.job, setProgress)
+      : this.job.result.job;
   }
 
   async updated() {
-    if (this.jobStatus) this.dispatchEvent(new CustomEvent('processed', { detail: this.jobStatus }));
+    if (this.jobStatus) {
+      this.dispatchEvent(new CustomEvent('processed', { detail: this.jobStatus }));
+    }
     if (this.jobStatus && this.jobStatus.progress.failed !== 0) {
       const timeouts = this.jobStatus.data.resources.filter((job) => job.status === 503);
       if (timeouts.length) {

@@ -288,6 +288,11 @@ label[for='urls'] i {
   right: 10px;
 }
 
+.jobs-tools .job-progress {
+  color: #666;
+  font-weight: 300;
+}
+
 .jobs-tools .clear-jobs {
   width: 25px;
   height: 18px;

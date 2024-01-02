@@ -121,11 +121,13 @@ const getStatus = async (link) => {
   }
 };
 
-const pollJobStatus = async ({ result }) => {
+const pollJobStatus = async (job, setProgress) => {
+  const { result } = job;
   let jobStatus;
   let stopped = false;
   while (!stopped) {
     const status = await getStatus(`${result.link.self}/details`);
+    setProgress(status);
     if (status.stopTime) {
       jobStatus = status;
       stopped = true;
