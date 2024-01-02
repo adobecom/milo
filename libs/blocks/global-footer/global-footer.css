@@ -4,8 +4,18 @@
   display: flex;
   justify-content: center;
   font-size: 12px;
-  background: var(--feds-background-promo--dark);
+
+}
+
+
+.wknd-global-footer {
+  background-color: var(--feds-background-promo--dark);
   color: #909090 !important;
+}
+
+.adobe-global-footer {
+  background-color: #fafafa;
+  color: #4B4B4B;
 }
 
 .global-footer ul {
@@ -19,6 +29,14 @@
 .global-footer button {
   background: none;
   cursor: pointer;
+}
+
+.wknd-footer-logo {
+  width:100px !important;
+}
+
+.adobe-footer-logo {
+  width: 50px !important;
 }
 
 .feds-footer-wrapper {

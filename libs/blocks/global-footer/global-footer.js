@@ -67,6 +67,7 @@ class Footer {
   decorateContent = async () => {
     // Fetch footer content
     this.body = await this.fetchContent();
+    this.branding = await this.fetchBranding();
 
     // TODO: log to LANA if Footer content could not be found
     if (!this.body) return;
@@ -100,6 +101,7 @@ class Footer {
     }
 
     this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
+    this.footerEl.classList.add(`${this.branding}-global-footer`);
 
     this.footerEl.append(this.elements.footer);
   };
@@ -120,6 +122,19 @@ class Footer {
     }
   };
 
+  fetchBranding = async () => {
+    const resp = await fetch(`/demo-config.json`);
+    const json = await resp.json();
+
+    if(!json) return null;
+
+    try{
+      return json.data[0].branding;
+    } catch(e) {
+      return null;
+    }
+  }
+
   loadMenuLogic = async () => {
     this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
       const menuLogic = await loadDecorateMenu();
@@ -135,21 +150,13 @@ class Footer {
     this.elements.footerMenu = '';
     const columns = this.body.querySelectorAll(':scope > div > h2:first-child');
 
-    
-   
-    
-
-
     if (!columns || !columns.length) return this.elements.footerMenu;
 
     this.elements.footerMenu = toFragment`<div class="feds-menu-content"></div>`;
 
     const footerLogo = this.body.querySelector(':scope > div > p img');
-    console.log('Footer Image: ' + footerLogo.src);
     if (footerLogo) {
-      const footerImage = toFragment`<div class="footer-logo"><img class="footer-logo" src="${footerLogo.src}"/></div>`
-      //const logoWrapper = createTag('div', {class: 'footer-logo-wrapper'});
-      //const 
+      const footerImage = toFragment`<div class="footer-logo"><img class="${this.branding}-footer-logo" src="${footerLogo.src}"/></div>`;
       this.elements.footerMenu.appendChild(footerImage);
     }
 

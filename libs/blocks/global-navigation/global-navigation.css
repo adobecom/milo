@@ -125,6 +125,14 @@ header.global-navigation {
   column-gap: 10px;
 }
 
+.adobe-logo{
+  width: 30px !important;
+}
+
+.wknd-logo {
+  width:100px !important;
+}
+
 .feds-brand {
   display: flex;
 }

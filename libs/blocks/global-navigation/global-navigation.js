@@ -195,6 +195,7 @@ class Gnav {
     for await (const task of tasks) {
       await yieldToMain();
       await task();
+      this.branding = await this.fetchBranding();
     }
 
     document.addEventListener('click', closeOnClickOutside);
@@ -462,13 +463,13 @@ class Gnav {
     };
 
     const imageEl = renderImage
-      ? toFragment`<span class="${classPrefix}-image">${getImageEl()}</span>`
+      ? toFragment`<span class="${classPrefix}-image ${this.branding}-logo">${getImageEl()}</span>`
       : '';
 
     // Create label element
     const labelEl = renderLabel
-      //? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
-      ? ''
+      ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
+      //? ''
       : '';
 
     // Create final template
@@ -687,7 +688,22 @@ class Gnav {
 
     return this.elements.search;
   };
+
+  fetchBranding = async () => {
+    const resp = await fetch(`/demo-config.json`);
+    const json = await resp.json();
+  
+    if(!json) return null;
+  
+    try{
+      return json.data[0].branding;
+    } catch(e) {
+      return null;
+    }
+  }
 }
+
+
 
 export default async function init(header) {
   const { locale } = getConfig();
