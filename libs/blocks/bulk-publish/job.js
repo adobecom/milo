@@ -1,6 +1,6 @@
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { humanDateTime, jobStatus } from './utils.js';
+import { humanDateTime, jobStatus, wait } from './utils.js';
 import { pollJobStatus, attemptRetry } from './services.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/job.css');
@@ -9,9 +9,7 @@ class JobProcess extends LitElement {
   static get properties() {
     return {
       job: { type: Object },
-      filtered: { type: String },
       jobStatus: { state: true },
-      viewError: { state: true },
       queue: { state: true },
       expandDate: { state: true },
     };
@@ -20,7 +18,6 @@ class JobProcess extends LitElement {
   constructor() {
     super();
     this.jobStatus = undefined;
-    this.viewError = false;
     this.queue = [];
     this.expandDate = false;
   }
@@ -66,7 +63,8 @@ class JobProcess extends LitElement {
       await navigator.clipboard.writeText(url);
       const results = this.renderRoot.querySelectorAll('.result');
       results[pathIndex].classList.add('copied');
-      setTimeout(() => results[pathIndex].classList.remove('copied'), 3000);
+      await wait(3000);
+      results[pathIndex].classList.remove('copied');
     }
   }
 
@@ -85,7 +83,9 @@ class JobProcess extends LitElement {
     const jobstatus = jobStatus(currentStatus, jobState, queued?.count);
     const okStyle = ` success${['delete', 'unpublish'].includes(current.topic) ? '' : ' link'}`;
     const style = isOK.includes(currentStatus) ? okStyle : '';
-    const origin = current.topic === 'publish' && statusResource?.status && isOK.includes(statusResource.status)
+    const origin = current.topic === 'publish'
+      && statusResource?.status
+      && isOK.includes(statusResource.status)
       ? this.job.origin.replace('.page', '.live')
       : this.job.origin;
 
@@ -96,14 +96,13 @@ class JobProcess extends LitElement {
       topic: current.topic,
       time: {
         stamp: stopTime ?? createTime,
-        label: stopTime ? 'Finish' : 'Start',
+        label: stopTime ? 'Finished' : 'Started',
       },
     };
   }
 
   render() {
     const { job } = this.job.result;
-    if (this.filtered && this.filtered !== this.jobStatus?.invocationId) return html``;
     return job.data.paths.map((path, pathIndex) => {
       const pathcheck = typeof path === 'object' ? path.path : path;
       const { style, status, topic, url, time } = this.jobDetails(pathcheck);

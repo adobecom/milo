@@ -14,7 +14,7 @@ import {
   storeUrls,
   userIsAuthorized,
   getStoredUrlInput,
-} from '../../../libs/blocks/bulk-publish/bulk-publish-utils.js';
+} from '../../../libs/blocks/bulk-publish-old/bulk-publish-utils.js';
 import { setLocalStorage } from '../../../libs/blocks/utils/utils.js';
 
 const EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/existing';
