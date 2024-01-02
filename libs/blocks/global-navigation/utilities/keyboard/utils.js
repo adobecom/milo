@@ -4,7 +4,7 @@ const selectors = {
   ...baseSelectors,
   globalFooter: '.global-footer',
   mainNavItems:
-    '.feds-navItem > a, .feds-navItem > .feds-cta-wrapper > .feds-cta',
+    '.feds-navItem > a, .feds-navItem > button, .feds-navItem > .feds-cta-wrapper > .feds-cta',
   brand: '.feds-brand',
   mainNavToggle: '.feds-toggle',
   searchTrigger: '.feds-search-trigger',
@@ -23,7 +23,7 @@ const selectors = {
   popup: '.feds-popup',
   headline: '.feds-menu-headline',
   section: '.feds-menu-section',
-  column: '.feds-menu-column',
+  column: '.feds-menu-column:not(.feds-menu-column--group)',
   cta: '.feds-cta',
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
   regionPicker: '.feds-regionPicker',

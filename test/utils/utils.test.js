@@ -235,8 +235,7 @@ describe('Utils', () => {
     });
 
     it('Sets up milo.deferredPromise', async () => {
-      window.milo = {};
-      const resolveDeferred = utils.setupDeferredPromise();
+      const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
       utils.loadDeferred(document, [], {}, resolveDeferred);
       const result = await window.milo.deferredPromise;
@@ -474,6 +473,17 @@ describe('Utils', () => {
       utils.scrollToHashedElement('');
       expect(scrollToCalled).to.be.false;
     });
+
+    it('should scroll to the hashed element with special character', () => {
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+
+      utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
+      expect(scrollToCalled).to.be.true;
+      expect(document.getElementById('tools-für-das-verhalten')).to.exist;
+    });
   });
 
   describe('useDotHtml', async () => {
@@ -559,6 +569,31 @@ describe('Utils', () => {
       await utils.decorateFooterPromo(promoConfig);
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+  });
+
+  describe('personalization', async () => {
+    const MANIFEST_JSON = {
+      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
+    };
+    function htmlResponse() {
+      return new Promise((resolve) => {
+        resolve({
+          ok: true,
+          json: () => MANIFEST_JSON,
+        });
+      });
+    }
+
+    it('should process personalization manifest and save in config', async () => {
+      window.fetch = sinon.stub().returns(htmlResponse());
+      document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
+      await utils.loadArea();
+      const resultConfig = utils.getConfig();
+      const resultExperiment = resultConfig.experiments[0];
+      expect(resultConfig.mep.preview).to.be.true;
+      expect(resultConfig.experiments.length).to.equal(3);
+      expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
     });
   });
 });

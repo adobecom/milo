@@ -36,7 +36,7 @@ const validUrl = new RegExp(
   'ig',
 );
 
-const allowedChars = /[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF\s.]/g;
+const allowedChars = /[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF\s@.]/g;
 
 const getUniqueArray = (arr) => {
   if (!Array.isArray(arr)) return [];
