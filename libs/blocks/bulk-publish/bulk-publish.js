@@ -10,7 +10,6 @@ import {
   validMiloURL,
   sticky,
   wait,
-  getElapsedTime,
   processJobResult,
 } from './utils.js';
 
