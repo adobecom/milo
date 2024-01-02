@@ -150,7 +150,9 @@ class ConfirmationModal extends Component {
               (confirmMessage === 'Delete' &&
                 deleteStatusCheck.value === 'IN PROGRESS')
                 ? 'Operation is in progress. Please wait.'
-                : '',
+                : ((new Date() < new Date(heading.value.endTime) && !enableActionButton.value)
+                ? 'Operation is not accessible during the event time'
+                : ''),
           },
           actionName
         )
