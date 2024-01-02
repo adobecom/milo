@@ -29,10 +29,11 @@ const CONFIG = {
 };
 
 class Footer {
-  constructor(footerEl, contentUrl) {
+  constructor(footerEl, contentUrl, branding) {
     this.footerEl = footerEl;
     this.contentUrl = contentUrl;
     this.elements = {};
+    this.branding = branding;
 
     this.init();
   }
@@ -372,8 +373,12 @@ class Footer {
   };
 }
 
-export default function init(block) {
-  const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
-  const footer = new Footer(block, url);
+export default async function init(block) {
+  const resp = await fetch(`/demo-config.json`);
+  const json = await resp.json();
+  const branding = json.data[0].branding;
+
+  const url = getMetadata('footer-source') || `${locale.contentRoot}/${branding}-footer`;
+  const footer = new Footer(block, url, branding);
   return footer;
 }

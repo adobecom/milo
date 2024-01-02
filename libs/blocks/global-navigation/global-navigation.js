@@ -174,7 +174,7 @@ class Gnav {
     this.elements = {};
   }
 
-  init = () => logErrorFor(async () => {
+  init = (branding) => logErrorFor(async () => {
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
 
     // Order is important, decorateTopnavWrapper will render the nav
@@ -192,10 +192,11 @@ class Gnav {
     this.el.addEventListener('keydown', setupKeyboardNav);
     setTimeout(this.loadDelayed, CONFIG.delays.loadDelayed);
     setTimeout(setupKeyboardNav, CONFIG.delays.keyboardNav);
+    this.branding = branding;
+
     for await (const task of tasks) {
       await yieldToMain();
       await task();
-      this.branding = await this.fetchBranding();
     }
 
     document.addEventListener('click', closeOnClickOutside);
@@ -469,7 +470,6 @@ class Gnav {
     // Create label element
     const labelEl = renderLabel
       ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
-      //? ''
       : '';
 
     // Create final template
@@ -688,27 +688,20 @@ class Gnav {
 
     return this.elements.search;
   };
-
-  fetchBranding = async () => {
-    const resp = await fetch(`/demo-config.json`);
-    const json = await resp.json();
-  
-    if(!json) return null;
-  
-    try{
-      return json.data[0].branding;
-    } catch(e) {
-      return null;
-    }
-  }
 }
 
 
 
 export default async function init(header) {
   const { locale } = getConfig();
+
+  const confResp = await fetch(`/demo-config.json`);
+  const conf = await confResp.json();
+  const branding = conf.data[0].branding;
+
+
   // TODO locale.contentRoot is not the fallback we want if we implement centralized content
-  const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  const url = getMetadata('gnav-source') || `${locale.contentRoot}/${branding}-gnav`;
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
   if (!html) return null;
@@ -716,7 +709,7 @@ export default async function init(header) {
 
   try {
     const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
-    gnav.init();
+    gnav.init(branding);
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
     return gnav;

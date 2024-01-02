@@ -36,7 +36,7 @@ function decorateFormField(fieldJson, el) {
       formField = createTag('input', {id: fieldID, class: 'sko-form-input', required:true, type:'text'});
       break;
     case 'email':
-      formField = createTag('input', {id: fieldID, class: 'sko-form-input', type:'email', placeholder: 'you@adobe.com'});
+      formField = createTag('input', {id: fieldID, class: 'sko-form-input', type:'email'});
       break;
     case 'dropdown':
       if(fieldJson.options !== '') {
@@ -68,6 +68,9 @@ function decorateFormField(fieldJson, el) {
 
 async function onSubmit() {
   const fieldCollection = document.querySelectorAll('.sko-form-input');
+  const resp = await fetch('/demo-config.json');
+  const json = await resp.json();
+  const adobeOnly = json.data[0].adobeOnly;
 
 
   let isValid = true;
@@ -82,11 +85,14 @@ async function onSubmit() {
         isValid = false;
       }
     } else if(item.type === 'email'){
-        if(validateEmail(item.value)) {
+        if(validateEmail(item.value, adobeOnly)) {
           item.classList.remove('invalid');
           payload[item.id] = item.value;
         } else {
           item.classList.add('invalid');
+          if(adobeOnly) {
+            alert('Only valid adobe email addresses are allowed')
+          }
           isValid = false;
         }
     } else {
@@ -109,9 +115,16 @@ async function onSubmit() {
         submitButton.classList.remove('blue');
         submitButton.classList.add('submitted');
         
+        payload.jobType = json.data[0].jobType;
+        payload.emailAknowledge = json.data[0].emailAknowledge;
+        
+        
+        console.log(payload);
+
         const submitURL = 'https://exio.azurewebsites.net/api/ko24submit';
         const paURL = 'https://prod-56.westus.logic.azure.com/workflows/58fe7b1a791c4b068c43c535fac5d703/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YXIJ9-vicUvmWpfOchMqtS0zACqe_iRCFPWjWUDTyDU';
 
+        
         const response = await fetch(submitURL, {
           method: "POST",
           body: JSON.stringify(payload),
@@ -120,7 +133,6 @@ async function onSubmit() {
           }
         });
         
-
      
 
       if(response.ok) {
@@ -216,11 +228,19 @@ function displayMessage(message, parent) {
   parent.append(marqueeWrapper);
 }
 
-function validateEmail(emailAddress) {
-  if(emailAddress.toLowerCase().includes('@adobe.com') || emailAddress.toLowerCase().includes('@adobetest.com'))  {
-    return true;
+function validateEmail(emailAddress, adobeOnly) {
+  const regex = /\S+@\S+\.\S+/;
+  
+  if(regex.test(emailAddress)) {
+    if(adobeOnly) {
+      if(emailAddress.toLowerCase().includes('@adobe.com') || emailAddress.toLowerCase().includes('@adobetest.com'))  {
+        return true;
+      }
+    } else {
+      return true;
+    }
   }
-  //return emailAddress.toLowerCase().includes('@adobe.com');
+  
 }
 
 
