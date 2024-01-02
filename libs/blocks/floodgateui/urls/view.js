@@ -25,13 +25,19 @@ function Urls() {
 
   const handleSearch = (term) => {
     setCurrentPage(1);
-
-    const filtered = urls.value.filter((url) => url.pathname.includes(term));
-    setFilteredUrls(filtered);
-    if (filtered.length === 0) {
-      showMessage('No results found');
+    if (term.trim() === '') {
+      // Clear the filtered URLs and set an empty message when no text is typed
+      setFilteredUrls([]);
+      showMessage('');
     } else {
-      showMessage(`Filtered URLs for: ${term}`);
+      const filtered = urls.value.filter((url) => url.pathname.includes(term));
+      setFilteredUrls(filtered);
+  
+      if (filtered.length === 0) {
+        showMessage('No results found');
+      } else {
+        showMessage(`Filtered URLs for: ${term}`);
+      }
     }
   };
 
@@ -44,7 +50,6 @@ function Urls() {
 
   const showMessage = (text) => {
     setMessage(text);
-    setTimeout(() => setMessage(''), 3000);
   };
 
   const handleInputKeyPress = (event) => {
