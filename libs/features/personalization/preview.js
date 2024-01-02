@@ -210,8 +210,8 @@ function createPreviewPill(manifests) {
 
   div.innerHTML = `
     <div class="mep-manifest mep-badge">
-      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>
       <span class="mep-open"></span>
+      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>
     </div>
     <div class="mep-popup">
     <div class="mep-popup-header">
