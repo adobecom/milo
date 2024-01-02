@@ -34,7 +34,8 @@ export default function Actions() {
           <button
             class="fgui-urls-heading-action"
             onClick=${findFragments}
-            title=${fragmentStatusCheck.value === 'IN PROGRESS' ? inProgressTitleFragment : ''}
+            title=${fragmentStatusCheck.value === 'IN PROGRESS' ? inProgressTitleFragment : urls.value.length < 1
+            ? 'Add urls to the excel sheet in order to access this operation.' : ''}
             disabled=${fragmentStatusCheck.value === 'IN PROGRESS' || urls.value.length < 1}
           >
             Update Fragments and Assets
@@ -42,7 +43,8 @@ export default function Actions() {
           <button
             class="fgui-urls-heading-action"
             onClick=${copyToFloodgateTree}
-            title=${urls.value.length > 500 ? urlLimitExceededTitle : (copyStatusCheck.value === 'IN PROGRESS' ? inProgressTitle : '')}
+            title=${urls.value.length > 500 ? urlLimitExceededTitle : urls.value.length < 1
+              ? 'Add urls to the excel sheet in order to access this operation.' :(copyStatusCheck.value === 'IN PROGRESS' ? inProgressTitle : '')}
             disabled=${urls.value.length > 500 || copyStatusCheck.value === 'IN PROGRESS' || urls.value.length < 1}
           >
             Copy Files to FG Tree
