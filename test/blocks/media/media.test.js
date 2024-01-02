@@ -73,7 +73,7 @@ describe('media', () => {
       const qrCodeImg = medias[5].querySelector('img.qr-code-img');
       const qrCTA = medias[5].querySelectorAll('.qr-button-container');
       expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).not.to.be.equal('none');
-      qrCTA.forEach(async (cta) => {
+      qrCTA.forEach((cta) => {
         expect(window.getComputedStyle(cta).getPropertyValue('display')).to.be.equal('none');
       });
     });
@@ -82,7 +82,7 @@ describe('media', () => {
       const qrCodeImg = medias[5].querySelector('img.qr-code-img');
       const qrCTA = medias[5].querySelectorAll('.qr-button-container');
       expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).to.be.equal('none');
-      qrCTA.forEach(async (cta) => {
+      qrCTA.forEach((cta) => {
         expect(window.getComputedStyle(cta).getPropertyValue('display')).not.to.be.equal('none');
       });
     });
@@ -91,7 +91,7 @@ describe('media', () => {
       const qrCodeImg = medias[5].querySelector('img.qr-code-img');
       const qrCTA = medias[5].querySelectorAll('.qr-button-container');
       expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).to.be.equal('none');
-      qrCTA.forEach(async (cta) => {
+      qrCTA.forEach((cta) => {
         expect(window.getComputedStyle(cta).getPropertyValue('display')).not.to.be.equal('none');
       });
     });
