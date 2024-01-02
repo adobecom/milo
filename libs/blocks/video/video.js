@@ -4,7 +4,7 @@ import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
 const ROOT_MARGIN = 1000;
 
 const loadVideo = (a) => {
-  const { pathname, hash } = a;
+  const { pathname, hash, dataset } = a;
   let videoPath = `.${pathname}`;
   if (pathname.match('media_.*.mp4')) {
     const { codeRoot } = getConfig();
@@ -15,7 +15,7 @@ const loadVideo = (a) => {
     videoPath = `${root}${mediaFilename}`;
   }
 
-  const attrs = getVideoAttrs(hash);
+  const attrs = getVideoAttrs(hash, dataset);
   const video = `<video ${attrs}>
         <source src="${videoPath}" type="video/mp4" />
       </video>`;
