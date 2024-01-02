@@ -301,26 +301,6 @@ label[for='urls'] i {
   cursor: pointer;
 }
 
-.status-filter {
-  position: relative;
-}
-
-.jobs-tools .status-icon {
-  width: 28px;
-  height: 28px;
-  background-image: url('/libs/blocks/bulk-publish/img/clipboard-list.svg');
-  background-repeat: no-repeat;
-  background-position: center 2px;
-  cursor: pointer;
-}
-
-.jobs-tools .status-icon.open {
-  background-color: white;
-  z-index: 2;
-  position: relative;
-  border-radius: 6px;
-}
-
 .job-statuses {
   display: flex;
 }

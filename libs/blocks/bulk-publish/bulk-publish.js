@@ -214,57 +214,10 @@ class BulkPublish extends LitElement {
       class="failed${failed > 0 ? ' rework' : ''}">${failed} Error</span>`;
   }
 
-  renderStatusFilter() {
-    const jobStatuses = this.jobs.filter((job) => job.status).map((job) => (job.status));
-    return jobStatuses.map(({ invocationId }) => {
-      const filtered = this.openStatus === invocationId;
-      const open = filtered ? ' open' : '';
-      const toggle = () => {
-        this.openStatus = filtered ? false : invocationId;
-      };
-      return html`
-        <div class="status-filter">
-          <div class="status-icon${open}" @click=${toggle}></div>
-        </div>
-      `;
-    });
-  }
-
-  renderJobStats(status) {
-    const { progress, startTime, stopTime, data } = status;
-    const { failed } = progress;
-    const success = data.resources.filter((path) => [200, 204].includes(path.status)).length;
-    return html`
-      <div class="stats">
-        ${getElapsedTime(startTime, stopTime)}
-        ${failed ? html`
-          • <span>${success} Success</span>
-          • ${this.errorReworkTool({ failed, status })}
-        ` : 'Duration'}
-      </div>
-    `;
-  }
-
-  renderJobStatus(allCount) {
-    const filtered = this.jobs.find(({ status }) => status?.invocationId === this.openStatus);
-    if (!filtered) {
-      return html`
-        ${allCount ? html`<strong>${allCount}</strong>` : ''}
-        Job Results
-      `;
-    }
-    const { topic, progress } = filtered.status;
-    return html`
-        <strong>${progress.total}</strong>
-        ${topic} ${this.renderJobStats(filtered.status)}
-      `;
-  }
-
   getJobState() {
     const jobState = {
       showList: this.mode === 'half' || this.openJobs,
       showClear: this.jobs.length && this.processing === false,
-      showStatusFilter: this.jobs.filter((job) => job.status).length > 0,
       loading: this.processing !== false,
     };
     Object.keys(jobState).forEach((key) => (jobState[key] = `${jobState[key] ? '' : ' hide'}`));
@@ -302,7 +255,7 @@ class BulkPublish extends LitElement {
   }
 
   renderResults() {
-    const { showList, showClear, showStatusFilter, loading, count } = this.getJobState();
+    const { showList, showClear, loading, count } = this.getJobState();
     const handleToggle = () => {
       if (!this.openJobs) this.openJobs = !!this.jobs.length;
     };
@@ -315,9 +268,6 @@ class BulkPublish extends LitElement {
           Job Results
         </span>
         <div class="jobs-tools${showList}">
-          <div class="job-statuses${showStatusFilter}">
-            ${this.renderStatusFilter()}
-          </div>
           <div 
             class="clear-jobs${showClear}"
             @click=${() => { this.jobs = []; this.openStatus = false; }}></div>
