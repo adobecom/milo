@@ -695,14 +695,14 @@ class Gnav {
 export default async function init(header) {
   const { locale } = getConfig();
 
-  const confResp = await fetch(`/demo-config.json`);
+  const confResp = await fetch(`demo-config.json`);
   const conf = await confResp.json();
   const branding = conf.data[0].branding;
 
 
   // TODO locale.contentRoot is not the fallback we want if we implement centralized content
-  const url = getMetadata('gnav-source') || `${locale.contentRoot}/${branding}-gnav`;
-  const resp = await fetch(`${url}.plain.html`);
+  //const url = getMetadata('gnav-source') || `${locale.contentRoot}/${branding}-gnav`;
+  const resp = await fetch(`gnav.plain.html`);
   const html = await resp.text();
   if (!html) return null;
   const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');

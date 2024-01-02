@@ -124,7 +124,7 @@ class Footer {
   };
 
   fetchBranding = async () => {
-    const resp = await fetch(`/demo-config.json`);
+    const resp = await fetch(`demo-config.json`);
     const json = await resp.json();
 
     if(!json) return null;
@@ -374,11 +374,11 @@ class Footer {
 }
 
 export default async function init(block) {
-  const resp = await fetch(`/demo-config.json`);
+  const resp = await fetch(`demo-config.json`);
   const json = await resp.json();
   const branding = json.data[0].branding;
 
-  const url = getMetadata('footer-source') || `${locale.contentRoot}/${branding}-footer`;
+  const url = getMetadata('footer-source') || `footer`;
   const footer = new Footer(block, url, branding);
   return footer;
 }

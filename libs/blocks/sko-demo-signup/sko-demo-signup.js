@@ -4,7 +4,7 @@ let _fileContents = null;
 
 export default async function init(blockEl) {
   blockEl.classList.add('content');
-  const formFields = await fetch('/signup-form-fields.json');
+  const formFields = await fetch('signup-form-fields.json');
   const results = await formFields.json();
   const fieldList = results.data;
 
@@ -68,7 +68,7 @@ function decorateFormField(fieldJson, el) {
 
 async function onSubmit() {
   const fieldCollection = document.querySelectorAll('.sko-form-input');
-  const resp = await fetch('/demo-config.json');
+  const resp = await fetch('demo-config.json');
   const json = await resp.json();
   const adobeOnly = json.data[0].adobeOnly;
 
