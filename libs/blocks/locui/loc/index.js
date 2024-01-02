@@ -25,6 +25,9 @@ let resourcePath;
 let previewPath;
 
 export function getUrls(jsonUrls, fgFlag = false) {
+  if (jsonUrls.length === 0) {
+    return []
+  }
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
   const locale = getLocale(locales, jsonUrls[0].pathname);

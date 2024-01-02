@@ -48,7 +48,7 @@ export default function Floodgate() {
 
     ${loadDetailsCheck.value && heading.value.fgColor
       && html`
-    <div>${urls.value.length > 0 && html`<${Actions} />`}</div>
+    <div>${html`<${Actions} />`}</div>
     <div key=${copyCompleteRender.value}>${urls.value.length > 0 && html`<${Urls} />`}</div>
     ${renderModal.value > 0 && html`
         <div key=${renderModal.value}>
