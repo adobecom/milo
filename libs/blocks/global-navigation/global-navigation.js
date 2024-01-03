@@ -488,7 +488,7 @@ class Gnav {
       imsClientId: window.adobeid?.client_id,
       analyticsContext: {
         consumer: {
-          name: 'Adobe.com',
+          name: 'adobecom',
           version: '1.0',
           platform: 'Web',
           device: getDevice(),
