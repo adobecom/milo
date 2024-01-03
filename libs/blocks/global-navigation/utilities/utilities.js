@@ -56,7 +56,7 @@ export const getFedsPlaceholderConfig = () => {
 export function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
 
-  let analyticsValue = processTrackingLabels(str, false, 30);
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
   analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
 
   return analyticsValue;
@@ -233,3 +233,13 @@ export const logErrorFor = async (fn, message, tags) => {
     lanaLog({ message, e, tags });
   }
 };
+
+export function processMartechAttributeMetadata(html) {
+  const dom = new DOMParser().parseFromString(html, 'text/html').body;
+  const blocks = dom.querySelectorAll('.martech-metadata');
+  blocks.forEach((block) => {
+    import('../../martech-metadata/martech-metadata.js')
+      .then(({ default: decorate }) => decorate(block));
+  });
+  return null;
+}
