@@ -104,6 +104,7 @@
 
 .quiz-marquee .aside.notification.small .foreground.container .text {
   align-items: flex-start;
+  flex-flow: row nowrap;
 }
 
 .quiz-marquee .aside.notification.small .foreground.container .text .icon-area {
@@ -126,7 +127,11 @@
   display: grid;
   gap: var(--spacing-m);
   width: 100%;
-  grid-template-columns: repeat(auto-fit, minmax(275px, max-content));
+  grid-template-columns: repeat(auto-fit,300px);
+}
+
+.quiz-marquee.center .commerce-card {
+  justify-content: center;
 }
 
 /* CLS */
