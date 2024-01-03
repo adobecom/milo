@@ -10,7 +10,9 @@ const options = {
   debug: true,
   lazy: true,
   defaultDir: 'core',
-  supportedPrefixTypes: ['ui-', 'test-'],
+  supportedPrefixTypes: ['sI-', 'test-'],
+  // supportedPrefixTypes Cannot start with a digit,
+  // two hyphens or a hyphen followed by a number
   supportedSuffixSizes: ['-xxs', '-xs', '-s', '-m', '-l', '-xl', '-xxl', '-initial'],
 };
 const CACHE = {};
@@ -27,9 +29,9 @@ const observer = new window.IntersectionObserver((entries, observerRef) => {
   });
 });
 
-function log(message) {
+function log(message, type = '') {
   if (options.debug) {
-    console.log(`[📜] ${message}`);
+    console.log(`${type} ${message}`);
   }
 }
 
@@ -47,12 +49,12 @@ function getIconSvg(fileName, folderName, iconUrl) {
 
   // If we have it in cache
   if (iconUrl && CACHE[cacheKey]) {
-    log(`Fetching ${cacheKey} from cache`);
+    log(`Fetching ${cacheKey} from cache`, '💾');
     return CACHE[cacheKey];
   }
 
   // Or resolve
-  log(`Fetching ${cacheKey} from /${folderName}/ - url:${iconUrl}`);
+  log(`Fetching ${cacheKey} from /${folderName}/ - url:${iconUrl}`, '💵');
   CACHE[cacheKey] = fetch(iconUrl).then((response) => {
     if (response.ok) {
       return response.text();
@@ -77,7 +79,7 @@ function refreshIcon(miloIcon, fileName, folderName, iconUrl) {
       // }
       // Fix fill to currentColor
       let data = iconData;
-      if (folderName === 'ui') {
+      if (folderName === 'sI') {
         // TODO: is this ok?
         data = data.replaceAll('var(--iconFill,#6E6E6E)', 'currentColor');
       }
