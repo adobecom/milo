@@ -113,6 +113,10 @@
   margin-right: var(--spacing-xxs);
 }
 
+.quiz-marquee .aside.notification.small .foreground.container .text .body-m {
+  margin: 0;
+}
+
 .quiz-marquee .nested.icon-bullet {
   display: grid;
   gap: var(--spacing-xxs);
