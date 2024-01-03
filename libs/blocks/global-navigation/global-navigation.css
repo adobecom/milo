@@ -155,7 +155,6 @@ header.global-navigation {
 /* Popup */
 .feds-popup {
   display: none;
-  padding: 12px 0;
   background-color: var(--feds-background-popup--light);
 }
 
@@ -527,6 +526,7 @@ header.global-navigation {
     z-index: 1;
     box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
     transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
+    padding: 12px 0;
   }
 
   [dir = "rtl"] .feds-popup {
