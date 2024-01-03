@@ -65,8 +65,7 @@ const decorateImage = (media) => {
 };
 
 export default function init(el) {
-  const isLight = el.classList.contains('light');
-  if (!isLight) el.classList.add('dark');
+  if (!['light', 'quiet'].some((s) => el.classList.contains(s))) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
   const foreground = children[children.length - 1];
   if (children.length > 1) {

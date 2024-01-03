@@ -168,20 +168,24 @@ export function decorateTextOverrides(el, options = ['-heading', '-body', '-deta
   });
 }
 
-export function getVideoAttrs(hash) {
+export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
+  const poster = dataset?.videoPoster ? `poster='${dataset.videoPoster}'` : '';
+  const globalAttrs = `playsinline ${poster}`;
+  const autoPlayAttrs = 'autoplay muted';
+
   if (isAutoplay && !isAutoplayOnce) {
-    return 'playsinline autoplay loop muted';
+    return `${globalAttrs} ${autoPlayAttrs} loop`;
   }
   if (playOnHover && isAutoplayOnce) {
-    return 'playsinline autoplay muted data-hoverplay';
+    return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
   }
   if (isAutoplayOnce) {
-    return 'playsinline autoplay muted';
+    return `${globalAttrs} ${autoPlayAttrs}`;
   }
-  return 'playsinline controls';
+  return `${globalAttrs} controls`;
 }
 
 export function applyHoverPlay(video) {

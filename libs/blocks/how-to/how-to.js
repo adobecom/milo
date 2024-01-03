@@ -136,6 +136,7 @@ export default function init(el) {
   decorateTextOverrides(el);
   const rows = el.querySelectorAll(':scope > div');
   const foreground = createTag('div', { class: 'foreground' });
+  if (mainImage) foreground.classList.add('has-image');
   rows.forEach((row) => { foreground.appendChild(row); });
   foreground.appendChild(orderedList);
   el.appendChild(foreground);
