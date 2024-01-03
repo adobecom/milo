@@ -13,6 +13,7 @@ import noBrandImageOnlyNav from './mocks/global-navigation-only-brand-no-explici
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
 import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
+import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -60,6 +61,49 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+    });
+  });
+
+  describe('Cross Cloud Menu', () => {
+    describe('desktop', () => {
+      it('should render the Cross Cloud Menu', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud });
+        const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
+
+        expect(crossCloudMenu).to.exist;
+        expect(isElementVisible(crossCloudMenu)).to.equal(false);
+
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+
+        crossCloudMenu.querySelectorAll(selectors.navLink).forEach((el) => {
+          expect(isElementVisible(el)).to.equal(true);
+        });
+      });
+
+      it('should not render Cross Cloud Menu if not authored', async () => {
+        await createFullGlobalNavigation();
+        expect(document.querySelector(selectors.crossCloudMenuWrapper)).to.not.exist;
+      });
+    });
+
+    describe('small desktop', () => {
+      it('should not render the Cross Cloud Menu', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud, viewport: 'smallDesktop' });
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+
+        expect(isElementVisible(document.querySelector(selectors.crossCloudMenuWrapper)))
+          .to.equal(false);
+      });
+    });
+
+    describe('mobile', () => {
+      it('should not render the Cross Cloud Menu', async () => {
+        await createFullGlobalNavigation({ viewport: 'mobile' });
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+
+        expect(isElementVisible(document.querySelector(selectors.crossCloudMenuWrapper)))
+          .to.equal(false);
+      });
     });
   });
 
