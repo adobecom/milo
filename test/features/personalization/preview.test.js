@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+document.body.innerHTML = await readFile({ path: './mocks/postPersonalization.html' });
 const { default: decoratePreviewMode } = await import('../../../libs/features/personalization/preview.js');
 const { setConfig, MILO_EVENTS } = await import('../../../libs/utils/utils.js');
 
@@ -65,6 +65,12 @@ describe('preview feature', () => {
               selector: '.marquee',
               pageFilter: '',
               target: '/mep/ace0763/marquee',
+            },
+          ],
+          replacefragment: [
+            {
+              selector: '/drafts/vgoodrich/fragments/highlight-replace-fragment/original-fragment',
+              val: '/fragments/fragmentreplaced',
             },
           ],
           useblockcode: [
@@ -164,6 +170,11 @@ describe('preview feature', () => {
     document.dispatchEvent(event);
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(1);
     expect(document.querySelector('.mep-popup-header h4').textContent).to.equal(`${config.experiments.length} Manifest(s) served`);
+  });
+  it('adds highlights', () => {
+    expect(document.querySelector('[data-path="/fragments/fragmentreplaced"]').getAttribute('data-manifest-id')).to.equal('selected-example.json');
+    expect(document.querySelector('.marquee').getAttribute('data-code-manifest-id')).to.equal('selected-example.json');
+    expect(document.querySelector('header').getAttribute('data-manifest-id')).to.equal('selected-example.json');
   });
   it('preselects form inputs', () => {
     expect(document.querySelector('input[name="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('checked')).to.equal('checked');
