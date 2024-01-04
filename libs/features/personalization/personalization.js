@@ -4,7 +4,7 @@ import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../
 import { ENTITLEMENT_MAP } from './entitlements.js';
 
 /* c20 ignore start */
-const PHONE_SIZE = window.screen.width < 768 && window.screen.height < 768;
+const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
