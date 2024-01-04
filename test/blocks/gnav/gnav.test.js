@@ -25,7 +25,7 @@ describe('Gnav', () => {
       client_id: 'milo',
       scope: 'gnav',
     };
-    window.adobeIMS = { getAccessToken: () => false };
+    window.adobeIMS = { getAccessToken: () => false, isSignedInUser: () => false };
   });
 
   after(() => {
@@ -172,6 +172,11 @@ describe('Gnav', () => {
 
 describe('Localized Gnav', () => {
   before(async () => {
+    window.adobeid = {
+      client_id: 'milo',
+      scope: 'gnav',
+    };
+    window.adobeIMS = { getAccessToken: () => false, isSignedInUser: () => false };
     // Load Localized Gnav
     await loadDefaultHtml();
     document.head.getElementsByTagName('meta')[0].setAttribute('content', '/test/blocks/gnav/mocks/simple-gnav');
@@ -187,6 +192,8 @@ describe('Localized Gnav', () => {
     setConfig(config);
     await loadDefaultHtml();
     gnav = await mod.default(document.querySelector('header'));
+    delete window.adobeid;
+    delete window.adobeIMS;
   });
 
   it('Test Gnav Localized Links', async () => {
