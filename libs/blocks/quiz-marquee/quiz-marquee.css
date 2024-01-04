@@ -131,7 +131,7 @@
   display: grid;
   gap: var(--spacing-m);
   width: 100%;
-  grid-template-columns: repeat(auto-fit,300px);
+  grid-template-columns: repeat(auto-fit, 378px);
 }
 
 .quiz-marquee.center .commerce-card {
