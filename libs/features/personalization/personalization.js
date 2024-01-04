@@ -5,12 +5,11 @@ import { ENTITLEMENT_MAP } from './entitlements.js';
 
 /* c20 ignore start */
 const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
-alert(navigator.userAgent);
 export const PERSONALIZATION_TAGS = {
   all: () => true,
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
+  chrome: () => !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime),
   firefox: () => navigator.userAgent.includes('Firefox'),
-  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
+  safari: () => navigator.userAgent.includes('Safari') && !PERSONALIZATION_TAGS.chrome(),
   msedge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
