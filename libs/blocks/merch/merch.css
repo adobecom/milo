@@ -19,3 +19,13 @@ span.placeholder-resolved[data-template="strikethrough"], span.price.price-strik
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";
 }
+
+.upgrade-flow-iframe {
+  overflow: hidden;
+  height: 820px;
+  width: 1100px;
+}
+
+.upgrade-flow-modal .dialog-close {
+  display: none;
+}

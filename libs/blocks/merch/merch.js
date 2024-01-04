@@ -117,21 +117,34 @@ export async function getPriceContext(el, params) {
   };
 }
 
-const upgradeCta = (cta) => createTag(
-  'a',
-  {
-    href: '#upgrade',
-    'data-modal-path': '/drafts/mariia/fragments/cardfragment',
-    'data-modal-hash': '#upgrade',
-    class: 'modal link-block ',
-  },
-  cta?.textContent,
-);
+const upgradeCta = async (cta) => {
+  const path = 'https://stage.plan.adobe.com?toOfferId=632B3ADD940A7FBB7864AA5AD19B8D28&language=en&intent=switch&surface=ADOBE_COM&ctx=if&ctxRtUrl=https://www.qa01.adobe.com/creativecloud/plans.html&onClose=https://www.stage.adobe.com&fromOffer=25A15F318CDEA57CB477721B9CAE0AB8';
+
+  const iframe = createTag('iframe', {
+    src: path,
+    title: 'Upgrade modal',
+    frameborder: '0',
+    marginwidth: '0',
+    marginheight: '0',
+    scrolling: 'no',
+    allowfullscreen: 'true',
+    loading: 'lazy',
+    class: 'upgrade-flow-iframe',
+  });
+
+  const { getModal } = await import('../modal/modal.js');
+  cta.addEventListener('click', async (e) => {
+    e.preventDefault();
+    getModal(null, { id: 'preflight', content: iframe, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
+  });
+  // replace cta with upgrade
+  cta.textContent = 'Upgrade';
+};
 
 const getProductFamilyFromPA = (productArrangementCode) => {
   if (!productArrangementCode) return null;
   if (productArrangementCode === 'ccsn_direct_individual') {
-    return 'allapps';
+    return 'CC_ALL_APPS';
   }
   if (productArrangementCode === 'DRAFTS') {
     return 'photoshop';
@@ -146,29 +159,81 @@ const getProductFamily = async (placeholder) => {
   return getProductFamilyFromPA(productArrangementCode);
 };
 
-const isUserEligibleForUpgrade = async () => {
-  // const alreadyPurchased = !!productFamily.find(family => entitlements.offer_families[family.toLowerCase()]);
-  const entitlements = await getUserEntitlements();
-  // enti?.offer_families
-  const productFamily = '';
-  if (productFamily === 'photoshop') {
-    return true;
-  }
+// todo figure out if list of cta should be configurable
+// or additionally defined by some flag
+const isAllApps = (ctaProductFamily) => {
+  if (ctaProductFamily === 'CC_ALL_APPS'
+    || ctaProductFamily === 'CC_ALL_APPS_STOCK_BUNDLE'
+    || ctaProductFamily === 'CC_PRO') return true;
   return false;
 };
 
+const isUpgradableOffer = (productFamily) => {
+  const upgradableOffers = ['PHOTOSHOP', 'ILLUSTRATOR', 'ACROBAT', 'AUDITION', 'RUSH', 'INDESIGN', '3DI', 'XD', 'PREMIERE', 'AFTEREFFECTS', 'DREAMWEAVER', 'CC_EXPRESS', 'INCOPY', '3D_TEXTURING', 'PHOTOGRAPHY', 'EDGE_ANIMATE', 'PHOTOSHOP_LIGHTROOM', 'ILLUSTRATOR_STOCK_BUNDLE'];
+  return upgradableOffers.includes(productFamily);
+};
+
+export function addFromOfferId({ entitlements, queryString, upgradeableProductFamilies }) {
+  if (!entitlements?.offers || !queryString || !upgradeableProductFamilies) return queryString;
+  const { offers } = entitlements;
+  const firstSingleAppOfferId = Object.keys(offers).find((offerId) => upgradeableProductFamilies
+    .includes(offers[offerId].product_arrangement?.family));
+  if (!firstSingleAppOfferId) return queryString;
+  if (queryString.includes('fromOffer=')) {
+    const fromOfferRegexp = /fromOffer=([^&]+)/; // matches this part of the string: fromOffer=123456789
+    return queryString.replace(fromOfferRegexp, `fromOffer=${firstSingleAppOfferId}`);
+  }
+  return `${queryString}&fromOffer=${firstSingleAppOfferId}`;
+}
+
+/**
+* Replaces the `ctxRtUrl` in the `queryString`
+* @param {string} queryString
+* @returns {string}
+*/
+export function replaceCtxRtUrl(queryString) {
+  /* In order for the RETURN_BACK navigation to work correctly, the host page must include
+  a ctxRtUrl query param in the iframe src. This value should represent the URL of the host page
+  and will be used as the return URL (for example, when redirecting to PayPal). */
+  if (!queryString || typeof queryString !== 'string') return '';
+  const currentPageUrl = new URL(window.location.href);
+  // If URL includes wcmmode=disabled param, the PayPal modal will not open, so we need to remove it
+  currentPageUrl.searchParams.delete('wcmmode');
+  const properCtxRtUrl = `ctxRtUrl=${encodeURIComponent(currentPageUrl.toString())}`;
+  if (queryString.includes('ctxRtUrl=')) {
+    const ctxUrlRegexp = /ctxRtUrl=([^&]+)/; // matches this part of the string: ctxRtUrl=https%3A%2F%2Faccount.stage.adobe.com
+    return queryString.replace(ctxUrlRegexp, properCtxRtUrl);
+  }
+  return `${queryString}${properCtxRtUrl}`;
+}
+
 const handleUpgradeOffer = async (cta) => {
-  const entitlements = await getUserEntitlements();
   const upgradeOffer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
-  // if (!upgradeOffer) return;
+  if (!upgradeOffer) return;
+  // todo remove
+  // upgradeCta(cta, upgradeOffer);
+  // todo remove
+  const ctaProductFamily = await getProductFamily(cta);
+  if (!isAllApps(ctaProductFamily)) return;
 
   await loadIms();
-  const isSignedInUser = window.adobeIMS.isSignedInUser();
-  if (!isSignedInUser) return;
-  const productFamily = await getProductFamily(cta);
-  // todo allapps should be configurable
-  if (productFamily === 'allapps') {
-    const canUpgrade = await isUserEligibleForUpgrade();
+  if (!window.adobeIMS.isSignedInUser()) return;
+  const entitlements = await getUserEntitlements({ params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }], format: 'raw' });
+  const changePlanOffer = entitlements?.find((offer) => offer.change_plan_available === true);
+  const hasChangePlanOffer = !!changePlanOffer;
+  const noAllApps = !entitlements?.find((offer) => {
+    const productFamily = offer?.offer?.product_arrangement?.family;
+    return isAllApps(productFamily);
+  });
+
+  const hasUpgradableOffer = !!entitlements?.find((offer) => {
+    const productFamily = offer?.offer?.product_arrangement?.family;
+    return isUpgradableOffer(productFamily);
+  });
+  // const canUpgrade = hasChangePlanOffer && noAllApps && hasUpgradableOffer;
+  const canUpgrade = hasChangePlanOffer && noAllApps && hasUpgradableOffer;
+  if (canUpgrade) {
+    await upgradeCta(cta, upgradeOffer);
   }
 };
 
