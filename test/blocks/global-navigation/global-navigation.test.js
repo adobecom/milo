@@ -562,6 +562,26 @@ describe('global navigation', () => {
         await createFullGlobalNavigation();
         expect(document.querySelector(`${selectors.promo}${selectors.promo}--dark ${selectors.cta}`)).to.exist;
       });
+
+      it('should render promo elements in initial order', async () => {
+        // Initial template order is text, then image
+        await createFullGlobalNavigation();
+
+        const imgAfterTxt = document.querySelector('.feds-promo-content + .feds-promo-image');
+        expect(imgAfterTxt).to.exist;
+
+        // Switch original order to be image, then text
+        const template = toFragment`<div></div>`;
+        template.innerHTML = globalNavigationMock;
+        const templatePromo = template.querySelector('.gnav-promo');
+        const templatePromoContent = templatePromo.firstElementChild;
+        templatePromoContent.remove();
+        templatePromo.append(templatePromoContent);
+        await createFullGlobalNavigation({ globalNavigation: template.innerHTML });
+
+        const txtAfterImg = document.querySelector('.feds-promo-image + .feds-promo-content');
+        expect(txtAfterImg).to.exist;
+      });
     });
 
     describe('small desktop', () => {
