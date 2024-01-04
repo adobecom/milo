@@ -135,12 +135,9 @@ const decoratePromo = (elem, index) => {
   const imageElem = elem.querySelector('picture');
 
   if (!isImageOnly) {
-    const cachedImageElem = imageElem && elem.removeChild(imageElem.closest(`${selectors.gnavPromo} > div`));
-    const innerContainer = toFragment`<div class="feds-promo-content"></div>`;
-
-    innerContainer.append(...elem.children);
-    elem.appendChild(innerContainer);
-    if (cachedImageElem) elem.appendChild(cachedImageElem);
+    const content = [...elem.querySelectorAll(':scope > div')]
+      .find((section) => !(section.querySelector('picture') instanceof HTMLElement));
+    content?.classList.add('feds-promo-content');
   }
 
   decorateElements({ elem, className: 'feds-promo-link', index });
