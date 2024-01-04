@@ -1,7 +1,7 @@
 import './job.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { runJob } from './services.js';
+import { getPermissions, runJob } from './services.js';
 import {
   editEntry,
   FORM_MODES,
@@ -27,6 +27,7 @@ class BulkPublish extends LitElement {
     jobs: { state: true },
     openJobs: { state: true },
     jobErrors: { state: true },
+    permissions: { state: true },
   };
 
   constructor() {
@@ -40,11 +41,18 @@ class BulkPublish extends LitElement {
     this.jobs = [];
     this.openJobs = false;
     this.jobErrors = false;
+    this.permissions = {
+      preview: false,
+      publish: false,
+      unpublish: false,
+      delete: false,
+    };
   }
 
   async connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styles, loader];
+    getPermissions(this);
     const resume = sticky().get('resume');
     if (resume.length) {
       this.jobs = resume;
@@ -329,12 +337,11 @@ class BulkPublish extends LitElement {
       const newJobs = await runJob({
         urls: this.urls,
         process: this.processType.toLowerCase(),
+        useBulk: this.permissions[this.processType],
       });
       const { complete, error } = processJobResult(newJobs);
       this.jobs = [...this.jobs, ...complete];
-      this.processing = complete.length
-        ? complete.map(({ result }) => ({ name: result.job.name }))
-        : false;
+      this.processing = complete.length ? 'job' : false;
       if (error.length) {
         this.setJobErrors(error);
       } else {

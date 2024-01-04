@@ -4,26 +4,48 @@ const BASE_URL = 'https://admin.hlx.page';
 const headers = { 'Content-Type': 'application/json' };
 
 const getMiloUrl = (url) => url.hostname.split('.')[0].split('--');
+const isLive = (type) => ['publish', 'unpublish'].includes(type);
+const isDelete = (type) => ['delete', 'unpublish'].includes(type);
 const getProcess = (type) => {
   if (type === 'index') return type;
-  if (['publish', 'unpublish'].includes(type)) return 'live';
+  if (isLive(type)) return 'live';
   return 'preview';
 };
 
-const getRequestEp = (url, type) => {
+const getRequestEp = (url, type, usePath = false) => {
   const [ref, repo, owner] = getMiloUrl(url);
   const process = getProcess(type);
-  const path = process === 'index' ? url.pathname : '*';
+  const path = usePath ? url.pathname : '*';
   return `${BASE_URL}/${process}/${owner}/${repo}/${ref}/${path}`;
+};
+
+const getPermissions = (bulkPub) => {
+  const setPerms = (event) => {
+    const processes = event?.detail?.data;
+    if (processes) {
+      console.log(processes);
+      const permissions = {};
+      Object.keys(bulkPub.permissions).forEach((key) => {
+        const process = isLive(key) ? 'live' : 'preview';
+        // 'list' permission is required to do more than 100 at a time for live/preview:post
+        // 'list' permission is required to use bulk live:delete and preview:delete
+        permissions[key] = !!processes[process].permissions?.includes('list');
+      });
+      bulkPub.permissions = permissions;
+    }
+  };
+  document.addEventListener('sidekick-ready', () => {
+    document.querySelector('helix-sidekick').addEventListener('statusfetched', setPerms);
+  }, { once: true });
 };
 
 const prepareBulkJob = (jobs) => {
   const { urls, process } = jobs;
   const all = urls.map((url) => (new URL(url)));
   return Object.values(all.reduce((newJobs, url) => {
-    const isDelete = ['unpublish', 'delete'].includes(process);
     let job = url.host;
-    while (newJobs[job] && newJobs[job].options.body.paths.length >= 100) {
+    // chunking to 100 per request for users without 'list' permission
+    while (!jobs.useBulk && newJobs[job]?.options.body.paths.length >= 100) {
       job = `${job}+`;
     }
     if (!newJobs[job]) {
@@ -33,12 +55,13 @@ const prepareBulkJob = (jobs) => {
         endpoint: getRequestEp(url, process),
         options: {
           headers,
-          method: isDelete ? 'DELETE' : 'POST',
+          method: isDelete(process) ? 'DELETE' : 'POST',
           body: { paths: [] },
         },
       };
     }
-    if (!isDelete) {
+    if (!isDelete(process)) {
+      // future potential to make this part of jobs object
       newJobs[job].options.body.forceUpdate = true;
     }
     newJobs[job].options.body.paths.push(url.pathname.toLowerCase());
@@ -53,15 +76,15 @@ const prepareJob = (jobs) => {
     href: url.href,
     origin: url.origin,
     path: url.pathname,
-    endpoint: getRequestEp(url, jobs.process),
+    endpoint: getRequestEp(url, jobs.process, true),
     options: {
       headers,
-      method: ['unpublish', 'delete'].includes(jobs.process) ? 'DELETE' : 'POST',
+      method: isDelete(jobs.process) ? 'DELETE' : 'POST',
     },
   }));
 };
 
-const createResults = (jobs, topic) => {
+const setResult = (jobs, topic) => {
   const { complete, error } = processJobResult(jobs);
   const { origin, useBulk } = jobs[0];
   const paths = complete.map(({ result }) => (result?.job?.path));
@@ -81,22 +104,22 @@ const createResults = (jobs, topic) => {
 };
 
 const runJob = async (jobs) => {
-  const useBulk = jobs.process !== 'index';
-  const newJobs = useBulk ? prepareBulkJob(jobs) : prepareJob(jobs);
-  const requests = newJobs.flatMap(async ({ endpoint, options, origin, href }) => {
+  const notBulk = jobs.process === 'index' || (isDelete(jobs.process) && !jobs.useBulk);
+  const newJobs = notBulk ? prepareJob(jobs) : prepareBulkJob(jobs);
+  const requests = newJobs.flatMap(async ({ endpoint, options, origin, href, path }) => {
     if (options.body) {
       options.body = JSON.stringify(options.body);
     }
     try {
       const job = await fetch(endpoint, options);
-      if (!job.ok && (useBulk || job.status === 403)) {
+      if (!job.ok && (!notBulk || job.status === 403)) {
         throw new Error(getErrorText(job.status), { cause: job.status }, origin);
       }
-      const result = useBulk
-        ? await job.json()
-        : { job: { origin, status: job.status, href } };
+      const result = notBulk
+        ? { job: { origin, href, path, status: job.status } }
+        : await job.json();
 
-      return { origin, result, useBulk, href };
+      return { href, origin, result, useBulk: !notBulk };
     } catch (error) {
       return {
         href,
@@ -107,7 +130,7 @@ const runJob = async (jobs) => {
     }
   });
   const results = await Promise.all(requests);
-  return useBulk ? results : createResults(results, jobs.process);
+  return notBulk ? setResult(results, jobs.process) : results;
 };
 
 const getStatus = async (link) => {
@@ -164,5 +187,6 @@ export {
   attemptRetry,
   runJob,
   getMiloUrl,
+  getPermissions,
   pollJobStatus,
 };
