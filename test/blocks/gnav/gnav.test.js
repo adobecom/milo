@@ -192,6 +192,8 @@ describe('Localized Gnav', () => {
     setConfig(config);
     await loadDefaultHtml();
     gnav = await mod.default(document.querySelector('header'));
+    delete window.adobeid;
+    delete window.adobeIMS;
   });
 
   it('Test Gnav Localized Links', async () => {
