@@ -6,14 +6,18 @@ import { ENTITLEMENT_MAP } from './entitlements.js';
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
   all: () => true,
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
-  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
+  firefox: () => navigator.userAgent.includes('Firefox'),
+  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
+  msedge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  phones: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+  tablets: () => /iPad|Android|Touch/i.test(navigator.userAgent),
+  mobile: () => (PERSONALIZATION_TAGS.phones() || PERSONALIZATION_TAGS.tablets),
+  desktop: () => !PERSONALIZATION_TAGS.mobile(),
   loggedout: () => !window.adobeIMS?.isSignedInUser(),
   loggedin: () => window.adobeIMS?.isSignedInUser(),
-  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
-  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
 };
 const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 /* c8 ignore stop */
