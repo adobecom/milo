@@ -5,6 +5,7 @@ import { ENTITLEMENT_MAP } from './entitlements.js';
 
 /* c20 ignore start */
 const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
+alert(navigator.userAgent);
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -15,9 +16,9 @@ export const PERSONALIZATION_TAGS = {
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
   windows: () => navigator.userAgent.includes('Windows'),
   mac: () => navigator.userAgent.includes('Macintosh'),
+  mobile: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
   phones: () => PERSONALIZATION_TAGS.mobile() && PHONE_SIZE,
   tablets: () => PERSONALIZATION_TAGS.mobile() && !PHONE_SIZE,
-  mobile: () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
   desktop: () => !PERSONALIZATION_TAGS.mobile(),
   loggedout: () => !window.adobeIMS?.isSignedInUser(),
   loggedin: () => window.adobeIMS?.isSignedInUser(),
