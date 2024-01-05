@@ -48,9 +48,9 @@ export default function init(el) {
     }
     const image = row.querySelector(':scope > div:not([class])');
     if (image) image.classList.add('image');
-    const img = image.querySelector(':scope img');
+    const img = image?.querySelector(':scope img');
     if (header && img?.alt === '') img.alt = header.textContent;
-    const imageVideo = image.querySelector('video');
+    const imageVideo = image?.querySelector('video');
     if (imageVideo) applyHoverPlay(imageVideo);
 
     // subcopy

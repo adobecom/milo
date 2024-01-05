@@ -95,6 +95,8 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   return manifests;
 };
 
+export const getFileName = (path) => path?.split('/').pop();
+
 const createFrag = (el, url, manifestId) => {
   let href = url;
   try {
@@ -479,7 +481,7 @@ export async function runPersonalization(info, config) {
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  let manifestId = experiment.manifest;
+  let manifestId = getFileName(experiment.manifest);
   if (!config.mep?.preview) {
     manifestId = false;
   } else if (experiment.name) {
@@ -566,8 +568,7 @@ export async function applyPers(manifests) {
   });
   const pznManifests = pznList.map((r) => {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return val.split('/').pop().replace('.json', '').trim()
-      .slice(0, 15);
+    return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
   document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }

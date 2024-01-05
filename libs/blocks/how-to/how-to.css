@@ -74,15 +74,22 @@ html[dir="rtl"] .how-to ol > li::before {
     column-gap: var(--spacing-m);
     grid-template-rows: 1fr;
     grid-template-areas:
+      "heading heading"
+      "list list"
+  }
+
+  .how-to .foreground.has-image {
+    grid-template-areas:
       "heading image"
       "list list"
   }
 
-  .how-to.large-image .foreground {
+  .how-to.large-image .foreground,
+  .how-to.large-image .foreground.has-image {
     grid-template-rows: 1fr;
     grid-auto-rows: min-content;
     grid-template-areas:
-      "heading image"
+      "heading heading"
       "list image"
   }
 
