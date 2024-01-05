@@ -72,27 +72,27 @@ describe('media', () => {
       await setViewport({ width: 1200, height: 100 });
       const qrCodeImg = medias[5].querySelector('img.qr-code-img');
       const qrCTA = medias[5].querySelectorAll('.qr-button-container');
-      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).not.to.be.equal('none');
+      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).not.to.equal('none');
       qrCTA.forEach((cta) => {
-        expect(window.getComputedStyle(cta).getPropertyValue('display')).to.be.equal('none');
+        expect(window.getComputedStyle(cta).getPropertyValue('display')).to.equal('none');
       });
     });
     it('mobile view has visibile google-play and app-store CTA and no qr code image', async () => {
       await setViewport({ width: 600, height: 100 });
       const qrCodeImg = medias[5].querySelector('img.qr-code-img');
       const qrCTA = medias[5].querySelectorAll('.qr-button-container');
-      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).to.be.equal('none');
+      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).to.equal('none');
       qrCTA.forEach((cta) => {
-        expect(window.getComputedStyle(cta).getPropertyValue('display')).not.to.be.equal('none');
+        expect(window.getComputedStyle(cta).getPropertyValue('display')).not.to.equal('none');
       });
     });
     it('tablet view has visibile google-play and app-store CTA and no qr code image', async () => {
       await setViewport({ width: 1199, height: 100 });
       const qrCodeImg = medias[5].querySelector('img.qr-code-img');
       const qrCTA = medias[5].querySelectorAll('.qr-button-container');
-      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).to.be.equal('none');
+      expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).to.equal('none');
       qrCTA.forEach((cta) => {
-        expect(window.getComputedStyle(cta).getPropertyValue('display')).not.to.be.equal('none');
+        expect(window.getComputedStyle(cta).getPropertyValue('display')).not.to.equal('none');
       });
     });
   });
