@@ -7,9 +7,9 @@ import { ENTITLEMENT_MAP } from './entitlements.js';
 const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
-  chrome: () => !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime),
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
   firefox: () => navigator.userAgent.includes('Firefox'),
-  safari: () => navigator.userAgent.includes('Safari') && !PERSONALIZATION_TAGS.chrome(),
+  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   msedge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
