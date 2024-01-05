@@ -293,12 +293,11 @@ const init = async (el) => {
     : null;
   if (actionMenuContent) {
     merchCard.setAttribute('action-menu', true);
-    merchCard.append(
-      createTag(
-        'div',
-        { slot: 'action-menu-content' },
-        actionMenuContent.innerHTML,
-      ),
+    createTag(
+      'div',
+      { slot: 'action-menu-content' },
+      actionMenuContent.innerHTML,
+      { parent: merchCard },
     );
   }
   let ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
@@ -309,9 +308,7 @@ const init = async (el) => {
     }
   }
   if (image !== undefined) {
-    const imageSlot = createTag('div', { slot: 'bg-image' });
-    imageSlot.appendChild(image);
-    merchCard.appendChild(imageSlot);
+    createTag('div', { slot: 'bg-image' }, image, { parent: merchCard });
   }
   if (!icons || icons.length > 0) {
     const iconImgs = Array.from(icons).map((icon) => {
