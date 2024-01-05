@@ -72,7 +72,7 @@ export default function init(el) {
 
     // qr code
     if (row.closest('.qr-code')) {
-      const imgQRCode = row.querySelector('.text > p.body-s > picture > img');
+      const imgQRCode = row.querySelector('.text img');
       if (imgQRCode) {
         imgQRCode.classList.add('qr-code-img');
       }
