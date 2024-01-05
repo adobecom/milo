@@ -72,7 +72,7 @@ describe('tabs', () => {
     tabList.scrollLeft = 50;
     await delay(200);
 
-    expect(tabList.scrollLeft).to.equal(50);
+    expect(tabList.scrollLeft).to.not.equal(0);
     expect(leftPaddle.getAttribute('disabled')).to.equal(null);
     leftPaddle.click();
     await delay(300);

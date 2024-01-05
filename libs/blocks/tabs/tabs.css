@@ -61,7 +61,7 @@
   box-shadow: 0 -1px 0 inset var(--tabs-border-color);
   display: flex;
   z-index: 2;
-  margin: 0 32px;
+  margin: 0 var(--spacing-m);
 
   /* ScrollProps - If content exceeds height of container, overflow! */
   overflow: auto;
@@ -308,6 +308,10 @@
   margin: 0 auto;
   transition: opacity 150ms ease;
   color: var(--tabs-text-color);
+}
+
+.tabs .tab-paddles .paddle-left svg {
+  transform: rotate(180deg);
 }
 
 .tabs .tab-paddles .paddle:hover svg {

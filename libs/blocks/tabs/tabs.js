@@ -4,7 +4,6 @@
  */
 import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 
-const LEFT_PADDLE = '<svg viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 0.750003C6.77979 0.750003 7.06006 0.856933 7.27344 1.0708C7.70069 1.49805 7.70069 2.19043 7.27344 2.61768L2.89063 7L7.27344 11.3823C7.70069 11.8096 7.70069 12.502 7.27344 12.9292C6.84668 13.3569 6.15332 13.3569 5.72656 12.9292L0.570308 7.77344C0.365228 7.56836 0.249998 7.29004 0.249998 7C0.249998 6.70996 0.365228 6.43164 0.570308 6.22656L5.72656 1.0708C5.93994 0.856933 6.22021 0.750493 6.5 0.750003Z" fill="currentColor"/></svg>';
 const RIGHT_PADDLE = '<svg viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
 
 const isTabInTabListView = (tab) => {
@@ -245,10 +244,8 @@ const init = (block) => {
 
   // Tab Paddles
   const tabPaddles = createTag('div', { class: 'tab-paddles', role: 'scrollbar' });
-  const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '' });
-  const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '' });
-  paddleLeft.innerHTML = LEFT_PADDLE;
-  paddleRight.innerHTML = RIGHT_PADDLE;
+  const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '' }, RIGHT_PADDLE);
+  const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '' }, RIGHT_PADDLE);
   tabPaddles.append(paddleLeft, paddleRight);
   tabList.after(tabPaddles);
   initPaddles(tabList, tabPaddles);
