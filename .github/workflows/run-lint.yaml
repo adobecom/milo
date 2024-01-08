@@ -23,5 +23,5 @@ jobs:
         uses: tj-actions/eslint-changed-files@v20
         with:
           config_path: ".eslintrc.js"
-          ignore_path: ".eslintignore"
+          # ignore_path: "/path/to/.eslintignore"
           # extra_args: "--max-warnings=0"

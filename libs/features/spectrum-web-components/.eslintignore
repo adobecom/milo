@@ -1,2 +1,1 @@
-src/*.js
-dist/*.js
+/libs/features/spectrum-web-components//*.js
