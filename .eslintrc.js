@@ -49,7 +49,6 @@ module.exports = {
   ignorePatterns: [
     '/libs/deps/*',
     '/tools/loc/*',
-    '**/dist/*',
   ],
   plugins: [
     'chai-friendly',
