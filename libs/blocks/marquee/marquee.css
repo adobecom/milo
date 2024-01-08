@@ -8,7 +8,7 @@
   min-height: 560px;
 }
 
-.marquee.small, .marquee.inline, .marquee.large.compact {
+.marquee.small, .marquee.quiet, .marquee.inline, .marquee.large.compact {
   min-height: 360px;
 }
 
