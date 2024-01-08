@@ -141,7 +141,7 @@ export const storeResultInLocalStorage = (
       secondaryProductCodes,
       umbrellaProduct,
     ),
-    pageloadHash: getAnalyticsDataForLocalStorage(answers),
+    pageloadHash: getAnalyticsDataForLocalStorage(answers, umbrellaProduct, primaryProducts),
   };
   localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
@@ -429,13 +429,22 @@ export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   return '';
 };
 
-export const getAnalyticsDataForLocalStorage = (answers) => {
+export const getAnalyticsDataForLocalStorage = (answers, umbrellaProduct, primaryProducts) => {
+  let formattedResultString = '';
   let formattedAnswerString = '';
+  if (umbrellaProduct) {
+    formattedResultString = umbrellaProduct;
+  }
+  else {
+    primaryProducts.forEach((product) => {
+      formattedResultString = formattedResultString === '' ? product : formattedResultString.concat('|', product);
+    });
+  }
   answers.forEach((answer) => {
     const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
     formattedAnswerString = formattedAnswerString === '' ? eachAnswer : formattedAnswerString.concat('|', eachAnswer);
   });
-  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&selectedOptions=${formattedAnswerString}`;
+  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&result=${formattedResultString}&selectedOptions=${formattedAnswerString}`;
   return analyticsHash;
 };
 

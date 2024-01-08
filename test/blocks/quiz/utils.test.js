@@ -111,9 +111,21 @@ describe('Quiz', () => {
   });
 
   it('Checking analytics data for local storage', async () => {
-    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers);
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers,'',[]);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
-    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
+    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
+  });
+
+  it('Checking analytics data for local storage with umbrella product', async () => {
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers,'cc-ind',[]);
+    expect(analyticsDataForBtnQCat).to.be.not.empty;
+    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=cc-ind&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
+  });
+
+  it('Checking analytics data for local storage with other products', async () => {
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers,'',['ps-ind','ai-ind']);
+    expect(analyticsDataForBtnQCat).to.be.not.empty;
+    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=ps-ind|ai-ind&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
 
   it('Testing structured fragments', async () => {
@@ -198,7 +210,7 @@ describe('Quiz', () => {
     const primaryProductCodes = [];
     const secondaryProductCodes = [];
     const umbrellaProductCode = '';
-    const pageLoad = 'type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
+    const pageLoad = 'type=cc:app-reco&quiz=uarv3&result=&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
     before(async () => {
       const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
       const resultResources = JSON.parse(resultResourcesData);
@@ -236,7 +248,7 @@ describe('Quiz', () => {
       'au-ind',
     ];
     const umbrellaProductCode = 'cc';
-    const pageLoad = 'type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
+    const pageLoad = 'type=cc:app-reco&quiz=uarv3&result=cc&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
     before(async () => {
       const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
       const resultResources = JSON.parse(resultResourcesData);
