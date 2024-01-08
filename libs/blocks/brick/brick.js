@@ -90,10 +90,10 @@ function decorateBricks(el) {
 }
 
 export default async function init(el) {
-  const { miloLibs, codeRoot } = getConfig();
   const regex = /rounded-corners/g;
-  const base = miloLibs || codeRoot;
   if ([...el.classList].some((c) => regex.test(c))) {
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
     loadStyle(`${base}/styles/rounded-corners.css`);
   }
   decorateBricks(el);
