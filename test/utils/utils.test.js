@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
+import { createTag } from '../../libs/utils/utils.js';
 
 const utils = {};
 
@@ -570,6 +571,20 @@ describe('Utils', () => {
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
+  });
+
+  describe('createTag', async () => {
+    /**
+       * create tag creates a tag from first parameter tag name,
+       * second parameter is requested attributes map in created tag,
+       * third parameter is the innerHTML of the tag, can be either node or text,
+       * fourth parameter is an object of creation options:
+       *  - @parent parent element to append the tag to.
+       */
+    createTag('var', { class: 'foo' }, 'bar', { parent: document.body });
+    const varTag = document.querySelector('body > var.foo');
+    expect(varTag).to.exist;
+    expect(varTag.textContent).to.equal('bar');
   });
 
   describe('personalization', async () => {
