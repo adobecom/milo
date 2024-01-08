@@ -15,6 +15,7 @@ const OST_STYLE_URL = `${OST_BASE}/index.css`;
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
+export const WCS_LANDSCAPE = 'PUBLISHED';
 
 /**
  * Maps Franklin page metadata to OST properties.
@@ -137,6 +138,7 @@ export async function loadOstEnv() {
   window.history.replaceState({}, null, newURL);
 
   const environment = searchParameters.get('env') ?? WCS_ENV;
+  const landscape = searchParameters.get('wcsLandscape') ?? WCS_LANDSCAPE;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
@@ -210,6 +212,7 @@ export async function loadOstEnv() {
     onSelect,
     country,
     environment,
+    landscape,
     language,
     searchParameters: ostSearchParameters,
     searchOfferSelectorId,

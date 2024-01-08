@@ -155,7 +155,6 @@ header.global-navigation {
 /* Popup */
 .feds-popup {
   display: none;
-  padding: 12px 0;
   background-color: var(--feds-background-popup--light);
 }
 
@@ -527,6 +526,7 @@ header.global-navigation {
     z-index: 1;
     box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
     transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
+    padding: 12px 0;
   }
 
   [dir = "rtl"] .feds-popup {
@@ -536,6 +536,7 @@ header.global-navigation {
 
   .feds-menu-container {
     min-width: 100%;
+    padding: 0 12px 40px;
   }
 
   /* Nav Links */
@@ -550,7 +551,7 @@ header.global-navigation {
   .feds-navItem--megaMenu .feds-popup {
     right: 0;
     justify-content: center;
-    padding: 40px 12px;
+    padding: 40px 0 0;
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
@@ -680,5 +681,9 @@ header.global-navigation {
 
   .feds-menu-container {
     min-width: var(--feds-minWidth-menu);
+  }
+
+  .feds-navItem--megaMenu .feds-popup {
+    align-items: center;
   }
 }
