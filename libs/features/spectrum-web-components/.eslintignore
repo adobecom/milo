@@ -1,1 +1,2 @@
-/libs/features/spectrum-web-components//*.js
+libs/features/spectrum-web-components/src/*.js
+libs/features/spectrum-web-components/dist/*.js
