@@ -21,7 +21,7 @@ export const PERSONALIZATION_TAGS = {
   tablets: () => PERSONALIZATION_TAGS.mobile() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS.mobile(),
   loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => window.adobeIMS?.isSignedInUser(),
+  loggedin: () => !!window.adobeIMS?.isSignedInUser(),
 };
 const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 /* c20 ignore stop */
