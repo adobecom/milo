@@ -103,7 +103,7 @@ describe('Merch Cards', async () => {
 
     const merchCards = await init(el);
     expect(merchCards.filter).to.equal('all');
-
+    await delay(500);
     let [cc, photoshop, express] = getVisibleCards(merchCards);
     expect(cc.size).to.be.equal('super-wide');
     expect(photoshop.name).to.be.equal('photoshop');

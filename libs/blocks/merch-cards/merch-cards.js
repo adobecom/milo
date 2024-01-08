@@ -33,6 +33,7 @@ const makePause = async () => new Promise((resolve) => setTimeout(resolve, 0));
 const fail = (el, err = '') => {
   window.lana?.log(`Failed to initialize merch cards: ${err}`);
   el.innerHTML = '';
+  return el;
 };
 
 /**
@@ -124,12 +125,12 @@ async function initMerchCards(config, type, filtered, el, preferences) {
 
 export default async function main(el) {
   if (el.classList.length < 2) {
-    return fail('Missing collection type');
+    return fail(el, 'Missing collection type');
   }
 
   const config = getConfig();
   if (!config.queryIndexCardPath) {
-    return fail('Missing queryIndexCardPath config');
+    return fail(el, 'Missing queryIndexCardPath config');
   }
 
   const { miloLibs } = getConfig();
@@ -217,7 +218,11 @@ export default async function main(el) {
 
   const type = el.classList[1];
   const merchCards = createTag('merch-cards', attributes);
-  merchCards.append(...literalSlots);
+  if (literalSlots.length > 0) {
+    merchCards.append(...literalSlots);
+  } else if (!merchCards.filtered) {
+    merchCards.filtered = 'all';
+  }
   initMerchCards(config, type, attributes.filtered, el, preferences)
     .then((async (cardsRoot) => {
       const cards = [...cardsRoot.children];
