@@ -248,7 +248,7 @@ const beforeSubmitCallback = () => {
       }),
     })
       .catch((error) => {
-        console.error('AA Sandbox Error:', error);
+        window.lana.log('AA Sandbox Error:', error);
       });
   }
 };
