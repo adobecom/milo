@@ -89,7 +89,9 @@ const CONFIG = {
           children: [
             { type: 'Support' },
             { type: 'Community' },
-            // TODO: add Jarvis
+            // TODO: add Jarvis option
+            // TODO: remove temporary
+            { type: 'Jarvis', title: 'Jarvis', appid: 'milo' },
           ],
         },
       },
@@ -481,6 +483,11 @@ class Gnav {
       return children;
     };
 
+    const onAnalyticsEvent = (data) => {
+      // TODO: update based on requirements
+      console.log('analytics data', data);
+    };
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -497,6 +504,7 @@ class Gnav {
         event: { visitor_guid: visitorGuid },
       },
       children: getChildren(),
+      onAnalyticsEvent,
     });
 
     window.UniversalNav(getConfiguration());
