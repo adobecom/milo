@@ -2,21 +2,16 @@ import {
   decorateCta,
   getActiveLink,
   getAnalyticsValue,
-  getFedsPlaceholderConfig,
   federatePictureSources,
-  getFederatedUrl,
   logErrorFor,
-  lanaLog,
   setActiveDropdown,
   trigger,
   isDesktop,
   selectors,
   toFragment,
   yieldToMain,
-  processMartechAttributeMetadata,
+  fetchAndProcess,
 } from '../utilities.js';
-import { decorateLinks } from '../../../../utils/utils.js';
-import { replaceText } from '../../../../features/placeholders.js';
 
 const homeIcon = '<svg xmlns="http://www.w3.org/2000/svg" height="25" viewBox="0 0 18 18" width="25"><path fill="#6E6E6E" d="M17.666,10.125,9.375,1.834a.53151.53151,0,0,0-.75,0L.334,10.125a.53051.53051,0,0,0,0,.75l.979.9785A.5.5,0,0,0,1.6665,12H2v4.5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5v-5a.5.5,0,0,1,.5-.5h3a.5.5,0,0,1,.5.5v5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5V12h.3335a.5.5,0,0,0,.3535-.1465l.979-.9785A.53051.53051,0,0,0,17.666,10.125Z"/></svg>';
 
@@ -313,23 +308,15 @@ const decorateMenu = (config) => logErrorFor(async () => {
 
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
-    const isFederatedMenu = pathElement?.href.includes('/federal/');
     if (!(pathElement instanceof HTMLElement)) return;
-    let content;
 
-    try {
-      const path = getFederatedUrl(pathElement.href);
-      const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
-      content = await res.text();
-      if (!content) throw new Error('Section menu content could not be fetched');
-    } catch (e) {
-      lanaLog({ message: 'Could not decorate section menu.', e });
-      return;
-    }
+    const content = await fetchAndProcess({
+      url: pathElement.href,
+      message: 'Menu could not be fetched',
+    });
+    if (!content) return;
 
-    const parsedContent = await replaceText(content, getFedsPlaceholderConfig());
-    processMartechAttributeMetadata(parsedContent);
-    const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
+    const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
           ${menuContent}
@@ -337,10 +324,6 @@ const decorateMenu = (config) => logErrorFor(async () => {
       </div>`;
     decorateCrossCloudMenu(menuTemplate);
 
-    if (isFederatedMenu || config.isFederatedGnav) federatePictureSources(menuTemplate);
-
-    // Content has been fetched dynamically, need to decorate links
-    decorateLinks(menuTemplate);
     await decorateColumns({ content: menuContent });
 
     if (getActiveLink(menuTemplate) instanceof HTMLElement) {

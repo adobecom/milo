@@ -292,6 +292,14 @@ describe('global navigation utilities', () => {
       );
     });
 
+    it('should return the federated url for a relative link including hashes and search params', () => {
+      expect(
+        getFederatedUrl('/federal/foo-fragment.html?foo=bar#test'),
+      ).to.equal(
+        'https://main--federal--adobecom.hlx.page/federal/foo-fragment.html?foo=bar#test',
+      );
+    });
+
     it('should return the url for invalid urls', () => {
       expect(getFederatedUrl('en-US/federal/')).to.equal('en-US/federal/');
       expect(getFederatedUrl(null)).to.equal(null);

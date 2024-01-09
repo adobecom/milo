@@ -13,7 +13,7 @@ import {
   getExperienceName,
   getAnalyticsValue,
   loadDecorateMenu,
-  getFederatedUrl,
+  fetchAndProcess,
   loadBaseStyles,
   yieldToMain,
   lanaLog,
@@ -21,7 +21,7 @@ import {
   toFragment,
 } from '../global-navigation/utilities/utilities.js';
 
-import { replaceKey, replaceText } from '../../features/placeholders.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 const { miloLibs, codeRoot, locale, mep } = getConfig();
 const base = miloLibs || codeRoot;
@@ -32,9 +32,7 @@ const CONFIG = {
 };
 
 class Footer {
-  constructor({ contentUrl, block, useFederatedContent } = {}) {
-    this.useFederatedContent = useFederatedContent;
-    this.contentUrl = contentUrl;
+  constructor({ block } = {}) {
     this.block = block;
     this.elements = {};
     this.init();
@@ -69,7 +67,13 @@ class Footer {
 
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
-    this.body = await this.fetchContent();
+    const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
+    this.useFederatedContent = url.includes('/federal/');
+    this.body = await fetchAndProcess({
+      url,
+      message: 'Error fetching footer content',
+      shouldDecorateLinks: false,
+    });
 
     if (!this.body) return;
 
@@ -107,30 +111,6 @@ class Footer {
 
     this.block.append(this.elements.footer);
   }, 'Failed to decorate footer content', 'errorType=error,module=global-footer');
-
-  fetchContent = async () => {
-    const resp = await fetch(`${this.contentUrl}.plain.html`);
-
-    if (!resp.ok) {
-      lanaLog({
-        message: `Failed to fetch footer content; content url: ${this.contentUrl}, status: ${resp.statusText}`,
-        tags: 'errorType=warn,module=global-footer',
-      });
-    }
-
-    const html = await resp.text();
-
-    if (!html) return null;
-
-    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig());
-
-    try {
-      return new DOMParser().parseFromString(parsedHTML, 'text/html').body;
-    } catch (e) {
-      lanaLog({ message: 'Footer could not be instantiated', tags: 'errorType=error,module=global-footer' });
-      return null;
-    }
-  };
 
   loadMenuLogic = async () => {
     this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
@@ -364,12 +344,7 @@ class Footer {
 
 export default function init(block) {
   try {
-    const contentUrl = getFederatedUrl(getMetadata('footer-source') || `${locale.contentRoot}/footer`);
-    const footer = new Footer({
-      block,
-      contentUrl,
-      useFederatedContent: contentUrl.includes('/federal/'),
-    });
+    const footer = new Footer({ block });
     return footer;
   } catch (e) {
     lanaLog({ message: 'Could not create footer', e });

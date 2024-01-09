@@ -8,7 +8,6 @@ import {
 import {
   toFragment,
   getFedsPlaceholderConfig,
-  getFederatedUrl,
   federatePictureSources,
   getAnalyticsValue,
   decorateCta,
@@ -30,10 +29,10 @@ import {
   selectors,
   logErrorFor,
   lanaLog,
-  processMartechAttributeMetadata,
+  fetchAndProcess,
 } from './utilities/utilities.js';
 
-import { replaceKey, replaceKeyArray, replaceText } from '../../features/placeholders.js';
+import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 const CONFIG = {
   icons: {
@@ -718,16 +717,16 @@ class Gnav {
 export default async function init(block) {
   try {
     const { locale, mep } = getConfig();
-    const contentUrl = getFederatedUrl(getMetadata('gnav-source') || `${locale.contentRoot}/gnav`);
-    const resp = await fetch(`${contentUrl}.plain.html`);
-    const html = await resp.text();
-    if (!html) throw new Error('Gnav content could not be fetched');
-    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig());
-    processMartechAttributeMetadata(parsedHTML);
+    const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+    const content = await fetchAndProcess({
+      url,
+      e: 'Error fetching gnav content',
+    });
+    if (!content) return null;
     const gnav = new Gnav({
-      content: new DOMParser().parseFromString(parsedHTML, 'text/html').body,
+      content,
       block,
-      useFederatedContent: contentUrl.includes('/federal/'),
+      useFederatedContent: url.includes('/federal/'),
     });
     gnav.init();
     block.setAttribute('daa-im', 'true');
