@@ -1,5 +1,5 @@
-// Wed, 06 Dec 2023 15:56:55 GMT
-import{html as n,LitElement as T}from"./lit-all.min.js";import{css as x,unsafeCSS as p}from"./lit-all.min.js";var s="(min-width: 768px)",c="(min-width: 1200px)",i="(min-width: 1600px)";var v=x`
+// Wed, 20 Dec 2023 15:18:15 GMT
+import{html as n,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var s="(min-width: 768px)",c="(min-width: 1200px)",i="(min-width: 1600px)";var v=x`
     :host {
         position: relative;
         display: flex;
@@ -353,6 +353,10 @@ merch-cards {
     display: contents;
 }
 
+merch-cards > merch-card:not([style]) {
+    display: none;
+}
+
 merch-cards > p[slot],
 merch-cards > div[slot] p {
     margin: 0;
@@ -383,6 +387,8 @@ merch-card.background-opacity-70 {
 
 merch-card.has-divider hr {
     margin-bottom: var(--spacing-xxs);
+    height: 1px;
+    border: none;
 }
 
 merch-card[variant="special-offers"] span[is="inline-price"][data-template="strikethrough"] {
@@ -785,11 +791,15 @@ div[slot='bg-image'] img {
 
 `;document.head.appendChild(E);var C="MERCH-CARD",O="merch-card",b=class extends T{static properties={name:{type:String},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color"},badgeBackgroundColor:{type:String,attribute:"badge-background-color"},badgeText:{type:String,attribute:"badge-text"},icons:{type:Array},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuContent:{type:String,attribute:"action-menu-content"},title:{type:String},description:{type:String},customHr:{type:Boolean,attribute:"custom-hr"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:e=>{let[t,r,a]=e.split(",");return{PUF:t,ABM:r,M2M:a}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:e=>Object.fromEntries(e.split(",").map(t=>{let[r,a,o]=t.split(":"),d=Number(a);return[r,{order:isNaN(d)?void 0:d,size:o}]})),toAttribute:e=>Object.entries(e).map(([t,{order:r,size:a}])=>[t,r,a].filter(o=>o!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0}};static styles=[v,...y()];constructor(){super(),this.filters={},this.types=""}updated(e){e.has("badgeBackgroundColor")&&(this.style.border=`1px solid ${this.badgeBackgroundColor}`)}renderIcons(){return this.icons?this.icons&&this.icons.length>0?n`
                   <div class="icons">
-                      ${this.icons.map(e=>n`<img src="${e.src}" alt="${e.alt}" />`)}
+                      ${this.icons.map(e=>n`<img
+                                  src="${e.src}"
+                                  alt="${e.alt}"
+                                  loading="lazy"
+                              />`)}
                   </div>
               `:"":n`<div class="icons">
                 <slot name="icons"></slot>
-            </div>`}get evergreen(){this.classList.contains("intro-pricing")}get stockCheckbox(){return this.checkboxLabel?n`<label id="stock-checkbox">
+            </div>`}get evergreen(){return this.classList.contains("intro-pricing")}get stockCheckbox(){return this.checkboxLabel?n`<label id="stock-checkbox">
                     <input type="checkbox" @change=${this.toggleStockOffer}></input>
                     <span></span>
                     ${this.checkboxLabel}
