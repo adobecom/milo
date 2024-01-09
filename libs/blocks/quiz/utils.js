@@ -434,8 +434,7 @@ export const getAnalyticsDataForLocalStorage = (answers, umbrellaProduct, primar
   let formattedAnswerString = '';
   if (umbrellaProduct) {
     formattedResultString = umbrellaProduct;
-  }
-  else {
+  } else {
     primaryProducts.forEach((product) => {
       formattedResultString = formattedResultString === '' ? product : formattedResultString.concat('|', product);
     });

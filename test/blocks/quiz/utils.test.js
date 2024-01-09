@@ -111,19 +111,19 @@ describe('Quiz', () => {
   });
 
   it('Checking analytics data for local storage', async () => {
-    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers,'',[]);
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers, '', []);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
     expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
 
   it('Checking analytics data for local storage with umbrella product', async () => {
-    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers,'cc-ind',[]);
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers, 'cc-ind', []);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
     expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=cc-ind&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
 
   it('Checking analytics data for local storage with other products', async () => {
-    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers,'',['ps-ind','ai-ind']);
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers, '', ['ps-ind', 'ai-ind']);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
     expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=ps-ind|ai-ind&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
