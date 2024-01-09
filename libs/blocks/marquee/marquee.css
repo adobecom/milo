@@ -17,7 +17,7 @@
   margin-bottom: 0;
 }
 
-.marquee.light, .marquee.mobile-light, .marquee.quiet, .marquee.inline {
+.marquee.light, .marquee.mobile-light, .marquee.quiet:not(.dark), .marquee.inline {
   color: var(--text-color);
 }
 
