@@ -30,8 +30,8 @@ export const getFaasHostSubDomain = (environment) => {
 };
 
 const base = miloLibs || codeRoot;
-export const faasHostUrl = base.includes('localhost') ? `${base}/deps` : `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com/faas/service`;
-const faasCurrentJS = `${faasHostUrl}/jquery.faas-current.js`;
+export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
+const faasCurrentJS = base.includes('localhost') ? `${base}/deps/jquery.faas-current.js` : `${faasHostUrl}/jquery.faas-current.js`;
 export const loadFaasFiles = () => {
   loadStyle(`${base}/blocks/faas/faas.css`);
   return Promise.all([
