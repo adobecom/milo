@@ -370,6 +370,12 @@ header.global-navigation {
   content: '/';
 }
 
+.feds-utilities {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--feds-gutter);
+}
+
 /* Profile styles - to be removed after IMS takes over the profile */
 .feds-profile {
   display: flex;
@@ -626,6 +632,10 @@ header.global-navigation {
 
   .feds-search-trigger:hover svg path {
     fill: var(--feds-color-link--hover--light);
+  }
+
+  .feds-utilities {
+    padding: 0;
   }
 
   /* Breadcrumbs */
