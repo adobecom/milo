@@ -26,7 +26,7 @@ export const getFaasHostSubDomain = (environment) => {
   if (faasEnv === 'qa') {
     return 'qa.';
   }
-  return 'dev.';
+  return 'qa.';
 };
 
 const base = miloLibs || codeRoot;
