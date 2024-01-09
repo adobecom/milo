@@ -183,7 +183,6 @@
 
 .marquee.large .foreground {
   padding: var(--spacing-m) 0;
-  gap: 0;
 }
 
 .marquee.large .background img {
