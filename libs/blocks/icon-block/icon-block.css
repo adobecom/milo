@@ -277,6 +277,10 @@
   text-align: center;
 }
 
+[class*='-up'] .icon-block.inline .foreground { 
+  margin: unset; 
+}
+
 [class*="-up"] .icon-block.bio.inline .foreground {
   max-width: unset;
   width: unset;
