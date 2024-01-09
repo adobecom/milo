@@ -123,7 +123,7 @@ async function initMerchCards(config, type, filtered, el, preferences) {
   return cardsRoot;
 }
 
-export default async function main(el) {
+export default async function init(el) {
   if (el.classList.length < 2) {
     return fail(el, 'Missing collection type');
   }
