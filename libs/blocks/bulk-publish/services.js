@@ -19,19 +19,24 @@ const getRequestEp = (url, type, usePath = false) => {
   return `${BASE_URL}/${process}/${owner}/${repo}/${ref}/${path}`;
 };
 
-const getPermissions = (bulkPub) => {
+const getUser = (bulkPub) => {
   const setPerms = (event) => {
     const processes = event?.detail?.data;
     if (processes) {
-      console.log(processes);
+      const profile = processes.profile ?? null;
       const permissions = {};
-      Object.keys(bulkPub.permissions).forEach((key) => {
+      Object.keys({
+        preview: false,
+        publish: false,
+        unpublish: false,
+        delete: false,
+      }).forEach((key) => {
         const process = isLive(key) ? 'live' : 'preview';
         // 'list' permission is required to do more than 100 at a time for live/preview:post
         // 'list' permission is required to use bulk live:delete and preview:delete
         permissions[key] = !!processes[process].permissions?.includes('list');
       });
-      bulkPub.permissions = permissions;
+      bulkPub.user = { profile, permissions };
     }
   };
   document.addEventListener('sidekick-ready', () => {
@@ -187,6 +192,6 @@ export {
   attemptRetry,
   runJob,
   getMiloUrl,
-  getPermissions,
+  getUser,
   pollJobStatus,
 };

@@ -1,7 +1,7 @@
 import './job.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { getPermissions, runJob } from './services.js';
+import { getUser, runJob } from './services.js';
 import {
   editEntry,
   FORM_MODES,
@@ -27,7 +27,7 @@ class BulkPublish extends LitElement {
     jobs: { state: true },
     openJobs: { state: true },
     jobErrors: { state: true },
-    permissions: { state: true },
+    user: { state: true },
   };
 
   constructor() {
@@ -41,18 +41,13 @@ class BulkPublish extends LitElement {
     this.jobs = [];
     this.openJobs = false;
     this.jobErrors = false;
-    this.permissions = {
-      preview: false,
-      publish: false,
-      unpublish: false,
-      delete: false,
-    };
+    this.user = null;
   }
 
   async connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styles, loader];
-    getPermissions(this);
+    getUser(this);
     const resume = sticky().get('resume');
     if (resume.length) {
       this.jobs = resume;
@@ -175,6 +170,13 @@ class BulkPublish extends LitElement {
           </span>
         </div>`;
     }
+    const getOption = (type) => {
+      const isDelete = ['delete', 'unpublish'].includes(type);
+      if (isDelete && this.user?.permissions[type] === false) {
+        return html`<option disabled value=${type}>${type}</option>`;
+      }
+      return html`<option value=${type}>${type}</option>`;
+    };
     return html`
       <div class="process">
         <div class="processor">
@@ -184,7 +186,7 @@ class BulkPublish extends LitElement {
             value=${this.processType}
             @change=${this.setType}>
             <option disabled selected value="choose">Choose Process</option>
-            ${PROCESS_TYPES.map((type) => (html`<option value=${type}>${type}</option>`))}
+            ${PROCESS_TYPES.map((type) => (getOption(type)))}
           </select>
           <button
             disable=${this.formDisabled()} 
@@ -337,7 +339,7 @@ class BulkPublish extends LitElement {
       const newJobs = await runJob({
         urls: this.urls,
         process: this.processType.toLowerCase(),
-        useBulk: this.permissions[this.processType],
+        useBulk: this.user?.permissions?.[this.processType],
       });
       const { complete, error } = processJobResult(newJobs);
       this.jobs = [...this.jobs, ...complete];
@@ -363,9 +365,21 @@ class BulkPublish extends LitElement {
     };
   }
 
+  renderLoginPrompt() {
+    if (this.user?.profile) return html``;
+    return html`
+      <div class="login-prompt">
+        <div class="prompt">
+          Please open AEM sidekick and login to continue
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     const { full, half, toggleMode } = this.getModeState();
     return html`
+      ${this.renderLoginPrompt()}
       <header id="Header">
         <h1>Bulk Publishing</h1>
         <div class="mode-switcher">
