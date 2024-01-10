@@ -4,7 +4,6 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/merch-card.js';
-import '../../deps/merch-quantity-select.js';
 
 const PRODUCT_NAMES = [
   'acrobat-pdf-pack',
@@ -238,8 +237,9 @@ function createQuantitySelect(el) {
   if (config.length !== 2) return null;
   const attributes = {};
   attributes.title = config[0].textContent.trim();
-  const quantityValues = config[1].textContent.split(',').map((value) => value.trim());
+  const quantityValues = config[1].textContent.split(',').map((value) => value.trim()).filter((value) => /^\d+$/.test(value));
   if (quantityValues.length !== 3) return null;
+  import('../../deps/merch-quantity-select.js');
   [attributes.min, attributes.max, attributes.step] = quantityValues.map(Number);
   const quantitySelect = createTag('merch-quantity-select', attributes);
   quantitySelectConfig.remove();

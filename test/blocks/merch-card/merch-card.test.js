@@ -330,7 +330,16 @@ describe('Merch Card with Offer Selection', () => {
     const button = merchCard.querySelector('.con-button');
     expect(button.getAttribute('data-quantity')).to.equal('3');
   });
+
+  it('Skip Change quantity select render ', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    await init(document.querySelector('.skip-quantity-select-render'));
+    await delay();
+    expect(document.querySelector('merch-quantity-select')).to.not.exist;
+  });
 });
+
+
 
 describe('Section metadata rules', async () => {
   before(async () => {
