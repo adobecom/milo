@@ -90,8 +90,7 @@ function decorateBricks(el) {
 }
 
 export default async function init(el) {
-  const regex = /rounded-corners/g;
-  if ([...el.classList].some((c) => regex.test(c))) {
+  if (el.className.includes('rounded-corners')) {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
     loadStyle(`${base}/styles/rounded-corners.css`);
