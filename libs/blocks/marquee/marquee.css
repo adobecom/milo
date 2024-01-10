@@ -39,13 +39,6 @@
   color: var(--link-color-dark);
 }
 
-.marquee.static-links:not(.mobile-dark) a:not(.con-button),
-.static-links .marquee:not(.mobile-dark) a:not(.con-button),
-.marquee.static-links a:not(.con-button):hover,
-.static-links .marquee a:not(.con-button):hover {
-  color: inherit;
-}
-
 .marquee.mobile-light a:not(.con-button):hover {
   color: var(--link-hover-color);
 }
@@ -716,4 +709,11 @@
   .marquee.large .foreground.container {
     max-width: var(--grid-container-width);
   }
+}
+
+.marquee.static-links a:not(.con-button),
+.marquee.static-links a:not(.con-button):hover,
+.static-links .marquee a:not(.con-button),
+.static-links .marquee a:not(.con-button):hover {
+  color: inherit;
 }
