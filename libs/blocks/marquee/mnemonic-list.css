@@ -1,6 +1,6 @@
 /* Mnemonic list marquee */
 
-@media screen and (min-width: 800px) {
+@media screen and (min-width: 768px) {
   .marquee.mnemonic-list .foreground .text {
     max-width: 800px;
   }

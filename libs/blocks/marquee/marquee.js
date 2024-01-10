@@ -3,7 +3,7 @@
  */
 
 import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
@@ -64,7 +64,7 @@ const decorateImage = (media) => {
   }
 };
 
-export default function init(el) {
+export default async function init(el) {
   const isLight = el.classList.contains('light');
   if (!isLight) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
@@ -114,13 +114,15 @@ export default function init(el) {
       media?.lastChild.remove();
     }
   }
-  if (el.classList.contains('mnemonic-list')) {
-    import('./mnemonic-list.js')
+  if (el.classList.contains('mnemonic-list') && foreground) {
+    const { miloLibs, codeRoot } = getConfig();
+    await import('./mnemonic-list.js')
       .then((module) => {
+        loadStyle(`${miloLibs || codeRoot}/blocks/marquee/mnemonic-list.css`);
         module.decorateMnemonicList(foreground);
       })
       .catch((err) => {
-        console.error('Failed to load module: ', err);
+        window.lana?.log(`Failed to load mnemonic marquee module: ${err}`);
       });
   }
 }
