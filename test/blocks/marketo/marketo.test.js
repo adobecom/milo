@@ -77,4 +77,10 @@ describe('marketo decorateURL', () => {
     const result = decorateURL('tps://business', baseURL);
     expect(result).to.be.null;
   });
+
+  it('Does not add .html to ending slash', () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = decorateURL('https://business.adobe.com/', baseURL);
+    expect(result.href).to.equal('https://business.adobe.com/');
+  });
 });
