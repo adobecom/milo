@@ -4,7 +4,6 @@ import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../
 import { ENTITLEMENT_MAP } from './entitlements.js';
 
 /* c20 ignore start */
-document.querySelector('#qualified-for-mep-audiences').insertAdjacentHTML('beforebegin', `<div>${navigator.userAgent}</div>`); 
 const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
