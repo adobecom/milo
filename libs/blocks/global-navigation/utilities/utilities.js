@@ -279,55 +279,40 @@ export function trigger({ element, event, type } = {}) {
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-export function processMartechAttributeMetadata(html) {
-  const dom = new DOMParser().parseFromString(html, 'text/html').body;
-  const blocks = dom.querySelectorAll('.martech-metadata');
-  blocks.forEach((block) => {
-    import('../../martech-metadata/martech-metadata.js')
-      .then(({ default: decorate }) => decorate(block));
-  });
-  return null;
-}
+export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
+  const path = getFederatedUrl(url);
+  const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
+  const text = await res.text();
+  const { body } = new DOMParser().parseFromString(text, 'text/html');
 
-export async function fetchAndProcess({ url, message, shouldDecorateLinks = true } = {}) {
-  try {
-    const path = getFederatedUrl(url);
-    const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
-    const text = await res.text();
-    const { body } = new DOMParser().parseFromString(text, 'text/html');
+  const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
+  if (inlineFrags.length) {
+    const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
 
-    const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
-    if (inlineFrags.length) {
-      const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
-
-      const fragPromises = inlineFrags.map((link) => {
-        // Replacing paragraphs should happen in the fragment module
-        // https://jira.corp.adobe.com/browse/MWPW-141039
-        if (link.parentElement && link.parentElement.nodeName === 'P') {
-          const div = document.createElement('div');
-          link.parentElement.replaceWith(div);
-          div.appendChild(link);
-        }
-        link.href = getFederatedUrl(link.href);
-        return loadInlineFrags(link);
-      });
-      await Promise.all(fragPromises);
-    }
-
-    if (path.includes('/federal/')) federatePictureSources(body);
-
-    if (shouldDecorateLinks) decorateLinks(body);
-
-    const blocks = body.querySelectorAll('.martech-metadata');
-    blocks.forEach((block) => {
-      import('../../martech-metadata/martech-metadata.js')
-        .then(({ default: decorate }) => decorate(block));
+    const fragPromises = inlineFrags.map((link) => {
+      // Replacing paragraphs should happen in the fragment module
+      // https://jira.corp.adobe.com/browse/MWPW-141039
+      if (link.parentElement && link.parentElement.nodeName === 'P') {
+        const div = document.createElement('div');
+        link.parentElement.replaceWith(div);
+        div.appendChild(link);
+      }
+      link.href = getFederatedUrl(link.href);
+      return loadInlineFrags(link);
     });
-
-    body.innerHTML = await replaceText(body.innerHTML, getFedsPlaceholderConfig());
-    return body;
-  } catch (e) {
-    lanaLog({ message: `${message} url: ${url}`, e, tags: 'errorType=error,module=utilities' });
-    return null;
+    await Promise.all(fragPromises);
   }
+
+  if (path.includes('/federal/')) federatePictureSources(body);
+
+  if (shouldDecorateLinks) decorateLinks(body);
+
+  const blocks = body.querySelectorAll('.martech-metadata');
+  if (blocks.length) {
+    import('../../martech-metadata/martech-metadata.js')
+      .then(({ default: decorate }) => blocks.forEach((block) => decorate(block)));
+  }
+
+  body.innerHTML = await replaceText(body.innerHTML, getFedsPlaceholderConfig());
+  return body;
 }

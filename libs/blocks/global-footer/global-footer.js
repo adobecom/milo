@@ -9,11 +9,10 @@ import {
 
 import {
   getFedsPlaceholderConfig,
-  federatePictureSources,
   getExperienceName,
   getAnalyticsValue,
   loadDecorateMenu,
-  fetchAndProcess,
+  fetchAndProcessPlainHtml,
   loadBaseStyles,
   yieldToMain,
   lanaLog,
@@ -68,12 +67,15 @@ class Footer {
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
     const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
-    this.useFederatedContent = url.includes('/federal/');
-    this.body = await fetchAndProcess({
+    this.body = await fetchAndProcessPlainHtml({
       url,
-      message: 'Error fetching footer content',
       shouldDecorateLinks: false,
-    });
+    })
+      .catch((e) => lanaLog({
+        message: `Error fetching footer content ${url}`,
+        e,
+        tags: 'errorType=error,module=gnav',
+      }));
 
     if (!this.body) return;
 
@@ -337,7 +339,6 @@ class Footer {
         </div>
       </div>`;
 
-    if (this.useFederatedContent) federatePictureSources(this.elements.footer);
     return this.elements.footer;
   };
 }

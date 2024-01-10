@@ -8,7 +8,6 @@ import {
 import {
   toFragment,
   getFedsPlaceholderConfig,
-  federatePictureSources,
   getAnalyticsValue,
   decorateCta,
   getExperienceName,
@@ -29,7 +28,7 @@ import {
   selectors,
   logErrorFor,
   lanaLog,
-  fetchAndProcess,
+  fetchAndProcessPlainHtml,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -161,10 +160,9 @@ const closeOnClickOutside = (e) => {
 };
 
 class Gnav {
-  constructor({ content, block, useFederatedContent } = {}) {
+  constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
-    this.useFederatedContent = useFederatedContent;
 
     this.blocks = {
       profile: {
@@ -238,7 +236,6 @@ class Gnav {
         ${breadcrumbs}
       </div>`;
 
-    if (this.useFederatedContent) federatePictureSources(this.elements.topnavWrapper);
     this.block.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
   };
 
@@ -592,7 +589,6 @@ class Gnav {
           item,
           template,
           type: itemType,
-          isFederatedGnav: this.useFederatedContent,
         });
       }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
 
@@ -718,15 +714,16 @@ export default async function init(block) {
   try {
     const { locale, mep } = getConfig();
     const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-    const content = await fetchAndProcess({
-      url,
-      e: 'Error fetching gnav content',
-    });
+    const content = await fetchAndProcessPlainHtml({ url })
+      .catch((e) => lanaLog({
+        message: `Error fetching gnav content url: ${url}`,
+        e,
+        tags: 'errorType=error,module=gnav',
+      }));
     if (!content) return null;
     const gnav = new Gnav({
       content,
       block,
-      useFederatedContent: url.includes('/federal/'),
     });
     gnav.init();
     block.setAttribute('daa-im', 'true');
