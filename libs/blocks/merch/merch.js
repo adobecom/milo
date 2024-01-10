@@ -8,7 +8,7 @@ export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 
 export function polyfills() {
-  /* c8 ignore start */
+  /* c8 ignore start  */
   if (!polyfills.promise) {
     let isSupported = false;
     document.createElement('div', {
