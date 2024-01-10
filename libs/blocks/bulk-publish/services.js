@@ -19,7 +19,7 @@ const getRequestEp = (url, type, usePath = false) => {
   return `${BASE_URL}/${process}/${owner}/${repo}/${ref}/${path}`;
 };
 
-const getUser = (bulkPub) => {
+const connectSidekick = (bulkPub) => {
   const setPerms = (event) => {
     const processes = event?.detail?.data;
     if (processes) {
@@ -192,6 +192,6 @@ export {
   attemptRetry,
   runJob,
   getMiloUrl,
-  getUser,
+  connectSidekick,
   pollJobStatus,
 };

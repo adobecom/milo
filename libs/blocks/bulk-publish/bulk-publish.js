@@ -1,7 +1,7 @@
 import './job.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { getUser, runJob } from './services.js';
+import { connectSidekick, runJob } from './services.js';
 import {
   editEntry,
   FORM_MODES,
@@ -47,7 +47,7 @@ class BulkPublish extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styles, loader];
-    getUser(this);
+    connectSidekick(this);
     const resume = sticky().get('resume');
     if (resume.length) {
       this.jobs = resume;
@@ -367,10 +367,13 @@ class BulkPublish extends LitElement {
 
   renderLoginPrompt() {
     if (this.user?.profile) return html``;
+    const message = this.user
+      ? 'Please sign in to AEM sidekick to continue'
+      : 'Please open AEM sidekick to continue';
     return html`
       <div class="login-prompt">
         <div class="prompt">
-          Please open AEM sidekick and login to continue
+          ${message}
         </div>
       </div>
     `;

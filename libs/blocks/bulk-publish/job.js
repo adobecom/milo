@@ -1,6 +1,6 @@
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { humanDateTime, jobStatus, wait } from './utils.js';
+import { humanDateTime, getStatusText, wait } from './utils.js';
 import { pollJobStatus, attemptRetry } from './services.js';
 
 const styles = await getSheet('/libs/blocks/bulk-publish/job.css');
@@ -25,19 +25,23 @@ class JobProcess extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styles];
-    const setProgress = (detail) => this.dispatchEvent(new CustomEvent('progress', { detail }));
-    this.jobStatus = this.job?.useBulk
-      ? await pollJobStatus(this.job, setProgress)
-      : this.job.result.job;
+    if (this.job?.useBulk) {
+      await pollJobStatus(this.job, (detail) => {
+        this.jobStatus = detail;
+        this.dispatchEvent(new CustomEvent('progress', { detail }));
+      });
+    } else {
+      this.jobStatus = this.job.result.job;
+    }
   }
 
   async updated() {
-    if (this.jobStatus) {
+    if (this.jobStatus && this.jobStatus.state === 'stopped') {
       this.dispatchEvent(new CustomEvent('processed', { detail: this.jobStatus }));
     }
-    if (this.jobStatus && this.jobStatus.progress.failed !== 0) {
-      const timeouts = this.jobStatus.data.resources.filter((job) => job.status === 503);
-      if (timeouts.length) {
+    if (this.jobStatus && this.jobStatus.progress?.failed !== 0) {
+      const timeouts = this.jobStatus.data?.resources?.filter((job) => job.status === 503);
+      if (timeouts?.length) {
         if (!this.queue.length) {
           this.queue = timeouts.map((item) => ({ ...item, count: 1 }));
         } else {
@@ -69,33 +73,37 @@ class JobProcess extends LitElement {
   }
 
   jobDetails(path) {
-    const current = this.jobStatus ?? this.job.result.job;
-    const { state, status, createTime, stopTime, data } = current;
-    const statusResource = this.jobStatus && data.resources.find((source) => source.path === path);
-    let currentStatus = statusResource?.status ?? status;
-    let jobState = state;
-    const isOK = [200, 204];
+    const jobData = this.jobStatus ?? this.job.result.job;
+    const { topic, data, startTime, stopTime, createTime } = jobData;
+    const resource = data?.resources?.find((source) => source.path === path);
+    let { state, status } = resource ?? jobData;
+
+    const success = [200, 204];
     const queued = this.queue?.find((item) => item.path === path);
     if (queued) {
-      currentStatus = queued.status;
-      jobState = !isOK.includes(queued.status) && queued.count < 3 ? 'queued' : 'stopped';
+      status = queued.status;
+      state = !success.includes(status) && queued.count < 3 ? 'queued' : 'stopped';
     }
-    const jobstatus = jobStatus(currentStatus, jobState, queued?.count);
-    const okStyle = ` success${['delete', 'unpublish'].includes(current.topic) ? '' : ' link'}`;
-    const style = isOK.includes(currentStatus) ? okStyle : '';
-    const origin = current.topic === 'publish'
-      && statusResource?.status
-      && isOK.includes(statusResource.status)
+    const statusText = getStatusText(status, state, queued?.count);
+    const style = success.includes(status)
+      ? ` success${['delete', 'unpublish'].includes(topic) ? '' : ' link'}`
+      : '';
+
+    const origin = topic === 'publish' && success.includes(status)
       ? this.job.origin.replace('.page', '.live')
       : this.job.origin;
 
+    // sometimes stopTime comes back with empty string
+    const stop = stopTime && stopTime !== '' ? stopTime : undefined;
+    const stamp = stop ?? startTime ?? createTime;
+
     return {
+      topic,
       style,
-      url: statusResource?.href ?? `${origin}${path}`,
-      status: jobstatus,
-      topic: current.topic,
+      url: resource?.href ?? `${origin}${path}`,
+      status: statusText,
       time: {
-        stamp: stopTime ?? createTime,
+        stamp,
         label: stopTime ? 'Finished' : 'Started',
       },
     };
@@ -104,8 +112,8 @@ class JobProcess extends LitElement {
   render() {
     const { job } = this.job.result;
     return job.data.paths.map((path, pathIndex) => {
-      const pathcheck = typeof path === 'object' ? path.path : path;
-      const { style, status, topic, url, time } = this.jobDetails(pathcheck);
+      const jobPath = typeof path === 'object' ? path.path : path;
+      const { style, status, topic, url, time } = this.jobDetails(jobPath);
       return html`
         <div 
           class="result${style}"

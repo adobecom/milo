@@ -71,7 +71,7 @@ const getErrorText = (code) => {
   return errorText[codes.indexOf(code)];
 };
 
-const jobStatus = (status, state, count) => {
+const getStatusText = (status, state, count) => {
   let code = status;
   let text = 'Working';
   let color = text.toLowerCase();
@@ -79,10 +79,15 @@ const jobStatus = (status, state, count) => {
     text = `${count}/3 Retry`;
     code = null;
   }
-  if (state === 'stopped') {
+  if (code && code !== 0) {
     const success = status === 200 || status === 204;
-    text = success ? 'Completed' : getErrorText(code);
-    color = success ? 'success' : 'error';
+    if (success) {
+      text = 'Completed';
+      color = 'success';
+    } else {
+      text = getErrorText(code);
+      color = 'error';
+    }
   }
   return { code, text, color };
 };
@@ -117,7 +122,7 @@ export {
   humanDateTime,
   PROCESS_TYPES,
   processJobResult,
-  jobStatus,
+  getStatusText,
   sticky,
   validMiloURL,
   wait,
