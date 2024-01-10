@@ -12,15 +12,16 @@ const ICONS = [
 
 const LIT_PATH_PATTERN = /^lit(\/.*)?$/;
 const ICON_PATH_PATTERN = /^@spectrum-web-components\/icon\/src\/spectrum-icon-(.*).css.js/;
+const SWC_BASE_PATH = '/libs/features/spectrum-web-components';
 
 const IGNORE_PATHS = [
   '@spectrum-web-components/modal/src/modal-wrapper.css.js',
   '@spectrum-web-components/modal/src/modal.css.js',
 ];
 
-const target = 'es2021';
+const TARGET = 'es2021';
 
-const define = { 'process.env.NODE_ENV': '"development"' };
+const DEFINE = { 'process.env.NODE_ENV': '"development"' };
 
 function rewriteImports() {
   return {
@@ -43,7 +44,7 @@ function rewriteImports() {
         if (ICON_PATH_PATTERN.test(args.path)) {
           const iconName = args.path.match(ICON_PATH_PATTERN)[1];
           return {
-            path: `/libs/features/spectrum-web-components/dist/icons/${iconName}.js`,
+            path: `${SWC_BASE_PATH}/dist/icons/${iconName}.js`,
             external: true,
           };
         }
@@ -52,7 +53,7 @@ function rewriteImports() {
           // get the first folder after @spectrum-web-components
           const [, module] = args.path.split('/');
           return {
-            path: `/libs/features/spectrum-web-components/dist/${module}.js`,
+            path: `${SWC_BASE_PATH}/dist/${module}.js`,
             external: true,
           };
         }
@@ -65,14 +66,14 @@ function rewriteImports() {
 const mods = fs.readdirSync('./src');
 
 build({
-  define,
+  define: DEFINE,
   bundle: true,
   banner: { js: BANNER },
   entryPoints: ['./src/lit.js'],
   platform: 'browser',
   format: 'esm',
   sourcemap: false,
-  target,
+  target: TARGET,
   minify: true,
   outfile: '../../deps/lit-all.min.js',
 });
@@ -80,7 +81,7 @@ build({
 mods.forEach((mod) => {
   if (mod === 'lit.js') return;
   build({
-    define,
+    define: DEFINE,
     bundle: true,
     banner: { js: BANNER },
     entryPoints: [`./src/${mod}`],
@@ -88,7 +89,7 @@ mods.forEach((mod) => {
     format: 'esm',
     sourcemap: false,
     legalComments: 'none',
-    target,
+    target: TARGET,
     minify: true,
     plugins: [rewriteImports()],
     outfile: `./dist/${mod}`,
@@ -97,7 +98,7 @@ mods.forEach((mod) => {
 
 ICONS.forEach((icon) => {
   build({
-    define,
+    define: DEFINE,
     bundle: true,
     banner: { js: BANNER },
     entryPoints: [`./node_modules/@spectrum-web-components/icon/src/spectrum-icon-${icon}.css.js/`],
@@ -105,7 +106,7 @@ ICONS.forEach((icon) => {
     format: 'esm',
     sourcemap: false,
     legalComments: 'none',
-    target,
+    target: TARGET,
     minify: true,
     outfile: `./dist/icons/${icon}.js`,
   });
