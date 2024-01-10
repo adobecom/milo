@@ -6,14 +6,18 @@
  * @property {Array.<string, iconType>} supportedPrefixTypes Supported Prefix Types
  * @property {Array.<string, iconSize>} supportedSuffixSizes Supported Suffix Sizes
  */
+
+// TODO
+// 1: update logic to parse - :add-size-m-s1: ${name-size-m-set}
+// 2: Use default to s1 set type if exists else use base.
+// 3: extend the 'sets' param to check directory
+
 const options = {
   debug: true,
   lazy: true,
   defaultDir: 'core',
-  supportedPrefixTypes: ['sI-', 'test-'],
-  // supportedPrefixTypes Cannot start with a digit,
-  // two hyphens or a hyphen followed by a number
-  supportedSuffixSizes: ['-xxs', '-xs', '-s', '-m', '-l', '-xl', '-xxl', '-initial'],
+  supportedSets: ['-s1', '-s2', '-sx', '-test'],
+  supportedSizes: ['-size-xxs', '-size-xs', '-size-s', '-size-m', '-size-l', '-size-xl', '-size-xxl', '-size-initial'],
 };
 const CACHE = {};
 
@@ -65,7 +69,7 @@ function getIconSvg(fileName, folderName, iconUrl) {
 }
 
 /**
- * @param {MiloIcon} miloIcon
+ * @param {HTMLElement} miloIcon
  * @param {string} fileName
  * @param {string} folderName
  * @param {string} iconUrl
@@ -81,7 +85,7 @@ function refreshIcon(miloIcon, fileName, folderName, iconUrl) {
       let data = iconData;
       if (folderName === 'sI') {
         // TODO: is this ok?
-        data = data.replaceAll('var(--iconFill,#6E6E6E)', 'currentColor');
+        // data = data.replaceAll('var(--iconFill,#6E6E6E)', 'currentColor');
       }
       // If we have some html, pass it along (useful for svg anim)
       if (miloIcon.defaultHTML) {
@@ -178,22 +182,20 @@ function getIconAttributes(iconName, baseUrl) {
     url: `${baseUrl}/img/icons/${options.defaultDir}/${iconName}.svg`,
   };
 
-  const prefixName = options.supportedPrefixTypes.filter((type) => iconName.startsWith(type));
-  const hasPrefix = (prefixName.length > 0);
-  if (hasPrefix) {
-    const newName = iconName.replace(prefixName, '');
-    const folderName = prefixName[0].replace('-', '');
+  const setName = options.supportedSets.filter((name) => iconName.endsWith(name));
+  if (setName.length > 0) {
+    const newName = iconName.replace(setName, '');
+    const folderName = setName[0].replace('-', '');
     attrs.type = folderName;
     attrs.name = newName;
     attrs.url = `${baseUrl}/img/icons/${folderName}/${newName}.svg`;
   }
 
-  const suffixSize = options.supportedSuffixSizes.filter((size) => iconName.endsWith(size));
-  const hasSize = (suffixSize.length > 0);
-  if (hasSize) {
+  const suffixSize = options.supportedSizes.filter((size) => iconName.includes(size));
+  if (suffixSize.length > 0) {
     const newName = attrs.name.replace(suffixSize, '');
     attrs.name = newName;
-    attrs.size = suffixSize[0].substring(1);
+    attrs.size = suffixSize[0].replace('-size-', '');
     attrs.url = `${baseUrl}/img/icons/${attrs.type}/${newName}.svg`;
   }
 
