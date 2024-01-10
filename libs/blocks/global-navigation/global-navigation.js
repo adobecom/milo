@@ -493,6 +493,7 @@ class Gnav {
       env: environment,
       locale,
       imsClientId: window.adobeid?.client_id,
+      theme: 'light',
       analyticsContext: {
         consumer: {
           name: 'adobecom',
@@ -502,9 +503,9 @@ class Gnav {
           os_version: navigator.platform,
         },
         event: { visitor_guid: visitorGuid },
+        onAnalyticsEvent,
       },
       children: getChildren(),
-      onAnalyticsEvent,
     });
 
     window.UniversalNav(getConfiguration());
