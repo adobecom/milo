@@ -493,6 +493,7 @@ class Gnav {
       env: environment,
       locale,
       imsClientId: window.adobeid?.client_id,
+      theme: 'light',
       analyticsContext: {
         consumer: {
           name: 'adobecom',
