@@ -72,6 +72,7 @@
 
 .aside .foreground.container .image {
   position: relative;
+  display: flex;
 }
 
 .aside .foreground.container > div {
@@ -82,10 +83,6 @@
 
 .aside.notification .foreground.container > div {
   flex-basis: 100%;
-}
-
-.aside .foreground.container .image {
-  display: flex;
 }
 
 .aside.inline .foreground.container .image,
@@ -330,6 +327,10 @@
 .aside.notification.extra-small .foreground.container a:not(.con-button):last-of-type {
   margin-left: var(--spacing-xs);
   color: var(--link-color);
+}
+
+.static-links .aside.notification.extra-small .foreground.container a:not(.con-button):last-of-type {
+  color: inherit;
 }
 
 .aside.notification.small .foreground.container .text a.con-button {
