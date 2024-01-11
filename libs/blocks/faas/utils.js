@@ -26,12 +26,12 @@ export const getFaasHostSubDomain = (environment) => {
   if (faasEnv === 'qa') {
     return 'qa.';
   }
-  return 'dev.';
+  return 'qa.';
 };
 
 const base = miloLibs || codeRoot;
 export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
-const faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
+const faasCurrentJS = base.includes('localhost') ? `${base}/deps/jquery.faas-current.js` : `${faasHostUrl}/faas/service/jquery.faas-current.js`;
 export const loadFaasFiles = () => {
   loadStyle(`${base}/blocks/faas/faas.css`);
   return Promise.all([
@@ -248,7 +248,7 @@ const beforeSubmitCallback = () => {
       }),
     })
       .catch((error) => {
-        console.error('AA Sandbox Error:', error);
+        window.lana.log('AA Sandbox Error:', error);
       });
   }
 };
