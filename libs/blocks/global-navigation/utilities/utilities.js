@@ -3,6 +3,12 @@ import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
 loadLana();
+const allowedOrigins = [
+  'https://www.adobe.com',
+  'https://business.adobe.com',
+  'https://blog.adobe.com',
+  'https://milo.adobe.com',
+];
 
 export const selectors = {
   globalNav: '.global-navigation',
@@ -54,19 +60,14 @@ export function toFragment(htmlStrings, ...values) {
   return fragment;
 }
 
+// TODO we might eventually want to move this to the milo core utilities
 let federatedContentRoot;
 export const getFederatedContentRoot = () => {
   if (federatedContentRoot) return federatedContentRoot;
 
   const { origin } = window.location;
-  const allowedOrigins = [
-    'https://www.adobe.com',
-    'https://business.adobe.com',
-    'https://blog.adobe.com',
-    'https://milo.adobe.com',
-  ];
 
-  federatedContentRoot = allowedOrigins.some((o) => origin === o)
+  federatedContentRoot = allowedOrigins.some((o) => origin.replace('.stage', '') === o)
     ? origin
     : 'https://www.adobe.com';
 

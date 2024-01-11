@@ -74,7 +74,7 @@ class Footer {
       .catch((e) => lanaLog({
         message: `Error fetching footer content ${url}`,
         e,
-        tags: 'errorType=error,module=gnav',
+        tags: 'errorType=error,module=global-footer',
       }));
 
     if (!this.body) return;
