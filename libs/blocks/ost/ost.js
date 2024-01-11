@@ -8,13 +8,14 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.14.1';
+const OST_VERSION = '1.14.4';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
+export const WCS_LANDSCAPE = 'PUBLISHED';
 
 /**
  * Maps Franklin page metadata to OST properties.
@@ -29,7 +30,8 @@ document.body.classList.add('tool', 'tool-ost');
 /**
  * @param {Commerce.Defaults} defaults
  */
-export const createLinkMarkup = (defaults) => (
+export const createLinkMarkup = (
+  defaults,
   offerSelectorId,
   type,
   offer,
@@ -56,14 +58,20 @@ export const createLinkMarkup = (defaults) => (
         params.set('workflowStep', workflowStep);
       }
     } else {
-      const { displayRecurrence, displayPerUnit, displayTax, forceTaxExclusive } = options;
+      const {
+        displayRecurrence,
+        displayPerUnit,
+        displayTax,
+        displayOldPrice,
+        forceTaxExclusive,
+      } = options;
       params.set('term', displayRecurrence);
       params.set('seat', displayPerUnit);
       params.set('tax', displayTax);
+      params.set('old', displayOldPrice);
       params.set('exclusive', forceTaxExclusive);
     }
-    const { location } = window;
-    return `${location.protocol + location.host}/tools/ost?${params.toString()}`;
+    return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
 
   const link = document.createElement('a');
@@ -79,9 +87,58 @@ export async function loadOstEnv() {
   const { Log, Defaults, getLocaleSettings } = await import('../../deps/commerce.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
-  const aosAccessToken = searchParameters.get('token');
-  searchParameters.delete('token');
+  const ostSearchParameters = new URLSearchParams();
+
+  const defaultPlaceholderOptions = Object.fromEntries([
+    ['term', 'displayRecurrence', 'true'],
+    ['seat', 'displayPerUnit', 'true'],
+    ['tax', 'displayTax'],
+    ['old', 'displayOldPrice'],
+  ].map(([key, targetKey, defaultValue = false]) => {
+    const value = searchParameters.get(key) ?? defaultValue;
+    searchParameters.delete(key);
+    return [targetKey, value === 'true'];
+  }));
+
+  // value inversed for legacy compatibility reasons.
+  const exclusive = !(searchParameters.get('exclusive') === 'true');
+  searchParameters.delete('exclusive');
+  defaultPlaceholderOptions.forceTaxExclusive = exclusive;
+
+  const searchOfferSelectorId = searchParameters.get('osi');
+  searchParameters.delete('osi');
+
+  [
+    ['type'],
+    ['text'],
+    ['promo', 'storedPromoOverride', true],
+    ['workflow', 'checkoutType'],
+    ['workflowStep'],
+  ].forEach(([key, targetKey, skip = false]) => {
+    const value = searchParameters.get(key);
+    if (value === null && skip) {
+      return;
+    }
+    ostSearchParameters.set(targetKey ?? key, value);
+    searchParameters.delete(key);
+  });
+
+  const workflowStep = ostSearchParameters.get('workflowStep');
+  ostSearchParameters.set('workflowStep', workflowStep?.replace('/', '_'));
+
+  let aosAccessToken = searchParameters.get('token');
+  if (aosAccessToken) {
+    sessionStorage.setItem('AOS_ACCESS_TOKEN', aosAccessToken);
+    searchParameters.delete('token');
+  } else {
+    aosAccessToken = sessionStorage.getItem('AOS_ACCESS_TOKEN');
+  }
+  const search = searchParameters.toString();
+  const newURL = `//${window.location.host}${window.location.pathname}${search ? `?${search}` : ''}`;
+  window.history.replaceState({}, null, newURL);
+
   const environment = searchParameters.get('env') ?? WCS_ENV;
+  const landscape = searchParameters.get('wcsLandscape') ?? WCS_LANDSCAPE;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
@@ -122,16 +179,44 @@ export async function loadOstEnv() {
     }
   }
 
+  const onSelect = (
+    offerSelectorId,
+    type,
+    offer,
+    options,
+    promoOverride,
+  ) => {
+    log.debug(offerSelectorId, type, offer, options, promoOverride);
+    const link = createLinkMarkup(
+      Defaults,
+      offerSelectorId,
+      type,
+      offer,
+      options,
+      promoOverride,
+    );
+
+    log.debug(`Use Link: ${link.outerHTML}`);
+    const linkBlob = new Blob([link.outerHTML], { type: 'text/html' });
+    const textBlob = new Blob([link.href], { type: 'text/plain' });
+    // eslint-disable-next-line no-undef
+    const data = [new ClipboardItem({ [linkBlob.type]: linkBlob, [textBlob.type]: textBlob })];
+    navigator.clipboard.write(data, log.debug, log.error);
+  };
+
   return {
     ...metadata,
     aosAccessToken,
     aosApiKey: AOS_API_KEY,
     checkoutClientId: CHECKOUT_CLIENT_ID,
-    createLinkMarkup: createLinkMarkup(Defaults),
+    onSelect,
     country,
     environment,
+    landscape,
     language,
-    searchParameters,
+    searchParameters: ostSearchParameters,
+    searchOfferSelectorId,
+    defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
   };

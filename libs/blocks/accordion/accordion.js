@@ -1,6 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import { processTrackingLabels } from '../../martech/analytics.js';
+import { processTrackingLabels } from '../../martech/attributes.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 const mediaCollection = {};
@@ -74,11 +74,11 @@ function createItem(accordion, id, heading, num, edit) {
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
   const hTag = heading.querySelector('h1, h2, h3, h4, h5, h6');
-  const analyticsString = `open-${num}|${processTrackingLabels(heading.textContent)}`;
+  const analyticsString = `open-${num}--${processTrackingLabels(heading.textContent)}`;
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
-    class: 'accordion-trigger',
+    class: 'accordion-trigger tracking-header',
     'aria-expanded': 'false',
     'aria-controls': panelId,
     'daa-ll': analyticsString,
@@ -135,7 +135,14 @@ export default function init(el) {
 
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
   const items = [...headings].map(
-    (heading, idx) => createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia),
+    (heading, idx) => createItem(
+      accordion,
+      id,
+      heading,
+      idx + 1,
+      isEditorial,
+      accordionMedia,
+    ),
   );
 
   if (isSeo) { setSEO(items); }

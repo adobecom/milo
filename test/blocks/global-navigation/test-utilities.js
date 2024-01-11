@@ -7,7 +7,9 @@ import { getLocale, setConfig, loadStyle } from '../../../libs/utils/utils.js';
 import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
+import largeMenuActiveMock from './mocks/large-menu-active.plain.js';
 import largeMenuWideColumnMock from './mocks/large-menu-wide-column.plain.js';
+import largeMenuCrossCloud from './mocks/large-menu-cross-cloud.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import correctPromoFragmentMock from './mocks/correctPromoFragment.plain.js';
 import { isElementVisible, selectors as keyboardSelectors } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
@@ -39,6 +41,7 @@ export const selectors = {
   breadcrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',
   imsSignIn: '.feds-signIn',
+  crossCloudMenuWrapper: '.feds-crossCloudMenu-wrapper',
 };
 
 export const viewports = {
@@ -129,6 +132,8 @@ export const createFullGlobalNavigation = async ({
     if (url.includes('profile')) { return mockRes({ payload: defaultProfile }); }
     if (url.includes('placeholders')) { return mockRes({ payload: placeholders || defaultPlaceholders }); }
     if (url.endsWith('large-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
+    if (url.endsWith('large-menu-cross-cloud.plain.html')) { return mockRes({ payload: largeMenuCrossCloud }); }
+    if (url.endsWith('large-menu-active.plain.html')) { return mockRes({ payload: largeMenuActiveMock }); }
     if (url.endsWith('large-menu-wide-column.plain.html')) { return mockRes({ payload: largeMenuWideColumnMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }

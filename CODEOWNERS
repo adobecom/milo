@@ -9,39 +9,48 @@
 /libs/features/title-append/ @hparra
 /libs/martech/ @adobecom/admins
 /libs/scripts/ @adobecom/admins
+/libs/scripts/taxonomy.js @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
 /libs/utils/ @adobecom/admins
 
 # Milo Blocks (alphabetical order)
 /libs/blocks/accordion/ @fullcolorcoder @ryanmparrish
+/libs/blocks/article-feed/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
+/libs/blocks/article-header/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
 /libs/blocks/aside/ @Sartxi
 /libs/blocks/caas/ @chrischrischris
 /libs/blocks/caas-config/ @chrischrischris
 /libs/blocks/carousel/ @rgclayton
-/libs/blocks/chart/ @meganthecoder @Brandon32 @JasonHowellSlavin @sanjayms01
+/libs/blocks/chart/ @meganthecoder @Brandon32 @JasonHowellSlavin
 /libs/blocks/commerce/ @Axelcureno @VKniaz
 /libs/blocks/faas/ @seanchoi-dev
 /libs/blocks/faas-config/ @seanchoi-dev
+/libs/blocks/featured-article/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
+/libs/blocks/form/ @elan-tbx @rgclayton
 /libs/blocks/fragment-personalization/ @chrischrischris
 /libs/blocks/global-footer/ @overmyheadandbody @mokimo @narcis-radu
 /libs/blocks/global-navigation/ @overmyheadandbody @mokimo @narcis-radu
 /libs/blocks/how-to/ @fullcolorcoder @ryanmparrish
 /libs/blocks/icon-block/ @elan-tbx
 /libs/blocks/local-nav/ @seanchoi-dev
-/libs/blocks/marketo/ @Brandon32
-/libs/blocks/marketo-config/ @Brandon32
+/libs/blocks/marketo/ @Brandon32 @meganthecoder @JasonHowellSlavin
+/libs/blocks/marketo-config/ @Brandon32 @meganthecoder @JasonHowellSlavin
 /libs/blocks/marquee/ @ryanmparrish @Sartxi @auniverseaway
 /libs/blocks/media/ @ryanmparrish
 /libs/blocks/merch/ @3ch023 @honstar @VKniaz @npeltier @Axelcureno
-/libs/blocks/merch-card/ @VKniaz @Axelcureno @ryanmparrish
+/libs/blocks/merch-card/ @VKniaz @Axelcureno @ryanmparrish @yesil @3ch023
+/libs/blocks/merch-offers/ @yesil @vladen
 /libs/blocks/ost/ @Axelcureno @3ch023 @honstar @VKniaz @vladen @yesil @npeltier
-/libs/blocks/pdf-vewer/ @sanjayms01
+/libs/blocks/pdf-vewer/ @meganthecoder @JasonHowellSlavin @Brandon32
 /libs/blocks/quiz/ @colloyd @sabyamon @fullcolorcoder @JackySun9 @elaineskpt @echampio-at-adobe
+/libs/blocks/quiz-marquee/ @ryanmparrish
 /libs/blocks/quiz-results/ @colloyd @sabyamon @fullcolorcoder @JackySun9 @elaineskpt @echampio-at-adobe
 /libs/blocks/quote/ @ryanmparrish
+/libs/blocks/recommended-articles/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
 /libs/blocks/review/ @nkthakur48 @chrischrischris @auniverseaway
-/libs/blocks/table-of-contents/ @Brandon32
+/libs/blocks/table-of-contents/ @Brandon32 @meganthecoder @JasonHowellSlavin
 /libs/blocks/tabs/ @ryanmparrish
-/libs/blocks/tag-selector/ @meganthecoder
+/libs/blocks/tag-selector/ @meganthecoder @JasonHowellSlavin @Brandon32
+/libs/blocks/tags/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
 /libs/blocks/text/ @ryanmparrish
 /libs/blocks/video-metadata/ @hparra
 /libs/blocks/z-pattern/ @ryanmparrish

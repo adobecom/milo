@@ -17,10 +17,9 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function handleHeading(headingCols) {
+function handleHeading(headingCols, isPriceBottom) {
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
-
     if (!col.innerHTML) {
       col.classList.add('hidden');
       return;
@@ -39,13 +38,24 @@ function handleHeading(headingCols) {
         textStartIndex += 1;
       }
       elements[textStartIndex]?.classList.add('tracking-header');
+      const pricingElem = elements[textStartIndex + 1];
+      let bodyElem = elements[textStartIndex + 2];
 
-      if (elements[textStartIndex + 1]) {
-        elements[textStartIndex + 1].classList.add('pricing');
+      if (pricingElem) {
+        pricingElem.classList.add('pricing');
+        if (isPriceBottom) {
+          pricingElem.parentNode.insertBefore(
+            elements[textStartIndex + 2],
+            elements[textStartIndex + 1],
+          );
+          bodyElem = elements[textStartIndex + 1];
+        }
+      }
+      if (bodyElem) {
+        bodyElem.classList.add('body');
       }
 
       decorateButtons(col, 'button-l');
-
       const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
       col.append(buttonsWrapper);
       const buttons = col.querySelectorAll('.con-button');
@@ -54,6 +64,16 @@ function handleHeading(headingCols) {
         const btnWrapper = btn.closest('P');
         buttonsWrapper.append(btnWrapper);
       });
+
+      const row1 = document.createElement('div');
+      const row2 = document.createElement('div');
+      const row1LastIdx = isPriceBottom ? 3 : 4;
+      [...elements].forEach((e, idx) => {
+        if (idx < row1LastIdx) row1.appendChild(e);
+        else row2.appendChild(e);
+      });
+      col.innerHTML = '';
+      col.append(row1, row2);
     }
   });
 }
@@ -64,6 +84,7 @@ function handleHighlight(table) {
   const firstRowCols = firstRow.querySelectorAll('.col');
   const secondRow = table.querySelector('.row-2');
   const secondRowCols = secondRow.querySelectorAll('.col');
+  const isPriceBottom = table.classList.contains('pricing-bottom');
   let headingCols = null;
 
   if (isHighlightTable) {
@@ -92,7 +113,7 @@ function handleHighlight(table) {
     firstRow.classList.add('row-heading');
   }
 
-  handleHeading(headingCols);
+  handleHeading(headingCols, isPriceBottom);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 

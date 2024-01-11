@@ -33,15 +33,15 @@ describe('Accordion', () => {
     // handleClick()
     const firstAccordionButton = document.body.querySelector('dt button');
     expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('false');
-    expect(firstAccordionButton.getAttribute('daa-ll')).to.equal('open-1|What if my dough did');
+    expect(firstAccordionButton.getAttribute('daa-ll')).to.equal('open-1--What if my dough didn t rise');
     firstAccordionButton.click();
     expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('true');
-    expect(firstAccordionButton.getAttribute('daa-ll')).to.equal('close-1|What if my dough did');
+    expect(firstAccordionButton.getAttribute('daa-ll')).to.equal('close-1--What if my dough didn t rise');
 
     // handleClick() => expanded = true.
     firstAccordionButton.click();
     expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('false');
-    expect(firstAccordionButton.getAttribute('daa-ll')).to.equal('open-1|What if my dough did');
+    expect(firstAccordionButton.getAttribute('daa-ll')).to.equal('open-1--What if my dough didn t rise');
 
     // ensure <h1> is kept
     expect(firstAccordionButton.parentElement.tagName).to.equal('H1');
