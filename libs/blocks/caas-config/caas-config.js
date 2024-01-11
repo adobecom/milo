@@ -185,6 +185,7 @@ const defaultOptions = {
     milo: 'Milo',
     northstar: 'Northstar',
     workfront: 'Workfront',
+    bacomblog: 'Bacom Blog',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
   titleHeadingLevel: {
