@@ -16,9 +16,9 @@ export const PERSONALIZATION_TAGS = {
   windows: () => navigator.userAgent.includes('Windows'),
   mac: () => navigator.userAgent.includes('Macintosh'),
   'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
-  phone: () => PERSONALIZATION_TAGS.mobile() && PHONE_SIZE,
-  tablet: () => PERSONALIZATION_TAGS.mobile() && !PHONE_SIZE,
-  desktop: () => !PERSONALIZATION_TAGS.mobile(),
+  phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
+  tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
+  desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
   loggedout: () => !window.adobeIMS?.isSignedInUser(),
   loggedin: () => !!window.adobeIMS?.isSignedInUser(),
 };
