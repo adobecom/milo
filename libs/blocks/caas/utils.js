@@ -520,16 +520,8 @@ const getCardsString = async (cards = []) => {
 };
 
 export const getConfig = async (originalState, strs = {}) => {
-  const getOriginSource = function(state) {
-    const isArray = Array.isArray(state.source);
-    if(isArray && state.source.join(',') === "bacomblog"){
-      return "bacom-blog";
-    }
-    return isArray ? state.source.join(',') : state.source;
-  }
-
   const state = addMissingStateProps(originalState);
-  const originSelection = getOriginSource(state);
+  const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const { country, language, locales } = getCountryAndLang(state);
   const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
