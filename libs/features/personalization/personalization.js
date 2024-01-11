@@ -311,7 +311,11 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
   if (!name) return false;
-  const searchParamVal = PAGE_URL.searchParams.get(name).toLowerCase();
+  const params = new URLSearchParams(PAGE_URL.search);
+  const newParams = new URLSearchParams(
+    Array.from(params, ([key, value]) => [key.toLowerCase(), value]),
+  );
+  const searchParamVal = newParams.get(name.toLowerCase())?.toLowerCase();
   if (searchParamVal !== null) {
     if (val) return val === searchParamVal;
     return true; // if no val is set, just check for existence of param
