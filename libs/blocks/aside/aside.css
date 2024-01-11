@@ -1091,6 +1091,8 @@
 
   .aside.promobar.popup {
     border-radius: var(--spacing-xl);
+    width: 85%;
+    max-width: 1600px;
   }
 
   .aside.promobar.popup .foreground.container .promo-text {
