@@ -110,20 +110,54 @@ describe('Quiz', () => {
     expect(analyticsDataForBtnQCat).to.equal('Filters|cc:app-reco|q-category/photo');
   });
 
+  it('Checking analytics data for local storage with null input', async () => {
+    const analyticsConfig = {
+      answers,
+      umbrellaProduct: null,
+      primaryProducts: null,
+      analyticsType: 'cc:app-reco',
+      analyticsQuiz: 'uarv3',
+    };
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(analyticsConfig);
+    expect(analyticsDataForBtnQCat).to.be.not.empty;
+    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
+  });
+
   it('Checking analytics data for local storage', async () => {
-    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers, '', []);
+    const analyticsConfig = {
+      answers,
+      umbrellaProduct: '',
+      primaryProducts: [],
+      analyticsType: 'cc:app-reco',
+      analyticsQuiz: 'uarv3',
+    };
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(analyticsConfig);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
     expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
 
   it('Checking analytics data for local storage with umbrella product', async () => {
-    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers, 'cc-ind', []);
+    const analyticsConfig = {
+      answers,
+      umbrellaProduct: 'cc-ind',
+      primaryProducts: [],
+      analyticsType: 'cc:app-reco',
+      analyticsQuiz: 'uarv3',
+    };
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(analyticsConfig);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
     expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=cc-ind&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
 
   it('Checking analytics data for local storage with other products', async () => {
-    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers, '', ['ps-ind', 'ai-ind']);
+    const analyticsConfig = {
+      answers,
+      umbrellaProduct: '',
+      primaryProducts: ['ps-ind', 'ai-ind'],
+      analyticsType: 'cc:app-reco',
+      analyticsQuiz: 'uarv3',
+    };
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(analyticsConfig);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
     expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=ps-ind|ai-ind&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
@@ -157,10 +191,9 @@ describe('Quiz', () => {
   });
 
   it('Testing redirect url', async () => {
-    const primaryProducts = ['express'];
-    const structuredFrags = getRedirectUrl('https://mockdata/path/to/quiz/uar-results', primaryProducts);
-    expect(structuredFrags).to.be.an('string');
-    expect(structuredFrags).to.include('express');
+    const redirectUrl = getRedirectUrl('https://mockdata/path/to/quiz/uar-results');
+    expect(redirectUrl).to.be.an('string');
+    expect(redirectUrl).to.include('cc-quiz-en-US');
   });
 
   it('Testing result flow with invalid selections', async () => {
