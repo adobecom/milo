@@ -49,6 +49,7 @@ module.exports = {
   ignorePatterns: [
     '/libs/deps/*',
     '/tools/loc/*',
+    '/libs/features/spectrum-web-components/*',
   ],
   plugins: [
     'chai-friendly',
