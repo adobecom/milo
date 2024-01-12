@@ -369,16 +369,17 @@ const init = async (el) => {
   }
   merchCard.appendChild(footer);
 
-  const quantitySelect = createQuantitySelect(el);
-
-  const offerSelection = cardType === 'plans' ? el.querySelector('ul') : null;
-  if (offerSelection) {
-    const { initOfferSelection } = await import('./merch-offer-select.js');
-    initOfferSelection(merchCard, offerSelection, quantitySelect);
-  }
-  if (quantitySelect) {
-    const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
-    bodySlot.append(quantitySelect);
+  if (cardType === 'plans') {
+    const quantitySelect = createQuantitySelect(el);
+    const offerSelection = el.querySelector('ul');
+    if (offerSelection) {
+      const { initOfferSelection } = await import('./merch-offer-select.js');
+      initOfferSelection(merchCard, offerSelection, quantitySelect);
+    }
+    if (quantitySelect) {
+      const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+      bodySlot.append(quantitySelect);
+    }
   }
 
   decorateBlockHrs(merchCard);
