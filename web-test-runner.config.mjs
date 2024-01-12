@@ -27,6 +27,7 @@ export default {
       '**/test/**',
       '**/deps/**',
       '**/imslib/imslib.min.js',
+      '**/features/spectrum-web-components/**',
       // TODO: folders below need to have tests written for 100% coverage
       '**/ui/controls/**',
       '**/blocks/library-config/**',

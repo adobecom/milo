@@ -3,20 +3,27 @@
 import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
 import { ENTITLEMENT_MAP } from './entitlements.js';
 
-/* c8 ignore start */
+/* c20 ignore start */
+const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
-  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
+  firefox: () => navigator.userAgent.includes('Firefox'),
+  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
+  edge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  windows: () => navigator.userAgent.includes('Windows'),
+  mac: () => navigator.userAgent.includes('Macintosh'),
+  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
+  tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
+  desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
   loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => window.adobeIMS?.isSignedInUser(),
-  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
-  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
+  loggedin: () => !!window.adobeIMS?.isSignedInUser(),
 };
 const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
-/* c8 ignore stop */
+/* c20 ignore stop */
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
