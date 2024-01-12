@@ -17,11 +17,17 @@ describe('Icon Suppprt', () => {
   before(async () => {
     icons = document.querySelectorAll('span.icon');
     await loadIcons(icons, config);
+    await loadIcons(icons, config); // Test duplicate icon not created if run twice
   });
 
   it('Replaces span.icon', async () => {
     const selector = icons[0].querySelector(':scope svg');
     expect(selector).to.exist;
+  });
+
+  it('No duplicate icon', async () => {
+    const svgs = icons[0].querySelectorAll(':scope svg');
+    expect(svgs.length).to.equal(1);
   });
 
   it('Creates default tooltip', async () => {
