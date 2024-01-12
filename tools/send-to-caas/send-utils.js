@@ -174,7 +174,7 @@ const getDateProp = (dateStr, errorMsg) => {
 };
 
 const processRepoForFloodgate = (repo, fgColor) => {
-  if (repo && fgColor) {
+  if (repo && fgColor && fgColor !== 'default') {
     return repo.slice(0, repo.lastIndexOf(`-${fgColor}`));
   }
   return repo;
@@ -184,7 +184,13 @@ const getOrigin = (fgColor) => {
   const { project, repo } = getConfig();
   const origin = project || processRepoForFloodgate(repo, fgColor);
 
-  if (origin) return origin;
+  const mappings = {
+    cc: 'hawks',
+    dc: 'doccloud',
+  };
+  if (mappings[origin] || origin) {
+    return mappings[origin] || origin;
+  }
 
   if (window.location.hostname.endsWith('.hlx.page')) {
     const [, singlePageRepo] = window.location.hostname.split('.')[0].split('--');

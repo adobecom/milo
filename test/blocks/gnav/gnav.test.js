@@ -20,6 +20,19 @@ const config = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } }, imsClien
 setConfig(config);
 
 describe('Gnav', () => {
+  before(() => {
+    window.adobeid = {
+      client_id: 'milo',
+      scope: 'gnav',
+    };
+    window.adobeIMS = { getAccessToken: () => false, isSignedInUser: () => false };
+  });
+
+  after(() => {
+    delete window.adobeid;
+    delete window.adobeIMS;
+  });
+
   beforeEach(() => {
     sinon.spy(console, 'log');
   });
@@ -30,6 +43,7 @@ describe('Gnav', () => {
 
   it('test wrong gnav', async () => {
     gnav = await mod.default(document.querySelector('header'));
+    window.adobeid.onReady();
     expect(gnav).to.be.not.null;
   });
 
@@ -158,6 +172,11 @@ describe('Gnav', () => {
 
 describe('Localized Gnav', () => {
   before(async () => {
+    window.adobeid = {
+      client_id: 'milo',
+      scope: 'gnav',
+    };
+    window.adobeIMS = { getAccessToken: () => false, isSignedInUser: () => false };
     // Load Localized Gnav
     await loadDefaultHtml();
     document.head.getElementsByTagName('meta')[0].setAttribute('content', '/test/blocks/gnav/mocks/simple-gnav');
@@ -173,6 +192,8 @@ describe('Localized Gnav', () => {
     setConfig(config);
     await loadDefaultHtml();
     gnav = await mod.default(document.querySelector('header'));
+    delete window.adobeid;
+    delete window.adobeIMS;
   });
 
   it('Test Gnav Localized Links', async () => {

@@ -65,7 +65,7 @@ export default `<div>
           Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas
           porttitor congue massa.
         </p>
-        <p><a href="https://adobe.com/">Check it out</a></p>
+        <p><strong><a href="https://adobe.com/">Check it out</a></strong></p>
       </div>
     </div>
     <div>
@@ -282,4 +282,37 @@ export default `<div>
       <div><a href="https://www.adobe.com/">Adobe</a></div>
     </div>
   </div>
-</div>`;
+</div>
+        <div class="martech-attribute-metadata">
+          <div>
+            <div>Free trial</div>
+            <div>Free trial</div>
+          </div>
+          <div>
+            <div>Your go-to for Instagram-gorgeous graphics.</div>
+            <div>Your go-to for Instagram-gorgeous graphics.</div>
+          </div>
+          <div>
+            <div>
+              <p>Everyone can.</p>
+              <p>Photoshop.</p>
+            </div>
+            <div>Everyone can.<br>Photoshop.</div>
+          </div>
+          <div>
+            <div>Buy now</div>
+            <div>Buy now</div>
+          </div>
+          <div>
+            <div>How do I compress a PDF without losing quality?</div>
+            <div>How do I compress a PDF without losing quality?</div>
+          </div>
+          <div>
+            <div>What size PDFs can I compress?</div>
+            <div>What size PDFs can I compress?</div>
+          </div>
+          <div>
+            <div>How do I check my PDF file size?</div>
+            <div>How do I check my PDF file size?</div>
+          </div>
+        </div>`;

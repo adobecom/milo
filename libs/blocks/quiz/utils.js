@@ -7,7 +7,7 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
-let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
+let configPath; let quizKey; let shortQuiz; let analyticsType; let analyticsQuiz; let metaData;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
@@ -33,11 +33,12 @@ async function fetchContentOfFile(path) {
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getMetadata(rootElement);
+  shortQuiz = metaData['short-quiz']?.text === 'true';
   configPath = initConfigPath(metaData);
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
-  return { configPath, quizKey, analyticsType, analyticsQuiz };
+  return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
 export const getQuizData = async () => {
@@ -90,9 +91,14 @@ export const getUrlParams = () => {
   return params;
 };
 
-export const handleResultFlow = async (answers = [], mlFlowData = {}) => {
+export const defaultRedirect = (url) => {
+  window.location.href = url;
+};
+
+export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect, mlFlowData = {}) => {
   const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers, mlFlowData);
-  window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  redirectFunc(redirectUrl);
 };
 
 /**
@@ -113,6 +119,16 @@ export const findAndStoreResultData = async (answers = [], mlFlowData = {}) => {
     primaryProductCodes = resultData.primary;
     secondaryProductCodes = resultData.secondary;
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result'];
+    storeResultInLocalStorage(
+      answers,
+      resultData,
+      resultResources,
+      primaryProductCodes,
+      secondaryProductCodes,
+      umbrellaProduct,
+    );
+  } else {
+    window.lana?.log(`ERROR: No results found for ${answers}`);
   }
 
   storeResultInLocalStorage(
@@ -139,9 +155,9 @@ export const storeResultInLocalStorage = (
   umbrellaProduct,
   mlFlowData,
 ) => {
-  const nestedFragsPrimary = resultData.matchedResults[0]['nested-fragments-primary'];
-  const nestedFragsSecondary = resultData.matchedResults[0]['nested-fragments-secondary'];
-  const structureFrags = resultData.matchedResults[0]['basic-fragments'];
+  const nestedFragsPrimary = resultData?.matchedResults?.[0]?.['nested-fragments-primary'] || '';
+  const nestedFragsSecondary = resultData?.matchedResults?.[0]?.['nested-fragments-secondary'] || '';
+  const structureFrags = resultData?.matchedResults?.[0]?.['basic-fragments'] || '';
 
   const structureFragsArray = structureFrags?.split(',');
   const nestedFragsPrimaryArray = nestedFragsPrimary?.split(',');

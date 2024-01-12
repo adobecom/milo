@@ -2,10 +2,13 @@
  * The parsing of these styles takes longer than the load event.
  * This style is thus needed to unhide to prevent FOUC.
  *
- * Any updates to the dep must also contain this manual unset.
+ * Any updates to the dep must also contain these manual updates.
  **/
 .milo-card-section {
   visibility: unset;
+}
+main .consonant-Wrapper {
+  font-family: var(--body-font-family);
 }
 /*!
  * Chimera UI Libraries - Build 5/8/2023, 09:49:36
