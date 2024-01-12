@@ -240,20 +240,19 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
 };
 
 /**
- * Normalizes the values of the metadata keys in the metadata table, cleaning them up
- * and removing all but alphanumeric characters in preparation for getMetadata();
+ * Normalizes the metadata keys in the metadata object,
+ * cleaning them up and removing all but alphanumeric characters
  */
-const normalizeKeys = (el) => {
-  const metadata = [...el.childNodes];
-  for (const row of metadata) {
-    if (row.children) {
-      let key = row.children[0].textContent;
-      if (key) {
-        key = key.match(/[a-zA-Z0-9]/g).join('');
-        row.children[0].innerHTML = key;
-      }
+const normalizeKeys = (data) => {
+  const keys = Object.keys(data);
+  for (const key of keys) {
+    const newKey = key.match(/[a-zA-Z0-9]/g).join('');
+    if (key !== newKey) {
+      data[newKey] = data[key];
+      delete data[key];
     }
   }
+  return data;
 };
 
 export const getRedirectUrl = (destinationPage) => {
@@ -483,7 +482,4 @@ export const getAnalyticsDataForLocalStorage = (config) => {
 
 export const isValidUrl = (url) => VALID_URL_RE.test(url);
 
-export const getNormalizedMetadata = (el) => {
-  normalizeKeys(el);
-  return getMetadata(el);
-};
+export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));
