@@ -407,6 +407,12 @@ export async function getPersConfig(info) {
   if (!persData) return null;
   const config = parseConfig(persData);
 
+  if (!config) {
+    /* c8 ignore next 3 */
+    console.log('Error loading personalization config: ', name || manifestPath);
+    return null;
+  }
+
   const infoTab = manifestInfo || data?.info?.data;
   config.manifestType = infoTab
     ?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase()
@@ -415,12 +421,6 @@ export async function getPersConfig(info) {
   config.manifestOverrideName = infoTab
     ?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')
     ?.value?.toLowerCase();
-
-  if (!config) {
-    /* c8 ignore next 3 */
-    console.log('Error loading personalization config: ', name || manifestPath);
-    return null;
-  }
 
   const selectedVariantName = await getPersonalizationVariant(
     manifestPath,
