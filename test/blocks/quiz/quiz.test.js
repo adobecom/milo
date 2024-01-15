@@ -178,10 +178,10 @@ describe('Quiz URL Parameter Tests', () => {
     replaceStateSpy.restore();
   });
 
-  it('should redirect to results page with results parameter', async () => {
+  it('should redirect to results page with quizKey parameter', async () => {
     const redirectStub = sinon.stub();
     await handleResultFlow(test, redirectStub);
-    const expectedUrl = '/path/to/result?primary=&quizKey=cc-quiz-en-US';
+    const expectedUrl = '/path/to/result?quizKey=cc-quiz-en-US';
     sinon.assert.calledWith(redirectStub, expectedUrl);
   });
 });
