@@ -15,6 +15,10 @@ span.placeholder-resolved[data-template="strikethrough"], span.price.price-strik
   visibility: inherit;
 }
 
+a[is='checkout-link'].loading-entitlements > span {
+  opacity: 0;
+}
+
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";

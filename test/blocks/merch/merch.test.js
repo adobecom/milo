@@ -7,17 +7,29 @@ import merch, {
   PRICE_TEMPLATE_STRIKETHROUGH,
   buildCta,
   getCheckoutContext,
+  handleEntitlements,
+  loadEntitlements,
   priceLiteralsURL,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
+import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
+
+const ENTITLEMENTS_METADATA = {
+  data: [{
+    'Product Arrangement Code': 'phsp_direct_individual',
+    CTA: 'Download',
+    Target: 'https://helpx.adobe.com/download-install.html',
+  }],
+};
 
 const config = {
   codeRoot: '/libs',
   commerce: { priceLiteralsURL },
   env: { name: 'prod' },
+  imsClientId: 'test_client_id',
 };
 
 /**
@@ -41,6 +53,9 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
 };
 
 describe('Merch Block', () => {
+  let setEntitlementsMetadata;
+  let setSubscriptionsData;
+
   after(async () => {
     delete window.lana;
     unmockFetch();
@@ -53,6 +68,8 @@ describe('Merch Block', () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     await mockFetch();
     setConfig(config);
+    ({ setEntitlementsMetadata, setSubscriptionsData } = await mockFetch());
+    await mockIms('CH');
   });
 
   beforeEach(async () => {
@@ -60,6 +77,11 @@ describe('Merch Block', () => {
     await init(() => config, true);
     Log.reset();
     Log.use(Log.Plugins.quietFilter);
+  });
+
+  afterEach(() => {
+    setEntitlementsMetadata();
+    setSubscriptionsData();
   });
 
   it('does not decorate merch with bad content', async () => {
@@ -323,6 +345,39 @@ describe('Merch Block', () => {
       const el = document.createElement('a');
       const params = new URLSearchParams();
       expect(await buildCta(el, params)).to.be.null;
+    });
+  });
+
+  describe('function "handleEntitlements"', () => {
+    it('updates CTA text to Download', async () => {
+      mockIms();
+      getUserEntitlements(); // if logged out, entitlements cache will be cleared.
+      mockIms('US');
+      setEntitlementsMetadata(ENTITLEMENTS_METADATA);
+      setSubscriptionsData([
+        {
+          offer: { product_arrangement_code: 'phsp_direct_individual' },
+          product_arrangement: {
+            code: 'phsp_direct_individual',
+            family: 'PHOTOSHOP',
+          },
+        },
+      ]);
+      const cta1 = await merch(document.querySelector('.merch.cta.download'));
+      await cta1.onceSettled();
+      handleEntitlements(cta1, loadEntitlements());
+      // wait 10ms
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+      const [{ CTA, Target }] = ENTITLEMENTS_METADATA.data;
+      expect(cta1.textContent).to.equal(CTA);
+      expect(cta1.href).to.equal(Target);
+
+      const cta2 = await merch(document.querySelector('.merch.cta.no-entitlement-check'));
+      await cta2.onceSettled();
+      expect(cta2.textContent).to.equal('Buy Now');
+      expect(cta2.href).to.not.equal(Target);
     });
   });
 });

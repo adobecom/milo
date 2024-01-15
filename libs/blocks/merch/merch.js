@@ -1,11 +1,16 @@
-import { getConfig, loadScript } from '../../utils/utils.js';
+import { getConfig, loadScript, loadIms } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
+export const entitlementsURL = 'https://milo.adobe.com/libs/commerce/entitlements.json?limit=2000';
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
+
+const TITLE_PRODUCT_ARRANGEMENT_CODE = 'Product Arrangement Code';
+const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 export function polyfills() {
   /* c8 ignore start */
@@ -73,12 +78,15 @@ export async function getCheckoutContext(el, params) {
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
+  const entitlements = params?.get('entitlements');
+  const checkEntitlements = entitlements === '1' || entitlements == null;
   return {
     ...context,
     checkoutClientId,
     checkoutWorkflow,
     checkoutWorkflowStep,
     checkoutMarketSegment,
+    checkEntitlements,
   };
 }
 
@@ -119,17 +127,67 @@ export async function getPriceContext(el, params) {
   };
 }
 
+let loadEntitlementsPromise;
+
+export async function loadEntitlements() {
+  await loadIms();
+  if (!window.adobeIMS?.isSignedInUser?.()) return Promise.resolve([{}, {}]);
+  const [{ default: getUserEntitlements },
+    mappings] = await Promise.all([
+    import('../global-navigation/utilities/getUserEntitlements.js'),
+    fetch(entitlementsURL),
+  ]);
+  const entitlements = await getUserEntitlements();
+  const entitlementsMetadata = await mappings.json();
+  return [entitlements, entitlementsMetadata];
+}
+
+export async function handleEntitlements(cta, promise) {
+  try {
+    const [{ arrangement_codes: aCodes }, entitlementsMappings] = await promise;
+    if (aCodes !== undefined) {
+      await cta.onceSettled();
+      const { value: [{ productArrangementCode }] } = cta;
+      if (aCodes[productArrangementCode] === true) {
+        const mapping = entitlementsMappings.data
+          ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
+        if (!mapping) return;
+        cta.firstElementChild.innerHTML = (await replaceKey(mapping.CTA, getConfig()))
+         || cta.firstElementChild.innerHTML;
+        cta.href = mapping.Target;
+      }
+    }
+  } catch {
+    // ignore
+  } finally {
+    cta.classList.remove(LOADING_ENTITLEMENTS);
+  }
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
+  const { checkEntitlements } = context;
+  if (!checkEntitlements) {
+    context.unwrap = true;
+  }
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
   cta.classList.add('con-button');
   cta.classList.toggle('button-l', large);
   cta.classList.toggle('blue', strong);
+
+  if (checkEntitlements) {
+    cta.classList.add(LOADING_ENTITLEMENTS);
+    if (!loadEntitlementsPromise) {
+      loadEntitlementsPromise = loadEntitlements();
+    }
+    handleEntitlements(cta, loadEntitlementsPromise);
+  }
+
   return cta;
 }
 
