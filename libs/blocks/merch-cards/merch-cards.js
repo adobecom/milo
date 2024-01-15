@@ -81,7 +81,6 @@ async function initMerchCards(config, type, filtered, el, preferences) {
     fail(el, err);
   }
 
-  // TODO add aditional parameters.
   const cards = `<div>${cardsData.data.map(({ cardContent }) => cardContent).join('\n')}</div>`;
   const fragment = document.createRange().createContextualFragment(cards);
   const cardsRoot = fragment.firstElementChild;
