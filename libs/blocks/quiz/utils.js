@@ -245,14 +245,16 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
  */
 const normalizeKeys = (data) => {
   const keys = Object.keys(data);
+  const cleanData = {};
   for (const key of keys) {
     const newKey = key.match(/[a-zA-Z0-9]/g).join('');
     if (key !== newKey) {
-      data[newKey] = data[key];
-      delete data[key];
+      cleanData[newKey] = data[key];
+    } else {
+      cleanData[key] = data[key];
     }
   }
-  return data;
+  return cleanData;
 };
 
 export const getRedirectUrl = (destinationPage) => {
