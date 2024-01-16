@@ -154,6 +154,15 @@
       "url": "https://milo.adobe.com/tools/faas",
       "isPalette": false,
       "includePaths": [ "**.docx**"]
+    },
+    {
+      "containerId": "tools",
+      "id": "martech-metadata-generator",
+      "title": "Martech Metadata Generator",
+      "environments": [ "edit" ],
+      "url": "/tools/martech-metadata-generator",
+      "isPalette": false,
+      "includePaths": [ "**.docx**" ]
     }
   ]
 }
