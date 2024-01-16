@@ -1,7 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { loadMnemonicList } from '../../../libs/blocks/marquee/marquee.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
@@ -103,6 +105,34 @@ describe('marquee', () => {
       const marquee = document.getElementById('using-svgs');
       init(marquee);
       expect(marquee.querySelector('.icon-area-multiple')).to.exist;
+    });
+  });
+
+  describe('Dynamic import of mnemonic-list.js', () => {
+    let log;
+    let decorateMnemonicList;
+    let dynamicImport;
+    let foreground;
+
+    beforeEach(() => {
+      log = sinon.fake();
+      window.lana = { log };
+      decorateMnemonicList = sinon.fake();
+      dynamicImport = sinon.stub();
+      foreground = document.getElementById('foreground');
+    });
+
+    it('should call decorateMnemonicList if the module is successfully imported', async () => {
+      dynamicImport.resolves({ decorateMnemonicList });
+      await loadMnemonicList(dynamicImport, decorateMnemonicList, foreground);
+      expect(decorateMnemonicList.calledOnceWith(foreground)).to.be.true;
+    });
+
+    it('should log an error if the module fails to import', async () => {
+      const error = new Error('Failed to load module');
+      dynamicImport.rejects(error);
+      await loadMnemonicList(dynamicImport, decorateMnemonicList, foreground);
+      expect(log.calledOnceWith(`Failed to load mnemonic marquee module: ${error}`)).to.be.true;
     });
   });
 

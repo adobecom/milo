@@ -3,7 +3,7 @@
  */
 
 import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
@@ -64,6 +64,21 @@ const decorateImage = (media) => {
   }
 };
 
+export async function dynamicImport(path) {
+  return import(path);
+}
+
+export async function loadMnemonicList(foreground) {
+  try {
+    await dynamicImport('../mnemonic-list/mnemonic-list.js')
+      .then((module) => {
+        module.decorateMnemonicList(foreground);
+      });
+  } catch (err) {
+    window.lana?.log(`Failed to load mnemonic marquee module: ${err}`);
+  }
+}
+
 export default async function init(el) {
   const excDark = ['light', 'quiet'];
   if (!excDark.some((s) => el.classList.contains(s))) el.classList.add('dark');
@@ -115,14 +130,6 @@ export default async function init(el) {
     }
   }
   if (el.classList.contains('mnemonic-list') && foreground) {
-    const { miloLibs, codeRoot } = getConfig();
-    await import('./mnemonic-list.js')
-      .then((module) => {
-        loadStyle(`${miloLibs || codeRoot}/blocks/marquee/mnemonic-list.css`);
-        module.decorateMnemonicList(foreground);
-      })
-      .catch((err) => {
-        window.lana?.log(`Failed to load mnemonic marquee module: ${err}`);
-      });
+    await loadMnemonicList(foreground);
   }
 }
