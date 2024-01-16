@@ -354,3 +354,13 @@ span.preflight-time {
   font-weight: 700;
   margin-left: 72px;
 }
+
+.preflight .martech {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preflight .martech .preflight-action {
+  cursor: pointer;
+}
