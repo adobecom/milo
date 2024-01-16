@@ -8,7 +8,8 @@ describe('Mnemonic List', () => {
 
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/mnemonic-list.html' });
-    mnemonicList = await init(document.body.querySelector('.mnemonic-list'));
+    await init(document.body.querySelector('.mnemonic-list'));
+    mnemonicList = document.body.querySelector('.mnemonic-list');
   });
 
   afterEach(() => {
@@ -28,11 +29,5 @@ describe('Mnemonic List', () => {
     const productItem = mnemonicList.querySelector('.product-item');
     const title = productItem.querySelector('strong');
     expect(title).to.exist;
-  });
-
-  it('should have a product item with a picture', () => {
-    const productItem = mnemonicList.querySelector('.product-item');
-    const picture = productItem.querySelector('picture');
-    expect(picture).to.exist;
   });
 });

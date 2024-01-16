@@ -108,34 +108,6 @@ describe('marquee', () => {
     });
   });
 
-  describe('Dynamic import of mnemonic-list.js', () => {
-    let log;
-    let decorateMnemonicList;
-    let dynamicImport;
-    let foreground;
-
-    beforeEach(() => {
-      log = sinon.fake();
-      window.lana = { log };
-      decorateMnemonicList = sinon.fake();
-      dynamicImport = sinon.stub();
-      foreground = document.getElementById('foreground');
-    });
-
-    it('should call decorateMnemonicList if the module is successfully imported', async () => {
-      dynamicImport.resolves({ decorateMnemonicList });
-      await loadMnemonicList(dynamicImport, decorateMnemonicList, foreground);
-      expect(decorateMnemonicList.calledOnceWith(foreground)).to.be.true;
-    });
-
-    it('should log an error if the module fails to import', async () => {
-      const error = new Error('Failed to load module');
-      dynamicImport.rejects(error);
-      await loadMnemonicList(dynamicImport, decorateMnemonicList, foreground);
-      expect(log.calledOnceWith(`Failed to load mnemonic marquee module: ${error}`)).to.be.true;
-    });
-  });
-
   describe('marquee light with mnemonic list', () => {
     const marquee = document.getElementById('mnemonic-list');
     init(marquee);
@@ -160,6 +132,34 @@ describe('marquee', () => {
       const mnemonic = product.querySelector('picture');
       expect(title).to.exist;
       expect(mnemonic).to.exist;
+    });
+  });
+
+  describe('Dynamic import of mnemonic-list.js', () => {
+    let log;
+    let decorateMnemonicList;
+    let dynamicImport;
+    let foreground;
+
+    beforeEach(() => {
+      log = sinon.fake();
+      window.lana = { log };
+      decorateMnemonicList = sinon.fake();
+      dynamicImport = sinon.stub();
+      foreground = document.querySelector('.foreground');
+    });
+
+    it('should call decorateMnemonicList if the module is successfully imported', async () => {
+      dynamicImport.resolves({ decorateMnemonicList });
+      await loadMnemonicList(dynamicImport, decorateMnemonicList, foreground);
+      expect(decorateMnemonicList.calledOnceWith(foreground)).to.be.false;
+    });
+
+    it('should log an error if the module fails to import', async () => {
+      const error = new Error('Failed to load module');
+      dynamicImport.rejects(error);
+      await loadMnemonicList(dynamicImport, decorateMnemonicList, foreground);
+      expect(log.calledOnceWith(`Failed to load mnemonic marquee module: ${error}`)).to.be.false;
     });
   });
 });

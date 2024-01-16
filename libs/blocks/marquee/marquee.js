@@ -75,7 +75,7 @@ export async function loadMnemonicList(foreground) {
         module.decorateMnemonicList(foreground);
       });
   } catch (err) {
-    window.lana?.log(`Failed to load mnemonic marquee module: ${err}`);
+    window.lana?.log(`Failed to load mnemonic list module: ${err}`);
   }
 }
 
