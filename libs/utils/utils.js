@@ -41,9 +41,11 @@ const MILO_BLOCKS = [
   'marketo',
   'marquee',
   'marquee-anchors',
+  'martech-metadata',
   'media',
   'merch',
   'merch-card',
+  'merch-cards',
   'merch-offers',
   'modal',
   'modal-metadata',
@@ -176,6 +178,27 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+const handleEntitlements = (() => {
+  let entResolve;
+  const entPromise = new Promise((resolve) => {
+    entResolve = resolve;
+  });
+
+  return (resolveVal) => {
+    if (resolveVal !== undefined) {
+      entResolve(resolveVal);
+    }
+    return entPromise;
+  };
+})();
+
+function setupMiloObj(config) {
+  window.milo ||= {};
+  window.milo.deferredPromise = new Promise((resolve) => {
+    config.resolveDeferred = resolve;
+  });
+}
+
 export const [setConfig, updateConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -204,6 +227,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
+      config.entitlements = handleEntitlements;
+      setupMiloObj(config);
       return config;
     },
     (conf) => (config = conf),
@@ -215,7 +240,7 @@ export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
-export function createTag(tag, attributes, html) {
+export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
     if (html instanceof HTMLElement
@@ -233,6 +258,7 @@ export function createTag(tag, attributes, html) {
       el.setAttribute(key, val);
     });
   }
+  options.parent?.append(el);
   return el;
 }
 
@@ -271,13 +297,14 @@ export function localizeLink(
   }
 }
 
-export function loadLink(href, { as, callback, crossorigin, rel } = {}) {
+export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
     if (as) link.setAttribute('as', as);
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
+    if (fetchpriority) link.setAttribute('fetchpriority', fetchpriority);
     link.setAttribute('href', href);
     if (callback) {
       link.onload = (e) => callback(e.type);
@@ -498,12 +525,18 @@ export function decorateImageLinks(el) {
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href, class: 'image-link' });
-      picParent.insertBefore(aTag, pic);
-      if (icon) {
-        import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+      if (href.includes('.mp4')) {
+        const a = createTag('a', { href: url, 'data-video-poster': img.src });
+        a.innerHTML = url;
+        pic.replaceWith(a);
       } else {
-        aTag.append(pic);
+        const aTag = createTag('a', { href, class: 'image-link' });
+        picParent.insertBefore(aTag, pic);
+        if (icon) {
+          import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+        } else {
+          aTag.append(pic);
+        }
       }
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
@@ -765,7 +798,12 @@ export async function loadIms() {
       onError: reject,
     };
     loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+  }).then(() => {
+    if (!window.adobeIMS?.isSignedInUser()) {
+      getConfig().entitlements([]);
+    }
   });
+
   return imsLoaded;
 }
 
@@ -836,7 +874,12 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    loadIms().catch(() => {});
+    loadIms()
+      .then(() => {
+        if (window.adobeIMS.isSignedInUser()) loadMartech();
+      })
+      .catch((e) => { console.log('Unable to load IMS:', e); });
+
     const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
@@ -852,7 +895,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  loadMartech(config);
+  loadMartech();
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
@@ -866,7 +909,7 @@ async function loadPostLCP(config) {
 
 export function scrollToHashedElement(hash) {
   if (!hash) return;
-  const elementId = hash.slice(1);
+  const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
   try {
     targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
@@ -882,15 +925,7 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-export function setupDeferredPromise() {
-  let resolveFn;
-  window.milo.deferredPromise = new Promise((resolve) => {
-    resolveFn = resolve;
-  });
-  return resolveFn;
-}
-
-export async function loadDeferred(area, blocks, config, resolveDeferred) {
+export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
 
@@ -898,7 +933,7 @@ export async function loadDeferred(area, blocks, config, resolveDeferred) {
     return;
   }
 
-  resolveDeferred(true);
+  config.resolveDeferred?.(true);
 
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
@@ -1044,16 +1079,13 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-  let resolveDeferredFn;
 
   if (isDoc) {
-    window.milo = {};
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
-    resolveDeferredFn = setupDeferredPromise();
   }
-
   const config = getConfig();
+
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
@@ -1079,7 +1111,7 @@ export async function loadArea(area = document) {
 
   if (isDoc) await documentPostSectionLoading(config);
 
-  await loadDeferred(area, areaBlocks, config, resolveDeferredFn);
+  await loadDeferred(area, areaBlocks, config);
 }
 
 export function loadDelayed() {

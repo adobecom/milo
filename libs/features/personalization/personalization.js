@@ -1,20 +1,53 @@
 /* eslint-disable no-console */
 
-import {
-  createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
-} from '../../utils/utils.js';
+import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
+import { ENTITLEMENT_MAP } from './entitlements.js';
+
+/* c20 ignore start */
+const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
+export const PERSONALIZATION_TAGS = {
+  all: () => true,
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
+  firefox: () => navigator.userAgent.includes('Firefox'),
+  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
+  edge: () => navigator.userAgent.includes('Edg'),
+  android: () => navigator.userAgent.includes('Android'),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  windows: () => navigator.userAgent.includes('Windows'),
+  mac: () => navigator.userAgent.includes('Macintosh'),
+  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
+  tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
+  desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
+  loggedout: () => !window.adobeIMS?.isSignedInUser(),
+  loggedin: () => !!window.adobeIMS?.isSignedInUser(),
+};
+const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
+/* c20 ignore stop */
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
-const LS_ENT_KEY = 'milo:entitlements';
-const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
 const COLUMN_NOT_OPERATOR = 'not';
 const TARGET_EXP_PREFIX = 'target-';
-const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
-const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
 const PAGE_URL = new URL(window.location.href);
 
 export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
+
+// Replace any non-alpha chars except comma, space, ampersand and hyphen
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
+
+const MANIFEST_KEYS = [
+  'action',
+  'selector',
+  'pagefilter',
+  'page filter',
+  'page filter optional',
+];
+
+const DATA_TYPE = {
+  JSON: 'json',
+  TEXT: 'text',
+};
 
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
@@ -62,43 +95,7 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   return manifests;
 };
 
-/* c8 ignore start */
-export const PERSONALIZATION_TAGS = {
-  all: () => true,
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
-  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
-  android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
-  loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => window.adobeIMS?.isSignedInUser(),
-  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
-  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
-};
-
-export const ENTITLEMENT_TAGS = {
-  photoshop: (ents) => ents.photoshop_cc,
-  lightroom: (ents) => ents.lightroom_cc,
-};
-/* c8 ignore stop */
-
-const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
-const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
-
-// Replace any non-alpha chars except comma, space, ampersand and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
-
-const MANIFEST_KEYS = [
-  'action',
-  'selector',
-  'pagefilter',
-  'page filter',
-  'page filter optional',
-];
-
-const DATA_TYPE = {
-  JSON: 'json',
-  TEXT: 'text',
-};
+export const getFileName = (path) => path?.split('/').pop();
 
 const createFrag = (el, url, manifestId) => {
   let href = url;
@@ -316,84 +313,15 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   }
   return config;
 }
-
-const fetchEntitlements = async () => {
-  const [{ default: getUserEntitlements }] = await Promise.all([
-    import('../../blocks/global-navigation/utilities/getUserEntitlements.js'),
-    loadIms(),
-  ]);
-  return getUserEntitlements();
-};
-
-const setEntLocalStorage = (ents) => {
-  localStorage.setItem(LS_ENT_KEY, JSON.stringify(ents));
-  localStorage.setItem(LS_ENT_EXPIRE_KEY, Date.now());
-};
-
-const loadEntsFromLocalStorage = () => {
-  const ents = localStorage.getItem(LS_ENT_KEY);
-  const expireDate = localStorage.getItem(LS_ENT_EXPIRE_KEY);
-  const now = Date.now();
-  if (!ents || !expireDate || (now - expireDate) > ENT_CACHE_EXPIRE) return null;
-  if ((now - expireDate) > ENT_CACHE_REFRESH) {
-    // refresh entitlements in background
-    setTimeout(() => {
-      fetchEntitlements().then((newEnts) => {
-        setEntLocalStorage(newEnts);
-      });
-    }, 5000);
-  }
-  return JSON.parse(ents);
-};
-
-const clearEntLocalStorage = () => {
-  localStorage.removeItem(LS_ENT_KEY);
-  localStorage.removeItem(LS_ENT_EXPIRE_KEY);
-};
-
-export const getEntitlements = (() => {
-  let ents;
-  let logoutEventSet;
-  return (async () => {
-    if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) {
-      clearEntLocalStorage();
-      return {};
-    }
-    if (!ents) {
-      ents = loadEntsFromLocalStorage();
-    }
-    if (!ents) {
-      ents = await fetchEntitlements();
-      setEntLocalStorage(ents);
-    }
-    if (!logoutEventSet) {
-      window.addEventListener('feds:signOut', clearEntLocalStorage);
-      logoutEventSet = true;
-    }
-    return ents;
-  });
-})();
-
-const getFlatEntitlements = async () => {
-  const ents = await getEntitlements();
-  return {
-    ...ents.arrangement_codes,
-    ...ents.clouds,
-    ...ents.fulfilled_codes,
-  };
-};
-
-const checkForEntitlementMatch = (name, entitlements) => {
-  const entName = name.split('ent-')[1];
-  if (!entName) return false;
-  return entitlements[entName];
-};
 /* c8 ignore stop */
 
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
   if (!name) return false;
-  const searchParamVal = PAGE_URL.searchParams.get(name);
+  const params = new URLSearchParams(
+    Array.from(PAGE_URL.searchParams, ([key, value]) => [key.toLowerCase(), value?.toLowerCase()]),
+  );
+  const searchParamVal = params.get(name.toLowerCase());
   if (searchParamVal !== null) {
     if (val) return val === searchParamVal;
     return true; // if no val is set, just check for existence of param
@@ -427,23 +355,20 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     return acc;
   }, { allNames: [] });
 
-  const hasEntitlementPrefix = variantInfo.allNames.some((name) => name.startsWith('ent-'));
+  const entitlementKeys = Object.values(ENTITLEMENT_MAP);
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
-  let entitlements = {};
-  if (hasEntitlementPrefix || hasEntitlementTag) {
-    entitlements = await getFlatEntitlements();
+  let userEntitlements = [];
+  if (hasEntitlementTag) {
+    userEntitlements = await config.entitlements();
   }
 
   const hasMatch = (name) => {
     if (name === '') return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
-    if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
-    if (entitlementKeys.includes(name)) {
-      return ENTITLEMENT_TAGS[name](entitlements);
-    }
-    return personalizationKeys.includes(name) && PERSONALIZATION_TAGS[name]();
+    if (userEntitlements?.includes(name)) return true;
+    return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
   const matchVariant = (name) => {
@@ -469,6 +394,8 @@ export async function getPersConfig(info) {
     manifestPlaceholders,
     manifestInfo,
     variantLabel,
+    disabled,
+    event,
   } = info;
   let data = manifestData;
   if (!data) {
@@ -481,8 +408,13 @@ export async function getPersConfig(info) {
   const config = parseConfig(persData);
 
   const infoTab = manifestInfo || data?.info?.data;
-  config.manifestType = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase() || 'personalization';
-  config.manifestOverrideName = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')?.value?.toLowerCase();
+  config.manifestType = infoTab
+    ?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase()
+    || 'personalization';
+
+  config.manifestOverrideName = infoTab
+    ?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')
+    ?.value?.toLowerCase();
 
   if (!config) {
     /* c8 ignore next 3 */
@@ -516,6 +448,8 @@ export async function getPersConfig(info) {
   config.name = name;
   config.manifest = manifestPath;
   config.manifestUrl = manifestUrl;
+  config.disabled = disabled;
+  config.event = event;
   return config;
 }
 
@@ -533,7 +467,6 @@ export async function runPersonalization(info, config) {
   const { manifestPath } = info;
 
   const experiment = await getPersConfig(info);
-
   if (!experiment) return null;
 
   const { selectedVariant } = experiment;
@@ -551,7 +484,7 @@ export async function runPersonalization(info, config) {
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  let manifestId = experiment.manifest;
+  let manifestId = getFileName(experiment.manifest);
   if (!config.mep?.preview) {
     manifestId = false;
   } else if (experiment.name) {
@@ -603,7 +536,6 @@ export async function applyPers(manifests) {
 
   if (!manifests?.length) return;
 
-  getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
   const override = config.mep?.override;
@@ -639,8 +571,7 @@ export async function applyPers(manifests) {
   });
   const pznManifests = pznList.map((r) => {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return val.split('/').pop().replace('.json', '').trim()
-      .slice(0, 15);
+    return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
   document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }

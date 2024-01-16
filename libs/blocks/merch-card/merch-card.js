@@ -195,10 +195,9 @@ const addMerchCardGridIfMissing = (section, cardType) => {
 
 const decorateMerchCardLinkAnalytics = (el) => {
   [...el.querySelectorAll('a')].forEach((link, index) => {
-    const config = getConfig();
     const heading = el.querySelector('h3');
-    const linkText = `${processTrackingLabels(link.textContent, config)}-${index + 1}`;
-    const headingText = heading ? `${processTrackingLabels(heading.textContent, config)}` : '';
+    const linkText = `${processTrackingLabels(link.textContent)}-${index + 1}`;
+    const headingText = heading ? `${processTrackingLabels(heading.textContent)}` : '';
     const analyticsString = heading ? `${linkText}--${headingText}` : linkText;
     link.setAttribute('daa-ll', analyticsString);
   });
@@ -218,6 +217,15 @@ const addStock = (merchCard, styles) => {
       merchCard.setAttribute('stock-offer-osis', stock.offers);
     }
   }
+};
+
+const simplifyHrs = (el) => {
+  const hrs = el.querySelectorAll('hr');
+  hrs.forEach((hr) => {
+    if (hr.parentElement.tagName === 'P') {
+      hr.parentElement.replaceWith(hr);
+    }
+  });
 };
 
 const init = async (el) => {
@@ -348,6 +356,7 @@ const init = async (el) => {
     initOfferSelection(merchCard, offerSelection);
   }
   decorateBlockHrs(merchCard);
+  simplifyHrs(merchCard);
   if (merchCard.classList.contains('has-divider')) {
     merchCard.setAttribute('custom-hr', true);
   }

@@ -8,7 +8,7 @@ export const DecorateBlockBackgroundCmp = ({ background = '' }) => html`<picture
       </picture>`;
 
 export const DecorateBlockForeground = ({ heading, subhead }) => html`<div class="quiz-foreground">
-    <h2 class="quiz-question-title" daa-lh="${heading}">${heading}</h2>
+    <h1 class="quiz-question-title" daa-lh="${heading}">${heading}</h1>
     <p class="quiz-question-text">${subhead}</p>
   </div>`;
 

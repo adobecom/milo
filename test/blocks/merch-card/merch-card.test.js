@@ -321,4 +321,10 @@ describe('Section metadata rules', async () => {
     const merchCard = await init(block);
     expect(merchCard.parentElement.className).to.match(/three-merch-cards/);
   });
+
+  it('should add default merch-card grid styles with 2-up', async () => {
+    const block = document.getElementById('with2Up');
+    const merchCard = await init(block);
+    expect(merchCard.parentElement.className).to.match(/section three-merch-cards product/);
+  });
 });

@@ -34,7 +34,7 @@ export const OptionCard = ({
     </div>`;
 
   const titleHtml = html`
-    <h3 class="quiz-option-title">${title}</h3>
+    <h2 class="quiz-option-title">${title}</h2>
   `;
 
   const textHtml = html`
