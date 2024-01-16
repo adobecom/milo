@@ -15,6 +15,11 @@ span.placeholder-resolved[data-template="strikethrough"], span.price.price-strik
   visibility: inherit;
 }
 
+a[is='checkout-link'] span {
+  display: inline-block;
+  min-width: 66px;
+}
+
 a[is='checkout-link'].loading-entitlements > span {
   opacity: 0;
 }
