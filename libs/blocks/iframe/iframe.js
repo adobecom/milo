@@ -7,7 +7,7 @@ export default function init(el) {
 
   if (!url) return;
 
-  const iframe = createTag('iframe', { src: url, allowfullscreen: true });
+  const iframe = createTag('iframe', { src: url, allowfullscreen: true, scrolling: 'no' });
   const embed = createTag('div', { class: `milo-iframe ${classes}` }, iframe);
 
   el.insertAdjacentElement('afterend', embed);
