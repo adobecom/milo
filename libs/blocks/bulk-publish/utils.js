@@ -1,7 +1,5 @@
-import { getMiloUrl } from './services.js';
-
 const FORM_MODES = ['full', 'half'];
-const PREFS_KEY = 'bulk-pub-prefs';
+const STORE = 'bulk-pub-prefs';
 const DEFAULT_PREFS = { mode: FORM_MODES[0], resume: [] };
 const PROCESS_TYPES = [
   'preview',
@@ -16,17 +14,18 @@ const wait = (delay = 5000) => new Promise((resolve) => {
 });
 
 const sticky = () => {
-  const store = localStorage.getItem(PREFS_KEY);
+  const store = localStorage.getItem(STORE);
   const prefs = store ? JSON.parse(store) : DEFAULT_PREFS;
   return {
     get: (key) => (prefs[key] ?? DEFAULT_PREFS[key]),
     set: (key, value) => {
       prefs[key] = value;
-      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+      localStorage.setItem(STORE, JSON.stringify(prefs));
     },
   };
 };
 
+const getMiloUrl = (url) => url.hostname.split('.')[0].split('--');
 const validMiloURL = (str) => {
   let url;
   try {
@@ -119,6 +118,7 @@ export {
   getElapsedTime,
   getErrorText,
   getJobErrorText,
+  getMiloUrl,
   humanDateTime,
   PROCESS_TYPES,
   processJobResult,
