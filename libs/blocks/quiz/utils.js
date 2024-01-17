@@ -22,9 +22,9 @@ const initQuizKey = () => {
   return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
 };
 
-const initAnalyticsType = () => metaData['analytics-type']?.text;
+const initAnalyticsType = () => metaData.analyticstype?.text;
 
-const initAnalyticsQuiz = () => metaData['analytics-quiz']?.text;
+const initAnalyticsQuiz = () => metaData.analyticsquiz?.text;
 
 async function fetchContentOfFile(path) {
   const response = await fetch(configPath(path));
@@ -32,8 +32,8 @@ async function fetchContentOfFile(path) {
 }
 
 export const initConfigPathGlob = (rootElement) => {
-  metaData = getMetadata(rootElement);
-  shortQuiz = metaData['short-quiz']?.text === 'true';
+  metaData = getNormalizedMetadata(rootElement);
+  shortQuiz = metaData.shortquiz?.text === 'true';
   configPath = initConfigPath(metaData);
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
@@ -237,6 +237,24 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
     });
   });
   return fragArray;
+};
+
+/**
+ * Normalizes the metadata keys in the metadata object,
+ * cleaning them up and removing all but alphanumeric characters
+ */
+const normalizeKeys = (data) => {
+  const keys = Object.keys(data);
+  const cleanData = {};
+  for (const key of keys) {
+    const newKey = key.match(/[a-zA-Z0-9]/g).join('');
+    if (key !== newKey) {
+      cleanData[newKey] = data[key];
+    } else {
+      cleanData[key] = data[key];
+    }
+  }
+  return cleanData;
 };
 
 export const getRedirectUrl = (destinationPage) => {
@@ -465,3 +483,5 @@ export const getAnalyticsDataForLocalStorage = (config) => {
 };
 
 export const isValidUrl = (url) => VALID_URL_RE.test(url);
+
+export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));

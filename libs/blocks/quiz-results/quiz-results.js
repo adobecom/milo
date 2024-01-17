@@ -1,5 +1,6 @@
 import { createTag } from '../../utils/utils.js';
-import { getMetadata, handleStyle } from '../section-metadata/section-metadata.js';
+import { handleStyle } from '../section-metadata/section-metadata.js';
+import { getNormalizedMetadata } from '../quiz/utils.js';
 
 export const LOADING_ERROR = 'Could not load quiz results:';
 
@@ -44,9 +45,9 @@ function setAnalytics(hashValue, debug) {
 }
 
 export default async function init(el, debug = null, localStoreKey = null) {
-  const data = getMetadata(el);
+  const data = getNormalizedMetadata(el);
   const params = new URL(document.location).searchParams;
-  const quizUrl = data['quiz-url'];
+  const quizUrl = data.quizurl;
   const BASIC_KEY = 'basicFragments';
   const NESTED_KEY = 'nestedFragments';
   const HASH_KEY = 'pageloadHash';
@@ -71,8 +72,8 @@ export default async function init(el, debug = null, localStoreKey = null) {
     return;
   }
 
-  if (data['nested-fragments'] && el.classList.contains('nested')) {
-    const nested = results[NESTED_KEY][data['nested-fragments'].text];
+  if (data.nestedfragments && el.classList.contains('nested')) {
+    const nested = results[NESTED_KEY][data.nestedfragments.text];
     if (nested) loadFragments(el, nested);
   } else if (el.classList.contains('basic')) {
     const basic = results[BASIC_KEY];
