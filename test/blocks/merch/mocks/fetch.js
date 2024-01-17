@@ -6,7 +6,8 @@ import { priceLiteralsURL } from '../../../../libs/blocks/merch/merch.js';
 export async function mockFetch() {
   // this path allows to import this mock from tests for other blocks (e.g. commerce)
   const literals = JSON.parse(await readFile({ path: '../merch/mocks/literals.json' }));
-  const [offers, namedOffers] = JSON.parse(await readFile({ path: '../merch/mocks/offers.json' }));
+  const offers = JSON.parse(await readFile({ path: '../merch/mocks/offers.json' }));
+  const namedOffers = JSON.parse(await readFile({ path: '../merch/mocks/named-offers.json' }));
 
   const { fetch } = window;
   sinon.stub(window, 'fetch').callsFake((...args) => {
