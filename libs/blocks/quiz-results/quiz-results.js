@@ -57,9 +57,7 @@ export default async function init(el, debug = null, localStoreKey = null) {
   localStoreKey ??= params.get('quizkey');
 
   const { locale } = getConfig();
-  if (locale?.ietf) {
-    localStoreKey = `${localStoreKey}-${locale.ietf}`;
-  }
+  localStoreKey = locale?.ietf ? `${localStoreKey}-${locale.ietf}` : localStoreKey;
 
   debug ??= params.get('debug');
 

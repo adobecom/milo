@@ -9,7 +9,6 @@ const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-
 
 let configPath;
 let quizKey;
-let quizLocalKey;
 let shortQuiz;
 let analyticsType;
 let analyticsQuiz;
@@ -23,11 +22,6 @@ const initConfigPath = (quizMetaData) => {
 };
 
 const initQuizKey = () => metaData.storage?.text.toLowerCase();
-
-const initQuizLocalKey = () => {
-  const { locale } = getConfig();
-  return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
-};
 
 const initAnalyticsType = () => metaData.analyticstype?.text;
 
@@ -43,12 +37,9 @@ export const initConfigPathGlob = (rootElement) => {
   shortQuiz = metaData.shortquiz?.text === 'true';
   configPath = initConfigPath(metaData);
   quizKey = initQuizKey();
-  quizLocalKey = initQuizLocalKey();
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
-  return {
-    configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz, quizLocalKey,
-  };
+  return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
 export const getQuizData = async () => {
@@ -160,6 +151,10 @@ export const storeResultInLocalStorage = (
     ),
     pageloadHash: getAnalyticsDataForLocalStorage(analyticsConfig),
   };
+
+  const { locale } = getConfig();
+  const quizLocalKey = locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
+
   localStorage.setItem(quizLocalKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
 };

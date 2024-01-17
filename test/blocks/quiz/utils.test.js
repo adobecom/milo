@@ -50,14 +50,12 @@ describe('Quiz', () => {
       analyticsType,
       analyticsQuiz,
       shortQuiz,
-      quizLocalKey,
     } = initConfigPathGlob(quiz);
     expect(configPath).to.be.a('function');
     expect(quizKey).to.be.a.string;
     expect(analyticsType).to.be.a.string;
     expect(analyticsQuiz).to.be.a.string;
     expect(shortQuiz).to.be.a('boolean');
-    expect(quizLocalKey).to.be.a.string;
   });
 
   it('Checking quiz data', async () => {
