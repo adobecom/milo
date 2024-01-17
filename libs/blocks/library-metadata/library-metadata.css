@@ -1,5 +1,6 @@
 .library-metadata {
   margin: 24px auto;
+  display: block;
 }
 
 .library-metadata::before {
@@ -15,13 +16,23 @@
 }
 
 .library-meta-row {
+  background-color: #EFEFEF;
   display: grid;
   grid-template-columns: 1fr 1fr;
   margin-top: 4px;
+  padding: 6px 12px;
   border-radius: 6px;
 }
 
-.library-meta-row {
-  background-color: #EFEFEF;
-  padding: 6px 12px;
+.library-container-start,
+.library-container-end,
+.section.masonry-layout .library-container-start[class*='grid-'],
+.section.masonry-layout .library-container-end[class*='grid-'] {
+  display: none;
+}
+
+.library-container-end + .library-metadata {
+  width: 100%;
+  grid-area: library;
+  grid-column: library;
 }
