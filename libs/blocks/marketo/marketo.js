@@ -44,7 +44,7 @@ export const decorateURL = (destination, baseURL = window.location) => {
       destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
     }
 
-    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html')) {
+    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html') && !pathname.endsWith('/')) {
       destinationUrl.pathname = `${pathname}.html`;
     }
 

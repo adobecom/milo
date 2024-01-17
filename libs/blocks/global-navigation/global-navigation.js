@@ -22,9 +22,13 @@ import {
   isDesktop,
   isTangentToViewport,
   setCurtainState,
+  hasActiveLink,
+  setActiveLink,
+  getActiveLink,
   selectors,
   logErrorFor,
   lanaLog,
+  processMartechAttributeMetadata,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray, replaceText } from '../../features/placeholders.js';
@@ -272,6 +276,7 @@ class Gnav {
         && this.elements.topnav.scrollWidth > document.body.clientWidth;
 
       this.elements.topnav.classList.toggle(selectors.overflowingTopNav.slice(1), isOverflowing);
+      window.dispatchEvent(new CustomEvent('feds:navOverflow', { detail: { isOverflowing } }));
     };
 
     toggleContraction();
@@ -381,6 +386,7 @@ class Gnav {
 
     const toggle = toFragment`<button
       class="feds-toggle"
+      daa-ll="hamburgermenu|open"
       aria-expanded="false"
       aria-haspopup="true"
       aria-label="Navigation menu"
@@ -403,6 +409,7 @@ class Gnav {
       this.elements.navWrapper.classList.toggle('feds-nav-wrapper--expanded', !isExpanded);
       closeAllDropdowns();
       setCurtainState(!isExpanded);
+      toggle.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
 
       if (this.blocks?.search?.instance) {
         this.blocks.search.instance.clearSearchForm();
@@ -531,6 +538,15 @@ class Gnav {
       this.elements.mainNav.appendChild(this.decorateMainNavItem(item, index));
     }
 
+    if (!hasActiveLink()) {
+      const sections = this.elements.mainNav.querySelectorAll('.feds-navItem--section');
+
+      if (sections.length === 1) {
+        sections[0].classList.add(selectors.activeNavItem.slice(1));
+        setActiveLink(true);
+      }
+    }
+
     return this.elements.mainNav;
   };
 
@@ -554,6 +570,10 @@ class Gnav {
 
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
+
+    const itemHasActiveLink = ['syncDropdownTrigger', 'link'].includes(itemType)
+      && getActiveLink(item.closest('div')) instanceof HTMLElement;
+    const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
     // All dropdown decoration is delayed
     const delayDropdownDecoration = (template) => {
@@ -591,8 +611,9 @@ class Gnav {
 
         const isSectionMenu = item.closest('.section') instanceof HTMLElement;
         const tag = isSectionMenu ? 'section' : 'div';
+        const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
         const triggerTemplate = toFragment`
-          <${tag} class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
+          <${tag} class="feds-navItem${sectionModifier}${activeModifier}">
             ${dropdownTrigger}
           </${tag}>`;
 
@@ -625,9 +646,13 @@ class Gnav {
         const linkElem = item.querySelector('a');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
+        if (itemHasActiveLink) {
+          linkElem.removeAttribute('href');
+          linkElem.setAttribute('tabindex', 0);
+        }
 
         const linkTemplate = toFragment`
-          <div class="feds-navItem">
+          <div class="feds-navItem${activeModifier}">
             ${linkElem}
           </div>`;
         return linkTemplate;
@@ -693,6 +718,7 @@ export default async function init(header) {
   const html = await resp.text();
   if (!html) return null;
   const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
+  processMartechAttributeMetadata(parsedHTML);
 
   try {
     const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
