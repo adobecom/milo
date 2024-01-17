@@ -85,14 +85,21 @@ function initTabs(elm, config, rootElem) {
 }
 
 const handleDeferredImages = (block) => {
+  /* c8 ignore next 6 */
   const loadLazyImages = () => {
     const images = block.querySelectorAll('img[loading="lazy"]');
-    /* c8 ignore next 3 */
     images.forEach((img) => {
       img.removeAttribute('loading');
     });
   };
   document.addEventListener(MILO_EVENTS.DEFERRED, loadLazyImages, { once: true, capture: true });
+};
+
+const handlePillSize = (pill) => {
+  const sizes = ['s', 'm', 'l'];
+  const variant = pill.substring(0, pill.indexOf('-pill'));
+  const size = sizes.findIndex((tshirt) => variant.startsWith(tshirt));
+  return `${sizes[size]?.[0] ?? sizes[1]}-pill`;
 };
 
 const init = (block) => {
@@ -130,7 +137,8 @@ const init = (block) => {
   tabListContainer.classList.add('tab-list-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
-    const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
+    const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
+    const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const tabBtnAttributes = {
@@ -170,6 +178,7 @@ const init = (block) => {
       const key = getStringKeyName(row.children[0].textContent);
       if (key !== 'tab') return;
       let val = getStringKeyName(row.children[1].textContent);
+      /* c8 ignore next */
       if (!val) return;
       let id = tabId;
       let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);

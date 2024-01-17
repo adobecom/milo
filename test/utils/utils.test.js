@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
+import { createTag } from '../../libs/utils/utils.js';
 
 const utils = {};
 
@@ -235,8 +236,7 @@ describe('Utils', () => {
     });
 
     it('Sets up milo.deferredPromise', async () => {
-      window.milo = {};
-      const resolveDeferred = utils.setupDeferredPromise();
+      const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
       utils.loadDeferred(document, [], {}, resolveDeferred);
       const result = await window.milo.deferredPromise;
@@ -368,6 +368,15 @@ describe('Utils', () => {
           .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
 
+      it('Live domain html link which is not in prod domains is absolute and localized', () => {
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+      });
+
       it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
         expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
           .to
@@ -379,11 +388,6 @@ describe('Utils', () => {
           .to
           .equal('not-a-url');
       });
-    });
-
-    it('decorates footer promo fragment', () => {
-      const a = document.querySelector('main > div:last-of-type .fragment');
-      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
 
     it('creates an IntersectionObserver', (done) => {
@@ -470,6 +474,17 @@ describe('Utils', () => {
       utils.scrollToHashedElement('');
       expect(scrollToCalled).to.be.false;
     });
+
+    it('should scroll to the hashed element with special character', () => {
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+
+      utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
+      expect(scrollToCalled).to.be.true;
+      expect(document.getElementById('tools-für-das-verhalten')).to.exist;
+    });
   });
 
   describe('useDotHtml', async () => {
@@ -502,6 +517,98 @@ describe('Utils', () => {
       htmlLinks.forEach((link) => {
         expect(link.href).to.not.contain('.html');
       });
+    });
+  });
+
+  describe('footer promo', () => {
+    const favicon = '<link rel="icon" href="data:,">';
+    const typeTaxonomy = '<meta name="footer-promo-type" content="taxonomy">';
+    const ccxVideo = '<meta name="footer-promo-tag" content="ccx-video-links">';
+    const analytics = '<meta property="article:tag" content="Analytics">';
+    const commerce = '<meta property="article:tag" content="Commerce">';
+    const summit = '<meta property="article:tag" content="Summit">';
+    const promoConfig = { locale: { contentRoot: '/test/utils/mocks' } };
+    let oldHead;
+    let promoBody;
+    let taxonomyData;
+
+    before(async () => {
+      oldHead = document.head.innerHTML;
+      promoBody = await readFile({ path: './mocks/body-footer-promo.html' });
+      taxonomyData = await readFile({ path: './mocks/taxonomy.json' });
+    });
+
+    beforeEach(() => {
+      document.body.innerHTML = promoBody;
+      window.fetch = mockFetch({ payload: JSON.parse(taxonomyData) });
+    });
+
+    afterEach(() => {
+      window.fetch = ogFetch;
+    });
+
+    after(() => {
+      document.head.innerHTML = oldHead;
+    });
+
+    it('loads from metadata', async () => {
+      document.head.innerHTML = favicon + ccxVideo;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
+    it('loads from taxonomy in order on sheet', async () => {
+      document.head.innerHTML = ccxVideo + typeTaxonomy + analytics + commerce + summit;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/commerce');
+    });
+
+    it('loads backup from tag when taxonomy has no promo', async () => {
+      document.head.innerHTML = ccxVideo + typeTaxonomy + summit;
+      await utils.decorateFooterPromo(promoConfig);
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+  });
+
+  describe('createTag', async () => {
+    /**
+       * create tag creates a tag from first parameter tag name,
+       * second parameter is requested attributes map in created tag,
+       * third parameter is the innerHTML of the tag, can be either node or text,
+       * fourth parameter is an object of creation options:
+       *  - @parent parent element to append the tag to.
+       */
+    createTag('var', { class: 'foo' }, 'bar', { parent: document.body });
+    const varTag = document.querySelector('body > var.foo');
+    expect(varTag).to.exist;
+    expect(varTag.textContent).to.equal('bar');
+  });
+
+  describe('personalization', async () => {
+    const MANIFEST_JSON = {
+      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
+    };
+    function htmlResponse() {
+      return new Promise((resolve) => {
+        resolve({
+          ok: true,
+          json: () => MANIFEST_JSON,
+        });
+      });
+    }
+
+    it('should process personalization manifest and save in config', async () => {
+      window.fetch = sinon.stub().returns(htmlResponse());
+      document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
+      await utils.loadArea();
+      const resultConfig = utils.getConfig();
+      const resultExperiment = resultConfig.experiments[0];
+      expect(resultConfig.mep.preview).to.be.true;
+      expect(resultConfig.experiments.length).to.equal(3);
+      expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
     });
   });
 });

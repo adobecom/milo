@@ -253,7 +253,7 @@
   .feds-footer-wrapper .feds-menu-content {
     flex-wrap: wrap;
     width: auto;
-    max-width: auto;
+    column-gap: 12px;
   }
 
   .feds-footer-wrapper .feds-menu-headline {
@@ -262,6 +262,21 @@
 
   .feds-footer-wrapper .feds-menu-column {
     row-gap: 15px;
+  }
+
+  .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child {
+    flex-grow: 1;
+  }
+
+  .feds-footer-wrapper .feds-menu-column:nth-last-child(-n+3):first-child .feds-menu-section,
+  .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child .feds-menu-section,
+  .feds-footer-wrapper .feds-menu-column:nth-child(2):nth-last-child(2) .feds-menu-section {
+    width: fit-content;
+  }
+
+  .feds-footer-wrapper .feds-menu-column:nth-last-child(-n+3):first-child,
+  .feds-footer-wrapper .feds-menu-column:nth-child(2):nth-last-child(2) {
+    min-width: 20%;
   }
 
   /* Featured products */

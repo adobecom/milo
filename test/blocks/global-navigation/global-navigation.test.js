@@ -3,13 +3,17 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
-import { isDesktop, isTangentToViewport } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, isTangentToViewport, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
+import noBrandImageOnlyNav from './mocks/global-navigation-only-brand-no-explicit-image.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
+import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
+import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -18,7 +22,7 @@ const ogFetch = window.fetch;
 
 describe('global navigation', () => {
   before(() => {
-    document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    document.head.innerHTML = '<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any"><script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
   });
 
   describe('basic sanity tests', () => {
@@ -57,6 +61,97 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+    });
+  });
+
+  describe('Cross Cloud Menu', () => {
+    describe('desktop', () => {
+      it('should render the Cross Cloud Menu', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud });
+        const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
+
+        expect(crossCloudMenu).to.exist;
+        expect(isElementVisible(crossCloudMenu)).to.equal(false);
+
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+
+        crossCloudMenu.querySelectorAll(selectors.navLink).forEach((el) => {
+          expect(isElementVisible(el)).to.equal(true);
+        });
+      });
+
+      it('should not render Cross Cloud Menu if not authored', async () => {
+        await createFullGlobalNavigation();
+        expect(document.querySelector(selectors.crossCloudMenuWrapper)).to.not.exist;
+      });
+    });
+
+    describe('small desktop', () => {
+      it('should not render the Cross Cloud Menu', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud, viewport: 'smallDesktop' });
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+
+        expect(isElementVisible(document.querySelector(selectors.crossCloudMenuWrapper)))
+          .to.equal(false);
+      });
+    });
+
+    describe('mobile', () => {
+      it('should not render the Cross Cloud Menu', async () => {
+        await createFullGlobalNavigation({ viewport: 'mobile' });
+        document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+
+        expect(isElementVisible(document.querySelector(selectors.crossCloudMenuWrapper)))
+          .to.equal(false);
+      });
+    });
+  });
+
+  describe('Promo', () => {
+    it('doesn\'t exist if metadata is not defined', async () => {
+      const nav = await createFullGlobalNavigation();
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+    });
+
+    it('doesn\'t exist if metadata is not referencing a fragment', async () => {
+      const wrongPromoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/path/to/promo">`;
+      document.head.append(wrongPromoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      wrongPromoMeta.remove();
+    });
+
+    it('doesn\'t exist if fragment doesn\'t contain an aside block', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/wrong-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      promoMeta.remove();
+    });
+
+    it('is available if set up correctly', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.true;
+      const asideElem = nav.el.querySelector('.aside.promobar');
+      expect(asideElem).to.exist;
+      expect(asideElem.getAttribute('daa-lh')).to.equal('Promo');
+      asideElem.querySelectorAll('a').forEach((linkElem) => {
+        expect(linkElem.hasAttribute('daa-ll')).to.be.true;
+      });
+      promoMeta.remove();
+    });
+
+    it('doesn\'t exist on mobile', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ viewport: 'mobile', hasPromo: true });
+      expect(nav.el.classList.contains('has-promo')).to.be.false;
+      const asideElem = nav.el.querySelector('.aside.promobar');
+      expect(asideElem).to.not.exist;
     });
   });
 
@@ -106,6 +201,12 @@ describe('global navigation', () => {
         await createFullGlobalNavigation({ globalNavigation: noLogoBrandOnlyNav });
         const brandImage = document.querySelector(`${selectors.brandImage}`);
         expect(isElementVisible(brandImage)).to.equal(false);
+      });
+
+      it('should render a default image if the one defined is invalid', async () => {
+        await createFullGlobalNavigation({ globalNavigation: noBrandImageOnlyNav });
+        const brandImage = document.querySelector(`${selectors.brandImage}`);
+        expect(isElementVisible(brandImage)).to.equal(true);
       });
     });
 
@@ -338,6 +439,80 @@ describe('global navigation', () => {
         });
       });
     });
+
+    describe('sets an active item', () => {
+      beforeEach(() => {
+        setActiveLink(false);
+      });
+
+      it('marks simple link as active', async () => {
+        const targetSelector = '#simple-link';
+        const template = toFragment`<div></div>`;
+        template.innerHTML = globalNavigationActiveMock;
+        const templateActiveElem = template.querySelector(targetSelector);
+        templateActiveElem.setAttribute('href', window.location.href);
+        await createFullGlobalNavigation({ globalNavigation: template.innerHTML });
+        const markupActiveElem = document.querySelector(targetSelector);
+        expect(markupActiveElem.closest(selectors.activeNavItem) instanceof HTMLElement).to.be.true;
+      });
+
+      it('marks item with sync dropdown containing active link', async () => {
+        const targetSelector = '#link-in-dropdown';
+        const template = toFragment`<div></div>`;
+        template.innerHTML = globalNavigationActiveMock;
+        const templateActiveElem = template.querySelector(targetSelector);
+        templateActiveElem.setAttribute('href', window.location.href);
+        await createFullGlobalNavigation({ globalNavigation: template.innerHTML });
+        const markupActiveElem = document.querySelector(targetSelector);
+        expect(markupActiveElem.closest(selectors.activeNavItem) instanceof HTMLElement).to.be.true;
+      });
+
+      it('marks item from a nav with a single async dropdown containing active link', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationActiveMock });
+        const sections = document.querySelectorAll('section.feds-navItem--section');
+        expect(sections.length).to.equal(1);
+        expect(sections[0].matches(selectors.activeNavItem)).to.be.true;
+      });
+
+      it('marks item from a nav with multiple async dropdowns containing active link', async () => {
+        const template = toFragment`<div></div>`;
+        template.innerHTML = globalNavigationActiveMock;
+        // Duplicate cloud menu and add it to the template
+        const toDuplicate = template.querySelector('#cloud-menu-wrapper');
+        const duplicated = toDuplicate.cloneNode(true);
+        duplicated.id = `${duplicated.id}-duplicate`;
+        const duplicatedCloudMenuElem = duplicated.querySelector('a#cloud-menu');
+        duplicatedCloudMenuElem.id = `${duplicatedCloudMenuElem.id}-duplicate`;
+        toDuplicate.after(duplicated);
+        await createFullGlobalNavigation({ globalNavigation: template.innerHTML });
+        // There should be two sections, one of which is active
+        const sections = document.querySelectorAll('.feds-navItem--section');
+        expect(sections.length).to.equal(2);
+        const activeSections = document.querySelectorAll(`.feds-navItem--section${selectors.activeNavItem}`);
+        expect(activeSections.length).to.equal(1);
+        // A special class needs to be added in this case
+        const activeSection = document.querySelector(selectors.activeNavItem);
+        expect(activeSection.matches(selectors.deferredActiveNavItem)).to.be.true;
+        // The special class should be removed is switching to mobile/tablet
+        await setViewport(viewports.mobile);
+        isDesktop.dispatchEvent(new Event('change'));
+        expect(activeSection.matches(selectors.deferredActiveNavItem)).to.be.false;
+      });
+
+      it('marks a single item as active if multiple links match URL', async () => {
+        const targetSelector1 = '#simple-link';
+        const targetSelector2 = '#link-in-dropdown';
+        const template = toFragment`<div></div>`;
+        template.innerHTML = globalNavigationActiveMock;
+        const templateActiveElem1 = template.querySelector(targetSelector1);
+        templateActiveElem1.setAttribute('href', window.location.href);
+        const templateActiveElem2 = template.querySelector(targetSelector2);
+        templateActiveElem2.setAttribute('href', window.location.href);
+        await createFullGlobalNavigation({ globalNavigation: template.innerHTML });
+        const activeSections = document.querySelectorAll('section.feds-navItem--section');
+        expect(activeSections.length).to.equal(1);
+      });
+    });
   });
 
   describe('main nav popups', () => {
@@ -368,6 +543,12 @@ describe('global navigation', () => {
         expect(hasLinkgroupModifier).to.equal(true);
       });
 
+      it('should render popups with wide columns', async () => {
+        await createFullGlobalNavigation({ globalNavigation: globalNavigationWideColumnMock });
+        expect(document.querySelector('.feds-navItem--section .feds-menu-column--group .feds-menu-column + .feds-menu-column')).to.exist;
+        expect(document.querySelector('.column-break')).to.not.exist;
+      });
+
       it('should render the promo', async () => {
         await createFullGlobalNavigation();
 
@@ -375,6 +556,31 @@ describe('global navigation', () => {
         document.querySelector(selectors.navLink).click();
 
         expect(isElementVisible(document.querySelector(selectors.promoImage))).to.equal(true);
+      });
+
+      it('should allow CTAs in Promo boxes', async () => {
+        await createFullGlobalNavigation();
+        expect(document.querySelector(`${selectors.promo}${selectors.promo}--dark ${selectors.cta}`)).to.exist;
+      });
+
+      it('should render promo elements in initial order', async () => {
+        // Initial template order is text, then image
+        await createFullGlobalNavigation();
+
+        const imgAfterTxt = document.querySelector('.feds-promo-content + .feds-promo-image');
+        expect(imgAfterTxt).to.exist;
+
+        // Switch original order to be image, then text
+        const template = toFragment`<div></div>`;
+        template.innerHTML = globalNavigationMock;
+        const templatePromo = template.querySelector('.gnav-promo');
+        const templatePromoContent = templatePromo.firstElementChild;
+        templatePromoContent.remove();
+        templatePromo.append(templatePromoContent);
+        await createFullGlobalNavigation({ globalNavigation: template.innerHTML });
+
+        const txtAfterImg = document.querySelector('.feds-promo-image + .feds-promo-content');
+        expect(txtAfterImg).to.exist;
       });
     });
 
@@ -858,10 +1064,6 @@ describe('global navigation', () => {
         expect(isElementVisible(logo)).to.equal(false);
       });
     });
-  });
-
-  describe('Breadcrumbs', () => {
-
   });
 
   describe('Viewport changes', () => {

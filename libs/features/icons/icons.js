@@ -56,13 +56,15 @@ export default async function loadIcons(icons, config) {
     const { classList } = icon;
     if (classList.contains('icon-tooltip')) decorateToolTip(icon);
     const iconName = icon.classList[1].replace('icon-', '');
-    if (!iconSVGs[iconName]) return;
+    const existingIcon = icon.querySelector('svg');
+    if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
     if (parent.childNodes.length > 1) {
       if (parent.lastChild === icon) {
         icon.classList.add('margin-left');
       } else if (parent.firstChild === icon) {
         icon.classList.add('margin-right');
+        if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
       } else {
         icon.classList.add('margin-left', 'margin-right');
       }

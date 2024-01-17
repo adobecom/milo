@@ -5,11 +5,12 @@ import { getConfig } from '../../utils/utils.js';
 const QUESTIONS_EP_NAME = 'questions.json';
 const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
+const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
-let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
+let configPath; let quizKey; let shortQuiz; let analyticsType; let analyticsQuiz; let metaData;
 
 const initConfigPath = (quizMetaData) => {
-  const quizConfigPath = quizMetaData.quizurl.text.toLowerCase();
+  const quizConfigPath = quizMetaData.data.text;
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
   return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
@@ -17,7 +18,7 @@ const initConfigPath = (quizMetaData) => {
 
 const initQuizKey = () => {
   const { locale } = getConfig();
-  quizKey = metaData.storagepath?.text;
+  quizKey = metaData.storage?.text;
   return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
 };
 
@@ -32,11 +33,12 @@ async function fetchContentOfFile(path) {
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getMetadata(rootElement);
+  shortQuiz = metaData['short-quiz']?.text === 'true';
   configPath = initConfigPath(metaData);
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
-  return { configPath, quizKey, analyticsType, analyticsQuiz };
+  return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
 export const getQuizData = async () => {
@@ -60,9 +62,14 @@ export const getUrlParams = () => {
   return params;
 };
 
-export const handleResultFlow = async (answers = []) => {
-  const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
-  window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+export const defaultRedirect = (url) => {
+  window.location.href = url;
+};
+
+export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect) => {
+  const { destinationPage } = await findAndStoreResultData(answers);
+  const redirectUrl = getRedirectUrl(destinationPage);
+  redirectFunc(redirectUrl);
 };
 
 /**
@@ -83,16 +90,18 @@ export const findAndStoreResultData = async (answers = []) => {
     primaryProductCodes = resultData.primary;
     secondaryProductCodes = resultData.secondary;
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result'];
+    storeResultInLocalStorage(
+      answers,
+      resultData,
+      resultResources,
+      primaryProductCodes,
+      secondaryProductCodes,
+      umbrellaProduct,
+    );
+  } else {
+    window.lana?.log(`ERROR: No results found for ${answers}`);
   }
 
-  storeResultInLocalStorage(
-    answers,
-    resultData,
-    resultResources,
-    primaryProductCodes,
-    secondaryProductCodes,
-    umbrellaProduct,
-  );
   return {
     destinationPage,
     primaryProductCodes,
@@ -107,13 +116,20 @@ export const storeResultInLocalStorage = (
   secondaryProductCodes,
   umbrellaProduct,
 ) => {
-  const nestedFragsPrimary = resultData.matchedResults[0]['nested-fragments-primary'];
-  const nestedFragsSecondary = resultData.matchedResults[0]['nested-fragments-secondary'];
-  const structureFrags = resultData.matchedResults[0]['basic-fragments'];
+  const nestedFragsPrimary = resultData?.matchedResults?.[0]?.['nested-fragments-primary'] || '';
+  const nestedFragsSecondary = resultData?.matchedResults?.[0]?.['nested-fragments-secondary'] || '';
+  const structureFrags = resultData?.matchedResults?.[0]?.['basic-fragments'] || '';
 
   const structureFragsArray = structureFrags?.split(',');
   const nestedFragsPrimaryArray = nestedFragsPrimary?.split(',');
   const nestedFragsSecondaryArray = nestedFragsSecondary?.split(',');
+  const analyticsConfig = {
+    answers,
+    umbrellaProduct,
+    primaryProducts,
+    analyticsType,
+    analyticsQuiz,
+  };
   const resultToDelegate = {
     primaryProducts,
     secondaryProducts: secondaryProductCodes,
@@ -132,7 +148,7 @@ export const storeResultInLocalStorage = (
       secondaryProductCodes,
       umbrellaProduct,
     ),
-    pageloadHash: getAnalyticsDataForLocalStorage(answers),
+    pageloadHash: getAnalyticsDataForLocalStorage(analyticsConfig),
   };
   localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
@@ -152,7 +168,7 @@ export const structuredFragments = (
         if (umbrellaProduct && row.product === umbrellaProduct) {
           structureFragments.push(row[fragment]);
         }
-      } else if (primaryProducts.length > 0 && primaryProducts.includes(row.product)
+      } else if (primaryProducts?.length > 0 && primaryProducts.includes(row.product)
       && row[fragment]) {
         structureFragments.push(row[fragment]);
       }
@@ -223,9 +239,9 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
   return fragArray;
 };
 
-export const getRedirectUrl = (destinationPage, primaryProducts) => {
+export const getRedirectUrl = (destinationPage) => {
   const separator = destinationPage.includes('?') ? '&' : '?';
-  return `${destinationPage}${separator}primary=${primaryProducts}&quizKey=${quizKey}`;
+  return `${destinationPage}${separator}quizKey=${quizKey}`;
 };
 
 export const parseResultData = async (answers) => {
@@ -355,7 +371,6 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
   const allcards = Object.keys(userInputSelections);
   let nextQuizViews = [];
   let hasResultTrigger = false;
-  let lastStopValue;
 
   allcards.forEach((selection) => {
     // for each elem in current selection, find its coresponding
@@ -373,7 +388,6 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
           nextQuizViews = []; // Resetting the nextQuizViews
           // eslint-disable-next-line no-param-reassign
           userFlow = []; // Resetting the userFlow as well
-          lastStopValue = 'RESET';
         }
 
         if (!hasResultTrigger) {
@@ -404,7 +418,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
   // Filtering out the NOT() from the nextQuizViews.
   nextQuizViews = nextQuizViews.filter((view) => view.startsWith('NOT(') === false);
 
-  return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])], lastStopValue };
+  return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])] };
 };
 
 export const transformToFlowData = (userSelection) => {
@@ -422,12 +436,32 @@ export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   return '';
 };
 
-export const getAnalyticsDataForLocalStorage = (answers) => {
+export const getAnalyticsDataForLocalStorage = (config) => {
+  const {
+    answers = [],
+    umbrellaProduct = '',
+    primaryProducts = [],
+    // eslint-disable-next-line no-shadow
+    analyticsType = '',
+    // eslint-disable-next-line no-shadow
+    analyticsQuiz = '',
+  } = config;
+
+  let formattedResultString = '';
   let formattedAnswerString = '';
-  answers.forEach((answer) => {
+  if (umbrellaProduct) {
+    formattedResultString = umbrellaProduct;
+  } else {
+    primaryProducts?.forEach((product) => {
+      formattedResultString = formattedResultString ? `${formattedResultString}|${product}` : product;
+    });
+  }
+  answers?.forEach((answer) => {
     const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
-    formattedAnswerString = formattedAnswerString === '' ? eachAnswer : formattedAnswerString.concat('|', eachAnswer);
+    formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${eachAnswer}` : eachAnswer;
   });
-  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&selectedOptions=${formattedAnswerString}`;
+  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&result=${formattedResultString}&selectedOptions=${formattedAnswerString}`;
   return analyticsHash;
 };
+
+export const isValidUrl = (url) => VALID_URL_RE.test(url);

@@ -15,6 +15,7 @@
  */
 import { parseEncodedConfig, loadScript, createTag, createIntersectionObserver } from '../../utils/utils.js';
 
+const ROOT_MARGIN = 1000;
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
@@ -43,7 +44,7 @@ export const decorateURL = (destination, baseURL = window.location) => {
       destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
     }
 
-    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html')) {
+    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html') && !pathname.endsWith('/')) {
       destinationUrl.pathname = `${pathname}.html`;
     }
 
@@ -199,5 +200,6 @@ export default function init(el) {
     callback: (target) => {
       loadMarketo(target, formData);
     },
+    options: { rootMargin: `${ROOT_MARGIN}px` },
   });
 }

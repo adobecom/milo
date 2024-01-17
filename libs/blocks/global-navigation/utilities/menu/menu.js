@@ -1,16 +1,21 @@
 import {
-  getAnalyticsValue,
-  toFragment,
   decorateCta,
-  yieldToMain,
+  getActiveLink,
+  getAnalyticsValue,
   getFedsPlaceholderConfig,
-  logErrorFor,
-  setActiveDropdown,
-  trigger,
   isDesktop,
+  logErrorFor,
+  selectors,
+  setActiveDropdown,
+  toFragment,
+  trigger,
+  yieldToMain,
+  processMartechAttributeMetadata,
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
+
+const homeIcon = '<svg xmlns="http://www.w3.org/2000/svg" height="25" viewBox="0 0 18 18" width="25"><path fill="#6E6E6E" d="M17.666,10.125,9.375,1.834a.53151.53151,0,0,0-.75,0L.334,10.125a.53051.53051,0,0,0,0,.75l.979.9785A.5.5,0,0,0,1.6665,12H2v4.5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5v-5a.5.5,0,0,1,.5-.5h3a.5.5,0,0,1,.5.5v5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5V12h.3335a.5.5,0,0,0,.3535-.1465l.979-.9785A.53051.53051,0,0,0,17.666,10.125Z"/></svg>';
 
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
@@ -54,7 +59,7 @@ const decorateHeadline = (elem, index) => {
 };
 
 const decorateLinkGroup = (elem, index) => {
-  if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return null;
+  if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return '';
 
   // TODO: allow links with image and no label
   const image = elem.querySelector('picture');
@@ -81,7 +86,7 @@ const decorateLinkGroup = (elem, index) => {
   return linkGroup;
 };
 
-const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, itemIndex = { position: 0 } } = {}) => {
+const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { position: 0 } } = {}) => {
   const decorateLink = (link) => {
     // Increase analytics index every time a link is decorated
     itemIndex.position += 1;
@@ -92,8 +97,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, 
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
-    if (parseCtas
-      && (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM')) {
+    if (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM') {
       const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
       // Remove its 'em' or 'strong' wrapper
       link.parentElement.replaceWith(link);
@@ -130,11 +134,17 @@ const decoratePromo = (elem, index) => {
   const isImageOnly = elem.matches('.image-only');
   const imageElem = elem.querySelector('picture');
 
-  decorateElements({ elem, className: 'feds-promo-link', parseCtas: false, index });
+  if (!isImageOnly) {
+    const content = [...elem.querySelectorAll(':scope > div')]
+      .find((section) => !(section.querySelector('picture') instanceof HTMLElement));
+    content?.classList.add('feds-promo-content');
+  }
+
+  decorateElements({ elem, className: 'feds-promo-link', index });
 
   const decorateImage = () => {
     const linkElem = elem.querySelector('a');
-    const imageWrapper = imageElem.closest('.gnav-promo > div');
+    const imageWrapper = imageElem.closest(`${selectors.gnavPromo} > div`);
     let promoImageElem;
 
     if (linkElem instanceof HTMLElement) {
@@ -208,7 +218,10 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
       await yieldToMain();
       const columnElem = column.firstElementChild;
 
-      if (columnElem.tagName === separatorTagName) {
+      if (columnElem.matches(selectors.columnBreak)) {
+        resetDestination();
+        columnElem.remove();
+      } else if (columnElem.tagName === separatorTagName) {
         headlineIndex += 1;
         // When encountering a separator (h5 for header, h2 for footer),
         // add the previous section to the column
@@ -220,8 +233,19 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
         // turning it into a simple div
         const sectionHeadline = decorateHeadline(columnElem, headlineIndex);
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
+
         itemDestination.append(sectionHeadline, menuItems);
-      } else if (columnElem.classList.contains('gnav-promo')) {
+
+        if (column.querySelector(selectors.columnBreak)) {
+          wrapper.classList.add(`${wrapperClass}--group`);
+          if (column.querySelectorAll(selectors.columnBreak).length > 1) wrapper.classList.add(`${wrapperClass}--wide`);
+
+          const wideColumn = document.createElement('div');
+          wideColumn.append(...column.childNodes);
+          menuItems.append(wideColumn);
+          await decorateColumns({ content: menuItems });
+        }
+      } else if (columnElem.matches(selectors.gnavPromo)) {
         // When encountering a promo, add the previous section to the column
         resetDestination();
         // Since the promo is alone on a column, reset the analytics index
@@ -247,6 +271,21 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
     // Replace column with parsed template
     column.replaceWith(wrapper);
   }
+};
+
+const decorateCrossCloudMenu = (content) => {
+  const crossCloudMenuEl = content.querySelector('.cross-cloud-menu');
+  if (!crossCloudMenuEl) return;
+
+  decorateElements({ elem: crossCloudMenuEl });
+  crossCloudMenuEl.className = 'feds-crossCloudMenu-wrapper';
+  crossCloudMenuEl.querySelector('div').className = 'feds-crossCloudMenu';
+  crossCloudMenuEl.querySelectorAll('ul li').forEach((el, index) => {
+    if (index === 0) el.querySelector('a')?.prepend(toFragment`${homeIcon}`);
+    el.className = 'feds-crossCloudMenu-item';
+  });
+
+  content.append(crossCloudMenuEl);
 };
 
 // Current limitation: after an h5 (or h2 in the case of the footer)
@@ -275,15 +314,37 @@ const decorateMenu = (config) => logErrorFor(async () => {
     if (res.status !== 200) return;
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
+    processMartechAttributeMetadata(parsedContent);
+    const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
-        <div class="feds-menu-content">
-          ${parsedContent}
+        <div class="feds-menu-container">
+          ${menuContent}
         </div>
       </div>`;
-
+    decorateCrossCloudMenu(menuTemplate);
     // Content has been fetched dynamically, need to decorate links
     decorateLinks(menuTemplate);
-    await decorateColumns({ content: menuTemplate.firstElementChild });
+    await decorateColumns({ content: menuContent });
+
+    if (getActiveLink(menuTemplate) instanceof HTMLElement) {
+      // Special handling on desktop, as content is loaded async;
+      // bolding the item text would normally push the content
+      // to the right, potentially causing CLS
+      const resetActiveState = () => {
+        config.template.style.width = '';
+        config.template.classList.remove(selectors.deferredActiveNavItem.slice(1));
+      };
+
+      if (isDesktop.matches) {
+        config.template.style.width = `${config.template.offsetWidth}px`;
+        config.template.classList.add(selectors.deferredActiveNavItem.slice(1));
+        isDesktop.addEventListener('change', resetActiveState, { once: true });
+        window.addEventListener('feds:navOverflow', resetActiveState, { once: true });
+      }
+
+      config.template.classList.add(selectors.activeNavItem.slice(1));
+    }
+
     config.template.classList.add('feds-navItem--megaMenu');
   }
 
@@ -292,6 +353,6 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 
   config.template?.append(menuTemplate);
-}, 'Decorate menu failed');
+}, 'Decorate menu failed', 'errorType=info,module=gnav-menu');
 
 export default { decorateMenu, decorateLinkGroup };
