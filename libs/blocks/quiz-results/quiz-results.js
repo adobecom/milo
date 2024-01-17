@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { handleStyle } from '../section-metadata/section-metadata.js';
 import { getNormalizedMetadata } from '../quiz/utils.js';
 
@@ -54,7 +54,13 @@ export default async function init(el, debug = null, localStoreKey = null) {
 
   /* eslint-disable no-param-reassign */
   // handle these two query param values in this way to facilitate unit tests
-  localStoreKey ??= params.get('quizKey');
+  localStoreKey ??= params.get('quizkey');
+
+  const { locale } = getConfig();
+  if (locale?.ietf) {
+    localStoreKey = `${localStoreKey}-${locale.ietf}`;
+  }
+
   debug ??= params.get('debug');
 
   el.replaceChildren();

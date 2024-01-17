@@ -7,7 +7,13 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
-let configPath; let quizKey; let shortQuiz; let analyticsType; let analyticsQuiz; let metaData;
+let configPath;
+let quizKey;
+let quizLocalKey;
+let shortQuiz;
+let analyticsType;
+let analyticsQuiz;
+let metaData;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
@@ -16,9 +22,10 @@ const initConfigPath = (quizMetaData) => {
   return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
 };
 
-const initQuizKey = () => {
+const initQuizKey = () => metaData.storage?.text.toLowerCase();
+
+const initQuizLocalKey = () => {
   const { locale } = getConfig();
-  quizKey = metaData.storage?.text;
   return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
 };
 
@@ -35,10 +42,13 @@ export const initConfigPathGlob = (rootElement) => {
   metaData = getNormalizedMetadata(rootElement);
   shortQuiz = metaData.shortquiz?.text === 'true';
   configPath = initConfigPath(metaData);
-  quizKey = initQuizKey(rootElement);
+  quizKey = initQuizKey();
+  quizLocalKey = initQuizLocalKey();
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
-  return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
+  return {
+    configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz, quizLocalKey,
+  };
 };
 
 export const getQuizData = async () => {
@@ -150,7 +160,7 @@ export const storeResultInLocalStorage = (
     ),
     pageloadHash: getAnalyticsDataForLocalStorage(analyticsConfig),
   };
-  localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
+  localStorage.setItem(quizLocalKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
 };
 
@@ -259,7 +269,7 @@ const normalizeKeys = (data) => {
 
 export const getRedirectUrl = (destinationPage) => {
   const separator = destinationPage.includes('?') ? '&' : '?';
-  return `${destinationPage}${separator}quizKey=${quizKey}`;
+  return `${destinationPage}${separator}quizkey=${quizKey}`;
 };
 
 export const parseResultData = async (answers) => {
