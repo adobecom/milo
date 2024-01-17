@@ -37,6 +37,7 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
     const value = expectedAttributes[key];
     expect(dataset[key], ` ${key} should equal ${value}`).to.equal(value);
   });
+  return el;
 };
 
 describe('Merch Block', () => {
@@ -50,14 +51,13 @@ describe('Merch Block', () => {
     window.lana = { log: () => { } };
     document.head.innerHTML = await readFile({ path: './mocks/head.html' });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    await mockIms('CH');
     await mockFetch();
     setConfig(config);
   });
 
   beforeEach(async () => {
     const { init, Log } = await import('../../../libs/deps/commerce.js');
-    await init(() => config);
+    await init(() => config, true);
     Log.reset();
     Log.use(Log.Plugins.quietFilter);
   });
@@ -104,6 +104,11 @@ describe('Merch Block', () => {
 
     it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {
       await validatePriceSpan('.merch.price.tax-exclusive', { forceTaxExclusive: 'true' });
+    });
+
+    it('renders merch link to GB price', async () => {
+      const el = await validatePriceSpan('.merch.price.gb', {});
+      expect(/£/.test(el.textContent)).to.be.true;
     });
   });
 
@@ -209,6 +214,19 @@ describe('Merch Block', () => {
       await init(() => config, true);
     });
 
+    it('renders merch link to cta for GB locale', async () => {
+      const { init } = await import('../../../libs/deps/commerce.js');
+      await mockIms();
+      await init(() => config, true);
+      const el = await merch(document.querySelector(
+        '.merch.cta.gb',
+      ));
+      const { nodeName, href } = await el.onceSettled();
+      expect(nodeName).to.equal('A');
+      expect(el.getAttribute('is')).to.equal('checkout-link');
+      expect(/0ADF92A6C8514F2800BE9E87DB641D2A/.test(href)).to.be.true;
+    });
+
     it('renders merch link to cta with empty promo', async () => {
       const el = await merch(document.querySelector(
         '.merch.cta.nopromo',
@@ -263,6 +281,9 @@ describe('Merch Block', () => {
     });
 
     it('adds ims country to checkout link', async () => {
+      const { init } = await import('../../../libs/deps/commerce.js');
+      await mockIms('CH');
+      await init(() => config, true);
       const el = await merch(document.querySelector(
         '.merch.cta.ims',
       ));
