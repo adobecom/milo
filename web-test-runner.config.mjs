@@ -35,7 +35,7 @@ export default {
       '**/special/tacocat/**',
     ],
   },
-  testFramework: { config: { retries: 1 } },
+  testFramework: { config: { retries: 0 } },
   plugins: [importMapsPlugin({})],
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),
