@@ -1,7 +1,7 @@
 import './job-process.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { connectSidekick, runJob } from './services.js';
+import { connectSidekick, runJobProcess } from './services.js';
 import {
   editEntry,
   FORM_MODES,
@@ -341,7 +341,7 @@ class BulkPublish extends LitElement {
   async submit() {
     if (!this.formDisabled()) {
       this.processing = 'started';
-      const job = await runJob({
+      const job = await runJobProcess({
         urls: this.urls,
         process: this.process.toLowerCase(),
         hasPermission: this.user?.permissions?.[this.process],

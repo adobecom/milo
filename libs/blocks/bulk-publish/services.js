@@ -1,4 +1,4 @@
-import { PROCESS_TYPES, getErrorText, getMiloUrl, processJobResult, wait } from './utils.js';
+import { PROCESS_TYPES, getErrorText, getMiloUrl, wait } from './utils.js';
 
 const BASE_URL = 'https://admin.hlx.page';
 const headers = { 'Content-Type': 'application/json' };
@@ -14,21 +14,22 @@ const getProcess = (type) => {
 const writeEP = (url, type, usePath = false) => {
   const [ref, repo, owner] = getMiloUrl(url);
   const process = getProcess(type);
-  const path = usePath ? url.pathname : '*';
-  return `${BASE_URL}/${process}/${owner}/${repo}/${ref}/${path}`;
+  const path = usePath ? url.pathname : '/*';
+  return `${BASE_URL}/${process}/${owner}/${repo}/${ref}${path}`;
 };
 
 const createAEMRequest = (url, process, isBulk = true) => {
   const del = isDelete(process);
   const href = isBulk ? [url.href] : url.href;
-  const options = { headers, method: del ? 'DELETE' : 'POST' };
+  const endpoint = writeEP(url, process, !isBulk);
+  const options = { headers, method: del ? 'DELETE' : 'POST', body: {} };
   if (isBulk) options.body = { paths: [] };
   const request = {
     href,
     options,
     path: url.pathname,
     origin: url.origin,
-    endpoint: writeEP(url, process, !isBulk),
+    endpoint,
   };
   return request;
 };
@@ -72,56 +73,46 @@ const createJobs = (details, useBulk) => {
     }
     if (!jobs[base]) jobs[base] = createAEMRequest(url, process);
     const job = jobs[base];
-    if (!isDelete(process)) {
-      job.options.body.forceUpdate = true;
+    if (isDelete(process)) {
+      const param = job.endpoint.includes('?') ? '&' : '?';
+      job.endpoint = `${job.endpoint}${param}paths[]=${url.pathname}`;
+    } else {
+      job.options.body.paths.push(url.pathname.toLowerCase());
     }
-    job.options.body.paths.push(url.pathname.toLowerCase());
     job.href.push(url.href);
     return jobs;
   }, {}));
 };
 
-const formatJobResult = (jobs, topic, formatted) => {
-  if (formatted) return jobs;
-  const { complete, error } = processJobResult(jobs);
-  const { origin, hasPermission } = jobs[0];
-  const paths = complete.map(({ result }) => (result?.job?.path));
-  return [{
-    origin,
-    useBulk: hasPermission,
-    result: {
-      job: {
-        topic,
-        state: 'stopped',
-        stopTime: new Date(),
-        progress: { failed: complete.filter(({ status }) => ![200, 204].includes(status)).length },
-        data: { paths, resources: complete.map((item) => (item.result.job)) },
-      },
+const formatResult = ({ status }, job) => {
+  const paths = job.urls.map((url) => (new URL(url).pathname));
+  return {
+    job: {
+      topic: job.process,
+      state: 'stopped',
+      stopTime: new Date(),
+      data: { paths, resources: paths.map((path) => ({ path, status })) },
+      progress: { failed: [200, 204].includes(status) ? 0 : 1 },
     },
-  }, ...error];
+  };
 };
 
-const runJob = async (details) => {
+const runJobProcess = async (details) => {
   const { process } = details;
   const useBulk = process !== 'index';
   const jobs = createJobs(details, useBulk);
   const requests = jobs.flatMap(async (job) => {
-    const { options, origin } = job;
-    let { endpoint } = job;
-    if (options.body) {
-      if (isDelete(process)) {
-        endpoint = `${endpoint}?paths[]=${options.body.paths.join('&paths[]=')}`;
-        delete options.body;
-      } else {
-        options.body = JSON.stringify(options.body);
-      }
+    const { options, origin, endpoint } = job;
+    if (options.body && !isDelete(process)) {
+      options.body.forceUpdate = true;
+      options.body = JSON.stringify(options.body);
     }
     try {
       const request = await fetch(endpoint, options);
       if (!request.ok && useBulk) {
         throw new Error(getErrorText(request.status), request, origin);
       }
-      const result = useBulk ? await request.json() : { job: { ...job, ...request } };
+      const result = useBulk ? await request.json() : formatResult(request, details);
       return { ...job, result, useBulk };
     } catch (error) {
       return {
@@ -132,7 +123,7 @@ const runJob = async (details) => {
     }
   });
   const results = await Promise.all(requests);
-  return formatJobResult(results, process, useBulk);
+  return results;
 };
 
 const fetchStatus = async (link) => {
@@ -187,7 +178,7 @@ const runRetry = async ({ queue, urls, process }) => {
 
 export {
   runRetry,
-  runJob,
+  runJobProcess,
   connectSidekick,
   pollJobStatus,
 };
