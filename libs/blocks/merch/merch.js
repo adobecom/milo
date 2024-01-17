@@ -122,11 +122,14 @@ export async function buildCta(el, params) {
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
   const service = await initService();
+  const isCta = el.textContent?.startsWith('CTA');
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
-  cta.classList.add('con-button');
-  cta.classList.toggle('button-l', large);
-  cta.classList.toggle('blue', strong);
+  if (isCta) {
+    cta.classList.add('con-button');
+    cta.classList.toggle('button-l', large);
+    cta.classList.toggle('blue', strong);
+  }
   return cta;
 }
 
