@@ -68,6 +68,7 @@
   border-radius: 0.5rem;
   cursor: pointer;
   display: flex;
+  font-family: inherit;
   margin: 0 0 16px;
   padding: 0;
   user-select: none;
@@ -180,6 +181,7 @@ html[dir="rtl"] .quiz-option-icon {
   border: 2px solid var(--color-white);
   border-radius: 30px;
   cursor: pointer;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 700;
   min-height: 32px;

@@ -219,6 +219,15 @@ const addStock = (merchCard, styles) => {
   }
 };
 
+const simplifyHrs = (el) => {
+  const hrs = el.querySelectorAll('hr');
+  hrs.forEach((hr) => {
+    if (hr.parentElement.tagName === 'P') {
+      hr.parentElement.replaceWith(hr);
+    }
+  });
+};
+
 const init = async (el) => {
   const styles = [...el.classList];
   const lastClass = styles[styles.length - 1];
@@ -347,6 +356,7 @@ const init = async (el) => {
     initOfferSelection(merchCard, offerSelection);
   }
   decorateBlockHrs(merchCard);
+  simplifyHrs(merchCard);
   if (merchCard.classList.contains('has-divider')) {
     merchCard.setAttribute('custom-hr', true);
   }
