@@ -7,6 +7,7 @@ export async function mockFetch() {
   // this path allows to import this mock from tests for other blocks (e.g. commerce)
   const literals = JSON.parse(await readFile({ path: '../merch/mocks/literals.json' }));
   const offers = JSON.parse(await readFile({ path: '../merch/mocks/offers.json' }));
+  const namedOffers = JSON.parse(await readFile({ path: '../merch/mocks/named-offers.json' }));
 
   const { fetch } = window;
   sinon.stub(window, 'fetch').callsFake((...args) => {
@@ -21,20 +22,23 @@ export async function mockFetch() {
     // wcs mock
     if (pathname.endsWith('/web_commerce_artifact')) {
       const osis = searchParams.get('offer_selector_ids').split(',');
+      const firstOsi = osis[0];
       return Promise.resolve({
         status: 200,
         statusText: '',
         ok: true,
-        json: () => Promise.resolve({
-          resolvedOffers: osis.map((osi) => {
-            let index = Number.parseInt(osi, 10);
-            if (Number.isNaN(index) || !Number.isFinite(index) || index < 0) index = 0;
-            return {
-              ...offers[index % offers.length],
-              offerSelectorIds: [osi],
-            };
-          }),
-        }),
+        json: () => Promise.resolve(
+          (/^[A-Za-z]/.test(firstOsi)) ? namedOffers[firstOsi] : {
+            resolvedOffers: osis.map((osi) => {
+              let index = Number.parseInt(osi, 10);
+              if (Number.isNaN(index) || !Number.isFinite(index) || index < 0) index = 0;
+              return {
+                ...offers[index % offers.length],
+                offerSelectorIds: [osi],
+              };
+            }),
+          },
+        ),
       });
     }
     // fallback to original fetch, should not happen!
