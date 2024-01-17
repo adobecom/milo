@@ -61,6 +61,13 @@ export default async function init(a) {
   const { expFragments, decorateArea } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
+
+  if (a.href.includes('#_inline')) {
+    inline = true;
+    a.href = a.href.replace('#_inline', '');
+    relHref = relHref.replace('#_inline', '');
+  }
+
   if (expFragments?.[relHref]) {
     a.href = expFragments[relHref];
     relHref = expFragments[relHref];
@@ -69,10 +76,7 @@ export default async function init(a) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
   }
-  if (a.href.includes('#_inline')) {
-    inline = true;
-    a.href = a.href.replace('#_inline', '');
-  }
+
   const resp = await fetch(`${a.href}.plain.html`);
 
   if (!resp.ok) {
