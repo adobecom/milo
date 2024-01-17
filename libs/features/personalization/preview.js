@@ -276,7 +276,9 @@ function addHighlightData(manifests) {
     selectedVariant?.updatemetadata?.forEach(({ selector }) => {
       if (selector === 'gnav-source') updateManifestId('header, footer');
     });
-    document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`).forEach((el) => (el.dataset.manifestId = manifestName));
+    // eslint-disable-next-line max-len
+    document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`)
+      .forEach((el) => (el.dataset.manifestId = manifestName));
   });
 }
 
