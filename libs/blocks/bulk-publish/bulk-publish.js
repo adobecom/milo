@@ -2,6 +2,7 @@ import './job-process.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
 import { connectSidekick, runJobProcess } from './services.js';
+import { getConfig } from '../../utils/utils.js';
 import {
   editEntry,
   FORM_MODES,
@@ -13,8 +14,11 @@ import {
   wait,
 } from './utils.js';
 
-const styleSheet = await getSheet('/libs/blocks/bulk-publish/bulk-publisher.css');
-const loader = await getSheet('/libs/blocks/bulk-publish/loader.css');
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
+
+const styleSheet = await getSheet(`${base}/blocks/bulk-publish/bulk-publisher.css`);
+const loader = await getSheet(`${base}/blocks/bulk-publish/loader.css`);
 
 class BulkPublish extends LitElement {
   static properties = {
@@ -187,6 +191,7 @@ class BulkPublish extends LitElement {
             ${PROCESS_TYPES.map((type) => (getOption(type)))}
           </select>
           <button
+            id="RunProcess"
             disable=${this.formDisabled()} 
             @click=${this.submit}>
             Run Job

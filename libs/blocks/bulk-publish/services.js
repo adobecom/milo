@@ -36,6 +36,7 @@ const createAEMRequest = (url, process, isBulk = true) => {
 const connectSidekick = (bulkPub) => {
   const config = (event) => {
     const processes = event?.detail?.data;
+    console.log(event.detail, 'detail');
     if (processes) {
       const profile = processes.profile ?? null;
       const permissions = {};
