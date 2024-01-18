@@ -21,12 +21,6 @@ const initConfigPath = (quizMetaData) => {
   return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
 };
 
-const initQuizKey = () => metaData.storage?.text.toLowerCase();
-
-const initAnalyticsType = () => metaData.analyticstype?.text;
-
-const initAnalyticsQuiz = () => metaData.analyticsquiz?.text;
-
 async function fetchContentOfFile(path) {
   const response = await fetch(configPath(path));
   return response.json();
@@ -34,11 +28,11 @@ async function fetchContentOfFile(path) {
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getNormalizedMetadata(rootElement);
-  shortQuiz = metaData.shortquiz?.text === 'true';
   configPath = initConfigPath(metaData);
-  quizKey = initQuizKey();
-  analyticsType = initAnalyticsType();
-  analyticsQuiz = initAnalyticsQuiz();
+  shortQuiz = metaData.shortquiz?.text === 'true';
+  quizKey = metaData.storage?.text.toLowerCase();
+  analyticsType = metaData.analyticstype?.text;
+  analyticsQuiz = metaData.analyticsquiz?.text;
   return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
