@@ -2,8 +2,11 @@ import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
 import { humanDateTime, getStatusText, wait } from './utils.js';
 import { pollJobStatus, runRetry } from './services.js';
+import { getConfig } from '../../utils/utils.js';
 
-const styleSheet = await getSheet('/libs/blocks/bulk-publish/job-process.css');
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
+const styleSheet = await getSheet(`${base}/blocks/bulk-publish/job-process.css`);
 
 class JobProcess extends LitElement {
   static get properties() {

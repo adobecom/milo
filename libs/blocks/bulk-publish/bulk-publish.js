@@ -16,7 +16,6 @@ import {
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
-
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish/bulk-publisher.css`);
 const loader = await getSheet(`${base}/blocks/bulk-publish/loader.css`);
 
