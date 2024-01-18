@@ -277,6 +277,9 @@ const init = async (el) => {
   const icons = [];
   const merchCard = createTag('merch-card', { class: styles.join(' '), 'data-block': '' });
   merchCard.setAttribute('variant', cardType);
+  if (el.dataset.removedManifestId) {
+    merchCard.dataset.removedManifestId = el.dataset.removedManifestId;
+  }
   if (name) {
     merchCard.setAttribute('name', name);
   }
