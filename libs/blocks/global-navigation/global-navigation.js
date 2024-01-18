@@ -466,17 +466,15 @@ class Gnav {
       // reset sign up value on change
       children[0].attributes.isSignUpRequired = false;
 
-      if (isDesktop.matches) {
-        this.universalNavComponents?.forEach((component) => {
-          if (component === 'profile') return;
-          if (component === 'signup') {
-            children[0].attributes.isSignUpRequired = true;
-            return;
-          }
+      this.universalNavComponents?.forEach((component) => {
+        if (component === 'profile') return;
+        if (component === 'signup') {
+          children[0].attributes.isSignUpRequired = true;
+          return;
+        }
 
-          children.push(CONFIG.universalNav.components[component]);
-        });
-      }
+        children.push(CONFIG.universalNav.components[component]);
+      });
 
       return children;
     };
