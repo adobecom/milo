@@ -17,7 +17,7 @@
   margin-bottom: 0;
 }
 
-.marquee.light, .marquee.mobile-light, .marquee.quiet, .marquee.inline {
+.marquee.light, .marquee.mobile-light, .marquee.quiet:not(.dark), .marquee.inline {
   color: var(--text-color);
 }
 
@@ -37,13 +37,6 @@
 .marquee.mobile-dark a:not(.con-button),
 .marquee.mobile-dark a:not(.con-button):hover {
   color: var(--link-color-dark);
-}
-
-.marquee.static-links:not(.mobile-dark) a:not(.con-button),
-.static-links .marquee:not(.mobile-dark) a:not(.con-button),
-.marquee.static-links a:not(.con-button):hover,
-.static-links .marquee a:not(.con-button):hover {
-  color: inherit;
 }
 
 .marquee.mobile-light a:not(.con-button):hover {
@@ -183,7 +176,6 @@
 
 .marquee.large .foreground {
   padding: var(--spacing-m) 0;
-  gap: 0;
 }
 
 .marquee.large .background img {
@@ -716,5 +708,18 @@
 @media screen and (min-width: 1440px) {
   .marquee.large .foreground.container {
     max-width: var(--grid-container-width);
+  }
+}
+
+.marquee.static-links a:not(.con-button),
+.marquee.static-links a:not(.con-button):hover,
+.static-links .marquee a:not(.con-button),
+.static-links .marquee a:not(.con-button):hover {
+  color: inherit;
+}
+
+@media screen and (min-width: 768px) {
+  .marquee.mnemonic-list .foreground .text {
+    max-width: 800px;
   }
 }

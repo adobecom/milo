@@ -133,8 +133,11 @@
   --font-size-multiplier: 1.25;
 }
 
-:root:lang(ko-KR) {
+:root:lang(ko-KR),
+:root:lang(ko) {
   --body-font-family: adobe-clean-han-korean, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+
+  word-break: keep-all;
 }
 
 :root:lang(ja-JP),

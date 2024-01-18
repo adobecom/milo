@@ -45,7 +45,9 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'merch-card',
+  'merch-cards',
   'merch-offers',
+  'mnemonic-list',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -239,7 +241,7 @@ export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
-export function createTag(tag, attributes, html) {
+export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
     if (html instanceof HTMLElement
@@ -257,6 +259,7 @@ export function createTag(tag, attributes, html) {
       el.setAttribute(key, val);
     });
   }
+  options.parent?.append(el);
   return el;
 }
 
@@ -523,12 +526,18 @@ export function decorateImageLinks(el) {
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href, class: 'image-link' });
-      picParent.insertBefore(aTag, pic);
-      if (icon) {
-        import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+      if (href.includes('.mp4')) {
+        const a = createTag('a', { href: url, 'data-video-poster': img.src });
+        a.innerHTML = url;
+        pic.replaceWith(a);
       } else {
-        aTag.append(pic);
+        const aTag = createTag('a', { href, class: 'image-link' });
+        picParent.insertBefore(aTag, pic);
+        if (icon) {
+          import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+        } else {
+          aTag.append(pic);
+        }
       }
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);

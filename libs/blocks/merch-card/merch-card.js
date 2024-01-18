@@ -219,6 +219,34 @@ const addStock = (merchCard, styles) => {
   }
 };
 
+const simplifyHrs = (el) => {
+  const hrs = el.querySelectorAll('hr');
+  hrs.forEach((hr) => {
+    if (hr.parentElement.tagName === 'P') {
+      hr.parentElement.replaceWith(hr);
+    }
+  });
+};
+
+function createQuantitySelect(el) {
+  const quantitySelectConfig = el.querySelector('ul');
+  if (!quantitySelectConfig) return null;
+  const configMarkup = quantitySelectConfig.querySelector('li');
+  if (!configMarkup || !configMarkup.textContent.includes('Quantity')) return null;
+  const config = configMarkup.querySelector('ul').querySelectorAll('li');
+  if (config.length !== 2) return null;
+  const attributes = {};
+  attributes.title = config[0].textContent.trim();
+  const quantityValues = config[1].textContent.split(',').map((value) => value.trim())
+    .filter((value) => /^\d+$/.test(value));
+  if (quantityValues.length !== 3) return null;
+  import('../../deps/merch-quantity-select.js');
+  [attributes.min, attributes.max, attributes.step] = quantityValues.map(Number);
+  const quantitySelect = createTag('merch-quantity-select', attributes);
+  quantitySelectConfig.remove();
+  return quantitySelect;
+}
+
 const init = async (el) => {
   const styles = [...el.classList];
   const lastClass = styles[styles.length - 1];
@@ -341,12 +369,22 @@ const init = async (el) => {
     footer.append(ctas);
   }
   merchCard.appendChild(footer);
-  const offerSelection = cardType === 'plans' ? el.querySelector('ul') : null;
-  if (offerSelection) {
-    const { initOfferSelection } = await import('./merch-offer-select.js');
-    initOfferSelection(merchCard, offerSelection);
+
+  if (cardType === 'plans') {
+    const quantitySelect = createQuantitySelect(el);
+    const offerSelection = el.querySelector('ul');
+    if (offerSelection) {
+      const { initOfferSelection } = await import('./merch-offer-select.js');
+      initOfferSelection(merchCard, offerSelection, quantitySelect);
+    }
+    if (quantitySelect) {
+      const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+      bodySlot.append(quantitySelect);
+    }
   }
+
   decorateBlockHrs(merchCard);
+  simplifyHrs(merchCard);
   if (merchCard.classList.contains('has-divider')) {
     merchCard.setAttribute('custom-hr', true);
   }

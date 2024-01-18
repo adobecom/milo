@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
+const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
@@ -304,6 +305,41 @@ describe('UAR Card', () => {
     expect(merchCard.classList.contains('has-divider')).to.be.true;
   });
 });
+
+describe('Merch Card with Offer Selection', () => {
+  it('Supports quantity select ', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    await init(document.querySelector('.quantity-select'));
+    const merchCard = document.querySelector('merch-card');
+    const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    expect(quantitySelect).to.exist;
+    expect(quantitySelect.getAttribute('title')).to.equal('Select a quantity:');
+    expect(quantitySelect.getAttribute('min')).to.equal('1');
+    expect(quantitySelect.getAttribute('max')).to.equal('3');
+    expect(quantitySelect.getAttribute('step')).to.equal('1');
+  });
+
+  it('Change quantity select ', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    await init(document.querySelector('.quantity-select'));
+    await delay();
+    const merchCard = document.querySelector('merch-card');
+    const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    const items = quantitySelect.shadowRoot.querySelectorAll('.item');
+    items[2].click();
+    const button = merchCard.querySelector('.con-button');
+    expect(button.getAttribute('data-quantity')).to.equal('3');
+  });
+
+  it('Skip Change quantity select render ', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    await init(document.querySelector('.skip-quantity-select-render'));
+    await delay();
+    expect(document.querySelector('merch-quantity-select')).to.not.exist;
+  });
+});
+
+
 
 describe('Section metadata rules', async () => {
   before(async () => {
