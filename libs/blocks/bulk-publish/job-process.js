@@ -72,7 +72,7 @@ class JobProcess extends LitElement {
     }
   }
 
-  jobDetails(path) {
+  getJob(path) {
     const jobData = this.jobStatus ?? this.job.result.job;
     const { topic, data, startTime, stopTime, createTime } = jobData;
     const resource = data?.resources?.find((src) => src.path === path || src.webPath === path);
@@ -114,7 +114,7 @@ class JobProcess extends LitElement {
     const { job } = this.job.result;
     return job.data.paths.map((path, pathIndex) => {
       const jobPath = typeof path === 'object' ? path.path : path;
-      const { style, status, topic, url, time } = this.jobDetails(jobPath);
+      const { style, status, topic, url, time } = this.getJob(jobPath);
       return html`
         <div 
           class="result${style}"

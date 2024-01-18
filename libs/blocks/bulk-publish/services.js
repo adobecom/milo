@@ -19,19 +19,18 @@ const writeEP = (url, type, usePath = false) => {
 };
 
 const createAEMRequest = (url, process, isBulk = true) => {
-  const del = isDelete(process);
+  const useDelete = isDelete(process);
   const href = isBulk ? [url.href] : url.href;
   const endpoint = writeEP(url, process, !isBulk);
-  const options = { headers, method: del ? 'DELETE' : 'POST', body: {} };
+  const options = { headers, method: useDelete ? 'DELETE' : 'POST', body: {} };
   if (isBulk) options.body = { paths: [] };
-  const request = {
+  return {
     href,
     options,
     path: url.pathname,
     origin: url.origin,
     endpoint,
   };
-  return request;
 };
 
 const connectSidekick = (bulkPub) => {

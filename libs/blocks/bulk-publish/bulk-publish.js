@@ -254,14 +254,11 @@ class BulkPublish extends LitElement {
   }
 
   renderProgress(total) {
-    const done = this.jobs.reduce((count, { progress }) => {
+    if (!total) return '';
+    return `${this.jobs.reduce((count, { progress }) => {
       const processed = progress?.processed ?? 0;
       return count + processed;
-    }, 0);
-    if (!total) {
-      return '';
-    }
-    return `${done}/${total}`;
+    }, 0)}/${total}`;
   }
 
   clearJobs = () => {
@@ -327,15 +324,11 @@ class BulkPublish extends LitElement {
     this.disabled = true;
     this.jobErrors = false;
     this.urls = [];
-    this.process = 'choose';
     const urls = this.renderRoot.querySelector('#Urls');
-    if (urls) {
-      urls.value = '';
-    }
+    if (urls) urls.value = '';
+    this.process = 'choose';
     const process = this.renderRoot.querySelector('#ProcessSelect');
-    if (process) {
-      process.value = 'choose';
-    }
+    if (process) process.value = 'choose';
   }
 
   async submit() {
