@@ -110,6 +110,29 @@ export async function sendViewportDimensionsOnRequest(messageInfo) {
   }
 }
 
+/** For the modal height adjustment to work the following conditions must be met:
+ * 1. The modal must have classes 'commerce-frame height-fit-content';
+ * 2. The iframe inside must send a postMessage with the contentHeight (a number of px or '100%);
+ */
+function adjustModalHeight({ contentHeight, dialogId }) {
+  if (!contentHeight || !dialogId) return;
+  const dialog = document.querySelector(`#${dialogId}`);
+  const iFrameWrapper = dialog?.querySelector('.milo-iframe.modal');
+  if (!iFrameWrapper) return;
+
+  if (contentHeight === '100%') {
+    iFrameWrapper.style.height = contentHeight;
+    dialog.style.height = contentHeight;
+  } else {
+    const verticalMargins = 20;
+    const clientHeight = document.documentElement.clientHeight - verticalMargins;
+    if (clientHeight <= 0) return;
+    const newHeight = contentHeight > clientHeight ? clientHeight : contentHeight;
+    iFrameWrapper.style.height = `${newHeight}px`;
+    dialog.style.height = `${newHeight}px`;
+  }
+}
+
 export async function getModal(details, custom) {
   if (!(details?.path || custom)) return null;
   const { id } = details || custom;
@@ -181,6 +204,9 @@ export async function getModal(details, custom) {
   if (dialog.classList.contains('commerce-frame')) {
     if (isInitialPageLoad) {
       window.addEventListener('message', (messageInfo) => {
+        if (dialog.classList.contains('height-fit-content')) {
+          adjustModalHeight({ contentHeight: messageInfo?.data?.contentHeight, dialogId: id });
+        }
         sendViewportDimensionsOnRequest(messageInfo);
       });
       isInitialPageLoad = false;
