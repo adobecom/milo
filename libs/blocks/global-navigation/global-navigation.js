@@ -505,10 +505,6 @@ class Gnav {
     });
 
     window.UniversalNav(getConfiguration());
-
-    isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(getConfiguration());
-    });
   };
 
   loadSearch = () => {
