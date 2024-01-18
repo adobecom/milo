@@ -37,9 +37,10 @@ const setManifestIdOnChildren = (sections, manifestId) => {
   );
 };
 
-const insertInlineFrag = (sections, a) => {
+const insertInlineFrag = (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
+  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
     a.parentElement.replaceWith(...fragChildren);
   } else {
@@ -113,7 +114,7 @@ export default async function init(a) {
   }
 
   if (inline) {
-    insertInlineFrag(sections, a);
+    insertInlineFrag(sections, a, relHref);
   } else {
     a.parentElement.replaceChild(fragment, a);
     await loadArea(fragment);
