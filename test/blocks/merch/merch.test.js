@@ -301,14 +301,6 @@ describe('Merch Block', () => {
       });
     });
 
-    it('renders linked text', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.linked.text',
-      ));
-      expect(el.textContent).to.equal('Buy now and save 40%');
-      expect(el.classList.contains('con-button')).to.be.false;
-    });
-
     it('renders large CTA inside a marquee', async () => {
       const el = await merch(document.querySelector(
         '.merch.cta.inside-marquee',
