@@ -7,7 +7,12 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
-let configPath; let quizKey; let shortQuiz; let analyticsType; let analyticsQuiz; let metaData;
+let configPath;
+let quizKey;
+let shortQuiz;
+let analyticsType;
+let analyticsQuiz;
+let metaData;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
@@ -16,16 +21,6 @@ const initConfigPath = (quizMetaData) => {
   return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
 };
 
-const initQuizKey = () => {
-  const { locale } = getConfig();
-  quizKey = metaData.storage?.text;
-  return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
-};
-
-const initAnalyticsType = () => metaData.analyticstype?.text;
-
-const initAnalyticsQuiz = () => metaData.analyticsquiz?.text;
-
 async function fetchContentOfFile(path) {
   const response = await fetch(configPath(path));
   return response.json();
@@ -33,11 +28,11 @@ async function fetchContentOfFile(path) {
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getNormalizedMetadata(rootElement);
-  shortQuiz = metaData.shortquiz?.text === 'true';
   configPath = initConfigPath(metaData);
-  quizKey = initQuizKey(rootElement);
-  analyticsType = initAnalyticsType();
-  analyticsQuiz = initAnalyticsQuiz();
+  shortQuiz = metaData.shortquiz?.text === 'true';
+  quizKey = metaData.storage?.text.toLowerCase();
+  analyticsType = metaData.analyticstype?.text;
+  analyticsQuiz = metaData.analyticsquiz?.text;
   return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
@@ -150,7 +145,11 @@ export const storeResultInLocalStorage = (
     ),
     pageloadHash: getAnalyticsDataForLocalStorage(analyticsConfig),
   };
-  localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
+
+  const { locale } = getConfig();
+  const quizLocalKey = locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
+
+  localStorage.setItem(quizLocalKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
 };
 
@@ -259,7 +258,7 @@ const normalizeKeys = (data) => {
 
 export const getRedirectUrl = (destinationPage) => {
   const separator = destinationPage.includes('?') ? '&' : '?';
-  return `${destinationPage}${separator}quizKey=${quizKey}`;
+  return `${destinationPage}${separator}quizkey=${quizKey}`;
 };
 
 export const parseResultData = async (answers) => {
