@@ -1,0 +1,64 @@
+  {
+    "gb1": {
+      "resolvedOffers": [
+        {
+          "offerSelectorIds": [
+            "gb1"
+          ],
+          "offerId": "0ADF92A6C8514F2800BE9E87DB641D2A",
+          "priceDetails": {
+            "price": 273.17,
+            "priceWithoutTax": 0.0,
+            "priceWithoutDiscountAndTax": 227.64,
+            "usePrecision": true,
+            "formatString": "'&pound;'#,##0.00",
+            "taxDisplay": "TAX_INCLUSIVE_DETAILS",
+            "taxTerm": "VAT"
+          },
+          "analytics": "{\"offerId\":\"0ADF92A6C8514F2800BE9E87DB641D2A\",\"label\":\"phsp_direct_individual\",\"price\":\"273.17\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"ANNUAL\",\"currencyCode\":\"GBP\"}",
+          "productArrangementCode": "phsp_direct_individual",
+          "buyingProgram": "RETAIL",
+          "commitment": "YEAR",
+          "term": "ANNUAL",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": [
+            "COM"
+          ],
+          "salesChannel": "DIRECT",
+          "offerType": "TRIAL",
+          "pricePoint": "TRIAL_TWP3060_60_DAY_TRIAL_FOR_CCI_SINGLE_APPS_WINBACK",
+          "language": "MULT",
+          "merchant": "ADOBE"
+        },
+        {
+          "offerSelectorIds": [
+            "gb1"
+          ],
+          "offerId": "49133266E474B3E6EE5D1CB98B95B824",
+          "priceDetails": {
+            "price": 262.51,
+            "priceWithoutTax": 0.0,
+            "priceWithoutDiscountAndTax": 218.76,
+            "usePrecision": true,
+            "formatString": "'&pound;'#,##0.00",
+            "taxDisplay": "TAX_INCLUSIVE_DETAILS",
+            "taxTerm": "VAT"
+          },
+          "analytics": "{\"offerId\":\"49133266E474B3E6EE5D1CB98B95B824\",\"label\":\"phsp_direct_individual\",\"price\":\"262.51\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"ANNUAL\",\"currencyCode\":\"GBP\"}",
+          "productArrangementCode": "phsp_direct_individual",
+          "buyingProgram": "RETAIL",
+          "commitment": "YEAR",
+          "term": "ANNUAL",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": [
+            "COM"
+          ],
+          "salesChannel": "DIRECT",
+          "offerType": "TRIAL",
+          "pricePoint": "TRIAL_TWP3060_60_DAY_TRIAL_FOR_CCI_SINGLE_APPS_WINBACK",
+          "language": "EN",
+          "merchant": "ADOBE"
+        }
+      ]
+    }
+  }
