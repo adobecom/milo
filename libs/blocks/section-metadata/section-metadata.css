@@ -205,11 +205,11 @@ main > .section[class*='-up'] > .content {
 
 /* mobile only */
 @media (max-width: 600px) {
-  .section.reverse-mobile > div:nth-child(1) {
+  .section.two-up.reverse-mobile > div:nth-child(1) {
     order: 2;
   }
 
-  .section.reverse-mobile > div:nth-child(2) {
+  .section.two-up.reverse-mobile > div:nth-child(2) {
     order: 1;
   }
 }
