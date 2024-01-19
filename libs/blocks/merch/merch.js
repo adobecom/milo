@@ -143,24 +143,17 @@ export async function loadEntitlements() {
 }
 
 export async function handleEntitlements(cta, promise) {
-  try {
-    const [{ arrangement_codes: aCodes }, entitlementsMappings] = await promise;
-    if (aCodes !== undefined) {
-      await cta.onceSettled();
-      const { value: [{ productArrangementCode }] } = cta;
-      if (aCodes[productArrangementCode] === true) {
-        const mapping = entitlementsMappings.data
-          ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
-        if (!mapping) return;
-        cta.firstElementChild.innerHTML = (await replaceKey(mapping.CTA, getConfig()))
+  const [{ arrangement_codes: aCodes }, entitlementsMappings] = await promise;
+  if (aCodes === undefined) return;
+  await cta.onceSettled();
+  const { value: [{ productArrangementCode }] } = cta;
+  if (aCodes[productArrangementCode] === true) {
+    const mapping = entitlementsMappings.data
+      ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
+    if (!mapping) return;
+    cta.firstElementChild.innerHTML = (await replaceKey(mapping.CTA, getConfig()))
          || cta.firstElementChild.innerHTML;
-        cta.href = mapping.Target;
-      }
-    }
-  } catch {
-    // ignore
-  } finally {
-    cta.classList.remove(LOADING_ENTITLEMENTS);
+    cta.href = mapping.Target;
   }
 }
 
@@ -185,7 +178,9 @@ export async function buildCta(el, params) {
     if (!loadEntitlementsPromise) {
       loadEntitlementsPromise = loadEntitlements();
     }
-    handleEntitlements(cta, loadEntitlementsPromise);
+    handleEntitlements(cta, loadEntitlementsPromise).finally(() => {
+      cta.classList.remove(LOADING_ENTITLEMENTS);
+    });
   }
 
   return cta;
