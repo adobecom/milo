@@ -1,5 +1,4 @@
-import { getConfig, loadScript, loadIms, createTag } from '../../utils/utils.js';
-import getUserEntitlements from '../global-navigation/utilities/getUserEntitlements.js';
+import { getConfig, loadScript } from '../../utils/utils.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
 
@@ -117,62 +116,6 @@ export async function getPriceContext(el, params) {
   };
 }
 
-const upgradeCta = async (cta) => {
-  const path = 'https://stage.plan.adobe.com?toOfferId=632B3ADD940A7FBB7864AA5AD19B8D28&language=en&intent=switch&surface=ADOBE_COM&ctx=if&ctxRtUrl=https://www.qa01.adobe.com/creativecloud/plans.html&onClose=https://www.stage.adobe.com&fromOffer=25A15F318CDEA57CB477721B9CAE0AB8';
-
-  const iframe = createTag('iframe', {
-    src: path,
-    title: 'Upgrade modal',
-    frameborder: '0',
-    marginwidth: '0',
-    marginheight: '0',
-    scrolling: 'no',
-    allowfullscreen: 'true',
-    loading: 'lazy',
-    class: 'upgrade-flow-iframe',
-  });
-
-  const { getModal } = await import('../modal/modal.js');
-  cta.addEventListener('click', async (e) => {
-    e.preventDefault();
-    getModal(null, { id: 'preflight', content: iframe, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
-  });
-  // replace cta with upgrade
-  cta.textContent = 'Upgrade';
-};
-
-const getProductFamilyFromPA = (productArrangementCode) => {
-  if (!productArrangementCode) return null;
-  if (productArrangementCode === 'ccsn_direct_individual') {
-    return 'CC_ALL_APPS';
-  }
-  if (productArrangementCode === 'DRAFTS') {
-    return 'photoshop';
-  }
-  return null;
-};
-
-const getProductFamily = async (placeholder) => {
-  const { value } = await placeholder.onceSettled();
-  if (!value || value.length === 0) return null;
-  const { productArrangementCode } = value[0];
-  return getProductFamilyFromPA(productArrangementCode);
-};
-
-// todo figure out if list of cta should be configurable
-// or additionally defined by some flag
-const isAllApps = (ctaProductFamily) => {
-  if (ctaProductFamily === 'CC_ALL_APPS'
-    || ctaProductFamily === 'CC_ALL_APPS_STOCK_BUNDLE'
-    || ctaProductFamily === 'CC_PRO') return true;
-  return false;
-};
-
-const isUpgradableOffer = (productFamily) => {
-  const upgradableOffers = ['PHOTOSHOP', 'ILLUSTRATOR', 'ACROBAT', 'AUDITION', 'RUSH', 'INDESIGN', '3DI', 'XD', 'PREMIERE', 'AFTEREFFECTS', 'DREAMWEAVER', 'CC_EXPRESS', 'INCOPY', '3D_TEXTURING', 'PHOTOGRAPHY', 'EDGE_ANIMATE', 'PHOTOSHOP_LIGHTROOM', 'ILLUSTRATOR_STOCK_BUNDLE'];
-  return upgradableOffers.includes(productFamily);
-};
-
 export function addFromOfferId({ entitlements, queryString, upgradeableProductFamilies }) {
   if (!entitlements?.offers || !queryString || !upgradeableProductFamilies) return queryString;
   const { offers } = entitlements;
@@ -207,36 +150,6 @@ export function replaceCtxRtUrl(queryString) {
   return `${queryString}${properCtxRtUrl}`;
 }
 
-const handleUpgradeOffer = async (cta) => {
-  const upgradeOffer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
-  if (!upgradeOffer) return;
-  // todo remove
-  // upgradeCta(cta, upgradeOffer);
-  // todo remove
-  const ctaProductFamily = await getProductFamily(cta);
-  if (!isAllApps(ctaProductFamily)) return;
-
-  await loadIms();
-  if (!window.adobeIMS.isSignedInUser()) return;
-  const entitlements = await getUserEntitlements({ params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }], format: 'raw' });
-  const changePlanOffer = entitlements?.find((offer) => offer.change_plan_available === true);
-  const hasChangePlanOffer = !!changePlanOffer;
-  const noAllApps = !entitlements?.find((offer) => {
-    const productFamily = offer?.offer?.product_arrangement?.family;
-    return isAllApps(productFamily);
-  });
-
-  const hasUpgradableOffer = !!entitlements?.find((offer) => {
-    const productFamily = offer?.offer?.product_arrangement?.family;
-    return isUpgradableOffer(productFamily);
-  });
-  // const canUpgrade = hasChangePlanOffer && noAllApps && hasUpgradableOffer;
-  const canUpgrade = hasChangePlanOffer && noAllApps && hasUpgradableOffer;
-  if (canUpgrade) {
-    await upgradeCta(cta, upgradeOffer);
-  }
-};
-
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
@@ -248,7 +161,11 @@ export async function buildCta(el, params) {
   cta.classList.add('con-button');
   cta.classList.toggle('button-l', large);
   cta.classList.toggle('blue', strong);
-  handleUpgradeOffer(cta);
+  const upgradeOffer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
+  if (upgradeOffer) {
+    const { default: handleUpgradeOffer } = await import('./upgrade.js');
+    handleUpgradeOffer(cta, upgradeOffer);
+  }
   return cta;
 }
 
