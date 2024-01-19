@@ -56,7 +56,8 @@ export default async function loadIcons(icons, config) {
     const { classList } = icon;
     if (classList.contains('icon-tooltip')) decorateToolTip(icon);
     const iconName = icon.classList[1].replace('icon-', '');
-    if (!iconSVGs[iconName]) return;
+    const existingIcon = icon.querySelector('svg');
+    if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
     if (parent.childNodes.length > 1) {
       if (parent.lastChild === icon) {

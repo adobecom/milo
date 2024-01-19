@@ -20,10 +20,9 @@ function decorateAvatar(el) {
 }
 
 export default function init(el) {
-  const { miloLibs, codeRoot } = getConfig();
-  const regex = /rounded-corners/g;
-  const base = miloLibs || codeRoot;
-  if ([...el.classList].some((c) => regex.test(c))) {
+  if (el.className.includes('rounded-corners')) {
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
     loadStyle(`${base}/styles/rounded-corners.css`);
   }
   el.classList.add('con-block');
@@ -72,7 +71,7 @@ export default function init(el) {
 
     // qr code
     if (row.closest('.qr-code')) {
-      const imgQRCode = row.querySelector('.text > p.body-s > picture > img');
+      const imgQRCode = row.querySelector('.text img');
       if (imgQRCode) {
         imgQRCode.classList.add('qr-code-img');
       }

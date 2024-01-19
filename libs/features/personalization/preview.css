@@ -329,3 +329,7 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
 body[data-mep-highlight='true'] main[data-manifest-id]::before {
   content: 'page replaced by: ' attr(data-manifest-id);
 }
+
+body[data-mep-highlight='true'] .section[class*="-merch-cards"] .fragment[data-manifest-id]::before {
+  display: none;
+}
