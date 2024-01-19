@@ -34,10 +34,12 @@ export function polyfills() {
  */
 export async function initService() {
   await polyfills();
-  const commerce = await import('../../deps/commerce.js');
-  return commerce.init(() => ({
-    ...getConfig(),
-    commerce: { priceLiteralsURL },
+  const commerceLib = await import('../../deps/commerce.js');
+  const { env, commerce } = getConfig();
+  commerce.priceLiteralsURL = priceLiteralsURL;
+  return commerceLib.init(() => ({
+    env,
+    commerce,
   }));
 }
 
@@ -64,6 +66,7 @@ export async function getCommerceContext(el, params) {
  */
 export async function getCheckoutContext(el, params) {
   const context = await getCommerceContext(el, params);
+  // const { commerce } = config;
   if (!context) return null;
   const { settings } = await initService();
   const { checkoutClientId } = settings;
