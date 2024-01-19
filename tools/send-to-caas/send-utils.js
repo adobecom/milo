@@ -239,8 +239,8 @@ const getCardImageUrl = () => {
   const { doc } = getConfig();
   const imageUrl = getImagePathMd('cardimage')
     || getImagePathMd('cardimagepath')
-    || doc.querySelector('meta[property="og:image"]')?.content
-    || doc.querySelector('main')?.querySelector('img')?.src;
+    || doc.querySelector('main')?.querySelector('img')?.src
+    || doc.querySelector('meta[property="og:image"]')?.content;
 
   if (!imageUrl) return null;
   return addHost(imageUrl);
