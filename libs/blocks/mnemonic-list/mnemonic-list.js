@@ -17,7 +17,13 @@ export const decorateMnemonicList = (container) => {
     if (title) product.appendChild(title);
     productList.appendChild(product);
     paragraph.replaceWith(productList);
+    paragraph.remove();
   });
+  if (targetElement) {
+    targetElement.prepend(productList);
+  }
+  const divs = targetElement.querySelectorAll('div:not([class])');
+  divs.forEach((div) => div.remove());
 };
 
 export default async function init(el) {

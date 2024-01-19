@@ -718,7 +718,7 @@
   color: inherit;
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 900px) {
   .marquee.mnemonic-list .foreground .text {
     max-width: 800px;
   }
