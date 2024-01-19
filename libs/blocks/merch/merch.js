@@ -120,8 +120,6 @@ export async function getPriceContext(el, params) {
 }
 
 export async function buildCta(el, params) {
-  const large = !!el.closest('.marquee');
-  const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
   const service = await initService();
@@ -129,6 +127,8 @@ export async function buildCta(el, params) {
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
   if (isCta) {
+    const large = !!el.closest('.marquee');
+    const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
     cta.classList.add('con-button');
     cta.classList.toggle('button-l', large);
     cta.classList.toggle('blue', strong);
