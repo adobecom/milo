@@ -35,7 +35,7 @@ export function polyfills() {
 export async function initService() {
   await polyfills();
   const commerceLib = await import('../../deps/commerce.js');
-  const { env, commerce } = getConfig();
+  const { env, commerce = {} } = getConfig();
   commerce.priceLiteralsURL = priceLiteralsURL;
   return commerceLib.init(() => ({
     env,
