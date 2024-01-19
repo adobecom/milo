@@ -66,7 +66,6 @@ export async function getCommerceContext(el, params) {
  */
 export async function getCheckoutContext(el, params) {
   const context = await getCommerceContext(el, params);
-  // const { commerce } = config;
   if (!context) return null;
   const { settings } = await initService();
   const { checkoutClientId } = settings;
