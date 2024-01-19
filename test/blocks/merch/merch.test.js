@@ -66,7 +66,6 @@ describe('Merch Block', () => {
     window.lana = { log: () => { } };
     document.head.innerHTML = await readFile({ path: './mocks/head.html' });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    await mockFetch();
     setConfig(config);
     ({ setEntitlementsMetadata, setSubscriptionsData } = await mockFetch());
     await mockIms('CH');
