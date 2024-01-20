@@ -896,6 +896,11 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  const georouting = getMetadata('georouting') || config.geoRouting;
+  if (georouting === 'on') {
+    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+  }
   loadMartech();
   const header = document.querySelector('header');
   if (header) {
@@ -1005,13 +1010,6 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
-  const georouting = getMetadata('georouting') || config.geoRouting;
-  if (georouting === 'on') {
-    // eslint-disable-next-line import/no-cycle
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
-  }
-
   decorateFooterPromo();
 
   const appendage = getMetadata('title-append');
@@ -1067,12 +1065,13 @@ async function processSection(section, config, isDoc) {
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loaded);
 
-  if (isDoc && section.el.dataset.idx === '0') {
-    loadPostLCP(config);
-  }
-
   // Show the section when all blocks inside are done.
   delete section.el.dataset.status;
+
+  if (isDoc && section.el.dataset.idx === '0') {
+    await loadPostLCP(config);
+  }
+
   delete section.el.dataset.idx;
 
   return section.blocks;
