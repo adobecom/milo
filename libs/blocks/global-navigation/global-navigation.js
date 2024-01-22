@@ -487,7 +487,7 @@ class Gnav {
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
-      locale,
+      locale: locale === 'no_NO' ? 'nb_NO' : locale,
       imsClientId: window.adobeid?.client_id,
       theme: 'light',
       analyticsContext: {
