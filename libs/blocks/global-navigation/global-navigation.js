@@ -206,8 +206,7 @@ const closeOnClickOutside = (e) => {
 
 const getIetfLocale = (ietfLocale) => {
   const nonStandardLocaleMap = { no_NO: 'nb_NO' };
-  if (nonStandardLocaleMap[ietfLocale]) return nonStandardLocaleMap[ietfLocale];
-  return ietfLocale;
+  return nonStandardLocaleMap[ietfLocale] || ietfLocale;
 };
 
 class Gnav {
