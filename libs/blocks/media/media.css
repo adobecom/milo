@@ -160,7 +160,7 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-right: var(--spacing-s);
 }
 
-.media.qr-code a {
+.media.qr-code .qr-button-container a {
   width: 135px;
   max-width: 140px;
   height: 50px;

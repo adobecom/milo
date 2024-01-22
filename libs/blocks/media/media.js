@@ -75,15 +75,16 @@ export default function init(el) {
       if (imgQRCode) {
         imgQRCode.classList.add('qr-code-img');
       }
-      const qrCodeLinks = row.querySelectorAll('a');
+      const qrCodeLinks = row.querySelectorAll('.con-button');
+      qrCodeLinks.forEach(qrCodeLink => {
+        qrCodeLink.textContent = '';
+        qrCodeLink.classList.remove('con-button');
+        qrCodeLink.parentNode.classList.add('qr-button-container');
+      })
       const googleBtn = qrCodeLinks[0];
       const appleBtn = qrCodeLinks[1];
-      googleBtn.textContent = '';
       googleBtn.classList.add('google-play');
-      googleBtn.parentNode.classList.add('qr-button-container');
-      appleBtn.textContent = '';
       appleBtn.classList.add('app-store');
-      appleBtn.parentNode.classList.add('qr-button-container');
     }
     container.append(row);
   });
