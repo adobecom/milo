@@ -78,6 +78,11 @@
   inset: 0 100% auto auto;
 }
 
+.text-block .icon-area {
+  display: flex;
+  column-gap: var(--spacing-s);
+}
+
 /* Alignment */
 .text-block.center {
   text-align: center;
@@ -186,11 +191,6 @@
 
 .section[class*='grid-width-'] .text-block .foreground {
   max-width: unset;
-}
-
-.text-block .icon-area {
-  display: flex;
-  column-gap: var(--spacing-xxs);
 }
 
 .text-block .icon-area.con-button {
