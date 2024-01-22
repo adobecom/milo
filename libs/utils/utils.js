@@ -835,8 +835,8 @@ async function checkForPageMods() {
   let persManifests = [];
   const search = new URLSearchParams(window.location.search);
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
-  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
-  const promoEnabled = promoMd && promoMd !== 'off';
+  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off' && search.get('martech') !== 'off';
+  const promoEnabled = promoMd && promoMd !== 'off' && search.get('promo') !== 'off';
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
   if (mepEnabled) {
