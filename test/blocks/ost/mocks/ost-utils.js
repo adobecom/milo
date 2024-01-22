@@ -6,8 +6,8 @@ const ogUrl = window.location.href;
 const getConfig = () => ({
   env: { name: 'local' },
   locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    ch_de: { ietf: 'de-CH', tk: 'vin7zsi.css' },
+    '': { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' },
+    ch_de: { prefix: '/ch_de', ietf: 'de-CH', tk: 'vin7zsi.css' },
   },
 });
 
