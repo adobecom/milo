@@ -1,19 +1,9 @@
-import { loadIms } from '../../utils/utils.js';
+import { loadIms, getMetadata, createTag } from '../../utils/utils.js';
 import getUserEntitlements from '../global-navigation/utilities/getUserEntitlements.js';
 
-// todo figure out if list of cta should be configurable
-// or additionally defined by some flag
-const isUpgradeTarget = (ctaProductFamily) => {
-  if (ctaProductFamily === 'CC_ALL_APPS'
-    || ctaProductFamily === 'CC_ALL_APPS_STOCK_BUNDLE'
-    || ctaProductFamily === 'CC_PRO') return true;
-  return false;
-};
-
-const isUpgradable = (offer) => {
+const isProductFamily = (offer, pfs) => {
   const productFamily = offer?.offer?.product_arrangement?.family;
-  const upgradableOffers = ['PHOTOSHOP', 'ILLUSTRATOR', 'ACROBAT', 'AUDITION', 'RUSH', 'INDESIGN', '3DI', 'XD', 'PREMIERE', 'AFTEREFFECTS', 'DREAMWEAVER', 'CC_EXPRESS', 'INCOPY', '3D_TEXTURING', 'PHOTOGRAPHY', 'EDGE_ANIMATE', 'PHOTOSHOP_LIGHTROOM', 'ILLUSTRATOR_STOCK_BUNDLE'];
-  return productFamily && upgradableOffers.includes(productFamily);
+  return productFamily && pfs.includes(productFamily);
 };
 
 const upgradeCta = async (cta) => {
@@ -55,21 +45,32 @@ const getProductFamily = async (placeholder) => {
   return null;
 };
 
+/**
+ * Metadata 'switch-modal' format is 'switch-modal'PHOTOSHOP, ILLUSTRATOR: CC_ALL_APPS'
+ * 'sourcePF' source product family, e.g. PHOTOSHOP or ILLUSTRATOR
+ * 'targetPF' target product family, e.g. CC_ALL_APPS
+ *
+ * This method checks if:
+ * 1. The CTA is in the list of upgrade targets, e.g. CC_ALL_APPS
+ * 2. The user is signed in
+ * 3. The user doesn't have an upgrade target, e.g. CC_ALL_APPS already
+ * 4. The user has an upgrade source offer, e.g. PHOTOSHOP or ILLUSTRATOR, etc.
+ *
+ */
 export default async function handleUpgradeOffer(cta, upgradeOffer) {
+  const [sourcePF, targetPF] = getMetadata('switch-modal').split(':')
+    .map((productFamilies) => productFamilies.split(',').map((pf) => pf.trim()).filter(Boolean));
   const ctaProductFamily = await getProductFamily(cta);
-  if (!isUpgradeTarget(ctaProductFamily)) return;
+  if (!targetPF.includes(ctaProductFamily)) return;
 
   await loadIms();
   if (!window.adobeIMS.isSignedInUser()) return;
   const entitlements = await getUserEntitlements({ params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }], format: 'raw' });
-  const hasUpgradeTarget = entitlements?.find((offer) => {
-    const productFamily = offer?.offer?.product_arrangement?.family;
-    return isUpgradeTarget(productFamily);
-  });
+  const hasUpgradeTarget = entitlements?.find((offer) => isProductFamily(offer, targetPF));
   if (hasUpgradeTarget) return;
 
   const changePlanOffers = entitlements?.filter((offer) => offer.change_plan_available === true);
-  const upgradable = changePlanOffers?.find((offer) => isUpgradable(offer));
+  const upgradable = changePlanOffers?.find((offer) => isProductFamily(offer, sourcePF));
   if (upgradable) {
     await upgradeCta(cta, upgradeOffer);
   }
