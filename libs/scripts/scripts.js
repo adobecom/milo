@@ -87,7 +87,7 @@ const locales = {
   my_ms: { ietf: 'ms', tk: 'qxw8hzm.css' },
   ng: { ietf: 'en-GB', tk: 'hah7vzn.css' },
   nl: { ietf: 'nl-NL', tk: 'qxw8hzm.css' },
-  no: { ietf: 'no-NO', tk: 'qxw8hzm.css' },
+  no: { ietf: 'nb-NO', tk: 'qxw8hzm.css' },
   nz: { ietf: 'en-GB', tk: 'hah7vzn.css' },
   pe: { ietf: 'es-PE', tk: 'hah7vzn.css' },
   ph_en: { ietf: 'en', tk: 'hah7vzn.css' },
