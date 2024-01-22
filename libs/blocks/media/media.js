@@ -76,11 +76,11 @@ export default function init(el) {
         imgQRCode.classList.add('qr-code-img');
       }
       const qrCodeLinks = row.querySelectorAll('.con-button');
-      qrCodeLinks.forEach(qrCodeLink => {
+      qrCodeLinks.forEach((qrCodeLink) => {
         qrCodeLink.textContent = '';
         qrCodeLink.classList.remove('con-button');
         qrCodeLink.parentNode.classList.add('qr-button-container');
-      })
+      });
       const googleBtn = qrCodeLinks[0];
       const appleBtn = qrCodeLinks[1];
       googleBtn.classList.add('google-play');
