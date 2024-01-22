@@ -204,6 +204,11 @@ const closeOnClickOutside = (e) => {
   }
 };
 
+const getIetfLocale = (ietfLocale) => {
+  const nonStandardLocaleMap = { no_NO: 'nb_NO' };
+  return nonStandardLocaleMap[ietfLocale] || ietfLocale;
+};
+
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -440,7 +445,7 @@ class Gnav {
     } else {
       [region, language] = config.locale.prefix.replace('/', '').split('_');
     }
-    const locale = `${language.toLowerCase()}_${region.toUpperCase()}`;
+    const locale = getIetfLocale(`${language.toLowerCase()}_${region.toUpperCase()}`);
     const environment = config.env.name === 'prod' ? 'prod' : 'dev';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
     const getDevice = () => {
