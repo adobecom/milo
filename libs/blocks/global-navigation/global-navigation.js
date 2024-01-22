@@ -204,6 +204,12 @@ const closeOnClickOutside = (e) => {
   }
 };
 
+const getIetfLocale = (ietfLocale) => {
+  const nonStandardLocaleMap = { no_NO: 'nb_NO' };
+  if (nonStandardLocaleMap[ietfLocale]) return nonStandardLocaleMap[ietfLocale];
+  return ietfLocale;
+};
+
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -440,7 +446,7 @@ class Gnav {
     } else {
       [region, language] = config.locale.prefix.replace('/', '').split('_');
     }
-    const locale = `${language.toLowerCase()}_${region.toUpperCase()}`;
+    const locale = getIetfLocale(`${language.toLowerCase()}_${region.toUpperCase()}`);
     const environment = config.env.name === 'prod' ? 'prod' : 'dev';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
     const getDevice = () => {
@@ -487,7 +493,7 @@ class Gnav {
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
-      locale: locale === 'no_NO' ? 'nb_NO' : locale,
+      locale,
       imsClientId: window.adobeid?.client_id,
       theme: 'light',
       analyticsContext: {
