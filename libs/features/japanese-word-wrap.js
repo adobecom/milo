@@ -79,10 +79,10 @@ function updateParserModel(parser, pattern, score, markerSymbol = '#') {
  * @returns {boolean} - True if the element should be excluded, false otherwise.
  */
 function shouldExclude(element) {
-  const isFirefox = navigator.userAgent.includes('Firefox');
-  const isDisplayFlexApplied = isFirefox && getComputedStyle(element).display === 'flex';
+  const elStyles = getComputedStyle(element);
 
-  return isDisplayFlexApplied;
+  return navigator.userAgent.includes('Firefox')
+    && (elStyles.display === 'flex' || elStyles.display === 'grid');
 }
 
 /**
