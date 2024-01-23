@@ -834,9 +834,10 @@ async function checkForPageMods() {
   const targetMd = getMetadata('target');
   let persManifests = [];
   const search = new URLSearchParams(window.location.search);
-  const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
-  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
-  const promoEnabled = promoMd && promoMd !== 'off';
+  const offFlag = (val) => search.get(val) === 'off' || search.get('mep') === 'off';
+  const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
+  const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
+  const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
   if (mepEnabled) {
