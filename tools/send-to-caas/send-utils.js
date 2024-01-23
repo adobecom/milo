@@ -237,10 +237,11 @@ const getImagePathMd = (keyName) => {
 
 const getCardImageUrl = () => {
   const { doc } = getConfig();
-  const imageUrl = getImagePathMd('cardimage')
+  const imageUrl = getImagePathMd('image')
+    || getImagePathMd('cardimage')
     || getImagePathMd('cardimagepath')
-    || doc.querySelector('meta[property="og:image"]')?.content
-    || doc.querySelector('main')?.querySelector('img')?.src;
+    || doc.querySelector('main')?.querySelector('img')?.src.replace(/\?.*/, '')
+    || doc.querySelector('meta[property="og:image"]')?.content;
 
   if (!imageUrl) return null;
   return addHost(imageUrl);
@@ -315,7 +316,7 @@ const getCountryAndLang = async (options) => {
 
 const parseCardMetadata = () => {
   const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('.card-metadata');
+  const mdEl = getConfig().doc.querySelector('.card-metadata') || getConfig().doc.querySelector('.caas-marquee');
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
       const key = n.children?.[0]?.textContent?.toLowerCase();
