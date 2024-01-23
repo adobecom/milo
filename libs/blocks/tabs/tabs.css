@@ -185,6 +185,7 @@
   background: unset;
 }
 
+
 .tabs[class*='pill'] .tab-content {
   border-bottom: none;
 }
@@ -272,32 +273,31 @@
 
 .tabs .tab-paddles .paddle {
   position: absolute;
+  cursor: pointer;
   width: 32px;
   height: 48px;
   bottom: 0;
   background: var(--tabs-active-bg-color);
   border: 0;
+  border-bottom: 1px solid var(--tabs-border-color);
   padding: 14px 0 12px;
   display: flex;
   align-items: center;
 }
 
-.tabs .tab-paddles .paddle:hover {
-  cursor: pointer;
-}
-
 .tabs .tab-paddles .paddle:disabled {
-  box-shadow: 0 -1px 0 inset var(--tabs-border-color);
+  cursor: default;
+  box-shadow: none;
   background: var(--tabs-list-bg-gradient);
 }
 
 .tabs .tab-paddles .paddle-left {
-  box-shadow: 0 -1px 0 inset var(--tabs-border-color), 4px 0 4px -2px var(--tabs-paddle-bs-color);
+  box-shadow: 4px 0 4px -2px var(--tabs-paddle-bs-color);
   left: 0;
 }
 
 .tabs .tab-paddles .paddle-right {
-  box-shadow: 0 -1px 0 inset var(--tabs-border-color), -4px 0 4px -2px var(--tabs-paddle-bs-color);
+  box-shadow: -4px 0 4px -2px var(--tabs-paddle-bs-color);
   right: 0;
 }
 
@@ -322,10 +322,16 @@
   opacity: 0;
 }
 
+.tabs[class*='pill'] .tab-paddles .paddle {
+  background: unset;
+  border: none;
+}
+
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs div[role="tablist"],
-.tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"] {
+.tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"],
+.tabs-background-transparent .tabs .tab-paddles .paddle {
   background: transparent;
 }
 
