@@ -73,6 +73,19 @@ function updateParserModel(parser, pattern, score, markerSymbol = '#') {
 }
 
 /**
+ * Determines whether an element should be excluded from Japanese word wrapping.
+ *
+ * @param {Element} element - The element to check.
+ * @returns {boolean} - True if the element should be excluded, false otherwise.
+ */
+function shouldExclude(element) {
+  const isFirefox = navigator.userAgent.includes('Firefox');
+  const isDisplayFlexApplied = isFirefox && getComputedStyle(element).display === 'flex';
+
+  return isDisplayFlexApplied;
+}
+
+/**
  * Check if a word wrap has been applied to an element.
  *
  * @param {HTMLElement} element - The HTML element to be checked.
@@ -146,7 +159,7 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
 
   // Apply budoux to target selector
   textElements.forEach((el) => {
-    if (budouxExcludeElements.has(el) || isWordWrapApplied(el)) return;
+    if (budouxExcludeElements.has(el) || isWordWrapApplied(el) || shouldExclude(el)) return;
     parser.applyElement(el, { threshold: budouxThres });
   });
 
@@ -155,7 +168,7 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
     const bw2 = new BalancedWordWrapper();
     // Apply balanced word wrap to target selector
     textElements.forEach((el) => {
-      if (bwExcludeElements.has(el) || isBalancedWordWrapApplied(el)) return;
+      if (bwExcludeElements.has(el) || isBalancedWordWrapApplied(el) || shouldExclude(el)) return;
       bw2.applyElement(el);
     });
   }
