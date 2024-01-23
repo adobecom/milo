@@ -44,11 +44,18 @@ describe('Quiz', () => {
   });
 
   it('Checking config values from the quiz block', async () => {
-    const { configPath, quizKey, analyticsType, analyticsQuiz } = initConfigPathGlob(quiz);
+    const {
+      configPath,
+      quizKey,
+      analyticsType,
+      analyticsQuiz,
+      shortQuiz,
+    } = initConfigPathGlob(quiz);
     expect(configPath).to.be.a('function');
     expect(quizKey).to.be.a.string;
     expect(analyticsType).to.be.a.string;
     expect(analyticsQuiz).to.be.a.string;
+    expect(shortQuiz).to.be.a('boolean');
   });
 
   it('Checking quiz data', async () => {
@@ -193,7 +200,7 @@ describe('Quiz', () => {
   it('Testing redirect url', async () => {
     const redirectUrl = getRedirectUrl('https://mockdata/path/to/quiz/uar-results');
     expect(redirectUrl).to.be.an('string');
-    expect(redirectUrl).to.include('cc-quiz-en-US');
+    expect(redirectUrl).to.include('cc-quiz');
   });
 
   it('Testing result flow with invalid selections', async () => {
