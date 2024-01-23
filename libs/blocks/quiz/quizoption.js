@@ -35,10 +35,9 @@ export const OptionCard = ({
 
   if (options === 'fi_code') {
     return html`<button class="quiz-option ${disabled}${selected}" data-option-name="${options}" id="${options}" 
-        data-option-type="${cardIcon ? 'icon' : ''}${coverImage ? 'cover-image' : ''}"
         aria-pressed="${!!selected}" tabindex="${disabled ? '-1' : '0'}">
-        ${cardIcon && cardIconHtml}
-        ${coverImage && coverImageHtml}
+        ${(icon || iconTablet || iconDesktop) && getIconHtml()}
+        ${image && imageHtml}
         <div class="quiz-option-text-container">
           <h3 class="quiz-option-title">${title}</h3>
           <p class="quiz-option-text">${text}</p>

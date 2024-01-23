@@ -126,20 +126,12 @@ export const findAndStoreResultData = async (answers = [], mlFlowData = {}) => {
       primaryProductCodes,
       secondaryProductCodes,
       umbrellaProduct,
+      mlFlowData,
     );
   } else {
     window.lana?.log(`ERROR: No results found for ${answers}`);
   }
 
-  storeResultInLocalStorage(
-    answers,
-    resultData,
-    resultResources,
-    primaryProductCodes,
-    secondaryProductCodes,
-    umbrellaProduct,
-    mlFlowData,
-  );
   return {
     destinationPage,
     primaryProductCodes,
