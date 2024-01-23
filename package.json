@@ -8,7 +8,7 @@
     "test:watch": "npm test -- --watch",
     "test:file": "wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage",
     "test:file:watch": "wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage --watch",
-    "libs": "hlx up --port=6456",
+    "libs": "aem up --port=6456",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
     "lint:js:nibble": "eslint-nibble .",
