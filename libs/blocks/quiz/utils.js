@@ -90,7 +90,11 @@ export const defaultRedirect = (url) => {
   window.location.href = url;
 };
 
-export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect, mlFlowData = {}) => {
+export const handleResultFlow = async (
+  answers = [],
+  mlFlowData = {},
+  redirectFunc = defaultRedirect,
+) => {
   const { destinationPage } = await findAndStoreResultData(answers, mlFlowData);
   const redirectUrl = getRedirectUrl(destinationPage);
   redirectFunc(redirectUrl);
