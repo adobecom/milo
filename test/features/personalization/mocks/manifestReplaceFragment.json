@@ -12,6 +12,16 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "replaceFragment",
+      "selector": "/fragments/inline-replaceme",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/inline-fragmentreplaced",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"
