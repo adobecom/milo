@@ -291,7 +291,7 @@ body[data-mep-highlight='true'] [data-removed-manifest-id] {
 }
 
 body:not([data-mep-highlight='true']) [data-removed-manifest-id] {
-  display: none;
+  display: none !important;
 }
 
 body[data-mep-highlight='true'] [data-manifest-id]::before,
