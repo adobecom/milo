@@ -69,11 +69,9 @@ export const signOut = (e) => {
 };
 
 export const getAuthorizedUsers = async () => {
-  let authorizedUsers = getLocalStorage(BULK_AUTHORIZED_USERS);
-  if (authorizedUsers) return authorizedUsers;
   const resp = await fetch(BULK_CONFIG_FILE_PATH);
   const json = await resp.json();
-  authorizedUsers = json.users.data.map((user) => user.user);
+  const authorizedUsers = json.users.data.map((user) => user.user);
   setLocalStorage(BULK_AUTHORIZED_USERS, authorizedUsers);
   return authorizedUsers;
 };

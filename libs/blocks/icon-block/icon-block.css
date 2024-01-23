@@ -2,7 +2,6 @@
   display: block;
   width: 100%;
   position: relative;
-  overflow: hidden;
 }
 
 .icon-block p {
@@ -275,6 +274,10 @@
 .icon-block.bio.center .foreground,
 .icon-block.vertical.center .foreground {
   text-align: center;
+}
+
+[class*='-up'] .icon-block.inline .foreground { 
+  margin: unset; 
 }
 
 [class*="-up"] .icon-block.bio.inline .foreground {

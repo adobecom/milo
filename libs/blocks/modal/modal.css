@@ -194,4 +194,19 @@
     padding-bottom: 0;
     height: 845px;
   }
+
+  .dialog-modal.commerce-frame.height-fit-content {
+    height: auto;
+    max-height: 850px;
+    min-width: 1000px;
+  }
+
+  .dialog-modal.commerce-frame.height-fit-content .milo-iframe {
+    height: auto;
+    max-height: 845px;
+  }
+}
+
+.disable-scroll {
+  overflow: hidden;
 }

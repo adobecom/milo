@@ -392,6 +392,7 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
     height: 98%;
 }
 
+.gnav-search-results > ul li > p,
 .gnav-search-results > ul li > a {
   color: #2d2d2d;
   display: block;
@@ -399,6 +400,7 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
   font-weight: 700;
   line-height: 1;
   padding: 5px 10px;
+  margin: 0;
 }
 
 .gnav-search-results > ul li > a span {
@@ -1181,6 +1183,10 @@ header .app-launcher {
     align-items: center;
     width: 25px;
     box-sizing: border-box;
+  }
+
+  .gnav .gnav-logo svg {
+    width: 100%;
   }
 
   /* Search Bar */

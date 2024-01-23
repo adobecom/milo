@@ -64,9 +64,24 @@ const decorateImage = (media) => {
   }
 };
 
-export default function init(el) {
-  const isLight = el.classList.contains('light');
-  if (!isLight) el.classList.add('dark');
+export async function dynamicImport(path) {
+  return import(path);
+}
+
+export async function loadMnemonicList(foreground) {
+  try {
+    await dynamicImport('../mnemonic-list/mnemonic-list.js')
+      .then((module) => {
+        module.decorateMnemonicList(foreground);
+      });
+  } catch (err) {
+    window.lana?.log(`Failed to load mnemonic list module: ${err}`);
+  }
+}
+
+export default async function init(el) {
+  const excDark = ['light', 'quiet'];
+  if (!excDark.some((s) => el.classList.contains(s))) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
   const foreground = children[children.length - 1];
   if (children.length > 1) {
@@ -79,9 +94,9 @@ export default function init(el) {
   text.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
 
-  if (media && !media.querySelector('video, a[href*=".mp4"]')) {
+  if (media) {
     media.classList.add('media');
-    decorateImage(media);
+    if (!media.querySelector('video, a[href*=".mp4"]')) decorateImage(media);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
@@ -113,5 +128,8 @@ export default function init(el) {
       el.classList.add('has-credit');
       media?.lastChild.remove();
     }
+  }
+  if (el.classList.contains('mnemonic-list') && foreground) {
+    await loadMnemonicList(foreground);
   }
 }

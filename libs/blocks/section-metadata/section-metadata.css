@@ -172,6 +172,10 @@
   z-index: 4;
 }
 
+.section.sticky-bottom.popup {
+  bottom: var(--spacing-xs);
+}
+
 .section[class*='grid-width-'] {
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);
@@ -185,9 +189,42 @@ main > .section[class*='-up'] > .content {
   margin: 0;
 }
 
+.section.masonry-layout {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--spacing-s);
+  padding-left: var(--grid-margins-width);
+  padding-right: var(--grid-margins-width);
+}
+
+.section.masonry-layout > div[class*='grid-'],
+.section.masonry-layout > div[class*='grid-'] > div.fragment,
+.section.masonry-layout > div[class*='grid-'] > div.fragment > div.section {
+  display: grid;
+}
+
+/* mobile only */
+@media (max-width: 600px) {
+  .section.two-up.reverse-mobile > div:nth-child(1) {
+    order: 2;
+  }
+
+  .section.two-up.reverse-mobile > div:nth-child(2) {
+    order: 1;
+  }
+}
+
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .section.masonry-layout {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }  
+  
+  .section.masonry-layout .grid-full-width:first-child {
+    grid-column: 1 / -1;
   }
 }
 
@@ -265,4 +302,22 @@ main > .section[class*='-up'] > .content {
     padding-left: var(--grid-margins-width-10);
     padding-right: var(--grid-margins-width-10);
   }
+
+  .section.masonry-layout {
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  .section.masonry-layout .grid-full-width {grid-column: span 12; }
+  .section.masonry-layout .grid-half-width {grid-column: span 6; }
+  .section.masonry-layout .grid-span-1 {grid-column: span 1; }
+  .section.masonry-layout .grid-span-2 {grid-column: span 2; }
+  .section.masonry-layout .grid-span-3 {grid-column: span 3; }
+  .section.masonry-layout .grid-span-4 {grid-column: span 4; }
+  .section.masonry-layout .grid-span-5 {grid-column: span 5; }
+  .section.masonry-layout .grid-span-6 {grid-column: span 6; }
+  .section.masonry-layout .grid-span-7 {grid-column: span 7; }
+  .section.masonry-layout .grid-span-8 {grid-column: span 8; }
+  .section.masonry-layout .grid-span-9 {grid-column: span 9; }
+  .section.masonry-layout .grid-span-10 {grid-column: span 10; }
+  .section.masonry-layout .grid-span-11 {grid-column: span 11; }
 }

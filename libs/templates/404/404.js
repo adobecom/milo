@@ -12,6 +12,9 @@ async function get404(path) {
   const main = document.body.querySelector('main');
   main.append(section);
   await loadArea(main);
+  import('../../martech/attributes.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((area, idx) => analytics.decorateSectionAnalytics(area, idx));
+  });
 }
 
 async function getLegacy404() {
