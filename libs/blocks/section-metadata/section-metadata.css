@@ -203,6 +203,17 @@ main > .section[class*='-up'] > .content {
   display: grid;
 }
 
+/* mobile only */
+@media (max-width: 600px) {
+  .section.two-up.reverse-mobile > div:nth-child(1) {
+    order: 2;
+  }
+
+  .section.two-up.reverse-mobile > div:nth-child(2) {
+    order: 1;
+  }
+}
+
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
