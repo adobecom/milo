@@ -129,6 +129,14 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
+  removefragment: (el, target, manifestId) => {
+    if (target === 'false') return;
+    if (manifestId) {
+      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
+      el.insertAdjacentElement('beforebegin', div);
+    }
+    el.classList.add(CLASS_EL_DELETE);
+  },
   replacecontent: (el, target, manifestId) => {
     if (el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
