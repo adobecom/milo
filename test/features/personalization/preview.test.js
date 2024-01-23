@@ -176,6 +176,9 @@ describe('preview feature', () => {
     expect(document.querySelector('.marquee').getAttribute('data-code-manifest-id')).to.equal('selected-example.json');
     expect(document.querySelector('header').getAttribute('data-manifest-id')).to.equal('selected-example.json');
   });
+  it('adjusts highlights for merch cards', () => {
+    expect(document.querySelector('merch-card').getAttribute('data-manifest-id')).to.equal('selected-example.json');
+  });
   it('preselects form inputs', () => {
     expect(document.querySelector('input[name="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('checked')).to.equal('checked');
     expect(document.querySelector('input[name="/homepage/fragments/mep/default-selected.json"][value="default"]').getAttribute('checked')).to.equal('checked');
