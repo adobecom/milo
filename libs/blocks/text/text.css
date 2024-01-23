@@ -196,6 +196,7 @@
 
 .text-block .icon-area.con-button {
   column-gap: unset;
+  margin-bottom: unset;
 }
 
 .text-block .icon-area picture {

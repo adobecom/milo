@@ -37,19 +37,10 @@ function decorateMultiViewport(el) {
 }
 
 function decorateBlockIconArea(el) {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  if (!headings) return;
-  headings.forEach((h) => {
-    const hPrevElem = h.previousElementSibling;
-    if (hPrevElem?.childElementCount) {
-      const picCount = [...hPrevElem.children].reduce((result, item) => {
-        let count = result;
-        if (item.nodeName === 'PICTURE') count += 1;
-        return count;
-      }, 0);
-      if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
-    }
-  });
+  const row = el.querySelector(':scope > div');
+  if (row.classList.length) return;
+  const pictures = row.children[0].querySelectorAll('PICTURE');
+  if (pictures.length) row.children[0].classList.add('icon-area');
 }
 
 export default function init(el) {
