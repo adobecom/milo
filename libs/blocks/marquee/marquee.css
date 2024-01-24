@@ -1,7 +1,7 @@
 .marquee {
   position: relative;
   color: var(--color-white);
-  display: flex;
+  display: block;
 }
 
 .marquee.large.standard {
@@ -10,6 +10,7 @@
 
 .marquee.small, .marquee.quiet, .marquee.inline, .marquee.large.compact {
   min-height: 360px;
+  display: block;
 }
 
 .marquee.inline hr {
