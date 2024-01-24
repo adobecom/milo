@@ -70,7 +70,7 @@
 .marquee .foreground {
   position: relative;
   padding: var(--spacing-xxl) 0;
-  display: flex;
+  display: block;
   flex-direction: column;
   gap: var(--spacing-m);
 }
