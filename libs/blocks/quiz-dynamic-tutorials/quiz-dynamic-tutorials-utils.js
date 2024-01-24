@@ -1,13 +1,20 @@
+import { getConfig } from '../../utils/utils.js';
+
+const API_KEY = 'CCHomeWeb1';
+const ENDPOINT = 'community-recom-v1';
+
 const getQuizTutorialsList = async (inputText, fiCode, numOfItems) => {
-  const apiUrl = 'https://cchome-stage.adobe.io/int/v1/models';
-  const res = await fetch(apiUrl, {
+  const { env } = getConfig();
+  const subdomain = env === 'prod' ? 'cchome-stage' : 'cchome-stage';
+  const apiUrl = `https://${subdomain}.adobe.io/int/v1/models`;
+  const result = await fetch(apiUrl, {
     method: 'POST',
     headers: {
-      'x-api-key': 'CCHomeWeb1',
+      'x-api-key': API_KEY,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      endpoint: 'community-recom-v1',
+      endpoint: ENDPOINT,
       contentType: 'application/json',
       payload: {
         data: {
@@ -21,9 +28,9 @@ const getQuizTutorialsList = async (inputText, fiCode, numOfItems) => {
     }),
   })
     .then((response) => response.json())
-    .catch((error) => console.log('Error:', error));
+    .catch((error) => window.lana.log(`ERROR: Fetching tutorials by fiCode ${error}`));
 
-  return res;
+  return result;
 };
 
 const getQuizTutorialsDetails = async (
