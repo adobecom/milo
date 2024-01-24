@@ -363,4 +363,9 @@ describe('Section metadata rules', async () => {
     const merchCard = await init(block);
     expect(merchCard.parentElement.className).to.match(/section three-merch-cards product/);
   });
+  it('Retains removed-manifest-id', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mep.html' });
+    const merchCard = await init(document.querySelector('.merch-card'));
+    expect(merchCard.dataset.removedManifestId).to.exist;
+  });
 });
