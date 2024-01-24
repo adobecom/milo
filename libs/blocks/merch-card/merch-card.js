@@ -421,7 +421,7 @@ const init = async (el) => {
   const footer = createTag('div', { slot: 'footer' });
   if (ctas) {
     if (merchCard.variant === 'mini-compare-chart') {
-      decorateButtons(ctas, 'button-m');
+      decorateButtons(ctas, 'button-l');
     } else {
       decorateButtons(ctas);
     }

@@ -331,15 +331,6 @@
   text-decoration: none;
 }
 
-.m-button .con-button,
-.con-button.button-m {
-  border-radius: 21px;
-  font-size: 17px;
-  line-height: 21px;
-  min-height: 21px;
-  padding: 8px 22px 11px;
-}
-
 .l-button .con-button,
 .con-button.button-l {
   border-radius: 20px;
