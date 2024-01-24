@@ -87,16 +87,16 @@ function initTabs(elm, config, rootElem) {
   if (config) configTabs(config, rootElem);
 }
 
-// Check if current tab is not visible and next tab is visible
-function previousTab(item, i, arr) {
+function previousTab(current, i, arr) {
   const next = arr[i + 1];
-  return (!isTabInTabListView(item) && next && isTabInTabListView(next));
+  // The tab before the first visible tab
+  return (next && !isTabInTabListView(current) && isTabInTabListView(next));
 }
 
-// Check if previous tab is visible and current tab is not visible
-function nextTab(item, i, arr) {
+function nextTab(current, i, arr) {
   const previous = arr[i - 1];
-  return (previous && isTabInTabListView(previous) && !isTabInTabListView(item));
+  // The tab after the last visible tab
+  return (previous && isTabInTabListView(previous) && !isTabInTabListView(current));
 }
 
 function initPaddles(tabList, tabPaddles) {

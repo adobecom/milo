@@ -43,7 +43,7 @@ describe('tabs', () => {
     expect(unSelectedBtn2.ariaSelected).to.equal('false');
   });
 
-  it('paddles are disabled when tabList is not scrollable', async () => {
+  it('disables paddles when tabList is not scrollable', async () => {
     setViewport({ width: DESKTOP_WIDTH, height: HEIGHT });
     window.dispatchEvent(new Event('resize'));
     await delay(200);
@@ -59,7 +59,6 @@ describe('tabs', () => {
     window.dispatchEvent(new Event('resize'));
     const rightPaddle = allTabs[0].querySelector('.paddle-right');
 
-    console.log(rightPaddle.getAttribute('disabled'));
     expect(rightPaddle.getAttribute('disabled')).to.equal('');
   });
 
