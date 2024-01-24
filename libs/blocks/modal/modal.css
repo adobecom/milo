@@ -25,7 +25,8 @@
   z-index: 103;
 }
 
-.dialog-modal.commerce-frame .fragment,.dialog-modal.commerce-frame .section {
+.dialog-modal.commerce-frame .fragment,
+.dialog-modal.commerce-frame .section {
   height: 100%;
 }
 
