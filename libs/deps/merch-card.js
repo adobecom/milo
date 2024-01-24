@@ -1,4 +1,4 @@
-// Wed, 24 Jan 2024 04:11:59 GMT
+// Wed, 24 Jan 2024 19:22:54 GMT
 import{html as t,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as f,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var g="(max-width: 767px)";var i="(min-width: 768px)",o="(min-width: 1200px)",s="(min-width: 1600px)";var y=f`
     :host {
         position: relative;
@@ -214,7 +214,8 @@ import{html as t,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as f
     }
 
     :host([variant='mini-compare-chart']) .body {
-        padding: var(--consonant-merch-spacing-s);
+        padding: var(--consonant-merch-spacing-s)
+            var(--consonant-merch-spacing-s) 0;
         height: inherit;
         flex: unset;
     }
