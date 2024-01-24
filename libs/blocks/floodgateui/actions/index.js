@@ -15,7 +15,7 @@ function getSanitizedUrl(link) {
 }
 
 function isReferencedAsset(link, baseUrlOrigin) {
-  return link && link.startsWith(baseUrlOrigin) && (link.endsWith('.svg') || link.endsWith('.pdf'));
+  return link && link.startsWith(baseUrlOrigin) && (link.endsWith('.svg') || link.endsWith('.pdf') || link.endsWith('.mp4'));
 }
 
 function updateDomWithBaseUrl(dom, url) {
@@ -96,7 +96,7 @@ export async function findFragments() {
   fragmentStatusCheck.value = 'IN PROGRESS';
   setStatus('fragments', 'info', 'Finding fragments.');
   const found = urls.value
-    .filter((url) => !url.pathname.endsWith('.svg') && !url.pathname.endsWith('.pdf'))
+    .filter((url) => !url.pathname.endsWith('.svg') && !url.pathname.endsWith('.pdf') && !url.pathname.endsWith('.mp4'))
     .map((url) => findPageFragments(url.pathname));
   const pageFragments = await Promise.all(found);
 
