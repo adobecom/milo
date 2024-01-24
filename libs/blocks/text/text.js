@@ -24,7 +24,6 @@ const blockTypeSizes = {
   },
 };
 
-
 function decorateMultiViewport(el) {
   const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
   const foreground = el.querySelector('.foreground');
