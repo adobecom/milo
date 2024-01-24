@@ -1,4 +1,4 @@
-import { loadIms, getMetadata, createTag } from '../../utils/utils.js';
+import { loadIms, getMetadata, createTag, getConfig } from '../../utils/utils.js';
 import getUserEntitlements from '../global-navigation/utilities/getUserEntitlements.js';
 
 const isProductFamily = (offer, pfs) => {
@@ -6,11 +6,24 @@ const isProductFamily = (offer, pfs) => {
   return productFamily && pfs.includes(productFamily);
 };
 
-const upgradeCta = async (cta) => {
-  const path = 'https://stage.plan.adobe.com?toOfferId=632B3ADD940A7FBB7864AA5AD19B8D28&language=en&intent=switch&surface=ADOBE_COM&ctx=if&ctxRtUrl=https://www.qa01.adobe.com/creativecloud/plans.html&onClose=https://www.stage.adobe.com&fromOffer=25A15F318CDEA57CB477721B9CAE0AB8';
+const upgradeCta = async (cta, upgradable, upgradeOffer) => {
+  if (!upgradable?.offer?.offer_id
+    || !upgradeOffer?.value
+    || upgradeOffer.value.length === 0) return;
+  const { env } = getConfig();
+  const url = new URL(env?.name === 'prod' ? 'https://adobe.com' : 'https://stage.adobe.com');
+  url.searchParams.append('intent', 'switch');
+  url.searchParams.append('toOfferId', upgradeOffer.value[0].offerId);
+  url.searchParams.append('fromOffer', upgradable.offer.offer_id);
+  url.searchParams.append('language', 'en'); // todo check where comes from
+  url.searchParams.append('surface', 'ADOBE_COM');
+  url.searchParams.append('ctx', 'if');
+  url.searchParams.append('ctxRtUrl', encodeURIComponent(window.location.href));
+  // If URL includes wcmmode=disabled param, the PayPal modal will not open, so we need to remove it
+  url.searchParams.delete('wcmmode');
 
   const iframe = createTag('iframe', {
-    src: path,
+    src: url.toString(),
     title: 'Upgrade modal',
     frameborder: '0',
     marginwidth: '0',
@@ -66,12 +79,31 @@ export default async function handleUpgradeOffer(cta, upgradeOffer) {
   await loadIms();
   if (!window.adobeIMS.isSignedInUser()) return;
   const entitlements = await getUserEntitlements({ params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }], format: 'raw' });
+  if (!entitlements || !Array.isArray(entitlements)) return;
   const hasUpgradeTarget = entitlements?.find((offer) => isProductFamily(offer, targetPF));
   if (hasUpgradeTarget) return;
 
   const changePlanOffers = entitlements?.filter((offer) => offer.change_plan_available === true);
   const upgradable = changePlanOffers?.find((offer) => isProductFamily(offer, sourcePF));
   if (upgradable) {
-    await upgradeCta(cta, upgradeOffer);
+    await upgradeCta(cta, upgradable, upgradeOffer);
   }
+}
+
+/**
+* Replaces the `ctxRtUrl` in the `queryString`
+* @param {string} queryString
+* @returns {string}
+*/
+export function replaceCtxRtUrl(queryString) {
+  /* In order for the RETURN_BACK navigation to work correctly, the host page must include
+  a ctxRtUrl query param in the iframe src. This value should represent the URL of the host page
+  and will be used as the return URL (for example, when redirecting to PayPal). */
+  if (!queryString || typeof queryString !== 'string') return '';
+
+  if (queryString.includes('ctxRtUrl=')) {
+    const ctxUrlRegexp = /ctxRtUrl=([^&]+)/; // matches this part of the string: ctxRtUrl=https%3A%2F%2Faccount.stage.adobe.com
+    return queryString.replace(ctxUrlRegexp, properCtxRtUrl);
+  }
+  return `${queryString}${properCtxRtUrl}`;
 }

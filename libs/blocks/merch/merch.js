@@ -116,40 +116,6 @@ export async function getPriceContext(el, params) {
   };
 }
 
-export function addFromOfferId({ entitlements, queryString, upgradeableProductFamilies }) {
-  if (!entitlements?.offers || !queryString || !upgradeableProductFamilies) return queryString;
-  const { offers } = entitlements;
-  const firstSingleAppOfferId = Object.keys(offers).find((offerId) => upgradeableProductFamilies
-    .includes(offers[offerId].product_arrangement?.family));
-  if (!firstSingleAppOfferId) return queryString;
-  if (queryString.includes('fromOffer=')) {
-    const fromOfferRegexp = /fromOffer=([^&]+)/; // matches this part of the string: fromOffer=123456789
-    return queryString.replace(fromOfferRegexp, `fromOffer=${firstSingleAppOfferId}`);
-  }
-  return `${queryString}&fromOffer=${firstSingleAppOfferId}`;
-}
-
-/**
-* Replaces the `ctxRtUrl` in the `queryString`
-* @param {string} queryString
-* @returns {string}
-*/
-export function replaceCtxRtUrl(queryString) {
-  /* In order for the RETURN_BACK navigation to work correctly, the host page must include
-  a ctxRtUrl query param in the iframe src. This value should represent the URL of the host page
-  and will be used as the return URL (for example, when redirecting to PayPal). */
-  if (!queryString || typeof queryString !== 'string') return '';
-  const currentPageUrl = new URL(window.location.href);
-  // If URL includes wcmmode=disabled param, the PayPal modal will not open, so we need to remove it
-  currentPageUrl.searchParams.delete('wcmmode');
-  const properCtxRtUrl = `ctxRtUrl=${encodeURIComponent(currentPageUrl.toString())}`;
-  if (queryString.includes('ctxRtUrl=')) {
-    const ctxUrlRegexp = /ctxRtUrl=([^&]+)/; // matches this part of the string: ctxRtUrl=https%3A%2F%2Faccount.stage.adobe.com
-    return queryString.replace(ctxUrlRegexp, properCtxRtUrl);
-  }
-  return `${queryString}${properCtxRtUrl}`;
-}
-
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
