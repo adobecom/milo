@@ -339,8 +339,6 @@ describe('Merch Card with Offer Selection', () => {
   });
 });
 
-
-
 describe('Section metadata rules', async () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/card-section-metadata.html' });
