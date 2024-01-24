@@ -132,10 +132,6 @@ const parseContent = (el, merchCard) => {
 
   innerElements.forEach((element) => {
     const { tagName } = element;
-    if (element.innerHTML.trim() === '') {
-      element.remove();
-      return;
-    }
     if (tagName === 'EM' && !element.querySelector('a')) {
       const promoText = createTag('p', { class: 'promo-text' }, element.innerHTML);
       element.replaceWith(promoText);
