@@ -15,6 +15,7 @@ async function loadFragments(el, experiences) {
     await createFragment(a);
   }
   document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx, getConfig()));
+  document.querySelectorAll('.quiz-results').forEach((quiz) => quiz.removeAttribute('daa-lh'));
 }
 
 function redirectPage(quizUrl, debug, message) {
