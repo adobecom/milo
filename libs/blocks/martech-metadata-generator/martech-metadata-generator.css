@@ -1,3 +1,24 @@
-.foo {
-  content: 'bar';
+.martech-metadata-generator form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  gap: 1rem;
+  height: 290px;
+  background: var(--color-gray-800);
+  color: var(--color-white);
+  border: 1px solid var(--color-black);
+}
+
+.martech-metadata-generator p {
+  font-weight: 600;
+}
+
+.martech-metadata-generator button {
+  cursor: pointer;
+}
+
+.martech-metadata-generator .loading button {
+  cursor: wait;
 }
