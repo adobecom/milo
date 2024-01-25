@@ -31,16 +31,15 @@ export function polyfills() {
   return polyfills.promise;
 }
 
-export function loadEntitlements() {
+export async function loadEntitlements() {
   loadEntitlements.promise = loadEntitlements.promise ?? Promise.all([
     import('../global-navigation/utilities/getUserEntitlements.js'),
     fetch(entitlementsURL),
-  ]).then(async ([getUserEntitlements, mappings]) => {
+  ]).then(([{ default: getUserEntitlements }, mappings]) => {
     if (!mappings.ok) return [];
-    const entitlements = await getUserEntitlements();
-    const entitlementsMetadata = await mappings.json();
-    return [entitlements, entitlementsMetadata];
+    return Promise.all([getUserEntitlements(), mappings.json()]);
   });
+  return loadEntitlements.promise;
 }
 
 async function getCheckoutAction(offers) {
@@ -54,8 +53,8 @@ async function getCheckoutAction(offers) {
     const config = getConfig();
     const { locale: { ietf } } = config;
     const text = await replaceKey(mapping.CTA, config);
-    const href = mapping[ietf] || localizeLink(mapping.Target);
-    return { text, href };
+    const url = mapping[ietf] || localizeLink(mapping.Target);
+    return { text, url };
   }
   return undefined;
 }
@@ -64,11 +63,15 @@ async function getCheckoutAction(offers) {
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
 export async function initService(force = false) {
-  initService.promise = (!force && initService.promise) ?? polyfills().then(async () => {
+  if (force) {
+    initService.promise = undefined;
+    loadEntitlements.promise = undefined;
+  }
+  initService.promise = initService.promise ?? polyfills().then(async () => {
     const commerceLib = await import('../../deps/commerce.js');
     const { env, commerce = {}, locale } = getConfig();
     commerce.priceLiteralsURL = priceLiteralsURL;
-    const service = commerceLib.init(() => ({
+    const service = await commerceLib.init(() => ({
       env,
       commerce,
       locale,
@@ -112,15 +115,14 @@ export async function getCheckoutContext(el, params) {
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
-  const entitlements = params?.get('entitlement');
-  const checkEntitlements = entitlements !== 'false';
+  const entitlement = params?.get('entitlement');
   return {
     ...context,
     checkoutClientId,
     checkoutWorkflow,
     checkoutWorkflowStep,
     checkoutMarketSegment,
-    checkEntitlements,
+    entitlement,
   };
 }
 
@@ -166,22 +168,14 @@ export async function buildCta(el, params) {
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
-  const { checkEntitlements } = context;
-  if (!checkEntitlements) {
-    context.unwrap = true;
-  }
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
   cta.classList.add('con-button');
   cta.classList.toggle('button-l', large);
   cta.classList.toggle('blue', strong);
-
-  if (checkEntitlements) {
-    cta.classList.add(LOADING_ENTITLEMENTS);
-    cta.onceSettled().then(() => cta.classList.remove(LOADING_ENTITLEMENTS));
-  }
-
+  cta.classList.add(LOADING_ENTITLEMENTS);
+  cta.onceSettled().then(() => cta.classList.remove(LOADING_ENTITLEMENTS));
   return cta;
 }
 

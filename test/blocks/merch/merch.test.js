@@ -211,12 +211,12 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to CTA, config values', async () => {
-      mockIms();
-      await initService(true);
       setConfig({
         ...config,
         commerce: { ...config.commerce, checkoutClientId: 'dc' },
       });
+      mockIms();
+      await initService(true);
       const el = await merch(document.querySelector(
         '.merch.cta.config',
       ));
@@ -232,7 +232,8 @@ describe('Merch Block', () => {
       expect(url.searchParams.get('cli')).to.equal('dc');
     });
 
-    it.only('renders merch link to CTA, metadata values', async () => {
+    it('renders merch link to CTA, metadata values', async () => {
+      setConfig({ ...config });
       const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 });
       document.head.appendChild(metadata);
       await initService(true);
@@ -369,12 +370,9 @@ describe('Merch Block', () => {
       mockIms('US');
       setEntitlementsMetadata(ENTITLEMENTS_METADATA);
       setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
+      await initService(true);
       const cta1 = await merch(document.querySelector('.merch.cta.download'));
       await cta1.onceSettled();
-      // wait 10ms
-      await new Promise((resolve) => {
-        setTimeout(resolve, 10);
-      });
       const [{ CTA, Target }] = ENTITLEMENTS_METADATA.data;
       expect(cta1.textContent).to.equal(CTA);
       expect(cta1.href).to.equal(Target);
@@ -395,9 +393,9 @@ describe('Merch Block', () => {
       mockIms();
       getUserEntitlements();
       mockIms('FR');
-      await initService(true);
       setEntitlementsMetadata(ENTITLEMENTS_METADATA);
       setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
+      await initService(true);
       const cta = await merch(document.querySelector('.merch.cta.download.fr'));
       await cta.onceSettled();
       const [{ CTA, 'fr-FR': target }] = ENTITLEMENTS_METADATA.data;
@@ -415,9 +413,9 @@ describe('Merch Block', () => {
       mockIms();
       getUserEntitlements();
       mockIms('DE');
-      await initService(true);
       setEntitlementsMetadata(ENTITLEMENTS_METADATA);
       setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
+      await initService(true);
       const cta = await merch(document.querySelector('.merch.cta.download.de'));
       await cta.onceSettled();
       const [{ CTA }] = ENTITLEMENTS_METADATA.data;
