@@ -14,7 +14,7 @@ async function loadFragments(el, experiences) {
     el.append(a);
     await createFragment(a);
   }
-  document.querySelectorAll('main > div').forEach((quiz) => quiz.removeAttribute('daa-lh'));
+  document.querySelectorAll('main > div, .quiz-results').forEach((quiz) => quiz.removeAttribute('daa-lh'));
   document.querySelectorAll('.quiz-results.basic > .fragment > .section').forEach((section, idx) => decorateSectionAnalytics(section, idx, getConfig()));
 }
 
