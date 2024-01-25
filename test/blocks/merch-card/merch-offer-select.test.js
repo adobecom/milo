@@ -70,14 +70,20 @@ describe('Merch Offer Select', () => {
 });
 
 describe('Merch quantity select', () => {
-  before(async () => {
+  let merchCard;
+  let quantitySelect;
+  let items;
+
+  beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
     await initCard(document.querySelector('.quantity-select-with-offer-selection'));
     await delay();
+    merchCard = document.querySelector('merch-card');
+    quantitySelect = merchCard.querySelector('merch-quantity-select');
+    items = quantitySelect.shadowRoot.querySelectorAll('.item');
   });
 
   it('Should render quantity select and initial card state', async () => {
-    const merchCard = document.querySelector('merch-card');
     const merchOffers = merchCard.querySelector('merch-quantity-select').querySelectorAll('merch-offer');
     validateMerchOffer(merchOffers[0], 'false', null, null, '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
     validateMerchOffer(merchOffers[1], 'false', null, null, 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', null);
@@ -85,22 +91,16 @@ describe('Merch quantity select', () => {
   });
 
   it('Should render and select 3 offer ', async () => {
-    const merchCard = document.querySelector('merch-card');
-    const quantitySelect = merchCard.querySelector('merch-quantity-select');
-    const items = quantitySelect.shadowRoot.querySelectorAll('.item');
     items[2].click();
-    await delay();
+    await delay(200);
 
     validateMerchCard(merchCard, null, 'Access advanced PDF.', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA');
     expect(merchCard.querySelector('div[slot="footer"] a[is="checkout-link"]').dataset.quantity).to.equal('3');
   });
 
   it('Should render and select 1 offer when 2 is not specified ', async () => {
-    const merchCard = document.querySelector('merch-card');
-    const quantitySelect = merchCard.querySelector('merch-quantity-select');
-    const items = quantitySelect.shadowRoot.querySelectorAll('.item');
     items[1].click();
-    await delay();
+    await delay(200);
 
     validateMerchCard(merchCard, null, 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
     expect(merchCard.querySelector('div[slot="footer"] a[is="checkout-link"]').dataset.quantity).to.equal('2');
