@@ -104,6 +104,8 @@ export default function init(el) {
   arbitrary.append(arbitraryKey, arbitraryValue);
   el.append(arbitrary);
 
+  el.innerHTML += '<div><div>Tags</div><div>caas:content-type/promotion</div></div>';
+
   // Degugging ((( Remove before release )))
   console.log('metadata:', metadata); // eslint-disable-line no-console
 }
