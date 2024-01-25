@@ -1,4 +1,4 @@
-import { getConfig, loadScript, loadIms } from '../../utils/utils.js';
+import { getConfig, loadScript, localizeLink } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
@@ -13,40 +13,74 @@ const TITLE_PRODUCT_ARRANGEMENT_CODE = 'Product Arrangement Code';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 export function polyfills() {
-  /* c8 ignore start */
-  if (!polyfills.promise) {
-    let isSupported = false;
-    document.createElement('div', {
-      // eslint-disable-next-line getter-return
-      get is() {
-        isSupported = true;
-      },
-    });
-    if (isSupported) {
-      polyfills.promise = Promise.resolve();
-    } else {
-      const { codeRoot, miloLibs } = getConfig();
-      const base = miloLibs || codeRoot;
-      polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
-    }
+  if (polyfills.promise) return polyfills.promise;
+  let isSupported = false;
+  document.createElement('div', {
+    // eslint-disable-next-line getter-return
+    get is() {
+      isSupported = true;
+    },
+  });
+  if (isSupported) {
+    polyfills.promise = Promise.resolve();
+  } else {
+    const { codeRoot, miloLibs } = getConfig();
+    const base = miloLibs || codeRoot;
+    polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
   }
   return polyfills.promise;
-  /* c8 ignore stop */
+}
+
+export function loadEntitlements() {
+  loadEntitlements.promise = loadEntitlements.promise ?? Promise.all([
+    import('../global-navigation/utilities/getUserEntitlements.js'),
+    fetch(entitlementsURL),
+  ]).then(async ([getUserEntitlements, mappings]) => {
+    if (!mappings.ok) return [];
+    const entitlements = await getUserEntitlements();
+    const entitlementsMetadata = await mappings.json();
+    return [entitlements, entitlementsMetadata];
+  });
+}
+
+async function getCheckoutAction(offers) {
+  const [{ arrangement_codes: aCodes } = {}, entitlementsMappings] = await loadEntitlements();
+  if (aCodes === undefined) return undefined;
+  const [{ productArrangementCode }] = offers;
+  if (aCodes[productArrangementCode] === true) {
+    const mapping = entitlementsMappings.data
+      ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
+    if (!mapping) return undefined;
+    const config = getConfig();
+    const { locale: { ietf } } = config;
+    const text = await replaceKey(mapping.CTA, config);
+    const href = mapping[ietf] || localizeLink(mapping.Target);
+    return { text, href };
+  }
+  return undefined;
 }
 
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
-export async function initService() {
-  await polyfills();
-  const commerceLib = await import('../../deps/commerce.js');
-  const { env, commerce = {}, locale } = getConfig();
-  commerce.priceLiteralsURL = priceLiteralsURL;
-  return commerceLib.init(() => ({
-    env,
-    commerce,
-    locale,
-  }));
+export async function initService(force = false) {
+  initService.promise = (!force && initService.promise) ?? polyfills().then(async () => {
+    const commerceLib = await import('../../deps/commerce.js');
+    const { env, commerce = {}, locale } = getConfig();
+    commerce.priceLiteralsURL = priceLiteralsURL;
+    const service = commerceLib.init(() => ({
+      env,
+      commerce,
+      locale,
+    }), () => ({ getCheckoutAction, force }));
+    service.imsSignedInPromise.then((isSignedIn) => {
+      if (isSignedIn) {
+        loadEntitlements();
+      }
+    });
+    return service;
+  });
+  return initService.promise;
 }
 
 export async function getCommerceContext(el, params) {
@@ -78,8 +112,8 @@ export async function getCheckoutContext(el, params) {
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
-  const entitlements = params?.get('entitlements');
-  const checkEntitlements = entitlements === '1' || entitlements == null;
+  const entitlements = params?.get('entitlement');
+  const checkEntitlements = entitlements !== 'false';
   return {
     ...context,
     checkoutClientId,
@@ -127,36 +161,6 @@ export async function getPriceContext(el, params) {
   };
 }
 
-let loadEntitlementsPromise;
-
-export async function loadEntitlements() {
-  await loadIms();
-  if (!window.adobeIMS?.isSignedInUser?.()) return Promise.resolve([{}, {}]);
-  const [{ default: getUserEntitlements },
-    mappings] = await Promise.all([
-    import('../global-navigation/utilities/getUserEntitlements.js'),
-    fetch(entitlementsURL),
-  ]);
-  const entitlements = await getUserEntitlements();
-  const entitlementsMetadata = await mappings.json();
-  return [entitlements, entitlementsMetadata];
-}
-
-export async function handleEntitlements(cta, promise) {
-  const [{ arrangement_codes: aCodes }, entitlementsMappings] = await promise;
-  if (aCodes === undefined) return;
-  await cta.onceSettled();
-  const { value: [{ productArrangementCode }] } = cta;
-  if (aCodes[productArrangementCode] === true) {
-    const mapping = entitlementsMappings.data
-      ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
-    if (!mapping) return;
-    cta.firstElementChild.innerHTML = (await replaceKey(mapping.CTA, getConfig()))
-         || cta.firstElementChild.innerHTML;
-    cta.href = mapping.Target;
-  }
-}
-
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
@@ -175,12 +179,7 @@ export async function buildCta(el, params) {
 
   if (checkEntitlements) {
     cta.classList.add(LOADING_ENTITLEMENTS);
-    if (!loadEntitlementsPromise) {
-      loadEntitlementsPromise = loadEntitlements();
-    }
-    handleEntitlements(cta, loadEntitlementsPromise).finally(() => {
-      cta.classList.remove(LOADING_ENTITLEMENTS);
-    });
+    cta.onceSettled().then(() => cta.classList.remove(LOADING_ENTITLEMENTS));
   }
 
   return cta;

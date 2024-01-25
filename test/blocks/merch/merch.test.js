@@ -1,14 +1,15 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
+import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/commerce.js';
+
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
   PRICE_TEMPLATE_STRIKETHROUGH,
   buildCta,
   getCheckoutContext,
-  handleEntitlements,
-  loadEntitlements,
+  initService,
   priceLiteralsURL,
 } from '../../../libs/blocks/merch/merch.js';
 
@@ -22,6 +23,7 @@ const ENTITLEMENTS_METADATA = {
     'Product Arrangement Code': 'phsp_direct_individual',
     CTA: 'Download',
     Target: 'https://helpx.adobe.com/download-install.html',
+    'fr-FR': 'https://helpx.adobe.com/fr/custom-page.html',
   }],
 };
 
@@ -52,6 +54,22 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
   return el;
 };
 
+const SUBSCRIPTION_DATA_PHSP = [
+  {
+    offer: { product_arrangement_code: 'phsp_direct_individual' },
+    product_arrangement: {
+      code: 'phsp_direct_individual',
+      family: 'PHOTOSHOP',
+    },
+  },
+];
+
+const PROD_DOMAINS = [
+  'www.adobe.com',
+  'www.stage.adobe.com',
+  'helpx.adobe.com',
+];
+
 describe('Merch Block', () => {
   let setEntitlementsMetadata;
   let setSubscriptionsData;
@@ -72,8 +90,7 @@ describe('Merch Block', () => {
   });
 
   beforeEach(async () => {
-    const { init, Log } = await import('../../../libs/deps/commerce.js');
-    await init(() => config, true);
+    await initService(true);
     Log.reset();
     Log.use(Log.Plugins.quietFilter);
   });
@@ -177,7 +194,7 @@ describe('Merch Block', () => {
 
   describe('CTAs', () => {
     it('renders merch link to CTA, default values', async () => {
-      const { Defaults } = await import('../../../libs/deps/commerce.js');
+      await initService(true);
       const el = await merch(document.querySelector(
         '.merch.cta',
       ));
@@ -194,9 +211,12 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to CTA, config values', async () => {
-      const { Defaults, init, reset } = await import('../../../libs/deps/commerce.js');
-      reset();
-      await init(() => ({ ...config, commerce: { checkoutClientId: 'dc' } }));
+      mockIms();
+      await initService(true);
+      setConfig({
+        ...config,
+        commerce: { ...config.commerce, checkoutClientId: 'dc' },
+      });
       const el = await merch(document.querySelector(
         '.merch.cta.config',
       ));
@@ -212,12 +232,10 @@ describe('Merch Block', () => {
       expect(url.searchParams.get('cli')).to.equal('dc');
     });
 
-    it('renders merch link to CTA, metadata values', async () => {
-      const { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, init, reset } = await import('../../../libs/deps/commerce.js');
-      reset();
+    it.only('renders merch link to CTA, metadata values', async () => {
       const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 });
       document.head.appendChild(metadata);
-      await init(() => config);
+      await initService(true);
       const el = await merch(document.querySelector(
         '.merch.cta.metadata',
       ));
@@ -232,13 +250,11 @@ describe('Merch Block', () => {
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       expect(url.searchParams.get('cli')).to.equal(Defaults.checkoutClientId);
       document.head.removeChild(metadata);
-      await init(() => config, true);
     });
 
     it('renders merch link to cta for GB locale', async () => {
-      const { init } = await import('../../../libs/deps/commerce.js');
       await mockIms();
-      await init(() => config, true);
+      await initService(true);
       const el = await merch(document.querySelector(
         '.merch.cta.gb',
       ));
@@ -302,9 +318,8 @@ describe('Merch Block', () => {
     });
 
     it('adds ims country to checkout link', async () => {
-      const { init } = await import('../../../libs/deps/commerce.js');
       await mockIms('CH');
-      await init(() => config, true);
+      await initService(true);
       const el = await merch(document.querySelector(
         '.merch.cta.ims',
       ));
@@ -347,24 +362,15 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('function "handleEntitlements"', () => {
+  describe('Entitlements', () => {
     it('updates CTA text to Download', async () => {
       mockIms();
-      getUserEntitlements(); // if logged out, entitlements cache will be cleared.
+      getUserEntitlements();
       mockIms('US');
       setEntitlementsMetadata(ENTITLEMENTS_METADATA);
-      setSubscriptionsData([
-        {
-          offer: { product_arrangement_code: 'phsp_direct_individual' },
-          product_arrangement: {
-            code: 'phsp_direct_individual',
-            family: 'PHOTOSHOP',
-          },
-        },
-      ]);
+      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
       const cta1 = await merch(document.querySelector('.merch.cta.download'));
       await cta1.onceSettled();
-      handleEntitlements(cta1, loadEntitlements());
       // wait 10ms
       await new Promise((resolve) => {
         setTimeout(resolve, 10);
@@ -377,6 +383,46 @@ describe('Merch Block', () => {
       await cta2.onceSettled();
       expect(cta2.textContent).to.equal('Buy Now');
       expect(cta2.href).to.not.equal(Target);
+    });
+
+    it('sets Download CTA href from the locale column', async () => {
+      setConfig({
+        ...config,
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: PROD_DOMAINS,
+      });
+      mockIms();
+      getUserEntitlements();
+      mockIms('FR');
+      await initService(true);
+      setEntitlementsMetadata(ENTITLEMENTS_METADATA);
+      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
+      const cta = await merch(document.querySelector('.merch.cta.download.fr'));
+      await cta.onceSettled();
+      const [{ CTA, 'fr-FR': target }] = ENTITLEMENTS_METADATA.data;
+      expect(cta.textContent).to.equal(CTA);
+      expect(cta.href).to.equal(target);
+    });
+
+    it('sets Download CTA href from localized target url', async () => {
+      setConfig({
+        ...config,
+        pathname: '/de/test.html',
+        locales: { de: { ietf: 'DE' } },
+        prodDomains: PROD_DOMAINS,
+      });
+      mockIms();
+      getUserEntitlements();
+      mockIms('DE');
+      await initService(true);
+      setEntitlementsMetadata(ENTITLEMENTS_METADATA);
+      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
+      const cta = await merch(document.querySelector('.merch.cta.download.de'));
+      await cta.onceSettled();
+      const [{ CTA }] = ENTITLEMENTS_METADATA.data;
+      expect(cta.textContent).to.equal(CTA);
+      expect(cta.href).to.equal('https://helpx.adobe.com/de/download-install.html');
     });
   });
 });

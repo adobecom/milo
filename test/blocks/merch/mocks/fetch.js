@@ -71,6 +71,15 @@ export async function mockFetch() {
       } : { ok: false, status: 404 });
     }
     // fallback to original fetch, should not happen!
+
+    // placeholder mock
+    if (/placeholders.json$/.test(pathname)) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ data: [] }),
+      });
+    }
     return fetch.apply(window, args);
   });
 
