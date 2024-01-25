@@ -17,7 +17,12 @@ import {
 } from '../utils/utils.js';
 
 // Production Domain
-const prodDomains = ['milo.adobe.com'];
+const prodDomains = [
+  'milo.adobe.com',
+  'www.adobe.com',
+  'helpx.adobe.com',
+  'business.adobe.com',
+];
 
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
