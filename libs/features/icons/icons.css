@@ -95,7 +95,13 @@ img.icon-milo {
   position: relative;
   top: .1em;
   width: auto;
-  margin-inline-end: var(--spacing-xxs);
+  margin-inline: var(--spacing-xxs);
+}
+
+.icon:first-child milo-icon svg,
+.icon:first-child svg.icon-milo,
+.icon:first-child img.icon-milo {
+  margin-inline-start: 0;
 }
 
 svg.icon-milo.icon-type-ui,

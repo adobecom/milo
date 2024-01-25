@@ -174,6 +174,7 @@
 .text-block .icon-area {
   display: flex;
   column-gap: var(--spacing-xxs);
+  flex-wrap: wrap;
 }
 
 .text-block .icon-area milo-icon svg {

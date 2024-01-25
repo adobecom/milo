@@ -3,20 +3,14 @@
  * @property {Boolean} debug Should we output messages to console
  * @property {Boolean} lazy Load icons lazily
  * @property {String} defaultDir Default icon set
- * @property {Array.<string, iconType>} supportedPrefixTypes Supported Prefix Types
- * @property {Array.<string, iconSize>} supportedSuffixSizes Supported Suffix Sizes
+ * @property {Array.<string, iconType>} supportedSets Supported Suffix Sets
+ * @property {Array.<string, iconSize>} supportedSizes Supported Suffix Sizes
  */
-
-// TODO
-// 1: update logic to parse - :add-size-m-s1: ${name-size-m-set}
-// 2: Use default to s1 set type if exists else use base.
-// 3: extend the 'sets' param to check directory
-
 const options = {
   debug: true,
   lazy: true,
-  defaultDir: 'core',
-  supportedSets: ['-s1', '-s2', '-sx', '-test'],
+  defaultDir: 's1',
+  supportedSets: ['-s2', '-sx', '-test'],
   supportedSizes: ['-size-xxs', '-size-xs', '-size-s', '-size-m', '-size-l', '-size-xl', '-size-xxl', '-size-initial'],
 };
 const CACHE = {};
@@ -41,8 +35,8 @@ function log(message, type = '') {
 
 /**
  * @param {string} fileName
- * @param {IconSet} iconSet
- * @param {string} iconUrl
+ * @param {string} folderName
+ * @param {url} iconUrl
  * @return {Promise<String, Error>}
  */
 function getIconSvg(fileName, folderName, iconUrl) {
