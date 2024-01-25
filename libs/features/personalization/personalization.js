@@ -561,10 +561,8 @@ export async function applyPers(manifests) {
     expFragments: consolidateObjects(results, 'fragments'),
   });
   const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
-  if (!pznList.length) {
-    document.body.dataset.mep = 'nopzn|nopzn';
-    return;
-  }
+  if (!pznList.length) return;
+
   const pznVariants = pznList.map((r) => {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
@@ -573,5 +571,5 @@ export async function applyPers(manifests) {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
-  document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }

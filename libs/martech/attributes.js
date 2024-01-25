@@ -57,7 +57,8 @@ export async function decorateSectionAnalytics(section, idx, config) {
   });
   section.querySelectorAll('[data-block]').forEach((block, blockIdx) => {
     const blockName = block.classList[0] || '';
-    block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName.slice(0, 15)}|${document.body.dataset.mep}`);
+    const mepMartech = config?.mep?.martech || '';
+    block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName.slice(0, 15)}${mepMartech}`);
     decorateDefaultLinkAnalytics(block, config);
     block.removeAttribute('data-block');
   });
