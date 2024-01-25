@@ -7,7 +7,12 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
-let configPath; let quizKey; let shortQuiz; let analyticsType; let analyticsQuiz; let metaData;
+let configPath;
+let quizKey;
+let shortQuiz;
+let analyticsType;
+let analyticsQuiz;
+let metaData;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
@@ -16,28 +21,18 @@ const initConfigPath = (quizMetaData) => {
   return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
 };
 
-const initQuizKey = () => {
-  const { locale } = getConfig();
-  quizKey = metaData.storage?.text;
-  return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
-};
-
-const initAnalyticsType = () => metaData['analytics-type']?.text;
-
-const initAnalyticsQuiz = () => metaData['analytics-quiz']?.text;
-
 async function fetchContentOfFile(path) {
   const response = await fetch(configPath(path));
   return response.json();
 }
 
 export const initConfigPathGlob = (rootElement) => {
-  metaData = getMetadata(rootElement);
-  shortQuiz = metaData['short-quiz']?.text === 'true';
+  metaData = getNormalizedMetadata(rootElement);
   configPath = initConfigPath(metaData);
-  quizKey = initQuizKey(rootElement);
-  analyticsType = initAnalyticsType();
-  analyticsQuiz = initAnalyticsQuiz();
+  shortQuiz = metaData.shortquiz?.text === 'true';
+  quizKey = metaData.storage?.text.toLowerCase();
+  analyticsType = metaData.analyticstype?.text;
+  analyticsQuiz = metaData.analyticsquiz?.text;
   return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
@@ -67,8 +62,8 @@ export const defaultRedirect = (url) => {
 };
 
 export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect) => {
-  const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
-  const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+  const { destinationPage } = await findAndStoreResultData(answers);
+  const redirectUrl = getRedirectUrl(destinationPage);
   redirectFunc(redirectUrl);
 };
 
@@ -123,6 +118,13 @@ export const storeResultInLocalStorage = (
   const structureFragsArray = structureFrags?.split(',');
   const nestedFragsPrimaryArray = nestedFragsPrimary?.split(',');
   const nestedFragsSecondaryArray = nestedFragsSecondary?.split(',');
+  const analyticsConfig = {
+    answers,
+    umbrellaProduct,
+    primaryProducts,
+    analyticsType,
+    analyticsQuiz,
+  };
   const resultToDelegate = {
     primaryProducts,
     secondaryProducts: secondaryProductCodes,
@@ -141,9 +143,13 @@ export const storeResultInLocalStorage = (
       secondaryProductCodes,
       umbrellaProduct,
     ),
-    pageloadHash: getAnalyticsDataForLocalStorage(answers),
+    pageloadHash: getAnalyticsDataForLocalStorage(analyticsConfig),
   };
-  localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
+
+  const { locale } = getConfig();
+  const quizLocalKey = locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
+
+  localStorage.setItem(quizLocalKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
 };
 
@@ -161,7 +167,7 @@ export const structuredFragments = (
         if (umbrellaProduct && row.product === umbrellaProduct) {
           structureFragments.push(row[fragment]);
         }
-      } else if (primaryProducts.length > 0 && primaryProducts.includes(row.product)
+      } else if (primaryProducts?.length > 0 && primaryProducts.includes(row.product)
       && row[fragment]) {
         structureFragments.push(row[fragment]);
       }
@@ -232,9 +238,27 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
   return fragArray;
 };
 
-export const getRedirectUrl = (destinationPage, primaryProducts) => {
+/**
+ * Normalizes the metadata keys in the metadata object,
+ * cleaning them up and removing all but alphanumeric characters
+ */
+const normalizeKeys = (data) => {
+  const keys = Object.keys(data);
+  const cleanData = {};
+  for (const key of keys) {
+    const newKey = key.match(/[a-zA-Z0-9]/g).join('');
+    if (key !== newKey) {
+      cleanData[newKey] = data[key];
+    } else {
+      cleanData[key] = data[key];
+    }
+  }
+  return cleanData;
+};
+
+export const getRedirectUrl = (destinationPage) => {
   const separator = destinationPage.includes('?') ? '&' : '?';
-  return `${destinationPage}${separator}primary=${primaryProducts}&quizKey=${quizKey}`;
+  return `${destinationPage}${separator}quizkey=${quizKey}`;
 };
 
 export const parseResultData = async (answers) => {
@@ -429,14 +453,34 @@ export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   return '';
 };
 
-export const getAnalyticsDataForLocalStorage = (answers) => {
+export const getAnalyticsDataForLocalStorage = (config) => {
+  const {
+    answers = [],
+    umbrellaProduct = '',
+    primaryProducts = [],
+    // eslint-disable-next-line no-shadow
+    analyticsType = '',
+    // eslint-disable-next-line no-shadow
+    analyticsQuiz = '',
+  } = config;
+
+  let formattedResultString = '';
   let formattedAnswerString = '';
-  answers.forEach((answer) => {
+  if (umbrellaProduct) {
+    formattedResultString = umbrellaProduct;
+  } else {
+    primaryProducts?.forEach((product) => {
+      formattedResultString = formattedResultString ? `${formattedResultString}|${product}` : product;
+    });
+  }
+  answers?.forEach((answer) => {
     const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
-    formattedAnswerString = formattedAnswerString === '' ? eachAnswer : formattedAnswerString.concat('|', eachAnswer);
+    formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${eachAnswer}` : eachAnswer;
   });
-  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&selectedOptions=${formattedAnswerString}`;
+  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&result=${formattedResultString}&selectedOptions=${formattedAnswerString}`;
   return analyticsHash;
 };
 
 export const isValidUrl = (url) => VALID_URL_RE.test(url);
+
+export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));

@@ -1,0 +1,169 @@
+<style>
+  .merch-cards,
+  #cards {
+    display: none;
+  }
+</style>
+<main>
+  <div class="section">
+    <div id="default" class="merch-cards">
+    </div>
+
+    <div id="defaultFilter" class="merch-cards catalog">
+    </div>
+
+    <div id="filterShowMoreText" class="merch-cards catalog">
+      <div>
+        <div>all</div>
+      </div>
+    </div>
+
+    <div id="filterShowMoreTextLimit" class="merch-cards catalog">
+      <div>
+        <div>all, 9</div>
+      </div>
+    </div>
+
+    <div id="onlyPhoto" class="merch-cards catalog">
+      <div>
+        <div><strong>photo</strong></div>
+      </div>
+      <div>
+        <div>
+          <p><strong>Photoshop</strong></p>
+          <p>Creative Cloud All Apps</p>
+          <p>Express</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="multipleFilters" class="merch-cards catalog">
+      <div>
+        <div>all, 9</div>
+      </div>
+      <div>
+        <div>all</div>
+        <div>
+          <p><strong><u>Creative Cloud All Apps</u></strong></p>
+          <p>Photoshop</p>
+          <p>Adobe Express</p>
+        </div>
+      </div>
+      <div>
+        <div>photo</div>
+        <div>
+          <p><strong>Photoshop</strong></p>
+          <p>Creative Cloud All Apps</p>
+          <p>Adobe Express</p>
+        </div>
+      </div>
+      <div>
+        <div>video</div>
+        <div>
+          <p><strong>Premiere Pro</strong></p>
+          <p>Creative Cloud All Apps</p>
+        </div>
+      </div>
+      <div>
+        <div>
+          <p>Search all products</p>
+          <p>Filters</p>
+          <p>Sort</p>
+          <p>Popularity</p>
+          <p>Alphabetical</p>
+          <p>0 results</p>
+          <p>1 result in <strong><u>filter</u></strong></p>
+          <p><u>10</u> results in <strong><u>filter</u></strong></p>
+          <p>1 result for <strong><u>search</u></strong></p>
+          <p><u>10</u> results for <strong><u>search</u></strong></p>
+          <p>1 result for: <strong><u>search</u></strong></p>
+          <p><u>10</u> results for: <strong><u>search</u></strong></p>
+          <p>Your search for <strong><u>search</u></strong> did not yield any results</p>
+          <hr>
+          <p>Your search for <strong><u>search</u></strong> did not yield any results. Try a different search term.</p>
+          <p>Suggestions:</p>
+          <ul>
+            <li>Make sure all words are spelled correctly</li>
+            <li>Use quotes to search for an entire phrase, such as "crop an image"</li>
+          </ul>
+          <hr>
+          <p>Show more</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="placeholders" class="merch-cards catalog">
+      <div>
+        <div>all, 18</div>
+      </div>
+      <div>
+        <div>
+          <p>Search all products</p>
+          <p>Filters</p>
+          <p>Sort</p>
+          <p>Popularity</p>
+          <p>Alphabetical</p>
+          <p>0 results</p>
+          <p>1 result in <strong><u>filter</u></strong></p>
+          <p><u>10</u> results in <strong><u>filter</u></strong></p>
+          <p>1 result for <strong><u>search</u></strong></p>
+          <p><u>10</u> results for <strong><u>search</u></strong></p>
+          <p>1 result for: <strong><u>search</u></strong></p>
+          <p><u>10</u> results for: <strong><u>search</u></strong></p>
+          <p>Your search for <strong><u>search</u></strong> did not yield any results</p>
+          <hr>
+          <p>Your search for <strong><u>search</u></strong> did not yield any results. Try a different search term.</p>
+          <p>Suggestions:</p>
+          <ul>
+            <li>Make sure all words are spelled correctly</li>
+            <li>Use quotes to search for an entire phrase, such as "crop an image"</li>
+          </ul>
+          <hr>
+          <p>Show more</p>
+        </div>
+      </div>
+    </div>
+
+    <!--this the expected merch-cards element -->
+    <merch-cards filter="all" limit="18" types="" search="" page="1"><p slot="searchText">Search all products</p><p slot="filtersText">Filters</p><p slot="sortText">Sort</p><p slot="popularityText">Popularity</p><p slot="alphabeticallyText">Alphabetical</p><p slot="noResultText">0 results</p><p slot="resultText">1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsText"><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="searchResultText">1 result for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsText"><span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultMobileText">1 result for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsMobileText"><span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="noSearchResultsText">Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p><div slot="noSearchResultsMobileText"><p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul>
+            <li>Make sure all words are spelled correctly</li>
+            <li>Use quotes to search for an entire phrase, such as "crop an image"</li>
+          </ul></div><p slot="showMoreText">Show more</p></merch-cards>
+  </div>
+
+  <div id="cards">
+    <div class="merch-card catalog express">
+      <div>
+        <h3>Adobe Express</h3>
+      </div>
+      <div>
+        <p>catalog:categories/creativity-design/photo</p>
+      </div>
+    </div>
+    <div class="merch-card catalog photoshop">
+      <div>
+        <h3>Photoshop</h3>
+      </div>
+      <div>
+        <p>catalog:categories/creativity-design/photo</p>
+      </div>
+    </div>
+    <div class="merch-card catalog all-apps">
+      <div>
+        <h3>Creative Cloud All Apps</h3>
+      </div>
+      <div>
+        <p>catalog:categories/creativity-design/photo</p>
+        <p>catalog:categories/creativity-design/video</p>
+      </div>
+    </div>
+    <div class="merch-card catalog premierepro">
+      <div>
+        <h3>Premiere Pro</h3>
+      </div>
+      <div>
+        <p>catalog:categories/creativity-design/video</p>
+      </div>
+    </div>
+  </div>
+</main>

@@ -45,7 +45,9 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'merch-card',
+  'merch-cards',
   'merch-offers',
+  'mnemonic-list',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -827,14 +829,19 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 }
 
 async function checkForPageMods() {
+  const search = new URLSearchParams(window.location.search);
+  const offFlag = (val) => search.get(val) === 'off';
+  if (offFlag('mep')) {
+    document.body.dataset.mep = 'nopzn|nopzn';
+    return;
+  }
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
   let persManifests = [];
-  const search = new URLSearchParams(window.location.search);
-  const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
-  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
-  const promoEnabled = promoMd && promoMd !== 'off';
+  const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
+  const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
+  const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
   if (mepEnabled) {

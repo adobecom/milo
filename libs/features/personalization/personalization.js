@@ -124,8 +124,8 @@ const COMMANDS = {
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
-      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
-      el.insertAdjacentElement('beforebegin', div);
+      el.dataset.removedManifestId = manifestId;
+      return;
     }
     el.classList.add(CLASS_EL_DELETE);
   },
@@ -318,7 +318,10 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
   if (!name) return false;
-  const searchParamVal = PAGE_URL.searchParams.get(name);
+  const params = new URLSearchParams(
+    Array.from(PAGE_URL.searchParams, ([key, value]) => [key.toLowerCase(), value?.toLowerCase()]),
+  );
+  const searchParamVal = params.get(name.toLowerCase());
   if (searchParamVal !== null) {
     if (val) return val === searchParamVal;
     return true; // if no val is set, just check for existence of param
@@ -404,6 +407,12 @@ export async function getPersConfig(info) {
   if (!persData) return null;
   const config = parseConfig(persData);
 
+  if (!config) {
+    /* c8 ignore next 3 */
+    console.log('Error loading personalization config: ', name || manifestPath);
+    return null;
+  }
+
   const infoTab = manifestInfo || data?.info?.data;
   config.manifestType = infoTab
     ?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase()
@@ -412,12 +421,6 @@ export async function getPersConfig(info) {
   config.manifestOverrideName = infoTab
     ?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')
     ?.value?.toLowerCase();
-
-  if (!config) {
-    /* c8 ignore next 3 */
-    console.log('Error loading personalization config: ', name || manifestPath);
-    return null;
-  }
 
   const selectedVariantName = await getPersonalizationVariant(
     manifestPath,
