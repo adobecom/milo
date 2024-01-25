@@ -25,7 +25,6 @@ function decorateQr(el) {
   const appStore = text.children[(text.children.length - 1)];
   const googlePlay = text.children[(text.children.length - 2)];
   const qrImage = text.children[(text.children.length - 3)];
-  console.log("Mija", qrImage);
   appStore.classList.add('app-store');
   appStore.textContent = '';
   googlePlay.classList.add('google-play');
