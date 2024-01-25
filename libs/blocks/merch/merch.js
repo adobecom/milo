@@ -1,4 +1,4 @@
-import { getConfig, loadScript, localizeLink } from '../../utils/utils.js';
+import { getConfig, loadIms, loadScript, localizeLink } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
@@ -68,6 +68,7 @@ export async function initService(force = false) {
     loadEntitlements.promise = undefined;
   }
   initService.promise = initService.promise ?? polyfills().then(async () => {
+    loadIms();
     const commerceLib = await import('../../deps/commerce.js');
     const { env, commerce = {}, locale } = getConfig();
     commerce.priceLiteralsURL = priceLiteralsURL;
