@@ -446,7 +446,7 @@ class Gnav {
       [region, language] = config.locale.prefix.replace('/', '').split('_');
     }
     const locale = getIetfLocale(`${language.toLowerCase()}_${region.toUpperCase()}`);
-    const environment = config.env.name === 'prod' ? 'prod' : 'dev';
+    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
     const getDevice = () => {
       const agent = navigator.userAgent;
