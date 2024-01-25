@@ -236,4 +236,19 @@ describe('Functional Test', () => {
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(document.body.dataset.mep).to.equal('fireflies|manifest');
   });
+
+  it('removeContent should tag z-pattern in preview', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestRemove.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    const config = getConfig();
+    config.mep = {
+      override: '',
+      preview: true,
+    };
+
+    expect(document.querySelector('.z-pattern')).to.not.be.null;
+    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+  });
 });

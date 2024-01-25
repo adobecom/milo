@@ -124,8 +124,8 @@ const COMMANDS = {
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
-      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
-      el.insertAdjacentElement('beforebegin', div);
+      el.dataset.removedManifestId = manifestId;
+      return;
     }
     el.classList.add(CLASS_EL_DELETE);
   },

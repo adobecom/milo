@@ -159,7 +159,9 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
     };
     window.edgeConfigId = edgeConfigId;
 
-    await loadScript(`${config.miloLibs || config.codeRoot}/deps/martech.main.standard.min.js`);
+    const env = ['stage', 'local'].includes(config.env.name) ? '.qa' : '';
+    const martechPath = `martech.main.standard${env}.min.js`;
+    await loadScript(`${config.miloLibs || config.codeRoot}/deps/${martechPath}`);
     // eslint-disable-next-line no-underscore-dangle
     window._satellite.track('pageload');
   };
