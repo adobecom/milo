@@ -236,8 +236,6 @@ label[for='urls'] i {
   position: absolute;
   top: 10px;
   right: 10px;
-  background-image: url('/libs/blocks/bulk-publish/img/checkmark.svg');
-  background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 0.6s;
 }
@@ -321,8 +319,6 @@ label[for='urls'] i {
 .jobs-tools .clear-jobs {
   width: 25px;
   height: 18px;
-  background-image: url('/libs/blocks/bulk-publish/img/remove.svg');
-  background-repeat: no-repeat;
   cursor: pointer;
 }
 
@@ -346,18 +342,13 @@ label[for='urls'] i {
   color: var(--success);
 }
 
-.failed.rework {
-  color: var(--error);
-  cursor: url("data:image/svg+xml,%3Csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='20' height='20' x='0px' y='0px' viewBox='0 0 9.5 13' style='enable-background:new 0 0 9.5 13;' xml:space='preserve'%3E%3Cstyle type='text/css'%3E .st0%7Bfill:%23DB4437;%7D%0A%3C/style%3E%3Cpath class='st0' d='M7,5.6l1.5,0c0.4,0,0.7-0.3,0.7-0.8c0-0.4-0.3-0.5-0.5-0.7L5.4,0.9C5.1,0.7,5,0.5,4.6,0.5 C4.3,0.5,4.1,0.7,3.9,1L0.7,4.3C0.5,4.5,0.3,4.7,0.3,5.1c0,0.4,0.4,0.7,0.8,0.7l1.5,0l0,1.5c0,1.4-0.3,3.3-1.5,3.8 c-0.4,0.2-0.6,0.5-0.6,0.8c0,0.4,0.3,0.7,0.8,0.7C5.6,12.4,7.1,9.4,7,5.6z'/%3E%3C/svg%3E") 8 8, pointer;
-}
-
 .job-meta {
   display: flex;
   justify-content: space-between;
   min-width: var(--meta-width);
 }
 
-.job-meta>*:last-child {
+.job-meta > *:last-child {
   text-align: right;
 }
 
@@ -395,7 +386,7 @@ label[for='urls'] i {
   border-style: solid;
   border-width: 2px;
   appearance: none;
-  background-image: url('/libs/blocks/bulk-publish/img/downarrow.svg');
+  background-image: var(--down-arrow-icon);
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 1em;

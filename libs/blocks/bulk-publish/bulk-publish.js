@@ -18,6 +18,10 @@ const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot || 'libs';
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish/bulk-publisher.css`);
 const loader = await getSheet(`${base}/blocks/bulk-publish/loader.css`);
+const backgroundImg = `${base}/blocks/bulk-publish/img/background.svg`;
+const downArrowIcon = `${base}/blocks/bulk-publish/img/downarrow.svg`;
+const checkmarkIcon = `${base}/blocks/bulk-publish/img/checkmark.svg`;
+const clearJobsIcon = `${base}/blocks/bulk-publish/img/remove.svg`;
 
 class BulkPublish extends LitElement {
   static properties = {
@@ -203,7 +207,9 @@ class BulkPublish extends LitElement {
       </div>
       <div class="urls${typeof this.disabled !== 'boolean' ? ' invalid' : ''}">
         <div class="error-bar">${this.renderErrorBar()}</div>
-        <div class="checkmark${this.disabled ? '' : ' show'}"></div>
+        <div class="checkmark${this.disabled ? '' : ' show'}">
+          <img src=${checkmarkIcon} alt="Valid Urls" />
+        </div>
         <div class="entered-count${this.urls.length ? ' show' : ''}">${this.urls.length}</div>
         <textarea 
           id="Urls"
@@ -288,7 +294,9 @@ class BulkPublish extends LitElement {
         <div class="jobs-tools${showList}">
           <div 
             class="clear-jobs${showClear}"
-            @click=${this.clearJobs}></div>
+            @click=${this.clearJobs}>
+            <img src=${clearJobsIcon} alt="Clear Job List" />
+          </div>
           <div class="job-progress${loading}">
             ${this.renderProgress(count)}
           </div>
@@ -405,5 +413,7 @@ class BulkPublish extends LitElement {
 customElements.define('bulk-publish', BulkPublish);
 
 export default async function init(el) {
+  el.style.setProperty('--background-img', `url(${backgroundImg})`);
+  el.style.setProperty('--down-arrow-icon', `url(${downArrowIcon})`);
   el.append(document.createElement('bulk-publish'));
 }
