@@ -83,6 +83,10 @@
   gap: 16px;
 }
 
+.icon-block.inline.items-center .foreground .text-content {
+  align-items: center;
+}
+
 .icon-block.inline .body-s.action-area {
   padding-top: 24px;
 }
