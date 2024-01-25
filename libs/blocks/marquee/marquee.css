@@ -133,6 +133,14 @@
   line-height: 0;
 }
 
+.marquee .background .expand-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
 .marquee .text p {
   margin: 0 0 var(--spacing-s);
 }
