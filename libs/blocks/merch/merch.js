@@ -175,7 +175,7 @@ export async function buildCta(el, params) {
   cta.classList.toggle('button-l', large);
   cta.classList.toggle('blue', strong);
   cta.classList.add(LOADING_ENTITLEMENTS);
-  cta.onceSettled().then(() => cta.classList.remove(LOADING_ENTITLEMENTS));
+  cta.onceSettled().finally(() => cta.classList.remove(LOADING_ENTITLEMENTS));
   return cta;
 }
 
