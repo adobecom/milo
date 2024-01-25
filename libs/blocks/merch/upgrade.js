@@ -11,7 +11,7 @@ const upgradeCta = async (cta, upgradable, upgradeOffer) => {
     || !upgradeOffer?.value
     || upgradeOffer.value.length === 0) return;
   const { env } = getConfig();
-  const url = new URL(env?.name === 'prod' ? 'https://adobe.com' : 'https://stage.adobe.com');
+  const url = new URL(env?.name === 'prod' ? 'https://plan.adobe.com' : 'https://stage.plan.adobe.com');
   url.searchParams.append('intent', 'switch');
   url.searchParams.append('toOfferId', upgradeOffer.value[0].offerId);
   url.searchParams.append('fromOffer', upgradable.offer.offer_id);
@@ -39,8 +39,8 @@ const upgradeCta = async (cta, upgradable, upgradeOffer) => {
     e.preventDefault();
     getModal(null, { id: 'preflight', content: iframe, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
   });
-  // replace cta with upgrade
-  cta.textContent = 'Upgrade';
+  cta.textContent = 'Upgrade now';
+  cta.dataset.switchPlanUrl = url.toString();
 };
 
 const getProductFamily = async (placeholder) => {
