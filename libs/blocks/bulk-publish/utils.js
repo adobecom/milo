@@ -100,13 +100,6 @@ const humanDateTime = (newDate) => {
   return isToday ? date.toLocaleTimeString() : date.toLocaleString().replace(',', '');
 };
 
-const getElapsedTime = (date1, date2) => {
-  const start = new Date(date1);
-  const end = new Date(date2);
-  const diff = Math.abs(end - start);
-  return (diff / 1000) > 60 ? `${Math.round(diff / (1000 * 60))}m` : `${Math.round(diff / 1000)}s`;
-};
-
 const processJobResult = (jobs) => jobs.reduce((result, job) => {
   result[!job.error ? 'complete' : 'error'].push(job);
   return result;
@@ -115,7 +108,6 @@ const processJobResult = (jobs) => jobs.reduce((result, job) => {
 export {
   editEntry,
   FORM_MODES,
-  getElapsedTime,
   getErrorText,
   getJobErrorText,
   getMiloUrl,

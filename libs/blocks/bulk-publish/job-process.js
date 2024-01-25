@@ -5,7 +5,7 @@ import { pollJobStatus, runRetry } from './services.js';
 import { getConfig } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
-const base = miloLibs || codeRoot;
+const base = miloLibs || codeRoot || 'libs';
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish/job-process.css`);
 
 class JobProcess extends LitElement {
@@ -63,15 +63,16 @@ class JobProcess extends LitElement {
   }
 
   async viewResult({ url, code, topic }, pathIndex) {
+    const results = this.renderRoot.querySelectorAll('.result');
     const isPOST = !['preview-remove', 'publish-remove'].includes(topic);
     if (this.jobStatus && (code === 200 || code === 204) && isPOST) {
+      results[pathIndex].classList.add('opened');
       window.open(url, '_blank');
     } else {
       await navigator.clipboard.writeText(url);
-      const results = this.renderRoot.querySelectorAll('.result');
-      results[pathIndex].classList.add('copied');
+      results[pathIndex].classList.add('copied', 'indicator');
       await wait(3000);
-      results[pathIndex].classList.remove('copied');
+      results[pathIndex].classList.remove('indicator');
     }
   }
 

@@ -34,9 +34,8 @@ const createAEMRequest = (url, process, isBulk = true) => {
 };
 
 const connectSidekick = (bulkPub) => {
-  const config = (event) => {
+  const setStatus = (event) => {
     const processes = event?.detail?.data;
-    console.log(event.detail, 'detail');
     if (processes) {
       const profile = processes.profile ?? null;
       const permissions = {};
@@ -51,7 +50,8 @@ const connectSidekick = (bulkPub) => {
     }
   };
   document.addEventListener('sidekick-ready', () => {
-    document.querySelector('helix-sidekick').addEventListener('statusfetched', config);
+    const sidekick = document.querySelector('helix-sidekick');
+    sidekick.addEventListener('statusfetched', setStatus);
   }, { once: true });
 };
 
@@ -142,7 +142,7 @@ const pollJobStatus = async (job, setProgress) => {
   let jobStatus;
   let stopped = false;
   while (!stopped) {
-    const status = await fetchStatus(`${result.link.self}/details`);
+    const status = await fetchStatus(`${result.links.self}/details`);
     setProgress(status);
     if (status.stopTime) {
       jobStatus = status;

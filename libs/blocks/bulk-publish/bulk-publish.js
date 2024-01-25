@@ -15,7 +15,7 @@ import {
 } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
-const base = miloLibs || codeRoot;
+const base = miloLibs || codeRoot || 'libs';
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish/bulk-publisher.css`);
 const loader = await getSheet(`${base}/blocks/bulk-publish/loader.css`);
 
@@ -243,7 +243,7 @@ class BulkPublish extends LitElement {
   processCompleted(event) {
     const status = event.detail;
     const jobProcess = this.jobs.find(({ result }) => result.job.name === status.name);
-    jobProcess.status = status;
+    if (jobProcess) jobProcess.status = status;
     if (this.jobs.filter((job) => !job.status).length === 0) {
       this.processing = false;
       sticky().set('resume', []);
@@ -253,7 +253,7 @@ class BulkPublish extends LitElement {
   setProgress(event) {
     const { name, progress } = event.detail;
     const jobProcess = this.jobs.find(({ result }) => result.job.name === name);
-    jobProcess.progress = progress;
+    if (jobProcess) jobProcess.progress = progress;
     this.requestUpdate();
   }
 

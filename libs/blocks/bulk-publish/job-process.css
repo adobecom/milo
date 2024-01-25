@@ -11,7 +11,7 @@
   text-overflow: ellipsis;
 }
 
-.result.copied::after {
+.result.copied.indicator::after {
   content: 'Copied!';
   width: 25%;
   position: absolute;
