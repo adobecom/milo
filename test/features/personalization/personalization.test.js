@@ -240,4 +240,19 @@ describe('Functional Test', () => {
     const config = getConfig();
     expect(config.mep.martech).to.equal('|fireflies|manifest');
   });
+
+  it('removeContent should tag z-pattern in preview', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestRemove.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    const config = getConfig();
+    config.mep = {
+      override: '',
+      preview: true,
+    };
+
+    expect(document.querySelector('.z-pattern')).to.not.be.null;
+    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+  });
 });
