@@ -84,23 +84,21 @@ describe('Merch quantity select', () => {
     validateMerchCard(merchCard, null, 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
   });
 
-  it('Should render and select 3 offer ', async () => {
+  it('Should render and select 3 offer ', () => {
     const merchCard = document.querySelector('merch-card');
     const quantitySelect = merchCard.querySelector('merch-quantity-select');
     const items = quantitySelect.shadowRoot.querySelectorAll('.item');
     items[2].click();
-    await delay();
 
     validateMerchCard(merchCard, null, 'Access advanced PDF.', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA');
     expect(merchCard.querySelector('div[slot="footer"] a[is="checkout-link"]').dataset.quantity).to.equal('3');
   });
 
-  it('Should render and select 1 offer when 2 is not specified ', async () => {
+  it('Should render and select 1 offer when 2 is not specified ', () => {
     const merchCard = document.querySelector('merch-card');
     const quantitySelect = merchCard.querySelector('merch-quantity-select');
     const items = quantitySelect.shadowRoot.querySelectorAll('.item');
     items[1].click();
-    await delay();
 
     validateMerchCard(merchCard, null, 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
     expect(merchCard.querySelector('div[slot="footer"] a[is="checkout-link"]').dataset.quantity).to.equal('2');
