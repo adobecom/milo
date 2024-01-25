@@ -2,9 +2,11 @@ import { getConfig } from '../../utils/utils.js';
 
 const API_KEY = 'CCHomeWeb1';
 const ENDPOINT = 'community-recom-v1';
+const UTUA_API_KEY = 'CCHomeMLRepo1';
+
+const { env, locale } = getConfig();
 
 const getQuizTutorialsList = async (inputText, fiCode, numOfItems) => {
-  const { env } = getConfig();
   const subdomain = env === 'prod' ? 'cchome-stage' : 'cchome-stage';
   const apiUrl = `https://${subdomain}.adobe.io/int/v1/models`;
   const result = await fetch(apiUrl, {
@@ -45,22 +47,23 @@ const getQuizTutorialsDetails = async (
   );
 
   const contentIds = tutorialsList.data.map((item) => item.content_id);
+  const subdomain = env === 'prod' ? 'utut-service' : 'utut-service-stage';
 
-  const baseUrl = 'https://utut-service.adobe.com/api/ututs';
+  const baseUrl = `https://${subdomain}.adobe.io/api/ututs`;
   const queryParams = new URLSearchParams({
-    api_key: 'CCHomeMLRepo1',
+    api_key: UTUA_API_KEY,
     ignore_missing_tutorials: 'true',
-    locale: 'en_US',
+    locale: locale?.ietf.replace('-', '_'),
   });
 
   contentIds.forEach((contentId) => {
     queryParams.append('aem_id', contentId);
   });
 
-  const res = await fetch(`${baseUrl}?${queryParams.toString()}`)
+  const result = await fetch(`${baseUrl}?${queryParams.toString()}`)
     .then((response) => response.json())
-    .catch((error) => console.log('Error:', error));
-  return res;
+    .catch((error) => window.lana.log(`ERROR: Fetching tutorial by contentId ${error}`));
+  return result;
 };
 
 export default getQuizTutorialsDetails;
