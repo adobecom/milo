@@ -201,13 +201,14 @@ describe('Functional Test', () => {
   });
 
   it('test or promo manifest', async () => {
+    let config = getConfig();
+    config.mep = {};
     let manifestJson = await readFile({ path: './mocks/manifestTestOrPromo.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
-
+    config = getConfig();
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    const config = getConfig();
-    expect(config.mep.martech).to.be.null;
+    expect(config.mep?.martech).to.be.undefined;
   });
 
   it('should choose chrome & logged out', async () => {
@@ -216,7 +217,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     const config = getConfig();
-    expect(config.mep.martech).to.equal('|chrome & logged|ampersand');
+    expect(config.mep?.martech).to.equal('|chrome & logged|ampersand');
   });
 
   it('should choose not firefox', async () => {
@@ -225,7 +226,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     const config = getConfig();
-    expect(config.mep.martech).to.equal('|not firefox|not');
+    expect(config.mep?.martech).to.equal('|not firefox|not');
   });
 
   it('should read and use entitlement data', async () => {
@@ -238,7 +239,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     const config = getConfig();
-    expect(config.mep.martech).to.equal('|fireflies|manifest');
+    expect(config.mep?.martech).to.equal('|fireflies|manifest');
   });
 
   it('removeContent should tag z-pattern in preview', async () => {

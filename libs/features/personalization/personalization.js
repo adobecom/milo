@@ -331,10 +331,10 @@ const checkForParamMatch = (paramStr) => {
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
-  if (config.mep?.override !== '') {
+  if (config.mep?.override) {
     let manifest;
     /* c8 ignore start */
-    config.mep?.override.split(',').some((item) => {
+    config.mep?.override?.split(',').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
         [, manifest] = pair;
@@ -532,7 +532,7 @@ const createDefaultExperiment = (manifest) => ({
 });
 
 export async function applyPers(manifests) {
-  const config = getConfig();
+  let config = getConfig();
 
   if (!manifests?.length) return;
 
@@ -554,7 +554,7 @@ export async function applyPers(manifests) {
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
-  updateConfig({
+  config = updateConfig({
     ...config,
     experiments,
     expBlocks: consolidateObjects(results, 'blocks'),
@@ -571,5 +571,7 @@ export async function applyPers(manifests) {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
+  if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  updateConfig(config);
 }
