@@ -25,6 +25,11 @@
   z-index: 103;
 }
 
+.dialog-modal.commerce-frame .fragment,
+.dialog-modal.commerce-frame .section {
+  height: 100%;
+}
+
 .modal-curtain.is-open {
   position: fixed;
   top: 0;
@@ -192,7 +197,7 @@
 
   .dialog-modal.commerce-frame .milo-iframe {
     padding-bottom: 0;
-    height: 845px;
+    height: 100%;
   }
 
   .dialog-modal.commerce-frame.height-fit-content {
