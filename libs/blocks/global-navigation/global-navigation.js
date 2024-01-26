@@ -204,6 +204,11 @@ const closeOnClickOutside = (e) => {
   }
 };
 
+const getIetfLocale = (ietfLocale) => {
+  const nonStandardLocaleMap = { no_NO: 'nb_NO' };
+  return nonStandardLocaleMap[ietfLocale] || ietfLocale;
+};
+
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -440,8 +445,8 @@ class Gnav {
     } else {
       [region, language] = config.locale.prefix.replace('/', '').split('_');
     }
-    const locale = `${language.toLowerCase()}_${region.toUpperCase()}`;
-    const environment = config.env.name === 'prod' ? 'prod' : 'dev';
+    const locale = getIetfLocale(`${language.toLowerCase()}_${region.toUpperCase()}`);
+    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
     const getDevice = () => {
       const agent = navigator.userAgent;
@@ -466,17 +471,15 @@ class Gnav {
       // reset sign up value on change
       children[0].attributes.isSignUpRequired = false;
 
-      if (isDesktop.matches) {
-        this.universalNavComponents?.forEach((component) => {
-          if (component === 'profile') return;
-          if (component === 'signup') {
-            children[0].attributes.isSignUpRequired = true;
-            return;
-          }
+      this.universalNavComponents?.forEach((component) => {
+        if (component === 'profile') return;
+        if (component === 'signup') {
+          children[0].attributes.isSignUpRequired = true;
+          return;
+        }
 
-          children.push(CONFIG.universalNav.components[component]);
-        });
-      }
+        children.push(CONFIG.universalNav.components[component]);
+      });
 
       return children;
     };

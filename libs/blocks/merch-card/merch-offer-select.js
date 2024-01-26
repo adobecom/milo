@@ -13,8 +13,8 @@ function createDynamicSlots(el, bodySlot) {
   footer.append(p);
   bodySlot.querySelector('p')?.setAttribute('slot', 'description');
 }
-function createMerchOffer(option) {
-  const merchOffer = createTag('merch-offer', { text: option.childNodes[0].textContent.trim() });
+function createMerchOffer(option, quantitySelector) {
+  const merchOffer = createTag('merch-offer', { [quantitySelector ? 'value' : 'text']: option.childNodes[0].textContent.trim() });
   [...option.querySelector('ul').children].forEach((li, index) => {
     const override = li.childNodes[0];
     if (override.nodeName === '#text') {
@@ -33,17 +33,21 @@ function createMerchOffer(option) {
   return merchOffer;
 }
 
-export const initOfferSelection = (merchCard, offerSelection) => {
+export const initOfferSelection = (merchCard, offerSelection, quantitySelector) => {
   const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
   if (!bodySlot) return;
   createDynamicSlots(merchCard, bodySlot);
   const merchOffers = createTag('merch-offer-select', { container: 'merch-card' });
   [...offerSelection.children].forEach((option) => {
-    merchOffers.append(createMerchOffer(option));
+    merchOffers.append(createMerchOffer(option, quantitySelector));
   });
   merchOffers.querySelectorAll('a[is="checkout-link"]').forEach((link) => { link.setAttribute('slot', 'cta'); });
   merchOffers.querySelectorAll('span[is="inline-price"]').forEach((price) => { price.setAttribute('slot', 'price'); });
-  bodySlot.append(merchOffers);
+  if (quantitySelector) {
+    quantitySelector.append(merchOffers);
+  } else {
+    bodySlot.append(merchOffers);
+  }
 };
 
 export default initOfferSelection;
