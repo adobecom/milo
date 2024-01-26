@@ -6,6 +6,8 @@ const QUESTIONS_EP_NAME = 'questions.json';
 const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
+const API_KEY = 'CCHomeMLRepo1';
+const ENDPOINT = 'acom-prd-recom-v1';
 
 let configPath;
 let quizKey;
@@ -49,9 +51,11 @@ export const getQuizData = async () => {
 };
 
 export async function fetchFiCodes(input, numberOfItems) {
-  const apiUrl = 'https://cchome-dev.adobe.io/int/v1/models';
+  const { env } = getConfig();
+  const subdomain = env === 'prod' ? 'cchome-dev' : 'cchome-dev';
+  const apiUrl = `https://${subdomain}.adobe.io/int/v1/models`;
   const params = {
-    endpoint: 'acom-prd-recom-v1',
+    endpoint: ENDPOINT,
     contentType: 'application/json',
     payload: {
       data: {
@@ -61,19 +65,17 @@ export async function fetchFiCodes(input, numberOfItems) {
     },
   };
 
-  const response = await fetch(apiUrl, {
+  const result = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': 'CCHomeMLRepo1',
+      'x-api-key': API_KEY,
     },
     body: JSON.stringify(params),
-  });
+  })
+    .then((response) => response.json())
+    .catch((error) => window.lana.log(`ERROR: Fetching fi codes ${error}`));
 
-  if (!response.ok) {
-    window.lana?.log(`ERROR: Fetching fi codes ${response.status} ${response.statusText}`);
-  }
-  const result = await response.json();
   return result;
 }
 

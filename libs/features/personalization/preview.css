@@ -290,6 +290,10 @@ body[data-mep-highlight='true'] [data-removed-manifest-id] {
   outline: 3px #ef3726 dashed !important;
 }
 
+body:not([data-mep-highlight='true']) [data-removed-manifest-id] {
+  display: none !important;
+}
+
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
