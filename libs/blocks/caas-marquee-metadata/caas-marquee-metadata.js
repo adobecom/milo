@@ -99,8 +99,6 @@ export default function init(el) {
     classList: ${classListString},
     imageSm: ${metadata.imagemobile || ''},
     imageMd: ${metadata.imagetablet || ''},
-    ctaStyle: ${metadata.ctastyle || ''},
-    cta2Style: ${metadata.cta2style || ''},
   `).replace(/\s+/g, ' '));
   arbitrary.append(arbitraryKey, arbitraryValue);
   el.append(arbitrary);
