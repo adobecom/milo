@@ -33,7 +33,7 @@ export default function init(el) {
   const metadata = getMetadata(el);
 
   // configure block font sizes
-  const classList = el.classList.toString().split(' ');
+  const classList = metadata.variant.split(',').map((c) => c.trim());
   /* eslint-disable no-nested-ternary */
   const size = classList.includes('small') ? 'small'
     : classList.includes('medium') ? 'medium'
@@ -42,20 +42,20 @@ export default function init(el) {
   /* eslint-enable no-nested-ternary */
 
   // background images for mobilr, tablet, and desktop
-  const img = createTag('img', { class: 'background', src: metadata.image });
-  const picture = createTag('picture', null, img);
+  const imgDesktop = createTag('img', { class: 'background', src: metadata.imagedesktop || metadata.image });
+  const picture = createTag('picture', null, imgDesktop);
   const desktopOnly = createTag('div', { class: 'desktop-only' }, picture);
 
-  const imgTablet = createTag('img', { class: 'background', src: metadata.imagetablet });
+  const imgTablet = createTag('img', { class: 'background', src: metadata.imagetablet || metadata.image });
   const pictureTablet = createTag('picture', null, imgTablet);
   const tabletOnly = createTag('div', { class: 'tablet-only' }, pictureTablet);
 
-  const imgSm = createTag('img', { class: 'background', src: metadata.imagemobile });
-  const pictureSm = createTag('picture', null, imgSm);
-  const mobileOnly = createTag('div', { class: 'mobile-only' }, pictureSm);
+  const imgMobile = createTag('img', { class: 'background', src: metadata.imagemobile || metadata.image });
+  const pictureMobile = createTag('picture', null, imgMobile);
+  const mobileOnly = createTag('div', { class: 'mobile-only' }, pictureMobile);
 
   const background = createTag('div', { class: 'background' });
-  background.append(desktopOnly, tabletOnly, mobileOnly);
+  background.append(mobileOnly, tabletOnly, desktopOnly);
 
   // foreground copy
   const title = createTag('h1', { class: `heading-${typeSize[size][0]}` }, metadata.title);
@@ -83,8 +83,8 @@ export default function init(el) {
   const foreground = createTag('div', { class: 'foreground container' }, text);
 
   // marquee container
-  const classListString = classList.join(' ').replace('caas-marquee', 'marquee');
-  const section = createTag('div', { class: `${classListString}` });
+  const classListString = classList.join(' ');
+  const section = createTag('div', { class: `marquee large ${classListString}` });
   section.append(background, foreground);
 
   // page section container
