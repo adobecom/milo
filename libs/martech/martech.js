@@ -170,6 +170,11 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   return filesLoadedPromise;
 };
 
+const preloadPersManifests = async (persManifests) => {
+  const { preloadManifests } = await import('../features/personalization/personalization.js');
+  preloadManifests({ persManifests });
+};
+
 export default async function init({ persEnabled = false, persManifests = [] }) {
   const config = getConfig();
 
@@ -183,6 +188,10 @@ export default async function init({ persEnabled = false, persManifests = [] }) 
       `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
+
+    if (persManifests?.length) {
+      preloadPersManifests(persManifests);
+    }
 
     const targetManifests = await getTargetPersonalization();
     if (targetManifests?.length || persManifests?.length) {

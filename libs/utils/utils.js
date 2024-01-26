@@ -799,7 +799,7 @@ export async function loadIms() {
 async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
-    return true;
+    return Promise.resolve();
   }
 
   const query = PAGE_URL.searchParams.get('martech');
@@ -811,9 +811,42 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({ persEnabled, persManifests });
+  return initMartech({ persEnabled, persManifests });
+}
 
-  return true;
+const preloadFile = (base, name, { path = '', css = true } = {}) => {
+  loadLink(
+    path || `${base}/blocks/${name}/${name}.js`,
+    { as: 'script', rel: 'modulepreload', fetchpriority: 'low' },
+  );
+  if (!path && css) {
+    loadLink(
+      path || `${base}/blocks/${name}/${name}.css`,
+      { rel: 'stylesheet', fetchpriority: 'low' },
+    );
+  }
+};
+
+function preloadBlocks() {
+  const firstSection = document.querySelector('body > main > div');
+  const blocks = firstSection.querySelectorAll(':scope > div[class]:not(.content)');
+  const { miloLibs, codeRoot } = getConfig();
+
+  blocks.forEach((block) => {
+    if (block.classList.contains('hide-block') || block.classList[0] === 'breadcrumbs') {
+      return;
+    }
+    const name = block.classList[0];
+    const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
+    preloadFile(base, name);
+
+    if (name === 'marquee') {
+      preloadFile(base, '', { path: `${base}/utils/decorate.js`, css: false });
+    }
+  });
+
+  preloadFile(miloLibs || codeRoot, 'fragment');
+  preloadFile('', '', { path: `${miloLibs || codeRoot}/utils/tree.js`, css: false });
 }
 
 async function checkForPageMods() {
@@ -833,6 +866,10 @@ async function checkForPageMods() {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
+      { as: 'script', rel: 'modulepreload' },
+    );
+    loadLink(
+      `${base}/features/personalization/entitlements.js`,
       { as: 'script', rel: 'modulepreload' },
     );
   }
@@ -863,7 +900,9 @@ async function checkForPageMods() {
   }
 
   if (targetEnabled) {
-    await loadMartech({ persEnabled: true, persManifests, targetMd });
+    const martechPromise = loadMartech({ persEnabled: true, persManifests, targetMd });
+    preloadBlocks();
+    await martechPromise;
   } else if (persManifests.length) {
     loadIms()
       .then(() => {
@@ -873,6 +912,8 @@ async function checkForPageMods() {
 
     const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
+
+    preloadBlocks();
 
     await applyPers(manifests);
   }
