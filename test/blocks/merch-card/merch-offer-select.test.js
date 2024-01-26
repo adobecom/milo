@@ -68,10 +68,10 @@ describe('Merch Offer Select', () => {
     validateMerchCard(merchCard, null, 'Access advanced PDF.', 'BWGlzrQG6jgkf-_zPJm55M5QpAyb4skYi05BizQIJ3U');
   });
 
-  it('Should display photography storage card with horizontal options, and price before description', async () => {
+  it('Should display photography storage card with horizontal options, and price before description, and 2 ctas', async () => {
     await initCard(document.querySelector('.photography'));
     await delay();
-    const merchCard = document.querySelectorAll('merch-card')[1];
+    const merchCard = document.querySelector('merch-card.photography');
     const merchOffers = merchCard.querySelectorAll('merch-offer');
     expect(merchOffers.length).to.equal(2);
     // options should be displayed horizontally
@@ -79,7 +79,14 @@ describe('Merch Offer Select', () => {
       .to.equal(merchOffers[1].getBoundingClientRect().y);
     const description = merchCard.querySelector('p[slot="description"]');
     const price = merchCard.querySelector('[slot="price"]');
+    // price should be above description
     expect(description.getBoundingClientRect().y).to.greaterThan(price.getBoundingClientRect().y);
+    // there should be 2 CTAs
+    merchOffers[1].click();
+    await delay(200);
+    const osis = [...merchCard.querySelectorAll('.action-area a')]
+      .map((a) => a.dataset.wcsOsi);
+    expect(osis).to.deep.equal(['1TB_TRIAL', '1TB_BUY']);
   });
 });
 
