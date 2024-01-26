@@ -94,13 +94,13 @@ export default function init(el) {
   // arbitrary fields caas-metadata
   const arbitrary = createTag('div');
   const arbitraryKey = createTag('div', null, 'arbitrary');
-  const arbitraryValue = createTag('div', null, `promoId: ${metadata.promoid},
+  const arbitraryValue = createTag('div', null, (`promoId: ${metadata.promoid},
     classList: ${classListString},
     imageSm: ${metadata.imagemobile || ''},
     imageMd: ${metadata.imagetablet || ''},
     ctaStyle: ${metadata.ctastyle || ''},
     cta2Style: ${metadata.cta2style || ''},
-  `);
+  `).replace(/\s+/g, ' '));
   arbitrary.append(arbitraryKey, arbitraryValue);
   el.append(arbitrary);
 
