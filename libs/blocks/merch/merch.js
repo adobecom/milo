@@ -37,16 +37,30 @@ export async function loadEntitlements() {
     fetch(entitlementsURL),
   ]).then(([{ default: getUserEntitlements }, mappings]) => {
     if (!mappings.ok) return [];
-    return Promise.all([getUserEntitlements(), mappings.json()]);
+    return Promise.all([getUserEntitlements({ params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }], format: 'raw' }), mappings.json()]);
   });
   return loadEntitlements.promise;
 }
 
 async function getCheckoutAction(offers) {
-  const [{ arrangement_codes: aCodes } = {}, entitlementsMappings] = await loadEntitlements();
-  if (aCodes === undefined) return undefined;
+  const [entitlements, entitlementsMappings] = await loadEntitlements();
+  const aCodes = entitlements?.map((offer) => offer.offer.product_arrangement_code);
   const [{ productArrangementCode }] = offers;
-  if (aCodes[productArrangementCode] === true) {
+  let ctaProductFamily;
+  const upgradeOffer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]'); // todo dont search each time
+  if (upgradeOffer && Array.isArray(entitlements)) {
+    const { default: handleUpgradeOffer } = await import('./upgrade.js');
+    const mapping = entitlementsMappings.data
+      ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
+    ctaProductFamily = mapping['Product Family'];
+    const handle = await handleUpgradeOffer(ctaProductFamily, upgradeOffer, entitlements);
+    if (handle) return handle;
+  }
+  const downloadFlow = false; // temporary disable
+  if (downloadFlow === false) return undefined;
+  if (aCodes === undefined) return undefined;
+
+  if (aCodes.includes(productArrangementCode)) {
     const mapping = entitlementsMappings.data
       ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
     if (!mapping) return undefined;
@@ -116,7 +130,7 @@ export async function getCheckoutContext(el, params) {
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
-  const entitlement = 'false' ?? params?.get('entitlement'); // temporarly disabled.
+  const entitlement = params?.get('entitlement') ?? 'true';
   return {
     ...context,
     checkoutClientId,
