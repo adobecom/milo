@@ -125,13 +125,14 @@ const parseContent = (el, merchCard) => {
   ];
   let bodySlotName = 'body-xs';
   let headingMCount = 0;
+  let headingCount = 3;
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
   }
   const bodySlot = createTag('div', { slot: bodySlotName });
 
   innerElements.forEach((element) => {
-    const { tagName } = element;
+    let { tagName } = element;
     if (tagName === 'EM' && !element.querySelector('a')) {
       const promoText = createTag('p', { class: 'promo-text' }, element.innerHTML);
       element.replaceWith(promoText);
@@ -139,16 +140,23 @@ const parseContent = (el, merchCard) => {
     if (isHeadingTag(tagName)) {
       let slotName = textStyles[tagName];
       if (slotName) {
-        if (['H2', 'H4', 'H5'].includes(tagName)) {
+        if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
           if (tagName === 'H2') {
             headingMCount += 1;
           }
           if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
             slotName = 'heading-m-price';
           }
+          tagName = `H${headingCount}`;
+          headingCount += 1;
         }
         element.setAttribute('slot', slotName);
-        merchCard.append(element);
+        const newElement = createTag(tagName);
+        Array.from(element.attributes).forEach((attr) => {
+          newElement.setAttribute(attr.name, attr.value);
+        });
+        newElement.innerHTML = element.innerHTML;
+        merchCard.append(newElement);
       }
       return;
     }
