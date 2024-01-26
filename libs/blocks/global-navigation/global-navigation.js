@@ -205,7 +205,7 @@ const closeOnClickOutside = (e) => {
 };
 
 const getIetfLocale = (ietfLocale) => {
-  const nonStandardLocaleMap = { no_NO: 'nb_NO' };
+  const nonStandardLocaleMap = { no_NO: 'nb_NO', pt_PT: 'pt_BR' };
   return nonStandardLocaleMap[ietfLocale] || ietfLocale;
 };
 
