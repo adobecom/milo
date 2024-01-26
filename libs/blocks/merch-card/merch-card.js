@@ -123,12 +123,9 @@ const parseContent = (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
   ];
-  let bodySlotName = 'body-xs';
+  const bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
-  let headingCount = 3;
-  if (merchCard.variant === MINI_COMPARE_CHART) {
-    bodySlotName = 'body-m';
-  }
+  let headingSize = 3;
   const bodySlot = createTag('div', { slot: bodySlotName });
 
   innerElements.forEach((element) => {
@@ -147,8 +144,8 @@ const parseContent = (el, merchCard) => {
           if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
             slotName = 'heading-m-price';
           }
-          tagName = `H${headingCount}`;
-          headingCount += 1;
+          tagName = `H${headingSize}`;
+          headingSize += 1;
         }
         element.setAttribute('slot', slotName);
         const newElement = createTag(tagName);
