@@ -116,7 +116,7 @@ export async function getCheckoutContext(el, params) {
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
-  const entitlement = params?.get('entitlement');
+  const entitlement = 'false' ?? params?.get('entitlement'); // temporarly disabled.
   return {
     ...context,
     checkoutClientId,

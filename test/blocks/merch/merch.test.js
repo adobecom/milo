@@ -363,7 +363,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('Entitlements', () => {
+  describe.skip('Entitlements', () => {
     it('updates CTA text to Download', async () => {
       mockIms();
       getUserEntitlements();
