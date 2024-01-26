@@ -341,7 +341,9 @@ describe('Merch Card with Offer Selection', () => {
     document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
     await init(document.querySelector('.quantity-select'));
     const merchCard = document.querySelector('merch-card');
+    const quantitySelectSlot = merchCard.querySelector('div[slot="quantity-select"]');
     const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    expect(quantitySelectSlot).to.exist;
     expect(quantitySelect).to.exist;
     expect(quantitySelect.getAttribute('title')).to.equal('Select a quantity:');
     expect(quantitySelect.getAttribute('min')).to.equal('1');
