@@ -127,11 +127,6 @@ export async function buildCta(el, params) {
   cta.classList.add('con-button');
   cta.classList.toggle('button-l', large);
   cta.classList.toggle('blue', strong);
-  const upgradeOffer = document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
-  if (upgradeOffer) {
-    const { default: handleUpgradeOffer } = await import('./upgrade.js');
-    handleUpgradeOffer(cta, upgradeOffer);
-  }
   return cta;
 }
 
