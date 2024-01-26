@@ -107,5 +107,5 @@ export default function init(el) {
   el.innerHTML += '<div><div>Tags</div><div>caas:content-type/promotion</div></div>';
 
   // Degugging ((( Remove before release )))
-  console.log('metadata:', metadata); // eslint-disable-line no-console
+  console.log('metadata:', getMetadata(el)); // eslint-disable-line no-console
 }
