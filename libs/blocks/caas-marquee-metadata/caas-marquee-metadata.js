@@ -16,13 +16,14 @@ function getMetadata(el) {
       metadata[key] = child.querySelector('img').src.replace(/\?.*/, '');
     } else if (key.match(/^cta/)) {
       const ctaLink = child.querySelector('a');
-      if (!ctaLink) continue;
-      metadata[`${key}1url`] = ctaLink.href;
-      metadata[`${key}1text`] = ctaLink.textContent.trim();
-      /* eslint-disable no-nested-ternary */
-      metadata[`${key}1style`] = ctaLink.parentNode.tagName === 'STRONG' ? 'blue'
-        : ctaLink.parentNode.tagName === 'EM' ? 'outline' : '';
-      /* eslint-enable no-nested-ternary */
+      if (ctaLink) {
+        metadata[`${key}1url`] = ctaLink.href;
+        metadata[`${key}1text`] = ctaLink.textContent.trim();
+        /* eslint-disable no-nested-ternary */
+        metadata[`${key}1style`] = ctaLink.parentNode.tagName === 'STRONG' ? 'blue'
+          : ctaLink.parentNode.tagName === 'EM' ? 'outline' : '';
+        /* eslint-enable no-nested-ternary */
+      }
     } else {
       metadata[key] = value;
     }
@@ -104,10 +105,9 @@ export default function init(el) {
   el.append(arbitrary);
 
   el.innerHTML += `<div><div>tags</div><div>caas:content-type/promotion</div></div>
-    <div><div>cta1url</div><div>${metadata['cta1url']}</div></div>
-    <div><div>cta1text</div><div>${metadata['cta1text']}</div></div>
-    <div><div>cta1style</div><div>${metadata['cta1style']}</div></div>`;
-  
+    <div><div>cta1url</div><div>${metadata.cta1url}</div></div>
+    <div><div>cta1text</div><div>${metadata.cta1text}</div></div>
+    <div><div>cta1style</div><div>${metadata.cta1style}</div></div>`;
 
   // Degugging ((( Remove before release )))
   console.log('metadata:', getMetadata(el)); // eslint-disable-line no-console
