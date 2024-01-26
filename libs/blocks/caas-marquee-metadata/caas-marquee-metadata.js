@@ -16,10 +16,11 @@ function getMetadata(el) {
       metadata[key] = child.querySelector('img').src.replace(/\?.*/, '');
     } else if (key.match(/^cta/)) {
       const ctaLink = child.querySelector('a');
-      metadata[`${key}url`] = ctaLink.href;
-      metadata[`${key}text`] = ctaLink.textContent.trim();
+      if (!ctaLink) continue;
+      metadata[`${key}1url`] = ctaLink.href;
+      metadata[`${key}1text`] = ctaLink.textContent.trim();
       /* eslint-disable no-nested-ternary */
-      metadata[`${key}style`] = ctaLink.parentNode.tagName === 'STRONG' ? 'blue'
+      metadata[`${key}1style`] = ctaLink.parentNode.tagName === 'STRONG' ? 'blue'
         : ctaLink.parentNode.tagName === 'EM' ? 'outline' : '';
       /* eslint-enable no-nested-ternary */
     } else {
@@ -62,10 +63,10 @@ export default function init(el) {
   const body = createTag('p', { class: `body-${typeSize[size][1]}` }, metadata.description);
 
   // ctas (buttons)
-  const cta = metadata.ctaurl ? createTag('a', {
-    class: `con-button blue button-${typeSize[size][1]} button-justified-mobile`,
+  const cta = metadata.cta1url ? createTag('a', {
+    class: `con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile`,
     href: metadata.ctaurl,
-  }, metadata.ctatext) : null;
+  }, metadata.cta1text) : null;
 
   const cta2 = metadata.cta2url ? createTag('a', {
     class: `con-button outline button-${typeSize[size][1]} button-justified-mobile`,
@@ -104,7 +105,11 @@ export default function init(el) {
   arbitrary.append(arbitraryKey, arbitraryValue);
   el.append(arbitrary);
 
-  el.innerHTML += '<div><div>Tags</div><div>caas:content-type/promotion</div></div>';
+  el.innerHTML += `<div><div>tags</div><div>caas:content-type/promotion</div></div>
+    <div><div>cta1url</div><div>${metadata['cta1url']}</div></div>
+    <div><div>cta1text</div><div>${metadata['cta1text']}</div></div>
+    <div><div>cta1style</div><div>${metadata['cta1style']}</div></div>`;
+  
 
   // Degugging ((( Remove before release )))
   console.log('metadata:', getMetadata(el)); // eslint-disable-line no-console
