@@ -73,16 +73,24 @@ function updateParserModel(parser, pattern, score, markerSymbol = '#') {
 }
 
 /**
- * Determines whether an element should be excluded from Japanese word wrapping.
+ * Check if the element has a flex or grid display.
  *
  * @param {Element} element - The element to check.
  * @returns {boolean} - True if the element should be excluded, false otherwise.
  */
-function shouldExclude(element) {
+function hasFlexOrGrid(element) {
   const elStyles = getComputedStyle(element);
 
-  return navigator.userAgent.includes('Firefox')
-    && (elStyles.display === 'flex' || elStyles.display === 'grid');
+  return (elStyles.display === 'flex' || elStyles.display === 'grid');
+}
+
+/**
+ * Check if the current browser is Firefox.
+ *
+ * @returns {boolean} - True if the current browser is Firefox, false otherwise.
+ */
+function isFirefox() {
+  return navigator.userAgent.includes('Firefox');
 }
 
 /**
@@ -159,7 +167,11 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
 
   // Apply budoux to target selector
   textElements.forEach((el) => {
-    if (budouxExcludeElements.has(el) || isWordWrapApplied(el) || shouldExclude(el)) return;
+    if (
+      budouxExcludeElements.has(el)
+      || isWordWrapApplied(el)
+      || (isFirefox() && hasFlexOrGrid(el))
+    ) return;
     parser.applyElement(el, { threshold: budouxThres });
   });
 
@@ -168,7 +180,11 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
     const bw2 = new BalancedWordWrapper();
     // Apply balanced word wrap to target selector
     textElements.forEach((el) => {
-      if (bwExcludeElements.has(el) || isBalancedWordWrapApplied(el) || shouldExclude(el)) return;
+      if (
+        bwExcludeElements.has(el)
+        || isBalancedWordWrapApplied(el)
+        || (isFirefox() && hasFlexOrGrid(el))
+      ) return;
       bw2.applyElement(el);
     });
   }
