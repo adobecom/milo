@@ -7,7 +7,12 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
-let configPath; let quizKey; let shortQuiz; let analyticsType; let analyticsQuiz; let metaData;
+let configPath;
+let quizKey;
+let shortQuiz;
+let analyticsType;
+let analyticsQuiz;
+let metaData;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
@@ -16,28 +21,18 @@ const initConfigPath = (quizMetaData) => {
   return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
 };
 
-const initQuizKey = () => {
-  const { locale } = getConfig();
-  quizKey = metaData.storage?.text;
-  return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
-};
-
-const initAnalyticsType = () => metaData['analytics-type']?.text;
-
-const initAnalyticsQuiz = () => metaData['analytics-quiz']?.text;
-
 async function fetchContentOfFile(path) {
   const response = await fetch(configPath(path));
   return response.json();
 }
 
 export const initConfigPathGlob = (rootElement) => {
-  metaData = getMetadata(rootElement);
-  shortQuiz = metaData['short-quiz']?.text === 'true';
+  metaData = getNormalizedMetadata(rootElement);
   configPath = initConfigPath(metaData);
-  quizKey = initQuizKey(rootElement);
-  analyticsType = initAnalyticsType();
-  analyticsQuiz = initAnalyticsQuiz();
+  shortQuiz = metaData.shortquiz?.text === 'true';
+  quizKey = metaData.storage?.text.toLowerCase();
+  analyticsType = metaData.analyticstype?.text;
+  analyticsQuiz = metaData.analyticsquiz?.text;
   return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
@@ -150,7 +145,11 @@ export const storeResultInLocalStorage = (
     ),
     pageloadHash: getAnalyticsDataForLocalStorage(analyticsConfig),
   };
-  localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
+
+  const { locale } = getConfig();
+  const quizLocalKey = locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
+
+  localStorage.setItem(quizLocalKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
 };
 
@@ -239,9 +238,27 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
   return fragArray;
 };
 
+/**
+ * Normalizes the metadata keys in the metadata object,
+ * cleaning them up and removing all but alphanumeric characters
+ */
+const normalizeKeys = (data) => {
+  const keys = Object.keys(data);
+  const cleanData = {};
+  for (const key of keys) {
+    const newKey = key.match(/[a-zA-Z0-9]/g).join('');
+    if (key !== newKey) {
+      cleanData[newKey] = data[key];
+    } else {
+      cleanData[key] = data[key];
+    }
+  }
+  return cleanData;
+};
+
 export const getRedirectUrl = (destinationPage) => {
   const separator = destinationPage.includes('?') ? '&' : '?';
-  return `${destinationPage}${separator}quizKey=${quizKey}`;
+  return `${destinationPage}${separator}quizkey=${quizKey}`;
 };
 
 export const parseResultData = async (answers) => {
@@ -465,3 +482,5 @@ export const getAnalyticsDataForLocalStorage = (config) => {
 };
 
 export const isValidUrl = (url) => VALID_URL_RE.test(url);
+
+export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));
