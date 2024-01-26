@@ -1,5 +1,5 @@
-// Wed, 24 Jan 2024 19:54:42 GMT
-import{html as n,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var g="(max-width: 767px)";var i="(min-width: 768px)",o="(min-width: 1200px)",s="(min-width: 1600px)";var y=x`
+// Fri, 26 Jan 2024 19:05:16 GMT
+import{html as n,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as f,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var g="(max-width: 767px)";var i="(min-width: 768px)",o="(min-width: 1200px)",s="(min-width: 1600px)";var y=f`
     :host {
         position: relative;
         display: flex;
@@ -232,9 +232,9 @@ import{html as n,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x
     :host([variant='plans']) {
         min-height: 348px;
     }
-`,w=()=>{let l=[x`
+`,w=()=>{let l=[f`
         /* Tablet */
-        @media screen and ${f(i)} {
+        @media screen and ${x(i)} {
             :host([size='wide']),
             :host([size='super-wide']) {
                 grid-column: span 2;
@@ -243,13 +243,13 @@ import{html as n,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x
         }
 
         /* Laptop */
-        @media screen and ${f(o)} {
+        @media screen and ${x(o)} {
             :host([size='super-wide']) {
                 grid-column: span 3;
             }
-        `];return l.push(x`
+        `];return l.push(f`
         /* Large desktop */
-        @media screen and ${f(s)} {
+        @media screen and ${x(s)} {
             :host([size='super-wide']) {
                 grid-column: span 4;
             }
@@ -480,6 +480,7 @@ merch-card [slot="body-xxs"] {
     font-weight: normal;
     letter-spacing: var(--consonant-merch-card-body-xxs-letter-spacing);
     color: var(--merch-color-grey-80);
+    margin: 0;
 }
 
 merch-card [slot="body-xs"] {
@@ -548,6 +549,14 @@ merch-card[variant="catalog"] [slot="action-menu-content"] p {
 merch-card[variant="catalog"] [slot="action-menu-content"] a {
     color: var(--consonant-merch-card-background-color);
     text-decoration: underline;
+}
+
+merch-card[variant="plans"] [slot="quantity-select"] {
+    display: flex;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    width: 100%;
+    padding: var(--consonant-merch-spacing-xs);
 }
 
 /* mini compare chart card styles */
@@ -939,7 +948,7 @@ div[slot='bg-image'] img {
                 </label>`:""}get cardImage(){return n` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}get plansFooter(){let e=this.secureLabel?n`<span class="secure-transaction-label"
+        </div>`}get secureLabelFooter(){let e=this.secureLabel?n`<span class="secure-transaction-label"
                   >${this.secureLabel}</span
               >`:"";return n`<footer>${e}<slot name="footer"></slot></footer>`}get badge(){let e;if(!(!this.badgeBackgroundColor||!this.badgeColor||!this.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.badgeBackgroundColor}; border-right: none;`),n`
             <div
@@ -950,7 +959,7 @@ div[slot='bg-image'] img {
             >
                 ${this.badgeText}
             </div>
-        `}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector('span[is="inline-price"]')}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll('a[is="checkout-link"]')??[]]}get isMobileOrTablet(){return window.matchMedia("(max-width: 1024px)").matches}async toggleStockOffer({target:e}){if(!this.stockOfferOsis)return;let r=this.checkoutLinks;if(r.length!==0)for(let t of r){await t.onceSettled();let a=t.value?.[0]?.planType;if(!a)return;let c=this.stockOfferOsis[a];if(!c)return;let d=t.dataset.wcsOsi.split(",").filter(m=>m!==c);e.checked&&d.push(c),t.dataset.wcsOsi=d.join(",")}}toggleActionMenu(e){let r=e?.type==="mouseleave"?!0:void 0,t=this.shadowRoot.querySelector('slot[name="action-menu-content"]');t&&t.classList.toggle("hidden",r)}handleQuantitySelection(e){let r=this.checkoutLinks;for(let t of r)t.dataset.quantity=e.detail.option}get title(){return this.querySelector('[slot="heading-xs"]').textContent.trim()}updateFilters(e){let r={...this.filters};Object.keys(r).forEach(t=>{if(e){r[t].order=Math.min(r[t].order,2);return}let a=r[t].order;a===1||isNaN(a)||(r[t].order=Number(a)+1)}),this.filters=r}includes(e){return this.textContent.match(new RegExp(e,"i"))!==null}render(){switch(this.variant){case"special-offers":return this.renderSpecialOffer();case"segment":return this.renderSegment();case"plans":return this.renderPlans();case"catalog":return this.renderCatalog();case"image":return this.renderImage();case"product":return this.renderProduct();case"inline-heading":return this.renderInlineHeading();case"mini-compare-chart":return this.renderMiniCompareChart();default:return this.renderProduct()}}renderSpecialOffer(){return n`${this.cardImage}
+        `}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector('span[is="inline-price"]')}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll('a[is="checkout-link"]')??[]]}get isMobileOrTablet(){return window.matchMedia("(max-width: 1024px)").matches}async toggleStockOffer({target:e}){if(!this.stockOfferOsis)return;let r=this.checkoutLinks;if(r.length!==0)for(let t of r){await t.onceSettled();let a=t.value?.[0]?.planType;if(!a)return;let c=this.stockOfferOsis[a];if(!c)return;let d=t.dataset.wcsOsi.split(",").filter(m=>m!==c);e.checked&&d.push(c),t.dataset.wcsOsi=d.join(",")}}toggleActionMenu(e){let r=e?.type==="mouseleave"?!0:void 0,t=this.shadowRoot.querySelector('slot[name="action-menu-content"]');t&&t.classList.toggle("hidden",r)}handleQuantitySelection(e){let r=this.checkoutLinks;for(let t of r)t.dataset.quantity=e.detail.option}get title(){return(this.variant==="special-offers"?this.querySelector('[slot="detail-m"]'):this.querySelector('[slot="heading-xs"]')).textContent.trim()}updateFilters(e){let r={...this.filters};Object.keys(r).forEach(t=>{if(e){r[t].order=Math.min(r[t].order,2);return}let a=r[t].order;a===1||isNaN(a)||(r[t].order=Number(a)+1)}),this.filters=r}includes(e){return this.textContent.match(new RegExp(e,"i"))!==null}render(){switch(this.variant){case"special-offers":return this.renderSpecialOffer();case"segment":return this.renderSegment();case"plans":return this.renderPlans();case"catalog":return this.renderCatalog();case"image":return this.renderImage();case"product":return this.renderProduct();case"inline-heading":return this.renderInlineHeading();case"mini-compare-chart":return this.renderMiniCompareChart();default:return this.renderProduct()}}renderSpecialOffer(){return n`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
@@ -981,7 +990,8 @@ div[slot='bg-image'] img {
                 <slot name="body-xs"></slot>
                 ${this.stockCheckbox}
             </div>
-            ${this.plansFooter}`}renderCatalog(){return n` <div class="body">
+            <slot name="quantity-select"></slot>
+            ${this.secureLabelFooter}`}renderCatalog(){return n` <div class="body">
                 <div class="top-section">
                     ${this.renderIcons()} ${this.badge}
                     <div
@@ -1027,13 +1037,13 @@ div[slot='bg-image'] img {
                 </div>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.customHr?"":n`<hr />`} ${this.plansFooter}`}renderProduct(){return n` ${this.badge}
+            ${this.customHr?"":n`<hr />`} ${this.secureLabelFooter}`}renderProduct(){return n` ${this.badge}
             <div class="body">
                 ${this.renderIcons()}
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            <footer><slot name="footer"></slot></footer>`}renderMiniCompareChart(){return n` ${this.badge}
+            ${this.secureLabelFooter}`}renderMiniCompareChart(){return n` ${this.badge}
             <div class="body">
                 ${this.renderIcons()}
                 <slot name="heading-m"></slot>

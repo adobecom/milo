@@ -1,4 +1,4 @@
-// Mon, 08 Jan 2024 21:06:16 GMT
+// Fri, 26 Jan 2024 19:05:16 GMT
 
 // src/merch-quantity-select.js
 import { html, css as css2, LitElement } from "/libs/deps/lit-all.min.js";
@@ -17,7 +17,7 @@ var styles = css`
         --input-height: var(--qs-input-height, 30px);
         --input-width: var(--qs-input-width, 72px);
         --button-width: var(--qs-button-width, 30px);
-        --font-size: var(--qs-font-size, 16px);
+        --font-size: var(--qs-font-size, 12px);
         --picker-fill-icon: var(
             --chevron-down-icon,
             url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="10" height="6" aria-hidden="true" viewBox="0 0 10 6"><path fill="%23787878" d="M9.99 1.01A1 1 0 0 0 8.283.3L5 3.586 1.717.3A1 1 0 1 0 .3 1.717L4.293 5.7a1 1 0 0 0 1.414 0L9.7 1.717a1 1 0 0 0 .29-.707z"/></svg>')
@@ -28,6 +28,7 @@ var styles = css`
         color: var(--main-color);
         user-select: none;
         padding: var(--qs-padding, 0);
+        line-height: var(--qs-line-height, 2);
     }
 
     .text-field {
@@ -54,6 +55,7 @@ var styles = css`
     }
 
     .text-field-input {
+        font-size: var(--font-size);
         border: var(--border-width) solid var(--border-color);
         border-top-left-radius: var(--radius);
         border-bottom-left-radius: var(--radius);
@@ -127,6 +129,7 @@ var styles = css`
 
     .item {
         color: var(--text-color);
+        font-size: var(--font-size);
         display: flex;
         width: var(--qs-width, 100%);
         justify-content: center;
@@ -202,18 +205,21 @@ var MerchQuantitySelect = class extends LitElement {
           this.handleMenuOption(null, this.selectedValue);
           this.toggleMenu();
         } else {
-          const inputField = this.shadowRoot.querySelector(".text-field-input");
-          const inputValue = parseInt(inputField.value);
-          if (!isNaN(inputValue) && inputValue > 0) {
-            this.selectedValue = inputValue;
-            this.highlightedIndex = this.options.indexOf(inputValue);
-            this.handleMenuOption(null, this.selectedValue);
-            inputField.blur();
-          }
+          this.handleInput();
           break;
         }
     }
     e.stopPropagation();
+  }
+  handleInput() {
+    const inputField = this.shadowRoot.querySelector(".text-field-input");
+    const inputValue = parseInt(inputField.value);
+    if (!isNaN(inputValue) && inputValue > 0 && inputValue !== this.selectedValue) {
+      this.selectedValue = inputValue;
+      this.highlightedIndex = this.options.indexOf(inputValue);
+      this.handleMenuOption(null, this.selectedValue);
+      inputField.blur();
+    }
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -239,6 +245,7 @@ var MerchQuantitySelect = class extends LitElement {
   }
   handleClickOutside(event) {
     const path = event.composedPath();
+    this.handleInput();
     if (!path.includes(this)) {
       this.closePopover();
     }

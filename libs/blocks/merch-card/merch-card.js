@@ -435,10 +435,7 @@ const init = async (el) => {
       const { initOfferSelection } = await import('./merch-offer-select.js');
       initOfferSelection(merchCard, offerSelection, quantitySelect);
     }
-    if (quantitySelect) {
-      const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
-      bodySlot.append(quantitySelect);
-    }
+    if (quantitySelect) merchCard.append(createTag('div', { slot: 'quantity-select' }, quantitySelect));
   }
 
   decorateBlockHrs(merchCard);
