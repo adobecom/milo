@@ -18,6 +18,9 @@ export const decorateMnemonicList = (container) => {
     productList.appendChild(product);
     paragraph.replaceWith(productList);
   });
+  targetElement?.prepend(productList);
+  const divs = targetElement?.querySelectorAll('div:not([class])');
+  divs.forEach((div) => div.remove());
 };
 
 export default async function init(el) {
