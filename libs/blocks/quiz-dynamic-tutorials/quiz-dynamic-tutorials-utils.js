@@ -2,7 +2,7 @@ import { getConfig } from '../../utils/utils.js';
 
 const API_KEY = 'CCHomeWeb1';
 const ENDPOINT = 'community-recom-v1';
-const UTUA_API_KEY = 'CCHomeMLRepo1';
+const UTUA_API_KEY = 'CCPlanReco1';
 
 const { env, locale } = getConfig();
 
