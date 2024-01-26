@@ -249,7 +249,7 @@ const simplifyHrs = (el) => {
   });
 };
 
-function createQuantitySelect(el) {
+function extractQuantitySelect(el) {
   const quantitySelectConfig = el.querySelector('ul');
   if (!quantitySelectConfig) return null;
   const configMarkup = quantitySelectConfig.querySelector('li');
@@ -428,8 +428,8 @@ const init = async (el) => {
   }
   merchCard.appendChild(footer);
 
-  if (cardType === 'plans') {
-    const quantitySelect = createQuantitySelect(el);
+  if (['plans', 'product'].includes(cardType)) {
+    const quantitySelect = extractQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');

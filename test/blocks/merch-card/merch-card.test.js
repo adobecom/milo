@@ -338,7 +338,7 @@ describe('Mini Compare Chart Merch Card', () => {
 
 describe('Merch Card with Offer Selection', () => {
   it('Supports quantity select ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
     await init(document.querySelector('.quantity-select'));
     const merchCard = document.querySelector('merch-card');
     const quantitySelect = merchCard.querySelector('merch-quantity-select');
@@ -350,7 +350,7 @@ describe('Merch Card with Offer Selection', () => {
   });
 
   it('Change quantity select ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
     await init(document.querySelector('.quantity-select'));
     await delay();
     const merchCard = document.querySelector('merch-card');
@@ -362,7 +362,7 @@ describe('Merch Card with Offer Selection', () => {
   });
 
   it('Skip Change quantity select render ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
     await init(document.querySelector('.skip-quantity-select-render'));
     await delay();
     expect(document.querySelector('merch-quantity-select')).to.not.exist;
