@@ -1,18 +1,24 @@
 {
-  "href": "https://main--milo--adobecom.hlx.page/drafts/sarchibeque/bulk-publish-test",
-  "origin": "https://main--milo--adobecom.hlx.page",
-  "result": {
-      "webPath": "/drafts/sarchibeque/bulk-publish-test",
-      "resourcePath": "/drafts/sarchibeque/bulk-publish-test.md",
-      "live": {
-          "url": "https://main--milo--adobecom.hlx.page/drafts/sarchibeque/bulk-publish-test",
-          "status": 200
-      },
-      "links": {
-          "status": "https://admin.hlx.page/status/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
-          "preview": "https://admin.hlx.page/preview/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
-          "live": "https://admin.hlx.page/live/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
-          "code": "https://admin.hlx.page/code/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test"
-      }
-  }
+    "webPath": "/drafts/sarchibeque/bulk-publish-test",
+    "resourcePath": "/drafts/sarchibeque/bulk-publish-test.md",
+    "live": {
+      "url": "https://main--milo--adobecom.hlx.live/drafts/sarchibeque/bulk-publish-test",
+      "status": 200,
+      "contentBusId": "helix-content-bus/428c247cb451d4d92914028a176c9d2654b76bb578506f630497e817d8c/live/drafts/sarchibeque/bulk-publish-test.md",
+      "contentType": "text/plain; charset=utf-8",
+      "lastModified": "Sat, 27 Jan 2024 20:54:42 GMT",
+      "sourceLocation": "onedrive:/drives/b!rZMb0rzDlki1jv128EwoNOJDPlbbCaJHjZmSthYaBRurbdjrKwiWS7YyVFjPXMsO/items/01TMM4TXG5OUZJUQBPQZC3UBWZGUNRUHHO",
+      "sourceLastModified": "Thu, 18 Jan 2024 21:14:35 GMT",
+      "permissions": [
+        "delete",
+        "read",
+        "write"
+      ]
+    },
+    "links": {
+      "status": "https://admin.hlx.page/status/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
+      "preview": "https://admin.hlx.page/preview/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
+      "live": "https://admin.hlx.page/live/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
+      "code": "https://admin.hlx.page/code/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test"
+    }
 }

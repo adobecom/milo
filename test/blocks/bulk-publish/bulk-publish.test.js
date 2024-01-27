@@ -1,8 +1,8 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { delay, waitForRemoval } from '../../helpers/waitfor.js';
-import { mockFetch, unmockFetch } from './mocks/response/fetch.js';
-import './mocks/login-prompt.js';
+import { mockFetch, unmockFetch } from './mocks/fetch.js';
+import './mocks/authentication.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/bulk-publish/bulk-publish.js');
@@ -40,6 +40,7 @@ describe('Bulk Publish Tool', () => {
   before(async () => {
     await mockFetch();
   });
+
   after(() => {
     unmockFetch();
   });
@@ -98,15 +99,25 @@ describe('Bulk Publish Tool', () => {
     expect(submitBtn.getAttribute('disable')).to.equal('false');
   });
 
+  it('can submit valid bulk publish job', async () => {
+    await delay(1500);
+    await setProcess(rootEl, 'publish');
+    await setTextArea(rootEl, testPage);
+    await clickElem(rootEl.querySelector('#RunProcess'));
+    expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(1);
+  });
+
   it('can submit valid bulk preview job', async () => {
+    await setProcess(rootEl, 'preview');
+    await setTextArea(rootEl, testPage);
     await clickElem(rootEl.querySelector('#RunProcess'));
     await delay(1500);
-    expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(1);
+    expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(2);
   });
 
   it('can open result page url', async () => {
     await delay(1500);
-    const previewProcess = rootEl.querySelector('job-process');
+    const previewProcess = rootEl.querySelectorAll('job-process')[1];
     const previewResult = previewProcess.shadowRoot.querySelector('.result');
     await clickElem(previewResult);
     previewResult.classList.add('opened');
@@ -118,33 +129,23 @@ describe('Bulk Publish Tool', () => {
     await setProcess(rootEl, 'delete');
     await setTextArea(rootEl, testPage);
     await clickElem(rootEl.querySelector('#RunProcess'));
-    expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(2);
+    expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(3);
   });
 
   it('can copy result page url', async () => {
     await delay(1500);
-    const deleteProcess = rootEl.querySelectorAll('job-process')[1];
+    const deleteProcess = rootEl.querySelectorAll('job-process')[2];
     const deleteResult = deleteProcess?.shadowRoot.querySelector('.result');
     await clickElem(deleteResult);
     deleteResult.classList.add('copied');
     expect(deleteResult.classList.contains('copied')).to.be.true;
   });
 
-  it('can submit valid publish job', async () => {
-    await delay(1500);
-    await setProcess(rootEl, 'publish');
-    await setTextArea(rootEl, testPage);
-    await clickElem(rootEl.querySelector('#RunProcess'));
-    await delay(400);
-    expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(3);
-  });
-
-  it('can submit valid index job', async () => {
+  it('can submit valid bulk index job', async () => {
     await delay(1500);
     await setProcess(rootEl, 'index');
     await setTextArea(rootEl, testPage);
     await clickElem(rootEl.querySelector('#RunProcess'));
-    await delay(400);
     expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(4);
   });
 });
