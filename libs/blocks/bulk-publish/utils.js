@@ -1,5 +1,5 @@
+const PREFS = 'bulk-pub-prefs';
 const FORM_MODES = ['full', 'half'];
-const STORE = 'bulk-pub-prefs';
 const DEFAULT_PREFS = { mode: FORM_MODES[0], resume: [] };
 const PROCESS_TYPES = [
   'preview',
@@ -9,18 +9,18 @@ const PROCESS_TYPES = [
   'index',
 ];
 
-const wait = (delay = 5000) => new Promise((resolve) => {
-  setTimeout(() => resolve(), delay);
+const delay = (timeout = 2000) => new Promise((resolve) => {
+  setTimeout(() => resolve(), timeout);
 });
 
 const sticky = () => {
-  const store = localStorage.getItem(STORE);
+  const store = localStorage.getItem(PREFS);
   const prefs = store ? JSON.parse(store) : DEFAULT_PREFS;
   return {
     get: (key) => (prefs[key] ?? DEFAULT_PREFS[key]),
     set: (key, value) => {
       prefs[key] = value;
-      localStorage.setItem(STORE, JSON.stringify(prefs));
+      localStorage.setItem(PREFS, JSON.stringify(prefs));
     },
   };
 };
@@ -59,13 +59,14 @@ const getJobErrorText = (errors, process) => {
 };
 
 const getErrorText = (code) => {
-  const codes = [400, 401, 403, 404, 503];
+  const codes = [400, 401, 403, 404, 503, 414];
   const errorText = [
     'Invalid URL',
     'Unauthorized',
     'Forbidden',
     'Not Found',
     'Timed Out',
+    'Request-URI Too Long',
   ];
   return errorText[codes.indexOf(code)];
 };
@@ -91,7 +92,7 @@ const getStatusText = (status, state, count) => {
   return { code, text, color };
 };
 
-const humanDateTime = (newDate) => {
+const displayDate = (newDate) => {
   const date = new Date(newDate);
   const today = new Date();
   const isToday = date.getDate() === today.getDate()
@@ -106,16 +107,16 @@ const processJobResult = (jobs) => jobs.reduce((result, job) => {
 }, { complete: [], error: [] });
 
 export {
+  displayDate,
   editEntry,
   FORM_MODES,
   getErrorText,
   getJobErrorText,
   getMiloUrl,
-  humanDateTime,
   PROCESS_TYPES,
   processJobResult,
   getStatusText,
   sticky,
   validMiloURL,
-  wait,
+  delay,
 };

@@ -1,4 +1,4 @@
-import { PROCESS_TYPES, getErrorText, getMiloUrl, wait } from './utils.js';
+import { PROCESS_TYPES, getErrorText, getMiloUrl, delay } from './utils.js';
 
 const BASE_URL = 'https://admin.hlx.page';
 const headers = { 'Content-Type': 'application/json' };
@@ -22,7 +22,7 @@ const createAEMRequest = (url, process, isBulk = true) => {
   const useDelete = isDelete(process);
   const href = isBulk ? [url.href] : url.href;
   const endpoint = writeEP(url, process, !isBulk);
-  const options = { headers, method: useDelete ? 'DELETE' : 'POST', body: {} };
+  const options = { headers, method: useDelete ? 'DELETE' : 'POST' };
   if (isBulk) options.body = { paths: [] };
   return {
     href,
@@ -40,7 +40,8 @@ const connectSidekick = (bulkPub) => {
       const profile = processes.profile ?? null;
       const permissions = {};
       PROCESS_TYPES.forEach((key) => {
-        // index.permissions does not exist in processes returned from sidekick event
+        // index.permissions does not exist in processes returned from sidekick event even though
+        // I can see the permissions in the documentation
         if (key !== 'index') {
           const process = isLive(key) ? 'live' : 'preview';
           permissions[key] = !!processes[process].permissions?.includes('list');
@@ -55,13 +56,13 @@ const connectSidekick = (bulkPub) => {
   }, { once: true });
 };
 
-const writeJobList = ({ urls, process }) => {
+const mapJobList = ({ urls, process }) => {
   const all = urls.map((url) => (new URL(url)));
   return all.map((url) => (createAEMRequest(url, process, false)));
 };
 
 const createJobs = (details, useBulk) => {
-  if (!useBulk) return writeJobList(details);
+  if (!useBulk) return mapJobList(details);
   const { urls, process } = details;
   const paths = urls.map((url) => (new URL(url)));
   return Object.values(paths.reduce((jobs, url) => {
@@ -97,7 +98,7 @@ const formatResult = ({ status }, job) => {
   };
 };
 
-const runJobProcess = async (details) => {
+const startJobProcess = async (details) => {
   const { process } = details;
   const useBulk = process !== 'index';
   const jobs = createJobs(details, useBulk);
@@ -127,7 +128,7 @@ const runJobProcess = async (details) => {
 };
 
 const fetchStatus = async (link) => {
-  await wait(3000);
+  await delay();
   try {
     const status = await fetch(link, { headers });
     const result = await status.json();
@@ -152,33 +153,34 @@ const pollJobStatus = async (job, setProgress) => {
   return jobStatus;
 };
 
-const runRetry = async ({ queue, urls, process }) => {
-  const jobs = writeJobList({ urls, process });
-  const processes = jobs.flatMap(async ({ endpoint, options, origin }) => {
+const updateRetryQueue = async ({ queue, urls, process }) => {
+  const jobs = mapJobList({ urls, process });
+  const processes = jobs.flatMap(async ({ endpoint, options, origin, href }) => {
     try {
-      await wait(4000);
+      await delay();
+      options.body = JSON.stringify({});
       const job = await fetch(endpoint, options);
       if (!job.ok) {
         throw new Error(getErrorText(job.status), { cause: job.status }, origin);
       }
       const result = await job.json();
-      return { origin, result };
+      return { href, origin, result };
     } catch (error) {
-      return { origin, result: { status: error.cause } };
+      return { href, origin, result: { status: error.cause } };
     }
   });
   const statuses = await Promise.all(processes);
-  const updateQueue = queue.map((item, index) => {
-    const newStatus = statuses.find((status) => status.origin === urls[index]);
-    const count = item.count + 1;
-    return { ...item, status: newStatus?.result ?? item.status, count };
+  const newQueue = queue.map((entry, index) => {
+    const { result } = statuses.find((stat) => stat.href === urls[index]);
+    const status = (result?.[getProcess(process)]?.status || result?.status) ?? entry.status;
+    return { ...entry, status, count: entry.count + 1 };
   });
-  return updateQueue;
+  return newQueue;
 };
 
 export {
-  runRetry,
-  runJobProcess,
+  updateRetryQueue,
+  startJobProcess,
   connectSidekick,
   pollJobStatus,
 };

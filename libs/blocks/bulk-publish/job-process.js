@@ -1,7 +1,7 @@
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { humanDateTime, getStatusText, wait } from './utils.js';
-import { pollJobStatus, runRetry } from './services.js';
+import { displayDate, getStatusText, delay } from './utils.js';
+import { pollJobStatus, updateRetryQueue } from './services.js';
 import { getConfig } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -39,30 +39,32 @@ class JobProcess extends LitElement {
   }
 
   async updated() {
-    if (this.jobStatus && this.jobStatus.state === 'stopped') {
+    if (this.jobStatus?.state === 'stopped') {
       this.dispatchEvent(new CustomEvent('stopped', { detail: this.jobStatus }));
     }
-    if (this.jobStatus && this.jobStatus.progress?.failed !== 0) {
-      const timeouts = this.jobStatus.data?.resources?.filter((job) => job.status === 503);
-      if (timeouts?.length) {
-        if (!this.queue.length) {
-          this.queue = timeouts.map((item) => ({ ...item, count: 1 }));
-        } else {
-          const queue = this.queue.filter((item) => item.count < 3 && item.status === 503);
-          if (queue.length) {
-            const newQueue = await runRetry({
-              queue,
-              urls: queue.map((item) => `${this.job.origin}${item.path}`),
-              process: this.jobStatus.topic,
-            });
-            this.queue = newQueue;
-          }
-        }
-      }
+    if (this.jobStatus?.progress?.failed !== 0) {
+      const timeouts = this.jobStatus?.data?.resources?.filter((job) => job.status === 503) ?? [];
+      this.retryTimeouts(timeouts);
     }
   }
 
-  async viewResult({ url, code, topic }, pathIndex) {
+  async retryTimeouts(timeouts) {
+    if (!timeouts.length) return;
+    if (this.queue.length) {
+      const queue = this.queue.filter(({ status, count }) => status === 503 && count <= 3);
+      if (queue.length) {
+        this.queue = await updateRetryQueue({
+          queue,
+          urls: queue.map(({ path }) => `${this.job.origin}${path}`),
+          process: this.jobStatus.topic,
+        });
+      }
+    } else {
+      this.queue = timeouts.map((item) => ({ ...item, count: 1 }));
+    }
+  }
+
+  async onClickResult({ url, code, topic }, pathIndex) {
     const results = this.renderRoot.querySelectorAll('.result');
     const isPOST = !['preview-remove', 'publish-remove'].includes(topic);
     if (this.jobStatus && (code === 200 || code === 204) && isPOST) {
@@ -71,12 +73,12 @@ class JobProcess extends LitElement {
     } else {
       await navigator.clipboard.writeText(url);
       results[pathIndex].classList.add('copied', 'indicator');
-      await wait(3000);
+      await delay(3000);
       results[pathIndex].classList.remove('indicator');
     }
   }
 
-  getJob(path) {
+  getJobState(path) {
     const jobData = this.jobStatus ?? this.job.result.job;
     const { topic, data, startTime, stopTime, createTime } = jobData;
     const resource = data?.resources?.find((src) => src.path === path || src.webPath === path);
@@ -118,11 +120,11 @@ class JobProcess extends LitElement {
     const { job } = this.job.result;
     return job.data.paths.map((path, pathIndex) => {
       const jobPath = typeof path === 'object' ? path.path : path;
-      const { style, status, topic, url, time } = this.getJob(jobPath);
+      const { style, status, topic, url, time } = this.getJobState(jobPath);
       return html`
         <div 
           class="result${style}"
-          @click=${() => this.viewResult({ url, code: status.code, topic }, pathIndex)}>
+          @click=${() => this.onClickResult({ url, code: status.code, topic }, pathIndex)}>
           <div class="process">
             ${topic} <span class="url">${url}</span>
           </div>
@@ -131,7 +133,7 @@ class JobProcess extends LitElement {
             <span
               @mouseover=${() => { this.expandDate = url; }}
               @mouseleave=${() => { this.expandDate = false; }}>
-              <i>${this.expandDate === url ? time.label : ''}</i> ${humanDateTime(time.stamp)}
+              <i>${this.expandDate === url ? time.label : ''}</i> ${displayDate(time.stamp)}
             </span>
           </div>
         </div>

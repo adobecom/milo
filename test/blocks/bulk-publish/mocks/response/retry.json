@@ -1,0 +1,18 @@
+{
+  "href": "https://main--milo--adobecom.hlx.page/drafts/sarchibeque/bulk-publish-test",
+  "origin": "https://main--milo--adobecom.hlx.page",
+  "result": {
+      "webPath": "/drafts/sarchibeque/bulk-publish-test",
+      "resourcePath": "/drafts/sarchibeque/bulk-publish-test.md",
+      "live": {
+          "url": "https://main--milo--adobecom.hlx.page/drafts/sarchibeque/bulk-publish-test",
+          "status": 200
+      },
+      "links": {
+          "status": "https://admin.hlx.page/status/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
+          "preview": "https://admin.hlx.page/preview/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
+          "live": "https://admin.hlx.page/live/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test",
+          "code": "https://admin.hlx.page/code/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test"
+      }
+  }
+}

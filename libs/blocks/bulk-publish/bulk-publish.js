@@ -1,7 +1,7 @@
 import './job-process.js';
 import { LitElement, html } from '../../deps/lit-all.min.js';
 import { getSheet } from '../../../tools/utils/utils.js';
-import { connectSidekick, runJobProcess } from './services.js';
+import { connectSidekick, startJobProcess } from './services.js';
 import { getConfig } from '../../utils/utils.js';
 import {
   editEntry,
@@ -11,13 +11,13 @@ import {
   PROCESS_TYPES,
   sticky,
   validMiloURL,
-  wait,
+  delay,
 } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot || 'libs';
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish/bulk-publisher.css`);
-const loader = await getSheet(`${base}/blocks/bulk-publish/loader.css`);
+const loaderSheet = await getSheet(`${base}/blocks/bulk-publish/loader.css`);
 const backgroundImg = `${base}/blocks/bulk-publish/img/background.svg`;
 const downArrowIcon = `${base}/blocks/bulk-publish/img/downarrow.svg`;
 const checkmarkIcon = `${base}/blocks/bulk-publish/img/checkmark.svg`;
@@ -53,12 +53,12 @@ class BulkPublish extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    this.renderRoot.adoptedStyleSheets = [styleSheet, loader];
+    this.renderRoot.adoptedStyleSheets = [styleSheet, loaderSheet];
     connectSidekick(this);
     const resume = sticky().get('resume');
     if (resume.length) {
       this.jobs = resume;
-      await wait(1000);
+      await delay(1000);
       this.openJobs = true;
       this.processing = 'resumed';
     }
@@ -221,17 +221,6 @@ class BulkPublish extends LitElement {
     `;
   }
 
-  errorReworkTool({ failed, status }) {
-    const setRework = () => {
-      const { origin } = this.jobs.find((item) => item.result.job.name === status.name);
-      const paths = status.data.resources.filter((path) => ![200, 204].includes(path.status));
-      this.urls = paths.map(({ path }) => `${origin}${path}`);
-    };
-    return html`<span
-      @click=${setRework}
-      class="failed${failed > 0 ? ' rework' : ''}">${failed} Error</span>`;
-  }
-
   getJobState() {
     const states = {
       showList: this.mode === 'half' || this.openJobs,
@@ -346,7 +335,7 @@ class BulkPublish extends LitElement {
   async submit() {
     if (!this.formDisabled()) {
       this.processing = 'started';
-      const job = await runJobProcess({
+      const job = await startJobProcess({
         urls: this.urls,
         process: this.process.toLowerCase(),
         hasPermission: this.user?.permissions?.[this.process],
@@ -367,9 +356,7 @@ class BulkPublish extends LitElement {
     return {
       full: this.mode === 'full' ? 'on' : 'off',
       half: this.mode === 'half' ? 'on' : 'off',
-      toggleMode: (modeIndex) => {
-        this.mode = FORM_MODES[modeIndex];
-      },
+      toggleMode: (modeIndex) => { this.mode = FORM_MODES[modeIndex]; },
     };
   }
 

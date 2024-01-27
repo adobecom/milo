@@ -5,7 +5,9 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/icon-block/icon-block.js');
 
 describe('icon blocks', () => {
-  const blocks = document.querySelectorAll('.icon-block');
+  const iconblocks = document.querySelectorAll('.icon-block');
+  const blocks = [...new Set(iconblocks)];
+  console.log(blocks);
   blocks.forEach((block) => {
     init(block);
     const isColumn = block.classList.contains('vertical') || block.classList.contains('centered');

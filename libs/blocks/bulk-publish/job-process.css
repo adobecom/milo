@@ -46,6 +46,10 @@
   color: var(--link-color);
 }
 
+.result.success.link.opened .url {
+  color: var(--accent);
+}
+
 .meta {
   display: flex;
   justify-content: space-between;
