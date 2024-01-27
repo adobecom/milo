@@ -172,7 +172,7 @@ const updateRetryQueue = async ({ queue, urls, process }) => {
   const statuses = await Promise.all(processes);
   const newQueue = queue.map((entry, index) => {
     const { result } = statuses.find((stat) => stat.href === urls[index]);
-    const status = result?.[getProcess(process)]?.status ?? entry.status;
+    const status = (result?.[getProcess(process)]?.status || result?.status) ?? entry.status;
     return { ...entry, status, count: entry.count + 1 };
   });
   return newQueue;
