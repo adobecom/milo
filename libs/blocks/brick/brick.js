@@ -68,14 +68,13 @@ function decorateForeground(el, foreground) {
   const fgtext = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   fgtext.closest('div').classList.add('brick-text');
   if (foreground.querySelectorAll(':scope > div').length > 1) {
-    if (!el.classList.contains('stack') && !el.classList.contains('center')) el.classList.add('row');
-    if (!el.classList.contains('stack')) foreground.closest('.brick').classList.add('split');
-    foreground.querySelector('div:not([class])').classList.add('brick-media');
-    if (foreground.querySelector('div').classList.contains('brick-media')) {
-      el.classList.add('media-left');
-    } else {
-      el.classList.add('media-right');
+    if (!el.classList.contains('stack')) {
+      foreground.closest('.brick').classList.add('split');
+      if (!el.classList.contains('center')) el.classList.add('row');
     }
+    const mediaEl = foreground.querySelector('div:not([class])');
+    mediaEl.classList.add('brick-media');
+    el.classList.add((foreground.firstElementChild === mediaEl) ? 'media-left' : 'media-right');
   }
   const hasIconArea = foreground.querySelector('p')?.querySelector('img');
   if (hasIconArea) {
