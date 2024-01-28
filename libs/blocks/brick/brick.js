@@ -47,7 +47,7 @@ function handleObjectFit(bgRow) {
 
 function handleClickableBrick(el, foreground) {
   if (!el.classList.contains('click')) return;
-  const links = foreground.querySelectorAll('a');
+  const links = foreground.querySelectorAll('.brick-text a');
   if (links.length !== 1) { el.classList.remove('click'); return; }
   const a = links[0];
   const linkDiv = createTag('span', { class: [...a.classList, 'first-link'].join(' ') }, a.innerHTML);
