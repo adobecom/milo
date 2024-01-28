@@ -77,11 +77,28 @@ function decorateBricks(el) {
   }
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground');
+  const fgtext = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  fgtext.closest('div').classList.add('brick-text');
+  if (foreground.querySelectorAll(':scope > div').length > 1) {
+    if (!el.classList.contains('stack') && !el.classList.contains('center')) el.classList.add('row');
+    if (!el.classList.contains('stack')) foreground.closest('.brick').classList.add('split');
+    foreground.querySelector('div:not([class])').classList.add('brick-media');
+    if (foreground.querySelector('div').classList.contains('brick-media')) {
+      el.classList.add('media-left');
+    } else {
+      el.classList.add('media-right');
+    }
+  }
   const hasIconArea = foreground.querySelector('p')?.querySelector('img');
-  if (hasIconArea) foreground.querySelector('p').classList.add('icon-area');
+  if (hasIconArea) {
+    const iconArea = foreground.querySelector('p');
+    iconArea.classList.add('icon-area');
+    if (iconArea.querySelectorAll('img').length > 1) iconArea.classList.add('icon-gap-s');
+  }
   const blockFormatting = getBlockSize(el);
   decorateButtons(foreground, 'button-l');
   decorateBlockText(foreground, blockFormatting);
+  el.querySelector('.icon-area')?.classList.remove('detail-l');
   decorateIconStack(el);
   el.querySelector('.icon-stack-area')?.classList.add('body-xs');
   handleSupplementalText(foreground);
