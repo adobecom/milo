@@ -263,6 +263,10 @@
     justify-content: space-between;
     padding: var(--spacing-l) var(--spacing-l) 0 var(--spacing-l);
   }
+  
+  .brick.split.center .foreground {
+    padding: var(--spacing-l);
+  }
 
   .brick.stack.media-left .foreground {
     padding: 0 var(--spacing-l) var(--spacing-l) var(--spacing-l);
@@ -291,7 +295,7 @@
   .brick.split.row.media-left .foreground .brick-text {
     grid-column: 8 / span 5;
   }
-  
+
   .brick.split.row.media-right .foreground .brick-media {
     grid-column: 7 / span 6;
   }
