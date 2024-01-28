@@ -84,10 +84,6 @@
   margin: 0;
 }
 
-.brick .foreground div > * {
-  margin-top: var(--spacing-xs);
-}
-
 .brick .foreground p:first-child,
 .brick .foreground p.icon-area,
 .brick .foreground p.icon-area + p {
@@ -217,6 +213,10 @@
   text-decoration: none;
 }
 
+.brick .foreground div > * {
+  margin-top: var(--spacing-xs);
+}
+
 @media screen and (max-width: 600px) {
   .brick .mobile-only {
     display: block;
@@ -274,16 +274,31 @@
     border-radius: inherit;
   }
 
+  .brick.stack .foreground .brick-media picture,
+  .brick.stack .foreground .brick-media img,
+  .brick.stack .foreground .brick-media video {
+    width: 100%;
+    height: auto;
+  }
+
   .brick.split.row .foreground .brick-media img,
   .brick.split.row .foreground .brick-media video {
     width: 50%;
     height: 100%;
     object-fit: cover;
     padding: 0;
+    margin: 0;
     border-radius: 0;
     border-top-right-radius: inherit;
     border-bottom-right-radius: inherit;
     position: absolute;
+  }
+  
+  .brick .foreground .brick-media video,
+  .brick.split.row .foreground .brick-media video {
+    object-fit: fill;
+    display: flex;
+    margin: 0;
   }
 
   [dir='rtl'] .brick.split.row .foreground .brick-media img,
@@ -317,8 +332,8 @@
     margin: 0;
   }
 
-  .brick.stack  .foreground .brick-text,
-  .brick.stack  .foreground .brick-media {
+  .brick.stack .foreground .brick-text,
+  .brick.stack .foreground .brick-media {
     margin: 0;
     padding: 0;
   }
@@ -329,12 +344,18 @@
   }
 
   .brick.split.media-left .foreground .brick-text,
+  [dir='rtl'] .brick.split .foreground .brick-text,
   [dir='rtl'] .brick.split.media-right .foreground .brick-text {
     margin: var(--spacing-l) var(--spacing-l) var(--spacing-l) 0;
   }
-
-  .brick.split.media-right .foreground .brick-text,
+  
+  .brick.split .foreground .brick-text,
+  .brick.split.media-right .foreground .brick-text
   [dir='rtl'] .brick.split.media-left .foreground .brick-text {
     margin: var(--spacing-l) 0 var(--spacing-l) var(--spacing-l);
+  }
+
+  .brick.split.center .foreground .brick-text {
+    margin: 0;
   }
 }
