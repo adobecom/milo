@@ -64,19 +64,7 @@ function decorateSupplementalText(el) {
   supplementalEl.className = 'body-xs supplemental-text';
 }
 
-function decorateBricks(el) {
-  if (!el.classList.contains('light')) el.classList.add('dark');
-  const elems = el.querySelectorAll(':scope > div');
-  if (elems.length > 1) {
-    handleObjectFit(elems[elems.length - 2]);
-    decorateBlockBg(el, elems[elems.length - 2], { useHandleFocalpoint: true });
-  }
-  if (elems.length > 2) {
-    el.style.background = elems[0].textContent;
-    elems[0].remove();
-  }
-  const foreground = elems[elems.length - 1];
-  foreground.classList.add('foreground');
+function decorateForeground(el, foreground) {
   const fgtext = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   fgtext.closest('div').classList.add('brick-text');
   if (foreground.querySelectorAll(':scope > div').length > 1) {
@@ -95,6 +83,22 @@ function decorateBricks(el) {
     iconArea.classList.add('icon-area');
     if (iconArea.querySelectorAll('img').length > 1) iconArea.classList.add('icon-gap-s');
   }
+}
+
+function decorateBricks(el) {
+  if (!el.classList.contains('light')) el.classList.add('dark');
+  const elems = el.querySelectorAll(':scope > div');
+  if (elems.length > 1) {
+    handleObjectFit(elems[elems.length - 2]);
+    decorateBlockBg(el, elems[elems.length - 2], { useHandleFocalpoint: true });
+  }
+  if (elems.length > 2) {
+    el.style.background = elems[0].textContent;
+    elems[0].remove();
+  }
+  const foreground = elems[elems.length - 1];
+  foreground.classList.add('foreground');
+  decorateForeground(el, foreground);
   const blockFormatting = getBlockSize(el);
   decorateButtons(foreground, 'button-l');
   decorateBlockText(foreground, blockFormatting);
