@@ -2,7 +2,7 @@
 import { getConfig } from '../../../utils/utils.js';
 
 const API_WAIT_TIMEOUT = 10000;
-const entitlements = {};
+let entitlements = {};
 
 const getAcceptLanguage = (locale = 'en-US') => [
   `${locale}`,
@@ -123,7 +123,10 @@ const getSubscriptions = async ({ queryParams }) => {
  * @returns {object} JIL Entitlements
  */
 const getUserEntitlements = async ({ params, format } = {}) => {
-  if (!window.adobeIMS?.isSignedInUser()) return Promise.resolve(emptyEntitlements());
+  if (!window.adobeIMS?.isSignedInUser()) {
+    entitlements = {};
+    return Promise.resolve(emptyEntitlements());
+  }
 
   const queryParams = getQueryParameters(params);
   if (entitlements[queryParams]) {
