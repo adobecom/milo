@@ -22,7 +22,7 @@ const createAEMRequest = (url, process, isBulk = true) => {
   const useDelete = isDelete(process);
   const href = isBulk ? [url.href] : url.href;
   const endpoint = writeEP(url, process, !isBulk);
-  const options = { headers, method: useDelete ? 'DELETE' : 'POST' };
+  const options = { headers, method: useDelete ? 'DELETE' : 'POST', body: {} };
   if (isBulk) options.body = { paths: [] };
   return {
     href,
@@ -66,7 +66,6 @@ const createJobs = (details, useBulk) => {
   const { urls, process } = details;
   const paths = urls.map((url) => (new URL(url)));
   return Object.values(paths.reduce((jobs, url) => {
-    // reduce urls list into jobs by host
     let base = url.host;
     // groups of 100 for users without 'list' permission
     while (!details.hasPermission && jobs[base]?.options.body.paths.length >= 100) {
@@ -104,10 +103,8 @@ const startJobProcess = async (details) => {
   const jobs = createJobs(details, useBulk);
   const requests = jobs.flatMap(async (job) => {
     const { options, origin, endpoint } = job;
-    if (options.body && !isDelete(process)) {
-      options.body.forceUpdate = true;
-      options.body = JSON.stringify(options.body);
-    }
+    if (!isDelete(process)) options.body.forceUpdate = true;
+    options.body = JSON.stringify(options.body ?? {});
     try {
       const request = await fetch(endpoint, options);
       if (!request.ok && useBulk) {

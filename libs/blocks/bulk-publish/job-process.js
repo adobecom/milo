@@ -96,7 +96,7 @@ class JobProcess extends LitElement {
       ? ` success${['preview-remove', 'publish-remove'].includes(topic) ? '' : ' link'}`
       : '';
 
-    const origin = topic === 'publish' && success.includes(status)
+    const origin = ['publish', 'index'].includes(topic) && success.includes(status)
       ? this.job.origin.replace('.page', '.live')
       : this.job.origin;
 

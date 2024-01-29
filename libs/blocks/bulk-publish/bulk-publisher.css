@@ -25,14 +25,16 @@
 }
 
 .login-prompt .prompt {
-  background-color: white;
+  background-color: #303030;
+  color: white;
   margin: 0 auto;
-  width: 50vw;
+  max-width: 50vw;
+  min-width: 10vw;
   text-align: center;
-  border-radius: 5px;
-  padding: 15px 5px;
+  border-radius: 12px;
+  padding: 20px 5px;
   position: absolute;
-  top: 20vh;
+  top: 43vh;
   left: 0;
   right: 0;
 }
