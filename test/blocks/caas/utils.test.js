@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig, getConfig as pageConfigHelper } from '../../../libs/utils/utils.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 import {
   defaultState,
   getConfig,
