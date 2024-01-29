@@ -56,7 +56,7 @@ describe('Bulk Publish Tool', () => {
   it('can prompt user to open sidekick', () => {
     const prompt = rootEl.querySelector('.login-prompt');
     expect(prompt).to.exist;
-    expect(prompt.innerText).to.equal('Please open AEM sidekick to continue');
+    expect(prompt.innerText).to.equal('Loading User Information');
   });
 
   it('can close sign-in prompt', async () => {

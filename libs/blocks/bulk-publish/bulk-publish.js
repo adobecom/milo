@@ -364,8 +364,8 @@ class BulkPublish extends LitElement {
     setTimeout(() => {
       const loader = this.renderRoot.querySelector('.load-indicator');
       const message = this.renderRoot.querySelector('.message');
-      loader.classList.add('hide');
-      message.classList.remove('hide');
+      loader?.classList.add('hide');
+      message?.classList.remove('hide');
     }, 4000);
     return html`
       <div class="load-indicator">
