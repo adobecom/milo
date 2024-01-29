@@ -304,7 +304,7 @@
   .brick.split.row.media-right .foreground .brick-media {
     grid-column: 7 / span 6;
   }
-  
+
   .brick.split.grid-full-width.row.media-right .foreground .brick-text {
     grid-column: span 5;
   }
@@ -367,10 +367,12 @@
   .brick.split.grid-full-width:not(.stack):not(.center) .foreground .brick-text,
   [dir='rtl'] .brick.split.row.grid-full-width.media-left .foreground .brick-text {
     margin-right: 0;
+    margin-left: var(--spacing-l);
   }
 
   .brick.split.row.grid-full-width.media-left .foreground .brick-text,
   [dir='rtl'] .brick.split.grid-full-width:not(.stack):not(.center) .foreground .brick-text {
+    margin-right: var(--spacing-l);
     margin-left: 0;
   }
 
