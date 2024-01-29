@@ -204,9 +204,36 @@ const closeOnClickOutside = (e) => {
   }
 };
 
-const getIetfLocale = (ietfLocale) => {
-  const nonStandardLocaleMap = { no_NO: 'nb_NO' };
-  return nonStandardLocaleMap[ietfLocale] || ietfLocale;
+const getUniversalNavLocale = (locale) => {
+  const prefix = locale.prefix.replace('/', '');
+  const { ietf } = locale;
+  const DEFAULTLANG = {
+    de_DE: ['at', 'ch_de', 'lu_de'],
+    en_US: [
+      'ae_en', 'africa', 'au', 'be_en', 'ca', 'cis_en', 'cy_en', 'eg_en', 'gr_en', 'hk_en',
+      'id_en', 'ie', 'il_en', 'in', 'kw_en', 'langstore', 'lu_en', 'mena_en', 'mt', 'my_en',
+      'ng', 'nz', 'ph_en', 'qa_en', 'sa_en', 'sg', 'th_en', 'uk', 'vn_en', 'za',
+    ],
+    es_ES: ['ar', 'ar_es', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
+    fr_FR: ['be_fr', 'ca_fr', 'ch_fr', 'lu_fr'],
+  };
+  const CUSTOMLANG = {
+    be_nl: 'nl_NL',
+    ch_it: 'it_IT',
+    cis_ru: 'ru_RU',
+    hk_zh: 'zh_TW',
+    no: 'nb_NO',
+  };
+  const prefixParts = prefix.split('_').reverse();
+
+  return Object.keys(DEFAULTLANG).find((key) => DEFAULTLANG[key].includes(prefix))
+         || CUSTOMLANG[prefix]
+         || (ietf.includes('-')
+           ? ietf.replace('-', '_')
+           : prefixParts[1]
+           && prefixParts.every((i) => !!i)
+           && `${prefixParts[0].toLowerCase()}_${prefixParts[1].toUpperCase()}`)
+         || 'en_US';
 };
 
 class Gnav {
@@ -438,14 +465,7 @@ class Gnav {
 
   decorateUniversalNav = async () => {
     const config = getConfig();
-    let language;
-    let region;
-    if (config.locale.ietf.includes('-')) {
-      [language, region] = config.locale.ietf.split('-');
-    } else {
-      [region, language] = config.locale.prefix.replace('/', '').split('_');
-    }
-    const locale = getIetfLocale(`${language.toLowerCase()}_${region.toUpperCase()}`);
+    const locale = getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
     const getDevice = () => {
