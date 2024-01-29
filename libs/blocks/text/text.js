@@ -98,7 +98,7 @@ export default function init(el) {
   });
   rows.forEach((row) => {
     row.classList.add('foreground');
-    if(!el.classList.contains('link-farm')) decorateBlockText(row, blockTypeSizes[blockType][size]);
+    if (!el.classList.contains('link-farm')) decorateBlockText(row, blockTypeSizes[blockType][size]);
     decorateBlockIconArea(row);
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
