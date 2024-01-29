@@ -46,11 +46,17 @@
   border-radius: var(--spacing-xs);
 }
 
+.brick.horizontal-center .foreground,
+.brick.horizontal-center .foreground .action-area,
 .brick.center .foreground,
 .brick.center .foreground .action-area {
   align-items: center;
   text-align: center;
   justify-content: center;
+}
+
+.brick.horizontal-center .foreground {
+  align-items: flex-start;
 }
 
 .brick .background div,
