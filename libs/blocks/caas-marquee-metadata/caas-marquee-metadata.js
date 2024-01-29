@@ -66,7 +66,7 @@ export default function init(el) {
   // ctas (buttons)
   const cta = metadata.cta1url ? createTag('a', {
     class: `con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile`,
-    href: metadata.ctaurl,
+    href: metadata.cta1url,
   }, metadata.cta1text) : null;
 
   const cta2 = metadata.cta2url ? createTag('a', {
