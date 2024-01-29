@@ -511,6 +511,40 @@ const fetchUuidForCard = async (card) => {
   }
 };
 
+const getCurrentEntityId = async () => {
+  try {
+    const { useDotHtmlConf, prodDomains, productionDomain, htmlExclude = [] } = pageConfigHelper();
+    console.log(`Here is the productionDomain ${productionDomain}`);
+    console.log(`Here is the useDotHtmlConf ${useDotHtmlConf}`);
+    console.log(`Here is the htmlExclude ${htmlExclude}`);
+
+    const host = productionDomain || prodDomains[0];
+
+    console.log(`Here is the host ${host}`);
+
+    const { pathname } = window.location;
+    const url = `${host}${pathname}`;
+
+    console.log(`Here is the pathname ${pathname}`);
+
+    console.log(`Here is the url ${url}`);
+
+    const shouldAppendHtml = useDotHtmlConf && !pathname.endsWith('.html')
+      && htmlExclude.every((excludeRe) => !excludeRe.test(url));
+
+    console.log(`Here is the shouldAppendHtml ${shouldAppendHtml}`);
+
+    const generatedUrl = `${url}${shouldAppendHtml ? '.html' : ''}`;
+    console.log(`Here is the generatedUrl ${generatedUrl}`);
+
+    console.log(`Here is the uuid ${await getUuid(generatedUrl)}`);
+
+    return await getUuid(generatedUrl);
+  } catch (error) {
+    return ''; // Return empty string as a fallback
+  }
+};
+
 const getCardsString = async (cards = []) => {
   const uuids = await Promise.all(cards.map(async (card) => {
     const uuid = await fetchUuidForCard(card);
@@ -526,6 +560,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
+  const currentEntityId = await getCurrentEntityId();
   const hideCtaTags = state.hideCtaTags ? state.hideCtaTags : [];
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
@@ -555,7 +590,7 @@ export const getConfig = async (originalState, strs = {}) => {
         ',',
       )}&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
         ',',
-      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
+      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=${currentEntityId}&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,

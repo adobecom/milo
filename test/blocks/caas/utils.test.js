@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig as pageConfigHelper } from '../../../libs/utils/utils.js';
 import {
   defaultState,
   getConfig,
@@ -533,6 +533,40 @@ describe('getConfig', () => {
         lastViewedSession: '',
       },
     });
+  });
+});
+
+describe('Test the current entity id generation', () => {
+  const state = defaultState;
+  async function testUrlParameter(useDotHtml, expectedEntityId, htmlExcludePattern = null) {
+    const cfg = {
+      productionDomain: 'milo.adobe.com',
+      prodDomains: ['milo.adobe.com'],
+      htmlExclude: htmlExcludePattern || [
+        /milo\.adobe\.com\/(\w\w(_\w\w)?\/)?blog(\/.*)?/,
+      ],
+      useDotHtml,
+    };
+    setConfig(cfg);
+    const myState = JSON.parse(JSON.stringify(state));
+    const config = await getConfig(myState, strings);
+    const url = new URL(config.collection.endpoint);
+    const params = new URLSearchParams(url.search);
+    expect(params.get('currentEntityId')).to.eql(expectedEntityId);
+  }
+
+  it('Generates the correct currentEntityId with useDotHtml = true', async () => {
+    await testUrlParameter(true, '337fabd8-fd63-5624-adfc-8d5062dcf231');
+  });
+
+  it('Generates the correct currentEntityId with useDotHtml = false', async () => {
+    await testUrlParameter(false, 'ca33cca5-9bc5-5682-908b-318d5ac18488');
+  });
+
+  it('Generates the correct currentEntityId with html exclude', async () => {
+    await testUrlParameter(true, 'ca33cca5-9bc5-5682-908b-318d5ac18488', [
+      /milo\.adobe\.com\/(\w\w(_\w\w)?\/)?(\/.*)?/,
+    ]);
   });
 });
 

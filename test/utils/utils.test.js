@@ -518,6 +518,11 @@ describe('Utils', () => {
         expect(link.href).to.not.contain('.html');
       });
     });
+
+    it('useDotHtmlConf should be false if useDotHtml is false', async () => {
+      utils.setConfig({ useDotHtml: false });
+      expect(utils.getConfig().useDotHtmlConf).to.be.false;
+    });
   });
 
   describe('footer promo', () => {
