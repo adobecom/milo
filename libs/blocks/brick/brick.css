@@ -97,7 +97,7 @@
 }
 
 .brick .foreground p.icon-area {
-  display: flex;
+  display: inline-flex;
   gap: var(--spacing-xs);
   align-items: center;
   margin-bottom: var(--spacing-s);
