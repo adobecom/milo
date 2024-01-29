@@ -124,8 +124,8 @@ const COMMANDS = {
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
-      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
-      el.insertAdjacentElement('beforebegin', div);
+      el.dataset.removedManifestId = manifestId;
+      return;
     }
     el.classList.add(CLASS_EL_DELETE);
   },
@@ -331,10 +331,10 @@ const checkForParamMatch = (paramStr) => {
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
-  if (config.mep?.override !== '') {
+  if (config.mep?.override) {
     let manifest;
     /* c8 ignore start */
-    config.mep?.override.split(',').some((item) => {
+    config.mep?.override?.split(',').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
         [, manifest] = pair;
@@ -532,7 +532,7 @@ const createDefaultExperiment = (manifest) => ({
 });
 
 export async function applyPers(manifests) {
-  const config = getConfig();
+  let config = getConfig();
 
   if (!manifests?.length) return;
 
@@ -554,17 +554,15 @@ export async function applyPers(manifests) {
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
-  updateConfig({
+  config = updateConfig({
     ...config,
     experiments,
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
   const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
-  if (!pznList.length) {
-    document.body.dataset.mep = 'nopzn|nopzn';
-    return;
-  }
+  if (!pznList.length) return;
+
   const pznVariants = pznList.map((r) => {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
@@ -573,5 +571,7 @@ export async function applyPers(manifests) {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
-  document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  if (!config?.mep) config.mep = {};
+  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  updateConfig(config);
 }

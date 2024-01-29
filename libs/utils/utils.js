@@ -829,14 +829,16 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 }
 
 async function checkForPageMods() {
+  const search = new URLSearchParams(window.location.search);
+  const offFlag = (val) => search.get(val) === 'off';
+  if (offFlag('mep')) return;
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
   let persManifests = [];
-  const search = new URLSearchParams(window.location.search);
-  const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
-  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
-  const promoEnabled = promoMd && promoMd !== 'off';
+  const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
+  const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
+  const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
   if (mepEnabled) {
@@ -885,8 +887,6 @@ async function checkForPageMods() {
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
     await applyPers(manifests);
-  } else {
-    document.body.dataset.mep = 'nopzn|nopzn';
   }
 
   if (previewOn) {

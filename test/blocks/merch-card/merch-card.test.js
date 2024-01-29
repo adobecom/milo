@@ -305,6 +305,46 @@ describe('UAR Card', () => {
     expect(merchCard.classList.contains('has-divider')).to.be.true;
   });
 });
+describe('Mini Compare Chart Merch Card', () => {
+  it('Supports Mini Compare Chart with footer rows', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
+    const heading = merchCard.querySelector('h2[slot="heading-m"]');
+    const body = merchCard.querySelector('div[slot="body-m"]');
+    const priceHeading = merchCard.querySelector('h2[slot="heading-m-price"]');
+    const footer = merchCard.querySelector('div[slot="footer"]');
+    const buttons = footer.querySelectorAll('.con-button');
+    const footerRows = merchCard.querySelector('div[slot="footer-rows"]');
+    const footerRowsIcon = footerRows.querySelector('picture.footer-row-icon');
+    const footerRowsText = footerRows.querySelector('.footer-row-cell-description');
+
+    expect(merchCard).to.exist;
+    expect(heading).to.exist;
+    expect(body).to.exist;
+    expect(priceHeading).to.exist;
+    expect(footerRows).to.exist;
+    expect(footerRowsIcon).to.exist;
+    expect(footerRowsText).to.exist;
+    expect(merchCard.getAttribute('variant')).to.be.equal('mini-compare-chart');
+    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
+    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
+    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+    expect(body.textContent).to.be.equal('Get Illustrator on desktop and iPad as part of Creative Cloud. This is promo text');
+    expect(buttons.length).to.be.equal(2);
+    expect(buttons[0].textContent).to.be.equal('Buy now');
+    expect(buttons[1].textContent).to.be.equal('free trial');
+  });
+  it('Supports Mini Compare Chart with quantity select', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
+    const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    expect(quantitySelect).to.exist;
+    expect(quantitySelect.getAttribute('title')).to.equal('Select a quantity:');
+    expect(quantitySelect.getAttribute('min')).to.equal('1');
+    expect(quantitySelect.getAttribute('max')).to.equal('10');
+    expect(quantitySelect.getAttribute('step')).to.equal('1');
+  });
+});
 
 describe('Merch Card with Offer Selection', () => {
   it('Supports quantity select ', async () => {
@@ -339,8 +379,6 @@ describe('Merch Card with Offer Selection', () => {
   });
 });
 
-
-
 describe('Section metadata rules', async () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/card-section-metadata.html' });
@@ -362,5 +400,10 @@ describe('Section metadata rules', async () => {
     const block = document.getElementById('with2Up');
     const merchCard = await init(block);
     expect(merchCard.parentElement.className).to.match(/section three-merch-cards product/);
+  });
+  it('Retains removed-manifest-id', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mep.html' });
+    const merchCard = await init(document.querySelector('.merch-card'));
+    expect(merchCard.dataset.removedManifestId).to.exist;
   });
 });

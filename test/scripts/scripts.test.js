@@ -28,7 +28,7 @@ describe('Decorating', async () => {
 
   it('martech test', async () => {
     const el = await waitForElement(
-      'script[src$="/libs/deps/martech.main.standard.min.js"]',
+      'script[src$="/libs/deps/martech.main.standard.qa.min.js"]',
       { rootEl: document.head },
     );
     expect(el).to.exist;
