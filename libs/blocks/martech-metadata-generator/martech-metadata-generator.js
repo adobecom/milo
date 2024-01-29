@@ -7,13 +7,9 @@ const owner = params.get('owner');
 const repo = params.get('repo');
 const ref = params.get('ref');
 const formEl = createTag('form', { action: '#' });
-const statusEl = createTag('p', {}, 'Enter document URL (leave blank to use current document)');
-const inputEl = createTag('input', { type: 'text' });
-const btn = createTag('button', { class: 'con-button' }, 'Build');
-const state = {
-  hasBuilt: false,
-  lastUrl: '#',
-};
+const statusEl = createTag('p', {}, 'Click Build to generate metadata table');
+const buildBtn = createTag('button', { class: 'con-button' }, 'Build');
+const copyBtn = createTag('button', { class: 'con-button hidden' }, 'Copy');
 let clipboardData = '';
 
 function getTable(strings) {
@@ -24,10 +20,11 @@ function getTable(strings) {
   table.append(headerRow);
   strings.forEach((str) => {
     const tr = document.createElement('tr');
-    tr.append(createTag('td', { colspan: 1 }, ''));
+    tr.append(createTag('td', { colspan: 1 }, createTag('h3', {}, str)));
     tr.append(createTag('td', { colspan: 1 }, createTag('h3', { 'data-ccp-parastyle': 'DNT' }, str)));
     table.append(tr);
   });
+  console.log(table);
   return table.outerHTML;
 }
 
@@ -38,45 +35,47 @@ function handleCopy() {
 function handleError(e, msg = 'An unknown error occurred') {
   statusEl.innerText = msg;
   formEl.classList.remove('loading');
-  btn.innerText = 'Build';
+  buildBtn.innerText = 'Build';
   /* eslint-disable-next-line no-console */
   console.error(e);
 }
 
 function handleSuccess() {
   formEl.classList.remove('loading');
-  btn.innerText = 'Copy';
+  buildBtn.innerText = 'Rebuild';
+  copyBtn.classList.remove('hidden');
   statusEl.innerText = 'Table built and copied, ready to paste into document';
-  state.hasBuilt = true;
 }
 
 async function handleBuild() {
   formEl.classList.add('loading');
   statusEl.innerText = 'Please wait...';
-  btn.innerText = 'Loading...';
-  if (state.lastUrl === inputEl.value) return handleSuccess();
-  state.lastUrl = inputEl.value;
+  buildBtn.innerText = 'Loading...';
   let json;
   let md;
   try {
-    const res = await fetch(`https://admin.hlx.page/status/${owner}/${repo}/${ref}?editUrl=${inputEl.value || referrer}`);
+    const res = await fetch(`https://admin.hlx.page/status/${owner}/${repo}/${ref}?editUrl=${referrer}`);
     json = await res.json();
-  } catch (e) {
-    return handleError(e);
-  }
-  if (json.preview.status === 404) return handleError(404, 'Document must be previewed first');
+  } catch (e) { return handleError(e); }
+  try {
+    const res = await fetch(
+      `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/${json.webPath}`,
+      { method: 'POST' },
+    );
+    const newJson = await res.json();
+    console.log(newJson);
+  } catch (e) { return handleError(e); }
+  if (json.preview.status === 404) return handleError(404, 'Failed to preview document');
   try {
     const mdFetch = await fetch(`${json.resourcePath}`);
     md = await mdFetch.text();
-  } catch (e) {
-    return handleError(e);
-  }
+  } catch (e) { return handleError(e); }
   const doc = { content: { data: md }, log: '' };
   parseMd(doc);
   const items = [];
   const searchItems = (arr) => {
     for (const child of arr) {
-      if (child.type.match(/link|heading/) && !child.children[0].value.startsWith('http')) {
+      if (child.type.match(/link|heading/) && !child.children[0].value?.startsWith('http')) {
         items.push(child.children[0].value);
         /* eslint-disable-next-line no-continue */
         continue;
@@ -86,7 +85,7 @@ async function handleBuild() {
   };
   searchItems(doc.content.mdast.children);
   /* global ClipboardItem */
-  clipboardData = [new ClipboardItem({ 'text/html': new Blob([getTable(items)], { type: 'text/html' }) })];
+  clipboardData = [new ClipboardItem({ 'text/plain': new Blob([getTable(items)], { type: 'text/plain' }) })];
   handleCopy();
   handleSuccess();
   return true;
@@ -95,21 +94,15 @@ async function handleBuild() {
 export default async function init(el) {
   el.classList.add('con-block', 'dark');
   formEl.append(statusEl);
-  formEl.append(inputEl);
-  formEl.append(btn);
-  formEl.addEventListener('submit', (e) => {
+  formEl.append(buildBtn);
+  formEl.append(copyBtn);
+  buildBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    if (!state.hasBuilt) handleBuild();
-    else handleCopy();
+    handleBuild();
   });
-  inputEl.addEventListener('input', () => {
-    if (inputEl.value !== state.lastUrl) {
-      statusEl.innerText = 'Enter document URL (leave blank to use current document)';
-      btn.innerText = 'Build';
-      state.hasBuilt = false;
-    } else {
-      state.hasBuilt = true;
-    }
+  copyBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleCopy();
   });
   el.append(formEl);
 }
