@@ -44,6 +44,12 @@ function handleLayout(text, section) {
   section.classList.add(layoutClass);
 }
 
+function handleDelay(text, section) {
+  if (!(text || section)) return;
+  section.style.display = 'none';
+  setTimeout(() => { section.style.display = 'block'; }, text);
+}
+
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
@@ -61,4 +67,5 @@ export default async function init(el) {
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
+  if (metadata.delay) handleDelay(metadata.delay.text, section);
 }
