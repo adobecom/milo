@@ -360,6 +360,21 @@ class BulkPublish extends LitElement {
     };
   }
 
+  loadPrompt() {
+    setTimeout(() => {
+      const loader = this.renderRoot.querySelector('.load-indicator');
+      const message = this.renderRoot.querySelector('.message');
+      loader.classList.add('hide');
+      message.classList.remove('hide');
+    }, 4000);
+    return html`
+      <div class="load-indicator">
+        <div class="loader"></div>
+        Loading User Information
+      </div>
+    `;
+  }
+
   renderPrompt() {
     if (this.user?.profile) return html``;
     const message = this.user
@@ -368,7 +383,10 @@ class BulkPublish extends LitElement {
     return html`
       <div class="login-prompt">
         <div class="prompt">
-          ${message}
+          ${this.loadPrompt()}
+          <div class="message hide">
+            ${message}
+          </div>
         </div>
       </div>
     `;

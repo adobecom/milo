@@ -40,9 +40,7 @@ const connectSidekick = (bulkPub) => {
       const profile = processes.profile ?? null;
       const permissions = {};
       PROCESS_TYPES.forEach((key) => {
-        // index.permissions does not exist in processes returned from sidekick event even though
-        // I can see the permissions in the documentation
-        if (key !== 'index') {
+        if (key !== 'index') { // index permission object isn't returned from aem
           const process = isLive(key) ? 'live' : 'preview';
           permissions[key] = !!processes[process].permissions?.includes('list');
         }

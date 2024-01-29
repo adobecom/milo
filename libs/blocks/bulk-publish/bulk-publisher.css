@@ -37,6 +37,27 @@
   top: 43vh;
   left: 0;
   right: 0;
+  height: 32px;
+}
+
+.prompt .load-indicator {
+  display: inline-flex;
+  gap: 22px;
+  align-items: center;
+  height: 33px;
+}
+
+.prompt .message {
+  display: inline-flex;
+  align-items: center;
+  height: 33px;
+  text-align: center;
+}
+
+
+.prompt .load-indicator.hide,
+.prompt .message.hide {
+  display: none;
 }
 
 header {
@@ -350,7 +371,7 @@ label[for='urls'] i {
   min-width: var(--meta-width);
 }
 
-.job-meta > *:last-child {
+.job-meta>*:last-child {
   text-align: right;
 }
 
