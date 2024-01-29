@@ -54,12 +54,16 @@ function decorateBlockIconArea(el) {
 
 function decorateLinkFarms(el) {
   loadStyle('/libs/blocks/text/link-farms.css');
+  const title = el.querySelectorAll('.foreground')[0];
   const foregroundDiv = el.querySelectorAll('.foreground')[1];
-  const count = foregroundDiv.querySelectorAll('h3').length;
+  const count = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
+  title.querySelector('h1, h2, h3, h4, h5, h6').classList.add('heading-l');
+  foregroundDiv.querySelectorAll('p').forEach(p=> p.classList.add('body-s'));
   foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
-    const h3 = divElem.querySelector('h3');
+    const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
+    heading?.classList.add('heading-xs');
     if (count) {
-      if (h3) {
+      if (heading) {
         const sibling = index % 2 === 0
           ? divElem.nextElementSibling
           : divElem.previousElementSibling;
@@ -67,8 +71,8 @@ function decorateLinkFarms(el) {
         if (index > 0) divElem.classList.add('has-heading');
         if (index > 1) foregroundDiv.classList.add('gap-xl');
       } else {
-        const headingElem = createTag('h3', { class: 'no-heading' });
-        divElem.insertBefore(headingElem, divElem.firstChild);
+        const noHeading = createTag('h3', { class: 'no-heading heading-xs' });
+        divElem.insertBefore(noHeading, divElem.firstChild);
       }
     }
   });
@@ -94,7 +98,7 @@ export default function init(el) {
   });
   rows.forEach((row) => {
     row.classList.add('foreground');
-    decorateBlockText(row, blockTypeSizes[blockType][size]);
+    if(!el.classList.contains('link-farm')) decorateBlockText(row, blockTypeSizes[blockType][size]);
     decorateBlockIconArea(row);
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
