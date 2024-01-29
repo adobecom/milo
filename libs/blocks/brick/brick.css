@@ -94,9 +94,8 @@
   margin-top: var(--spacing-xs);
 }
 
-.brick .foreground p:first-child,
-.brick .foreground p.icon-area,
-.brick .foreground p.icon-area + * {
+.brick .foreground .brick-text *:first-child,
+.brick .foreground .brick-text p.icon-area + * {
   margin-top: 0;
 }
 
