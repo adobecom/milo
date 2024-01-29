@@ -431,12 +431,13 @@ const init = async (el) => {
   if (cardType === 'plans' || cardType === MINI_COMPARE_CHART) {
     const quantitySelect = createQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
+    const bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');
       initOfferSelection(merchCard, offerSelection, quantitySelect);
     }
     if (quantitySelect) {
-      const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+      const bodySlot = merchCard.querySelector(`div[slot="${bodySlotName}"]`);
       bodySlot.append(quantitySelect);
     }
   }
