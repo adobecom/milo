@@ -428,7 +428,7 @@ const init = async (el) => {
   }
   merchCard.appendChild(footer);
 
-  if (cardType === 'plans') {
+  if (cardType === 'plans' || cardType === MINI_COMPARE_CHART) {
     const quantitySelect = createQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
     if (offerSelection) {
