@@ -105,6 +105,8 @@ const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
 const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart'];
 
+const MULTI_OFFER_CARDS = ['plans', 'product'];
+
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
 const textStyles = {
@@ -428,7 +430,7 @@ const init = async (el) => {
   }
   merchCard.appendChild(footer);
 
-  if (['plans', 'product'].includes(cardType)) {
+  if (MULTI_OFFER_CARDS.includes(cardType)) {
     const quantitySelect = extractQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
     if (offerSelection) {
