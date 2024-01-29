@@ -437,8 +437,8 @@ const init = async (el) => {
       initOfferSelection(merchCard, offerSelection, quantitySelect);
     }
     if (quantitySelect) {
-      if(cardType === 'plans') {
-        merchCard.append(createTag('div', { slot: 'quantity-select' }, quantitySelect))
+      if (cardType === 'plans') {
+        merchCard.append(createTag('div', { slot: 'quantity-select' }, quantitySelect));
       } else {
         merchCard.querySelector(`div[slot="${bodySlotName}"]`).append(quantitySelect);
       }
