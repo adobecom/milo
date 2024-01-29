@@ -1,5 +1,5 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
-import decorateLinkFarms from '../link-farms/link-farms.js';
+import { createTag, loadStyle } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -48,6 +48,28 @@ function decorateBlockIconArea(el) {
         return count;
       }, 0);
       if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
+    }
+  });
+}
+
+function decorateLinkFarms(el) {
+  loadStyle('/libs/blocks/text/link-farms.css');
+  const foregroundDiv = el.querySelectorAll('.foreground')[1];
+  const count = foregroundDiv.querySelectorAll('h3').length;
+  foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
+    const h3 = divElem.querySelector('h3');
+    if (count) {
+      if (h3) {
+        const sibling = index % 2 === 0
+          ? divElem.nextElementSibling
+          : divElem.previousElementSibling;
+        sibling?.classList.add('hspace');
+        if (index > 0) divElem.classList.add('has-heading');
+        if (index > 1) foregroundDiv.classList.add('gap-xl');
+      } else {
+        const headingElem = createTag('h3', { class: 'no-heading' });
+        divElem.insertBefore(headingElem, divElem.firstChild);
+      }
     }
   });
 }
