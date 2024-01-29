@@ -264,7 +264,7 @@
   .brick.stack .foreground {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-l);
+    gap: var(--spacing-m);
     justify-content: space-between;
     padding: var(--spacing-l) var(--spacing-l) 0 var(--spacing-l);
   }
