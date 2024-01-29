@@ -58,7 +58,7 @@ function decorateLinkFarms(el) {
   const foregroundDiv = el.querySelectorAll('.foreground')[1];
   const count = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
   title.querySelector('h1, h2, h3, h4, h5, h6').classList.add('heading-l');
-  foregroundDiv.querySelectorAll('p').forEach(p=> p.classList.add('body-s'));
+  foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
   foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
     const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
     heading?.classList.add('heading-xs');
