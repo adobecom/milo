@@ -7,7 +7,7 @@ const typeSize = {
   xlarge: ['xxl', 'xl', 'l'],
 };
 
-function getMetadata(el) {
+export function getMetadata(el) {
   const metadata = {};
   for (const child of el.children) {
     const key = child.children[0]?.textContent?.trim()?.toLowerCase();
@@ -15,15 +15,15 @@ function getMetadata(el) {
     if (key.match(/^image/)) {
       metadata[key] = child.querySelector('img').src.replace(/\?.*/, '');
     } else if (key.match(/^cta/)) {
-      const ctaLink = child.querySelector('a');
-      if (ctaLink) {
-        metadata[`${key}1url`] = ctaLink.href;
-        metadata[`${key}1text`] = ctaLink.textContent.trim();
+      const ctaLink = child.querySelectorAll('a');
+      ctaLink?.forEach((link, index) => {
+        metadata[`cta${index + 1}url`] = link.href;
+        metadata[`cta${index + 1}text`] = link.textContent.trim();
         /* eslint-disable no-nested-ternary */
-        metadata[`${key}1style`] = ctaLink.parentNode.tagName === 'STRONG' ? 'blue'
-          : ctaLink.parentNode.tagName === 'EM' ? 'outline' : '';
+        metadata[`cta${index + 1}style`] = link.parentNode.tagName === 'STRONG' ? 'blue'
+          : link.parentNode.tagName === 'EM' ? 'outline' : '';
         /* eslint-enable no-nested-ternary */
-      }
+      });
     } else {
       metadata[key] = value;
     }
@@ -70,7 +70,7 @@ export default function init(el) {
   }, metadata.cta1text) : null;
 
   const cta2 = metadata.cta2url ? createTag('a', {
-    class: `con-button outline button-${typeSize[size][1]} button-justified-mobile`,
+    class: `con-button ${metadata.cta2style} button-${typeSize[size][1]} button-justified-mobile`,
     href: metadata.cta2url,
   }, metadata.cta2text) : null;
 
