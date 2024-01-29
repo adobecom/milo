@@ -76,9 +76,9 @@ function decorateForeground(el, foreground) {
     mediaEl.classList.add('brick-media');
     el.classList.add((foreground.firstElementChild === mediaEl) ? 'media-left' : 'media-right');
   }
-  const hasIconArea = foreground.querySelector('p')?.querySelector('img');
+  const hasIconArea = fgtext.querySelector('p')?.querySelector('img');
   if (hasIconArea) {
-    const iconArea = foreground.querySelector('p');
+    const iconArea = fgtext.querySelector('p');
     iconArea.classList.add('icon-area');
     if (iconArea.querySelectorAll('img').length > 1) iconArea.classList.add('icon-gap-s');
   }
