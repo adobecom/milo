@@ -1,419 +1,424 @@
-import { html, render, useRef, useState } from '../../deps/htm-preact.js';
-import { getMetadata } from '../../utils/utils.js';
+import './job-process.js';
+import { LitElement, html } from '../../deps/lit-all.min.js';
+import { getSheet } from '../../../tools/utils/utils.js';
+import { connectSidekick, startJobProcess } from './services.js';
+import { getConfig } from '../../utils/utils.js';
 import {
-  ANONYMOUS,
-  executeActions,
-  getActionName,
-  getCompletion,
-  getStoredOperation,
-  getStoredUrlInput,
-  getUrls,
-  getUser,
-  sendReport,
-  signIn,
-  signOut,
-  storeOperation,
-  storeUrls,
-  userIsAuthorized,
-} from './bulk-publish-utils.js';
+  editEntry,
+  FORM_MODES,
+  getJobErrorText,
+  processJobResult,
+  PROCESS_TYPES,
+  sticky,
+  validMiloURL,
+  delay,
+} from './utils.js';
 
-const URLS_ENTRY_LIMIT = 1000;
-let urlLimit;
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot || 'libs';
+const styleSheet = await getSheet(`${base}/blocks/bulk-publish/bulk-publisher.css`);
+const loaderSheet = await getSheet(`${base}/blocks/bulk-publish/loader.css`);
+const backgroundImg = `${base}/blocks/bulk-publish/img/background.svg`;
+const downArrowIcon = `${base}/blocks/bulk-publish/img/downarrow.svg`;
+const checkmarkIcon = `${base}/blocks/bulk-publish/img/checkmark.svg`;
+const clearJobsIcon = `${base}/blocks/bulk-publish/img/remove.svg`;
 
-function User({ user }) {
-  return html`
-      <div class="bulk-user">
-          <div class="bulk-user-header">logged in as</div>
-          <div class="bulk-user-name">
-              ${user.name}
-          </div>
-          ${user.name !== ANONYMOUS && html`
-              <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
-          `}
-      </div>
-  `;
-}
-
-function UrlInput({ urlsElt }) {
-  return html`
-    <span class="max-urls">Maximum number of URLS processed: ${urlLimit} </span>
-    <textarea class="bulk-urls-input" placeholder="Ex: https://main--milo--adobecom.hlx.page/my/sample/page" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
-  `;
-}
-
-function SelectBtn({ actionElt, onSelectChange, storedOperationName }) {
-  return html`
-      <select class="bulk-action-select" ref="${actionElt}" onChange=${onSelectChange}>
-          <option value="preview">Preview</option>
-          <option value="publish" selected="${storedOperationName === 'publish'}">Publish</option>
-          <option value="preview&publish" selected="${storedOperationName === 'preview&publish'}">Preview & Publish</option>
-          <option value="unpublish" selected="${storedOperationName === 'unpublish'}">Unpublish</option>
-          <option value="unpublish&delete" selected="${storedOperationName === 'unpublish&delete'}">Delete</option>
-          <option value="index" selected="${storedOperationName === 'index'}">Index</option>
-      </select>
-  `;
-}
-
-function SubmitBtn({ submit }) {
-  return html`
-    <button class="bulk-action-submit" onClick=${submit}>
-      Run process
-    </button>
-  `;
-}
-
-function prettyDate(date = new Date()) {
-  const localeDate = date.toLocaleString();
-  const splitDate = localeDate.split(', ');
-  return html`
-    <span class=bulk-date>${splitDate[0]}</span>
-    <span class=bulk-time>${splitDate[1]}</span>
-  `;
-}
-
-function bulkPublishStatus(row) {
-  const success = row.status.publish === 200;
-  const status = success ? '' : `Error - Status: ${row.status.publish}`;
-  return !success && row.status.publish !== undefined && html`
-    <span class=page-status>${status}</span>
-  `;
-}
-
-function bulkPreviewStatus(row) {
-  const success = row.status.preview === 200;
-  const status = success ? '' : `Error - Status: ${row.status.preview}`;
-  return row.status.preview !== 200 && row.status.preview !== undefined && html`
-    <span class=page-status>${status}</span>
-  `;
-}
-
-function bulkDeleteStatus(row) {
-  const success = row.status.delete === 204;
-  const status = row.status.delete === 403
-    ? 'Failed to Delete (Ensure the resource is deleted in SharePoint)'
-    : `Error - Status: ${row.status.delete}`;
-  return !success && row.status.delete !== undefined && html`
-    <span class=page-status>${status}</span>
-  `;
-}
-
-function bulkUnpublishStatus(row) {
-  const success = row.status.unpublish === 204;
-  const status = row.status.unpublish === 403
-    ? 'Failed to Unpublish (Ensure the resource is deleted in SharePoint)'
-    : `Error - Status: ${row.status.unpublish}`;
-  return !success && row.status.unpublish !== undefined && html`
-    <span class=page-status>${status}</span>
-  `;
-}
-
-function bulkIndexStatus(row) {
-  const success = row.status.index === 200 || row.status.index === 202;
-  const status = success ? '' : `Error - Status: ${row.status.index}`;
-  return !success && row.status.index !== undefined && html`<span class=page-status>${status}</span>`;
-}
-
-function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
-  const name = getActionName(submittedAction, true);
-  const URLS = (urlNumber > 1) ? 'URLS' : 'URL';
-  return bulkTriggered && html`
-    <div class="bulk-status-head">
-      <ul class="bulk-status-head-title">
-        <li><span>STATUS:</span> ${name} ${urlNumber} ${URLS}</li>
-      </ul>
-    </div>
-  `;
-}
-
-function StatusRow({ row }) {
-  const timeStamp = prettyDate(row?.timestamp);
-  const errorStyle = 'status-error';
-  const del = !!row.status.delete || !!row.status.unpublish;
-  const expectedStatus = del ? 204 : 200;
-  const previewStatus = del ? row.status.delete : row.status.preview;
-  const publishStatus = del ? row.status.unpublish : row.status.publish;
-  const preStatus = del ? bulkDeleteStatus : bulkPreviewStatus;
-  const pubStatus = del ? bulkUnpublishStatus : bulkPublishStatus;
-
-  const previewStatusError = previewStatus === expectedStatus ? '' : errorStyle;
-  const publishStatusError = publishStatus === expectedStatus ? '' : errorStyle;
-  const indexSuccess = row.status.index === 200 || row.status.index === 202;
-  const indexStatusError = indexSuccess ? '' : errorStyle;
-
-  return html`
-    <tr class="bulk-status-row">
-      <td class="bulk-status-url"><a href="${row.url}" target="_blank">${row.url}</a></td>
-      <td class="bulk-status-preview ${previewStatusError}">
-        ${previewStatus === expectedStatus && timeStamp} ${preStatus(row)}
-      </td>
-      <td class="bulk-status-publish ${publishStatusError}">
-        ${publishStatus === expectedStatus && timeStamp} ${pubStatus(row)}
-      </td>
-      <td class="bulk-status-index ${indexStatusError}">
-        ${indexSuccess && timeStamp} ${bulkIndexStatus(row)}
-      </td>
-    </tr>
-  `;
-}
-
-function StatusContent({ resultsElt, result, submittedAction }) {
-  const name = getActionName(submittedAction).toLowerCase();
-  const displayClass = 'did-bulk';
-  const bulkPreviewed = name.includes('preview') || name === 'delete' ? displayClass : '';
-  const bulkPublished = name.includes('publish') || name === 'delete' ? displayClass : '';
-  const bulkIndexed = name.includes('index') ? displayClass : '';
-
-  const del = name === 'delete' || name === 'unpublish';
-  const headings = {
-    pre: del ? 'Deleted' : 'Previewed',
-    pub: del ? 'UnPublished' : 'Published',
+class BulkPublish extends LitElement {
+  static properties = {
+    mode: { state: true },
+    urls: { state: true },
+    process: { state: true },
+    disabled: { state: true },
+    editing: { state: true },
+    processing: { state: true },
+    jobs: { state: true },
+    openJobs: { state: true },
+    jobErrors: { state: true },
+    user: { state: true },
   };
-  return html`
-    <table class="bulk-status-content" ref="${resultsElt}">
-      ${result && html`
-        <tr class="bulk-status-header-row">
-          <th>URL</th>
-          <th class="${bulkPreviewed}">${headings.pre}</th>
-          <th class="${bulkPublished}">${headings.pub}</th>
-          <th class="${bulkIndexed}">Indexed</th>
-        </tr>
-        ${result.reverse().map((row) => html`<${StatusRow} row=${row} />`)}
-      `}
-    </table>
-  `;
-}
 
-function StatusCompletion({ completion }) {
-  const timeStamp = prettyDate();
-  return completion && html`
-    <div class="bulk-job">
-      <div class="bulk-job-status">
-        ${completion.preview.total > 0 && html`
-          <ul class="bulk-job-preview">
-            <li><span>Preview Job Complete:</span> ${timeStamp}</li>
-            <li><span>Successful:</span> ${completion.preview.success} / ${completion.preview.total}</li>
-          </ul>
-        `}
-        ${completion.publish.total > 0 && html`
-        <ul class="bulk-job-publish">
-          <li><span>Publish Job Complete:</span> ${timeStamp}</li>
-          <li><span>Successful:</span> ${completion.publish.success} / ${completion.publish.total}</li>
-        </ul>
-        `}
-        ${completion.delete.total > 0 && html`
-        <ul class="bulk-job-publish">
-          <li><span>Delete Job Complete:</span> ${timeStamp}</li>
-          <li><span>Successful:</span> ${completion.delete.success} / ${completion.delete.total}</li>
-        </ul>
-        `}
-        ${completion.unpublish.total > 0 && html`
-        <ul class="bulk-job-publish">
-          <li><span>Unpublish Job Complete:</span> ${timeStamp}</li>
-          <li><span>Successful:</span> ${completion.unpublish.success} / ${completion.unpublish.total}</li>
-        </ul>
-        `}
-        ${completion.index.total > 0 && html`
-        <ul class="bulk-job-index">
-          <li><span>Index Job Complete:</span> ${timeStamp}</li>
-          <li><span>Successful:</span> ${completion.index.success} / ${completion.index.total}</li>
-        </ul>
-        `}
-      </div>
-    </div>
-  `;
-}
-
-// eslint-disable-next-line max-len
-function Status({
-  valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion,
-}) {
-  return valid && html`
-    <div class="bulk-status">
-      <div class="bulk-status-info">
-        <${StatusTitle}
-          bulkTriggered=${bulkTriggered}
-          submittedAction=${submittedAction}
-          urlNumber=${urlNumber} />
-        <${StatusCompletion}
-          completion=${completion} />
-      </div>
-      <div class="bulk-status-content-container">
-        <${StatusContent}
-          resultsElt=${resultsElt}
-          result=${result}
-          submittedAction=${submittedAction} />
-      </div>
-    </div>
-  `;
-}
-
-function ErrorMessage({ valid, authorized, urlNumber }) {
-  if (valid) return '';
-  let message;
-  if (!authorized) {
-    message = 'You are not authorized to perform bulk operations';
-  } else if (urlNumber < 1) {
-    message = 'There are no URLS to process. Add URLS to the text area to start bulk publishing.';
-  } else if (urlNumber > urlLimit) {
-    message = `There are too many URLS. You entered ${urlNumber} URLS. The max allowed number is ${urlLimit}`;
+  constructor() {
+    super();
+    this.mode = sticky().get('mode');
+    this.urls = [];
+    this.process = 'choose';
+    this.disabled = true;
+    this.editing = false;
+    this.processing = false;
+    this.jobs = [];
+    this.openJobs = false;
+    this.jobErrors = false;
+    this.user = null;
   }
-  return !!message && html`
-      <div class="bulk-error">
-          ${message}
-      </div>
-  `;
-}
 
-function ResumeModal({ displayResumeDialog, resumeModal, resume, hideModal }) {
-  return html`
-      <div class="bulk-resume-modal ${displayResumeDialog}" ref="${resumeModal}">
-          <div class="bulk-resume-modal-content">
-              <div>The previous bulk operation was interrupted before it could finish. Would you like to resume processing the outstanding URLS?</div>
-              <div class="bulk-resume-modal-button">
-                  <button class="bulk-resume-modal-button-resume" onclick="${resume}">Resume</button>
-                  <button class="bulk-resume-modal-button-cancel" onclick="${hideModal}">Cancel</button>
-              </div>
+  async connectedCallback() {
+    super.connectedCallback();
+    this.renderRoot.adoptedStyleSheets = [styleSheet, loaderSheet];
+    connectSidekick(this);
+    const resume = sticky().get('resume');
+    if (resume.length) {
+      this.jobs = resume;
+      await delay(1000);
+      this.openJobs = true;
+      this.processing = 'resumed';
+    }
+  }
+
+  async updated() {
+    const storage = sticky();
+    if (storage.get('mode') !== this.mode) {
+      storage.set('mode', this.mode);
+    }
+    if (this.jobs.length) {
+      const resumeable = this.jobs.filter((job) => !job.status);
+      storage.set('resume', resumeable);
+    }
+    const textarea = this.renderRoot.querySelector('#Urls');
+    if (this.urls.length && textarea?.value === '') {
+      textarea.value = this.urls.join('\r\n');
+    }
+  }
+
+  setType(e) {
+    if (e.target.value !== this.process) {
+      this.process = e.target.value;
+    }
+  }
+
+  setUrls(e) {
+    const urls = e.target.value.replace(/\n/g, ' ').split(' ').filter((ur) => (ur.length));
+    this.urls = [...new Set(urls)];
+    this.validateUrls();
+  }
+
+  setJobErrors(errors) {
+    const urls = [];
+    errors.forEach((error) => {
+      const matched = this.urls.filter((url) => {
+        if (Array.isArray(error.href)) return error.href.includes(url);
+        return url.includes(error.href);
+      });
+      matched.forEach((match) => urls.push(match));
+    });
+    const textarea = this.renderRoot.querySelector('#Urls');
+    textarea.value = urls.join('\r\n');
+    if (['delete', 'unpublish'].includes(this.process)) {
+      this.urls = urls;
+    }
+    this.disabled = urls;
+    this.jobErrors = { urls, messages: errors.map((error) => (error.message)) };
+  }
+
+  validateUrls() {
+    let errors = [];
+    const invalid = this.jobErrors?.urls?.length
+      ? this.urls.filter((url) => this.jobErrors.urls.includes(url))
+      : this.urls.filter((url) => !validMiloURL(url) && url.length);
+
+    if (invalid?.length) {
+      errors = [...errors, ...invalid];
+    }
+    if (errors.length === 0) {
+      errors = this.urls.length === 0;
+    }
+    this.disabled = errors;
+    this.editing = false;
+  }
+
+  renderErrorBar() {
+    if (typeof this.disabled === 'boolean') return html``;
+    const { text, startEdit } = this.getErrorProps();
+    startEdit();
+    const count = this.disabled.length;
+    const btnText = this.editing ? 'Next Error' : 'Select Line';
+    return html`
+      <div class="errors">
+        <span>Error: <strong>${text}</strong></span>
+        <div class="fix-btn" @click=${() => startEdit(true)}>
+          ${count === 1 ? 'Finish Up' : btnText}
+        </div>
+      </div>
+    `;
+  }
+
+  getErrorProps() {
+    const textarea = this.renderRoot.getElementById('Urls');
+    let text = 'Invalid Url';
+    if (this.jobErrors) {
+      text = getJobErrorText(this.jobErrors, this.process);
+    }
+    return {
+      text,
+      startEdit: (click = null) => {
+        this.editing = !this.editing;
+        if (click) {
+          if (this.jobErrors.length === 1) {
+            this.jobErrors = false;
+          } else {
+            Object.keys(this.jobErrors).forEach((key) => this.jobErrors[key].shift());
+          }
+          this.validateUrls();
+        } else {
+          editEntry(textarea, this.disabled[0]);
+        }
+      },
+    };
+  }
+
+  renderForm() {
+    if (this.openJobs && this.mode === 'full') {
+      return html`
+        <div class="panel-title" @click=${() => { this.openJobs = false; }}>
+          <span class="title">
+            <strong>+</strong>
+            Start New Job
+          </span>
+        </div>`;
+    }
+    const getOption = (type) => {
+      const isDelete = ['delete', 'unpublish'].includes(type);
+      if (isDelete && this.user?.permissions[type] === false) {
+        return html`<option disabled value=${type}>${type}</option>`;
+      }
+      return html`<option value=${type}>${type}</option>`;
+    };
+    return html`
+      <div class="process">
+        <div class="processor">
+          <select 
+            id="ProcessSelect"
+            name="select"
+            value=${this.process}
+            @change=${this.setType}>
+            <option disabled selected value="choose">Choose Process</option>
+            ${PROCESS_TYPES.map((type) => (getOption(type)))}
+          </select>
+          <button
+            id="RunProcess"
+            disable=${this.formDisabled()} 
+            @click=${this.submit}>
+            Run Job
+            <span class="loader${this.processing === 'started' ? '' : ' hide'}"></span>
+          </button>
+        </div>
+        <label class="process-title" for="Urls">
+          <strong>PAGE URLs</strong>
+        </label>
+      </div>
+      <div class="urls${typeof this.disabled !== 'boolean' ? ' invalid' : ''}">
+        <div class="error-bar">${this.renderErrorBar()}</div>
+        <div class="checkmark${this.disabled ? '' : ' show'}">
+          <img src=${checkmarkIcon} alt="Valid Urls" />
+        </div>
+        <div class="entered-count${this.urls.length ? ' show' : ''}">${this.urls.length}</div>
+        <textarea 
+          id="Urls"
+          wrap="off"
+          placeholder="Example: https://main--milo--adobecom.hlx.page/path/to/page"
+          @blur=${this.setUrls}
+          @change=${this.setUrls}></textarea>
+      </div>
+    `;
+  }
+
+  getJobState() {
+    const states = {
+      showList: this.mode === 'half' || this.openJobs,
+      showClear: this.jobs.length && this.processing === false,
+      loading: this.processing !== false,
+    };
+    Object.keys(states).forEach((key) => (states[key] = `${states[key] ? '' : ' hide'}`));
+    states.count = this.jobs.reduce((count, { result }) => {
+      const paths = result?.job?.data?.paths?.length ?? 0;
+      return count + paths;
+    }, 0);
+    return states;
+  }
+
+  processCompleted(event) {
+    const status = event.detail;
+    const jobProcess = this.jobs.find(({ result }) => result.job.name === status.name);
+    if (jobProcess) jobProcess.status = status;
+    if (this.jobs.filter((job) => !job.status).length === 0) {
+      this.processing = false;
+      sticky().set('resume', []);
+    }
+  }
+
+  setProgress(event) {
+    const { name, progress } = event.detail;
+    const jobProcess = this.jobs.find(({ result }) => result.job.name === name);
+    if (jobProcess) jobProcess.progress = progress;
+    this.requestUpdate();
+  }
+
+  renderProgress(total) {
+    if (!total) return '';
+    return `${this.jobs.reduce((count, { progress }) => {
+      const processed = progress?.processed ?? 0;
+      return count + processed;
+    }, 0)}/${total}`;
+  }
+
+  clearJobs = () => {
+    this.jobs = [];
+    if (this.mode === 'full') this.openJobs = false;
+  };
+
+  renderResults() {
+    const { showList, showClear, loading, count } = this.getJobState();
+    const handleToggle = () => {
+      if (!this.openJobs) {
+        this.openJobs = !!this.jobs.length;
+      }
+    };
+    return html`
+      <div
+        class="panel-title"
+        @click=${handleToggle}>
+        <span class="title">
+          ${count ? html`<strong>${count}</strong>` : ''}
+          Job Results
+        </span>
+        <div class="jobs-tools${showList}">
+          <div 
+            class="clear-jobs${showClear}"
+            @click=${this.clearJobs}>
+            <img src=${clearJobsIcon} alt="Clear Job List" />
           </div>
-      </div>
-  `;
-}
-
-function BulkPublish({ user, storedOperation }) {
-  const [valid, setValid] = useState(true);
-  const [authorized, setAuthorized] = useState(true);
-  const [urlNumber, setUrlNumber] = useState(-1);
-  const [bulkTriggered, setBulkTriggered] = useState(false);
-  const [selectedAction, setSelectedAction] = useState(storedOperation.name);
-  const [submittedAction, setSubmittedAction] = useState(storedOperation.name);
-  const [result, setResult] = useState(null);
-  const [completion, setCompletion] = useState(null);
-
-  const urlsElt = useRef(null);
-  const actionElt = useRef(null);
-  const resultsElt = useRef(null);
-  const bulkInputElt = useRef(null);
-  const resumeModal = useRef(null);
-
-  const displayResumeDialog = (storedOperation.completed === null || storedOperation.completed) ? '' : 'displayed';
-
-  const executeBulk = async (resume) => {
-    // reset the result area
-    setResult(null);
-    setCompletion(null);
-    setValid(null);
-
-    // validate the user
-    const authorizedValue = await userIsAuthorized();
-    setAuthorized(authorizedValue);
-    if (!authorizedValue) {
-      setValid(false);
-      return;
-    }
-
-    // validate the number of urls
-    const { urls } = getStoredOperation();
-    const urlNumberValue = urls.length;
-    setUrlNumber(urlNumberValue);
-    if (urlNumberValue < 1 || urlNumberValue > urlLimit) {
-      setValid(false);
-      return;
-    }
-
-    // perform the action
-    setValid(true);
-    const operation = getStoredOperation().name;
-    const results = await executeActions(resume, setResult);
-    const completionValue = getCompletion(results);
-    setCompletion(completionValue);
-
-    // log the actions on the server
-    await sendReport(results, operation);
-  };
-
-  const onSelectChange = () => {
-    setSelectedAction(actionElt.current.value);
-  };
-
-  const hideModal = () => {
-    resumeModal.current.classList.remove('displayed');
-  };
-
-  const submit = async () => {
-    setBulkTriggered(true);
-    const operation = actionElt.current.value;
-    setSubmittedAction(operation);
-    storeOperation(operation);
-    const urls = getUrls(urlsElt);
-    storeUrls(urls);
-    await executeBulk();
-  };
-
-  const resume = async () => {
-    setBulkTriggered(true);
-    hideModal();
-    await executeBulk(true);
-  };
-
-  return html`
-  <div class="bulk-container">
-    <div class="bulk-input" ref="${bulkInputElt}">
-      <div class="bulk-header">
-        <div class="tool-header">
-          <h1>Bulk Publishing</div>
-        </div>
-        <${User} user=${user} />
-      </div>
-      <div class="bulk-controls">
-        <div class="bulk-urls-title">Add URLS</div>
-        <div class="bulk-action">
-          <${SelectBtn}
-            actionElt=${actionElt}
-            onSelectChange=${onSelectChange}
-            storedOperationName=${storedOperation.name} />
-          <${SubmitBtn}
-            submit=${submit}
-            selectedAction=${selectedAction} />
+          <div class="job-progress${loading}">
+            ${this.renderProgress(count)}
+          </div>
+          <div class="loading-jobs${loading}">
+            <div class="loader pink"></div>
+          </div>
         </div>
       </div>
-      <${UrlInput} urlsElt=${urlsElt} />
-    </div>
-    <${ErrorMessage}
-      valid=${valid}
-      authorized=${authorized}
-      urlNumber=${urlNumber} />
-    <${Status}
-      valid=${valid}
-      urlNumber=${urlNumber}
-      bulkTriggered=${bulkTriggered}
-      submittedAction=${submittedAction}
-      result=${result}
-      resultsElt=${resultsElt}
-      completion=${completion} />
-    <${ResumeModal}
-      displayResumeDialog=${displayResumeDialog}
-      resumeModal=${resumeModal}
-      resume=${resume}
-      hideModal=${hideModal} />
-  </div>
-  `;
+      <div class="job${showList}">
+        <div class="job-head">
+          <div class="job-url">JOB</div>
+          <div class="job-meta">
+            <span>STATUS</span>
+            <span>DATE/TIME</span>
+          </div>
+        </div>
+        <div class="job-list">
+          ${this.jobs.map((job) => html`
+            <job-process 
+              .job=${job}
+              @progress="${this.setProgress}"
+              @stopped="${this.processCompleted}">
+            </job-process>
+          `)}
+        </div>
+      </div>
+    `;
+  }
+
+  formDisabled() {
+    return this.disabled === true
+      || typeof this.disabled !== 'boolean'
+      || this.process === 'choose';
+  }
+
+  resetForm() {
+    this.disabled = true;
+    this.jobErrors = false;
+    this.urls = [];
+    const urls = this.renderRoot.querySelector('#Urls');
+    if (urls) urls.value = '';
+    this.process = 'choose';
+    const process = this.renderRoot.querySelector('#ProcessSelect');
+    if (process) process.value = 'choose';
+  }
+
+  async submit() {
+    if (!this.formDisabled()) {
+      this.processing = 'started';
+      const job = await startJobProcess({
+        urls: this.urls,
+        process: this.process.toLowerCase(),
+        hasPermission: this.user?.permissions?.[this.process],
+      });
+      const { complete, error } = processJobResult(job);
+      this.jobs = [...this.jobs, ...complete];
+      this.processing = complete.length ? 'job' : false;
+      if (error.length) {
+        this.setJobErrors(error);
+      } else {
+        if (this.mode === 'full') this.openJobs = true;
+        this.resetForm();
+      }
+    }
+  }
+
+  getModeState() {
+    return {
+      full: this.mode === 'full' ? 'on' : 'off',
+      half: this.mode === 'half' ? 'on' : 'off',
+      toggleMode: (modeIndex) => { this.mode = FORM_MODES[modeIndex]; },
+    };
+  }
+
+  loadPrompt() {
+    setTimeout(() => {
+      const loader = this.renderRoot.querySelector('.load-indicator');
+      const message = this.renderRoot.querySelector('.message');
+      loader?.classList.add('hide');
+      message?.classList.remove('hide');
+    }, 4000);
+    return html`
+      <div class="load-indicator">
+        <div class="loader"></div>
+        Loading User Information
+      </div>
+    `;
+  }
+
+  renderPrompt() {
+    if (this.user?.profile) return html``;
+    const message = this.user
+      ? 'Please sign in to AEM sidekick to continue'
+      : 'Please open AEM sidekick to continue';
+    return html`
+      <div class="login-prompt">
+        <div class="prompt">
+          ${this.loadPrompt()}
+          <div class="message hide">
+            ${message}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  render() {
+    const { full, half, toggleMode } = this.getModeState();
+    return html`
+      ${this.renderPrompt()}
+      <header id="Header">
+        <h1>Bulk Publishing</h1>
+        <div class="mode-switcher">
+          <div class="switch full ${full}" @click=${() => toggleMode(0)}></div>
+          <div class="switch half ${half}" @click=${() => toggleMode(1)}></div>
+        </div>
+      </header>
+      <div id="BulkPublish" class="bulk-publisher ${this.mode}">
+        <div active=${!this.openJobs} class="panel form">
+          ${this.renderForm()}
+        </div>
+        <div active=${!!this.openJobs} class="panel results">
+          ${this.renderResults()}
+        </div>
+      </div>
+    `;
+  }
 }
 
-function initUrlLimit() {
-  if (urlLimit) return;
-  const { searchParams } = new URL(window.location.href);
-  const limit = searchParams.get('limit');
-  urlLimit = limit ? Number(limit) || URLS_ENTRY_LIMIT : URLS_ENTRY_LIMIT;
-}
+customElements.define('bulk-publish', BulkPublish);
 
 export default async function init(el) {
-  const imsSignIn = getMetadata('ims-sign-in');
-  if (imsSignIn === 'on' || imsSignIn === 'true') {
-    const signedIn = await signIn();
-    if (!signedIn) return;
-  }
-
-  initUrlLimit();
-  const user = await getUser();
-  const storedOperation = getStoredOperation();
-  render(html`<${BulkPublish} user="${user}" storedOperation="${storedOperation}" />`, el);
+  el.style.setProperty('--background-img', `url(${backgroundImg})`);
+  el.style.setProperty('--down-arrow-icon', `url(${downArrowIcon})`);
+  el.append(document.createElement('bulk-publish'));
 }
