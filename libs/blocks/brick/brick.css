@@ -90,9 +90,13 @@
   margin: 0;
 }
 
+.brick .foreground div > * {
+  margin-top: var(--spacing-xs);
+}
+
 .brick .foreground p:first-child,
 .brick .foreground p.icon-area,
-.brick .foreground p.icon-area + p {
+.brick .foreground p.icon-area + * {
   margin-top: 0;
 }
 
@@ -217,10 +221,6 @@
   background-color: var(--color-white);
   color: var(--color-black);
   text-decoration: none;
-}
-
-.brick .foreground div > * {
-  margin-top: var(--spacing-xs);
 }
 
 @media screen and (max-width: 600px) {
