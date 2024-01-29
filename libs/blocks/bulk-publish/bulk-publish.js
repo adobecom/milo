@@ -10,7 +10,7 @@ import {
   processJobResult,
   PROCESS_TYPES,
   sticky,
-  validMiloURL,
+  isValidUrl,
   delay,
 } from './utils.js';
 
@@ -113,7 +113,7 @@ class BulkPublish extends LitElement {
     let errors = [];
     const invalid = this.jobErrors?.urls?.length
       ? this.urls.filter((url) => this.jobErrors.urls.includes(url))
-      : this.urls.filter((url) => !validMiloURL(url) && url.length);
+      : this.urls.filter((url) => !isValidUrl(url) && url.length);
 
     if (invalid?.length) {
       errors = [...errors, ...invalid];

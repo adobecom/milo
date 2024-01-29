@@ -25,15 +25,15 @@ const sticky = () => {
   };
 };
 
-const getMiloUrl = (url) => url.hostname.split('.')[0].split('--');
-const validMiloURL = (str) => {
+const getAemUrl = (url) => url.hostname.split('.')[0].split('--');
+const isValidUrl = (str) => {
   let url;
   try {
     url = new URL(str);
   } catch (_) {
     return false;
   }
-  const [ref, repo, owner] = getMiloUrl(url);
+  const [ref, repo, owner] = getAemUrl(url);
   return url.protocol === 'https:' && ref && repo && owner;
 };
 
@@ -112,11 +112,11 @@ export {
   FORM_MODES,
   getErrorText,
   getJobErrorText,
-  getMiloUrl,
+  getAemUrl,
   PROCESS_TYPES,
   processJobResult,
   getStatusText,
   sticky,
-  validMiloURL,
+  isValidUrl,
   delay,
 };

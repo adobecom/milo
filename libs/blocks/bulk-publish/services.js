@@ -1,4 +1,4 @@
-import { PROCESS_TYPES, getErrorText, getMiloUrl, delay } from './utils.js';
+import { PROCESS_TYPES, getErrorText, getAemUrl, delay } from './utils.js';
 
 const BASE_URL = 'https://admin.hlx.page';
 const headers = { 'Content-Type': 'application/json' };
@@ -12,7 +12,7 @@ const getProcess = (type) => {
 };
 
 const getEndpoint = (url, type, usePath = false) => {
-  const [ref, repo, owner] = getMiloUrl(url);
+  const [ref, repo, owner] = getAemUrl(url);
   const process = getProcess(type);
   const path = usePath ? url.pathname : '/*';
   return `${BASE_URL}/${process}/${owner}/${repo}/${ref}${path}`;
