@@ -269,7 +269,8 @@
     justify-content: space-between;
     padding: var(--spacing-l) var(--spacing-l) 0 var(--spacing-l);
   }
-  
+
+  .brick.split.horizontal-center .foreground,
   .brick.split.center .foreground {
     padding: var(--spacing-l);
   }
@@ -288,6 +289,7 @@
     width: 41.66%;
   }
 
+  .brick.split.horizontal-center .foreground .brick-text,
   .brick.split.center .foreground .brick-text {
     margin: 0;
     grid-column: 4 / span 6;
@@ -352,15 +354,20 @@
     padding: 0;
   }
 
-  .brick.split.media-left .foreground .brick-text,
-  [dir='rtl'] .brick.split .foreground .brick-text,
-  [dir='rtl'] .brick.split.media-right .foreground .brick-text {
+  .brick.horizontal-center.media-right .foreground,
+  .brick.horizontal-center.media-left .foreground {
+    align-items: center;
+  }
+
+  .brick.split.row.media-left .foreground .brick-text,
+  [dir='rtl'] .brick.split.row .foreground .brick-text,
+  [dir='rtl'] .brick.split.row.media-right .foreground .brick-text {
     margin: var(--spacing-l) var(--spacing-l) var(--spacing-l) 0;
   }
   
-  .brick.split .foreground .brick-text,
-  .brick.split.media-right .foreground .brick-text
-  [dir='rtl'] .brick.split.media-left .foreground .brick-text {
+  .brick.split.row .foreground .brick-text,
+  .brick.split.row.media-right .foreground .brick-text
+  [dir='rtl'] .brick.split.row.media-left .foreground .brick-text {
     margin: var(--spacing-l) 0 var(--spacing-l) var(--spacing-l);
   }
 
