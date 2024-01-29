@@ -226,7 +226,9 @@ const getUniversalNavLocale = (locale) => {
          || CUSTOMLANG[prefix]
          || (ietf.includes('-')
            ? ietf.replace('-', '_')
-           : prefixParts.length === 2 && `${prefixParts[0].toLowerCase()}_${prefixParts[1].toUpperCase()}`)
+           : prefixParts[1]
+           && prefixParts.every((i) => !!i)
+           && `${prefixParts[0].toLowerCase()}_${prefixParts[1].toUpperCase()}`)
          || 'en_US';
 };
 
