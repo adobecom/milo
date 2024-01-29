@@ -295,28 +295,22 @@
   }
 
   .brick.split .foreground .brick-text,
-  .brick.split.row.media-right .foreground .brick-text {
+  .brick.split.row.media-right .foreground .brick-text,
+  .brick.split.row.media-left .foreground .brick-media {
     grid-column: span 6;
   }
 
+  .brick.split.row.media-left .foreground .brick-text,
+  .brick.split.row.media-right .foreground .brick-media {
+    grid-column: 7 / span 6;
+  }
+  
   .brick.split.grid-full-width.row.media-right .foreground .brick-text {
     grid-column: span 5;
   }
 
-  .brick.split.row.media-right .foreground .brick-media {
-    grid-column: 7 / span 6;
-  }
-
-  .brick.split.row.media-left .foreground .brick-text {
-    grid-column: 7 / span 6;
-  }
-
   .brick.split.grid-full-width.row.media-left .foreground .brick-text {
     grid-column: 8 / span 5;
-  }
-
-  .brick.split.row.media-left .foreground .brick-media {
-    grid-column: span 6;
   }
 
   .brick.split.row .foreground,
