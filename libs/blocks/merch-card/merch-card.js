@@ -428,14 +428,21 @@ const init = async (el) => {
   }
   merchCard.appendChild(footer);
 
-  if (cardType === 'plans') {
+  if (cardType === 'plans' || cardType === MINI_COMPARE_CHART) {
     const quantitySelect = createQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
+    const bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');
       initOfferSelection(merchCard, offerSelection, quantitySelect);
     }
-    if (quantitySelect) merchCard.append(createTag('div', { slot: 'quantity-select' }, quantitySelect));
+    if (quantitySelect) {
+      if(cardType === 'plans') {
+        merchCard.append(createTag('div', { slot: 'quantity-select' }, quantitySelect))
+      } else {
+        merchCard.querySelector(`div[slot="${bodySlotName}"]`).append(quantitySelect);
+      }
+    }
   }
 
   decorateBlockHrs(merchCard);
