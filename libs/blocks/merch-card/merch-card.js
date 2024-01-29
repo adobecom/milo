@@ -103,7 +103,9 @@ const PRODUCT_NAMES = [
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
-const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image'];
+const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart'];
+
+const MINI_COMPARE_CHART = 'mini-compare-chart';
 
 const textStyles = {
   H5: 'detail-m',
@@ -119,15 +121,32 @@ const isParagraphTag = (tagName) => tagName === 'P';
 
 const parseContent = (el, merchCard) => {
   const innerElements = [
-    ...el.querySelectorAll('h2, h3, h4, h5, p, ul'),
+    ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
   ];
-  const bodySlot = createTag('div', { slot: 'body-xs' });
+  let bodySlotName = 'body-xs';
+  let headingMCount = 0;
+  if (merchCard.variant === MINI_COMPARE_CHART) {
+    bodySlotName = 'body-m';
+  }
+  const bodySlot = createTag('div', { slot: bodySlotName });
 
   innerElements.forEach((element) => {
     const { tagName } = element;
+    if (tagName === 'EM' && !element.querySelector('a')) {
+      const promoText = createTag('p', { class: 'promo-text' }, element.innerHTML);
+      element.replaceWith(promoText);
+    }
     if (isHeadingTag(tagName)) {
-      const slotName = textStyles[tagName];
+      let slotName = textStyles[tagName];
       if (slotName) {
+        if (['H2', 'H4', 'H5'].includes(tagName)) {
+          if (tagName === 'H2') {
+            headingMCount += 1;
+          }
+          if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
+            slotName = 'heading-m-price';
+          }
+        }
         element.setAttribute('slot', slotName);
         merchCard.append(element);
       }
@@ -135,9 +154,12 @@ const parseContent = (el, merchCard) => {
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
+      merchCard.append(bodySlot);
     }
   });
-  merchCard.append(bodySlot);
+  if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
+    merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
+  }
 };
 
 const getBadgeStyle = (badgeMetadata) => {
@@ -189,7 +211,6 @@ const addMerchCardGridIfMissing = (section, cardType) => {
   if (directSection) {
     section.classList.add('three-merch-cards', cardType);
   }
-
   return false;
 };
 
@@ -247,6 +268,32 @@ function createQuantitySelect(el) {
   return quantitySelect;
 }
 
+const getMiniCompareChartFooterRows = (el) => {
+  let footerRows = [];
+  footerRows = Array.from(el.children).slice(1);
+  footerRows.forEach((row) => row.remove());
+  return footerRows;
+};
+
+const decorateFooterRows = (merchCard, footerRows) => {
+  if (footerRows) {
+    const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
+    footerRows.forEach((row) => {
+      const rowIcon = row.firstElementChild.querySelector('picture');
+      const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
+      const rowTextParagraph = createTag('p', { class: 'footer-row-cell-description' }, rowText);
+      const footerRowCell = createTag('div', { class: 'footer-row-cell' });
+      if (rowIcon) {
+        rowIcon.classList.add('footer-row-icon');
+        footerRowCell.appendChild(rowIcon);
+      }
+      footerRowCell.appendChild(rowTextParagraph);
+      footerRowsSlot.appendChild(footerRowCell);
+    });
+    merchCard.appendChild(footerRowsSlot);
+  }
+};
+
 const init = async (el) => {
   const styles = [...el.classList];
   const lastClass = styles[styles.length - 1];
@@ -272,26 +319,14 @@ const init = async (el) => {
       }
     }
   }
-  const images = el.querySelectorAll('picture');
-  let image;
-  const icons = [];
   const merchCard = createTag('merch-card', { class: styles.join(' '), 'data-block': '' });
   merchCard.setAttribute('variant', cardType);
+  if (el.dataset.removedManifestId) {
+    merchCard.dataset.removedManifestId = el.dataset.removedManifestId;
+  }
   if (name) {
     merchCard.setAttribute('name', name);
   }
-  images.forEach((img) => {
-    const imgNode = img.querySelector('img');
-    const { width, height } = imgNode;
-    const isSquare = Math.abs(width - height) <= 10;
-    if (img) {
-      if (isSquare) {
-        icons.push(img);
-      } else {
-        image = img;
-      }
-    }
-  });
   let tags = {};
   if (el.lastElementChild) {
     tags = extractTags(el.lastElementChild);
@@ -316,6 +351,25 @@ const init = async (el) => {
       }
     }
   }
+  let footerRows;
+  if (cardType === MINI_COMPARE_CHART) {
+    footerRows = getMiniCompareChartFooterRows(el);
+  }
+  const images = el.querySelectorAll('picture');
+  let image;
+  const icons = [];
+  images.forEach((img) => {
+    const imgNode = img.querySelector('img');
+    const { width, height } = imgNode;
+    const isSquare = Math.abs(width - height) <= 10;
+    if (img) {
+      if (isSquare) {
+        icons.push(img);
+      } else {
+        image = img;
+      }
+    }
+  });
   const actionMenuContent = cardType === 'catalog'
     ? getActionMenuContent(el)
     : null;
@@ -365,7 +419,11 @@ const init = async (el) => {
   parseContent(el, merchCard);
   const footer = createTag('div', { slot: 'footer' });
   if (ctas) {
-    decorateButtons(ctas);
+    if (merchCard.variant === 'mini-compare-chart') {
+      decorateButtons(ctas, 'button-l');
+    } else {
+      decorateButtons(ctas);
+    }
     footer.append(ctas);
   }
   merchCard.appendChild(footer);
@@ -388,6 +446,7 @@ const init = async (el) => {
   if (merchCard.classList.contains('has-divider')) {
     merchCard.setAttribute('custom-hr', true);
   }
+  decorateFooterRows(merchCard, footerRows);
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
