@@ -37,15 +37,15 @@ const validMiloURL = (str) => {
   return url.protocol === 'https:' && ref && repo && owner;
 };
 
-const editEntry = (elem, str) => {
-  if (elem?.value) {
-    const { offsetTop, value, scrollHeight, clientHeight } = elem;
+const editEntry = (el, str) => {
+  if (el?.value) {
+    const { offsetTop, value, scrollHeight, clientHeight } = el;
     const start = value.indexOf(str);
     const end = start + str.length;
     const position = offsetTop + (scrollHeight - clientHeight) * (start / value.length);
-    elem.setSelectionRange(start, end);
-    elem.focus();
-    elem.scrollTop = position;
+    el.setSelectionRange(start, end);
+    el.focus();
+    el.scrollTop = position;
   }
 };
 

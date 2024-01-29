@@ -371,7 +371,7 @@ label[for='urls'] i {
   min-width: var(--meta-width);
 }
 
-.job-meta>*:last-child {
+.job-meta > *:last-child {
   text-align: right;
 }
 

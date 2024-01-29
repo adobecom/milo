@@ -11,7 +11,7 @@ const getProcess = (type) => {
   return 'preview';
 };
 
-const writeEP = (url, type, usePath = false) => {
+const getEndpoint = (url, type, usePath = false) => {
   const [ref, repo, owner] = getMiloUrl(url);
   const process = getProcess(type);
   const path = usePath ? url.pathname : '/*';
@@ -21,7 +21,7 @@ const writeEP = (url, type, usePath = false) => {
 const createAEMRequest = (url, process, isBulk = true) => {
   const useDelete = isDelete(process);
   const href = isBulk ? [url.href] : url.href;
-  const endpoint = writeEP(url, process, !isBulk);
+  const endpoint = getEndpoint(url, process, !isBulk);
   const options = { headers, method: useDelete ? 'DELETE' : 'POST', body: {} };
   if (isBulk) options.body = { paths: [] };
   return {

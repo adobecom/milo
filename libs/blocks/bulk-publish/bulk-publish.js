@@ -360,7 +360,7 @@ class BulkPublish extends LitElement {
     };
   }
 
-  loadPrompt() {
+  promptLoader() {
     setTimeout(() => {
       const loader = this.renderRoot.querySelector('.load-indicator');
       const message = this.renderRoot.querySelector('.message');
@@ -383,7 +383,7 @@ class BulkPublish extends LitElement {
     return html`
       <div class="login-prompt">
         <div class="prompt">
-          ${this.loadPrompt()}
+          ${this.promptLoader()}
           <div class="message hide">
             ${message}
           </div>
