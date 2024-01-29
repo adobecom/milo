@@ -157,7 +157,7 @@ const updateRetryQueue = async ({ queue, urls, process }) => {
   const jobs = mapJobList({ urls, process });
   const processes = jobs.flatMap(async ({ endpoint, options, origin, href }) => {
     try {
-      await delay(2000);
+      await delay();
       options.body = JSON.stringify({});
       const job = await fetch(endpoint, options);
       if (!job.ok) {

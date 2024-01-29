@@ -9,7 +9,7 @@ const PROCESS_TYPES = [
   'index',
 ];
 
-const delay = (timeout = 2000) => new Promise((resolve) => {
+const delay = (timeout = 3000) => new Promise((resolve) => {
   setTimeout(() => resolve(), timeout);
 });
 
