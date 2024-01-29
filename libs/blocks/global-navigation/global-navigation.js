@@ -209,7 +209,11 @@ const getUniversalNavLocale = (locale) => {
   const { ietf } = locale;
   const DEFAULTLANG = {
     de_DE: ['at', 'ch_de', 'lu_de'],
-    en_US: ['ae_en', 'africa', 'au', 'be_en', 'ca', 'cis_en', 'cy_en', 'eg_en', 'gr_en', 'hk_en', 'id_en', 'ie', 'il_en', 'in', 'kw_en', 'langstore', 'lu_en', 'mena_en', 'mt', 'my_en', 'ng', 'nz', 'ph_en', 'qa_en', 'sa_en', 'sg', 'th_en', 'uk', 'vn_en', 'za'],
+    en_US: [
+      'ae_en', 'africa', 'au', 'be_en', 'ca', 'cis_en', 'cy_en', 'eg_en', 'gr_en', 'hk_en',
+      'id_en', 'ie', 'il_en', 'in', 'kw_en', 'langstore', 'lu_en', 'mena_en', 'mt', 'my_en',
+      'ng', 'nz', 'ph_en', 'qa_en', 'sa_en', 'sg', 'th_en', 'uk', 'vn_en', 'za',
+    ],
     es_ES: ['ar', 'ar_es', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
     fr_FR: ['be_fr', 'ca_fr', 'ch_fr', 'lu_fr'],
   };
