@@ -1,5 +1,9 @@
 import { getConfig } from '../../utils/utils.js';
 
+// TODO: add PEP segment map here when we have it;
+// However, we need to decide if these are relevant to others or not;
+// if not, we should find a better place for them
+// and add a method to return raw segments
 export const ENTITLEMENT_MAP = {
   '8ba78b22-90fb-4b97-a1c4-f8c03a45cbc2': 'indesign',
   '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'photoshop',
