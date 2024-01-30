@@ -85,7 +85,8 @@ function decorateForeground(el, foreground) {
 }
 
 function decorateFillButtons(actionArea) {
-  const btns = actionArea?.querySelectorAll('a.con-button.blue');
+  if (!actionArea) return;
+  const btns = actionArea.querySelectorAll('a.con-button.blue');
   btns.forEach((b) => {
     b.classList.remove('blue');
     b.classList.add('fill');
