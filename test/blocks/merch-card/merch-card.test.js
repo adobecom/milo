@@ -334,6 +334,16 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(buttons[0].textContent).to.be.equal('Buy now');
     expect(buttons[1].textContent).to.be.equal('free trial');
   });
+  it('Supports Mini Compare Chart with quantity select', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
+    const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    expect(quantitySelect).to.exist;
+    expect(quantitySelect.getAttribute('title')).to.equal('Select a quantity:');
+    expect(quantitySelect.getAttribute('min')).to.equal('1');
+    expect(quantitySelect.getAttribute('max')).to.equal('10');
+    expect(quantitySelect.getAttribute('step')).to.equal('1');
+  });
 });
 
 describe('Merch Card with Offer Selection', () => {
