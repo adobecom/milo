@@ -197,13 +197,6 @@
   text-decoration: underline;
 }
 
-.brick.click:hover .first-link.con-button.blue,
-.brick.click:active .first-link.con-button.blue {
-  background: var(--color-accent-hover);
-  border-color: var(--color-accent-hover);
-  color: var(--color-white);
-}
-
 .brick.click:hover .first-link.con-button,
 .brick.click:active .first-link.con-button,
 .dark .brick.click:hover .first-link.con-button,
@@ -221,6 +214,13 @@
 .light .brick.click:active .first-link.con-button {
   background-color: var(--color-black);
   border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.brick.click:hover .first-link.con-button.blue,
+.brick.click:active .first-link.con-button.blue {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
   color: var(--color-white);
 }
 
