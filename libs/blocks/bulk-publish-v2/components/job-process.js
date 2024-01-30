@@ -1,8 +1,8 @@
-import { LitElement, html } from '../../deps/lit-all.min.js';
-import { getSheet } from '../../../tools/utils/utils.js';
-import { displayDate, getStatusText, delay } from './utils.js';
-import { pollJobStatus, updateRetry } from './services.js';
-import { getConfig } from '../../utils/utils.js';
+import { LitElement, html } from '../../../deps/lit-all.min.js';
+import { getSheet } from '../../../../tools/utils/utils.js';
+import { displayDate, getStatusText, delay } from '../utils.js';
+import { pollJobStatus, updateRetry } from '../services.js';
+import { getConfig } from '../../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot || 'libs';
