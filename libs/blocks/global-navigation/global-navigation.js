@@ -512,8 +512,8 @@ class Gnav {
         const interactionMapping = {
           profile: {
             click: {
-              'sign-in': `Sign in|gnav|${getExperienceName()}|unav`,
               account: `View Account|gnav|${getExperienceName()}`,
+              'sign-in': `Sign in|gnav|${getExperienceName()}|unav`,
               'sign-out': `Sign out|gnav|${getExperienceName()}|unav`,
             },
             render: { component: `Account|gnav|${getExperienceName()}` },
@@ -524,10 +524,10 @@ class Gnav {
                 data.content?.name?.split('-').map((str) => str.charAt(0).toUpperCase() + str.slice(1)).join(' ')
               }`,
               footer: {
-                'adobe-dot-com': 'AppLauncher.adobe.com',
-                'see-all-apps': 'AppLauncher.allapps',
-                'adobe-home': 'AppLauncher.adobe.com',
                 'all-apps': 'AppLauncher.allapps',
+                'adobe-dot-com': 'AppLauncher.adobe.com',
+                'adobe-home': 'AppLauncher.adobe.com',
+                'see-all-apps': 'AppLauncher.allapps',
               },
             },
             render: { component: 'AppLauncher.appIconToggle' },
