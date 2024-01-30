@@ -107,6 +107,8 @@ const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
+const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
+
 const textStyles = {
   H5: 'detail-m',
   H4: 'body-xxs',
@@ -249,7 +251,7 @@ const simplifyHrs = (el) => {
   });
 };
 
-function createQuantitySelect(el) {
+function extractQuantitySelect(el) {
   const quantitySelectConfig = el.querySelector('ul');
   if (!quantitySelectConfig) return null;
   const configMarkup = quantitySelectConfig.querySelector('li');
@@ -428,8 +430,8 @@ const init = async (el) => {
   }
   merchCard.appendChild(footer);
 
-  if (cardType === 'plans' || cardType === MINI_COMPARE_CHART) {
-    const quantitySelect = createQuantitySelect(el);
+  if (MULTI_OFFER_CARDS.includes(cardType)) {
+    const quantitySelect = extractQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
     const bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
     if (offerSelection) {
