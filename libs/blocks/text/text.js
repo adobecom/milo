@@ -61,8 +61,11 @@ function decorateLinkFarms(el) {
   foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
     const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
     heading?.classList.add('heading-xs');
-    if (!hCount) return
-    if (!heading) return divElem.prepend(createTag('h3', { class: 'no-heading heading-xs' }));
+    if (!hCount) return;
+    if (!heading) {
+      divElem.prepend(createTag('h3', { class: 'no-heading heading-xs' }));
+      return;
+    }
     const sibling = index % 2 === 0
       ? divElem.nextElementSibling
       : divElem.previousElementSibling;
