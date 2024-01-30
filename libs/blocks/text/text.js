@@ -54,26 +54,21 @@ function decorateBlockIconArea(el) {
 
 function decorateLinkFarms(el) {
   loadStyle('/libs/blocks/text/link-farms.css');
-  const [ title, foregroundDiv ] = [...el.querySelectorAll('.foreground')];
+  const [title, foregroundDiv] = [...el.querySelectorAll('.foreground')];
   const hCount = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
   title.querySelector('h1, h2, h3, h4, h5, h6').classList.add('heading-l');
   foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
   foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
     const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
     heading?.classList.add('heading-xs');
-    if (hCount) {
-      if (heading) {
-        const sibling = index % 2 === 0
-          ? divElem.nextElementSibling
-          : divElem.previousElementSibling;
-        sibling?.classList.add('hspace');
-        if (index > 0) divElem.classList.add('has-heading');
-        if (index > 1) foregroundDiv.classList.add('gap-xl');
-      } else {
-        const noHeading = createTag('h3', { class: 'no-heading heading-xs' });
-        divElem.prepend(noHeading);
-      }
-    }
+    if (!hCount) return
+    if (!heading) return divElem.prepend(createTag('h3', { class: 'no-heading heading-xs' }));
+    const sibling = index % 2 === 0
+      ? divElem.nextElementSibling
+      : divElem.previousElementSibling;
+    sibling?.classList.add('hspace');
+    if (index > 0) divElem.classList.add('has-heading');
+    if (index > 1) foregroundDiv.classList.add('gap-xl');
   });
 }
 
