@@ -1,4 +1,4 @@
-class HelixSidekick extends HTMLElement {
+class MockAuth extends HTMLElement {
   opened() {
     this.dispatchEvent(new CustomEvent('sidekick-ready', { bubbles: true }));
     this.isopen = true;
@@ -19,4 +19,4 @@ class HelixSidekick extends HTMLElement {
   }
 }
 
-customElements.define('helix-sidekick', HelixSidekick);
+customElements.define('helix-sidekick', MockAuth);
