@@ -524,6 +524,7 @@ class Gnav {
                 data.content?.name?.split('-').map((str) => str.charAt(0).toUpperCase() + str.slice(1)).join(' ')
               }`,
               footer: {
+                // two of these will be removed in the future, when the unav team updates the data model
                 'all-apps': 'AppLauncher.allapps',
                 'adobe-dot-com': 'AppLauncher.adobe.com',
                 'adobe-home': 'AppLauncher.adobe.com',
