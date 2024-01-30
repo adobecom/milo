@@ -46,8 +46,8 @@ function handleLayout(text, section) {
 
 function handleDelay(text, section) {
   if (!(text || section)) return;
-  section.style.display = 'none';
-  setTimeout(() => { section.style.display = 'block'; }, text);
+  section.classList.add('hide-sticky-section');
+  setTimeout(() => { section.classList.remove('hide-sticky-section'); }, text);
 }
 
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
