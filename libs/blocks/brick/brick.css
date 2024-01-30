@@ -206,6 +206,15 @@
 
 .brick.click:hover .first-link.con-button,
 .brick.click:active .first-link.con-button,
+.dark .brick.click:hover .first-link.con-button,
+.dark .brick.click:active .first-link.con-button,
+.brick.dark.click:hover .first-link.con-button,
+.brick.dark.click:active .first-link.con-button {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  text-decoration: none;
+}
+
 .brick.light.click:hover .first-link.con-button,
 .brick.light.click:active .first-link.con-button,
 .light .brick.click:hover .first-link.con-button,
@@ -213,13 +222,6 @@
   background-color: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
-}
-
-.dark .brick.click:hover .first-link.con-button,
-.brick.dark.click:active .first-link.con-button {
-  background-color: var(--color-white);
-  color: var(--color-black);
-  text-decoration: none;
 }
 
 @media screen and (max-width: 600px) {

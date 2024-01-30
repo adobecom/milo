@@ -84,6 +84,14 @@ function decorateForeground(el, foreground) {
   }
 }
 
+function decorateFillButtons(actionArea) {
+  const btns = actionArea.querySelectorAll('a.con-button.blue');
+  btns.forEach((b) => {
+    b.classList.remove('blue');
+    b.classList.add('fill');
+  });
+}
+
 function decorateBricks(el) {
   if (!el.classList.contains('light')) el.classList.add('dark');
   const elems = el.querySelectorAll(':scope > div');
@@ -101,6 +109,7 @@ function decorateBricks(el) {
   const blockFormatting = getBlockSize(el);
   decorateButtons(foreground, 'button-l');
   decorateBlockText(foreground, blockFormatting);
+  if (el.classList.contains('fill-buttons')) decorateFillButtons(foreground.querySelector('.action-area'));
   el.querySelector('.icon-area')?.classList.remove('detail-l');
   decorateIconStack(el);
   el.querySelector('.icon-stack-area')?.classList.add('body-xs');
