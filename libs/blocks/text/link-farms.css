@@ -34,7 +34,7 @@
 }
 
 .link-farm.text-block a:hover {
-  text-decoration: double underline;
+  text-decoration-style: double;
 }
 
 
