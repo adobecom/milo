@@ -123,7 +123,7 @@ const config = {
   geoRouting: 'on',
   fallbackRouting: 'on',
   links: 'on',
-  imsClientId: 'milo',
+  imsClientId: new URLSearchParams(window.location.search).get('imsClientId') || 'milo', // TODO: reset to original value
   imsScope: 'AdobeID,openid,gnav,pps.read,firefly_api',
   codeRoot: '/libs',
   locales,
