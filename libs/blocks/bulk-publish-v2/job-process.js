@@ -6,7 +6,7 @@ import { getConfig } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot || 'libs';
-const styleSheet = await getSheet(`${base}/blocks/bulk-publish/job-process.css`);
+const styleSheet = await getSheet(`${base}/blocks/bulk-publish-v2/job-process.css`);
 
 class JobProcess extends LitElement {
   static get properties() {

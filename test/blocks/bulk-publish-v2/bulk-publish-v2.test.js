@@ -5,7 +5,7 @@ import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import './mocks/authentication.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/bulk-publish/bulk-publish.js');
+const { default: init } = await import('../../../libs/blocks/bulk-publish-v2/bulk-publish-v2.js');
 
 const testPage = 'https://main--milo--adobecom.hlx.page/drafts/sarchibeque/bulk-publish-test';
 
