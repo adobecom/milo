@@ -505,8 +505,44 @@ class Gnav {
     };
 
     const onAnalyticsEvent = (data) => {
-      // TODO: update based on requirements
-      console.log('analytics data', data);
+      if (!data) return;
+
+      const getInteraction = () => {
+        const { event: { type, subtype } = {}, source: { name } = {} } = data;
+        const interactionMapping = {
+          profile: {
+            click: {
+              'sign-in': `Sign in|gnav|${getExperienceName()}|unav`,
+              account: `View Account|gnav|${getExperienceName()}`,
+              'sign-out': `Sign out|gnav|${getExperienceName()}|unav`,
+            },
+            render: { component: `Account|gnav|${getExperienceName()}` },
+          },
+          'app-switcher': {
+            click: {
+              app: `AppLauncher.appClick.${
+                data.content?.name?.split('-').map((str) => str.charAt(0).toUpperCase() + str.slice(1)).join(' ')
+              }`,
+              footer: {
+                'adobe-home': 'AppLauncher.adobe.com',
+                'all-apps': 'AppLauncher.allaps',
+              },
+            },
+            render: { component: 'AppLauncher.appIconToggle' },
+          },
+        };
+        const interactionResult = interactionMapping[name]?.[type]?.[subtype];
+
+        return (interactionResult && interactionResult[data.content?.name]) || interactionResult;
+      };
+      const interaction = getInteraction();
+
+      if (!interaction) return;
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite?.track('event', {
+        xdm: {},
+        data: { web: { webInteraction: { name: interaction } } },
+      });
     };
 
     const getConfiguration = () => ({
