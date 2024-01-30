@@ -61,6 +61,7 @@ const CONFIG = {
           isSignUpRequired: false,
           componentLoaderConfig: {
             config: {
+              enableLocalSection: true,
               miniAppContext: {
                 logger: {
                   trace: () => {},
