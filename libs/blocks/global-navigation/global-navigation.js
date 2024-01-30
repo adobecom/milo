@@ -538,9 +538,6 @@ class Gnav {
       const interaction = getInteraction();
 
       if (!interaction) return;
-      // __ added for testing purposes, will be removed before merging
-      console.log('interaction -->', interaction);
-      // _____________________________________________________________
       // eslint-disable-next-line no-underscore-dangle
       window._satellite?.track('event', {
         xdm: {},
