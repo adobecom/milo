@@ -5,7 +5,7 @@ const headers = { 'Content-Type': 'application/json' };
 
 const isLive = (type) => ['publish', 'unpublish'].includes(type);
 const isDelete = (type) => ['delete', 'unpublish'].includes(type);
-const getProcess = (type) => {
+const getProcessAlias = (type) => {
   if (type === 'index') return type;
   if (isLive(type)) return 'live';
   return 'preview';
@@ -13,17 +13,17 @@ const getProcess = (type) => {
 
 const getEndpoint = (url, type, usePath = false) => {
   const [ref, repo, owner] = getAemUrl(url);
-  const process = getProcess(type);
+  const process = getProcessAlias(type);
   const path = usePath ? url.pathname : '/*';
   return `${BASE_URL}/${process}/${owner}/${repo}/${ref}${path}`;
 };
 
-const createAEMRequest = (url, process, isBulk = true) => {
+const getRequest = (url, process, useBulk = true) => {
   const useDelete = isDelete(process);
-  const href = isBulk ? [url.href] : url.href;
-  const endpoint = getEndpoint(url, process, !isBulk);
+  const href = useBulk ? [url.href] : url.href;
+  const endpoint = getEndpoint(url, process, !useBulk);
   const options = { headers, method: useDelete ? 'DELETE' : 'POST', body: {} };
-  if (isBulk) options.body = { paths: [] };
+  if (useBulk) options.body = { paths: [] };
   return {
     href,
     options,
@@ -33,43 +33,43 @@ const createAEMRequest = (url, process, isBulk = true) => {
   };
 };
 
-const connectSidekick = (bulkPub) => {
-  const setStatus = (event) => {
+const authenticate = (tool) => {
+  const setUser = (event) => {
     const processes = event?.detail?.data;
     if (processes) {
       const profile = processes.profile ?? null;
       const permissions = {};
       PROCESS_TYPES.forEach((key) => {
-        if (key !== 'index') { // index permission object isn't returned from aem
+        if (key !== 'index') {
           const process = isLive(key) ? 'live' : 'preview';
           permissions[key] = !!processes[process].permissions?.includes('list');
         }
       });
-      bulkPub.user = { profile, permissions };
+      tool.user = { profile, permissions };
     }
   };
   document.addEventListener('sidekick-ready', () => {
     const sidekick = document.querySelector('helix-sidekick');
-    sidekick.addEventListener('statusfetched', setStatus);
+    sidekick.addEventListener('statusfetched', setUser);
   }, { once: true });
 };
 
 const mapJobList = ({ urls, process }) => {
   const all = urls.map((url) => (new URL(url)));
-  return all.map((url) => (createAEMRequest(url, process, false)));
+  return all.map((url) => (getRequest(url, process, false)));
 };
 
-const createJobs = (details, useBulk) => {
+const prepareJobs = (details, useBulk) => {
   if (!useBulk) return mapJobList(details);
   const { urls, process } = details;
   const paths = urls.map((url) => (new URL(url)));
   return Object.values(paths.reduce((jobs, url) => {
     let base = url.host;
-    // groups of 100 for users without 'list' permission
+    // groups of 100 for users without 'list' permissions
     while (!details.hasPermission && jobs[base]?.options.body.paths.length >= 100) {
       base = `${base}+`;
     }
-    if (!jobs[base]) jobs[base] = createAEMRequest(url, process);
+    if (!jobs[base]) jobs[base] = getRequest(url, process);
     const job = jobs[base];
     if (isDelete(process)) {
       const param = job.endpoint.includes('?') ? '&' : '?';
@@ -95,14 +95,14 @@ const formatResult = ({ status }, job) => {
   };
 };
 
-const startJobProcess = async (details) => {
+const startJob = async (details) => {
   const { process } = details;
-  const useBulk = process !== 'index';
-  const jobs = createJobs(details, useBulk);
+  const useBulk = process !== 'index'; // index is the only process missing bulk endpoint
+  const jobs = prepareJobs(details, useBulk);
   const requests = jobs.flatMap(async (job) => {
     const { options, origin, endpoint } = job;
     if (!isDelete(process)) options.body.forceUpdate = true;
-    options.body = JSON.stringify(options.body ?? {});
+    options.body = JSON.stringify(options.body);
     try {
       const request = await fetch(endpoint, options);
       if (!request.ok && useBulk) {
@@ -122,7 +122,7 @@ const startJobProcess = async (details) => {
   return results;
 };
 
-const fetchStatus = async (link) => {
+const getJobStatus = async (link) => {
   await delay();
   try {
     const status = await fetch(link, { headers });
@@ -138,7 +138,7 @@ const pollJobStatus = async (job, setProgress) => {
   let jobStatus;
   let stopped = false;
   while (!stopped) {
-    const status = await fetchStatus(`${result.links.self}/details`);
+    const status = await getJobStatus(`${result.links.self}/details`);
     setProgress(status);
     if (status.stopTime) {
       jobStatus = status;
@@ -148,12 +148,12 @@ const pollJobStatus = async (job, setProgress) => {
   return jobStatus;
 };
 
-const updateRetryQueue = async ({ queue, urls, process }) => {
+const updateRetry = async ({ queue, urls, process }) => {
   const jobs = mapJobList({ urls, process });
   const processes = jobs.flatMap(async ({ endpoint, options, origin, href }) => {
     try {
       await delay();
-      options.body = JSON.stringify({});
+      options.body = JSON.stringify(options.body);
       const job = await fetch(endpoint, options);
       if (!job.ok) {
         throw new Error(getErrorText(job.status), { cause: job.status }, origin);
@@ -167,15 +167,15 @@ const updateRetryQueue = async ({ queue, urls, process }) => {
   const statuses = await Promise.all(processes);
   const newQueue = queue.map((entry, index) => {
     const { result } = statuses.find((stat) => stat.href === urls[index]);
-    const status = (result?.[getProcess(process)]?.status || result?.status) ?? entry.status;
+    const status = (result?.[getProcessAlias(process)]?.status || result?.status) ?? entry.status;
     return { ...entry, status, count: entry.count + 1 };
   });
   return newQueue;
 };
 
 export {
-  updateRetryQueue,
-  startJobProcess,
-  connectSidekick,
+  authenticate,
   pollJobStatus,
+  startJob,
+  updateRetry,
 };
