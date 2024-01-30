@@ -17,8 +17,8 @@ import {
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot || 'libs';
 
-const styleSheet = await getSheet(`${base}/blocks/bulk-publish-v2/bulk-publisher.css`);
-const loaderSheet = await getSheet(`${base}/blocks/bulk-publish-v2/loader.css`);
+const styleSheet = await getSheet(`${base}/blocks/bulk-publish-v2/components/bulk-publisher.css`);
+const loaderSheet = await getSheet(`${base}/blocks/bulk-publish-v2/components/loader.css`);
 const checkmarkIcon = `${base}/blocks/bulk-publish-v2/img/checkmark.svg`;
 const clearJobsIcon = `${base}/blocks/bulk-publish-v2/img/remove.svg`;
 

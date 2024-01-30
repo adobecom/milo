@@ -409,7 +409,7 @@ label[for='urls'] i {
   border-style: solid;
   border-width: 2px;
   appearance: none;
-  background-image: var(--down-arrow-icon);
+  background-image: var(--arrow-icon);
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 1em;
