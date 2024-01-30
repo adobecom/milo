@@ -525,7 +525,7 @@ class Gnav {
               }`,
               footer: {
                 'adobe-home': 'AppLauncher.adobe.com',
-                'all-apps': 'AppLauncher.allaps',
+                'all-apps': 'AppLauncher.allapps',
               },
             },
             render: { component: 'AppLauncher.appIconToggle' },
