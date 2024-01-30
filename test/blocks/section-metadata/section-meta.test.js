@@ -89,9 +89,9 @@ describe('Section Metdata', () => {
     const sec = document.querySelector('.section.delay');
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
-    expect(sec.style.display).to.equal('none');
+    expect(sec.classList.contains('hide-sticky-section')).to.be.true;
     await delay(1000);
-    expect(sec.style.display).to.equal('block');
+    expect(sec.classList.contains('hide-sticky-section')).not.to.be.true;
   });
 
   it('should calculate the top position based on header height', async () => {
