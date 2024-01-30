@@ -109,7 +109,7 @@ function decorateBricks(el) {
   const blockFormatting = getBlockSize(el);
   decorateButtons(foreground, 'button-l');
   decorateBlockText(foreground, blockFormatting);
-  if (el.classList.contains('fill-buttons')) decorateFillButtons(foreground.querySelector('.action-area'));
+  if (el.classList.contains('button-fill')) decorateFillButtons(foreground.querySelector('.action-area'));
   el.querySelector('.icon-area')?.classList.remove('detail-l');
   decorateIconStack(el);
   el.querySelector('.icon-stack-area')?.classList.add('body-xs');
