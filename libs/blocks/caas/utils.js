@@ -514,30 +514,14 @@ const fetchUuidForCard = async (card) => {
 const getCurrentEntityId = async () => {
   try {
     const { useDotHtmlConf, prodDomains, productionDomain, htmlExclude = [] } = pageConfigHelper();
-    console.log(`Here is the productionDomain ${productionDomain}`);
-    console.log(`Here is the useDotHtmlConf ${useDotHtmlConf}`);
-    console.log(`Here is the htmlExclude ${htmlExclude}`);
-
     const host = productionDomain || prodDomains[0];
-
-    console.log(`Here is the host ${host}`);
-
     const { pathname } = window.location;
     const url = `${host}${pathname}`;
-
-    console.log(`Here is the pathname ${pathname}`);
-
-    console.log(`Here is the url ${url}`);
 
     const shouldAppendHtml = useDotHtmlConf && !pathname.endsWith('.html')
       && htmlExclude.every((excludeRe) => !excludeRe.test(url));
 
-    console.log(`Here is the shouldAppendHtml ${shouldAppendHtml}`);
-
     const generatedUrl = `${url}${shouldAppendHtml ? '.html' : ''}`;
-    console.log(`Here is the generatedUrl ${generatedUrl}`);
-
-    console.log(`Here is the uuid ${await getUuid(generatedUrl)}`);
 
     return await getUuid(generatedUrl);
   } catch (error) {
