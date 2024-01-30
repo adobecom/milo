@@ -14,3 +14,8 @@ div[class*="-merch-card"] > div,
   margin-top: 8px; 
   margin-bottom: 16px; 
 }
+
+.dark .merch-card .con-button.outline {
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
+}
