@@ -236,6 +236,11 @@ const getUniversalNavLocale = (locale) => {
          || 'en_US';
 };
 
+const convertToPascalCase = (str) => str
+  ?.split('-')
+  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+  .join(' ');
+
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -468,6 +473,8 @@ class Gnav {
     const locale = getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
+    const experienceName = getExperienceName();
+
     const getDevice = () => {
       const agent = navigator.userAgent;
       if (agent.includes('Mac')) return 'macOS';
@@ -508,22 +515,25 @@ class Gnav {
       if (!data) return;
 
       const getInteraction = () => {
-        const { event: { type, subtype } = {}, source: { name } = {} } = data;
-        const contentName = data.content?.name;
+        const {
+          event: { type, subtype } = {},
+          source: { name } = {},
+          content: { name: contentName } = {},
+        } = data;
+
         switch (`${name}|${type}|${subtype}|${contentName || ''}`) {
           case 'profile|click|sign-in|':
-            return `Sign in|gnav|${getExperienceName()}|unav`;
+            return `Sign in|gnav|${experienceName}|unav`;
           case 'profile|render|component|':
-            return `Account|gnav|${getExperienceName()}`;
+            return `Account|gnav|${experienceName}`;
           case 'profile|click|account|':
-            return `View Account|gnav|${getExperienceName()}`;
+            return `View Account|gnav|${experienceName}`;
           case 'profile|click|sign-out|':
-            return `Sign out|gnav|${getExperienceName()}|unav`;
+            return `Sign out|gnav|${experienceName}|unav`;
           case 'app-switcher|render|component|':
             return 'AppLauncher.appIconToggle';
           case `app-switcher|click|app|${contentName}`:
-            return `AppLauncher.appClick.${contentName?.split('-')
-              .map((str) => str.charAt(0).toUpperCase() + str.slice(1)).join(' ')}`;
+            return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
           case 'app-switcher|click|footer|adobe-home':
             return 'AppLauncher.adobe.com';
           case 'app-switcher|click|footer|all-apps':
