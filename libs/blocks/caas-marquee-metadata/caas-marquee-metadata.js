@@ -98,8 +98,8 @@ export default function init(el) {
   const arbitraryKey = createTag('div', null, 'arbitrary');
   const arbitraryValue = createTag('div', null, (`promoId: ${metadata.promoid},
     classList: ${classListString},
-    imageSm: ${metadata.imagemobile || ''},
-    imageMd: ${metadata.imagetablet || ''},
+    imageTablet: ${metadata.imagetablet || ''},
+    imageDesktop: ${metadata.imagedesktop || ''},
   `).replace(/\s+/g, ' '));
   arbitrary.append(arbitraryKey, arbitraryValue);
   el.append(arbitrary);
