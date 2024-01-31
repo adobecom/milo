@@ -316,7 +316,8 @@ const getCountryAndLang = async (options) => {
 
 const parseCardMetadata = () => {
   const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('div[class$="-metadata"]');
+  const marquee = getConfig().doc.querySelector('.caas-marquee-metadata');
+  const mdEl = getConfig().doc.querySelector('.card-metadata') || marquee;
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
       const key = n.children?.[0]?.textContent?.toLowerCase();

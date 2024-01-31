@@ -27,14 +27,19 @@ function getMarqueeId() {
 
 // Parse json from chimera into metadata
 function parseMarqueeData(data) {
+  const images = {
+    tablet: data.arbitrary?.find((item) => item.key === 'imageTablet')?.value,
+    desktop: data.arbitrary?.find((item) => item.key === 'imageDesktop')?.value,
+  };
+
   const metadata = {
     id: data.id,
     title: data.contentArea?.title,
     description: data.contentArea?.description,
     detail: data.contentArea?.detailText,
     image: data.styles?.backgroundImage,
-    imagetablet: data.imagetablet,
-    imagedesktop: data.imagedesktop,
+    imagetablet: images.tablet,
+    imagedesktop: images.desktop,
     variant: data.variant,
     cta1url: data.footer[0].right[0]?.href,
     cta1text: data.footer[0]?.right[0]?.text,
@@ -48,6 +53,7 @@ function parseMarqueeData(data) {
   data.arbitrary?.forEach((item) => { arbitrary[item.key] = item.value; });
   metadata.variant = arbitrary.variant || 'dark, static-links';
 
+  console.log('metadata', metadata);
   return metadata;
 }
 
