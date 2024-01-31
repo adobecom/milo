@@ -44,7 +44,8 @@ export default function init(el) {
     <div><div>cta1style</div><div>${metadata.cta1style}</div></div>`;
 
   // Render marquee
-  el.parentNode.append(renderMarquee(metadata));
+  // el.parentNode.append(renderMarquee(metadata));
+  renderMarquee(el.parentNode, metadata);
 
   // Degugging ((( Remove before release )))
   console.log('metadata:', getMetadata(el)); // eslint-disable-line no-console

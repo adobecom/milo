@@ -8,57 +8,52 @@ const typeSize = {
   xlarge: ['xxl', 'xl', 'l'],
 };
 
-function getMarqueeData(marqueeId) {
+async function getAllMarquees(promoId) {
   const endPoint = 'https://14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection';
-  const payload = `originSelection=milo&collectionTags=caas%3Acontent-type%2Fpromotion&marqueeId=${marqueeId || 'homepage'}`;
+  const payload = `originSelection=milo&collectionTags=caas%3Acontent-type%2Fpromotion&marqueeId=${promoId || 'homepage'}`;
   return fetch(`${endPoint}?${payload}`).then((res) => res.json());
 }
 
-// function renderMarquee(marquee, data) {
-//   console.log('renderMarquee()', marquee, data);
-//   // background images for mobilr, tablet, and desktop
-//   const imgDesktop = createTag('img', { class: 'background', src: data.styles.backgroundImage });
-//   const picture = createTag('picture', null, imgDesktop);
-//   const desktopOnly = createTag('div', { class: 'desktop-only' }, picture);
-//   marquee.append(desktopOnly);
-// }
-
 // Get marquee id (eventually from Spectra)
 function getMarqueeId() {
-  // return Math.floor(Math.random() * Math.floor(6));
-  return 6;
+  const id = Math.floor(Math.random() * Math.floor(6));
+  return new Promise((resolve) => {
+    setTimeout(() => { resolve(id); }, 500);
+  });
 }
 
-// Parse card data
-function parseMarqueeData(marquee) {
-  console.log('parseMarqueeData()', marquee);
-  const data = {
-    id: marquee.id,
-    title: marquee.contentArea.title,
-    description: marquee.contentArea.description,
-    detail: marquee.contentArea.detailText,
-    image: marquee.styles.backgroundImage,
-    imagetablet: marquee.imagetablet,
-    imagedesktop: marquee.imagedesktop,
-    cta1url: marquee.footer[0].right[0].href,
-    cta1text: marquee.footer[0].right[0].text,
-    cta1style: marquee.footer[0].right[0].style,
-    cta2url: marquee.footer[0].center[0]?.href,
-    cta2text: marquee.footer[0].center[0]?.text,
-    cta2style: marquee.footer[0].center[0]?.style,
+// Parse data, either json from chimera or metadata from milo block
+function parseMarqueeData(data) {
+  console.log('parseMarqueeData()', data);
+  const metadata = {
+    id: data.id || '',
+    title: data.contentArea?.title || data.title,
+    description: data.contentArea?.description || data.description,
+    detail: data.contentArea?.detailText || data.detailText,
+    image: data.styles?.backgroundImage || data.image,
+    imagetablet: data.imagetablet,
+    imagedesktop: data.imagedesktop,
+    variant: data.variant,
+    cta1url: data.footer[0].right[0]?.href || data.cta1url,
+    cta1text: data.footer[0]?.right[0]?.text || data.cta1text,
+    cta1style: data.footer[0]?.right[0]?.style || data.cta1style,
+    cta2url: data.footer[0]?.center[0]?.href || data.cta2url,
+    cta2text: data.footer[0]?.center[0]?.text || data.cta2text,
+    cta2style: data.footer[0]?.center[0]?.style || data.cta2style,
   };
 
   const arbitrary = {};
-  marquee.arbitrary.forEach((item) => { arbitrary[item.key] = item.value; });
-  data.arbitrary = arbitrary;
+  data.arbitrary?.forEach((item) => { arbitrary[item.key] = item.value; });
+  metadata.arbitrary = arbitrary;
 
-  return data;
+  return metadata;
 }
 
-export function renderMarquee(marquee, data) {
-  console.log('renderMarquee()', marquee, data);
-  const metadata = parseMarqueeData(data);
-  console.log('METADATA', metadata);
+export function renderMarquee(marquee, data, id) {
+  const metadata = data.cards ? parseMarqueeData(data.cards[id]) : data;
+
+  // remove loader
+  marquee.innerHTML = '';
 
   // configure block font sizes
   const classList = metadata.variant.split(',').map((c) => c.trim());
@@ -123,8 +118,10 @@ export default async function init(el) {
   const metadata = getMetadata(el);
 
   const marquee = createTag('div', { class: `marquee ${metadata.variant}` });
+  marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
 
-  getMarqueeData(metadata.marqueeId)
-    .then((data) => renderMarquee(marquee, data.cards[getMarqueeId()]));
+  const selectedId = await getMarqueeId();
+  const allMarqueesJson = await getAllMarquees(metadata.promoId || 'homepage');
+  await renderMarquee(marquee, allMarqueesJson, selectedId);
 }

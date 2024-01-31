@@ -2,11 +2,55 @@
   display: none;
 }
 
+/* Styles for Loading animation */
+.lds-ring {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+}
+
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid #fff;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #fff transparent transparent;
+}
+
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+      transform: rotate(0deg);
+  }
+
+  100% {
+      transform: rotate(360deg);
+  }
+}
+
+/* Styles for Loading animation */
+
 .marquee {
   position: relative;
   color: var(--color-white);
   display: flex;
   background: #f0f0f0; /* For Debugging */
+  background: linear-gradient(45deg, red, orange); /* For Debugging */
 }
 
 .marquee.large.standard {
@@ -372,7 +416,7 @@
   .marquee.quiet.large .foreground .text {
     max-width: 800px;
   }
-  
+
   .marquee.tablet-light a:not(.con-button) {
     color: var(--link-color);
   }
@@ -424,7 +468,7 @@
     flex-direction: row;
     padding: var(--spacing-xl) 0;
   }
-  
+
   .marquee.split .foreground.container .text {
     max-width: calc(50% - var(--grid-column-width));
   }
@@ -435,7 +479,7 @@
     right: 0;
     height: 100%;
   }
-  
+
   .marquee.split.row-reversed .media.bleed {
     right: auto;
     left: 0;
@@ -473,7 +517,7 @@
   .marquee.split.large .media video{
     max-height: initial;
   }
-  
+
   .marquee.split .media.bleed picture,
   .marquee.split .media.bleed video {
     height: 100%;
@@ -524,7 +568,7 @@
   .marquee.desktop-light a:not(.con-button) {
     color: var(--link-color);
   }
-  
+
   .marquee.desktop-dark a:not(.con-button),
   .marquee.desktop-dark a:not(.con-button):hover {
     color: var(--link-color-dark);
@@ -560,7 +604,7 @@
   .marquee.desktop-dark {
     color: var(--color-white);
   }
-  
+
   .marquee .foreground {
     flex-direction: row;
     align-items: center;
