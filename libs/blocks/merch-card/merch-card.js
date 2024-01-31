@@ -3,7 +3,7 @@ import { getConfig, createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
-import 'http://localhost:2023/src/merch-card.js';
+import '../../deps/merch-card.js';
 
 const PRODUCT_NAMES = [
   'acrobat-pdf-pack',
