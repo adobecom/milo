@@ -831,10 +831,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 async function checkForPageMods() {
   const search = new URLSearchParams(window.location.search);
   const offFlag = (val) => search.get(val) === 'off';
-  if (offFlag('mep')) {
-    document.body.dataset.mep = 'nopzn|nopzn';
-    return;
-  }
+  if (offFlag('mep')) return;
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
@@ -890,8 +887,6 @@ async function checkForPageMods() {
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
     await applyPers(manifests);
-  } else {
-    document.body.dataset.mep = 'nopzn|nopzn';
   }
 
   if (previewOn) {
