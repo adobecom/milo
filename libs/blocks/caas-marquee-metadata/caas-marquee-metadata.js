@@ -42,10 +42,12 @@ export default function init(el) {
     <div><div>cta1url</div><div>${metadata.cta1url}</div></div>
     <div><div>cta1text</div><div>${metadata.cta1text}</div></div>
     <div><div>cta1style</div><div>${metadata.cta1style}</div></div>`;
+    
+  const marquee = createTag('div', { class: `marquee ${metadata.variant}` });
+  el.parentNode.prepend(marquee);
 
   // Render marquee
-  // el.parentNode.append(renderMarquee(metadata));
-  renderMarquee(el.parentNode, metadata);
+  renderMarquee(marquee, metadata);
 
   // Degugging ((( Remove before release )))
   console.log('metadata:', getMetadata(el)); // eslint-disable-line no-console

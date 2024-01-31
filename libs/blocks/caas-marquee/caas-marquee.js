@@ -22,29 +22,29 @@ function getMarqueeId() {
   });
 }
 
-// Parse data, either json from chimera or metadata from milo block
+// Parse json from chimera into metadata
 function parseMarqueeData(data) {
   console.log('parseMarqueeData()', data);
   const metadata = {
-    id: data.id || '',
-    title: data.contentArea?.title || data.title,
-    description: data.contentArea?.description || data.description,
-    detail: data.contentArea?.detailText || data.detailText,
-    image: data.styles?.backgroundImage || data.image,
+    id: data.id,
+    title: data.contentArea?.title,
+    description: data.contentArea?.description,
+    detail: data.contentArea?.detailText,
+    image: data.styles?.backgroundImage,
     imagetablet: data.imagetablet,
     imagedesktop: data.imagedesktop,
     variant: data.variant,
-    cta1url: data.footer[0].right[0]?.href || data.cta1url,
-    cta1text: data.footer[0]?.right[0]?.text || data.cta1text,
-    cta1style: data.footer[0]?.right[0]?.style || data.cta1style,
-    cta2url: data.footer[0]?.center[0]?.href || data.cta2url,
-    cta2text: data.footer[0]?.center[0]?.text || data.cta2text,
-    cta2style: data.footer[0]?.center[0]?.style || data.cta2style,
+    cta1url: data.footer[0].right[0]?.href,
+    cta1text: data.footer[0]?.right[0]?.text,
+    cta1style: data.footer[0]?.right[0]?.style,
+    cta2url: data.footer[0]?.center[0]?.href,
+    cta2text: data.footer[0]?.center[0]?.text,
+    cta2style: data.footer[0]?.center[0]?.style,
   };
 
   const arbitrary = {};
   data.arbitrary?.forEach((item) => { arbitrary[item.key] = item.value; });
-  metadata.arbitrary = arbitrary;
+  metadata.variant = arbitrary.variant || 'dark, static-links';
 
   return metadata;
 }
@@ -105,14 +105,11 @@ export function renderMarquee(marquee, data, id) {
   text.append(title, body, footer);
   const foreground = createTag('div', { class: 'foreground container' }, text);
 
-  // marquee container
-  const classListString = classList.join(' ');
-  const section = createTag('div', { class: `marquee large ${classListString}` });
-  section.append(background, foreground);
-
-  // return section;
-  marquee.append(section);
+  marquee.append(background, foreground);
 }
+
+
+
 
 export default async function init(el) {
   const metadata = getMetadata(el);
