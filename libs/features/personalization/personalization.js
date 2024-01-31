@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
+} from '../../utils/utils.js';
 import { ENTITLEMENT_MAP } from './entitlements.js';
 
 /* c20 ignore start */
