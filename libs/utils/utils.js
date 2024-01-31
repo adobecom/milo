@@ -15,6 +15,7 @@ const MILO_BLOCKS = [
   'author-header',
   'brick',
   'bulk-publish',
+  'bulk-publish-v2',
   'caas',
   'caas-config',
   'card',
