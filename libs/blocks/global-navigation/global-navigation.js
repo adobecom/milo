@@ -237,6 +237,11 @@ const getUniversalNavLocale = (locale) => {
          || 'en_US';
 };
 
+const convertToPascalCase = (str) => str
+  ?.split('-')
+  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+  .join(' ');
+
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -469,6 +474,8 @@ class Gnav {
     const locale = getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
+    const experienceName = getExperienceName();
+
     const getDevice = () => {
       const agent = navigator.userAgent;
       if (agent.includes('Mac')) return 'macOS';
@@ -506,8 +513,49 @@ class Gnav {
     };
 
     const onAnalyticsEvent = (data) => {
-      // TODO: update based on requirements
-      console.log('analytics data', data);
+      if (!data) return;
+
+      const getInteraction = () => {
+        const {
+          event: { type, subtype } = {},
+          source: { name } = {},
+          content: { name: contentName } = {},
+        } = data;
+
+        switch (`${name}|${type}|${subtype}|${contentName || ''}`) {
+          case 'profile|click|sign-in|':
+            return `Sign in|gnav|${experienceName}|unav`;
+          case 'profile|render|component|':
+            return `Account|gnav|${experienceName}`;
+          case 'profile|click|account|':
+            return `View Account|gnav|${experienceName}`;
+          case 'profile|click|sign-out|':
+            return `Sign out|gnav|${experienceName}|unav`;
+          case 'app-switcher|render|component|':
+            return 'AppLauncher.appIconToggle';
+          case `app-switcher|click|app|${contentName}`:
+            return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
+          case 'app-switcher|click|footer|adobe-home':
+            return 'AppLauncher.adobe.com';
+          case 'app-switcher|click|footer|all-apps':
+            return 'AppLauncher.allapps';
+          case 'app-switcher|click|footer|adobe-dot-com':
+            return 'AppLauncher.adobe.com';
+          case 'app-switcher|click|footer|see-all-apps':
+            return 'AppLauncher.allapps';
+            // TODO: add support for notifications
+          default:
+            return null;
+        }
+      };
+      const interaction = getInteraction();
+
+      if (!interaction) return;
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite?.track('event', {
+        xdm: {},
+        data: { web: { webInteraction: { name: interaction } } },
+      });
     };
 
     const getConfiguration = () => ({
