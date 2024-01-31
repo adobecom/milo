@@ -113,7 +113,7 @@ export function renderMarquee(marquee, data, id) {
 export default async function init(el) {
   const metadata = getMetadata(el);
 
-  const marquee = createTag('div', { class: `marquee ${metadata.variant.replaceAll(',', '')}` });
+  const marquee = createTag('div', { class: `marquee ${metadata.variant.replaceAll(',', ' ')}` });
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
 
