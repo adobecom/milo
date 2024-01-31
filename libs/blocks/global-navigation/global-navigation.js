@@ -509,36 +509,33 @@ class Gnav {
 
       const getInteraction = () => {
         const { event: { type, subtype } = {}, source: { name } = {} } = data;
-        const interactionMapping = {
-          profile: {
-            click: {
-              account: `View Account|gnav|${getExperienceName()}`,
-              'sign-in': `Sign in|gnav|${getExperienceName()}|unav`,
-              'sign-out': `Sign out|gnav|${getExperienceName()}|unav`,
-            },
-            render: { component: `Account|gnav|${getExperienceName()}` },
-          },
-          'app-switcher': {
-            click: {
-              app: `AppLauncher.appClick.${
-                data.content?.name?.split('-').map((str) => str.charAt(0).toUpperCase() + str.slice(1)).join(' ')
-              }`,
-              footer: {
-                // two of these will be removed in the future,
-                // when the unav team updates the data model for consistency
-                // between logged in and logged out states
-                'all-apps': 'AppLauncher.allapps',
-                'adobe-dot-com': 'AppLauncher.adobe.com',
-                'adobe-home': 'AppLauncher.adobe.com',
-                'see-all-apps': 'AppLauncher.allapps',
-              },
-            },
-            render: { component: 'AppLauncher.appIconToggle' },
-          },
-        };
-        const interactionResult = interactionMapping[name]?.[type]?.[subtype];
-
-        return (interactionResult && interactionResult[data.content?.name]) || interactionResult;
+        const contentName = data.content?.name;
+        switch (`${name}|${type}|${subtype}|${contentName || ''}`) {
+          case 'profile|click|sign-in|':
+            return `Sign in|gnav|${getExperienceName()}|unav`;
+          case 'profile|render|component|':
+            return `Account|gnav|${getExperienceName()}`;
+          case 'profile|click|account|':
+            return `View Account|gnav|${getExperienceName()}`;
+          case 'profile|click|sign-out|':
+            return `Sign out|gnav|${getExperienceName()}|unav`;
+          case 'app-switcher|render|component|':
+            return 'AppLauncher.appIconToggle';
+          case `app-switcher|click|app|${contentName}`:
+            return `AppLauncher.appClick.${contentName?.split('-')
+              .map((str) => str.charAt(0).toUpperCase() + str.slice(1)).join(' ')}`;
+          case 'app-switcher|click|footer|adobe-home':
+            return 'AppLauncher.adobe.com';
+          case 'app-switcher|click|footer|all-apps':
+            return 'AppLauncher.allapps';
+          case 'app-switcher|click|footer|adobe-dot-com':
+            return 'AppLauncher.adobe.com';
+          case 'app-switcher|click|footer|see-all-apps':
+            return 'AppLauncher.allapps';
+            // TODO: add support for notifications
+          default:
+            return null;
+        }
       };
       const interaction = getInteraction();
 
