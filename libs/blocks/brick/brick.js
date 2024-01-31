@@ -119,7 +119,7 @@ function decorateBricks(el) {
   return foreground;
 }
 
-export default async function init(el) {
+export default function init(el) {
   if (el.className.includes('rounded-corners')) {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
