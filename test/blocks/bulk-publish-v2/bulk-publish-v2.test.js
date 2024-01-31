@@ -45,7 +45,7 @@ describe('Bulk Publish Tool', () => {
     unmockFetch();
   });
 
-  init(document.querySelector('.bulk-publish'));
+  init(document.querySelector('.bulk-publish-v2'));
   const bulkPub = document.querySelector('bulk-publish');
   const rootEl = bulkPub.shadowRoot;
 
