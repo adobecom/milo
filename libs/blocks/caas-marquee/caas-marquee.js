@@ -16,15 +16,17 @@ async function getAllMarquees(promoId) {
 
 // Get marquee id (eventually from Spectra)
 function getMarqueeId() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('marqueeId')) return urlParams.get('marqueeId');
+
   const id = Math.floor(Math.random() * Math.floor(6));
   return new Promise((resolve) => {
-    setTimeout(() => { resolve(id); }, 500);
+    setTimeout(() => { resolve(id); }, 100);
   });
 }
 
 // Parse json from chimera into metadata
 function parseMarqueeData(data) {
-  console.log('parseMarqueeData()', data);
   const metadata = {
     id: data.id,
     title: data.contentArea?.title,
@@ -108,13 +110,10 @@ export function renderMarquee(marquee, data, id) {
   marquee.append(background, foreground);
 }
 
-
-
-
 export default async function init(el) {
   const metadata = getMetadata(el);
 
-  const marquee = createTag('div', { class: `marquee ${metadata.variant}` });
+  const marquee = createTag('div', { class: `marquee ${metadata.variant.replaceAll(',', '')}` });
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
 
