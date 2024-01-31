@@ -19,10 +19,6 @@
   cursor: pointer;
 }
 
-.martech-metadata-generator button.hidden {
-  display: none;
-}
-
 .martech-metadata-generator .loading button {
-  cursor: wait;
+  display: none;
 }
