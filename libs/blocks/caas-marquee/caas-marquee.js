@@ -15,6 +15,10 @@ async function getAllMarquees(promoId) {
 }
 
 // Get marquee id (eventually from Spectra)
+/**
+ * function getMarqueeId()
+ * @returns {string} id - currently marquee index (eventually will be marquee ID from Spectra)
+ */
 function getMarqueeId() {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('marqueeId')) return urlParams.get('marqueeId');
@@ -25,7 +29,11 @@ function getMarqueeId() {
   });
 }
 
-// Parse json from chimera into metadata
+/**
+ * function parseMarqueeData()
+ * @param {*} data - marquee JSON data
+ * @returns {Object} metadata - marquee data
+ */
 function parseMarqueeData(data) {
   const images = {
     tablet: data.arbitrary?.find((item) => item.key === 'imageTablet')?.value,
@@ -53,10 +61,16 @@ function parseMarqueeData(data) {
   data.arbitrary?.forEach((item) => { arbitrary[item.key] = item.value; });
   metadata.variant = arbitrary.variant || 'dark, static-links';
 
-  console.log('metadata', metadata);
   return metadata;
 }
 
+/**
+ * function renderMarquee()
+ * @param {HTMLElement} marquee - marquee container
+ * @param {Object} data - marquee data
+ * @param {string} id - marquee id
+ * @returns {void}
+ */
 export function renderMarquee(marquee, data, id) {
   const metadata = data.cards ? parseMarqueeData(data.cards[id]) : data;
 
@@ -116,6 +130,10 @@ export function renderMarquee(marquee, data, id) {
   marquee.append(background, foreground);
 }
 
+/**
+ * function init()
+ * @param {*} el - element with metadata for marquee
+ */
 export default async function init(el) {
   const metadata = getMetadata(el);
 
