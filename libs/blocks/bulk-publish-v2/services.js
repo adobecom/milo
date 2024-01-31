@@ -42,7 +42,7 @@ const authenticate = (tool) => {
       PROCESS_TYPES.forEach((key) => {
         if (key !== 'index') {
           const process = isLive(key) ? 'live' : 'preview';
-          permissions[key] = !!processes[process].permissions?.includes('list');
+          permissions[key] = !!processes[process]?.permissions?.includes('list');
         }
       });
       tool.user = { profile, permissions };
