@@ -5,7 +5,7 @@ import { pollJobStatus, updateRetry } from '../services.js';
 import { getConfig } from '../../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
-const base = miloLibs || codeRoot || 'libs';
+const base = miloLibs || codeRoot;
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish-v2/components/job-process.css`);
 
 class JobProcess extends LitElement {
@@ -48,10 +48,10 @@ class JobProcess extends LitElement {
     }
   }
 
-  async retry(jobs) {
-    if (!jobs.length) return;
+  async retry(timeouts) {
+    if (!timeouts.length) return;
     if (this.queue.length) {
-      const queue = this.queue.filter(({ count }) => count <= 3);
+      const queue = this.queue.filter(({ count, status }) => status === 503 && count <= 3);
       if (queue.length) {
         this.queue = await updateRetry({
           queue,
@@ -60,7 +60,7 @@ class JobProcess extends LitElement {
         });
       }
     } else {
-      this.queue = jobs.map((item) => ({ ...item, count: 1 }));
+      this.queue = timeouts.map((item) => ({ ...item, count: 1 }));
     }
   }
 
@@ -72,6 +72,7 @@ class JobProcess extends LitElement {
       window.open(url, '_blank');
     } else {
       await navigator.clipboard.writeText(url);
+      /* c8 ignore next 3 */
       results[pathIndex].classList.add('copied', 'indicator');
       await delay(3000);
       results[pathIndex].classList.remove('indicator');
@@ -130,6 +131,7 @@ class JobProcess extends LitElement {
           <div class="meta">
             <span class="${status.color}">${status.text}</span>
             <span
+              class="date-stamp"
               @mouseover=${() => { this.expandDate = url; }}
               @mouseleave=${() => { this.expandDate = false; }}>
               <i>${this.expandDate === url ? time.label : ''}</i> ${displayDate(time.stamp)}

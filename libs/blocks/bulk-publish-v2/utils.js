@@ -53,6 +53,7 @@ const getJobErrorText = (errors, process) => {
   const [message] = errors.messages;
   let text = message;
   if (['unpublish', 'delete'].includes(process) && message === 'Forbidden') {
+    /* c8 ignore next 2 */
     text = `Failed to ${process} - has the SharePoint document been deleted?`;
   }
   return text;

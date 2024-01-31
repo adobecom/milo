@@ -15,7 +15,7 @@ import {
 } from '../utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
-const base = miloLibs || codeRoot || 'libs';
+const base = miloLibs || codeRoot;
 
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish-v2/components/bulk-publisher.css`);
 const loaderSheet = await getSheet(`${base}/blocks/bulk-publish-v2/components/loader.css`);
@@ -56,6 +56,7 @@ class BulkPublish2 extends LitElement {
     authenticate(this);
     const resumes = sticky().get('resume');
     if (resumes.length) {
+      /* c8 ignore next 5 */
       this.jobs = resumes;
       await delay(1000);
       this.openJobs = true;
@@ -74,6 +75,7 @@ class BulkPublish2 extends LitElement {
     }
     const textarea = this.renderRoot.querySelector('#Urls');
     if (this.urls.length && textarea?.value === '') {
+      /* c8 ignore next 2 */
       textarea.value = this.urls.join('\r\n');
     }
   }

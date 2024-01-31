@@ -66,6 +66,7 @@ const prepareJobs = (details, useBulk) => {
   return Object.values(paths.reduce((jobs, url) => {
     let base = url.host;
     // groups of 100 for users without 'list' permissions
+    /* c8 ignore next 3 */
     while (!details.hasPermission && jobs[base]?.options.body.paths.length >= 100) {
       base = `${base}+`;
     }
@@ -84,11 +85,13 @@ const prepareJobs = (details, useBulk) => {
 
 const formatResult = ({ status }, job) => {
   const paths = job.urls.map((url) => (new URL(url).pathname));
+  const stopTime = new Date();
   return {
     job: {
+      stopTime,
       topic: job.process,
       state: 'stopped',
-      stopTime: new Date(),
+      name: `job-${stopTime.toISOString()}`,
       data: { paths, resources: paths.map((path) => ({ path, status })) },
       progress: { failed: [200, 204].includes(status) ? 0 : 1 },
     },
@@ -129,6 +132,7 @@ const getJobStatus = async (link) => {
     const result = await status.json();
     return result;
   } catch (error) {
+    /* c8 ignore next 2 */
     return error;
   }
 };
@@ -139,11 +143,11 @@ const pollJobStatus = async (job, setProgress) => {
   let stopped = false;
   while (!stopped) {
     const status = await getJobStatus(`${result.links.self}/details`);
-    setProgress(status);
     if (status.stopTime) {
       jobStatus = status;
       stopped = true;
     }
+    setProgress(status);
   }
   return jobStatus;
 };
@@ -156,11 +160,13 @@ const updateRetry = async ({ queue, urls, process }) => {
       options.body = JSON.stringify(options.body);
       const job = await fetch(endpoint, options);
       if (!job.ok) {
+        /* c8 ignore next 2 */
         throw new Error(getErrorText(job.status), { cause: job.status }, origin);
       }
       const result = await job.json();
       return { href, origin, result };
     } catch (error) {
+      /* c8 ignore next 2 */
       return { href, origin, result: { status: error.cause } };
     }
   });

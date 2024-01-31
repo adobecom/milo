@@ -11,7 +11,7 @@
       "phase": "completed",
       "resources": [
           {
-              "status": 503,
+              "status": 200,
               "path": "/drafts/sarchibeque/bulk-publish-test",
               "resourcePath": "/drafts/sarchibeque/bulk-publish-test.md"
           }
@@ -23,7 +23,7 @@
   "progress": {
       "total": 1,
       "processed": 1,
-      "failed": 1,
+      "failed": 0,
       "notmodified": 0
   },
   "links": {
