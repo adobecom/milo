@@ -5,3 +5,7 @@
 merch-cards {
   min-height: 200px;
 }
+
+merch-card.placeholder {
+  visibility: hidden;
+}

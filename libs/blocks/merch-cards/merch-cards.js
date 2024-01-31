@@ -63,6 +63,14 @@ export function parsePreferences(elements) {
   });
 }
 
+/** Adds several placeholder merch-cards to prevent CLS issues */
+function addPlaceholderMerchCards(merchCards, type, { filtered = 'all', limit = 3 }) {
+  const placeholder = createTag('merch-card', { class: 'placeholder', variant: type, filters: filtered });
+  for (let i = 0; i < limit; i += 1) {
+    merchCards.append(placeholder.cloneNode(true));
+  }
+}
+
 async function initMerchCards(config, type, filtered, el, preferences) {
   let cardsData;
   let err;
@@ -222,10 +230,12 @@ export default async function init(el) {
   } else if (!merchCards.filtered) {
     merchCards.filtered = 'all';
   }
+  addPlaceholderMerchCards(merchCards, type, attributes);
   initMerchCards(config, type, attributes.filtered, el, preferences)
     .then((async (cardsRoot) => {
       const cards = [...cardsRoot.children];
       const batchSize = 3;
+      merchCards.querySelectorAll('merch-card.placeholder').forEach((merchCard) => merchCard.remove());
       for (let i = 0; i < cards.length; i += batchSize) {
         const batch = cards.slice(i, i + batchSize);
         merchCards.append(...batch);

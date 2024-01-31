@@ -83,6 +83,7 @@ describe('Merch Cards', async () => {
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
 
     const merchCards = await init(el);
+    expect(merchCards.querySelector('merch-card.placeholder')).to.exist;
     expect(merchCards.getAttribute('filtered')).to.equal('photo');
 
     document.location.hash = '#filter=video';
@@ -94,6 +95,7 @@ describe('Merch Cards', async () => {
     expect(photoshop.name).to.be.equal('photoshop');
     expect(cc.name).to.be.equal('all-apps');
     expect(express.name).to.be.equal('express');
+    expect(merchCards.querySelector('merch-card.placeholder')).to.not.exist;
   });
 
   it('should parse multiple filters', async () => {
