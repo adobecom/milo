@@ -8,6 +8,8 @@ import { replaceText } from '../../features/placeholders.js';
 
 const DIGITS_ONLY = /^\d+$/;
 
+const CLASS_LOADING = 'loading';
+
 const LITERAL_SLOTS = [
   'searchText',
   'filtersText',
@@ -144,7 +146,7 @@ export default async function init(el) {
   loadStyle(`${miloLibs}/blocks/merch/merch.css`);
   loadStyle(`${miloLibs}/blocks/merch-card/merch-card.css`);
 
-  const attributes = { filter: 'all' };
+  const attributes = { filter: 'all', class: CLASS_LOADING };
   const settingsEl = el.firstElementChild?.firstElementChild;
 
   const filtered = settingsEl?.firstElementChild?.tagName === 'STRONG';
@@ -245,6 +247,9 @@ export default async function init(el) {
         }
         await makePause();
       }
+      merchCards.updateComplete.then(() => {
+        merchCards.classList.remove(CLASS_LOADING);
+      });
       merchCards.displayResult = true;
     }
     ));
