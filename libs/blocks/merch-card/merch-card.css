@@ -10,11 +10,12 @@ div[class*="-merch-card"] > div,
    grid-column: 1 / -1;
  }
 
- div[data-removed-manifest-id] {
-   display: none;
- }
- 
  .merch-card-price {
   margin-top: 8px; 
   margin-bottom: 16px; 
+}
+
+.dark .merch-card .con-button.outline {
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
 }
