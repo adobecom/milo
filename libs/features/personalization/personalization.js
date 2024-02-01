@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
+} from '../../utils/utils.js';
 import { ENTITLEMENT_MAP } from './entitlements.js';
 
 /* c20 ignore start */
@@ -112,7 +114,7 @@ const createFrag = (el, url, manifestId) => {
   if (isSection) {
     frag = createTag('div', undefined, frag);
   }
-  loadLink(`${href}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return frag;
 };
 
