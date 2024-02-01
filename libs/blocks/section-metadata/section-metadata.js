@@ -47,7 +47,6 @@ function handleLayout(text, section) {
 function handleDelay(text, section) {
   if (!(text || section)) return;
   section.classList.add('hide-sticky-section');
-  console.log(`Time Delay ${text}`);
   setTimeout(() => { section.classList.remove('hide-sticky-section'); }, text);
 }
 
