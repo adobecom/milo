@@ -205,10 +205,9 @@ async function decorateIcons(icons, base) {
     const attrs = getIconAttributes(iconName, base);
     // icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
     
-    const svgElem = `<svg xmlns="http://www.w3.org/2000/svg" class="icon-milo">
-      <image crossorigin="anonymous" href="${base}/img/icons/s1/${iconName}.svg"/>
-    </svg>`;
-
+    // const svgElem = `<svg xmlns="http://www.w3.org/2000/svg" class="icon-milo">
+    //   <image crossorigin="anonymous" href="${base}/img/icons/s1/${iconName}.svg"/>
+    // </svg>`;
     const svgImg = `<img src="${base}/img/icons/s1/${iconName}.svg"/>`;
     icon.insertAdjacentHTML('afterbegin', svgImg);
     return icon;
