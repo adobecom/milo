@@ -98,9 +98,9 @@ function decorateBrickIconStack(el) {
   el.querySelector('.icon-stack-area')?.classList.add('body-xs');
   const liELs = el.querySelector('.icon-stack-area')?.querySelectorAll('li');
   [...liELs].forEach((liEl) => {
-    const aTxt = liEl.querySelector('a').textContent.trim();
-    const liTxt = liEl.textContent.trim();
-    if (liTxt === aTxt) return;
+    const aTxt = liEl.querySelector('a')?.textContent?.trim();
+    const liTxt = liEl.textContent?.trim();
+    if (!liTxt || (liTxt === aTxt)) return;
     const pic = liEl.querySelector('picture');
     let icn = pic;
     if (pic && pic.parentElement !== liEl) {
