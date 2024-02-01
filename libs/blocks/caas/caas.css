@@ -11,12 +11,14 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   width: 100%;
 }
 
-.caas-min-height {
+.caas,
+.caas-preview {
   min-height: 400px;
 }
 
 @media (min-width: 600px) {
-  .caas-min-height {
+  .caas, 
+  .caas-preview {
     min-height: unset;
   }
 }

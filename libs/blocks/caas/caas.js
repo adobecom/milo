@@ -38,7 +38,7 @@ const loadCaas = async (a) => {
   ]);
 
   const block = document.createElement('div');
-  block.className = `${a.className} caas-min-height`;
+  block.className = a.className;
   block.id = 'caas';
   const modalDiv = document.createElement('div');
   modalDiv.className = 'modalContainer';
