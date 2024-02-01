@@ -137,7 +137,7 @@
 }
 
 .brick .icon-stack-area li .list-text a {
-  display: inline-block;
+  display: inline-flex;
 }
 
 .brick .foreground .icon-area img {
