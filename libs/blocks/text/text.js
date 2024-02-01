@@ -1,5 +1,5 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag, loadStyle } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -53,7 +53,8 @@ function decorateBlockIconArea(el) {
 }
 
 function decorateLinkFarms(el) {
-  loadStyle('/libs/blocks/text/link-farms.css');
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/blocks/text/link-farms.css`);
   const regex = /-spacing/;
   const hasSpacing = [...el.classList].some((className) => regex.test(className));
   if (!hasSpacing) el.classList.add('xl-spacing');
