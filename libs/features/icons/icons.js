@@ -7,7 +7,7 @@
  * @property {Array.<string, iconSize>} supportedSizes Supported Suffix Sizes
  */
 const options = {
-  debug: true,
+  debug: false,
   lazy: true,
   defaultDir: 's1',
   supportedSets: ['-s2', '-sx', '-test'],
@@ -71,16 +71,7 @@ function getIconSvg(fileName, folderName, iconUrl) {
 function refreshIcon(miloIcon, fileName, folderName, iconUrl) {
   getIconSvg(fileName, folderName, iconUrl)
     .then((iconData) => {
-      // Strip class attribute as it may be affected by css
-      // if (iconData.includes("class=")) {
-      //   iconData = iconData.replace(/ class="([a-z- ]*)"/g, "");
-      // }
-      // Fix fill to currentColor
       let data = iconData;
-      if (folderName === 'sI') {
-        // TODO: is this ok?
-        // data = data.replaceAll('var(--iconFill,#6E6E6E)', 'currentColor');
-      }
       // If we have some html, pass it along (useful for svg anim)
       if (miloIcon.defaultHTML) {
         data = data.replace('</svg>', `${miloIcon.defaultHTML}</svg>`);
@@ -89,6 +80,7 @@ function refreshIcon(miloIcon, fileName, folderName, iconUrl) {
     })
     .catch((error) => {
       miloIcon.innerHTML = '<span>⚠️</span>';
+      console.error(`miloIcon ${miloIcon})`);
       console.error(`Failed to load icon ${fileName} (error ${error})`);
     });
 }
@@ -170,6 +162,16 @@ class MiloIconElement extends HTMLElement {
 customElements.define('milo-icon', MiloIconElement);
 
 function getIconAttributes(iconName, baseUrl) {
+
+  let libOrigin = 'https://milo.adobe.com/libs';
+  // const { origin } = window.location;
+  // if (origin.includes('localhost') || origin.includes('.hlx.')) {
+  //   libOrigin = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
+  // }
+  
+  console.log('libOrigin', libOrigin);
+  console.log('baseUrl', baseUrl);
+
   const attrs = {
     name: iconName,
     type: options.defaultDir,
@@ -201,7 +203,12 @@ async function decorateIcons(icons, base) {
   [...icons].forEach(async (icon) => {
     const iconName = icon.classList[1].replace('icon-', '');
     const attrs = getIconAttributes(iconName, base);
-    icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
+    // icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
+    
+    const svgElem = `<svg xmlns="http://www.w3.org/2000/svg" class="icon-milo">
+      <image crossorigin="anonymous" href="${base}/img/icons/s1/${iconName}.svg"/>
+    </svg>`;
+    icon.insertAdjacentHTML('afterbegin', svgElem);
     return icon;
   });
 }
