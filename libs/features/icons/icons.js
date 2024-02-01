@@ -7,7 +7,7 @@
  * @property {Array.<string, iconSize>} supportedSizes Supported Suffix Sizes
  */
 const options = {
-  debug: false,
+  debug: true,
   lazy: true,
   defaultDir: 's1',
   supportedSets: ['-s2', '-sx', '-test'],
@@ -203,12 +203,12 @@ async function decorateIcons(icons, base) {
   [...icons].forEach(async (icon) => {
     const iconName = icon.classList[1].replace('icon-', '');
     const attrs = getIconAttributes(iconName, base);
-    // icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
+    icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
     
-    const svgElem = `<svg xmlns="http://www.w3.org/2000/svg" class="icon-milo">
-      <image crossorigin="anonymous" href="${base}/img/icons/s1/${iconName}.svg"/>
-    </svg>`;
-    icon.insertAdjacentHTML('afterbegin', svgElem);
+    // const svgElem = `<svg xmlns="http://www.w3.org/2000/svg" class="icon-milo">
+    //   <image crossorigin="anonymous" href="${base}/img/icons/s1/${iconName}.svg"/>
+    // </svg>`;
+    // icon.insertAdjacentHTML('afterbegin', svgElem);
     return icon;
   });
 }
