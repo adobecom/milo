@@ -112,6 +112,7 @@ function decorateBrickIconStack(el) {
     if (icn) liEl.append(icn, txt);
     liEl.append(txt);
     txt.querySelector('picture')?.remove();
+    txt.querySelector('a:empty')?.remove();
   });
 }
 
