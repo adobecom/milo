@@ -1,15 +1,16 @@
 import { getConfig } from '../../utils/utils.js';
 
-/* c8 ignore next 11 */
-function handleEvent(prefix, link) {
+/* c8 ignore next 12 */
+function handleEvent(prefix, link, hover) {
   document.cookie = `international=${prefix};path=/`;
   sessionStorage.setItem('international', prefix);
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
     if (!resp.ok) throw new Error('request failed');
-    window.location.assign(link.href);
+    if (!hover) window.location.assign(link.href);
   }).catch(() => {
     const prefixUrl = prefix ? `/${prefix}` : '';
-    window.location.assign(`${prefixUrl}/`);
+    if (!hover) window.location.assign(`${prefixUrl}/`);
+    if (hover) link.href = `${prefixUrl}/`;
   });
 }
 
@@ -26,7 +27,18 @@ function decorateLink(link, config, path) {
   link.addEventListener('click', (e) => {
     /* c8 ignore next 2 */
     e.preventDefault();
-    handleEvent(prefix, link, config);
+    handleEvent(prefix, link);
+  });
+  let timeOutTimer = null;
+  link.addEventListener('mouseover', () => {
+    /* c8 ignore next 3 */
+    timeOutTimer = window.setTimeout(() => {
+      handleEvent(prefix, link, 'hover');
+    }, 50);
+  });
+  link.addEventListener('mouseout', () => {
+    /* c8 ignore next 1 */
+    window.clearTimeout(timeOutTimer);
   });
 }
 
