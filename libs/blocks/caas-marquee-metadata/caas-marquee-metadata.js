@@ -1,5 +1,4 @@
 import { createTag } from '../../utils/utils.js';
-import { renderMarquee } from '../caas-marquee/caas-marquee.js';
 
 export function getMetadata(el) {
   const metadata = {};
@@ -46,10 +45,4 @@ export default function init(el) {
 
   const marquee = createTag('div', { class: `marquee ${metadata.variant.replaceAll(',', ' ')}` });
   el.parentNode.prepend(marquee);
-
-  // Render marquee
-  renderMarquee(marquee, metadata);
-
-  // Degugging ((( Remove before release )))
-  console.log('metadata:', getMetadata(el)); // eslint-disable-line no-console
 }
