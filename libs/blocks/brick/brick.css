@@ -136,6 +136,7 @@
   height: auto;
 }
 
+.brick .icon-stack-area li .list-text,
 .brick .icon-stack-area li .list-text a {
   display: inline-flex;
 }
