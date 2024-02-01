@@ -14,6 +14,7 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
 .caas,
 .caas-preview {
   min-height: 400px;
+  display: block;
 }
 
 @media (min-width: 600px) {

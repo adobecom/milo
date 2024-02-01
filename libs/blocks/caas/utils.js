@@ -722,12 +722,11 @@ export const initCaas = async (state, caasStrs, el) => {
   if (!caasEl) return;
 
   const appEl = caasEl.parentElement;
-  caasEl.remove();
-
   const newEl = document.createElement('div');
   newEl.id = 'caas';
   newEl.className = 'caas-preview';
   appEl.append(newEl);
+  caasEl.remove();
 
   const config = await getConfig(state, caasStrs);
 
