@@ -21,7 +21,6 @@
   display: flex;
   flex: none;
   gap: var(--spacing-xxs);
-  min-height: 32px;
 }
 
 .mnemonic-list .product-list .product-item strong {
