@@ -116,12 +116,20 @@ const createFrag = (el, url, manifestId) => {
   return frag;
 };
 
+const DEPRECATED_COMMANDS = {
+  replacecontent: 'replace',
+  removefragment: 'replace',
+  removecontent: 'remove',
+  insertcontentbefore: 'insertbefore',
+  insertcontentafter: 'insertafter',
+};
+
 const COMMANDS = {
-  insertcontentafter: (el, target, manifestId) => el
+  insertafter: (el, target, manifestId) => el
     .insertAdjacentElement('afterend', createFrag(el, target, manifestId)),
-  insertcontentbefore: (el, target, manifestId) => el
+  insertbefore: (el, target, manifestId) => el
     .insertAdjacentElement('beforebegin', createFrag(el, target, manifestId)),
-  removecontent: (el, target, manifestId) => {
+  remove: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
       const div = createTag('div', { 'data-removed-manifest-id': manifestId });
@@ -129,15 +137,7 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  removefragment: (el, target, manifestId) => {
-    if (target === 'false') return;
-    if (manifestId) {
-      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
-      el.insertAdjacentElement('beforebegin', div);
-    }
-    el.classList.add(CLASS_EL_DELETE);
-  },
-  replacecontent: (el, target, manifestId) => {
+  replace: (el, target, manifestId) => {
     if (el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
@@ -226,6 +226,7 @@ function normalizeKeys(obj) {
 
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
+    if (DEPRECATED_COMMANDS[cmd.action]) cmd.action = DEPRECATED_COMMANDS[cmd.action];
     if (VALID_COMMANDS.includes(cmd.action)) {
       try {
         const selectorEl = rootEl.querySelector(cmd.selector);
