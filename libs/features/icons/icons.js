@@ -2,14 +2,14 @@
  * @typedef Options
  * @property {Boolean} debug Should we output messages to console
  * @property {Boolean} lazy Load icons lazily
- * @property {String} defaultDir Default icon set
+ * @property {String} defaultSet Default icon set
  * @property {Array.<string, iconType>} supportedSets Supported Suffix Sets
  * @property {Array.<string, iconSize>} supportedSizes Supported Suffix Sizes
  */
 const options = {
   debug: true,
   lazy: true,
-  defaultDir: 's1',
+  defaultSet: 's1',
   supportedSets: ['-s2', '-sx', '-test'],
   supportedSizes: ['-size-xxs', '-size-xs', '-size-s', '-size-m', '-size-l', '-size-xl', '-size-xxl', '-size-initial'],
 };
@@ -142,9 +142,9 @@ class MiloIconElement extends HTMLElement {
     const name = this.getAttribute('name');
     if (!name) return;
     const type = this.getAttribute('type');
-    const url = this.getAttribute('url');
+    const dataUrl = this.getAttribute('data-url');
     this.innerHTML = '';
-    refreshIcon(this, name, type, url);
+    refreshIcon(this, name, type, dataUrl);
   }
 
   attributeChangedCallback(attr, oldVal, newVal) {
@@ -168,14 +168,14 @@ function getIconAttributes(iconName, baseUrl) {
   // if (origin.includes('localhost') || origin.includes('.hlx.')) {
   //   libOrigin = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
   // }
-  
-  console.log('libOrigin', libOrigin);
-  console.log('baseUrl', baseUrl);
+
+  // console.log('libOrigin', libOrigin);
+  // console.log('baseUrl', baseUrl);
 
   const attrs = {
     name: iconName,
-    type: options.defaultDir,
-    url: `${baseUrl}/img/icons/${options.defaultDir}/${iconName}.svg`,
+    type: options.defaultSet,
+    'data-url': `${baseUrl}/img/icons/${options.defaultSet}/${iconName}.svg`,
   };
 
   const setName = options.supportedSets.filter((name) => iconName.endsWith(name));
@@ -184,7 +184,7 @@ function getIconAttributes(iconName, baseUrl) {
     const folderName = setName[0].replace('-', '');
     attrs.type = folderName;
     attrs.name = newName;
-    attrs.url = `${baseUrl}/img/icons/${folderName}/${newName}.svg`;
+    attrs["data-url"] = `${baseUrl}/img/icons/${folderName}/${newName}.svg`;
   }
 
   const suffixSize = options.supportedSizes.filter((size) => iconName.includes(size));
@@ -192,24 +192,24 @@ function getIconAttributes(iconName, baseUrl) {
     const newName = attrs.name.replace(suffixSize, '');
     attrs.name = newName;
     attrs.size = suffixSize[0].replace('-size-', '');
-    attrs.url = `${baseUrl}/img/icons/${attrs.type}/${newName}.svg`;
+    attrs["data-url"] = `${baseUrl}/img/icons/${attrs.type}/${newName}.svg`;
   }
 
-  const props = Object.keys(attrs).map((k) => `${k}="${attrs[k]}"`).join(' ');
-  return props;
+  const attributes = Object.keys(attrs).map((k) => `${k}="${attrs[k]}"`).join(' ');
+  return attributes;
 }
 
 async function decorateIcons(icons, base) {
   [...icons].forEach(async (icon) => {
     const iconName = icon.classList[1].replace('icon-', '');
     const attrs = getIconAttributes(iconName, base);
-    // icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
+    icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
     
     // const svgElem = `<svg xmlns="http://www.w3.org/2000/svg" class="icon-milo">
     //   <image crossorigin="anonymous" href="${base}/img/icons/s1/${iconName}.svg"/>
     // </svg>`;
-    const svgImg = `<img src="${base}/img/icons/s1/${iconName}.svg"/>`;
-    icon.insertAdjacentHTML('afterbegin', svgImg);
+    // const svgImg = `<img src="${base}/img/icons/s1/${iconName}.svg"/>`;
+    // icon.insertAdjacentHTML('afterbegin', svgImg);
     return icon;
   });
 }
