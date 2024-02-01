@@ -136,9 +136,12 @@
   height: auto;
 }
 
-.brick .icon-stack-area li .list-text,
-.brick .icon-stack-area li .list-text a {
+.brick .icon-stack-area li .list-text {
   display: inline-flex;
+}
+
+.brick .icon-stack-area li .list-text a {
+  display: inline-block;
 }
 
 .brick .foreground .icon-area img {
