@@ -136,6 +136,10 @@
   height: auto;
 }
 
+.brick .icon-stack-area li .list-text a {
+  display: inline-block;
+}
+
 .brick .foreground .icon-area img {
   height: var(--icon-size-l);
   width: auto;
@@ -167,6 +171,7 @@
   align-items: center;
   gap: var(--spacing-xs);
   text-align: left;
+  flex-shrink: 0;
 }
 
 .brick .foreground a:not([class]),

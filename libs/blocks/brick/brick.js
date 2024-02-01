@@ -93,6 +93,28 @@ function decorateFillButtons(actionArea) {
   });
 }
 
+function decorateBrickIconStack(el) {
+  decorateIconStack(el);
+  el.querySelector('.icon-stack-area')?.classList.add('body-xs');
+  const liELs = el.querySelector('.icon-stack-area')?.querySelectorAll('li');
+  [...liELs].forEach((liEl) => {
+    const aTxt = liEl.querySelector('a').textContent.trim();
+    const liTxt = liEl.textContent.trim();
+    if (liTxt === aTxt) return;
+    const pic = liEl.querySelector('picture');
+    let icn = pic;
+    if (pic && pic.parentElement !== liEl) {
+      icn = pic.parentElement.cloneNode(false);
+      icn.append(pic);
+    }
+    const txt = createTag('span', { class: 'list-text' }, liEl.innerHTML);
+    liEl.innerHTML = '';
+    if (icn) liEl.append(icn, txt);
+    liEl.append(txt);
+    txt.querySelector('picture')?.remove();
+  });
+}
+
 function decorateBricks(el) {
   if (!el.classList.contains('light')) el.classList.add('dark');
   const elems = el.querySelectorAll(':scope > div');
@@ -112,8 +134,7 @@ function decorateBricks(el) {
   decorateBlockText(foreground, blockFormatting);
   if (el.classList.contains('button-fill')) decorateFillButtons(foreground.querySelector('.action-area'));
   el.querySelector('.icon-area')?.classList.remove('detail-l');
-  decorateIconStack(el);
-  el.querySelector('.icon-stack-area')?.classList.add('body-xs');
+  decorateBrickIconStack(el);
   handleSupplementalText(foreground);
   handleClickableBrick(el, foreground);
   return foreground;
