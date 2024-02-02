@@ -10,10 +10,11 @@ export function getMetadata(el) {
     } else if (key.match(/^cta/)) {
       const ctaLink = child.querySelectorAll('a');
       ctaLink?.forEach((link, index) => {
-        metadata[`cta${index + 1}url`] = link.href;
-        metadata[`cta${index + 1}text`] = link.textContent.trim();
+        const count = index + 1;
+        metadata[`cta${count}url`] = link.href;
+        metadata[`cta${count}text`] = link.textContent.trim();
         /* eslint-disable no-nested-ternary */
-        metadata[`cta${index + 1}style`] = link.parentNode.tagName === 'STRONG' ? 'blue'
+        metadata[`cta${count}style`] = link.parentNode.tagName === 'STRONG' ? 'blue'
           : link.parentNode.tagName === 'EM' ? 'outline' : '';
         /* eslint-enable no-nested-ternary */
       });
