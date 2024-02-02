@@ -22,12 +22,15 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
   return io;
 }
 
-function handleStickyPromobar(section) {
+function handleStickyPromobar(section, delay) {
   const main = document.querySelector('main');
   section.classList.add('promo-sticky-section', 'hide-sticky-section');
   if (section.querySelector('.promobar.popup')) section.classList.add('popup');
   let stickySectionEl = null;
-  const hasScrollControl = section.querySelector('.promobar').classList.contains('no-delay');
+  let hasScrollControl;
+  if ((section.querySelector('.promobar').classList.contains('no-delay')) || (delay && section.classList.contains('popup'))) {
+    hasScrollControl = true;
+  }
   if (!hasScrollControl && main.children[0] !== section) {
     stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
     section.parentElement.insertBefore(stickySectionEl, section);
@@ -37,7 +40,7 @@ function handleStickyPromobar(section) {
   io.observe(document.querySelector('footer'));
 }
 
-export default async function handleStickySection(sticky, section) {
+export default async function handleStickySection(sticky, section, delay) {
   const main = document.querySelector('main');
   switch (sticky) {
     case 'sticky-top':
@@ -48,7 +51,7 @@ export default async function handleStickySection(sticky, section) {
       break;
     }
     case 'sticky-bottom':
-      if (section.querySelector('.promobar')) handleStickyPromobar(section);
+      if (section.querySelector('.promobar')) setTimeout(() => { handleStickyPromobar(section, delay); }, delay);
       main.append(section);
       break;
     default:
