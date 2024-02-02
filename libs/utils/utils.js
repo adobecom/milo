@@ -852,7 +852,7 @@ const preloadFile = (base, name, { path = '', css = true } = {}) => {
   }
 };
 
-function preloadFirstSectionBlocks() {
+function preloadFirstSectionBlocks({ mep = false } = {}) {
   const firstSection = document.querySelector('body > main > div');
   const blocks = firstSection.querySelectorAll(':scope > div[class]:not(.content)');
   const { miloLibs, codeRoot } = getConfig();
@@ -870,8 +870,10 @@ function preloadFirstSectionBlocks() {
     }
   });
 
-  preloadFile(miloLibs || codeRoot, 'fragment');
-  preloadFile('', '', { path: `${miloLibs || codeRoot}/utils/tree.js`, css: false });
+  if (mep) {
+    preloadFile(miloLibs || codeRoot, 'fragment');
+    preloadFile('', '', { path: `${miloLibs || codeRoot}/utils/tree.js`, css: false });
+  }
 }
 
 async function checkForPageMods() {
@@ -926,7 +928,7 @@ async function checkForPageMods() {
 
   if (targetEnabled) {
     const martechPromise = loadMartech({ persEnabled: true, persManifests, targetMd });
-    preloadFirstSectionBlocks();
+    preloadFirstSectionBlocks({ mep: true });
     await martechPromise;
   } else if (persManifests.length) {
     loadIms()
@@ -938,7 +940,7 @@ async function checkForPageMods() {
     const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
-    preloadFirstSectionBlocks();
+    preloadFirstSectionBlocks({ mep: true });
 
     await applyPers(manifests);
   }
@@ -1143,11 +1145,13 @@ export async function loadArea(area = document) {
   }
   const config = getConfig();
 
-  await decoratePlaceholders(area, config);
+  const placeholderPromise = decoratePlaceholders(area, config);
 
   if (isDoc) {
+    preloadFirstSectionBlocks();
     decorateDocumentExtras();
   }
+  await placeholderPromise;
 
   const sections = decorateSections(area, isDoc);
 
