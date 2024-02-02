@@ -39,8 +39,7 @@ describe('global navigation', () => {
 
     afterEach(() => {
       fetchStub = null;
-      window.fetch.restore();
-      window.lana.log.restore();
+      sinon.restore();
       document.head.replaceChildren();
       document.body.replaceChildren();
       document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
