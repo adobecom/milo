@@ -85,6 +85,7 @@
 .dialog-modal.locale-modal-v2 .tabs div[role="tablist"]  {
   box-shadow: initial;
   background: initial;
+  margin: 0;
 }
 
 .dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tab-list-container {
@@ -92,8 +93,18 @@
   margin: 2px;
 }
 
+.dialog-modal.locale-modal-v2 .tabs .tab-paddles .paddle {
+  margin: 2px 0;
+  background: var(--tabs-active-bg-color);
+  border-width: 0 0 2px;
+}
+
 .dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-text-color);
+}
+
+.dialog-modal.locale-modal-v2 .tabs .tab-paddles .paddle:disabled {
+  display: none;
 }
 
 .dialog-modal.locale-modal-v2 .tabs button {
