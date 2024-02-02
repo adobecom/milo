@@ -711,7 +711,7 @@ class Gnav {
 }
 
 export default async function init(header) {
-  const { locale } = getConfig();
+  const { locale, mep } = getConfig();
   // TODO locale.contentRoot is not the fallback we want if we implement centralized content
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const resp = await fetch(`${url}.plain.html`);
@@ -724,7 +724,8 @@ export default async function init(header) {
     const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
     gnav.init();
     header.setAttribute('daa-im', 'true');
-    header.setAttribute('daa-lh', `gnav|${getExperienceName()}|${document.body.dataset.mep}`);
+    const mepMartech = mep?.martech || '';
+    header.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });
