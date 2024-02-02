@@ -17,11 +17,12 @@
   flex-direction: column;
 }
 
-.quiz-background picture {
+.quiz-background {
   display: block;
   inset: 0;
   line-height: 0;
   position: absolute;
+  z-index: -1;
 }
 
 .quiz-background img {

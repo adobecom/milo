@@ -201,12 +201,14 @@ describe('Functional Test', () => {
   });
 
   it('test or promo manifest', async () => {
+    let config = getConfig();
+    config.mep = {};
     let manifestJson = await readFile({ path: './mocks/manifestTestOrPromo.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
-
+    config = getConfig();
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(document.body.dataset.mep).to.equal('nopzn|nopzn');
+    expect(config.mep?.martech).to.be.undefined;
   });
 
   it('should choose chrome & logged out', async () => {
@@ -214,7 +216,8 @@ describe('Functional Test', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(document.body.dataset.mep).to.equal('chrome & logged|ampersand');
+    const config = getConfig();
+    expect(config.mep?.martech).to.equal('|chrome & logged|ampersand');
   });
 
   it('should choose not firefox', async () => {
@@ -222,7 +225,8 @@ describe('Functional Test', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(document.body.dataset.mep).to.equal('not firefox|not');
+    const config = getConfig();
+    expect(config.mep?.martech).to.equal('|not firefox|not');
   });
 
   it('should read and use entitlement data', async () => {
@@ -234,6 +238,22 @@ describe('Functional Test', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(document.body.dataset.mep).to.equal('fireflies|manifest');
+    const config = getConfig();
+    expect(config.mep?.martech).to.equal('|fireflies|manifest');
+  });
+
+  it('removeContent should tag z-pattern in preview', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestRemove.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    const config = getConfig();
+    config.mep = {
+      override: '',
+      preview: true,
+    };
+
+    expect(document.querySelector('.z-pattern')).to.not.be.null;
+    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
   });
 });
