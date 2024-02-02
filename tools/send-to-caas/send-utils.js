@@ -442,7 +442,7 @@ const getCaasProps = (p) => {
     floodGateColor: p.floodgatecolor,
     universalContentIdentifier: p.uci,
     title: p.cardtitle || p.title,
-    description: p.carddescription || p.description,
+    description: p.carddescription || p.description || p.copy,
     createdDate: p.created,
     modifiedDate: p.modified,
     tags: p.tags,
