@@ -1,9 +1,6 @@
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
-const { miloLibs, codeRoot } = getConfig();
-
-export const decorateMnemonicList = (container) => {
-  loadStyle(`${miloLibs || codeRoot}/blocks/mnemonic-list/mnemonic-list.css`);
+export const decorateMnemonicList = async (container) => {
   const mnemonicListElement = container.querySelector('.mnemonic-list');
   const targetElement = mnemonicListElement || container;
   const rows = targetElement.querySelectorAll(':scope p:not([class])');
