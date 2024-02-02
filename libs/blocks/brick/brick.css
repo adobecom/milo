@@ -350,12 +350,6 @@
     margin: 0;
   }
 
-  .brick.grid-full-width.split.row .foreground .brick-media img,
-  .brick.grid-full-width.split.row .foreground .brick-media video {
-    height: calc(100% - 2 * var(--spacing-l));
-    padding: var(--spacing-l) 0;
-  }
-
   .brick.stack .foreground .brick-media picture {
     display: flex;
     margin: 0;
