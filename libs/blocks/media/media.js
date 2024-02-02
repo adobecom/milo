@@ -19,6 +19,10 @@ function decorateAvatar(el) {
   });
 }
 
+function getElementIndex (element) {
+  return Array.from(element.parentNode.children).indexOf(element);
+}
+
 function decorateQr(el) {
   const text = el.querySelector('.text');
   if (!text) return;
@@ -78,14 +82,18 @@ export default function init(el) {
     }
 
     // subcopy with links
-    if (actionArea?.nextElementSibling?.tagName === 'H3') {
-      actionArea.nextElementSibling.classList.remove('heading-m', 'body-xl');
-      actionArea.nextElementSibling.classList.add('heading-xs');
-      const links = row.querySelectorAll('h3.heading-xs ~ p.body-s a, h3.heading-xs ~ p.icon-area a');
-      links.forEach((link) => {
-        link.parentElement.className = 'subcopy-link';
-        link.className = 'body-xxs';
-      });
+    if (actionArea?.nextElementSibling) {
+      const siblingIsHeader = actionArea.nextElementSibling.tagName.match(/^H\d/);
+      if (siblingIsHeader) {
+        const targetEl = actionArea.nextElementSibling;
+        targetEl.className = 'heading-xs subcopy-heading';
+        const targetIndex = getElementIndex(targetEl);
+        const targetSiblings = row.querySelectorAll('.subcopy-heading ~ p');
+        [...targetSiblings].forEach((sib) => {
+          const link = sib.querySelector(':scope > a');
+          sib.className = link ? 'body-xxs' : 'body-xs';
+        });
+      }
     }
     container.append(row);
   });

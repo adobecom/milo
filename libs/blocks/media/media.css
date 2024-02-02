@@ -135,24 +135,20 @@ div[class*="-up"] .media .foreground > .media-row {
   vertical-align: middle;
 }
 
-.media .subcopy {
-  font-size: var(--type-heading-xs-size);
-  line-height: var(--type-body-s-lh);
-  margin-top: var(--spacing-xs);
-}
-
-.media h3.heading-xs {
-  margin-top: var(--spacing-s);
-  margin-bottom: var(--spacing-xs);
+.media .subcopy-heading {
+  margin: var(--spacing-s) 0 var(--spacing-xs) 0;
 }
 
 .media p.icon-area {
   margin-bottom: 0;
 }
 
-.media p.subcopy-link {
-  margin-top: 0;
-  margin-bottom: 8px;
+.media p.body-xxs {
+  margin: var(--spacing-xxs) 0;
+}
+
+.media p.body-xxs:last-of-type {
+  margin-bottom: 0;
 }
 
 .media svg.icon-milo, img.icon-milo {
