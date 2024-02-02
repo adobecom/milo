@@ -33,6 +33,7 @@ const Ratings = ({
     if (fieldSetMouseOut.hovering) {
       // only the inputs have value
       if (fieldSetMouseOut.event.target.value) {
+        setKeyboardFocusIndex(null);
         const hoveredRating = parseInt(fieldSetMouseOut.event.target.value, 10);
         setCurrentRating(hoveredRating);
         if (onRatingHover) onRatingHover({ rating: hoveredRating });
@@ -54,6 +55,7 @@ const Ratings = ({
 
     if (!fieldSetMouseLeave.hovering) {
       setHoverIndex(null);
+      setKeyboardFocusIndex(null);
     }
 
     if (!fieldSetMouseLeave.hovering && rating !== currentRating) {
@@ -87,7 +89,7 @@ const Ratings = ({
   };
 
   const onBlur = (ev) => {
-    if (ev.relatedTarget === null || ev.relatedTarget.nodeName !== 'INPUT') {
+    if (ev.relatedTarget === null || ev?.relatedTarget?.nodeName !== 'INPUT') {
       // Focus has left the rating fields
       setCurrentRating(rating);
       setKeyboardFocusIndex(null);
@@ -103,8 +105,7 @@ const Ratings = ({
     const tooltip = tooltips && tooltips[i - 1];
     ratings.push(
       html`<${RatingInput}
-        key="rating"
-        -${i}
+        key=${`rating-${i}`}
         isActive=${i <= currentRating}
         isHovering=${hoverIndex === i}
         isInteractive=${isInteractive}
@@ -114,6 +115,9 @@ const Ratings = ({
         starString=${starString}
         starStringPlural=${starStringPlural}
         tooltip=${tooltip}
+        onBlur=${onBlur}
+        onFocus=${onFocus}
+        isChecked=${i === currentRating}
       />`,
     );
   }
@@ -124,9 +128,7 @@ const Ratings = ({
     <fieldset
       ref=${fieldSetRef}
       className="hlx-Review-ratingFields"
-      onFocus=${onFocus}
       onMouseDown=${onMouseDown}
-      onBlur=${onBlur}
       disabled=${!isInteractive}
     >
       ${starsLegend && legentElement} ${ratings.map((rate) => html`${rate}`)}
