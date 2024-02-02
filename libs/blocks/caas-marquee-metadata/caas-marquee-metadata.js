@@ -46,7 +46,4 @@ export default function init(el) {
     <div><div>cta2url</div><div>${metadata.cta2url}</div></div>
     <div><div>cta2text</div><div>${metadata.cta2text}</div></div>
     <div><div>cta2style</div><div>${metadata.cta2style}</div></div>`;
-
-  const marquee = createTag('div', { class: `marquee ${metadata.variant.replaceAll(',', ' ')}` });
-  el.parentNode.prepend(marquee);
 }
