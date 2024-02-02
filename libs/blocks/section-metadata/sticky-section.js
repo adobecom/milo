@@ -40,20 +40,23 @@ function handleStickyPromobar(section, delay) {
   io.observe(document.querySelector('footer'));
 }
 
-export default async function handleStickySection(sticky, section, delay) {
+export default async function handleStickySection(sticky, section, delay = 0) {
   const main = document.querySelector('main');
   switch (sticky) {
-    case 'sticky-top':
-    {
+    case 'sticky-top': {
       const { debounce } = await import('../../utils/action.js');
       window.addEventListener('resize', debounce(() => handleTopHeight(section)));
       main.prepend(section);
       break;
     }
-    case 'sticky-bottom':
-      if (section.querySelector('.promobar')) setTimeout(() => { handleStickyPromobar(section, delay); }, delay);
+    case 'sticky-bottom': {
+      if (section.querySelector('.promobar')) {
+        if (delay) setTimeout(() => { handleStickyPromobar(section, delay); }, delay);
+        else handleStickyPromobar(section, delay);
+      }
       main.append(section);
       break;
+    }
     default:
       break;
   }
