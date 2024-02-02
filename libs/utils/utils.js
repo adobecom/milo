@@ -821,6 +821,25 @@ export async function loadIms() {
   return imsLoaded;
 }
 
+function preloadFile(base, name, { path = '', css = true } = {}) {
+  loadLink(
+    path || `${base}/blocks/${name}/${name}.js`,
+    { as: 'script', rel: 'modulepreload', fetchpriority: 'low' },
+  );
+  if (!path && css) {
+    loadLink(
+      path || `${base}/blocks/${name}/${name}.css`,
+      { as: 'style', rel: 'preload', fetchpriority: 'low' },
+    );
+  }
+}
+
+function getDtmLib(env) {
+  return env.name === 'prod'
+    ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+    : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js';
+}
+
 async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
@@ -832,25 +851,23 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
     return false;
   }
 
+  const { env, miloLibs, codeRoot } = getConfig();
+  const martechEnv = ['stage', 'local'].includes(env.name) ? '.qa' : '';
+  preloadFile('', '', {
+    path: `${miloLibs || codeRoot}/deps/martech.main.standard${martechEnv}.min.js`,
+    css: false,
+  });
+  preloadFile('', '', {
+    path: getDtmLib(env),
+    css: false,
+  });
+
   window.targetGlobalSettings = { bodyHidingEnabled: false };
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
   return initMartech({ persEnabled, persManifests });
 }
-
-const preloadFile = (base, name, { path = '', css = true } = {}) => {
-  loadLink(
-    path || `${base}/blocks/${name}/${name}.js`,
-    { as: 'script', rel: 'modulepreload', fetchpriority: 'low' },
-  );
-  if (!path && css) {
-    loadLink(
-      path || `${base}/blocks/${name}/${name}.css`,
-      { as: 'style', rel: 'preload', fetchpriority: 'low' },
-    );
-  }
-};
 
 function preloadFirstSectionBlocks({ mep = false } = {}) {
   const firstSection = document.querySelector('body > main > div');
