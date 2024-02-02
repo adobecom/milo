@@ -55,8 +55,7 @@ function decorateBlockIconArea(el) {
 function decorateLinkFarms(el) {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/blocks/text/link-farms.css`);
-  const regex = /-spacing/;
-  const hasSpacing = [...el.classList].some((className) => regex.test(className));
+  const hasSpacing = el.classList.toString().includes('-spacing');
   if (!hasSpacing) el.classList.add('xl-spacing');
   const [title, foregroundDiv] = [...el.querySelectorAll('.foreground')];
   const hCount = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
