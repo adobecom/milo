@@ -4,36 +4,39 @@
  */
 import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 
-const isElementInContainerView = (targetEl) => {
-  const rect = targetEl.getBoundingClientRect();
-  const docEl = document.documentElement;
-  return (
-    rect.top >= 0
-    && rect.left >= 0
-    && rect.bottom <= (window.innerHeight || /* c8 ignore next */ docEl.clientHeight)
-    && rect.right <= (window.innerWidth || /* c8 ignore next */ docEl.clientWidth)
-  );
+const RIGHT_PADDLE = '<svg viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
+
+const isTabInTabListView = (tab) => {
+  const tabList = tab.closest('[role="tablist"]');
+  const tabRect = tab.getBoundingClientRect();
+  const tabListRect = tabList.getBoundingClientRect();
+
+  const tabLeft = Math.round(tabRect.left);
+  const tabRight = Math.round(tabRect.right);
+  const tabListLeft = Math.round(tabListRect.left);
+  const tabListRight = Math.round(tabListRect.right);
+
+  return (tabLeft >= tabListLeft && tabRight <= tabListRight);
 };
 
-const scrollTabIntoView = (e) => {
-  const isElInView = isElementInContainerView(e);
-  /* c8 ignore next */
-  if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+const scrollTabIntoView = (e, inline = 'center') => {
+  const isElInView = isTabInTabListView(e);
+  if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline });
 };
 
 function changeTabs(e) {
   const { target } = e;
   const parent = target.parentNode;
-  const grandparent = parent.parentNode.nextElementSibling;
+  const content = parent.parentNode.parentNode.lastElementChild;
   parent
     .querySelectorAll('[aria-selected="true"]')
     .forEach((t) => t.setAttribute('aria-selected', false));
   target.setAttribute('aria-selected', true);
   scrollTabIntoView(target);
-  grandparent
+  content
     .querySelectorAll('[role="tabpanel"]')
     .forEach((p) => p.setAttribute('hidden', true));
-  grandparent.parentNode
+  content
     .querySelector(`#${target.getAttribute('aria-controls')}`)
     .removeAttribute('hidden');
 }
@@ -82,6 +85,77 @@ function initTabs(elm, config, rootElem) {
     tab.addEventListener('click', changeTabs);
   });
   if (config) configTabs(config, rootElem);
+}
+
+function previousTab(current, i, arr) {
+  const next = arr[i + 1];
+  // The tab before the first visible tab
+  return (next && !isTabInTabListView(current) && isTabInTabListView(next));
+}
+
+function nextTab(current, i, arr) {
+  const previous = arr[i - 1];
+  // The tab after the last visible tab
+  return (previous && isTabInTabListView(previous) && !isTabInTabListView(current));
+}
+
+function initPaddles(tabList, tabPaddles) {
+  const left = tabPaddles.firstElementChild;
+  const right = tabPaddles.lastElementChild;
+  const tabListItems = tabList.querySelectorAll('[role="tab"]');
+  const tabListItemsArray = [...tabListItems];
+  const firstTab = tabListItemsArray[0];
+  const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
+
+  left.addEventListener('click', () => {
+    const previous = tabListItemsArray.find(previousTab);
+    if (previous) {
+      scrollTabIntoView(previous, 'end');
+    } else {
+      /* c8 ignore next 3 */
+      const { width } = tabList.getBoundingClientRect();
+      tabList.scrollBy({ left: -(width / 2), behavior: 'smooth' });
+    }
+  });
+  right.addEventListener('click', () => {
+    const next = tabListItemsArray.find(nextTab);
+    if (next) {
+      scrollTabIntoView(next, 'start');
+    } else {
+      /* c8 ignore next 3 */
+      const { width } = tabList.getBoundingClientRect();
+      tabList.scrollBy({ left: width / 2, behavior: 'smooth' });
+    }
+  });
+
+  const options = {
+    root: tabList,
+    rootMargin: '0px',
+    threshold: 0.9,
+  };
+
+  const callback = (entries) => {
+    entries.forEach((entry) => {
+      if (entry.target === firstTab) {
+        if (entry.isIntersecting) {
+          left.setAttribute('disabled', '');
+        } else {
+          left.removeAttribute('disabled');
+        }
+      } else if (entry.target === lastTab) {
+        if (entry.isIntersecting) {
+          right.setAttribute('disabled', '');
+        } else {
+          right.removeAttribute('disabled');
+        }
+      }
+    });
+  };
+
+  const observer = new IntersectionObserver(callback, options);
+
+  observer.observe(firstTab);
+  observer.observe(lastTab);
 }
 
 const handleDeferredImages = (block) => {
@@ -167,6 +241,14 @@ const init = (block) => {
     });
     tabListItems[0].parentElement.remove();
   }
+
+  // Tab Paddles
+  const tabPaddles = createTag('div', { class: 'tab-paddles', role: 'scrollbar' });
+  const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '' }, RIGHT_PADDLE);
+  const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '' }, RIGHT_PADDLE);
+  tabPaddles.append(paddleLeft, paddleRight);
+  tabList.after(tabPaddles);
+  initPaddles(tabList, tabPaddles);
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
