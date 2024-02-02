@@ -99,10 +99,14 @@ const AUTO_BLOCKS = [
   { merch: '/tools/ost?' },
   { 'offer-preview': '/tools/commerce' },
 ];
-const DO_NOT_INLINE = [
+const DO_NOT_INLINE_FRAGMENTS = [
   'accordion',
   'columns',
   'z-pattern',
+];
+
+const POSTLCP_BLOCKS = [
+  'modal',
 ];
 
 const ENVS = {
@@ -212,8 +216,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.doNotInline = conf.doNotInline
-        ? [...DO_NOT_INLINE, ...conf.doNotInline]
-        : DO_NOT_INLINE;
+        ? [...DO_NOT_INLINE_FRAGMENTS, ...conf.doNotInline]
+        : DO_NOT_INLINE_FRAGMENTS;
       const lang = getMetadata('content-language') || config.locale.ietf;
       document.documentElement.setAttribute('lang', lang);
       try {
@@ -299,7 +303,7 @@ export function localizeLink(
 }
 
 export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
-  let link = document.head.querySelector(`link[href="${href}"]`);
+  let link = document.head.querySelector(`link[href="${href}"][rel="${rel}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
@@ -711,18 +715,14 @@ async function loadFooter() {
   await loadBlock(footer);
 }
 
-function decorateSection(section, idx) {
-  let links = decorateLinks(section);
-  decorateDefaults(section);
-  const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
-
+function getBlockLinks(blocks, links) {
   const { doNotInline } = getConfig();
-  const blockLinks = [...blocks].reduce((blkLinks, block) => {
+  return blocks.reduce((blkLinks, block) => {
     const blockName = block.classList[0];
     links.filter((link) => block.contains(link))
       .forEach((link) => {
         if (link.classList.contains('fragment')
-          && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
+          && MILO_BLOCKS.includes(blockName)
           && !doNotInline.includes(blockName)) {
           if (!link.href.includes('#_inline')) {
             link.href = `${link.href}#_inline`;
@@ -734,19 +734,44 @@ function decorateSection(section, idx) {
       });
     return blkLinks;
   }, { inlineFrags: [], autoBlocks: [] });
+}
 
-  const embeddedLinks = [...blockLinks.inlineFrags, ...blockLinks.autoBlocks];
-  if (embeddedLinks.length) {
-    links = links.filter((link) => !embeddedLinks.includes(link));
+function filterOutLinks(links, linksToFilterOut) {
+  if (linksToFilterOut.length) {
+    return links.filter((link) => !linksToFilterOut.includes(link));
   }
+  return links;
+}
+
+function getPostLcpBlocks(blocks) {
+  return blocks.filter((block) => POSTLCP_BLOCKS
+    .some((postLcpBlock) => block.classList[0] === postLcpBlock));
+}
+
+function decorateSection(section, idx) {
+  let links = decorateLinks(section);
+  decorateDefaults(section);
+  let blocks = [...section.querySelectorAll(':scope > div[class]:not(.content)')];
+
+  const blockLinks = getBlockLinks(blocks, links);
+
+  links = filterOutLinks(links, [...blockLinks.inlineFrags, ...blockLinks.autoBlocks]);
+  const postLcpLinks = getPostLcpBlocks(links);
+  links = filterOutLinks(links, postLcpLinks);
+
+  const postLcpBlocks = getPostLcpBlocks(blocks);
+  blocks = filterOutLinks(blocks, postLcpBlocks);
+
   section.className = 'section';
   section.dataset.status = 'decorated';
   section.dataset.idx = idx;
+
   return {
     blocks: [...links, ...blocks],
     el: section,
     idx,
     preloadLinks: blockLinks.autoBlocks,
+    postLcpBlocks: [...postLcpLinks, ...postLcpBlocks],
   };
 }
 
@@ -822,12 +847,12 @@ const preloadFile = (base, name, { path = '', css = true } = {}) => {
   if (!path && css) {
     loadLink(
       path || `${base}/blocks/${name}/${name}.css`,
-      { rel: 'stylesheet', fetchpriority: 'low' },
+      { as: 'style', rel: 'preload', fetchpriority: 'low' },
     );
   }
 };
 
-function preloadBlocks() {
+function preloadFirstSectionBlocks() {
   const firstSection = document.querySelector('body > main > div');
   const blocks = firstSection.querySelectorAll(':scope > div[class]:not(.content)');
   const { miloLibs, codeRoot } = getConfig();
@@ -901,7 +926,7 @@ async function checkForPageMods() {
 
   if (targetEnabled) {
     const martechPromise = loadMartech({ persEnabled: true, persManifests, targetMd });
-    preloadBlocks();
+    preloadFirstSectionBlocks();
     await martechPromise;
   } else if (persManifests.length) {
     loadIms()
@@ -913,7 +938,7 @@ async function checkForPageMods() {
     const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
-    preloadBlocks();
+    preloadFirstSectionBlocks();
 
     await applyPers(manifests);
   }
@@ -924,7 +949,7 @@ async function checkForPageMods() {
   }
 }
 
-async function loadPostLCP(config) {
+async function loadPostLCP(config, postLcpBlocks = []) {
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
@@ -940,6 +965,9 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
+  if (postLcpBlocks.length) {
+    postLcpBlocks.forEach((block) => loadBlock(block));
+  }
 }
 
 export function scrollToHashedElement(hash) {
