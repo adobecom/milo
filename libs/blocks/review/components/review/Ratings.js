@@ -61,6 +61,7 @@ const Ratings = ({
     if (!fieldSetMouseLeave.hovering && rating !== currentRating) {
       setCurrentRating(rating);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fieldSetMouseOut, fieldSetMouseLeave, hoverIndex]);
 
   useEffect(() => {
