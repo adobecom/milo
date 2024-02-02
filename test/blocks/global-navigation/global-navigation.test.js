@@ -2,7 +2,17 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
-import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
+import {
+  createFullGlobalNavigation,
+  selectors,
+  isElementVisible,
+  mockRes,
+  viewports,
+  config,
+  unavAnalyticsTestData,
+  unavDeviceTestingMap,
+  unavLocalesTestData,
+} from './test-utilities.js';
 import { isDesktop, isTangentToViewport, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
@@ -22,7 +32,11 @@ const ogFetch = window.fetch;
 
 describe('global navigation', () => {
   before(() => {
-    document.head.innerHTML = '<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any"><script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
+    <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://dev.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://stage.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    `;
   });
 
   describe('basic sanity tests', () => {
@@ -1159,6 +1173,154 @@ describe('global navigation', () => {
       isTangentToViewport.dispatchEvent(new Event('change'));
 
       expect(getOverflowingTopnav()).to.equal(null);
+    });
+  });
+
+  describe('Universal navigation', () => {
+    let unavMeta;
+    const orgAlloy = window.alloy;
+    beforeEach(async () => {
+      window.UniversalNav = sinon.spy();
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = { track: sinon.spy() };
+      // eslint-disable-next-line
+      window.alloy = () => new Promise((resolve) => resolve({ identity: { ECID: 'dummy-ECID' } }));
+      unavMeta = toFragment`<meta name="universal-nav" content="on">`;
+      document.head.append(unavMeta);
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      window.allow = orgAlloy;
+      document.head.removeChild(unavMeta);
+    });
+
+    describe('desktop', () => {
+      it('should render the Universal navigation', async () => {
+        const unavMeta2 = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
+        const gnav = await createFullGlobalNavigation({});
+
+        await gnav.decorateUniversalNav();
+        const unavFirstCall = window.UniversalNav.getCall(0);
+        expect(unavFirstCall.args[0]?.children
+          .every((c) => c.name === 'profile' && !['app-switcher', 'notifications', 'help'].includes(c.name)))
+          .to.be.true;
+
+        document.head.append(unavMeta2);
+        await gnav.decorateUniversalNav();
+        const unavSecondCall = window.UniversalNav.getCall(1);
+        expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
+          .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
+        document.head.removeChild(unavMeta2);
+      });
+
+      it('should reload unav on viewport change', async () => {
+        await createFullGlobalNavigation({});
+        window.UniversalNav.reload = sinon.spy();
+        isDesktop.dispatchEvent(new Event('change'));
+        expect(window.UniversalNav.reload.getCall(0)).to.exist;
+      });
+
+      it('should send the correct analytics events', async () => {
+        await createFullGlobalNavigation({});
+        const analyticsFn = window.UniversalNav.getCall(0)
+          .args[0].analyticsContext.onAnalyticsEvent;
+
+        unavAnalyticsTestData.forEach((data) => {
+          analyticsFn(data.sentData);
+          // eslint-disable-next-line no-underscore-dangle
+          expect(window._satellite.track.calledWith('event', data.expectedData)).to.be.true;
+        });
+        expect(analyticsFn(null)).to.equal(undefined);
+        expect(analyticsFn({
+          event: { type: 'not', subtype: 'matching' },
+          source: { name: 'anything' },
+          content: { name: null },
+        })).to.equal(undefined);
+      });
+
+      it('should send/not send visitor guid to unav when window.alloy is available/unavailable', async () => {
+        await createFullGlobalNavigation({});
+        expect(window.UniversalNav.getCall(0)
+          .args[0].analyticsContext.event.visitor_guid).to.equal('dummy-ECID');
+
+        delete window.alloy;
+        await createFullGlobalNavigation({});
+        expect(window.UniversalNav.getCall(1)
+          .args[0].analyticsContext.event.visitor_guid).to.equal(undefined);
+      });
+
+      it('should send the correct device type', async () => {
+        const gnav = await createFullGlobalNavigation({});
+        window.UniversalNav.resetHistory();
+        for (const i of unavDeviceTestingMap) {
+          const userAgentStub = sinon.stub(navigator, 'userAgent').value(i.agent);
+          await gnav.decorateUniversalNav();
+          const unavFirstCallArgs = window.UniversalNav.getCall(0).args[0];
+          expect(unavFirstCallArgs.analyticsContext.consumer.device).to.equal(i.expectedDevice);
+          userAgentStub.restore();
+          window.UniversalNav.resetHistory();
+        }
+      });
+
+      it('should send the correct locale to unav', async () => {
+        for (const data of unavLocalesTestData) {
+          await createFullGlobalNavigation({
+            customConfig: {
+              ...config,
+              contentRoot: `${window.location.origin}${data.prefix}`,
+              pathname: `${data.prefix}`,
+              locale: {
+                prefix: data.prefix,
+                ietf: data.ietf,
+              },
+              locales: { [data.prefix.replace('/', '')]: { ietf: data.ietf, tk: 'hah7vzn.css' } },
+            },
+          });
+          expect(window.UniversalNav.getCall(0).args[0].locale).to.equal(data.expectedLocale);
+          window.UniversalNav.resetHistory();
+        }
+      });
+    });
+
+    describe('small desktop', () => {
+      it('should render the Universal navigation', async () => {
+        const unavMeta2 = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
+        const gnav = await createFullGlobalNavigation({});
+        await gnav.decorateUniversalNav();
+
+        const unavFirstCall = window.UniversalNav.getCall(0);
+        expect(unavFirstCall.args[0]?.children
+          .every((c) => c.name === 'profile' && !['app-switcher', 'notifications', 'help'].includes(c.name)))
+          .to.be.true;
+
+        document.head.append(unavMeta2);
+        await gnav.decorateUniversalNav();
+        const unavSecondCall = window.UniversalNav.getCall(1);
+        expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
+          .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
+        document.head.removeChild(unavMeta2);
+      });
+    });
+
+    describe('mobile', () => {
+      it('should render the Universal navigation', async () => {
+        const unavMeta2 = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
+        const gnav = await createFullGlobalNavigation({});
+        await gnav.decorateUniversalNav();
+
+        const unavFirstCall = window.UniversalNav.getCall(0);
+        expect(unavFirstCall.args[0]?.children
+          .every((c) => c.name === 'profile' && !['app-switcher', 'notifications', 'help'].includes(c.name)))
+          .to.be.true;
+
+        document.head.append(unavMeta2);
+        await gnav.decorateUniversalNav();
+        const unavSecondCall = window.UniversalNav.getCall(1);
+        expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
+          .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
+        document.head.removeChild(unavMeta2);
+      });
     });
   });
 });
