@@ -821,15 +821,15 @@ export async function loadIms() {
   return imsLoaded;
 }
 
-function preloadFile(base, name, { path = '', css = true } = {}) {
+function preloadFile(base, name, { path = '', css = true, fetchpriority = 'low' } = {}) {
   loadLink(
     path || `${base}/blocks/${name}/${name}.js`,
-    { as: 'script', rel: 'modulepreload', fetchpriority: 'low' },
+    { as: 'script', rel: 'modulepreload', fetchpriority },
   );
   if (!path && css) {
     loadLink(
       path || `${base}/blocks/${name}/${name}.css`,
-      { as: 'style', rel: 'preload', fetchpriority: 'low' },
+      { as: 'style', rel: 'preload', fetchpriority },
     );
   }
 }
@@ -856,10 +856,12 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   preloadFile('', '', {
     path: `${miloLibs || codeRoot}/deps/martech.main.standard${martechEnv}.min.js`,
     css: false,
+    fetchpriority: 'high',
   });
   preloadFile('', '', {
     path: getDtmLib(env),
     css: false,
+    fetchpriority: 'high',
   });
 
   window.targetGlobalSettings = { bodyHidingEnabled: false };
