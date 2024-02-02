@@ -143,8 +143,9 @@ export default async function init(el) {
   }
 
   const { miloLibs } = getConfig();
-  loadStyle(`${miloLibs}/blocks/merch/merch.css`);
-  loadStyle(`${miloLibs}/blocks/merch-card/merch-card.css`);
+  const merchStyles = new Promise((resolve) => loadStyle(`${miloLibs}/blocks/merch/merch.css`, resolve));
+  const merchCardStyles = new Promise((resolve) => loadStyle(`${miloLibs}/blocks/merch-card/merch-card.css`, resolve));
+  const allStyles = Promise.all([merchStyles, merchCardStyles]);
 
   const attributes = { filter: 'all', class: CLASS_LOADING };
   const settingsEl = el.firstElementChild?.firstElementChild;
@@ -266,6 +267,6 @@ export default async function init(el) {
     }
     el.replaceWith(merchCards);
   }
-
+  await allStyles;
   return merchCards;
 }
