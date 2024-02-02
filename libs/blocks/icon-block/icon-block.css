@@ -83,6 +83,10 @@
   gap: 16px;
 }
 
+.five-up .icon-block.full-width .foreground .text-content {
+  text-align: center;
+}
+
 .icon-block.inline .body-s.action-area {
   padding-top: 24px;
 }
