@@ -120,7 +120,7 @@ describe('Functional Test', () => {
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(getConfig().expBlocks).to.deep.equal({ promo: '/test/features/personalization/mocks/newpromo' });
+    expect(getConfig().expBlocks).to.deep.equal({ promo: '/test/features/personalization/mocks/promo' });
     const promoBlock = document.querySelector('.promo');
     expect(promoBlock.textContent?.trim()).to.equal('Old Promo Block');
     await loadBlock(promoBlock);
