@@ -168,7 +168,13 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
 
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
-    propMap[i.selector] = i.val;
+    let { selector, val } = i;
+    if (prop === 'blocks') {
+      if (val?.includes('\\')) val = val?.split('\\').join('/');
+      if (!val?.startsWith('/')) val = `/${val}`;
+      selector = val?.split('/').pop();
+    }
+    propMap[selector] = val;
   });
   return propMap;
 }, {});
