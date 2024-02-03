@@ -107,6 +107,17 @@ const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
+const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
+// Force cards to refresh once they become visible so that the footer rows are properly aligned.
+const sectionObserver = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.type === 'attributes' && mutation.attributeName === 'data-status') {
+      sectionObserver.disconnect(mutation.target);
+      [...mutation.target.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
+    }
+  });
+});
+
 const textStyles = {
   H5: 'detail-m',
   H4: 'body-xxs',
@@ -249,7 +260,7 @@ const simplifyHrs = (el) => {
   });
 };
 
-function createQuantitySelect(el) {
+function extractQuantitySelect(el) {
   const quantitySelectConfig = el.querySelector('ul');
   if (!quantitySelectConfig) return null;
   const configMarkup = quantitySelectConfig.querySelector('li');
@@ -353,6 +364,10 @@ const init = async (el) => {
   }
   let footerRows;
   if (cardType === MINI_COMPARE_CHART) {
+    const container = el.closest('[data-status="decorated"]');
+    if (container) {
+      sectionObserver.observe(container, { attributes: true, subtree: false });
+    }
     footerRows = getMiniCompareChartFooterRows(el);
   }
   const images = el.querySelectorAll('picture');
@@ -428,15 +443,16 @@ const init = async (el) => {
   }
   merchCard.appendChild(footer);
 
-  if (cardType === 'plans') {
-    const quantitySelect = createQuantitySelect(el);
+  if (MULTI_OFFER_CARDS.includes(cardType)) {
+    const quantitySelect = extractQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
+    const bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');
       initOfferSelection(merchCard, offerSelection, quantitySelect);
     }
     if (quantitySelect) {
-      const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+      const bodySlot = merchCard.querySelector(`div[slot="${bodySlotName}"]`);
       bodySlot.append(quantitySelect);
     }
   }

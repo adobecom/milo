@@ -21,7 +21,7 @@ import {
 
 import { replaceKey, replaceText } from '../../features/placeholders.js';
 
-const { miloLibs, codeRoot, locale } = getConfig();
+const { miloLibs, codeRoot, locale, mep } = getConfig();
 const base = miloLibs || codeRoot;
 
 const CONFIG = {
@@ -100,7 +100,8 @@ class Footer {
       await task();
     }
 
-    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
+    const mepMartech = mep?.martech || '';
+    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
 
     this.footerEl.append(this.elements.footer);
   }, 'Failed to decorate footer content', 'errorType=error,module=global-footer');
