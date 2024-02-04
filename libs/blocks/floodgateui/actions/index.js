@@ -29,7 +29,7 @@ function getOriginFromLink(link) {
   return url.origin;
 }
 
-async function updateExcelJson() {
+export async function updateExcelJson() {
   let count = 1;
   const excelUpdated = setInterval(async () => {
     setStatus('excel', 'info', `Refreshing project. Try #${count}`);

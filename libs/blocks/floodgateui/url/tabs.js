@@ -91,7 +91,7 @@ function TabButton({ tabs, tab, idx }) {
     </button>`;
 }
 
-function TabPanel({ tab, idx, item, suffix }) {
+export function TabPanel({ tab, idx, item, suffix }) {
   const id = `panel-${idx + 1}`;
   const labeledBy = `tab-${idx + 1}`;
   const selected = tab.selected === true;

@@ -40,23 +40,3 @@ export const copyCompleteRender = signal();
 export const renderModal = signal(0);
 export const shouldOpenModalOnMount = signal(true);
 export const enableActionButton = signal(false);
-
-export function getSiteConfig() {
-  setStatus('siteConfig', 'info', 'Getting site settings.');
-  // eslint-disable-next-line no-async-promise-executor
-  return new Promise(async (resolve) => {
-    if (siteConfig.value) {
-      setStatus('siteConfig');
-      resolve(siteConfig.value);
-      return;
-    }
-    const resp = await fetch(`${origin}${LOC_CONFIG}`);
-    if (!resp.ok) {
-      setStatus('siteConfig', 'error', 'Error getting site settings.');
-      return;
-    }
-    siteConfig.value = await resp.json();
-    setStatus('siteConfig');
-    resolve(siteConfig.value);
-  });
-}

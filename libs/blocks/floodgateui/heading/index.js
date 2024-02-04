@@ -2,7 +2,6 @@ import { heading, languages, urls, statuses, renderSignal, shouldOpenModalOnMoun
 import { setStatus } from '../utils/status.js';
 import { autoSetup } from '../floodgate/index.js';
 import getServiceConfig from '../../../utils/service-config.js';
-import { getServiceUpdates, startSync } from '../utils/miloc.js';
 
 export default async function handleRefresh() {
   if (heading.value.projectId) {
@@ -15,12 +14,6 @@ export default async function handleRefresh() {
         'Check /.milo/config in your project.',
       );
       return;
-    }
-    try {
-      await startSync(miloc.url);
-      await getServiceUpdates(miloc.url, 'created');
-    } catch {
-      console.log('something wrong');
     }
   } else {
     languages.value = [];

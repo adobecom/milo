@@ -268,12 +268,12 @@ refreshModalContent = async () => {
                           <td style="border: 1px solid #ddd; padding: 8px;">${batch.startTime ? new Date(batch.startTime).toLocaleString(undefined, { timeZoneName: 'short' }) : '-'}</td>
                           <td style="border: 1px solid #ddd; padding: 8px;">${batch.endTime ? new Date(batch.endTime).toLocaleString(undefined, { timeZoneName: 'short' }) : '-'}</td>
                           <td style="border: 1px solid #ddd; padding: 8px;">${batch.status || 'NOT STARTED'}</td>
-                          <td style="border: 1px solid #ddd; padding: 8px; cursor: pointer; font-size: 24px;" onClick=${() => this.handleBatchClick(batch)}>
-                            📂
+                          <td style="border: 1px solid #ddd; padding: 8px; cursor: pointer; font-size: 24px;">
+                            <span class="batch-click" onClick=${() => this.handleBatchClick(batch)}>📂</span>
                           </td>
                           <td style="border: 1px solid #ddd; padding: 8px;">
                             ${batch.status === 'COMPLETED WITH ERROR'
-                              ? html`<span style="cursor: pointer; font-size: 24px;" onClick=${() => !showBatchFiles && this.handleBatchErrorClick(batch)}>⚠️</span>`
+                              ? html`<span class="error-symbol" style="cursor: pointer; font-size: 24px;" onClick=${() => !showBatchFiles && this.handleBatchErrorClick(batch)}>⚠️</span>`
                               : ''}
                           </td>
                         </tr>

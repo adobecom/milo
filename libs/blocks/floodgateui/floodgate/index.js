@@ -12,7 +12,7 @@ import {
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../../locui/utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
-import { getServiceUpdates, getEventTimeFg } from '../utils/miloc.js';
+import { getEventTimeFg } from '../utils/miloc.js';
 import { getUrls } from '../../locui/loc/index.js';
 
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B12F9079D-E580-4407-973D-2330B171B2CB%7D&file=DemoFgUI.xlsx&action=default&mobileredirect=true';
@@ -24,7 +24,7 @@ const repo = urlParams.get('repo') || 'milo';
 let resourcePath;
 let previewPath;
 
-async function loadProjectSettings(projSettings) {
+export async function loadProjectSettings(projSettings) {
   const settings = projSettings.reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
   heading.value = {
     ...heading.value,
@@ -40,7 +40,6 @@ async function loadProjectSettings(projSettings) {
   }
   if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localization service.');
-    await getServiceUpdates();
     setStatus('service');
   } else {
     canRefresh.value = true;
@@ -48,7 +47,7 @@ async function loadProjectSettings(projSettings) {
   }
 }
 
-async function loadDetails() {
+export async function loadDetails() {
   setStatus('details', 'info', 'Loading Project Status and URLs.');
   try {
     const resp = await fetch(previewPath);
@@ -70,7 +69,7 @@ async function loadDetails() {
   }
 }
 
-async function loadHeading() {
+export async function loadHeading() {
   setStatus('details', 'info', 'Getting latest project info.');
   const missingKeys = REQUIRED_KEYS.filter(key => !urlParams.has(key));
   if (missingKeys.length > 0) {
