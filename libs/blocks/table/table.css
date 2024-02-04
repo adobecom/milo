@@ -112,7 +112,7 @@
   line-height: var(--type-body-xs-lh);
 }
 
-.table:not(.merch) .section-row .col:not(.section-row-title),
+.table:not(.merch):not(.left) .section-row .col:not(.section-row-title),
 .table .row-heading .col.col-heading {
   text-align: center;
 }
