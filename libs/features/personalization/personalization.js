@@ -173,6 +173,14 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
       if (val?.includes('\\')) val = val?.split('\\').join('/');
       if (!val?.startsWith('/')) val = `/${val}`;
       selector = val?.split('/').pop();
+      const { origin } = PAGE_URL;
+      if (origin.includes('.hlx.') || origin.includes('localhost')) {
+        if (val.startsWith('/libs/')) {
+          val = `${getConfig().miloLibs}${val.replace('/libs', '')}`;
+        } else {
+          val = `${origin}${val}`;
+        }
+      }
     }
     propMap[selector] = val;
   });
