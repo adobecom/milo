@@ -228,3 +228,11 @@ div.media-p {
     margin: 0;
   }
 }
+
+.new-variant .accordion-media {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin: 0;
+}

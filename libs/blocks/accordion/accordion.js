@@ -14,20 +14,20 @@ function setSEO(questions) {
 
 function toggleMedia(con, trig, status) {
   if (status === 'open') {
-    trig.setAttribute('hidden', '');
     trig.setAttribute('aria-expanded', 'false');
+    trig.setAttribute('aria-other', 'false');
     con.setAttribute('hidden', '');
     con.setAttribute('aria-expanded', 'false');
   } else {
     trig.setAttribute('aria-expanded', 'true');
-    trig.removeAttribute('hidden');
+    trig.setAttribute('aria-other', 'true');
     con.setAttribute('aria-expanded', 'true');
     con.removeAttribute('hidden');
   }
 }
 
-function newUpdatesMadeDuringTest(accordion, el, dd, i, expanded) {
-  // New code
+function newInBranch(accordion, el, dd, i, expanded) {
+  const id = el.getAttribute('aria-controls').split('-')[1];
 }
 
 function displayMedia(displayArea, el, dd, i, expanded) {
