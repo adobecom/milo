@@ -26,6 +26,10 @@ function toggleMedia(con, trig, status) {
   }
 }
 
+function newUpdatesMadeDuringTest(accordion, el, dd, i, expanded) {
+  // New code
+}
+
 function displayMedia(displayArea, el, dd, i, expanded) {
   const id = el.getAttribute('aria-controls').split('-')[1];
   [...mediaCollection[id]].forEach(
