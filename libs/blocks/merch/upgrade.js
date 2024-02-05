@@ -1,6 +1,8 @@
-import { getMetadata, createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
+const SOURCE_PF = ['PHOTOSHOP', 'ILLUSTRATOR', 'ACROBAT', 'AUDITION', 'RUSH', 'INDESIGN', '3DI', 'XD', 'PREMIERE', 'AFTEREFFECTS', 'DREAMWEAVER', 'CC_EXPRESS', 'INCOPY', '3D_TEXTURING', 'PHOTOGRAPHY', 'EDGE_ANIMATE', 'PHOTOSHOP_LIGHTROOM', 'ILLUSTRATOR_STOCK_BUNDLE'];
+const TARGET_PF = ['CC_ALL_APPS', 'CC_ALL_APPS_STOCK_BUNDLE', 'CC_PRO'];
 const MANAGE_PLAN_MSG_SUBTYPE = {
   AppLoaded: 'AppLoaded',
   EXTERNAL: 'EXTERNAL',
@@ -20,7 +22,7 @@ let modal;
 function buildUrl(upgradeOffer, upgradable, config) {
   const toOffer = upgradeOffer?.value[0].offerId;
   const fromOffer = upgradable?.offer?.offer_id;
-  if (!toOffer || !fromOffer) return;
+  if (!toOffer || !fromOffer) return undefined;
   const { env } = config;
   const url = new URL(env?.name === 'prod' ? 'https://plan.adobe.com' : 'https://stage.plan.adobe.com');
   url.searchParams.append('intent', 'switch');
@@ -80,31 +82,16 @@ const handleIFrameEvents = ({ data: msgData }) => {
   }
 };
 
-/**
- * Metadata 'switch-modal' format is 'switch-modal'PHOTOSHOP, ILLUSTRATOR: CC_ALL_APPS'
- * 'sourcePF' source product family, e.g. PHOTOSHOP or ILLUSTRATOR
- * 'targetPF' target product family, e.g. CC_ALL_APPS
- *
- * This method checks if:
- * 1. The CTA is in the list of upgrade targets, e.g. CC_ALL_APPS
- * 2. The user is signed in
- * 3. The user doesn't have an upgrade target, e.g. CC_ALL_APPS already
- * 4. The user has an upgrade source offer, e.g. PHOTOSHOP or ILLUSTRATOR, etc.
- *
- */
 export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlements) {
-  const [sourcePF, targetPF] = getMetadata('switch-modal').split(':')
-    .map((productFamilies) => productFamilies.split(',').map((pf) => pf.trim()).filter(Boolean));
-  if (!targetPF.includes(ctaPF)) return;
+  if (!TARGET_PF.includes(ctaPF)) return undefined;
 
-  const hasUpgradeTarget = entitlements?.find((offer) => isProductFamily(offer, targetPF));
-  if (hasUpgradeTarget) return;
+  const hasUpgradeTarget = entitlements?.find((offer) => isProductFamily(offer, TARGET_PF));
+  if (hasUpgradeTarget) return undefined;
 
   const changePlanOffers = entitlements?.filter((offer) => offer.change_plan_available === true);
-  const upgradable = changePlanOffers?.find((offer) => isProductFamily(offer, sourcePF));
-  if (!upgradable) return;
+  const upgradable = changePlanOffers?.find((offer) => isProductFamily(offer, SOURCE_PF));
+  if (!upgradable) return undefined;
 
-  await upgradeOffer.onceSettled();
   const config = getConfig();
   const upgradeUrl = buildUrl(upgradeOffer, upgradable, config);
   if (upgradeUrl) {
@@ -120,6 +107,7 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
       loading: 'lazy',
       class: 'upgrade-flow-iframe',
     });
+
     const { getModal } = await import('../modal/modal.js');
     const content = createTag('div', { class: 'upgrade-flow-modal-content' });
     content.append(iframe);
@@ -127,9 +115,10 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
     const showModal = async (e) => {
       e.preventDefault();
       modal = await getModal(null, { id: 'preflight', content, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
-      this.dataset.switchPlanUrl2 = upgradeUrl;
+      return modal;
     };
-    const text = await replaceKey('upgrade-now', config);
-    return { text, url: upgradeUrl, handler: showModal };
+    return replaceKey('upgrade-now', config)
+      .then((text) => ({ text, url: upgradeUrl, handler: showModal }));
   }
+  return undefined;
 }
