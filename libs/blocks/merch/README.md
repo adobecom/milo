@@ -28,3 +28,17 @@ const GeoMap = {
 
 ### Where does the 'lang' value come from?
 scripts.js file, see 'locales' object, 'ietf' value.
+
+
+### Switch Modal (Upgrade Flow)
+Most of logic is separated to upgrade.js to not be loaded for every user.
+upgrade.js will only load for logged in user and if the page has upgrade offer in merch-offers block
+
+`MANAGE_PLAN_MSG_SUBTYPE` is taken from Message Data Structure: https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=IdentityACCM&title=Manage+Plan+Integration
+
+`handleIFrameEvents` will:
+* `MANAGE_PLAN_MSG_SUBTYPE.EXTERNAL` - Will open a page in a new tab
+* `MANAGE_PLAN_MSG_SUBTYPE.SWITCH` - Will open a page in the same tab, and we do not have to handle the return back case
+* `MANAGE_PLAN_MSG_SUBTYPE.RETURN_BACK` - Will open a PayPal page in the same tab. After user returns from PayPal, there will be 'pp' and 'token' query parameters in the page URL, which are used together with upgradeModalReturnUrl saved in session storage to create a proper iFrame URL 
+* `MANAGE_PLAN_MSG_SUBTYPE.Close` - If user visited PayPal, the 'pp' and 'token' params were appended in the page URL. They will be removed both from page URL, and from the upgradeQuerystring
+

@@ -1,10 +1,21 @@
 import { getMetadata, createTag, getConfig } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
+const MANAGE_PLAN_MSG_SUBTYPE = {
+  AppLoaded: 'AppLoaded',
+  EXTERNAL: 'EXTERNAL',
+  SWITCH: 'SWITCH',
+  RETURN_BACK: 'RETURN_BACK',
+  OrderComplete: 'OrderComplete',
+  Error: 'Error',
+  Close: 'Close',
+};
 const isProductFamily = (offer, pfs) => {
   const productFamily = offer?.offer?.product_arrangement?.family;
   return productFamily && pfs.includes(productFamily);
 };
+let shouldRefetchEntitlements = false;
+let modal;
 
 function buildUrl(upgradeOffer, upgradable, config) {
   const toOffer = upgradeOffer?.value[0].offerId;
@@ -21,6 +32,53 @@ function buildUrl(upgradeOffer, upgradable, config) {
   url.searchParams.append('ctxRtUrl', encodeURIComponent(window.location.href));
   return url.toString();
 }
+
+const handleIFrameEvents = ({ data: msgData }) => {
+  let parsedMsg = null;
+  try {
+    parsedMsg = JSON.parse(msgData);
+  } catch (error) {
+    // If message data can't be JSON.parse()-d, we can ignore this message, it's not the one we need
+    return;
+  }
+  const { app, subType, data } = parsedMsg || {};
+
+  if (app !== 'ManagePlan') return;
+  switch (subType) {
+    case MANAGE_PLAN_MSG_SUBTYPE.AppLoaded:
+      // todo hide spinner
+      break;
+    case MANAGE_PLAN_MSG_SUBTYPE.EXTERNAL:
+      if (!data?.externalUrl || !data.target) return;
+      window.open(data.externalUrl, data.target);
+      break;
+    case MANAGE_PLAN_MSG_SUBTYPE.SWITCH:
+      if (!data?.externalUrl || !data.target) return;
+      window.open(data.externalUrl, data.target);
+      break;
+    case MANAGE_PLAN_MSG_SUBTYPE.RETURN_BACK:
+      if (!data?.externalUrl || !data.target) return;
+      if (data.returnUrl) {
+        window.sessionStorage.setItem('upgradeModalReturnUrl', data.returnUrl);
+      }
+      window.open(data.externalUrl, data.target);
+      break;
+    case MANAGE_PLAN_MSG_SUBTYPE.OrderComplete:
+      shouldRefetchEntitlements = true;
+      break;
+    case MANAGE_PLAN_MSG_SUBTYPE.Error:
+      break;
+    case MANAGE_PLAN_MSG_SUBTYPE.Close:
+      // todo deletePayPalParamsFromPageUrl();
+      if (shouldRefetchEntitlements) {
+        window.location.reload();
+      }
+      modal?.dispatchEvent(new Event('closeModal'));
+      break;
+    default:
+      break;
+  }
+};
 
 /**
  * Metadata 'switch-modal' format is 'switch-modal'PHOTOSHOP, ILLUSTRATOR: CC_ALL_APPS'
@@ -50,6 +108,7 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
   const config = getConfig();
   const upgradeUrl = buildUrl(upgradeOffer, upgradable, config);
   if (upgradeUrl) {
+    window.addEventListener('message', handleIFrameEvents);
     const iframe = createTag('iframe', {
       src: upgradeUrl,
       title: 'Upgrade modal',
@@ -62,30 +121,15 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
       class: 'upgrade-flow-iframe',
     });
     const { getModal } = await import('../modal/modal.js');
-    const func = (e) => {
+    const content = createTag('div', { class: 'upgrade-flow-modal-content' });
+    content.append(iframe);
+
+    const showModal = async (e) => {
       e.preventDefault();
-      getModal(null, { id: 'preflight', content: iframe, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
+      modal = await getModal(null, { id: 'preflight', content, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
       this.dataset.switchPlanUrl2 = upgradeUrl;
     };
     const text = await replaceKey('upgrade-now', config);
-    return { text, url: upgradeUrl, handler: func };
+    return { text, url: upgradeUrl, handler: showModal };
   }
-}
-
-/**
-* Replaces the `ctxRtUrl` in the `queryString`
-* @param {string} queryString
-* @returns {string}
-*/
-export function replaceCtxRtUrl(queryString) {
-  /* In order for the RETURN_BACK navigation to work correctly, the host page must include
-  a ctxRtUrl query param in the iframe src. This value should represent the URL of the host page
-  and will be used as the return URL (for example, when redirecting to PayPal). */
-  if (!queryString || typeof queryString !== 'string') return '';
-
-  if (queryString.includes('ctxRtUrl=')) {
-    const ctxUrlRegexp = /ctxRtUrl=([^&]+)/; // matches this part of the string: ctxRtUrl=https%3A%2F%2Faccount.stage.adobe.com
-    return queryString.replace(ctxUrlRegexp, properCtxRtUrl);
-  }
-  return `${queryString}${properCtxRtUrl}`;
 }
