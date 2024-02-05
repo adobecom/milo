@@ -163,7 +163,7 @@
 .section.sticky-bottom {
   position: sticky;
   bottom: 0;
-  z-index: 1;
+  z-index: 3;
   background-color: var(--color-white);
 }
 
@@ -201,6 +201,17 @@ main > .section[class*='-up'] > .content {
 .section.masonry-layout > div[class*='grid-'] > div.fragment,
 .section.masonry-layout > div[class*='grid-'] > div.fragment > div.section {
   display: grid;
+}
+
+/* mobile only */
+@media (max-width: 600px) {
+  .section.two-up.reverse-mobile > div:nth-child(1) {
+    order: 2;
+  }
+
+  .section.two-up.reverse-mobile > div:nth-child(2) {
+    order: 1;
+  }
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
