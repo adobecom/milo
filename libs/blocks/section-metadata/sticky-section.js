@@ -40,7 +40,7 @@ function handleStickyPromobar(section, delay) {
   io.observe(document.querySelector('footer'));
 }
 
-export default async function handleStickySection(sticky, section, delay = 0) {
+export default async function handleStickySection(sticky, section, delay) {
   const main = document.querySelector('main');
   switch (sticky) {
     case 'sticky-top': {
