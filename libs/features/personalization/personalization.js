@@ -187,7 +187,7 @@ const getBlockProps = (fSelector, fVal) => {
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
     let { selector, val } = i;
-    if (prop === 'blocks') ({ selector, val } = getBlockProps(i));
+    if (prop === 'blocks') ({ selector, val } = getBlockProps(selector, val));
     propMap[selector] = val;
   });
   return propMap;
