@@ -367,6 +367,10 @@
     max-width: 600px;
   }
 
+  .marquee.hero .foreground .text {
+    max-width: 800px;
+  }
+
   .marquee.center .foreground .text,
   .marquee.centered .foreground .text {
     margin: 0 auto;
