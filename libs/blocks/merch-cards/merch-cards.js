@@ -135,8 +135,12 @@ export default async function init(el) {
   }
 
   const { miloLibs } = getConfig();
-  const merchStyles = new Promise((resolve) => loadStyle(`${miloLibs}/blocks/merch/merch.css`, resolve));
-  const merchCardStyles = new Promise((resolve) => loadStyle(`${miloLibs}/blocks/merch-card/merch-card.css`, resolve));
+  const merchStyles = new Promise((resolve) => {
+    loadStyle(`${miloLibs}/blocks/merch/merch.css`, resolve);
+  });
+  const merchCardStyles = new Promise((resolve) => {
+    loadStyle(`${miloLibs}/blocks/merch-card/merch-card.css`, resolve);
+  });
   const allStyles = Promise.all([merchStyles, merchCardStyles]);
 
   const attributes = { filter: 'all', class: CLASS_LOADING };
