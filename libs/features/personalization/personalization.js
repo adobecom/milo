@@ -166,22 +166,28 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
+const getBlockProps = (fSelector, fVal) => {
+  let selector = fSelector;
+  let val = fVal;
+  if (val?.includes('\\')) val = val?.split('\\').join('/');
+  if (!val?.startsWith('/')) val = `/${val}`;
+  selector = val?.split('/').pop();
+  const { origin } = PAGE_URL;
+  if (origin.includes('.hlx.') || origin.includes('localhost')) {
+    if (val.startsWith('/libs/')) {
+      const { miloLibs, codeRoot } = getConfig();
+      val = `${miloLibs || codeRoot}${val.replace('/libs', '')}`;
+    } else {
+      val = `${origin}${val}`;
+    }
+  }
+  return { selector, val };
+};
+
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
     let { selector, val } = i;
-    if (prop === 'blocks') {
-      if (val?.includes('\\')) val = val?.split('\\').join('/');
-      if (!val?.startsWith('/')) val = `/${val}`;
-      selector = val?.split('/').pop();
-      const { origin } = PAGE_URL;
-      if (origin.includes('.hlx.') || origin.includes('localhost:3000')) {
-        if (val.startsWith('/libs/')) {
-          val = `${getConfig().miloLibs}${val.replace('/libs', '')}`;
-        } else {
-          val = `${origin}${val}`;
-        }
-      }
-    }
+    if (prop === 'blocks') ({ selector, val } = getBlockProps(i));
     propMap[selector] = val;
   });
   return propMap;
