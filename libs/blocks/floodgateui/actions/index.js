@@ -15,7 +15,10 @@ function getSanitizedUrl(link) {
 }
 
 function isReferencedAsset(link, baseUrlOrigin) {
-  return link && link.startsWith(baseUrlOrigin) && (link.endsWith('.svg') || link.endsWith('.pdf') || link.endsWith('.mp4'));
+  if (link && link.includes('#_autoplay')) {
+    link = link.replace('#_autoplay', '');
+  }
+  return link && link.startsWith(baseUrlOrigin) && (link.endsWith('.svg') || link.endsWith('.pdf') || (link.endsWith('.mp4') && link.includes('/assets/')));
 }
 
 function updateDomWithBaseUrl(dom, url) {
