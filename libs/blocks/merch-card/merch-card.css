@@ -1,7 +1,6 @@
 main > div.section[class*="-merch-card"]:not([data-status='decorated']),
 .fragment > div.section[class*="-merch-card"]:not([data-status='decorated']) {
   display: grid;
-  padding-bottom: var(--spacing-m);
 }
 
 div[class*="-merch-card"] > div,
