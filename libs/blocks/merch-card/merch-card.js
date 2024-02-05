@@ -112,8 +112,9 @@ const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 const sectionObserver = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.type === 'attributes' && mutation.attributeName === 'data-status') {
-      sectionObserver.disconnect(mutation.target);
-      [...mutation.target.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
+      const container = mutation.target.closest('main > div');
+      if (!container) return;
+      [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
     }
   });
 });
