@@ -1,4 +1,3 @@
-import parseMd from '../../../tools/loc/helix/parseMarkdown.bundle.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
 
@@ -51,36 +50,30 @@ async function handleBuild() {
   formEl.classList.add('loading');
   statusEl.innerText = 'Generating table, please wait....';
   let json;
-  let md;
+  let body;
   try {
     const res = await fetch(`https://admin.hlx.page/status/${owner}/${repo}/${ref}?editUrl=${referrer}`);
     json = await res.json();
   } catch (e) { return handleError(e); }
   try {
     await fetch(
-      `https://admin.hlx.page/preview/${owner}/${repo}/${ref}/${json.webPath}`,
+      `https://admin.hlx.page/preview/${owner}/${repo}/${ref}${json.webPath}`,
       { method: 'POST' },
     );
   } catch (e) { return handleError('Failed to preview document'); }
   try {
-    const mdFetch = await fetch(`${json.resourcePath}`);
-    md = await mdFetch.text();
+    const mdFetch = await fetch(`${json.preview.url}`);
+    body = await mdFetch.text();
   } catch (e) { return handleError(e); }
-  const doc = { content: { data: md }, log: '' };
-  parseMd(doc);
-  const items = [];
-  const searchItems = async (arr) => {
-    for (const child of arr) {
-      if (child.type.match(/link|heading/) && !child.children[0].value?.startsWith('http')) {
-        const str = await replaceText(child.children[0].value, config);
-        if (str) items.push(str);
-        /* eslint-disable-next-line no-continue */
-        continue;
-      }
-      if (child.children) await searchItems(child.children);
-    }
-  };
-  await searchItems(doc.content.mdast.children);
+  const dummy = createTag('html', {}, body);
+  const els = [...dummy.querySelectorAll('main :is(h1, h2, h3, h4, h5, h6, a)')]
+    .filter((el) => !el.closest('[class*="metadata"]') && !el.innerText.startsWith('http'));
+  const items = await els.reduce(async (accP, curr) => {
+    const acc = await accP;
+    const str = await replaceText(curr.innerText, config);
+    if (str) acc.push(str);
+    return acc;
+  }, []);
   /* global ClipboardItem */
   clipboardData = [new ClipboardItem({ 'text/html': new Blob([getTable(items)], { type: 'text/html' }) })];
   handleSuccess();
