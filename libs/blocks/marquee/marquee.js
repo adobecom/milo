@@ -66,9 +66,9 @@ const decorateImage = (media) => {
 
 export async function loadMnemonicList(foreground) {
   try {
-    const { miloLibs, codeRoot } = getConfig();
+    const { base } = getConfig();
     const stylePromise = new Promise((resolve) => {
-      loadStyle(`${miloLibs || codeRoot}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
+      loadStyle(`${base}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
     });
     const loadModule = import('../mnemonic-list/mnemonic-list.js')
       .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
