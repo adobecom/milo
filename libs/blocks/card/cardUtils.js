@@ -6,8 +6,10 @@ const DOUBLE_WIDE = 'DoubleWideCard';
 const HALF_HEIGHT = 'HalfHeightCard';
 
 export const addBackgroundImg = (picture, cardType, card) => {
-  const url = picture.querySelector('img').src;
-  card.append(createTag('div', { class: `consonant-${cardType}-img`, style: `background-image: url(${url})` }));
+  let url = '';
+  if (viewport === 'mobile') url = pic.querySelector('source[type="image/webp"]:not([media])');
+  else url = pic.querySelector('source[type="image/webp"][media]');
+  card.append(createTag('div', { class: `consonant-${cardType}-img`, style: `background-image: url(${url.srcset})` }));
 };
 
 export const addVideoBtn = (link, cardType, card) => {
