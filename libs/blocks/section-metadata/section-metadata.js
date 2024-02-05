@@ -15,7 +15,7 @@ function handleBackground(div, section) {
   }
 }
 
-export async function handleStyle(text, section, delay) {
+export async function handleStyle(text, section, delay = null) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
