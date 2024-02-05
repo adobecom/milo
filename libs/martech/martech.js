@@ -189,8 +189,6 @@ export default async function init({ persEnabled = false, persManifests = [] }) 
       const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
       const manifests = preloadManifests({ targetManifests, persManifests });
       await applyPers(manifests);
-    } else {
-      document.body.dataset.mep = 'nopzn|nopzn';
     }
   }
 
