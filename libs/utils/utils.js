@@ -834,13 +834,16 @@ function preloadFile(base, name, { path = '', css = true, fetchpriority = 'low' 
   }
 }
 
-function getDtmLib(env) {
-  return env.name === 'prod'
-    ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-    : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js';
-}
 
 async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
+  const getDtmLib = (env) => ({
+    edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
+    url:
+      env.name === 'prod'
+        ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+        : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
+  });
+
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
     return Promise.resolve();
@@ -853,22 +856,19 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 
   const { env, miloLibs, codeRoot } = getConfig();
   const martechEnv = ['stage', 'local'].includes(env.name) ? '.qa' : '';
-  preloadFile('', '', {
-    path: `${miloLibs || codeRoot}/deps/martech.main.standard${martechEnv}.min.js`,
-    css: false,
-    fetchpriority: 'high',
-  });
-  preloadFile('', '', {
-    path: getDtmLib(env),
-    css: false,
-    fetchpriority: 'high',
-  });
+  loadLink(
+    `${miloLibs || codeRoot}/deps/martech.main.standard${martechEnv}.min.js`,
+    { as: 'script', rel: 'preload', fetchpriority: 'high' },
+  );
+
+  const dtmLib = getDtmLib(env);
+  loadLink(dtmLib.url, { as: 'script', rel: 'preload', fetchpriority: 'high' });
 
   window.targetGlobalSettings = { bodyHidingEnabled: false };
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  return initMartech({ persEnabled, persManifests });
+  return initMartech({ dtmLib, persEnabled, persManifests });
 }
 
 function preloadFirstSectionBlocks({ mep = false } = {}) {
