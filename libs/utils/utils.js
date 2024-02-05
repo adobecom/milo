@@ -104,7 +104,6 @@ const DO_NOT_INLINE_FRAGMENTS = [
   'columns',
   'z-pattern',
 ];
-
 const POSTLCP_BLOCKS = [
   'modal',
 ];
@@ -715,13 +714,15 @@ async function loadFooter() {
   await loadBlock(footer);
 }
 
-function getBlockLinks(blocks, links) {
+function getBlockLinks(blocks, links, sectionIdx) {
   const { doNotInline } = getConfig();
   return blocks.reduce((blkLinks, block) => {
     const blockName = block.classList[0];
     links.filter((link) => block.contains(link))
       .forEach((link) => {
-        if (link.classList.contains('fragment')
+        if (sectionIdx === 0 && POSTLCP_BLOCKS.includes(link.classList[0])) {
+          blkLinks.postLcpBlocks.push(link);
+        } else if (link.classList.contains('fragment')
           && MILO_BLOCKS.includes(blockName)
           && !doNotInline.includes(blockName)) {
           if (!link.href.includes('#_inline')) {
@@ -733,7 +734,7 @@ function getBlockLinks(blocks, links) {
         }
       });
     return blkLinks;
-  }, { inlineFrags: [], autoBlocks: [] });
+  }, { inlineFrags: [], autoBlocks: [], postLcpBlocks: [] });
 }
 
 function filterOutLinks(links, linksToFilterOut) {
@@ -753,14 +754,21 @@ function decorateSection(section, idx) {
   decorateDefaults(section);
   let blocks = [...section.querySelectorAll(':scope > div[class]:not(.content)')];
 
-  const blockLinks = getBlockLinks(blocks, links);
+  const blkLinks = getBlockLinks(blocks, links, idx);
 
-  links = filterOutLinks(links, [...blockLinks.inlineFrags, ...blockLinks.autoBlocks]);
-  const postLcpLinks = getPostLcpBlocks(links);
-  links = filterOutLinks(links, postLcpLinks);
+  let postLcpLinks = [];
+  let postLcpBlocks = [];
 
-  const postLcpBlocks = getPostLcpBlocks(blocks);
-  blocks = filterOutLinks(blocks, postLcpBlocks);
+  if (idx === 0) {
+    postLcpLinks = getPostLcpBlocks(links);
+    postLcpBlocks = getPostLcpBlocks(blocks);
+    blocks = filterOutLinks(blocks, postLcpBlocks);
+  }
+
+  links = filterOutLinks(
+    links,
+    [...postLcpLinks, ...blkLinks.postLcpBlocks, ...blkLinks.inlineFrags, ...blkLinks.autoBlocks],
+  );
 
   section.className = 'section';
   section.dataset.status = 'decorated';
@@ -770,8 +778,8 @@ function decorateSection(section, idx) {
     blocks: [...links, ...blocks],
     el: section,
     idx,
-    preloadLinks: blockLinks.autoBlocks,
-    postLcpBlocks: [...postLcpLinks, ...postLcpBlocks],
+    preloadLinks: blkLinks.autoBlocks,
+    postLcpBlocks: [...postLcpLinks, ...blkLinks.postLcpBlocks, ...postLcpBlocks],
   };
 }
 
@@ -821,29 +829,7 @@ export async function loadIms() {
   return imsLoaded;
 }
 
-function preloadFile(base, name, { path = '', css = true, fetchpriority = 'low' } = {}) {
-  loadLink(
-    path || `${base}/blocks/${name}/${name}.js`,
-    { as: 'script', rel: 'modulepreload', fetchpriority },
-  );
-  if (!path && css) {
-    loadLink(
-      path || `${base}/blocks/${name}/${name}.css`,
-      { as: 'style', rel: 'preload', fetchpriority },
-    );
-  }
-}
-
-
 async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
-  const getDtmLib = (env) => ({
-    edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
-    url:
-      env.name === 'prod'
-        ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-        : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
-  });
-
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
     return Promise.resolve();
@@ -854,45 +840,11 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
     return false;
   }
 
-  const { env, miloLibs, codeRoot } = getConfig();
-  const martechEnv = ['stage', 'local'].includes(env.name) ? '.qa' : '';
-  loadLink(
-    `${miloLibs || codeRoot}/deps/martech.main.standard${martechEnv}.min.js`,
-    { as: 'script', rel: 'preload', fetchpriority: 'high' },
-  );
-
-  const dtmLib = getDtmLib(env);
-  loadLink(dtmLib.url, { as: 'script', rel: 'preload', fetchpriority: 'high' });
-
   window.targetGlobalSettings = { bodyHidingEnabled: false };
-  loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  return initMartech({ dtmLib, persEnabled, persManifests });
-}
-
-function preloadFirstSectionBlocks({ mep = false } = {}) {
-  const firstSection = document.querySelector('body > main > div');
-  const blocks = firstSection.querySelectorAll(':scope > div[class]:not(.content)');
-  const { miloLibs, codeRoot } = getConfig();
-
-  blocks.forEach((block) => {
-    if (block.classList.contains('hide-block') || block.classList[0] === 'breadcrumbs') {
-      return;
-    }
-    const name = block.classList[0];
-    const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
-    preloadFile(base, name);
-
-    if (name === 'marquee') {
-      preloadFile(base, '', { path: `${base}/utils/decorate.js`, css: false });
-    }
-  });
-
-  if (mep) {
-    preloadFile(miloLibs || codeRoot, 'fragment');
-    preloadFile('', '', { path: `${miloLibs || codeRoot}/utils/tree.js`, css: false });
-  }
+  loadIms().catch(() => {});
+  return initMartech({ persEnabled, persManifests });
 }
 
 async function checkForPageMods() {
@@ -911,13 +863,12 @@ async function checkForPageMods() {
   if (mepEnabled) {
     const { base } = getConfig();
     loadLink(
-      `${base}/features/personalization/personalization.js`,
+      `${base}/martech/martech.js`,
       { as: 'script', rel: 'modulepreload' },
     );
-    loadLink(
-      `${base}/features/personalization/entitlements.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
+    loadLink('https://assets.adobedtm.com', { rel: 'preconnect' });
+    loadLink('https://sstats.adobe.com', { rel: 'preconnect' });
+    loadLink('https://auth.services.adobe.com', { rel: 'preconnect' });
   }
 
   if (persEnabled) {
@@ -933,10 +884,10 @@ async function checkForPageMods() {
   }
 
   const { env } = getConfig();
-  let previewOn = false;
+
   const mep = PAGE_URL.searchParams.get('mep');
-  if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
-    previewOn = true;
+  const previewOn = mep !== null || (env?.name !== 'prod' && mepEnabled);
+  if (previewOn) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
@@ -946,10 +897,14 @@ async function checkForPageMods() {
   }
 
   if (targetEnabled) {
-    const martechPromise = loadMartech({ persEnabled: true, persManifests, targetMd });
-    preloadFirstSectionBlocks({ mep: true });
-    await martechPromise;
+    await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
+    const { base } = getConfig();
+    loadLink(
+      `${base}/features/personalization/personalization.js`,
+      { as: 'script', rel: 'modulepreload' },
+    );
+
     loadIms()
       .then(() => {
         if (window.adobeIMS.isSignedInUser()) loadMartech();
@@ -958,8 +913,6 @@ async function checkForPageMods() {
 
     const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
-
-    preloadFirstSectionBlocks({ mep: true });
 
     await applyPers(manifests);
   }
@@ -986,9 +939,7 @@ async function loadPostLCP(config, postLcpBlocks = []) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
-  if (postLcpBlocks.length) {
-    postLcpBlocks.forEach((block) => loadBlock(block));
-  }
+  postLcpBlocks?.forEach((block) => loadBlock(block));
 }
 
 export function scrollToHashedElement(hash) {
@@ -1147,7 +1098,7 @@ async function processSection(section, config, isDoc) {
   delete section.el.dataset.status;
 
   if (isDoc && section.el.dataset.idx === '0') {
-    await loadPostLCP(config);
+    await loadPostLCP(config, section.postLcpBlocks);
   }
 
   delete section.el.dataset.idx;
@@ -1167,7 +1118,6 @@ export async function loadArea(area = document) {
   const placeholderPromise = decoratePlaceholders(area, config);
 
   if (isDoc) {
-    preloadFirstSectionBlocks();
     decorateDocumentExtras();
   }
   await placeholderPromise;
