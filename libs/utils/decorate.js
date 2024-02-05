@@ -155,11 +155,16 @@ function applyTextOverrides(el, override) {
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
-    elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
+    if (type === 'supplemental') {
+      parts[1] = 'body';
+      elem.classList.add(`${parts[1]}-${parts[0]}`);
+    } else {
+      elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
+    }
   });
 }
 
-export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
+export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail', '-supplemental']) {
   const overrides = [...el.classList]
     .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
   if (!overrides.length) return;

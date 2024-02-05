@@ -2,7 +2,7 @@
  * Marquee - v6.0
  */
 
-import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
+import { decorateButtons, decorateTextOverrides, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
@@ -131,4 +131,9 @@ export default async function init(el) {
   if (el.classList.contains('mnemonic-list') && foreground) {
     await loadMnemonicList(foreground);
   }
+
+  if (el.classList.contains('hero')) {
+    el.classList.add('xxxl-heading', 'xl-button', 'xs-supplemental')
+  }
+  decorateTextOverrides(el);
 }
