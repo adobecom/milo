@@ -15,13 +15,13 @@ function handleBackground(div, section) {
   }
 }
 
-export async function handleStyle(text, section, delay) {
+export async function handleStyle(text, section) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
   if (sticky) {
     const { default: handleStickySection } = await import('./sticky-section.js');
-    await handleStickySection(sticky, section, delay);
+    await handleStickySection(sticky, section);
   }
   if (styles.includes('masonry')) styles.push('masonry-up');
   section.classList.add(...styles);
@@ -63,7 +63,7 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
 export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
-  if (metadata.style) await handleStyle(metadata.style.text, section, metadata.delay?.text);
+  if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);

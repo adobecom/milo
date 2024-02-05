@@ -1,4 +1,5 @@
 import { createTag } from '../../utils/utils.js';
+import { getMetadata } from './section-metadata.js';
 
 function handleTopHeight(section) {
   const headerHeight = document.querySelector('header').offsetHeight;
@@ -9,12 +10,13 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
   const io = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (el.classList.contains('close-sticky-section')) {
+        window.removeEventListener('resize', handleTopHeight);
         observer.unobserve(entry.target);
         return;
       }
       const isPromoStart = entry.target === stickySectionEl;
       const abovePromoStart = (isPromoStart && entry.isIntersecting)
-                        || stickySectionEl?.getBoundingClientRect().y > 0;
+        || stickySectionEl?.getBoundingClientRect().y > 0;
       if (entry.isIntersecting || abovePromoStart) el.classList.add('hide-sticky-section');
       else el.classList.remove('hide-sticky-section');
     });
@@ -40,7 +42,7 @@ function handleStickyPromobar(section, delay) {
   io.observe(document.querySelector('footer'));
 }
 
-export default async function handleStickySection(sticky, section, delay = 0) {
+export default async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
   switch (sticky) {
     case 'sticky-top': {
@@ -51,8 +53,12 @@ export default async function handleStickySection(sticky, section, delay = 0) {
     }
     case 'sticky-bottom': {
       if (section.querySelector('.promobar')) {
-        if (delay) setTimeout(() => { handleStickyPromobar(section, delay); }, delay);
-        else handleStickyPromobar(section, delay);
+        const metadata = getMetadata(section.querySelector('.section-metadata'));
+        if (metadata.delay) {
+          setTimeout(() => {
+            handleStickyPromobar(section, metadata.delay?.text);
+          }, metadata.delay.text);
+        } else handleStickyPromobar(section, metadata.delay?.text);
       }
       main.append(section);
       break;
