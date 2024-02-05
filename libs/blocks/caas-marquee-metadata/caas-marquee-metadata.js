@@ -34,7 +34,7 @@ export default function init(el) {
   const arbitraryValue = createTag('div', null, (`promoId: ${metadata.promoid},
     imageTablet: ${metadata.imagetablet || ''},
     imageDesktop: ${metadata.imagedesktop || ''},
-    variant: ${metadata.variant || ''},
+    variant: ${metadata.variant.toLowerCase() || ''},
     context: ${metadata.context || ''},
   `).replace(/\s+/g, ' '));
   arbitrary.append(arbitraryKey, arbitraryValue);
