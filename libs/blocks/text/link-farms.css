@@ -1,3 +1,7 @@
+.link-farm.text-block:not([class*="-spacing"]) {
+  padding: var(--spacing-xl) 0;
+}
+
 .link-farm.text-block .foreground {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
