@@ -9,7 +9,7 @@ export const addBackgroundImg = (picture, cardType, card) => {
   let url = '';
   // if (viewport === 'mobile') 
   // else url = pic.querySelector('source[type="image/webp"][media]');
-  url = pic.querySelector('source[type="image/webp"]:not([media])');
+  url = picture.querySelector('source[type="image/webp"]:not([media])');
   card.append(createTag('div', { class: `consonant-${cardType}-img`, style: `background-image: url(${url.srcset})` }));
 };
 
