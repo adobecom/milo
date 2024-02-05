@@ -174,8 +174,9 @@ const getBlockProps = (fSelector, fVal) => {
   selector = val?.split('/').pop();
   const { origin } = PAGE_URL;
   if (origin.includes('.hlx.') || origin.includes('localhost')) {
+    const { miloLibs, codeRoot } = getConfig();
     if (val.startsWith('/libs/')) {
-      const { miloLibs, codeRoot } = getConfig();
+      /* c8 ignore next 2 */
       val = `${miloLibs || codeRoot}${val.replace('/libs', '')}`;
     } else {
       val = `${origin}${val}`;
