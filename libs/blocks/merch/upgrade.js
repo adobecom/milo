@@ -35,7 +35,7 @@ function buildUrl(upgradeOffer, upgradable, config) {
   return url.toString();
 }
 
-const handleIFrameEvents = ({ data: msgData }) => {
+export const handleIFrameEvents = ({ data: msgData }) => {
   let parsedMsg = null;
   try {
     parsedMsg = JSON.parse(msgData);
@@ -122,3 +122,7 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
   }
   return undefined;
 }
+
+export const setModal = (testModal) => {
+  modal = testModal;
+};
