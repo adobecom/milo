@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { delay } from '../../helpers/waitfor.js';
 
 import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/commerce.js';
 
@@ -11,7 +12,6 @@ import merch, {
   getCheckoutContext,
   initService,
   priceLiteralsURL,
-  setDownloadFlowFeatureFlag,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
@@ -19,12 +19,30 @@ import { mockIms, unmockIms } from './mocks/ims.js';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
 
-const ENTITLEMENTS_METADATA = {
+const CHECKOUT_LINK_CONFIGS = {
   data: [{
-    'Product Arrangement Code': 'phsp_direct_individual',
-    CTA: 'Download',
-    Target: 'https://helpx.adobe.com/download-install.html',
-    'fr-FR': 'https://helpx.adobe.com/fr/custom-page.html',
+    PRODUCT_FAMILY: 'PHOTOSHOP',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/photoshop',
+    FREE_TRIAL_PATH: '/cc-shared/fragments/trial-modals/photoshop',
+    BUY_NOW_PATH: '/cc-shared/fragments/buy-modals/photoshop',
+    LOCALE: '',
+  },
+  {
+    PRODUCT_FAMILY: 'ILLUSTRATOR',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/illustrator',
+    FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
+    BUY_NOW_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html',
+    LOCALE: '',
+  },
+  {
+    PRODUCT_FAMILY: 'PHOTOSHOP',
+    DOWNLOAD_TEXT: '',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/fr/apps/download/photoshop?q=123',
+    FREE_TRIAL_PATH: '',
+    BUY_NOW_PATH: '',
+    LOCALE: 'fr',
   }],
 };
 
@@ -33,7 +51,7 @@ const config = {
   commerce: { priceLiteralsURL },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
-  placeholders: { 'upgrade-now': 'Upgrade Now' },
+  placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
 };
 
 /**
@@ -56,25 +74,12 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
   return el;
 };
 
-const SUBSCRIPTION_DATA_PHSP = [
-  {
-    offer: { product_arrangement_code: 'phsp_direct_individual' },
-    product_arrangement: {
-      code: 'phsp_direct_individual',
-      family: 'PHOTOSHOP',
-    },
-  },
-];
-
 const SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE = [
   {
     change_plan_available: true,
     offer: {
       offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
-      product_arrangement: {
-        code: 'phsp_direct_individual',
-        family: 'PHOTOSHOP',
-      },
+      product_arrangement: { family: 'PHOTOSHOP' },
     },
   },
 ];
@@ -86,11 +91,12 @@ const PROD_DOMAINS = [
 ];
 
 describe('Merch Block', () => {
-  let setEntitlementsMetadata;
+  let setCheckoutLinkConfigs;
   let setSubscriptionsData;
 
   after(async () => {
     delete window.lana;
+    setCheckoutLinkConfigs();
     unmockFetch();
     unmockIms();
   });
@@ -99,20 +105,19 @@ describe('Merch Block', () => {
     window.lana = { log: () => { } };
     document.head.innerHTML = await readFile({ path: './mocks/head.html' });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    setConfig(config);
-    ({ setEntitlementsMetadata, setSubscriptionsData } = await mockFetch());
-    await mockIms('CH');
-    setDownloadFlowFeatureFlag(true);
+    ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
+    setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
 
   beforeEach(async () => {
+    setConfig(config);
+    await mockIms('CH');
     await initService(true);
     Log.reset();
     Log.use(Log.Plugins.quietFilter);
   });
 
   afterEach(() => {
-    setEntitlementsMetadata();
     setSubscriptionsData();
   });
 
@@ -379,64 +384,46 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('Entitlements', () => {
-    it('updates CTA text to Download', async () => {
+  describe('TWP and D2P modals', () => {
+  });
+
+  describe('Download flow', () => {
+    it('supports download use case', async () => {
       mockIms();
       getUserEntitlements();
       mockIms('US');
-      setEntitlementsMetadata(ENTITLEMENTS_METADATA);
-      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
+      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
       await initService(true);
       const cta1 = await merch(document.querySelector('.merch.cta.download'));
       await cta1.onceSettled();
-      const [{ CTA, Target }] = ENTITLEMENTS_METADATA.data;
-      expect(cta1.textContent).to.equal(CTA);
-      expect(cta1.href).to.equal(Target);
+      const [{ DOWNLOAD_TEXT, DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
+      expect(cta1.textContent).to.equal(DOWNLOAD_TEXT);
+      expect(cta1.href).to.equal(DOWNLOAD_URL);
 
       const cta2 = await merch(document.querySelector('.merch.cta.no-entitlement-check'));
       await cta2.onceSettled();
       expect(cta2.textContent).to.equal('Buy Now');
-      expect(cta2.href).to.not.equal(Target);
+      expect(cta2.href).to.not.equal(DOWNLOAD_URL);
     });
 
-    it('sets Download CTA href from the locale column', async () => {
-      setConfig({
+    it('supports download use case with locale specific values', async () => {
+      const newConfig = setConfig({
         ...config,
         pathname: '/fr/test.html',
         locales: { fr: { ietf: 'fr-FR' } },
         prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
       });
       mockIms();
       getUserEntitlements();
       mockIms('FR');
-      setEntitlementsMetadata(ENTITLEMENTS_METADATA);
-      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
+      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
       await initService(true);
       const cta = await merch(document.querySelector('.merch.cta.download.fr'));
       await cta.onceSettled();
-      const [{ CTA, 'fr-FR': target }] = ENTITLEMENTS_METADATA.data;
-      expect(cta.textContent).to.equal(CTA);
-      expect(cta.href).to.equal(target);
-    });
-
-    it('sets Download CTA href from localized target url', async () => {
-      setConfig({
-        ...config,
-        pathname: '/de/test.html',
-        locales: { de: { ietf: 'DE' } },
-        prodDomains: PROD_DOMAINS,
-      });
-      mockIms();
-      getUserEntitlements();
-      mockIms('DE');
-      setEntitlementsMetadata(ENTITLEMENTS_METADATA);
-      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP);
-      await initService(true);
-      const cta = await merch(document.querySelector('.merch.cta.download.de'));
-      await cta.onceSettled();
-      const [{ CTA }] = ENTITLEMENTS_METADATA.data;
-      expect(cta.textContent).to.equal(CTA);
-      expect(cta.href).to.equal('https://helpx.adobe.com/de/download-install.html');
+      const [, { DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
+      expect(cta.textContent).to.equal(newConfig.placeholders.download);
+      expect(cta.href).to.equal(DOWNLOAD_URL);
     });
   });
 
@@ -445,7 +432,6 @@ describe('Merch Block', () => {
       mockIms();
       getUserEntitlements();
       mockIms('US');
-      setEntitlementsMetadata(ENTITLEMENTS_METADATA);
       setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
       await initService(true);
       const target = await merch(document.querySelector('.merch.cta.upgrade-target'));
@@ -453,6 +439,40 @@ describe('Merch Block', () => {
       const sourceCta = await merch(document.querySelector('.merch.cta.upgrade-source'));
       await sourceCta.onceSettled();
       expect(sourceCta.textContent).to.equal('Upgrade Now');
+    });
+  });
+
+  describe('Modal flow', () => {
+    it('renders TWP modal', async () => {
+      mockIms();
+      const el = document.querySelector('.merch.cta.twp');
+      const cta = await merch(el);
+      const { nodeName, textContent } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      expect(textContent).to.equal('Free Trial');
+      expect(cta.getAttribute('href')).to.equal('#');
+      cta.click();
+      await delay(100);
+      expect(document.querySelector('iframe').src).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1');
+      const modal = document.getElementById('checkout-link-modal');
+      expect(modal).to.exist;
+      document.querySelector('.modal-curtain').click();
+    });
+
+    it('renders D2P modal', async () => {
+      mockIms();
+      const el = document.querySelector('.merch.cta.d2p');
+      const cta = await merch(el);
+      const { nodeName, textContent } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      expect(textContent).to.equal('Buy Now');
+      expect(cta.getAttribute('href')).to.equal('#');
+      cta.click();
+      await delay(100);
+      expect(document.querySelector('iframe').src).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
+      const modal = document.getElementById('checkout-link-modal');
+      expect(modal).to.exist;
+      document.querySelector('.modal-curtain').click();
     });
   });
 });

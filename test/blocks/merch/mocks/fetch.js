@@ -11,9 +11,9 @@ export async function mockFetch() {
 
   const { fetch } = window;
 
-  let entitlementsMetadata;
-  const setEntitlementsMetadata = (data) => {
-    entitlementsMetadata = Promise.resolve(data);
+  let checkoutLinkConfigs;
+  const setCheckoutLinkConfigs = (data) => {
+    checkoutLinkConfigs = Promise.resolve(data);
   };
 
   let subscriptionsData;
@@ -54,11 +54,11 @@ export async function mockFetch() {
     }
 
     // entitlements data mock
-    if (/entitlements.json/.test(pathname)) {
-      return Promise.resolve(entitlementsMetadata ? {
+    if (/checkout-link.json/.test(pathname)) {
+      return Promise.resolve(checkoutLinkConfigs ? {
         ok: true,
         status: 200,
-        json: () => entitlementsMetadata,
+        json: () => checkoutLinkConfigs,
       } : { ok: false, status: 404 });
     }
 
@@ -83,7 +83,7 @@ export async function mockFetch() {
     return fetch.apply(window, args);
   });
 
-  return { setEntitlementsMetadata, setSubscriptionsData };
+  return { setCheckoutLinkConfigs, setSubscriptionsData };
 }
 
 export function unmockFetch() {
