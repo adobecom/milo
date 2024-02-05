@@ -113,7 +113,11 @@ function addPillEventListeners(div) {
     a.addEventListener('click', () => {
       if (a.getAttribute('href')) return false;
       const w = window.open('', '_blank');
-      w.document.write('<html><head></head><body>Please wait while we redirect you</body></html>');
+      w.document.write(`<html><head></head><body>
+        Please wait while we redirect you. 
+        If you are not redirected, please check that you are signed into the AEM sidekick
+        and try again.
+        </body></html>`);
       w.document.close();
       w.focus();
       getEditManifestUrl(a, w);
