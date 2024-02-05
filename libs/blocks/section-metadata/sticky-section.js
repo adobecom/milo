@@ -55,9 +55,8 @@ export default async function handleStickySection(sticky, section) {
       if (section.querySelector('.promobar')) {
         const metadata = getMetadata(section.querySelector('.section-metadata'));
         const delay = metadata.delay?.text;
-        if (delay) {
-          setTimeout(() => { handleStickyPromobar(section, delay); }, metadata.delay.text);
-        } else handleStickyPromobar(section, delay);
+        if (delay) setTimeout(() => { handleStickyPromobar(section, delay); }, metadata.delay.text);
+        else handleStickyPromobar(section, delay);
       }
       main.append(section);
       break;
