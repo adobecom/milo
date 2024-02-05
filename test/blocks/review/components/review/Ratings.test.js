@@ -119,15 +119,15 @@ describe('Ratings', () => {
     const forth = stars[3];
     const fifth = stars[4];
     forth.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-    await new Promise((resolve) => { setTimeout(() => resolve(), 50); });
+    await new Promise((resolve) => { setTimeout(() => resolve(), 150); });
     expect(forth.classList.contains('is-hovering')).to.be.true;
     forth.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
     forth.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
-    await new Promise((resolve) => { setTimeout(() => resolve(), 50); });
+    await new Promise((resolve) => { setTimeout(() => resolve(), 150); });
     expect(forth.classList.contains('is-hovering')).to.be.false;
     fifth.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
     fifth.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    await new Promise((resolve) => { setTimeout(() => resolve(), 100); });
+    await new Promise((resolve) => { setTimeout(() => resolve(), 150); });
     expect(fifth.classList.contains('is-Active')).to.be.true;
     forth.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
     forth.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
