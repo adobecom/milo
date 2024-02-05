@@ -234,7 +234,7 @@ export default async function init(el) {
     merchCards.filtered = 'all';
   }
   addPlaceholderMerchCards(merchCards, type, attributes);
-  initMerchCards(config, type, attributes.filtered, el, preferences)
+  await initMerchCards(config, type, attributes.filtered, el, preferences)
     .then((async (cardsRoot) => {
       const cards = [...cardsRoot.children];
       const batchSize = 3;
