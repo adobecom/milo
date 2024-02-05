@@ -1,7 +1,7 @@
 import { createIntersectionObserver } from '../../utils/utils.js';
 import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
 
-const ROOT_MARGIN = window.innerHeight || 600;
+const ROOT_MARGIN = window.innerHeight - 100 || 600;
 
 const loadAdobeTv = (a) => {
   const bgBlocks = ['aside', 'marquee'];
