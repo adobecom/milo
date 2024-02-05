@@ -57,43 +57,43 @@ describe('media', () => {
   });
   describe('media with qr-code', () => {
     it('does have qr-code image', () => {
-      const qrCodeImg = medias[5].querySelector('img.qr-code-img');
+      const qrCodeImg = medias[5].querySelector('.qr-code-img');
       expect(qrCodeImg).to.exist;
     });
     it('does have CTA for google-play', () => {
-      const googlePlayCta = medias[5].querySelector('a.google-play');
+      const googlePlayCta = medias[5].querySelector('.google-play');
       expect(googlePlayCta).to.exist;
     });
     it('does have CTA for app-store', () => {
-      const appStoreCta = medias[5].querySelector('a.app-store');
+      const appStoreCta = medias[5].querySelector('.app-store');
       expect(appStoreCta).to.exist;
     });
     it('desktop view has visibile qr code image and no google-play and app-store CTA', async () => {
       await setViewport({ width: 1200, height: 100 });
-      const qrCodeImg = medias[5].querySelector('img.qr-code-img');
-      const qrCTA = medias[5].querySelectorAll('.qr-button-container');
+      const qrCodeImg = medias[5].querySelector('.qr-code-img');
+      const googlePlayCta = medias[5].querySelector('.google-play');
+      const appStoreCta = medias[5].querySelector('.app-store');
       expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).not.to.equal('none');
-      qrCTA.forEach((cta) => {
-        expect(window.getComputedStyle(cta).getPropertyValue('display')).to.equal('none');
-      });
+      expect(window.getComputedStyle(googlePlayCta).getPropertyValue('display')).to.equal('none');
+      expect(window.getComputedStyle(appStoreCta).getPropertyValue('display')).to.equal('none');
     });
     it('mobile view has visibile google-play and app-store CTA and no qr code image', async () => {
       await setViewport({ width: 600, height: 100 });
-      const qrCodeImg = medias[5].querySelector('img.qr-code-img');
-      const qrCTA = medias[5].querySelectorAll('.qr-button-container');
+      const qrCodeImg = medias[5].querySelector('.qr-code-img');
+      const googlePlayCta = medias[5].querySelector('.google-play');
+      const appStoreCta = medias[5].querySelector('.app-store');
       expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).to.equal('none');
-      qrCTA.forEach((cta) => {
-        expect(window.getComputedStyle(cta).getPropertyValue('display')).not.to.equal('none');
-      });
+      expect(window.getComputedStyle(googlePlayCta).getPropertyValue('display')).not.to.equal('none');
+      expect(window.getComputedStyle(appStoreCta).getPropertyValue('display')).not.to.equal('none');
     });
     it('tablet view has visibile google-play and app-store CTA and no qr code image', async () => {
       await setViewport({ width: 1199, height: 100 });
-      const qrCodeImg = medias[5].querySelector('img.qr-code-img');
-      const qrCTA = medias[5].querySelectorAll('.qr-button-container');
+      const qrCodeImg = medias[5].querySelector('.qr-code-img');
+      const googlePlayCta = medias[5].querySelector('.google-play');
+      const appStoreCta = medias[5].querySelector('.app-store');
       expect(window.getComputedStyle(qrCodeImg).getPropertyValue('display')).to.equal('none');
-      qrCTA.forEach((cta) => {
-        expect(window.getComputedStyle(cta).getPropertyValue('display')).not.to.equal('none');
-      });
+      expect(window.getComputedStyle(googlePlayCta).getPropertyValue('display')).not.to.equal('none');
+      expect(window.getComputedStyle(appStoreCta).getPropertyValue('display')).not.to.equal('none');
     });
   });
   describe('with bio variant', () => {
