@@ -11,17 +11,10 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   width: 100%;
 }
 
-.caas,
-.caas-preview {
-  min-height: 400px;
+a.caas,
+.caas.link-block {
   display: block;
-}
-
-@media (min-width: 600px) {
-  .caas, 
-  .caas-preview {
-    min-height: unset;
-  }
+  min-height: 400px;
 }
 
 /* Dexter Modal CSS - can be removed when caas team fixes MWPW-118588*/

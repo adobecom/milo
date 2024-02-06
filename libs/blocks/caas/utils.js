@@ -726,12 +726,12 @@ export const initCaas = async (state, caasStrs, el) => {
   newEl.id = 'caas';
   newEl.className = 'caas-preview';
   appEl.append(newEl);
-  caasEl.remove();
 
   const config = await getConfig(state, caasStrs);
 
   // eslint-disable-next-line no-new, no-undef
   new ConsonantCardCollection(config, newEl);
+  caasEl.remove();
 };
 
 export const defaultState = {
