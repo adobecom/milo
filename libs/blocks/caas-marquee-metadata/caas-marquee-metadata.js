@@ -1,6 +1,4 @@
 import { createTag } from '../../utils/utils.js';
-// For preview only ((( Remove before merge )))
-import { renderMarquee } from '../caas-marquee/caas-marquee.js';
 
 export function getMetadata(el) {
   const metadata = {};
@@ -49,12 +47,4 @@ export default function init(el) {
     <div><div>cta2url</div><div>${metadata.cta2url}</div></div>
     <div><div>cta2text</div><div>${metadata.cta2text}</div></div>
     <div><div>cta2style</div><div>${metadata.cta2style}</div></div>`;
-
-  // For preview only ((( Remove before merge )))
-  const marquee = createTag('div', { class: `marquee split ${metadata.variant.toLowerCase().replaceAll(',', ' ')}` });
-  el.parentNode.prepend(marquee);
-  // Render marquee
-  renderMarquee(marquee, metadata);
-  // Degugging ((( Remove before release )))
-  console.log('metadata:', getMetadata(el)); // eslint-disable-line no-console
 }
