@@ -5,3 +5,11 @@
 merch-cards {
   min-height: 200px;
 }
+
+merch-cards.loading {
+  visibility: hidden;
+}
+
+merch-card.placeholder {
+  visibility: hidden;
+}
