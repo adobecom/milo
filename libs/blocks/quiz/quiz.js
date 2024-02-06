@@ -205,9 +205,9 @@ const App = ({
     if (selectedCards?.fi_code) {
       const customerInput = document.querySelector('button#fi_code div.quiz-option-text-container input').value;
       if (customerInput.length > 0) {
-        const productCodes = await fetchFiCodes(customerInput, 3);
-        const allFiCodes = productCodes?.data?.flatMap((item) => item.ficode) || [];
-        const filteredFiCodes = allFiCodes?.filter((item) => validFiCodes.includes(item));
+        const productCodes = await fetchFiCodes(customerInput, 3, validFiCodes);
+        const filteredProductCodes = productCodes?.data?.filter((item) => item.prob >= 0.2);
+        const filteredFiCodes = filteredProductCodes.flatMap((item) => item.ficode) || [];
         setMlFlowData(
           {
             fiCodes: filteredFiCodes,
