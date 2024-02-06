@@ -46,7 +46,7 @@ async function getCheckoutAction(offers) {
   let upgradeAction;
   const [entitlements, entitlementsMappings] = await loadEntitlements();
   const [{ productArrangementCode, productArrangement }] = offers;
-  const { productFamily } = productArrangement?.productFamily || {};
+  const productFamily = productArrangement?.productFamily;
   const upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]')?.onceSettled()
     .catch((e) => {
       window.lana.log('Failed to resolve an upgrade offer:', e);
