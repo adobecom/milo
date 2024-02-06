@@ -99,11 +99,77 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
 
 export const getFileName = (path) => path?.split('/').pop();
 
-const createFrag = (el, url, manifestId) => {
+const createDelayedModalAnchor = ({
+  delay,
+  displayMode,
+  href,
+  pathname,
+  hash,
+  manifestId,
+}) => {
+  if (!delay || !displayMode || !href || !pathname || !hash) {
+    // @TODO: remove this after testing, and won't returning undefined break anything?
+    console.log('not enough params:', { delay, displayMode, href, manifestId });
+    return undefined;
+  }
+  const a = createTag('a', { href }, `${pathname}${hash}`);
+  if (manifestId) a.dataset.manifestId = manifestId;
+  a.setAttribute('href', hash);
+  a.setAttribute('modal-hash', hash);
+  a.setAttribute('modal-path', pathname);
+  // @TODO: set display: none in CSS
+  a.classList.add('modal link-block delayed-modal-anchor');
+  loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  return a;
+};
+
+const defineDelayedModalParams = (search) => {
+  if (!search) return undefined;
+  const DELAYED_MODAL_DISPLAY_MODE = {
+    oncePerPageLoad: 'pageload',
+    oncePerSession: 'session',
+  };
+  const urlParams = new URLSearchParams(search);
+  const delay = urlParams?.get('delay');
+  const displayMode = urlParams?.get('display');
+  const isDelayValid = delay === '1' || delay === '2' || delay === '3';
+  const isDisplayModeValid = displayMode === 'pageload' || displayMode === 'session';
+  if (!isDelayValid || !isDisplayModeValid) return undefined;
+  return {
+    delay,
+    displayMode,
+    DELAYED_MODAL_DISPLAY_MODE,
+  };
+};
+
+const createFrag = async (el, url, manifestId) => {
   let href = url;
   try {
     const { pathname, search, hash } = new URL(url);
     href = `${pathname}${search}${hash}`;
+    const {
+      delay,
+      displayMode,
+      DELAYED_MODAL_DISPLAY_MODE,
+    } = defineDelayedModalParams(search) || {};
+    if (delay && displayMode) {
+      const { initDelayedModal } = await import('../../blocks/modal/modal.js');
+      initDelayedModal({
+        delay,
+        displayMode,
+        hash,
+        contentUrl: pathname,
+        DELAYED_MODAL_DISPLAY_MODE,
+      });
+      return createDelayedModalAnchor({
+        delay,
+        displayMode,
+        href,
+        pathname,
+        hash,
+        manifestId,
+      });
+    }
   } catch {
     // ignore
   }

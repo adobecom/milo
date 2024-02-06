@@ -9,9 +9,10 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
     <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
   </g>
 </svg>`;
-let isInitialPageLoad = true;
 const MOBILE_MAX = 599;
 const TABLET_MAX = 1199;
+
+let isInitialPageLoad = true;
 
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
@@ -72,6 +73,28 @@ function isElementInView(element) {
   );
 }
 
+export function initDelayedModal({
+  delay,
+  displayMode,
+  hash,
+  contentUrl,
+  DELAYED_MODAL_DISPLAY_MODE,
+}) {
+  if (!delay || !displayMode || !hash || !contentUrl || !DELAYED_MODAL_DISPLAY_MODE) return;
+  if (displayMode === DELAYED_MODAL_DISPLAY_MODE.oncePerPageLoad) {
+    setTimeout(() => {
+      window.location.hash = hash;
+    }, delay * 1000);
+  } else if (displayMode === DELAYED_MODAL_DISPLAY_MODE.oncePerSession) {
+    if (!window.sessionStorage.getItem('wasDelayedModalShown')) {
+      setTimeout(() => {
+        window.location.hash = hash;
+        window.sessionStorage.setItem('wasDelayedModalShown', true);
+      }, delay * 1000);
+    }
+  }
+}
+
 function getCustomModal(custom, dialog) {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
@@ -93,6 +116,7 @@ async function getPathModal(path, dialog) {
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(block);
 }
+
 function sendViewportDimensionsToiFrame(source) {
   const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
   source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
