@@ -147,8 +147,9 @@ export default async function init(el) {
 
   setTimeout(() => {
     if (marquee.children.length !== 2) {
+      // In case of failure:
       // If there is a fallback marquee provided, we use it.
-      // Otherwise we use this as the last resort fallback
+      // Otherwise, we use this strings as the last resort fallback
       metadata.title = metadata.title || 'Welcome to Adobe';
       metadata.description = metadata.description || 'Do it all with Adobe Creative Cloud.';
       renderMarquee(marquee, metadata, null);
