@@ -90,10 +90,7 @@ const Ratings = ({
   };
 
   const onBlur = (ev) => {
-    if (!ev) {
-      return;
-    }
-    if (ev.relatedTarget === null || ev.relatedTarget?.nodeName !== 'INPUT') {
+    if (ev?.relatedTarget?.nodeName !== 'INPUT') {
       // Focus has left the rating fields
       setCurrentRating(rating);
       setKeyboardFocusIndex(null);
