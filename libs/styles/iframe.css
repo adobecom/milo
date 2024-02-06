@@ -26,7 +26,7 @@
   padding-bottom: 0;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1199px) {
   .dialog-modal.commerce-frame .milo-iframe {
     /* fallback to vh if dvh is not supported */
     padding-bottom: 90vh;

@@ -21,7 +21,7 @@
 /libs/blocks/caas-config/ @chrischrischris
 /libs/blocks/carousel/ @rgclayton
 /libs/blocks/chart/ @meganthecoder @Brandon32 @JasonHowellSlavin
-/libs/blocks/commerce/ @Axelcureno @VKniaz
+/libs/blocks/commerce/ @adobecom/tacocat
 /libs/blocks/faas/ @seanchoi-dev
 /libs/blocks/faas-config/ @seanchoi-dev
 /libs/blocks/featured-article/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
@@ -36,11 +36,12 @@
 /libs/blocks/marketo-config/ @Brandon32 @meganthecoder @JasonHowellSlavin
 /libs/blocks/marquee/ @ryanmparrish @Sartxi @auniverseaway
 /libs/blocks/media/ @ryanmparrish
-/libs/blocks/merch/ @3ch023 @honstar @VKniaz @npeltier @Axelcureno @yesil @vladen
-/libs/blocks/merch-card/ @VKniaz @Axelcureno @ryanmparrish @yesil @3ch023 @npeltier
-/libs/blocks/merch-cards/ @yesil @VKniaz @Axelcureno @ryanmparrish @3ch023 @vladen @npeltier
-/libs/blocks/merch-offers/ @yesil @VKniaz @Axelcureno @ryanmparrish @3ch023 @vladen @npeltier
-/libs/blocks/ost/ @Axelcureno @3ch023 @honstar @VKniaz @vladen @yesil @npeltier
+/libs/blocks/merch/ @adobecom/tacocat
+/libs/blocks/merch-card/ @adobecom/tacocat
+/libs/blocks/merch-cards/ @adobecom/tacocat
+/libs/blocks/merch-offers/ @adobecom/tacocat
+/libs/blocks/mnemonic-list/ @adobecom/tacocat
+/libs/blocks/ost/ @adobecom/tacocat
 /libs/blocks/pdf-vewer/ @meganthecoder @JasonHowellSlavin @Brandon32
 /libs/blocks/quiz/ @colloyd @sabyamon @fullcolorcoder @JackySun9 @elaineskpt @echampio-at-adobe
 /libs/blocks/quiz-marquee/ @ryanmparrish

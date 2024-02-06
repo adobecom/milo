@@ -47,6 +47,7 @@ const MILO_BLOCKS = [
   'merch-card',
   'merch-cards',
   'merch-offers',
+  'mnemonic-list',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -430,31 +431,19 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
-function checkForExpBlock(name, expBlocks) {
-  const expBlock = expBlocks?.[name];
-  if (!expBlock) return null;
-
-  const blockName = expBlock.split('/').pop();
-  return { blockPath: expBlock, blockName };
-}
-
 export async function loadBlock(block) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
   }
 
-  let name = block.classList[0];
+  const name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
 
-  const expBlock = checkForExpBlock(name, expBlocks);
-  if (expBlock) {
-    name = expBlock.blockName;
-    path = expBlock.blockPath;
-  }
+  if (expBlocks?.[name]) path = expBlocks[name];
 
   const blockPath = `${path}/${name}`;
 
@@ -829,14 +818,16 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 }
 
 async function checkForPageMods() {
+  const search = new URLSearchParams(window.location.search);
+  const offFlag = (val) => search.get(val) === 'off';
+  if (offFlag('mep')) return;
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
   let persManifests = [];
-  const search = new URLSearchParams(window.location.search);
-  const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
-  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
-  const promoEnabled = promoMd && promoMd !== 'off';
+  const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
+  const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
+  const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
   if (mepEnabled) {
@@ -885,8 +876,6 @@ async function checkForPageMods() {
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
     await applyPers(manifests);
-  } else {
-    document.body.dataset.mep = 'nopzn|nopzn';
   }
 
   if (previewOn) {
@@ -896,6 +885,11 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  const georouting = getMetadata('georouting') || config.geoRouting;
+  if (georouting === 'on') {
+    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+  }
   loadMartech();
   const header = document.querySelector('header');
   if (header) {
@@ -1005,13 +999,6 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
-  const georouting = getMetadata('georouting') || config.geoRouting;
-  if (georouting === 'on') {
-    // eslint-disable-next-line import/no-cycle
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
-  }
-
   decorateFooterPromo();
 
   const appendage = getMetadata('title-append');
@@ -1067,12 +1054,13 @@ async function processSection(section, config, isDoc) {
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loaded);
 
-  if (isDoc && section.el.dataset.idx === '0') {
-    loadPostLCP(config);
-  }
-
   // Show the section when all blocks inside are done.
   delete section.el.dataset.status;
+
+  if (isDoc && section.el.dataset.idx === '0') {
+    await loadPostLCP(config);
+  }
+
   delete section.el.dataset.idx;
 
   return section.blocks;
