@@ -41,7 +41,6 @@
 }
 
 .five-up .icon-block .foreground .text-content {
-  text-align: left;
   padding-bottom: var(--spacing-xs);
 }
 
@@ -81,10 +80,6 @@
   flex-flow: row nowrap;
   text-align: start;
   gap: 16px;
-}
-
-.five-up .icon-block.full-width .foreground .text-content {
-  text-align: center;
 }
 
 .icon-block.inline .body-s.action-area {
