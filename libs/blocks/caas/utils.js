@@ -520,7 +520,7 @@ const getCurrentEntityId = async () => {
 
     let shouldAppendHtml = false;
     if (useDotHtmlConf && !pathname.endsWith('.html')) {
-      shouldAppendHtml = htmlExclude.every((excludeRe) => !excludeRe.test(url));
+      shouldAppendHtml = !htmlExclude.some((excludeRe) => excludeRe.test(url));
     }
     const generatedUrl = `${url}${shouldAppendHtml ? '.html' : ''}`;
 
