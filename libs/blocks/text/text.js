@@ -1,5 +1,5 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -52,6 +52,30 @@ function decorateBlockIconArea(el) {
   });
 }
 
+function decorateLinkFarms(el) {
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/blocks/text/link-farms.css`);
+  const [title, foregroundDiv] = [...el.querySelectorAll('.foreground')];
+  const hCount = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
+  title.querySelector('h1, h2, h3, h4, h5, h6').classList.add('heading-l');
+  foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
+  foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
+    const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
+    heading?.classList.add('heading-xs');
+    if (!hCount) return;
+    if (!heading) {
+      divElem.prepend(createTag('h3', { class: 'no-heading heading-xs' }));
+      return;
+    }
+    const sibling = index % 2 === 0
+      ? divElem.nextElementSibling
+      : divElem.previousElementSibling;
+    sibling?.classList.add('hspace');
+    if (index > 0) divElem.classList.add('has-heading');
+    if (index > 1) foregroundDiv.classList.add('gap-xl');
+  });
+}
+
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -70,9 +94,10 @@ export default function init(el) {
       blockType = (index > 0) ? 'standard' : variant;
     }
   });
+  const hasLinkFarm = el.classList.contains('link-farm');
   rows.forEach((row) => {
     row.classList.add('foreground');
-    decorateBlockText(row, blockTypeSizes[blockType][size]);
+    if (!hasLinkFarm) decorateBlockText(row, blockTypeSizes[blockType][size]);
     decorateBlockIconArea(row);
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
@@ -81,17 +106,8 @@ export default function init(el) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-s');
   }
-  if (el.classList.contains('link-farm')) {
-    const foregroundDiv = el.querySelectorAll('.foreground')[1];
-    const count = foregroundDiv.querySelectorAll('h3').length;
-    foregroundDiv.querySelectorAll('div').forEach((divElem) => {
-      if (!divElem.querySelector('h3') && count) {
-        const headingElem = createTag('h3', { class: 'no-heading' });
-        divElem.insertBefore(headingElem, divElem.firstChild);
-      }
-    });
-  }
+  if (hasLinkFarm) decorateLinkFarms(el);
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
-  decorateMultiViewport(el);
+  if (!hasLinkFarm) decorateMultiViewport(el);
 }
