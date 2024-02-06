@@ -16,6 +16,7 @@ const isProductFamily = (offer, pfs) => {
   const productFamily = offer?.offer?.product_arrangement?.family;
   return productFamily && pfs.includes(productFamily);
 };
+
 let shouldRefetchEntitlements = false;
 let modal;
 
@@ -34,13 +35,6 @@ function buildUrl(upgradeOffer, upgradable, config) {
   url.searchParams.append('ctxRtUrl', encodeURIComponent(window.location.href));
   return url.toString();
 }
-
-export const deletePayPalParamsFromPageUrl = () => {
-  const windowLocationUrl = new URL(window.location.href);
-  windowLocationUrl.searchParams.delete('pp');
-  windowLocationUrl.searchParams.delete('token');
-  window.history.replaceState({}, '', windowLocationUrl.toString());
-};
 
 export const handleIFrameEvents = ({ data: msgData }) => {
   let parsedMsg = null;
@@ -77,7 +71,6 @@ export const handleIFrameEvents = ({ data: msgData }) => {
     case MANAGE_PLAN_MSG_SUBTYPE.Error:
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.Close:
-      deletePayPalParamsFromPageUrl();
       if (shouldRefetchEntitlements) {
         window.location.reload();
       }
@@ -115,12 +108,10 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
     });
 
     const { getModal } = await import('../modal/modal.js');
-    const content = createTag('div', { class: 'upgrade-flow-modal-content' });
-    content.append(iframe);
 
     const showModal = async (e) => {
       e.preventDefault();
-      modal = await getModal(null, { id: 'preflight', content, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
+      modal = await getModal(null, { id: 'preflight', content: iframe, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
       return modal;
     };
     return replaceKey('upgrade-now', config)

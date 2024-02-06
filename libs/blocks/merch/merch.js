@@ -45,25 +45,23 @@ export async function loadEntitlements() {
 async function getCheckoutAction(offers) {
   let upgradeAction;
   const [entitlements, entitlementsMappings] = await loadEntitlements();
-  const aCodes = entitlements?.map((offer) => offer.offer.product_arrangement_code);
-  const [{ productArrangementCode }] = offers;
-  const [{ productArrangement }] = offers;
-  const ctaProductFamily = productArrangement?.productFamily;
+  const [{ productArrangementCode, productArrangement }] = offers;
+  const { productFamily } = productArrangement?.productFamily || {};
   const upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]')?.onceSettled()
     .catch((e) => {
       window.lana.log('Failed to resolve an upgrade offer:', e);
       return undefined;
     });
-  if (upgradeOffer && Array.isArray(entitlements) && ctaProductFamily) {
+  if (upgradeOffer && entitlements?.length && productFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
-    upgradeAction = handleUpgradeOffer(ctaProductFamily, upgradeOffer, entitlements);
+    upgradeAction = handleUpgradeOffer(productFamily, upgradeOffer, entitlements);
+    if (upgradeAction) return upgradeAction;
   }
-  if (upgradeAction) return upgradeAction;
 
   const downloadFlow = false; // temporary disable
   if (downloadFlow === false) return undefined;
-  if (aCodes === undefined) return undefined;
-  if (aCodes.includes(productArrangementCode)) {
+  const aCodes = entitlements?.map((offer) => offer.offer.product_arrangement_code);
+  if (aCodes?.includes(productArrangementCode)) {
     const mapping = entitlementsMappings.data
       ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
     if (!mapping) return undefined;

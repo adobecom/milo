@@ -30,6 +30,18 @@
   height: 100%;
 }
 
+.dialog-modal.upgrade-flow-modal {
+  height: 100%;
+  width: 100%;
+  max-height: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.upgrade-flow-modal .dialog-close {
+  display: none;
+}
+
 .modal-curtain.is-open {
   position: fixed;
   top: 0;
@@ -170,17 +182,6 @@
   }
 }
 
-@media (min-width: 1200px) {
-  .region-selector .content {
-    column-count: 5;
-  }
-
-  .dialog-modal#langnav {
-    width: 1200px;
-    max-width: calc((100% - 6px) - 2em);
-  } 
-}
-
 @media (max-width: 1200px) {
   .dialog-modal.commerce-frame {
     width: 100%;
@@ -190,6 +191,15 @@
 }
 
 @media (min-width: 1200px) {
+  .region-selector .content {
+    column-count: 5;
+  }
+
+  .dialog-modal#langnav {
+    width: 1200px;
+    max-width: calc((100% - 6px) - 2em);
+  }
+
   .dialog-modal.commerce-frame {
     width: 1024px;
     height: 850px;
@@ -209,6 +219,13 @@
   .dialog-modal.commerce-frame.height-fit-content .milo-iframe {
     height: auto;
     max-height: 845px;
+  }
+  
+  .dialog-modal.upgrade-flow-modal {
+    height: 820px;
+    max-width: 1100px;
+    overflow: hidden;
+    width: 80%;
   }
 }
 

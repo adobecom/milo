@@ -32,10 +32,6 @@ a[is='checkout-link'].loading-entitlements > span {
 
 .upgrade-flow-iframe {
   overflow: hidden;
-  height: 820px;
-  width: 1100px;
-}
-
-.upgrade-flow-modal .dialog-close {
-  display: none;
+  height: 100%;
+  width: 100%;
 }
