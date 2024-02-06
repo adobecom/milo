@@ -14,9 +14,8 @@ async function getAllMarquees(promoId) {
   return fetch(`${endPoint}?${payload}`).then((res) => res.json());
 }
 
-// Get marquee id (eventually from Spectra)
 /**
- * function getMarqueeId()
+ * function getMarqueeId() : Eventually from Spectra API
  * @returns {string} id - currently marquee index (eventually will be marquee ID from Spectra)
  */
 function getMarqueeId() {
@@ -30,11 +29,11 @@ function getMarqueeId() {
 }
 
 /**
- * function parseMarqueeData()
+ * function normalizeData()
  * @param {*} data - marquee JSON data
  * @returns {Object} metadata - marquee data
  */
-function parseMarqueeData(data) {
+function normalizeData(data) {
   const images = {
     tablet: data.arbitrary?.find((item) => item.key === 'imageTablet')?.value,
     desktop: data.arbitrary?.find((item) => item.key === 'imageDesktop')?.value,
@@ -72,7 +71,8 @@ function parseMarqueeData(data) {
  * @returns {void}
  */
 export function renderMarquee(marquee, data, id) {
-  const metadata = data.cards ? parseMarqueeData(data.cards[id]) : data;
+  if (marquee.classList.contains('fallback')) return;
+  const metadata = data.cards ? normalizeData(data.cards[id]) : data;
 
   // remove loader
   marquee.innerHTML = '';
@@ -85,6 +85,10 @@ export function renderMarquee(marquee, data, id) {
       : classList.includes('large') ? 'large'
         : 'xlarge';
   /* eslint-enable no-nested-ternary */
+
+  // background and foreground for marquee
+  const background = createTag('div', { class: 'background' });
+  const foreground = createTag('div', { class: 'foreground container' });
 
   // background images for mobile, tablet, and desktop
   const imgDesktop = createTag('img', { class: 'background', src: metadata.imagedesktop || metadata.image });
@@ -99,7 +103,6 @@ export function renderMarquee(marquee, data, id) {
   const pictureMobile = createTag('picture', null, imgMobile);
   const mobileOnly = createTag('div', { class: 'mobile-only' }, pictureMobile);
 
-  const background = createTag('div', { class: 'background' });
   background.append(mobileOnly, tabletOnly, desktopOnly);
 
   // foreground copy
@@ -125,7 +128,7 @@ export function renderMarquee(marquee, data, id) {
   // text copy area
   const text = createTag('div', { class: 'text' });
   text.append(title, body, footer);
-  const foreground = createTag('div', { class: 'foreground container' }, text);
+  foreground.append(text);
 
   marquee.append(background, foreground);
 }
@@ -135,13 +138,26 @@ export function renderMarquee(marquee, data, id) {
  * @param {*} el - element with metadata for marquee
  */
 export default async function init(el) {
+  const timeOutMS = 3000;
   const metadata = getMetadata(el);
 
-  const marquee = createTag('div', { class: `marquee ${metadata.variant.replaceAll(',', ' ')}` });
+  const marquee = createTag('div', { class: `marquee split ${metadata.variant.toLowerCase().replaceAll(',', ' ')}` });
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
 
+  setTimeout(() => {
+    if (marquee.children.length !== 2) {
+      // If there is a fallback marquee provided, we use it.
+      // Otherwise we use this as the last resort fallback
+      metadata.title = metadata.title || 'Welcome to Adobe';
+      metadata.description = metadata.description || 'Do it all with Adobe Creative Cloud.';
+      renderMarquee(marquee, metadata, null);
+      marquee.classList.add('fallback');
+    }
+  }, timeOutMS);
+
   const selectedId = await getMarqueeId();
   const allMarqueesJson = await getAllMarquees(metadata.promoId || 'homepage');
+
   await renderMarquee(marquee, allMarqueesJson, selectedId);
 }
