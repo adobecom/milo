@@ -1,7 +1,6 @@
 main > div.section[class*="-merch-card"]:not([data-status='decorated']),
 .fragment > div.section[class*="-merch-card"]:not([data-status='decorated']) {
   display: grid;
-  padding-bottom: var(--spacing-m);
 }
 
 div[class*="-merch-card"] > div,
@@ -13,4 +12,9 @@ div[class*="-merch-card"] > div,
  .merch-card-price {
   margin-top: 8px; 
   margin-bottom: 16px; 
+}
+
+.dark .merch-card .con-button.outline {
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
 }
