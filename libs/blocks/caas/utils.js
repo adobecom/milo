@@ -518,9 +518,10 @@ const getCurrentEntityId = async () => {
     const { pathname } = window.location;
     const url = `${host}${pathname}`;
 
-    const shouldAppendHtml = useDotHtmlConf && !pathname.endsWith('.html')
-      && htmlExclude.every((excludeRe) => !excludeRe.test(url));
-
+    let shouldAppendHtml = false;
+    if (useDotHtmlConf && !pathname.endsWith('.html')) {
+      shouldAppendHtml = htmlExclude.every((excludeRe) => !excludeRe.test(url));
+    }
     const generatedUrl = `${url}${shouldAppendHtml ? '.html' : ''}`;
 
     return await getUuid(generatedUrl);
