@@ -53,4 +53,4 @@ The `handleUpgradeOffer` method checks if:
 * `MANAGE_PLAN_MSG_SUBTYPE.SWITCH` - Will open a page in the same tab, and we do not have to handle the return back case
 * `MANAGE_PLAN_MSG_SUBTYPE.RETURN_BACK` - Will open a PayPal page in the same tab. After user returns from PayPal, there will be 'pp' and 'token' query parameters in the page URL, which are used together with upgradeModalReturnUrl saved in session storage to create a proper iFrame URL 
 * `MANAGE_PLAN_MSG_SUBTYPE.Close` - If user visited PayPal, the 'pp' and 'token' params were appended in the page URL. They will be removed both from page URL, and from the upgradeQuerystring
-
+If message data can't be JSON.parse()-d, the message is ignored.

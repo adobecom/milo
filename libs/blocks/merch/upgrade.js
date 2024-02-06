@@ -35,12 +35,18 @@ function buildUrl(upgradeOffer, upgradable, config) {
   return url.toString();
 }
 
+export const deletePayPalParamsFromPageUrl = () => {
+  const windowLocationUrl = new URL(window.location.href);
+  windowLocationUrl.searchParams.delete('pp');
+  windowLocationUrl.searchParams.delete('token');
+  window.history.replaceState({}, '', windowLocationUrl.toString());
+};
+
 export const handleIFrameEvents = ({ data: msgData }) => {
   let parsedMsg = null;
   try {
     parsedMsg = JSON.parse(msgData);
   } catch (error) {
-    // If message data can't be JSON.parse()-d, we can ignore this message, it's not the one we need
     return;
   }
   const { app, subType, data } = parsedMsg || {};
@@ -71,7 +77,7 @@ export const handleIFrameEvents = ({ data: msgData }) => {
     case MANAGE_PLAN_MSG_SUBTYPE.Error:
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.Close:
-      // todo deletePayPalParamsFromPageUrl();
+      deletePayPalParamsFromPageUrl();
       if (shouldRefetchEntitlements) {
         window.location.reload();
       }
