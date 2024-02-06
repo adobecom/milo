@@ -430,31 +430,19 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
-function checkForExpBlock(name, expBlocks) {
-  const expBlock = expBlocks?.[name];
-  if (!expBlock) return null;
-
-  const blockName = expBlock.split('/').pop();
-  return { blockPath: expBlock, blockName };
-}
-
 export async function loadBlock(block) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
   }
 
-  let name = block.classList[0];
+  const name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
 
-  const expBlock = checkForExpBlock(name, expBlocks);
-  if (expBlock) {
-    name = expBlock.blockName;
-    path = expBlock.blockPath;
-  }
+  if (expBlocks?.[name]) path = expBlocks[name];
 
   const blockPath = `${path}/${name}`;
 
