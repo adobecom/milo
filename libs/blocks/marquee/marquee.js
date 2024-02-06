@@ -81,7 +81,7 @@ export async function loadMnemonicList(foreground) {
 export default async function init(el) {
   const excDark = ['light', 'quiet'];
   if (!excDark.some((s) => el.classList.contains(s))) el.classList.add('dark');
-  if (el.classList.contains('new-variant')) console.log('Hello from new variant!');
+  if (el.classList.contains('new-variant')) console.log('Hello from new variant 3!');
   const children = el.querySelectorAll(':scope > div');
   const foreground = children[children.length - 1];
   if (children.length > 1) {
