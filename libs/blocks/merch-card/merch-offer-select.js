@@ -2,6 +2,8 @@ import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import '../../deps/merch-offer-select.js';
 
+const MINI_COMPARE_CHART = 'mini-compare-chart';
+
 function createDynamicSlots(el, bodySlot) {
   const pricePlaceholder = el.querySelector("span[is='inline-price']");
   if (pricePlaceholder) {
@@ -17,8 +19,18 @@ function createDynamicSlots(el, bodySlot) {
   const footer = el.querySelector('div[slot="footer"]');
   footer.append(p);
   bodySlot.querySelector('p')?.setAttribute('slot', 'description');
+  if (el.variant === MINI_COMPARE_CHART) {
+    const description = el.querySelector('div[slot="body-m"] p:last-child');
+    if (description) {
+      const descriptionSlot = el.querySelector('p[slot="description"]');
+      if (descriptionSlot) {
+        descriptionSlot.appendChild(description);
+      }
+    }
+  }
 }
-function createMerchOffer(option, quantitySelector) {
+
+function createMerchOffer(option, quantitySelector, variant) {
   const merchOffer = createTag('merch-offer', { [quantitySelector ? 'value' : 'text']: option.childNodes[0].textContent.trim() });
   [...option.querySelector('ul').children].forEach((li, index) => {
     const override = li.childNodes[0];
@@ -34,19 +46,23 @@ function createMerchOffer(option, quantitySelector) {
       merchOffer.append(override);
     }
   });
-  decorateButtons(merchOffer);
+  if (variant === MINI_COMPARE_CHART) {
+    decorateButtons(merchOffer, 'button-l');
+  } else {
+    decorateButtons(merchOffer);
+  }
   return merchOffer;
 }
 
 const isHorizontal = (offerSelection) => [...offerSelection.querySelectorAll('merch-offer')].map((o) => o.text).every((t) => /^\d+.B$/.test(t));
 
 export const initOfferSelection = (merchCard, offerSelection, quantitySelector) => {
-  const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+  const bodySlot = merchCard.querySelector(`div[slot="${merchCard.variant === 'mini-compare-chart' ? 'offers' : 'body-xs'}"]`);
   if (!bodySlot) return;
   createDynamicSlots(merchCard, bodySlot);
   const merchOffers = createTag('merch-offer-select', { container: 'merch-card' });
   [...offerSelection.children].forEach((option) => {
-    merchOffers.append(createMerchOffer(option, quantitySelector));
+    merchOffers.append(createMerchOffer(option, quantitySelector, merchCard.variant));
   });
   merchOffers.querySelectorAll('a[is="checkout-link"]').forEach((link) => { link.setAttribute('slot', 'cta'); });
   if (isHorizontal(merchOffers)) {
