@@ -1,114 +1,70 @@
 import { createTag } from '../../utils/utils.js';
 
-const typeSize = {
-  small: ['xl', 'm', 'm'],
-  medium: ['xl', 'm', 'm'],
-  large: ['xxl', 'xl', 'l'],
-  xlarge: ['xxl', 'xl', 'l'],
-};
+const CTA_STYLES = {
+  'STRONG': 'blue',
+  'EM': 'outline',
+}
+function getCtaStyle(tagName) {
+  return CTA_STYLES[tagName] || '';
+}
+function parseCtas(el) {
+  const ctas = {};
+  let index = 1;
+  let a = el.querySelectorAll('a');
+  let ctaLinks = a.length ?  a : [{}, {}];
 
-export function getMetadata(el) {
-  const metadata = {};
-  for (const child of el.children) {
-    const key = child.children[0]?.textContent?.trim()?.toLowerCase();
-    const value = child.children[1]?.innerHTML?.trim();
-    if (key.match(/^image/)) {
-      metadata[key] = child.querySelector('img').src.replace(/\?.*/, '');
-    } else if (key.match(/^cta/)) {
-      const ctaLink = child.querySelectorAll('a');
-      ctaLink?.forEach((link, index) => {
-        metadata[`cta${index + 1}url`] = link.href;
-        metadata[`cta${index + 1}text`] = link.textContent.trim();
-        /* eslint-disable no-nested-ternary */
-        metadata[`cta${index + 1}style`] = link.parentNode.tagName === 'STRONG' ? 'blue'
-          : link.parentNode.tagName === 'EM' ? 'outline' : '';
-        /* eslint-enable no-nested-ternary */
-      });
-    } else {
-      metadata[key] = value;
+  for (const ctaLink of ctaLinks) { // change to forEach
+    ctas[`cta${index}url`] = ctaLink.href || '';
+    ctas[`cta${index}text`] = ctaLink.textContent?.trim() || '';
+    ctas[`cta${index}style`] = getCtaStyle(ctaLink.parentNode?.tagName);
+    ctas[`cta${index}target`] = ctaLink.target || '';
+    index++;
+  }
+  return ctas;
+}
+export const getMetadata = (el) => {
+  let metadata = {};
+  for (const row of el.children) {
+    const key = row.children[0].textContent.trim().toLowerCase() || '';
+    let val = row.children[1].innerHTML || '';
+    if (key.includes('image')) {
+      const img = row.children[1].querySelector('img');
+      val = img ? new URL(img.src).pathname : '';
     }
+    if (key.includes('cta')) {
+      metadata = { ...metadata, ...parseCtas(row.children[1]) };
+    }
+    if (key.includes('variant')) {
+      val = val.replace(/,/g, '');
+    }
+    metadata[key] = val;
   }
   return metadata;
-}
-
+};
 export default function init(el) {
-  const metadata = getMetadata(el);
+  let metadata = getMetadata(el);
+  const additionalFields = {
+    arbitrary: `
+      promoId: ${metadata.promoid},
+      context: ${metadata.context},
+      imageTablet: ${metadata.imagetablet},
+      imageDesktop: ${metadata.imagedesktop},
+      variant: ${metadata.variant}`.trim(),
+    tags: 'caas:content-type/promotion',
+    cta1url: `${metadata.cta1url}`,
+    cta1text: `${metadata.cta1text}`,
+    cta1style: `${metadata.cta1style}`,
+    cta2url: `${metadata.cta2url}`,
+    cta2text: `${metadata.cta2text}`,
+    cta2style: `${metadata.cta2style}`
+  }
 
-  // configure block font sizes
-  const classList = metadata.variant.split(',').map((c) => c.trim());
-  /* eslint-disable no-nested-ternary */
-  const size = classList.includes('small') ? 'small'
-    : classList.includes('medium') ? 'medium'
-      : classList.includes('large') ? 'large'
-        : 'xlarge';
-  /* eslint-enable no-nested-ternary */
-
-  // background images for mobilr, tablet, and desktop
-  const imgDesktop = createTag('img', { class: 'background', src: metadata.imagedesktop || metadata.image });
-  const picture = createTag('picture', null, imgDesktop);
-  const desktopOnly = createTag('div', { class: 'desktop-only' }, picture);
-
-  const imgTablet = createTag('img', { class: 'background', src: metadata.imagetablet || metadata.image });
-  const pictureTablet = createTag('picture', null, imgTablet);
-  const tabletOnly = createTag('div', { class: 'tablet-only' }, pictureTablet);
-
-  const imgMobile = createTag('img', { class: 'background', src: metadata.imagemobile || metadata.image });
-  const pictureMobile = createTag('picture', null, imgMobile);
-  const mobileOnly = createTag('div', { class: 'mobile-only' }, pictureMobile);
-
-  const background = createTag('div', { class: 'background' });
-  background.append(mobileOnly, tabletOnly, desktopOnly);
-
-  // foreground copy
-  const title = createTag('h1', { class: `heading-${typeSize[size][0]}` }, metadata.title);
-  const body = createTag('p', { class: `body-${typeSize[size][1]}` }, metadata.description);
-
-  // ctas (buttons)
-  const cta = metadata.cta1url ? createTag('a', {
-    class: `con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile`,
-    href: metadata.cta1url,
-  }, metadata.cta1text) : null;
-
-  const cta2 = metadata.cta2url ? createTag('a', {
-    class: `con-button ${metadata.cta2style} button-${typeSize[size][1]} button-justified-mobile`,
-    href: metadata.cta2url,
-  }, metadata.cta2text) : null;
-
-  // action-area footer
-  const footer = createTag('p', { class: 'action-area' });
-  if (cta) footer.append(cta);
-  if (cta2) footer.append(cta2);
-
-  // text copy area
-  const text = createTag('div', { class: 'text' });
-  text.append(title, body, footer);
-  const foreground = createTag('div', { class: 'foreground container' }, text);
-
-  // marquee container
-  const classListString = classList.join(' ');
-  const section = createTag('div', { class: `marquee large ${classListString}` });
-  section.append(background, foreground);
-
-  // page section container
-  const pageSection = document.querySelector('.section');
-  pageSection.prepend(section);
-
-  // arbitrary fields caas-metadata
-  const arbitrary = createTag('div');
-  const arbitraryKey = createTag('div', null, 'arbitrary');
-  const arbitraryValue = createTag('div', null, (`promoId: ${metadata.promoid},
-    classList: ${classListString},
-    imageSm: ${metadata.imagemobile || ''},
-    imageMd: ${metadata.imagetablet || ''},
-  `).replace(/\s+/g, ' '));
-  arbitrary.append(arbitraryKey, arbitraryValue);
-  el.append(arbitrary);
-
-  el.innerHTML += `<div><div>tags</div><div>caas:content-type/promotion</div></div>
-    <div><div>cta1url</div><div>${metadata.cta1url}</div></div>
-    <div><div>cta1text</div><div>${metadata.cta1text}</div></div>
-    <div><div>cta1style</div><div>${metadata.cta1style}</div></div>`;
-
-  // Degugging ((( Remove before release )))
-  console.log('metadata:', getMetadata(el)); // eslint-disable-line no-console
+  for (const [key, val] of Object.entries(additionalFields)) {
+    const container = createTag('div');
+    container.innerHTML = `
+    <div data-valign="middle">${key}</div>
+    <div data-valign="middle">${val}</div>
+  `;
+    el.appendChild(container);
+  }
 }
