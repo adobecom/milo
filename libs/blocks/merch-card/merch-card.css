@@ -19,6 +19,6 @@ div[class*="-merch-card"] > div,
   color: var(--text-color);
 }
 
-merch-card [slot="heading-xs"] del span.inline-price .price {
+merch-card.special-offers del span[is="inline-price"] .price {
   text-decoration: line-through;
 }
