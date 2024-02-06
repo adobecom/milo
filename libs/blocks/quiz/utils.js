@@ -7,7 +7,7 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 const API_KEY = 'CCHomeMLRepo1';
-const ENDPOINT = 'acom-prd-recom-v1';
+const ENDPOINT = 'acom-prd-recom-v2';
 
 let configPath;
 let quizKey;
@@ -50,7 +50,7 @@ export const getQuizData = async () => {
   return [];
 };
 
-export async function fetchFiCodes(input, numberOfItems) {
+export async function fetchFiCodes(input, numberOfItems, validFiCodes) {
   const { env } = getConfig();
   const subdomain = env === 'prod' ? 'cchome-dev' : 'cchome-dev';
   const apiUrl = `https://${subdomain}.adobe.io/int/v1/models`;
@@ -61,6 +61,7 @@ export async function fetchFiCodes(input, numberOfItems) {
       data: {
         input,
         num_items: numberOfItems || 10,
+        given_prod_list: validFiCodes,
       },
     },
   };

@@ -51,9 +51,9 @@ async function loadCards(el, tutorials) {
   }
 }
 
-async function loadTutorials(inputText, ficode, total) {
+async function loadTutorials(inputText, ficodes, total) {
   const { default: getTutorials } = await import('./quiz-dynamic-tutorials-utils.js');
-  return getTutorials(inputText, ficode, total);
+  return getTutorials(inputText, ficodes, total);
 }
 
 export default async function init(el) {
@@ -63,7 +63,10 @@ export default async function init(el) {
 
   const metadata = getMetadata(el);
   const params = new URL(document.location).searchParams;
-  const localStoreKey = params.get('quizKey');
+  let localStoreKey = params.get('quizkey');
+
+  const { locale } = getConfig();
+  localStoreKey = locale?.ietf ? `${localStoreKey}-${locale.ietf}` : localStoreKey;
 
   let results = localStorage.getItem(localStoreKey);
   if (!results) {
@@ -78,10 +81,10 @@ export default async function init(el) {
 
   const mlKey = results?.mlFlowData || {};
   const textInput = mlKey?.userInput || metadata.text.text || 'creative cloud';
-  const ficode = metadata.ficode.text;
+  const ficodes = mlKey?.fiCodes || metadata.ficode.text;
   const total = Number(metadata['total-tutorials'].text) || 1;
 
-  const data = await loadTutorials(textInput, ficode, total);
+  const data = await loadTutorials(textInput, ficodes, total);
 
   el.replaceChildren();
   loadCards(el, data.tutorials);
