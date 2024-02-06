@@ -1,24 +1,24 @@
 import { createTag } from '../../utils/utils.js';
 
 const CTA_STYLES = {
-  'STRONG': 'blue',
-  'EM': 'outline',
-}
+  STRONG: 'blue',
+  EM: 'outline',
+};
 function getCtaStyle(tagName) {
   return CTA_STYLES[tagName] || '';
 }
 function parseCtas(el) {
   const ctas = {};
   let index = 1;
-  let a = el.querySelectorAll('a');
-  let ctaLinks = a.length ?  a : [{}, {}];
+  const a = el.querySelectorAll('a');
+  const ctaLinks = a.length ? a : [{}, {}];
 
   for (const ctaLink of ctaLinks) { // change to forEach
     ctas[`cta${index}url`] = ctaLink.href || '';
     ctas[`cta${index}text`] = ctaLink.textContent?.trim() || '';
     ctas[`cta${index}style`] = getCtaStyle(ctaLink.parentNode?.tagName);
     ctas[`cta${index}target`] = ctaLink.target || '';
-    index++;
+    index += 1;
   }
   return ctas;
 }
@@ -42,6 +42,7 @@ export const getMetadata = (el) => {
   return metadata;
 };
 export default function init(el) {
+  // eslint-disable-next-line prefer-const
   let metadata = getMetadata(el);
   const additionalFields = {
     arbitrary: `
@@ -56,8 +57,8 @@ export default function init(el) {
     cta1style: `${metadata.cta1style}`,
     cta2url: `${metadata.cta2url}`,
     cta2text: `${metadata.cta2text}`,
-    cta2style: `${metadata.cta2style}`
-  }
+    cta2style: `${metadata.cta2style}`,
+  };
 
   for (const [key, val] of Object.entries(additionalFields)) {
     const container = createTag('div');
