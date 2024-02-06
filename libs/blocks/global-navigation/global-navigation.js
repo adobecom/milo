@@ -524,13 +524,13 @@ class Gnav {
 
         switch (`${name}|${type}|${subtype}|${contentName || ''}`) {
           case 'profile|click|sign-in|':
-            return `Sign in|gnav|${experienceName}|unav`;
+            return `Sign In|gnav|${experienceName}|unav`;
           case 'profile|render|component|':
             return `Account|gnav|${experienceName}`;
           case 'profile|click|account|':
             return `View Account|gnav|${experienceName}`;
           case 'profile|click|sign-out|':
-            return `Sign out|gnav|${experienceName}|unav`;
+            return `Sign Out|gnav|${experienceName}|unav`;
           case 'app-switcher|render|component|':
             return 'AppLauncher.appIconToggle';
           case `app-switcher|click|app|${contentName}`:
