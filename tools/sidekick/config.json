@@ -160,7 +160,7 @@
       "id": "martech-metadata-generator",
       "title": "Martech Metadata Generator",
       "environments": [ "edit" ],
-      "url": "https://ebartholomew-MWPW-140438-merchdata-table-tool--milo--adobecom.hlx.page/tools/martech-metadata-generator",
+      "url": "http://localhost:3000/drafts/ebartholomew/tools/martech-metadata-generator",
       "isPalette": true,
       "passReferrer": true,
       "passConfig": true,

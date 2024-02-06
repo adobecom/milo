@@ -1,4 +1,5 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, loadIms } from '../../utils/utils.js';
+// import { getImsToken } from '../../../tools/utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
 
 const config = getConfig();
@@ -46,6 +47,39 @@ function handleSuccess() {
   statusEl.innerText = 'Table built, click Copy and paste into document';
 }
 
+export const loadScript = (url, type) => new Promise((resolve, reject) => {
+  let script = document.querySelector(`head > script[src="${url}"]`);
+  if (!script) {
+    const { head } = document;
+    script = document.createElement('script');
+    script.setAttribute('src', url);
+    if (type) {
+      script.setAttribute('type', type);
+    }
+    head.append(script);
+  }
+
+  if (script.dataset.loaded) {
+    resolve(script);
+    return;
+  }
+
+  const onScript = (event) => {
+    script.removeEventListener('load', onScript);
+    script.removeEventListener('error', onScript);
+
+    if (event.type === 'error') {
+      reject(new Error(`error loading script: ${script.src}`));
+    } else if (event.type === 'load') {
+      script.dataset.loaded = true;
+      resolve(script);
+    }
+  };
+
+  script.addEventListener('load', onScript);
+  script.addEventListener('error', onScript);
+});
+
 async function handleBuild() {
   formEl.classList.add('loading');
   statusEl.innerText = 'Generating table, please wait....';
@@ -81,6 +115,15 @@ async function handleBuild() {
 }
 
 export default async function init(el) {
+  document.addEventListener('sidekick-ready', () => {
+    const sidekick = document.querySelector('helix-sidekick');
+    sidekick.addEventListener('statusfetched', async () => {
+      await loadIms();
+      // window.adobeIMS.signIn();
+      // const token = window.adobeIMS.getAccessToken();
+      console.log(window.adobeIMS.getAccessToken());
+    });
+  }, { once: true });
   el.classList.add('con-block', 'dark');
   formEl.append(statusEl);
   formEl.append(copyBtn);
