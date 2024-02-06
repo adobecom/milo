@@ -13,6 +13,9 @@ const RatingInput = ({
   starString,
   starStringPlural,
   tooltip,
+  isChecked,
+  onBlur,
+  onFocus,
 }) => {
   const handleClick = (ev, isKeyboardSelection = false) => {
     if (onClick) onClick(index, ev, { isKeyboardSelection });
@@ -51,12 +54,15 @@ const RatingInput = ({
     <input
       data-tooltip=${tooltip}
       name="rating"
-      aria-label=${label}
+      aria-label="${tooltip} ${label}"
       type="radio"
       className=${ratingsInputClassNames}
       onClick=${handleClick}
       onKeyPress=${handleKeyPress}
       value=${index}
+      aria-checked=${isChecked ? 'true' : 'false'}
+      onBlur=${onBlur}
+      onFocus=${onFocus}
     />
   `;
 };
