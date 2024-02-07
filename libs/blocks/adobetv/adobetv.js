@@ -34,7 +34,7 @@ export default function init(a) {
   } else {
     createIntersectionObserver({
       el: a,
-      options: { threshold : 1 },
+      options: { threshold : 0.2 },
       callback: loadAdobeTv,
     });
   }
