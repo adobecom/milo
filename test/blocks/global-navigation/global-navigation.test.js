@@ -34,7 +34,6 @@ describe('global navigation', () => {
   before(() => {
     document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
     <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://dev.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     <script src="https://stage.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
   });
@@ -1221,32 +1220,31 @@ describe('global navigation', () => {
 
     describe('desktop', () => {
       it('should render the Universal navigation', async () => {
-        const unavMeta2 = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
-        const gnav = await createFullGlobalNavigation({});
+        const fullUnavMeta = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
+        const gnav = await createFullGlobalNavigation();
 
         await gnav.decorateUniversalNav();
-        const unavFirstCall = window.UniversalNav.getCall(0);
-        expect(unavFirstCall.args[0]?.children
+        expect(window.UniversalNav.getCall(0).args[0]?.children
           .every((c) => c.name === 'profile' && !['app-switcher', 'notifications', 'help'].includes(c.name)))
           .to.be.true;
 
-        document.head.append(unavMeta2);
+        document.head.append(fullUnavMeta);
         await gnav.decorateUniversalNav();
         const unavSecondCall = window.UniversalNav.getCall(1);
         expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
           .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
-        document.head.removeChild(unavMeta2);
+        document.head.removeChild(fullUnavMeta);
       });
 
       it('should reload unav on viewport change', async () => {
-        await createFullGlobalNavigation({});
+        await createFullGlobalNavigation();
         window.UniversalNav.reload = sinon.spy();
         isDesktop.dispatchEvent(new Event('change'));
         expect(window.UniversalNav.reload.getCall(0)).to.exist;
       });
 
       it('should send the correct analytics events', async () => {
-        await createFullGlobalNavigation({});
+        await createFullGlobalNavigation();
         const analyticsFn = window.UniversalNav.getCall(0)
           .args[0].analyticsContext.onAnalyticsEvent;
 
@@ -1255,8 +1253,8 @@ describe('global navigation', () => {
           ['adobe-express', 'adobe-firefly', 'acrobat', 'photoshop', 'lightroom', 'stock', 'acrobat-sign', 'fonts', 'experience-cloud'],
         );
 
-        for (const [sent, expected] of Object.entries(analyticsTestData)) {
-          const [name, type, subtype, contentName] = sent.split('|');
+        for (const [eventData, interaction] of Object.entries(analyticsTestData)) {
+          const [name, type, subtype, contentName] = eventData.split('|');
           analyticsFn({
             event: { type, subtype },
             source: { name },
@@ -1265,7 +1263,7 @@ describe('global navigation', () => {
           // eslint-disable-next-line no-underscore-dangle
           expect(window._satellite.track.calledWith('event', {
             xdm: {},
-            data: { web: { webInteraction: { name: expected } } },
+            data: { web: { webInteraction: { name: interaction } } },
           })).to.be.true;
         }
 
@@ -1278,25 +1276,24 @@ describe('global navigation', () => {
       });
 
       it('should send/not send visitor guid to unav when window.alloy is available/unavailable', async () => {
-        await createFullGlobalNavigation({});
+        await createFullGlobalNavigation();
         expect(window.UniversalNav.getCall(0)
           .args[0].analyticsContext.event.visitor_guid).to.equal('dummy-ECID');
 
         delete window.alloy;
-        await createFullGlobalNavigation({});
+        await createFullGlobalNavigation();
         expect(window.UniversalNav.getCall(1)
           .args[0].analyticsContext.event.visitor_guid).to.equal(undefined);
       });
 
       it('should send the correct device type', async () => {
-        const gnav = await createFullGlobalNavigation({});
+        const gnav = await createFullGlobalNavigation();
         window.UniversalNav.resetHistory();
-        for (const i of Object.entries(osMap)) {
-          const [os, osName] = i;
+        for (const [os, osName] of Object.entries(osMap)) {
           const userAgentStub = sinon.stub(navigator, 'userAgent').value(os);
           await gnav.decorateUniversalNav();
-          const unavFirstCallArgs = window.UniversalNav.getCall(0).args[0];
-          expect(unavFirstCallArgs.analyticsContext.consumer.device).to.equal(osName);
+          expect(window.UniversalNav.getCall(0)
+            .args[0].analyticsContext.consumer.device).to.equal(osName);
           userAgentStub.restore();
           window.UniversalNav.resetHistory();
         }
@@ -1324,41 +1321,39 @@ describe('global navigation', () => {
 
     describe('small desktop', () => {
       it('should render the Universal navigation', async () => {
-        const unavMeta2 = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
-        const gnav = await createFullGlobalNavigation({});
-        await gnav.decorateUniversalNav();
+        const fullUnavMeta = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
+        const gnav = await createFullGlobalNavigation();
 
-        const unavFirstCall = window.UniversalNav.getCall(0);
-        expect(unavFirstCall.args[0]?.children
+        await gnav.decorateUniversalNav();
+        expect(window.UniversalNav.getCall(0).args[0]?.children
           .every((c) => c.name === 'profile' && !['app-switcher', 'notifications', 'help'].includes(c.name)))
           .to.be.true;
 
-        document.head.append(unavMeta2);
+        document.head.append(fullUnavMeta);
         await gnav.decorateUniversalNav();
         const unavSecondCall = window.UniversalNav.getCall(1);
         expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
           .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
-        document.head.removeChild(unavMeta2);
+        document.head.removeChild(fullUnavMeta);
       });
     });
 
     describe('mobile', () => {
       it('should render the Universal navigation', async () => {
-        const unavMeta2 = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
-        const gnav = await createFullGlobalNavigation({});
-        await gnav.decorateUniversalNav();
+        const fullUnavMeta = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
+        const gnav = await createFullGlobalNavigation();
 
-        const unavFirstCall = window.UniversalNav.getCall(0);
-        expect(unavFirstCall.args[0]?.children
+        await gnav.decorateUniversalNav();
+        expect(window.UniversalNav.getCall(0).args[0]?.children
           .every((c) => c.name === 'profile' && !['app-switcher', 'notifications', 'help'].includes(c.name)))
           .to.be.true;
 
-        document.head.append(unavMeta2);
+        document.head.append(fullUnavMeta);
         await gnav.decorateUniversalNav();
         const unavSecondCall = window.UniversalNav.getCall(1);
         expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
           .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
-        document.head.removeChild(unavMeta2);
+        document.head.removeChild(fullUnavMeta);
       });
     });
   });

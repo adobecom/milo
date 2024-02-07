@@ -547,8 +547,8 @@ class Gnav {
           content: { name: contentName } = {},
         } = data;
 
-        for (const [eventData, result] of Object.entries(unavAnalyticsEventsMap(experienceName, [contentName || '']))) {
-          if (eventData === `${name}|${type}|${subtype}|${contentName || ''}`) return result;
+        for (const [eventData, interaction] of Object.entries(unavAnalyticsEventsMap(experienceName, [contentName || '']))) {
+          if (eventData === `${name}|${type}|${subtype}|${contentName || ''}`) return interaction;
         }
 
         return null;
