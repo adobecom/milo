@@ -109,10 +109,10 @@ const MINI_COMPARE_CHART = 'mini-compare-chart';
 
 const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
-const sectionObserver = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.type === 'attributes' && mutation.attributeName === 'data-status') {
-      const container = mutation.target.closest('main > div');
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const container = entry.target.closest('main > div');
       if (!container) return;
       [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
     }
