@@ -18,6 +18,6 @@ div[class*="-merch-card"] > div,
   color: var(--text-color);
 }
 
-merch-card.special-offers del span[is="inline-price"] .price {
+merch-card.special-offers del span[is="inline-price"] {
   text-decoration: line-through;
 }
