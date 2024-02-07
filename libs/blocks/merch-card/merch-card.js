@@ -132,19 +132,18 @@ const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
 const appendSlot = (el, slotName, merchCard) => {
-  if (el.length > 0) {
-    const newEl = createTag(
-      'p',
-      { slot: slotName, class: slotName },
-    );
-    el.forEach((e, index) => {
-      newEl.innerHTML += e.innerHTML;
-      if (index < el.length - 1) {
-        newEl.innerHTML += '<br>';
-      }
-    });
-    merchCard.append(newEl);
-  }
+  if (el.length === 0) return;
+  const newEl = createTag(
+    'p',
+    { slot: slotName, class: slotName },
+  );
+  el.forEach((e, index) => {
+    newEl.innerHTML += e.innerHTML;
+    if (index < el.length - 1) {
+      newEl.innerHTML += '<br>';
+    }
+  });
+  merchCard.append(newEl);
 };
 
 const parseContent = (el, merchCard) => {
@@ -301,7 +300,7 @@ function extractQuantitySelect(el) {
 
 const getMiniCompareChartFooterRows = (el) => {
   let footerRows = Array.from(el.children).slice(1);
-  footerRows = footerRows.filter((row) => row.querySelector('.footer-row-cell') === null);
+  footerRows = footerRows.filter((row) => !row.querySelector('.footer-row-cell'));
   if (footerRows[0].firstElementChild.innerText === 'Alt-cta') {
     footerRows.splice(0, 2);
   }
