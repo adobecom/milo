@@ -9,8 +9,6 @@ import {
   mockRes,
   viewports,
   config,
-  unavAnalyticsTestData,
-  unavDeviceTestingMap,
   unavLocalesTestData,
 } from './test-utilities.js';
 import { isDesktop, isTangentToViewport, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
@@ -24,6 +22,8 @@ import globalNavigationMock from './mocks/global-navigation.plain.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
 import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
 import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
+import { osMap, unavAnalyticsEventsMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import { getLocale } from '../../../libs/utils/utils.js';
 
 const ogFetch = window.fetch;
 
@@ -37,6 +37,30 @@ describe('global navigation', () => {
     <script src="https://dev.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     <script src="https://stage.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
+  });
+
+  describe('LANA logging tests', () => {
+    beforeEach(async () => {
+      window.lana.log = sinon.spy();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should log when could not load IMS', async () => {
+      const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+      await createFullGlobalNavigation({
+        customConfig: {
+          imsClientId: null,
+          codeRoot: '/libs',
+          contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
+          locales,
+        },
+      });
+
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('GNAV: Error with IMS'))).to.exist;
+    });
   });
 
   describe('basic sanity tests', () => {
@@ -1226,11 +1250,25 @@ describe('global navigation', () => {
         const analyticsFn = window.UniversalNav.getCall(0)
           .args[0].analyticsContext.onAnalyticsEvent;
 
-        unavAnalyticsTestData.forEach((data) => {
-          analyticsFn(data.sentData);
+        const analyticsTestData = unavAnalyticsEventsMap(
+          'milo',
+          ['adobe-express', 'adobe-firefly', 'acrobat', 'photoshop', 'lightroom', 'stock', 'acrobat-sign', 'fonts', 'experience-cloud'],
+        );
+
+        for (const [sent, expected] of Object.entries(analyticsTestData)) {
+          const [name, type, subtype, contentName] = sent.split('|');
+          analyticsFn({
+            event: { type, subtype },
+            source: { name },
+            content: { name: contentName },
+          });
           // eslint-disable-next-line no-underscore-dangle
-          expect(window._satellite.track.calledWith('event', data.expectedData)).to.be.true;
-        });
+          expect(window._satellite.track.calledWith('event', {
+            xdm: {},
+            data: { web: { webInteraction: { name: expected } } },
+          })).to.be.true;
+        }
+
         expect(analyticsFn(null)).to.equal(undefined);
         expect(analyticsFn({
           event: { type: 'not', subtype: 'matching' },
@@ -1253,11 +1291,12 @@ describe('global navigation', () => {
       it('should send the correct device type', async () => {
         const gnav = await createFullGlobalNavigation({});
         window.UniversalNav.resetHistory();
-        for (const i of unavDeviceTestingMap) {
-          const userAgentStub = sinon.stub(navigator, 'userAgent').value(i.agent);
+        for (const i of Object.entries(osMap)) {
+          const [os, osName] = i;
+          const userAgentStub = sinon.stub(navigator, 'userAgent').value(os);
           await gnav.decorateUniversalNav();
           const unavFirstCallArgs = window.UniversalNav.getCall(0).args[0];
-          expect(unavFirstCallArgs.analyticsContext.consumer.device).to.equal(i.expectedDevice);
+          expect(unavFirstCallArgs.analyticsContext.consumer.device).to.equal(osName);
           userAgentStub.restore();
           window.UniversalNav.resetHistory();
         }
