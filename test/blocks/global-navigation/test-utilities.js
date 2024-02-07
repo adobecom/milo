@@ -51,7 +51,13 @@ export const viewports = {
   wide: { width: 1600, height: 1024 },
 };
 
+// TODO: use the locales from the global-navigation.js
 export const unavLocalesTestData = [
+  {
+    prefix: '/ch_de',
+    ieft: 'de-CH',
+    expectedLocale: 'de_DE',
+  },
   {
     prefix: '/be_nl',
     ietf: 'nl-BE',
