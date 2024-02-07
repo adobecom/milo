@@ -83,7 +83,6 @@ export async function initService(force = false) {
     loadEntitlements.promise = undefined;
   }
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    // loadIms();
     const commerceLib = await import('../../deps/commerce.js');
     const { env, commerce = {}, locale } = getConfig();
     commerce.priceLiteralsURL = priceLiteralsURL;
