@@ -1237,7 +1237,6 @@ describe('global navigation', () => {
       });
 
       it('should reload unav on viewport change', async () => {
-        await createFullGlobalNavigation();
         window.UniversalNav.reload = sinon.spy();
         isDesktop.dispatchEvent(new Event('change'));
         expect(window.UniversalNav.reload.getCall(0)).to.exist;
@@ -1332,7 +1331,7 @@ describe('global navigation', () => {
         document.head.append(fullUnavMeta);
         await gnav.decorateUniversalNav();
         const unavSecondCall = window.UniversalNav.getCall(1);
-        expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
+        expect(unavSecondCall.args[0] && unavSecondCall.args[0].children
           .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
         document.head.removeChild(fullUnavMeta);
       });
