@@ -1,6 +1,9 @@
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
 import { createTag } from '../../utils/utils.js';
 
+// 3 seconds max wait time for marquee to load
+const MAX_WAIT_TIME = 3000;
+
 const typeSize = {
   small: ['xl', 'm', 'm'],
   medium: ['xl', 'm', 'm'],
@@ -47,7 +50,6 @@ function normalizeData(data) {
     image: data.styles?.backgroundImage,
     imagetablet: images.tablet,
     imagedesktop: images.desktop,
-    variant: data.variant,
     cta1url: data.footer[0].right[0]?.href,
     cta1text: data.footer[0]?.right[0]?.text,
     cta1style: data.footer[0]?.right[0]?.style,
@@ -86,49 +88,65 @@ export function renderMarquee(marquee, data, id) {
         : 'xlarge';
   /* eslint-enable no-nested-ternary */
 
-  // background and foreground for marquee
+  // background content
+  const bgContent = `<div class="mobile-only">
+    <picture>
+      <source type="image/webp" srcset="${metadata.image}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+      <source type="image/webp" srcset="${metadata.image}?width=750&amp;format=webply&amp;optimize=medium">
+      <source type="image/jpeg" srcset="${metadata.image}?width=2000&amp;format=jpeg&amp;optimize=medium" media="(min-width: 600px)">
+      <img loading="eager" alt="" src="${metadata.image}?width=750&amp;format=jpeg&amp;optimize=medium" width="1440" height="992" fetchpriority="high">
+    </picture>
+  </div>
+  <div class="tablet-only">
+    <picture>
+      <source type="image/webp" srcset="${metadata.imagetablet}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+      <source type="image/webp" srcset="${metadata.imagetablet}?width=750&amp;format=webply&amp;optimize=medium">
+      <source type="image/jpeg" srcset="${metadata.imagetablet}?width=2000&amp;format=jpeg&amp;optimize=medium" media="(min-width: 600px)">
+      <img loading="lazy" alt="" src="${metadata.imagetablet}?width=750&amp;format=jpeg&amp;optimize=medium" width="2048" height="520">
+  </picture>
+  </div>
+  <div class="desktop-only">
+    <picture>
+      <source type="image/webp" srcset="${metadata.imagedesktop}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+      <source type="image/webp" srcset="${metadata.imagedesktop}?width=750&amp;format=webply&amp;optimize=medium">
+      <source type="image/png" srcset="${metadata.imagedesktop}?width=2000&amp;format=png&amp;optimize=medium" media="(min-width: 600px)">
+      <img loading="lazy" alt="" src="${metadata.imagedesktop}?width=750&amp;format=png&amp;optimize=medium" width="2400" height="813" style="object-position: 32% center;">
+    </picture>
+  </div>`;
+
   const background = createTag('div', { class: 'background' });
+  background.innerHTML = bgContent;
+
+  // foreground content
+  const cta = metadata.cta1url
+    ? `<a 
+      class="con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile" 
+      href="${metadata.cta1url}">${metadata.cta1text}</a>`
+    : '';
+
+  const cta2 = metadata.cta2url
+    ? `<a 
+      class="con-button ${metadata.cta2style} button-${typeSize[size][1]} button-justified-mobile" 
+      href="${metadata.cta2url}">${metadata.cta1text}</a>`
+    : '';
+
+  const fgContent = `<div class="text">
+    <h1 class="heading-${typeSize[size][0]}">${metadata.title}</h1>
+    <p class="body-${typeSize[size][1]}">${metadata.description}</p>
+    <p class="action-area">
+      ${cta} 
+      ${cta2}
+      </p>  
+  </div>`;
+
   const foreground = createTag('div', { class: 'foreground container' });
+  foreground.innerHTML = fgContent;
 
-  // background images for mobile, tablet, and desktop
-  const imgDesktop = createTag('img', { class: 'background', src: metadata.imagedesktop || metadata.image });
-  const picture = createTag('picture', null, imgDesktop);
-  const desktopOnly = createTag('div', { class: 'desktop-only' }, picture);
-
-  const imgTablet = createTag('img', { class: 'background', src: metadata.imagetablet || metadata.image });
-  const pictureTablet = createTag('picture', null, imgTablet);
-  const tabletOnly = createTag('div', { class: 'tablet-only' }, pictureTablet);
-
-  const imgMobile = createTag('img', { class: 'background', src: metadata.imagemobile || metadata.image });
-  const pictureMobile = createTag('picture', null, imgMobile);
-  const mobileOnly = createTag('div', { class: 'mobile-only' }, pictureMobile);
-
-  background.append(mobileOnly, tabletOnly, desktopOnly);
-
-  // foreground copy
-  const title = createTag('h1', { class: `heading-${typeSize[size][0]}` }, metadata.title);
-  const body = createTag('p', { class: `body-${typeSize[size][1]}` }, metadata.description);
-
-  // ctas (buttons)
-  const cta = metadata.cta1url ? createTag('a', {
-    class: `con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile`,
-    href: metadata.cta1url,
-  }, metadata.cta1text) : null;
-
-  const cta2 = metadata.cta2url ? createTag('a', {
-    class: `con-button ${metadata.cta2style} button-${typeSize[size][1]} button-justified-mobile`,
-    href: metadata.cta2url,
-  }, metadata.cta2text) : null;
-
-  // action-area footer
-  const footer = createTag('p', { class: 'action-area' });
-  if (cta) footer.append(cta);
-  if (cta2) footer.append(cta2);
-
-  // text copy area
-  const text = createTag('div', { class: 'text' });
-  text.append(title, body, footer);
-  foreground.append(text);
+  // apply marquee variant to viewer
+  if (metadata.variant) {
+    const classes = metadata.variant.split(',').map((c) => c.trim());
+    marquee.classList.add(...classes);
+  }
 
   marquee.append(background, foreground);
 }
@@ -138,16 +156,15 @@ export function renderMarquee(marquee, data, id) {
  * @param {*} el - element with metadata for marquee
  */
 export default async function init(el) {
-  const timeOutMS = 3000;
   const metadata = getMetadata(el);
 
-  const marquee = createTag('div', { class: `marquee split ${metadata.variant.toLowerCase().replaceAll(',', ' ')}` });
+  const marquee = createTag('div', { class: `marquee split ${metadata.variant.replaceAll(',', ' ')}` });
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
 
   setTimeout(() => {
+    // In case of failure
     if (marquee.children.length !== 2) {
-      // In case of failure:
       // If there is a fallback marquee provided, we use it.
       // Otherwise, we use this strings as the last resort fallback
       metadata.title = metadata.title || 'Welcome to Adobe';
@@ -155,10 +172,9 @@ export default async function init(el) {
       renderMarquee(marquee, metadata, null);
       marquee.classList.add('fallback');
     }
-  }, timeOutMS);
+  }, MAX_WAIT_TIME);
 
   const selectedId = await getMarqueeId();
   const allMarqueesJson = await getAllMarquees(metadata.promoId || 'homepage');
-
   await renderMarquee(marquee, allMarqueesJson, selectedId);
 }
