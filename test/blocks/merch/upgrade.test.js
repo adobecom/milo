@@ -138,11 +138,6 @@ describe('Switch Modal (Upgrade Flow)', () => {
       window.open = originalOpen;
     });
 
-    it('should do nothing if message is not parseble', async () => {
-      const message = { data: { } };
-      handleIFrameEvents(message);
-    });
-
     it('should open external url if Type External', async () => {
       const message = { data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
       handleIFrameEvents(message);
@@ -170,6 +165,18 @@ describe('Switch Modal (Upgrade Flow)', () => {
 
       handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"Close","data":{"actionRequired":false}}' });
       expect(dispatchEventStub.calledOnceWith(new Event('closeModal'))).to.be.true;
+    });
+
+    [
+      [{ data: {} }, 'should do nothing if message is not parseble'],
+      [{ data: '{"app":"ManagePlan","subType":"AppLoaded","data":{"actionRequired":false}}' }, 'should do nothing if message is not parseble'],
+      [{ data: '{"app":"ManagePlan","subType":"Invalid","data":{"actionRequired":false}}' }, 'should do nothing if message type is not valid'],
+      [{ data: '{"app":"ManagePlan","subType":"Error","data":{"actionRequired":false}}' }, 'should do nothing if message type is error'],
+    ].forEach(([message, desc]) => {
+      it(desc, () => {
+        expect(() => { handleIFrameEvents(message); }).not.to.throw();
+        expect(window.open.calledOnce).to.be.false;
+      });
     });
   });
 });
