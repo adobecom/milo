@@ -115,10 +115,10 @@ const convertToPascalCase = (str) => str
 
 export const unavAnalyticsEventsMap = (experienceName, contentNames = []) => {
   const eventsMap = {
-    'profile|click|sign-in|': `Sign in|gnav|${experienceName}|unav`,
+    'profile|click|sign-in|': `Sign In|gnav|${experienceName}|unav`,
     'profile|render|component|': `Account|gnav|${experienceName}`,
     'profile|click|account|': `View Account|gnav|${experienceName}`,
-    'profile|click|sign-out|': `Sign out|gnav|${experienceName}|unav`,
+    'profile|click|sign-out|': `Sign Out|gnav|${experienceName}|unav`,
     'app-switcher|render|component|': 'AppLauncher.appIconToggle',
     'app-switcher|click|footer|adobe-home': 'AppLauncher.adobe.com',
     'app-switcher|click|footer|all-apps': 'AppLauncher.allapps',
