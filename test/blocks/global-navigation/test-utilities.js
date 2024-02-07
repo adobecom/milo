@@ -73,7 +73,6 @@ export const unavLocalesTestData = [
     ietf: 'ab-AB',
     expectedLocale: 'ab_AB',
   },
-
   {
     prefix: '/ab',
     ietf: 'ab',
