@@ -118,7 +118,9 @@ const createDelayedModalAnchor = ({
   a.setAttribute('modal-hash', hash);
   a.setAttribute('modal-path', pathname);
   // @TODO: set display: none in CSS
-  a.classList.add('modal link-block delayed-modal-anchor');
+  a.classList.add('modal');
+  a.classList.add('link-block');
+  a.classList.add('delayed-modal-anchor');
   loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return a;
 };
@@ -142,37 +144,49 @@ const defineDelayedModalParams = (search) => {
   };
 };
 
-const createFrag = async (el, url, manifestId) => {
-  let href = url;
+const parseUrl = (url) => {
+  if (!url) return {};
+  const parsed = {};
   try {
     const { pathname, search, hash } = new URL(url);
-    href = `${pathname}${search}${hash}`;
-    const {
-      delay,
-      displayMode,
-      DELAYED_MODAL_DISPLAY_MODE,
-    } = defineDelayedModalParams(search) || {};
-    if (delay && displayMode) {
-      const { initDelayedModal } = await import('../../blocks/modal/modal.js');
-      initDelayedModal({
-        delay,
-        displayMode,
-        hash,
-        contentUrl: pathname,
-        DELAYED_MODAL_DISPLAY_MODE,
-      });
-      return createDelayedModalAnchor({
-        delay,
-        displayMode,
-        href,
-        pathname,
-        hash,
-        manifestId,
-      });
-    }
+    parsed.href = `${pathname}${search}${hash}`;
+    parsed.pathname = pathname;
+    parsed.hash = hash;
+    parsed.search = search;
   } catch {
     // ignore
   }
+  return parsed;
+};
+
+const createFrag = async (el, url, manifestId) => {
+  const { href, pathname, hash, search } = parseUrl(url);
+
+  const {
+    delay,
+    displayMode,
+    DELAYED_MODAL_DISPLAY_MODE,
+  } = defineDelayedModalParams(search) || {};
+
+  if (delay && displayMode) {
+    const { initDelayedModal } = await import('../../blocks/modal/modal.js');
+    initDelayedModal({
+      delay,
+      displayMode,
+      hash,
+      contentUrl: pathname,
+      DELAYED_MODAL_DISPLAY_MODE,
+    });
+    return createDelayedModalAnchor({
+      delay,
+      displayMode,
+      href,
+      pathname,
+      hash,
+      manifestId,
+    });
+  }
+
   const a = createTag('a', { href }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
   let frag = createTag('p', undefined, a);
@@ -311,6 +325,7 @@ function handleCommands(commands, manifestId, rootEl = document) {
       try {
         const selectorEl = rootEl.querySelector(cmd.selector);
         if (!selectorEl) return;
+        console.log('cmd.target', cmd.target);
         COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
       } catch (e) {
         console.log('Invalid selector: ', cmd.selector);
