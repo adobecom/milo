@@ -30,8 +30,3 @@ a[is='checkout-link'].loading-entitlements > span {
   content: "\00a0";
 }
 
-.upgrade-flow-iframe {
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
-}

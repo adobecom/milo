@@ -42,6 +42,14 @@
   display: none;
 }
 
+.upgrade-flow-modal .upgrade-flow-iframe {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  padding: 65px 0 100px;
+  box-sizing: border-box; 
+}
+
 .modal-curtain.is-open {
   position: fixed;
   top: 0;
@@ -179,6 +187,10 @@
 
   .region-selector .content {
     column-count: 3;
+  }
+
+  .upgrade-flow-modal .upgrade-flow-iframe {
+    padding: 0 0 10px;
   }
 }
 

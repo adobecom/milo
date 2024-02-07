@@ -101,7 +101,6 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
       frameborder: '0',
       marginwidth: '0',
       marginheight: '0',
-      scrolling: 'no',
       allowfullscreen: 'true',
       loading: 'lazy',
       class: 'upgrade-flow-iframe',
