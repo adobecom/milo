@@ -1077,7 +1077,7 @@ export async function loadArea(area = document) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+      await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
   }
 
