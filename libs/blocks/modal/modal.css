@@ -199,6 +199,11 @@
     max-width: 100%;
     max-height: 100%;
   }
+  
+  .dialog-modal.upgrade-flow-modal {
+    border-radius: 0;
+  }
+  
 }
 
 @media (min-width: 1200px) {
