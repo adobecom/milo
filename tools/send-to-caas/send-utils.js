@@ -67,7 +67,7 @@ const flattenLink = (link) => {
 };
 
 const checkUrl = (url, errorMsg) => {
-  if (url === undefined) return url;
+  if (url === undefined || isValidModal(url)) return url;
   const flatUrl = url.includes('href=') ? flattenLink(url) : url;
   if (isValidModal(flatUrl)) {
     return flatUrl;
@@ -321,11 +321,16 @@ const getCountryAndLang = async (options) => {
 
 const parseCardMetadata = () => {
   const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('.card-metadata') || getConfig().doc.querySelector('.caas-marquee-metadata');
+  const marqueeMetadata = getConfig().doc.querySelector('.caas-marquee-metadata');
+  const cardMetadata = getConfig().doc.querySelector('.card-metadata');
+  const mdEl = cardMetadata || marqueeMetadata;
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
       const key = n.children?.[0]?.textContent?.toLowerCase();
-      const val = n.children?.[1]?.textContent;
+      let val = n.children?.[1]?.textContent;
+      if (marqueeMetadata) {
+        val = n.children?.[1]?.innerHTML;
+      }
       if (!key) return;
 
       pageMd[key] = val;
@@ -333,6 +338,12 @@ const parseCardMetadata = () => {
   }
   return pageMd;
 };
+
+function checkCtaUrl(s, options, i) {
+  if (s?.trim() === '') return '';
+  const url = s || options.prodUrl || window.location.origin + window.location.pathname;
+  return checkUrl(url, `Invalid Cta${i}Url: ${url}`);
+}
 
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
@@ -383,16 +394,12 @@ const props = {
   cta1style: 0,
   cta1target: 0,
   cta1text: 0,
-  cta1url: (s, options) => {
-    if (s?.trim() === '') return '';
-    const url = s || options.prodUrl || window.location.origin + window.location.pathname;
-    return checkUrl(url, `Invalid Cta1Url: ${url}`);
-  },
+  cta1url: (s, options) => checkCtaUrl(s, options, 1),
   cta2icon: (s) => checkUrl(s, `Invalid Cta2Icon url: ${s}`),
   cta2style: 0,
   cta2target: 0,
   cta2text: 0,
-  cta2url: (s) => checkUrl(s, `Invalid Cta2Url: ${s}`),
+  cta2url: (s) => checkCtaUrl(s, {}, 2),
   description: (s) => s || getMetaContent('name', 'description') || '',
   details: 0,
   entityid: (_, options) => {

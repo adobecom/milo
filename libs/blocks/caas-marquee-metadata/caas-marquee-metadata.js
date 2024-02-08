@@ -1,5 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 
+const MAX_NUM_CTAS = 2;
 const CTA_STYLES = {
   STRONG: 'blue',
   EM: 'outline',
@@ -9,25 +10,26 @@ function getCtaStyle(tagName) {
 }
 
 function getUrl(ctaLink) {
+  if (!ctaLink) {
+    return '';
+  }
   const modalPath = ctaLink.getAttribute('data-modal-path');
   const modalHash = ctaLink.getAttribute('data-modal-hash');
+  const target = ctaLink.target ? `#${ctaLink.target}` : '';
   if (modalPath && modalHash) {
     return `${modalPath}${modalHash}`;
   }
-  return ctaLink.href;
+  return `${ctaLink.href}${target}`;
 }
 function parseCtas(el) {
   const ctas = {};
-  let index = 1;
-  const a = el.querySelectorAll('a');
-  const ctaLinks = a.length ? a : [{}, {}];
+  const ctaLinks = el.querySelectorAll('a');
 
-  for (const ctaLink of ctaLinks) {
-    ctas[`cta${index}url`] = getUrl(ctaLink) || '';
-    ctas[`cta${index}text`] = ctaLink.textContent?.trim() || '';
-    ctas[`cta${index}style`] = getCtaStyle(ctaLink.parentNode?.tagName);
-    ctas[`cta${index}target`] = ctaLink.target || '';
-    index += 1;
+  for (let i = 1; i <= MAX_NUM_CTAS; i += 1) {
+    const ctaLink = ctaLinks[i - 1] || '';
+    ctas[`cta${i}url`] = getUrl(ctaLink);
+    ctas[`cta${i}text`] = ctaLink.textContent?.trim() || '';
+    ctas[`cta${i}style`] = getCtaStyle(ctaLink.parentNode?.tagName);
   }
   return ctas;
 }
@@ -63,11 +65,9 @@ export default function init(el) {
     cta1url: `${metadata.cta1url}`,
     cta1text: `${metadata.cta1text}`,
     cta1style: `${metadata.cta1style}`,
-    cta1target: `${metadata.cta1target}`,
     cta2url: `${metadata.cta2url}`,
     cta2text: `${metadata.cta2text}`,
     cta2style: `${metadata.cta2style}`,
-    cta2target: `${metadata.cta2target}`,
   };
 
   for (const [key, val] of Object.entries(additionalFields)) {
