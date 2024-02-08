@@ -229,6 +229,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       config.entitlements = handleEntitlements;
+      config.consumerEnts = conf.entitlements || [];
       setupMiloObj(config);
       return config;
     },
