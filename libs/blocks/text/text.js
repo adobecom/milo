@@ -57,7 +57,7 @@ function decorateLinkFarms(el) {
   loadStyle(`${miloLibs || codeRoot}/blocks/text/link-farms.css`);
   const [title, foregroundDiv] = [...el.querySelectorAll('.foreground')];
   const hCount = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
-  title.querySelector('h1, h2, h3, h4, h5, h6').classList.add('heading-l');
+  title.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading-l');
   foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
   foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
     const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
