@@ -11,6 +11,7 @@ export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 
 const TITLE_PRODUCT_ARRANGEMENT_CODE = 'Product Arrangement Code';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
+let downloadFlowFeatureFlag = false; // temporary disable till GWP is ready
 
 export function polyfills() {
   if (polyfills.promise) return polyfills.promise;
@@ -53,12 +54,11 @@ async function getCheckoutAction(offers) {
     });
   if (upgradeOffer && entitlements?.length && productFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
-    upgradeAction = handleUpgradeOffer(productFamily, upgradeOffer, entitlements);
+    upgradeAction = await handleUpgradeOffer(productFamily, upgradeOffer, entitlements);
     if (upgradeAction) return upgradeAction;
   }
 
-  const downloadFlow = false; // temporary disable
-  if (downloadFlow === false) return undefined;
+  if (downloadFlowFeatureFlag === false) return undefined;
   const aCodes = entitlements?.map((offer) => offer.offer.product_arrangement_code);
   if (aCodes?.includes(productArrangementCode)) {
     const mapping = entitlementsMappings.data
@@ -218,3 +218,7 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
+
+export const setDownloadFlowFeatureFlag = (value) => {
+  downloadFlowFeatureFlag = value;
+};

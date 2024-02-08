@@ -113,8 +113,8 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
       modal = await getModal(null, { id: 'preflight', content: iframe, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
       return modal;
     };
-    return replaceKey('upgrade-now', config)
-      .then((text) => ({ text, url: upgradeUrl, handler: showModal }));
+    const text = await replaceKey('upgrade-now', config);
+    return { text, url: upgradeUrl, handler: showModal };
   }
   return undefined;
 }
