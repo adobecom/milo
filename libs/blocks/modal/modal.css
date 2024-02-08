@@ -27,7 +27,7 @@
 
 .dialog-modal.commerce-frame .fragment,
 .dialog-modal.commerce-frame .section {
-  height: 100%;
+  height: 100vh;
 }
 
 .modal-curtain.is-open {
