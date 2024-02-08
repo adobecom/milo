@@ -29,3 +29,4 @@ a[is='checkout-link'].loading-entitlements > span {
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";
 }
+
