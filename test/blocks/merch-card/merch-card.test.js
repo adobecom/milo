@@ -309,6 +309,7 @@ describe('Mini Compare Chart Merch Card', () => {
   it('Supports Mini Compare Chart with footer rows', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
+    document.querySelector('.section').removeAttribute('data-status');
     const heading = merchCard.querySelector('h2[slot="heading-m"]');
     const body = merchCard.querySelector('div[slot="body-m"]');
     const priceHeading = merchCard.querySelector('h2[slot="heading-m-price"]');

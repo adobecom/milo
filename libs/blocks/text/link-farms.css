@@ -1,0 +1,114 @@
+.link-farm.text-block:not([class*="-spacing"]) {
+  padding: var(--spacing-xl) 0;
+}
+
+.link-farm.text-block .foreground {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spacing-xl) var(--spacing-m);
+}
+
+.link-farm.text-block .foreground:first-child {
+  grid-template-columns: auto;
+}
+
+.link-farm.text-block .heading-xs {
+  margin: 0 0 var(--spacing-l);
+}
+
+.link-farm.text-block .no-heading {
+  display: none;
+}
+
+.link-farm.text-block .heading-l {
+  margin: 0 0 var(--spacing-m);
+}
+
+.link-farm.text-block p {
+  margin: 0 0 var(--spacing-s);
+}
+
+.link-farm.text-block p:last-child {
+  margin: 0;
+}
+
+.link-farm.text-block a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.link-farm.text-block a:hover {
+  text-decoration-style: double;
+}
+
+
+/* mobile */
+@media screen and (max-width: 600px) {
+  .link-farm.text-block .foreground {
+    row-gap: 0;
+  }
+
+  .link-farm.text-block .has-heading {
+    margin-top: var(--spacing-s);
+  }
+
+  .link-farm.text-block .foreground div:last-child p:last-child {
+    margin-bottom: 0;
+  }
+
+  .link-farm.text-block p:last-child {
+    margin-bottom: var(--spacing-s);
+  }
+}
+
+/* Tablet up */
+@media screen and (min-width: 600px) {
+  .link-farm.text-block .heading-l {
+    margin: 0 0 var(--spacing-xl-static);
+  }
+
+
+  .link-farm.text-block .foreground {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .link-farm.text-block .no-heading {
+    display: none;
+  }
+
+  .link-farm.text-block .hspace .no-heading {
+    display: block;
+  }
+
+  .link-farm.text-block .no-heading {
+    height: var(--type-heading-m-size);
+  }
+
+  .link-farm.text-block .foreground {
+    row-gap: var(--spacing-s);
+  }
+
+   .link-farm.text-block .gap-xl {
+    row-gap: var(--spacing-xl);
+   }
+
+
+  .link-farm.text-block .foreground div p:last-child {
+    margin-bottom: 0;
+  }
+
+  .link-farm.text-block p:last-child{
+    margin-bottom: var(--spacing-s);
+  }
+}
+
+/* Desktop up */
+@media screen and (min-width: 1200px) {
+  .link-farm.text-block .foreground {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .link-farm.text-block .no-heading {
+    display: block;
+  }
+}

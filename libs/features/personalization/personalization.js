@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
+} from '../../utils/utils.js';
 import { ENTITLEMENT_MAP } from './entitlements.js';
 
 /* c20 ignore start */
@@ -112,7 +114,7 @@ const createFrag = (el, url, manifestId) => {
   if (isSection) {
     frag = createTag('div', undefined, frag);
   }
-  loadLink(`${href}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return frag;
 };
 
@@ -164,9 +166,30 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
+const getBlockProps = (fSelector, fVal) => {
+  let selector = fSelector;
+  let val = fVal;
+  if (val?.includes('\\')) val = val?.split('\\').join('/');
+  if (!val?.startsWith('/')) val = `/${val}`;
+  selector = val?.split('/').pop();
+  const { origin } = PAGE_URL;
+  if (origin.includes('.hlx.') || origin.includes('localhost')) {
+    if (val.startsWith('/libs/')) {
+      /* c8 ignore next 2 */
+      const { miloLibs, codeRoot } = getConfig();
+      val = `${miloLibs || codeRoot}${val.replace('/libs', '')}`;
+    } else {
+      val = `${origin}${val}`;
+    }
+  }
+  return { selector, val };
+};
+
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
-    propMap[i.selector] = i.val;
+    let { selector, val } = i;
+    if (prop === 'blocks') ({ selector, val } = getBlockProps(selector, val));
+    propMap[selector] = val;
   });
   return propMap;
 }, {});

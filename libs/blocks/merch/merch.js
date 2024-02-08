@@ -11,6 +11,7 @@ export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 
 const TITLE_PRODUCT_ARRANGEMENT_CODE = 'Product Arrangement Code';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
+let downloadFlowFeatureFlag = false; // temporary disable till GWP is ready
 
 export function polyfills() {
   if (polyfills.promise) return polyfills.promise;
@@ -37,16 +38,29 @@ export async function loadEntitlements() {
     fetch(entitlementsURL),
   ]).then(([{ default: getUserEntitlements }, mappings]) => {
     if (!mappings.ok) return [];
-    return Promise.all([getUserEntitlements(), mappings.json()]);
+    return Promise.all([getUserEntitlements({ params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }], format: 'raw' }), mappings.json()]);
   });
   return loadEntitlements.promise;
 }
 
 async function getCheckoutAction(offers) {
-  const [{ arrangement_codes: aCodes } = {}, entitlementsMappings] = await loadEntitlements();
-  if (aCodes === undefined) return undefined;
-  const [{ productArrangementCode }] = offers;
-  if (aCodes[productArrangementCode] === true) {
+  let upgradeAction;
+  const [entitlements, entitlementsMappings] = await loadEntitlements();
+  const [{ productArrangementCode, productArrangement }] = offers;
+  const productFamily = productArrangement?.productFamily;
+  const upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]')?.onceSettled()
+    .catch((e) => {
+      window.lana.log('Failed to resolve an upgrade offer:', e);
+    });
+  if (upgradeOffer && entitlements?.length && productFamily) {
+    const { default: handleUpgradeOffer } = await import('./upgrade.js');
+    upgradeAction = await handleUpgradeOffer(productFamily, upgradeOffer, entitlements);
+    if (upgradeAction) return upgradeAction;
+  }
+
+  if (downloadFlowFeatureFlag === false) return undefined;
+  const aCodes = entitlements?.map((offer) => offer.offer.product_arrangement_code);
+  if (aCodes?.includes(productArrangementCode)) {
     const mapping = entitlementsMappings.data
       ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
     if (!mapping) return undefined;
@@ -68,7 +82,6 @@ export async function initService(force = false) {
     loadEntitlements.promise = undefined;
   }
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    // loadIms();
     const commerceLib = await import('../../deps/commerce.js');
     const { env, commerce = {}, locale } = getConfig();
     commerce.priceLiteralsURL = priceLiteralsURL;
@@ -116,7 +129,7 @@ export async function getCheckoutContext(el, params) {
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
-  const entitlement = 'false' ?? params?.get('entitlement'); // temporarly disabled.
+  const entitlement = params?.get('entitlement') ?? 'true';
   return {
     ...context,
     checkoutClientId,
@@ -205,3 +218,7 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
+
+export const setDownloadFlowFeatureFlag = (value) => {
+  downloadFlowFeatureFlag = value;
+};

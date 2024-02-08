@@ -8,6 +8,8 @@ import { replaceText } from '../../features/placeholders.js';
 
 const DIGITS_ONLY = /^\d+$/;
 
+const CLASS_LOADING = 'loading';
+
 const LITERAL_SLOTS = [
   'searchText',
   'filtersText',
@@ -133,10 +135,15 @@ export default async function init(el) {
   }
 
   const { miloLibs } = getConfig();
-  loadStyle(`${miloLibs}/blocks/merch/merch.css`);
-  loadStyle(`${miloLibs}/blocks/merch-card/merch-card.css`);
+  const merchStyles = new Promise((resolve) => {
+    loadStyle(`${miloLibs}/blocks/merch/merch.css`, resolve);
+  });
+  const merchCardStyles = new Promise((resolve) => {
+    loadStyle(`${miloLibs}/blocks/merch-card/merch-card.css`, resolve);
+  });
+  const allStyles = Promise.all([merchStyles, merchCardStyles]);
 
-  const attributes = { filter: 'all' };
+  const attributes = { filter: 'all', class: CLASS_LOADING };
   const settingsEl = el.firstElementChild?.firstElementChild;
 
   const filtered = settingsEl?.firstElementChild?.tagName === 'STRONG';
@@ -222,7 +229,7 @@ export default async function init(el) {
   } else if (!merchCards.filtered) {
     merchCards.filtered = 'all';
   }
-  initMerchCards(config, type, attributes.filtered, el, preferences)
+  await initMerchCards(config, type, attributes.filtered, el, preferences)
     .then((async (cardsRoot) => {
       const cards = [...cardsRoot.children];
       const batchSize = 3;
@@ -235,6 +242,9 @@ export default async function init(el) {
         }
         await makePause();
       }
+      merchCards.updateComplete.then(() => {
+        merchCards.classList.remove(CLASS_LOADING);
+      });
       merchCards.displayResult = true;
     }
     ));
@@ -251,6 +261,6 @@ export default async function init(el) {
     }
     el.replaceWith(merchCards);
   }
-
+  await allStyles;
   return merchCards;
 }

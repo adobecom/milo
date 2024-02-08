@@ -1,12 +1,10 @@
 main > div.section[class*="-merch-card"]:not([data-status='decorated']),
 .fragment > div.section[class*="-merch-card"]:not([data-status='decorated']) {
   display: grid;
-  padding-bottom: var(--spacing-m);
 }
 
 div[class*="-merch-card"] > div,
  div[class*="-merch-cards"] > div {
-   width: 100%;
    grid-column: 1 / -1;
  }
 
