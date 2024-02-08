@@ -884,11 +884,6 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  const georouting = getMetadata('georouting') || config.geoRouting;
-  if (georouting === 'on') {
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
-  }
   loadMartech();
   const header = document.querySelector('header');
   if (header) {
@@ -1078,6 +1073,12 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     decorateDocumentExtras();
+
+    const georouting = getMetadata('georouting') || config.geoRouting;
+    if (georouting === 'on') {
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    }
   }
 
   const sections = decorateSections(area, isDoc);
