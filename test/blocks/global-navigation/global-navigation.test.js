@@ -1231,7 +1231,7 @@ describe('global navigation', () => {
         document.head.append(fullUnavMeta);
         await gnav.decorateUniversalNav();
         const unavSecondCall = window.UniversalNav.getCall(1);
-        expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
+        expect(unavSecondCall.args[0] && unavSecondCall.args[0].children
           .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
         document.head.removeChild(fullUnavMeta);
       });
@@ -1350,7 +1350,7 @@ describe('global navigation', () => {
         document.head.append(fullUnavMeta);
         await gnav.decorateUniversalNav();
         const unavSecondCall = window.UniversalNav.getCall(1);
-        expect(unavSecondCall.args[0] && !!unavSecondCall.args[0].children
+        expect(unavSecondCall.args[0] && unavSecondCall.args[0].children
           .every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name))).to.be.true;
         document.head.removeChild(fullUnavMeta);
       });
