@@ -6,7 +6,7 @@ const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
 const URL_POSTXDM = 'https://14257-milocaasproxy-stage.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
-const VALID_MODAL_RE = /^\/fragments(.*)#[a-zA-Z0-9_]+$/;
+const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
@@ -324,11 +324,12 @@ const parseCardMetadata = () => {
   const marqueeMetadata = getConfig().doc.querySelector('.caas-marquee-metadata');
   const cardMetadata = getConfig().doc.querySelector('.card-metadata');
   const mdEl = cardMetadata || marqueeMetadata;
+  const allowHtml = ['description'];
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
       const key = n.children?.[0]?.textContent?.toLowerCase();
       let val = n.children?.[1]?.textContent;
-      if (marqueeMetadata) {
+      if (marqueeMetadata && allowHtml.includes(key)) {
         val = n.children?.[1]?.innerHTML;
       }
       if (!key) return;
