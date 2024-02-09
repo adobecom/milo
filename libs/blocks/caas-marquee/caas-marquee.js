@@ -74,7 +74,8 @@ function normalizeData(data) {
  */
 export function renderMarquee(marquee, data, id) {
   if (marquee.classList.contains('fallback')) return;
-  const metadata = data.cards ? normalizeData(data.cards[id]) : data;
+  let chosen = data.cards.filter(obj => obj.id === id)[0];
+  const metadata = data.cards ? normalizeData(chosen) : data;
 
   // remove loader
   marquee.innerHTML = '';
@@ -117,20 +118,39 @@ export function renderMarquee(marquee, data, id) {
   const background = createTag('div', { class: 'background' });
   background.innerHTML = bgContent;
 
+  let cta1Style = (metadata.cta1style === "blue" || metadata.cta1style === "outline") ?
+    `con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile` : "";
+
+  let cta2Style = (metadata.cta2style === "blue" || metadata.cta2style === "outline") ?
+    `con-button ${metadata.cta2style} button-${typeSize[size][1]} button-justified-mobile` : "";
+
   // foreground content
-  const cta = metadata.cta1url
+  let cta = metadata.cta1url
     ? `<a 
-      class="con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile" 
+      class="${cta1Style}" 
       href="${metadata.cta1url}">${metadata.cta1text}</a>`
     : '';
 
-  const cta2 = metadata.cta2url
+  if(metadata.cta1url.includes('fragment')){
+    let fragment = metadata.cta1url.split("#")[0];
+    let hash = metadata.cta1url.split("#")[1];
+    cta = `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="Launch modal-1--Modal examples" class="modal link-block ${cta1Style}">${metadata.cta1text}</a>`
+  }
+
+  let cta2 = metadata.cta2url
     ? `<a 
-      class="con-button ${metadata.cta2style} button-${typeSize[size][1]} button-justified-mobile" 
-      href="${metadata.cta2url}">${metadata.cta1text}</a>`
+      class="${cta2Style}"
+      href="${metadata.cta2url}">${metadata.cta2text}</a>`
     : '';
 
+  if(metadata.cta2url?.includes('fragment')){
+    let fragment = metadata.cta2url.split("#")[0];
+    let hash = metadata.cta2url.split("#")[1];
+    cta2 = `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="Launch modal-1--Modal examples" class="modal link-block ${cta2Style}">${metadata.cta2text}</a>`
+  }
+
   const fgContent = `<div class="text">
+    <p class="detail-l">${metadata.detail}</p>
     <h1 class="heading-${typeSize[size][0]}">${metadata.title}</h1>
     <p class="body-${typeSize[size][1]}">${metadata.description}</p>
     <p class="action-area">
@@ -144,7 +164,7 @@ export function renderMarquee(marquee, data, id) {
 
   // apply marquee variant to viewer
   if (metadata.variant) {
-    const classes = metadata.variant.split(',').map((c) => c.trim());
+    const classes = metadata.variant.split(' ').map((c) => c.trim());
     marquee.classList.add(...classes);
   }
 
