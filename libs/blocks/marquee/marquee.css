@@ -27,7 +27,7 @@
 
 .marquee .icon-area picture,
 .marquee .icon-area a {
-  display: contents;
+  display: inline-flex;
 }
 
 .marquee.mobile-light a:not(.con-button) {
@@ -96,7 +96,9 @@
 }
 
 .marquee .icon-area {
-  margin-bottom: var(--spacing-s);
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
 }
 
 .marquee .icon-area img {
@@ -222,7 +224,9 @@
 .marquee.center .foreground,
 .marquee.center .action-area,
 .marquee.centered .foreground,
-.marquee.centered .action-area {
+.marquee.centered .action-area,
+.marquee.center .icon-area,
+.marquee.centered .icon-area {
   justify-content: center;
 }
 
@@ -284,18 +288,10 @@
   object-position: left bottom;
 }
 
-.marquee .icon-area.icon-area-multiple {
-  display: flex;
-}
-
 .marquee .icon-area.icon-area-multiple img {
   height: 40px;
   max-height: 40px;
   max-width: 114px;
-}
-
-.marquee .icon-area.icon-area-multiple > :not(:first-child) img {
-  margin-left: var(--spacing-xxs);
 }
 
 .marquee.large .text .action-area {
