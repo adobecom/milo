@@ -124,7 +124,7 @@ const config = {
   fallbackRouting: 'on',
   links: 'on',
   // will undo before merging
-  imsClientId: 'fedsmilo',
+  imsClientId: new URLSearchParams(window.location.search).get('imsClientId') || 'milo', // TODO: reset to original value  imsScope: 'AdobeID,openid,gnav,pps.read',
   imsScope: 'AdobeID,openid,gnav,pps.read',
   codeRoot: '/libs',
   locales,
