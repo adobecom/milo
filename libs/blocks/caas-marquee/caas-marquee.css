@@ -43,14 +43,15 @@
   }
 }
 
+.marquee.loading {
+  background: linear-gradient(45deg, red, orange); /* For Debugging */
+}
 /* Styles for Loading animation */
 
 .marquee {
   position: relative;
   color: var(--color-white);
   display: flex;
-  background: #f0f0f0; /* For Debugging */
-  background: linear-gradient(45deg, red, orange); /* For Debugging */
 }
 
 .marquee.large.standard {

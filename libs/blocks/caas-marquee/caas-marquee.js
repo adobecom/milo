@@ -21,14 +21,22 @@ async function getAllMarquees(promoId) {
  * function getMarqueeId() : Eventually from Spectra API
  * @returns {string} id - currently marquee index (eventually will be marquee ID from Spectra)
  */
-function getMarqueeId() {
+async function getMarqueeId() {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('marqueeId')) return urlParams.get('marqueeId');
 
-  const id = Math.floor(Math.random() * Math.floor(6));
-  return new Promise((resolve) => {
-    setTimeout(() => { resolve(id); }, 100);
+  let segments = ['indesign', 'photoshop']; // will come from API but hard coded for now
+  let visitedLinks = [document.referrer];
+  let response = await fetch('https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/models', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': 'ChimeraAcom'
+    },
+    body: `{"endpoint":"community-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${visitedLinks}, "segments": ${segments}}}}`
   });
+  let json = await response.json();
+  return json.data[0].content_id;
 }
 
 /**
@@ -182,17 +190,21 @@ export default async function init(el) {
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
 
-  setTimeout(() => {
-    // In case of failure
-    if (marquee.children.length !== 2) {
-      // If there is a fallback marquee provided, we use it.
-      // Otherwise, we use this strings as the last resort fallback
-      metadata.title = metadata.title || 'Welcome to Adobe';
-      metadata.description = metadata.description || 'Do it all with Adobe Creative Cloud.';
-      renderMarquee(marquee, metadata, null);
-      marquee.classList.add('fallback');
-    }
-  }, MAX_WAIT_TIME);
+  // Commented out this code for now.
+  // We will need to handle failures by getting the promise states of all the various API calls
+  // (and putting timeouts per call) versus doing one global set timeout.
+  //
+  // setTimeout(() => {
+  //   // In case of failure
+  //   if (marquee.children.length !== 2) {
+  //     // If there is a fallback marquee provided, we use it.
+  //     // Otherwise, we use this strings as the last resort fallback
+  //     metadata.title = metadata.title || 'Welcome to Adobe';
+  //     metadata.description = metadata.description || 'Do it all with Adobe Creative Cloud.';
+  //     renderMarquee(marquee, metadata, null);
+  //     marquee.classList.add('fallback');
+  //   }
+  // }, MAX_WAIT_TIME);
 
   const selectedId = await getMarqueeId();
   const allMarqueesJson = await getAllMarquees(metadata.promoId || 'homepage');
