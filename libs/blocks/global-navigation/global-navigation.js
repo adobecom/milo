@@ -177,7 +177,7 @@ class Gnav {
     this.elements = {};
   }
 
-  init = () => logErrorFor(async () => {
+ // init = () => logErrorFor(async () => {
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
 
     // Order is important, decorateTopnavWrapper will render the nav
