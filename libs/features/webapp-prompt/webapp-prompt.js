@@ -1,6 +1,6 @@
 import { toFragment } from '../../blocks/global-navigation/utilities/utilities.js';
 import { getConfig } from '../../utils/utils.js'; // TODO: doesn't make sense outside of Milo
-import { replaceKey, replaceText } from '../../features/placeholders.js';
+import { replaceKey, replaceText } from '../placeholders.js';
 
 const CONFIG = {
   selectors: { prompt: '.appPrompt' },
@@ -47,7 +47,7 @@ class AppPrompt {
     this.addEventListeners();
 
     document.body.appendChild(this.template);
-    this.elements.closeIcon.focus();
+    this.elements.cta.focus();
 
     this.redirectFn = this.initRedirect();
   };
@@ -123,7 +123,7 @@ class AppPrompt {
       <div class="appPrompt-icon">
         ${this.image}
       </div>
-      <div class="appPrompt-title">${this.title}</div>
+      <h2 class="appPrompt-title">${this.title}</h2>
       ${this.elements.profile}
       <div class="appPrompt-footer">
         <div class="appPrompt-text">${this.subtitle}</div>
@@ -141,6 +141,10 @@ class AppPrompt {
     // document.addEventListener('click', (e) => {
     //   if (!e.target.closest(CONFIG.selectors.prompt)) AppPrompt.close();
     // });
+
+    document.addEventListener('keydown', (event) => {
+      if (['Tab', 'Escape', 'Enter'].includes(event.key)) this.close();
+    });
 
     [this.elements.closeIcon, this.elements.cta]
       .forEach((elem) => elem.addEventListener('click', this.close));
