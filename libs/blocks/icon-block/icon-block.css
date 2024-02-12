@@ -72,7 +72,7 @@
 }
 
 .icon-block.inline .foreground {
-  max-width: max-content;
+  /* max-width: max-content; */
   margin: 0 auto;
 }
 
