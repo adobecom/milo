@@ -72,6 +72,7 @@ function decorateContent(el) {
       textContent.forEach((content) => {
         secondColumn.append(content);
       });
+      if (secondColumn.children.length === 1) el.classList.add('items-center');
       el.querySelector('.foreground .text-content').append(secondColumn);
     }
   }

@@ -11,6 +11,7 @@ import merch, {
   getCheckoutContext,
   initService,
   priceLiteralsURL,
+  setDownloadFlowFeatureFlag,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
@@ -32,6 +33,7 @@ const config = {
   commerce: { priceLiteralsURL },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
+  placeholders: { 'upgrade-now': 'Upgrade Now' },
 };
 
 /**
@@ -64,6 +66,19 @@ const SUBSCRIPTION_DATA_PHSP = [
   },
 ];
 
+const SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE = [
+  {
+    change_plan_available: true,
+    offer: {
+      offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
+      product_arrangement: {
+        code: 'phsp_direct_individual',
+        family: 'PHOTOSHOP',
+      },
+    },
+  },
+];
+
 const PROD_DOMAINS = [
   'www.adobe.com',
   'www.stage.adobe.com',
@@ -87,6 +102,7 @@ describe('Merch Block', () => {
     setConfig(config);
     ({ setEntitlementsMetadata, setSubscriptionsData } = await mockFetch());
     await mockIms('CH');
+    setDownloadFlowFeatureFlag(true);
   });
 
   beforeEach(async () => {
@@ -363,7 +379,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe.skip('Entitlements', () => {
+  describe('Entitlements', () => {
     it('updates CTA text to Download', async () => {
       mockIms();
       getUserEntitlements();
@@ -421,6 +437,22 @@ describe('Merch Block', () => {
       const [{ CTA }] = ENTITLEMENTS_METADATA.data;
       expect(cta.textContent).to.equal(CTA);
       expect(cta.href).to.equal('https://helpx.adobe.com/de/download-install.html');
+    });
+  });
+
+  describe('Upgrade Flow', () => {
+    it('updates CTA text to Upgrade Now', async () => {
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setEntitlementsMetadata(ENTITLEMENTS_METADATA);
+      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
+      await initService(true);
+      const target = await merch(document.querySelector('.merch.cta.upgrade-target'));
+      await target.onceSettled();
+      const sourceCta = await merch(document.querySelector('.merch.cta.upgrade-source'));
+      await sourceCta.onceSettled();
+      expect(sourceCta.textContent).to.equal('Upgrade Now');
     });
   });
 });
