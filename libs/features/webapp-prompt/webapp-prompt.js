@@ -81,7 +81,7 @@ class AppPrompt {
     const cancelText = content.querySelector('em > a');
     // TODO: add placeholder to sheet and document that consumers will need to add it too
     // TODO: is there a better way to let authors define the CTA text?
-    //       Should we just use a placeholder?
+    // Should we just use a placeholder?
     this.cancelText = cancelText?.innerText || await replaceKey('pep-prompt-cancel', getConfig());
 
     this.profile = {};
@@ -143,12 +143,14 @@ class AppPrompt {
     //   if (!e.target.closest(CONFIG.selectors.prompt)) AppPrompt.close();
     // });
 
-    document.addEventListener('keydown', (event) => {
-      if (['Tab', 'Escape', 'Enter'].includes(event.key)) this.close();
-    });
+    document.addEventListener('keydown', this.handleKeyDown);
 
     [this.elements.closeIcon, this.elements.cta]
       .forEach((elem) => elem.addEventListener('click', this.close));
+  };
+
+  handleKeyDown = (event) => {
+    if (['Tab', 'Escape', 'Enter'].includes(event.key)) this.close();
   };
 
   initRedirect = () => setTimeout(() => {
@@ -170,6 +172,7 @@ class AppPrompt {
     appPromptElem?.remove();
     clearTimeout(this.redirectFn);
     this.setDismissedPrompt();
+    document.removeEventListener('keydown', this.handleKeyDown);
   };
 
   static getDismissedPrompts = () => {
