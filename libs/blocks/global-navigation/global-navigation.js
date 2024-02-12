@@ -108,37 +108,17 @@ export const osMap = {
   iPhone: 'iOS',
 };
 
-const convertToPascalCase = (str) => str
-  ?.split('-')
-  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-  .join(' ');
-
-export const unavAnalyticsEventsMap = (experienceName, contentNames = []) => {
-  const eventsMap = {
-    'profile|click|sign-in|': `Sign In|gnav|${experienceName}|unav`,
-    'profile|render|component|': `Account|gnav|${experienceName}`,
-    'profile|click|account|': `View Account|gnav|${experienceName}`,
-    'profile|click|sign-out|': `Sign Out|gnav|${experienceName}|unav`,
-    'app-switcher|render|component|': 'AppLauncher.appIconToggle',
-    'app-switcher|click|footer|adobe-home': 'AppLauncher.adobe.com',
-    'app-switcher|click|footer|all-apps': 'AppLauncher.allapps',
-    'app-switcher|click|footer|adobe-dot-com': 'AppLauncher.adobe.com',
-    'app-switcher|click|footer|see-all-apps': 'AppLauncher.allapps',
-  };
-
-  contentNames.forEach((contentName) => {
-    eventsMap[`app-switcher|click|app|${contentName}`] = `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
-  });
-
-  return eventsMap;
-};
-
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = () => {
   if (typeof window.adobeIMS?.signIn !== 'function') return;
 
   window.adobeIMS.signIn();
 };
+
+const convertToPascalCase = (str) => str
+  ?.split('-')
+  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+  .join(' ');
 
 const decorateSignIn = async ({ rawElem, decoratedElem }) => {
   const dropdownElem = rawElem.querySelector(':scope > div:nth-child(2)');
@@ -547,11 +527,31 @@ class Gnav {
           content: { name: contentName } = {},
         } = data;
 
-        for (const [eventData, interaction] of Object.entries(unavAnalyticsEventsMap(experienceName, [contentName || '']))) {
-          if (eventData === `${name}|${type}|${subtype}|${contentName || ''}`) return interaction;
+        switch (`${name}|${type}|${subtype}|${contentName || ''}`) {
+          case 'profile|click|sign-in|':
+            return `Sign In|gnav|${experienceName}|unav`;
+          case 'profile|render|component|':
+            return `Account|gnav|${experienceName}`;
+          case 'profile|click|account|':
+            return `View Account|gnav|${experienceName}`;
+          case 'profile|click|sign-out|':
+            return `Sign Out|gnav|${experienceName}|unav`;
+          case 'app-switcher|render|component|':
+            return 'AppLauncher.appIconToggle';
+          case `app-switcher|click|app|${contentName}`:
+            return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
+          case 'app-switcher|click|footer|adobe-home':
+            return 'AppLauncher.adobe.com';
+          case 'app-switcher|click|footer|all-apps':
+            return 'AppLauncher.allapps';
+          case 'app-switcher|click|footer|adobe-dot-com':
+            return 'AppLauncher.adobe.com';
+          case 'app-switcher|click|footer|see-all-apps':
+            return 'AppLauncher.allapps';
+            // TODO: add support for notifications
+          default:
+            return null;
         }
-
-        return null;
       };
       const interaction = getInteraction();
 

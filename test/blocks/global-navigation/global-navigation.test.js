@@ -10,6 +10,7 @@ import {
   viewports,
   config,
   unavLocalesTestData,
+  analyticsTestData,
 } from './test-utilities.js';
 import { isDesktop, isTangentToViewport, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
@@ -22,7 +23,7 @@ import globalNavigationMock from './mocks/global-navigation.plain.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
 import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
 import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
-import { osMap, unavAnalyticsEventsMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import { osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { getLocale } from '../../../libs/utils/utils.js';
 
 const ogFetch = window.fetch;
@@ -1248,11 +1249,6 @@ describe('global navigation', () => {
         await createFullGlobalNavigation();
         const analyticsFn = window.UniversalNav.getCall(0)
           .args[0].analyticsContext.onAnalyticsEvent;
-
-        const analyticsTestData = unavAnalyticsEventsMap(
-          'milo',
-          ['adobe-express', 'adobe-firefly', 'acrobat', 'photoshop', 'lightroom', 'stock', 'acrobat-sign', 'fonts', 'experience-cloud'],
-        );
 
         for (const [eventData, interaction] of Object.entries(analyticsTestData)) {
           const [name, type, subtype, contentName] = eventData.split('|');
