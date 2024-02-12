@@ -206,7 +206,28 @@ export default async function init(el) {
   //   }
   // }, MAX_WAIT_TIME);
 
-  const selectedId = await getMarqueeId();
-  const allMarqueesJson = await getAllMarquees(metadata.promoId || 'homepage');
+  /*
+    Note: We cannot do the following code to get the Marquees
+    due to performance issues.
+
+    const allMarqueesJson = await getAllMarquees();
+    const selectedId = await getMarqueeId();
+    await renderMarquee(marquee, allMarqueesJson, selectedId);
+
+    This will cause the code to run synchronously and be blocking.
+
+    See the MDN docs warning not to do this for more context/information:
+    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all#using_promise.all_with_async_functions
+
+    We need to use Promise.all to get all the information we need in parallel.
+
+    See LH scores by using Promise.all here:
+    https://pagespeed.web.dev/analysis/https-caas-marquee-viewer-lh-test--milo--adobecom-hlx-page-drafts-sanrai-marquee-viewer-cc-lapsed/av1124mjs0?form_factor=mobile
+
+  */
+  const [allMarqueesJson, selectedId] = await Promise.all([
+    getMarqueeId(),
+    getAllMarquees(metadata.promoId || 'homepage')
+  ]);
   await renderMarquee(marquee, allMarqueesJson, selectedId);
 }
