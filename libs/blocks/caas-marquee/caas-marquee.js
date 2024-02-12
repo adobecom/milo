@@ -206,7 +206,9 @@ export default async function init(el) {
   //   }
   // }, MAX_WAIT_TIME);
 
-  const selectedId = await getMarqueeId();
-  const allMarqueesJson = await getAllMarquees(metadata.promoId || 'homepage');
-  await renderMarquee(marquee, allMarqueesJson, selectedId);
+  const [allMarqueesJson, selectedId] = await Promise.all([
+    getMarqueeId(),
+    getAllMarquees(metadata.promoId || 'homepage')
+  ])
+  await renderMarquee(marquee, selectedId, allMarqueesJson);
 }
