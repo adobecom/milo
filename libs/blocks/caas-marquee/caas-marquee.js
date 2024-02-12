@@ -75,7 +75,7 @@ function normalizeData(data) {
     id: data.id,
     title: data.contentArea?.title,
     description: data.contentArea?.description,
-    detail: data.contentArea?.detailText,
+    details: data.contentArea?.detailText,
     image: data.styles?.backgroundImage,
     imagetablet: images.tablet,
     imagedesktop: images.desktop,
@@ -101,10 +101,9 @@ function normalizeData(data) {
  * @param {string} id - marquee id
  * @returns {void}
  */
-export function renderMarquee(marquee, data, id) {
-  if (marquee.classList.contains('fallback')) return;
-  let chosen = data.cards.filter(obj => obj.id === id)[0];
-  const metadata = data.cards ? normalizeData(chosen) : data;
+export function renderMarquee(marquee, data, id, fallback) {
+  let chosen = data?.cards?.filter(obj => obj.id === id)[0];
+  const metadata = data.cards ? normalizeData(chosen) : fallback;
 
   // remove loader
   marquee.innerHTML = '';
@@ -179,7 +178,7 @@ export function renderMarquee(marquee, data, id) {
   }
 
   const fgContent = `<div class="text">
-    <p class="detail-l">${metadata.detail}</p>
+    <p class="detail-l">${metadata.details}</p>
     <h1 class="heading-${typeSize[size][0]}">${metadata.title}</h1>
     <p class="body-${typeSize[size][1]}">${metadata.description}</p>
     <p class="action-area">
@@ -211,22 +210,6 @@ export default async function init(el) {
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
 
-  // Commented out this code for now.
-  // We will need to handle failures by getting the promise states of all the various API calls
-  // (and putting timeouts per call) versus doing one global set timeout.
-  //
-  // setTimeout(() => {
-  //   // In case of failure
-  //   if (marquee.children.length !== 2) {
-  //     // If there is a fallback marquee provided, we use it.
-  //     // Otherwise, we use this strings as the last resort fallback
-  //     metadata.title = metadata.title || 'Welcome to Adobe';
-  //     metadata.description = metadata.description || 'Do it all with Adobe Creative Cloud.';
-  //     renderMarquee(marquee, metadata, null);
-  //     marquee.classList.add('fallback');
-  //   }
-  // }, MAX_WAIT_TIME);
-
   /*
     Note: We cannot do the following code to get the Marquees
     due to performance issues.
@@ -246,9 +229,13 @@ export default async function init(el) {
     https://pagespeed.web.dev/analysis/https-caas-marquee-viewer-lh-test--milo--adobecom-hlx-page-drafts-sanrai-marquee-viewer-cc-lapsed/av1124mjs0?form_factor=mobile
 
   */
-  const [selectedId, allMarqueesJson] = await Promise.all([
-    getMarqueeId(),
-    getAllMarquees(metadata.promoId || 'homepage')
-  ]);
-  await renderMarquee(marquee, allMarqueesJson, selectedId);
+  try {
+    const [selectedId, allMarqueesJson] = await Promise.all([
+      getMarqueeId(),
+      getAllMarquees(metadata.promoId || 'homepage')
+    ]);
+    await renderMarquee(marquee, allMarqueesJson, selectedId, null);
+  } catch(e){
+    renderMarquee(marquee, [], '', metadata);
+  }
 }
