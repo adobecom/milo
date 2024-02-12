@@ -185,9 +185,13 @@ export async function buildCta(el, params) {
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
-  cta.classList.add('con-button');
-  cta.classList.toggle('button-l', large);
-  cta.classList.toggle('blue', strong);
+  if (el.href.includes('#_tcl')) {
+    el.href = el.href.replace('#_tcl', '');
+  } else {
+    cta.classList.add('con-button');
+    cta.classList.toggle('button-l', large);
+    cta.classList.toggle('blue', strong);
+  }
   if (context.entitlement !== 'false') {
     cta.classList.add(LOADING_ENTITLEMENTS);
     cta.onceSettled().finally(() => cta.classList.remove(LOADING_ENTITLEMENTS));
