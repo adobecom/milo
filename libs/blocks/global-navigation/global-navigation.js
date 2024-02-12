@@ -710,7 +710,7 @@ class Gnav {
   };
 }
 
-//export default async function init(header) {
+export default async function init(header) {
   const { locale, mep } = getConfig();
   // TODO locale.contentRoot is not the fallback we want if we implement centralized content
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
