@@ -9,11 +9,15 @@ div[class*="-merch-card"] > div,
  }
 
  .merch-card-price {
-  margin-top: 8px; 
-  margin-bottom: 16px; 
+  margin-top: 8px;
+  margin-bottom: 16px;
 }
 
 .dark .merch-card .con-button.outline {
   border: 2px solid var(--text-color);
   color: var(--text-color);
+}
+
+merch-card.special-offers del span[is="inline-price"] {
+  text-decoration: line-through;
 }
