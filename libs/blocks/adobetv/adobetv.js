@@ -2,13 +2,18 @@ import { createIntersectionObserver } from '../../utils/utils.js';
 import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
 
 const ROOT_MARGIN = 1000;
+const MOBILE_SIZE = 768;
 
 const loadAdobeTv = (a) => {
   const bgBlocks = ['aside', 'marquee'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
     const { href, hash } = a;
-    const attrs = getVideoAttrs(hash || 'autoplay');
+      const screenWidth = window.innerWidth;
+      if (screenWidth <= MOBILE_SIZE) {
+        const attrs = getVideoAttrs(hash || 'autoplay');
+      }
+    // const attrs = getVideoAttrs(hash || 'autoplay');
     const video = `<video ${attrs}>
           <source src="${href}" type="video/mp4" />
         </video>`;
@@ -34,7 +39,8 @@ export default function init(a) {
   } else {
     createIntersectionObserver({
       el: a,
-      options: { threshold : 0.2 },
+      // options: { threshold : 0.2 },
+      options: { rootMargin: `${ROOT_MARGIN}px` },
       callback: loadAdobeTv,
     });
   }
