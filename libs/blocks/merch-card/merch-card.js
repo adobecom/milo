@@ -132,15 +132,15 @@ const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style
 const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
-const appendSlot = (el, slotName, merchCard) => {
-  if (el.length === 0) return;
+const appendSlot = (slotEls, slotName, merchCard) => {
+  if (slotEls.length === 0) return;
   const newEl = createTag(
     'p',
     { slot: slotName, class: slotName },
   );
-  el.forEach((e, index) => {
+  slotEls.forEach((e, index) => {
     newEl.innerHTML += e.innerHTML;
-    if (index < el.length - 1) {
+    if (index < slotEls.length - 1) {
       newEl.innerHTML += '<br>';
     }
   });
