@@ -115,11 +115,6 @@ const signIn = () => {
   window.adobeIMS.signIn();
 };
 
-const convertToPascalCase = (str) => str
-  ?.split('-')
-  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-  .join(' ');
-
 const decorateSignIn = async ({ rawElem, decoratedElem }) => {
   const dropdownElem = rawElem.querySelector(':scope > div:nth-child(2)');
   const signInLabel = await replaceKey('sign-in', getFedsPlaceholderConfig(), 'feds');
@@ -251,6 +246,11 @@ const getUniversalNavLocale = (locale) => {
            && `${prefixParts[0].toLowerCase()}_${prefixParts[1].toUpperCase()}`)
          || 'en_US';
 };
+
+const convertToPascalCase = (str) => str
+  ?.split('-')
+  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+  .join(' ');
 
 class Gnav {
   constructor(body, el) {
