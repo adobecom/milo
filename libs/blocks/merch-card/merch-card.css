@@ -21,3 +21,9 @@ div[class*="-merch-card"] > div,
 merch-card.special-offers del span[is="inline-price"] {
   text-decoration: line-through;
 }
+
+.dark .merch-card .con-button.outline:hover {
+  color: var(--color-white);
+  background-color: var(--color-black);
+  text-decoration: none;
+}
