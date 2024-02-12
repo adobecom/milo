@@ -25,7 +25,7 @@ describe('Functional Test', () => {
     // Add custom keys so tests doesn't rely on real data
     const config = getConfig();
     config.env = { name: 'prod' };
-    config.consumerEnts = {
+    config.consumerEntitlements = {
       '11111111-aaaa-bbbb-6666-cccccccccccc': 'my-special-app',
       '22222222-xxxx-bbbb-7777-cccccccccccc': 'fireflies',
     };
@@ -237,7 +237,7 @@ describe('Functional Test', () => {
   it('should read and use entitlement data', async () => {
     setConfig(getConfig());
     const config = getConfig();
-    config.consumerEnts = { 'consumer-defined-entitlement': 'fireflies' };
+    config.consumerEntitlements = { 'consumer-defined-entitlement': 'fireflies' };
     config.entitlements = () => Promise.resolve(['indesign-any', 'fireflies', 'after-effects-any']);
 
     let manifestJson = await readFile({ path: './mocks/manifestUseEntitlements.json' });

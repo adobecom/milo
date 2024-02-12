@@ -85,7 +85,7 @@ describe('entitlements', () => {
 
   it('Should be able to use consumer defined entitlements in the config', async () => {
     const config = getConfig();
-    config.consumerEnts = { 'consumer-defined-entitlement': 'consumer-defined' };
+    config.consumerEntitlements = { 'consumer-defined-entitlement': 'consumer-defined' };
     config.env = { name: 'prod' };
 
     const destinations = [
