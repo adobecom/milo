@@ -190,9 +190,7 @@ export async function buildCta(el, params) {
   cta.classList.toggle('blue', strong);
   if (context.entitlement !== 'false') {
     cta.classList.add(LOADING_ENTITLEMENTS);
-    Promise.allSettled(cta).finally(() => {
-      cta.classList.remove(LOADING_ENTITLEMENTS);
-    });
+    cta.onceSettled().finally(() => cta.classList.remove(LOADING_ENTITLEMENTS));
   }
   return cta;
 }
