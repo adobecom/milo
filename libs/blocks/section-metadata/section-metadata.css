@@ -215,6 +215,10 @@ main > .section[class*='-up'] > .content {
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
+  .section.three-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
