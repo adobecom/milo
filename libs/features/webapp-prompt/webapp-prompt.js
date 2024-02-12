@@ -80,7 +80,8 @@ class AppPrompt {
     // TODO: we might need to also define a primary-like CTA
     const cancelText = content.querySelector('em > a');
     // TODO: add placeholder to sheet and document that consumers will need to add it too
-    // TODO: is there a better way to let authors define the CTA text? Should we just use a placeholder?
+    // TODO: is there a better way to let authors define the CTA text?
+    //       Should we just use a placeholder?
     this.cancelText = cancelText?.innerText || await replaceKey('pep-prompt-cancel', getConfig());
 
     this.profile = {};
