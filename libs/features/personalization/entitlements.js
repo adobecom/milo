@@ -16,10 +16,10 @@ const ENTITLEMENT_MAP = {
 };
 
 export const getEntitlementMap = async () => {
-  const { env, consumerEnts } = getConfig();
-  if (env.name === 'prod') return { ...consumerEnts, ...ENTITLEMENT_MAP };
+  const { env, consumerEntitlements } = getConfig();
+  if (env.name === 'prod') return { ...consumerEntitlements, ...ENTITLEMENT_MAP };
   const { default: STAGE_ENTITLEMENTS } = await import('./stage-entitlements.js');
-  return { ...consumerEnts, ...STAGE_ENTITLEMENTS };
+  return { ...consumerEntitlements, ...STAGE_ENTITLEMENTS };
 };
 
 const getEntitlements = async (data) => {
