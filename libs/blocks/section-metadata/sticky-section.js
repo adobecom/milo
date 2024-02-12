@@ -1,5 +1,5 @@
 import { createTag } from '../../utils/utils.js';
-import { getMetadata } from './section-metadata.js';
+import { getMetadata, getDelayTime } from './section-metadata.js';
 
 function handleTopHeight(section) {
   const headerHeight = document.querySelector('header').offsetHeight;
@@ -54,7 +54,7 @@ export default async function handleStickySection(sticky, section) {
     case 'sticky-bottom': {
       if (section.querySelector('.promobar')) {
         const metadata = getMetadata(section.querySelector('.section-metadata'));
-        const delay = metadata.delay?.text;
+        const delay = getDelayTime(metadata.delay?.text);
         if (delay) setTimeout(() => { handleStickyPromobar(section, delay); }, delay);
         else handleStickyPromobar(section, delay);
       }

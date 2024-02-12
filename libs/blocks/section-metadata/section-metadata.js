@@ -44,10 +44,15 @@ function handleLayout(text, section) {
   section.classList.add(layoutClass);
 }
 
+export function getDelayTime(time) {
+  if (time > 99) return time;
+  return (time * 1000);
+}
+
 function handleDelay(time, section) {
   if (!(time || section)) return;
   section.classList.add('hide-sticky-section');
-  setTimeout(() => { section.classList.remove('hide-sticky-section'); }, time);
+  setTimeout(() => { section.classList.remove('hide-sticky-section'); }, getDelayTime(time));
 }
 
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
