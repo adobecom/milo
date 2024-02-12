@@ -30,7 +30,7 @@ export const OptionCard = ({
 
   const imageHtml = html`
     <div class="quiz-option-image" 
-      style="background-image: url('${image}')" loading="lazy">
+      style="background-image: url('${image}'); background-size: cover" loading="lazy">
     </div>`;
 
   const titleHtml = html`
