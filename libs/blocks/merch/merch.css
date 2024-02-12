@@ -15,7 +15,14 @@ span.placeholder-resolved[data-template="strikethrough"], span.price.price-strik
   visibility: inherit;
 }
 
+a[is='checkout-link'] > span {
+  display: inline-block;
+  text-align: center;
+  min-width: 66px;
+}
+
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";
 }
+
