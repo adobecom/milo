@@ -195,7 +195,7 @@ export function renderMarquee(marquee, data, id, fallback) {
     const classes = metadata.variant.split(' ').map((c) => c.trim());
     marquee.classList.add(...classes);
   }
-
+  marquee.setAttribute('data-block', '');
   marquee.append(background, foreground);
 }
 
@@ -236,6 +236,6 @@ export default async function init(el) {
     ]);
     await renderMarquee(marquee, allMarqueesJson, selectedId, null);
   } catch(e){
-    renderMarquee(marquee, [], '', metadata);
+    await renderMarquee(marquee, [], '', metadata);
   }
 }
