@@ -10,10 +10,10 @@ const loadAdobeTv = (a) => {
     a.classList.add('hide');
     const { href, hash } = a;
       const screenWidth = window.innerWidth;
-      if (screenWidth <= MOBILE_SIZE) {
-        const attrs = getVideoAttrs(hash || 'autoplay');
-      }
-    // const attrs = getVideoAttrs(hash || 'autoplay');
+      // if (screenWidth <= MOBILE_SIZE) {
+      //   const attrs = getVideoAttrs(hash || 'autoplay');
+      // }
+    const attrs = getVideoAttrs(hash || 'autoplay');
     const video = `<video ${attrs}>
           <source src="${href}" type="video/mp4" />
         </video>`;
