@@ -2,6 +2,7 @@
 .media {
   margin: 0 auto;
   position: relative;
+  padding: var(--spacing-s) 0;
 }
 
 .dark .media,
@@ -54,7 +55,6 @@
     gap:  var(--spacing-s);
     justify-content: stretch;
     margin: 0 auto;
-    padding: var(--spacing-s) 0;
     position: relative;
 }
 
@@ -81,6 +81,14 @@
 .media .image img {
   display: block;
   width: 100%;
+}
+
+div[class*="-up"] .media {
+  width: 100%;
+}
+
+div[class*="-up"] .media.has-bg {  
+  width: initial;
 }
 
 .media[class*="-up"] .foreground {
@@ -151,7 +159,7 @@ div[class*="-up"] .media .foreground > .media-row {
   top: .155em;
 }
 
-.media.qr-code img.qr-code-img {
+.media.qr-code .qr-code-img {
   display: none;
 }
 
@@ -160,17 +168,17 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-right: var(--spacing-s);
 }
 
-.media.qr-code a {
+.media.qr-code .google-play,
+.media.qr-code .app-store {
   width: 135px;
   max-width: 140px;
   height: 50px;
   font-size: 19px;
   align-items: center;
   justify-content: center;
-  padding-bottom: 0;
-  padding-top: 0;
+  padding: 0;
   display: inline-flex;
-  margin-top: var(--spacing-xxs);
+  margin: var(--spacing-xxs) var(--spacing-s) 0 0;
 }
 
 .media.qr-code .google-play {
@@ -340,14 +348,15 @@ div[class*="-up"] .media .foreground > .media-row {
     margin-top: 8px;
   }
 
-  .media.qr-code img.qr-code-img {
+  .media.qr-code .qr-code-img {
     display: flex;
     width: 140px;
     height: 140px;
     margin-top: var(--spacing-s);
   }
 
-  .media.qr-code .qr-button-container {
+  .media.qr-code .google-play,
+  .media.qr-code .app-store {
     display: none;
   }
 

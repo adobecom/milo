@@ -12,6 +12,8 @@ import {
   unavLocalesTestData,
   analyticsTestData,
 } from './test-utilities.js';
+import { setConfig, getLocale } from '../../../libs/utils/utils.js';
+import initGnav, { osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
@@ -23,8 +25,6 @@ import globalNavigationMock from './mocks/global-navigation.plain.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
 import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
 import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
-import { osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
-import { getLocale } from '../../../libs/utils/utils.js';
 
 const ogFetch = window.fetch;
 
@@ -63,6 +63,51 @@ describe('global navigation', () => {
     });
   });
 
+  describe('content source', () => {
+    const customPath = '/path/to/gnav';
+    let fetchStub;
+
+    beforeEach(() => {
+      fetchStub = sinon.stub(window, 'fetch');
+      sinon.stub(window.lana, 'log');
+      setConfig({ locale: { ietf: 'en-US', prefix: '' } });
+    });
+
+    afterEach(() => {
+      fetchStub = null;
+      sinon.restore();
+      document.head.replaceChildren();
+      document.body.replaceChildren();
+      document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    });
+
+    it('fetches default global navigation based on metadata', async () => {
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html')).to.be.true;
+    });
+
+    it('fetches centralized custom global navigation based on metadata', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="https://adobe.com/federal${customPath}">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+      ).to.be.true;
+    });
+
+    it('fetches a centralised custom global navigation based on a relative link', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="/federal${customPath}">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+      ).to.be.true;
+    });
+  });
+
   describe('basic sanity tests', () => {
     it('should render the navigation on desktop', async () => {
       const nav = await createFullGlobalNavigation();
@@ -74,7 +119,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
     });
 
     it('should render the navigation on smallDesktop', async () => {
@@ -86,7 +131,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
     });
 
     it('should render the navigation on mobile', async () => {
@@ -98,7 +143,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
     });
   });
 
@@ -148,15 +193,15 @@ describe('global navigation', () => {
   describe('Promo', () => {
     it('doesn\'t exist if metadata is not defined', async () => {
       const nav = await createFullGlobalNavigation();
-      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      expect(nav.block.querySelector('.aside.promobar')).to.equal(null);
     });
 
     it('doesn\'t exist if metadata is not referencing a fragment', async () => {
       const wrongPromoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/path/to/promo">`;
       document.head.append(wrongPromoMeta);
       const nav = await createFullGlobalNavigation({ hasPromo: true });
-      expect(nav.el.classList.contains('has-promo')).to.be.false;
-      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      expect(nav.block.classList.contains('has-promo')).to.be.false;
+      expect(nav.block.querySelector('.aside.promobar')).to.equal(null);
       wrongPromoMeta.remove();
     });
 
@@ -164,8 +209,8 @@ describe('global navigation', () => {
       const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/wrong-promo-fragment">`;
       document.head.append(promoMeta);
       const nav = await createFullGlobalNavigation({ hasPromo: true });
-      expect(nav.el.classList.contains('has-promo')).to.be.false;
-      expect(nav.el.querySelector('.aside.promobar')).to.equal(null);
+      expect(nav.block.classList.contains('has-promo')).to.be.false;
+      expect(nav.block.querySelector('.aside.promobar')).to.equal(null);
       promoMeta.remove();
     });
 
@@ -173,8 +218,8 @@ describe('global navigation', () => {
       const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
       document.head.append(promoMeta);
       const nav = await createFullGlobalNavigation({ hasPromo: true });
-      expect(nav.el.classList.contains('has-promo')).to.be.true;
-      const asideElem = nav.el.querySelector('.aside.promobar');
+      expect(nav.block.classList.contains('has-promo')).to.be.true;
+      const asideElem = nav.block.querySelector('.aside.promobar');
       expect(asideElem).to.exist;
       expect(asideElem.getAttribute('daa-lh')).to.equal('Promo');
       asideElem.querySelectorAll('a').forEach((linkElem) => {
@@ -187,8 +232,8 @@ describe('global navigation', () => {
       const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
       document.head.append(promoMeta);
       const nav = await createFullGlobalNavigation({ viewport: 'mobile', hasPromo: true });
-      expect(nav.el.classList.contains('has-promo')).to.be.false;
-      const asideElem = nav.el.querySelector('.aside.promobar');
+      expect(nav.block.classList.contains('has-promo')).to.be.false;
+      const asideElem = nav.block.querySelector('.aside.promobar');
       expect(asideElem).to.not.exist;
     });
   });
@@ -1115,7 +1160,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
       expect([...document.querySelectorAll(selectors.headline)]
         .every((elem) => elem.getAttribute('daa-ll') === null))
         .to.be.true;
@@ -1129,7 +1174,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
       expect([...document.querySelectorAll(selectors.headline)]
         .every((elem) => elem.getAttribute('daa-ll') === null))
         .to.be.true;
@@ -1143,7 +1188,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
-      expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
       expect([...document.querySelectorAll(selectors.headline)]
         .every((elem) => elem.getAttribute('daa-ll') !== null))
         .to.be.true;
