@@ -3,6 +3,14 @@ import { createTag } from '../../utils/utils.js';
 
 // 3 seconds max wait time for marquee to load
 const MAX_WAIT_TIME = 3000;
+const SEGMENT_MAP = {
+  '5a5fd14e-f4ca-49d2-9f87-835df5477e3c': 'PHSP',
+  '09bc4ba3-ebed-4d05-812d-a1fb1a7e82ae': 'IDSN',
+  '25ede755-7181-4be2-801e-19f157c005ae': 'ILST',
+  '07609803-48a0-4762-be51-94051ccffb45': 'PPRO',
+  '73c3406b-32a2-4465-abf3-2d415b9b1f4f': 'AEFT',
+  'bf632803-4412-463d-83c5-757dda3224ee': 'CCSN',
+};
 
 const typeSize = {
   small: ['xl', 'm', 'm'],
@@ -10,6 +18,21 @@ const typeSize = {
   large: ['xxl', 'xl', 'l'],
   xlarge: ['xxl', 'xl', 'l'],
 };
+let segments = ['default'];
+window.addEventListener('alloy_sendEvent', (e) => {
+  if (e.detail.type === 'pageView') {
+    let mappedUserSegments = [];
+    let userSegmentIds = e.detail?.result?.destinations?.[0]?.segments || [];
+    for(let userSegmentId of userSegmentIds){
+      if(SEGMENT_MAP[userSegmentId]){
+        mappedUserSegments.push(SEGMENT_MAP[userSegmentId]);
+      }
+    }
+    if(mappedUserSegments.length){
+      segments = mappedUserSegments;
+    }
+  }
+});
 
 async function getAllMarquees(promoId) {
   const endPoint = 'https://14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection';
@@ -24,8 +47,6 @@ async function getAllMarquees(promoId) {
 async function getMarqueeId() {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('marqueeId')) return urlParams.get('marqueeId');
-
-  let segments = ['indesign', 'photoshop']; // will come from API but hard coded for now
   let visitedLinks = [document.referrer];
   let response = await fetch('https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/models', {
     method: 'POST',
@@ -225,7 +246,7 @@ export default async function init(el) {
     https://pagespeed.web.dev/analysis/https-caas-marquee-viewer-lh-test--milo--adobecom-hlx-page-drafts-sanrai-marquee-viewer-cc-lapsed/av1124mjs0?form_factor=mobile
 
   */
-  const [allMarqueesJson, selectedId] = await Promise.all([
+  const [selectedId, allMarqueesJson] = await Promise.all([
     getMarqueeId(),
     getAllMarquees(metadata.promoId || 'homepage')
   ]);
