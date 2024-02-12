@@ -73,13 +73,17 @@
 }
 
 .icon-block .foreground .icon-area picture {
-  line-height: 0em;
+  line-height: 0;
   display: block;
 }
 
 .icon-block .foreground .icon-area img {
   max-height: var(--icon-size-xxl);
   width: auto;
+}
+
+.icon-block .foreground .text-content [class*="heading"] {
+  margin: 0 0 var(--spacing-xs);
 }
 
 .icon-block.inline .foreground {
@@ -232,10 +236,6 @@
 
 .icon-block.bio .foreground .text-content .body-s {
   margin-bottom: var(--spacing-s);
-}
-
-.icon-block .foreground .text-content [class*="heading"] {
-  margin: 0 0 var(--spacing-xs);
 }
 
 .icon-block .foreground .text-content .action-area > a:last-child {
