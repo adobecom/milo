@@ -63,51 +63,6 @@ describe('global navigation', () => {
     });
   });
 
-  describe('content source', () => {
-    const customPath = '/path/to/gnav';
-    let fetchStub;
-
-    beforeEach(() => {
-      fetchStub = sinon.stub(window, 'fetch');
-      sinon.stub(window.lana, 'log');
-      setConfig({ locale: { ietf: 'en-US', prefix: '' } });
-    });
-
-    afterEach(() => {
-      fetchStub = null;
-      sinon.restore();
-      document.head.replaceChildren();
-      document.body.replaceChildren();
-      document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
-    });
-
-    it('fetches default global navigation based on metadata', async () => {
-      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-      await initGnav(document.body.querySelector('header'));
-      expect(fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html')).to.be.true;
-    });
-
-    it('fetches centralized custom global navigation based on metadata', async () => {
-      const gnavMeta = toFragment`<meta name="gnav-source" content="https://adobe.com/federal${customPath}">`;
-      document.head.append(gnavMeta);
-      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-      await initGnav(document.body.querySelector('header'));
-      expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
-      ).to.be.true;
-    });
-
-    it('fetches a centralised custom global navigation based on a relative link', async () => {
-      const gnavMeta = toFragment`<meta name="gnav-source" content="/federal${customPath}">`;
-      document.head.append(gnavMeta);
-      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-      await initGnav(document.body.querySelector('header'));
-      expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
-      ).to.be.true;
-    });
-  });
-
   describe('basic sanity tests', () => {
     it('should render the navigation on desktop', async () => {
       const nav = await createFullGlobalNavigation();
@@ -1286,7 +1241,7 @@ describe('global navigation', () => {
 
       it('should reload unav on viewport change', async () => {
         window.UniversalNav.reload = sinon.spy();
-        isDesktop.dispatchEvent(new Event('change'));
+        await setViewport(viewports.mobile);
         expect(window.UniversalNav.reload.getCall(0)).to.exist;
       });
 
@@ -1402,6 +1357,50 @@ describe('global navigation', () => {
 
         document.head.removeChild(fullUnavMeta);
       });
+    });
+  });
+
+  describe('content source', () => {
+    const customPath = '/path/to/gnav';
+    let fetchStub;
+
+    beforeEach(() => {
+      fetchStub = sinon.stub(window, 'fetch');
+      setConfig({ locale: { ietf: 'en-US', prefix: '' } });
+    });
+
+    afterEach(() => {
+      fetchStub = null;
+      sinon.restore();
+      document.head.replaceChildren();
+      document.body.replaceChildren();
+      document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    });
+
+    it('fetches default global navigation based on metadata', async () => {
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html')).to.be.true;
+    });
+
+    it('fetches centralized custom global navigation based on metadata', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="https://adobe.com/federal${customPath}">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+      ).to.be.true;
+    });
+
+    it('fetches a centralised custom global navigation based on a relative link', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="/federal${customPath}">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+      ).to.be.true;
     });
   });
 });

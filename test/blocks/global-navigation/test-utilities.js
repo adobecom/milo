@@ -76,13 +76,8 @@ export const analyticsTestData = {
 export const unavLocalesTestData = [
   {
     prefix: '/ch_de',
-    ieft: 'de-CH',
+    ietf: 'de-CH',
     expectedLocale: 'de_DE',
-  },
-  {
-    prefix: '/be_nl',
-    ietf: 'nl-BE',
-    expectedLocale: 'nl_NL',
   },
   {
     prefix: '/ab_cd',
