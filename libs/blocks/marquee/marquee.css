@@ -21,13 +21,17 @@
   color: var(--text-color);
 }
 
-.marquee.mobile-dark {
-  color: var(--color-white);
-}
-
 .marquee .icon-area picture,
 .marquee .icon-area a {
   display: inline-flex;
+}
+
+.marquee.static-links .icon-area a {
+  text-decoration: none;
+}
+
+.marquee.mobile-dark {
+  color: var(--color-white);
 }
 
 .marquee.mobile-light a:not(.con-button) {
@@ -99,6 +103,7 @@
   display: flex;
   gap: var(--spacing-xs);
   align-items: center;
+  font-size: var(--type-heading-l-size);
 }
 
 .marquee .icon-area img {
@@ -292,6 +297,10 @@
   height: 40px;
   max-height: 40px;
   max-width: 114px;
+}
+
+.marquee .icon-area.icon-area-multiple picture:nth-of-type(n+2) {
+  margin-inline-start: 8px;
 }
 
 .marquee.large .text .action-area {
