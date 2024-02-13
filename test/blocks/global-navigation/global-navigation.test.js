@@ -1231,6 +1231,7 @@ describe('global navigation', () => {
       });
 
       it('should reload unav on viewport change', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
         await setViewport(viewports.mobile);
         expect(window.UniversalNav.reload.getCall(0)).to.exist;
       });
