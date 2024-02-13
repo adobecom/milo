@@ -485,7 +485,7 @@ const init = async (el) => {
       if (merchCard.variant === MINI_COMPARE_CHART) {
         setMiniCompareOfferSlot(merchCard, quantitySelect);
       } else {
-        const bodySlot = merchCard.querySelector('div[slot="xs"]');
+        const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
         bodySlot.append(quantitySelect);
       }
     }
