@@ -1241,7 +1241,6 @@ describe('global navigation', () => {
       });
 
       it('should reload unav on viewport change', async () => {
-        window.UniversalNav.reload = sinon.spy();
         await setViewport(viewports.mobile);
         expect(window.UniversalNav.reload.getCall(0)).to.exist;
       });

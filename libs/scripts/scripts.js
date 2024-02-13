@@ -123,7 +123,6 @@ const config = {
   geoRouting: 'on',
   fallbackRouting: 'on',
   links: 'on',
-  // will undo before merging
   imsClientId: 'milo',
   imsScope: 'AdobeID,openid,gnav,pps.read',
   codeRoot: '/libs',
