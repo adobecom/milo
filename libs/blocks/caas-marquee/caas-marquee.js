@@ -1,8 +1,15 @@
+// TODO: Add lana logging to track API failures for requests
+// TODO: Add abort controller for fetch with a given timeout
+// TODO: Test network latency and if code handles that correctly
+// TODO: Fix variants inconsistently supporting both ',' and '' (lines 95, 115, 198, 213)
+// TODO: Go through all code paths to make sure no exceptions occur
+// TODO: Update SEGMENT_MAP with final from Martech team
+// TODO: Update Spectra AI endpoint to final one (instead of pointing to local Chimera IO instance)
+// TODO: Test that when no authored fields for fallback occurs, code fails gracefully.
+
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
 import { createTag } from '../../utils/utils.js';
 
-// 3 seconds max wait time for marquee to load
-const MAX_WAIT_TIME = 3000;
 const SEGMENT_MAP = {
   '5a5fd14e-f4ca-49d2-9f87-835df5477e3c': 'PHSP',
   '09bc4ba3-ebed-4d05-812d-a1fb1a7e82ae': 'IDSN',
@@ -34,9 +41,9 @@ window.addEventListener('alloy_sendEvent', (e) => {
   }
 });
 
-async function getAllMarquees(promoId) {
+async function getAllMarquees(promoId, origin) {
   const endPoint = 'https://14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection';
-  const payload = `originSelection=milo&collectionTags=caas%3Acontent-type%2Fpromotion&marqueeId=${promoId || 'homepage'}`;
+  const payload = `originSelection=${origin}&collectionTags=caas%3Acontent-type%2Fpromotion&marqueeId=${promoId}&language=en&country=US`;
   return fetch(`${endPoint}?${payload}`).then((res) => res.json());
 }
 
@@ -57,7 +64,7 @@ async function getMarqueeId() {
     body: `{"endpoint":"community-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${visitedLinks}, "segments": ${segments}}}}`
   });
   let json = await response.json();
-  return json.data[0].content_id;
+  return json?.data?.[0]?.content_id || '';
 }
 
 /**
@@ -67,24 +74,24 @@ async function getMarqueeId() {
  */
 function normalizeData(data) {
   const images = {
-    tablet: data.arbitrary?.find((item) => item.key === 'imageTablet')?.value,
-    desktop: data.arbitrary?.find((item) => item.key === 'imageDesktop')?.value,
+    tablet: data.arbitrary?.find((item) => item.key === 'imageTablet')?.value || '',
+    desktop: data.arbitrary?.find((item) => item.key === 'imageDesktop')?.value || '',
   };
 
   const metadata = {
-    id: data.id,
-    title: data.contentArea?.title,
-    description: data.contentArea?.description,
-    details: data.contentArea?.detailText,
-    image: data.styles?.backgroundImage,
-    imagetablet: images.tablet,
-    imagedesktop: images.desktop,
-    cta1url: data.footer[0].right[0]?.href,
-    cta1text: data.footer[0]?.right[0]?.text,
-    cta1style: data.footer[0]?.right[0]?.style,
-    cta2url: data.footer[0]?.center[0]?.href,
-    cta2text: data.footer[0]?.center[0]?.text,
-    cta2style: data.footer[0]?.center[0]?.style,
+    id: data.id || '',
+    title: data.contentArea?.title || '',
+    description: data.contentArea?.description || '',
+    details: data.contentArea?.detailText || '',
+    image: data.styles?.backgroundImage || '',
+    imagetablet: images.tablet || '',
+    imagedesktop: images.desktop || '',
+    cta1url: data.footer[0].right[0]?.href || '',
+    cta1text: data.footer[0]?.right[0]?.text || '',
+    cta1style: data.footer[0]?.right[0]?.style || '',
+    cta2url: data.footer[0]?.center[0]?.href || '',
+    cta2text: data.footer[0]?.center[0]?.text || '',
+    cta2style: data.footer[0]?.center[0]?.style || '',
   };
 
   const arbitrary = {};
@@ -102,8 +109,8 @@ function normalizeData(data) {
  * @returns {void}
  */
 export function renderMarquee(marquee, data, id, fallback) {
-  let chosen = data?.cards?.filter(obj => obj.id === id)[0];
-  const metadata = data.cards ? normalizeData(chosen) : fallback;
+  let chosen = data?.cards?.find(obj => obj.id === id);
+  const metadata = data?.cards?.length && chosen ? normalizeData(chosen) : fallback;
 
   // remove loader
   marquee.innerHTML = '';
@@ -159,10 +166,10 @@ export function renderMarquee(marquee, data, id, fallback) {
       href="${metadata.cta1url}">${metadata.cta1text}</a>`
     : '';
 
-  if(metadata.cta1url.includes('fragment')){
+  if(metadata.cta1url?.includes('fragment')){
     let fragment = metadata.cta1url.split("#")[0];
     let hash = metadata.cta1url.split("#")[1];
-    cta = `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="Launch modal-1--Modal examples" class="modal link-block ${cta1Style}">${metadata.cta1text}</a>`
+    cta = `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="${metadata.cta1text}" class="modal link-block ${cta1Style}">${metadata.cta1text}</a>`
   }
 
   let cta2 = metadata.cta2url
@@ -174,7 +181,7 @@ export function renderMarquee(marquee, data, id, fallback) {
   if(metadata.cta2url?.includes('fragment')){
     let fragment = metadata.cta2url.split("#")[0];
     let hash = metadata.cta2url.split("#")[1];
-    cta2 = `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="Launch modal-1--Modal examples" class="modal link-block ${cta2Style}">${metadata.cta2text}</a>`
+    cta2 = `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="${metadata.cta2text}" class="modal link-block ${cta2Style}">${metadata.cta2text}</a>`
   }
 
   const fgContent = `<div class="text">
@@ -195,6 +202,8 @@ export function renderMarquee(marquee, data, id, fallback) {
     const classes = metadata.variant.split(' ').map((c) => c.trim());
     marquee.classList.add(...classes);
   }
+
+  // Added so marquee can be picked up by milo analytics decorators
   marquee.setAttribute('data-block', '');
   marquee.append(background, foreground);
 }
@@ -205,7 +214,8 @@ export function renderMarquee(marquee, data, id, fallback) {
  */
 export default async function init(el) {
   const metadata = getMetadata(el);
-
+  const promoId = metadata.promoid;
+  const origin = metadata.origin || 'homepage';
   const marquee = createTag('div', { class: `marquee split ${metadata.variant.replaceAll(',', ' ')}` });
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
@@ -232,9 +242,9 @@ export default async function init(el) {
   try {
     const [selectedId, allMarqueesJson] = await Promise.all([
       getMarqueeId(),
-      getAllMarquees(metadata.promoId || 'homepage')
+      getAllMarquees(promoId, origin)
     ]);
-    await renderMarquee(marquee, allMarqueesJson, selectedId, null);
+    await renderMarquee(marquee, allMarqueesJson, selectedId, metadata);
   } catch(e){
     await renderMarquee(marquee, [], '', metadata);
   }
