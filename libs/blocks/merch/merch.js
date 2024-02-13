@@ -11,7 +11,7 @@ export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
 
-const CC_SINGLE_APPS = [
+export const CC_SINGLE_APPS = [
   ['3D_TEXTURING'],
   ['3DI'],
   ['ACROBAT', 'ACROBAT_STOCK_BUNDLE'],
@@ -32,9 +32,9 @@ const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
-const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
+export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
-const CC_ALL_APPS = ['CC_ALL_APPS',
+export const CC_ALL_APPS = ['CC_ALL_APPS',
   'CC_ALL_APPS_STOCK_BUNDLE', 'CC_PRO'];
 
 const NAME_LOCALE = 'LOCALE';
