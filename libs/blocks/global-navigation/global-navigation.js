@@ -215,35 +215,35 @@ const closeOnClickOutside = (e) => {
 };
 
 const getUniversalNavLocale = (locale) => {
-  const prefix = locale.prefix.replace('/', '');
-  const { ietf } = locale;
-  const DEFAULTLANG = {
-    de_DE: ['at', 'ch_de', 'lu_de'],
-    en_US: [
-      'ae_en', 'africa', 'au', 'be_en', 'ca', 'cis_en', 'cy_en', 'eg_en', 'gr_en', 'hk_en',
-      'id_en', 'ie', 'il_en', 'in', 'kw_en', 'langstore', 'lu_en', 'mena_en', 'mt', 'my_en',
-      'ng', 'nz', 'ph_en', 'qa_en', 'sa_en', 'sg', 'th_en', 'uk', 'vn_en', 'za',
-    ],
-    es_ES: ['ar', 'ar_es', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
-    fr_FR: ['be_fr', 'ca_fr', 'ch_fr', 'lu_fr'],
+  const LANGMAP = {
+    cs: ['cz'],
+    da: ['dk'],
+    de: ['at'],
+    en: ['africa', 'au', 'ca', 'ie', 'in', 'mt', 'ng', 'nz', 'sg', 'za'],
+    es: ['ar', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
+    et: ['ee'],
+    ja: ['jp'],
+    ko: ['kr'],
+    nb: ['no'],
+    pt: ['br'],
+    sl: ['si'],
+    sv: ['se'],
+    uk: ['ua'],
+    zh: ['cn', 'tw'],
   };
-  const CUSTOMLANG = {
-    be_nl: 'nl_NL',
-    ch_it: 'it_IT',
-    cis_ru: 'ru_RU',
-    hk_zh: 'zh_TW',
-    no: 'nb_NO',
-  };
-  const prefixParts = prefix.split('_').reverse();
 
-  return Object.keys(DEFAULTLANG).find((key) => DEFAULTLANG[key].includes(prefix))
-         || CUSTOMLANG[prefix]
-         || (ietf.includes('-')
-           ? ietf.replace('-', '_')
-           : prefixParts[1]
-           && prefixParts.every((i) => !!i)
-           && `${prefixParts[0].toLowerCase()}_${prefixParts[1].toUpperCase()}`)
-         || 'en_US';
+  if (!locale.prefix || locale.prefix === '/') return 'en_US';
+  const prefix = locale.prefix.replace('/', '');
+  if (prefix.includes('_')) {
+    const [lang, country] = prefix.split('_').reverse();
+    return `${lang.toLowerCase()}_${country.toUpperCase()}`;
+  }
+
+  if (prefix === 'uk') return 'en_GB';
+  const customLang = Object.keys(LANGMAP).find((key) => LANGMAP[key].includes(prefix));
+  if (customLang) return `${customLang.toLowerCase()}_${prefix.toUpperCase()}`;
+
+  return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
 };
 
 const convertToPascalCase = (str) => str
