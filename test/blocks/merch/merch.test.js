@@ -359,7 +359,6 @@ describe('Merch Block', () => {
         '.merch.text.link',
       ));
       const { href, textContent } = await el.onceSettled();
-      console.log('href', href);
       expect(href.includes('#_tcl')).to.be.false;
       expect(textContent).to.equal('40% off');
       expect(el.getAttribute('is')).to.equal('checkout-link');
