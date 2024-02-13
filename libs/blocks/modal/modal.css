@@ -233,8 +233,12 @@
   }
 
   .dialog-modal.commerce-frame.height-fit-content .milo-iframe {
-    height: auto;
+    height: 100%;
     max-height: 845px;
+  }
+
+  .dialog-modal.commerce-frame.height-fit-content .milo-iframe iframe {
+    height: 0%;
   }
   
   .dialog-modal.upgrade-flow-modal {
