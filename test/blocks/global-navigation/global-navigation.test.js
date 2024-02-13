@@ -1201,7 +1201,6 @@ describe('global navigation', () => {
   });
 
   describe('Universal navigation', () => {
-    let unavMeta;
     const orgAlloy = window.alloy;
     beforeEach(async () => {
       window.UniversalNav = sinon.spy();
@@ -1210,34 +1209,25 @@ describe('global navigation', () => {
       window._satellite = { track: sinon.spy() };
       // eslint-disable-next-line
       window.alloy = () => new Promise((resolve) => resolve({ identity: { ECID: 'dummy-ECID' } }));
-      unavMeta = toFragment`<meta name="universal-nav" content="on">`;
-      document.head.append(unavMeta);
     });
 
     afterEach(() => {
       sinon.restore();
       window.allow = orgAlloy;
-      if (document.head.contains(unavMeta)) document.head.removeChild(unavMeta);
     });
 
     describe('desktop', () => {
       it('should render the Universal navigation', async () => {
-        const fullUnavMeta = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
-        const gnav = await createFullGlobalNavigation();
-        await gnav.decorateUniversalNav();
+        await createFullGlobalNavigation({ unavContent: 'on' });
         const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
 
         expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
 
-        document.head.removeChild(unavMeta);
-        document.head.append(fullUnavMeta);
-        await gnav.decorateUniversalNav();
+        await createFullGlobalNavigation({ unavContent: 'profile, appswitcher, notifications, help' });
         const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
 
         expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
           .to.be.true;
-
-        document.head.removeChild(fullUnavMeta);
       });
 
       it('should reload unav on viewport change', async () => {
@@ -1246,7 +1236,7 @@ describe('global navigation', () => {
       });
 
       it('should send the correct analytics events', async () => {
-        await createFullGlobalNavigation();
+        await createFullGlobalNavigation({ unavContent: 'on' });
         const analyticsFn = window.UniversalNav.getCall(0)
           .args[0].analyticsContext.onAnalyticsEvent;
 
@@ -1273,18 +1263,18 @@ describe('global navigation', () => {
       });
 
       it('should send/not send visitor guid to unav when window.alloy is available/unavailable', async () => {
-        await createFullGlobalNavigation();
+        await createFullGlobalNavigation({ unavContent: 'on' });
         expect(window.UniversalNav.getCall(0)
           .args[0].analyticsContext.event.visitor_guid).to.equal('dummy-ECID');
 
         delete window.alloy;
-        await createFullGlobalNavigation();
+        await createFullGlobalNavigation({ unavContent: 'on' });
         expect(window.UniversalNav.getCall(1)
           .args[0].analyticsContext.event.visitor_guid).to.equal(undefined);
       });
 
       it('should send the correct device type', async () => {
-        const gnav = await createFullGlobalNavigation();
+        const gnav = await createFullGlobalNavigation({ unavContent: 'on' });
         window.UniversalNav.resetHistory();
         for (const [os, osName] of Object.entries(osMap)) {
           const userAgentStub = sinon.stub(navigator, 'userAgent').value(os);
@@ -1299,6 +1289,7 @@ describe('global navigation', () => {
       it('should send the correct locale to unav', async () => {
         for (const data of unavLocalesTestData) {
           await createFullGlobalNavigation({
+            unavContent: 'on',
             customConfig: {
               ...config,
               contentRoot: `${window.location.origin}${data.prefix}`,
@@ -1318,44 +1309,31 @@ describe('global navigation', () => {
 
     describe('small desktop', () => {
       it('should render the Universal navigation', async () => {
-        const fullUnavMeta = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
-        const gnav = await createFullGlobalNavigation({ viewport: 'smallDesktop' });
-        await gnav.decorateUniversalNav();
+        await createFullGlobalNavigation({ viewport: 'smallDesktop', unavContent: 'on' });
         const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
 
         expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
 
-        document.head.removeChild(unavMeta);
-        document.head.append(fullUnavMeta);
-        await gnav.decorateUniversalNav();
+        await createFullGlobalNavigation({ viewport: 'smallDesktop', unavContent: 'profile, appswitcher, notifications, help' });
         const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
 
         expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
           .to.be.true;
-
-        document.head.removeChild(fullUnavMeta);
       });
     });
 
     describe('mobile', () => {
       it('should render the Universal navigation', async () => {
-        const fullUnavMeta = toFragment`<meta name="universal-nav" content="profile, appswitcher, notifications, help">`;
-        window.UniversalNav.reload = sinon.spy();
-        const gnav = await createFullGlobalNavigation({ viewport: 'mobile' });
-        await gnav.decorateUniversalNav();
+        await createFullGlobalNavigation({ viewport: 'mobile', unavContent: 'on' });
         const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
 
         expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
 
-        document.head.removeChild(unavMeta);
-        document.head.append(fullUnavMeta);
-        await gnav.decorateUniversalNav();
+        await createFullGlobalNavigation({ viewport: 'mobile', unavContent: 'profile, appswitcher, notifications, help' });
         const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
 
         expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
           .to.be.true;
-
-        document.head.removeChild(fullUnavMeta);
       });
     });
   });

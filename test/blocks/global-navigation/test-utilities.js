@@ -164,6 +164,7 @@ export const createFullGlobalNavigation = async ({
   breadcrumbsEl = defaultBreadcrumbsEl(),
   globalNavigation,
   hasPromo,
+  unavContent = null,
 } = {}) => {
   const clock = sinon.useFakeTimers({
     // Intercept setTimeout and call the function immediately
@@ -199,6 +200,9 @@ export const createFullGlobalNavigation = async ({
       }),
     ),
   };
+
+  const unavMeta = unavContent && toFragment`<meta name="universal-nav" content="${unavContent}">`;
+  if (unavContent) document.head.append(unavMeta);
 
   document.body.replaceChildren(toFragment`
     <header class="global-navigation has-breadcrumbs${hasPromo ? ' has-promo' : ''}" daa-im="true" daa-lh="gnav|milo">
@@ -241,6 +245,6 @@ export const createFullGlobalNavigation = async ({
   window.fetch = ogFetch;
   window.adobeIMS = undefined;
   window.adobeid = undefined;
-
+  if (document.head.contains(unavMeta)) document.head.removeChild(unavMeta);
   return instance;
 };
