@@ -1205,6 +1205,7 @@ describe('global navigation', () => {
     const orgAlloy = window.alloy;
     beforeEach(async () => {
       window.UniversalNav = sinon.spy();
+      window.UniversalNav.reload = sinon.spy();
       // eslint-disable-next-line no-underscore-dangle
       window._satellite = { track: sinon.spy() };
       // eslint-disable-next-line
