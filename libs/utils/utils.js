@@ -230,6 +230,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       config.useDotHtmlConf = (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       config.entitlements = handleEntitlements;
+      config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
       return config;
     },

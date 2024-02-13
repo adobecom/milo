@@ -6,9 +6,11 @@ const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
 const URL_POSTXDM = 'https://14257-milocaasproxy-stage.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
+const VALID_MODAL_RE = /^\/fragments(.*)#[a-zA-Z0-9_]+$/;
 
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
+const isValidModal = (u) => VALID_MODAL_RE.test(u);
 
 const [setConfig, getConfig] = (() => {
   let config = {
@@ -67,6 +69,9 @@ const flattenLink = (link) => {
 const checkUrl = (url, errorMsg) => {
   if (url === undefined) return url;
   const flatUrl = url.includes('href=') ? flattenLink(url) : url;
+  if (isValidModal(flatUrl)) {
+    return flatUrl;
+  }
   return isValidUrl(flatUrl) ? prefixHttps(flatUrl) : { error: errorMsg };
 };
 
@@ -237,10 +242,11 @@ const getImagePathMd = (keyName) => {
 
 const getCardImageUrl = () => {
   const { doc } = getConfig();
-  const imageUrl = getImagePathMd('cardimage')
+  const imageUrl = getImagePathMd('image')
+    || getImagePathMd('cardimage')
     || getImagePathMd('cardimagepath')
-    || doc.querySelector('meta[property="og:image"]')?.content
-    || doc.querySelector('main')?.querySelector('img')?.src;
+    || doc.querySelector('main')?.querySelector('img')?.src.replace(/\?.*/, '')
+    || doc.querySelector('meta[property="og:image"]')?.content;
 
   if (!imageUrl) return null;
   return addHost(imageUrl);
@@ -315,7 +321,7 @@ const getCountryAndLang = async (options) => {
 
 const parseCardMetadata = () => {
   const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('.card-metadata');
+  const mdEl = getConfig().doc.querySelector('.card-metadata') || getConfig().doc.querySelector('.caas-marquee-metadata');
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
       const key = n.children?.[0]?.textContent?.toLowerCase();
@@ -375,6 +381,7 @@ const props = {
   },
   cta1icon: (s) => checkUrl(s, `Invalid Cta1Icon url: ${s}`),
   cta1style: 0,
+  cta1target: 0,
   cta1text: 0,
   cta1url: (s, options) => {
     if (s?.trim() === '') return '';
@@ -383,6 +390,7 @@ const props = {
   },
   cta2icon: (s) => checkUrl(s, `Invalid Cta2Icon url: ${s}`),
   cta2style: 0,
+  cta2target: 0,
   cta2text: 0,
   cta2url: (s) => checkUrl(s, `Invalid Cta2Url: ${s}`),
   description: (s) => s || getMetaContent('name', 'description') || '',
@@ -474,6 +482,7 @@ const getCaasProps = (p) => {
               url: p.cta1url,
               style: p.cta1style,
               icon: p.cta1icon,
+              target: p.cta1target,
             },
           }),
           ...(p.cta2url && {
@@ -482,6 +491,7 @@ const getCaasProps = (p) => {
               url: p.cta2url,
               style: p.cta2style,
               icon: p.cta2icon,
+              target: p.cta2target,
             },
           }),
         },
