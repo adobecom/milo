@@ -17,11 +17,12 @@
   flex-direction: column;
 }
 
-.quiz-background picture {
+.quiz-background {
   display: block;
   inset: 0;
   line-height: 0;
   position: absolute;
+  z-index: -1;
 }
 
 .quiz-background img {
@@ -359,7 +360,6 @@ html[dir="rtl"] .quiz-step::after {
     justify-content: center;
     margin: 0;
     min-height: 126px;
-    width: auto;
   }
 
   .quiz-option.has-icon.quiz-option.has-image .no-icon-tablet,
