@@ -1,44 +1,103 @@
-import { getConfig, loadScript } from '../../utils/utils.js';
+import { getConfig, loadScript, localizeLink } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
+export const entitlementsURL = 'https://milo.adobe.com/libs/commerce/entitlements.json?limit=2000';
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 
+const TITLE_PRODUCT_ARRANGEMENT_CODE = 'Product Arrangement Code';
+const LOADING_ENTITLEMENTS = 'loading-entitlements';
+let downloadFlowFeatureFlag = false; // temporary disable till GWP is ready
+
 export function polyfills() {
-  /* c8 ignore start */
-  if (!polyfills.promise) {
-    let isSupported = false;
-    document.createElement('div', {
-      // eslint-disable-next-line getter-return
-      get is() {
-        isSupported = true;
-      },
-    });
-    if (isSupported) {
-      polyfills.promise = Promise.resolve();
-    } else {
-      const { codeRoot, miloLibs } = getConfig();
-      const base = miloLibs || codeRoot;
-      polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
-    }
+  if (polyfills.promise) return polyfills.promise;
+  let isSupported = false;
+  document.createElement('div', {
+    // eslint-disable-next-line getter-return
+    get is() {
+      isSupported = true;
+    },
+  });
+  if (isSupported) {
+    polyfills.promise = Promise.resolve();
+  } else {
+    const { codeRoot, miloLibs } = getConfig();
+    const base = miloLibs || codeRoot;
+    polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
   }
   return polyfills.promise;
-  /* c8 ignore stop */
+}
+
+export async function loadEntitlements() {
+  loadEntitlements.promise = loadEntitlements.promise ?? Promise.all([
+    import('../global-navigation/utilities/getUserEntitlements.js'),
+    fetch(entitlementsURL),
+  ]).then(([{ default: getUserEntitlements }, mappings]) => {
+    if (!mappings.ok) return [];
+    return Promise.all([getUserEntitlements({ params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }], format: 'raw' }), mappings.json()]);
+  });
+  return loadEntitlements.promise;
+}
+
+async function getCheckoutAction(offers) {
+  let upgradeAction;
+  const [entitlements, entitlementsMappings] = await loadEntitlements();
+  const [{ productArrangementCode, productArrangement }] = offers;
+  const productFamily = productArrangement?.productFamily;
+  const upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]')?.onceSettled()
+    .catch((e) => {
+      window.lana.log('Failed to resolve an upgrade offer:', e);
+    });
+  if (upgradeOffer && entitlements?.length && productFamily) {
+    const { default: handleUpgradeOffer } = await import('./upgrade.js');
+    upgradeAction = await handleUpgradeOffer(productFamily, upgradeOffer, entitlements);
+    if (upgradeAction) return upgradeAction;
+  }
+
+  if (downloadFlowFeatureFlag === false) return undefined;
+  const aCodes = entitlements?.map((offer) => offer.offer.product_arrangement_code);
+  if (aCodes?.includes(productArrangementCode)) {
+    const mapping = entitlementsMappings.data
+      ?.find(({ [TITLE_PRODUCT_ARRANGEMENT_CODE]: code }) => code === productArrangementCode);
+    if (!mapping) return undefined;
+    const config = getConfig();
+    const { locale: { ietf } } = config;
+    const text = await replaceKey(mapping.CTA, config);
+    const url = mapping[ietf] || localizeLink(mapping.Target);
+    return { text, url };
+  }
+  return undefined;
 }
 
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
-export async function initService() {
-  await polyfills();
-  const commerce = await import('../../deps/commerce.js');
-  return commerce.init(() => ({
-    ...getConfig(),
-    commerce: { priceLiteralsURL },
-  }));
+export async function initService(force = false) {
+  if (force) {
+    initService.promise = undefined;
+    loadEntitlements.promise = undefined;
+  }
+  initService.promise = initService.promise ?? polyfills().then(async () => {
+    const commerceLib = await import('../../deps/commerce.js');
+    const { env, commerce = {}, locale } = getConfig();
+    commerce.priceLiteralsURL = priceLiteralsURL;
+    const service = await commerceLib.init(() => ({
+      env,
+      commerce,
+      locale,
+    }), () => ({ getCheckoutAction, force }));
+    service.imsSignedInPromise.then((isSignedIn) => {
+      if (isSignedIn) {
+        loadEntitlements();
+      }
+    });
+    return service;
+  });
+  return initService.promise;
 }
 
 export async function getCommerceContext(el, params) {
@@ -70,12 +129,14 @@ export async function getCheckoutContext(el, params) {
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
+  const entitlement = params?.get('entitlement') ?? 'true';
   return {
     ...context,
     checkoutClientId,
     checkoutWorkflow,
     checkoutWorkflowStep,
     checkoutMarketSegment,
+    entitlement,
   };
 }
 
@@ -127,6 +188,10 @@ export async function buildCta(el, params) {
   cta.classList.add('con-button');
   cta.classList.toggle('button-l', large);
   cta.classList.toggle('blue', strong);
+  if (context.entitlement !== 'false') {
+    cta.classList.add(LOADING_ENTITLEMENTS);
+    cta.onceSettled().finally(() => cta.classList.remove(LOADING_ENTITLEMENTS));
+  }
   return cta;
 }
 
@@ -153,3 +218,7 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
+
+export const setDownloadFlowFeatureFlag = (value) => {
+  downloadFlowFeatureFlag = value;
+};

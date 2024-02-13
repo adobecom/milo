@@ -3,7 +3,7 @@
  */
 
 import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
@@ -64,7 +64,21 @@ const decorateImage = (media) => {
   }
 };
 
-export default function init(el) {
+export async function loadMnemonicList(foreground) {
+  try {
+    const { base } = getConfig();
+    const stylePromise = new Promise((resolve) => {
+      loadStyle(`${base}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
+    });
+    const loadModule = import('../mnemonic-list/mnemonic-list.js')
+      .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
+    await Promise.all([stylePromise, loadModule]);
+  } catch (err) {
+    window.lana?.log(`Failed to load mnemonic list module: ${err}`);
+  }
+}
+
+export default async function init(el) {
   const excDark = ['light', 'quiet'];
   if (!excDark.some((s) => el.classList.contains(s))) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
@@ -113,5 +127,8 @@ export default function init(el) {
       el.classList.add('has-credit');
       media?.lastChild.remove();
     }
+  }
+  if (el.classList.contains('mnemonic-list') && foreground) {
+    await loadMnemonicList(foreground);
   }
 }
