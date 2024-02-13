@@ -8,7 +8,7 @@
       "selector": "promo",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/test/features/personalization/mocks/newpromo",
+      "chrome": "test\\features\\personalization\\mocks\\promo",
       "firefox": "",
       "android": "",
       "ios": ""
