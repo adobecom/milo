@@ -98,6 +98,16 @@ const CONFIG = {
   },
 };
 
+export const osMap = {
+  Mac: 'macOS',
+  Win: 'windows',
+  Linux: 'linux',
+  CrOS: 'chromeOS',
+  Android: 'android',
+  iPad: 'iPadOS',
+  iPhone: 'iOS',
+};
+
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = () => {
   if (typeof window.adobeIMS?.signIn !== 'function') return;
@@ -478,14 +488,9 @@ class Gnav {
 
     const getDevice = () => {
       const agent = navigator.userAgent;
-      if (agent.includes('Mac')) return 'macOS';
-      if (agent.includes('Win')) return 'windows';
-      if (agent.includes('Linux')) return 'linux';
-      if (agent.includes('CrOS')) return 'chromeOS';
-      if (agent.includes('Android')) return 'android';
-      if (agent.includes('iPad')) return 'iPadOS';
-      if (agent.includes('iPhone')) return 'iOS';
-
+      for (const [os, osName] of Object.entries(osMap)) {
+        if (agent.includes(os)) return osName;
+      }
       return 'linux';
     };
 

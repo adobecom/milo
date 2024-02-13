@@ -2,9 +2,18 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
-import { setConfig } from '../../../libs/utils/utils.js';
-import initGnav from '../../../libs/blocks/global-navigation/global-navigation.js';
-import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
+import {
+  createFullGlobalNavigation,
+  selectors,
+  isElementVisible,
+  mockRes,
+  viewports,
+  config,
+  unavLocalesTestData,
+  analyticsTestData,
+} from './test-utilities.js';
+import { setConfig, getLocale } from '../../../libs/utils/utils.js';
+import initGnav, { osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
@@ -24,51 +33,33 @@ const ogFetch = window.fetch;
 
 describe('global navigation', () => {
   before(() => {
-    document.head.innerHTML = '<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any"><script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
+    <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://stage.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    `;
   });
 
-  describe('content source', () => {
-    const customPath = '/path/to/gnav';
-    let fetchStub;
-
-    beforeEach(() => {
-      fetchStub = sinon.stub(window, 'fetch');
-      sinon.stub(window.lana, 'log');
-      setConfig({ locale: { ietf: 'en-US', prefix: '' } });
+  describe('LANA logging tests', () => {
+    beforeEach(async () => {
+      window.lana.log = sinon.spy();
     });
 
     afterEach(() => {
-      fetchStub = null;
       sinon.restore();
-      document.head.replaceChildren();
-      document.body.replaceChildren();
-      document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
     });
 
-    it('fetches default global navigation based on metadata', async () => {
-      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-      await initGnav(document.body.querySelector('header'));
-      expect(fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html')).to.be.true;
-    });
+    it('should log when could not load IMS', async () => {
+      const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+      await createFullGlobalNavigation({
+        customConfig: {
+          imsClientId: null,
+          codeRoot: '/libs',
+          contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
+          locales,
+        },
+      });
 
-    it('fetches centralized custom global navigation based on metadata', async () => {
-      const gnavMeta = toFragment`<meta name="gnav-source" content="https://adobe.com/federal${customPath}">`;
-      document.head.append(gnavMeta);
-      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-      await initGnav(document.body.querySelector('header'));
-      expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
-      ).to.be.true;
-    });
-
-    it('fetches a centralised custom global navigation based on a relative link', async () => {
-      const gnavMeta = toFragment`<meta name="gnav-source" content="/federal${customPath}">`;
-      document.head.append(gnavMeta);
-      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-      await initGnav(document.body.querySelector('header'));
-      expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
-      ).to.be.true;
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('GNAV: Error with IMS'))).to.exist;
     });
   });
 
@@ -1206,6 +1197,189 @@ describe('global navigation', () => {
       isTangentToViewport.dispatchEvent(new Event('change'));
 
       expect(getOverflowingTopnav()).to.equal(null);
+    });
+  });
+
+  describe('Universal navigation', () => {
+    const orgAlloy = window.alloy;
+    beforeEach(async () => {
+      window.UniversalNav = sinon.spy();
+      window.UniversalNav.reload = sinon.spy();
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = { track: sinon.spy() };
+      // eslint-disable-next-line
+      window.alloy = () => new Promise((resolve) => resolve({ identity: { ECID: 'dummy-ECID' } }));
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      window.allow = orgAlloy;
+    });
+
+    describe('desktop', () => {
+      it('should render the Universal navigation', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
+
+        expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
+
+        await createFullGlobalNavigation({ unavContent: 'profile, appswitcher, notifications, help' });
+        const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
+
+        expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
+          .to.be.true;
+      });
+
+      it('should reload unav on viewport change', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        await setViewport(viewports.mobile);
+        expect(window.UniversalNav.reload.getCall(0)).to.exist;
+      });
+
+      it('should send the correct analytics events', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const analyticsFn = window.UniversalNav.getCall(0)
+          .args[0].analyticsContext.onAnalyticsEvent;
+
+        for (const [eventData, interaction] of Object.entries(analyticsTestData)) {
+          const [name, type, subtype, contentName] = eventData.split('|');
+          analyticsFn({
+            event: { type, subtype },
+            source: { name },
+            content: { name: contentName },
+          });
+          // eslint-disable-next-line no-underscore-dangle
+          expect(window._satellite.track.lastCall.calledWith('event', {
+            xdm: {},
+            data: { web: { webInteraction: { name: interaction } } },
+          })).to.be.true;
+        }
+
+        expect(analyticsFn(null)).to.equal(undefined);
+        expect(analyticsFn({
+          event: { type: 'not', subtype: 'matching' },
+          source: { name: 'anything' },
+          content: { name: null },
+        })).to.equal(undefined);
+      });
+
+      it('should send/not send visitor guid to unav when window.alloy is available/unavailable', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        expect(window.UniversalNav.getCall(0)
+          .args[0].analyticsContext.event.visitor_guid).to.equal('dummy-ECID');
+
+        delete window.alloy;
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        expect(window.UniversalNav.getCall(1)
+          .args[0].analyticsContext.event.visitor_guid).to.equal(undefined);
+      });
+
+      it('should send the correct device type', async () => {
+        const gnav = await createFullGlobalNavigation({ unavContent: 'on' });
+        window.UniversalNav.resetHistory();
+        for (const [os, osName] of Object.entries(osMap)) {
+          const userAgentStub = sinon.stub(navigator, 'userAgent').value(os);
+          await gnav.decorateUniversalNav();
+          expect(window.UniversalNav.getCall(0)
+            .args[0].analyticsContext.consumer.device).to.equal(osName);
+          userAgentStub.restore();
+          window.UniversalNav.resetHistory();
+        }
+      });
+
+      it('should send the correct locale to unav', async () => {
+        for (const data of unavLocalesTestData) {
+          await createFullGlobalNavigation({
+            unavContent: 'on',
+            customConfig: {
+              ...config,
+              contentRoot: `${window.location.origin}${data.prefix}`,
+              pathname: `${data.prefix}`,
+              locale: {
+                prefix: data.prefix,
+                ietf: data.ietf,
+              },
+              locales: { [data.prefix.replace('/', '')]: { ietf: data.ietf, tk: 'hah7vzn.css' } },
+            },
+          });
+          expect(window.UniversalNav.getCall(0).args[0].locale).to.equal(data.expectedLocale);
+          window.UniversalNav.resetHistory();
+        }
+      });
+    });
+
+    describe('small desktop', () => {
+      it('should render the Universal navigation', async () => {
+        await createFullGlobalNavigation({ viewport: 'smallDesktop', unavContent: 'on' });
+        const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
+
+        expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
+
+        await createFullGlobalNavigation({ viewport: 'smallDesktop', unavContent: 'profile, appswitcher, notifications, help' });
+        const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
+
+        expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
+          .to.be.true;
+      });
+    });
+
+    describe('mobile', () => {
+      it('should render the Universal navigation', async () => {
+        await createFullGlobalNavigation({ viewport: 'mobile', unavContent: 'on' });
+        const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
+
+        expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
+
+        await createFullGlobalNavigation({ viewport: 'mobile', unavContent: 'profile, appswitcher, notifications, help' });
+        const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
+
+        expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
+          .to.be.true;
+      });
+    });
+  });
+
+  describe('content source', () => {
+    const customPath = '/path/to/gnav';
+    let fetchStub;
+
+    beforeEach(() => {
+      fetchStub = sinon.stub(window, 'fetch');
+      setConfig({ locale: { ietf: 'en-US', prefix: '' } });
+    });
+
+    afterEach(() => {
+      fetchStub = null;
+      sinon.restore();
+      document.head.replaceChildren();
+      document.body.replaceChildren();
+      document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+    });
+
+    it('fetches default global navigation based on metadata', async () => {
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html')).to.be.true;
+    });
+
+    it('fetches centralized custom global navigation based on metadata', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="https://adobe.com/federal${customPath}">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+      ).to.be.true;
+    });
+
+    it('fetches a centralised custom global navigation based on a relative link', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="/federal${customPath}">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+      ).to.be.true;
     });
   });
 });
