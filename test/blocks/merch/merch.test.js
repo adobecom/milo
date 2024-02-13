@@ -421,7 +421,7 @@ describe('Merch Block', () => {
       await initService(true);
       const cta = await merch(document.querySelector('.merch.cta.download.fr'));
       await cta.onceSettled();
-      const [, { DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
+      const [,, { DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
       expect(cta.textContent).to.equal(newConfig.placeholders.download);
       expect(cta.href).to.equal(DOWNLOAD_URL);
     });
