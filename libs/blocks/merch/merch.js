@@ -106,6 +106,11 @@ async function getCheckoutLinkConfig(productFamily) {
   const overrides = Object.fromEntries(
     Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value !== undefined),
   );
+  Object.entries(overrides).forEach(([key, value]) => {
+    if (value === 'X' || value === '❌') {
+      overrides[key] = '';
+    }
+  });
   return { ...checkoutLinkConfig, ...overrides };
 }
 

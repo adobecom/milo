@@ -40,8 +40,8 @@ const CHECKOUT_LINK_CONFIGS = {
     PRODUCT_FAMILY: 'PHOTOSHOP',
     DOWNLOAD_TEXT: '',
     DOWNLOAD_URL: 'https://creativecloud.adobe.com/fr/apps/download/photoshop?q=123',
-    FREE_TRIAL_PATH: '',
-    BUY_NOW_PATH: '',
+    FREE_TRIAL_PATH: '❌',
+    BUY_NOW_PATH: 'X',
     LOCALE: 'fr',
   }],
 };
