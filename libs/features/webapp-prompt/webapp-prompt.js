@@ -47,7 +47,7 @@ class AppPrompt {
     this.addEventListeners();
 
     document.body.appendChild(this.template);
-    this.elements.cta.focus();
+    this.elements.closeIcon.focus();
 
     this.redirectFn = this.initRedirect();
   };
