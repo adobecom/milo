@@ -85,6 +85,15 @@ describe('Section Metdata', () => {
     expect(main.lastElementChild.classList.contains('hide-sticky-section')).to.be.true;
   });
 
+  it('Handles delay in loading the promobar', async () => {
+    const sec = document.querySelector('.section.delay');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.classList.contains('hide-sticky-section')).to.be.true;
+    await delay(1000);
+    expect(sec.classList.contains('hide-sticky-section')).not.to.be.true;
+  });
+
   it('should calculate the top position based on header height', async () => {
     const sec = document.querySelector('.section.sticky-top');
     const header = document.createElement('header');
