@@ -22,7 +22,7 @@ import getUserEntitlements from '../../../libs/blocks/global-navigation/utilitie
 const CHECKOUT_LINK_CONFIGS = {
   data: [{
     PRODUCT_FAMILY: 'PHOTOSHOP',
-    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_TEXT: '',
     DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/photoshop',
     FREE_TRIAL_PATH: '/cc-shared/fragments/trial-modals/photoshop',
     BUY_NOW_PATH: '/cc-shared/fragments/buy-modals/photoshop',
@@ -396,8 +396,8 @@ describe('Merch Block', () => {
       await initService(true);
       const cta1 = await merch(document.querySelector('.merch.cta.download'));
       await cta1.onceSettled();
-      const [{ DOWNLOAD_TEXT, DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
-      expect(cta1.textContent).to.equal(DOWNLOAD_TEXT);
+      const [{ DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
+      expect(cta1.textContent).to.equal('Download');
       expect(cta1.href).to.equal(DOWNLOAD_URL);
 
       const cta2 = await merch(document.querySelector('.merch.cta.no-entitlement-check'));

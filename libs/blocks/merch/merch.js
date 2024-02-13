@@ -104,14 +104,15 @@ async function getCheckoutLinkConfig(productFamily) {
     ({ [NAME_LOCALE]: locale }) => locale === region,
   ) ?? {};
   const overrides = Object.fromEntries(
-    Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value !== undefined),
+    Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value),
   );
-  Object.entries(overrides).forEach(([key, value]) => {
+  const finalConfig = { ...checkoutLinkConfig, ...overrides };
+  Object.entries(finalConfig).forEach(([key, value]) => {
     if (value === 'X' || value === '❌') {
-      overrides[key] = '';
+      finalConfig[key] = '';
     }
   });
-  return { ...checkoutLinkConfig, ...overrides };
+  return finalConfig;
 }
 
 export async function getDownloadAction(options, imsSignedInPromise, offerFamily) {
