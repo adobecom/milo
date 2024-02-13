@@ -47,7 +47,7 @@ function handleObjectFit(bgRow) {
 
 function handleClickableBrick(el, foreground) {
   if (!el.classList.contains('click')) return;
-  const links = foreground.querySelectorAll('a');
+  const links = foreground.querySelectorAll('.brick-text a');
   if (links.length !== 1) { el.classList.remove('click'); return; }
   const a = links[0];
   const linkDiv = createTag('span', { class: [...a.classList, 'first-link'].join(' ') }, a.innerHTML);
@@ -64,6 +64,60 @@ function decorateSupplementalText(el) {
   supplementalEl.className = 'body-xs supplemental-text';
 }
 
+function decorateForeground(el, foreground) {
+  const fgtext = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  fgtext.closest('div').classList.add('brick-text');
+  if (foreground.querySelectorAll(':scope > div').length > 1) {
+    if (!el.classList.contains('stack')) {
+      foreground.closest('.brick').classList.add('split');
+      if (!el.classList.contains('center')) el.classList.add('row');
+    }
+    const mediaEl = foreground.querySelector('div:not([class])');
+    mediaEl.classList.add('brick-media');
+    el.classList.add((foreground.firstElementChild === mediaEl) ? 'media-left' : 'media-right');
+  }
+  const hasIconArea = fgtext.querySelector('p')?.querySelector('img');
+  if (hasIconArea) {
+    const iconArea = fgtext.querySelector('p');
+    iconArea.classList.add('icon-area');
+    if (iconArea.querySelectorAll('img').length > 1) iconArea.classList.add('icon-gap-s');
+  }
+}
+
+function decorateFillButtons(actionArea) {
+  if (!actionArea) return;
+  const btns = actionArea.querySelectorAll('a.con-button.blue');
+  btns.forEach((b) => {
+    b.classList.remove('blue');
+    b.classList.add('fill');
+  });
+}
+
+function decorateBrickIconStack(el) {
+  decorateIconStack(el);
+  const icnStk = el.querySelector('.icon-stack-area');
+  if (!icnStk) return;
+  icnStk.classList.add('body-xs');
+  const liELs = icnStk.querySelectorAll('li');
+  [...liELs].forEach((liEl) => {
+    const aTxt = liEl.querySelector('a')?.textContent?.trim();
+    const liTxt = liEl.textContent?.trim();
+    if (!liTxt || (liTxt === aTxt)) return;
+    const pic = liEl.querySelector('picture');
+    let icn = pic;
+    if (pic && pic.parentElement !== liEl) {
+      icn = pic.parentElement.cloneNode(false);
+      icn.append(pic);
+    }
+    const txt = createTag('span', { class: 'list-text' }, liEl.innerHTML);
+    liEl.innerHTML = '';
+    if (icn) liEl.append(icn, txt);
+    liEl.append(txt);
+    txt.querySelector('picture')?.remove();
+    txt.querySelector('a:empty')?.remove();
+  });
+}
+
 function decorateBricks(el) {
   if (!el.classList.contains('light')) el.classList.add('dark');
   const elems = el.querySelectorAll(':scope > div');
@@ -77,19 +131,19 @@ function decorateBricks(el) {
   }
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground');
-  const hasIconArea = foreground.querySelector('p')?.querySelector('img');
-  if (hasIconArea) foreground.querySelector('p').classList.add('icon-area');
+  decorateForeground(el, foreground);
   const blockFormatting = getBlockSize(el);
   decorateButtons(foreground, 'button-l');
   decorateBlockText(foreground, blockFormatting);
-  decorateIconStack(el);
-  el.querySelector('.icon-stack-area')?.classList.add('body-xs');
+  if (el.classList.contains('button-fill')) decorateFillButtons(foreground.querySelector('.action-area'));
+  el.querySelector('.icon-area')?.classList.remove('detail-l');
+  decorateBrickIconStack(el);
   handleSupplementalText(foreground);
   handleClickableBrick(el, foreground);
   return foreground;
 }
 
-export default async function init(el) {
+export default function init(el) {
   if (el.className.includes('rounded-corners')) {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;

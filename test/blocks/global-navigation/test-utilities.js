@@ -3,7 +3,7 @@
 import sinon, { stub } from 'sinon';
 import { setViewport } from '@web/test-runner-commands';
 import initGnav from '../../../libs/blocks/global-navigation/global-navigation.js';
-import { getLocale, setConfig, loadStyle } from '../../../libs/utils/utils.js';
+import { setConfig, loadStyle } from '../../../libs/utils/utils.js';
 import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
@@ -83,7 +83,6 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 export const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
-  contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
   locales,
 };
 
@@ -125,7 +124,7 @@ export const createFullGlobalNavigation = async ({
     // Intercept setTimeout and call the function immediately
     toFake: ['setTimeout'],
   });
-  setConfig(customConfig);
+  setConfig({ ...config, ...customConfig });
   await setViewport(viewports[viewport]);
   window.lana = { log: stub() };
   window.fetch = stub().callsFake((url) => {
@@ -135,6 +134,8 @@ export const createFullGlobalNavigation = async ({
     if (url.endsWith('large-menu-cross-cloud.plain.html')) { return mockRes({ payload: largeMenuCrossCloud }); }
     if (url.endsWith('large-menu-active.plain.html')) { return mockRes({ payload: largeMenuActiveMock }); }
     if (url.endsWith('large-menu-wide-column.plain.html')) { return mockRes({ payload: largeMenuWideColumnMock }); }
+    if (url.includes('main--federal--adobecom.hlx.page')
+      && url.endsWith('feds-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }
     if (url.includes('wrong-promo-fragment')) { return mockRes({ payload: '<div>Non-promo content</div>' }); }

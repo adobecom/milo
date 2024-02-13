@@ -107,6 +107,19 @@ const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
+const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
+// Force cards to refresh once they become visible so that the footer rows are properly aligned.
+const intersectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const container = entry.target.closest('main > div');
+      if (!container) return;
+      [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
+      intersectionObserver.unobserve(entry.target);
+    }
+  });
+});
+
 const textStyles = {
   H5: 'detail-m',
   H4: 'body-xxs',
@@ -119,23 +132,40 @@ const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style
 const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
+const appendSlot = (slotEls, slotName, merchCard) => {
+  if (slotEls.length === 0) return;
+  const newEl = createTag(
+    'p',
+    { slot: slotName, class: slotName },
+  );
+  slotEls.forEach((e, index) => {
+    newEl.innerHTML += e.innerHTML;
+    if (index < slotEls.length - 1) {
+      newEl.innerHTML += '<br>';
+    }
+  });
+  merchCard.append(newEl);
+};
+
 const parseContent = (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
   ];
   let bodySlotName = 'body-xs';
   let headingMCount = 0;
+
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
+    const promoText = el.querySelectorAll('h5');
+    const priceSmallType = el.querySelectorAll('h6');
+    appendSlot(promoText, 'promo-text', merchCard);
+    appendSlot(priceSmallType, 'price-commitment', merchCard);
   }
+
   const bodySlot = createTag('div', { slot: bodySlotName });
 
   innerElements.forEach((element) => {
     const { tagName } = element;
-    if (tagName === 'EM' && !element.querySelector('a')) {
-      const promoText = createTag('p', { class: 'promo-text' }, element.innerHTML);
-      element.replaceWith(promoText);
-    }
     if (isHeadingTag(tagName)) {
       let slotName = textStyles[tagName];
       if (slotName) {
@@ -157,6 +187,7 @@ const parseContent = (el, merchCard) => {
       merchCard.append(bodySlot);
     }
   });
+
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
   }
@@ -249,7 +280,7 @@ const simplifyHrs = (el) => {
   });
 };
 
-function createQuantitySelect(el) {
+function extractQuantitySelect(el) {
   const quantitySelectConfig = el.querySelector('ul');
   if (!quantitySelectConfig) return null;
   const configMarkup = quantitySelectConfig.querySelector('li');
@@ -269,8 +300,11 @@ function createQuantitySelect(el) {
 }
 
 const getMiniCompareChartFooterRows = (el) => {
-  let footerRows = [];
-  footerRows = Array.from(el.children).slice(1);
+  let footerRows = Array.from(el.children).slice(1);
+  footerRows = footerRows.filter((row) => !row.querySelector('.footer-row-cell'));
+  if (footerRows[0].firstElementChild.innerText === 'Alt-cta') {
+    footerRows.splice(0, 2);
+  }
   footerRows.forEach((row) => row.remove());
   return footerRows;
 };
@@ -292,6 +326,13 @@ const decorateFooterRows = (merchCard, footerRows) => {
     });
     merchCard.appendChild(footerRowsSlot);
   }
+};
+
+const setMiniCompareOfferSlot = (merchCard, offers) => {
+  if (merchCard.variant !== MINI_COMPARE_CHART) return;
+  const miniCompareOffers = createTag('div', { slot: 'offers' }, offers);
+  if (offers === undefined) { miniCompareOffers.appendChild(createTag('p')); }
+  merchCard.appendChild(miniCompareOffers);
 };
 
 const init = async (el) => {
@@ -353,6 +394,10 @@ const init = async (el) => {
   }
   let footerRows;
   if (cardType === MINI_COMPARE_CHART) {
+    const container = el.closest('[data-status="decorated"]');
+    if (container) {
+      intersectionObserver.observe(container);
+    }
     footerRows = getMiniCompareChartFooterRows(el);
   }
   const images = el.querySelectorAll('picture');
@@ -428,17 +473,21 @@ const init = async (el) => {
   }
   merchCard.appendChild(footer);
 
-  if (cardType === 'plans' || cardType === MINI_COMPARE_CHART) {
-    const quantitySelect = createQuantitySelect(el);
+  if (MULTI_OFFER_CARDS.includes(cardType)) {
+    const quantitySelect = extractQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
-    const bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');
+      setMiniCompareOfferSlot(merchCard, undefined);
       initOfferSelection(merchCard, offerSelection, quantitySelect);
     }
     if (quantitySelect) {
-      const bodySlot = merchCard.querySelector(`div[slot="${bodySlotName}"]`);
-      bodySlot.append(quantitySelect);
+      if (merchCard.variant === MINI_COMPARE_CHART) {
+        setMiniCompareOfferSlot(merchCard, quantitySelect);
+      } else {
+        const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+        bodySlot.append(quantitySelect);
+      }
     }
   }
 

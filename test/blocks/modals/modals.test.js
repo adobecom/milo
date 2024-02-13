@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, getModal, sendViewportDimensionsOnRequest } = await import('../../../libs/blocks/modal/modal.js');
+const { default: init, getModal, sendViewportDimensionsOnRequest, closeModal } = await import('../../../libs/blocks/modal/modal.js');
 
 describe('Modals', () => {
   it('Doesnt load modals on page load with no hash', async () => {
@@ -191,26 +191,88 @@ describe('Modals', () => {
     const contentHeightDesktop = 714;
     const contentHeightMobile = '100%';
     const content = new DocumentFragment();
-    const miloIFrame = document.createElement('div');
-    miloIFrame.classList.add('milo-iframe');
-    miloIFrame.classList.add('modal');
-    content.append(miloIFrame);
+    const iframeWrapper = document.createElement('div');
+    const iframe = document.createElement('iframe');
+    iframeWrapper.appendChild(iframe);
+    iframeWrapper.classList.add('milo-iframe');
+    iframeWrapper.classList.add('modal');
+    content.append(iframeWrapper);
     getModal(null, { class: 'commerce-frame', id: 'modal-with-iframe', content, closeEvent: 'closeModal' });
     window.location.hash = '#modal-with-iframe';
     const modalWithIFrame = document.querySelector('#modal-with-iframe');
     modalWithIFrame.classList.add('height-fit-content');
-    const miloIFrameModal = document.querySelector('.milo-iframe.modal');
 
     await setViewport({ width: 1200, height: 1000 });
     window.postMessage({ contentHeight: contentHeightDesktop }, '*');
     await delay(50);
-    expect(modalWithIFrame.clientHeight).to.equal(contentHeightDesktop);
-    expect(miloIFrameModal.clientHeight).to.equal(contentHeightDesktop);
+    expect(iframe.clientHeight).to.equal(contentHeightDesktop);
+    expect(iframeWrapper.clientHeight).to.equal(contentHeightDesktop);
 
     await setViewport({ width: 320, height: 600 });
     window.postMessage({ contentHeight: contentHeightMobile }, '*');
     await delay(50);
-    expect(modalWithIFrame.style.height).to.equal(contentHeightMobile);
-    expect(miloIFrameModal.style.height).to.equal(contentHeightMobile);
+    expect(iframe.style.height).to.equal(contentHeightMobile);
+    expect(iframeWrapper.style.height).to.equal(contentHeightMobile);
+
+    closeModal(modalWithIFrame);
+  });
+
+  it('properly adjusts the modal height when there are two modals on the page', async () => {
+    const firstContentHeight = 714;
+    const secondContentHeight = 600;
+    const contentHeightMobile = '100%';
+
+    const content = new DocumentFragment();
+    const iframeWrapper = document.createElement('div');
+    const iframe = document.createElement('iframe');
+    iframeWrapper.appendChild(iframe);
+    iframeWrapper.classList.add('milo-iframe');
+    iframeWrapper.classList.add('modal');
+    content.append(iframeWrapper);
+    getModal(null, { class: 'commerce-frame', id: 'modal-with-iframe', content, closeEvent: 'closeModal' });
+    window.location.hash = '#modal-with-iframe';
+    const modalWithIFrame = document.querySelector('#modal-with-iframe');
+    modalWithIFrame.classList.add('height-fit-content');
+
+    await setViewport({ width: 1200, height: 1000 });
+    window.postMessage({ contentHeight: firstContentHeight }, '*');
+    await delay(50);
+    expect(iframe.clientHeight).to.equal(firstContentHeight);
+    expect(iframeWrapper.clientHeight).to.equal(firstContentHeight);
+
+    await setViewport({ width: 320, height: 600 });
+    window.postMessage({ contentHeight: contentHeightMobile }, '*');
+    await delay(50);
+    expect(iframe.style.height).to.equal(contentHeightMobile);
+    expect(iframeWrapper.style.height).to.equal(contentHeightMobile);
+
+    closeModal(modalWithIFrame);
+
+    const secondContent = new DocumentFragment();
+    const secondIframeWrapper = document.createElement('div');
+    const secondIframe = document.createElement('iframe');
+    secondIframeWrapper.appendChild(secondIframe);
+    secondIframeWrapper.classList.add('milo-iframe');
+    secondIframeWrapper.classList.add('modal');
+    secondContent.append(secondIframeWrapper);
+
+    getModal(null, { class: 'commerce-frame', id: 'modal-with-iframe-2', content: secondContent, closeEvent: 'closeModal' });
+    window.location.hash = '#modal-with-iframe-2';
+    const secondModalWithIFrame = document.querySelector('#modal-with-iframe-2');
+    secondModalWithIFrame.classList.add('height-fit-content');
+
+    await setViewport({ width: 1200, height: 1000 });
+    window.postMessage({ contentHeight: secondContentHeight }, '*');
+    await delay(50);
+    expect(secondIframe.clientHeight).to.equal(secondContentHeight);
+    expect(secondIframeWrapper.clientHeight).to.equal(secondContentHeight);
+
+    await setViewport({ width: 320, height: 600 });
+    window.postMessage({ contentHeight: contentHeightMobile }, '*');
+    await delay(50);
+    expect(secondIframe.style.height).to.equal(contentHeightMobile);
+    expect(secondIframeWrapper.style.height).to.equal(contentHeightMobile);
+
+    closeModal(secondModalWithIFrame);
   });
 });
