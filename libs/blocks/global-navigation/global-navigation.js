@@ -257,12 +257,12 @@ class Gnav {
     this.block = block;
 
     this.blocks = {
-      search: { config: { icon: CONFIG.icons.search } },
-      breadcrumbs: { wrapper: '' },
       profile: {
         rawElem: this.content.querySelector('.profile'),
         decoratedElem: toFragment`<div class="feds-profile"></div>`,
       },
+      search: { config: { icon: CONFIG.icons.search } },
+      breadcrumbs: { wrapper: '' },
     };
 
     this.setupUniversalNav();
