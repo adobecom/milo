@@ -68,7 +68,7 @@ export const normalizePath = (p) => {
     try {
       const url = new URL(path);
       const firstFolder = url.pathname.split('/')[1];
-      if (config.locale.ietf === 'en-US' || url.hash === '#_dnt' || firstFolder in config.locales) {
+      if (config.locale.ietf === 'en-US' || url.hash === '#_dnt' || firstFolder in config.locales || path.includes('.json')) {
         path = url.pathname;
       } else {
         path = `${config.locale.prefix}${url.pathname}`;

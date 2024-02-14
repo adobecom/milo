@@ -69,9 +69,15 @@ export default async function init(a) {
     relHref = relHref.replace('#_inline', '');
   }
 
-  if (expFragments?.[relHref]) {
-    a.href = expFragments[relHref];
-    relHref = expFragments[relHref];
+  let path = '';
+  try {
+    path = new URL(a.href).pathname;
+  } catch (e) {
+    window.lana?.log(`ERROR: Invalid URL ${a.href}`);
+  }
+  if (expFragments?.[path]) {
+    a.href = expFragments[path];
+    relHref = expFragments[path];
   }
   if (isCircularRef(relHref)) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
