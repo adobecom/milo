@@ -44,3 +44,21 @@ a[is='checkout-link'] > span {
 #checkout-link-modal iframe.d2p {
   max-height: 850px;
 }
+
+.upgrade-flow-content {
+  display: flex;
+  height: 100%;
+}
+
+.upgrade-flow-content .loading {
+  visibility: hidden;
+}
+
+.upgrade-flow-content sp-theme {
+  width: max-content;
+  height: max-content;
+  left: 50%; 
+  position: relative; 
+  top: 50%; 
+  transform: translate(-50%,-50%);
+}

@@ -46,9 +46,10 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
 let upgradeOffer = null;
+let customElementsSupported;
 
-export function polyfills() {
-  if (polyfills.promise) return polyfills.promise;
+export const supportsCustomElements = () => {
+  if (customElementsSupported !== undefined) return customElementsSupported;
   let isSupported = false;
   document.createElement('div', {
     // eslint-disable-next-line getter-return
@@ -56,11 +57,15 @@ export function polyfills() {
       isSupported = true;
     },
   });
-  if (isSupported) {
+  return isSupported;
+};
+
+export function polyfills() {
+  if (polyfills.promise) return polyfills.promise;
+  if (supportsCustomElements()) {
     polyfills.promise = Promise.resolve();
   } else {
-    const { codeRoot, miloLibs } = getConfig();
-    const base = miloLibs || codeRoot;
+    const { base } = getConfig();
     polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
   }
   return polyfills.promise;
@@ -364,3 +369,7 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
+
+export const setCustomElementsSupported = (value) => {
+  customElementsSupported = value;
+};
