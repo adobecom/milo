@@ -1,14 +1,12 @@
 // TODO: Add lana logging to track API failures for requests
 // TODO: Add abort controller for fetch with a given timeout
 // TODO: Test network latency and if code handles that correctly
-// TODO: Fix variants inconsistently supporting both ',' and '' (lines 95, 115, 198, 213)
 // TODO: Go through all code paths to make sure no exceptions occur
+// TODO: Fix variants inconsistently supporting both ',' and '' (lines 95, 115, 198, 213)
 // TODO: Update SEGMENT_MAP with final from Martech team
 // TODO: Update Spectra AI endpoint to final one (instead of pointing to local Chimera IO instance)
-// TODO: Test that when no authored fields for fallback occurs, code fails gracefully.
-// TODO: add easy way for authors to preview their fallbacks
-// TODO: update origin to be pulled from consumers
 // TODO: Fix tablet responsive class issue
+// TODO: Update origin to be pulled from consumers
 
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
 import { createTag } from '../../utils/utils.js';
@@ -239,6 +237,16 @@ export default async function init(el) {
   const marquee = createTag('div', { class: `marquee split ${metadata.variant.replaceAll(',', ' ')}` });
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('previewFallback')) {
+    // This query param ensures authors can verify the fallback looks good before publishing live.
+    // Requirement:
+    // As long as we add easy way for authors to preview their fallback content (via query param)
+    // Then we don't have to hardcode any fallbacks in the code.
+    await renderMarquee(marquee, [], '', metadata);
+    return;
+  }
 
   /*
     Note: We cannot do the following code to get the Marquees
