@@ -14,11 +14,7 @@ function getTable(strings) {
   [...strings].forEach((str) => {
     const tr = document.createElement('tr');
     tr.append(createTag('td', { colspan: 1 }, createTag('h3', {}, str)));
-    tr.append(createTag(
-      'td',
-      { colspan: 1 },
-      createTag('h3', { 'data-ccp-parastyle': 'DNT', style: 'color: rgb(255 74 74)' }, str),
-    ));
+    tr.append(createTag('td', { colspan: 1 }, createTag('h3', { 'data-ccp-parastyle': 'DNT' }, str)));
     table.append(tr);
   });
   return table.outerHTML;
