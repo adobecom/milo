@@ -259,24 +259,27 @@ class Gnav {
     this.blocks = {
       search: { config: { icon: CONFIG.icons.search } },
       breadcrumbs: { wrapper: '' },
+      profile: {
+        rawElem: this.content.querySelector('.profile'),
+        decoratedElem: toFragment`<div class="feds-profile"></div>`,
+      },
     };
 
+    this.setupUniversalNav();
+    decorateLinks(this.content);
+    this.elements = {};
+  }
+
+  setupUniversalNav = () => {
     const meta = getMetadata('universal-nav')?.toLowerCase();
     this.universalNavComponents = meta?.split(',').map((option) => option.trim())
       .filter((component) => Object.keys(CONFIG.universalNav.components).includes(component) || component === 'signup');
     this.useUniversalNav = meta === 'on' || !!this.universalNavComponents?.length;
     if (this.useUniversalNav) {
+      delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
-    } else {
-      this.blocks.profile = {
-        rawElem: this.content.querySelector('.profile'),
-        decoratedElem: toFragment`<div class="feds-profile"></div>`,
-      };
     }
-
-    decorateLinks(this.content);
-    this.elements = {};
-  }
+  };
 
   init = () => logErrorFor(async () => {
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
@@ -324,8 +327,8 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
-        ${this.useUniversalNav && this.blocks.universalNav}
-        ${!this.useUniversalNav && (this.blocks.profile.rawElem ? this.blocks.profile.decoratedElem : '')}
+        ${this.useUniversalNav ? this.blocks.universalNav : ''}
+        ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
       </nav>
     `;
