@@ -99,7 +99,7 @@ export default async function init(el) {
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
-  if (firstDivInForeground?.classList.contains('media')) el.classList.add('row-reversed');
+  if (firstDivInForeground?.classList.contains('asset')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
