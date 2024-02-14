@@ -195,13 +195,6 @@ main > .section[class*='-up'] > .content,
   margin: 0;
 }
 
-.section[class*='grid-width-'].milo-card-section {
-  padding-left: unset;
-  padding-right: unset;
-  display: initial;
-  gap: initial;
-}
-
 .section.masonry-layout {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
