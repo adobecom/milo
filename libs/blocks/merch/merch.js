@@ -197,8 +197,9 @@ export async function getModalAction(offers, options, productFamily) {
   if (!checkoutLinkConfig) return undefined;
   const [{ offerType }] = offers;
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
-  // TODO add locale support
-  const url = localizeLink(checkoutLinkConfig[columnName]);
+  let url = checkoutLinkConfig[columnName];
+  if (!url) return undefined;
+  url = localizeLink(checkoutLinkConfig[columnName]);
   return { url, handler: (e) => openModal(e, url, offerType) };
 }
 

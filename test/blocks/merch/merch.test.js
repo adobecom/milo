@@ -474,6 +474,13 @@ describe('Merch Block', () => {
       const action = await getModalAction({}, { modal: true }, 'XYZ');
       expect(action).to.be.undefined;
     });
+
+    it('getModalAction: returns undefined if modal path is cancelled', async () => {
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction({}, { modal: true }, 'XYZ');
+      expect(action).to.be.undefined;
+    });
   });
 
   describe('Upgrade Flow', () => {
