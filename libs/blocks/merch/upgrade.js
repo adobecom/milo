@@ -1,8 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-const SOURCE_PF = ['PHOTOSHOP', 'ILLUSTRATOR', 'ACROBAT', 'AUDITION', 'RUSH', 'INDESIGN', '3DI', 'XD', 'PREMIERE', 'AFTEREFFECTS', 'DREAMWEAVER', 'CC_EXPRESS', 'INCOPY', '3D_TEXTURING', 'PHOTOGRAPHY', 'EDGE_ANIMATE', 'PHOTOSHOP_LIGHTROOM', 'ILLUSTRATOR_STOCK_BUNDLE'];
-const TARGET_PF = ['CC_ALL_APPS', 'CC_ALL_APPS_STOCK_BUNDLE', 'CC_PRO'];
 const MANAGE_PLAN_MSG_SUBTYPE = {
   AppLoaded: 'AppLoaded',
   EXTERNAL: 'EXTERNAL',
@@ -81,7 +79,13 @@ export const handleIFrameEvents = ({ data: msgData }) => {
   }
 };
 
-export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlements) {
+export default async function handleUpgradeOffer(
+  ctaPF,
+  upgradeOffer,
+  entitlements,
+  SOURCE_PF,
+  TARGET_PF,
+) {
   if (!TARGET_PF.includes(ctaPF)) return undefined;
 
   const hasUpgradeTarget = entitlements?.find((offer) => isProductFamily(offer, TARGET_PF));
@@ -110,7 +114,7 @@ export default async function handleUpgradeOffer(ctaPF, upgradeOffer, entitlemen
 
     const showModal = async (e) => {
       e.preventDefault();
-      modal = await getModal(null, { id: 'preflight', content: iframe, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
+      modal = await getModal(null, { id: 'upgrade-modal', content: iframe, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
       return modal;
     };
     const text = await replaceKey('upgrade-now', config);
