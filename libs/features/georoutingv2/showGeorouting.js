@@ -220,12 +220,9 @@ async function showModal(details) {
 }
 
 // source is stored or akamai
-export default async function showGeorouting(conf, source, suggestedLocale, urlLocale) {
+export default async function showGeorouting(conf, json, source, suggestedLocale, urlLocale) {
   config = conf;
 
-  const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-  if (!resp.ok) return;
-  const json = await resp.json();
   const isStored = source === 'stored';
   let localeMatches;
   if (isStored) {

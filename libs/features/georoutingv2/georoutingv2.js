@@ -76,18 +76,23 @@ export default async function loadGeoRouting(
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
 
-  // ToDo: Find another way of checking about legacy georouting
-  // if (!resp.ok) {
-  //   // eslint-disable-next-line import/no-cycle
-  //   const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
-  //   loadGeoRoutingOld(config, createTag, getMetadata);
-  //   return;
-  // }
+  const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
+  if (!resp.ok) {
+    // eslint-disable-next-line import/no-cycle
+    const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
+    loadGeoRoutingOld(config, createTag, getMetadata);
+    return;
+  }
+  const json = await resp.json();
 
   const { locale } = config;
+
   const urlLocale = locale.prefix.replace('/', '');
   const storedInter = getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
+
+  const urlGeoData = json.georouting.data.find((d) => d.prefix === urlLocale);
+  if (!urlGeoData) return;
 
   if (storedLocale || storedLocale === '') {
     const urlLocaleGeo = urlLocale.split('_')[0];
@@ -95,16 +100,15 @@ export default async function loadGeoRouting(
     // Show modal when url and cookie disagree
     if (urlLocaleGeo !== storedLocaleGeo) {
       const { default: showGeorouting } = await import('./showGeorouting.js');
-      await showGeorouting(config, 'stored', storedLocale, urlLocale);
+      showGeorouting(config, json, 'stored', storedLocale, urlLocale);
     }
     return;
   }
 
   // Show modal when derived countries from url locale and akamai disagree
   const akamaiCode = await getAkamaiCode();
-  const localeData = config.locales[urlLocale];
-  if (akamaiCode && !localeData.akamaiCodes.includes(akamaiCode)) {
+  if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
     const { default: showGeorouting } = await import('./showGeorouting.js');
-    await showGeorouting(config, 'akamai', akamaiCode, urlLocale);
+    showGeorouting(config, json, 'akamai', akamaiCode, urlLocale);
   }
 }
