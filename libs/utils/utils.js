@@ -843,8 +843,8 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 
   window.targetGlobalSettings = { bodyHidingEnabled: false };
 
-  const { default: initMartech } = await import('../martech/martech.js');
   loadIms().catch(() => {});
+  const { default: initMartech } = await import('../martech/martech.js');
   return initMartech({ persEnabled, persManifests });
 }
 
