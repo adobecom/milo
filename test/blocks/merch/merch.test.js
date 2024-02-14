@@ -17,6 +17,7 @@ import merch, {
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
+  getCheckoutAction,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
@@ -476,9 +477,21 @@ describe('Merch Block', () => {
     });
 
     it('getModalAction: returns undefined if modal path is cancelled', async () => {
+      setConfig({
+        ...config,
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction({}, { modal: true }, 'XYZ');
+      const action = await getModalAction([{}], { modal: true }, 'PHOTOSHOP');
+      expect(action).to.be.undefined;
+    });
+
+    it('getCheckoutAction: handles errors gracefully', async () => {
+      const action = await getCheckoutAction([{ productArrangement: {} }], {}, Promise.reject(new Error('error')));
       expect(action).to.be.undefined;
     });
   });

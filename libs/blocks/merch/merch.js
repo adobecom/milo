@@ -203,7 +203,7 @@ export async function getModalAction(offers, options, productFamily) {
   return { url, handler: (e) => openModal(e, url, offerType) };
 }
 
-async function getCheckoutAction(offers, options, imsSignedInPromise) {
+export async function getCheckoutAction(offers, options, imsSignedInPromise) {
   const [{ productArrangement: { productFamily } = {} }] = offers;
   const [downloadAction, upgradeAction, modalAction] = await Promise.all([
     getDownloadAction(options, imsSignedInPromise, productFamily),
@@ -211,6 +211,7 @@ async function getCheckoutAction(offers, options, imsSignedInPromise) {
     getModalAction(offers, options, productFamily),
   ]).catch((e) => {
     log?.error('Failed to resolve checkout action', e);
+    return [];
   });
   return downloadAction || upgradeAction || modalAction;
 }
