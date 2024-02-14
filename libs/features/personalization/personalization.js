@@ -3,7 +3,7 @@
 import {
   createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
 } from '../../utils/utils.js';
-import { ENTITLEMENT_MAP } from './entitlements.js';
+import { getEntitlementMap } from './entitlements.js';
 
 /* c20 ignore start */
 const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
@@ -378,7 +378,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     return acc;
   }, { allNames: [] });
 
-  const entitlementKeys = Object.values(ENTITLEMENT_MAP);
+  const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
   let userEntitlements = [];
@@ -555,7 +555,7 @@ const createDefaultExperiment = (manifest) => ({
 });
 
 export async function applyPers(manifests) {
-  let config = getConfig();
+  const config = getConfig();
 
   if (!manifests?.length) return;
 
@@ -577,12 +577,11 @@ export async function applyPers(manifests) {
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
-  config = updateConfig({
-    ...config,
-    experiments,
-    expBlocks: consolidateObjects(results, 'blocks'),
-    expFragments: consolidateObjects(results, 'fragments'),
-  });
+
+  config.experiments = experiments;
+  config.expBlocks = consolidateObjects(results, 'blocks');
+  config.expFragments = consolidateObjects(results, 'fragments');
+
   const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
 
@@ -596,5 +595,4 @@ export async function applyPers(manifests) {
   });
   if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-  updateConfig(config);
 }
