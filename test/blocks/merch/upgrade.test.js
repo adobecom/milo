@@ -30,13 +30,18 @@ const verifyUrl = (url, expectedUrl) => {
   expect(parsedUrl.toString()).to.equal(parsedExpectedUrl.toString());
 };
 describe('Switch Modal (Upgrade Flow)', () => {
+  before(async () => {
+    setConfig(config);
+  });
   describe('handleUpgradeOffer', () => {
-    before(async () => {
-      setConfig(config);
-    });
-
     it('return an action that will show iframe in modal', async () => {
-      const action = await handleUpgradeOffer(CTA_PRODUCT_FAMILY, UPGRADE_OFFER, ENTITLEMENTS);
+      const action = await handleUpgradeOffer(
+        CTA_PRODUCT_FAMILY,
+        UPGRADE_OFFER,
+        ENTITLEMENTS,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
+      );
       const { handler } = action;
       expect(handler).to.be.a('function');
       await handler(new Event('click'));
@@ -46,6 +51,7 @@ describe('Switch Modal (Upgrade Flow)', () => {
       expect(iframe.getAttribute('src').startsWith('https://plan.adobe.com/?intent=switch')).to.be.true;
       expect(iframe.classList.contains('loading')).to.be.true;
       expect(modal.querySelector('sp-progress-circle')).to.exist;
+      modal?.dispatchEvent(new Event('closeModal'));
     });
 
     it('should return an upgrade action for PROD', async () => {
@@ -182,6 +188,25 @@ describe('Switch Modal (Upgrade Flow)', () => {
       window.open = originalOpen;
     });
 
+    it('should remove loading class and remove sp-theme if type AppLoaded', async () => {
+      const action = await handleUpgradeOffer(
+        CTA_PRODUCT_FAMILY,
+        UPGRADE_OFFER,
+        ENTITLEMENTS,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
+      );
+      const { handler } = action;
+      await handler(new Event('click'));
+      const iframe = document.querySelector('.upgrade-flow-modal iframe');
+      expect(iframe.classList.contains('loading')).to.be.true;
+      expect(document.querySelector('.upgrade-flow-content sp-theme')).to.exist;
+
+      handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"AppLoaded","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' });
+      expect(iframe.classList.contains('loading')).to.be.false;
+      expect(document.querySelector('.upgrade-flow-content sp-theme')).not.to.exist;
+    });
+
     it('should open external url if Type External', async () => {
       const message = { data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
       handleIFrameEvents(message);
@@ -217,7 +242,6 @@ describe('Switch Modal (Upgrade Flow)', () => {
 
     [
       [{ data: {} }, 'should do nothing if message is not parseble'],
-      [{ data: '{"app":"ManagePlan","subType":"AppLoaded","data":{"actionRequired":false}}' }, 'should do nothing if message is not parseble'],
       [{ data: '{"app":"ManagePlan","subType":"Invalid","data":{"actionRequired":false}}' }, 'should do nothing if message type is not valid'],
       [{ data: '{"app":"ManagePlan","subType":"Error","data":{"actionRequired":false}}' }, 'should do nothing if message type is error'],
     ].forEach(([message, desc]) => {

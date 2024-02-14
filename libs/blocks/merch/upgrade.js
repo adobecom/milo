@@ -71,7 +71,6 @@ export const handleIFrameEvents = ({ data: msgData }) => {
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.Close:
       if (shouldRefetchEntitlements) {
-        window.location.reload();
         location.reload();
       }
       modal?.dispatchEvent(new Event('closeModal'));
