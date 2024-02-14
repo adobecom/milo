@@ -111,12 +111,10 @@ const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
 const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      const container = entry.target.closest('main > div');
-      if (!container) return;
-      [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
-      intersectionObserver.unobserve(entry.target);
-    }
+    const container = entry.target.closest('main > div');
+    if (!container) return;
+    [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
+    intersectionObserver.unobserve(entry.target);
   });
 });
 
