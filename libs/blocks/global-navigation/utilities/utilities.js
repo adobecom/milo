@@ -309,9 +309,9 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
     await Promise.all(fragPromises);
   }
 
-  if (path.includes('/federal/')) federatePictureSources(body);
-
   if (shouldDecorateLinks) decorateLinks(body);
+
+  if (path.includes('/federal/')) federatePictureSources(body);
 
   const blocks = body.querySelectorAll('.martech-metadata');
   if (blocks.length) {
