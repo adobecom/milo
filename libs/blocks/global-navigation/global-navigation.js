@@ -67,7 +67,7 @@ const CONFIG = {
                   trace: () => {},
                   debug: () => {},
                   info: () => {},
-                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'errorType=error,module=universalnav' }),
+                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'errorType=warn,module=universalnav' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'errorType=error,module=universalnav' }),
                 },
               },
@@ -261,10 +261,10 @@ class Gnav {
       breadcrumbs: { wrapper: '' },
     };
 
-    // TODO: metadata + project config
-    this.universalNavComponents = getMetadata('universal-nav')?.toLowerCase()?.split(',').map((option) => option.trim())
+    const meta = getMetadata('universal-nav')?.toLowerCase();
+    this.universalNavComponents = meta?.split(',').map((option) => option.trim())
       .filter((component) => Object.keys(CONFIG.universalNav.components).includes(component) || component === 'signup');
-    this.useUniversalNav = getMetadata('universal-nav')?.toLowerCase() === 'on' || !!this.universalNavComponents?.length;
+    this.useUniversalNav = meta === 'on' || !!this.universalNavComponents?.length;
     if (this.useUniversalNav) {
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
     } else {
@@ -483,7 +483,8 @@ class Gnav {
     const config = getConfig();
     const locale = getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
-    const visitorGuid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID) : undefined;
+    const visitorGuid = window.alloy ? await window.alloy('getIdentity')
+      .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
     const experienceName = getExperienceName();
 
     const getDevice = () => {
