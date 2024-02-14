@@ -134,10 +134,9 @@ export async function getDownloadAction(options, imsSignedInPromise, offerFamily
   });
   if (!offer) return undefined;
   const config = getConfig();
-  const { locale: { ietf } } = config;
   const text = await replaceKey(checkoutLinkConfig.DOWNLOAD_TEXT
       || PLACEHOLDER_KEY_DOWNLOAD, config);
-  const url = checkoutLinkConfig[ietf] || localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
+  const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
   return { text, url };
 }
 
