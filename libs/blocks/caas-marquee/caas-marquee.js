@@ -1,5 +1,4 @@
 // TODO: Add lana logging to track API failures for requests
-// TODO: Add abort controller for fetch with a given timeout
 // TODO: Test network latency and if code handles that correctly
 // TODO: Go through all code paths to make sure no exceptions occur
 // TODO: Fix variants inconsistently supporting both ',' and '' (lines 95, 115, 198, 213)
@@ -20,6 +19,8 @@ const SEGMENT_MAP = {
   '73c3406b-32a2-4465-abf3-2d415b9b1f4f': 'AEFT',
   'bf632803-4412-463d-83c5-757dda3224ee': 'CCSN',
 };
+
+const REQUEST_TIMEOUT = 1500;
 
 const typeSize = {
   small: ['xl', 'm', 'm'],
@@ -47,7 +48,10 @@ async function getAllMarquees(promoId, origin) {
   // TODO: Update this to https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection before release
   const endPoint = 'https://14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection';
   const payload = `originSelection=${origin}&collectionTags=caas%3Acontent-type%2Fpromotion&marqueeId=${promoId}&language=en&country=US`;
-  return fetch(`${endPoint}?${payload}`).then((res) => res.json());
+
+  // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
+  // See https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
+  return fetch(`${endPoint}?${payload}`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT) }).then((res) => res.json());
 }
 
 /**
@@ -58,6 +62,10 @@ async function getMarqueeId() {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('marqueeId')) return urlParams.get('marqueeId');
   let visitedLinks = [document.referrer];
+
+  // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
+  // See https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
+
   // TODO: Update this to final Spectra AI model before release
   let response = await fetch('https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/models', {
     method: 'POST',
@@ -65,7 +73,8 @@ async function getMarqueeId() {
       'Content-Type': 'application/json',
       'x-api-key': 'ChimeraAcom'
     },
-    body: `{"endpoint":"community-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${visitedLinks}, "segments": ${segments}}}}`
+    body: `{"endpoint":"community-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${visitedLinks}, "segments": ${segments}}}}`,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   });
   let json = await response.json();
   return json?.data?.[0]?.content_id || '';
