@@ -6,10 +6,14 @@
 // TODO: Update SEGMENT_MAP with final from Martech team
 // TODO: Update Spectra AI endpoint to final one (instead of pointing to local Chimera IO instance)
 // TODO: Test that when no authored fields for fallback occurs, code fails gracefully.
+// TODO: add easy way for authors to preview their fallbacks
+// TODO: update origin to be pulled from consumers
+// TODO: Fix tablet responsive class issue
 
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
 import { createTag } from '../../utils/utils.js';
 
+// TODO: Final list needs to come from Target List before release
 const SEGMENT_MAP = {
   '5a5fd14e-f4ca-49d2-9f87-835df5477e3c': 'PHSP',
   '09bc4ba3-ebed-4d05-812d-a1fb1a7e82ae': 'IDSN',
@@ -42,6 +46,7 @@ window.addEventListener('alloy_sendEvent', (e) => {
 });
 
 async function getAllMarquees(promoId, origin) {
+  // TODO: Update this to https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection before release
   const endPoint = 'https://14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection';
   const payload = `originSelection=${origin}&collectionTags=caas%3Acontent-type%2Fpromotion&marqueeId=${promoId}&language=en&country=US`;
   return fetch(`${endPoint}?${payload}`).then((res) => res.json());
@@ -55,6 +60,7 @@ async function getMarqueeId() {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('marqueeId')) return urlParams.get('marqueeId');
   let visitedLinks = [document.referrer];
+  // TODO: Update this to final Spectra AI model before release
   let response = await fetch('https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/models', {
     method: 'POST',
     headers: {
@@ -110,13 +116,15 @@ function normalizeData(data) {
  */
 export function renderMarquee(marquee, data, id, fallback) {
   let chosen = data?.cards?.find(obj => obj.id === id);
-  const metadata = data?.cards?.length && chosen ? normalizeData(chosen) : fallback;
+  let shouldRenderMarquee = data?.cards?.length && chosen;
+  const metadata = shouldRenderMarquee ? normalizeData(chosen) : fallback;
 
   // remove loader
   marquee.innerHTML = '';
 
   // configure block font sizes
   const classList = metadata.variant.split(',').map((c) => c.trim());
+  // TODO: Update this to using a map to prevent nested ternaries
   /* eslint-disable no-nested-ternary */
   const size = classList.includes('small') ? 'small'
     : classList.includes('medium') ? 'medium'
@@ -166,6 +174,17 @@ export function renderMarquee(marquee, data, id, fallback) {
       href="${metadata.cta1url}">${metadata.cta1text}</a>`
     : '';
 
+  /*
+    Note: Modal must be written exactly in this format to be picked up by milo decorators.
+    Other formats/structures will not work.
+    <a
+      href="#abc"
+      data-modal-path="/fragment/path-to-fragment"
+      data-modal-hash="#abc">
+        Some Modal Text
+    </a>
+   */
+
   if(metadata.cta1url?.includes('fragment')){
     let fragment = metadata.cta1url.split("#")[0];
     let hash = metadata.cta1url.split("#")[1];
@@ -203,7 +222,7 @@ export function renderMarquee(marquee, data, id, fallback) {
     marquee.classList.add(...classes);
   }
 
-  // Added so marquee can be picked up by milo analytics decorators
+  // Note: Added data-block so marquee can be picked up by milo analytics decorators
   marquee.setAttribute('data-block', '');
   marquee.append(background, foreground);
 }
@@ -215,6 +234,7 @@ export function renderMarquee(marquee, data, id, fallback) {
 export default async function init(el) {
   const metadata = getMetadata(el);
   const promoId = metadata.promoid;
+  // TODO: Origin needs be pulled from consumer configs and NOT in CaaS Marquee block.
   const origin = metadata.origin || 'homepage';
   const marquee = createTag('div', { class: `marquee split ${metadata.variant.replaceAll(',', ' ')}` });
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
