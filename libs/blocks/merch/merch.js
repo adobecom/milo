@@ -84,19 +84,19 @@ export async function fetchCheckoutLinkConfigs() {
     ?? fetch(checkoutLinkConfigURL).catch(() => {
       log?.error('Failed to fetch checkout link configs');
     }).then((mappings) => {
-      if (!mappings.ok) return undefined;
+      if (!mappings?.ok) return undefined;
       return mappings.json();
     });
   return fetchCheckoutLinkConfigs.promise;
 }
 
-async function getCheckoutLinkConfig(productFamily) {
+export async function getCheckoutLinkConfig(productFamily) {
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs();
   const { locale: { region } } = getConfig();
   const productFamilyConfigs = checkoutLinkConfigs.data?.filter(
     ({ [NAME_PRODUCT_FAMILY]: mappingProductFamily }) => mappingProductFamily === productFamily,
-  ) ?? [];
-  if (!productFamilyConfigs.length === 0) return undefined;
+  );
+  if (productFamilyConfigs.length === 0) return undefined;
   const checkoutLinkConfig = productFamilyConfigs.find(
     ({ [NAME_LOCALE]: locale }) => locale === '',
   );

@@ -12,6 +12,11 @@ import merch, {
   getCheckoutContext,
   initService,
   priceLiteralsURL,
+  fetchCheckoutLinkConfigs,
+  getCheckoutLinkConfig,
+  getDownloadAction,
+  fetchEntitlements,
+  getModalAction,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
@@ -43,7 +48,8 @@ const CHECKOUT_LINK_CONFIGS = {
     FREE_TRIAL_PATH: '❌',
     BUY_NOW_PATH: 'X',
     LOCALE: 'fr',
-  }],
+  },
+  { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' }],
 };
 
 const config = {
@@ -73,6 +79,13 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
   });
   return el;
 };
+
+const SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE = [
+  {
+    change_plan_available: true,
+    offer: { product_arrangement: { family: 'CC_ALL_APPS' } },
+  },
+];
 
 const SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE = [
   {
@@ -424,6 +437,42 @@ describe('Merch Block', () => {
       const [,, { DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
       expect(cta.textContent).to.equal(newConfig.placeholders.download);
       expect(cta.href).to.equal(DOWNLOAD_URL);
+    });
+
+    it('fetchCheckoutLinkConfigs: returns null if mapping cannot be fetched', async () => {
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(null);
+      const mappings = await fetchCheckoutLinkConfigs();
+      expect(mappings).to.be.undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      fetchCheckoutLinkConfigs.promise = undefined;
+    });
+
+    it('getCheckoutLinkConfig: returns undefined if productFamily is not found', async () => {
+      const checkoutLinkConfig = await getCheckoutLinkConfig('XYZ');
+      expect(checkoutLinkConfig).to.be.undefined;
+    });
+
+    it('getDownloadAction: returns undefined', async () => {
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'ILLUSTRATOR');
+      expect(checkoutLinkConfig).to.be.undefined;
+    });
+
+    it('getDownloadAction: returns download action for CC_ALL_APPS', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE);
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'CC_ALL_APPS');
+      expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getModalAction: returns undefined if checkout-link config is not found', async () => {
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction({}, { modal: true }, 'XYZ');
+      expect(action).to.be.undefined;
     });
   });
 

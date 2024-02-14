@@ -13,7 +13,7 @@ export async function mockFetch() {
 
   let checkoutLinkConfigs;
   const setCheckoutLinkConfigs = (data) => {
-    checkoutLinkConfigs = Promise.resolve(data);
+    checkoutLinkConfigs = data === null ? null : Promise.resolve(data);
   };
 
   let subscriptionsData;
@@ -55,6 +55,9 @@ export async function mockFetch() {
 
     // entitlements data mock
     if (/checkout-link.json/.test(pathname)) {
+      if (checkoutLinkConfigs === null) {
+        return Promise.reject(new Error('Error while retrieving checkout-link configs'));
+      }
       return Promise.resolve(checkoutLinkConfigs ? {
         ok: true,
         status: 200,
