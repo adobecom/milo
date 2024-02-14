@@ -1,4 +1,3 @@
-// TODO: Add lana logging to track API failures for requests
 // TODO: Test network latency and if code handles that correctly
 // TODO: Go through all code paths to make sure no exceptions occur
 // TODO: Fix variants inconsistently supporting both ',' and '' (lines 95, 115, 198, 213)
@@ -18,6 +17,10 @@ const SEGMENT_MAP = {
   '07609803-48a0-4762-be51-94051ccffb45': 'PPRO',
   '73c3406b-32a2-4465-abf3-2d415b9b1f4f': 'AEFT',
   'bf632803-4412-463d-83c5-757dda3224ee': 'CCSN',
+};
+
+const LANA_OPTIONS = {
+  tags: 'caasMarquee',
 };
 
 const REQUEST_TIMEOUT = 1500;
@@ -54,7 +57,9 @@ async function getAllMarquees(promoId, origin) {
 
   // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
   // See https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
-  return fetch(`${endPoint}?${payload}`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT) }).then((res) => res.json());
+  return fetch(`${endPoint}?${payload}`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT) }).then((res) => res.json()).catch(error => {
+    window.lana?.log(`getAllMarquees failed: ${error}`, LANA_OPTIONS);
+  });
 }
 
 /**
@@ -65,6 +70,10 @@ async function getMarqueeId() {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('marqueeId')) return urlParams.get('marqueeId');
   let visitedLinks = [document.referrer];
+
+  if(segments.includes('default')){
+    window.lana?.log(`Segment didn't load in time, sending default profile to Spectra AI`, LANA_OPTIONS);
+  }
 
   // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
   // See https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
@@ -78,6 +87,8 @@ async function getMarqueeId() {
     },
     body: `{"endpoint":"community-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${visitedLinks}, "segments": ${segments}}}}`,
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
+  }).catch(error => {
+    window.lana?.log(`getMarqueeId failed: ${error}`, LANA_OPTIONS);
   });
   let json = await response.json();
   return json?.data?.[0]?.content_id || '';
