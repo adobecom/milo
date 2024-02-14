@@ -1315,10 +1315,10 @@ describe('global navigation', () => {
 
         expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
 
-        await createFullGlobalNavigation({ viewport: 'smallDesktop', unavContent: 'profile, appswitcher, notifications, help' });
+        await createFullGlobalNavigation({ viewport: 'smallDesktop', unavContent: 'profile, appswitcher, notifications, help, signup' });
         const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
 
-        expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
+        expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help', 'signup'].includes(c.name)))
           .to.be.true;
       });
     });
