@@ -2,6 +2,8 @@ import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { createTag } from '../../../utils/utils.js';
 
 const martechBlock = signal(null);
+const copiedTimeout = signal(null);
+const btnText = signal('Copy Table');
 
 function getTable(strings) {
   const table = document.createElement('table');
@@ -9,10 +11,14 @@ function getTable(strings) {
   const headerRow = document.createElement('tr');
   headerRow.append(createTag('th', { colspan: 2, style: 'width: 100%' }, 'martech metadata'));
   table.append(headerRow);
-  strings.forEach((str) => {
+  [...strings].forEach((str) => {
     const tr = document.createElement('tr');
     tr.append(createTag('td', { colspan: 1 }, createTag('h3', {}, str)));
-    tr.append(createTag('td', { colspan: 1 }, createTag('h3', { 'data-ccp-parastyle': 'DNT' }, str)));
+    tr.append(createTag(
+      'td',
+      { colspan: 1 },
+      createTag('h3', { 'data-ccp-parastyle': 'DNT', style: 'color: rgb(255 74 74)' }, str),
+    ));
     table.append(tr);
   });
   return table.outerHTML;
@@ -26,13 +32,24 @@ async function checkMartechMeta() {
       if (str) acc.push(str);
       return acc;
     }, []);
-  martechBlock.value = getTable(strings);
+  martechBlock.value = getTable(new Set(strings));
 }
 
 function copyTable() {
-  /* global ClipboardItem */
-  const clipboardData = [new ClipboardItem({ 'text/html': new Blob([martechBlock.value], { type: 'text/html' }) })];
-  navigator.clipboard.write(clipboardData);
+  try {
+    /* global ClipboardItem */
+    const clipboardData = [new ClipboardItem({ 'text/html': new Blob([martechBlock.value], { type: 'text/html' }) })];
+    navigator.clipboard.write(clipboardData);
+    btnText.value = '✔ Copied!';
+  } catch (e) {
+    btnText.value = 'ⓧ Error Copying';
+    /* eslint-disable-next-line no-console */
+    console.error(e);
+  }
+  if (copiedTimeout.value) clearTimeout(copiedTimeout.value);
+  copiedTimeout.value = setTimeout(() => {
+    btnText.value = 'Copy Table';
+  }, 5000);
 }
 
 export default function Martech() {
@@ -41,7 +58,7 @@ export default function Martech() {
   return html`
   <div class="access-columns martech">
     ${martechBlock.value && html`
-      <button class="preflight-action" onclick=${copyTable}>Copy Table</button>
+      <button class="preflight-action" onclick=${copyTable}>${btnText.value}</button>
       <div dangerouslySetInnerHTML="${{ __html: martechBlock.value }}"></div>
     `}
   </div>`;
