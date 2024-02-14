@@ -3,7 +3,6 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, setConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { ENTITLEMENT_MAP } from '../../../libs/features/personalization/entitlements.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -20,12 +19,18 @@ const setFetchResponse = (data, type = 'json') => {
   window.fetch = stub().returns(getFetchPromise(data, type));
 };
 
-// Modify the entitlement map with custom keys so tests doesn't rely on real data
-ENTITLEMENT_MAP['11111111-aaaa-bbbb-6666-cccccccccccc'] = 'my-special-app';
-ENTITLEMENT_MAP['22222222-xxxx-bbbb-7777-cccccccccccc'] = 'fireflies';
-
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional Test', () => {
+  before(() => {
+    // Add custom keys so tests doesn't rely on real data
+    const config = getConfig();
+    config.env = { name: 'prod' };
+    config.consumerEntitlements = {
+      '11111111-aaaa-bbbb-6666-cccccccccccc': 'my-special-app',
+      '22222222-xxxx-bbbb-7777-cccccccccccc': 'fireflies',
+    };
+  });
+
   it('replaceContent should replace an element with a fragment', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestReplace.json' });
     manifestJson = JSON.parse(manifestJson);
@@ -120,7 +125,7 @@ describe('Functional Test', () => {
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(getConfig().expBlocks).to.deep.equal({ promo: '/test/features/personalization/mocks/newpromo' });
+    expect(getConfig().expBlocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
     const promoBlock = document.querySelector('.promo');
     expect(promoBlock.textContent?.trim()).to.equal('Old Promo Block');
     await loadBlock(promoBlock);
@@ -134,7 +139,7 @@ describe('Functional Test', () => {
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(getConfig().expBlocks).to.deep.equal({ myblock: '/test/features/personalization/mocks/myblock' });
+    expect(getConfig().expBlocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
     const myBlock = document.querySelector('.myblock');
     expect(myBlock.textContent?.trim()).to.equal('This block does not exist');
     await loadBlock(myBlock);
@@ -231,15 +236,15 @@ describe('Functional Test', () => {
 
   it('should read and use entitlement data', async () => {
     setConfig(getConfig());
-    const { entitlements } = getConfig();
+    const config = getConfig();
+    config.consumerEntitlements = { 'consumer-defined-entitlement': 'fireflies' };
+    config.entitlements = () => Promise.resolve(['indesign-any', 'fireflies', 'after-effects-any']);
 
-    entitlements(['some-app', 'fireflies']);
     let manifestJson = await readFile({ path: './mocks/manifestUseEntitlements.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    const config = getConfig();
-    expect(config.mep?.martech).to.equal('|fireflies|manifest');
+    expect(getConfig().mep?.martech).to.equal('|fireflies|manifest');
   });
 
   it('removeContent should tag z-pattern in preview', async () => {

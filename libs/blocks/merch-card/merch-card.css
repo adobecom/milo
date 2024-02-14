@@ -1,21 +1,29 @@
 main > div.section[class*="-merch-card"]:not([data-status='decorated']),
 .fragment > div.section[class*="-merch-card"]:not([data-status='decorated']) {
   display: grid;
-  padding-bottom: var(--spacing-m);
 }
 
 div[class*="-merch-card"] > div,
  div[class*="-merch-cards"] > div {
-   width: 100%;
    grid-column: 1 / -1;
  }
 
  .merch-card-price {
-  margin-top: 8px; 
-  margin-bottom: 16px; 
+  margin-top: 8px;
+  margin-bottom: 16px;
 }
 
 .dark .merch-card .con-button.outline {
   border: 2px solid var(--text-color);
   color: var(--text-color);
+}
+
+merch-card.special-offers del span[is="inline-price"] {
+  text-decoration: line-through;
+}
+
+.dark .merch-card .con-button.outline:hover {
+  color: var(--color-white);
+  background-color: var(--color-black);
+  text-decoration: none;
 }

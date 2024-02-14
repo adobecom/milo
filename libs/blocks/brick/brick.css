@@ -136,6 +136,10 @@
   height: auto;
 }
 
+.brick .icon-stack-area li .list-text a {
+  display: inline-block;
+}
+
 .brick .foreground .icon-area img {
   height: var(--icon-size-l);
   width: auto;
@@ -167,6 +171,7 @@
   align-items: center;
   gap: var(--spacing-xs);
   text-align: left;
+  flex-shrink: 0;
 }
 
 .brick .foreground a:not([class]),
@@ -343,12 +348,6 @@
     object-fit: fill;
     display: flex;
     margin: 0;
-  }
-
-  .brick.grid-full-width.split.row .foreground .brick-media img,
-  .brick.grid-full-width.split.row .foreground .brick-media video {
-    height: calc(100% - 2 * var(--spacing-l));
-    padding: var(--spacing-l) 0;
   }
 
   .brick.stack .foreground .brick-media picture {
