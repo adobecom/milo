@@ -262,3 +262,4 @@ describe('Functional Test', () => {
     expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
   });
 });
+// test
