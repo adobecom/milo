@@ -1207,13 +1207,14 @@ describe('global navigation', () => {
       window.UniversalNav.reload = sinon.spy();
       // eslint-disable-next-line no-underscore-dangle
       window._satellite = { track: sinon.spy() };
-      // eslint-disable-next-line
-      window.alloy = () => new Promise((resolve) => resolve({ identity: { ECID: 'dummy-ECID' } }));
+      window.alloy = () => new Promise((resolve) => {
+        resolve({ identity: { ECID: 'dummy-ECID' } });
+      });
     });
 
     afterEach(() => {
       sinon.restore();
-      window.allow = orgAlloy;
+      window.alloy = orgAlloy;
     });
 
     describe('desktop', () => {
