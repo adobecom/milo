@@ -26,3 +26,21 @@ a[is='checkout-link'] > span {
   content: "\00a0";
 }
 
+@media (max-width: 1200px) {
+  #checkout-link-modal {
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+#checkout-link-modal {
+  display: flex;
+}
+
+#checkout-link-modal iframe {
+  flex: 1;
+}
+
+#checkout-link-modal iframe.d2p {
+  max-height: 850px;
+}
