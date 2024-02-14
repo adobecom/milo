@@ -29,6 +29,9 @@ const typeSize = {
   xlarge: ['xxl', 'xl', 'l'],
 };
 let segments = ['default'];
+
+// See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
+// for more information on how to integrate with this API.
 window.addEventListener('alloy_sendEvent', (e) => {
   if (e.detail.type === 'pageView') {
     let mappedUserSegments = [];
