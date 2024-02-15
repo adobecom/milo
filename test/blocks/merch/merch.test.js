@@ -373,6 +373,19 @@ describe('Merch Block', () => {
       });
     });
 
+    it('should not add button classes to cta if href includes "#_tcl"', async () => {
+      const el = await merch(document.querySelector(
+        '.merch.text.link',
+      ));
+      const { href, textContent } = await el.onceSettled();
+      expect(href.includes('#_tcl')).to.be.false;
+      expect(textContent).to.equal('40% off');
+      expect(el.getAttribute('is')).to.equal('checkout-link');
+      expect(el.classList.contains('con-button')).to.be.false;
+      expect(el.classList.contains('button-l')).to.be.false;
+      expect(el.classList.contains('blue')).to.be.false;
+    });
+
     it('renders large CTA inside a marquee', async () => {
       const el = await merch(document.querySelector(
         '.merch.cta.inside-marquee',
