@@ -36,6 +36,7 @@ const getRequest = (url, process, useBulk = true) => {
 const authenticate = (tool) => {
   const setUser = (event) => {
     const processes = event?.detail?.data;
+    console.log('setting user:', processes);
     if (processes) {
       const profile = processes.profile ?? null;
       const permissions = {};
@@ -49,6 +50,7 @@ const authenticate = (tool) => {
     }
   };
   document.addEventListener('sidekick-ready', () => {
+    console.log('sidekick opened');
     const sidekick = document.querySelector('helix-sidekick');
     sidekick.addEventListener('statusfetched', setUser);
   }, { once: true });
