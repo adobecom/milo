@@ -48,12 +48,12 @@ class BulkPublish2 extends LitElement {
     this.openJobs = false;
     this.jobErrors = false;
     this.user = null;
+    authenticate(this);
   }
 
   async connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styleSheet, loaderSheet];
-    authenticate(this);
     const resumes = sticky().get('resume');
     if (resumes.length) {
       /* c8 ignore next 5 */
