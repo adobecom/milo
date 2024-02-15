@@ -1,6 +1,6 @@
 import { toFragment } from '../../blocks/global-navigation/utilities/utilities.js';
 import { getConfig } from '../../utils/utils.js'; // TODO: doesn't make sense outside of Milo
-import { replaceKey, replaceText } from '../../features/placeholders.js';
+import { replaceKey, replaceText } from '../placeholders.js';
 
 const CONFIG = {
   selectors: { prompt: '.appPrompt' },
