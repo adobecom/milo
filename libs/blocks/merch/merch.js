@@ -373,7 +373,3 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
-
-export const setCustomElementsSupported = (value) => {
-  customElementsSupported = value;
-};
