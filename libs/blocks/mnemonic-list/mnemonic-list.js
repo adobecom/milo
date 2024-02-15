@@ -1,9 +1,6 @@
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
-
-const { miloLibs, codeRoot } = getConfig();
+import { createTag } from '../../utils/utils.js';
 
 export const decorateMnemonicList = (container) => {
-  loadStyle(`${miloLibs || codeRoot}/blocks/mnemonic-list/mnemonic-list.css`);
   const mnemonicListElement = container.querySelector('.mnemonic-list');
   const targetElement = mnemonicListElement || container;
   const rows = targetElement.querySelectorAll(':scope p:not([class])');
@@ -18,6 +15,9 @@ export const decorateMnemonicList = (container) => {
     productList.appendChild(product);
     paragraph.replaceWith(productList);
   });
+  targetElement?.prepend(productList);
+  const divs = targetElement?.querySelectorAll('div:not([class])');
+  divs.forEach((div) => div.remove());
 };
 
 export default async function init(el) {

@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
-import { ENTITLEMENT_MAP } from './entitlements.js';
+import {
+  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
+} from '../../utils/utils.js';
+import { getEntitlementMap } from './entitlements.js';
 
 /* c20 ignore start */
 const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
@@ -112,7 +114,7 @@ const createFrag = (el, url, manifestId) => {
   if (isSection) {
     frag = createTag('div', undefined, frag);
   }
-  loadLink(`${href}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return frag;
 };
 
@@ -124,8 +126,8 @@ const COMMANDS = {
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
-      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
-      el.insertAdjacentElement('beforebegin', div);
+      el.dataset.removedManifestId = manifestId;
+      return;
     }
     el.classList.add(CLASS_EL_DELETE);
   },
@@ -164,9 +166,30 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
+const getBlockProps = (fSelector, fVal) => {
+  let selector = fSelector;
+  let val = fVal;
+  if (val?.includes('\\')) val = val?.split('\\').join('/');
+  if (!val?.startsWith('/')) val = `/${val}`;
+  selector = val?.split('/').pop();
+  const { origin } = PAGE_URL;
+  if (origin.includes('.hlx.') || origin.includes('localhost')) {
+    if (val.startsWith('/libs/')) {
+      /* c8 ignore next 2 */
+      const { miloLibs, codeRoot } = getConfig();
+      val = `${miloLibs || codeRoot}${val.replace('/libs', '')}`;
+    } else {
+      val = `${origin}${val}`;
+    }
+  }
+  return { selector, val };
+};
+
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
-    propMap[i.selector] = i.val;
+    let { selector, val } = i;
+    if (prop === 'blocks') ({ selector, val } = getBlockProps(selector, val));
+    propMap[selector] = val;
   });
   return propMap;
 }, {});
@@ -331,10 +354,10 @@ const checkForParamMatch = (paramStr) => {
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
-  if (config.mep?.override !== '') {
+  if (config.mep?.override) {
     let manifest;
     /* c8 ignore start */
-    config.mep?.override.split(',').some((item) => {
+    config.mep?.override?.split(',').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
         [, manifest] = pair;
@@ -355,7 +378,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     return acc;
   }, { allNames: [] });
 
-  const entitlementKeys = Object.values(ENTITLEMENT_MAP);
+  const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
   let userEntitlements = [];
@@ -554,17 +577,14 @@ export async function applyPers(manifests) {
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
-  updateConfig({
-    ...config,
-    experiments,
-    expBlocks: consolidateObjects(results, 'blocks'),
-    expFragments: consolidateObjects(results, 'fragments'),
-  });
+
+  config.experiments = experiments;
+  config.expBlocks = consolidateObjects(results, 'blocks');
+  config.expFragments = consolidateObjects(results, 'fragments');
+
   const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
-  if (!pznList.length) {
-    document.body.dataset.mep = 'nopzn|nopzn';
-    return;
-  }
+  if (!pznList.length) return;
+
   const pznVariants = pznList.map((r) => {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
@@ -573,5 +593,6 @@ export async function applyPers(manifests) {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
-  document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  if (!config?.mep) config.mep = {};
+  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }

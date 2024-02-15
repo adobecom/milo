@@ -103,7 +103,20 @@ const PRODUCT_NAMES = [
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
-const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image'];
+const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart'];
+
+const MINI_COMPARE_CHART = 'mini-compare-chart';
+
+const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
+// Force cards to refresh once they become visible so that the footer rows are properly aligned.
+const intersectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    const container = entry.target.closest('main > div');
+    if (!container) return;
+    [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
+    intersectionObserver.unobserve(entry.target);
+  });
+});
 
 const textStyles = {
   H5: 'detail-m',
@@ -117,17 +130,51 @@ const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style
 const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
+const appendSlot = (slotEls, slotName, merchCard) => {
+  if (slotEls.length === 0) return;
+  const newEl = createTag(
+    'p',
+    { slot: slotName, class: slotName },
+  );
+  slotEls.forEach((e, index) => {
+    newEl.innerHTML += e.innerHTML;
+    if (index < slotEls.length - 1) {
+      newEl.innerHTML += '<br>';
+    }
+  });
+  merchCard.append(newEl);
+};
+
 const parseContent = (el, merchCard) => {
   const innerElements = [
-    ...el.querySelectorAll('h2, h3, h4, h5, p, ul'),
+    ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
   ];
-  const bodySlot = createTag('div', { slot: 'body-xs' });
+  let bodySlotName = 'body-xs';
+  let headingMCount = 0;
+
+  if (merchCard.variant === MINI_COMPARE_CHART) {
+    bodySlotName = 'body-m';
+    const promoText = el.querySelectorAll('h5');
+    const priceSmallType = el.querySelectorAll('h6');
+    appendSlot(promoText, 'promo-text', merchCard);
+    appendSlot(priceSmallType, 'price-commitment', merchCard);
+  }
+
+  const bodySlot = createTag('div', { slot: bodySlotName });
 
   innerElements.forEach((element) => {
     const { tagName } = element;
     if (isHeadingTag(tagName)) {
-      const slotName = textStyles[tagName];
+      let slotName = textStyles[tagName];
       if (slotName) {
+        if (['H2', 'H4', 'H5'].includes(tagName)) {
+          if (tagName === 'H2') {
+            headingMCount += 1;
+          }
+          if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
+            slotName = 'heading-m-price';
+          }
+        }
         element.setAttribute('slot', slotName);
         merchCard.append(element);
       }
@@ -135,9 +182,13 @@ const parseContent = (el, merchCard) => {
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
+      merchCard.append(bodySlot);
     }
   });
-  merchCard.append(bodySlot);
+
+  if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
+    merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
+  }
 };
 
 const getBadgeStyle = (badgeMetadata) => {
@@ -189,7 +240,6 @@ const addMerchCardGridIfMissing = (section, cardType) => {
   if (directSection) {
     section.classList.add('three-merch-cards', cardType);
   }
-
   return false;
 };
 
@@ -228,7 +278,7 @@ const simplifyHrs = (el) => {
   });
 };
 
-function createQuantitySelect(el) {
+function extractQuantitySelect(el) {
   const quantitySelectConfig = el.querySelector('ul');
   if (!quantitySelectConfig) return null;
   const configMarkup = quantitySelectConfig.querySelector('li');
@@ -246,6 +296,42 @@ function createQuantitySelect(el) {
   quantitySelectConfig.remove();
   return quantitySelect;
 }
+
+const getMiniCompareChartFooterRows = (el) => {
+  let footerRows = Array.from(el.children).slice(1);
+  footerRows = footerRows.filter((row) => !row.querySelector('.footer-row-cell'));
+  if (footerRows[0].firstElementChild.innerText === 'Alt-cta') {
+    footerRows.splice(0, 2);
+  }
+  footerRows.forEach((row) => row.remove());
+  return footerRows;
+};
+
+const decorateFooterRows = (merchCard, footerRows) => {
+  if (footerRows) {
+    const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
+    footerRows.forEach((row) => {
+      const rowIcon = row.firstElementChild.querySelector('picture');
+      const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
+      const rowTextParagraph = createTag('p', { class: 'footer-row-cell-description' }, rowText);
+      const footerRowCell = createTag('div', { class: 'footer-row-cell' });
+      if (rowIcon) {
+        rowIcon.classList.add('footer-row-icon');
+        footerRowCell.appendChild(rowIcon);
+      }
+      footerRowCell.appendChild(rowTextParagraph);
+      footerRowsSlot.appendChild(footerRowCell);
+    });
+    merchCard.appendChild(footerRowsSlot);
+  }
+};
+
+const setMiniCompareOfferSlot = (merchCard, offers) => {
+  if (merchCard.variant !== MINI_COMPARE_CHART) return;
+  const miniCompareOffers = createTag('div', { slot: 'offers' }, offers);
+  if (offers === undefined) { miniCompareOffers.appendChild(createTag('p')); }
+  merchCard.appendChild(miniCompareOffers);
+};
 
 const init = async (el) => {
   const styles = [...el.classList];
@@ -272,26 +358,14 @@ const init = async (el) => {
       }
     }
   }
-  const images = el.querySelectorAll('picture');
-  let image;
-  const icons = [];
   const merchCard = createTag('merch-card', { class: styles.join(' '), 'data-block': '' });
   merchCard.setAttribute('variant', cardType);
+  if (el.dataset.removedManifestId) {
+    merchCard.dataset.removedManifestId = el.dataset.removedManifestId;
+  }
   if (name) {
     merchCard.setAttribute('name', name);
   }
-  images.forEach((img) => {
-    const imgNode = img.querySelector('img');
-    const { width, height } = imgNode;
-    const isSquare = Math.abs(width - height) <= 10;
-    if (img) {
-      if (isSquare) {
-        icons.push(img);
-      } else {
-        image = img;
-      }
-    }
-  });
   let tags = {};
   if (el.lastElementChild) {
     tags = extractTags(el.lastElementChild);
@@ -316,6 +390,29 @@ const init = async (el) => {
       }
     }
   }
+  let footerRows;
+  if (cardType === MINI_COMPARE_CHART) {
+    const container = el.closest('[data-status="decorated"]');
+    if (container) {
+      intersectionObserver.observe(container);
+    }
+    footerRows = getMiniCompareChartFooterRows(el);
+  }
+  const images = el.querySelectorAll('picture');
+  let image;
+  const icons = [];
+  images.forEach((img) => {
+    const imgNode = img.querySelector('img');
+    const { width, height } = imgNode;
+    const isSquare = Math.abs(width - height) <= 10;
+    if (img) {
+      if (isSquare) {
+        icons.push(img);
+      } else {
+        image = img;
+      }
+    }
+  });
   const actionMenuContent = cardType === 'catalog'
     ? getActionMenuContent(el)
     : null;
@@ -365,21 +462,30 @@ const init = async (el) => {
   parseContent(el, merchCard);
   const footer = createTag('div', { slot: 'footer' });
   if (ctas) {
-    decorateButtons(ctas);
+    if (merchCard.variant === 'mini-compare-chart') {
+      decorateButtons(ctas, 'button-l');
+    } else {
+      decorateButtons(ctas);
+    }
     footer.append(ctas);
   }
   merchCard.appendChild(footer);
 
-  if (cardType === 'plans') {
-    const quantitySelect = createQuantitySelect(el);
+  if (MULTI_OFFER_CARDS.includes(cardType)) {
+    const quantitySelect = extractQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');
+      setMiniCompareOfferSlot(merchCard, undefined);
       initOfferSelection(merchCard, offerSelection, quantitySelect);
     }
     if (quantitySelect) {
-      const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
-      bodySlot.append(quantitySelect);
+      if (merchCard.variant === MINI_COMPARE_CHART) {
+        setMiniCompareOfferSlot(merchCard, quantitySelect);
+      } else {
+        const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+        bodySlot.append(quantitySelect);
+      }
     }
   }
 
@@ -388,6 +494,7 @@ const init = async (el) => {
   if (merchCard.classList.contains('has-divider')) {
     merchCard.setAttribute('custom-hr', true);
   }
+  decorateFooterRows(merchCard, footerRows);
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
