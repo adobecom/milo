@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import handleUpgradeOffer, { handleIFrameEvents, LANA_OPTIONS, lanaLog } from '../../../libs/blocks/merch/upgrade.js';
+import handleUpgradeOffer, { handleIFrameEvents, lanaLog } from '../../../libs/blocks/merch/upgrade.js';
 import { CC_ALL_APPS, CC_SINGLE_APPS_ALL } from '../../../libs/blocks/merch/merch.js';
 
 const CTA_PRODUCT_FAMILY = 'CC_ALL_APPS';
