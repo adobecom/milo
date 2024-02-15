@@ -115,7 +115,7 @@ async function initMerchCards(config, type, filtered, el, preferences) {
       preference
         .forEach(([sortKey, cardSize], index) => {
           if (merchCard.name === sortKey || merchCard.title === sortKey) {
-            filters[key] = { order: index, size: cardSize };
+            filters[key] = { order: index + 1, size: cardSize };
           }
         });
     });
