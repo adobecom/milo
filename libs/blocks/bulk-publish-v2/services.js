@@ -6,7 +6,7 @@ const headers = { 'Content-Type': 'application/json' };
 const isLive = (type) => ['publish', 'unpublish'].includes(type);
 const isDelete = (type) => ['delete', 'unpublish'].includes(type);
 const getProcessAlias = (type) => {
-  if (type === 'index') return type;
+  if (type === 'index' || type === 'status') return type;
   if (isLive(type)) return 'live';
   return 'preview';
 };
@@ -33,27 +33,34 @@ const getRequest = (url, process, useBulk = true) => {
   };
 };
 
-const authenticate = (tool) => {
-  const setUser = (event) => {
-    const processes = event?.detail?.data;
-    console.log('setting user:', processes);
-    if (processes) {
-      const profile = processes.profile ?? null;
-      const permissions = {};
-      PROCESS_TYPES.forEach((key) => {
-        if (key !== 'index') {
-          const process = isLive(key) ? 'live' : 'preview';
-          permissions[key] = !!processes[process]?.permissions?.includes('list');
-        }
-      });
-      tool.user = { profile, permissions };
-    }
-  };
-  document.addEventListener('sidekick-ready', () => {
-    console.log('sidekick opened');
-    const sidekick = document.querySelector('helix-sidekick');
-    sidekick.addEventListener('statusfetched', setUser);
-  }, { once: true });
+const setUserData = (event) => {
+  const processes = event?.detail?.data;
+  if (processes) {
+    const profile = processes.profile ?? null;
+    const permissions = {};
+    PROCESS_TYPES.forEach((key) => {
+      if (key !== 'index') {
+        const process = isLive(key) ? 'live' : 'preview';
+        permissions[key] = !!processes[process]?.permissions?.includes('list');
+      }
+    });
+    return { profile, permissions };
+  }
+  return null;
+};
+
+const authenticate = async (tool = null) => {
+  await delay(2000);
+  const statusfetched = (event) => { tool.user = setUserData(event); };
+  const sidekick = document.querySelector('helix-sidekick');
+  if (sidekick) {
+    sidekick.addEventListener('statusfetched', statusfetched);
+  } else {
+    document.addEventListener('sidekick-ready', () => {
+      const sidekik = document.querySelector('helix-sidekick');
+      sidekik.addEventListener('statusfetched', statusfetched);
+    }, { once: true });
+  }
 };
 
 const mapJobList = ({ urls, process }) => {
