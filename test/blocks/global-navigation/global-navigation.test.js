@@ -1278,9 +1278,9 @@ describe('global navigation', () => {
       it('should send the correct device type', async () => {
         const gnav = await createFullGlobalNavigation({ unavContent: 'on' });
         window.UniversalNav.resetHistory();
-        const map = { Test: 'test', ...osMap };
+        const map = { Test: 'linux', ...osMap };
         for (const [os, osName] of Object.entries(map)) {
-          const userAgentStub = sinon.stub(navigator, 'userAgent').value(os);
+          const userAgentStub = sinon.stub(navigator, 'userAgent').value(os !== 'Test' ? os : 'Random');
           await gnav.decorateUniversalNav();
           expect(window.UniversalNav.getCall(0)
             .args[0].analyticsContext.consumer.device).to.equal(osName);
