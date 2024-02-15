@@ -274,8 +274,10 @@ const init = async (el) => {
     merchCard.dataset.removedManifestId = el.dataset.removedManifestId;
   }
   let tags = {};
-  if (el.lastElementChild) {
-    const nameEl = el.lastElementChild.querySelector('h3, h4, h5, h6');
+  if (el.lastElementChild.previousElementSibling?.querySelector('h2,h3,h4,h5,h6')) {
+    // tag section is available
+    const nameSelector = 'h3,h4,h5,h6';
+    const nameEl = el.lastElementChild.querySelector(nameSelector);
     if (nameEl) {
       merchCard.setAttribute('name', nameEl.textContent?.trim());
       nameEl.remove();
