@@ -23,7 +23,8 @@ const LANA_OPTIONS = {
   tags: 'caasMarquee',
 };
 
-const REQUEST_TIMEOUT = 1500;
+// Bumped from 1500 to 2000 as sm-collection was having issues loading fast enough in authoring
+const REQUEST_TIMEOUT = 2000;
 
 const typeSize = {
   small: ['xl', 'm', 'm'],
@@ -257,7 +258,14 @@ export default async function init(el) {
   const promoId = metadata.promoid;
   // TODO: Origin needs be pulled from consumer configs and NOT in CaaS Marquee block.
   const origin = metadata.origin || 'homepage';
-  const marquee = createTag('div', { class: `marquee split ${metadata.variant.replaceAll(',', ' ')}` });
+
+  // We shouldn't be adding variant properties from the viewer table as the requirements are each marquee has
+  // all their viewing properties completely self-contained.
+  // const marquee = createTag('div', { class: `marquee split ${metadata.variant.replaceAll(',', ' ')}` });
+  const marquee = createTag('div', { class: `marquee split` });
+
+  // Only in the case of a fallback should we use the variant fields from the viewer table.
+  const fallbackVariants = metadata.variant.split(',');
   marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
   el.parentNode.prepend(marquee);
 
@@ -267,6 +275,7 @@ export default async function init(el) {
     // Requirement:
     // As long as we add easy way for authors to preview their fallback content (via query param)
     // Then we don't have to hardcode any fallbacks in the code.
+    marquee.classList.add(...fallbackVariants);
     await renderMarquee(marquee, [], '', metadata);
     return;
   }
@@ -297,6 +306,7 @@ export default async function init(el) {
     ]);
     await renderMarquee(marquee, allMarqueesJson, selectedId, metadata);
   } catch(e){
+    marquee.classList.add(...fallbackVariants);
     await renderMarquee(marquee, [], '', metadata);
   }
 }
