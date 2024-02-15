@@ -7,7 +7,7 @@ const CONFIG = {
   delay: 7000,
   loaderColor: '#EB1000',
 };
-
+// update
 const getElemText = (elem) => elem?.textContent?.trim().toLowerCase();
 
 // Note: this might be used outside of Milo,

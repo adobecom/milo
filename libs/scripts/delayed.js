@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+// update
 export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
   const jarvis = getMetadata('jarvis-chat')?.toLowerCase();

@@ -118,7 +118,7 @@ const locales = {
   cis_ru: { ietf: 'ru', tk: 'qxw8hzm.css' },
   sea: { ietf: 'en', tk: 'hah7vzn.css' },
 };
-
+// update
 const config = {
   geoRouting: 'on',
   fallbackRouting: 'on',
