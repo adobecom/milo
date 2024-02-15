@@ -26,7 +26,6 @@ const lanaLog = window.lana ? async (msg, subType) => {
 } : (() => {});
 
 let shouldRefetchEntitlements = false;
-let modal;
 
 function buildUrl(upgradeOffer, upgradable, env) {
   const toOffer = upgradeOffer?.value[0].offerId;
@@ -88,8 +87,7 @@ export const handleIFrameEvents = ({ data: msgData }) => {
         reloadPage();
       }
       lanaLog('Closing modal', subType);
-      modal?.dispatchEvent(new Event('closeModal'));
-      modal = null;
+      document.querySelector('.dialog-modal.upgrade-flow-modal')?.dispatchEvent(new Event('closeModal'));
       break;
     default:
       break;
@@ -139,8 +137,7 @@ export default async function handleUpgradeOffer(
       theme.append(pCircle);
       content.append(theme);
       content.append(iframe);
-      modal = await getModal(null, { id: 'switch-modal', content, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
-      return modal;
+      return getModal(null, { id: 'switch-modal', content, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
     };
     const text = await replaceKey('upgrade-now', getConfig());
     return { text, url: upgradeUrl, handler: showModal };
