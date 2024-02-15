@@ -46,10 +46,9 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
 let upgradeOffer = null;
-let customElementsSupported;
 
-export const supportsCustomElements = () => {
-  if (customElementsSupported !== undefined) return customElementsSupported;
+export function polyfills() {
+  if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
   document.createElement('div', {
     // eslint-disable-next-line getter-return
@@ -57,15 +56,11 @@ export const supportsCustomElements = () => {
       isSupported = true;
     },
   });
-  return isSupported;
-};
-
-export function polyfills() {
-  if (polyfills.promise) return polyfills.promise;
-  if (supportsCustomElements()) {
+  if (isSupported) {
     polyfills.promise = Promise.resolve();
   } else {
-    const { base } = getConfig();
+    const { codeRoot, miloLibs } = getConfig();
+    const base = miloLibs || codeRoot;
     polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
   }
   return polyfills.promise;
