@@ -331,6 +331,10 @@ export async function getPriceContext(el, params) {
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
+  const isUpgradeOffer = el.closest('.merch-offers.upgrade');
+  if (isUpgradeOffer) {
+    params.append('entitlement', 'false');
+  }
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
   const service = await initService();

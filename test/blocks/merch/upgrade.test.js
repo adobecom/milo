@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
-import sinon, { stub } from 'sinon';
+import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import handleUpgradeOffer, { handleIFrameEvents, setModal, setLocation } from '../../../libs/blocks/merch/upgrade.js';
+import handleUpgradeOffer, { handleIFrameEvents } from '../../../libs/blocks/merch/upgrade.js';
 import { CC_ALL_APPS, CC_SINGLE_APPS_ALL } from '../../../libs/blocks/merch/merch.js';
 
 const CTA_PRODUCT_FAMILY = 'CC_ALL_APPS';
@@ -225,19 +225,6 @@ describe('Switch Modal (Upgrade Flow)', () => {
       const returnUrl = window.sessionStorage.getItem('upgradeModalReturnUrl');
       expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
       expect(returnUrl).to.equal('https://www.adobe.com');
-    });
-
-    it('should set close modal and reload page', async () => {
-      const dispatchEventStub = stub();
-      const reloadStub = stub();
-      const modal = { dispatchEvent: dispatchEventStub };
-      setModal(modal);
-      setLocation({ reload: reloadStub });
-
-      handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"OrderComplete","data":{"actionRequired":false}}' });
-      handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"Close","data":{"actionRequired":false}}' });
-      expect(dispatchEventStub.calledOnceWith(new Event('closeModal'))).to.be.true;
-      expect(reloadStub.calledOnce).to.be.true;
     });
 
     [

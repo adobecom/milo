@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, reloadPage } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const MANAGE_PLAN_MSG_SUBTYPE = {
@@ -14,9 +14,18 @@ const isProductFamily = (offer, pfs) => {
   const productFamily = offer?.offer?.product_arrangement?.family;
   return productFamily && pfs.includes(productFamily);
 };
+const LANA_OPTIONS = {
+  clientId: 'merch-at-scale',
+  sampleRate: 100,
+  tags: 'manage-plan',
+};
+
+const lanaLog = window.lana ? async (msg, subType) => {
+  const { userId } = await window.adobeIMS?.getProfile() ?? {};
+  window.lana.log(`ManagePlan/${subType}/${userId}: ${msg}`, LANA_OPTIONS);
+} : (() => {});
 
 let shouldRefetchEntitlements = false;
-let { location } = window;
 let modal;
 
 function buildUrl(upgradeOffer, upgradable, env) {
@@ -48,13 +57,16 @@ export const handleIFrameEvents = ({ data: msgData }) => {
     case MANAGE_PLAN_MSG_SUBTYPE.AppLoaded:
       document.querySelector('.upgrade-flow-content iframe')?.classList?.remove('loading');
       document.querySelector('.upgrade-flow-content sp-theme')?.remove();
+      lanaLog('Showing modal', subType);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.EXTERNAL:
       if (!data?.externalUrl || !data.target) return;
+      lanaLog('Opening external URL', subType);
       window.open(data.externalUrl, data.target);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.SWITCH:
       if (!data?.externalUrl || !data.target) return;
+      lanaLog('Opening external URL (SWITCH)', subType);
       window.open(data.externalUrl, data.target);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.RETURN_BACK:
@@ -62,6 +74,7 @@ export const handleIFrameEvents = ({ data: msgData }) => {
       if (data.returnUrl) {
         window.sessionStorage.setItem('upgradeModalReturnUrl', data.returnUrl);
       }
+      lanaLog('Opening external URL (RETURN_BACK)', subType);
       window.open(data.externalUrl, data.target);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.OrderComplete:
@@ -71,8 +84,10 @@ export const handleIFrameEvents = ({ data: msgData }) => {
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.Close:
       if (shouldRefetchEntitlements) {
-        location.reload();
+        lanaLog('Reloading page to update entitlements', subType);
+        reloadPage();
       }
+      lanaLog('Closing modal', subType);
       modal?.dispatchEvent(new Event('closeModal'));
       modal = null;
       break;
@@ -132,11 +147,3 @@ export default async function handleUpgradeOffer(
   }
   return undefined;
 }
-
-export const setModal = (testModal) => {
-  modal = testModal;
-};
-
-export const setLocation = (testLocation) => {
-  location = testLocation;
-};
