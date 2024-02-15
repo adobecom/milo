@@ -309,6 +309,7 @@ describe('Mini Compare Chart Merch Card', () => {
   it('Supports Mini Compare Chart with footer rows', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
+    document.querySelector('.section').removeAttribute('data-status');
     const heading = merchCard.querySelector('h2[slot="heading-m"]');
     const body = merchCard.querySelector('div[slot="body-m"]');
     const priceHeading = merchCard.querySelector('h2[slot="heading-m-price"]');
@@ -348,7 +349,7 @@ describe('Mini Compare Chart Merch Card', () => {
 
 describe('Merch Card with Offer Selection', () => {
   it('Supports quantity select ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
     await init(document.querySelector('.quantity-select'));
     const merchCard = document.querySelector('merch-card');
     const quantitySelect = merchCard.querySelector('merch-quantity-select');
@@ -360,7 +361,7 @@ describe('Merch Card with Offer Selection', () => {
   });
 
   it('Change quantity select ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
     await init(document.querySelector('.quantity-select'));
     await delay();
     const merchCard = document.querySelector('merch-card');
@@ -372,7 +373,7 @@ describe('Merch Card with Offer Selection', () => {
   });
 
   it('Skip Change quantity select render ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/acrobat-card.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
     await init(document.querySelector('.skip-quantity-select-render'));
     await delay();
     expect(document.querySelector('merch-quantity-select')).to.not.exist;
