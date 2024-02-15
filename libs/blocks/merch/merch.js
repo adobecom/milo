@@ -116,7 +116,7 @@ export async function getCheckoutLinkConfig(productFamily) {
 }
 
 export async function getDownloadAction(options, imsSignedInPromise, offerFamily) {
-  if (options.entitlement === false) return null;
+  if (options.entitlement !== true) return null;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
