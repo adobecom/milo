@@ -1,4 +1,4 @@
-// Wed, 07 Feb 2024 16:41:26 GMT
+// Tue, 13 Feb 2024 15:45:03 GMT
 import{html as n,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var l="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var y=x`
     :host {
         position: relative;
@@ -689,6 +689,7 @@ div[slot='bg-image'] img {
 @media screen and ${l} {
     :root {
         --consonant-merch-card-mini-compare-chart-width: 142px;
+        --consonant-merch-card-special-offers-width: 302px;
     }
 }
 
@@ -699,6 +700,7 @@ div[slot='bg-image'] img {
         --consonant-merch-card-catalog-width: 302px;
         --consonant-merch-card-plans-width: 302px;
         --consonant-merch-card-mini-compare-chart-width: 302px;
+        --consonant-merch-card-special-offers-width: 302px;
     }
 }
 
@@ -1154,5 +1156,5 @@ merch-card .footer-row-cell:nth-child(8) {
             <slot name="offers"></slot>
             <slot name="promo-text"></slot>
             ${this.secureLabelFooter}
-            <slot name="footer-rows"><slot name="body-s"></slot></slot>`}connectedCallback(){super.connectedCallback(),this.#e=this.getContainer(),this.setAttribute("tabindex","0"),this.addEventListener("keydown",this.keydownHandler),this.addEventListener("mouseleave",this.toggleActionMenu),this.addEventListener("selection-changed",this.handleQuantitySelection)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener("keydown",this.keydownHandler)}keydownHandler(e){let r=document.activeElement?.closest(S);if(!r)return;function t(R,O){let g=document.elementFromPoint(R,O)?.closest(S);g&&(e.preventDefault(),e.stopImmediatePropagation(),g.focus(),g.scrollIntoView({behavior:"smooth",block:"center"}))}let{x:a,y:o,width:d,height:p}=r.getBoundingClientRect(),m=64;switch(e.code===E?e.shiftKey?u:v:e.code){case u:t(a-m,o);break;case v:t(a+d+m,o);break;case k:t(a,o-m);break;case z:t(a,o+p+m);break;case $:this.footerSlot?.querySelector("a")?.click();break}}adjustFooterRows(){if(this.variant!==A||this.getBoundingClientRect().width===0)return;[...this.querySelector('[slot="footer-rows"]').children].forEach((r,t)=>{let a=Math.max(_,parseInt(window.getComputedStyle(r).height)||0),o=parseInt(this.#e.style.getPropertyValue(L(t+1)))||0;a>o&&this.#e.style.setProperty(L(t+1),`${a}px`)})}};customElements.define(M,b);export{M as MERCH_CARD,S as MERCH_CARD_NODE_NAME,b as MerchCard,L as getRowMinHeightPropertyName};
+            <slot name="footer-rows"><slot name="body-s"></slot></slot>`}connectedCallback(){super.connectedCallback(),this.#e=this.getContainer(),this.setAttribute("tabindex","0"),this.addEventListener("keydown",this.keydownHandler),this.addEventListener("mouseleave",this.toggleActionMenu),this.addEventListener("change",this.handleQuantitySelection)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener("keydown",this.keydownHandler),this.removeEventListener("change",this.handleQuantitySelection)}keydownHandler(e){let r=document.activeElement?.closest(S);if(!r)return;function t(R,O){let g=document.elementFromPoint(R,O)?.closest(S);g&&(e.preventDefault(),e.stopImmediatePropagation(),g.focus(),g.scrollIntoView({behavior:"smooth",block:"center"}))}let{x:a,y:o,width:d,height:p}=r.getBoundingClientRect(),m=64;switch(e.code===E?e.shiftKey?u:v:e.code){case u:t(a-m,o);break;case v:t(a+d+m,o);break;case k:t(a,o-m);break;case z:t(a,o+p+m);break;case $:this.footerSlot?.querySelector("a")?.click();break}}adjustFooterRows(){if(this.variant!==A||this.getBoundingClientRect().width===0)return;[...this.querySelector('[slot="footer-rows"]').children].forEach((r,t)=>{let a=Math.max(_,parseInt(window.getComputedStyle(r).height)||0),o=parseInt(this.#e.style.getPropertyValue(L(t+1)))||0;a>o&&this.#e.style.setProperty(L(t+1),`${a}px`)})}};customElements.define(M,b);export{M as MERCH_CARD,S as MERCH_CARD_NODE_NAME,b as MerchCard,L as getRowMinHeightPropertyName};
 //# sourceMappingURL=merch-card.js.map
