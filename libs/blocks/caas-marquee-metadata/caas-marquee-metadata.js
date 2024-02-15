@@ -40,7 +40,9 @@ export const getMetadata = (el) => {
     let val = row.children[1].innerHTML || '';
     if (key.startsWith('image')) {
       const img = row.children[1].querySelector('img');
+      const video = row.children[1].querySelector('.video');
       val = img ? new URL(img.src).pathname : '';
+      val = video ? new URL(video.href).pathname : val;
     }
     if (key.includes('cta')) {
       metadata = { ...metadata, ...parseCtas(row.children[1]) };
@@ -60,6 +62,7 @@ export default function init(el) {
       context: ${metadata.context},
       imageTablet: ${metadata.imagetablet},
       imageDesktop: ${metadata.imagedesktop},
+      backgroundColor: ${metadata.backgroundcolor},
       variant: ${metadata.variant}`.trim(),
     tags: 'caas:content-type/promotion',
     cta1url: `${metadata.cta1url}`,
