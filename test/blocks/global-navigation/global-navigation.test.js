@@ -1278,7 +1278,8 @@ describe('global navigation', () => {
       it('should send the correct device type', async () => {
         const gnav = await createFullGlobalNavigation({ unavContent: 'on' });
         window.UniversalNav.resetHistory();
-        for (const [os, osName] of Object.entries(osMap)) {
+        const map = { Test: 'test', ...osMap };
+        for (const [os, osName] of Object.entries(map)) {
           const userAgentStub = sinon.stub(navigator, 'userAgent').value(os);
           await gnav.decorateUniversalNav();
           expect(window.UniversalNav.getCall(0)
