@@ -14,16 +14,16 @@ const isProductFamily = (offer, pfs) => {
   const productFamily = offer?.offer?.product_arrangement?.family;
   return productFamily && pfs.includes(productFamily);
 };
-const LANA_OPTIONS = {
+export const LANA_OPTIONS = {
   clientId: 'merch-at-scale',
   sampleRate: 100,
   tags: 'manage-plan',
 };
 
-const lanaLog = window.lana ? async (msg, subType) => {
+export const lanaLog = async (msg, subType) => {
   const { userId } = await window.adobeIMS?.getProfile() ?? {};
-  window.lana.log(`ManagePlan/${subType}/${userId}: ${msg}`, LANA_OPTIONS);
-} : (() => {});
+  window.lana?.log(`ManagePlan/${subType}/${userId}: ${msg}`, LANA_OPTIONS);
+};
 
 let shouldRefetchEntitlements = false;
 

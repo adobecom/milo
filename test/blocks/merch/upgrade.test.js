@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import handleUpgradeOffer, { handleIFrameEvents } from '../../../libs/blocks/merch/upgrade.js';
+import handleUpgradeOffer, { handleIFrameEvents, LANA_OPTIONS, lanaLog } from '../../../libs/blocks/merch/upgrade.js';
 import { CC_ALL_APPS, CC_SINGLE_APPS_ALL } from '../../../libs/blocks/merch/merch.js';
 
 const CTA_PRODUCT_FAMILY = 'CC_ALL_APPS';
@@ -225,6 +225,20 @@ describe('Switch Modal (Upgrade Flow)', () => {
       const returnUrl = window.sessionStorage.getItem('upgradeModalReturnUrl');
       expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
       expect(returnUrl).to.equal('https://www.adobe.com');
+    });
+
+    it('should log lana message', async () => {
+      const originalLana = window.lana;
+      const originalAdobeIMS = window.adobeIMS;
+      const log = sinon.stub();
+      const getProfile = sinon.stub().callsFake(() => ({ userId: '123' }));
+      window.adobeIMS = { getProfile };
+      window.lana = { log };
+
+      await lanaLog('Showing modal', 'AppLoaded');
+      expect(log.calledOnce).to.be.true;
+      window.lana = originalLana;
+      window.adobeIMS = originalAdobeIMS;
     });
 
     [
