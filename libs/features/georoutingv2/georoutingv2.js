@@ -236,26 +236,30 @@ function buildContent(currentPage, locale, geoData, locales) {
 
 async function getDetails(currentPage, localeMatches, geoData) {
   const availableLocales = await getAvailableLocales(localeMatches);
-  if (availableLocales.length > 0) {
-    const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' });
-    currentPage.url = window.location.hash ? document.location.href : '#';
-    if (availableLocales.length === 1) {
-      const content = buildContent(currentPage, availableLocales[0], geoData);
-      georoutingWrapper.appendChild(content);
-      return georoutingWrapper;
-    }
-    const sortedLocales = availableLocales.sort((a, b) => a.languageOrder - b.languageOrder);
-    const tabsContainer = createTabsContainer(sortedLocales.map((l) => l.language));
-    georoutingWrapper.appendChild(tabsContainer);
-
-    sortedLocales.forEach((locale) => {
-      const content = buildContent(currentPage, locale, geoData, sortedLocales);
-      const tab = createTab(content, locale.language);
-      georoutingWrapper.appendChild(tab);
-    });
+  if (!availableLocales.length) return null;
+  const { innerWidth } = window;
+  let svg = null;
+  if (innerWidth < 480) {
+    const { default: getMobileBg } = await import('./getMobileBg.js');
+    svg = getMobileBg();
+  }
+  const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment', style: 'display:none;' }, svg);
+  currentPage.url = window.location.hash ? document.location.href : '#';
+  if (availableLocales.length === 1) {
+    const content = buildContent(currentPage, availableLocales[0], geoData);
+    georoutingWrapper.appendChild(content);
     return georoutingWrapper;
   }
-  return null;
+  const sortedLocales = availableLocales.sort((a, b) => a.languageOrder - b.languageOrder);
+  const tabsContainer = createTabsContainer(sortedLocales.map((l) => l.language));
+  georoutingWrapper.appendChild(tabsContainer);
+
+  sortedLocales.forEach((locale) => {
+    const content = buildContent(currentPage, locale, geoData, sortedLocales);
+    const tab = createTab(content, locale.language);
+    georoutingWrapper.appendChild(tab);
+  });
+  return georoutingWrapper;
 }
 
 async function showModal(details) {
