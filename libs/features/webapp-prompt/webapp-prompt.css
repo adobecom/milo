@@ -148,17 +148,19 @@
   }
 
   .appPrompt-progress {
-    width: 1%;
+    width: 100%;
     height: 100%;
     animation: appPrompt-animate 5s linear forwards;
+    transform-origin: 0 0;
+    transform: scaleX(0);
   }
 
   @keyframes appPrompt-animate {
     0% {
-        width: 1%;
+        transform: scaleX(0);
     }
     100% {
-        width: 100%;
+        transform: scaleX(1);
     }
   }
 }
