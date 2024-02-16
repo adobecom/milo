@@ -1102,12 +1102,11 @@ export async function loadArea(area = document) {
   }
   const config = getConfig();
 
-  const placeholderPromise = decoratePlaceholders(area, config);
+  await decoratePlaceholders(area, config);
 
   if (isDoc) {
     decorateDocumentExtras();
   }
-  await placeholderPromise;
 
   const sections = decorateSections(area, isDoc);
 
