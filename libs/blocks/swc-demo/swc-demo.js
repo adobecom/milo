@@ -63,5 +63,6 @@ export default async function main(el) {
     'swc-tbt-started',
     'swc-tbt-finished',
   );
+  await el.firstElementChild.updateComplete;
   return el;
 }
