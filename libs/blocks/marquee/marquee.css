@@ -36,11 +36,6 @@
   display: contents;
 }
 
-.marquee.static-links a:not(.con-button),
-.static-links .marquee a:not(.con-button) {
-  color: inherit;
-}
-
 .marquee.mobile-light a:not(.con-button) {
   color: var(--link-color);
 }
@@ -75,15 +70,6 @@
   border-color: var(--color-white);
   color: var(--color-black);
   text-decoration: none;
-}
-
-.marquee.static-links a:not(.con-button):hover,
-.static-links .marquee a:not(.con-button):hover {
-  color: inherit;
-}
-
-.marquee.large.split .action-area a:not(.con-button) {
-  font-size: var(--type-body-m-size);
 }
 
 .marquee .foreground {
@@ -339,6 +325,10 @@
 .marquee.large.split .action-area {
   font-size: var(--type-body-l-size);
   line-height: var(--type-body-l-lh);
+}
+
+.marquee.large.split .action-area a:not(.con-button) {
+  font-size: var(--type-body-m-size);
 }
 
 @media screen and (min-width: 600px) {
@@ -730,4 +720,11 @@
   .marquee.large .foreground.container {
     max-width: var(--grid-container-width);
   }
+}
+
+.marquee.static-links a:not(.con-button),
+.marquee.static-links a:not(.con-button):hover,
+.static-links .marquee a:not(.con-button),
+.static-links .marquee a:not(.con-button):hover {
+  color: inherit;
 }
