@@ -745,11 +745,6 @@ function filterOutLinks(links, linksToFilterOut) {
   return links;
 }
 
-function getPostLcpLinks(blocks) {
-  return blocks.filter((block) => POSTLCP_LINK_BLOCKS
-    .some((postLcpLink) => block.classList[0] === postLcpLink));
-}
-
 function decorateSection(section, idx) {
   let links = decorateLinks(section);
   decorateDefaults(section);
