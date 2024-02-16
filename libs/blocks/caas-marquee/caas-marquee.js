@@ -20,12 +20,14 @@ const SEGMENT_MAP = {
 };
 
 const WIDTHS = {
+  split: 1199,
   mobile: 1440,
   tablet: 2048,
   desktop: 2400
 }
 
 const HEIGHTS = {
+  split: 828,
   mobile: 992,
   tablet: 520,
   desktop: 813
@@ -151,6 +153,7 @@ function normalizeData(data) {
   const arbitrary = {};
   data.arbitrary?.forEach((item) => { arbitrary[item.key] = item.value; });
   metadata.variant = arbitrary.variant || 'dark, static-links';
+  metadata.backgroundcolor = arbitrary.backgroundColor;
 
   return metadata;
 }
@@ -160,10 +163,10 @@ function getVideoHtml(src){
 }
 
 function getImageHtml(src, screen){
-  let format = (screen === 'desktop') ? 'png' : 'jpeg';
+  let format = (screen === 'desktop' || screen === 'split') ? 'png' : 'jpeg';
   let style = (screen === 'desktop') ? 'style="object-position: 32% center;"' : '';
   let fetchPriority = (screen === 'mobile') ? 'fetchpriority="high"' : '';
-  let loadingType = (screen === 'mobile') ? 'eager' : 'lazy';
+  let loadingType = (screen === 'mobile' || screen === 'split') ? 'eager' : 'lazy';
   let width = WIDTHS[screen];
   let height = HEIGHTS[screen];
   return `<picture>
@@ -179,10 +182,13 @@ function getContent(src, screen){
   const isVideo = VIDEO_EXTENSIONS.test(src);
   let inner = ''
   if(isImage) {
-    inner = getImageHtml(src);
+    inner = getImageHtml(src, screen);
   }
   if(isVideo) {
     inner = getVideoHtml(src);
+  }
+  if(screen === 'split'){
+    return `<div data-valign="middle" class="asset image bleed">${inner}</div>`
   }
   return `<div class=${screen}-only>${inner}</div>`
 }
@@ -201,9 +207,11 @@ export function renderMarquee(marquee, data, id, fallback) {
 
   // remove loader
   marquee.innerHTML = '';
+  marquee.style.backgroundColor = metadata.backgroundcolor;
 
   // configure block font sizes
   const classList = metadata.variant.split(',').map((c) => c.trim());
+  const isSplit = metadata.variant.includes('split');
   // TODO: Update this to using a map to prevent nested ternaries
   /* eslint-disable no-nested-ternary */
   const size = classList.includes('small') ? 'small'
@@ -216,10 +224,16 @@ export function renderMarquee(marquee, data, id, fallback) {
   const mobileBgContent = getContent(metadata.image, 'mobile');
   const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
   const desktopBgContent = getContent(metadata.imagedesktop, 'desktop');
+  const splitContent = getContent(metadata.imagedesktop, 'split');
 
   const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
-  const background = createTag('div', { class: 'background' });
-  background.innerHTML = bgContent;
+  let background = createTag('div', { class: 'background' });
+  if(isSplit) {
+    let parser = new DOMParser();
+    background = parser.parseFromString(splitContent, 'text/html').body.childNodes[0];
+  } else {
+    background.innerHTML = bgContent;
+  }
 
   let cta1Style = (metadata.cta1style === "blue" || metadata.cta1style === "outline") ?
     `con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile` : "";

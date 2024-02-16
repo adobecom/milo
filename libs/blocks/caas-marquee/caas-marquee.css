@@ -368,6 +368,13 @@
   font-size: var(--type-body-m-size);
 }
 
+.marquee.split .asset img,
+.marquee.split .asset video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 @media screen and (min-width: 600px) {
   .marquee .action-area {
     display: flex;
@@ -527,6 +534,24 @@
 
   .marquee.split.large .icon-area img {
     max-height: 80px;
+  }
+
+  .marquee.split .asset.bleed picture,
+  .marquee.split .asset.bleed video {
+    height: 100%;
+    object-fit: fill;
+  }
+
+  .marquee.split .asset.bleed {
+    position: absolute;
+    width: 50vw;
+    right: 0;
+    height: 100%;
+  }
+
+  .marquee.split.row-reversed .asset.bleed {
+    right: auto;
+    left: 0;
   }
 
 }
