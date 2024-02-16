@@ -17,7 +17,7 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function handleHeading(headingCols, isPriceBottom) {
+function handleHeading(headingCols, isPriceBottom, isMerch) {
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
     if (!col.innerHTML) {
@@ -34,8 +34,10 @@ function handleHeading(headingCols, isPriceBottom) {
       col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
       let textStartIndex = 0;
-      if (elements[0]?.querySelector('img')) {
+      const iconTile = elements[0]?.querySelector('img');
+      if (iconTile) {
         textStartIndex += 1;
+        if (!isMerch) iconTile.closest('p').classList.add('header-product-tile');
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
@@ -85,6 +87,7 @@ function handleHighlight(table) {
   const secondRow = table.querySelector('.row-2');
   const secondRowCols = secondRow.querySelectorAll('.col');
   const isPriceBottom = table.classList.contains('pricing-bottom');
+  const isMerch = table.classList.contains('merch');
   let headingCols = null;
 
   if (isHighlightTable) {
@@ -113,7 +116,7 @@ function handleHighlight(table) {
     firstRow.classList.add('row-heading');
   }
 
-  handleHeading(headingCols, isPriceBottom);
+  handleHeading(headingCols, isPriceBottom, isMerch);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
@@ -138,6 +141,17 @@ function handleExpand(e) {
  * @param {*} sectionParams that is from init()
  * @returns {boolean expandSection} that is the only variable get updated from sectionParams
  */
+
+function handleTitleText(cell) {
+  const textSpan = createTag('span', { class: 'table-title-text' });
+  while (cell.firstChild) textSpan.append(cell.firstChild);
+  cell.append(textSpan);
+  const iconTag = textSpan.querySelector('.icon');
+  if (iconTag) {
+    cell.append(iconTag);
+  }
+}
+
 function handleSection(sectionParams) {
   const {
     row, index, allRows, rowCols, isMerch, isCollapseTable, isHighlightTable,
@@ -160,6 +174,7 @@ function handleSection(sectionParams) {
         merchCol.setAttribute('role', 'rowheader');
       });
     } else {
+      handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
     }
@@ -210,6 +225,7 @@ function handleSection(sectionParams) {
       });
     } else {
       const sectionRowTitle = rowCols[0];
+      handleTitleText(sectionRowTitle);
       sectionRowTitle.classList.add('section-row-title');
     }
   }
