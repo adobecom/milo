@@ -28,7 +28,7 @@ export async function loadProjectSettings(projSettings) {
   const settings = projSettings.reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
   heading.value = {
     ...heading.value,
-    env: settings.FloodgateIOEnv || 'stage',
+    env: settings.FloodgateIOEnv || 'prod',
     fgColor: settings.FloodgateColor || 'pink',
     source: `${repo}`,
     floodgate: `${repo}-${settings.FloodgateColor || 'pink'}`,
