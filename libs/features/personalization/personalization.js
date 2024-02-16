@@ -118,13 +118,31 @@ const createFrag = (el, url, manifestId) => {
   return frag;
 };
 
-const DEPRECATED_COMMANDS = {
-  replacecontent: 'replace',
-  removefragment: 'replace',
-  removecontent: 'remove',
-  insertcontentbefore: 'insertbefore',
-  insertcontentafter: 'insertafter',
-};
+const GLOBAL_CMDS = [
+  'insertscript',
+  'replacefragment',
+  'removefragment',
+  'replacepage',
+  'updatemetadata',
+  'useblockcode',
+];
+
+function checkSelector(selector, action) {
+  if (action in GLOBAL_CMDS) return { finalAction: action };
+  if (`${action}fragment` in GLOBAL_CMDS) return { finalAction: `${action}fragment` };
+  if (selector.includes('/fragments/') && (selector.startsWith('/') || selector.startsWith('http'))) {
+    const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
+    if (fragment) return { el: fragment.parentNode, finalAction: action };
+  }
+  try {
+    const finalAction = action.replace('content', '');
+    const el = document.querySelector(selector);
+    if (el) return { el, finalAction };
+  } catch {
+    return { finalAction: false };
+  }
+  return { finalAction: false };
+}
 
 const COMMANDS = {
   insertafter: (el, target, manifestId) => el
@@ -145,16 +163,6 @@ const COMMANDS = {
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
-
-const VALID_COMMANDS = Object.keys(COMMANDS);
-
-const GLOBAL_CMDS = [
-  'insertscript',
-  'replacefragment',
-  'replacepage',
-  'updatemetadata',
-  'useblockcode',
-];
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
@@ -247,17 +255,10 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-function handleCommands(commands, manifestId, rootEl = document) {
+function handleCommands(commands, manifestId) {
   commands.forEach((cmd) => {
-    if (DEPRECATED_COMMANDS[cmd.action]) cmd.action = DEPRECATED_COMMANDS[cmd.action];
-    if (VALID_COMMANDS.includes(cmd.action)) {
-      try {
-        const selectorEl = rootEl.querySelector(cmd.selector);
-        if (!selectorEl) return;
-        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
-      } catch (e) {
-        console.log('Invalid selector: ', cmd.selector);
-      }
+    if (cmd.action in COMMANDS) {
+      COMMANDS[cmd.action](cmd.el, cmd.target, manifestId);
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
@@ -282,14 +283,17 @@ const getVariantInfo = (line, variantNames, variants) => {
       target: line[vn],
     };
 
-    if (GLOBAL_CMDS.includes(action)) {
-      variants[vn][action] = variants[vn][action] || [];
+    const { el, finalAction } = checkSelector(selector, action);
 
-      variants[vn][action].push({
+    if (GLOBAL_CMDS.includes(finalAction)) {
+      variants[vn][finalAction] = variants[vn][finalAction] || [];
+
+      variants[vn][finalAction].push({
         selector: normalizePath(selector),
         val: normalizePath(line[vn]),
       });
-    } else if (VALID_COMMANDS.includes(action)) {
+    } else if (finalAction in COMMANDS) {
+      variantInfo.el = el;
       variants[vn].commands.push(variantInfo);
     } else {
       /* c8 ignore next 2 */
