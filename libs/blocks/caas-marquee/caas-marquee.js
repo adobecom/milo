@@ -20,15 +20,15 @@ const SEGMENT_MAP = {
 };
 
 const WIDTHS = {
-  MOBILE: 1440,
-  TABLET: 2048,
-  DESKTOP: 2400
+  mobile: 1440,
+  tablet: 2048,
+  desktop: 2400
 }
 
 const HEIGHTS = {
-  MOBILE: 992,
-  TABLET: 520,
-  DESKTOP: 813
+  mobile: 992,
+  tablet: 520,
+  desktop: 813
 }
 
 const LANA_OPTIONS = {
@@ -160,10 +160,10 @@ function getVideoHtml(src){
 }
 
 function getImageHtml(src, screen){
-  let format = (screen === 'DESKTOP') ? 'png' : 'jpeg';
-  let style = (screen === 'DESKTOP') ? 'style="object-position: 32% center;"' : '';
-  let fetchPriority = (screen === 'MOBILE') ? 'fetchpriority="high"' : '';
-  let loadingType = (screen === 'MOBIlE') ? 'eager' : 'lazy';
+  let format = (screen === 'desktop') ? 'png' : 'jpeg';
+  let style = (screen === 'desktop') ? 'style="object-position: 32% center;"' : '';
+  let fetchPriority = (screen === 'mobile') ? 'fetchpriority="high"' : '';
+  let loadingType = (screen === 'mobile') ? 'eager' : 'lazy';
   let width = WIDTHS[screen];
   let height = HEIGHTS[screen];
   return `<picture>
@@ -212,37 +212,10 @@ export function renderMarquee(marquee, data, id, fallback) {
         : 'xlarge';
   /* eslint-enable no-nested-ternary */
 
-  const isMobileImage = IMAGE_EXTENSIONS.test(metadata.image);
-  const isTabletImage = IMAGE_EXTENSIONS.test(metadata.imagetablet);
-  const isDesktopImage = IMAGE_EXTENSIONS.test(metadata.imagedesktop);
-
   // background content
-  const mobileBgContent = isMobileImage ? `<div class="mobile-only">
-    <picture>
-      <source type="image/webp" srcset="${metadata.image}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
-      <source type="image/webp" srcset="${metadata.image}?width=750&amp;format=webply&amp;optimize=medium">
-      <source type="image/jpeg" srcset="${metadata.image}?width=2000&amp;format=jpeg&amp;optimize=medium" media="(min-width: 600px)">
-      <img loading="eager" alt="" src="${metadata.image}?width=750&amp;format=jpeg&amp;optimize=medium" width="1440" height="992" fetchpriority="high">
-    </picture>
-  </div>` : `<div class="mobile-only"><video autoPlay muted playsInline> <source src="${metadata.image}" type="video/mp4"></video></div>`;
-
-  const tabletBgContent = isTabletImage ? `<div class="tablet-only">
-    <picture>
-      <source type="image/webp" srcset="${metadata.imagetablet}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
-      <source type="image/webp" srcset="${metadata.imagetablet}?width=750&amp;format=webply&amp;optimize=medium">
-      <source type="image/jpeg" srcset="${metadata.imagetablet}?width=2000&amp;format=jpeg&amp;optimize=medium" media="(min-width: 600px)">
-      <img loading="lazy" alt="" src="${metadata.imagetablet}?width=750&amp;format=jpeg&amp;optimize=medium" width="2048" height="520">
-    </picture>
-  </div>` : `<div class="tablet-only"><video autoPlay muted playsInline> <source src="${metadata.imagetablet}" type="video/mp4"></video></div>`;
-
-  const desktopBgContent = isDesktopImage ? `<div class="desktop-only">
-    <picture>
-      <source type="image/webp" srcset="${metadata.imagedesktop}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
-      <source type="image/webp" srcset="${metadata.imagedesktop}?width=750&amp;format=webply&amp;optimize=medium">
-      <source type="image/png" srcset="${metadata.imagedesktop}?width=2000&amp;format=png&amp;optimize=medium" media="(min-width: 600px)">
-      <img loading="lazy" alt="" src="${metadata.imagedesktop}?width=750&amp;format=png&amp;optimize=medium" width="2400" height="813" style="object-position: 32% center;">
-    </picture>
-  </div>` : `<div class="desktop-only"><video autoPlay muted playsInline> <source src="${metadata.imagedesktop}" type="video/mp4"></video></div>`;
+  const mobileBgContent = getContent(metadata.image, 'mobile');
+  const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
+  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop');
 
   const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
   const background = createTag('div', { class: 'background' });
