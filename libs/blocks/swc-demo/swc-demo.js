@@ -9,11 +9,19 @@ export default async function main(el) {
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
   ]);
   el.innerHTML = `
-  <sp-theme scale="medium" color="light">
+  <sp-theme scale="large" color="dark">
   <div id="todo-app">
       <sp-textfield id="new-todo" placeholder="What needs to be done?"></sp-textfield>
       <sp-button variant="cta" id="add-todo">Add</sp-button>
-      <ul id="todo-list"></ul>
+      <ul id="todo-list">
+      <li><sp-checkbox>Quick Introduction to commerce on adobe.com</li></sp-checkbox>
+      <li><sp-checkbox>Milo Commerce</li></sp-checkbox>
+      <li><sp-checkbox>Web Components</li></sp-checkbox>
+      <li><sp-checkbox>Spectrum Web Components (SWC)</li></sp-checkbox>
+      <li><sp-checkbox>Adding new components</li></sp-checkbox>
+      <li><sp-checkbox>SWC in consumer projects</li></sp-checkbox>
+      <li><sp-checkbox>Performance optimizations</li></sp-checkbox>
+      </ul>
   </div>
 </sp-theme>
 `;
@@ -22,7 +30,7 @@ export default async function main(el) {
   const newTodoInput = document.getElementById('new-todo');
   const todoList = document.getElementById('todo-list');
 
-  addButton.addEventListener('click', () => {
+  const addTask = () => {
     const taskText = newTodoInput.value.trim();
     if (taskText) {
       const listItem = document.createElement('li');
@@ -32,7 +40,15 @@ export default async function main(el) {
       todoList.appendChild(listItem);
       newTodoInput.value = '';
     }
+  };
+
+  newTodoInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+      addTask();
+    }
   });
+
+  addButton.addEventListener('click', addTask);
 
   return el;
 }

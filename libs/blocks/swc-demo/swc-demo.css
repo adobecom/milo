@@ -1,9 +1,14 @@
+.swc-demo {
+  display: flex;
+  justify-content: center;
+
+}
+
 #todo-app {
   width: 100%;
   min-height: 400px;
   margin: auto;
   padding: 20px;
-  background-color: var(--color-gray-200);
 }
 
 #todo-list {
