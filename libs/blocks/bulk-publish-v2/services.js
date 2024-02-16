@@ -6,7 +6,7 @@ const headers = { 'Content-Type': 'application/json' };
 const isLive = (type) => ['publish', 'unpublish'].includes(type);
 const isDelete = (type) => ['delete', 'unpublish'].includes(type);
 const getProcessAlias = (type) => {
-  if (type === 'index' || type === 'status') return type;
+  if (type === 'index') return type;
   if (isLive(type)) return 'live';
   return 'preview';
 };
@@ -50,14 +50,14 @@ const setUserData = (event) => {
 };
 
 const authenticate = async (tool = null) => {
-  const statusfetched = (event) => { tool.user = setUserData(event); };
+  const setUser = (event) => { tool.user = setUserData(event); };
   const openSideKick = document.querySelector('helix-sidekick');
   if (openSideKick) {
-    openSideKick.addEventListener('statusfetched', statusfetched);
+    openSideKick.addEventListener('statusfetched', setUser);
   } else {
     document.addEventListener('sidekick-ready', () => {
       const sidekick = document.querySelector('helix-sidekick');
-      sidekick.addEventListener('statusfetched', statusfetched);
+      sidekick.addEventListener('statusfetched', setUser);
     }, { once: true });
   }
 };

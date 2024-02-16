@@ -183,6 +183,7 @@ class BulkPublish2 extends LitElement {
       }
       return html`<option value=${type}>${type}</option>`;
     };
+    const exUrl = `${window.location.href.replace(window.location.pathname, '')}/path/to/page`;
     return html`
       <div class="process">
         <div class="processor">
@@ -215,7 +216,7 @@ class BulkPublish2 extends LitElement {
         <textarea 
           id="Urls"
           wrap="off"
-          placeholder="Example: https://main--milo--adobecom.hlx.page/path/to/page"
+          placeholder="Example: ${exUrl}"
           @blur=${this.setUrls}
           @change=${this.setUrls}></textarea>
       </div>
@@ -400,8 +401,9 @@ class BulkPublish2 extends LitElement {
       <header id="Header">
         <h1>Bulk Publishing</h1>
         <div class="mode-switcher">
-          <div class="switch full ${full}" @click=${() => toggleMode(0)}></div>
-          <div class="switch half ${half}" @click=${() => toggleMode(1)}></div>
+          <div title="Carousel View" class="switch full ${full}" @click=${() => toggleMode(0)}>
+          </div>
+          <div title="Panel View" class="switch half ${half}" @click=${() => toggleMode(1)}></div>
         </div>
       </header>
       <div id="BulkPublish" class="bulk-publisher ${this.mode}">
