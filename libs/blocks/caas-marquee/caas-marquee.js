@@ -82,7 +82,7 @@ window.addEventListener('alloy_sendEvent', (e) => {
 async function getAllMarquees(promoId, origin) {
   // TODO: Update this to https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection before release
   const endPoint = 'https://14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection';
-  const payload = `originSelection=${origin}&collectionTags=caas%3Acontent-type%2Fpromotion&marqueeId=${promoId}&language=en&country=US`;
+  const payload = `originSelection=${origin}&marqueeId=${promoId}&language=en&country=US`;
 
   // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
   // See https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
