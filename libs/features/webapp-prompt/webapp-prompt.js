@@ -1,6 +1,6 @@
 import { toFragment } from '../../blocks/global-navigation/utilities/utilities.js';
 import { getConfig } from '../../utils/utils.js'; // TODO: doesn't make sense outside of Milo
-import { replaceKey, replaceText } from '../../features/placeholders.js';
+import { replaceKey, replaceText } from '../placeholders.js';
 
 const CONFIG = {
   selectors: { prompt: '.appPrompt' },
@@ -80,7 +80,8 @@ class AppPrompt {
     // TODO: we might need to also define a primary-like CTA
     const cancelText = content.querySelector('em > a');
     // TODO: add placeholder to sheet and document that consumers will need to add it too
-    // TODO: is there a better way to let authors define the CTA text? Should we just use a placeholder?
+    // TODO: is there a better way to let authors define the CTA text?
+    // Should we just use a placeholder?
     this.cancelText = cancelText?.innerText || await replaceKey('pep-prompt-cancel', getConfig());
 
     this.profile = {};
