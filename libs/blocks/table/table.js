@@ -146,10 +146,11 @@ function handleTitleText(cell) {
   const textSpan = createTag('span', { class: 'table-title-text' });
   while (cell.firstChild) textSpan.append(cell.firstChild);
   cell.append(textSpan);
-  const iconTag = textSpan.querySelector('.icon');
-  if (iconTag) {
-    cell.append(iconTag);
-  }
+  const iconTooltip = textSpan.querySelector('.icon-tooltip, .milo-tooltip');
+  if (!iconTooltip) return;
+  const tooltipEm = iconTooltip.closest('em');
+  if (tooltipEm) cell.append(tooltipEm);
+  else cell.append(iconTooltip);
 }
 
 function handleSection(sectionParams) {
