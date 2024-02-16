@@ -1,9 +1,10 @@
+// TODO: Fix tablet responsive class issue
+// TODO: Figure out workaround if segments API takes too long to load
 // TODO: Test network latency and if code handles that correctly
 // TODO: Go through all code paths to make sure no exceptions occur
 // TODO: Fix variants inconsistently supporting both ',' and '' (lines 95, 115, 198, 213)
 // TODO: Update SEGMENT_MAP with final from Martech team
 // TODO: Update Spectra AI endpoint to final one (instead of pointing to local Chimera IO instance)
-// TODO: Fix tablet responsive class issue
 
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
 import { createTag, getConfig } from '../../utils/utils.js';
@@ -36,6 +37,8 @@ const LANA_OPTIONS = {
   tags: 'caasMarquee',
 };
 
+const BUTTON_STYLES = ['blue', 'outline'];
+
 function isProd() {
   const { host } = window.location;
   return !(host.includes('hlx.page')
@@ -49,15 +52,23 @@ function isProd() {
 // showing them fallback content.
 const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
 
-const typeSize = {
-  small: ['xl', 'm', 'm'],
-  medium: ['xl', 'm', 'm'],
-  large: ['xxl', 'xl', 'l'],
-  xlarge: ['xxl', 'xl', 'l'],
-};
+const TEXT_SIZE = {
+  small: 'm',
+  medium: 'm',
+  large: 'xl',
+  xlarge: 'xl'
+}
+
+const HEADING_SIZE = {
+  small: 'xl',
+  medium: 'xl',
+  large: 'xxl',
+  xlarge: 'xxl'
+}
 
 const IMAGE_EXTENSIONS = /^.*\.(jpg|jpeg|png|gif|bmp|svg|webp|tiff|ico|avif|jfif)$/;
 const VIDEO_EXTENSIONS = /^.*\.(mp4|mpeg|mpg|mov|wmv|avi|webm|ogg)$/;
+const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
 let segments = ['default'];
 
@@ -80,8 +91,8 @@ window.addEventListener('alloy_sendEvent', (e) => {
 
 async function getAllMarquees(promoId, origin) {
   // TODO: Update this to https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection before release
-  const endPoint = 'https://14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection';
-  const payload = `originSelection=${origin}&marqueeId=${promoId}&language=en&country=US`;
+  const endPoint = 'https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection';
+  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US`;
 
   // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
   // See https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
@@ -192,6 +203,44 @@ function getContent(src, screen){
   return `<div class=${screen}-only>${inner}</div>`
 }
 
+function getLoadingSpinnerHtml(){
+  const spinner = `<div class="lds-ring LOADING">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>`;
+  return spinner;
+}
+
+/*
+  Note: Modal must be written exactly in this format to be picked up by milo decorators.
+  Other formats/structures will not work.
+  <a
+    href="#abc"
+    data-modal-path="/fragment/path-to-fragment"
+    data-modal-hash="#abc">
+      Some Modal Text
+  </a>
+ */
+function getModalHtml(ctaUrl, classes, ctaText){
+  let [fragment, hash] = ctaUrl.split("#");
+  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="${ctaText}" class="modal link-block ${classes}">${ctaText}</a>`
+}
+
+function getCtaHtml(url, text, classes){
+  if(isValidModal(url)){
+    return getModalHtml(url, classes, text);
+  }
+  return url ? `<a class="${classes}" href="${url}"> ${text} </a>` : '';
+}
+
+const isValidModal = (u) => VALID_MODAL_RE.test(u);
+
+function getCtaClasses(ctaStyle, size){
+  return BUTTON_STYLES.includes(ctaStyle) ? `con-button ${ctaStyle} button-${TEXT_SIZE[size]} button-justified-mobile` : '';
+}
+
 /**
  * function renderMarquee()
  * @param {HTMLElement} marquee - marquee container
@@ -236,52 +285,17 @@ export function renderMarquee(marquee, data, id, fallback) {
     background.innerHTML = bgContent;
   }
 
-  let cta1Style = (metadata.cta1style === "blue" || metadata.cta1style === "outline") ?
-    `con-button ${metadata.cta1style} button-${typeSize[size][1]} button-justified-mobile` : "";
-
-  let cta2Style = (metadata.cta2style === "blue" || metadata.cta2style === "outline") ?
-    `con-button ${metadata.cta2style} button-${typeSize[size][1]} button-justified-mobile` : "";
+  let cta1Classes = getCtaClasses(metadata.cta1style, size);
+  let cta2Classes = getCtaClasses(metadata.cta2style, size);
 
   // foreground content
-  let cta = metadata.cta1url
-    ? `<a 
-      class="${cta1Style}" 
-      href="${metadata.cta1url}">${metadata.cta1text}</a>`
-    : '';
-
-  /*
-    Note: Modal must be written exactly in this format to be picked up by milo decorators.
-    Other formats/structures will not work.
-    <a
-      href="#abc"
-      data-modal-path="/fragment/path-to-fragment"
-      data-modal-hash="#abc">
-        Some Modal Text
-    </a>
-   */
-
-  if(metadata.cta1url?.includes('fragment')){
-    let fragment = metadata.cta1url.split("#")[0];
-    let hash = metadata.cta1url.split("#")[1];
-    cta = `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="${metadata.cta1text}" class="modal link-block ${cta1Style}">${metadata.cta1text}</a>`
-  }
-
-  let cta2 = metadata.cta2url
-    ? `<a 
-      class="${cta2Style}"
-      href="${metadata.cta2url}">${metadata.cta2text}</a>`
-    : '';
-
-  if(metadata.cta2url?.includes('fragment')){
-    let fragment = metadata.cta2url.split("#")[0];
-    let hash = metadata.cta2url.split("#")[1];
-    cta2 = `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="${metadata.cta2text}" class="modal link-block ${cta2Style}">${metadata.cta2text}</a>`
-  }
+  let cta = getCtaHtml(metadata.cta1url, metadata.cta1text, cta1Classes);
+  let cta2 = getCtaHtml(metadata.cta2url, metadata.cta2text, cta2Classes);
 
   const fgContent = `<div class="text">
     <p class="detail-l">${metadata.details}</p>
-    <h1 class="heading-${typeSize[size][0]}">${metadata.title}</h1>
-    <p class="body-${typeSize[size][1]}">${metadata.description}</p>
+    <h1 class="heading-${HEADING_SIZE[size]}">${metadata.title}</h1>
+    <p class="body-${TEXT_SIZE[size]}">${metadata.description}</p>
     <p class="action-area">
       ${cta} 
       ${cta2}
@@ -298,8 +312,12 @@ export function renderMarquee(marquee, data, id, fallback) {
   }
 
   // Note: Added data-block so marquee can be picked up by milo analytics decorators
-  marquee.setAttribute('data-block', '');
+  addAnalytics(marquee);
   marquee.append(background, foreground);
+}
+
+function addAnalytics(marquee){
+  marquee.setAttribute('data-block', '');
 }
 
 /**
@@ -318,7 +336,7 @@ export default async function init(el) {
 
   // Only in the case of a fallback should we use the variant fields from the viewer table.
   const fallbackVariants = metadata.variant.split(',');
-  marquee.innerHTML = '<div class="lds-ring LOADING"><div></div><div></div><div></div><div></div></div>';
+  marquee.innerHTML = getLoadingSpinnerHtml();
   el.parentNode.prepend(marquee);
 
   const urlParams = new URLSearchParams(window.location.search);
