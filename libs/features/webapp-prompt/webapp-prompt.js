@@ -6,6 +6,9 @@ const CONFIG = {
   selectors: { prompt: '.appPrompt' },
   delay: 7000,
   loaderColor: '#EB1000',
+  // TODO: depending on microbundle investigations,
+  // import this from global-navigation or its utilities
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1" title="Adobe, Inc."><defs><style>.cls-1 {fill: #eb1000;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
 };
 
 const getElemText = (elem) => elem?.textContent?.trim().toLowerCase();
@@ -68,10 +71,11 @@ class AppPrompt {
   getData = async (content) => {
     // TODO: should we have a default app image?
     const image = content.querySelector('picture');
-    this.image = image || '';
+    this.image = image || CONFIG.icon;
 
     const title = content.querySelector('h2');
-    this.title = title?.innerText || '';
+    // TODO: add placeholder to sheet and document that consumers will need to add it too
+    this.title = title?.innerText || await replaceKey('pep-prompt-title', getConfig());
 
     const subtitle = content.querySelector('h3');
     // TODO: add placeholder to sheet and document that consumers will need to add it too
@@ -80,8 +84,6 @@ class AppPrompt {
     // TODO: we might need to also define a primary-like CTA
     const cancelText = content.querySelector('em > a');
     // TODO: add placeholder to sheet and document that consumers will need to add it too
-    // TODO: is there a better way to let authors define the CTA text?
-    // Should we just use a placeholder?
     this.cancelText = cancelText?.innerText || await replaceKey('pep-prompt-cancel', getConfig());
 
     this.profile = {};
