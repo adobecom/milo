@@ -79,6 +79,7 @@ const MILO_BLOCKS = [
   'z-pattern',
   'share',
   'reading-time',
+  'swc-demo',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
