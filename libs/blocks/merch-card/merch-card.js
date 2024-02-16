@@ -118,6 +118,15 @@ const intersectionObserver = new IntersectionObserver((entries) => {
   });
 });
 
+const addTabClickListener = (container) => {
+  const buttons = document.querySelectorAll('button[role="tab"]');
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      intersectionObserver.observe(container);
+    });
+  });
+};
+
 const textStyles = {
   H5: 'detail-m',
   H4: 'body-xxs',
@@ -395,6 +404,7 @@ const init = async (el) => {
     const container = el.closest('[data-status="decorated"]');
     if (container) {
       intersectionObserver.observe(container);
+      addTabClickListener(container);
     }
     footerRows = getMiniCompareChartFooterRows(el);
   }
