@@ -149,7 +149,7 @@ const parseContent = (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
   ];
-  const bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
+  let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
