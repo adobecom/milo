@@ -63,10 +63,12 @@ export const loadGoogleLogin = async (getMetadata, loadIms, loadScript) => {
 // TODO: adapt logic to only start execution after App Switcher loads;
 // we then need to position the prompt relative to it
 export const loadAppPrompt = async (getConfig, getMetadata, loadStyle) => {
+  const state = getMetadata('app-prompt')?.toLowerCase();
   const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
   const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
   const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
-  if (!window.adobeIMS?.isSignedInUser()
+  if (state === 'off'
+    || !window.adobeIMS?.isSignedInUser()
     || !desktopViewport
     || !entName?.length
     || !promptPath?.length) return;
