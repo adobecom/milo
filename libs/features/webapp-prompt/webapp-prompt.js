@@ -121,10 +121,11 @@ class AppPrompt {
       : '';
 
     return toFragment`<div class="appPrompt">
+    ${this.elements.closeIcon}
       <div class="appPrompt-icon">
         ${this.image}
       </div>
-      <h2 class="appPrompt-title">${this.title}</h2>
+      <div class="appPrompt-title">${this.title}</div>
       ${this.elements.profile}
       <div class="appPrompt-footer">
         <div class="appPrompt-text">${this.subtitle}</div>
@@ -133,7 +134,6 @@ class AppPrompt {
       <div class="appPrompt-progressWrapper">
         <div class="appPrompt-progress" style="background-color: ${this.options['loader-color']}; animation-duration: ${this.options['loader-duration']}ms;"></div>
       </div>
-      ${this.elements.closeIcon}
     </div>`;
   };
 
@@ -150,7 +150,7 @@ class AppPrompt {
   };
 
   handleKeyDown = (event) => {
-    if (['Tab', 'Escape', 'Enter'].includes(event.key)) this.close();
+    if ([' ', 'Escape'].includes(event.key)) this.close();
   };
 
   initRedirect = () => setTimeout(() => {
