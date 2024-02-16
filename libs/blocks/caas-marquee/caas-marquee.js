@@ -320,6 +320,11 @@ function addAnalytics(marquee){
   marquee.setAttribute('data-block', '');
 }
 
+async function loadFallback(marquee, fallbackVariants, metadata){
+  marquee.classList.add(...fallbackVariants);
+  await renderMarquee(marquee, [], '', metadata);
+}
+
 /**
  * function init()
  * @param {*} el - element with metadata for marquee
@@ -335,7 +340,7 @@ export default async function init(el) {
   const marquee = createTag('div', { class: `marquee split` });
 
   // Only in the case of a fallback should we use the variant fields from the viewer table.
-  const fallbackVariants = metadata.variant.split(',');
+  const fallbackVariants = metadata.variant.split(',').map((c) => c.trim());
   marquee.innerHTML = getLoadingSpinnerHtml();
   el.parentNode.prepend(marquee);
 
@@ -345,8 +350,7 @@ export default async function init(el) {
     // Requirement:
     // As long as we add easy way for authors to preview their fallback content (via query param)
     // Then we don't have to hardcode any fallbacks in the code.
-    marquee.classList.add(...fallbackVariants);
-    await renderMarquee(marquee, [], '', metadata);
+    await loadFallback(marquee, fallbackVariants, metadata);
     return;
   }
 
@@ -376,7 +380,6 @@ export default async function init(el) {
     ]);
     await renderMarquee(marquee, allMarqueesJson, selectedId, metadata);
   } catch(e){
-    marquee.classList.add(...fallbackVariants);
-    await renderMarquee(marquee, [], '', metadata);
+    await loadFallback(marquee, fallbackVariants, metadata);
   }
 }
