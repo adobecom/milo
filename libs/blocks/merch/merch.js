@@ -165,7 +165,7 @@ export async function getUpgradeAction(options, imsSignedInPromise, productFamil
   return undefined;
 }
 
-async function openExternalModal(url, getModal, offerType) {
+async function openModalExternalModal(url, getModal, offerType) {
   const iframe = createTag('iframe', {
     src: url,
     frameborder: '0',
@@ -187,7 +187,7 @@ export async function openModal(e, url, offerType) {
   e.preventDefault();
   const { getModal } = await import('../modal/modal.js');
   if (/^https?:/.test(url)) {
-    openExternalModal(url, getModal, offerType);
+    openModalExternalModal(url, getModal, offerType);
   }
 }
 
