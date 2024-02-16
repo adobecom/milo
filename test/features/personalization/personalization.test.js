@@ -3,8 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, setConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { ENTITLEMENT_MAP } from '../../../libs/features/personalization/entitlements.js';
-import { applyPers } from '../../../libs/features/personalization/personalization.js';
+import { applyPers, normalizePath } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -20,12 +19,18 @@ const setFetchResponse = (data, type = 'json') => {
   window.fetch = stub().returns(getFetchPromise(data, type));
 };
 
-// Modify the entitlement map with custom keys so tests doesn't rely on real data
-ENTITLEMENT_MAP['11111111-aaaa-bbbb-6666-cccccccccccc'] = 'my-special-app';
-ENTITLEMENT_MAP['22222222-xxxx-bbbb-7777-cccccccccccc'] = 'fireflies';
-
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional Test', () => {
+  before(() => {
+    // Add custom keys so tests doesn't rely on real data
+    const config = getConfig();
+    config.env = { name: 'prod' };
+    config.consumerEntitlements = {
+      '11111111-aaaa-bbbb-6666-cccccccccccc': 'my-special-app',
+      '22222222-xxxx-bbbb-7777-cccccccccccc': 'fireflies',
+    };
+  });
+
   it('replaceContent should replace an element with a fragment', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestReplace.json' });
     manifestJson = JSON.parse(manifestJson);
@@ -231,15 +236,15 @@ describe('Functional Test', () => {
 
   it('should read and use entitlement data', async () => {
     setConfig(getConfig());
-    const { entitlements } = getConfig();
+    const config = getConfig();
+    config.consumerEntitlements = { 'consumer-defined-entitlement': 'fireflies' };
+    config.entitlements = () => Promise.resolve(['indesign-any', 'fireflies', 'after-effects-any']);
 
-    entitlements(['some-app', 'fireflies']);
     let manifestJson = await readFile({ path: './mocks/manifestUseEntitlements.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    const config = getConfig();
-    expect(config.mep?.martech).to.equal('|fireflies|manifest');
+    expect(getConfig().mep?.martech).to.equal('|fireflies|manifest');
   });
 
   it('removeContent should tag z-pattern in preview', async () => {
@@ -255,5 +260,40 @@ describe('Functional Test', () => {
     expect(document.querySelector('.z-pattern')).to.not.be.null;
     await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
     expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+  });
+});
+
+describe('normalizePath function', () => {
+  it('does not localize for US page', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
+    expect(path).to.equal('/path/to/fragment.plain.html');
+  });
+
+  it('does not localize for #_dnt', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html#_dnt');
+    expect(path).to.equal('/path/to/fragment.plain.html');
+  });
+
+  it('does not localize if fragment is already localized', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/de/path/to/fragment.plain.html#_dnt');
+    expect(path).to.equal('/de/path/to/fragment.plain.html');
+  });
+
+  it('does not localize json', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/manifest.json');
+    expect(path).to.equal('/path/to/manifest.json');
+  });
+
+  it('does localize otherwise', async () => {
+    const config = getConfig();
+    config.locales = {
+      de: {
+        ietf: 'de-DE',
+        prefix: '/de',
+      },
+    };
+    config.locale = config.locales.de;
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
+    expect(path).to.equal('/de/path/to/fragment.plain.html');
   });
 });
