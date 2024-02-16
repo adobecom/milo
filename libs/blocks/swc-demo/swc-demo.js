@@ -1,9 +1,13 @@
-import '../../features/spectrum-web-components/dist/button.js';
-import '../../features/spectrum-web-components/dist/checkbox.js';
-import '../../features/spectrum-web-components/dist/textfield.js';
-import '../../features/spectrum-web-components/dist/theme.js';
+import { getConfig } from '../../utils/utils.js';
 
 export default async function main(el) {
+  const { base } = getConfig();
+  await Promise.all([
+    import(`${base}/features/spectrum-web-components/dist/button.js`),
+    import(`${base}/features/spectrum-web-components/dist/checkbox.js`),
+    import(`${base}/features/spectrum-web-components/dist/textfield.js`),
+    import(`${base}/features/spectrum-web-components/dist/theme.js`),
+  ]);
   el.innerHTML = `
   <sp-theme scale="large" color="dark">
   <div id="todo-app">
