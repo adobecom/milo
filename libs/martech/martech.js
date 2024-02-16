@@ -95,6 +95,14 @@ const getTargetPersonalization = async () => {
   return manifests;
 };
 
+const getDtmLib = (env) => ({
+  edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
+  url:
+    env.name === 'prod'
+      ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
+});
+
 const setupEntitlementCallback = () => {
   const setEntitlements = async (destinations) => {
     const { default: parseEntitlements } = await import('../features/personalization/entitlements.js');
@@ -123,21 +131,11 @@ const setupEntitlementCallback = () => {
   );
 };
 
-const getDtmLib = (env) => ({
-  edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
-  url:
-    env.name === 'prod'
-      ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
-});
-
 let filesLoadedPromise = false;
 const loadMartechFiles = async (config, url, edgeConfigId) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
-    loadLink(url, { as: 'script', rel: 'preload', fetchpriority: 'high' });
-
     loadIms()
       .then(() => {
         if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
@@ -172,31 +170,19 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   return filesLoadedPromise;
 };
 
-const preloadFile = (path) => loadLink(path, { as: 'script', rel: 'modulepreload' });
-
-const preloadPersManifests = async (persManifests) => {
-  const { preloadManifests } = await import('../features/personalization/personalization.js');
-  preloadManifests({ persManifests });
-};
-
 export default async function init({ persEnabled = false, persManifests = [] }) {
   const config = getConfig();
 
   const { url, edgeConfigId } = getDtmLib(config.env);
+  loadLink(url, { as: 'script', rel: 'preload' });
+
   const martechPromise = loadMartechFiles(config, url, edgeConfigId);
 
   if (persEnabled) {
-    const base = config.miloLibs || config.codeRoot;
-    preloadFile(`${base}/utils/decorate.js`);
-    preloadFile(`${base}/martech/attributes.js`);
     loadLink(
       `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
-
-    if (persManifests?.length) {
-      preloadPersManifests(persManifests);
-    }
 
     const targetManifests = await getTargetPersonalization();
     if (targetManifests?.length || persManifests?.length) {
