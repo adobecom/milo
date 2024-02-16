@@ -354,3 +354,28 @@ span.preflight-time {
   font-weight: 700;
   margin-left: 72px;
 }
+
+.preflight .martech {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preflight .martech .preflight-action {
+  cursor: pointer;
+}
+
+.dialog-modal#preflight table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  border-color: #fff;
+  background: rgba(0 0 0 / 10%);
+}
+
+.dialog-modal#preflight table td {
+  padding: 2px 10px;
+}
+
+.dialog-modal#preflight table td h3 {
+  font-size: 16px;
+}

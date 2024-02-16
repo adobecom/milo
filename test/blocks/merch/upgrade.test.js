@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import handleUpgradeOffer, { handleIFrameEvents, setModal } from '../../../libs/blocks/merch/upgrade.js';
+import { CC_ALL_APPS, CC_SINGLE_APPS_ALL } from '../../../libs/blocks/merch/merch.js';
 
 const CTA_PRODUCT_FAMILY = 'CC_ALL_APPS';
 const UPGRADE_OFFER = { value: [{ offerId: '632B3ADD940A7FBB7864AA5AD19B8D28' }] };
@@ -34,7 +35,13 @@ describe('Switch Modal (Upgrade Flow)', () => {
     });
 
     it('should return an upgrade action for PROD', async () => {
-      const result = await handleUpgradeOffer(CTA_PRODUCT_FAMILY, UPGRADE_OFFER, ENTITLEMENTS);
+      const result = await handleUpgradeOffer(
+        CTA_PRODUCT_FAMILY,
+        UPGRADE_OFFER,
+        ENTITLEMENTS,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
+      );
       expect(result.text).to.equal('Upgrade Now');
       verifyUrl(result.url, EXPECTED_UPGRADE_URL_PROD);
       const { handler } = result;
@@ -48,13 +55,25 @@ describe('Switch Modal (Upgrade Flow)', () => {
           env: { name: 'stage' },
         },
       );
-      const result = await handleUpgradeOffer(CTA_PRODUCT_FAMILY, UPGRADE_OFFER, ENTITLEMENTS);
+      const result = await handleUpgradeOffer(
+        CTA_PRODUCT_FAMILY,
+        UPGRADE_OFFER,
+        ENTITLEMENTS,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
+      );
       verifyUrl(result.url, EXPECTED_UPGRADE_URL_STAGE);
     });
 
     it('should return undefined if CTA product family is not in the list of upgrade targets', async () => {
       const ctaPF = 'LIGHTROOM';
-      const result = await handleUpgradeOffer(ctaPF, UPGRADE_OFFER, ENTITLEMENTS);
+      const result = await handleUpgradeOffer(
+        ctaPF,
+        UPGRADE_OFFER,
+        ENTITLEMENTS,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
+      );
       expect(result).to.equal(undefined);
     });
 
@@ -73,6 +92,8 @@ describe('Switch Modal (Upgrade Flow)', () => {
         CTA_PRODUCT_FAMILY,
         UPGRADE_OFFER,
         ENTITLEMENTS_WITH_UPGRADE_TARGET,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
       );
       expect(result).to.equal(undefined);
     });
@@ -91,6 +112,8 @@ describe('Switch Modal (Upgrade Flow)', () => {
         CTA_PRODUCT_FAMILY,
         UPGRADE_OFFER,
         ENTITLEMENTS_NO_CP,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
       );
       expect(result).to.equal(undefined);
     });
@@ -109,6 +132,8 @@ describe('Switch Modal (Upgrade Flow)', () => {
         CTA_PRODUCT_FAMILY,
         UPGRADE_OFFER,
         ENTITLEMENTS_NO_CP,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
       );
       expect(result).to.equal(undefined);
     });
@@ -124,6 +149,8 @@ describe('Switch Modal (Upgrade Flow)', () => {
         CTA_PRODUCT_FAMILY,
         UPGRADE_OFFER,
         ENTITLEMENTS_NO_CP,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
       );
       expect(result).to.equal(undefined);
     });
