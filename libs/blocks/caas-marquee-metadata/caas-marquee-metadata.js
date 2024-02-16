@@ -1,5 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 
+const MAX_NUM_CTAS = 2;
 const CTA_STYLES = {
   STRONG: 'blue',
   EM: 'outline',
@@ -9,25 +10,26 @@ function getCtaStyle(tagName) {
 }
 
 function getUrl(ctaLink) {
+  if (!ctaLink) {
+    return '';
+  }
   const modalPath = ctaLink.getAttribute('data-modal-path');
   const modalHash = ctaLink.getAttribute('data-modal-hash');
+  const target = ctaLink.target ? `#${ctaLink.target}` : '';
   if (modalPath && modalHash) {
     return `${modalPath}${modalHash}`;
   }
-  return ctaLink.href;
+  return `${ctaLink.href}${target}`;
 }
 function parseCtas(el) {
   const ctas = {};
-  let index = 1;
-  const a = el.querySelectorAll('a');
-  const ctaLinks = a.length ? a : [{}, {}];
+  const ctaLinks = el.querySelectorAll('a');
 
-  for (const ctaLink of ctaLinks) {
-    ctas[`cta${index}url`] = getUrl(ctaLink) || '';
-    ctas[`cta${index}text`] = ctaLink.textContent?.trim() || '';
-    ctas[`cta${index}style`] = getCtaStyle(ctaLink.parentNode?.tagName);
-    ctas[`cta${index}target`] = ctaLink.target || '';
-    index += 1;
+  for (let i = 1; i <= MAX_NUM_CTAS; i += 1) {
+    const ctaLink = ctaLinks[i - 1] || '';
+    ctas[`cta${i}url`] = getUrl(ctaLink);
+    ctas[`cta${i}text`] = ctaLink.textContent?.trim() || '';
+    ctas[`cta${i}style`] = getCtaStyle(ctaLink.parentNode?.tagName);
   }
   return ctas;
 }
@@ -38,7 +40,9 @@ export const getMetadata = (el) => {
     let val = row.children[1].innerHTML || '';
     if (key.startsWith('image')) {
       const img = row.children[1].querySelector('img');
+      const video = row.children[1].querySelector('.video');
       val = img ? new URL(img.src).pathname : '';
+      val = video ? new URL(video.href).pathname : val;
     }
     if (key.includes('cta')) {
       metadata = { ...metadata, ...parseCtas(row.children[1]) };
@@ -58,16 +62,15 @@ export default function init(el) {
       context: ${metadata.context},
       imageTablet: ${metadata.imagetablet},
       imageDesktop: ${metadata.imagedesktop},
+      backgroundColor: ${metadata.backgroundcolor},
       variant: ${metadata.variant}`.trim(),
     tags: 'caas:content-type/promotion',
     cta1url: `${metadata.cta1url}`,
     cta1text: `${metadata.cta1text}`,
     cta1style: `${metadata.cta1style}`,
-    cta1target: `${metadata.cta1target}`,
     cta2url: `${metadata.cta2url}`,
     cta2text: `${metadata.cta2text}`,
     cta2style: `${metadata.cta2style}`,
-    cta2target: `${metadata.cta2target}`,
   };
 
   for (const [key, val] of Object.entries(additionalFields)) {
