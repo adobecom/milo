@@ -207,7 +207,9 @@ export function renderMarquee(marquee, data, id, fallback) {
 
   // remove loader
   marquee.innerHTML = '';
-  marquee.style.backgroundColor = metadata.backgroundcolor;
+  if(metadata.backgroundcolor){
+    marquee.style.backgroundColor = metadata.backgroundcolor;
+  }
 
   // configure block font sizes
   const classList = metadata.variant.split(',').map((c) => c.trim());
