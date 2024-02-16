@@ -99,13 +99,10 @@ const AUTO_BLOCKS = [
   { merch: '/tools/ost?' },
   { 'offer-preview': '/tools/commerce' },
 ];
-const DO_NOT_INLINE_FRAGMENTS = [
+const DO_NOT_INLINE = [
   'accordion',
   'columns',
   'z-pattern',
-];
-const POSTLCP_LINK_BLOCKS = [
-  'modal',
 ];
 
 const ENVS = {
@@ -215,8 +212,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.doNotInline = conf.doNotInline
-        ? [...DO_NOT_INLINE_FRAGMENTS, ...conf.doNotInline]
-        : DO_NOT_INLINE_FRAGMENTS;
+        ? [...DO_NOT_INLINE, ...conf.doNotInline]
+        : DO_NOT_INLINE;
       const lang = getMetadata('content-language') || config.locale.ietf;
       document.documentElement.setAttribute('lang', lang);
       try {
@@ -303,7 +300,7 @@ export function localizeLink(
 }
 
 export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
-  let link = document.head.querySelector(`link[href="${href}"][rel="${rel}"]`);
+  let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
@@ -715,16 +712,18 @@ async function loadFooter() {
   await loadBlock(footer);
 }
 
-function getBlockLinks(blocks, links, sectionIdx) {
+function decorateSection(section, idx) {
+  let links = decorateLinks(section);
+  decorateDefaults(section);
+  const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
+
   const { doNotInline } = getConfig();
-  return blocks.reduce((blkLinks, block) => {
+  const blockLinks = [...blocks].reduce((blkLinks, block) => {
     const blockName = block.classList[0];
     links.filter((link) => block.contains(link))
       .forEach((link) => {
-        if (sectionIdx === 0 && POSTLCP_LINK_BLOCKS.includes(link.classList[0])) {
-          blkLinks.postLcpLinks.push(link);
-        } else if (link.classList.contains('fragment')
-          && MILO_BLOCKS.includes(blockName)
+        if (link.classList.contains('fragment')
+          && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
           && !doNotInline.includes(blockName)) {
           if (!link.href.includes('#_inline')) {
             link.href = `${link.href}#_inline`;
@@ -735,38 +734,20 @@ function getBlockLinks(blocks, links, sectionIdx) {
         }
       });
     return blkLinks;
-  }, { inlineFrags: [], autoBlocks: [], postLcpLinks: [] });
-}
+  }, { inlineFrags: [], autoBlocks: [] });
 
-function filterOutLinks(links, linksToFilterOut) {
-  if (linksToFilterOut.length) {
-    return links.filter((link) => !linksToFilterOut.includes(link));
+  const embeddedLinks = [...blockLinks.inlineFrags, ...blockLinks.autoBlocks];
+  if (embeddedLinks.length) {
+    links = links.filter((link) => !embeddedLinks.includes(link));
   }
-  return links;
-}
-
-function decorateSection(section, idx) {
-  let links = decorateLinks(section);
-  decorateDefaults(section);
-  const blocks = [...section.querySelectorAll(':scope > div[class]:not(.content)')];
-
-  const blkLinks = getBlockLinks(blocks, links, idx);
-
-  links = filterOutLinks(
-    links,
-    [...blkLinks.postLcpLinks, ...blkLinks.inlineFrags, ...blkLinks.autoBlocks],
-  );
-
   section.className = 'section';
   section.dataset.status = 'decorated';
   section.dataset.idx = idx;
-
   return {
     blocks: [...links, ...blocks],
     el: section,
     idx,
-    preloadLinks: blkLinks.autoBlocks,
-    postLcpLinks: blkLinks.postLcpLinks,
+    preloadLinks: blockLinks.autoBlocks,
   };
 }
 
@@ -819,7 +800,7 @@ export async function loadIms() {
 async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
-    return Promise.resolve();
+    return true;
   }
 
   const query = PAGE_URL.searchParams.get('martech');
@@ -828,10 +809,12 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   }
 
   window.targetGlobalSettings = { bodyHidingEnabled: false };
-
   loadIms().catch(() => {});
+
   const { default: initMartech } = await import('../martech/martech.js');
-  return initMartech({ persEnabled, persManifests });
+  await initMartech({ persEnabled, persManifests });
+
+  return true;
 }
 
 async function checkForPageMods() {
@@ -850,12 +833,9 @@ async function checkForPageMods() {
   if (mepEnabled) {
     const { base } = getConfig();
     loadLink(
-      `${base}/martech/martech.js`,
+      `${base}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
-    loadLink('https://assets.adobedtm.com', { rel: 'preconnect' });
-    loadLink('https://sstats.adobe.com', { rel: 'preconnect' });
-    loadLink('https://auth.services.adobe.com', { rel: 'preconnect' });
   }
 
   if (persEnabled) {
@@ -871,10 +851,10 @@ async function checkForPageMods() {
   }
 
   const { env } = getConfig();
-
+  let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
-  const previewOn = mep !== null || (env?.name !== 'prod' && mepEnabled);
-  if (previewOn) {
+  if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
+    previewOn = true;
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
@@ -886,12 +866,6 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    const { base } = getConfig();
-    loadLink(
-      `${base}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-
     loadIms()
       .then(() => {
         if (window.adobeIMS.isSignedInUser()) loadMartech();
@@ -910,7 +884,7 @@ async function checkForPageMods() {
   }
 }
 
-async function loadPostLCP(config, postLcpLinks = []) {
+async function loadPostLCP(config) {
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
@@ -926,7 +900,6 @@ async function loadPostLCP(config, postLcpLinks = []) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
-  postLcpLinks?.forEach((block) => loadBlock(block));
 }
 
 export function scrollToHashedElement(hash) {
@@ -1085,7 +1058,7 @@ async function processSection(section, config, isDoc) {
   delete section.el.dataset.status;
 
   if (isDoc && section.el.dataset.idx === '0') {
-    await loadPostLCP(config, section.postLcpLinks);
+    await loadPostLCP(config);
   }
 
   delete section.el.dataset.idx;
@@ -1102,12 +1075,11 @@ export async function loadArea(area = document) {
   }
   const config = getConfig();
 
-  const placeholderPromise = decoratePlaceholders(area, config);
+  await decoratePlaceholders(area, config);
 
   if (isDoc) {
     decorateDocumentExtras();
   }
-  await placeholderPromise;
 
   const sections = decorateSections(area, isDoc);
 
