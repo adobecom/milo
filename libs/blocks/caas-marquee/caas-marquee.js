@@ -4,10 +4,9 @@
 // TODO: Update SEGMENT_MAP with final from Martech team
 // TODO: Update Spectra AI endpoint to final one (instead of pointing to local Chimera IO instance)
 // TODO: Fix tablet responsive class issue
-// TODO: Update origin to be pulled from consumers
 
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 
 // TODO: Final list needs to come from Target List before release
 const SEGMENT_MAP = {
@@ -310,8 +309,7 @@ export function renderMarquee(marquee, data, id, fallback) {
 export default async function init(el) {
   const metadata = getMetadata(el);
   const promoId = metadata.promoid;
-  // TODO: Origin needs be pulled from consumer configs and NOT in CaaS Marquee block.
-  const origin = metadata.origin || 'homepage';
+  const origin = getConfig().chimeraOrigin || metadata.origin;
 
   // We shouldn't be adding variant properties from the viewer table as the requirements are each marquee has
   // all their viewing properties completely self-contained.
