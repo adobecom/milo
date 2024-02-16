@@ -57,12 +57,12 @@ export default async function main(el) {
   });
 
   addButton.addEventListener('click', addTask);
+  await el.firstElementChild.updateComplete;
   performance.mark('swc-tbt-finished');
   performance.measure(
     'swc-tbt-duration',
     'swc-tbt-started',
     'swc-tbt-finished',
   );
-  await el.firstElementChild.updateComplete;
   return el;
 }
