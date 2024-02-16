@@ -121,7 +121,7 @@ class AppPrompt {
       : '';
 
     return toFragment`<div class="appPrompt">
-    ${this.elements.closeIcon}
+      ${this.elements.closeIcon}
       <div class="appPrompt-icon">
         ${this.image}
       </div>
