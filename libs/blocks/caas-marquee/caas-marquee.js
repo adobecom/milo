@@ -19,12 +19,34 @@ const SEGMENT_MAP = {
   'bf632803-4412-463d-83c5-757dda3224ee': 'CCSN',
 };
 
+const WIDTHS = {
+  MOBILE: 1440,
+  TABLET: 2048,
+  DESKTOP: 2400
+}
+
+const HEIGHTS = {
+  MOBILE: 992,
+  TABLET: 520,
+  DESKTOP: 813
+}
+
 const LANA_OPTIONS = {
   tags: 'caasMarquee',
 };
 
-// Bumped from 1500 to 2000 as sm-collection was having issues loading fast enough in authoring
-const REQUEST_TIMEOUT = 2000;
+function isProd() {
+  const { host } = window.location;
+  return !(host.includes('hlx.page')
+    || host.includes('localhost')
+    || host.includes('hlx.live')
+    || host.includes('stage.adobe')
+    || host.includes('corp.adobe'));
+}
+
+// Our Chimera-SM BE has no caching on lower tiered environments (as of now) and requests will time out for authors
+// showing them fallback content.
+const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
 
 const typeSize = {
   small: ['xl', 'm', 'm'],
@@ -32,6 +54,10 @@ const typeSize = {
   large: ['xxl', 'xl', 'l'],
   xlarge: ['xxl', 'xl', 'l'],
 };
+
+const IMAGE_EXTENSIONS = /^.*\.(jpg|jpeg|png|gif|bmp|svg|webp|tiff|ico|avif|jfif)$/;
+const VIDEO_EXTENSIONS = /^.*\.(mp4|mpeg|mpg|mov|wmv|avi|webm|ogg)$/;
+
 let segments = ['default'];
 
 // See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
@@ -129,6 +155,38 @@ function normalizeData(data) {
   return metadata;
 }
 
+function getVideoHtml(src){
+  return `<video autoplay muted playsinline> <source src="${src}" type="video/mp4"></video>`
+}
+
+function getImageHtml(src, screen){
+  let format = (screen === 'DESKTOP') ? 'png' : 'jpeg';
+  let style = (screen === 'DESKTOP') ? 'style="object-position: 32% center;"' : '';
+  let fetchPriority = (screen === 'MOBILE') ? 'fetchpriority="high"' : '';
+  let loadingType = (screen === 'MOBIlE') ? 'eager' : 'lazy';
+  let width = WIDTHS[screen];
+  let height = HEIGHTS[screen];
+  return `<picture>
+        <source type="image/webp" srcset="${src}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+        <source type="image/webp" srcset="${src}?width=750&amp;format=webply&amp;optimize=medium">
+        <source type="image/${format}" srcset="${src}?width=2000&amp;format=${format}&amp;optimize=medium" media="(min-width: 600px)">
+        <img loading="${loadingType}" alt src="${src}?width=750&amp;format=${format}&amp;optimize=medium" width="${width}" height="${height}" ${fetchPriority} ${style}>
+  </picture>`
+}
+
+function getContent(src, screen){
+  const isImage = IMAGE_EXTENSIONS.test(src);
+  const isVideo = VIDEO_EXTENSIONS.test(src);
+  let inner = ''
+  if(isImage) {
+    inner = getImageHtml(src);
+  }
+  if(isVideo) {
+    inner = getVideoHtml(src);
+  }
+  return `<div class=${screen}-only>${inner}</div>`
+}
+
 /**
  * function renderMarquee()
  * @param {HTMLElement} marquee - marquee container
@@ -154,32 +212,39 @@ export function renderMarquee(marquee, data, id, fallback) {
         : 'xlarge';
   /* eslint-enable no-nested-ternary */
 
+  const isMobileImage = IMAGE_EXTENSIONS.test(metadata.image);
+  const isTabletImage = IMAGE_EXTENSIONS.test(metadata.imagetablet);
+  const isDesktopImage = IMAGE_EXTENSIONS.test(metadata.imagedesktop);
+
   // background content
-  const bgContent = `<div class="mobile-only">
+  const mobileBgContent = isMobileImage ? `<div class="mobile-only">
     <picture>
       <source type="image/webp" srcset="${metadata.image}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
       <source type="image/webp" srcset="${metadata.image}?width=750&amp;format=webply&amp;optimize=medium">
       <source type="image/jpeg" srcset="${metadata.image}?width=2000&amp;format=jpeg&amp;optimize=medium" media="(min-width: 600px)">
       <img loading="eager" alt="" src="${metadata.image}?width=750&amp;format=jpeg&amp;optimize=medium" width="1440" height="992" fetchpriority="high">
     </picture>
-  </div>
-  <div class="tablet-only">
+  </div>` : `<div class="mobile-only"><video autoPlay muted playsInline> <source src="${metadata.image}" type="video/mp4"></video></div>`;
+
+  const tabletBgContent = isTabletImage ? `<div class="tablet-only">
     <picture>
       <source type="image/webp" srcset="${metadata.imagetablet}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
       <source type="image/webp" srcset="${metadata.imagetablet}?width=750&amp;format=webply&amp;optimize=medium">
       <source type="image/jpeg" srcset="${metadata.imagetablet}?width=2000&amp;format=jpeg&amp;optimize=medium" media="(min-width: 600px)">
       <img loading="lazy" alt="" src="${metadata.imagetablet}?width=750&amp;format=jpeg&amp;optimize=medium" width="2048" height="520">
-  </picture>
-  </div>
-  <div class="desktop-only">
+    </picture>
+  </div>` : `<div class="tablet-only"><video autoPlay muted playsInline> <source src="${metadata.imagetablet}" type="video/mp4"></video></div>`;
+
+  const desktopBgContent = isDesktopImage ? `<div class="desktop-only">
     <picture>
       <source type="image/webp" srcset="${metadata.imagedesktop}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
       <source type="image/webp" srcset="${metadata.imagedesktop}?width=750&amp;format=webply&amp;optimize=medium">
       <source type="image/png" srcset="${metadata.imagedesktop}?width=2000&amp;format=png&amp;optimize=medium" media="(min-width: 600px)">
       <img loading="lazy" alt="" src="${metadata.imagedesktop}?width=750&amp;format=png&amp;optimize=medium" width="2400" height="813" style="object-position: 32% center;">
     </picture>
-  </div>`;
+  </div>` : `<div class="desktop-only"><video autoPlay muted playsInline> <source src="${metadata.imagedesktop}" type="video/mp4"></video></div>`;
 
+  const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
   const background = createTag('div', { class: 'background' });
   background.innerHTML = bgContent;
 
