@@ -121,7 +121,7 @@ export async function getDownloadAction(options, imsSignedInPromise, offerFamily
   const entitlements = await fetchEntitlements();
   if (!entitlements?.length) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(offerFamily);
-  if (!checkoutLinkConfig) return undefined;
+  if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find((
     { offer: { product_arrangement: { family: subscriptionFamily } } },
   ) => {
@@ -164,7 +164,7 @@ export async function getUpgradeAction(options, imsSignedInPromise, productFamil
   return undefined;
 }
 
-async function openModalExternalModal(url, getModal, offerType) {
+async function openExternalModal(url, getModal, offerType) {
   const iframe = createTag('iframe', {
     src: url,
     frameborder: '0',
@@ -186,7 +186,7 @@ export async function openModal(e, url, offerType) {
   e.preventDefault();
   const { getModal } = await import('../modal/modal.js');
   if (/^https?:/.test(url)) {
-    openModalExternalModal(url, getModal, offerType);
+    openExternalModal(url, getModal, offerType);
   }
 }
 
