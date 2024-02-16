@@ -104,7 +104,7 @@ const DO_NOT_INLINE_FRAGMENTS = [
   'columns',
   'z-pattern',
 ];
-const POSTLCP_BLOCKS = [
+const POSTLCP_LINK_BLOCKS = [
   'modal',
 ];
 
@@ -721,8 +721,8 @@ function getBlockLinks(blocks, links, sectionIdx) {
     const blockName = block.classList[0];
     links.filter((link) => block.contains(link))
       .forEach((link) => {
-        if (sectionIdx === 0 && POSTLCP_BLOCKS.includes(link.classList[0])) {
-          blkLinks.postLcpBlocks.push(link);
+        if (sectionIdx === 0 && POSTLCP_LINK_BLOCKS.includes(link.classList[0])) {
+          blkLinks.postLcpLinks.push(link);
         } else if (link.classList.contains('fragment')
           && MILO_BLOCKS.includes(blockName)
           && !doNotInline.includes(blockName)) {
@@ -735,7 +735,7 @@ function getBlockLinks(blocks, links, sectionIdx) {
         }
       });
     return blkLinks;
-  }, { inlineFrags: [], autoBlocks: [], postLcpBlocks: [] });
+  }, { inlineFrags: [], autoBlocks: [], postLcpLinks: [] });
 }
 
 function filterOutLinks(links, linksToFilterOut) {
@@ -745,30 +745,21 @@ function filterOutLinks(links, linksToFilterOut) {
   return links;
 }
 
-function getPostLcpBlocks(blocks) {
-  return blocks.filter((block) => POSTLCP_BLOCKS
-    .some((postLcpBlock) => block.classList[0] === postLcpBlock));
+function getPostLcpLinks(blocks) {
+  return blocks.filter((block) => POSTLCP_LINK_BLOCKS
+    .some((postLcpLink) => block.classList[0] === postLcpLink));
 }
 
 function decorateSection(section, idx) {
   let links = decorateLinks(section);
   decorateDefaults(section);
-  let blocks = [...section.querySelectorAll(':scope > div[class]:not(.content)')];
+  const blocks = [...section.querySelectorAll(':scope > div[class]:not(.content)')];
 
   const blkLinks = getBlockLinks(blocks, links, idx);
 
-  let postLcpLinks = [];
-  let postLcpBlocks = [];
-
-  if (idx === 0) {
-    postLcpLinks = getPostLcpBlocks(links);
-    postLcpBlocks = getPostLcpBlocks(blocks);
-    blocks = filterOutLinks(blocks, postLcpBlocks);
-  }
-
   links = filterOutLinks(
     links,
-    [...postLcpLinks, ...blkLinks.postLcpBlocks, ...blkLinks.inlineFrags, ...blkLinks.autoBlocks],
+    [...blkLinks.postLcpLinks, ...blkLinks.inlineFrags, ...blkLinks.autoBlocks],
   );
 
   section.className = 'section';
@@ -780,7 +771,7 @@ function decorateSection(section, idx) {
     el: section,
     idx,
     preloadLinks: blkLinks.autoBlocks,
-    postLcpBlocks: [...postLcpLinks, ...blkLinks.postLcpBlocks, ...postLcpBlocks],
+    postLcpLinks: blkLinks.postLcpLinks,
   };
 }
 
@@ -924,7 +915,7 @@ async function checkForPageMods() {
   }
 }
 
-async function loadPostLCP(config, postLcpBlocks = []) {
+async function loadPostLCP(config, postLcpLinks = []) {
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
@@ -940,7 +931,7 @@ async function loadPostLCP(config, postLcpBlocks = []) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
-  postLcpBlocks?.forEach((block) => loadBlock(block));
+  postLcpLinks?.forEach((block) => loadBlock(block));
 }
 
 export function scrollToHashedElement(hash) {
@@ -1099,7 +1090,7 @@ async function processSection(section, config, isDoc) {
   delete section.el.dataset.status;
 
   if (isDoc && section.el.dataset.idx === '0') {
-    await loadPostLCP(config, section.postLcpBlocks);
+    await loadPostLCP(config, section.postLcpLinks);
   }
 
   delete section.el.dataset.idx;
