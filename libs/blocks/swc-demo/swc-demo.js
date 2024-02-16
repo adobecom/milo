@@ -2,12 +2,20 @@ import { getConfig } from '../../utils/utils.js';
 
 export default async function main(el) {
   const { base } = getConfig();
+  performance.mark('swc-load-started');
   await Promise.all([
     import(`${base}/features/spectrum-web-components/dist/button.js`),
     import(`${base}/features/spectrum-web-components/dist/checkbox.js`),
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
   ]);
+  performance.mark('swc-load-finished');
+  performance.measure(
+    'swc-load-duration',
+    'swc-load-started',
+    'swc-load-finished',
+  );
+  performance.mark('swc-tbt-started');
   el.innerHTML = `
   <sp-theme scale="large" color="dark">
   <div id="todo-app">
@@ -49,6 +57,11 @@ export default async function main(el) {
   });
 
   addButton.addEventListener('click', addTask);
-
+  performance.mark('swc-tbt-finished');
+  performance.measure(
+    'swc-tbt-duration',
+    'swc-tbt-started',
+    'swc-tbt-finished',
+  );
   return el;
 }
