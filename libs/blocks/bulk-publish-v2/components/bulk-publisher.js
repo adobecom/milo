@@ -209,7 +209,7 @@ class BulkPublish2 extends LitElement {
       <div class="urls${typeof this.disabled !== 'boolean' ? ' invalid' : ''}">
         <div class="error-bar">${this.renderErrorBar()}</div>
         <div class="checkmark${this.disabled ? '' : ' show'}">
-          <img src=${checkmarkIcon} alt="Valid Urls" />
+          <img src=${checkmarkIcon} alt="Checkmark Icon" title="Valid Page Urls" />
         </div>
         <div class="entered-count${this.urls.length ? ' show' : ''}">${this.urls.length}</div>
         <textarea 
@@ -285,7 +285,7 @@ class BulkPublish2 extends LitElement {
           <div 
             class="clear-jobs${showClear}"
             @click=${this.clearJobs}>
-            <img src=${clearJobsIcon} alt="Clear Job List" />
+            <img src=${clearJobsIcon} alt="Clear List Icon" title="Clear Job List" />
           </div>
           <div class="job-progress${loading}">
             ${this.renderProgress(count)}

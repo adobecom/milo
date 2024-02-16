@@ -50,15 +50,14 @@ const setUserData = (event) => {
 };
 
 const authenticate = async (tool = null) => {
-  await delay(2000);
   const statusfetched = (event) => { tool.user = setUserData(event); };
-  const sidekick = document.querySelector('helix-sidekick');
-  if (sidekick) {
-    sidekick.addEventListener('statusfetched', statusfetched);
+  const openSideKick = document.querySelector('helix-sidekick');
+  if (openSideKick) {
+    openSideKick.addEventListener('statusfetched', statusfetched);
   } else {
     document.addEventListener('sidekick-ready', () => {
-      const sidekik = document.querySelector('helix-sidekick');
-      sidekik.addEventListener('statusfetched', statusfetched);
+      const sidekick = document.querySelector('helix-sidekick');
+      sidekick.addEventListener('statusfetched', statusfetched);
     }, { once: true });
   }
 };
