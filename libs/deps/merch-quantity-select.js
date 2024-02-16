@@ -1,4 +1,4 @@
-// Mon, 08 Jan 2024 21:06:16 GMT
+// Mon, 12 Feb 2024 17:51:13 GMT
 
 // src/merch-quantity-select.js
 import { html, css as css2, LitElement } from "/libs/deps/lit-all.min.js";
@@ -17,7 +17,7 @@ var styles = css`
         --input-height: var(--qs-input-height, 30px);
         --input-width: var(--qs-input-width, 72px);
         --button-width: var(--qs-button-width, 30px);
-        --font-size: var(--qs-font-size, 16px);
+        --font-size: var(--qs-font-size, 12px);
         --picker-fill-icon: var(
             --chevron-down-icon,
             url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="10" height="6" aria-hidden="true" viewBox="0 0 10 6"><path fill="%23787878" d="M9.99 1.01A1 1 0 0 0 8.283.3L5 3.586 1.717.3A1 1 0 1 0 .3 1.717L4.293 5.7a1 1 0 0 0 1.414 0L9.7 1.717a1 1 0 0 0 .29-.707z"/></svg>')
@@ -28,6 +28,7 @@ var styles = css`
         color: var(--main-color);
         user-select: none;
         padding: var(--qs-padding, 0);
+        line-height: var(--qs-line-height, 2);
     }
 
     .text-field {
@@ -54,6 +55,7 @@ var styles = css`
     }
 
     .text-field-input {
+        font-size: var(--font-size);
         border: var(--border-width) solid var(--border-color);
         border-top-left-radius: var(--radius);
         border-bottom-left-radius: var(--radius);
@@ -127,6 +129,7 @@ var styles = css`
 
     .item {
         color: var(--text-color);
+        font-size: var(--font-size);
         display: flex;
         width: var(--qs-width, 100%);
         justify-content: center;
@@ -180,6 +183,10 @@ var MerchQuantitySelect = class extends LitElement {
     this.addEventListener("keydown", this.boundKeydownListener);
     window.addEventListener("mousedown", this.handleClickOutside);
   }
+  handleKeyup() {
+    this.handleInput();
+    this.sendEvent();
+  }
   handleKeydown(e) {
     switch (e.key) {
       case ARROW_DOWN:
@@ -198,22 +205,27 @@ var MerchQuantitySelect = class extends LitElement {
         break;
       case "Enter":
         if (!this.closed) {
-          this.selectedValue = this.options[this.highlightedIndex];
-          this.handleMenuOption(null, this.selectedValue);
+          const option = this.options[this.highlightedIndex];
+          if (!option)
+            break;
+          this.selectedValue = option;
+          this.handleMenuOption(this.selectedValue);
           this.toggleMenu();
         } else {
-          const inputField = this.shadowRoot.querySelector(".text-field-input");
-          const inputValue = parseInt(inputField.value);
-          if (!isNaN(inputValue) && inputValue > 0) {
-            this.selectedValue = inputValue;
-            this.highlightedIndex = this.options.indexOf(inputValue);
-            this.handleMenuOption(null, this.selectedValue);
-            inputField.blur();
-          }
-          break;
+          this.closePopover();
         }
+        break;
     }
-    e.stopPropagation();
+    if (e.composedPath().includes(this))
+      e.stopPropagation();
+  }
+  handleInput() {
+    const inputField = this.shadowRoot.querySelector(".text-field-input");
+    const inputValue = parseInt(inputField.value);
+    if (!isNaN(inputValue) && inputValue > 0 && inputValue !== this.selectedValue) {
+      this.selectedValue = inputValue;
+      this.highlightedIndex = this.options.indexOf(inputValue);
+    }
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -233,7 +245,7 @@ var MerchQuantitySelect = class extends LitElement {
     if (changedProperties.has("min") || changedProperties.has("max") || changedProperties.has("step")) {
       this.options = this.generateOptionsArray();
       this.highlightedIndex = 0;
-      this.handleMenuOption(null, this.options[0]);
+      this.handleMenuOption(this.options[0]);
       this.requestUpdate();
     }
   }
@@ -250,20 +262,13 @@ var MerchQuantitySelect = class extends LitElement {
     this.highlightedIndex = index;
     this.requestUpdate();
   }
-  setQuantityChangeHandler(callback) {
-    this.quantityChangeHandler = callback;
-  }
-  handleMenuOption(event, option) {
+  handleMenuOption(option) {
     this.selectedValue = option;
-    this.parentElement.value = option;
-    if (this.quantityChangeHandler) {
-      this.quantityChangeHandler(option);
-    }
     this.sendEvent();
     this.closePopover();
   }
   sendEvent() {
-    const customEvent = new CustomEvent("selection-changed", {
+    const customEvent = new CustomEvent("change", {
       detail: { option: this.selectedValue },
       bubbles: true
     });
@@ -280,7 +285,7 @@ var MerchQuantitySelect = class extends LitElement {
       (option, index) => html`
                     <div
                         class="item ${index === this.highlightedIndex ? "highlighted" : ""}"
-                        @click="${(e) => this.handleMenuOption(e, option)}"
+                        @click="${() => this.handleMenuOption(option)}"
                         @mouseenter="${() => this.handleMouseEnter(index)}"
                     >
                         ${option}
@@ -299,6 +304,7 @@ var MerchQuantitySelect = class extends LitElement {
                     .value="${this.selectedValue}"
                     type="number"
                     @keydown="${this.handleKeydown}"
+                    @keyup="${this.handleKeyup}"
                 />
                 <button class="picker-button" @click="${this.toggleMenu}">
                     <div
