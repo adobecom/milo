@@ -148,9 +148,7 @@ function handleTitleText(cell) {
   cell.append(textSpan);
   const iconTooltip = textSpan.querySelector('.icon-tooltip, .milo-tooltip');
   if (!iconTooltip) return;
-  const tooltipEm = iconTooltip.closest('em');
-  if (tooltipEm) cell.append(tooltipEm);
-  else cell.append(iconTooltip);
+  cell.append(iconTooltip.closest('em') || iconTooltip);
 }
 
 function handleSection(sectionParams) {
