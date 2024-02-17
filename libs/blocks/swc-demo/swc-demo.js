@@ -3,7 +3,7 @@ import { getConfig } from '../../utils/utils.js';
 export default async function main(el) {
   const { base } = getConfig();
   performance.mark('swc-load-started');
-  await Promise.all([
+  const deps = Promise.all([
     import(`${base}/features/spectrum-web-components/dist/button.js`),
     import(`${base}/features/spectrum-web-components/dist/checkbox.js`),
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
@@ -63,5 +63,6 @@ export default async function main(el) {
     'swc-tbt-started',
     'swc-tbt-finished',
   );
+  await deps;
   return el;
 }
