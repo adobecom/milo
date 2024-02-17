@@ -51,6 +51,7 @@ function isProd() {
 // Our Chimera-SM BE has no caching on lower tiered environments (as of now) and requests will time out for authors
 // showing them fallback content.
 const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
+const SEGMENT_API_TIMEOUT = 2500;
 
 const TEXT_SIZE = {
   small: 'm',
@@ -72,22 +73,39 @@ const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
 let segments = ['default'];
 
-// See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
-// for more information on how to integrate with this API.
-window.addEventListener('alloy_sendEvent', (e) => {
-  if (e.detail.type === 'pageView') {
-    let mappedUserSegments = [];
-    let userSegmentIds = e.detail?.result?.destinations?.[0]?.segments || [];
-    for(let userSegmentId of userSegmentIds){
-      if(SEGMENT_MAP[userSegmentId]){
-        mappedUserSegments.push(SEGMENT_MAP[userSegmentId]);
+let marquee;
+let cards;
+let selectedId;
+let metadata;
+let fallbackVariants;
+let loaded = false;
+let timeout;
+
+timeout = setTimeout(async function(){
+  clearTimeout(timeout);
+  await loadFallback(marquee, fallbackVariants, metadata);
+}, SEGMENT_API_TIMEOUT);
+
+async function handler(e){
+    if (e.detail.type === 'pageView') {
+      let mappedUserSegments = [];
+      let userSegments = e.detail?.result?.destinations?.[0]?.segments || [];
+      for(let userSegment of userSegments){
+        if(SEGMENT_MAP[userSegment.id]){
+          mappedUserSegments.push(SEGMENT_MAP[userSegment.id]);
+        }
+      }
+      if(mappedUserSegments.length){
+        segments = mappedUserSegments;
+        selectedId = await getMarqueeId();
+        renderMarquee(marquee, cards, selectedId, metadata);
       }
     }
-    if(mappedUserSegments.length){
-      segments = mappedUserSegments;
-    }
-  }
-});
+}
+
+// See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
+// for more information on how to integrate with this API.
+window.addEventListener('alloy_sendEvent', (e) => handler(e));
 
 async function getAllMarquees(promoId, origin) {
   // TODO: Update this to https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection before release
@@ -96,9 +114,25 @@ async function getAllMarquees(promoId, origin) {
 
   // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
   // See https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
-  return fetch(`${endPoint}?${payload}`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT) }).then((res) => res.json()).catch(error => {
+  let response = await fetch(`${endPoint}?${payload}`, {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT)
+  }).catch(error => {
     window.lana?.log(`getAllMarquees failed: ${error}`, LANA_OPTIONS);
+    return null;
   });
+
+  try {
+    if(!response || response?.status !== 200){
+      console.log(`getAllMarquees: Invalid response or status: response: ${response}, status: ${response?.status} `, LANA_OPTIONS);
+      return [];
+    }
+    let json = await response?.json();
+    let marquees = json?.cards;
+    return Array.isArray(marquees) ? marquees  : [];
+  } catch(e){
+    console.log(`getAllMarquees exception: ${e} `, LANA_OPTIONS);
+    return [];
+  }
 }
 
 /**
@@ -107,7 +141,6 @@ async function getAllMarquees(promoId, origin) {
  */
 async function getMarqueeId() {
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('marqueeId')) return urlParams.get('marqueeId');
   let visitedLinks = [document.referrer];
 
   if(segments.includes('default')){
@@ -127,10 +160,20 @@ async function getMarqueeId() {
     body: `{"endpoint":"community-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${visitedLinks}, "segments": ${segments}}}}`,
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   }).catch(error => {
-    window.lana?.log(`getMarqueeId failed: ${error}`, LANA_OPTIONS);
+    console.log(`getMarqueeId promise caught: ${error}`, LANA_OPTIONS);
+    return null;
   });
-  let json = await response.json();
-  return json?.data?.[0]?.content_id || '';
+  try {
+    if(!response || response?.status !== 200){
+      console.log(`getMarqueeId: Invalid response or status: response: ${response}, status: ${response?.status} `, LANA_OPTIONS);
+      return '';
+    }
+    let json = await response?.json();
+    return json?.data?.[0]?.content_id || '';
+  } catch(e){
+    console.log(`getMarqueeId exception: ${e} `, LANA_OPTIONS);
+    return '';
+  }
 }
 
 /**
@@ -244,13 +287,17 @@ function getCtaClasses(ctaStyle, size){
 /**
  * function renderMarquee()
  * @param {HTMLElement} marquee - marquee container
- * @param {Object} data - marquee data
+ * @param {Array} cards - marquee data
  * @param {string} id - marquee id
  * @returns {void}
  */
-export function renderMarquee(marquee, data, id, fallback) {
-  let chosen = data?.cards?.find(obj => obj.id === id);
-  let shouldRenderMarquee = data?.cards?.length && chosen;
+export function renderMarquee(marquee, cards, id, fallback) {
+  if(loaded){
+    return;
+  }
+  loaded = true;
+  let chosen = cards?.find(obj => obj.id === id);
+  let shouldRenderMarquee = cards?.length && chosen;
   const metadata = shouldRenderMarquee ? normalizeData(chosen) : fallback;
 
   // remove loader
@@ -320,9 +367,13 @@ function addAnalytics(marquee){
   marquee.setAttribute('data-block', '');
 }
 
-async function loadFallback(marquee, fallbackVariants, metadata){
+function splitVariants(variant){
+  return variant.split(/\s+|,/).map((c) => c.trim()).filter(i => i !== '');
+}
+
+function loadFallback(marquee, fallbackVariants, metadata){
   marquee.classList.add(...fallbackVariants);
-  await renderMarquee(marquee, [], '', metadata);
+  renderMarquee(marquee, [], '', metadata);
 }
 
 /**
@@ -330,22 +381,22 @@ async function loadFallback(marquee, fallbackVariants, metadata){
  * @param {*} el - element with metadata for marquee
  */
 export default async function init(el) {
-  const metadata = getMetadata(el);
+  metadata = getMetadata(el);
   const promoId = metadata.promoid;
   const origin = getConfig().chimeraOrigin || metadata.origin;
 
   // We shouldn't be adding variant properties from the viewer table as the requirements are each marquee has
   // all their viewing properties completely self-contained.
   // const marquee = createTag('div', { class: `marquee split ${metadata.variant.replaceAll(',', ' ')}` });
-  const marquee = createTag('div', { class: `marquee split` });
+  marquee = createTag('div', { class: `marquee split` });
 
   // Only in the case of a fallback should we use the variant fields from the viewer table.
-  const fallbackVariants = metadata.variant.split(',').map((c) => c.trim());
+  fallbackVariants = splitVariants(metadata.variant);
   marquee.innerHTML = getLoadingSpinnerHtml();
   el.parentNode.prepend(marquee);
 
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('previewFallback')) {
+  if (urlParams.get('previewFallback') || urlParams.get('martech')) {
     // This query param ensures authors can verify the fallback looks good before publishing live.
     // Requirement:
     // As long as we add easy way for authors to preview their fallback content (via query param)
@@ -358,9 +409,9 @@ export default async function init(el) {
     Note: We cannot do the following code to get the Marquees
     due to performance issues.
 
-    const allMarqueesJson = await getAllMarquees();
+    const cards = await getAllMarquees();
     const selectedId = await getMarqueeId();
-    await renderMarquee(marquee, allMarqueesJson, selectedId);
+    await renderMarquee(marquee, cards, selectedId);
 
     This will cause the code to run synchronously and be blocking.
 
@@ -374,12 +425,11 @@ export default async function init(el) {
 
   */
   try {
-    const [selectedId, allMarqueesJson] = await Promise.all([
-      getMarqueeId(),
-      getAllMarquees(promoId, origin)
-    ]);
-    await renderMarquee(marquee, allMarqueesJson, selectedId, metadata);
+    cards = await getAllMarquees(promoId, origin);
+    if (urlParams.get('marqueeId')) {
+      renderMarquee(marquee, cards, urlParams.get('marqueeId'), metadata);
+    }
   } catch(e){
-    await loadFallback(marquee, fallbackVariants, metadata);
+    loadFallback(marquee, fallbackVariants, metadata);
   }
 }
