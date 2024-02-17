@@ -17,7 +17,7 @@ export default async function main(el) {
   );
   performance.mark('swc-tbt-started');
   el.innerHTML = `
-  <sp-theme scale="large" color="dark">
+  <sp-theme scale="medium" color="light">
   <div id="todo-app">
       <sp-textfield id="new-todo" placeholder="What needs to be done?"></sp-textfield>
       <sp-button variant="cta" id="add-todo">Add</sp-button>
