@@ -1,4 +1,7 @@
 // TODO: Fix tablet responsive class issue
+// TODO: Fix issue where color on video flashes from black to white
+// TODO: Check line about logging 'default' segments and see if it's still relevant
+// TODO: Check LH scores after performance improvements.
 // TODO: Figure out workaround if segments API takes too long to load
 // TODO: Test network latency and if code handles that correctly
 // TODO: Go through all code paths to make sure no exceptions occur
@@ -48,6 +51,14 @@ function isProd() {
     || host.includes('corp.adobe'));
 }
 
+function log(...args){
+  if(!isProd()) {
+    console.log(...args)
+  } else {
+    window.lana?.log(...args);
+  }
+}
+
 // Our Chimera-SM BE has no caching on lower tiered environments (as of now) and requests will time out for authors
 // showing them fallback content.
 const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
@@ -74,8 +85,8 @@ const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 let segments = ['default'];
 
 let marquee;
-let cards;
-let selectedId;
+let cards = [];
+let selectedId = '';
 let metadata;
 let fallbackVariants;
 let loaded = false;
@@ -117,20 +128,20 @@ async function getAllMarquees(promoId, origin) {
   let response = await fetch(`${endPoint}?${payload}`, {
     signal: AbortSignal.timeout(REQUEST_TIMEOUT)
   }).catch(error => {
-    window.lana?.log(`getAllMarquees failed: ${error}`, LANA_OPTIONS);
+    log(`getAllMarquees failed: ${error}`, LANA_OPTIONS);
     return null;
   });
 
   try {
     if(!response || response?.status !== 200){
-      console.log(`getAllMarquees: Invalid response or status: response: ${response}, status: ${response?.status} `, LANA_OPTIONS);
+      log(`getAllMarquees: Invalid response or status: response: ${response}, status: ${response?.status} `, LANA_OPTIONS);
       return [];
     }
     let json = await response?.json();
     let marquees = json?.cards;
     return Array.isArray(marquees) ? marquees  : [];
   } catch(e){
-    console.log(`getAllMarquees exception: ${e} `, LANA_OPTIONS);
+    log(`getAllMarquees exception: ${e} `, LANA_OPTIONS);
     return [];
   }
 }
@@ -144,7 +155,7 @@ async function getMarqueeId() {
   let visitedLinks = [document.referrer];
 
   if(segments.includes('default')){
-    window.lana?.log(`Segment didn't load in time, sending default profile to Spectra AI`, LANA_OPTIONS);
+    log(`Segment didn't load in time, sending default profile to Spectra AI`, LANA_OPTIONS);
   }
 
   // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
@@ -160,18 +171,18 @@ async function getMarqueeId() {
     body: `{"endpoint":"community-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${visitedLinks}, "segments": ${segments}}}}`,
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   }).catch(error => {
-    console.log(`getMarqueeId promise caught: ${error}`, LANA_OPTIONS);
+    log(`getMarqueeId promise caught: ${error}`, LANA_OPTIONS);
     return null;
   });
   try {
     if(!response || response?.status !== 200){
-      console.log(`getMarqueeId: Invalid response or status: response: ${response}, status: ${response?.status} `, LANA_OPTIONS);
+      log(`getMarqueeId: Invalid response or status: response: ${response}, status: ${response?.status} `, LANA_OPTIONS);
       return '';
     }
     let json = await response?.json();
     return json?.data?.[0]?.content_id || '';
   } catch(e){
-    console.log(`getMarqueeId exception: ${e} `, LANA_OPTIONS);
+    log(`getMarqueeId exception: ${e} `, LANA_OPTIONS);
     return '';
   }
 }
@@ -401,8 +412,11 @@ export default async function init(el) {
     // Requirement:
     // As long as we add easy way for authors to preview their fallback content (via query param)
     // Then we don't have to hardcode any fallbacks in the code.
-    await loadFallback(marquee, fallbackVariants, metadata);
+    loadFallback(marquee, fallbackVariants, metadata);
     return;
+  }
+  if (urlParams.get('marqueeId')) {
+    renderMarquee(marquee, cards, urlParams.get('marqueeId'), metadata);
   }
 
   /*
@@ -410,26 +424,9 @@ export default async function init(el) {
     due to performance issues.
 
     const cards = await getAllMarquees();
-    const selectedId = await getMarqueeId();
-    await renderMarquee(marquee, cards, selectedId);
-
-    This will cause the code to run synchronously and be blocking.
-
-    See the MDN docs warning not to do this for more context/information:
-    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all#using_promise.all_with_async_functions
-
-    We need to use Promise.all to get all the information we need in parallel.
-
-    See LH scores by using Promise.all here:
-    https://pagespeed.web.dev/analysis/https-caas-marquee-viewer-lh-test--milo--adobecom-hlx-page-drafts-sanrai-marquee-viewer-cc-lapsed/av1124mjs0?form_factor=mobile
-
+    This causes the code to run synchronously and block (has been empirically verified).
   */
-  try {
-    cards = await getAllMarquees(promoId, origin);
-    if (urlParams.get('marqueeId')) {
-      renderMarquee(marquee, cards, urlParams.get('marqueeId'), metadata);
-    }
-  } catch(e){
-    loadFallback(marquee, fallbackVariants, metadata);
-  }
+  getAllMarquees(promoId, origin).then(resp => {
+    cards = resp;
+  });
 }
