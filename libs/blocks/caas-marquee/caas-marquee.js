@@ -316,6 +316,7 @@ export function renderMarquee(marquee, cards, id, fallback) {
   // configure block font sizes
   const classList = metadata.variant.split(',').map((c) => c.trim());
   const isSplit = metadata.variant.includes('split');
+  const isReversed = metadata.variant.includes('row-reversed');
   // TODO: Update this to using a map to prevent nested ternaries
   /* eslint-disable no-nested-ternary */
   const size = classList.includes('small') ? 'small'
@@ -341,12 +342,15 @@ export function renderMarquee(marquee, cards, id, fallback) {
 
   let cta1Classes = getCtaClasses(metadata.cta1style, size);
   let cta2Classes = getCtaClasses(metadata.cta2style, size);
+  const reversedFiller = isReversed && !isSplit
+    ? '<div data-valign="middle" class="media image"></div>'
+    : '';
 
   // foreground content
   let cta = getCtaHtml(metadata.cta1url, metadata.cta1text, cta1Classes);
   let cta2 = getCtaHtml(metadata.cta2url, metadata.cta2text, cta2Classes);
 
-  const fgContent = `<div class="text">
+  const fgContent = `${reversedFiller}<div class="text">
     <p class="detail-l">${metadata.details}</p>
     <h1 class="heading-${HEADING_SIZE[size]}">${metadata.title}</h1>
     <p class="body-${TEXT_SIZE[size]}">${metadata.description}</p>
@@ -394,7 +398,7 @@ export default async function init(el) {
   // We shouldn't be adding variant properties from the viewer table as the requirements are each marquee has
   // all their viewing properties completely self-contained.
   // const marquee = createTag('div', { class: `marquee split ${metadata.variant.replaceAll(',', ' ')}` });
-  marquee = createTag('div', { class: `marquee split` });
+  marquee = createTag('div', { class: `marquee` });
 
   // Only in the case of a fallback should we use the variant fields from the viewer table.
   marquee.innerHTML = getLoadingSpinnerHtml();
