@@ -41,6 +41,9 @@ const LANA_OPTIONS = {
 };
 
 const BUTTON_STYLES = ['blue', 'outline'];
+const isProd = isProd();
+const urlParams = new URLSearchParams(window.location.search);
+const debug = urlParams.get('debug');
 
 function isProd() {
   const { host } = window.location;
@@ -52,7 +55,7 @@ function isProd() {
 }
 
 function log(...args){
-  if(!isProd()) {
+  if(!isProd|| debug) {
     console.log(...args)
   } else {
     window.lana?.log(...args);
@@ -152,7 +155,6 @@ async function getAllMarquees(promoId, origin) {
  * @returns {string} id - currently marquee index (eventually will be marquee ID from Spectra)
  */
 async function getMarqueeId() {
-  const urlParams = new URLSearchParams(window.location.search);
   let visitedLinks = [document.referrer];
 
   if(segments.includes('default')){
@@ -407,7 +409,6 @@ export default async function init(el) {
   marquee.innerHTML = getLoadingSpinnerHtml();
   el.parentNode.prepend(marquee);
 
-  const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('previewFallback') || urlParams.get('martech')) {
     // This query param ensures authors can verify the fallback looks good before publishing live.
     // Requirement:
@@ -415,9 +416,6 @@ export default async function init(el) {
     // Then we don't have to hardcode any fallbacks in the code.
     loadFallback(marquee, fallbackVariants, metadata);
     return;
-  }
-  if (urlParams.get('marqueeId')) {
-    renderMarquee(marquee, cards, urlParams.get('marqueeId'), metadata);
   }
 
   /*
@@ -429,5 +427,8 @@ export default async function init(el) {
   */
   getAllMarquees(promoId, origin).then(resp => {
     cards = resp;
+    if (urlParams.get('marqueeId')) {
+      renderMarquee(marquee, cards, urlParams.get('marqueeId'), metadata);
+    }
   });
 }
