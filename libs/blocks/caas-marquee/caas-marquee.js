@@ -1,5 +1,4 @@
 // TODO: Fix tablet responsive class issue
-// TODO: Fix issue where color on video flashes from black to white
 // TODO: Check line about logging 'default' segments and see if it's still relevant
 // TODO: Check LH scores after performance improvements.
 // TODO: Figure out workaround if segments API takes too long to load
@@ -85,20 +84,17 @@ const IMAGE_EXTENSIONS = /^.*\.(jpg|jpeg|png|gif|bmp|svg|webp|tiff|ico|avif|jfif
 const VIDEO_EXTENSIONS = /^.*\.(mp4|mpeg|mpg|mov|wmv|avi|webm|ogg)$/;
 const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
-let segments = ['default'];
-
+let segments = [];
 let marquee;
 let cards = [];
 let selectedId = '';
 let metadata;
-let fallbackVariants;
 let loaded = false;
 let timeout;
 
 timeout = setTimeout(async function(){
   clearTimeout(timeout);
-  log('Segments not loaded in time. Loading fallback');
-  await loadFallback(marquee, fallbackVariants, metadata);
+  await loadFallback(marquee, metadata);
 }, SEGMENT_API_TIMEOUT);
 
 async function handler(e){
@@ -156,10 +152,7 @@ async function getAllMarquees(promoId, origin) {
  */
 async function getMarqueeId() {
   let visitedLinks = [document.referrer];
-
-  if(segments.includes('default')){
-    log(`Segment didn't load in time, sending default profile to Spectra AI`, LANA_OPTIONS);
-  }
+  log(`Segments: ${segments} sent to Spectra AI`, LANA_OPTIONS);
 
   // { signal: AbortSignal.timeout(TIMEOUT_TIME) } is way to cancel a request after T seconds using fetch
   // See https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
@@ -368,7 +361,7 @@ export function renderMarquee(marquee, cards, id, fallback) {
 
   // apply marquee variant to viewer
   if (metadata.variant) {
-    const classes = metadata.variant.split(' ').map((c) => c.trim());
+    const classes = getClasses(metadata.variant);
     marquee.classList.add(...classes);
   }
 
@@ -381,12 +374,11 @@ function addAnalytics(marquee){
   marquee.setAttribute('data-block', '');
 }
 
-function splitVariants(variant){
-  return variant.split(/\s+|,/).map((c) => c.trim()).filter(i => i !== '');
+function getClasses(variant){
+  return variant.split(' ').map((c) => c.trim()).filter(i => i !== '');
 }
 
-function loadFallback(marquee, fallbackVariants, metadata){
-  marquee.classList.add(...fallbackVariants);
+function loadFallback(marquee, metadata){
   renderMarquee(marquee, [], '', metadata);
 }
 
@@ -405,16 +397,15 @@ export default async function init(el) {
   marquee = createTag('div', { class: `marquee split` });
 
   // Only in the case of a fallback should we use the variant fields from the viewer table.
-  fallbackVariants = splitVariants(metadata.variant);
   marquee.innerHTML = getLoadingSpinnerHtml();
   el.parentNode.prepend(marquee);
 
-  if (urlParams.get('previewFallback') || urlParams.get('martech')) {
+  if (urlParams.get('previewFallback')) {
     // This query param ensures authors can verify the fallback looks good before publishing live.
     // Requirement:
     // As long as we add easy way for authors to preview their fallback content (via query param)
     // Then we don't have to hardcode any fallbacks in the code.
-    loadFallback(marquee, fallbackVariants, metadata);
+    loadFallback(marquee, metadata);
     return;
   }
 
