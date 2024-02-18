@@ -400,7 +400,7 @@ export default async function init(el) {
   marquee.innerHTML = getLoadingSpinnerHtml();
   el.parentNode.prepend(marquee);
 
-  if (urlParams.get('previewFallback')) {
+  if (urlParams.get('previewFallback') || urlParams.get('martech')) {
     // This query param ensures authors can verify the fallback looks good before publishing live.
     // Requirement:
     // As long as we add easy way for authors to preview their fallback content (via query param)
