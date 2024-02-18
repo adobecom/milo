@@ -41,7 +41,7 @@ const LANA_OPTIONS = {
 };
 
 const BUTTON_STYLES = ['blue', 'outline'];
-const isProd = isProd();
+const prod = isProd();
 const urlParams = new URLSearchParams(window.location.search);
 const debug = urlParams.get('debug');
 
@@ -55,7 +55,7 @@ function isProd() {
 }
 
 function log(...args){
-  if(!isProd|| debug) {
+  if(!prod|| debug) {
     console.log(...args)
   } else {
     window.lana?.log(...args);
