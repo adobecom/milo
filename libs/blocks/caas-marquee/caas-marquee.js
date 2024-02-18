@@ -94,6 +94,7 @@ let timeout;
 
 timeout = setTimeout(async function(){
   clearTimeout(timeout);
+  log('Segments not loaded in time. Loading fallback');
   await loadFallback(marquee, fallbackVariants, metadata);
 }, SEGMENT_API_TIMEOUT);
 
