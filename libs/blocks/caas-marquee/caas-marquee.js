@@ -174,15 +174,13 @@ async function getMarqueeId() {
   const visitedLinks = [document.referrer];
   log(`Segments: ${segments} sent to Spectra AI`, LANA_OPTIONS);
   const endPoint = isProd() ? API_CONFIGS.spectra.prod : API_CONFIGS.spectra.stage;
-
-  // TODO: Update this to final Spectra AI model before release
   const response = await fetch(endPoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': 'ChimeraAcom',
     },
-    body: `{"endpoint":"community-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${visitedLinks}, "segments": ${segments}}}}`,
+    body: `{"endpoint":"acom-banner-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${JSON.stringify(visitedLinks)}, "segment": ${JSON.stringify(segments)}}}}`,
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   }).catch((error) => fetchExceptionHandler('getMarqueeId', error));
 
