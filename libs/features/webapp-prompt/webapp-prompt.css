@@ -138,6 +138,10 @@
     left: 12px;
   }
 
+  .appPrompt-close:focus {
+    outline: 2px solid #157AF3;
+  }
+
   .appPrompt-progressWrapper {
     position: absolute;
     bottom: 0;
