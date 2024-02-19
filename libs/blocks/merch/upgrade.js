@@ -16,7 +16,7 @@ const isProductFamily = (offer, pfs) => {
 };
 export const LANA_OPTIONS = {
   clientId: 'merch-at-scale',
-  sampleRate: 100,
+  sampleRate: 10,
   tags: 'manage-plan',
 };
 
