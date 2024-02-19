@@ -467,8 +467,16 @@ describe('Merch Block', () => {
       expect(checkoutLinkConfig).to.be.undefined;
     });
 
-    it('getDownloadAction: returns undefined', async () => {
+    it('getDownloadAction: returns undefined if not entitled', async () => {
       const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'ILLUSTRATOR');
+      expect(checkoutLinkConfig).to.be.undefined;
+    });
+
+    it('getDownloadAction: returns undefined if download URL is empty', async () => {
+      const [photoshopConfig] = CHECKOUT_LINK_CONFIGS.data;
+      photoshopConfig.DOWNLOAD_URL = '';
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'PHOTOSHOP');
       expect(checkoutLinkConfig).to.be.undefined;
     });
 

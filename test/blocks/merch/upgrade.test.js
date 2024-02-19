@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
-import sinon, { stub } from 'sinon';
+import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import handleUpgradeOffer, { handleIFrameEvents, setModal } from '../../../libs/blocks/merch/upgrade.js';
+import handleUpgradeOffer, { handleIFrameEvents, lanaLog } from '../../../libs/blocks/merch/upgrade.js';
 import { CC_ALL_APPS, CC_SINGLE_APPS_ALL } from '../../../libs/blocks/merch/merch.js';
 
 const CTA_PRODUCT_FAMILY = 'CC_ALL_APPS';
@@ -16,6 +16,7 @@ const ENTITLEMENTS = [
   },
 ];
 const config = {
+  codeRoot: '/libs',
   env: { name: 'prod' },
   placeholders: { 'upgrade-now': 'Upgrade Now' },
 };
@@ -29,9 +30,28 @@ const verifyUrl = (url, expectedUrl) => {
   expect(parsedUrl.toString()).to.equal(parsedExpectedUrl.toString());
 };
 describe('Switch Modal (Upgrade Flow)', () => {
+  before(async () => {
+    setConfig(config);
+  });
   describe('handleUpgradeOffer', () => {
-    before(async () => {
-      setConfig(config);
+    it('return an action that will show iframe in modal', async () => {
+      const action = await handleUpgradeOffer(
+        CTA_PRODUCT_FAMILY,
+        UPGRADE_OFFER,
+        ENTITLEMENTS,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
+      );
+      const { handler } = action;
+      expect(handler).to.be.a('function');
+      await handler(new Event('click'));
+      const modal = document.querySelector('.dialog-modal.upgrade-flow-modal');
+      expect(modal).to.exist;
+      const iframe = modal.querySelector('iframe');
+      expect(iframe.getAttribute('src').startsWith('https://plan.adobe.com/?intent=switch')).to.be.true;
+      expect(iframe.classList.contains('loading')).to.be.true;
+      expect(modal.querySelector('sp-progress-circle')).to.exist;
+      modal?.dispatchEvent(new Event('closeModal'));
     });
 
     it('should return an upgrade action for PROD', async () => {
@@ -118,7 +138,7 @@ describe('Switch Modal (Upgrade Flow)', () => {
       expect(result).to.equal(undefined);
     });
 
-    it('should return undefined if no entitlement offer is not in upgrade source offers', async () => {
+    it('should return undefined if entitlement offer is not in upgrade source offers', async () => {
       const ENTITLEMENTS_NO_CP = [
         {
           offer: {
@@ -141,7 +161,10 @@ describe('Switch Modal (Upgrade Flow)', () => {
     it('should return undefined if failed to build upgrade url', async () => {
       const ENTITLEMENTS_NO_CP = [
         {
-          offer: {},
+          offer: {
+            offer_id: null,
+            product_arrangement: { family: 'ILLUSTRATOR' },
+          },
           change_plan_available: true,
         },
       ];
@@ -165,6 +188,25 @@ describe('Switch Modal (Upgrade Flow)', () => {
       window.open = originalOpen;
     });
 
+    it('should remove loading class and remove sp-theme if type AppLoaded', async () => {
+      const action = await handleUpgradeOffer(
+        CTA_PRODUCT_FAMILY,
+        UPGRADE_OFFER,
+        ENTITLEMENTS,
+        CC_SINGLE_APPS_ALL,
+        CC_ALL_APPS,
+      );
+      const { handler } = action;
+      await handler(new Event('click'));
+      const iframe = document.querySelector('.upgrade-flow-modal iframe');
+      expect(iframe.classList.contains('loading')).to.be.true;
+      expect(document.querySelector('.upgrade-flow-content sp-theme')).to.exist;
+
+      handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"AppLoaded","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' });
+      expect(iframe.classList.contains('loading')).to.be.false;
+      expect(document.querySelector('.upgrade-flow-content sp-theme')).not.to.exist;
+    });
+
     it('should open external url if Type External', async () => {
       const message = { data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
       handleIFrameEvents(message);
@@ -185,18 +227,22 @@ describe('Switch Modal (Upgrade Flow)', () => {
       expect(returnUrl).to.equal('https://www.adobe.com');
     });
 
-    it('should set close modal and reload page', async () => {
-      const dispatchEventStub = stub();
-      const modal = { dispatchEvent: dispatchEventStub };
-      setModal(modal);
+    it('should log lana message', async () => {
+      const originalLana = window.lana;
+      const originalAdobeIMS = window.adobeIMS;
+      const log = sinon.stub();
+      const getProfile = sinon.stub().callsFake(() => ({ userId: '123' }));
+      window.adobeIMS = { getProfile };
+      window.lana = { log };
 
-      handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"Close","data":{"actionRequired":false}}' });
-      expect(dispatchEventStub.calledOnceWith(new Event('closeModal'))).to.be.true;
+      await lanaLog('Showing modal', 'AppLoaded');
+      expect(log.calledOnce).to.be.true;
+      window.lana = originalLana;
+      window.adobeIMS = originalAdobeIMS;
     });
 
     [
       [{ data: {} }, 'should do nothing if message is not parseble'],
-      [{ data: '{"app":"ManagePlan","subType":"AppLoaded","data":{"actionRequired":false}}' }, 'should do nothing if message is not parseble'],
       [{ data: '{"app":"ManagePlan","subType":"Invalid","data":{"actionRequired":false}}' }, 'should do nothing if message type is not valid'],
       [{ data: '{"app":"ManagePlan","subType":"Error","data":{"actionRequired":false}}' }, 'should do nothing if message type is error'],
     ].forEach(([message, desc]) => {
