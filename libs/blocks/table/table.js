@@ -143,10 +143,11 @@ function handleExpand(e) {
  */
 
 function handleTitleText(cell) {
+  if (cell.querySelector('.table-title-text')) return;
   const textSpan = createTag('span', { class: 'table-title-text' });
   while (cell.firstChild) textSpan.append(cell.firstChild);
   cell.append(textSpan);
-  const iconTooltip = textSpan.querySelector('.icon-tooltip, .milo-tooltip');
+  const iconTooltip = textSpan.querySelector('.icon-info, .icon-tooltip, .milo-tooltip');
   if (!iconTooltip) return;
   cell.append(iconTooltip.closest('em') || iconTooltip);
 }
