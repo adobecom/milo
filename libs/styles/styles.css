@@ -421,7 +421,7 @@
   color: var(--color-black);
 }
 
-.con-button svg.icon-milo {
+.con-button icon-milo svg {
   display: inline-block;
   height: 1em;
   width: 1em;

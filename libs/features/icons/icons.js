@@ -7,8 +7,8 @@
  * @property {Array.<string, iconSize>} supportedSizes Supported Suffix Sizes
  */
 const options = {
-  debug: true,
-  lazy: true,
+  debug: false,
+  lazy: false,
   defaultSet: 's1',
   supportedSets: ['-s2', '-sx', '-test'],
   supportedSizes: ['-size-xxs', '-size-xs', '-size-s', '-size-m', '-size-l', '-size-xl', '-size-xxl', '-size-initial'],
@@ -161,8 +161,8 @@ class MiloIconElement extends HTMLElement {
 
 customElements.define('milo-icon', MiloIconElement);
 
-function getIconAttributes(iconName, baseUrl) {
-
+function getIconAttributes(icon, baseUrl) {
+  const iconName = icon.classList[1].replace('icon-', '');
   let libOrigin = 'https://milo.adobe.com/libs';
   // const { origin } = window.location;
   // if (origin.includes('localhost') || origin.includes('.hlx.')) {
@@ -195,15 +195,42 @@ function getIconAttributes(iconName, baseUrl) {
     attrs["data-url"] = `${baseUrl}/img/icons/${attrs.type}/${newName}.svg`;
   }
 
-  const attributes = Object.keys(attrs).map((k) => `${k}="${attrs[k]}"`).join(' ');
-  return attributes;
+  return attrs;
 }
 
-async function decorateIcons(icons, base) {
-  [...icons].forEach(async (icon) => {
-    const iconName = icon.classList[1].replace('icon-', '');
-    const attrs = getIconAttributes(iconName, base);
-    icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attrs}></milo-icon>`);
+function setNodeIndexClass(icon) {
+  const parent = icon.parentNode;
+  const children = parent.childNodes;
+  const nodeIndex = Array.prototype.indexOf.call(children, icon);
+  let indexClass = (nodeIndex === children.length - 1) ? 'last' : nodeIndex;
+  if (nodeIndex === 0) indexClass = 'first'
+  icon.classList.add(`node-index-${indexClass}`);
+}
+
+function decorateToolTip(icon) {
+  const wrapper = icon.closest('em');
+  wrapper.className = 'tooltip-wrapper';
+  if (!wrapper) return;
+  const conf = wrapper.textContent.split('|');
+  // Text is the last part of a tooltip
+  const content = conf.pop().trim();
+  if (!content) return;
+  icon.dataset.tooltip = content;
+  // Position is the next to last part of a tooltip
+  const place = conf.pop()?.trim().toLowerCase() || 'right';
+  icon.className = `icon icon-info milo-tooltip ${place}`;
+  wrapper.parentElement.replaceChild(icon, wrapper);
+}
+
+export default async function loadIcons(icons, base) {
+  icons.forEach(async (icon) => {
+    const { classList } = icon;
+    if (classList.contains('icon-tooltip')) decorateToolTip(icon);
+    const attrs = getIconAttributes(icon, base);
+    setNodeIndexClass(icon);
+    icon.classList.add(`icon-milo-${attrs.name}`);
+    const attributes = Object.keys(attrs).map((k) => `${k}="${attrs[k]}"`).join(' ');
+    icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attributes}></milo-icon>`);
     
     // const svgElem = `<svg xmlns="http://www.w3.org/2000/svg" class="icon-milo">
     //   <image crossorigin="anonymous" href="${base}/img/icons/s1/${iconName}.svg"/>
@@ -212,8 +239,4 @@ async function decorateIcons(icons, base) {
     // icon.insertAdjacentHTML('afterbegin', svgImg);
     return icon;
   });
-}
-
-export default async function loadIcons(icons, base) {
-  await decorateIcons(icons, base);
 }
