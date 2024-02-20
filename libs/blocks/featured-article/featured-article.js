@@ -34,6 +34,7 @@ export default async function init(el) {
   const pic = doc.body.querySelector('picture');
   const img = pic.querySelector('img');
   img.removeAttribute('loading');
+  img.setAttribute('fetchpriority', 'high');
   const featuredImg = createTag('div', { class: 'featured-article-card-image' }, pic);
   const categoryEl = createTag('div', { class: 'featured-article-card-category' });
   img.addEventListener('load', () => {
@@ -49,5 +50,7 @@ export default async function init(el) {
   const date = createTag('p', { class: 'featured-article-card-date' }, dateMeta);
 
   body.append(categoryEl, title, description, date);
-  a.append(featuredImg, body);
+  const fragment = document.createDocumentFragment();
+  fragment.append(featuredImg, body);
+  a.append(fragment);
 }
