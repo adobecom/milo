@@ -9,6 +9,8 @@ const PROCESS_TYPES = [
   'index',
 ];
 
+const isDelete = (type) => ['delete', 'unpublish'].includes(type);
+
 const delay = (timeout = 3000) => new Promise((resolve) => {
   setTimeout(() => resolve(), timeout);
 });
@@ -48,6 +50,8 @@ const editEntry = (el, str) => {
     el.scrollTop = position;
   }
 };
+
+const frisk = (permissions, action) => !!permissions?.includes(action);
 
 const getJobErrorText = (errors, process) => {
   const [message] = errors.messages;
@@ -108,12 +112,14 @@ const processJobResult = (jobs) => jobs.reduce((result, job) => {
 }, { complete: [], error: [] });
 
 export {
+  frisk,
   displayDate,
   editEntry,
   FORM_MODES,
   getErrorText,
   getJobErrorText,
   getAemUrl,
+  isDelete,
   PROCESS_TYPES,
   processJobResult,
   getStatusText,

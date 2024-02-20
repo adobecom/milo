@@ -1,10 +1,16 @@
-import { PROCESS_TYPES, getErrorText, getAemUrl, delay } from './utils.js';
+import {
+  PROCESS_TYPES,
+  getErrorText,
+  getAemUrl,
+  delay,
+  frisk,
+  isDelete,
+} from './utils.js';
 
 const BASE_URL = 'https://admin.hlx.page';
 const headers = { 'Content-Type': 'application/json' };
 
 const isLive = (type) => ['publish', 'unpublish'].includes(type);
-const isDelete = (type) => ['delete', 'unpublish'].includes(type);
 const getProcessAlias = (type) => {
   if (type === 'index') return type;
   if (isLive(type)) return 'live';
@@ -41,7 +47,11 @@ const setUserData = (event) => {
     PROCESS_TYPES.forEach((key) => {
       if (key !== 'index') {
         const process = isLive(key) ? 'live' : 'preview';
-        permissions[key] = !!processes[process]?.permissions?.includes('list');
+        const userPermissions = processes[process]?.permissions;
+        permissions[key] = {
+          useBulk: frisk(userPermissions, 'list'),
+          canUse: frisk(userPermissions, 'write'),
+        };
       }
     });
     return { profile, permissions };
@@ -75,7 +85,7 @@ const prepareJobs = (details, useBulk) => {
     let base = url.host;
     // groups of 100 for users without 'list' permissions
     /* c8 ignore next 3 */
-    while (!details.hasPermission && jobs[base]?.options.body.paths.length >= 100) {
+    while (!details.useBulk && jobs[base]?.options.body.paths.length >= 100) {
       base = `${base}+`;
     }
     if (!jobs[base]) jobs[base] = getRequest(url, process);

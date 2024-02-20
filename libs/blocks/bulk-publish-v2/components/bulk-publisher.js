@@ -4,14 +4,15 @@ import { getSheet } from '../../../../tools/utils/utils.js';
 import { authenticate, startJob } from '../services.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
+  delay,
   editEntry,
   FORM_MODES,
   getJobErrorText,
+  isValidUrl,
   processJobResult,
   PROCESS_TYPES,
   sticky,
-  isValidUrl,
-  delay,
+  isDelete,
 } from '../utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -166,6 +167,27 @@ class BulkPublish2 extends LitElement {
     `;
   }
 
+  selectingProcess(event) {
+    const select = this.shadowRoot.querySelector('#ProcessSelect');
+    if (event.altKey === true) {
+      const indexOpt = document.createElement('option');
+      indexOpt.value = 'index';
+      indexOpt.text = 'index';
+      select.add(indexOpt);
+    } else {
+      select.querySelector('option[value="index"')?.remove();
+    }
+  }
+
+  getProcess = (type) => {
+    const userPermissions = this.user?.permissions[type];
+    const needsBulk = isDelete(type) && userPermissions?.useBulk === false;
+    if (needsBulk || userPermissions?.canUse === false) {
+      return html`<option disabled value=${type}>${type}</option>`;
+    }
+    return html`<option value=${type}>${type}</option>`;
+  };
+
   renderJobForm() {
     if (this.openJobs && this.mode === 'full') {
       return html`
@@ -176,13 +198,6 @@ class BulkPublish2 extends LitElement {
           </span>
         </div>`;
     }
-    const getProcess = (type) => {
-      const isDelete = ['delete', 'unpublish'].includes(type);
-      if (isDelete && this.user?.permissions[type] === false) {
-        return html`<option disabled value=${type}>${type}</option>`;
-      }
-      return html`<option value=${type}>${type}</option>`;
-    };
     const exUrl = `${window.location.href.replace(window.location.pathname, '')}/path/to/page`;
     return html`
       <div class="process">
@@ -191,9 +206,10 @@ class BulkPublish2 extends LitElement {
             id="ProcessSelect"
             name="select"
             value=${this.process}
-            @change=${this.setProcess}>
+            @change=${this.setProcess}
+            @click=${this.selectingProcess}>
             <option disabled selected value="choose">Choose Process</option>
-            ${PROCESS_TYPES.map((type) => (getProcess(type)))}
+            ${PROCESS_TYPES.filter((pt) => pt !== 'index').map((type) => (this.getProcess(type)))}
           </select>
           <button
             id="RunProcess"
@@ -340,7 +356,7 @@ class BulkPublish2 extends LitElement {
       const job = await startJob({
         urls: this.urls,
         process: this.process.toLowerCase(),
-        hasPermission: this.user?.permissions?.[this.process],
+        useBulk: this.user.permissions[this.process].useBulk,
       });
       const { complete, error } = processJobResult(job);
       this.jobs = [...this.jobs, ...complete];
@@ -378,10 +394,16 @@ class BulkPublish2 extends LitElement {
   }
 
   renderLoginPrompt() {
-    if (this.user?.profile) return html``;
-    const message = this.user
-      ? 'Please sign in to AEM sidekick to continue'
-      : 'Please open AEM sidekick to continue';
+    let message = 'Please open AEM sidekick to continue';
+    if (this.user) {
+      if (this.user?.profile) {
+        const canUse = Object.values(this.user.permissions).filter((perms) => perms.canUse);
+        if (canUse.length) return html``;
+        message = 'Current user is not authorized to use Bulk Publishing Tool';
+      } else {
+        message = 'Please sign in to AEM sidekick to continue';
+      }
+    }
     return html`
       <div class="login-prompt">
         <div class="prompt">
