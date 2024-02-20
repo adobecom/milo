@@ -4,10 +4,12 @@ export default async function main(el) {
   const { base } = getConfig();
   performance.mark('swc-load-started');
   const deps = Promise.all([
+    import(`${base}/features/spectrum-web-components/dist/theme.js`),
+    import(`${base}/features/spectrum-web-components/dist/base.js`),
+    import(`${base}/features/spectrum-web-components/dist/shared.js`),
     import(`${base}/features/spectrum-web-components/dist/button.js`),
     import(`${base}/features/spectrum-web-components/dist/checkbox.js`),
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
-    import(`${base}/features/spectrum-web-components/dist/theme.js`),
   ]);
   performance.mark('swc-load-finished');
   performance.measure(
