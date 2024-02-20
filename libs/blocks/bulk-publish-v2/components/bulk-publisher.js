@@ -198,7 +198,8 @@ class BulkPublish2 extends LitElement {
           </span>
         </div>`;
     }
-    const exUrl = `${window.location.href.replace(window.location.pathname, '')}/path/to/page`;
+    const exUrl = window.location.href.replace(window.location.pathname, '')
+      .replace(window.location.search, '');
     return html`
       <div class="process">
         <div class="processor">
@@ -232,7 +233,7 @@ class BulkPublish2 extends LitElement {
         <textarea 
           id="Urls"
           wrap="off"
-          placeholder="Example: ${exUrl}"
+          placeholder="Example: ${exUrl}/path/to/page"
           @blur=${this.setUrls}
           @change=${this.setUrls}></textarea>
       </div>
