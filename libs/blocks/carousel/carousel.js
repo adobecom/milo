@@ -156,7 +156,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
-  activeSlide.querySelectorAll('a').forEach(focusableElements => focusableElements.setAttribute('tabindex', -1))
+  activeSlide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); });
   activeSlideIndicator.classList.remove('active');
   activeSlideIndicator.setAttribute('tabindex', -1);
 
@@ -207,7 +207,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
-  activeSlide.querySelectorAll('a').forEach(focusableElement => focusableElement.setAttribute('tabindex', 0))
+  activeSlide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('tabindex', 0);
 
@@ -373,6 +373,6 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
-  slides.slice(1).forEach((slide) => slide.querySelectorAll('a').forEach(focusableElement => focusableElement.setAttribute('tabindex', -1)))
+  slides.slice(1).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
   handleChangingSlides(carouselElements);
 }
