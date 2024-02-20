@@ -152,7 +152,7 @@ class AppPrompt {
   };
 
   handleKeyDown = (event) => {
-    if ([' ', 'Escape'].includes(event.key)) this.close();
+    if (event.key === 'Escape') this.close();
   };
 
   initRedirect = () => setTimeout(() => {
