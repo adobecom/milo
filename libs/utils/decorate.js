@@ -183,6 +183,9 @@ export function getVideoAttrs(hash, dataset) {
   if (playOnHover && isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
   }
+  if (playOnHover && !isAutoplayOnce) {
+    return `${globalAttrs} data-hoverplay`;
+  }
   if (isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs}`;
   }
