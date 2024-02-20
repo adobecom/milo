@@ -21,11 +21,26 @@ a[is='checkout-link'] > span {
   min-width: 66px;
 }
 
-a[is='checkout-link'].loading-entitlements > span {
-  opacity: 0;
-}
-
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";
+}
+
+@media (max-width: 1200px) {
+  #checkout-link-modal {
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+#checkout-link-modal {
+  display: flex;
+}
+
+#checkout-link-modal iframe {
+  flex: 1;
+}
+
+#checkout-link-modal iframe.d2p {
+  max-height: 850px;
 }

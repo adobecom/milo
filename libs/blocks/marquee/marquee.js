@@ -3,7 +3,7 @@
  */
 
 import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
@@ -64,16 +64,15 @@ const decorateImage = (media) => {
   }
 };
 
-export async function dynamicImport(path) {
-  return import(path);
-}
-
 export async function loadMnemonicList(foreground) {
   try {
-    await dynamicImport('../mnemonic-list/mnemonic-list.js')
-      .then((module) => {
-        module.decorateMnemonicList(foreground);
-      });
+    const { base } = getConfig();
+    const stylePromise = new Promise((resolve) => {
+      loadStyle(`${base}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
+    });
+    const loadModule = import('../mnemonic-list/mnemonic-list.js')
+      .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
+    await Promise.all([stylePromise, loadModule]);
   } catch (err) {
     window.lana?.log(`Failed to load mnemonic list module: ${err}`);
   }
@@ -95,12 +94,12 @@ export default async function init(el) {
   const media = foreground.querySelector(':scope > div:not([class])');
 
   if (media) {
-    media.classList.add('media');
+    media.classList.add('asset');
     if (!media.querySelector('video, a[href*=".mp4"]')) decorateImage(media);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
-  if (firstDivInForeground?.classList.contains('media')) el.classList.add('row-reversed');
+  if (firstDivInForeground?.classList.contains('asset')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
@@ -115,7 +114,7 @@ export default async function init(el) {
     }
 
     let mediaCreditInner;
-    const txtContent = media?.lastChild.textContent.trim();
+    const txtContent = media?.lastChild?.textContent?.trim();
     if (txtContent) {
       mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
     } else if (media.lastElementChild?.tagName !== 'PICTURE') {

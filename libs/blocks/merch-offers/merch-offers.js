@@ -3,7 +3,7 @@
  */
 
 export default async function init(el) {
-  el.append(el.querySelector('p'));
+  el.append(...el.querySelectorAll('p'));
   el.append(...el.querySelectorAll('[data-wcs-osi]'));
   el.firstElementChild.remove();
   return el;
