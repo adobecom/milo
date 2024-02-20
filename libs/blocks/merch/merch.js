@@ -59,8 +59,7 @@ export function polyfills() {
   if (isSupported) {
     polyfills.promise = Promise.resolve();
   } else {
-    const { codeRoot, miloLibs } = getConfig();
-    const base = miloLibs || codeRoot;
+    const { base } = getConfig();
     polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
   }
   return polyfills.promise;
@@ -326,6 +325,9 @@ export async function getPriceContext(el, params) {
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
+  if (el.closest('.merch-offers.upgrade')) {
+    params.append('entitlement', 'false');
+  }
   const context = await getCheckoutContext(el, params);
   if (!context) return null;
   const service = await initService();
