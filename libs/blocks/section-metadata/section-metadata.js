@@ -1,4 +1,5 @@
 import { handleFocalpoint } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 function handleBackground(div, section) {
   const pic = div.background.content?.querySelector('picture');
@@ -55,6 +56,16 @@ function handleDelay(time, section) {
   setTimeout(() => { section.classList.remove('hide-sticky-section'); }, getDelayTime(time));
 }
 
+function handleAnchorLink(anchorText, section) {
+  const targetText = section.querySelectorAll('del');
+  if (!targetText.length) return;
+  const textNode = [...targetText].filter((node) => node.textContent === anchorText);
+  if (!textNode.length) return;
+  const span = createTag('span', { id: `${anchorText.split(' ').join('-')}` }, anchorText);
+  textNode[0].after(span);
+  textNode[0].remove();
+}
+
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
@@ -73,4 +84,5 @@ export default async function init(el) {
   if (metadata.layout) handleLayout(metadata.layout.text, section);
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.delay) handleDelay(metadata.delay.text, section);
+  if (metadata.anchor) handleAnchorLink(metadata.anchor.text, section);
 }
