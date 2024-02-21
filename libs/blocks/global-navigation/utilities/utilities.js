@@ -1,6 +1,17 @@
-import { getConfig, getMetadata, loadStyle, loadLana } from '../../../utils/utils.js';
+import { getConfig, getMetadata, loadStyle, loadLana, decorateLinks } from '../../../utils/utils.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
+import { replaceText } from '../../../features/placeholders.js';
 
 loadLana();
+
+// TODO when porting this to milo core, we should define this on config level
+// and allow consumers to add their own origins
+const allowedOrigins = [
+  'https://www.adobe.com',
+  'https://business.adobe.com',
+  'https://blog.adobe.com',
+  'https://milo.adobe.com',
+];
 
 export const selectors = {
   globalNav: '.global-navigation',
@@ -8,9 +19,30 @@ export const selectors = {
   navLink: '.feds-navLink',
   overflowingTopNav: '.feds-topnav--overflowing',
   navItem: '.feds-navItem',
+  activeNavItem: '.feds-navItem--active',
+  deferredActiveNavItem: '.feds-navItem--activeDeferred',
   activeDropdown: '.feds-dropdown--active',
   menuSection: '.feds-menu-section',
   menuColumn: '.feds-menu-column',
+  gnavPromo: '.gnav-promo',
+  columnBreak: '.column-break',
+};
+
+export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
+  const url = getMetadata('gnav-source');
+  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
+    clientId: 'feds-milo',
+    sampleRate: 1,
+    tags,
+  });
+};
+
+export const logErrorFor = async (fn, message, tags) => {
+  try {
+    await fn();
+  } catch (e) {
+    lanaLog({ message, e, tags });
+  }
 };
 
 export function toFragment(htmlStrings, ...values) {
@@ -31,27 +63,68 @@ export function toFragment(htmlStrings, ...values) {
   return fragment;
 }
 
-export const getFedsPlaceholderConfig = () => {
-  const { locale } = getConfig();
-  let libOrigin = 'https://milo.adobe.com';
+// TODO we might eventually want to move this to the milo core utilities
+let federatedContentRoot;
+export const getFederatedContentRoot = () => {
+  if (federatedContentRoot) return federatedContentRoot;
+
   const { origin } = window.location;
 
+  federatedContentRoot = allowedOrigins.some((o) => origin.replace('.stage', '') === o)
+    ? origin
+    : 'https://www.adobe.com';
+
   if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    libOrigin = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
+    federatedContentRoot = `https://main--federal--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
   }
 
-  return {
+  return federatedContentRoot;
+};
+
+// TODO we should match the akamai patterns /locale/federal/ at the start of the url
+// and make the check more strict.
+export const getFederatedUrl = (url = '') => {
+  if (typeof url !== 'string' || !url.includes('/federal/')) return url;
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
+  try {
+    const { pathname, search, hash } = new URL(url);
+    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
+  } catch (e) {
+    lanaLog({ message: `getFederatedUrl errored parsing the URL: ${url}`, e, tags: 'errorType=warn,module=utilities' });
+  }
+  return url;
+};
+
+export const federatePictureSources = (section) => {
+  section?.querySelectorAll('[src], [srcset]').forEach((source) => {
+    const type = source.hasAttribute('src') ? 'src' : 'srcset';
+    const value = source.getAttribute(type);
+    if (!value) return;
+    source.setAttribute(type, value.replace(/^\.?\//, `${getFederatedContentRoot()}/`));
+  });
+};
+
+let fedsPlaceholderConfig;
+export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
+  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
+
+  const { locale } = getConfig();
+  const libOrigin = getFederatedContentRoot();
+
+  fedsPlaceholderConfig = {
     locale: {
       ...locale,
-      contentRoot: `${libOrigin}${locale.prefix}`,
+      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
     },
   };
+
+  return fedsPlaceholderConfig;
 };
 
 export function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
 
-  let analyticsValue = str.trim().replace(/[^\w]+/g, '_').replace(/^_+|_+$/g, '');
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
   analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
 
   return analyticsValue;
@@ -161,6 +234,30 @@ export function setActiveDropdown(elem) {
   });
 }
 
+export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
+  let activeLinkFound;
+
+  return [
+    () => activeLinkFound,
+    (val) => { activeLinkFound = !!val; },
+    (area) => {
+      if (hasActiveLink() || !(area instanceof HTMLElement)) return null;
+      const { origin, pathname } = window.location;
+      let activeLink;
+
+      [`${origin}${pathname}`, pathname].forEach((path) => {
+        if (activeLink) return;
+        activeLink = area.querySelector(`a[href = '${path}'], a[href ^= '${path}?'], a[href ^= '${path}#']`);
+      });
+
+      if (!activeLink) return null;
+
+      setActiveLink(true);
+      return activeLink;
+    },
+  ];
+})();
+
 export function closeAllDropdowns({ type } = {}) {
   const selector = type === 'headline'
     ? '.feds-menu-headline[aria-expanded="true"]'
@@ -188,19 +285,40 @@ export function trigger({ element, event, type } = {}) {
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
-  const url = getMetadata('gnav-source');
-  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
-    clientId: 'feds-milo',
-    sampleRate: 1,
-    tags,
-  });
-};
+export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
+  const path = getFederatedUrl(url);
+  const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
+  const text = await res.text();
+  const { body } = new DOMParser().parseFromString(text, 'text/html');
 
-export const logErrorFor = async (fn, message, tags) => {
-  try {
-    await fn();
-  } catch (e) {
-    lanaLog({ message, e, tags });
+  const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
+  if (inlineFrags.length) {
+    const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
+
+    const fragPromises = inlineFrags.map((link) => {
+      // Replacing paragraphs should happen in the fragment module
+      // https://jira.corp.adobe.com/browse/MWPW-141039
+      if (link.parentElement && link.parentElement.nodeName === 'P') {
+        const div = document.createElement('div');
+        link.parentElement.replaceWith(div);
+        div.appendChild(link);
+      }
+      link.href = getFederatedUrl(link.href);
+      return loadInlineFrags(link);
+    });
+    await Promise.all(fragPromises);
   }
-};
+
+  if (shouldDecorateLinks) decorateLinks(body);
+
+  if (path.includes('/federal/')) federatePictureSources(body);
+
+  const blocks = body.querySelectorAll('.martech-metadata');
+  if (blocks.length) {
+    import('../../martech-metadata/martech-metadata.js')
+      .then(({ default: decorate }) => blocks.forEach((block) => decorate(block)));
+  }
+
+  body.innerHTML = await replaceText(body.innerHTML, getFedsPlaceholderConfig());
+  return body;
+}

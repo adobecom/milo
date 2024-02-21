@@ -49,6 +49,13 @@ describe('Section Metdata', () => {
     expect(sec.classList.contains('grid-template-columns-1-2')).to.be.true;
   });
 
+  it('Adds class based on masonry input', async () => {
+    const sec = document.querySelector('.section.masonrysec');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.classList.contains('masonry-layout')).to.be.true;
+  });
+
   it('gets section metadata', () => {
     const metadata = getMetadata(document.querySelector('.section.color .section-metadata'));
     expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
@@ -76,6 +83,15 @@ describe('Section Metdata', () => {
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
     expect(main.lastElementChild.classList.contains('hide-sticky-section')).to.be.true;
+  });
+
+  it('Handles delay in loading the promobar', async () => {
+    const sec = document.querySelector('.section.delay');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.classList.contains('hide-sticky-section')).to.be.true;
+    await delay(1000);
+    expect(sec.classList.contains('hide-sticky-section')).not.to.be.true;
   });
 
   it('should calculate the top position based on header height', async () => {

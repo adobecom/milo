@@ -6,8 +6,8 @@ const ogUrl = window.location.href;
 const getConfig = () => ({
   env: { name: 'local' },
   locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    ch_de: { ietf: 'de-CH', tk: 'vin7zsi.css' },
+    '': { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' },
+    ch_de: { prefix: '/ch_de', ietf: 'de-CH', tk: 'vin7zsi.css' },
   },
 });
 
@@ -33,14 +33,14 @@ const mockRes = ({ payload, status = 200 } = {}) => new Promise((resolve) => {
   });
 });
 
-function mockOstDeps({ failStatus = false, failMetadata = false, mockToken } = {}) {
+function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, overrideParams } = {}) {
   const options = {
     country: 'CH',
     language: 'de',
     workflow: 'UCv2',
   };
 
-  const params = {
+  const defaultParams = {
     ref: 'main',
     repo: 'milo',
     owner: 'adobecom',
@@ -49,6 +49,7 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken } = {
     referrer: 'https://adobe.sharepoint.com/:w:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B341A5A28-4B2F-4BC0-B7D4-6467E22B275C%7D&file=index.docx&action=default&mobileredirect=true',
     token: mockToken ? 'aos-access-token' : undefined,
   };
+  const params = { ...defaultParams, ...overrideParams };
 
   window.fetch = sinon.stub()
     .onFirstCall()

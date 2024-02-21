@@ -5,7 +5,7 @@
   "data": [
     {
       "action": "useBlockCode",
-      "selector": "myblock",
+      "selector": "",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/test/features/personalization/mocks/myblock",

@@ -5,11 +5,16 @@ import { getLocale, loadArea, setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
+const decorateArea = (doc) => {
+  doc.querySelector('picture.frag-image')?.classList.add('decorated');
+};
+
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
+  decorateArea,
   locales,
 };
 setConfig(config);
@@ -57,5 +62,19 @@ describe('Fragments', () => {
     expect(cols.querySelector('.fragment')).to.exist;
     expect(cols.querySelector('.aside').style.background).to.equal('rgb(238, 238, 238)');
     expect(cols.innerHTML.includes('Hello World!!!')).to.be.true;
+  });
+
+  it('Makes media relative to fragment', async () => {
+    const section = document.querySelector('.default-section');
+    await loadArea(section);
+    expect(section.querySelector('source[srcset^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
+    expect(section.querySelector('img[src^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
+  });
+
+  it('"decorated" class added by decorateArea()', async () => {
+    const a = document.querySelector('a.frag-image');
+    await getFragment(a);
+    const pic = document.querySelector('picture.frag-image');
+    expect(pic.classList.contains('decorated')).to.be.true;
   });
 });

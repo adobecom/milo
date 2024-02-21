@@ -6,7 +6,7 @@ import {
 } from '../../../../deps/htm-preact.js';
 
 import { addToAverage } from '../../utils/utils.js';
-import sanitizeComment from '../../utils/sanitizeComment.js';
+import sanitizeComment from '../../../../utils/sanitizeComment.js';
 import Comments from './Comments.js';
 import Ratings from './Ratings.js';
 import RatingSummary from './RatingSummary.js';
@@ -69,7 +69,7 @@ function Review({
       setIsInteractive(false);
       if (hideTitleOnReload !== 'false') setDisplayTitle(false);
     }
-  }, [staticRating]);
+  }, [staticRating, hideTitleOnReload]);
 
   useEffect(() => {
     if (initialRating) {

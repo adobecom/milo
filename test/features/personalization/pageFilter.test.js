@@ -1,11 +1,15 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
+import { getConfig } from '../../../libs/utils/utils.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
 it('pageFilter should exclude page if it is not a match', async () => {
+  const config = getConfig();
+  config.env = { name: 'prod' };
+
   let manifestJson = await readFile({ path: './mocks/manifestPageFilterExclude.json' });
   manifestJson = JSON.parse(manifestJson);
   const replacePageHtml = await readFile({ path: './mocks/replacePage.plain.html' });
@@ -39,6 +43,9 @@ it('pageFilter should exclude page if it is not a match', async () => {
 });
 
 it('pageFilter should include page if it is a match', async () => {
+  const config = getConfig();
+  config.env = { name: 'prod' };
+
   let manifestJson = await readFile({ path: './mocks/manifestPageFilterInclude.json' });
   manifestJson = JSON.parse(manifestJson);
   const replacePageHtml = await readFile({ path: './mocks/replacePage.plain.html' });

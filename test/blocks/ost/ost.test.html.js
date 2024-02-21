@@ -7,6 +7,9 @@ afterEach(() => {
 });
 
 describe('loadOstEnv', async () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
   it('fetches and returns page status and metadata', async () => {
     const {
       options: { country, language, workflow },
@@ -79,6 +82,9 @@ describe('loadOstEnv', async () => {
 });
 
 describe('init', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
   it('opens OST without waiting for IMS if query string includes token', async () => {
     const {
       options: { country, language, workflow },
@@ -143,5 +149,33 @@ describe('init', () => {
     await init(document.body.firstChild);
     window.adobeid.onReady();
     expect(window.adobeIMS.signIn.called).to.be.true;
+  });
+
+  it('opens OST with overwritten WCS "landscape" and "env" values', async () => {
+    const {
+      options: { country, language, workflow },
+      params: { token },
+    } = mockOstDeps({ mockToken: true, overrideParams: { wcsLandscape: 'DRAFT', env: 'stage' } });
+
+    const {
+      AOS_API_KEY,
+      CHECKOUT_CLIENT_ID,
+      WCS_API_KEY,
+      default: init,
+    } = await import('../../../libs/blocks/ost/ost.js');
+    await init(document.body.firstChild);
+
+    expect(window.ost.openOfferSelectorTool.called).to.be.true;
+    expect(window.ost.openOfferSelectorTool.getCall(0).args[0]).to.include({
+      aosAccessToken: token,
+      aosApiKey: AOS_API_KEY,
+      checkoutClientId: CHECKOUT_CLIENT_ID,
+      country,
+      environment: 'stage',
+      landscape: 'DRAFT',
+      language,
+      wcsApiKey: WCS_API_KEY,
+      workflow,
+    });
   });
 });

@@ -84,14 +84,16 @@
   align-items: center;
 }
 
-.text-block.center .action-area { justify-content: center; }
+.text-block.center .action-area,
+.text-block.center .icon-area { justify-content: center; }
 
 .text-block.right {
   text-align: right;
   align-items: end;
 }
 
-.text-block.right .action-area { justify-content: end; }
+.text-block.right .action-area,
+.text-block.right .icon-area { justify-content: end; }
 
 /* Vertical */
 .vertical.text-block .foreground {
@@ -134,63 +136,63 @@
   font-style: italic;
 }
 
-/* link-farm */
-.link-farm.text-block {
-  padding: var(--spacing-xl) 0;
-}
-
-.link-farm.text-block .foreground {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--spacing-xl) var(--spacing-m);
-}
-
-.link-farm.text-block .foreground:first-child {
-  grid-template-columns: auto;
-}
-
-.link-farm.text-block h3 {
-  margin: 0 0 var(--spacing-l);
-  font-size: var(--type-heading-xs-size);
-  line-height: var(--type-heading-xs-lh);
-}
-
-.link-farm.text-block .no-heading {
-  margin: 0;
-}
-
-.link-farm.text-block h2 {
-  margin: 0 0 var(--spacing-m);
-}
-
-.link-farm.text-block p {
-  font-size: var(--type-body-s-size);
-  margin: 0 0 var(--spacing-s);
-  line-height: var(--type-body-s-lh);
-}
-
-.link-farm.text-block p:last-child {
-  margin: 0;
-}
-
-.link-farm.text-block a {
-  color: inherit;
-  text-decoration: underline;
-}
-
-.link-farm.text-block a:hover {
-  text-decoration: double underline;
-}
-
 .section[class*='grid-width-'] .text-block .foreground {
   max-width: unset;
 }
 
+.text-block .icon-area {
+  display: flex;
+  column-gap: var(--spacing-xxs);
+}
+
+.text-block .icon-area.con-button {
+  column-gap: unset;
+}
+
+.text-block .icon-area picture {
+  line-height: 0em;
+}
+
+/* icon inline */
+.text-block.icon-inline .foreground > div {
+  display: grid;
+  column-gap: var(--spacing-xs);
+  align-items: center;
+  grid-template-columns: auto 1fr;
+  justify-content: start;
+}
+
+.text-block.icon-inline .foreground [class^="body-"] {
+  grid-column: span 2;
+  margin-top: 0;
+}
+
+.text-block.icon-inline .icon-area {
+  margin-bottom: var(--spacing-xs);
+}
+
+.text-block.icon-inline .icon-area picture img {
+  min-width: var(--icon-size-m);
+  max-width: var(--icon-size-m);
+}
+
+.text-block.center .foreground > .mobile-up {
+  justify-content: center;
+}
+
+.text-block.right .foreground > .mobile-up {
+  justify-content: end;
+}
+
+.text-block .foreground > .desktop-up,
+.text-block .foreground > .tablet-up,
+.text-block.icon-inline .foreground > .desktop-up,
+.text-block.icon-inline .foreground > .tablet-up {
+  display: none;
+}
+
 /* Tablet up */
 @media screen and (min-width: 600px) {
-  .link-farm.text-block h2 {
-    margin: 0 0 var(--spacing-xl-static);
-  }
 
   .inset.text-block .foreground::before {
     display: none;
@@ -204,19 +206,56 @@
     padding-left: var(--spacing-l);
   }
 
-  .link-farm.text-block .foreground {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .text-block .foreground > .tablet-up,
+  .text-block .foreground > .tablet-up.desktop-up {
+    display: block;
   }
 
-  .link-farm.text-block .no-heading {
-    height: var(--type-heading-m-size);
-    margin: 0 0 var(--spacing-l);
+  .text-block.icon-inline .foreground > .tablet-up,
+  .text-block.icon-inline .foreground > .tablet-up.desktop-up {
+    display: grid;
+  }
+
+  .text-block.center .foreground > .tablet-up {
+    justify-content: center;
+  }
+  
+  .text-block.right .foreground > .tablet-up {
+    justify-content: end;
+  }
+  
+  .text-block .foreground > .mobile-up,
+  .text-block .foreground > .desktop-up,
+  .text-block.icon-inline .foreground > .mobile-up,
+  .text-block.icon-inline .foreground > .desktop-up {
+    display: none;
   }
 }
 
 /* Desktop up */
 @media screen and (min-width: 1200px) {
-  .link-farm.text-block .foreground {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .text-block .foreground > .desktop-up,
+  .text-block .foreground > .tablet-up.desktop-up {
+    display: block;
+  }
+
+  .text-block.icon-inline .foreground > .desktop-up,
+  .text-block.icon-inline .foreground > .tablet-up.desktop-up {
+    display: grid;
+  }
+
+  .text-block.center .foreground > .desktop-up {
+    justify-content: center;
+  }
+  
+  .text-block.right .foreground > .desktop-up {
+    justify-content: end;
+  }
+  
+  .text-block .foreground > .mobile-up,
+  .text-block .foreground > .tablet-up,
+  .text-block.icon-inline .foreground > .mobile-up,
+  .text-block.icon-inline .foreground > .tablet-up {
+    display: none;
   }
 }

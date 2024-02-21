@@ -55,6 +55,11 @@ dl.accordion {
   pointer-events: none;
 }
 
+html[dir="rtl"] .accordion-icon {
+  right: unset;
+  left: var(--spacing-xs);
+}
+
 .accordion-icon::before,
 .accordion-icon::after {
   content: "";
@@ -145,6 +150,18 @@ dl.accordion {
   background: var(--color-gray-100);
 }
 
+html[dir="rtl"] .accordion dt button {
+  padding: var(--spacing-s) var(--spacing-xs) var(--spacing-s) var(--spacing-m);
+}
+
+html[dir="rtl"] .accordion dt button::before {
+  right: 0;
+}
+
+.section[class*='-up'] dl.accordion {
+  max-width: unset;
+}
+
 /* Editorial Variation  */
 .accordion-media {
   display:  none;
@@ -158,17 +175,17 @@ dl.accordion {
 }
 
 
-@keyframes fade-in { 
-  0% { 
+@keyframes fade-in {
+  0% {
     opacity: 0;
   }
 
-  100% { 
-    opacity: 1; 
+  100% {
+    opacity: 1;
   }
 }
 
-.accordion-media > div.expanded, 
+.accordion-media > div.expanded,
 .accordion-media > div.expanded > img {
   display: inline;
   position: relative;
@@ -190,7 +207,7 @@ div.media-p {
     align-items: center;
     justify-content: center;
   }
-  
+
   .editorial .accordion {
     width: 50%;
     display: inline-block;

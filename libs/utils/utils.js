@@ -13,6 +13,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'brick',
   'bulk-publish',
   'caas',
   'caas-config',
@@ -26,6 +27,7 @@ const MILO_BLOCKS = [
   'faq',
   'featured-article',
   'figure',
+  'form',
   'fragment',
   'featured-article',
   'global-footer',
@@ -40,9 +42,13 @@ const MILO_BLOCKS = [
   'marketo',
   'marquee',
   'marquee-anchors',
+  'martech-metadata',
   'media',
   'merch',
   'merch-card',
+  'merch-cards',
+  'merch-offers',
+  'mnemonic-list',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -56,6 +62,7 @@ const MILO_BLOCKS = [
   'preflight',
   'promo',
   'quiz',
+  'quiz-marquee',
   'quiz-results',
   'tabs',
   'table-of-contents',
@@ -173,6 +180,27 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+const handleEntitlements = (() => {
+  let entResolve;
+  const entPromise = new Promise((resolve) => {
+    entResolve = resolve;
+  });
+
+  return (resolveVal) => {
+    if (resolveVal !== undefined) {
+      entResolve(resolveVal);
+    }
+    return entPromise;
+  };
+})();
+
+function setupMiloObj(config) {
+  window.milo ||= {};
+  window.milo.deferredPromise = new Promise((resolve) => {
+    config.resolveDeferred = resolve;
+  });
+}
+
 export const [setConfig, updateConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -201,6 +229,9 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
+      config.entitlements = handleEntitlements;
+      config.consumerEntitlements = conf.entitlements || [];
+      setupMiloObj(config);
       return config;
     },
     (conf) => (config = conf),
@@ -212,7 +243,7 @@ export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
-export function createTag(tag, attributes, html) {
+export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
     if (html instanceof HTMLElement
@@ -230,6 +261,7 @@ export function createTag(tag, attributes, html) {
       el.setAttribute(key, val);
     });
   }
+  options.parent?.append(el);
   return el;
 }
 
@@ -268,13 +300,14 @@ export function localizeLink(
   }
 }
 
-export function loadLink(href, { as, callback, crossorigin, rel } = {}) {
+export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
     if (as) link.setAttribute('as', as);
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
+    if (fetchpriority) link.setAttribute('fetchpriority', fetchpriority);
     link.setAttribute('href', href);
     if (callback) {
       link.onload = (e) => callback(e.type);
@@ -399,31 +432,19 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
-function checkForExpBlock(name, expBlocks) {
-  const expBlock = expBlocks?.[name];
-  if (!expBlock) return null;
-
-  const blockName = expBlock.split('/').pop();
-  return { blockPath: expBlock, blockName };
-}
-
 export async function loadBlock(block) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
   }
 
-  let name = block.classList[0];
+  const name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
 
-  const expBlock = checkForExpBlock(name, expBlocks);
-  if (expBlock) {
-    name = expBlock.blockName;
-    path = expBlock.blockPath;
-  }
+  if (expBlocks?.[name]) path = expBlocks[name];
 
   const blockPath = `${path}/${name}`;
 
@@ -495,12 +516,18 @@ export function decorateImageLinks(el) {
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href, class: 'image-link' });
-      picParent.insertBefore(aTag, pic);
-      if (icon) {
-        import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+      if (href.includes('.mp4')) {
+        const a = createTag('a', { href: url, 'data-video-poster': img.src });
+        a.innerHTML = url;
+        pic.replaceWith(a);
       } else {
-        aTag.append(pic);
+        const aTag = createTag('a', { href, class: 'image-link' });
+        picParent.insertBefore(aTag, pic);
+        if (icon) {
+          import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+        } else {
+          aTag.append(pic);
+        }
       }
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
@@ -665,7 +692,7 @@ async function decorateIcons(area, config) {
 }
 
 async function decoratePlaceholders(area, config) {
-  const el = area.documentElement ? document.querySelector('main') : area;
+  const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
@@ -762,7 +789,12 @@ export async function loadIms() {
       onError: reject,
     };
     loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+  }).then(() => {
+    if (!window.adobeIMS?.isSignedInUser()) {
+      getConfig().entitlements([]);
+    }
   });
+
   return imsLoaded;
 }
 
@@ -787,21 +819,22 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 }
 
 async function checkForPageMods() {
+  const search = new URLSearchParams(window.location.search);
+  const offFlag = (val) => search.get(val) === 'off';
+  if (offFlag('mep')) return;
   const persMd = getMetadata('personalization');
+  const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
   let persManifests = [];
-  const search = new URLSearchParams(window.location.search);
-  const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
-  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
+  const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
+  const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
+  const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
-  if (persEnabled || targetEnabled) {
+  if (mepEnabled) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-    loadLink(
-      `${base}/features/personalization/manifest-utils.js`,
       { as: 'script', rel: 'modulepreload' },
     );
   }
@@ -809,38 +842,56 @@ async function checkForPageMods() {
   if (persEnabled) {
     persManifests = persMd.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim());
+      .filter((path) => path?.trim())
+      .map((manifestPath) => ({ manifestPath }));
+  }
+
+  if (promoEnabled) {
+    const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
+    persManifests = persManifests.concat(getPromoManifests(promoMd));
   }
 
   const { env } = getConfig();
+  let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
-  if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
+  if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
+    previewOn = true;
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
-      persEnabled,
+      mepEnabled,
       persManifests,
-      targetEnabled,
     });
   }
 
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    loadIms().catch(() => {});
-    const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
+    loadIms()
+      .then(() => {
+        if (window.adobeIMS.isSignedInUser()) loadMartech();
+      })
+      .catch((e) => { console.log('Unable to load IMS:', e); });
+
+    const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
-    const { applyPers } = await import('../features/personalization/personalization.js');
-
     await applyPers(manifests);
-  } else {
-    document.body.dataset.mep = 'default|default';
+  }
+
+  if (previewOn) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
 }
 
 async function loadPostLCP(config) {
-  loadMartech(config);
+  const georouting = getMetadata('georouting') || config.geoRouting;
+  if (georouting === 'on') {
+    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+  }
+  loadMartech();
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
@@ -854,7 +905,7 @@ async function loadPostLCP(config) {
 
 export function scrollToHashedElement(hash) {
   if (!hash) return;
-  const elementId = hash.slice(1);
+  const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
   try {
     targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
@@ -870,15 +921,7 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-export function setupDeferredPromise() {
-  let resolveFn;
-  window.milo.deferredPromise = new Promise((resolve) => {
-    resolveFn = resolve;
-  });
-  return resolveFn;
-}
-
-export async function loadDeferred(area, blocks, config, resolveDeferred) {
+export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
 
@@ -886,7 +929,7 @@ export async function loadDeferred(area, blocks, config, resolveDeferred) {
     return;
   }
 
-  resolveDeferred(true);
+  config.resolveDeferred?.(true);
 
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
@@ -957,13 +1000,6 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
-  const georouting = getMetadata('georouting') || config.geoRouting;
-  if (georouting === 'on') {
-    // eslint-disable-next-line import/no-cycle
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
-  }
-
   decorateFooterPromo();
 
   const appendage = getMetadata('title-append');
@@ -991,8 +1027,8 @@ async function documentPostSectionLoading(config) {
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
-  import('../martech/analytics.js').then((analytics) => {
-    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx));
+  import('../martech/attributes.js').then((analytics) => {
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
 }
 
@@ -1019,12 +1055,13 @@ async function processSection(section, config, isDoc) {
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loaded);
 
-  if (isDoc && section.el.dataset.idx === '0') {
-    loadPostLCP(config);
-  }
-
   // Show the section when all blocks inside are done.
   delete section.el.dataset.status;
+
+  if (isDoc && section.el.dataset.idx === '0') {
+    await loadPostLCP(config);
+  }
+
   delete section.el.dataset.idx;
 
   return section.blocks;
@@ -1032,16 +1069,13 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-  let resolveDeferredFn;
 
   if (isDoc) {
-    window.milo = {};
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
-    resolveDeferredFn = setupDeferredPromise();
   }
-
   const config = getConfig();
+
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
@@ -1067,7 +1101,7 @@ export async function loadArea(area = document) {
 
   if (isDoc) await documentPostSectionLoading(config);
 
-  await loadDeferred(area, areaBlocks, config, resolveDeferredFn);
+  await loadDeferred(area, areaBlocks, config);
 }
 
 export function loadDelayed() {
@@ -1120,3 +1154,5 @@ export function loadLana(options = {}) {
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
 }
+
+export const reloadPage = () => window.location.reload();
