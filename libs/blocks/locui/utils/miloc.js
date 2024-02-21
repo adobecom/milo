@@ -42,6 +42,12 @@ export async function getProjectStatus() {
     const resp = await fetch(`${url}project-status?project=${heading.value.projectId}`, { cache: 'reload' });
     const json = await resp.json();
 
+    if (json.errors) {
+      setStatus('service-error', 'error', `${json['error-phase']}`, json.errors);
+    } else {
+      setStatus('service-error');
+    }
+
     if (json.projectStatus === 'sync') {
       allowSyncToLangstore.value = false;
     }

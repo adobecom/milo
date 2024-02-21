@@ -283,6 +283,15 @@ li.locui-subproject.locui-subproject-in-progress .locui-subproject-badge {
   background: #80B3E7;
 }
 
+li.locui-subproject.locui-subproject-error {
+  border-color: #e40909;
+  background: rgb(249 148 148 / 20%);
+}
+
+li.locui-subproject.locui-subproject-error .locui-subproject-badge {
+  background: #e40909;
+}
+
 h3.locui-subproject-name {
   font-weight: 400;
   font-size: 28px;
