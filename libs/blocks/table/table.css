@@ -211,7 +211,7 @@
   line-height: var(--type-body-m-lh);
 }
 
-.table .row-heading .col-heading .table-heading-content {
+.table:not(.merch) .row-heading .col-heading .table-heading-content {
   display: flex;
   flex-direction: column;
 }
