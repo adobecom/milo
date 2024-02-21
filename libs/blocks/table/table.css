@@ -22,6 +22,7 @@
 .table .col {
   min-height: 27px;
   border-left: 1px var(--border-color) solid;
+  border-right: 1px solid transparent;
   border-top: 1px var(--border-color) solid;
 }
 
@@ -296,7 +297,7 @@
 /* rtl */
 [dir="rtl"] .table .col {
   border-right: 1px var(--border-color) solid;
-  border-left: 0;
+  border-left: 1px solid transparent;
 }
 
 [dir="rtl"] .table.merch .col {
