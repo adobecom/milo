@@ -555,6 +555,12 @@ header.global-navigation {
   }
 }
 
+@media (max-width: 600px) {
+  .table.header-left .row-heading .col.col-heading {
+    padding: var(--spacing-xs);
+  }
+}
+
 @media (max-width: 400px) {
   .table,
   .table.merch {
