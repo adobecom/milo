@@ -252,6 +252,8 @@
 }
 
 /* icons */
+.table:not(.merch) .row .col span.milo-tooltip.margin-left { margin-left: var(--spacing-xs); }
+
 .table .icon-milo-info {
   height: 18px;
 }
