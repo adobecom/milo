@@ -67,8 +67,8 @@ function handleHeading(headingCols, isPriceBottom, isMerch) {
         buttonsWrapper.append(btnWrapper);
       });
 
-      const row1 = document.createElement('div');
-      const row2 = document.createElement('div');
+      const row1 = createTag('div', { class: 'table-heading-content' });
+      const row2 = createTag('div', { class: 'table-heading-button' });
       const row1LastIdx = isPriceBottom ? 3 : 4;
       [...elements].forEach((e, idx) => {
         if (idx < row1LastIdx) row1.appendChild(e);
