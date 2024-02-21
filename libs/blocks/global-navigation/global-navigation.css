@@ -369,6 +369,21 @@ header.global-navigation {
   content: '/';
 }
 
+.feds-utilities {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--feds-gutter);
+  z-index: 1; /* Useful for UNav dropdowns */
+}
+
+.feds-utilities .unav-comp-app-switcher-popover, /* App Switcher */
+.feds-utilities .spectrum-Dialog-content, /* Notifications */
+.feds-utilities .unav-comp-external-profile, /* Profile */
+.feds-utilities .unav-comp-help-popover, /* Help */
+.feds-utilities .unc-overlay-container { /* Tooltips */
+  transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
+}
+
 /* Profile styles - to be removed after IMS takes over the profile */
 .feds-profile {
   display: flex;
@@ -627,6 +642,10 @@ header.global-navigation {
 
   .feds-search-trigger:hover svg path {
     fill: var(--feds-color-link--hover--light);
+  }
+
+  .feds-utilities {
+    padding: 0;
   }
 
   /* Breadcrumbs */
