@@ -11,9 +11,9 @@ let lastSearch = null;
 function highlightTextElements(terms, elements) {
   elements.forEach((element) => {
     const matches = [];
-    const textContent = element.textContent.toLowerCase();
+    const { textContent } = element;
     terms.forEach((term) => {
-      const offset = textContent.indexOf(term.toLowerCase());
+      const offset = textContent.toLowerCase().indexOf(term.toLowerCase());
       if (offset >= 0) {
         matches.push({ offset, term });
       }
@@ -30,12 +30,17 @@ function highlightTextElements(terms, elements) {
     let currentIndex = 0;
     const fragment = matches.reduce((acc, { offset, term }) => {
       const textBefore = textContent.substring(currentIndex, offset);
-      if (textBefore) {
+      if (textBefore === ' ') {
+        acc.appendChild(createTag('span', null, ' '));
+      }
+      if (textBefore && textBefore !== ' ') {
         acc.appendChild(document.createTextNode(textBefore));
       }
-      const markedTerm = createTag('mark', { class: 'gnav-search-highlight' }, term);
+      const endIndex = offset + term.length;
+      const termText = textContent.substring(offset, endIndex);
+      const markedTerm = createTag('mark', { class: 'gnav-search-highlight' }, termText);
       acc.appendChild(markedTerm);
-      currentIndex = offset + term.length;
+      currentIndex = endIndex;
       return acc;
     }, document.createDocumentFragment());
     const textAfter = textContent.substring(currentIndex);
