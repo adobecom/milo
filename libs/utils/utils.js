@@ -1153,3 +1153,5 @@ export function loadLana(options = {}) {
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
 }
+
+export const reloadPage = () => window.location.reload();
