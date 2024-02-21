@@ -1,3 +1,53 @@
+.caas-marquee {
+  display: none;
+}
+
+/* Styles for Loading animation */
+.lds-ring {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+}
+
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid #fff;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #fff transparent transparent;
+}
+
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.marquee.loading {
+  background: linear-gradient(45deg, red, orange); /* For Debugging */
+}
+/* Styles for Loading animation */
+
 .marquee {
   position: relative;
   color: var(--color-white);
@@ -8,10 +58,7 @@
   min-height: 560px;
 }
 
-.marquee.small,
-.marquee.quiet,
-.marquee.inline,
-.marquee.large.compact {
+.marquee.small, .marquee.quiet, .marquee.inline, .marquee.large.compact {
   min-height: 360px;
 }
 
@@ -20,10 +67,7 @@
   margin-bottom: 0;
 }
 
-.marquee.light,
-.marquee.mobile-light,
-.marquee.quiet:not(.dark),
-.marquee.inline {
+.marquee.light, .marquee.mobile-light, .marquee.quiet:not(.dark), .marquee.inline {
   color: var(--text-color);
 }
 
@@ -88,14 +132,14 @@
   align-items: stretch;
 }
 
-.marquee .asset {
+.marquee .media {
   order: 1;
   width: 100%;
   margin: 0 auto;
 }
 
-.marquee .asset img,
-.marquee .asset video {
+.marquee .media img,
+.marquee .media video {
   display: block;
   width: 100%;
   height: auto;
@@ -139,14 +183,6 @@
   line-height: 0;
 }
 
-.marquee .background .expand-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-
 .marquee .text p {
   margin: 0 0 var(--spacing-s);
 }
@@ -172,7 +208,7 @@
   order: 1;
 }
 
-.marquee.small .asset {
+.marquee.small .media {
   order: 2;
 }
 
@@ -232,18 +268,19 @@
   justify-content: center;
 }
 
+/* Split */
 .marquee.split {
   flex-direction: column;
 }
 
-.marquee.split .asset {
+.marquee.split .media {
   order: 0;
   width: 100%;
   margin: 0;
 }
 
-.marquee.split .asset img,
-.marquee.split .asset video {
+.marquee.split .media img,
+.marquee.split .media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -259,7 +296,7 @@
   order: 1;
 }
 
-.marquee.split.small .asset {
+.marquee.split.small .media {
   order: 2;
 }
 
@@ -329,6 +366,13 @@
 
 .marquee.large.split .action-area a:not(.con-button) {
   font-size: var(--type-body-m-size);
+}
+
+.marquee.split .asset img,
+.marquee.split .asset video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @media screen and (min-width: 600px) {
@@ -417,10 +461,11 @@
     text-decoration: none;
   }
 
-  .marquee .asset {
-    width: var(--grid-container-width);
+  .marquee .media {
+    width: var(--grid-container-width); /* 10 grid / 83% */
   }
 
+  /* Split */
   .marquee.split {
     display: flex;
     justify-content: center;
@@ -436,24 +481,24 @@
     max-width: calc(50% - var(--grid-column-width));
   }
 
-  .marquee.split .asset.bleed {
+  .marquee.split .media.bleed {
     position: absolute;
     width: 50vw;
     right: 0;
     height: 100%;
   }
 
-  .marquee.split.row-reversed .asset.bleed {
+  .marquee.split.row-reversed .media.bleed {
     right: auto;
     left: 0;
   }
 
-  html[dir="rtl"] .marquee.split .asset.bleed {
+  html[dir="rtl"] .marquee.split .media.bleed {
     left: 0;
     right: auto;
   }
 
-  html[dir="rtl"] .marquee.split.row-reversed .asset.bleed {
+  html[dir="rtl"] .marquee.split.row-reversed .media.bleed {
     right: 0;
     left: auto;
   }
@@ -472,13 +517,23 @@
     justify-content: flex-end;
   }
 
-  .marquee.split .asset img,
-  .marquee.split.small .asset img,
-  .marquee.split.large .asset img,
-  .marquee.split .asset video,
-  .marquee.split.small .asset video,
-  .marquee.split.large .asset video {
+  .marquee.split .media img,
+  .marquee.split.small .media img,
+  .marquee.split.large .media img,
+  .marquee.split .media video,
+  .marquee.split.small .media video,
+  .marquee.split.large .media video{
     max-height: initial;
+  }
+
+  .marquee.split .media.bleed picture,
+  .marquee.split .media.bleed video {
+    height: 100%;
+    object-fit: fill;
+  }
+
+  .marquee.split.large .icon-area img {
+    max-height: 80px;
   }
 
   .marquee.split .asset.bleed picture,
@@ -487,8 +542,16 @@
     object-fit: fill;
   }
 
-  .marquee.split.large .icon-area img {
-    max-height: 80px;
+  .marquee.split .asset.bleed {
+    position: absolute;
+    width: 50vw;
+    right: 0;
+    height: 100%;
+  }
+
+  .marquee.split.row-reversed .asset.bleed {
+    right: auto;
+    left: 0;
   }
 
 }
@@ -596,9 +659,9 @@
     order: unset;
   }
 
-  .marquee .asset,
-  .marquee.small .asset,
-  .marquee.large .asset {
+  .marquee .media,
+  .marquee.small .media,
+  .marquee.large .media {
     order: unset;
   }
 
@@ -606,7 +669,7 @@
     max-width: 500px;
   }
 
-  .marquee .foreground .asset {
+  .marquee .foreground .media {
     max-width: 600px;
   }
 
@@ -617,8 +680,8 @@
     justify-content: center;
   }
 
-  .marquee .asset img,
-  .marquee .asset video {
+  .marquee .media img,
+  .marquee .media video {
     width: 100%;
     max-width: initial;
     min-height: 150px;
@@ -645,6 +708,7 @@
     min-height: 700px;
     display: flex;
   }
+
 
   .marquee.large .background img {
     max-height: unset;
@@ -685,14 +749,14 @@
     justify-content: flex-end;
   }
 
-  .marquee.split.one-third .asset.bleed {
+  .marquee.split.one-third .media.bleed {
     position: absolute;
     width: calc(var(--grid-container-width) * 0.6667 + (100vw - var(--grid-container-width)) / 2);
     right: 0;
     height: 100%;
   }
 
-  html[dir="rtl"] .marquee.split.one-third:not(.row-reversed) .asset.bleed {
+  html[dir="rtl"] .marquee.split.one-third:not(.row-reversed) .media.bleed {
     left: 0;
     right: auto;
   }
@@ -727,4 +791,10 @@
 .static-links .marquee a:not(.con-button),
 .static-links .marquee a:not(.con-button):hover {
   color: inherit;
+}
+
+@media screen and (min-width: 768px) {
+  .marquee.mnemonic-list .foreground .text {
+    max-width: 800px;
+  }
 }
