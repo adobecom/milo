@@ -55,7 +55,7 @@ const handleAlloyResponse = (response) => {
   return items
     .map((item) => {
       const content = item?.data?.content;
-      if (!content) return null;
+      if (!content || !(content.manifestLocation || content.manifestContent)) return null;
 
       return {
         manifestPath: content.manifestLocation || content.manifestPath,
