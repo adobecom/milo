@@ -94,6 +94,7 @@ export const loadAppPrompt = async (getConfig, getMetadata, loadStyle) => {
     webappPrompt,
   ] = await Promise.all([
     import('../features/webapp-prompt/webapp-prompt.js'),
+    loadStyle(`${base}/features/webapp-prompt/base.css`),
     loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
   ]);
 
