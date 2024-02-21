@@ -156,6 +156,10 @@ export async function getModal(details, custom) {
 
   if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])) {
     firstFocusable = focusablesOnLoad[0]; // eslint-disable-line prefer-destructuring
+    if (focusablesOnLoad.length === 1 && firstFocusable.classList.contains('link-block') && firstFocusable.classList.contains("adobetv")) {
+      dialog.setAttribute('tabindex', 0);
+      firstFocusable = dialog;
+    }
   } else if (titleOnLoad) {
     titleOnLoad.setAttribute('tabIndex', 0);
     firstFocusable = titleOnLoad;
