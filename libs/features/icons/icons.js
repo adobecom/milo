@@ -204,6 +204,7 @@ function setNodeIndexClass(icon) {
   const nodeIndex = Array.prototype.indexOf.call(children, icon);
   let indexClass = (nodeIndex === children.length - 1) ? 'last' : nodeIndex;
   if (nodeIndex === 0) indexClass = 'first'
+  if (children.length === 1) indexClass = 'only'
   icon.classList.add(`node-index-${indexClass}`);
 }
 

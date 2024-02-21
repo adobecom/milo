@@ -177,8 +177,8 @@
   flex-wrap: wrap;
 }
 
-.text-block .icon-area milo-icon svg {
-  margin-inline: auto;
+.text-block .icon-area span.icon {
+  margin-inline: 0;
 }
 
 .text-block .icon-area picture {

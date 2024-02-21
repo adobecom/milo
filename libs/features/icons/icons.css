@@ -99,7 +99,6 @@ milo-icon svg {
   position: relative;
   top: .1em;
   width: auto;
-  margin-inline: var(--spacing-xxs);
 }
 
 milo-icon[size='xxs'] svg { height: var(--icon-size-xxs); }
@@ -115,10 +114,7 @@ milo-icon[size='initial'] svg {
   width: initial; 
 }
 
-.node-index-first milo-icon svg {
-  margin-inline-start: 0;
-}
-
-.node-index-last milo-icon svg {
-  margin-inline-end: 0;
-}
+span.icon { margin-inline: var(--spacing-xxs); }
+span.icon.node-index-first { margin-inline-start: 0; }
+span.icon.node-index-last {  margin-inline-end: 0; }
+span.icon.node-index-only {  margin-inline: initial; }
