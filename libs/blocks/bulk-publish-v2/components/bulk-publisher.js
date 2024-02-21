@@ -88,7 +88,8 @@ class BulkPublish2 extends LitElement {
   }
 
   setUrls(event) {
-    const urls = event.target.value.replace(/\n/g, ' ').split(' ').filter((ur) => (ur.length));
+    const urls = event.target.value.replace(/\n/g, ' ')
+      .replace(/(?=http)/g, ' ').split(' ').filter((ur) => (ur.length));
     this.urls = [...new Set(urls)];
     this.validateUrls();
   }

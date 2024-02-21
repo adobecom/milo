@@ -104,11 +104,13 @@ class JobProcess extends LitElement {
     const stop = stopTime && stopTime !== '' ? stopTime : undefined;
     const stamp = stop ?? startTime ?? createTime;
 
+    const statusText = jobData.error ? { code: 404, text: jobData.error, color: 'error' } : null;
+
     return {
       topic,
       style,
       url: resource?.href ?? `${origin}${path}`,
-      status: getStatusText(status, state, retry?.count),
+      status: statusText ?? getStatusText(status, state, retry?.count),
       time: {
         stamp,
         label: stopTime ? 'Finished' : 'Started',
