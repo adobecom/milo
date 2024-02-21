@@ -171,10 +171,12 @@ class BulkPublish2 extends LitElement {
   selectingProcess(event) {
     const select = this.shadowRoot.querySelector('#ProcessSelect');
     if (event.altKey === true) {
-      const indexOpt = document.createElement('option');
-      indexOpt.value = 'index';
-      indexOpt.text = 'index';
-      select.add(indexOpt);
+      if (![...select.options].find((opt) => opt.value === 'index')) {
+        const indexOpt = document.createElement('option');
+        indexOpt.value = 'index';
+        indexOpt.text = 'index';
+        select.add(indexOpt);
+      }
     } else {
       select.querySelector('option[value="index"')?.remove();
     }
