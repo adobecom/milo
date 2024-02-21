@@ -33,19 +33,40 @@ function parseCtas(el) {
   }
   return ctas;
 }
+
+function getImageOrVideo(el){
+  const img = el.querySelector('img');
+  const video = el.querySelector('.video');
+  let val = img ? new URL(img.src).pathname : '';
+  val = video ? new URL(video.href).pathname : val;
+  return val;
+}
+
+function parseBrick(key, el){
+  let [headingEl, descriptionEl, ctaEl, imageEl] = el.querySelectorAll('p');
+  const brick = {
+    heading: headingEl.querySelector('strong').textContent || '',
+    description: descriptionEl.innerHTML || '',
+    ctas: parseCtas(ctaEl),
+    image: getImageOrVideo(imageEl)
+  }
+
+  return btoa(JSON.stringify(brick));
+}
+
 export const getMetadata = (el) => {
   let metadata = {};
   for (const row of el.children) {
     const key = row.children[0].textContent.trim().toLowerCase() || '';
     let val = row.children[1].innerHTML || '';
     if (key.startsWith('image')) {
-      const img = row.children[1].querySelector('img');
-      const video = row.children[1].querySelector('.video');
-      val = img ? new URL(img.src).pathname : '';
-      val = video ? new URL(video.href).pathname : val;
+      val = getImageOrVideo(row.children[1]);
     }
     if (key.includes('cta')) {
       metadata = { ...metadata, ...parseCtas(row.children[1]) };
+    }
+    if (key.includes('brick')) {
+      val = parseBrick(key, row.children[1]);
     }
     if (key.includes('variant')) {
       val = val.replaceAll(',', '');
@@ -63,6 +84,8 @@ export default function init(el) {
       imageTablet: ${metadata.imagetablet},
       imageDesktop: ${metadata.imagedesktop},
       backgroundColor: ${metadata.backgroundcolor},
+      leftBrick: ${metadata.leftbrick},
+      rightBrick: ${metadata.rightbrick},
       variant: ${metadata.variant}`.trim(),
     tags: 'caas:content-type/promotion',
     cta1url: `${metadata.cta1url}`,

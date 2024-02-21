@@ -223,6 +223,8 @@ function normalizeData(data) {
   data.arbitrary?.forEach((item) => { arbitrary[item.key] = item.value; });
   metadata.variant = arbitrary.variant || 'dark, static-links';
   metadata.backgroundcolor = arbitrary.backgroundColor || '';
+  metadata.leftbrick = JSON.parse(atob(arbitrary.leftBrick || 'e30=')) || '';
+  metadata.rightbrick = JSON.parse(atob(arbitrary.rightBrick || 'e30=')) || '';
 
   return metadata;
 }
@@ -246,6 +248,8 @@ function getDefaultMetadata() {
     backgroundcolor: '',
     promoid: '',
     origin: '',
+    leftbrick: '',
+    rightbrick: '',
   };
 }
 
@@ -253,27 +257,26 @@ function getVideoHtml(src) {
   return `<video autoplay muted playsinline> <source src="${src}" type="video/mp4"></video>`;
 }
 
-function getImageHtml(src, screen) {
-  const format = (screen === 'desktop' || screen === 'split') ? 'png' : 'jpeg';
-  const style = (screen === 'desktop') ? 'style="object-position: 32% center;"' : '';
-  const fetchPriority = (screen === 'mobile') ? 'fetchpriority="high"' : '';
-  const loadingType = (screen === 'mobile' || screen === 'split') ? 'eager' : 'lazy';
-  const width = WIDTHS[screen];
-  const height = HEIGHTS[screen];
+function getImageHtml(src, screen, belowFold, style='', width, height) {
+  const format = (screen === 'desktop' || screen === 'split' || belowFold) ? 'png' : 'jpeg';
+  const fetchPriority = (screen === 'mobile' && !belowFold) ? 'fetchpriority="high"' : '';
+  const loadingType = ((screen === 'mobile' && !belowFold) || screen === 'split') ? 'eager' : 'lazy';
+  width = width ? width : WIDTHS[screen];
+  height = height ? height : HEIGHTS[screen];
   return `<picture>
         <source type="image/webp" srcset="${src}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
         <source type="image/webp" srcset="${src}?width=750&amp;format=webply&amp;optimize=medium">
         <source type="image/${format}" srcset="${src}?width=2000&amp;format=${format}&amp;optimize=medium" media="(min-width: 600px)">
-        <img loading="${loadingType}" alt src="${src}?width=750&amp;format=${format}&amp;optimize=medium" width="${width}" height="${height}" ${fetchPriority} ${style}>
+        <img loading="${loadingType}" alt src="${src}?width=750&amp;format=${format}&amp;optimize=medium" width="${width}" height="${height}" ${fetchPriority} style="${style}">
   </picture>`;
 }
 
-function getContent(src, screen) {
+function getContent(src, screen, style) {
   const isImage = IMAGE_EXTENSIONS.test(src);
   const isVideo = VIDEO_EXTENSIONS.test(src);
   let inner = '';
   if (isImage) {
-    inner = getImageHtml(src, screen);
+    inner = getImageHtml(src, screen, false, false, style);
   }
   if (isVideo) {
     inner = getVideoHtml(src);
@@ -367,6 +370,89 @@ function getClasses(variant) {
   return variant.split(/\s+|,/).map((c) => c.trim()).filter((i) => i !== '');
 }
 
+function getBrickContent(metadata){
+  const [modal0Path, modal0Hash] = metadata.cta1url.split("#");
+  const [modal1path, modal1hash] = metadata.leftbrick.ctas.cta1url.split("#");
+  const [modal2path, modal2hash] = metadata.leftbrick.ctas.cta2url.split("#");
+  return `<div class="section has-background" daa-lh="s1">
+            <picture class="section-background">
+              <source type="image/webp" srcset="https://www.stage.adobe.com/homepage/media_148f2a129210332a5c2de11f946d81cde4a2d5d38.png?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+              <source type="image/webp" srcset="https://www.stage.adobe.com/homepage/media_148f2a129210332a5c2de11f946d81cde4a2d5d38.png?width=750&amp;format=webply&amp;optimize=medium">
+              <source type="image/png" srcset="https://www.stage.adobe.com/homepage/media_148f2a129210332a5c2de11f946d81cde4a2d5d38.png?width=2000&amp;format=png&amp;optimize=medium" media="(min-width: 600px)">
+              <img loading="eager" alt="Inserting image..." src="https://www.stage.adobe.com/homepage/media_148f2a129210332a5c2de11f946d81cde4a2d5d38.png?width=750&amp;format=png&amp;optimize=medium" width="1600" height="718" fetchpriority="high">
+            </picture>
+            <div class="homepage-brick above-pods static-links" daa-lh="b1|homepage-brick|nopzn|hp">
+              <div class="foreground">
+                <div data-valign="middle">
+                  <h1 id="tap-the-power-of-generative-ai-in-creative-cloud" class="heading-xxl">${metadata.title}</h1>
+                  <p class="body-m">${metadata.description}</p>
+                  <p class="action-area">
+                    <a href="#${modal0Hash}" data-modal-path="${modal0Path}" data-modal-hash="#${modal0Hash}" class="modal link-block con-button blue button-xl button-justified-mobile" daa-ll="Free trial-1--Tap the power of gen">
+                        ${metadata.cta1text}
+                    </a>
+                    <a href="${metadata.cta2url}" daa-ll="See all plans-2--Tap the power of gen">
+                        ${metadata.cta2text}
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="section masonry masonry-up">
+            <div class="homepage-brick semi-transparent two-thirds-grid click" daa-lh="b2|homepage-brick|nopzn|hp">
+              <div class="background first-background">
+                <div data-valign="middle" class="mobileOnly">
+                  ${getImageHtml(metadata.leftbrick.image, "mobile", true, "object-position: center bottom; object-fit: contain;", 608, 900)}
+                </div>
+                <div data-valign="middle" class="tabletOnly">
+                  ${getImageHtml(metadata.leftbrick.image, 'tablet', true, 'object-position: center bottom; object-fit: contain;', 608, 900)}
+                </div>
+                <div data-valign="middle" class="desktopOnly">
+                  ${getImageHtml(metadata.leftbrick.image, 'desktop', true, 'object-position: right bottom; object-fit: contain;', 1600, 907)}
+                </div>
+              </div>
+              <a href="#${modal1hash}" data-modal-path="${modal1path}" data-modal-hash="${modal1hash}" class="modal link-block outline foreground" daa-ll="Start free trial-1--Adobe Photoshop powe">
+                <div data-valign="middle">
+                  <h3 id="adobe-photoshop-powered-by-firefly" class="heading-m">
+                    ${metadata.leftbrick.heading}
+                  </h3>
+                  <p class="body-m">
+                    ${metadata.leftbrick.description}
+                  </p>
+                  <p class="action-area"></p>
+                  <div class="modal link-block con-button outline button-l">
+                    ${metadata.leftbrick.ctas.cta1text}
+                  </div>
+                  <p></p>
+                </div>
+              </a>
+            </div>
+            <div class="homepage-brick semi-transparent click" daa-lh="b3|homepage-brick|nopzn|hp">
+              <div class="background first-background">
+                <div data-valign="middle" class="mobileOnly">
+                  ${getImageHtml(metadata.rightbrick.image, "mobile", true, "object-position: right bottom; object-fit: cover;", 600, 1000)}
+                </div>
+                <div data-valign="middle" class="tabletOnly">
+                  ${getImageHtml(metadata.rightbrick.image, "tablet", true, "object-position: right bottom; object-fit: cover;", 600, 804)}
+                </div>
+                <div data-valign="middle" class="desktopOnly">
+                  ${getImageHtml(metadata.rightbrick.image, "desktop", true, "object-position: right bottom; object-fit: contain;", 1180, 1043)}
+                </div>
+              </div>
+              <a href="#${modal2hash}" data-modal-path="${modal2path}" data-modal-hash="#${modal2hash}" class="modal link-block outline foreground" daa-ll="Start free trial-1--Adobe Illustrator po">
+                <div data-valign="middle">
+                  <h3 id="adobe-illustrator-powered-by-firefly" class="heading-m">${metadata.rightbrick.heading}</h3>
+                  <p class="body-m">${metadata.rightbrick.description}</p>
+                  <p class="action-area"></p>
+                  <div class="modal link-block con-button outline button-l">
+                    ${metadata.rightbrick.ctas.cta1text}
+                  </div>
+                  <p></p>
+                </div>
+              </a>
+            </div>
+          </div>`;
+}
+
 /**
  * function renderMarquee()
  * @param {HTMLElement} marquee - marquee container
@@ -382,20 +468,24 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const found = marquees?.find((obj) => obj.id === id);
   const shouldRenderMarquee = marquees?.length && found;
   const metadata = shouldRenderMarquee ? normalizeData(found) : fallback;
+  const classList = getClasses(metadata.variant);
 
   removeLoader(marquee);
   addBackground(marquee, metadata);
+  applyVariants(marquee, metadata, classList);
+  addAnalytics(marquee);
 
-  const classList = getClasses(metadata.variant);
   const isSplit = classList.includes('split');
+  const isBrick = classList.includes('homepage-brick');
   const isReversed = classList.includes('row-reversed');
   const size = getSize(classList);
   const useReverseFiller = isReversed && !isSplit;
 
   const mobileBgContent = getContent(metadata.image, 'mobile');
   const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
-  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop');
+  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'style="object-position: 32% center;');
   const splitContent = getContent(metadata.imagedesktop, 'split');
+  const brickContent = getBrickContent(metadata);
 
   const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
   let background = createTag('div', { class: 'background' }, '');
@@ -416,9 +506,11 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const foreground = createTag('div', { class: 'foreground container' }, '');
   foreground.innerHTML = fgContent;
 
-  applyVariants(marquee, metadata, classList);
-  addAnalytics(marquee);
   marquee.append(background, foreground);
+  if(isBrick){
+    marquee.innerHTML = brickContent;
+    marquee.classList.remove('marquee');
+  }
 }
 
 function loadFallback(marquee, metadata) {
