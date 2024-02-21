@@ -53,7 +53,7 @@ function getIconSvg(fileName, folderName, iconUrl) {
 
   // Or resolve
   log(`Fetching ${cacheKey} from /${folderName}/ - url:${iconUrl}`, '💵');
-  CACHE[cacheKey] = fetch(iconUrl).then((response) => {
+  CACHE[cacheKey] = fetch(iconUrl, { mode: 'no-cors' }).then((response) => {
     if (response.ok) {
       return response.text();
     }
