@@ -1,8 +1,8 @@
 import { getConfig } from '../../utils/utils.js';
 
 export default async function main(el) {
+  performance.mark('swc-tbt-started');
   const { base } = getConfig();
-  performance.mark('swc-load-started');
   const deps = Promise.all([
     import(`${base}/deps/lit-all.min.js`),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
@@ -12,13 +12,6 @@ export default async function main(el) {
     import(`${base}/features/spectrum-web-components/dist/checkbox.js`),
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
   ]);
-  performance.mark('swc-load-finished');
-  performance.measure(
-    'swc-load-duration',
-    'swc-load-started',
-    'swc-load-finished',
-  );
-  performance.mark('swc-tbt-started');
   el.innerHTML = `
   <sp-theme scale="medium" color="light">
   <div id="todo-app">
