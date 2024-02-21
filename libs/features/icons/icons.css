@@ -114,7 +114,17 @@ milo-icon[size='initial'] svg {
   width: initial; 
 }
 
-span.icon { margin-inline: var(--spacing-xxs); }
-span.icon.node-index-first { margin-inline-start: 0; }
-span.icon.node-index-last {  margin-inline-end: 0; }
-span.icon.node-index-only {  margin-inline: initial; }
+.con-button icon-milo svg {
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+}
+
+span.icon.size-initial {
+  display: contents;
+}
+
+span.icon.node-index-first { margin-inline-start: unset; }
+span.icon.node-index-middle {  margin-inline: var(--spacing-xxs); }
+span.icon.node-index-last {  margin-inline-end: unset; }
+span.icon.node-index-only {  margin-inline: unset; }

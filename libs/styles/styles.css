@@ -422,14 +422,10 @@
 }
 
 span.icon {
+  display: inline-block;
   min-height: 1em;
   min-width: 1em;
-}
-
-.con-button icon-milo svg {
-  display: inline-block;
-  height: 1em;
-  width: 1em;
+  margin-inline: var(--spacing-xxs);
 }
 
 .con-button[aria-disabled="true"],

@@ -198,14 +198,16 @@ function getIconAttributes(icon, baseUrl) {
   return attrs;
 }
 
-function setNodeIndexClass(icon) {
-  const parent = icon.parentNode;
-  const children = parent.childNodes;
-  const nodeIndex = Array.prototype.indexOf.call(children, icon);
-  let indexClass = (nodeIndex === children.length - 1) ? 'last' : nodeIndex;
-  if (nodeIndex === 0) indexClass = 'first'
-  if (children.length === 1) indexClass = 'only'
-  icon.classList.add(`node-index-${indexClass}`);
+export function setNodeIndexClass(icons) {
+  icons.forEach(async (icon) => {
+    const parent = icon.parentNode;
+    const children = parent.childNodes;
+    const nodeIndex = Array.prototype.indexOf.call(children, icon);
+    let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
+    if (nodeIndex === 0) indexClass = 'first'
+    if (children.length === 1) indexClass = 'only'
+    icon.classList.add(`node-index-${indexClass}`);
+  });
 }
 
 function decorateToolTip(icon) {
@@ -228,8 +230,9 @@ export default async function loadIcons(icons, base) {
     const { classList } = icon;
     if (classList.contains('icon-tooltip')) decorateToolTip(icon);
     const attrs = getIconAttributes(icon, base);
-    setNodeIndexClass(icon);
     icon.classList.add(`icon-milo-${attrs.name}`);
+
+    if (attrs.size === 'initial') icon.classList.add('size-initial'); 
     const attributes = Object.keys(attrs).map((k) => `${k}="${attrs[k]}"`).join(' ');
     icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attributes}></milo-icon>`);
     
