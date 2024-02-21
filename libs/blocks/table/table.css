@@ -137,6 +137,11 @@
   padding: var(--spacing-s);
 }
 
+.table:not(.merch) .row-heading .col-heading .action-area {
+  display: flex;
+  gap: var(--spacing-s);
+  flex-wrap: wrap;
+}
 
 .table.header-left .row-heading .col.col-heading .buttons-wrapper {
   justify-content: flex-start;
