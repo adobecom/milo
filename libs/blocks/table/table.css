@@ -207,6 +207,10 @@
   font-size: var(--type-body-m-size);
 }
 
+.table:not(.merch) .row-heading .col-heading .body {
+  line-height: var(--type-body-m-lh);
+}
+
 /* section */
 .table .divider {
   display: none;
