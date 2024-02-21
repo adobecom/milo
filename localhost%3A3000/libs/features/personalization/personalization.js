@@ -252,12 +252,13 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-function getSelectedElement(selector) {
+function getSelectedElement(selector, elementType) {
   try {
     if (selector.includes('/fragments/') && (selector.startsWith('/') || selector.startsWith('http'))) {
       const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
       if (fragment) {
-        return fragment.parentNode;
+        if (elementType === 'selector') return fragment.parentNode;
+        return fragment;
       }
       return null;
     }
@@ -271,7 +272,7 @@ function handleCommands(commands, manifestId) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (action in COMMANDS) {
-      const el = getSelectedElement(selector);
+      const el = getSelectedElement(selector, action);
       COMMANDS[action](el, target, manifestId);
     } else {
       /* c8 ignore next 2 */
