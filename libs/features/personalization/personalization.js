@@ -66,7 +66,13 @@ export const normalizePath = (p) => {
     || path.includes('.hlx.')
     || path.startsWith(`https://${config.productionDomain}`)) {
     try {
-      path = new URL(path).pathname;
+      const url = new URL(path);
+      const firstFolder = url.pathname.split('/')[1];
+      if (config.locale.ietf === 'en-US' || url.hash === '#_dnt' || firstFolder in config.locales || path.includes('.json')) {
+        path = url.pathname;
+      } else {
+        path = `${config.locale.prefix}${url.pathname}`;
+      }
     } catch (e) { /* return path below */ }
   } else if (!path.startsWith('http') && !path.startsWith('/')) {
     path = `/${path}`;
