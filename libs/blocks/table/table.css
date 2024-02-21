@@ -252,7 +252,15 @@
 }
 
 /* icons */
-.table:not(.merch) .row .col span.milo-tooltip.margin-left { margin-left: var(--spacing-xs); }
+.table:not(.merch) .row .col span.milo-tooltip {
+  margin-left: var(--spacing-xs);
+  margin-right: 0;
+}
+
+[dir='rtl'] .table:not(.merch) .row .col span.milo-tooltip {
+  margin-left: 0;
+  margin-right: var(--spacing-xs);
+}
 
 .table .icon-milo-info {
   height: 18px;
