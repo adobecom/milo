@@ -778,7 +778,7 @@ export async function loadIms() {
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
     window.adobeid = {
       client_id: imsClientId,
-      scope: imsScope || 'AdobeID,openid,gnav',
+      scope: imsScope || 'AdobeID,openid,gnav,pps.read,firefly_api',
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
