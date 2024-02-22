@@ -17,6 +17,8 @@ const MILO_BLOCKS = [
   'bulk-publish',
   'caas',
   'caas-config',
+  'caas-marquee',
+  'caas-marquee-metadata',
   'card',
   'card-horizontal',
   'card-metadata',
