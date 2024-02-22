@@ -160,7 +160,7 @@ async function responseHandler(response, fnName) {
 
 async function getAllMarquees(promoId, origin) {
   const endPoint = isProd() ? API_CONFIGS.caas.prod : API_CONFIGS.caas.stage;
-  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US`;
+  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US&perf=true`;
 
   /* eslint-disable object-curly-newline */
   const response = await fetch(`${endPoint}?${payload}`, {
