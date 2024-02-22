@@ -465,15 +465,10 @@ export default async function init(el) {
 
   loadMartech();
 
-  marquees = await getAllMarquees(promoId, origin);
-  if (authorPreview()) {
-    renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
-  }
-
-  //   getAllMarquees(promoId, origin).then((resp) => {
-  //   marquees = resp;
-  //   if (authorPreview()) {
-  //     renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
-  //   }
-  // });
+  getAllMarquees(promoId, origin).then((resp) => {
+    marquees = resp;
+    if (authorPreview()) {
+      renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
+    }
+  });
 }
