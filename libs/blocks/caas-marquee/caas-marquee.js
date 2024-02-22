@@ -257,11 +257,11 @@ function getVideoHtml(src) {
   return `<video autoplay muted playsinline> <source src="${src}" type="video/mp4"></video>`;
 }
 
-function getImageHtml(src, screen, belowFold, style='', width='', height='', classname='') {
+function getImageHtml(src, screen, belowFold, style = '', width = '', height = '', classname = '') {
   const usePng = ['desktop', 'split', 'brick'];
   const format = (usePng.includes(screen) || belowFold) ? 'png' : 'jpeg';
-  const fetchPriority = (screen === 'mobile' && !belowFold || screen ==='brick' ) ? 'fetchpriority="high"' : '';
-  const loadingType = ((screen === 'mobile' && !belowFold) || screen === 'split' || screen ==='brick' ) ? 'eager' : 'lazy';
+  const fetchPriority = (screen === 'mobile' && !belowFold || screen === 'brick') ? 'fetchpriority="high"' : '';
+  const loadingType = ((screen === 'mobile' && !belowFold) || screen === 'split' || screen === 'brick') ? 'eager' : 'lazy';
   width = width ? width : WIDTHS[screen];
   height = height ? height : HEIGHTS[screen];
   return `<picture class=${classname}>
@@ -297,9 +297,9 @@ function addLoadingSpinner(marquee) {
                   </div>`;
 }
 
-function getModalHtml(ctaUrl, classes, ctaText, html=''){
-  const [fragment, hash] = ctaUrl.split("#");
-  const innerContent = html ? html : ctaText;
+function getModalHtml(ctaUrl, classes, ctaText, html = '') {
+  const [fragment, hash] = ctaUrl.split('#');
+  const innerContent = html || ctaText;
   return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`
 }
 
@@ -372,7 +372,7 @@ function getClasses(variant) {
   return variant.split(/\s+|,/).map((c) => c.trim()).filter((i) => i !== '');
 }
 
-function getBrickFgContent(metadata, modalUrl){
+function getBrickFgContent(metadata, modalUrl) {
   const size = 'large';
   const ctaStyle = 'con-button blue button-xl button-justified-mobile';
   const cta = isValidModal(modalUrl) ? getModalHtml(modalUrl, ctaStyle, metadata.cta1text) : '';
@@ -384,13 +384,13 @@ function getBrickFgContent(metadata, modalUrl){
           </div>`;
 }
 
-function getBrickBackground(imgSrc, config){
-  let [mobileWidth, mobileHeight, mobileStyle] = config.mobile;
-  let [tabletWidth, tabletHeight, tabletStyle] = config.tablet;
-  let [desktopWidth, desktopHeight, desktopStyle] = config.desktop;
+function getBrickBackground(imgSrc, config) {
+  const [mobileWidth, mobileHeight, mobileStyle] = config.mobile;
+  const [tabletWidth, tabletHeight, tabletStyle] = config.tablet;
+  const [desktopWidth, desktopHeight, desktopStyle] = config.desktop;
   return `<div class="background first-background">
             <div data-valign="middle" class="mobileOnly">
-              ${getImageHtml(imgSrc, "mobile", true, mobileStyle, mobileWidth, mobileHeight)}
+              ${getImageHtml(imgSrc, 'mobile', true, mobileStyle, mobileWidth, mobileHeight)}
             </div>
             <div data-valign="middle" class="tabletOnly">
               ${getImageHtml(imgSrc, 'tablet', true, tabletStyle, tabletWidth, tabletHeight)}
@@ -401,7 +401,7 @@ function getBrickBackground(imgSrc, config){
          </div>`
 }
 
-function getBrickContent(heading, description, ctaText){
+function getBrickContent(heading, description, ctaText) {
   return `<div data-valign="middle">
             <h3 class="heading-m">
                 ${heading}
@@ -417,10 +417,10 @@ function getBrickContent(heading, description, ctaText){
           </div>`;
 }
 
-function getBricks(metadata){
-  const styleOne = "object-position: center bottom; object-fit: contain;";
-  const styleTwo = "object-position: right bottom; object-fit: contain;";
-  const styleThree = "object-position: right bottom; object-fit: cover;";
+function getBricks(metadata) {
+  const styleOne = 'object-position: center bottom; object-fit: contain;';
+  const styleTwo = 'object-position: right bottom; object-fit: contain;';
+  const styleThree = 'object-position: right bottom; object-fit: cover;';
   const brickOneConfigs = {
     mobile: ['608', '900', styleOne],
     tablet: ['608', '900', styleOne],
@@ -432,16 +432,16 @@ function getBricks(metadata){
     desktop: ['1180', '1043', styleTwo],
   };
 
-  let mainSectionImage = getImageHtml(metadata.image, 'brick', false, '', 1600, 718, 'section-background' );
-  let mainSectionContent = getBrickFgContent(metadata, metadata.cta1url);
+  const mainSectionImage = getImageHtml(metadata.image, 'brick', false, '', 1600, 718, 'section-background' );
+  const mainSectionContent = getBrickFgContent(metadata, metadata.cta1url);
 
-  let brickOneBg = getBrickBackground(metadata.leftbrick.image, brickOneConfigs);
-  let brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.ctas.cta1text);
-  let brickOneModal = getModalHtml(metadata.leftbrick.ctas.cta1url, 'outline foreground', metadata.leftbrick.ctas.cta1text, brickOneContent);
+  const brickOneBg = getBrickBackground(metadata.leftbrick.image, brickOneConfigs);
+  const brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.ctas.cta1text);
+  const brickOneModal = getModalHtml(metadata.leftbrick.ctas.cta1url, 'outline foreground', metadata.leftbrick.ctas.cta1text, brickOneContent);
 
-  let brickTwoBg = getBrickBackground(metadata.rightbrick.image, brickTwoConfigs);
-  let brickTwoContent = getBrickContent(metadata.rightbrick.heading, metadata.rightbrick.description, metadata.rightbrick.ctas.cta1text);
-  let brickTwoModal = getModalHtml(metadata.rightbrick.ctas.cta1url, 'outline foreground', metadata.rightbrick.ctas.cta1text, brickTwoContent);
+  const brickTwoBg = getBrickBackground(metadata.rightbrick.image, brickTwoConfigs);
+  const brickTwoContent = getBrickContent(metadata.rightbrick.heading, metadata.rightbrick.description, metadata.rightbrick.ctas.cta1text);
+  const brickTwoModal = getModalHtml(metadata.rightbrick.ctas.cta1url, 'outline foreground', metadata.rightbrick.ctas.cta1text, brickTwoContent);
 
   return `<div class="section has-background" daa-lh="s1">
             ${mainSectionImage}
@@ -491,7 +491,7 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'style="object-position: 32% center;');
   const splitContent = getContent(metadata.imagedesktop, 'split');
   const brickContent = isBrick ? getBricks(metadata) : '';
-  if(isBrick){
+  if (isBrick) {
     marquee.innerHTML = brickContent;
     marquee.classList.remove('marquee');
     return;
