@@ -220,6 +220,11 @@
     width: 1024px;
     height: 850px;
   }
+  
+  .dialog-modal.commerce-frame .fragment,
+  .dialog-modal.commerce-frame .section {
+    height: 100%;
+  }
 
   .dialog-modal.commerce-frame .milo-iframe {
     padding-bottom: 0;
