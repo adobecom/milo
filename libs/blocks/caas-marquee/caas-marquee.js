@@ -79,7 +79,7 @@ function log(...args) {
 }
 
 const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
-const SEGMENT_API_TIMEOUT = 2500;
+const SEGMENT_API_TIMEOUT = 1000;
 
 const TEXT = {
   small: 'm',
@@ -465,10 +465,9 @@ export default async function init(el) {
 
   loadMartech();
 
-  getAllMarquees(promoId, origin).then((resp) => {
-    marquees = resp;
-    if (authorPreview()) {
-      renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
-    }
-  });
+  marquees = await getAllMarquees(promoId, origin);
+  if (authorPreview()) {
+    renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
+  }
+
 }
