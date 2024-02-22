@@ -1,10 +1,16 @@
 /* eslint-disable no-console */
 
 import {
-  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
+  createTag,
+  getConfig,
+  loadLink,
+  loadScript,
+  localizeLink,
+  updateConfig,
+  defineHashParams,
+  setEventBasedModalListener,
 } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
-import { defineDelayedModalParams, decorateDelayedModalAnchor, showModalWithDelay } from '../../blocks/modal/modal.js';
 
 /* c20 ignore start */
 const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
@@ -106,15 +112,23 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
 
 export const getFileName = (path) => path?.split('/').pop();
 
+export const decorateDelayedModalAnchor = ({ a, hash, pathname }) => {
+  if (!a || !hash || !pathname) return;
+  a.setAttribute('href', hash);
+  a.setAttribute('data-modal-hash', hash);
+  a.setAttribute('data-modal-path', pathname);
+  a.setAttribute('style', 'display: none');
+  a.classList.add('modal');
+  a.classList.add('link-block');
+};
+
 export const parseUrl = (url) => {
   if (!url) return {};
   const parsed = {};
   try {
     const { pathname, search, hash } = new URL(url);
-    parsed.href = `${pathname}${search}${hash}`;
-    parsed.pathname = pathname;
-    parsed.hash = hash;
-    parsed.search = search;
+    const { hashWithoutParams, ...params } = defineHashParams(hash);
+    Object.assign(parsed, { href: `${pathname}${search}${hashWithoutParams}`, pathname, hash: hashWithoutParams, ...params });
   } catch {
     // if target has this format: '/fragments/somepath'
     parsed.href = url;
@@ -123,18 +137,16 @@ export const parseUrl = (url) => {
 };
 
 export const createFrag = (el, url, manifestId) => {
-  const { href, pathname, hash, search } = parseUrl(url);
+  const { hash, href, pathname, delay, display } = parseUrl(url);
   const a = createTag('a', { href }, url);
-  const isSection = el.parentElement.nodeName === 'MAIN';
-  const { delay, displayMode } = defineDelayedModalParams(search);
-  let frag = createTag('p', undefined, a);
-
-  if (delay && displayMode) {
-    frag = a;
+  if (delay && display) {
+    setEventBasedModalListener();
     decorateDelayedModalAnchor({ a, hash, pathname });
-    showModalWithDelay({ delay, displayMode, hash });
+    window.dispatchEvent(new CustomEvent('modal:open', { detail: { hash, delay, display } }));
   }
+  let frag = createTag('p', undefined, a);
   if (manifestId) a.dataset.manifestId = manifestId;
+  const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
     frag = createTag('div', undefined, frag);
   }

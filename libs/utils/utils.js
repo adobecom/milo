@@ -137,6 +137,11 @@ export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
 
+export const DISPLAY_MODE = {
+  oncePerPageLoad: 'pageload',
+  oncePerSession: 'session',
+};
+
 function getEnv(conf) {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
@@ -922,6 +927,25 @@ export function scrollToHashedElement(hash) {
   });
 }
 
+export function defineHashParams(hash) {
+  const params = { hashWithoutParams: hash?.replaceAll(/:\w+=\w+/g, '') || '' };
+  hash?.split(':').forEach((part) => {
+    if (part.includes('delay')) {
+      const delayValue = Number(part.split('=')[1]);
+      if (Number.isInteger(delayValue) && delayValue > 0) {
+        params.delay = delayValue * 1000;
+      }
+    } else if (part.includes('display')) {
+      const displayValue = part.split('=')[1];
+      if (displayValue === DISPLAY_MODE.oncePerPageLoad
+              || displayValue === DISPLAY_MODE.oncePerSession) {
+        params.display = displayValue;
+      }
+    }
+  });
+  return params;
+}
+
 export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
@@ -966,6 +990,36 @@ function initSidekick() {
   }
 }
 
+export function showModal({ delay, display, details, getModal }) {
+  if (!details) return;
+  if (delay && display) {
+    if (display === DISPLAY_MODE.oncePerPageLoad) {
+      setTimeout(() => {
+        getModal(details);
+      }, delay);
+    } else if (display === DISPLAY_MODE.oncePerSession) {
+      if (!window.sessionStorage.getItem('wasDelayedModalShown')) {
+        setTimeout(() => {
+          getModal(details);
+          window.sessionStorage.setItem('wasDelayedModalShown', true);
+        }, delay);
+      }
+    } else {
+      getModal(details);
+    }
+  }
+}
+
+export function setEventBasedModalListener() {
+  window.addEventListener('modal:open', async ({ detail }) => {
+    const { miloLibs } = getConfig();
+    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
+    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
+    const { hash, delay, display } = detail || {};
+    showModal({ delay, display, details: findDetails(hash), getModal });
+  });
+}
+
 function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."]');
@@ -981,14 +1035,7 @@ function decorateMeta() {
     }
   });
 
-  // Event-based modal
-  window.addEventListener('modal:open', async (e) => {
-    const { miloLibs } = getConfig();
-    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
-    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
-    const details = findDetails(e.detail.hash);
-    if (details) getModal(details);
-  });
+  setEventBasedModalListener();
 }
 
 function decorateDocumentExtras() {
