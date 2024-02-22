@@ -106,6 +106,21 @@ let selectedId = '';
 let metadata;
 let loaded = false;
 
+const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => {
+    if (timeoutVal !== undefined) {
+      resolve(timeoutVal);
+    } else {
+      reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
+    }
+  }, timeout);
+
+  window.addEventListener(eventName, (event) => {
+    clearTimeout(timer);
+    resolve(event);
+  }, { once: true });
+});
+
 // eslint-disable-next-line prefer-arrow-callback, func-names
 const timeout = setTimeout(async function () {
   clearTimeout(timeout);
@@ -116,7 +131,6 @@ const timeout = setTimeout(async function () {
 // See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
 // for more information on how to integrate with this API.
 async function segmentApiEventHandler(e) {
-  console.log('segmentApiEventHandler', e);
   const SEGMENT_MAP = isProd() ? SEGMENTS_MAP.prod : SEGMENTS_MAP.stage;
   if (e.detail.type === 'pageView') {
     const mappedUserSegments = [];
@@ -138,7 +152,7 @@ async function segmentApiEventHandler(e) {
     clearTimeout(timeout);
   }
 }
-window.addEventListener('alloy_sendEvent', (e) => segmentApiEventHandler(e));
+// window.addEventListener('alloy_sendEvent', (e) => segmentApiEventHandler(e));
 
 function fetchExceptionHandler(fnName, error) {
   log(`${fnName} fetch caught exception: ${error}`, LANA_OPTIONS);
@@ -467,6 +481,9 @@ export default async function init(el) {
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
+  const event = await waitForEventOrTimeout('alloy_sendEvent', 1000, []);
+  // console.log(event); // will need to change param in segmentApiEventHandler
+  await segmentApiEventHandler(event);
 
   if (authorPreview()) {
     renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
