@@ -463,9 +463,11 @@ export default async function init(el) {
     return;
   }
 
-  loadMartech();
+  const martechPromise = loadMartech();
+  const marqueesPromise = getAllMarquees(promoId, origin);
+  await Promise.all([martechPromise, marqueesPromise]);
+  marquees = await marqueesPromise;
 
-  marquees = await getAllMarquees(promoId, origin);
   if (authorPreview()) {
     renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
   }
