@@ -2,7 +2,6 @@
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
 import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
-loadMartech();
 performance.mark('caas-marquee-js');
 
 const SEGMENTS_MAP = {
@@ -463,6 +462,8 @@ export default async function init(el) {
     loadFallback(marquee, metadata);
     return;
   }
+
+  loadMartech();
 
   marquees = await getAllMarquees(promoId, origin);
   if (authorPreview()) {
