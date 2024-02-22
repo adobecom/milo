@@ -69,7 +69,7 @@ async function getPlaceholder(key, config, sheet) {
     return defaultPlaceholders;
   });
 
-  if (placeholders?.[key]) return placeholders[key];
+  if (typeof placeholders?.[key] === 'string') return placeholders[key];
 
   if (!defaultFetched && config.locale.ietf !== defaultLocale) {
     const defaultPlaceholders = await getDefaultPlaceholders();
