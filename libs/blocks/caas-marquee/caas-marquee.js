@@ -79,7 +79,7 @@ function log(...args) {
 }
 
 const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
-const SEGMENT_API_TIMEOUT = 1000;
+// const SEGMENT_API_TIMEOUT = 1000;
 
 const TEXT = {
   small: 'm',
@@ -122,11 +122,11 @@ const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((r
 });
 
 // eslint-disable-next-line prefer-arrow-callback, func-names
-const timeout = setTimeout(async function () {
-  clearTimeout(timeout);
-  // eslint-disable-next-line no-use-before-define
-  await loadFallback(marquee, metadata);
-}, SEGMENT_API_TIMEOUT);
+// const timeout = setTimeout(async function () {
+//   clearTimeout(timeout);
+//   // eslint-disable-next-line no-use-before-define
+//   await loadFallback(marquee, metadata);
+// }, SEGMENT_API_TIMEOUT);
 
 // See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
 // for more information on how to integrate with this API.
@@ -149,7 +149,6 @@ async function segmentApiEventHandler(e) {
     } else {
       loadFallback(marquee, metadata);
     }
-    clearTimeout(timeout);
   }
 }
 // window.addEventListener('alloy_sendEvent', (e) => segmentApiEventHandler(e));
