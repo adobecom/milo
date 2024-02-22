@@ -470,4 +470,10 @@ export default async function init(el) {
     renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
   }
 
+  //   getAllMarquees(promoId, origin).then((resp) => {
+  //   marquees = resp;
+  //   if (authorPreview()) {
+  //     renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
+  //   }
+  // });
 }
