@@ -257,13 +257,14 @@ function getVideoHtml(src) {
   return `<video autoplay muted playsinline> <source src="${src}" type="video/mp4"></video>`;
 }
 
-function getImageHtml(src, screen, belowFold, style='', width, height) {
-  const format = (screen === 'desktop' || screen === 'split' || belowFold) ? 'png' : 'jpeg';
-  const fetchPriority = (screen === 'mobile' && !belowFold) ? 'fetchpriority="high"' : '';
-  const loadingType = ((screen === 'mobile' && !belowFold) || screen === 'split') ? 'eager' : 'lazy';
+function getImageHtml(src, screen, belowFold, style='', width='', height='', classname='') {
+  const usePng = ['desktop', 'split', 'brick'];
+  const format = (usePng.includes(screen) || belowFold) ? 'png' : 'jpeg';
+  const fetchPriority = (screen === 'mobile' && !belowFold || screen ==='brick' ) ? 'fetchpriority="high"' : '';
+  const loadingType = ((screen === 'mobile' && !belowFold) || screen === 'split' || screen ==='brick' ) ? 'eager' : 'lazy';
   width = width ? width : WIDTHS[screen];
   height = height ? height : HEIGHTS[screen];
-  return `<picture>
+  return `<picture class=${classname}>
         <source type="image/webp" srcset="${src}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
         <source type="image/webp" srcset="${src}?width=750&amp;format=webply&amp;optimize=medium">
         <source type="image/${format}" srcset="${src}?width=2000&amp;format=${format}&amp;optimize=medium" media="(min-width: 600px)">
@@ -271,12 +272,12 @@ function getImageHtml(src, screen, belowFold, style='', width, height) {
   </picture>`;
 }
 
-function getContent(src, screen, style) {
+function getContent(src, screen, style='') {
   const isImage = IMAGE_EXTENSIONS.test(src);
   const isVideo = VIDEO_EXTENSIONS.test(src);
   let inner = '';
   if (isImage) {
-    inner = getImageHtml(src, screen, false, false, style);
+    inner = getImageHtml(src, screen, false, style);
   }
   if (isVideo) {
     inner = getVideoHtml(src);
@@ -296,9 +297,10 @@ function addLoadingSpinner(marquee) {
                   </div>`;
 }
 
-function getModalHtml(ctaUrl, classes, ctaText) {
-  const [fragment, hash] = ctaUrl.split('#');
-  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="${ctaText}" class="modal link-block ${classes}">${ctaText}</a>`;
+function getModalHtml(ctaUrl, classes, ctaText, html=''){
+  const [fragment, hash] = ctaUrl.split("#");
+  const innerContent = html ? html : ctaText;
+  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`
 }
 
 const isValidModal = (u) => VALID_MODAL_RE.test(u);
@@ -370,86 +372,89 @@ function getClasses(variant) {
   return variant.split(/\s+|,/).map((c) => c.trim()).filter((i) => i !== '');
 }
 
-function getBrickContent(metadata){
-  const [modal0Path, modal0Hash] = metadata.cta1url.split("#");
-  const [modal1path, modal1hash] = metadata.leftbrick.ctas.cta1url.split("#");
-  const [modal2path, modal2hash] = metadata.leftbrick.ctas.cta2url.split("#");
+function getBrickFgContent(metadata, modalUrl){
+  const size = 'large';
+  const ctaStyle = 'con-button blue button-xl button-justified-mobile';
+  const cta = isValidModal(modalUrl) ? getModalHtml(modalUrl, ctaStyle, metadata.cta1text) : '';
+  const cta2 = `<a href="${metadata.cta2url}">${metadata.cta2text}</a>`;
+  return `<div class="homepage-brick above-pods static-links" daa-lh="b1|homepage-brick|nopzn|hp">
+            <div class="foreground">
+                ${getFgContent(metadata, size, cta, cta2)}
+            </div>
+          </div>`;
+}
+
+function getBrickBackground(imgSrc, config){
+  let [mobileWidth, mobileHeight, mobileStyle] = config.mobile;
+  let [tabletWidth, tabletHeight, tabletStyle] = config.tablet;
+  let [desktopWidth, desktopHeight, desktopStyle] = config.desktop;
+  return `<div class="background first-background">
+            <div data-valign="middle" class="mobileOnly">
+              ${getImageHtml(imgSrc, "mobile", true, mobileStyle, mobileWidth, mobileHeight)}
+            </div>
+            <div data-valign="middle" class="tabletOnly">
+              ${getImageHtml(imgSrc, 'tablet', true, tabletStyle, tabletWidth, tabletHeight)}
+            </div>
+            <div data-valign="middle" class="desktopOnly">
+              ${getImageHtml(imgSrc, 'desktop', true, desktopStyle, desktopWidth, desktopHeight)}
+            </div>
+         </div>`
+}
+
+function getBrickContent(heading, description, ctaText){
+  return `<div data-valign="middle">
+            <h3 class="heading-m">
+                ${heading}
+            </h3>
+            <p class="body-m">
+                ${description}
+            </p>
+            <p class="action-area"></p>
+            <div class="modal link-block con-button outline button-l">
+                ${ctaText}
+            </div>
+            <p></p>
+          </div>`;
+}
+
+function getBricks(metadata){
+  const styleOne = "object-position: center bottom; object-fit: contain;";
+  const styleTwo = "object-position: right bottom; object-fit: contain;";
+  const styleThree = "object-position: right bottom; object-fit: cover;";
+  const brickOneConfigs = {
+    mobile: ['608', '900', styleOne],
+    tablet: ['608', '900', styleOne],
+    desktop: ['1600', '907', styleTwo],
+  };
+  const brickTwoConfigs = {
+    mobile: ['600', '1000', styleThree],
+    tablet: ['608', '804', styleThree],
+    desktop: ['1180', '1043', styleTwo],
+  };
+
+  let mainSectionImage = getImageHtml(metadata.image, 'brick', false, '', 1600, 718, 'section-background' );
+  let mainSectionContent = getBrickFgContent(metadata, metadata.cta1url);
+
+  let brickOneBg = getBrickBackground(metadata.leftbrick.image, brickOneConfigs);
+  let brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.ctas.cta1text);
+  let brickOneModal = getModalHtml(metadata.leftbrick.ctas.cta1url, 'outline foreground', metadata.leftbrick.ctas.cta1text, brickOneContent);
+
+  let brickTwoBg = getBrickBackground(metadata.rightbrick.image, brickTwoConfigs);
+  let brickTwoContent = getBrickContent(metadata.rightbrick.heading, metadata.rightbrick.description, metadata.rightbrick.ctas.cta1text);
+  let brickTwoModal = getModalHtml(metadata.rightbrick.ctas.cta1url, 'outline foreground', metadata.rightbrick.ctas.cta1text, brickTwoContent);
+
   return `<div class="section has-background" daa-lh="s1">
-            <picture class="section-background">
-              <source type="image/webp" srcset="https://www.stage.adobe.com/homepage/media_148f2a129210332a5c2de11f946d81cde4a2d5d38.png?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
-              <source type="image/webp" srcset="https://www.stage.adobe.com/homepage/media_148f2a129210332a5c2de11f946d81cde4a2d5d38.png?width=750&amp;format=webply&amp;optimize=medium">
-              <source type="image/png" srcset="https://www.stage.adobe.com/homepage/media_148f2a129210332a5c2de11f946d81cde4a2d5d38.png?width=2000&amp;format=png&amp;optimize=medium" media="(min-width: 600px)">
-              <img loading="eager" alt="Inserting image..." src="https://www.stage.adobe.com/homepage/media_148f2a129210332a5c2de11f946d81cde4a2d5d38.png?width=750&amp;format=png&amp;optimize=medium" width="1600" height="718" fetchpriority="high">
-            </picture>
-            <div class="homepage-brick above-pods static-links" daa-lh="b1|homepage-brick|nopzn|hp">
-              <div class="foreground">
-                <div data-valign="middle">
-                  <h1 id="tap-the-power-of-generative-ai-in-creative-cloud" class="heading-xxl">${metadata.title}</h1>
-                  <p class="body-m">${metadata.description}</p>
-                  <p class="action-area">
-                    <a href="#${modal0Hash}" data-modal-path="${modal0Path}" data-modal-hash="#${modal0Hash}" class="modal link-block con-button blue button-xl button-justified-mobile" daa-ll="Free trial-1--Tap the power of gen">
-                        ${metadata.cta1text}
-                    </a>
-                    <a href="${metadata.cta2url}" daa-ll="See all plans-2--Tap the power of gen">
-                        ${metadata.cta2text}
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </div>
+            ${mainSectionImage}
+            ${mainSectionContent}
             <div class="section masonry masonry-up">
-            <div class="homepage-brick semi-transparent two-thirds-grid click" daa-lh="b2|homepage-brick|nopzn|hp">
-              <div class="background first-background">
-                <div data-valign="middle" class="mobileOnly">
-                  ${getImageHtml(metadata.leftbrick.image, "mobile", true, "object-position: center bottom; object-fit: contain;", 608, 900)}
-                </div>
-                <div data-valign="middle" class="tabletOnly">
-                  ${getImageHtml(metadata.leftbrick.image, 'tablet', true, 'object-position: center bottom; object-fit: contain;', 608, 900)}
-                </div>
-                <div data-valign="middle" class="desktopOnly">
-                  ${getImageHtml(metadata.leftbrick.image, 'desktop', true, 'object-position: right bottom; object-fit: contain;', 1600, 907)}
-                </div>
+              <div class="homepage-brick semi-transparent two-thirds-grid click" daa-lh="b2|homepage-brick|pzn|hp">
+                ${brickOneBg}
+                ${brickOneModal}
               </div>
-              <a href="#${modal1hash}" data-modal-path="${modal1path}" data-modal-hash="${modal1hash}" class="modal link-block outline foreground" daa-ll="Start free trial-1--Adobe Photoshop powe">
-                <div data-valign="middle">
-                  <h3 id="adobe-photoshop-powered-by-firefly" class="heading-m">
-                    ${metadata.leftbrick.heading}
-                  </h3>
-                  <p class="body-m">
-                    ${metadata.leftbrick.description}
-                  </p>
-                  <p class="action-area"></p>
-                  <div class="modal link-block con-button outline button-l">
-                    ${metadata.leftbrick.ctas.cta1text}
-                  </div>
-                  <p></p>
-                </div>
-              </a>
-            </div>
-            <div class="homepage-brick semi-transparent click" daa-lh="b3|homepage-brick|nopzn|hp">
-              <div class="background first-background">
-                <div data-valign="middle" class="mobileOnly">
-                  ${getImageHtml(metadata.rightbrick.image, "mobile", true, "object-position: right bottom; object-fit: cover;", 600, 1000)}
-                </div>
-                <div data-valign="middle" class="tabletOnly">
-                  ${getImageHtml(metadata.rightbrick.image, "tablet", true, "object-position: right bottom; object-fit: cover;", 600, 804)}
-                </div>
-                <div data-valign="middle" class="desktopOnly">
-                  ${getImageHtml(metadata.rightbrick.image, "desktop", true, "object-position: right bottom; object-fit: contain;", 1180, 1043)}
-                </div>
+              <div class="homepage-brick semi-transparent click" daa-lh="b3|homepage-brick|pzn|hp">
+                ${brickTwoBg}
+                ${brickTwoModal}
               </div>
-              <a href="#${modal2hash}" data-modal-path="${modal2path}" data-modal-hash="#${modal2hash}" class="modal link-block outline foreground" daa-ll="Start free trial-1--Adobe Illustrator po">
-                <div data-valign="middle">
-                  <h3 id="adobe-illustrator-powered-by-firefly" class="heading-m">${metadata.rightbrick.heading}</h3>
-                  <p class="body-m">${metadata.rightbrick.description}</p>
-                  <p class="action-area"></p>
-                  <div class="modal link-block con-button outline button-l">
-                    ${metadata.rightbrick.ctas.cta1text}
-                  </div>
-                  <p></p>
-                </div>
-              </a>
-            </div>
           </div>`;
 }
 
@@ -485,7 +490,12 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
   const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'style="object-position: 32% center;');
   const splitContent = getContent(metadata.imagedesktop, 'split');
-  const brickContent = getBrickContent(metadata);
+  const brickContent = isBrick ? getBricks(metadata) : '';
+  if(isBrick){
+    marquee.innerHTML = brickContent;
+    marquee.classList.remove('marquee');
+    return;
+  }
 
   const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
   let background = createTag('div', { class: 'background' }, '');
@@ -507,10 +517,6 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   foreground.innerHTML = fgContent;
 
   marquee.append(background, foreground);
-  if(isBrick){
-    marquee.innerHTML = brickContent;
-    marquee.classList.remove('marquee');
-  }
 }
 
 function loadFallback(marquee, metadata) {
