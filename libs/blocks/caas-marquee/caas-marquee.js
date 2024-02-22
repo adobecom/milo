@@ -79,7 +79,7 @@ function log(...args) {
 }
 
 const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
-const SEGMENT_API_TIMEOUT = 1000;
+const SEGMENT_API_TIMEOUT = 100;
 
 const TEXT = {
   small: 'm',
