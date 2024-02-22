@@ -1,6 +1,8 @@
 /* eslint-disable no-shadow */
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
+
+performance.mark('caas-marquee-js');
 
 const SEGMENTS_MAP = {
   stage: {
@@ -114,6 +116,7 @@ const timeout = setTimeout(async function () {
 // See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
 // for more information on how to integrate with this API.
 async function segmentApiEventHandler(e) {
+  console.log('segmentApiEventHandler', e);
   const SEGMENT_MAP = isProd() ? SEGMENTS_MAP.prod : SEGMENTS_MAP.stage;
   if (e.detail.type === 'pageView') {
     const mappedUserSegments = [];
@@ -129,7 +132,10 @@ async function segmentApiEventHandler(e) {
       selectedId = await getMarqueeId();
       // eslint-disable-next-line no-use-before-define
       renderMarquee(marquee, marquees, selectedId, metadata);
+    } else {
+      loadFallback(marquee, metadata);
     }
+    clearTimeout(timeout);
   }
 }
 window.addEventListener('alloy_sendEvent', (e) => segmentApiEventHandler(e));
@@ -343,9 +349,9 @@ function getFgContent(metadata, size, cta, cta2) {
     <h1 class="heading-${HEADING[size]}">${metadata.title}</h1>
     <p class="body-${TEXT[size]}">${metadata.description}</p>
     <p class="action-area">
-      ${cta} 
+      ${cta}
       ${cta2}
-      </p>  
+      </p>
   </div>`;
 }
 
@@ -419,6 +425,7 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   applyVariants(marquee, metadata, classList);
   addAnalytics(marquee);
   marquee.append(background, foreground);
+  console.log(performance.measure('caas-marquee-js'));
 }
 
 function loadFallback(marquee, metadata) {
@@ -456,10 +463,17 @@ export default async function init(el) {
     return;
   }
 
-  getAllMarquees(promoId, origin).then((resp) => {
-    marquees = resp;
-    if (authorPreview()) {
-      renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
-    }
-  });
+  loadMartech();
+
+  marquees = await getAllMarquees(promoId, origin);
+  if (authorPreview()) {
+    renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
+  }
+
+  //   getAllMarquees(promoId, origin).then((resp) => {
+  //   marquees = resp;
+  //   if (authorPreview()) {
+  //     renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
+  //   }
+  // });
 }
