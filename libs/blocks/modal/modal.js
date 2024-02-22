@@ -11,6 +11,10 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
 </svg>`;
 const MOBILE_MAX = 599;
 const TABLET_MAX = 1199;
+export const DISPLAY_MODE = {
+  oncePerPageLoad: 'pageload',
+  oncePerSession: 'session',
+};
 let messageAbortController;
 let resizeAbortController;
 
@@ -246,3 +250,41 @@ window.addEventListener('hashchange', (e) => {
     if (details) getModal(details);
   }
 });
+
+export const decorateDelayedModalAnchor = ({ a, hash, pathname }) => {
+  if (!a || !hash || !pathname) return;
+  a.setAttribute('href', hash);
+  a.setAttribute('data-modal-hash', hash);
+  a.setAttribute('data-modal-path', pathname);
+  a.setAttribute('style', 'display: none');
+  a.classList.add('modal');
+  a.classList.add('link-block');
+};
+
+export const defineDelayedModalParams = (search) => {
+  if (!search) return {};
+  const urlParams = new URLSearchParams(search);
+  const delay = Number(urlParams?.get('delay'));
+  const displayMode = urlParams?.get('display');
+  return {
+    ...(Number.isInteger(delay) && delay > 0 && { delay: delay * 1000 }),
+    ...((displayMode === DISPLAY_MODE.oncePerPageLoad
+      || displayMode === DISPLAY_MODE.oncePerSession) && { displayMode }),
+  };
+};
+
+export function showModalWithDelay({ delay, displayMode, hash }) {
+  if (!delay || !displayMode || !hash) return;
+  if (displayMode === DISPLAY_MODE.oncePerPageLoad) {
+    setTimeout(() => {
+      window.location.hash = hash;
+    }, delay);
+  } else if (displayMode === DISPLAY_MODE.oncePerSession) {
+    if (!window.sessionStorage.getItem('wasDelayedModalShown')) {
+      setTimeout(() => {
+        window.location.hash = hash;
+        window.sessionStorage.setItem('wasDelayedModalShown', true);
+      }, delay);
+    }
+  }
+}
