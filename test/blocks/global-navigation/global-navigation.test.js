@@ -8,7 +8,6 @@ import {
   isElementVisible,
   mockRes,
   viewports,
-  config,
   unavLocalesTestData,
   analyticsTestData,
 } from './test-utilities.js';
