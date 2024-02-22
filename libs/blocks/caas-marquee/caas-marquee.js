@@ -481,7 +481,7 @@ export default async function init(el) {
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
-  const event = await waitForEventOrTimeout('alloy_sendEvent', 1000, []);
+  const event = await waitForEventOrTimeout('alloy_sendEvent', 10, new Event(''));
   // console.log(event); // will need to change param in segmentApiEventHandler
   await segmentApiEventHandler(event);
 
