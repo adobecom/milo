@@ -2,6 +2,7 @@
 import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
 import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
+loadMartech();
 performance.mark('caas-marquee-js');
 
 const SEGMENTS_MAP = {
@@ -79,7 +80,7 @@ function log(...args) {
 }
 
 const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
-const SEGMENT_API_TIMEOUT = 2500;
+const SEGMENT_API_TIMEOUT = 1000;
 
 const TEXT = {
   small: 'm',
@@ -462,8 +463,6 @@ export default async function init(el) {
     loadFallback(marquee, metadata);
     return;
   }
-
-  loadMartech();
 
   marquees = await getAllMarquees(promoId, origin);
   if (authorPreview()) {
