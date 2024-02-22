@@ -192,6 +192,25 @@ function getArbitraryByKey(data, key) {
   return data.arbitrary?.find((item) => item.key === key)?.value || '';
 }
 
+function parseEncodedBrick(data){
+  let brick = {};
+  let defaults = {
+    image: '',
+    heading: '',
+    description: '',
+    cta1text: '',
+    cta1url: '',
+  };
+  try {
+    brick = JSON.parse(atob(data));
+    brick = { ...defaults, ...brick }
+  } catch (e) {
+    log(`Exception: ${e} When trying to parse encoded brick`, LANA_OPTIONS);
+    brick = defaults;
+  }
+  return brick;
+}
+
 /**
  * function normalizeData()
  * @param {*} data - marquee JSON data
@@ -223,8 +242,8 @@ function normalizeData(data) {
   data.arbitrary?.forEach((item) => { arbitrary[item.key] = item.value; });
   metadata.variant = arbitrary.variant || 'dark, static-links';
   metadata.backgroundcolor = arbitrary.backgroundColor || '';
-  metadata.leftbrick = JSON.parse(atob(arbitrary.leftBrick || 'e30=')) || '';
-  metadata.rightbrick = JSON.parse(atob(arbitrary.rightBrick || 'e30=')) || '';
+  metadata.leftbrick = parseEncodedBrick(arbitrary.leftBrick);
+  metadata.rightbrick = parseEncodedBrick(arbitrary.rightBrick);
 
   return metadata;
 }
@@ -248,8 +267,20 @@ function getDefaultMetadata() {
     backgroundcolor: '',
     promoid: '',
     origin: '',
-    leftbrick: '',
-    rightbrick: '',
+    leftbrick: {
+      image: '',
+      heading: '',
+      description: '',
+      cta1text: '',
+      cta1url: '',
+    },
+    rightbrick: {
+      image: '',
+      heading: '',
+      description: '',
+      cta1text: '',
+      cta1url: '',
+    },
   };
 }
 
@@ -257,13 +288,18 @@ function getVideoHtml(src) {
   return `<video autoplay muted playsinline> <source src="${src}" type="video/mp4"></video>`;
 }
 
-function getImageHtml(src, screen, belowFold, style = '', width = '', height = '', classname = '') {
+function getImageHtml(src, screen, belowFold, style='', width='', height='', classname='') {
+  const aboveFold = !belowFold;
   const usePng = ['desktop', 'split', 'brick'];
+  const eager = ['split', 'brick'];
+  const mobileAboveFold = (screen === 'mobile' && aboveFold);
+
   const format = (usePng.includes(screen) || belowFold) ? 'png' : 'jpeg';
-  const fetchPriority = (screen === 'mobile' && !belowFold || screen === 'brick') ? 'fetchpriority="high"' : '';
-  const loadingType = ((screen === 'mobile' && !belowFold) || screen === 'split' || screen === 'brick') ? 'eager' : 'lazy';
+  const fetchPriority = (mobileAboveFold || screen ==='brick' ) ? 'fetchpriority="high"' : '';
+  const loadingType = (mobileAboveFold || eager.includes(screen) ) ? 'eager' : 'lazy';
   width = width ? width : WIDTHS[screen];
   height = height ? height : HEIGHTS[screen];
+
   return `<picture class=${classname}>
         <source type="image/webp" srcset="${src}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
         <source type="image/webp" srcset="${src}?width=750&amp;format=webply&amp;optimize=medium">
@@ -436,12 +472,12 @@ function getBricks(metadata) {
   const mainSectionContent = getBrickFgContent(metadata, metadata.cta1url);
 
   const brickOneBg = getBrickBackground(metadata.leftbrick.image, brickOneConfigs);
-  const brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.ctas.cta1text);
-  const brickOneModal = getModalHtml(metadata.leftbrick.ctas.cta1url, 'outline foreground', metadata.leftbrick.ctas.cta1text, brickOneContent);
+  const brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.cta1text);
+  const brickOneModal = getModalHtml(metadata.leftbrick.cta1url, 'outline foreground', metadata.leftbrick.cta1text, brickOneContent);
 
   const brickTwoBg = getBrickBackground(metadata.rightbrick.image, brickTwoConfigs);
-  const brickTwoContent = getBrickContent(metadata.rightbrick.heading, metadata.rightbrick.description, metadata.rightbrick.ctas.cta1text);
-  const brickTwoModal = getModalHtml(metadata.rightbrick.ctas.cta1url, 'outline foreground', metadata.rightbrick.ctas.cta1text, brickTwoContent);
+  const brickTwoContent = getBrickContent(metadata.rightbrick.heading, metadata.rightbrick.description, metadata.rightbrick.cta1text);
+  const brickTwoModal = getModalHtml(metadata.rightbrick.cta1url, 'outline foreground', metadata.rightbrick.cta1text, brickTwoContent);
 
   return `<div class="section has-background" daa-lh="s1">
             ${mainSectionImage}

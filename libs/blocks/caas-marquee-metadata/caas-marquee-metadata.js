@@ -23,7 +23,7 @@ function getUrl(ctaLink) {
 }
 function parseCtas(el) {
   const ctas = {};
-  const ctaLinks = el.querySelectorAll('a');
+  const ctaLinks = el?.querySelectorAll('a') || [];
 
   for (let i = 1; i <= MAX_NUM_CTAS; i += 1) {
     const ctaLink = ctaLinks[i - 1] || '';
@@ -35,8 +35,8 @@ function parseCtas(el) {
 }
 
 function getImageOrVideo(el){
-  const img = el.querySelector('img');
-  const video = el.querySelector('.video');
+  const img = el?.querySelector('img');
+  const video = el?.querySelector('.video');
   let val = img ? new URL(img.src).pathname : '';
   val = video ? new URL(video.href).pathname : val;
   return val;
@@ -45,9 +45,9 @@ function getImageOrVideo(el){
 function parseBrick(key, el){
   let [headingEl, descriptionEl, ctaEl, imageEl] = el.querySelectorAll('p');
   const brick = {
-    heading: headingEl.querySelector('strong').textContent || '',
-    description: descriptionEl.innerHTML || '',
-    ctas: parseCtas(ctaEl),
+    heading: headingEl?.querySelector('strong')?.textContent || '',
+    description: descriptionEl?.innerHTML || '',
+    ...parseCtas(ctaEl),
     image: getImageOrVideo(imageEl)
   }
 
