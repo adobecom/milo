@@ -108,6 +108,23 @@ export const osMap = {
   iPhone: 'iOS',
 };
 
+export const LANGMAP = {
+  cs: ['cz'],
+  da: ['dk'],
+  de: ['at'],
+  en: ['africa', 'au', 'ca', 'ie', 'in', 'mt', 'ng', 'nz', 'sg', 'za'],
+  es: ['ar', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
+  et: ['ee'],
+  ja: ['jp'],
+  ko: ['kr'],
+  nb: ['no'],
+  pt: ['br'],
+  sl: ['si'],
+  sv: ['se'],
+  uk: ['ua'],
+  zh: ['cn', 'tw'],
+};
+
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 export const signIn = () => {
   if (typeof window.adobeIMS?.signIn !== 'function') return;
@@ -214,23 +231,6 @@ const closeOnClickOutside = (e) => {
   }
 };
 
-export const LANGMAP = {
-  cs: ['cz'],
-  da: ['dk'],
-  de: ['at'],
-  en: ['africa', 'au', 'ca', 'ie', 'in', 'mt', 'ng', 'nz', 'sg', 'za'],
-  es: ['ar', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
-  et: ['ee'],
-  ja: ['jp'],
-  ko: ['kr'],
-  nb: ['no'],
-  pt: ['br'],
-  sl: ['si'],
-  sv: ['se'],
-  uk: ['ua'],
-  zh: ['cn', 'tw'],
-};
-
 export const getUniversalNavLocale = (locale) => {
   if (!locale.prefix || locale.prefix === '/') return 'en_US';
   const prefix = locale.prefix.replace('/', '');
@@ -315,7 +315,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'Error with IMS', e, tags: 'errorType=info,module=gnav' });
+      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
     });
 
   decorateTopNav = () => {
@@ -411,7 +411,7 @@ class Gnav {
 
         resolve();
       } catch (e) {
-        lanaLog({ message: 'Error within loadDelayed', e, tags: 'errorType=warn,module=gnav' });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'errorType=warn,module=gnav' });
         resolve();
       }
     });
@@ -428,7 +428,7 @@ class Gnav {
         await task();
       }
     } catch (e) {
-      lanaLog({ message: 'issues within onReady', e, tags: 'errorType=info,module=gnav' });
+      lanaLog({ message: 'GNAV: issues within onReady', e, tags: 'errorType=info,module=gnav' });
     }
   };
 
