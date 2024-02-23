@@ -411,7 +411,7 @@ class Gnav {
     locale.geo = getCountry();
 
     searchInput.addEventListener('input', (e) => {
-      this.onSearchInput({
+      this.onSearchInput?.({
         value: e.target.value,
         resultsEl: searchResultsUl,
         locale,
