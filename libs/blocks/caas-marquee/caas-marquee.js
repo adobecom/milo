@@ -1,8 +1,6 @@
 /* eslint-disable no-shadow */
 import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
-performance.mark('caas-marquee-js');
-
 const SEGMENTS_MAP = {
   stage: {
     '5a5fd14e-f4ca-49d2-9f87-835df5477e3c': 'PHSP',
@@ -26,6 +24,8 @@ const SEGMENTS_MAP = {
     '934fdc1d-7ba6-4644-908b-53e01e550086': 'DC Paid Active entitlements',
   },
 };
+
+const ALLOY_TIMEOUT = 500;
 
 const WIDTHS = {
   split: 1199,
@@ -87,7 +87,7 @@ function parseCtas(el) {
   }
   return ctas;
 }
-function getMetadata(el){
+function getMetadata(el) {
   let metadata = {};
   for (const row of el.children) {
     const key = row.children[0].textContent.trim().toLowerCase() || '';
@@ -113,7 +113,6 @@ function isProd() {
   const { host } = window.location;
   return !(host.includes('hlx.page')
     || host.includes('localhost')
-    || host.includes('hlx.live')
     || host.includes('stage.adobe')
     || host.includes('corp.adobe'));
 }
@@ -194,6 +193,7 @@ async function segmentApiEventHandler(e) {
       renderMarquee(marquee, marquees, selectedId, metadata);
     }
   }
+  // eslint-disable-next-line no-use-before-define
   loadFallback(marquee, metadata);
 }
 
@@ -406,9 +406,9 @@ function getFgContent(metadata, size, cta, cta2) {
     <h1 class="heading-${HEADING[size]}">${metadata.title}</h1>
     <p class="body-${TEXT[size]}">${metadata.description}</p>
     <p class="action-area">
-      ${cta}
+      ${cta} 
       ${cta2}
-      </p>
+      </p> 
   </div>`;
 }
 
@@ -482,7 +482,6 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   applyVariants(marquee, metadata, classList);
   addAnalytics(marquee);
   marquee.append(background, foreground);
-  console.log(performance.measure('caas-marquee-js'));
 }
 
 function loadFallback(marquee, metadata) {
@@ -524,7 +523,7 @@ export default async function init(el) {
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
-  const event = await waitForEventOrTimeout('alloy_sendEvent', 500, new Event(''));
+  const event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
   await segmentApiEventHandler(event);
 
   if (authorPreview()) {
