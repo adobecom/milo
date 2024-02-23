@@ -132,7 +132,7 @@ const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((r
 // for more information on how to integrate with this API.
 async function segmentApiEventHandler(e) {
   const SEGMENT_MAP = isProd() ? SEGMENTS_MAP.prod : SEGMENTS_MAP.stage;
-  if (e.detail.type === 'pageView') {
+  if (e.detail?.type === 'pageView') {
     const mappedUserSegments = [];
     const userSegments = e.detail?.result?.destinations?.[0]?.segments || [];
     for (const userSegment of userSegments) {
@@ -146,10 +146,9 @@ async function segmentApiEventHandler(e) {
       selectedId = await getMarqueeId();
       // eslint-disable-next-line no-use-before-define
       renderMarquee(marquee, marquees, selectedId, metadata);
-    } else {
-      loadFallback(marquee, metadata);
     }
   }
+  loadFallback(marquee, metadata);
 }
 // window.addEventListener('alloy_sendEvent', (e) => segmentApiEventHandler(e));
 
@@ -480,7 +479,7 @@ export default async function init(el) {
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
-  const event = await waitForEventOrTimeout('alloy_sendEvent', 10, new Event(''));
+  const event = await waitForEventOrTimeout('alloy_sendEvent', 500, new Event(''));
   // console.log(event); // will need to change param in segmentApiEventHandler
   await segmentApiEventHandler(event);
 
