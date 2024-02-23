@@ -1,6 +1,5 @@
 /* eslint-disable no-shadow */
-import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
 const SEGMENTS_MAP = {
   stage: {
@@ -25,6 +24,8 @@ const SEGMENTS_MAP = {
     '934fdc1d-7ba6-4644-908b-53e01e550086': 'DC Paid Active entitlements',
   },
 };
+
+const ALLOY_TIMEOUT = 500;
 
 const WIDTHS = {
   split: 1199,
@@ -53,11 +54,65 @@ const API_CONFIGS = {
   },
 };
 
+const MAX_NUM_CTAS = 2;
+const CTA_STYLES = {
+  STRONG: 'blue',
+  EM: 'outline',
+};
+function getCtaStyle(tagName) {
+  return CTA_STYLES[tagName] || '';
+}
+
+function getUrl(ctaLink) {
+  if (!ctaLink) {
+    return '';
+  }
+  const modalPath = ctaLink.getAttribute('data-modal-path');
+  const modalHash = ctaLink.getAttribute('data-modal-hash');
+  const target = ctaLink.target ? `#${ctaLink.target}` : '';
+  if (modalPath && modalHash) {
+    return `${modalPath}${modalHash}`;
+  }
+  return `${ctaLink.href}${target}`;
+}
+function parseCtas(el) {
+  const ctas = {};
+  const ctaLinks = el.querySelectorAll('a');
+
+  for (let i = 1; i <= MAX_NUM_CTAS; i += 1) {
+    const ctaLink = ctaLinks[i - 1] || '';
+    ctas[`cta${i}url`] = getUrl(ctaLink);
+    ctas[`cta${i}text`] = ctaLink.textContent?.trim() || '';
+    ctas[`cta${i}style`] = getCtaStyle(ctaLink.parentNode?.tagName);
+  }
+  return ctas;
+}
+function getMetadata(el) {
+  let metadata = {};
+  for (const row of el.children) {
+    const key = row.children[0].textContent.trim().toLowerCase() || '';
+    let val = row.children[1].innerHTML || '';
+    if (key.startsWith('image')) {
+      const img = row.children[1].querySelector('img');
+      const video = row.children[1].querySelector('.video');
+      val = img ? new URL(img.src).pathname : '';
+      val = video ? new URL(video.href).pathname : val;
+    }
+    if (key.includes('cta')) {
+      metadata = { ...metadata, ...parseCtas(row.children[1]) };
+    }
+    if (key.includes('variant')) {
+      val = val.replaceAll(',', '');
+    }
+    metadata[key] = val;
+  }
+  return metadata;
+}
+
 function isProd() {
   const { host } = window.location;
   return !(host.includes('hlx.page')
     || host.includes('localhost')
-    || host.includes('hlx.live')
     || host.includes('stage.adobe')
     || host.includes('corp.adobe'));
 }
@@ -77,7 +132,6 @@ function log(...args) {
 }
 
 const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
-const SEGMENT_API_TIMEOUT = 2500;
 
 const TEXT = {
   small: 'm',
@@ -104,18 +158,26 @@ let selectedId = '';
 let metadata;
 let loaded = false;
 
-// eslint-disable-next-line prefer-arrow-callback, func-names
-const timeout = setTimeout(async function () {
-  clearTimeout(timeout);
-  // eslint-disable-next-line no-use-before-define
-  await loadFallback(marquee, metadata);
-}, SEGMENT_API_TIMEOUT);
+const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => {
+    if (timeoutVal !== undefined) {
+      resolve(timeoutVal);
+    } else {
+      reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
+    }
+  }, timeout);
+
+  window.addEventListener(eventName, (event) => {
+    clearTimeout(timer);
+    resolve(event);
+  }, { once: true });
+});
 
 // See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
 // for more information on how to integrate with this API.
 async function segmentApiEventHandler(e) {
   const SEGMENT_MAP = isProd() ? SEGMENTS_MAP.prod : SEGMENTS_MAP.stage;
-  if (e.detail.type === 'pageView') {
+  if (e.detail?.type === 'pageView') {
     const mappedUserSegments = [];
     const userSegments = e.detail?.result?.destinations?.[0]?.segments || [];
     for (const userSegment of userSegments) {
@@ -131,8 +193,9 @@ async function segmentApiEventHandler(e) {
       renderMarquee(marquee, marquees, selectedId, metadata);
     }
   }
+  // eslint-disable-next-line no-use-before-define
+  loadFallback(marquee, metadata);
 }
-window.addEventListener('alloy_sendEvent', (e) => segmentApiEventHandler(e));
 
 function fetchExceptionHandler(fnName, error) {
   log(`${fnName} fetch caught exception: ${error}`, LANA_OPTIONS);
@@ -154,7 +217,7 @@ async function responseHandler(response, fnName) {
 
 async function getAllMarquees(promoId, origin) {
   const endPoint = isProd() ? API_CONFIGS.caas.prod : API_CONFIGS.caas.stage;
-  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US`;
+  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US&perf=true`;
 
   /* eslint-disable object-curly-newline */
   const response = await fetch(`${endPoint}?${payload}`, {
@@ -345,7 +408,7 @@ function getFgContent(metadata, size, cta, cta2) {
     <p class="action-area">
       ${cta} 
       ${cta2}
-      </p>  
+      </p> 
   </div>`;
 }
 
@@ -456,10 +519,14 @@ export default async function init(el) {
     return;
   }
 
-  getAllMarquees(promoId, origin).then((resp) => {
-    marquees = resp;
-    if (authorPreview()) {
-      renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
-    }
-  });
+  const martechPromise = loadMartech();
+  const marqueesPromise = getAllMarquees(promoId, origin);
+  await Promise.all([martechPromise, marqueesPromise]);
+  marquees = await marqueesPromise;
+  const event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+  await segmentApiEventHandler(event);
+
+  if (authorPreview()) {
+    renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
+  }
 }
