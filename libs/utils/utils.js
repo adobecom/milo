@@ -990,17 +990,32 @@ function initSidekick() {
   }
 }
 
+export function sendAnalytics(event) {
+  // eslint-disable-next-line no-underscore-dangle
+  window._satellite?.track('event', {
+    xdm: {},
+    data: {
+      web: { webInteraction: { name: event?.type } },
+      _adobe_corpnew: { digitalData: event?.data },
+    },
+  });
+}
+
 export function showModal({ delay, display, details, getModal }) {
   if (!details) return;
   if (delay && display) {
+    const modalOpenEvent = new Event(`${details.id}:modalOpen`);
+    console.log('modalOpenEvent', modalOpenEvent);
     if (display === DISPLAY_MODE.oncePerPageLoad) {
       setTimeout(() => {
         getModal(details);
+        sendAnalytics(modalOpenEvent);
       }, delay);
     } else if (display === DISPLAY_MODE.oncePerSession) {
       if (!window.sessionStorage.getItem('wasDelayedModalShown')) {
         setTimeout(() => {
           getModal(details);
+          sendAnalytics(modalOpenEvent);
           window.sessionStorage.setItem('wasDelayedModalShown', true);
         }, delay);
       }

@@ -1,5 +1,7 @@
 /* eslint-disable import/no-cycle */
-import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
+import {
+  createTag, getMetadata, localizeLink, loadStyle, getConfig, sendAnalytics,
+} from '../../utils/utils.js';
 
 const FOCUSABLES = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
@@ -19,17 +21,6 @@ export function findDetails(hash, el) {
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
   const path = a?.dataset.modalPath || localizeLink(getMetadata(`-${id}`));
   return { id, path, isHash: hash === window.location.hash };
-}
-
-export function sendAnalytics(event) {
-  // eslint-disable-next-line no-underscore-dangle
-  window._satellite?.track('event', {
-    xdm: {},
-    data: {
-      web: { webInteraction: { name: event?.type } },
-      _adobe_corpnew: { digitalData: event?.data },
-    },
-  });
 }
 
 export function closeModal(modal) {
