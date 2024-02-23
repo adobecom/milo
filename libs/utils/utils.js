@@ -794,8 +794,12 @@ export async function loadIms() {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
     }
+    // remove acomsis cookie that is used in Akamai, for SignOut event from ims.
+    window.adobeProfile?.addEventListener('adobeProfile:SignOut', () => {
+      document.cookie = `acomsis=;path=/;expires=${new Date(0).toUTCString()};`;
+      document.cookie = `acomsis=;path=/;expires=${new Date(0).toUTCString()};domain=${window.location.host.includes('stage') ? 'stage.' : ''}adobe.com;`;
+    });
   });
-
   return imsLoaded;
 }
 
