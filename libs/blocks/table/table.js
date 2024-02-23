@@ -18,7 +18,7 @@ function defineDeviceByScreenSize() {
 }
 
 function handleHeading(table, headingCols) {
-  const isPricingBottom = table.classList.contains('pricing-bottom');
+  const isPriceBottom = table.classList.contains('pricing-bottom');
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
     if (!col.innerHTML) {
@@ -46,7 +46,7 @@ function handleHeading(table, headingCols) {
 
       if (pricingElem) {
         pricingElem.classList.add('pricing');
-        if (isPricingBottom) {
+        if (isPriceBottom) {
           pricingElem.parentNode.insertBefore(
             elements[textStartIndex + 2],
             elements[textStartIndex + 1],
@@ -70,7 +70,7 @@ function handleHeading(table, headingCols) {
 
       const row1 = createTag('div', { class: 'table-heading-content' });
       const row2 = createTag('div', { class: 'table-heading-button' });
-      const row1LastIdx = isPricingBottom ? 3 : 4;
+      const row1LastIdx = isPriceBottom ? 3 : 4;
       [...elements].forEach((e, idx) => {
         if (idx < row1LastIdx) row1.appendChild(e);
         else row2.appendChild(e);
