@@ -1003,8 +1003,9 @@ export function sendAnalytics(event) {
 
 export function showModal({ delay, display, details, getModal }) {
   if (!details) return;
+  const { id } = details;
   if (delay && display) {
-    const modalOpenEvent = new Event(`${details.id}:modalOpen`);
+    const modalOpenEvent = new Event(`${id}:modalOpen`);
     console.log('modalOpenEvent', modalOpenEvent);
     if (display === DISPLAY_MODE.oncePerPageLoad) {
       setTimeout(() => {
@@ -1012,11 +1013,11 @@ export function showModal({ delay, display, details, getModal }) {
         sendAnalytics(modalOpenEvent);
       }, delay);
     } else if (display === DISPLAY_MODE.oncePerSession) {
-      if (!window.sessionStorage.getItem('wasDelayedModalShown')) {
+      if (!window.sessionStorage.getItem(`shown:${id}`)) {
         setTimeout(() => {
           getModal(details);
           sendAnalytics(modalOpenEvent);
-          window.sessionStorage.setItem('wasDelayedModalShown', true);
+          window.sessionStorage.setItem(`shown:${id}`, true);
         }, delay);
       }
     } else {
