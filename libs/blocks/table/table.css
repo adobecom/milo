@@ -182,6 +182,11 @@
 .table .row-heading .col-heading .header-product-tile {
   display: inline-flex;
   gap: var(--spacing-xxs);
+  justify-content: center;
+}
+
+.table.header-left .row-heading .col-heading .header-product-tile {
+  justify-content: flex-start;
 }
 
 .table .row-heading .col-heading .header-product-tile picture {
