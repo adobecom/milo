@@ -139,7 +139,10 @@
   }
 
   .appPrompt-close:focus {
-    outline: 2px solid #157AF3;
+    /* For Firefox */
+    outline: auto;
+    /* For Chrome, Edge, and Safari */
+    outline: 2px solid -webkit-focus-ring-color;
   }
 
   .appPrompt-progressWrapper {
