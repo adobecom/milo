@@ -3,6 +3,54 @@ import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
 performance.mark('caas-marquee-js');
 
+let marquees = [];
+let marquee = createTag('div', { class: 'marquee' }, '');
+let segments = [];
+let selectedId = '';
+let metadata;
+let loaded = false;
+
+const LANA_OPTIONS = { tags: 'caasMarquee' };
+
+const BUTTON_STYLES = ['blue', 'outline'];
+const prod = isProd();
+const urlParams = new URLSearchParams(window.location.search);
+const debug = urlParams.get('debug');
+
+const isValidModal = (u) => VALID_MODAL_RE.test(u);
+
+const IMAGE_EXTENSIONS = /^.*\.(jpg|jpeg|png|gif|bmp|svg|webp|tiff|ico|avif|jfif)$/;
+const VIDEO_EXTENSIONS = /^.*\.(mp4|mpeg|mpg|mov|wmv|avi|webm|ogg)$/;
+const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
+
+const WIDTHS = {
+  split: 1199,
+  mobile: 1440,
+  tablet: 2048,
+  desktop: 2400,
+};
+
+const HEIGHTS = {
+  split: 828,
+  mobile: 992,
+  tablet: 520,
+  desktop: 813,
+};
+
+const TEXT = {
+  small: 'm',
+  medium: 'm',
+  large: 'xl',
+  xlarge: 'xl',
+};
+
+const HEADING = {
+  small: 'xl',
+  medium: 'xl',
+  large: 'xxl',
+  xlarge: 'xxl',
+};
+
 const SEGMENTS_MAP = {
   stage: {
     '5a5fd14e-f4ca-49d2-9f87-835df5477e3c': 'PHSP',
@@ -27,21 +75,20 @@ const SEGMENTS_MAP = {
   },
 };
 
-const WIDTHS = {
-  split: 1199,
-  mobile: 1440,
-  tablet: 2048,
-  desktop: 2400,
-};
+const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => {
+    if (timeoutVal !== undefined) {
+      resolve(timeoutVal);
+    } else {
+      reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
+    }
+  }, timeout);
 
-const HEIGHTS = {
-  split: 828,
-  mobile: 992,
-  tablet: 520,
-  desktop: 813,
-};
-
-const LANA_OPTIONS = { tags: 'caasMarquee' };
+  window.addEventListener(eventName, (event) => {
+    clearTimeout(timer);
+    resolve(event);
+  }, { once: true });
+});
 
 const API_CONFIGS = {
   spectra: {
@@ -53,6 +100,14 @@ const API_CONFIGS = {
     stage: 'https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection',
   },
 };
+
+const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
+
+const martechPromise = loadMartech();
+const marqueesPromise = getAllMarquees('homepage', 'milo');
+await Promise.all([martechPromise, marqueesPromise]);
+marquees = await marqueesPromise;
+const event = await waitForEventOrTimeout('alloy_sendEvent', 500, new Event(''));
 
 const MAX_NUM_CTAS = 2;
 const CTA_STYLES = {
@@ -118,11 +173,6 @@ function isProd() {
     || host.includes('corp.adobe'));
 }
 
-const BUTTON_STYLES = ['blue', 'outline'];
-const prod = isProd();
-const urlParams = new URLSearchParams(window.location.search);
-const debug = urlParams.get('debug');
-
 function log(...args) {
   if (!prod || debug) {
     // eslint-disable-next-line no-console
@@ -131,48 +181,6 @@ function log(...args) {
     window.lana?.log(...args);
   }
 }
-
-const REQUEST_TIMEOUT = isProd() ? 1500 : 10000;
-
-const TEXT = {
-  small: 'm',
-  medium: 'm',
-  large: 'xl',
-  xlarge: 'xl',
-};
-
-const HEADING = {
-  small: 'xl',
-  medium: 'xl',
-  large: 'xxl',
-  xlarge: 'xxl',
-};
-
-const IMAGE_EXTENSIONS = /^.*\.(jpg|jpeg|png|gif|bmp|svg|webp|tiff|ico|avif|jfif)$/;
-const VIDEO_EXTENSIONS = /^.*\.(mp4|mpeg|mpg|mov|wmv|avi|webm|ogg)$/;
-const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
-
-let segments = [];
-let marquee;
-let marquees = [];
-let selectedId = '';
-let metadata;
-let loaded = false;
-
-const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((resolve, reject) => {
-  const timer = setTimeout(() => {
-    if (timeoutVal !== undefined) {
-      resolve(timeoutVal);
-    } else {
-      reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
-    }
-  }, timeout);
-
-  window.addEventListener(eventName, (event) => {
-    clearTimeout(timer);
-    resolve(event);
-  }, { once: true });
-});
 
 // See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
 // for more information on how to integrate with this API.
@@ -361,8 +369,6 @@ function getModalHtml(ctaUrl, classes, ctaText) {
   return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="${ctaText}" class="modal link-block ${classes}">${ctaText}</a>`;
 }
 
-const isValidModal = (u) => VALID_MODAL_RE.test(u);
-
 function getCtaHtml(url, text, classes) {
   if (isValidModal(url)) {
     return getModalHtml(url, classes, text);
@@ -509,9 +515,9 @@ function handleAuthoringMistakes(authoredFields) {
 export default async function init(el) {
   metadata = getMetadata(el);
   metadata = handleAuthoringMistakes(metadata);
-  const promoId = metadata.promoid;
-  const origin = getConfig().chimeraOrigin || metadata.origin;
-  marquee = createTag('div', { class: 'marquee' }, '');
+  // const promoId = metadata.promoid;
+  // const origin = getConfig().chimeraOrigin || metadata.origin;
+  // marquee = createTag('div', { class: 'marquee' }, '');
   addLoadingSpinner(marquee);
   el.parentNode.prepend(marquee);
 
@@ -520,11 +526,6 @@ export default async function init(el) {
     return;
   }
 
-  const martechPromise = loadMartech();
-  const marqueesPromise = getAllMarquees(promoId, origin);
-  await Promise.all([martechPromise, marqueesPromise]);
-  marquees = await marqueesPromise;
-  const event = await waitForEventOrTimeout('alloy_sendEvent', 500, new Event(''));
   await segmentApiEventHandler(event);
 
   if (authorPreview()) {
