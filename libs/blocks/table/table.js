@@ -17,7 +17,7 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function handleHeading(headingCols, isPriceBottom, isMerch) {
+function handleHeading(table, headingCols) {
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
     if (!col.innerHTML) {
@@ -37,7 +37,7 @@ function handleHeading(headingCols, isPriceBottom, isMerch) {
       const iconTile = elements[0]?.querySelector('img');
       if (iconTile) {
         textStartIndex += 1;
-        if (!isMerch) iconTile.closest('p').classList.add('header-product-tile');
+        if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
@@ -45,7 +45,7 @@ function handleHeading(headingCols, isPriceBottom, isMerch) {
 
       if (pricingElem) {
         pricingElem.classList.add('pricing');
-        if (isPriceBottom) {
+        if (table.classList.contains('pricing-bottom')) {
           pricingElem.parentNode.insertBefore(
             elements[textStartIndex + 2],
             elements[textStartIndex + 1],
@@ -69,7 +69,7 @@ function handleHeading(headingCols, isPriceBottom, isMerch) {
 
       const row1 = createTag('div', { class: 'table-heading-content' });
       const row2 = createTag('div', { class: 'table-heading-button' });
-      const row1LastIdx = isPriceBottom ? 3 : 4;
+      const row1LastIdx = table.classList.contains('pricing-bottom') ? 3 : 4;
       [...elements].forEach((e, idx) => {
         if (idx < row1LastIdx) row1.appendChild(e);
         else row2.appendChild(e);
@@ -86,8 +86,6 @@ function handleHighlight(table) {
   const firstRowCols = firstRow.querySelectorAll('.col');
   const secondRow = table.querySelector('.row-2');
   const secondRowCols = secondRow.querySelectorAll('.col');
-  const isPriceBottom = table.classList.contains('pricing-bottom');
-  const isMerch = table.classList.contains('merch');
   let headingCols = null;
 
   if (isHighlightTable) {
@@ -116,7 +114,7 @@ function handleHighlight(table) {
     firstRow.classList.add('row-heading');
   }
 
-  handleHeading(headingCols, isPriceBottom, isMerch);
+  handleHeading(table, headingCols);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
@@ -137,11 +135,6 @@ function handleExpand(e) {
   }
 }
 
-/**
- * @param {*} sectionParams that is from init()
- * @returns {boolean expandSection} that is the only variable get updated from sectionParams
- */
-
 function handleTitleText(cell) {
   if (cell.querySelector('.table-title-text')) return;
   const textSpan = createTag('span', { class: 'table-title-text' });
@@ -151,6 +144,11 @@ function handleTitleText(cell) {
   if (!iconTooltip) return;
   cell.append(iconTooltip.closest('em') || iconTooltip);
 }
+
+/**
+ * @param {*} sectionParams that is from init()
+ * @returns {boolean expandSection} that is the only variable get updated from sectionParams
+ */
 
 function handleSection(sectionParams) {
   const {
