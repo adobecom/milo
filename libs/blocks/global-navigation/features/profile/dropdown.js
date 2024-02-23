@@ -3,7 +3,7 @@ import { toFragment, getFedsPlaceholderConfig, trigger, closeAllDropdowns, logEr
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 
 const ACOM_SIGNED_IN_STATUS = 'acomsis';
-const isStage = document.location.host.includes('stage');
+const isStage = window.location.host.includes('stage');
 
 const getLanguage = (ietfLocale) => {
   if (!ietfLocale.length) return 'en';
@@ -165,6 +165,7 @@ class ProfileDropdown {
 
     signOutLink.addEventListener('click', (e) => {
       e.preventDefault();
+      document.cookie = `${ACOM_SIGNED_IN_STATUS}=;path=/;expires=${new Date(0).toUTCString()};`;
       document.cookie = `${ACOM_SIGNED_IN_STATUS}=;path=/;expires=${new Date(0).toUTCString()};domain=${isStage ? 'www.stage.' : ''}adobe.com;`;
       window.dispatchEvent(new Event('feds:signOut'));
       window.adobeIMS.signOut();
