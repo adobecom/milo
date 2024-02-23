@@ -1,5 +1,4 @@
 /* eslint-disable no-shadow */
-import { getMetadata } from '../caas-marquee-metadata/caas-marquee-metadata.js';
 import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
 performance.mark('caas-marquee-js');
@@ -54,6 +53,61 @@ const API_CONFIGS = {
     stage: 'https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection',
   },
 };
+
+const MAX_NUM_CTAS = 2;
+const CTA_STYLES = {
+  STRONG: 'blue',
+  EM: 'outline',
+};
+function getCtaStyle(tagName) {
+  return CTA_STYLES[tagName] || '';
+}
+
+function getUrl(ctaLink) {
+  if (!ctaLink) {
+    return '';
+  }
+  const modalPath = ctaLink.getAttribute('data-modal-path');
+  const modalHash = ctaLink.getAttribute('data-modal-hash');
+  const target = ctaLink.target ? `#${ctaLink.target}` : '';
+  if (modalPath && modalHash) {
+    return `${modalPath}${modalHash}`;
+  }
+  return `${ctaLink.href}${target}`;
+}
+function parseCtas(el) {
+  const ctas = {};
+  const ctaLinks = el.querySelectorAll('a');
+
+  for (let i = 1; i <= MAX_NUM_CTAS; i += 1) {
+    const ctaLink = ctaLinks[i - 1] || '';
+    ctas[`cta${i}url`] = getUrl(ctaLink);
+    ctas[`cta${i}text`] = ctaLink.textContent?.trim() || '';
+    ctas[`cta${i}style`] = getCtaStyle(ctaLink.parentNode?.tagName);
+  }
+  return ctas;
+}
+function getMetadata(el){
+  let metadata = {};
+  for (const row of el.children) {
+    const key = row.children[0].textContent.trim().toLowerCase() || '';
+    let val = row.children[1].innerHTML || '';
+    if (key.startsWith('image')) {
+      const img = row.children[1].querySelector('img');
+      const video = row.children[1].querySelector('.video');
+      val = img ? new URL(img.src).pathname : '';
+      val = video ? new URL(video.href).pathname : val;
+    }
+    if (key.includes('cta')) {
+      metadata = { ...metadata, ...parseCtas(row.children[1]) };
+    }
+    if (key.includes('variant')) {
+      val = val.replaceAll(',', '');
+    }
+    metadata[key] = val;
+  }
+  return metadata;
+}
 
 function isProd() {
   const { host } = window.location;
@@ -163,7 +217,7 @@ async function responseHandler(response, fnName) {
 
 async function getAllMarquees(promoId, origin) {
   const endPoint = isProd() ? API_CONFIGS.caas.prod : API_CONFIGS.caas.stage;
-  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US`;
+  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US&perf=true`;
 
   /* eslint-disable object-curly-newline */
   const response = await fetch(`${endPoint}?${payload}`, {
