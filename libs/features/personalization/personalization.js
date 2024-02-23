@@ -601,4 +601,8 @@ export async function applyPers(manifests) {
   });
   if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+
+  if (window.milo) {
+    window.milo.mep = { experiments };
+  }
 }
