@@ -194,12 +194,13 @@ function getArbitraryByKey(data, key) {
 
 function parseEncodedBrick(data){
   let brick = {};
-  let defaults = {
+  const defaults = {
     image: '',
     heading: '',
     description: '',
     cta1text: '',
     cta1url: '',
+    cta1style: '',
   };
   try {
     brick = JSON.parse(atob(data));
@@ -273,6 +274,7 @@ function getDefaultMetadata() {
       description: '',
       cta1text: '',
       cta1url: '',
+      cta1style: '',
     },
     rightbrick: {
       image: '',
@@ -280,6 +282,7 @@ function getDefaultMetadata() {
       description: '',
       cta1text: '',
       cta1url: '',
+      cta1style: '',
     },
   };
 }
@@ -300,7 +303,7 @@ function getImageHtml(src, screen, belowFold, style='', width='', height='', cla
   width = width ? width : WIDTHS[screen];
   height = height ? height : HEIGHTS[screen];
 
-  return `<picture class=${classname}>
+  return `<picture class="${classname}">
         <source type="image/webp" srcset="${src}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
         <source type="image/webp" srcset="${src}?width=750&amp;format=webply&amp;optimize=medium">
         <source type="image/${format}" srcset="${src}?width=2000&amp;format=${format}&amp;optimize=medium" media="(min-width: 600px)">
@@ -437,7 +440,7 @@ function getBrickBackground(imgSrc, config) {
          </div>`
 }
 
-function getBrickContent(heading, description, ctaText) {
+function getBrickContent(heading, description, ctaText, ctaStyle) {
   return `<div data-valign="middle">
             <h3 class="heading-m">
                 ${heading}
@@ -445,11 +448,11 @@ function getBrickContent(heading, description, ctaText) {
             <p class="body-m">
                 ${description}
             </p>
-            <p class="action-area"></p>
-            <div class="modal link-block con-button outline button-l">
-                ${ctaText}
-            </div>
-            <p></p>
+            <p class="action-area">
+                <div class="modal link-block con-button ${ctaStyle} button-l">
+                    ${ctaText}
+                </div>
+            </p>
           </div>`;
 }
 
@@ -472,11 +475,11 @@ function getBricks(metadata) {
   const mainSectionContent = getBrickFgContent(metadata, metadata.cta1url);
 
   const brickOneBg = getBrickBackground(metadata.leftbrick.image, brickOneConfigs);
-  const brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.cta1text);
+  const brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.cta1text, metadata.leftbrick.cta1style);
   const brickOneModal = getModalHtml(metadata.leftbrick.cta1url, 'outline foreground', metadata.leftbrick.cta1text, brickOneContent);
 
   const brickTwoBg = getBrickBackground(metadata.rightbrick.image, brickTwoConfigs);
-  const brickTwoContent = getBrickContent(metadata.rightbrick.heading, metadata.rightbrick.description, metadata.rightbrick.cta1text);
+  const brickTwoContent = getBrickContent(metadata.rightbrick.heading, metadata.rightbrick.description, metadata.rightbrick.cta1text, metadata.rightbrick.cta1style);
   const brickTwoModal = getModalHtml(metadata.rightbrick.cta1url, 'outline foreground', metadata.rightbrick.cta1text, brickTwoContent);
 
   return `<div class="section has-background" daa-lh="s1">
@@ -524,7 +527,7 @@ export function renderMarquee(marquee, marquees, id, fallback) {
 
   const mobileBgContent = getContent(metadata.image, 'mobile');
   const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
-  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'style="object-position: 32% center;');
+  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'object-position: 32% center;');
   const splitContent = getContent(metadata.imagedesktop, 'split');
   const brickContent = isBrick ? getBricks(metadata) : '';
   if (isBrick) {
