@@ -202,6 +202,9 @@ function parseEncodedBrick(data){
     cta1url: '',
     cta1style: '',
   };
+  if(!data) {
+    return defaults;
+  }
   try {
     brick = JSON.parse(atob(data));
     brick = { ...defaults, ...brick }
@@ -526,9 +529,8 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const cta = getCtaHtml(metadata.cta1url, metadata.cta1text, cta1Classes);
   const cta2 = getCtaHtml(metadata.cta2url, metadata.cta2text, cta2Classes);
 
-  const brickContent = getBricks(metadata, size, cta, cta2);
   if (isBrick) {
-    marquee.innerHTML = brickContent;
+    marquee.innerHTML = getBricks(metadata, size, cta, cta2);
     marquee.classList.remove('marquee');
     return;
   }
@@ -577,6 +579,8 @@ function handleAuthoringMistakes(authoredFields) {
  */
 export default async function init(el) {
   metadata = getMetadata(el);
+  metadata.leftbrick = parseEncodedBrick(metadata.leftbrick);
+  metadata.rightbrick = parseEncodedBrick(metadata.rightbrick);
   metadata = handleAuthoringMistakes(metadata);
   const promoId = metadata.promoid;
   const origin = getConfig().chimeraOrigin || metadata.origin;
