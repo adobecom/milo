@@ -49,7 +49,7 @@ const API_CONFIGS = {
     stage: 'https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/models',
   },
   caas: {
-    prod: 'https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection',
+    prod: 'https://www.adobe.com/chimera-api/sm-collection',
     stage: 'https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection',
   },
 };
