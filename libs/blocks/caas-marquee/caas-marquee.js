@@ -411,11 +411,7 @@ function getClasses(variant) {
   return variant.split(/\s+|,/).map((c) => c.trim()).filter((i) => i !== '');
 }
 
-function getBrickFgContent(metadata, modalUrl) {
-  const size = 'large';
-  const ctaStyle = 'con-button blue button-xl button-justified-mobile';
-  const cta = isValidModal(modalUrl) ? getModalHtml(modalUrl, ctaStyle, metadata.cta1text) : '';
-  const cta2 = `<a href="${metadata.cta2url}">${metadata.cta2text}</a>`;
+function getBrickFgContent(metadata, size, cta, cta2) {
   return `<div class="homepage-brick above-pods static-links" daa-lh="b1|homepage-brick|nopzn|hp">
             <div class="foreground">
                 ${getFgContent(metadata, size, cta, cta2)}
@@ -456,7 +452,7 @@ function getBrickContent(heading, description, ctaText, ctaStyle) {
           </div>`;
 }
 
-function getBricks(metadata) {
+function getBricks(metadata, size, cta, cta2) {
   const styleOne = 'object-position: center bottom; object-fit: contain;';
   const styleTwo = 'object-position: right bottom; object-fit: contain;';
   const styleThree = 'object-position: right bottom; object-fit: cover;';
@@ -472,7 +468,7 @@ function getBricks(metadata) {
   };
 
   const mainSectionImage = getImageHtml(metadata.image, 'brick', false, '', 1600, 718, 'section-background' );
-  const mainSectionContent = getBrickFgContent(metadata, metadata.cta1url);
+  const mainSectionContent = getBrickFgContent(metadata, size, cta, cta2);
 
   const brickOneBg = getBrickBackground(metadata.leftbrick.image, brickOneConfigs);
   const brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.cta1text, metadata.leftbrick.cta1style);
@@ -525,16 +521,22 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const size = getSize(classList);
   const useReverseFiller = isReversed && !isSplit;
 
-  const mobileBgContent = getContent(metadata.image, 'mobile');
-  const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
-  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'object-position: 32% center;');
-  const splitContent = getContent(metadata.imagedesktop, 'split');
-  const brickContent = isBrick ? getBricks(metadata) : '';
+  const cta1Classes = getCtaClasses(metadata.cta1style, size);
+  const cta2Classes = getCtaClasses(metadata.cta2style, size);
+  const cta = getCtaHtml(metadata.cta1url, metadata.cta1text, cta1Classes);
+  const cta2 = getCtaHtml(metadata.cta2url, metadata.cta2text, cta2Classes);
+
+  const brickContent = getBricks(metadata, size, cta, cta2);
   if (isBrick) {
     marquee.innerHTML = brickContent;
     marquee.classList.remove('marquee');
     return;
   }
+
+  const mobileBgContent = getContent(metadata.image, 'mobile');
+  const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
+  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'object-position: 32% center;');
+  const splitContent = getContent(metadata.imagedesktop, 'split');
 
   const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
   let background = createTag('div', { class: 'background' }, '');
@@ -544,13 +546,7 @@ export function renderMarquee(marquee, marquees, id, fallback) {
     background.innerHTML = bgContent;
   }
 
-  const cta1Classes = getCtaClasses(metadata.cta1style, size);
-  const cta2Classes = getCtaClasses(metadata.cta2style, size);
   const reversedFiller = useReverseFiller ? getReverseFiller() : '';
-
-  const cta = getCtaHtml(metadata.cta1url, metadata.cta1text, cta1Classes);
-  const cta2 = getCtaHtml(metadata.cta2url, metadata.cta2text, cta2Classes);
-
   const fgContent = `${reversedFiller}${getFgContent(metadata, size, cta, cta2)}`;
   const foreground = createTag('div', { class: 'foreground container' }, '');
   foreground.innerHTML = fgContent;
