@@ -87,19 +87,41 @@ function parseCtas(el) {
   }
   return ctas;
 }
+
+function getImageOrVideo(el) {
+  const img = el?.querySelector('img');
+  const video = el?.querySelector('.video');
+  let val = img ? new URL(img.src).pathname : '';
+  val = video ? new URL(video.href).pathname : val;
+  return val;
+}
+
+function parseBrick(el) {
+  const [headingEl, descriptionEl, ctaEl, imageEl] = el?.querySelectorAll('p') || [];
+  const brick = {
+    heading: headingEl?.querySelector('strong')?.textContent || '',
+    description: descriptionEl?.innerHTML || '',
+    ...parseCtas(ctaEl),
+    image: getImageOrVideo(imageEl),
+  };
+
+  return btoa(JSON.stringify(brick));
+}
+
+
 function getMetadata(el) {
   let metadata = {};
   for (const row of el.children) {
     const key = row.children[0].textContent.trim().toLowerCase() || '';
-    let val = row.children[1].innerHTML || '';
+    let val = row.children[1]?.innerHTML || '';
     if (key.startsWith('image')) {
-      const img = row.children[1].querySelector('img');
-      const video = row.children[1].querySelector('.video');
-      val = img ? new URL(img.src).pathname : '';
-      val = video ? new URL(video.href).pathname : val;
+      val = getImageOrVideo(row.children[1]);
     }
     if (key.includes('cta')) {
       metadata = { ...metadata, ...parseCtas(row.children[1]) };
+    }
+    if (key.includes('brick')) {
+      val = parseBrick(row.children[1]);
     }
     if (key.includes('variant')) {
       val = val.replaceAll(',', '');
@@ -107,7 +129,7 @@ function getMetadata(el) {
     metadata[key] = val;
   }
   return metadata;
-}
+};
 
 function isProd() {
   const { host } = window.location;
