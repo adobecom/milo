@@ -1,4 +1,4 @@
-/* eslint-disable no-shadow */
+/* eslint-disable no-shadow, consistent-return, max-len */
 import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
 const SEGMENTS_MAP = {
@@ -108,7 +108,6 @@ function parseBrick(el) {
   return btoa(JSON.stringify(brick));
 }
 
-
 function getMetadata(el) {
   let metadata = {};
   for (const row of el.children) {
@@ -129,7 +128,7 @@ function getMetadata(el) {
     metadata[key] = val;
   }
   return metadata;
-};
+}
 
 function isProd() {
   const { host } = window.location;
@@ -278,7 +277,7 @@ function getArbitraryByKey(data, key) {
   return data.arbitrary?.find((item) => item.key === key)?.value || '';
 }
 
-function parseEncodedBrick(data){
+function parseEncodedBrick(data) {
   let brick = {};
   const defaults = {
     image: '',
@@ -288,19 +287,18 @@ function parseEncodedBrick(data){
     cta1url: '',
     cta1style: '',
   };
-  if(!data) {
+  if (!data) {
     return defaults;
   }
   try {
     brick = JSON.parse(atob(data));
-    brick = { ...defaults, ...brick }
+    brick = { ...defaults, ...brick };
   } catch (e) {
     log(`Exception: ${e} When trying to parse encoded brick`, LANA_OPTIONS);
     brick = defaults;
   }
   return brick;
 }
-
 
 /**
  * function normalizeData()
@@ -381,17 +379,19 @@ function getVideoHtml(src) {
   return `<video autoplay muted playsinline> <source src="${src}" type="video/mp4"></video>`;
 }
 
-function getImageHtml(src, screen, belowFold, style='', width='', height='', classname='') {
+function getImageHtml(src, screen, belowFold, style = '', width = '', height = '', classname = '') {
   const aboveFold = !belowFold;
   const usePng = ['desktop', 'split', 'brick'];
   const eager = ['split', 'brick'];
   const mobileAboveFold = (screen === 'mobile' && aboveFold);
 
   const format = (usePng.includes(screen) || belowFold) ? 'png' : 'jpeg';
-  const fetchPriority = (mobileAboveFold || screen ==='brick' ) ? 'fetchpriority="high"' : '';
-  const loadingType = (mobileAboveFold || eager.includes(screen) ) ? 'eager' : 'lazy';
-  width = width ? width : WIDTHS[screen];
-  height = height ? height : HEIGHTS[screen];
+  const fetchPriority = (mobileAboveFold || screen === 'brick') ? 'fetchpriority="high"' : '';
+  const loadingType = (mobileAboveFold || eager.includes(screen)) ? 'eager' : 'lazy';
+  /* eslint-disable-next-line no-param-reassign */
+  width = width || WIDTHS[screen];
+  /* eslint-disable-next-line no-param-reassign */
+  height = height || HEIGHTS[screen];
 
   return `<picture class="${classname}">
         <source type="image/webp" srcset="${src}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
@@ -401,7 +401,7 @@ function getImageHtml(src, screen, belowFold, style='', width='', height='', cla
   </picture>`;
 }
 
-function getContent(src, screen, style='') {
+function getContent(src, screen, style = '') {
   const isImage = IMAGE_EXTENSIONS.test(src);
   const isVideo = VIDEO_EXTENSIONS.test(src);
   let inner = '';
@@ -429,7 +429,7 @@ function addLoadingSpinner(marquee) {
 function getModalHtml(ctaUrl, classes, ctaText, html = '') {
   const [fragment, hash] = ctaUrl.split('#');
   const innerContent = html || ctaText;
-  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`
+  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
 }
 
 const isValidModal = (u) => VALID_MODAL_RE.test(u);
@@ -523,7 +523,7 @@ function getBrickBackground(imgSrc, config) {
             <div data-valign="middle" class="desktopOnly">
               ${getImageHtml(imgSrc, 'desktop', true, desktopStyle, desktopWidth, desktopHeight)}
             </div>
-         </div>`
+         </div>`;
 }
 
 function getBrickContent(heading, description, ctaText, ctaStyle) {
@@ -557,7 +557,7 @@ function getBricks(metadata, size, cta, cta2) {
     desktop: ['1180', '1043', styleTwo],
   };
 
-  const mainSectionImage = getImageHtml(metadata.image, 'brick', false, '', 1600, 718, 'section-background' );
+  const mainSectionImage = getImageHtml(metadata.image, 'brick', false, '', 1600, 718, 'section-background');
   const mainSectionContent = getBrickFgContent(metadata, size, cta, cta2);
 
   const brickOneBg = getBrickBackground(metadata.leftbrick.image, brickOneConfigs);
