@@ -212,11 +212,11 @@ async function segmentApiEventHandler(e) {
       // eslint-disable-next-line no-use-before-define
       selectedId = await getMarqueeId();
       // eslint-disable-next-line no-use-before-define
-      renderMarquee(marquee, marquees, selectedId, metadata);
+      return renderMarquee(marquee, marquees, selectedId, metadata);
     }
   }
   // eslint-disable-next-line no-use-before-define
-  loadFallback(marquee, metadata);
+  return loadFallback(marquee, metadata);
 }
 
 function fetchExceptionHandler(fnName, error) {
@@ -675,8 +675,7 @@ export default async function init(el) {
   el.parentNode.prepend(marquee);
 
   if (shouldLoadFallback()) {
-    loadFallback(marquee, metadata);
-    return;
+    return loadFallback(marquee, metadata);
   }
 
   const martechPromise = loadMartech();
@@ -684,9 +683,10 @@ export default async function init(el) {
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
   const event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
-  await segmentApiEventHandler(event);
 
   if (authorPreview()) {
-    renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
+    return renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
   }
+
+  await segmentApiEventHandler(event);
 }
