@@ -46,7 +46,7 @@ const LANA_OPTIONS = { tags: 'caasMarquee' };
 const API_CONFIGS = {
   spectra: {
     prod: 'https://cchome.adobe.io/int/v1/models',
-    stage: 'https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/models',
+    stage: 'https://cchome-dev.adobe.io/int/v1/models',
   },
   caas: {
     prod: 'https://www.adobe.com/chimera-api/sm-collection',
@@ -134,6 +134,7 @@ function getMetadata(el) {
 function isProd() {
   const { host } = window.location;
   return !(host.includes('hlx.page')
+    || host.includes('hlx.live')
     || host.includes('localhost')
     || host.includes('stage.adobe')
     || host.includes('corp.adobe'));
