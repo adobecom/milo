@@ -49,8 +49,8 @@ const API_CONFIGS = {
     stage: 'https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/models',
   },
   caas: {
-    prod: 'https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection',
-    stage: 'https://14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection',
+    prod: 'https://www.adobe.com/chimera-api/sm-collection',
+    stage: 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/sm-collection',
   },
 };
 
@@ -217,7 +217,7 @@ async function responseHandler(response, fnName) {
 
 async function getAllMarquees(promoId, origin) {
   const endPoint = isProd() ? API_CONFIGS.caas.prod : API_CONFIGS.caas.stage;
-  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US&perf=true`;
+  const payload = `originSelection=${origin}&promoId=${promoId}&language=en&country=US`;
 
   /* eslint-disable object-curly-newline */
   const response = await fetch(`${endPoint}?${payload}`, {
@@ -255,6 +255,30 @@ function getArbitraryByKey(data, key) {
   return data.arbitrary?.find((item) => item.key === key)?.value || '';
 }
 
+function parseEncodedBrick(data){
+  let brick = {};
+  const defaults = {
+    image: '',
+    heading: '',
+    description: '',
+    cta1text: '',
+    cta1url: '',
+    cta1style: '',
+  };
+  if(!data) {
+    return defaults;
+  }
+  try {
+    brick = JSON.parse(atob(data));
+    brick = { ...defaults, ...brick }
+  } catch (e) {
+    log(`Exception: ${e} When trying to parse encoded brick`, LANA_OPTIONS);
+    brick = defaults;
+  }
+  return brick;
+}
+
+
 /**
  * function normalizeData()
  * @param {*} data - marquee JSON data
@@ -286,6 +310,8 @@ function normalizeData(data) {
   data.arbitrary?.forEach((item) => { arbitrary[item.key] = item.value; });
   metadata.variant = arbitrary.variant || 'dark, static-links';
   metadata.backgroundcolor = arbitrary.backgroundColor || '';
+  metadata.leftbrick = parseEncodedBrick(arbitrary.leftBrick);
+  metadata.rightbrick = parseEncodedBrick(arbitrary.rightBrick);
 
   return metadata;
 }
@@ -309,6 +335,22 @@ function getDefaultMetadata() {
     backgroundcolor: '',
     promoid: '',
     origin: '',
+    leftbrick: {
+      image: '',
+      heading: '',
+      description: '',
+      cta1text: '',
+      cta1url: '',
+      cta1style: '',
+    },
+    rightbrick: {
+      image: '',
+      heading: '',
+      description: '',
+      cta1text: '',
+      cta1url: '',
+      cta1style: '',
+    },
   };
 }
 
@@ -316,27 +358,32 @@ function getVideoHtml(src) {
   return `<video autoplay muted playsinline> <source src="${src}" type="video/mp4"></video>`;
 }
 
-function getImageHtml(src, screen) {
-  const format = (screen === 'desktop' || screen === 'split') ? 'png' : 'jpeg';
-  const style = (screen === 'desktop') ? 'style="object-position: 32% center;"' : '';
-  const fetchPriority = (screen === 'mobile') ? 'fetchpriority="high"' : '';
-  const loadingType = (screen === 'mobile' || screen === 'split') ? 'eager' : 'lazy';
-  const width = WIDTHS[screen];
-  const height = HEIGHTS[screen];
-  return `<picture>
+function getImageHtml(src, screen, belowFold, style='', width='', height='', classname='') {
+  const aboveFold = !belowFold;
+  const usePng = ['desktop', 'split', 'brick'];
+  const eager = ['split', 'brick'];
+  const mobileAboveFold = (screen === 'mobile' && aboveFold);
+
+  const format = (usePng.includes(screen) || belowFold) ? 'png' : 'jpeg';
+  const fetchPriority = (mobileAboveFold || screen ==='brick' ) ? 'fetchpriority="high"' : '';
+  const loadingType = (mobileAboveFold || eager.includes(screen) ) ? 'eager' : 'lazy';
+  width = width ? width : WIDTHS[screen];
+  height = height ? height : HEIGHTS[screen];
+
+  return `<picture class="${classname}">
         <source type="image/webp" srcset="${src}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
         <source type="image/webp" srcset="${src}?width=750&amp;format=webply&amp;optimize=medium">
         <source type="image/${format}" srcset="${src}?width=2000&amp;format=${format}&amp;optimize=medium" media="(min-width: 600px)">
-        <img loading="${loadingType}" alt src="${src}?width=750&amp;format=${format}&amp;optimize=medium" width="${width}" height="${height}" ${fetchPriority} ${style}>
+        <img loading="${loadingType}" alt src="${src}?width=750&amp;format=${format}&amp;optimize=medium" width="${width}" height="${height}" ${fetchPriority} style="${style}">
   </picture>`;
 }
 
-function getContent(src, screen) {
+function getContent(src, screen, style='') {
   const isImage = IMAGE_EXTENSIONS.test(src);
   const isVideo = VIDEO_EXTENSIONS.test(src);
   let inner = '';
   if (isImage) {
-    inner = getImageHtml(src, screen);
+    inner = getImageHtml(src, screen, false, style);
   }
   if (isVideo) {
     inner = getVideoHtml(src);
@@ -356,9 +403,10 @@ function addLoadingSpinner(marquee) {
                   </div>`;
 }
 
-function getModalHtml(ctaUrl, classes, ctaText) {
+function getModalHtml(ctaUrl, classes, ctaText, html = '') {
   const [fragment, hash] = ctaUrl.split('#');
-  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}" daa-ll="${ctaText}" class="modal link-block ${classes}">${ctaText}</a>`;
+  const innerContent = html || ctaText;
+  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`
 }
 
 const isValidModal = (u) => VALID_MODAL_RE.test(u);
@@ -430,6 +478,88 @@ function getClasses(variant) {
   return variant.split(/\s+|,/).map((c) => c.trim()).filter((i) => i !== '');
 }
 
+function getBrickFgContent(metadata, size, cta, cta2) {
+  return `<div class="homepage-brick above-pods static-links" daa-lh="b1|homepage-brick|nopzn|hp">
+            <div class="foreground">
+                ${getFgContent(metadata, size, cta, cta2)}
+            </div>
+          </div>`;
+}
+
+function getBrickBackground(imgSrc, config) {
+  const [mobileWidth, mobileHeight, mobileStyle] = config.mobile;
+  const [tabletWidth, tabletHeight, tabletStyle] = config.tablet;
+  const [desktopWidth, desktopHeight, desktopStyle] = config.desktop;
+  return `<div class="background first-background">
+            <div data-valign="middle" class="mobileOnly">
+              ${getImageHtml(imgSrc, 'mobile', true, mobileStyle, mobileWidth, mobileHeight)}
+            </div>
+            <div data-valign="middle" class="tabletOnly">
+              ${getImageHtml(imgSrc, 'tablet', true, tabletStyle, tabletWidth, tabletHeight)}
+            </div>
+            <div data-valign="middle" class="desktopOnly">
+              ${getImageHtml(imgSrc, 'desktop', true, desktopStyle, desktopWidth, desktopHeight)}
+            </div>
+         </div>`
+}
+
+function getBrickContent(heading, description, ctaText, ctaStyle) {
+  return `<div data-valign="middle">
+            <h3 class="heading-m">
+                ${heading}
+            </h3>
+            <p class="body-m">
+                ${description}
+            </p>
+            <p class="action-area">
+                <div class="modal link-block con-button ${ctaStyle} button-l">
+                    ${ctaText}
+                </div>
+            </p>
+          </div>`;
+}
+
+function getBricks(metadata, size, cta, cta2) {
+  const styleOne = 'object-position: center bottom; object-fit: contain;';
+  const styleTwo = 'object-position: right bottom; object-fit: contain;';
+  const styleThree = 'object-position: right bottom; object-fit: cover;';
+  const brickOneConfigs = {
+    mobile: ['608', '900', styleOne],
+    tablet: ['608', '900', styleOne],
+    desktop: ['1600', '907', styleTwo],
+  };
+  const brickTwoConfigs = {
+    mobile: ['600', '1000', styleThree],
+    tablet: ['608', '804', styleThree],
+    desktop: ['1180', '1043', styleTwo],
+  };
+
+  const mainSectionImage = getImageHtml(metadata.image, 'brick', false, '', 1600, 718, 'section-background' );
+  const mainSectionContent = getBrickFgContent(metadata, size, cta, cta2);
+
+  const brickOneBg = getBrickBackground(metadata.leftbrick.image, brickOneConfigs);
+  const brickOneContent = getBrickContent(metadata.leftbrick.heading, metadata.leftbrick.description, metadata.leftbrick.cta1text, metadata.leftbrick.cta1style);
+  const brickOneModal = getModalHtml(metadata.leftbrick.cta1url, 'outline foreground', metadata.leftbrick.cta1text, brickOneContent);
+
+  const brickTwoBg = getBrickBackground(metadata.rightbrick.image, brickTwoConfigs);
+  const brickTwoContent = getBrickContent(metadata.rightbrick.heading, metadata.rightbrick.description, metadata.rightbrick.cta1text, metadata.rightbrick.cta1style);
+  const brickTwoModal = getModalHtml(metadata.rightbrick.cta1url, 'outline foreground', metadata.rightbrick.cta1text, brickTwoContent);
+
+  return `<div class="section has-background" daa-lh="s1">
+            ${mainSectionImage}
+            ${mainSectionContent}
+            <div class="section masonry masonry-up">
+              <div class="homepage-brick semi-transparent two-thirds-grid click" daa-lh="b2|homepage-brick|pzn|hp">
+                ${brickOneBg}
+                ${brickOneModal}
+              </div>
+              <div class="homepage-brick semi-transparent click" daa-lh="b3|homepage-brick|pzn|hp">
+                ${brickTwoBg}
+                ${brickTwoModal}
+              </div>
+          </div>`;
+}
+
 /**
  * function renderMarquee()
  * @param {HTMLElement} marquee - marquee container
@@ -445,19 +575,33 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const found = marquees?.find((obj) => obj.id === id);
   const shouldRenderMarquee = marquees?.length && found;
   const metadata = shouldRenderMarquee ? normalizeData(found) : fallback;
+  const classList = getClasses(metadata.variant);
 
   removeLoader(marquee);
   addBackground(marquee, metadata);
+  applyVariants(marquee, metadata, classList);
+  addAnalytics(marquee);
 
-  const classList = getClasses(metadata.variant);
   const isSplit = classList.includes('split');
+  const isBrick = classList.includes('homepage-brick');
   const isReversed = classList.includes('row-reversed');
   const size = getSize(classList);
   const useReverseFiller = isReversed && !isSplit;
 
+  const cta1Classes = getCtaClasses(metadata.cta1style, size);
+  const cta2Classes = getCtaClasses(metadata.cta2style, size);
+  const cta = getCtaHtml(metadata.cta1url, metadata.cta1text, cta1Classes);
+  const cta2 = getCtaHtml(metadata.cta2url, metadata.cta2text, cta2Classes);
+
+  if (isBrick) {
+    marquee.innerHTML = getBricks(metadata, size, cta, cta2);
+    marquee.classList.remove('marquee');
+    return;
+  }
+
   const mobileBgContent = getContent(metadata.image, 'mobile');
   const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
-  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop');
+  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'object-position: 32% center;');
   const splitContent = getContent(metadata.imagedesktop, 'split');
 
   const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
@@ -468,19 +612,11 @@ export function renderMarquee(marquee, marquees, id, fallback) {
     background.innerHTML = bgContent;
   }
 
-  const cta1Classes = getCtaClasses(metadata.cta1style, size);
-  const cta2Classes = getCtaClasses(metadata.cta2style, size);
   const reversedFiller = useReverseFiller ? getReverseFiller() : '';
-
-  const cta = getCtaHtml(metadata.cta1url, metadata.cta1text, cta1Classes);
-  const cta2 = getCtaHtml(metadata.cta2url, metadata.cta2text, cta2Classes);
-
   const fgContent = `${reversedFiller}${getFgContent(metadata, size, cta, cta2)}`;
   const foreground = createTag('div', { class: 'foreground container' }, '');
   foreground.innerHTML = fgContent;
 
-  applyVariants(marquee, metadata, classList);
-  addAnalytics(marquee);
   marquee.append(background, foreground);
 }
 
@@ -507,6 +643,8 @@ function handleAuthoringMistakes(authoredFields) {
  */
 export default async function init(el) {
   metadata = getMetadata(el);
+  metadata.leftbrick = parseEncodedBrick(metadata.leftbrick);
+  metadata.rightbrick = parseEncodedBrick(metadata.rightbrick);
   metadata = handleAuthoringMistakes(metadata);
   const promoId = metadata.promoid;
   const origin = getConfig().chimeraOrigin || metadata.origin;
