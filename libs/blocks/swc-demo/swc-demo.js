@@ -2,13 +2,13 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 
 const tasks = [
-  { title: 'Quick Introduction to commerce on adobe.com', completed: false },
-  { title: 'Milo Commerce', completed: false },
-  { title: 'Web Components', completed: false },
-  { title: 'Spectrum Web Components (SWC)', completed: false },
-  { title: 'Adding new components', completed: false },
-  { title: 'SWC in consumer projects', completed: false },
-  { title: 'Performance optimizations', completed: false },
+  { title: '1. Quick Introduction to commerce on adobe.com', completed: false },
+  { title: '2. Milo Commerce', completed: false },
+  { title: '3. Web Components', completed: false },
+  { title: '4. Spectrum Web Components (SWC)', completed: false },
+  { title: '5. Adding new components', completed: false },
+  { title: '6. SWC in consumer projects', completed: false },
+  { title: '7. Performance optimizations', completed: false },
 ];
 
 async function getApp() {
@@ -44,7 +44,7 @@ async function getApp() {
     }
 
     onCompletedTasksChange(event) {
-      this.hideCompleted = event.target.value === 'Hide';
+      this.hideCompleted = event.target.value === 'hide';
     }
 
     get tasks() {
