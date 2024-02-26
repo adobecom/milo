@@ -178,7 +178,7 @@ div[class*="-up"] .media .foreground > .media-row {
   justify-content: center;
   padding: 0;
   display: inline-flex;
-  margin: var(--spacing-xxs) var(--spacing-s) 0 0;
+  margin: var(--spacing-xs) var(--spacing-s) 0 0;
 }
 
 .media.qr-code .google-play {
