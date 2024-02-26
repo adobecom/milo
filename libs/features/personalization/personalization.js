@@ -139,13 +139,13 @@ export const parseUrl = (url) => {
 export const createFrag = (el, url, manifestId) => {
   const { hash, href, pathname, delay, display } = parseUrl(url);
   const a = createTag('a', { href }, url);
+  if (manifestId) a.dataset.manifestId = manifestId;
   if (delay && display) {
     setEventBasedModalListener();
     decorateDelayedModalAnchor({ a, hash, pathname });
     window.dispatchEvent(new CustomEvent('modal:open', { detail: { hash, delay, display } }));
   }
   let frag = createTag('p', undefined, a);
-  if (manifestId) a.dataset.manifestId = manifestId;
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
     frag = createTag('div', undefined, frag);

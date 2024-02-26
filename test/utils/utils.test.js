@@ -1,9 +1,14 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitFor, waitForElement } from '../helpers/waitfor.js';
+import { waitFor, waitForElement, delay } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
-import { createTag } from '../../libs/utils/utils.js';
+import {
+  createTag,
+  defineHashParams,
+  sendAnalytics,
+  showModal,
+} from '../../libs/utils/utils.js';
 
 const utils = {};
 
@@ -248,7 +253,7 @@ describe('Utils', () => {
         document.body.innerHTML = '<div class="bad-url">https://www.adobe.com/test</div>';
         const a = document.querySelector('.bad-url');
         try {
-          // eslint-disable-next-line no-new
+        // eslint-disable-next-line no-new
           new URL(a.textContent);
         } catch (err) {
           expect(err.message).to.equal("Failed to construct 'URL': Invalid URL");
@@ -609,6 +614,113 @@ describe('Utils', () => {
       expect(resultConfig.mep.preview).to.be.true;
       expect(resultConfig.experiments.length).to.equal(3);
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
+    });
+  });
+
+  describe('defineHashParams', () => {
+    it('returns default object is hash in invalid', () => {
+      expect(defineHashParams()).to.deep.equal({ hashWithoutParams: '' });
+    });
+
+    it('returns delay and display params if provided in hash', () => {
+      expect(defineHashParams('element-name:delay=1:display=pageload')).to.deep.equal(
+        {
+          hashWithoutParams: 'element-name',
+          delay: 1000,
+          display: 'pageload',
+        },
+      );
+    });
+  });
+
+  describe('sendAnalytics', () => {
+    it('should call _satellite.track with the correct arguments', () => {
+      const event = {
+        type: 'click',
+        data: { category: 'button', action: 'click', label: 'Home' },
+      };
+
+      const expectedArguments = [
+        'event',
+        {
+          xdm: {},
+          data: {
+            web: { webInteraction: { name: event.type } },
+            _adobe_corpnew: { digitalData: event.data },
+          },
+        },
+      ];
+
+      // eslint-disable-next-line no-underscore-dangle
+      const originalTrackFunction = window._satellite?.track;
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = {
+        track: (eventName, eventData) => {
+          expect(eventName).to.equal(expectedArguments[0]);
+          expect(eventData).to.deep.equal(expectedArguments[1]);
+        },
+      };
+      sendAnalytics(event);
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite.track = originalTrackFunction;
+    });
+
+    it('should handle undefined event object', () => {
+      // eslint-disable-next-line no-underscore-dangle
+      const originalTrackFunction = window._satellite?.track;
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = {
+        track: (eventName, eventData) => {
+          expect(eventName).to.be.a('string');
+          expect(eventData).to.be.an('object');
+        },
+      };
+      sendAnalytics();
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite.track = originalTrackFunction;
+    });
+  });
+
+  describe('showModal', () => {
+    it('shows modal with delay', async () => {
+      showModal({ delay: '1', display: 'pageload', details: { id: 'delayed' }, getModal: () => {} });
+      expect(document.querySelector('#dmpageload')).to.not.exist;
+      await delay(1000);
+      const modal = waitForElement('#dmpageload');
+      expect(modal).to.exist;
+    });
+
+    it('shows modal with delay and remembers it in session storage', async () => {
+      const id = 'dmsession';
+      window.sessionStorage.removeItem(`shown:${id}`);
+      showModal({ delay: '1', display: 'session', details: { id }, getModal: () => {} });
+      expect(document.querySelector(`#${id}`)).to.not.exist;
+      await delay(1000);
+      const modal = waitForElement(`#${id}`);
+      expect(modal).to.exist;
+      expect(window.sessionStorage.getItem(`shown:${id}`)).to.equal('true');
+    });
+  });
+
+  describe('setEventBasedModalListener', () => {
+    it('should display modal with delay and display params on modal:open event', async () => {
+      // eslint-disable-next-line no-underscore-dangle
+      const originalTrackFunction = window._satellite?.track;
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = { track: () => {} };
+      const event = new CustomEvent('modal:open', {
+        detail: {
+          hash: '#test-modal',
+          delay: '1',
+          display: 'pageload',
+        },
+      });
+      window.dispatchEvent(event);
+      await delay(1000);
+      const modal = waitForElement('#test-modal');
+      expect(modal).to.exist;
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite.track = originalTrackFunction;
     });
   });
 });

@@ -1006,7 +1006,6 @@ export function showModal({ delay, display, details, getModal }) {
   const { id } = details;
   if (delay && display) {
     const modalOpenEvent = new Event(`${id}:modalOpen`);
-    console.log('modalOpenEvent', modalOpenEvent);
     if (display === DISPLAY_MODE.oncePerPageLoad) {
       setTimeout(() => {
         getModal(details);
@@ -1020,9 +1019,9 @@ export function showModal({ delay, display, details, getModal }) {
           window.sessionStorage.setItem(`shown:${id}`, true);
         }, delay);
       }
-    } else {
-      getModal(details);
     }
+  } else {
+    getModal(details);
   }
 }
 
@@ -1050,7 +1049,6 @@ function decorateMeta() {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
   });
-
   setEventBasedModalListener();
 }
 
