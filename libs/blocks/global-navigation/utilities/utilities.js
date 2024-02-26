@@ -28,6 +28,7 @@ export const selectors = {
   columnBreak: '.column-break',
 };
 
+const FEDERAL_PATH_KEY = 'federal';
 export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
   const url = getMetadata('gnav-source');
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
@@ -95,13 +96,26 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
+const getPath = (urlOrPath = '') => {
+  try {
+    const url = new URL(urlOrPath);
+    return url.pathname;
+  } catch (error) {
+    return urlOrPath.replace(/^\.?\//, '/');
+  }
+};
+
 export const federatePictureSources = (section) => {
-  section?.querySelectorAll('[src^="/federal/"], [srcset^="/federal/"]').forEach((source) => {
-    const type = source.hasAttribute('src') ? 'src' : 'srcset';
-    const value = source.getAttribute(type);
-    if (!value) return;
-    source.setAttribute(type, value.replace(/^\.?\//, `${getFederatedContentRoot()}/`));
-  });
+  section?.querySelectorAll(`[src*="/${FEDERAL_PATH_KEY}/"], [srcset*="/${FEDERAL_PATH_KEY}/"]`)
+    .forEach((source) => {
+      const type = source.hasAttribute('src') ? 'src' : 'srcset';
+      const path = getPath(source.getAttribute(type));
+      const localeOrFederalKey = path.split('/')[1];
+      const federalKey = path.split('/')[2];
+      const isFederal = localeOrFederalKey === FEDERAL_PATH_KEY || federalKey === FEDERAL_PATH_KEY;
+      if (!isFederal) return;
+      source.setAttribute(type, `${getFederatedContentRoot()}${path}`);
+    });
 };
 
 let fedsPlaceholderConfig;
