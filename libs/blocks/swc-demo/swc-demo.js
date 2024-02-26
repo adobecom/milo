@@ -1,5 +1,4 @@
 /* eslint-disable class-methods-use-this */
-import { LitElement, html, css, repeat } from '../../deps/lit-all.min.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 
 const tasks = [
@@ -12,10 +11,12 @@ const tasks = [
   { title: 'Performance optimizations', completed: false },
 ];
 
-class SwcDemo extends LitElement {
-  static properties = { hideCompleted: { type: Boolean, attribute: 'hide-completed', reflect: true } };
+async function getApp() {
+  const { LitElement, html, css, repeat } = await import('../../deps/lit-all.min.js');
+  class SwcDemo extends LitElement {
+    static properties = { hideCompleted: { type: Boolean, attribute: 'hide-completed', reflect: true } };
 
-  static styles = css`
+    static styles = css`
   #todo-list {
     list-style: none;
     padding: 0;
@@ -29,57 +30,57 @@ class SwcDemo extends LitElement {
   }  
   `;
 
-  constructor() {
-    super();
-    this.hideCompleted = false;
-  }
+    constructor() {
+      super();
+      this.hideCompleted = false;
+    }
 
-  onTaskChange(event, task) {
-    const { target } = event;
-    setTimeout(() => {
-      task.completed = target.checked;
-      this.requestUpdate();
-    }, 2000);
-  }
+    onTaskChange(event, task) {
+      const { target } = event;
+      setTimeout(() => {
+        task.completed = target.checked;
+        this.requestUpdate();
+      }, 2000);
+    }
 
-  onCompletedTasksChange(event) {
-    this.hideCompleted = event.target.value === 'Hide';
-  }
+    onCompletedTasksChange(event) {
+      this.hideCompleted = event.target.value === 'Hide';
+    }
 
-  get tasks() {
-    const filteredTasks = tasks.filter((task) => !this.hideCompleted || !task.completed);
-    return html`${repeat(
-      filteredTasks,
-      (task) => task.title,
-      (task) => html`<li><sp-checkbox
+    get tasks() {
+      const filteredTasks = tasks.filter((task) => !this.hideCompleted || !task.completed);
+      return html`${repeat(
+        filteredTasks,
+        (task) => task.title,
+        (task) => html`<li><sp-checkbox
         ?checked=${task.completed}
         @change=${(event) => this.onTaskChange(event, task)}>
         ${task.title}
         </sp-checkbox></li>`,
-    )}`;
-  }
-
-  get newTodoInput() {
-    return this.shadowRoot.getElementById('new-todo');
-  }
-
-  addTask() {
-    const taskText = this.newTodoInput.value.trim();
-    if (taskText) {
-      tasks.push({ title: taskText, completed: false });
-      this.newTodoInput.value = '';
-      this.requestUpdate();
+      )}`;
     }
-  }
 
-  keypress(event) {
-    if (event.key === 'Enter') {
-      this.addTask();
+    get newTodoInput() {
+      return this.shadowRoot.getElementById('new-todo');
     }
-  }
 
-  render() {
-    return html`
+    addTask() {
+      const taskText = this.newTodoInput.value.trim();
+      if (taskText) {
+        tasks.push({ title: taskText, completed: false });
+        this.newTodoInput.value = '';
+        this.requestUpdate();
+      }
+    }
+
+    keypress(event) {
+      if (event.key === 'Enter') {
+        this.addTask();
+      }
+    }
+
+    render() {
+      return html`
     <sp-theme scale="medium" color="light">
     <div id="todo-app">
         <sp-textfield id="new-todo" placeholder="What needs to be done?" @keypress=${this.keypress}></sp-textfield>
@@ -94,10 +95,13 @@ class SwcDemo extends LitElement {
         </sp-combobox>
     </div>
   </sp-theme>`;
+    }
   }
-}
 
-customElements.define('swc-demo', SwcDemo);
+  customElements.define('swc-demo', SwcDemo);
+
+  return createTag('swc-demo', {});
+}
 
 export default async function main(el) {
   const { base } = getConfig();
@@ -111,7 +115,7 @@ export default async function main(el) {
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
   ]);
 
-  el.replaceWith(createTag('swc-demo', {}));
+  el.replaceWith(await getApp());
 
   await deps;
   return el;
