@@ -1,5 +1,7 @@
 /* Hide banner if user shrinks to mobile after being displayed */
 .appPrompt {
+  --pep-background-prompt: #ffffff;
+  --pep-background-progress: #e9e9e9;
   display: none;
 }
 
@@ -14,7 +16,7 @@
     flex-direction: column;
     row-gap: 16px;
     border-radius: 16px;
-    background: #fff;
+    background: var(--pep-background-prompt);
     overflow: hidden;
   }
 
@@ -133,6 +135,12 @@
     content: '\2715';
   }
 
+  .appPrompt-close:focus {
+    background-color: var(--pep-background-progress);
+    border-radius: 50%;
+    border: 3px solid var(--pep-background-prompt);
+  }
+
   [dir = "rtl"] .appPrompt-close {
     right: unset;
     left: 12px;
@@ -144,7 +152,7 @@
     left: 0;
     right: 0;
     height: 12px;
-    background-color: #e9e9e9;
+    background-color: var(--pep-background-progress);
   }
 
   .appPrompt-progress {
