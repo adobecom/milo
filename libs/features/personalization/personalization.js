@@ -109,7 +109,8 @@ const createFrag = (el, url, manifestId) => {
   let href = url;
   try {
     const { pathname, search, hash } = new URL(url);
-    href = `${pathname}${search}${hash}`;
+    const isDelayedModal = hash.includes(':delay=');
+    href = `${pathname}${search}${hash}${isDelayedModal ? '#hide' : ''}`;
   } catch {
     // ignore
   }

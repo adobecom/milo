@@ -221,10 +221,48 @@ export async function getModal(details, custom) {
   return dialog;
 }
 
+function getHashParams(hashStr) {
+  return hashStr.split(':').reduce((params, part) => {
+    if (part.startsWith('#')) {
+      params.hash = part;
+    } else {
+      const [key, val] = part.split('=');
+      if (key === 'delay' && parseInt(val, 10) > 0) {
+        params.delay = parseInt(val, 10) * 1000;
+      } else if (key === 'display' && ['pageload', 'session'].includes(val)) {
+        params.display = val;
+      }
+    }
+    return params;
+  }, {});
+}
+
+function checkForHiddenLink(el) {
+  if (el.dataset.modalHash.includes('#hide')) {
+    el.classList.add('hide-block');
+    el.dataset.modalHash = el.dataset.modalHash.replace('#hide', '');
+  }
+}
+
+function delayedModal(el) {
+  const { hash, delay, display } = getHashParams(el.dataset.modalHash);
+  if (delay || display) {
+    el.dataset.modalHash = hash;
+    setTimeout(() => {
+      window.location.replace(hash);
+    }, delay);
+    return true;
+  }
+  return false;
+}
+
 // Deep link-based
 export default function init(el) {
-  const { modalHash } = el.dataset;
-  if (window.location.hash === modalHash) {
+  checkForHiddenLink(el);
+
+  if (delayedModal(el)) return null;
+
+  if (window.location.hash === el.dataset.modalHash) {
     const details = findDetails(window.location.hash, el);
     if (details) return getModal(details);
   }
