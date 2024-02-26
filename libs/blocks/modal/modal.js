@@ -152,14 +152,12 @@ export async function getModal(details, custom) {
   const focusVisible = { focusVisible: true };
   const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
   const titleOnLoad = dialog.querySelector('h1, h2, h3, h4, h5');
+  const isVideoFragment = dialog.querySelector('.fragment:first-child')?.dataset?.path?.includes("modals/videos") || false;
   let firstFocusable;
 
-  if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])) {
+  if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])
+    && !isVideoFragment) {
     firstFocusable = focusablesOnLoad[0]; // eslint-disable-line prefer-destructuring
-    if (focusablesOnLoad.length === 1 && firstFocusable.classList.contains('link-block') && firstFocusable.classList.contains("adobetv")) {
-      dialog.setAttribute('tabindex', 0);
-      firstFocusable = dialog;
-    }
   } else if (titleOnLoad) {
     titleOnLoad.setAttribute('tabIndex', 0);
     firstFocusable = titleOnLoad;
