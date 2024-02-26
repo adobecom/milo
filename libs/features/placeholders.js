@@ -8,11 +8,13 @@ const getPlaceholdersPath = (config, sheet) => {
 
 const fetchPlaceholders = (config, sheet) => {
   const placeholdersPath = getPlaceholdersPath(config, sheet);
+  const params = new URLSearchParams(window.location.search);
 
   fetchedPlaceholders[placeholdersPath] = fetchedPlaceholders[placeholdersPath]
     // eslint-disable-next-line no-async-promise-executor
     || new Promise(async (resolve) => {
-      const resp = await fetch(placeholdersPath).catch(() => ({}));
+      const resp = await fetch(placeholdersPath, { cache: params.get('cache') || 'default' })
+        .catch(() => ({}));
       const json = resp.ok ? await resp.json() : { data: [] };
       if (json.data.length === 0) { resolve({}); return; }
       const placeholders = {};

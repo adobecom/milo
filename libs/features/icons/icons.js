@@ -4,7 +4,8 @@ let fetched = false;
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
   if (!path) return null;
-  const resp = await fetch(path);
+  const params = new URLSearchParams(window.location.search);
+  const resp = await fetch(path, { cache: params.get('cache') || 'default' });
   /* c8 ignore next */
   if (!resp.ok) return null;
   const miloIcons = {};
