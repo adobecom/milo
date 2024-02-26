@@ -96,7 +96,7 @@ export const getFederatedUrl = (url = '') => {
 };
 
 export const federatePictureSources = (section) => {
-  section?.querySelectorAll('[src], [srcset]').forEach((source) => {
+  section?.querySelectorAll('[src^="/federal/"], [srcset^="/federal/"]').forEach((source) => {
     const type = source.hasAttribute('src') ? 'src' : 'srcset';
     const value = source.getAttribute(type);
     if (!value) return;
@@ -311,7 +311,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
 
   if (shouldDecorateLinks) decorateLinks(body);
 
-  if (path.includes('/federal/')) federatePictureSources(body);
+  federatePictureSources(body);
 
   const blocks = body.querySelectorAll('.martech-metadata');
   if (blocks.length) {
