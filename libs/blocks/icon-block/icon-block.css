@@ -187,7 +187,7 @@
 }
 
 .icon-block.inline .foreground .text-content .icon-area {
-  width: fit-content;
+  width: min-content;
   display: contents;
 }
 
