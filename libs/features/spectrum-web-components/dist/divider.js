@@ -38,7 +38,7 @@ import{html as p,SizedMixin as k,SpectrumElement as b}from"/libs/features/spectr
 --mod-divider-background-color-medium-static-black,var(--spectrum-divider-background-color-medium-static-black)
 )}:host([static=black][size=l]){--spectrum-divider-background-color:var(
 --mod-divider-background-color-large-static-black,var(--spectrum-divider-background-color-large-static-black)
-)}:host([vertical]){align-self:var(--mod-divider-vertical-align);block-size:100%;inline-size:var(
+)}:host([vertical]){align-self:var(--mod-divider-vertical-align);block-size:var(--mod-divider-vertical-height);block-size:100%;inline-size:var(
 --mod-divider-thickness,var(--spectrum-divider-thickness)
-);height:var(--mod-divider-vertical-height);margin-block:var(--mod-divider-vertical-margin)}:host{display:block}hr{border:none;margin:0}
+);margin-block:var(--mod-divider-vertical-margin)}:host{display:block}hr{border:none;margin:0}
 `,o=u;var v=Object.defineProperty,m=Object.getOwnPropertyDescriptor,n=(c,r,a,t)=>{for(var e=t>1?void 0:t?m(r,a):r,d=c.length-1,s;d>=0;d--)(s=c[d])&&(e=(t?s(r,a,e):s(e))||e);return t&&e&&v(r,a,e),e},i=class extends k(b,{validSizes:["s","m","l"],noDefaultSize:!0}){constructor(){super(...arguments),this.vertical=!1}render(){return p``}firstUpdated(r){super.firstUpdated(r),this.setAttribute("role","separator")}updated(r){super.updated(r),r.has("vertical")&&(this.vertical?this.setAttribute("aria-orientation","vertical"):this.removeAttribute("aria-orientation"))}};i.styles=[o],n([g({type:Boolean,reflect:!0})],i.prototype,"vertical",2);import{defineElement as h}from"/libs/features/spectrum-web-components/dist/base.js";h("sp-divider",i);

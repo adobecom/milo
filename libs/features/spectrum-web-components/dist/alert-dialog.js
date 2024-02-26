@@ -28,9 +28,9 @@ import{html as a,SpectrumElement as w}from"/libs/features/spectrum-web-component
 --spectrum-body-sans-serif-font-style
 );--spectrum-alert-dialog-body-font-size:var(
 --spectrum-alert-dialog-description-size
-);--spectrum-alert-dialog-body-line-height:var(--spectrum-line-height-100);--spectrum-alert-dialog-body-color:var(--spectrum-body-color);--spectrum-alert-dialog-title-to-divider:var(--spectrum-spacing-200);--spectrum-alert-dialog-divider-to-description:var(--spectrum-spacing-300);--spectrum-alert-dialog-title-to-icon:var(--spectrum-spacing-300);--mod-buttongroup-justify-content:flex-end}:host{box-sizing:border-box;display:flex;inline-size:-moz-fit-content;inline-size:fit-content;max-inline-size:var(
+);--spectrum-alert-dialog-body-line-height:var(--spectrum-line-height-100);--spectrum-alert-dialog-body-color:var(--spectrum-body-color);--spectrum-alert-dialog-title-to-divider:var(--spectrum-spacing-200);--spectrum-alert-dialog-divider-to-description:var(--spectrum-spacing-300);--spectrum-alert-dialog-title-to-icon:var(--spectrum-spacing-300);--mod-buttongroup-justify-content:flex-end;box-sizing:border-box;display:flex;inline-size:-moz-fit-content;inline-size:fit-content;max-block-size:inherit;max-inline-size:var(
 --mod-alert-dialog-max-width,var(--spectrum-alert-dialog-max-width)
-);max-height:inherit;min-inline-size:var(
+);min-inline-size:var(
 --mod-alert-dialog-min-width,var(--spectrum-alert-dialog-min-width)
 );outline:none;padding:var(
 --mod-alert-dialog-padding,var(--spectrum-alert-dialog-padding)
@@ -38,7 +38,7 @@ import{html as a,SpectrumElement as w}from"/libs/features/spectrum-web-component
 --mod-alert-dialog-icon-size,var(--spectrum-alert-dialog-icon-size)
 );flex-shrink:0;inline-size:var(
 --mod-alert-dialog-icon-size,var(--spectrum-alert-dialog-icon-size)
-);margin-left:var(
+);margin-inline-start:var(
 --mod-alert-dialog-title-to-icon,var(--spectrum-alert-dialog-title-to-icon)
 )}:host([variant=warning]){--mod-icon-color:var(
 --mod-alert-dialog-warning-icon-color,var(--spectrum-alert-dialog-warning-icon-color)
@@ -58,7 +58,7 @@ import{html as a,SpectrumElement as w}from"/libs/features/spectrum-web-component
 --mod-alert-dialog-title-line-height,var(--spectrum-alert-dialog-title-line-height)
 );margin:0;margin-block-end:var(
 --mod-alert-dialog-title-to-divider,var(--spectrum-alert-dialog-title-to-divider)
-)}.content{-webkit-overflow-scrolling:touch;color:var(
+)}.content{color:var(
 --mod-alert-dialog-body-color,var(--spectrum-alert-dialog-body-color)
 );font-family:var(
 --mod-alert-dialog-body-font-family,var(--spectrum-alert-dialog-body-font-family)
@@ -70,12 +70,12 @@ import{html as a,SpectrumElement as w}from"/libs/features/spectrum-web-component
 --mod-alert-dialog-body-font-weight,var(--spectrum-alert-dialog-body-font-weight)
 );line-height:var(
 --mod-alert-dialog-body-line-height,var(--spectrum-alert-dialog-body-line-height)
-);margin:0;margin-block-end:var(
+);-webkit-overflow-scrolling:touch;margin:0;margin-block-end:var(
 --mod-alert-dialog-description-to-buttons,var(--spectrum-alert-dialog-description-to-buttons)
 );margin-block-start:var(
 --mod-alert-dialog-divider-to-description,var(--spectrum-alert-dialog-divider-to-description)
 );overflow-y:auto}@media (forced-colors:active){:host{border:solid}}
-`,m=b;var f=Object.defineProperty,y=Object.getOwnPropertyDescriptor,g=(s,t,e,r)=>{for(var i=r>1?void 0:r?y(t,e):t,o=s.length-1,l;o>=0;o--)(l=s[o])&&(i=(r?l(t,e,i):l(i))||i);return r&&i&&f(t,e,i),i},k=["confirmation","information","warning","error","destructive","secondary"],E=0;function u(s,t){let e=s.assignedElements(),r=[];return e.forEach(i=>{if(i.id)r.push(i.id);else{let o=t+`-${E++}`;i.id=o,r.push(o)}}),r}var d=class h extends C(w){constructor(){super(...arguments),this.resizeController=new n(this,{callback:()=>{this.shouldManageTabOrderForScrolling()}}),this._variant="",this.labelledbyId=`sp-dialog-label-${h.instanceCount++}`,this.shouldManageTabOrderForScrolling=()=>{if(!this.contentElement)return;let{offsetHeight:t,scrollHeight:e}=this.contentElement;t<e?this.contentElement.tabIndex=0:this.contentElement.removeAttribute("tabindex")},this.describedbyId=`sp-dialog-description-${h.instanceCount++}`}static get styles(){return[m]}set variant(t){if(t===this.variant)return;let e=this.variant;k.includes(t)?(this.setAttribute("variant",t),this._variant=t):(this.removeAttribute("variant"),this._variant=""),this.requestUpdate("variant",e)}get variant(){return this._variant}renderIcon(){switch(this.variant){case"warning":case"error":return a`
+`,h=b;var f=Object.defineProperty,y=Object.getOwnPropertyDescriptor,g=(s,t,e,r)=>{for(var i=r>1?void 0:r?y(t,e):t,o=s.length-1,l;o>=0;o--)(l=s[o])&&(i=(r?l(t,e,i):l(i))||i);return r&&i&&f(t,e,i),i},k=["confirmation","information","warning","error","destructive","secondary"],E=0;function u(s,t){let e=s.assignedElements(),r=[];return e.forEach(i=>{if(i.id)r.push(i.id);else{let o=t+`-${E++}`;i.id=o,r.push(o)}}),r}var d=class m extends C(w){constructor(){super(...arguments),this.resizeController=new n(this,{callback:()=>{this.shouldManageTabOrderForScrolling()}}),this._variant="",this.labelledbyId=`sp-dialog-label-${m.instanceCount++}`,this.shouldManageTabOrderForScrolling=()=>{if(!this.contentElement)return;let{offsetHeight:t,scrollHeight:e}=this.contentElement;t<e?this.contentElement.tabIndex=0:this.contentElement.removeAttribute("tabindex")},this.describedbyId=`sp-dialog-description-${m.instanceCount++}`}static get styles(){return[h]}set variant(t){if(t===this.variant)return;let e=this.variant;k.includes(t)?(this.setAttribute("variant",t),this._variant=t):(this.removeAttribute("variant"),this._variant=""),this.requestUpdate("variant",e)}get variant(){return this._variant}renderIcon(){switch(this.variant){case"warning":case"error":return a`
                     <sp-icon-alert class="icon"></sp-icon-alert>
                 `;default:return a``}}renderHeading(){return a`
             <slot name="heading" @slotchange=${this.onHeadingSlotchange}></slot>

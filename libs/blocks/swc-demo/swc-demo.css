@@ -1,17 +1,5 @@
-.swc-demo {
+swc-demo {
   display: flex;
   justify-content: center;
 
-}
-
-#todo-app {
-  width: 100%;
-  min-height: 700px;
-  margin: auto;
-  padding: 20px;
-}
-
-#todo-list {
-  list-style: none;
-  padding: 0;
 }
