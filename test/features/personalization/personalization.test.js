@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import { stub } from 'sinon';
+import { assert, stub } from 'sinon';
 import { getConfig, setConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
@@ -19,6 +19,12 @@ const setFetchResponse = (data, type = 'json') => {
   window.fetch = stub().returns(getFetchPromise(data, type));
 };
 
+async function loadManifestAndSetResponse(manifestPath) {
+  let manifestJson = await readFile({ path: manifestPath });
+  manifestJson = JSON.parse(manifestJson);
+  setFetchResponse(manifestJson);
+}
+
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional Test', () => {
   before(() => {
@@ -32,9 +38,7 @@ describe('Functional Test', () => {
   });
 
   it('replaceContent should replace an element with a fragment', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestReplace.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestReplace.json');
 
     expect(document.querySelector('#features-of-milo-experimentation-platform')).to.not.be.null;
     expect(document.querySelector('.how-to')).to.not.be.null;
@@ -49,9 +53,7 @@ describe('Functional Test', () => {
   });
 
   it('removeContent should remove z-pattern content from the page', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestRemove.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestRemove.json');
 
     expect(document.querySelector('.z-pattern')).to.not.be.null;
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
@@ -59,9 +61,7 @@ describe('Functional Test', () => {
   });
 
   it('insertContentAfter should add fragment after target element', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestInsertContentAfter.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestInsertContentAfter.json');
 
     expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
@@ -73,10 +73,7 @@ describe('Functional Test', () => {
   });
 
   it('insertContentBefore should add fragment before target element', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestInsertContentBefore.json' });
-
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestInsertContentBefore.json');
 
     expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
@@ -90,9 +87,7 @@ describe('Functional Test', () => {
   it('replaceFragment should replace a fragment in the document', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
-    let manifestJson = await readFile({ path: './mocks/manifestReplaceFragment.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestReplaceFragment.json');
 
     expect(document.querySelector('a[href="/fragments/replaceme"]')).to.exist;
     expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.exist;
@@ -119,9 +114,7 @@ describe('Functional Test', () => {
   });
 
   it('useBlockCode should override a current block with the custom block code provided', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestUseBlockCode.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestUseBlockCode.json');
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
@@ -133,9 +126,7 @@ describe('Functional Test', () => {
   });
 
   it('useBlockCode should be able to use a new type of block', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestUseBlockCode2.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestUseBlockCode2.json');
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
@@ -147,9 +138,7 @@ describe('Functional Test', () => {
   });
 
   it('updateMetadata should be able to add and change metadata', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestUpdateMetadata.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestUpdateMetadata.json');
 
     const geoMetadata = document.querySelector('meta[name="georouting"]');
     expect(geoMetadata.content).to.equal('off');
@@ -167,9 +156,7 @@ describe('Functional Test', () => {
   });
 
   it('Invalid selector should not fail page render and rest of items', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestInvalid.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestInvalid.json');
 
     expect(document.querySelector('.marquee')).to.not.be.null;
     expect(document.querySelector('a[href="/fragments/insertafter2"]')).to.be.null;
@@ -181,9 +168,7 @@ describe('Functional Test', () => {
   });
 
   it('Can select elements using block-#', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestBlockNumber.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestBlockNumber.json');
 
     expect(document.querySelector('.marquee')).to.not.be.null;
     expect(document.querySelector('a[href="/fragments/replace/marquee/r2c1"]')).to.be.null;
@@ -202,10 +187,22 @@ describe('Functional Test', () => {
       .to.equal(secondFrag);
   });
 
+  it('Can select blocks using section and block indexs', async () => {
+    await loadManifestAndSetResponse('./mocks/manifestSectionBlock.json');
+
+    expect(document.querySelector('.special-block')).to.not.be.null;
+    expect(document.querySelector('.custom-block-2')).to.not.be.null;
+    expect(document.querySelector('.custom-block-3')).to.not.be.null;
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    expect(document.querySelector('.special-block')).to.be.null;
+    expect(document.querySelector('.custom-block-2')).to.be.null;
+    expect(document.querySelector('.custom-block-3')).to.be.null;
+  });
+
   it('scheduled manifest should apply changes if active (bts)', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestScheduledActive.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestScheduledActive.json');
     expect(document.querySelector('a[href="/fragments/insertafter3"]')).to.be.null;
     const event = { name: 'bts', start: new Date('2023-11-24T13:00:00+00:00'), end: new Date('2222-11-24T13:00:00+00:00') };
     await applyPers([{ manifestPath: '/promos/bts/manifest.json', disabled: false, event }]);
@@ -217,9 +214,7 @@ describe('Functional Test', () => {
   });
 
   it('scheduled manifest should not apply changes if not active (blackfriday)', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestScheduledInactive.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestScheduledInactive.json');
     expect(document.querySelector('a[href="/fragments/insertafter4"]')).to.be.null;
     const event = { name: 'blackfriday', start: new Date('2022-11-24T13:00:00+00:00'), end: new Date('2022-11-24T13:00:00+00:00') };
     await applyPers([{ manifestPath: '/promos/blackfriday/manifest.json', disabled: true, event }]);
@@ -231,27 +226,21 @@ describe('Functional Test', () => {
   it('test or promo manifest', async () => {
     let config = getConfig();
     config.mep = {};
-    let manifestJson = await readFile({ path: './mocks/manifestTestOrPromo.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestTestOrPromo.json');
     config = getConfig();
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(config.mep?.martech).to.be.undefined;
   });
 
   it('should choose chrome & logged out', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestWithAmpersand.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestWithAmpersand.json');
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     const config = getConfig();
     expect(config.mep?.martech).to.equal('|chrome & logged|ampersand');
   });
 
   it('should choose not firefox', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestWithNot.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestWithNot.json');
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     const config = getConfig();
     expect(config.mep?.martech).to.equal('|not firefox|not');
@@ -263,17 +252,13 @@ describe('Functional Test', () => {
     config.consumerEntitlements = { 'consumer-defined-entitlement': 'fireflies' };
     config.entitlements = () => Promise.resolve(['indesign-any', 'fireflies', 'after-effects-any']);
 
-    let manifestJson = await readFile({ path: './mocks/manifestUseEntitlements.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestUseEntitlements.json');
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(getConfig().mep?.martech).to.equal('|fireflies|manifest');
   });
 
   it('removeContent should tag z-pattern in preview', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestRemove.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+    await loadManifestAndSetResponse('./mocks/manifestRemove.json');
     const config = getConfig();
     config.mep = {
       override: '',
@@ -283,5 +268,16 @@ describe('Functional Test', () => {
     expect(document.querySelector('.z-pattern')).to.not.be.null;
     await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
     expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+  });
+
+  it('invalid selector should output error to console', async () => {
+    window.console.log = stub();
+
+    await loadManifestAndSetResponse('./mocks/manifestInvalidSelector.json');
+
+    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+
+    assert.calledWith(window.console.log, 'Invalid selector: ', '.bad...selector');
+    window.console.log.reset();
   });
 });

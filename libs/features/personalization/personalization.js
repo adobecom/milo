@@ -270,8 +270,11 @@ function getSection(rootEl, idx) {
 function getSelectedEl(rootEl, selector) {
   if (!selector) return null;
 
-  let selectedEl = querySelector(rootEl, selector);
-  if (selectedEl) return selectedEl;
+  let selectedEl;
+  if (selector.includes('.') || !['section', 'block', 'row'].some((s) => selector.includes(s))) {
+    selectedEl = querySelector(rootEl, selector);
+    if (selectedEl) return selectedEl;
+  }
 
   const terms = selector.split(/\s+/);
 
