@@ -59,7 +59,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { expFragments, decorateArea } = getConfig();
+  const { expFragments, decorateArea, mep } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
 
@@ -70,9 +70,21 @@ export default async function init(a) {
   }
 
   const path = new URL(a.href).pathname;
-  if (expFragments?.[path]) {
-    a.href = expFragments[path];
-    relHref = expFragments[path];
+  if (expFragments) {
+    const { replace, remove } = expFragments;
+    if (remove?.[path]) {
+      if (!mep?.preview) {
+        a.parentElement.dataset.removedManifestId = remove[path].manifestPath;
+      } else {
+        a.parentElement.remove();
+      }
+      return;
+    }
+    if (replace?.[path]) {
+      a.href = replace[path].fragment;
+      relHref = replace[path].fragment;
+      a.dataset.manifestId = replace[path].manifestPath;
+    }
   }
 
   if (isCircularRef(relHref)) {

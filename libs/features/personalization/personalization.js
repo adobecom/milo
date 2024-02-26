@@ -133,11 +133,14 @@ const GLOBAL_CMDS = [
   'useblockcode',
 ];
 
+const CREATE_CMDS = {
+  insertafter: 'afterend',
+  insertbefore: 'beforebegin',
+  prependtosection: 'afterbegin',
+  appendtosection: 'beforeend',
+};
+
 const COMMANDS = {
-  insertafter: (el, target, manifestId) => el
-    .insertAdjacentElement('afterend', createFrag(el, target, manifestId)),
-  insertbefore: (el, target, manifestId) => el
-    .insertAdjacentElement('beforebegin', createFrag(el, target, manifestId)),
   remove: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
@@ -159,7 +162,7 @@ function checkActionType(selector, action) {
   if (GLOBAL_CMDS.includes(`${action}fragment`) && selector.includes('/fragments/')
     && (selector.startsWith('/') || selector.startsWith('http'))) {
     finalAction = `${action}fragment`;
-  } else if (finalAction in COMMANDS) {
+  } else if (finalAction in COMMANDS || finalAction in CREATE_CMDS) {
     actionType = 'command';
   } else if (!GLOBAL_CMDS.includes(finalAction)) {
     actionType = false;
@@ -207,8 +210,15 @@ const getBlockProps = (fSelector, fVal) => {
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
     let { selector, val } = i;
-    if (prop === 'blocks') ({ selector, val } = getBlockProps(selector, val));
-    propMap[selector] = val;
+    if (prop === 'blocks') {
+      ({ selector, val } = getBlockProps(selector, val));
+      propMap[selector] = val;
+    } else if (val.toLowerCase() !== 'false' && val.toLowerCase() !== '') {
+      propMap[selector] = {
+        fragment: val,
+        manifestPath: item.manifestPath,
+      };
+    }
   });
   return propMap;
 }, {});
@@ -258,8 +268,13 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-function getSelectedElement(selector) {
+function getSelectedElement(selector, action) {
   try {
+    if (action.includes('pendtosection') && selector.includes('section')) {
+      const section = selector.replace('section', '');
+      if (Number.isNaN(section)) return null;
+      return document.querySelector(`main > :nth-child(${section})`);
+    }
     if (selector.includes('/fragments/') && (selector.startsWith('/') || selector.startsWith('http'))) {
       const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
       if (fragment) {
@@ -277,8 +292,11 @@ function handleCommands(commands, manifestId) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (action in COMMANDS) {
-      const el = getSelectedElement(selector);
+      const el = getSelectedElement(selector, action);
       COMMANDS[action](el, target, manifestId);
+    } else if (action in CREATE_CMDS) {
+      const el = getSelectedElement(selector, action);
+      el.insertAdjacentElement(CREATE_CMDS[action], createFrag(el, target, manifestId));
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
@@ -548,11 +566,14 @@ export async function runPersonalization(info, config) {
   handleCommands(selectedVariant.commands, manifestId);
 
   selectedVariant.replacefragment &&= selectedVariant.replacefragment.map(normalizeFragPaths);
+  selectedVariant.removefragment &&= selectedVariant.removefragment.map(normalizeFragPaths);
 
   return {
+    manifestPath,
     experiment,
     blocks: selectedVariant.useblockcode,
-    fragments: selectedVariant.replacefragment,
+    replacefragment: selectedVariant.replacefragment,
+    removefragment: selectedVariant.removefragment,
   };
 }
 
@@ -612,7 +633,10 @@ export async function applyPers(manifests) {
 
   config.experiments = experiments;
   config.expBlocks = consolidateObjects(results, 'blocks');
-  config.expFragments = consolidateObjects(results, 'fragments');
+  config.expFragments = {
+    replace: consolidateObjects(results, 'replacefragment'),
+    remove: consolidateObjects(results, 'removefragment'),
+  };
 
   const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
