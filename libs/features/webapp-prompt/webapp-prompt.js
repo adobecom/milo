@@ -123,6 +123,7 @@ class AppPrompt {
       : '';
 
     return toFragment`<div class="appPrompt">
+      ${this.elements.closeIcon}
       <div class="appPrompt-icon">
         ${this.image}
       </div>
@@ -135,7 +136,6 @@ class AppPrompt {
       <div class="appPrompt-progressWrapper">
         <div class="appPrompt-progress" style="background-color: ${this.options['loader-color']}; animation-duration: ${this.options['loader-duration']}ms;"></div>
       </div>
-      ${this.elements.closeIcon}
     </div>`;
   };
 
@@ -145,8 +145,14 @@ class AppPrompt {
     //   if (!e.target.closest(CONFIG.selectors.prompt)) AppPrompt.close();
     // });
 
+    document.addEventListener('keydown', this.handleKeyDown);
+
     [this.elements.closeIcon, this.elements.cta]
       .forEach((elem) => elem.addEventListener('click', this.close));
+  };
+
+  handleKeyDown = (event) => {
+    if (event.key === 'Escape') this.close();
   };
 
   initRedirect = () => setTimeout(() => {
@@ -168,6 +174,7 @@ class AppPrompt {
     appPromptElem?.remove();
     clearTimeout(this.redirectFn);
     this.setDismissedPrompt();
+    document.removeEventListener('keydown', this.handleKeyDown);
   };
 
   static getDismissedPrompts = () => {
