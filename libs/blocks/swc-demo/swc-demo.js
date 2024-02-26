@@ -89,10 +89,10 @@ async function getApp() {
           ${this.tasks}
         </ul>
         <sp-field-label for="tasks">Completed tasks</sp-field-label>
-        <sp-combobox id="tasks" value="show" @change=${this.onCompletedTasksChange}>
+        <sp-picker id="tasks" value="show" @change=${this.onCompletedTasksChange}>
             <sp-menu-item value="show">Show</sp-menu-item>
             <sp-menu-item value="hide">Hide</sp-menu-item>
-        </sp-combobox>
+        </sp-picker>
     </div>
   </sp-theme>`;
     }
@@ -110,7 +110,7 @@ export default async function main(el) {
     import(`${base}/features/spectrum-web-components/dist/base.js`),
     import(`${base}/features/spectrum-web-components/dist/shared.js`),
     import(`${base}/features/spectrum-web-components/dist/button.js`),
-    import(`${base}/features/spectrum-web-components/dist/combobox.js`),
+    import(`${base}/features/spectrum-web-components/dist/picker.js`),
     import(`${base}/features/spectrum-web-components/dist/checkbox.js`),
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
   ]);
