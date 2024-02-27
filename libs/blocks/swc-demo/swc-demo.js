@@ -24,7 +24,7 @@ async function getApp() {
 
   #todo-app {
     width: 100%;
-    min-height: 700px;
+    min-height: 300px;
     margin: auto;
     padding: 20px;
   }  
