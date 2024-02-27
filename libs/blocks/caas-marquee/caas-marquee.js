@@ -3,12 +3,18 @@ import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
 const SEGMENTS_MAP = {
   stage: {
-    '5a5fd14e-f4ca-49d2-9f87-835df5477e3c': 'PHSP',
-    '09bc4ba3-ebed-4d05-812d-a1fb1a7e82ae': 'IDSN',
-    '25ede755-7181-4be2-801e-19f157c005ae': 'ILST',
-    '07609803-48a0-4762-be51-94051ccffb45': 'PPRO',
-    '73c3406b-32a2-4465-abf3-2d415b9b1f4f': 'AEFT',
-    'bf632803-4412-463d-83c5-757dda3224ee': 'CCSN',
+    '0668f6cf-a981-433e-af60-ec967ef90423': 'acrobat',
+    '763a8323-2087-42fc-acd8-aac45dbf7532': 'sign',
+    'ecbe1189-f9fe-4a89-9823-c5ae77e8bfd9': 'illustrator',
+    'f6622923-afab-4f5e-a1fe-fcc4103e7906': 'premiere',
+    '28fc7790-6273-4803-a53e-641ea3aa0692': 'photoshop',
+    '604da2f2-00f8-4a67-b42d-5b21107eeb93': 'lightroom',
+    'a9765398-b8e6-4086-a7f5-d80c7e0a3eb2': 'helpx',
+    '510409d5-bf01-4ea9-a080-dd0b162ff854': 'firefly',
+    'b790a4d3-c1eb-4ce5-8313-20e225b1c7a8': 'express',
+    'fd3085a1-a77b-43fc-9f67-65092fc7bf49': 'stock',
+    '7199b3ea-600f-4035-ab62-86fe93dcafd5': 'commerce',
+    '6841adaf-9eb8-4c8e-90ef-c0eb711e0e55': 'creative-cloud',
   },
   prod: {
     '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'PHSP',
@@ -135,8 +141,8 @@ function isProd() {
   return !(host.includes('hlx.page')
     || host.includes('hlx.live')
     || host.includes('localhost')
-    || host.includes('stage.adobe.com')
-    || host.includes('corp.adobe.com'));
+    || host.includes('stage.adobe')
+    || host.includes('corp.adobe'));
 }
 
 const BUTTON_STYLES = ['blue', 'outline'];
