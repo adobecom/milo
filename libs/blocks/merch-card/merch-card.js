@@ -505,7 +505,6 @@ const init = async (el) => {
   decorateFooterRows(merchCard, footerRows);
   el.replaceWith(merchCard);
 
-  merchCard.querySelectorAll('a, button').forEach((element) => element.setAttribute('tabindex', '0'));
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
 };
