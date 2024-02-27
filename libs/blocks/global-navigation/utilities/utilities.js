@@ -4,6 +4,8 @@ import { replaceText } from '../../../features/placeholders.js';
 
 loadLana();
 
+const FEDERAL_PATH_KEY = 'federal';
+
 // TODO when porting this to milo core, we should define this on config level
 // and allow consumers to add their own origins
 const allowedOrigins = [
@@ -28,7 +30,6 @@ export const selectors = {
   columnBreak: '.column-break',
 };
 
-const FEDERAL_PATH_KEY = 'federal';
 export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
   const url = getMetadata('gnav-source');
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
@@ -101,7 +102,7 @@ const getPath = (urlOrPath = '') => {
     const url = new URL(urlOrPath);
     return url.pathname;
   } catch (error) {
-    return urlOrPath.replace(/^\.?\//, '/');
+    return urlOrPath.replace(/^\.\//, '/');
   }
 };
 
