@@ -104,6 +104,7 @@ async function getApp() {
 }
 
 export default async function main(el) {
+  performance.mark('swc-demo:start');
   const { base } = getConfig();
   const deps = Promise.all([
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
@@ -118,5 +119,7 @@ export default async function main(el) {
   el.replaceWith(await getApp());
 
   await deps;
+  performance.mark('swc-demo:end');
+  performance.measure('swc-demo block', 'swc-demo:start', 'swc-demo:end');
   return el;
 }
