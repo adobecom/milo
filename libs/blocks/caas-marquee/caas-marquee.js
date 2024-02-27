@@ -135,8 +135,8 @@ function isProd() {
   return !(host.includes('hlx.page')
     || host.includes('hlx.live')
     || host.includes('localhost')
-    || host.includes('stage.adobe')
-    || host.includes('corp.adobe'));
+    || host.includes('stage.adobe.com')
+    || host.includes('corp.adobe.com'));
 }
 
 const BUTTON_STYLES = ['blue', 'outline'];
