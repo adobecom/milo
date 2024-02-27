@@ -152,7 +152,7 @@ export async function getModal(details, custom) {
   const focusVisible = { focusVisible: true };
   const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
   const titleOnLoad = dialog.querySelector('h1, h2, h3, h4, h5');
-  const isVideoFragment = dialog.querySelector('.fragment:first-child')?.dataset?.path?.includes('modals/videos') || false;
+  const isVideoFragment = dialog.querySelector('.fragment:first-child')?.dataset?.path?.includes('modals/videos');
   let firstFocusable;
 
   if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])
