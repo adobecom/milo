@@ -504,7 +504,6 @@ const init = async (el) => {
   }
   decorateFooterRows(merchCard, footerRows);
   el.replaceWith(merchCard);
-
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
 };
