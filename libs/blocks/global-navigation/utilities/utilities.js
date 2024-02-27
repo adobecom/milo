@@ -111,10 +111,8 @@ export const federatePictureSources = (section) => {
     .forEach((source) => {
       const type = source.hasAttribute('src') ? 'src' : 'srcset';
       const path = getPath(source.getAttribute(type));
-      const localeOrFederalKey = path.split('/')[1];
-      const federalKey = path.split('/')[2];
-      const isFederal = localeOrFederalKey === FEDERAL_PATH_KEY || federalKey === FEDERAL_PATH_KEY;
-      if (!isFederal) return;
+      const [, localeOrKeySegment, keyOrPathSegment] = path.split('/');
+      if (![localeOrKeySegment, keyOrPathSegment].includes(FEDERAL_PATH_KEY)) return;
       source.setAttribute(type, `${getFederatedContentRoot()}${path}`);
     });
 };
