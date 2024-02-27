@@ -799,7 +799,7 @@ export async function loadIms() {
   return imsLoaded;
 }
 
-async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
+export async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
     return true;
