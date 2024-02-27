@@ -1016,7 +1016,7 @@ export function showModal({ delay, display, details, getModal }) {
         setTimeout(() => {
           getModal(details);
           sendAnalytics(modalOpenEvent);
-          window.sessionStorage.setItem(`shown:${id}`, true);
+          window.sessionStorage.setItem(`shown:${id}`, 'true');
         }, delay);
       }
     }

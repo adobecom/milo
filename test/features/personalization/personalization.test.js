@@ -4,7 +4,13 @@ import { stub } from 'sinon';
 import { getConfig, setConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { applyPers, createFrag, normalizePath } from '../../../libs/features/personalization/personalization.js';
+import {
+  applyPers,
+  createFrag,
+  normalizePath,
+  decorateDelayedModalAnchor,
+  parseUrl,
+} from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -32,22 +38,23 @@ describe('Functional Test', () => {
     };
   });
 
-  it('should create a fragment, and show a modal with delay', async () => {
+  it('should create a delayed modal anchor', async () => {
     const hash = '#testhash';
-    const url = 'https://adobe.com/testpage/?delay=1&display=pageload#testhash';
+    const url = 'https://adobe.com/testpage/#testhash:delay=1:display=pageload';
     const manifestId = 'testManifestId';
     const parentElement = document.createElement('div');
     const el = document.createElement('div');
     parentElement.appendChild(el);
     document.body.appendChild(parentElement);
     const frag = createFrag(el, url, manifestId);
-    expect(frag.nodeName).to.equal('A');
-    expect(frag.getAttribute('href')).to.equal(hash);
-    expect(frag.getAttribute('data-modal-hash')).to.equal(hash);
-    expect(frag.getAttribute('data-modal-path')).to.equal('/testpage/');
-    expect(frag.getAttribute('style')).to.equal('display: none');
-    expect(frag.classList.contains('modal')).to.be.true;
-    expect(frag.classList.contains('link-block')).to.be.true;
+    expect(frag.nodeName).to.equal('P');
+    const link = frag.querySelector('a');
+    expect(link.getAttribute('href')).to.equal(hash);
+    expect(link.getAttribute('data-modal-hash')).to.equal(hash);
+    expect(link.getAttribute('data-modal-path')).to.equal('/testpage/');
+    expect(link.getAttribute('style')).to.equal('display: none');
+    expect(link.classList.contains('modal')).to.be.true;
+    expect(link.classList.contains('link-block')).to.be.true;
     el.appendChild(frag);
     const delayedModal = await waitForElement(hash);
     expect(delayedModal).to.exist;
@@ -319,5 +326,36 @@ describe('normalizePath function', () => {
     config.locale = config.locales.de;
     const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
     expect(path).to.equal('/de/path/to/fragment.plain.html');
+  });
+
+  it('sets proper attributes on the delayed modal anchor link', () => {
+    const a = document.createElement('a');
+    const hash = '#dm';
+    decorateDelayedModalAnchor({ a, hash, pathname: 'path/to/page' });
+    expect(a.getAttribute('href')).to.equal(hash);
+    expect(a.getAttribute('data-modal-hash')).to.equal(hash);
+    expect(a.getAttribute('data-modal-path')).to.equal('path/to/page');
+    expect(a.getAttribute('style')).to.equal('display: none');
+    expect(a.classList.contains('modal')).to.be.true;
+    expect(a.classList.contains('link-block')).to.be.true;
+    a.remove();
+  });
+
+  it('parses URL properly', () => {
+    const hash = '#dm';
+    expect(parseUrl()).to.deep.equal({});
+    expect(parseUrl('https://www.adobe.com/')).to.deep.equal({
+      hash: '',
+      href: '/',
+      pathname: '/',
+    });
+    expect(parseUrl('/fragments/testpage')).to.deep.equal({ href: '/fragments/testpage' });
+    expect(parseUrl('https://www.adobe.com/testpage/#dm:delay=1:display=pageload')).to.deep.equal({
+      hash,
+      href: '/testpage/#dm',
+      pathname: '/testpage/',
+      delay: 1000,
+      display: 'pageload',
+    });
   });
 });

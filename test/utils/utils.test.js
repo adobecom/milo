@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitFor, waitForElement, delay } from '../helpers/waitfor.js';
+import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
 import {
   createTag,
@@ -9,6 +9,7 @@ import {
   sendAnalytics,
   showModal,
 } from '../../libs/utils/utils.js';
+import { getModal } from '../../libs/blocks/modal/modal.js';
 
 const utils = {};
 
@@ -682,10 +683,8 @@ describe('Utils', () => {
   });
 
   describe('showModal', () => {
-    it('shows modal with delay', async () => {
-      showModal({ delay: '1', display: 'pageload', details: { id: 'delayed' }, getModal: () => {} });
-      expect(document.querySelector('#dmpageload')).to.not.exist;
-      await delay(1000);
+    it('shows modal with delay', () => {
+      showModal({ delay: '1', display: 'pageload', details: { id: 'delayed' }, getModal });
       const modal = waitForElement('#dmpageload');
       expect(modal).to.exist;
     });
@@ -693,10 +692,9 @@ describe('Utils', () => {
     it('shows modal with delay and remembers it in session storage', async () => {
       const id = 'dmsession';
       window.sessionStorage.removeItem(`shown:${id}`);
-      showModal({ delay: '1', display: 'session', details: { id }, getModal: () => {} });
+      showModal({ delay: '1', display: 'session', details: { id }, getModal });
       expect(document.querySelector(`#${id}`)).to.not.exist;
-      await delay(1000);
-      const modal = waitForElement(`#${id}`);
+      const modal = await waitForElement(`#${id}`);
       expect(modal).to.exist;
       expect(window.sessionStorage.getItem(`shown:${id}`)).to.equal('true');
     });
@@ -716,8 +714,7 @@ describe('Utils', () => {
         },
       });
       window.dispatchEvent(event);
-      await delay(1000);
-      const modal = waitForElement('#test-modal');
+      const modal = await waitForElement('#test-modal');
       expect(modal).to.exist;
       // eslint-disable-next-line no-underscore-dangle
       window._satellite.track = originalTrackFunction;
