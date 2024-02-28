@@ -116,10 +116,11 @@ export default async function main(el) {
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
   ]);
 
-  el.replaceWith(await getApp());
+  const app = await getApp();
+  el.replaceWith(app);
 
   await deps;
   performance.mark('swc-demo:end');
   performance.measure('swc-demo block', 'swc-demo:start', 'swc-demo:end');
-  return el;
+  return app;
 }
