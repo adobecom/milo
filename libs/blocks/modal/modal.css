@@ -25,11 +25,6 @@
   z-index: 103;
 }
 
-.dialog-modal.commerce-frame .fragment,
-.dialog-modal.commerce-frame .section {
-  height: 100vh;
-}
-
 .dialog-modal.upgrade-flow-modal {
   height: 100%;
   width: 100%;
@@ -193,7 +188,7 @@
   }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1199px) {
   .dialog-modal.commerce-frame {
     width: 100%;
     max-width: 100%;
@@ -203,7 +198,11 @@
   .dialog-modal.upgrade-flow-modal {
     border-radius: 0;
   }
-  
+ 
+  .dialog-modal.commerce-frame .fragment,
+  .dialog-modal.commerce-frame .section {
+    height: 100vh;
+ }
 }
 
 @media (min-width: 1200px) {
@@ -220,12 +219,7 @@
     width: 1024px;
     height: 850px;
   }
-  
-  .dialog-modal.commerce-frame .fragment,
-  .dialog-modal.commerce-frame .section {
-    height: 100%;
-  }
-
+ 
   .dialog-modal.commerce-frame .milo-iframe {
     padding-bottom: 0;
     height: 100%;
