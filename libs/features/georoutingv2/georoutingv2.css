@@ -1,11 +1,14 @@
 .dialog-modal.locale-modal-v2 .georouting-wrapper {
-  display: block !important;
   padding: 56px 24px 40px;
 }
 
 .dialog-modal.locale-modal-v2 {
   overflow: hidden;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  background-image: url('/libs/features/georoutingv2/img/test.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .dialog-modal.locale-modal-v2 svg.georouting-bg {
@@ -134,9 +137,6 @@
 @media (min-width: 480px) {
   .dialog-modal.locale-modal-v2 {
     background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Tablet.png');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
   }
 
   .dialog-modal.locale-modal-v2 .georouting-bg {

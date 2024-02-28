@@ -237,13 +237,7 @@ function buildContent(currentPage, locale, geoData, locales) {
 async function getDetails(currentPage, localeMatches, geoData) {
   const availableLocales = await getAvailableLocales(localeMatches);
   if (!availableLocales.length) return null;
-  const { innerWidth } = window;
-  let svg = null;
-  if (innerWidth < 480) {
-    const { default: getMobileBg } = await import('./getMobileBg.js');
-    svg = getMobileBg();
-  }
-  const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment', style: 'display:none;' }, svg);
+  const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' });
   currentPage.url = window.location.hash ? document.location.href : '#';
   if (availableLocales.length === 1) {
     const content = buildContent(currentPage, availableLocales[0], geoData);
