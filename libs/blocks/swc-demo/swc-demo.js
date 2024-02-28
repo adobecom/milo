@@ -11,7 +11,8 @@ const tasks = [
   { title: '7. Performance optimizations', completed: false },
 ];
 
-async function getApp() {
+async function declareSwcDemo() {
+  if (customElements.get('swc-demo')) return;
   const { LitElement, html, css, repeat } = await import('../../deps/lit-all.min.js');
   class SwcDemo extends LitElement {
     static properties = { hideCompleted: { type: Boolean, attribute: 'hide-completed', reflect: true } };
@@ -99,8 +100,6 @@ async function getApp() {
   }
 
   customElements.define('swc-demo', SwcDemo);
-
-  return createTag('swc-demo', {});
 }
 
 export default async function main(el) {
@@ -116,7 +115,8 @@ export default async function main(el) {
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
   ]);
 
-  const app = await getApp();
+  await declareSwcDemo();
+  const app = createTag('swc-demo');
   el.replaceWith(app);
 
   await deps;
