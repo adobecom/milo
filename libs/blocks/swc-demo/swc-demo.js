@@ -47,7 +47,7 @@ async function declareSwcDemo() {
       this.hideCompleted = event.target.value === 'hide';
     }
 
-    get tasks() {
+    get visibleTasks() {
       const filteredTasks = this.tasks.filter((task) => !this.hideCompleted || !task.completed);
       return html`${repeat(
         filteredTasks,
@@ -86,7 +86,7 @@ async function declareSwcDemo() {
         <sp-textfield id="new-todo" placeholder="What needs to be done?" @keypress=${this.keypress}></sp-textfield>
         <sp-button variant="cta" id="add-todo" @click=${this.addTask}>Add</sp-button>
         <ul id="todo-list">
-          ${this.tasks}
+          ${this.visibleTasks}
         </ul>
         <sp-field-label for="tasks">Completed tasks</sp-field-label>
         <sp-picker id="tasks" value="show" @change=${this.onCompletedTasksChange}>
