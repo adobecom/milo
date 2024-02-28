@@ -165,7 +165,7 @@ describe('remove action', () => {
     expect(document.querySelector('a[href="/fragments/removeme"]')).to.be.null;
   });
 
-  it('removeContent should tag z-pattern in preview', async () => {
+  it('removeContent should tag but not remove content in preview', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
     let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
@@ -180,6 +180,11 @@ describe('remove action', () => {
     await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
     expect(document.querySelector('.z-pattern')).to.not.be.null;
     expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+
+    const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
+    await initFragments(removeMeFrag);
+    expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
+    expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
   });
 });
 
