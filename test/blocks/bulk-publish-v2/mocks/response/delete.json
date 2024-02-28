@@ -5,10 +5,14 @@
     "name": "job-2024-01-24t23-16-20-377z",
     "state": "created",
     "createTime": "2024-01-24T23:16:20.377Z",
+    "startTime": "2024-01-24T23:16:20.377Z",
     "data": {
       "paths": [
         {
           "path": "/drafts/sarchibeque/bulk-publish-test"
+        },
+        {
+          "path": "/drafts/sarchibeque/bulk-publish-test1"
         }
       ]
     }

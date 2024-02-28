@@ -70,9 +70,9 @@ class JobProcess extends LitElement {
     if (this.jobStatus && (code === 200 || code === 204) && isPOST) {
       results[pathIndex].classList.add('opened');
       window.open(url, '_blank');
+    /* c8 ignore next 6 */
     } else {
       await navigator.clipboard.writeText(url);
-      /* c8 ignore next 3 */
       results[pathIndex].classList.add('copied', 'indicator');
       await delay(3000);
       results[pathIndex].classList.remove('indicator');

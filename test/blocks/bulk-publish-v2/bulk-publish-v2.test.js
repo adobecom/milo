@@ -13,20 +13,6 @@ const { default: init } = await import('../../../libs/blocks/bulk-publish-v2/bul
 
 const testPage = 'https://main--milo--adobecom.hlx.page/drafts/sarchibeque/bulk-publish-test';
 
-const setProcess = async (el, type = 'preview') => {
-  const select = el.querySelector('#ProcessSelect');
-  select.focus();
-  await sendKeys({ type });
-  select.blur();
-};
-
-const setTextArea = async (el, type) => {
-  const select = el.querySelector('#Urls');
-  select.focus();
-  select.value = type;
-  select.blur();
-};
-
 const mouseEvent = async (el, type = 'click') => {
   if (!el) return;
   const rect = el?.getBoundingClientRect();
@@ -38,6 +24,27 @@ const mouseEvent = async (el, type = 'click') => {
       parseInt((rect?.top ?? 0) + 1, 10),
     ],
   });
+};
+
+const setProcess = async (el, type = 'preview', holdAlt = false) => {
+  const select = el.querySelector('#ProcessSelect');
+  if (holdAlt) {
+    await sendKeys({ down: 'Alt' });
+    await mouseEvent(select);
+    await sendKeys({ up: 'Alt' });
+    select.value = type;
+    select.dispatchEvent(new Event('change'));
+  } else {
+    await mouseEvent(select);
+    await sendKeys({ type });
+  }
+};
+
+const setTextArea = async (el, type) => {
+  const textarea = el.querySelector('#Urls');
+  textarea.focus();
+  textarea.value = type;
+  textarea.blur();
 };
 
 describe('Bulk Publish Tool', () => {
@@ -67,6 +74,7 @@ describe('Bulk Publish Tool', () => {
     const sidekick = document.querySelector('helix-sidekick');
     sidekick.opened();
     sidekick.status();
+    sidekick.loggedin();
     await waitForRemoval('.login-prompt');
     expect(rootEl.querySelector('.login-prompt')).to.not.exist;
   });
@@ -126,7 +134,7 @@ describe('Bulk Publish Tool', () => {
   it('can submit valid bulk delete job', async () => {
     await delay(1500);
     await setProcess(rootEl, 'delete');
-    await setTextArea(rootEl, testPage);
+    await setTextArea(rootEl, `${testPage}${testPage}1`);
     await mouseEvent(rootEl.querySelector('#RunProcess'));
     expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(3);
   });
@@ -140,15 +148,25 @@ describe('Bulk Publish Tool', () => {
     expect(deleteResult.classList.contains('copied')).to.be.true;
   });
 
-  it('can submit valid bulk index job', async () => {
-    await setProcess(rootEl, 'index');
+  it('can submit valid index job', async () => {
+    await setProcess(rootEl, 'index', true);
     await setTextArea(rootEl, testPage);
+    await delay(1500);
     await mouseEvent(rootEl.querySelector('#RunProcess'));
     expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(4);
-    await delay(1500);
+  });
+
+  it('can toggle view mode', async () => {
+    await mouseEvent(rootEl.querySelector('.switch.full'));
+    await delay(700);
+    await mouseEvent(rootEl.querySelector('#FormPanel'));
+    await mouseEvent(rootEl.querySelector('#ResultPanel'));
+    await delay(700);
+    expect(rootEl.querySelector('#BulkPublish.full')).to.exist;
   });
 
   it('can open result page url', async () => {
+    await mouseEvent(rootEl.querySelector('.switch.half'));
     await delay(1500);
     const openProcess = rootEl.querySelectorAll('job-process')[0];
     const openResult = openProcess.shadowRoot.querySelector('.result');
@@ -162,6 +180,5 @@ describe('Bulk Publish Tool', () => {
     await delay(1500);
     await mouseEvent(rootEl.querySelector('.clear-jobs'));
     expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(0);
-    await mouseEvent(rootEl.querySelector('.switch.full'));
   });
 });

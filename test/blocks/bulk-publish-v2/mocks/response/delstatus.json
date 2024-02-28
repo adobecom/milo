@@ -7,14 +7,19 @@
     "paths": [
       {
         "path": "/drafts/sarchibeque/bulk-publish-test"
+      },
+      {
+        "path": "/drafts/sarchibeque/bulk-publish-test1"
       }
     ],
     "phase": "completed",
     "resources": [
       {
-        "lastModified": "2024-01-24T23:15:51.000Z",
-        "resourcePath": "/drafts/sarchibeque/bulk-publish-test.md",
         "webPath": "/drafts/sarchibeque/bulk-publish-test",
+        "status": 200
+      },
+      {
+        "webPath": "/drafts/sarchibeque/bulk-publish-test1",
         "status": 200
       }
     ]
@@ -23,8 +28,8 @@
   "stopTime": "2024-01-24T23:16:24.869Z",
   "invocationId": "41573309-53aa-5b34-98c5-6d22cfd91253",
   "progress": {
-    "total": 1,
-    "processed": 1,
+    "total": 2,
+    "processed": 2,
     "failed": 0
   },
   "links": {

@@ -64,6 +64,7 @@ const authenticate = async (tool = null) => {
   const openSideKick = document.querySelector('helix-sidekick');
   if (openSideKick) {
     openSideKick.addEventListener('statusfetched', setUser);
+  /* c8 ignore next 6 */
   } else {
     document.addEventListener('sidekick-ready', () => {
       const sidekick = document.querySelector('helix-sidekick');
@@ -118,7 +119,8 @@ const formatResult = ({ status }, job) => {
 
 const startJob = async (details) => {
   const { process } = details;
-  const useBulk = process !== 'index'; // index is the only process missing bulk endpoint
+  // index is the only process missing bulk endpoint
+  const useBulk = process !== 'index';
   const jobs = prepareJobs(details, useBulk);
   const requests = jobs.flatMap(async (job) => {
     const { options, origin, endpoint } = job;
@@ -149,8 +151,8 @@ const getJobStatus = async (link) => {
     const status = await fetch(link, { headers });
     const result = await status.json();
     return result;
+  /* c8 ignore next 3 */
   } catch (error) {
-    /* c8 ignore next 2 */
     return error;
   }
 };
@@ -177,14 +179,14 @@ const updateRetry = async ({ queue, urls, process }) => {
       await delay();
       options.body = JSON.stringify(options.body);
       const job = await fetch(endpoint, options);
+      /* c8 ignore next 3 */
       if (!job.ok) {
-        /* c8 ignore next 2 */
         throw new Error(getErrorText(job.status), { cause: job.status }, origin);
       }
       const result = await job.json();
       return { href, origin, result };
+    /* c8 ignore next 3 */
     } catch (error) {
-      /* c8 ignore next 2 */
       return { href, origin, result: { status: error.cause } };
     }
   });

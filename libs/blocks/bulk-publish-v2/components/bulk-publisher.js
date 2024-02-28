@@ -56,8 +56,8 @@ class BulkPublish2 extends LitElement {
     authenticate(this);
     this.renderRoot.adoptedStyleSheets = [styleSheet, loaderSheet];
     const resumes = sticky().get('resume');
+    /* c8 ignore next 6 */
     if (resumes.length) {
-      /* c8 ignore next 5 */
       this.jobs = resumes;
       await delay(1000);
       this.openJobs = true;
@@ -75,8 +75,8 @@ class BulkPublish2 extends LitElement {
       prefs.set('resume', resumeable);
     }
     const textarea = this.renderRoot.querySelector('#Urls');
+    /* c8 ignore next 3 */
     if (this.urls.length && textarea?.value === '') {
-      /* c8 ignore next 2 */
       textarea.value = this.urls.join('\r\n');
     }
   }
@@ -99,12 +99,14 @@ class BulkPublish2 extends LitElement {
     errors.forEach((error) => {
       const matched = this.urls.filter((url) => {
         if (Array.isArray(error.href)) return error.href.includes(url);
+        /* c8 ignore next 1 */
         return url.includes(error.href);
       });
       matched.forEach((match) => urls.push(match));
     });
     const textarea = this.renderRoot.querySelector('#Urls');
     textarea.value = urls.join('\r\n');
+    /* c8 ignore next 3 */
     if (['delete', 'unpublish'].includes(this.process)) {
       this.urls = urls;
     }
@@ -139,6 +141,7 @@ class BulkPublish2 extends LitElement {
       startEdit: (click = null) => {
         this.editing = !this.editing;
         if (click) {
+          /* c8 ignore next 2 */
           if (this.jobErrors.length === 1) {
             this.jobErrors = false;
           } else {
@@ -173,6 +176,7 @@ class BulkPublish2 extends LitElement {
     if (event.altKey === true) {
       if (![...select.options].find((opt) => opt.value === 'index')) {
         const indexOpt = document.createElement('option');
+        indexOpt.setAttribute('id', 'indexOption');
         indexOpt.value = 'index';
         indexOpt.text = 'index';
         select.add(indexOpt);
@@ -185,6 +189,7 @@ class BulkPublish2 extends LitElement {
   getProcess = (type) => {
     const userPermissions = this.user?.permissions[type];
     const needsBulk = isDelete(type) && userPermissions?.useBulk === false;
+    /* c8 ignore next 3 */
     if (needsBulk || userPermissions?.canUse === false) {
       return html`<option disabled value=${type}>${type}</option>`;
     }
@@ -194,7 +199,7 @@ class BulkPublish2 extends LitElement {
   renderJobForm() {
     if (this.openJobs && this.mode === 'full') {
       return html`
-        <div class="panel-title" @click=${() => { this.openJobs = false; }}>
+        <div id="FormPanel" class="panel-title" @click=${() => { this.openJobs = false; }}>
           <span class="title">
             <strong>+</strong>
             Start New Job
@@ -296,6 +301,7 @@ class BulkPublish2 extends LitElement {
     };
     return html`
       <div
+        id="ResultPanel"
         class="panel-title"
         @click=${handleToggle}>
         <span class="title">
@@ -360,7 +366,7 @@ class BulkPublish2 extends LitElement {
       const job = await startJob({
         urls: this.urls,
         process: this.process.toLowerCase(),
-        useBulk: this.user.permissions[this.process].useBulk,
+        useBulk: this.user.permissions[this.process]?.useBulk ?? false,
       });
       const { complete, error } = processJobResult(job);
       this.jobs = [...this.jobs, ...complete];

@@ -5,12 +5,25 @@ class MockAuth extends HTMLElement {
   }
 
   status() {
+    const permissions = ['delete', 'read', 'write'];
+    this.dispatchEvent(new CustomEvent('statusfetched', {
+      bubbles: true,
+      detail: {
+        data: {
+          preview: { permissions },
+          live: { permissions },
+        },
+      },
+    }));
+  }
+
+  loggedin() {
     const permissions = ['delete', 'read', 'write', 'list'];
     this.dispatchEvent(new CustomEvent('statusfetched', {
       bubbles: true,
       detail: {
         data: {
-          profile: { name: 'testing' },
+          profile: { name: 'Unit Test' },
           preview: { permissions },
           live: { permissions },
         },

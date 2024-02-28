@@ -7,7 +7,7 @@ const requests = {
   prevstatus: 'https://admin.hlx.page/job/adobecom/milo/main/preview/job-2024-01-22t21-59-57-639z/details',
   publish: 'https://admin.hlx.page/live/adobecom/milo/main/*',
   pubstatus: 'https://admin.hlx.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z/details',
-  delete: 'https://admin.hlx.page/preview/adobecom/milo/main/*?paths[]=/drafts/sarchibeque/bulk-publish-test',
+  delete: 'https://admin.hlx.page/preview/adobecom/milo/main/*?paths[]=/drafts/sarchibeque/bulk-publish-test&paths[]=/drafts/sarchibeque/bulk-publish-test1',
   delstatus: 'https://admin.hlx.page/job/adobecom/milo/main/preview-remove/job-2024-01-24t23-16-20-377z/details',
   retry: 'https://admin.hlx.page/preview/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test',
   index: 'https://admin.hlx.page/index/adobecom/milo/main/drafts/sarchibeque/bulk-publish-test',
