@@ -148,7 +148,7 @@ const COMMANDS = {
     el.classList.add(CLASS_EL_DELETE);
   },
   replace: (el, target, manifestId) => {
-    if (el.classList.contains(CLASS_EL_REPLACE)) return;
+    if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
@@ -294,7 +294,7 @@ function handleCommands(commands, manifestId) {
       COMMANDS[action](el, target, manifestId);
     } else if (action in CREATE_CMDS) {
       const el = getSelectedElement(selector, action);
-      el.insertAdjacentElement(CREATE_CMDS[action], createFrag(el, target, manifestId));
+      el?.insertAdjacentElement(CREATE_CMDS[action], createFrag(el, target, manifestId));
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
