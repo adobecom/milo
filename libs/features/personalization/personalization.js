@@ -664,11 +664,11 @@ export async function applyPers(manifests) {
     const { action, fragment, manifestPath } = command;
     if (action === 'replace') {
       a.href = fragment;
-      if (!mep?.preview) a.dataset.manifestId = manifestPath;
+      if (mep?.preview) a.dataset.manifestId = manifestPath;
       return fragment;
     }
     if (action === 'remove') {
-      if (!mep?.preview) {
+      if (mep?.preview) {
         a.parentElement.dataset.removedManifestId = manifestPath;
       } else {
         a.parentElement.remove();
