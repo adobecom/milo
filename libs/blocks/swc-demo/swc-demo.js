@@ -1,16 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { createTag, getConfig } from '../../utils/utils.js';
 
-const tasks = [
-  { title: '1. Quick Introduction to commerce on adobe.com', completed: false },
-  { title: '2. Milo Commerce', completed: false },
-  { title: '3. Web Components', completed: false },
-  { title: '4. Spectrum Web Components (SWC)', completed: false },
-  { title: '5. Adding new components', completed: false },
-  { title: '6. SWC in consumer projects', completed: false },
-  { title: '7. Performance optimizations', completed: false },
-];
-
 async function declareSwcDemo() {
   if (customElements.get('swc-demo')) return;
   const { LitElement, html, css, repeat } = await import('../../deps/lit-all.min.js');
@@ -34,6 +24,15 @@ async function declareSwcDemo() {
     constructor() {
       super();
       this.hideCompleted = false;
+      this.tasks = [
+        { title: '1. Quick Introduction to commerce on adobe.com', completed: false },
+        { title: '2. Milo Commerce', completed: false },
+        { title: '3. Web Components', completed: false },
+        { title: '4. Spectrum Web Components (SWC)', completed: false },
+        { title: '5. Adding new components', completed: false },
+        { title: '6. SWC in consumer projects', completed: false },
+        { title: '7. Performance optimizations', completed: false },
+      ];
     }
 
     onTaskChange(event, task) {
@@ -49,7 +48,7 @@ async function declareSwcDemo() {
     }
 
     get tasks() {
-      const filteredTasks = tasks.filter((task) => !this.hideCompleted || !task.completed);
+      const filteredTasks = this.tasks.filter((task) => !this.hideCompleted || !task.completed);
       return html`${repeat(
         filteredTasks,
         (task) => task.title,
@@ -68,7 +67,7 @@ async function declareSwcDemo() {
     addTask() {
       const taskText = this.newTodoInput.value.trim();
       if (taskText) {
-        tasks.push({ title: taskText, completed: false });
+        this.tasks.push({ title: taskText, completed: false });
         this.newTodoInput.value = '';
         this.requestUpdate();
       }
