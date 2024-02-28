@@ -105,6 +105,7 @@ export default async function main(el) {
   performance.mark('swc-demo:start');
   const { base } = getConfig();
   const deps = Promise.all([
+    declareSwcDemo(),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
     import(`${base}/features/spectrum-web-components/dist/base.js`),
     import(`${base}/features/spectrum-web-components/dist/shared.js`),
@@ -114,7 +115,6 @@ export default async function main(el) {
     import(`${base}/features/spectrum-web-components/dist/textfield.js`),
   ]);
 
-  await declareSwcDemo();
   const app = createTag('swc-demo');
   el.replaceWith(app);
 
