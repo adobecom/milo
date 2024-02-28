@@ -8,7 +8,17 @@
       "selector": ".marquee",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/fragments/insertafter",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "/fragments/insertaround",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafterfragment",
       "firefox": "",
       "android": "",
       "ios": ""

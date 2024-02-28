@@ -9,7 +9,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "",
-      "firefox": "/drafts/rwoblesk/personalization-testing/fragments/milo-replace-content-firefox-accordion",
+      "firefox": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion",
       "android": "",
       "ios": ""
     },
@@ -18,7 +18,7 @@
       "selector": "#features-of-milo-experimentation-platform",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/fragments/milo-replace-content-chrome-howto-h2",
+      "chrome": "/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -28,7 +28,7 @@
       "selector": "/fragments/replaceme",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/fragments/fragmentreplaced",
+      "chrome": "/test/features/personalization/mocks/fragments/fragmentReplaced",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -38,7 +38,7 @@
       "selector": "/fragments/inline-replaceme",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/fragments/inline-fragmentreplaced",
+      "chrome": "/test/features/personalization/mocks/fragments/inlineFragReplaced",
       "firefox": "",
       "android": "",
       "ios": ""

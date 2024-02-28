@@ -72,6 +72,7 @@ export default async function init(a) {
   const path = new URL(a.href).pathname;
   if (expFragments?.[path] && mep) {
     relHref = mep.handleFragmentCommand(expFragments[path], a, mep);
+    if (!relHref) return;
   }
 
   if (isCircularRef(relHref)) {

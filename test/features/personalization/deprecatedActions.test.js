@@ -39,7 +39,7 @@ describe('Functional Test', () => {
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(document.querySelector('#features-of-milo-experimentation-platform')).to.be.null;
     expect(parentEl.firstElementChild.firstElementChild.href)
-      .to.equal('http://localhost:2000/fragments/milo-replace-content-chrome-howto-h2');
+      .to.equal('http://localhost:2000/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2');
     // .how-to should not be changed as it is targeted to firefox
     expect(document.querySelector('.how-to')).to.not.be.null;
   });
@@ -62,7 +62,7 @@ describe('Functional Test', () => {
     expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    const fragment = document.querySelector('a[href="/fragments/insertafter"]');
+    const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter"]');
     expect(fragment).to.not.be.null;
 
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
@@ -77,7 +77,7 @@ describe('Functional Test', () => {
     expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    const fragment = document.querySelector('a[href="/fragments/insertbefore"]');
+    const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertbefore"]');
     expect(fragment).to.not.be.null;
 
     expect(fragment.parentElement.parentElement.children[1].className).to.equal('marquee');
@@ -94,19 +94,19 @@ describe('Functional Test', () => {
     expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.exist;
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    const fragmentResp = await readFile({ path: './mocks/fragmentReplaced.plain.html' });
-    const inlineFragmentResp = await readFile({ path: './mocks/inlineFragReplaced.plain.html' });
+    const fragmentResp = await readFile({ path: './mocks/fragments/fragmentReplaced.plain.html' });
+    const inlineFragmentResp = await readFile({ path: './mocks/fragments/inlineFragReplaced.plain.html' });
 
     window.fetch = stub();
-    window.fetch.withArgs('http://localhost:2000/fragments/fragmentreplaced.plain.html')
+    window.fetch.withArgs('http://localhost:2000/test/features/personalization/mocks/fragments/fragmentReplaced.plain.html')
       .returns(getFetchPromise(fragmentResp, 'text'));
-    window.fetch.withArgs('http://localhost:2000/fragments/inline-fragmentreplaced.plain.html')
+    window.fetch.withArgs('http://localhost:2000/test/features/personalization/mocks/fragments/inlineFragReplaced.plain.html')
       .returns(getFetchPromise(inlineFragmentResp, 'text'));
 
     const replacemeFrag = document.querySelector('a[href="/fragments/replaceme"]');
     await initFragments(replacemeFrag);
     expect(document.querySelector('a[href="/fragments/replaceme"]')).to.be.null;
-    expect(document.querySelector('div[data-path="/fragments/fragmentreplaced"]')).to.exist;
+    expect(document.querySelector('div[data-path="/test/features/personalization/mocks/fragments/fragmentReplaced"]')).to.exist;
 
     const inlineReplacemeFrag = document.querySelector('a[href="/fragments/inline-replaceme#_inline"]');
     await initFragments(inlineReplacemeFrag);

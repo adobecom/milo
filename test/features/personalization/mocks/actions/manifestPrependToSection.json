@@ -4,11 +4,11 @@
   "limit": 5,
   "data": [
     {
-      "action": "replacePage",
-      "selector": "",
+      "action": "prependToSection",
+      "selector": "section2",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/test/features/personalization/mocks/fragments/replacePage"
+      "chrome": "/test/features/personalization/mocks/fragments/prependToSection"
     }
   ],
   ":type": "sheet"

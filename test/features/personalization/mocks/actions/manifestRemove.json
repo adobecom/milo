@@ -12,6 +12,16 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "remove",
+      "selector": "/fragments/removeme",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "yes",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"
