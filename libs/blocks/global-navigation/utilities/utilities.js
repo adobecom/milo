@@ -294,18 +294,11 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
-
     const fragPromises = inlineFrags.map((link) => {
-      // Replacing paragraphs should happen in the fragment module
-      // https://jira.corp.adobe.com/browse/MWPW-141039
-      if (link.parentElement && link.parentElement.nodeName === 'P') {
-        const div = document.createElement('div');
-        link.parentElement.replaceWith(div);
-        div.appendChild(link);
-      }
       link.href = getFederatedUrl(link.href);
       return loadInlineFrags(link);
     });
+
     await Promise.all(fragPromises);
   }
 
