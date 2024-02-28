@@ -70,21 +70,8 @@ export default async function init(a) {
   }
 
   const path = new URL(a.href).pathname;
-  if (expFragments) {
-    const { replace, remove } = expFragments;
-    if (remove?.[path]) {
-      if (!mep?.preview) {
-        a.parentElement.dataset.removedManifestId = remove[path].manifestPath;
-      } else {
-        a.parentElement.remove();
-      }
-      return;
-    }
-    if (replace?.[path]) {
-      a.href = replace[path].fragment;
-      relHref = replace[path].fragment;
-      a.dataset.manifestId = replace[path].manifestPath;
-    }
+  if (expFragments?.[path] && mep) {
+    relHref = mep.handleFragmentCommand(expFragments[path], a, mep);
   }
 
   if (isCircularRef(relHref)) {

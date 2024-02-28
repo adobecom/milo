@@ -126,8 +126,6 @@ const createFrag = (el, url, manifestId) => {
 
 const GLOBAL_CMDS = [
   'insertscript',
-  'replacefragment',
-  'removefragment',
   'replacepage',
   'updatemetadata',
   'useblockcode',
@@ -156,18 +154,13 @@ const COMMANDS = {
   },
 };
 
-function checkActionType(selector, action) {
-  let finalAction = action;
-  let actionType = 'global';
-  if (GLOBAL_CMDS.includes(`${action}fragment`) && selector.includes('/fragments/')
+function checkSelectorType(selector) {
+  let selectorType = 'css';
+  if (selector.includes('/fragments/')
     && (selector.startsWith('/') || selector.startsWith('http'))) {
-    finalAction = `${action}fragment`;
-  } else if (finalAction in COMMANDS || finalAction in CREATE_CMDS) {
-    actionType = 'command';
-  } else if (!GLOBAL_CMDS.includes(finalAction)) {
-    actionType = false;
+    selectorType = 'fragment';
   }
-  return { finalAction, actionType };
+  return selectorType;
 }
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
@@ -188,12 +181,11 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fSelector, fVal) => {
-  let selector = fSelector;
+const getBlockProps = (fVal) => {
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
-  selector = val?.split('/').pop();
+  const blockSelector = val?.split('/').pop();
   const { origin } = PAGE_URL;
   if (origin.includes('.hlx.') || origin.includes('localhost')) {
     if (val.startsWith('/libs/')) {
@@ -204,20 +196,26 @@ const getBlockProps = (fSelector, fVal) => {
       val = `${origin}${val}`;
     }
   }
-  return { selector, val };
+  return { blockSelector, blockTarget: val };
 };
 
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
-    let { selector, val } = i;
+    const { selector, val } = i;
     if (prop === 'blocks') {
-      ({ selector, val } = getBlockProps(selector, val));
       propMap[selector] = val;
-    } else if (val.toLowerCase() !== 'false' && val.toLowerCase() !== '') {
-      propMap[selector] = {
+    } else {
+      if (selector in propMap) return;
+      const action = {
         fragment: val,
         manifestPath: item.manifestPath,
+        action: i.action,
       };
+      // eslint-disable-next-line no-restricted-syntax
+      for (const key in propMap) {
+        if (propMap[key].fragment === selector) propMap[key] = action;
+      }
+      propMap[selector] = action;
     }
   });
   return propMap;
@@ -275,7 +273,7 @@ function getSelectedElement(selector, action) {
       if (Number.isNaN(section)) return null;
       return document.querySelector(`main > :nth-child(${section})`);
     }
-    if (selector.includes('/fragments/') && (selector.startsWith('/') || selector.startsWith('http'))) {
+    if (checkSelectorType(selector) === 'fragment') {
       const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
       if (fragment) {
         return fragment.parentNode;
@@ -312,25 +310,40 @@ const getVariantInfo = (line, variantNames, variants) => {
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
   variantNames.forEach((vn) => {
-    if (!line[vn]) return;
+    if (!line[vn] || line[vn].toLowerCase() === 'false') return;
 
     const variantInfo = {
       action,
       selector,
       pageFilter,
       target: line[vn],
+      selectorType: checkSelectorType(selector),
     };
 
-    const { actionType, finalAction } = checkActionType(selector, action);
-
-    if (actionType === 'global') {
-      variants[vn][finalAction] = variants[vn][finalAction] || [];
-
-      variants[vn][finalAction].push({
-        selector: normalizePath(selector),
+    if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
+      variants[vn].fragments.push({
+        selector: normalizePath(variantInfo.selector),
         val: normalizePath(line[vn]),
+        action,
       });
-    } else if (actionType === 'command') {
+    } else if (GLOBAL_CMDS.includes(action)) {
+      variants[vn][action] = variants[vn][action] || [];
+
+      if (action === 'useblockcode') {
+        const { blockSelector, blockTarget } = getBlockProps(line[vn]);
+        variants[vn][action].push({
+          selector: blockSelector,
+          val: blockTarget,
+          pageFilter,
+        });
+      } else {
+        variants[vn][action].push({
+          selector: normalizePath(selector),
+          val: normalizePath(line[vn]),
+          pageFilter,
+        });
+      }
+    } else if (action in COMMANDS || action in CREATE_CMDS) {
       variants[vn].commands.push(variantInfo);
     } else {
       /* c8 ignore next 2 */
@@ -351,7 +364,7 @@ export function parseConfig(data) {
       .filter((vn) => !MANIFEST_KEYS.includes(vn));
 
     variantNames.forEach((vn) => {
-      variants[vn] = { commands: [] };
+      variants[vn] = { commands: [], fragments: [] };
     });
 
     experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
@@ -531,9 +544,10 @@ const deleteMarkedEls = () => {
     .forEach((el) => el.remove());
 };
 
-const normalizeFragPaths = ({ selector, val }) => ({
+const normalizeFragPaths = ({ selector, val, action }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
+  action,
 });
 
 export async function runPersonalization(info, config) {
@@ -565,15 +579,13 @@ export async function runPersonalization(info, config) {
   }
   handleCommands(selectedVariant.commands, manifestId);
 
-  selectedVariant.replacefragment &&= selectedVariant.replacefragment.map(normalizeFragPaths);
-  selectedVariant.removefragment &&= selectedVariant.removefragment.map(normalizeFragPaths);
+  selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
   return {
     manifestPath,
     experiment,
     blocks: selectedVariant.useblockcode,
-    replacefragment: selectedVariant.replacefragment,
-    removefragment: selectedVariant.removefragment,
+    fragments: selectedVariant.fragments,
   };
 }
 
@@ -604,7 +616,7 @@ const createDefaultExperiment = (manifest) => ({
   manifest: manifest.manifestPath,
   variantNames: ['all'],
   selectedVariantName: 'default',
-  selectedVariant: { commands: [] },
+  selectedVariant: { commands: [], fragments: [] },
 });
 
 export async function applyPers(manifests) {
@@ -633,10 +645,7 @@ export async function applyPers(manifests) {
 
   config.experiments = experiments;
   config.expBlocks = consolidateObjects(results, 'blocks');
-  config.expFragments = {
-    replace: consolidateObjects(results, 'replacefragment'),
-    remove: consolidateObjects(results, 'removefragment'),
-  };
+  config.expFragments = consolidateObjects(results, 'fragments');
 
   const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
@@ -651,4 +660,20 @@ export async function applyPers(manifests) {
   });
   if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  config.mep.handleFragmentCommand = (command, a, mep) => {
+    const { action, fragment, manifestPath } = command;
+    if (action === 'replace') {
+      a.href = fragment;
+      if (!mep?.preview) a.dataset.manifestId = manifestPath;
+      return fragment;
+    }
+    if (action === 'remove') {
+      if (!mep?.preview) {
+        a.parentElement.dataset.removedManifestId = manifestPath;
+      } else {
+        a.parentElement.remove();
+      }
+    }
+    return false;
+  };
 }
