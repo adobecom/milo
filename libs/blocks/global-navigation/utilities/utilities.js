@@ -247,7 +247,11 @@ export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
 
       [`${origin}${pathname}`, pathname].forEach((path) => {
         if (activeLink) return;
-        activeLink = area.querySelector(`a[href = '${path}'], a[href ^= '${path}?'], a[href ^= '${path}#']`);
+        const linkElements = area.querySelectorAll('a:not([data-modal-hash])');
+        activeLink = [...linkElements].find((el) => {
+          const regex = new RegExp(`^${path}(\\?[^#]*)?(#.*)?$`);
+          return regex.test(el.href);
+        });
       });
 
       if (!activeLink) return null;
