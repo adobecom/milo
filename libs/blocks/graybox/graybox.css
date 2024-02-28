@@ -1,0 +1,220 @@
+.graybox {
+  display: none;
+}
+
+.gb-no-change {
+  position: relative;
+}
+
+.gb-no-change::before {
+  content: "";
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0 0 0 / 45%);
+  pointer-events: none;
+}
+
+.gb-overlay {
+  position: relative;
+}
+
+.gb-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0 0 0 / 45%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.gb-no-click::before {
+  pointer-events: all;
+}
+
+body.gb-overlay::before {
+  position: fixed;
+}
+
+/* The elements that should appear above the overlay */
+.gb-changed {
+  position: relative;
+  z-index: 1001;
+}
+
+.graybox-container {
+  --border: 1px solid #707070;
+
+  position: fixed;
+  top: 15%;
+  right: 0;
+  z-index: 2001;
+}
+
+.graybox-container .gb-toggle {
+  position: absolute;
+  left: -40px;
+  width: 40px;
+  height: 58px;
+  background-color: white;
+  border: var(--border);
+  cursor: pointer;
+}
+
+.graybox-container .gb-toggle::before {
+  content: " ";
+  border-left: var(--border);
+  border-bottom: var(--border);
+  width: 8px;
+  height: 8px;
+  transform: rotate(140deg) scaleX(-1);
+  cursor: pointer;
+  display: block;
+  margin-left: 10px;
+  transition: transform 0.2s ease-in-out, margin-left 0.2s ease-in-out;
+  scale: 85%;
+}
+
+.graybox-container.open .gb-toggle::before {
+  transform: rotate(225deg) scaleX(1);
+  margin-left: 5px;
+}
+
+.graybox-container .graybox-menu {
+  display: grid;
+  grid-template-rows: 1fr 66px;
+  position: absolute;
+  right: 39px;
+  background-color: white;
+  width: 0;
+  overflow: hidden;
+  border: 0;
+  box-sizing: border-box;
+  border-radius: 3px;
+  border-top-right-radius: 0;
+}
+
+.graybox-container .graybox-menu.hide-devices {
+  grid-template-rows: 1fr 0;
+  border-bottom-right-radius: 0;
+}
+
+.graybox-container.open .graybox-menu {
+  min-width: 320px;
+  min-height: 60px;
+  border: var(--border);
+}
+
+.graybox-text {
+  padding: 16px;
+  font-weight: bold;
+  font-size: 24px;
+  color: #000;
+  line-height: 24px;
+}
+
+.graybox-text > p {
+  margin: 0;
+}
+
+.graybox-devices {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-content: center;
+  align-content: center;
+  justify-items: center;
+  padding: 16px;
+  column-gap: 10px;
+  height: 34px;
+  border-top: var(--border);
+}
+
+.graybox-devices > a {
+  box-sizing: border-box;
+  width: 85px;
+  text-align: center;
+  color: #505050;
+  border-color: #505050;
+  cursor: default;
+}
+
+.graybox-devices > a:hover {
+  background-color: #505050;
+  text-decoration: none;
+}
+
+.dialog-modal.graybox-modal {
+  z-index: 2000;
+}
+
+.dialog-modal.graybox-modal.mobile > div {
+  overflow-x: hidden;
+  border-radius: 88px;
+}
+
+.dialog-modal.graybox-modal.tablet > div {
+  overflow-x: hidden;
+  border-radius: 88px;
+}
+
+.dialog-modal.graybox-modal.mobile .graybox-device-border {
+  position: absolute;
+  pointer-events: none;
+  width: 418px;
+  height: 863px;
+}
+
+.dialog-modal.graybox-modal.tablet .graybox-device-border {
+  position: absolute;
+  pointer-events: none;
+  width: 859px;
+  height: 1205px;
+}
+
+.dialog-modal.graybox-modal.mobile {
+  width: 417px;
+  border-radius: 66px;
+  background: rgb(50 50 50);
+  overflow-y: hidden;
+}
+
+.dialog-modal.graybox-modal.tablet {
+  width: 858px;
+  border-radius: 66px;
+  background: rgb(50 50 50);
+  border-top-right-radius: 60px 78px;
+  border-bottom-right-radius: 51px 69px;
+  border-bottom-left-radius: 55px 84px;
+  overflow-y: hidden;
+}
+
+.dialog-modal.graybox-modal.mobile iframe {
+  width: 411px;
+  height: 852px;
+  padding-left: 16px;
+  margin-left: 4px;
+}
+
+.dialog-modal.graybox-modal.tablet iframe {
+  width: 838px;
+  height: 1194px;
+  padding-left: 26px;
+  margin-left: 6px;
+  margin-top: 62px;
+  margin-bottom: -62px;
+}
+
+.dialog-modal.graybox-modal button.dialog-close {
+  display: none;
+}
+
+.modal-curtain.graybox-curtain.is-open {
+  background: rgb(50 50 50);
+  z-index: 1999;
+}

@@ -34,6 +34,7 @@ const MILO_BLOCKS = [
   'featured-article',
   'global-footer',
   'global-navigation',
+  'graybox',
   'footer',
   'gnav',
   'how-to',
