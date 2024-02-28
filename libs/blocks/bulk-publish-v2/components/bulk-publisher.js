@@ -141,7 +141,7 @@ class BulkPublish2 extends LitElement {
       startEdit: (click = null) => {
         this.editing = !this.editing;
         if (click) {
-          /* c8 ignore next 2 */
+          /* c8 ignore next 3 */
           if (this.jobErrors.length === 1) {
             this.jobErrors = false;
           } else {
