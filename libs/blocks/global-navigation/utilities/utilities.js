@@ -241,7 +241,7 @@ export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
     () => activeLinkFound,
     (val) => { activeLinkFound = !!val; },
     (area) => {
-      if (hasActiveLink() || !(area instanceof HTMLElement)) return null;
+      if (hasActiveLink() || !(area instanceof HTMLElement) || area.querySelector('a').dataset.modalHash) return null;
       const { origin, pathname } = window.location;
       let activeLink;
 
