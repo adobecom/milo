@@ -3,18 +3,48 @@ import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
 const SEGMENTS_MAP = {
   stage: {
-    '0668f6cf-a981-433e-af60-ec967ef90423': 'acrobat',
-    '763a8323-2087-42fc-acd8-aac45dbf7532': 'sign',
-    'ecbe1189-f9fe-4a89-9823-c5ae77e8bfd9': 'illustrator',
-    'f6622923-afab-4f5e-a1fe-fcc4103e7906': 'premiere',
-    '28fc7790-6273-4803-a53e-641ea3aa0692': 'photoshop',
-    '604da2f2-00f8-4a67-b42d-5b21107eeb93': 'lightroom',
-    'a9765398-b8e6-4086-a7f5-d80c7e0a3eb2': 'helpx',
-    '510409d5-bf01-4ea9-a080-dd0b162ff854': 'firefly',
-    'b790a4d3-c1eb-4ce5-8313-20e225b1c7a8': 'express',
-    'fd3085a1-a77b-43fc-9f67-65092fc7bf49': 'stock',
-    '7199b3ea-600f-4035-ab62-86fe93dcafd5': 'commerce',
-    '6841adaf-9eb8-4c8e-90ef-c0eb711e0e55': 'creative-cloud',
+    source: {
+      '00000000-0000-0000-0000-000000000000': 'adobecom', // TODO: Update to final one
+      '00000000-0000-0000-0000-000000000001': 'business', // TODO: Update to final one
+      '7199b3ea-600f-4035-ab62-86fe93dcafd5': 'commerce',
+      '6841adaf-9eb8-4c8e-90ef-c0eb711e0e55': 'creative-cloud',
+      'b790a4d3-c1eb-4ce5-8313-20e225b1c7a8': 'express',
+      '510409d5-bf01-4ea9-a080-dd0b162ff854': 'firefly',
+      'a9765398-b8e6-4086-a7f5-d80c7e0a3eb2': 'helpx',
+      'fd3085a1-a77b-43fc-9f67-65092fc7bf49': 'stock',
+      '604da2f2-00f8-4a67-b42d-5b21107eeb93': 'lightroom',
+      '28fc7790-6273-4803-a53e-641ea3aa0692': 'photoshop',
+      '0668f6cf-a981-433e-af60-ec967ef90423': 'acrobat',
+      'f6622923-afab-4f5e-a1fe-fcc4103e7906': 'premiere',
+      '763a8323-2087-42fc-acd8-aac45dbf7532': 'sign',
+      'ecbe1189-f9fe-4a89-9823-c5ae77e8bfd9': 'illustrator',
+    },
+    attributes: {
+      'adobecom': ['news', 'community', 'plan'],
+      'business': ['analytics', 'solution', 'adobe experience manager'],
+      'commerce': ['apps', 'digital design', 'photography'],
+      'creative-cloud': ['apps', 'digital design', 'photography'],
+      'express': ['create', 'quickactions', 'video'],
+      'firefly': ['generative', 'artificial intelligence', 'images'],
+      'helpx': ['knowledgebase', 'install', 'help'],
+      'stock': ['images', 'vector', 'video'],
+      'lightroom': ['photo editing', 'image adjust', 'enhancing color'],
+      'photoshop': ['generative', 'image adjust', 'compositing'],
+      'acrobat': ['pdf', 'convert document', 'reader'],
+      'premiere': ['video editing', 'visual effects', 'motion graphics'],
+      'sign': ['Pdf', 'signature', 'document'],
+      'illustrator': ['drawing', 'vector', 'logo design'],
+      'adobecom,commerce': ['accounts', 'legal', 'offer'],
+      'adobecom,creative-cloud': ['creativecloud', 'apps', 'learn'],
+      'adobecom,express': ['image', 'create', 'templates'],
+      'adobecom,firefly': ['accounts', 'news', 'offer'],
+      'adobecom,helpx': ['cloud', 'install', 'help'],
+      'commerce,creative-cloud': ['discover', 'apps', 'business'],
+      'creative-cloud,helpx': ['creativecloud', 'help', 'apps'],
+      'adobecom,commerce,creative-cloud': ['business', 'apps', 'learn'],
+      'adobecom,creative-cloud,helpx': ['creativecloud', 'help', 'support'],
+      'creative-cloud,stock': ['discover', 'images', 'education'],
+    }
   },
   prod: {
     '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'PHSP',
@@ -29,6 +59,7 @@ const SEGMENTS_MAP = {
     'ab713720-91a2-4e8e-b6d7-6f613e049566': 'Any CC product without stock add-ons active users',
     '934fdc1d-7ba6-4644-908b-53e01e550086': 'DC Paid Active entitlements',
   },
+  attributes: {}
 };
 
 const ALLOY_TIMEOUT = 500;
@@ -201,10 +232,60 @@ const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((r
   }, { once: true });
 });
 
+function getCombinations(arr, data, start, end, index, r, ans){
+  if(!arr.length){
+    return;
+  }
+  if(index === r){
+    ans.push(data.slice(0, r));
+  }
+
+  for (let i=start; i<=end && end-i+1 >= r-index; i++){
+    data[index] = arr[i];
+    getCombinations(arr, data, i+1, end, index+1, r, ans);
+  }
+}
+
+function check(key, s){
+  const linkToValues = isProd() ? SEGMENTS_MAP.prod.attributes : SEGMENTS_MAP.stage.attributes;
+  if(linkToValues[key]){
+    let temp = linkToValues[key];
+    for(let attribute of temp){
+      s.add(attribute);
+    }
+  }
+}
+
+function getAttributes(mappedUserSegments){
+  let s = new Set();
+  let len = mappedUserSegments.length;
+  let singles = [];
+  let pairs = [];
+  let triplets = [];
+
+  getCombinations(mappedUserSegments, new Array(1), 0, len, 0, 1, singles);
+  getCombinations(mappedUserSegments, new Array(2),0, len, 0, 2, pairs);
+  getCombinations(mappedUserSegments, new Array(3), 0, len, 0, 3, triplets);
+
+  for(let i = 0; i < singles.length; i++)
+    check(singles[i], s);
+
+  for(let i = 0; i < pairs.length; i++){
+    let pair = pairs[i].sort();
+    check(`${pair[0]},${pair[1]}`, s);
+  }
+
+  for(let i = 0; i < triplets.length; i++){
+    let triplet = triplets[i].sort();
+    check(`${triplet[0]},${triplet[1]},${triplet[2]}`, s);
+  }
+  return Array.from(s);
+}
+
 // See https://experienceleague.adobe.com/docs/experience-platform/destinations/catalog/personalization/custom-personalization.html?lang=en
 // for more information on how to integrate with this API.
 async function segmentApiEventHandler(e) {
-  const SEGMENT_MAP = isProd() ? SEGMENTS_MAP.prod : SEGMENTS_MAP.stage;
+  const SEGMENT_MAP = isProd() ? SEGMENTS_MAP.prod.source : SEGMENTS_MAP.stage.source;
   if (e.detail?.type === 'pageView') {
     const mappedUserSegments = [];
     const userSegments = e.detail?.result?.destinations?.[0]?.segments || [];
@@ -214,7 +295,11 @@ async function segmentApiEventHandler(e) {
       }
     }
     if (mappedUserSegments.length) {
-      segments = mappedUserSegments;
+      try {
+        segments = getAttributes(mappedUserSegments);
+      } catch(e) {
+        log(`${getAttributes}: Unable to parse mapped user segments: ${e} ${mappedUserSegments} `, LANA_OPTIONS);
+      }
       // eslint-disable-next-line no-use-before-define
       selectedId = await getMarqueeId();
       // eslint-disable-next-line no-use-before-define
