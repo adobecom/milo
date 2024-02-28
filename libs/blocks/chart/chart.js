@@ -123,7 +123,8 @@ export function processMarkData(series, xUnit) {
 
 export async function fetchData(link) {
   const params = new URLSearchParams(window.location.search);
-  const resp = await fetch(link.href.toLowerCase(), { cache: params.get('cache') || 'default' });
+  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  const resp = await fetch(link.href.toLowerCase(), { cache });
 
   if (!resp.ok) return {};
 

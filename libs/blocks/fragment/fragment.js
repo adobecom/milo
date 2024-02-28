@@ -81,7 +81,8 @@ export default async function init(a) {
   }
 
   const params = new URLSearchParams(window.location.search);
-  const resp = await fetch(`${a.href}.plain.html`, { cache: params.get('cache') || 'default' });
+  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  const resp = await fetch(`${a.href}.plain.html`, { cache });
 
   if (!resp.ok) {
     window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
