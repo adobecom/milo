@@ -741,7 +741,8 @@ function loadFallback(marquee, metadata) {
 }
 
 function shouldLoadFallback() {
-  return urlParams.get('previewFallback') || urlParams.get('martech');
+  return urlParams.get('previewFallback') === 'true'
+    || (urlParams.get('martech') === 'off' && !urlParams.get('marqueeId'));
 }
 
 function authorPreview() {
