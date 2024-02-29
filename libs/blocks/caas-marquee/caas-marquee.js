@@ -136,7 +136,7 @@ function getImageOrVideo(el) {
 function parseBrick(el) {
   const [headingEl, descriptionEl, ctaEl, imageEl] = el?.querySelectorAll('p') || [];
   const brick = {
-    heading: headingEl?.querySelector('strong')?.textContent || '',
+    heading: headingEl?.querySelector('h1, h2, h3, h4, strong')?.textContent || '',
     description: descriptionEl?.innerHTML || '',
     ...parseCtas(ctaEl),
     image: getImageOrVideo(imageEl),
@@ -398,8 +398,10 @@ function parseEncodedBrick(data) {
  */
 function normalizeData(data) {
   const images = {
-    tablet: getArbitraryByKey(data, 'imageTablet'),
-    desktop: getArbitraryByKey(data, 'imageDesktop'),
+    tablet: getArbitraryByKey(data, 'imageTablet') === 'undefined'
+      ? data.styles?.backgroundImage : '',
+    desktop: getArbitraryByKey(data, 'imageDesktop') === 'undefined'
+      ? data.styles?.backgroundImage : '',
   };
 
   const metadata = {
@@ -568,9 +570,9 @@ function getFgContent(metadata, size, cta, cta2) {
     <h1 class="heading-${HEADING[size]}">${metadata.title}</h1>
     <p class="body-${TEXT[size]}">${metadata.description}</p>
     <p class="action-area">
-      ${cta} 
+      ${cta}
       ${cta2}
-      </p> 
+      </p>
   </div>`;
 }
 

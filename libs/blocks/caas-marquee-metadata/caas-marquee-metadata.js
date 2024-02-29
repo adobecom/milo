@@ -45,7 +45,7 @@ function getImageOrVideo(el) {
 function parseBrick(el) {
   const [headingEl, descriptionEl, ctaEl, imageEl] = el?.querySelectorAll('p') || [];
   const brick = {
-    heading: headingEl?.querySelector('strong')?.textContent || '',
+    heading: headingEl?.querySelector('h1, h2, h3, h4, strong')?.textContent || '',
     description: descriptionEl?.innerHTML || '',
     ...parseCtas(ctaEl),
     image: getImageOrVideo(imageEl),
@@ -85,7 +85,7 @@ export default function init(el) {
       imageDesktop: ${metadata.imagedesktop},
       backgroundColor: ${metadata.backgroundcolor},
       leftBrick: ${metadata.leftbrick},
-      rightBrick: ${metadata.rightbrick},      
+      rightBrick: ${metadata.rightbrick},
       variant: ${metadata.variant}`.trim(),
     tags: 'caas:content-type/promotion',
     cta1url: `${metadata.cta1url}`,
