@@ -36,31 +36,27 @@ export const getCookie = (name) => document.cookie
   ?.split('=')[1];
 
 /* c8 ignore next 16 */
-const geo2jsonp = (callback, errorcallback) => {
+const geo2jsonp = (callback, errorCallback) => {
   // Setup a unique name that can be called & destroyed
-  try {
-    const callbackName = `jsonp_${Math.round(100000 * Math.random())}`;
+  const callbackName = `jsonp_${Math.round(100000 * Math.random())}`;
 
-    const script = document.createElement('script');
-    script.src = `https://geo2.adobe.comasdf/json/?callback=${callbackName}`;
+  const script = document.createElement('script');
+  script.src = `https://geo2.adobe.comasdf/json/?callback=${callbackName}`;
 
-    // Define the function that the script will call
-    window[callbackName] = (data) => {
-      delete window[callbackName];
-      document.body.removeChild(script);
-      callback(data);
-    };
+  // Define the function that the script will call
+  window[callbackName] = (data) => {
+    delete window[callbackName];
+    document.body.removeChild(script);
+    callback(data);
+  };
 
-    script.onerror = () => {
-      delete window[callbackName];
-      document.body.removeChild(script);
-      errorcallback('Error while trying to get akamai code from geo2.adobe.com');
-    };
+  script.onerror = () => {
+    delete window[callbackName];
+    document.body.removeChild(script);
+    errorCallback('Error while trying to get akamai code from geo2.adobe.com');
+  };
 
-    document.body.appendChild(script);
-  } catch (e) {
-    errorcallback(e);
-  }
+  document.body.appendChild(script);
 };
 
 const getAkamaiCode = () => new Promise((resolve, reject) => {
