@@ -17,10 +17,10 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function handleHeading(headingCols) {
+function handleHeading(table, headingCols) {
+  const isPriceBottom = table.classList.contains('pricing-bottom');
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
-
     if (!col.innerHTML) {
       col.classList.add('hidden');
       return;
@@ -35,17 +35,30 @@ function handleHeading(headingCols) {
       col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
       let textStartIndex = 0;
-      if (elements[0]?.querySelector('img')) {
+      const iconTile = elements[0]?.querySelector('img');
+      if (iconTile) {
         textStartIndex += 1;
+        if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
       }
       elements[textStartIndex]?.classList.add('tracking-header');
+      const pricingElem = elements[textStartIndex + 1];
+      let bodyElem = elements[textStartIndex + 2];
 
-      if (elements[textStartIndex + 1]) {
-        elements[textStartIndex + 1].classList.add('pricing');
+      if (pricingElem) {
+        pricingElem.classList.add('pricing');
+        if (isPriceBottom) {
+          pricingElem.parentNode.insertBefore(
+            elements[textStartIndex + 2],
+            elements[textStartIndex + 1],
+          );
+          bodyElem = elements[textStartIndex + 1];
+        }
+      }
+      if (bodyElem) {
+        bodyElem.classList.add('body');
       }
 
       decorateButtons(col, 'button-l');
-
       const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
       col.append(buttonsWrapper);
       const buttons = col.querySelectorAll('.con-button');
@@ -54,6 +67,16 @@ function handleHeading(headingCols) {
         const btnWrapper = btn.closest('P');
         buttonsWrapper.append(btnWrapper);
       });
+
+      const row1 = createTag('div', { class: 'table-heading-content' });
+      const row2 = createTag('div', { class: 'table-heading-button' });
+      const row1LastIdx = isPriceBottom ? 3 : 4;
+      [...elements].forEach((e, idx) => {
+        if (idx < row1LastIdx) row1.appendChild(e);
+        else row2.appendChild(e);
+      });
+      col.innerHTML = '';
+      col.append(row1, row2);
     }
   });
 }
@@ -92,7 +115,7 @@ function handleHighlight(table) {
     firstRow.classList.add('row-heading');
   }
 
-  handleHeading(headingCols);
+  handleHeading(table, headingCols);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
@@ -113,10 +136,21 @@ function handleExpand(e) {
   }
 }
 
+function handleTitleText(cell) {
+  if (cell.querySelector('.table-title-text')) return;
+  const textSpan = createTag('span', { class: 'table-title-text' });
+  while (cell.firstChild) textSpan.append(cell.firstChild);
+  cell.append(textSpan);
+  const iconTooltip = textSpan.querySelector('.icon-info, .icon-tooltip, .milo-tooltip');
+  if (!iconTooltip) return;
+  cell.append(iconTooltip.closest('em') || iconTooltip);
+}
+
 /**
  * @param {*} sectionParams that is from init()
  * @returns {boolean expandSection} that is the only variable get updated from sectionParams
  */
+
 function handleSection(sectionParams) {
   const {
     row, index, allRows, rowCols, isMerch, isCollapseTable, isHighlightTable,
@@ -139,6 +173,7 @@ function handleSection(sectionParams) {
         merchCol.setAttribute('role', 'rowheader');
       });
     } else {
+      handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
     }
@@ -189,6 +224,7 @@ function handleSection(sectionParams) {
       });
     } else {
       const sectionRowTitle = rowCols[0];
+      handleTitleText(sectionRowTitle);
       sectionRowTitle.classList.add('section-row-title');
     }
   }

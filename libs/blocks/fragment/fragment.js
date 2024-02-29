@@ -37,9 +37,10 @@ const setManifestIdOnChildren = (sections, manifestId) => {
   );
 };
 
-const insertInlineFrag = (sections, a) => {
+const insertInlineFrag = (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
+  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
     a.parentElement.replaceWith(...fragChildren);
   } else {
@@ -61,18 +62,24 @@ export default async function init(a) {
   const { expFragments, decorateArea } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
-  if (expFragments?.[relHref]) {
-    a.href = expFragments[relHref];
-    relHref = expFragments[relHref];
+
+  if (a.href.includes('#_inline')) {
+    inline = true;
+    a.href = a.href.replace('#_inline', '');
+    relHref = relHref.replace('#_inline', '');
   }
+
+  const path = new URL(a.href).pathname;
+  if (expFragments?.[path]) {
+    a.href = expFragments[path];
+    relHref = expFragments[path];
+  }
+
   if (isCircularRef(relHref)) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
   }
-  if (a.href.includes('#_inline')) {
-    inline = true;
-    a.href = a.href.replace('#_inline', '');
-  }
+
   const resp = await fetch(`${a.href}.plain.html`);
 
   if (!resp.ok) {
@@ -109,7 +116,7 @@ export default async function init(a) {
   }
 
   if (inline) {
-    insertInlineFrag(sections, a);
+    insertInlineFrag(sections, a, relHref);
   } else {
     a.parentElement.replaceChild(fragment, a);
     await loadArea(fragment);

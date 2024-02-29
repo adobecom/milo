@@ -108,6 +108,10 @@ const defaultOptions = {
       '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   filterBuildPanel: {
     automatic: 'Automatic',
@@ -185,6 +189,7 @@ const defaultOptions = {
     milo: 'Milo',
     northstar: 'Northstar',
     workfront: 'Workfront',
+    'bacom-blog': 'Bacom Blog',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
   titleHeadingLevel: {

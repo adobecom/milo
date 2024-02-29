@@ -14,7 +14,7 @@
   --feds-borderColor--light: #eaeaea;
   --feds-borderColor-menu--light: #e1e1e1;
   /* Top navigation - colors */
-  --feds-color-adobeBrand: #fa0f00;
+  --feds-color-adobeBrand: #EB1000;
   --feds-color-headline--light: #505050;
   /* Top navigation - misc */
   --feds-radius-utilityIcon: 4px;
@@ -97,6 +97,10 @@
   left: 18px;
 }
 
+.feds-navLink[class *= '-gradient'] {
+  display: none;
+}
+
 .feds-navLink-image,
 .feds-navLink-description {
   display: none;
@@ -115,14 +119,51 @@
     padding: 0 12px;
   }
 
+  .feds-navItem--active > .feds-navLink {
+    position: relative;
+    font-weight: 700;
+  }
+
+  .feds-navItem--active > .feds-navLink:only-child {
+    cursor: default;
+  }
+
+  .feds-navItem--active > .feds-navLink:only-child:hover,
+  .feds-navItem--active > .feds-navLink:only-child:focus {
+    color: var(--feds-color-link--light);
+  }
+
+  .feds-navItem--active > .feds-navLink:before {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-bottom: 2px solid #2c2c2c;
+    content: "";
+  }
+
+  .feds-navItem--active > .feds-navLink:before {
+    margin: 0 12px;
+  }
+
+  .feds-navItem--activeDeferred > .feds-navLink {
+    padding: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
   .feds-topnav--overflowing .feds-navLink,
   .feds-topnav--overflowing .feds-navLink--hoverCaret,
   [dir = "rtl"] .feds-topnav--overflowing .feds-navLink--hoverCaret {
     padding: 0 8px;
   }
 
-  .feds-navLink--hoverCaret {
-    position: static;
+  .feds-topnav--overflowing .feds-navItem--active > .feds-navLink:before {
+    margin: 0 8px;
+  }
+
+  .feds-topnav--overflowing .feds-navItem--activeDeferred > .feds-navLink {
+    padding: 0;
   }
 
   .feds-navLink--hoverCaret:hover,
@@ -179,11 +220,22 @@
 
   /* Nav Link special styles for A/B test */
   .feds-navLink[class *= '-gradient'] {
+    display: flex;
     border-radius: 4px;
+  }
+
+  .feds-menu-column--group .feds-navLink[class *= '-gradient'] {
+    padding-left: 8px;
+    padding-right: 8px;
+    column-gap: 8px;
   }
 
   .feds-navLink[class *= '-gradient']:not(:first-child) {
     margin-top: 12px;
+  }
+
+  .feds-menu-column--group .feds-navLink[class *= '-gradient'] picture {
+    max-width: 18px;
   }
 
   .feds-navLink[class *= '-gradient'] .feds-navLink-title {

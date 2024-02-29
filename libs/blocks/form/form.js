@@ -8,6 +8,8 @@ const RULE_OPERATORS = {
   lessThanOrEqual: '<=',
   greaterThan: '>',
   greaterThanOrEqual: '>=',
+  includes: 'inc',
+  excludes: 'exc',
 };
 
 function createSelect({ field, placeholder, options, defval, required }) {
@@ -25,12 +27,12 @@ function createSelect({ field, placeholder, options, defval, required }) {
 
 function constructPayload(form) {
   const payload = {};
-  [...form.elements].forEach((fe) => {
+  [...form.elements].filter((el) => el.tagName !== 'BUTTON').forEach((fe) => {
     if (fe.type.match(/(?:checkbox|radio)/)) {
       if (fe.checked) {
         payload[fe.name] = payload[fe.name] ? `${fe.value}, ${payload[fe.name]}` : fe.value;
-      } else if (!payload[fe.name] && fe.closest('.group-container').classList.contains('required')) {
-        payload[fe.name] = 'required-not-checked';
+      } else {
+        payload[fe.name] = payload[fe.name] || '';
       }
       return;
     }
@@ -44,16 +46,17 @@ async function submitForm(form) {
   const keys = Object.keys(payload);
   payload.timestamp = new Date().toJSON();
   for (const key of keys) {
-    if (payload[key] === 'required-not-checked') {
+    const field = form.querySelector(`[data-field-id=${key}]`);
+    if (!payload[key] && field.querySelector('.group-container.required')) {
       const el = form.querySelector(`input[name="${key}"]`);
-      el.setCustomValidity('This box must be checked');
+      el.setCustomValidity('A selection is required');
       el.reportValidity();
       const cb = () => {
         el.setCustomValidity('');
         el.reportValidity();
-        el.removeEventListener('input', cb);
+        field.removeEventListener('input', cb);
       };
-      el.addEventListener('input', cb);
+      field.addEventListener('input', cb);
       return false;
     }
     payload[key] = sanitizeComment(payload[key]);
@@ -193,6 +196,12 @@ function applyRules(form, rules) {
         break;
       case RULE_OPERATORS.notEqual:
         force = (payload[key] !== value);
+        break;
+      case RULE_OPERATORS.includes:
+        force = (payload[key].split(',').map((s) => s.trim()).includes(value));
+        break;
+      case RULE_OPERATORS.excludes:
+        force = (!payload[key].split(',').map((s) => s.trim()).includes(value));
         break;
       case RULE_OPERATORS.lessThan:
         force = processRule(tf, operator, payload[key], value, (a, b) => a < b);

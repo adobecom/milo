@@ -15,7 +15,50 @@ span.placeholder-resolved[data-template="strikethrough"], span.price.price-strik
   visibility: inherit;
 }
 
+a[is='checkout-link'] > span {
+  display: inline-block;
+  text-align: center;
+  min-width: 66px;
+}
+
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";
+}
+
+@media (max-width: 1200px) {
+  #checkout-link-modal {
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+#checkout-link-modal {
+  display: flex;
+}
+
+#checkout-link-modal iframe {
+  flex: 1;
+}
+
+#checkout-link-modal iframe.d2p {
+  max-height: 850px;
+}
+
+.upgrade-flow-content {
+  display: flex;
+  height: 100%;
+}
+
+.upgrade-flow-content .loading {
+  visibility: hidden;
+}
+
+.upgrade-flow-content sp-theme {
+  width: max-content;
+  height: max-content;
+  left: 50%; 
+  position: relative; 
+  top: 50%; 
+  transform: translate(-50%,-50%);
 }

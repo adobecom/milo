@@ -30,11 +30,11 @@ export const OptionCard = ({
 
   const imageHtml = html`
     <div class="quiz-option-image" 
-      style="background-image: url('${image}')" loading="lazy">
+      style="background-image: url('${image}'); background-size: cover" loading="lazy">
     </div>`;
 
   const titleHtml = html`
-    <h3 class="quiz-option-title">${title}</h3>
+    <h2 class="quiz-option-title">${title}</h2>
   `;
 
   const textHtml = html`
@@ -94,7 +94,7 @@ export const GetQuizOption = ({
           aria-label="Next" 
           class="quiz-button" 
           daa-ll="${btnAnalyticsData}"
-          onClick=${() => { handleOnNextClick(selectedCards); }}>
+          onClick=${() => { handleOnNextClick(); }}>
             <span class="quiz-button-label">${btnText}</span>
         </button>
       </div>

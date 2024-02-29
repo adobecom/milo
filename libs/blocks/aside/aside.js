@@ -81,10 +81,12 @@ function decorateMedia(el) {
 }
 
 function formatPromoButton(el) {
-  if (!(el.classList.contains('promobar') && el.classList.contains('popup'))) return;
+  if (!el.classList.contains('promobar')) return;
   el.querySelectorAll('.action-area').forEach((aa) => {
-    aa.querySelectorAll('.con-button:not(.outline)').forEach((btn) => {
-      btn.classList.add('fill');
+    aa.querySelectorAll('.con-button').forEach((btn) => {
+      btn.classList.add('button-l');
+      if (!el.classList.contains('popup')) return;
+      if (!btn.classList.contains('outline')) btn.classList.add('fill');
     });
   });
 }

@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
-import { NON_TRACKED_MANIFEST_TYPE } from './personalization.js';
+import { NON_TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -113,7 +113,11 @@ function addPillEventListeners(div) {
     a.addEventListener('click', () => {
       if (a.getAttribute('href')) return false;
       const w = window.open('', '_blank');
-      w.document.write('<html><head></head><body>Please wait while we redirect you</body></html>');
+      w.document.write(`<html><head></head><body>
+        Please wait while we redirect you. 
+        If you are not redirected, please check that you are signed into the AEM sidekick
+        and try again.
+        </body></html>`);
       w.document.close();
       w.focus();
       getEditManifestUrl(a, w);
@@ -129,7 +133,7 @@ function createPreviewPill(manifests) {
   div.classList.add('mep-hidden');
   let manifestList = '';
   const manifestParameter = [];
-  manifests.forEach((manifest) => {
+  manifests?.forEach((manifest) => {
     const {
       variantNames,
       manifestPath = manifest.manifest,
@@ -169,7 +173,7 @@ function createPreviewPill(manifests) {
       <label for="${manifestPath}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
-    const manifestFileName = manifestPath.split('/').pop();
+    const manifestFileName = getFileName(manifestPath);
     const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
     const scheduled = manifest.event
       ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
@@ -210,13 +214,13 @@ function createPreviewPill(manifests) {
 
   div.innerHTML = `
     <div class="mep-manifest mep-badge">
-      <div class="mep-manifest-count">${manifests.length} Manifest(s) served</div>
       <span class="mep-open"></span>
+      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>
     </div>
     <div class="mep-popup">
     <div class="mep-popup-header">
       <div>
-        <h4>${manifests.length} Manifest(s) served</h4>
+        <h4>${manifests?.length || 0} Manifest(s) served</h4>
         <span class="mep-close"></span>
         <div class="mep-manifest-page-info-title">Page Info:</div>
         <div>Target integration feature is ${targetOnText}</div>
@@ -257,30 +261,36 @@ function createPreviewPill(manifests) {
   addPillEventListeners(div);
 }
 
-function addMarkerData(manifests) {
-  manifests.forEach((manifest) => {
-    manifest?.selectedVariant.useblockcode?.forEach((item) => {
-      if (item.selector) {
-        document.querySelectorAll(`.${item.selector}`).forEach((el) => {
-          el.dataset.codeManifestId = manifest.manifest;
-        });
-      }
+function addHighlightData(manifests) {
+  manifests.forEach(({ selectedVariant, manifest }) => {
+    const manifestName = getFileName(manifest);
+
+    const updateManifestId = (selector, prop = 'manifestId') => {
+      document.querySelectorAll(selector).forEach((el) => (el.dataset[prop] = manifestName));
+    };
+
+    selectedVariant?.replacefragment?.forEach(
+      ({ val }) => updateManifestId(`[data-path*="${val}"]`),
+    );
+
+    selectedVariant?.useblockcode?.forEach(({ selector }) => {
+      if (selector) updateManifestId(`.${selector}`, 'codeManifestId');
     });
-    manifest?.selectedVariant.updatemetadata?.forEach((item) => {
-      if (item.selector === 'gnav-source') {
-        document.querySelectorAll('header, footer').forEach((el) => {
-          el.dataset.manifestId = manifest.manifest;
-        });
-      }
+
+    selectedVariant?.updatemetadata?.forEach(({ selector }) => {
+      if (selector === 'gnav-source') updateManifestId('header, footer');
     });
+    // eslint-disable-next-line max-len
+    document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`)
+      .forEach((el) => (el.dataset.manifestId = manifestName));
   });
 }
 
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, experiments } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  addMarkerData(experiments);
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     createPreviewPill(experiments);
+    if (experiments) addHighlightData(experiments);
   }, { once: true });
 }

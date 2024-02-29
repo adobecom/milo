@@ -46,7 +46,7 @@ class Search {
 
   async getLabels() {
     this.labels = {};
-    [this.labels.search, this.labels.clearResults, this.labels.tryAdvancedSearch] = await replaceKeyArray(['search', 'clear-results', 'try-advanced-search'], getFedsPlaceholderConfig(), 'feds');
+    [this.labels.search, this.labels.clearResults, this.labels.tryAdvancedSearch] = await replaceKeyArray(['search', 'clear-results', 'try-advanced-search'], getFedsPlaceholderConfig());
   }
 
   decorate() {
