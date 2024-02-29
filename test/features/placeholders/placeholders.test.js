@@ -18,7 +18,7 @@ describe('Placeholders', () => {
     const paramsGet = stub(URLSearchParams.prototype, 'get');
     paramsGet.returns('off');
     const text = await replaceText('Look at me, I am {{testing-cache}}', config);
-    expect(text).to.equal('Look at me, I am Testing cache');
+    expect(text).to.equal('Look at me, I am testing cache');
     paramsGet.restore();
   });
 
