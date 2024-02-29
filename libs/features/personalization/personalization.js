@@ -593,25 +593,26 @@ export async function runPersonalization(experiment, config) {
   };
 }
 
-function cleanManifestList(manifests) {
-  const manifestPaths = [];
-  const cleanedList = [];
+function cleanAndSortManifestList(manifests) {
+  const manifestObj = {};
   manifests.forEach((manifest) => {
-    try {
-      const url = new URL(manifest.manifestPath);
-      manifest.manifestPath = url.pathname;
-    } catch (e) {
-      // do nothing
-    }
-    const foundIndex = manifestPaths.indexOf(manifest.manifestPath);
-    if (foundIndex === -1) {
-      manifestPaths.push(manifest.manifestPath);
-      cleanedList.push(manifest);
+    manifest.manifestPath = normalizePath(manifest.manifestUrl);
+    if (manifest.manifestPath in manifestObj) {
+      let fullManifest = manifestObj[manifest.manifestPath];
+      let freshManifest = manifest;
+      if (manifest.name) {
+        fullManifest = manifest;
+        freshManifest = manifestObj[manifest.manifestPath];
+      }
+      freshManifest.name = fullManifest.name;
+      freshManifest.selectedVariant = fullManifest.selectedVariant;
+      freshManifest.selectedVariantName = fullManifest.selectedVariantName;
+      manifestObj[manifest.manifestPath] = freshManifest;
     } else {
-      cleanedList[foundIndex] = { ...cleanedList[foundIndex], ...manifest };
+      manifestObj[manifest.manifestPath] = manifest;
     }
   });
-  return cleanedList;
+  return Object.values(manifestObj).sort((a, b) => a.executionOrder - b.executionOrder);
 }
 
 const createDefaultExperiment = (manifest) => ({
@@ -632,7 +633,7 @@ export async function applyPers(manifests) {
     experiments[i] = await getPersConfig(experiments[i]);
   }
 
-  // experiments = cleanManifestList(experiments);
+  experiments = cleanAndSortManifestList(experiments);
 
   const override = config.mep?.override;
   let results = [];
