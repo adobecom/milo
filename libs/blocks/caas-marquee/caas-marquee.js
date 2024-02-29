@@ -398,10 +398,8 @@ function parseEncodedBrick(data) {
  */
 function normalizeData(data) {
   const images = {
-    tablet: getArbitraryByKey(data, 'imageTablet') === 'undefined'
-      ? data.styles?.backgroundImage : '',
-    desktop: getArbitraryByKey(data, 'imageDesktop') === 'undefined'
-      ? data.styles?.backgroundImage : '',
+    tablet: getArbitraryByKey(data, 'imageTablet'),
+    desktop: getArbitraryByKey(data, 'imageDesktop'),
   };
 
   const metadata = {
