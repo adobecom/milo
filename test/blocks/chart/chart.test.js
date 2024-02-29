@@ -467,9 +467,8 @@ describe('chart', () => {
   });
 
   it('fetchData functions as expected with cache control enabled', async () => {
-    const params = new URLSearchParams(window.location.search);
-    params.set('cache', 'off');
-    window.location.search = params.toString();
+    const paramsGet = sinon.stub(URLSearchParams.prototype, 'get');
+    paramsGet.returns('off');
     const link = document.createElement('a');
     const linkRel = '/drafts/data-viz/line.json';
     link.href = `${linkRel}`;
@@ -477,8 +476,7 @@ describe('chart', () => {
     fetch.withArgs(link.href, { cache: 'reload' }).resolves(goodResponse);
     const response = await fetchData(link);
     expect(response).to.be.true;
-    params.delete('cache');
-    window.location.search = params.toString();
+    paramsGet.restore();
   });
 
   it('fetchData returns json given an anchor tag', async () => {

@@ -31,15 +31,13 @@ describe('Fragments', () => {
   });
 
   it('Loads a fragment with cache control', async () => {
-    const params = new URLSearchParams(window.location.search);
-    params.set('cache', 'off');
-    window.location.search = params.toString();
+    const paramsGet = stub(URLSearchParams.prototype, 'get');
+    paramsGet.returns('off');
     const a = document.querySelector('a.cache');
     await getFragment(a);
     const h1 = document.querySelector('h1.frag-cache');
     expect(h1).to.exist;
-    params.delete('cache');
-    window.location.search = params.toString();
+    paramsGet.restore();
   });
 
   it('Doesnt load a fragment', async () => {

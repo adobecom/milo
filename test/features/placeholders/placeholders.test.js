@@ -1,4 +1,5 @@
 import { expect } from '@esm-bundle/chai';
+import { stub } from 'sinon';
 import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 import { replaceText, replaceKey, replaceKeyArray } from '../../../libs/features/placeholders.js';
 
@@ -14,13 +15,11 @@ describe('Placeholders', () => {
   });
 
   it('Works with cache control', async () => {
-    const params = new URLSearchParams(window.location.search);
-    params.set('cache', 'off');
-    window.location.search = params.toString();
+    const paramsGet = stub(URLSearchParams.prototype, 'get');
+    paramsGet.returns('off');
     const text = await replaceText('Look at me, I am {{testing-cache}}', config);
     expect(text).to.equal('Look at me, I am Testing cache');
-    params.delete('cache');
-    window.location.search = params.toString();
+    paramsGet.restore();
   });
 
   it('Replaces text & links', async () => {

@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { stub } from 'sinon';
 import { setConfig, getConfig, createTag } from '../../../libs/utils/utils.js';
 
 const { default: loadIcons } = await import('../../../libs/features/icons/icons.js');
@@ -21,13 +22,11 @@ describe('Icon Suppprt', () => {
   });
 
   it('Fetches successfully with cache control enabled', async () => {
-    const params = new URLSearchParams(window.location.search);
-    params.set('cache', 'off');
-    window.location.search = params.toString();
+    const paramsGet = stub(URLSearchParams.prototype, 'get');
+    paramsGet.returns('off');
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
     await loadIcons(otherIcons, config);
-    params.delete('cache');
-    window.location.search = params.toString();
+    paramsGet.restore();
   });
 
   it('Replaces span.icon', async () => {
