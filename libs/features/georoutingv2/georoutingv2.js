@@ -53,6 +53,7 @@ const geo2jsonp = (callback) => {
   script.onerror = () => {
     delete window[callbackName];
     document.body.removeChild(script);
+    window.lana('geo2jsonp failed');
   };
 
   document.body.appendChild(script);
@@ -306,7 +307,7 @@ export default async function loadGeoRouting(
 
   const urlLocale = locale.prefix.replace('/', '');
   const storedInter = getCookie('international');
-  const storedLocale = storedInter === 'us' ? '' : storedInter;
+  const storedLocale = 'us';
 
   const urlGeoData = json.georouting.data.find((d) => d.prefix === urlLocale);
   if (!urlGeoData) return;
