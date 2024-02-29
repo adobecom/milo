@@ -126,8 +126,11 @@ export const LANGMAP = {
 };
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
-export const signIn = () => {
-  if (typeof window.adobeIMS?.signIn !== 'function') return;
+const signIn = () => {
+  if (typeof window.adobeIMS?.signIn !== 'function') {
+    lanaLog({ message: 'IMS signIn method not available', tags: 'errorType=warn,module=gnav' });
+    return;
+  }
 
   window.adobeIMS.signIn();
 };

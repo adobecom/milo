@@ -12,7 +12,7 @@ import {
   analyticsTestData,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import initGnav, { getUniversalNavLocale, osMap, signIn as gnavSignIn } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import initGnav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
@@ -77,6 +77,15 @@ describe('global navigation', () => {
       });
       await gnav.imsReady();
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('issues within onReady'))).to.exist;
+    });
+
+    it('should log when IMS signIn method is not available', async () => {
+      const ogIms = window.adobeIMS;
+      window.adobeIMS = { signIn: 'not-a-function' };
+      await createFullGlobalNavigation({ signedIn: false });
+      document.querySelector(`${selectors.signInDropdown} ${selectors.signIn}`).click();
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('IMS signIn method not available'))).to.exist;
+      window.adobeIMS = ogIms;
     });
   });
 
@@ -979,12 +988,6 @@ describe('global navigation', () => {
         expect(isElementVisible(signInDropdown)).to.equal(true);
         expect(signInDropdown.querySelector('li').innerText).to.equal('Experience Cloud');
         expect(signInDropdown.querySelectorAll('li').length).to.equal(5);
-      });
-
-      it('should ignore click on the sign in button if ims signIn method is not a function', () => {
-        window.adobeIMS = { signIn: 'not-a-function' };
-        expect(gnavSignIn()).to.be.undefined;
-        window.adobeIMS = undefined;
       });
 
       it('calls ims when clicking a link with a special href', async () => {
