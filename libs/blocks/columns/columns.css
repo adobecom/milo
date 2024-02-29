@@ -14,6 +14,10 @@
   align-items: center;
 }
 
+.center .columns.contained .col {
+  text-align: center;
+}
+
 .columns.xxl-spacing {
   gap: var(--spacing-xxl);
 }
