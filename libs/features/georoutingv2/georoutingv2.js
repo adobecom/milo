@@ -36,13 +36,13 @@ export const getCookie = (name) => document.cookie
   ?.split('=')[1];
 
 /* c8 ignore next 16 */
-const geo2jsonp = (callback) => {
+const geo2jsonp = (callback, errorcallback) => {
   // Setup a unique name that can be called & destroyed
   try {
     const callbackName = `jsonp_${Math.round(100000 * Math.random())}`;
 
     const script = document.createElement('script');
-    script.src = `https://geo2.adobe.com/json/?callback=${callbackName}`;
+    script.src = `https://geo2.adobe.comasdf/json/?callback=${callbackName}`;
 
     // Define the function that the script will call
     window[callbackName] = (data) => {
@@ -54,15 +54,16 @@ const geo2jsonp = (callback) => {
     script.onerror = () => {
       delete window[callbackName];
       document.body.removeChild(script);
+      errorcallback('Error while trying to get akamai code from geo2.adobe.com');
     };
 
     document.body.appendChild(script);
   } catch (e) {
-    window.lana?.log('Error while trying to get akamai code from geo2.adobe.com');
+    errorcallback(e);
   }
 };
 
-const getAkamaiCode = () => new Promise((resolve) => {
+const getAkamaiCode = () => new Promise((resolve, reject) => {
   const urlParams = new URLSearchParams(window.location.search);
   const akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
   if (akamaiLocale !== null) {
@@ -73,7 +74,7 @@ const getAkamaiCode = () => new Promise((resolve) => {
       const code = data.country.toLowerCase();
       sessionStorage.setItem('akamai', code);
       resolve(code);
-    });
+    }, reject);
   }
 });
 
@@ -335,15 +336,19 @@ export default async function loadGeoRouting(
   }
 
   // Show modal when derived countries from url locale and akamai disagree
-  const akamaiCode = await getAkamaiCode();
-  if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
-    const localeMatches = getMatches(json.georouting.data, akamaiCode);
-    const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
-    if (details) {
-      await showModal(details);
-      sendAnalyticsFunc(
-        new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
-      );
+  try {
+    const akamaiCode = await getAkamaiCode();
+    if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
+      const localeMatches = getMatches(json.georouting.data, akamaiCode);
+      const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
+      if (details) {
+        await showModal(details);
+        sendAnalyticsFunc(
+          new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
+        );
+      }
     }
+  } catch (e) {
+    window.lana?.log(e.message);
   }
 }
