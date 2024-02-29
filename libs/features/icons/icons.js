@@ -1,12 +1,12 @@
+import { fetchMaybeCache } from '../../utils/utils.js';
+
 let fetchedIcons;
 let fetched = false;
 
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
   if (!path) return null;
-  const params = new URLSearchParams(window.location.search);
-  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
-  const resp = await fetch(path, { cache });
+  const resp = await fetchMaybeCache(path);
   /* c8 ignore next */
   if (!resp.ok) return null;
   const miloIcons = {};

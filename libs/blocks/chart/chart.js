@@ -1,4 +1,4 @@
-import { loadScript, getConfig, createTag } from '../../utils/utils.js';
+import { loadScript, getConfig, createTag, fetchMaybeCache } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -122,9 +122,7 @@ export function processMarkData(series, xUnit) {
 }
 
 export async function fetchData(link) {
-  const params = new URLSearchParams(window.location.search);
-  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
-  const resp = await fetch(link.href.toLowerCase(), { cache });
+  const resp = await fetchMaybeCache(link.href.toLowerCase());
 
   if (!resp.ok) return {};
 

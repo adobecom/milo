@@ -1157,3 +1157,9 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+export async function fetchMaybeCache(path) {
+  const params = new URLSearchParams(window.location.search);
+  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  return fetch(path, { cache });
+}
