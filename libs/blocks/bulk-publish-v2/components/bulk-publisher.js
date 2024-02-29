@@ -138,9 +138,9 @@ class BulkPublish2 extends LitElement {
     }
     return {
       text,
-      startEdit: (click = null) => {
+      startEdit: (clicked = null) => {
         this.editing = !this.editing;
-        if (click) {
+        if (clicked) {
           /* c8 ignore next 3 */
           if (this.jobErrors.length === 1) {
             this.jobErrors = false;
@@ -160,12 +160,12 @@ class BulkPublish2 extends LitElement {
     const { text, startEdit } = this.getErrorEditor();
     startEdit();
     const count = this.disabled.length;
-    const btnText = this.editing ? 'Next Error' : 'Select Line';
+    const btnText = this.editing ? 'Next' : 'Select';
     return html`
       <div class="errors">
         <span>Error: <strong>${text}</strong></span>
         <div class="fix-btn" @click=${() => startEdit(true)}>
-          ${count === 1 ? 'Finish Up' : btnText}
+          ${count === 1 ? 'Done' : btnText}
         </div>
       </div>
     `;
