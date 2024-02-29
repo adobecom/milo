@@ -500,14 +500,24 @@ export async function getPersConfig(info) {
   }
 
   const infoTab = manifestInfo || data?.info?.data;
-  config.manifestType = infoTab
-    ?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase()
-    || 'personalization';
-
-  config.manifestOverrideName = infoTab
-    ?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')
-    ?.value?.toLowerCase();
-
+  if (infoTab) {
+    const infoObj = infoTab?.reduce((acc, item) => {
+      acc[item.key] = item.value;
+      return acc;
+    }, {});
+    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
+    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    const infoKeyMap = {
+      'manifest-type': ['Personalization', 'Promo', 'Test'],
+      'manifest-execution-order': ['First', 'Normal', 'Last'],
+    };
+    Object.keys(infoObj).forEach((key) => {
+      if (!infoKeyMap[key]) return;
+      const index = infoKeyMap[key].indexOf(infoObj[key]);
+      infoKeyMap[key] = index > -1 ? index : 1;
+    });
+    config.executionOrder = `${infoKeyMap['manifest-execution-order']}-${infoKeyMap['manifest-type']}`;
+  }
   const selectedVariantName = await getPersonalizationVariant(
     manifestPath,
     config.variantNames,
@@ -550,17 +560,11 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
   action,
 });
 
-export async function runPersonalization(info, config) {
-  const { manifestPath } = info;
-
-  const experiment = await getPersConfig(info);
+export async function runPersonalization(experiment, config) {
   if (!experiment) return null;
-
-  const { selectedVariant } = experiment;
+  const { manifestPath, selectedVariant } = experiment;
   if (!selectedVariant) return {};
-  if (selectedVariant === 'default') {
-    return { experiment };
-  }
+  if (selectedVariant === 'default') return { experiment };
 
   if (selectedVariant.replacepage) {
     // only one replacepage can be defined
@@ -623,17 +627,21 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) return;
+  let experiments = manifests;
+  for (let i = 0; i < experiments.length; i += 1) {
+    experiments[i] = await getPersConfig(experiments[i]);
+  }
 
-  const cleanedManifests = cleanManifestList(manifests);
+  // experiments = cleanManifestList(experiments);
 
   const override = config.mep?.override;
   let results = [];
-  const experiments = [];
-  for (const manifest of cleanedManifests) {
-    if (manifest.disabled && !override) {
-      experiments.push(createDefaultExperiment(manifest));
+
+  for (const experiment of experiments) {
+    if (experiment.disabled && !override) {
+      experiments.push(createDefaultExperiment(experiment));
     } else {
-      const result = await runPersonalization(manifest, config);
+      const result = await runPersonalization(experiment, config);
       if (result) {
         results.push(result);
         experiments.push(result.experiment);
