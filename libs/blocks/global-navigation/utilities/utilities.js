@@ -298,7 +298,6 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
       link.href = getFederatedUrl(link.href);
       return loadInlineFrags(link);
     });
-
     await Promise.all(fragPromises);
   }
 
