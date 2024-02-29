@@ -1,5 +1,5 @@
 export default function getMobileBg() {
-  return `<svg id="Layer_1" data-name="Layer 1" class="georouting-bg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 648 858">
+  return `<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 648 858">
   <defs>
     <style>
       .cls-1 {

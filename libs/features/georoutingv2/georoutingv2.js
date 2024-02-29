@@ -238,12 +238,12 @@ async function getDetails(currentPage, localeMatches, geoData) {
   const availableLocales = await getAvailableLocales(localeMatches);
   if (!availableLocales.length) return null;
   const { innerWidth } = window;
-  let svg = null;
+  let svgDiv = null;
   if (innerWidth < 480) {
     const { default: getMobileBg } = await import('./getMobileBg.js');
-    svg = getMobileBg();
+    svgDiv = createTag('div', { class: 'georouting-bg' }, getMobileBg());
   }
-  const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment', style: 'display:none;' }, svg);
+  const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment', style: 'display:none;' }, svgDiv);
   currentPage.url = window.location.hash ? document.location.href : '#';
   if (availableLocales.length === 1) {
     const content = buildContent(currentPage, availableLocales[0], geoData);
