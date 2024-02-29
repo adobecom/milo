@@ -466,6 +466,21 @@ describe('chart', () => {
     expect(typeof options.yAxis[0].axisLabel.formatter()).to.equal('string');
   });
 
+  it('fetchData functions as expected with cache control enabled', async () => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('cache', 'off');
+    window.location.search = params.toString();
+    const link = document.createElement('a');
+    const linkRel = '/drafts/data-viz/line.json';
+    link.href = `${linkRel}`;
+    const goodResponse = { ok: true, json: () => true };
+    fetch.withArgs(link.href, { cache: 'reload' }).resolves(goodResponse);
+    const response = await fetchData(link);
+    expect(response).to.be.true;
+    params.delete('cache');
+    window.location.search = params.toString();
+  });
+
   it('fetchData returns json given an anchor tag', async () => {
     const link = document.createElement('a');
     const linkRel = '/drafts/data-viz/line.json';

@@ -13,6 +13,16 @@ describe('Placeholders', () => {
     expect(text).to.equal('recommended for you');
   });
 
+  it('Works with cache control', async () => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('cache', 'off');
+    window.location.search = params.toString();
+    const text = await replaceText('Look at me, I am {{testing-cache}}', config);
+    expect(text).to.equal('Look at me, I am Testing cache');
+    params.delete('cache');
+    window.location.search = params.toString();
+  });
+
   it('Replaces text & links', async () => {
     config.locale.contentRoot = '/test/features/placeholders';
     const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;

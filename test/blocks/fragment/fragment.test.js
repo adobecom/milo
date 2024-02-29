@@ -30,6 +30,18 @@ describe('Fragments', () => {
     expect(h1).to.exist;
   });
 
+  it('Loads a fragment with cache control', async () => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('cache', 'off');
+    window.location.search = params.toString();
+    const a = document.querySelector('a.cache');
+    await getFragment(a);
+    const h1 = document.querySelector('h1.frag-cache');
+    expect(h1).to.exist;
+    params.delete('cache');
+    window.location.search = params.toString();
+  });
+
   it('Doesnt load a fragment', async () => {
     const a = document.querySelector('a.bad');
     await getFragment(a);
