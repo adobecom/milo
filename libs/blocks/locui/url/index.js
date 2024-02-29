@@ -10,7 +10,10 @@ function getPrettyDate(string) {
   return [date, time];
 }
 
-export function handleAction(url) {
+export async function handleAction(url, sync = false) {
+  if (sync) {
+    console.log('sync to franklin', url);
+  }
   window.open(url, '_blank');
 }
 

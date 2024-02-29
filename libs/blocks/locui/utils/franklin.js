@@ -12,6 +12,13 @@ export async function preview(path) {
   return json;
 }
 
+export async function publish(path) {
+  const url = `${ADMIN}/preview/${owner}/${repo}/main${path}`;
+  const resp = await fetch(url, { method: 'POST' });
+  const json = await resp.json();
+  return json;
+}
+
 export async function getStatus(path = '', editUrl = 'auto') {
   let url = `${ADMIN}/status/${owner}/${repo}/main${path}`;
   url = editUrl ? `${url}?editUrl=${editUrl}` : url;

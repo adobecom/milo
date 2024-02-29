@@ -16,11 +16,11 @@ function Actions({ item }) {
       <button
         disabled=${item.value.preview?.status !== 200}
         class="locui-url-action locui-url-action-view"
-        onClick=${() => { handleAction(item.value.preview.url); }}>Preview</button>
+        onClick=${() => { handleAction(item.value.preview.url, true); }}>Preview</button>
       <button
         disabled=${item.value.live?.status !== 200}
         class="locui-url-action locui-url-action-view"
-        onClick=${() => { handleAction(item.value.live.url); }}>Live</button>
+        onClick=${() => { handleAction(item.value.live.url, true); }}>Live</button>
     </div>
   `;
 }
