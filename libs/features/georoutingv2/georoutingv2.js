@@ -41,13 +41,18 @@ const geo2jsonp = (callback) => {
   const callbackName = `jsonp_${Math.round(100000 * Math.random())}`;
 
   const script = document.createElement('script');
-  script.src = `https://geo2.adobe.com/json/?callback=${callbackName}`;
+  script.src = `https://geo2.adobe.comasdf/json/?callback=${callbackName}`;
 
   // Define the function that the script will call
   window[callbackName] = (data) => {
     delete window[callbackName];
     document.body.removeChild(script);
     callback(data);
+  };
+
+  script.onerror = () => {
+    delete window[callbackName];
+    document.body.removeChild(script);
   };
 
   document.body.appendChild(script);
