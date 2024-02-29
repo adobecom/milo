@@ -6,6 +6,10 @@
   align-items: start;
 }
 
+.bulk-publish-v2.pushdown {
+  height: 95.7vh;
+}
+
 .bulk-publish-v2::before {
   content: '';
   background: var(--bg-img) no-repeat;

@@ -59,12 +59,30 @@ const setUserData = (event) => {
   return null;
 };
 
+const isPushedDown = async () => {
+  const callback = () => {
+    const sidekick = document.querySelector('helix-sidekick');
+    const pushdown = sidekick?.getAttribute('pushdown');
+    const bulkPub = document.querySelector('.bulk-publish-v2');
+    if (pushdown && !bulkPub.classList.contains('pushdown')) {
+      bulkPub.classList.add('pushdown');
+    }
+  };
+  const observer = new MutationObserver(callback);
+  observer.observe(document, {
+    attributes: true,
+    subtree: true,
+    attributeOldValue: true,
+  });
+};
+
 const authenticate = async (tool = null) => {
+  isPushedDown();
   const setUser = (event) => { tool.user = setUserData(event); };
   const openSideKick = document.querySelector('helix-sidekick');
   if (openSideKick) {
     openSideKick.addEventListener('statusfetched', setUser);
-  /* c8 ignore next 6 */
+    /* c8 ignore next 6 */
   } else {
     document.addEventListener('sidekick-ready', () => {
       const sidekick = document.querySelector('helix-sidekick');
