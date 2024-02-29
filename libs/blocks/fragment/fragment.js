@@ -64,9 +64,10 @@ export default async function init(a) {
   let inline = false;
 
   if (a.parentElement && a.parentElement.nodeName === 'P') {
+    const children = a.parentElement.childNodes;
     const div = document.createElement('div');
     a.parentElement.replaceWith(div);
-    div.appendChild(a);
+    div.append(...children);
   }
 
   if (a.href.includes('#_inline')) {
