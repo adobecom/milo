@@ -183,11 +183,6 @@
   gap: var(--spacing-m);
 }
 
-.section.container[class*='-up'] {
-  width: auto;
-  margin: 0;
-}
-
 .section[class*='grid-width-'] > .content,
 main > .section[class*='-up'] > .content,
 .section[class*='grid-width-'] > .contained {
