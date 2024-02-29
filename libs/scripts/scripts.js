@@ -11,6 +11,7 @@
  */
 
 import {
+  getMetadata,
   loadArea,
   loadLana,
   setConfig,
@@ -119,12 +120,14 @@ const locales = {
   sea: { ietf: 'en', tk: 'hah7vzn.css' },
 };
 
+const unavMeta = getMetadata('universal-nav')?.trim();
+
 const config = {
   geoRouting: 'on',
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
-  imsScope: 'AdobeID,openid,gnav,pps.read,firefly_api',
+  imsScope: `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api' : ''}`,
   codeRoot: '/libs',
   locales,
   prodDomains,
