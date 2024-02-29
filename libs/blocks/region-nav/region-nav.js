@@ -2,8 +2,7 @@ import { getConfig } from '../../utils/utils.js';
 
 /* c8 ignore next 11 */
 function handleEvent(prefix, link) {
-  const domain = window.location.host === 'adobe.com'
-    || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
   document.cookie = `international=${prefix};path=/;${domain}`;
   sessionStorage.setItem('international', prefix);
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
