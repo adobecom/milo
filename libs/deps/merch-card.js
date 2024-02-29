@@ -1,4 +1,4 @@
-// Fri, 16 Feb 2024 06:26:19 GMT
+// Thu, 29 Feb 2024 18:02:20 GMT
 import{html as n,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as f,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var h="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var y=f`
     :host {
         position: relative;
@@ -242,10 +242,12 @@ import{html as n,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as f
         padding: var(--consonant-merch-spacing-s)
             var(--consonant-merch-spacing-s) 0;
         flex: unset;
+        gap: var(--consonant-merch-spacing-xs);
     }
 
     :host([variant='mini-compare-chart']) .price {
-        padding: 0 var(--consonant-merch-spacing-s);
+        padding: var(--consonant-merch-spacing-xs)
+            var(--consonant-merch-spacing-s);
     }
 
     :host([variant='mini-compare-chart']) footer {
@@ -608,10 +610,6 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 }
 
 /* mini compare chart card styles */
-merch-card[variant="mini-compare-chart"] [slot="body-m"] {
-    padding: var(--consonant-merch-spacing-xs) 0;
-}
-
 merch-card[variant="mini-compare-chart"] span.placeholder-resolved[data-template="strikethrough"] {
     font-size: var(--consonant-merch-card-body-m-font-size);
 }
@@ -683,6 +681,10 @@ merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     merch-card[variant="mini-compare-chart"] [slot='body-m'] {
         font-size: var(--consonant-merch-card-body-xs-font-size);
         line-height: var(--consonant-merch-card-body-xs-line-height);
+    }
+
+    merch-card[variant="mini-compare-chart"] [slot="offers"] {
+        padding: var(--consonant-merch-spacing-xs);
     }
 
     merch-card[variant="mini-compare-chart"] [slot='heading-m-price'] {
@@ -1209,10 +1211,10 @@ merch-card .footer-row-cell:nth-child(8) {
                 ${this.renderIcons()}
                 <slot name="heading-m"></slot>
                 <slot name="body-m"></slot>
-            </div>
-            <div class="price">
-                <slot name="heading-m-price"></slot>
-                <slot name="price-commitment"></slot>
+                <div class="price">
+                    <slot name="heading-m-price"></slot>
+                    <slot name="price-commitment"></slot>
+                </div>
             </div>
             <slot name="offers"></slot>
             <slot name="promo-text"></slot>
