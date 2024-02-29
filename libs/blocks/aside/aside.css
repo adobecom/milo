@@ -727,7 +727,7 @@
   .aside.split.half .split-image video {
     width: 50vw;
     max-width: 1396px;
-    object-position: left top;
+    object-position: center top;
   }
 
   .aside.split.split-left .split-image img,
