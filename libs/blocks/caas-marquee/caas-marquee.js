@@ -1,7 +1,33 @@
-/* eslint-disable no-shadow, consistent-return, max-len */
+/* eslint-disable no-shadow, consistent-return, max-len, quote-props, prefer-const */
 import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
 const SEGMENTS_MAP = {
+  attributes: {
+    'adobecom': ['news', 'community', 'plan'],
+    'business': ['analytics', 'solution', 'adobe experience manager'],
+    'commerce': ['apps', 'digital design', 'photography'],
+    'creative-cloud': ['apps', 'digital design', 'photography'],
+    'express': ['create', 'quickactions', 'video'],
+    'firefly': ['generative', 'artificial intelligence', 'images'],
+    'helpx': ['knowledgebase', 'install', 'help'],
+    'stock': ['images', 'vector', 'video'],
+    'lightroom': ['photo editing', 'image adjust', 'enhancing color'],
+    'photoshop': ['generative', 'image adjust', 'compositing'],
+    'acrobat': ['pdf', 'convert document', 'reader'],
+    'premiere': ['video editing', 'visual effects', 'motion graphics'],
+    'sign': ['Pdf', 'signature', 'document'],
+    'illustrator': ['drawing', 'vector', 'logo design'],
+    'adobecom,commerce': ['accounts', 'legal', 'offer'],
+    'adobecom,creative-cloud': ['creativecloud', 'apps', 'learn'],
+    'adobecom,express': ['image', 'create', 'templates'],
+    'adobecom,firefly': ['accounts', 'news', 'offer'],
+    'adobecom,helpx': ['cloud', 'install', 'help'],
+    'commerce,creative-cloud': ['discover', 'apps', 'business'],
+    'creative-cloud,helpx': ['creativecloud', 'help', 'apps'],
+    'adobecom,commerce,creative-cloud': ['business', 'apps', 'learn'],
+    'adobecom,creative-cloud,helpx': ['creativecloud', 'help', 'support'],
+    'creative-cloud,stock': ['discover', 'images', 'education'],
+  },
   stage: {
     source: {
       '00000000-0000-0000-0000-000000000000': 'adobecom', // TODO: Update to final one
@@ -19,32 +45,6 @@ const SEGMENTS_MAP = {
       '763a8323-2087-42fc-acd8-aac45dbf7532': 'sign',
       'ecbe1189-f9fe-4a89-9823-c5ae77e8bfd9': 'illustrator',
     },
-    attributes: {
-      'adobecom': ['news', 'community', 'plan'],
-      'business': ['analytics', 'solution', 'adobe experience manager'],
-      'commerce': ['apps', 'digital design', 'photography'],
-      'creative-cloud': ['apps', 'digital design', 'photography'],
-      'express': ['create', 'quickactions', 'video'],
-      'firefly': ['generative', 'artificial intelligence', 'images'],
-      'helpx': ['knowledgebase', 'install', 'help'],
-      'stock': ['images', 'vector', 'video'],
-      'lightroom': ['photo editing', 'image adjust', 'enhancing color'],
-      'photoshop': ['generative', 'image adjust', 'compositing'],
-      'acrobat': ['pdf', 'convert document', 'reader'],
-      'premiere': ['video editing', 'visual effects', 'motion graphics'],
-      'sign': ['Pdf', 'signature', 'document'],
-      'illustrator': ['drawing', 'vector', 'logo design'],
-      'adobecom,commerce': ['accounts', 'legal', 'offer'],
-      'adobecom,creative-cloud': ['creativecloud', 'apps', 'learn'],
-      'adobecom,express': ['image', 'create', 'templates'],
-      'adobecom,firefly': ['accounts', 'news', 'offer'],
-      'adobecom,helpx': ['cloud', 'install', 'help'],
-      'commerce,creative-cloud': ['discover', 'apps', 'business'],
-      'creative-cloud,helpx': ['creativecloud', 'help', 'apps'],
-      'adobecom,commerce,creative-cloud': ['business', 'apps', 'learn'],
-      'adobecom,creative-cloud,helpx': ['creativecloud', 'help', 'support'],
-      'creative-cloud,stock': ['discover', 'images', 'education'],
-    }
   },
   prod: {
     '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'PHSP',
@@ -59,7 +59,6 @@ const SEGMENTS_MAP = {
     'ab713720-91a2-4e8e-b6d7-6f613e049566': 'Any CC product without stock add-ons active users',
     '934fdc1d-7ba6-4644-908b-53e01e550086': 'DC Paid Active entitlements',
   },
-  attributes: {}
 };
 
 const ALLOY_TIMEOUT = 500;
@@ -232,31 +231,31 @@ const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((r
   }, { once: true });
 });
 
-function getCombinations(arr, data, start, end, index, r, ans){
-  if(!arr.length){
+function getCombinations(arr, data, start, end, index, r, ans) {
+  if (!arr.length) {
     return;
   }
-  if(index === r){
+  if (index === r) {
     ans.push(data.slice(0, r));
   }
 
-  for (let i=start; i<=end && end-i+1 >= r-index; i++){
+  for (let i = start; i <= end && end - i + 1 >= r - index; i += 1) {
     data[index] = arr[i];
-    getCombinations(arr, data, i+1, end, index+1, r, ans);
+    getCombinations(arr, data, i + 1, end, index + 1, r, ans);
   }
 }
 
-function check(key, s){
-  const linkToValues = isProd() ? SEGMENTS_MAP.prod.attributes : SEGMENTS_MAP.stage.attributes;
-  if(linkToValues[key]){
-    let temp = linkToValues[key];
-    for(let attribute of temp){
+function check(key, s) {
+  const linkToValues = SEGMENTS_MAP.attributes;
+  if (linkToValues[key]) {
+    const attributes = linkToValues[key];
+    for (let attribute of attributes) {
       s.add(attribute);
     }
   }
 }
 
-function getAttributes(mappedUserSegments){
+function getAttributes(mappedUserSegments) {
   let s = new Set();
   let len = mappedUserSegments.length;
   let singles = [];
@@ -264,19 +263,20 @@ function getAttributes(mappedUserSegments){
   let triplets = [];
 
   getCombinations(mappedUserSegments, new Array(1), 0, len, 0, 1, singles);
-  getCombinations(mappedUserSegments, new Array(2),0, len, 0, 2, pairs);
+  getCombinations(mappedUserSegments, new Array(2), 0, len, 0, 2, pairs);
   getCombinations(mappedUserSegments, new Array(3), 0, len, 0, 3, triplets);
 
-  for(let i = 0; i < singles.length; i++)
+  for (let i = 0; i < singles.length; i += 1) {
     check(singles[i], s);
+  }
 
-  for(let i = 0; i < pairs.length; i++){
-    let pair = pairs[i].sort();
+  for (let i = 0; i < pairs.length; i += 1) {
+    const pair = pairs[i].sort();
     check(`${pair[0]},${pair[1]}`, s);
   }
 
-  for(let i = 0; i < triplets.length; i++){
-    let triplet = triplets[i].sort();
+  for (let i = 0; i < triplets.length; i += 1) {
+    const triplet = triplets[i].sort();
     check(`${triplet[0]},${triplet[1]},${triplet[2]}`, s);
   }
   return Array.from(s);
@@ -297,7 +297,7 @@ async function segmentApiEventHandler(e) {
     if (mappedUserSegments.length) {
       try {
         segments = getAttributes(mappedUserSegments);
-      } catch(e) {
+      } catch (e) {
         log(`${getAttributes}: Unable to parse mapped user segments: ${e} ${mappedUserSegments} `, LANA_OPTIONS);
       }
       // eslint-disable-next-line no-use-before-define
@@ -529,7 +529,7 @@ function getCtaHtml(url, text, classes) {
   if (isValidModal(url)) {
     return getModalHtml(url, classes, text);
   }
-  return url ? `<a class="${classes}" href="${url}"> ${text} </a>` : '';
+  return url ? `<a class="${classes}" href="${url}" daa-ll="${text}"> ${text} </a>` : '';
 }
 
 function getCtaClasses(ctaStyle, size) {
@@ -584,8 +584,9 @@ function createBackground(splitContent) {
   return el?.body?.childNodes[0];
 }
 
-function addAnalytics(marquee) {
-  marquee.setAttribute('data-block', '');
+function addAnalytics(marquee, shouldRenderMarquee, contentId) {
+  let label = shouldRenderMarquee ? contentId : 'fallback-marquee';
+  marquee.setAttribute('daa-lh', `b1|marquee|${label}`);
 }
 
 function getClasses(variant) {
@@ -694,7 +695,7 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   removeLoader(marquee);
   addBackground(marquee, metadata);
   applyVariants(marquee, metadata, classList);
-  addAnalytics(marquee);
+  addAnalytics(marquee, shouldRenderMarquee, id);
 
   const isSplit = classList.includes('split');
   const isBrick = classList.includes('homepage-brick');
