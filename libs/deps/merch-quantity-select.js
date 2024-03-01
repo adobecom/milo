@@ -1,4 +1,4 @@
-// Fri, 01 Mar 2024 21:56:49 GMT
+// Fri, 01 Mar 2024 23:31:57 GMT
 
 // src/merch-quantity-select.js
 import { html, LitElement } from "/libs/deps/lit-all.min.js";
@@ -209,6 +209,7 @@ var MerchQuantitySelect = class extends LitElement {
           this.toggleMenu();
         } else {
           this.closePopover();
+          this.blur();
         }
         break;
     }
