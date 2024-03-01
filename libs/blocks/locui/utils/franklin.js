@@ -13,7 +13,7 @@ export async function preview(path) {
 }
 
 export async function publish(path) {
-  const url = `${ADMIN}/preview/${owner}/${repo}/main${path}`;
+  const url = `${ADMIN}/live/${owner}/${repo}/main${path}`;
   const resp = await fetch(url, { method: 'POST' });
   const json = await resp.json();
   return json;

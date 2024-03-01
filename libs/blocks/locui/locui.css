@@ -505,7 +505,7 @@ button.locui-url-action {
   }
 }
 
-button.locui-url-action[disabled] {
+button.locui-url-action.disabled {
   opacity: 0.25;
 }
 

@@ -1,4 +1,4 @@
-import { getStatus } from '../utils/franklin.js';
+import { getStatus, preview, publish } from '../utils/franklin.js';
 
 const TIME_FORMAT = { hour12: false, hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
 
@@ -8,13 +8,6 @@ function getPrettyDate(string) {
   const date = rawDate.toLocaleDateString();
   const time = rawDate.toLocaleTimeString([], TIME_FORMAT);
   return [date, time];
-}
-
-export async function handleAction(url, sync = false) {
-  if (sync) {
-    console.log('sync to franklin', url);
-  }
-  window.open(url, '_blank');
 }
 
 async function getDetails(path) {
@@ -36,6 +29,15 @@ async function getDetails(path) {
       modified: getPrettyDate(json.live.lastModified),
     },
   };
+}
+
+export async function handleAction(item, isLive = false) {
+  const url = new URL(item.value[isLive ? 'live' : 'preview'].url);
+  if (isLive) await publish(url.pathname);
+  else await preview(url.pathname);
+  const details = await getDetails(item.value.path);
+  item.value = { ...item.value, ...details };
+  window.open(url, '_blank');
 }
 
 export async function openWord(e, item) {
