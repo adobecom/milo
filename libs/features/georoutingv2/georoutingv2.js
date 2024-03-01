@@ -243,7 +243,7 @@ async function getDetails(currentPage, localeMatches, geoData) {
     const { default: getMobileBg } = await import('./getMobileBg.js');
     svgDiv = createTag('div', { class: 'georouting-bg' }, getMobileBg());
   }
-  const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment', style: 'display:none;' }, svgDiv);
+  const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' }, svgDiv);
   currentPage.url = window.location.hash ? document.location.href : '#';
   if (availableLocales.length === 1) {
     const content = buildContent(currentPage, availableLocales[0], geoData);
@@ -266,10 +266,13 @@ async function showModal(details) {
   const { miloLibs, codeRoot } = config;
 
   const tabs = details.querySelector('.tabs');
+  const stylePromise = new Promise((resolve) => {
+    loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`, resolve);
+  });
   const promises = [
     tabs ? loadBlock(tabs) : null,
     tabs ? loadStyle(`${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`) : null,
-    loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`),
+    stylePromise,
   ];
   await Promise.all(promises);
   // eslint-disable-next-line import/no-cycle
