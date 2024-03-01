@@ -265,7 +265,8 @@ function normalizeKeys(obj) {
 function getSelectedElement(selector, action) {
   try {
     if (action.includes('pendtosection') && selector.includes('section')) {
-      const section = selector.replace('section', '');
+      let section = selector.trim().replace('section', '');
+      if (section === '') section = 1;
       if (Number.isNaN(section)) return null;
       return document.querySelector(`main > :nth-child(${section})`);
     }
