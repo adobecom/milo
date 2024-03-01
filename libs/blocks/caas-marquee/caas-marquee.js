@@ -585,7 +585,7 @@ function createBackground(splitContent) {
 }
 
 function addAnalytics(marquee, shouldRenderMarquee, contentId) {
-  let label = shouldRenderMarquee ? contentId : 'fallback-marquee'
+  let label = shouldRenderMarquee ? contentId : 'fallback-marquee';
   marquee.setAttribute('daa-lh', `b1|marquee|${label}`);
 }
 
