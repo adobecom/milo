@@ -45,7 +45,7 @@ function getImageOrVideo(el) {
 function parseBrick(el) {
   const [headingEl, descriptionEl, ctaEl, imageEl] = el?.querySelectorAll('p') || [];
   const brick = {
-    heading: headingEl?.querySelector('h1, h2, h3, h4, strong')?.textContent || '',
+    heading: headingEl?.querySelector('strong')?.textContent || '',
     description: descriptionEl?.innerHTML || '',
     ...parseCtas(ctaEl),
     image: getImageOrVideo(imageEl),
