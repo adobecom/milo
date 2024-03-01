@@ -85,7 +85,7 @@ export default function init(el) {
       imageDesktop: ${metadata.imagedesktop},
       backgroundColor: ${metadata.backgroundcolor},
       leftBrick: ${metadata.leftbrick},
-      rightBrick: ${metadata.rightbrick},      
+      rightBrick: ${metadata.rightbrick},
       variant: ${metadata.variant}`.trim(),
     tags: 'caas:content-type/promotion',
     cta1url: `${metadata.cta1url}`,

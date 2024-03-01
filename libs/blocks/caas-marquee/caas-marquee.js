@@ -408,8 +408,8 @@ function normalizeData(data) {
     description: data.contentArea?.description || '',
     details: data.contentArea?.detailText || '',
     image: data.styles?.backgroundImage || '',
-    imagetablet: images.tablet || '',
-    imagedesktop: images.desktop || '',
+    imagetablet: images.tablet || data.styles?.backgroundImage || '',
+    imagedesktop: images.desktop || data.styles?.backgroundImage || '',
     cta1url: data.footer[0].right[0]?.href || '',
     cta1text: data.footer[0]?.right[0]?.text || '',
     cta1style: data.footer[0]?.right[0]?.style || '',
@@ -568,9 +568,9 @@ function getFgContent(metadata, size, cta, cta2) {
     <h1 class="heading-${HEADING[size]}">${metadata.title}</h1>
     <p class="body-${TEXT[size]}">${metadata.description}</p>
     <p class="action-area">
-      ${cta} 
+      ${cta}
       ${cta2}
-      </p> 
+      </p>
   </div>`;
 }
 
@@ -717,7 +717,8 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const mobileBgContent = getContent(metadata.image, 'mobile');
   const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
   const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'object-position: 32% center;');
-  const splitContent = getContent(metadata.imagedesktop, 'split');
+  const splitImage = metadata.imageDesktop || metadata.imageTablet || metadata.image;
+  const splitContent = getContent(splitImage, 'split');
 
   const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
   let background = createTag('div', { class: 'background' }, '');
@@ -740,7 +741,8 @@ function loadFallback(marquee, metadata) {
 }
 
 function shouldLoadFallback() {
-  return urlParams.get('previewFallback') || urlParams.get('martech');
+  return urlParams.get('previewFallback') === 'true'
+    || (urlParams.get('martech') === 'off' && !urlParams.get('marqueeId'));
 }
 
 function authorPreview() {
