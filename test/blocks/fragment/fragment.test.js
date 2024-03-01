@@ -89,12 +89,11 @@ describe('Fragments', () => {
 
   it('should transfer all attributes when replacing a paragraph parent with a div parent', async () => {
     const a = document.querySelector('a.frag-p');
-    const testAttr = Object.entries({ class: 'frag-p-wrapper', test: 'test' });
-    for (const [name, value] of testAttr) a.parentElement.setAttribute(name, value);
+    const { attributes } = a.parentElement;
     await getFragment(a);
     const wrapper = document.querySelector('.frag-p-wrapper');
-    for (const [name, value] of testAttr) {
-      expect(wrapper.getAttribute(name)).to.equal(value);
+    for (const attr of attributes) {
+      expect(wrapper.getAttribute(attr.name)).to.equal(attr.value);
     }
   });
 });
