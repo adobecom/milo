@@ -297,9 +297,9 @@ function extractQuantitySelect(el) {
   attributes.title = config[0].textContent.trim();
   const quantityValues = config[1].textContent.split(',').map((value) => value.trim())
     .filter((value) => /^\d+$/.test(value));
-  if (quantityValues.length !== 3) return null;
+  if (quantityValues.length !== 3 && quantityValues.length !== 4) return null;
   import('../../deps/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step] = quantityValues.map(Number);
+  [attributes.min, attributes.max, attributes.step, attributes['max-input']] = quantityValues.map(Number);
   const quantitySelect = createTag('merch-quantity-select', attributes);
   quantitySelectConfig.remove();
   return quantitySelect;

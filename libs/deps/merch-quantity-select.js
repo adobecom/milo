@@ -1,19 +1,20 @@
-// Mon, 12 Feb 2024 17:51:13 GMT
+// Fri, 01 Mar 2024 21:56:49 GMT
 
 // src/merch-quantity-select.js
-import { html, css as css2, LitElement } from "/libs/deps/lit-all.min.js";
+import { html, LitElement } from "/libs/deps/lit-all.min.js";
 
 // src/merch-quantity-select.css.js
 import { css } from "/libs/deps/lit-all.min.js";
 var styles = css`
     :host {
-        --background-color: var(--qs-background-color, rgb(246, 246, 246));
-        --text-color: var(--qs-text-color, rgb(0, 0, 0));
+        --background-color: var(--qs-background-color, #f6f6f6);
+        --text-color: var(--qs-text-color, #000);
         --radius: 5px;
-        --border-color: var(--qs-border-color, rgb(232, 232, 232));
+        --border-color: var(--qs-border-color, #e8e8e8);
         --border-width: var(--qs-border-width, 1px);
         --label-font-size: var(--qs-label-font-size, 12px);
-        --label-color: var(--qs-lable-color, rgb(0, 0, 0));
+        --font-size: var(--qs-font-size, 12px);
+        --label-color: var(--qs-lable-color, #000);
         --input-height: var(--qs-input-height, 30px);
         --input-width: var(--qs-input-width, 72px);
         --button-width: var(--qs-button-width, 30px);
@@ -23,26 +24,40 @@ var styles = css`
             url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="10" height="6" aria-hidden="true" viewBox="0 0 10 6"><path fill="%23787878" d="M9.99 1.01A1 1 0 0 0 8.283.3L5 3.586 1.717.3A1 1 0 1 0 .3 1.717L4.293 5.7a1 1 0 0 0 1.414 0L9.7 1.717a1 1 0 0 0 .29-.707z"/></svg>')
         );
         --qs-transition: var(--transition);
+
         display: block;
         position: relative;
-        color: var(--main-color);
-        user-select: none;
-        padding: var(--qs-padding, 0);
+        color: var(--text-color);
         line-height: var(--qs-line-height, 2);
     }
 
     .text-field {
-        position: relative;
         display: flex;
         align-items: center;
         width: var(--input-width);
+        position: relative;
         margin-top: 6px;
+    }
+
+    .text-field-input {
+        font-family: inherit;
+        padding: 0;
+        font-size: var(--font-size);
+        height: var(--input-height);
+        width: calc(var(--input-width) - var(--button-width));
+        border: var(--border-width) solid var(--border-color);
+        border-top-left-radius: var(--radius);
+        border-bottom-left-radius: var(--radius);
+        border-right: none;
+        padding-inline-start: 12px;
+        box-sizing: border-box;
     }
 
     .text-field-input::-webkit-inner-spin-button,
     .text-field-input::-webkit-outer-spin-button {
-        -webkit-appearance: none;
         margin: 0;
+        -moz-appearance: textfield;
+        -webkit-appearance: none;
     }
 
     .label {
@@ -50,30 +65,11 @@ var styles = css`
         color: var(--label-color);
     }
 
-    .text-field-input[type='number'] {
-        -moz-appearance: textfield;
-    }
-
-    .text-field-input {
-        font-size: var(--font-size);
-        border: var(--border-width) solid var(--border-color);
-        border-top-left-radius: var(--radius);
-        border-bottom-left-radius: var(--radius);
-        width: calc(var(--input-width) - var(--button-width));
-        height: var(--input-height);
-        border-right: none;
-        padding: var(--padding-vertical, 8px) 12px;
-        padding-left: var(--padding-horizontal, 12px);
-        text-overflow: ellipsis;
-        box-sizing: border-box;
-    }
-
     .picker-button {
-        position: absolute;
-        inset-inline-end: 0;
         width: var(--button-width);
         height: var(--input-height);
-        padding: 0;
+        position: absolute;
+        inset-inline-end: 0;
         border: var(--border-width) solid var(--border-color);
         border-top-right-radius: var(--radius);
         border-bottom-right-radius: var(--radius);
@@ -82,39 +78,38 @@ var styles = css`
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        padding: 0;
     }
 
     .picker-button-fill {
-        display: flex;
-        align-content: center;
-        align-items: center;
-        box-sizing: border-box;
         width: 100%;
         height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background-image: var(--picker-fill-icon);
-        background-position: center center;
+        background-position: center;
         background-repeat: no-repeat;
     }
 
     .popover {
         position: absolute;
         top: var(--input-height);
-        margin-top: var(--popover-margin-top, 6px);
         left: 0;
+        width: var(--input-width);
         border-radius: var(--radius);
-        width: var(--input-width, 100%);
-        opacity: 0;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         overflow: hidden;
         z-index: 100;
+        margin-top: var(--popover-margin-top, 6px);
         transition: var(--qs-transition);
+        opacity: 0;
+        box-sizing: border-box;
     }
 
     .popover.open {
-        background: #ffffff;
-        position: absolute;
-        width: var(--input-width, 100%);
         opacity: 1;
+        background: #ffffff;
         border: var(--border-width) solid var(--border-color);
     }
 
@@ -128,17 +123,16 @@ var styles = css`
     }
 
     .item {
+        display: flex;
+        align-items: center;
         color: var(--text-color);
         font-size: var(--font-size);
-        display: flex;
-        width: var(--qs-width, 100%);
-        justify-content: center;
-        align-items: center;
-        opacity: 1;
+        padding-inline-start: 12px;
+        box-sizing: border-box;
     }
 
     .item.highlighted {
-        background: var(--background-color);
+        background-color: var(--background-color);
     }
 `;
 
@@ -161,6 +155,7 @@ var MerchQuantitySelect = class extends LitElement {
       min: { type: Number },
       max: { type: Number },
       step: { type: Number },
+      maxInput: { type: Number, attribute: "max-input" },
       title: { type: String }
     };
   }
@@ -175,6 +170,7 @@ var MerchQuantitySelect = class extends LitElement {
     this.min = 0;
     this.max = 0;
     this.step = 0;
+    this.maxInput = void 0;
     this.selectedValue = 0;
     this.highlightedIndex = 0;
     this.toggleMenu = this.toggleMenu.bind(this);
@@ -203,7 +199,7 @@ var MerchQuantitySelect = class extends LitElement {
           this.requestUpdate();
         }
         break;
-      case "Enter":
+      case ENTER:
         if (!this.closed) {
           const option = this.options[this.highlightedIndex];
           if (!option)
@@ -223,8 +219,10 @@ var MerchQuantitySelect = class extends LitElement {
     const inputField = this.shadowRoot.querySelector(".text-field-input");
     const inputValue = parseInt(inputField.value);
     if (!isNaN(inputValue) && inputValue > 0 && inputValue !== this.selectedValue) {
-      this.selectedValue = inputValue;
-      this.highlightedIndex = this.options.indexOf(inputValue);
+      const adjustedInputValue = this.maxInput && inputValue > this.maxInput ? this.maxInput : inputValue;
+      this.selectedValue = adjustedInputValue;
+      inputField.value = adjustedInputValue;
+      this.highlightedIndex = this.options.indexOf(adjustedInputValue);
     }
   }
   disconnectedCallback() {
@@ -263,6 +261,8 @@ var MerchQuantitySelect = class extends LitElement {
     this.requestUpdate();
   }
   handleMenuOption(option) {
+    if (option === this.max)
+      this.shadowRoot.querySelector(".text-field-input")?.focus();
     this.selectedValue = option;
     this.sendEvent();
     this.closePopover();
@@ -288,7 +288,7 @@ var MerchQuantitySelect = class extends LitElement {
                         @click="${() => this.handleMenuOption(option)}"
                         @mouseenter="${() => this.handleMouseEnter(index)}"
                     >
-                        ${option}
+                        ${option === this.max ? `${option}+` : option}
                     </div>
                 `
     )}
@@ -311,7 +311,7 @@ var MerchQuantitySelect = class extends LitElement {
                         class="picker-button-fill ${this.closed ? "open" : "closed"}"
                     ></div>
                 </button>
-                ${this.popover};
+                ${this.popover}
             </div>
         `;
   }
