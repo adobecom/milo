@@ -717,7 +717,8 @@ export function renderMarquee(marquee, marquees, id, fallback) {
   const mobileBgContent = getContent(metadata.image, 'mobile');
   const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
   const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'object-position: 32% center;');
-  const splitContent = getContent(metadata.imagedesktop, 'split');
+  const splitImage = metadata.imageDesktop || metadata.imageTablet || metadata.image;
+  const splitContent = getContent(splitImage, 'split');
 
   const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
   let background = createTag('div', { class: 'background' }, '');
