@@ -657,15 +657,15 @@ export async function applyPers(manifests) {
   });
   if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-  config.mep.handleFragmentCommand = (command, a, mep) => {
+  config.mep.handleFragmentCommand = (command, a) => {
     const { action, fragment, manifestPath } = command;
     if (action === 'replace') {
       a.href = fragment;
-      if (mep?.preview) a.dataset.manifestId = manifestPath;
+      if (config.mep.preview) a.dataset.manifestId = manifestPath;
       return fragment;
     }
     if (action === 'remove') {
-      if (mep?.preview) {
+      if (config.mep.preview) {
         a.parentElement.dataset.removedManifestId = manifestPath;
       } else {
         a.parentElement.remove();
