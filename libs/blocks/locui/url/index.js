@@ -1,4 +1,5 @@
 import { getStatus, preview, publish } from '../utils/franklin.js';
+import { setStatus } from '../utils/status.js';
 
 const TIME_FORMAT = { hour12: false, hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
 
@@ -31,13 +32,27 @@ async function getDetails(path) {
   };
 }
 
-export async function handleAction(item, isLive = false) {
-  const url = new URL(item.value[isLive ? 'live' : 'preview'].url);
-  if (isLive) await publish(url.pathname);
-  else await preview(url.pathname);
-  const details = await getDetails(item.value.path);
-  item.value = { ...item.value, ...details };
-  window.open(url, '_blank');
+export async function handleAction(e, item, isLive = false) {
+  e.target.classList.add('locui-action-loading');
+  const action = item.value[isLive ? 'live' : 'preview'];
+  const url = new URL(action.url);
+  try {
+    if (isLive) await publish(url.pathname);
+    else await preview(url.pathname);
+    const details = await getDetails(item.value.path);
+    item.value = { ...item.value, ...details };
+    e.target.classList.remove('locui-action-loading');
+    window.open(url, '_blank');
+  } catch (error) {
+    e.target.classList.remove('locui-action-loading');
+    setStatus(
+      'details',
+      'error',
+      `${isLive ? 'Publishing' : 'Previewing'} document`,
+      'Sync to Langstore to perform this action',
+      9000,
+    );
+  }
 }
 
 export async function openWord(e, item) {
