@@ -66,6 +66,7 @@ export default async function init(a) {
   if (a.parentElement?.nodeName === 'P') {
     const children = a.parentElement.childNodes;
     const div = document.createElement('div');
+    for (const attr of a.parentElement.attributes) div.setAttribute(attr.name, attr.value);
     a.parentElement.replaceWith(div);
     div.append(...children);
   }

@@ -86,4 +86,15 @@ describe('Fragments', () => {
     body.innerHTML = body.innerHTML; // after reassignment, the parser guarantees the presence of only valid HTML
     expect(innerHtml).to.equal(body.innerHTML);
   });
+
+  it('should transfer all attributes when replacing a paragraph parent with a div parent', async () => {
+    const a = document.querySelector('a.frag-p');
+    const testAttr = Object.entries({ class: 'frag-p-wrapper', test: 'test' });
+    for (const [name, value] of testAttr) a.parentElement.setAttribute(name, value);
+    await getFragment(a);
+    const wrapper = document.querySelector('.frag-p-wrapper');
+    for (const [name, value] of testAttr) {
+      expect(wrapper.getAttribute(name)).to.equal(value);
+    }
+  });
 });
