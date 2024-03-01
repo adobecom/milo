@@ -500,6 +500,10 @@ export async function getPersConfig(info) {
   }
 
   const infoTab = manifestInfo || data?.info?.data;
+  const infoKeyMap = {
+    'manifest-type': ['Personalization', 'Promo', 'Test'],
+    'manifest-execution-order': ['First', 'Normal', 'Last'],
+  };
   if (infoTab) {
     const infoObj = infoTab?.reduce((acc, item) => {
       acc[item.key] = item.value;
@@ -507,16 +511,16 @@ export async function getPersConfig(info) {
     }, {});
     config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
     config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    const infoKeyMap = {
-      'manifest-type': ['Personalization', 'Promo', 'Test'],
-      'manifest-execution-order': ['First', 'Normal', 'Last'],
-    };
     Object.keys(infoObj).forEach((key) => {
       if (!infoKeyMap[key]) return;
       const index = infoKeyMap[key].indexOf(infoObj[key]);
       infoKeyMap[key] = index > -1 ? index : 1;
     });
     config.executionOrder = `${infoKeyMap['manifest-execution-order']}-${infoKeyMap['manifest-type']}`;
+  } else {
+    // eslint-disable-next-line prefer-destructuring
+    config.manifestType = infoKeyMap[1];
+    config.executionOrder = '1-1';
   }
   const selectedVariantName = await getPersonalizationVariant(
     manifestPath,
@@ -593,7 +597,12 @@ export async function runPersonalization(experiment, config) {
   };
 }
 
-function cleanAndSortManifestList(manifests) {
+function compareExecutionOrder(a, b) {
+  if (a.executionOrder === b.executionOrder) return 0;
+  return a.executionOrder > b.executionOrder ? 1 : -1;
+}
+
+export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
   manifests.forEach((manifest) => {
     manifest.manifestPath = normalizePath(manifest.manifestUrl);
@@ -612,7 +621,7 @@ function cleanAndSortManifestList(manifests) {
       manifestObj[manifest.manifestPath] = manifest;
     }
   });
-  return Object.values(manifestObj).sort((a, b) => a.executionOrder - b.executionOrder);
+  return Object.values(manifestObj).sort(compareExecutionOrder);
 }
 
 const createDefaultExperiment = (manifest) => ({
@@ -645,7 +654,6 @@ export async function applyPers(manifests) {
       const result = await runPersonalization(experiment, config);
       if (result) {
         results.push(result);
-        experiments.push(result.experiment);
       }
     }
   }
