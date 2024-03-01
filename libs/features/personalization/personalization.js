@@ -264,7 +264,7 @@ function normalizeKeys(obj) {
 
 function getSelectedElement(selector, action) {
   try {
-    if ((action.includes('appendtosection') || action.includes('prependtosection') ) && selector.includes('section')) {
+    if ((action.includes('appendtosection') || action.includes('prependtosection')) && selector.includes('section')) {
       let section = selector.trim().replace('section', '');
       if (section === '') section = 1;
       if (Number.isNaN(section)) return null;
