@@ -63,7 +63,7 @@ export default async function init(a) {
   let relHref = localizeLink(a.href);
   let inline = false;
 
-  if (a.parentElement && a.parentElement.nodeName === 'P') {
+  if (a.parentElement?.nodeName === 'P') {
     const children = a.parentElement.childNodes;
     const div = document.createElement('div');
     a.parentElement.replaceWith(div);
