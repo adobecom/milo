@@ -155,12 +155,7 @@ const COMMANDS = {
 };
 
 function checkSelectorType(selector) {
-  let selectorType = 'css';
-  if (selector.includes('/fragments/')
-    && (selector.startsWith('/') || selector.startsWith('http'))) {
-    selectorType = 'fragment';
-  }
-  return selectorType;
+  return selector?.includes('/fragments/') ? 'fragment' : 'css';
 }
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
@@ -204,19 +199,20 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
     const { selector, val } = i;
     if (prop === 'blocks') {
       propMap[selector] = val;
-    } else {
-      if (selector in propMap) return;
-      const action = {
-        fragment: val,
-        manifestPath: item.manifestPath,
-        action: i.action,
-      };
-      // eslint-disable-next-line no-restricted-syntax
-      for (const key in propMap) {
-        if (propMap[key].fragment === selector) propMap[key] = action;
-      }
-      propMap[selector] = action;
+      return;
     }
+
+    if (selector in propMap) return;
+    const action = {
+      fragment: val,
+      manifestPath: item.manifestPath,
+      action: i.action,
+    };
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key in propMap) {
+      if (propMap[key].fragment === selector) propMap[key] = action;
+    }
+    propMap[selector] = action;
   });
   return propMap;
 }, {});
