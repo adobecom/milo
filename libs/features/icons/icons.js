@@ -1,4 +1,4 @@
-import { fetchMaybeCache } from '../../utils/utils.js';
+import { fetchWithCacheRules } from '../../utils/helpers.js';
 
 let fetchedIcons;
 let fetched = false;
@@ -6,7 +6,7 @@ let fetched = false;
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
   if (!path) return null;
-  const resp = await fetchMaybeCache(path);
+  const resp = await fetchWithCacheRules(path).catch(() => ({}));
   /* c8 ignore next */
   if (!resp.ok) return null;
   const miloIcons = {};

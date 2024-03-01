@@ -1,4 +1,5 @@
-import { createTag, getConfig, loadArea, localizeLink, fetchMaybeCache } from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
+import { fetchWithCacheRules } from '../../utils/helpers.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
@@ -80,7 +81,7 @@ export default async function init(a) {
     return;
   }
 
-  const resp = await fetchMaybeCache(`${a.href}.plain.html`);
+  const resp = await fetchWithCacheRules(`${a.href}.plain.html`).catch(() => ({}));
 
   if (!resp.ok) {
     window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);

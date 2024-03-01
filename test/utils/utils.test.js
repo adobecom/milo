@@ -611,19 +611,4 @@ describe('Utils', () => {
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
     });
   });
-
-  describe('Cache control', async () => {
-    it('fetches with cache param', async () => {
-      const paramsGet = sinon.stub(URLSearchParams.prototype, 'get');
-      const fetchStub = sinon.stub(window, 'fetch');
-      const goodResponse = { ok: true, json: () => true };
-      const mockUrl = './mocks/taxonomy.json';
-      paramsGet.withArgs('cache').returns('off');
-      fetchStub.withArgs(mockUrl, { cache: 'reload' }).resolves(goodResponse);
-      const resp = await utils.fetchMaybeCache(mockUrl);
-      expect(resp.json()).to.be.true;
-      paramsGet.restore();
-      fetchStub.restore();
-    });
-  });
 });

@@ -15,6 +15,17 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 let icons;
 
 describe('Icon Suppprt', () => {
+  let paramsGetStub;
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
   before(async () => {
     icons = document.querySelectorAll('span.icon');
     await loadIcons(icons, config);
@@ -22,11 +33,8 @@ describe('Icon Suppprt', () => {
   });
 
   it('Fetches successfully with cache control enabled', async () => {
-    const paramsGet = stub(URLSearchParams.prototype, 'get');
-    paramsGet.returns('off');
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
     await loadIcons(otherIcons, config);
-    paramsGet.restore();
   });
 
   it('Replaces span.icon', async () => {

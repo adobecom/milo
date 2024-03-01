@@ -19,3 +19,9 @@ export function updateLinkWithLangRoot(link) {
     return link;
   }
 }
+
+export async function fetchWithCacheRules(path) {
+  const params = new URLSearchParams(window.location.search);
+  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  return fetch(path, { cache });
+}

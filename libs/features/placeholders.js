@@ -1,4 +1,4 @@
-import { fetchMaybeCache } from '../utils/utils.js';
+import { fetchWithCacheRules } from '../utils/helpers.js';
 
 const fetchedPlaceholders = {};
 
@@ -14,7 +14,7 @@ const fetchPlaceholders = (config, sheet) => {
   fetchedPlaceholders[placeholdersPath] = fetchedPlaceholders[placeholdersPath]
     // eslint-disable-next-line no-async-promise-executor
     || new Promise(async (resolve) => {
-      const resp = await fetchMaybeCache(placeholdersPath)
+      const resp = await fetchWithCacheRules(placeholdersPath)
         .catch(() => ({}));
       const json = resp.ok ? await resp.json() : { data: [] };
       if (json.data.length === 0) { resolve({}); return; }

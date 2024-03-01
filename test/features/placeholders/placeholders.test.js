@@ -9,17 +9,25 @@ setConfig(conf);
 const config = getConfig();
 
 describe('Placeholders', () => {
+  let paramsGetStub;
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
   it('Fails on JSON', async () => {
     const text = await replaceKey('recommended-for-you', config);
     expect(text).to.equal('recommended for you');
   });
 
   it('Works with cache control', async () => {
-    const paramsGet = stub(URLSearchParams.prototype, 'get');
-    paramsGet.returns('off');
     const text = await replaceText('Look at me, I am {{testing-cache}}', config);
     expect(text).to.equal('Look at me, I am testing cache');
-    paramsGet.restore();
   });
 
   it('Replaces text & links', async () => {

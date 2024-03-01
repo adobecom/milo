@@ -23,6 +23,17 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment } = await import('../../../libs/blocks/fragment/fragment.js');
 
 describe('Fragments', () => {
+  let paramsGetStub;
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
   it('Loads a fragment', async () => {
     const a = document.querySelector('a');
     await getFragment(a);
@@ -31,13 +42,10 @@ describe('Fragments', () => {
   });
 
   it('Loads a fragment with cache control', async () => {
-    const paramsGet = stub(URLSearchParams.prototype, 'get');
-    paramsGet.returns('off');
     const a = document.querySelector('a.cache');
     await getFragment(a);
     const h1 = document.querySelector('h1.frag-cache');
     expect(h1).to.exist;
-    paramsGet.restore();
   });
 
   it('Doesnt load a fragment', async () => {
