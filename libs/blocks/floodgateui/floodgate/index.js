@@ -34,10 +34,6 @@ export async function loadProjectSettings(projSettings) {
     floodgate: `${repo}-${settings.FloodgateColor || 'pink'}`,
   };
   getEventTimeFg();
-  const pdOverrideParam = urlParams.get('pdoverride');
-  if (pdOverrideParam && pdOverrideParam.toLowerCase() === 'true') {
-    enableActionButton.value = true;
-  }
   if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localization service.');
     setStatus('service');

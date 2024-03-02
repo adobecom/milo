@@ -15,7 +15,8 @@ import {
   cssStatusDelete,
   cssStatusPromote,
   copyCompleteRender,
-  enableActionButton,
+  enablePromoteButton,
+  enableDeleteButton,
 } from './state.js';
 import { accessToken } from '../../../tools/sharepoint/state.js';
 import { origin, getStatus } from '../../locui/utils/franklin.js';
@@ -75,7 +76,7 @@ export async function postData(url, params) {
   const urlEncodedParams = new URLSearchParams(params).toString();
   const resp = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Token': accessToken },
     body: urlEncodedParams,
   });
   return resp.json();
@@ -90,6 +91,14 @@ export async function getServiceConfigFg(origin) {
   let configDriveId;
   if (rowIndex !== -1) {
     configDriveId = json.configs.data[rowIndex].value;
+  }
+  const enablePromoteIndex = json.configs.data.findIndex((row) => row.key === 'sharepoint.site.enablePromote');
+  if (enablePromoteIndex !== -1) {
+    enablePromoteButton.value = json.configs.data[enablePromoteIndex].value;
+  }
+  const enableDeleteIndex = json.configs.data.findIndex((row) => row.key === 'sharepoint.site.enableDelete');
+  if (enableDeleteIndex !== -1) {
+    enableDeleteButton.value = json.configs.data[enableDeleteIndex].value;
   }
   json.floodgate.data.forEach((conf) => {
     const [confEnv, confService, confType, confUrl] = conf.key.split('.');
@@ -152,7 +161,7 @@ export async function copyToFloodgateTree() {
     copyStatusCheck.value = 'IN PROGRESS';
     setStatus('details', 'info', 'Copying files to the Floodgate Tree. Check the status card for further updates.');
     const config = await getServiceConfigFg(origin);
-    const params = { ...await getParamsFg(config), spToken: accessToken };
+    const params = { ...await getParamsFg(config) };
     const env = heading.value.env;
     const { url } = config[env].milofg.copy;
 
@@ -191,11 +200,8 @@ export async function promoteFiles(doPublish) {
   try {
     setStatus('details', 'info', 'Promoting files to the Floodgate Tree. Check the status card for further updates.');
     const config = await getServiceConfigFg(origin);
-    const params = { ...await getParamsFg(config), spToken: accessToken, doPublish };
-    if (enableActionButton.value === true) {
-      params.pdoverride = true;
-    }
-    params.edgeWorkerEndDate = heading.value.endTimeUTCString;
+    const params = { ...await getParamsFg(config), doPublish };
+    params.enablePromote = enablePromoteButton.value;
     const env = heading.value.env;
     const { url } = config[env].milofg.promote;
 
@@ -233,11 +239,8 @@ export async function deleteFgTree() {
   try {
     setStatus('details', 'info', 'Deleting the Floodgate Tree. Check the status table for further updates.');
     const config = await getServiceConfigFg(origin);
-    const params = { ...await getParamsFg(config), spToken: accessToken };
-    if (enableActionButton.value === true) {
-      params.pdoverride = true;
-    }
-    params.edgeWorkerEndDate = heading.value.endTimeUTCString;
+    const params = { ...await getParamsFg(config)};
+    params.enableDelete = enableDeleteButton.value;
     const env = heading.value.env;
     const { url } = config[env].milofg.delete;
 

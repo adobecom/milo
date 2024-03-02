@@ -39,4 +39,5 @@ export const loadDetailsCheck = signal();
 export const copyCompleteRender = signal();
 export const renderModal = signal(0);
 export const shouldOpenModalOnMount = signal(true);
-export const enableActionButton = signal(false);
+export const enablePromoteButton = signal(false);
+export const enableDeleteButton = signal(false);
