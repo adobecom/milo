@@ -290,8 +290,22 @@ function getSection(rootEl, idx) {
     : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
 }
 
-function getSelectedEl(rootEl, selector) {
+function getSelectedElement(selector, action, rootEl) {
   if (!selector) return null;
+  if ((action.includes('appendtosection') || action.includes('prependtosection'))) {
+    if (!selector.includes('section')) return null;
+    const section = selector.trim().replace('section', '');
+    if (section !== '' && Number.isNaN(section)) return null;
+  }
+  if (checkSelectorType(selector) === 'fragment') {
+    try {
+      const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
+      if (fragment) return fragment.parentNode;
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 
   let selectedEl;
   if (selector.includes('.') || !['section', 'block', 'row'].some((s) => selector.includes(s))) {
@@ -340,35 +354,14 @@ function getSelectedEl(rootEl, selector) {
   return selectedEl;
 }
 
-function getSelectedElement(selector, action) {
-  try {
-    if ((action.includes('appendtosection') || action.includes('prependtosection')) && selector.includes('section')) {
-      let section = selector.trim().replace('section', '');
-      if (section === '') section = 1;
-      if (Number.isNaN(section)) return null;
-      return document.querySelector(`main > :nth-child(${section})`);
-    }
-    if (checkSelectorType(selector) === 'fragment') {
-      const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
-      if (fragment) {
-        return fragment.parentNode;
-      }
-      return null;
-    }
-    return document.querySelector(selector);
-  } catch (e) {
-    return null;
-  }
-}
-
-function handleCommands(commands, manifestId) {
+function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (action in COMMANDS) {
-      const el = getSelectedElement(selector, action);
+      const el = getSelectedElement(selector, action, rootEl);
       COMMANDS[action](el, target, manifestId);
     } else if (action in CREATE_CMDS) {
-      const el = getSelectedElement(selector, action);
+      const el = getSelectedElement(selector, action, rootEl);
       el?.insertAdjacentElement(CREATE_CMDS[action], createFrag(el, target, manifestId));
     } else {
       /* c8 ignore next 2 */
