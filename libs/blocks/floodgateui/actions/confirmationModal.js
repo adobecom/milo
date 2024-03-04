@@ -137,13 +137,7 @@ class ConfirmationModal extends Component {
                 ? undefined
                 : this.openModal,
             disabled:
-              confirmMessage === 'Promote'
-                ? (promoteStatusCheck.value === 'IN PROGRESS'  ||
-                ((new Date() < new Date(heading.value.endTime) && !enableActionButton.value)))
-                : confirmMessage === 'Delete'
-                ? (deleteStatusCheck.value === 'IN PROGRESS' ||
-                ((new Date() < new Date(heading.value.endTime) && !enableActionButton.value)))
-                : false,
+            true,
             title:
               (confirmMessage === 'Promote' &&
                 promoteStatusCheck.value === 'IN PROGRESS') ||
