@@ -537,6 +537,7 @@ export function decorateImageLinks(el) {
 }
 
 export function decorateAutoBlock(a) {
+  if (a?.href.endsWith('.svg')) return false;
   const config = getConfig();
   const { hostname } = window.location;
   let url;
