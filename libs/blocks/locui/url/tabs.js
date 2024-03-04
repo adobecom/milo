@@ -16,10 +16,10 @@ function Actions({ item }) {
         onClick=${(e) => { openWord(e, item); }}>Edit</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.preview?.status)}"
-        onClick=${(e) => { handleAction(e, item); }}>Preview</button>
+        onClick=${(e) => { handleAction(e, item, true); }}>Preview</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.live?.status)}"
-        onClick=${(e) => { handleAction(e, item, true); }}>Live</button>
+        onClick=${(e) => { handleAction(e, item); }}>Live</button>
     </div>
   `;
 }
