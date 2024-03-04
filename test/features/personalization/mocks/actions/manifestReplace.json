@@ -35,6 +35,16 @@
     },
     {
       "action": "replace",
+      "selector": "/fragments/notonpage",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/fragmentReplaced",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replace",
       "selector": "/fragments/inline-replaceme",
       "page filter (optional)": "",
       "param-newoffer=123": "",
