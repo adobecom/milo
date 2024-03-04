@@ -7,7 +7,6 @@ import {
   canRefresh,
   loadHeadingCheck,
   loadDetailsCheck,
-  enableActionButton,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../../locui/utils/franklin.js';
