@@ -508,12 +508,16 @@ export async function getPersConfig(info) {
     }, {});
     config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
     config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    const executionOrder = {
+      'manifest-type': 1,
+      'manifest-execution-order': 1,
+    };
     Object.keys(infoObj).forEach((key) => {
       if (!infoKeyMap[key]) return;
       const index = infoKeyMap[key].indexOf(infoObj[key]);
-      infoKeyMap[key] = index > -1 ? index : 1;
+      executionOrder[key] = index > -1 ? index : 1;
     });
-    config.executionOrder = `${infoKeyMap['manifest-execution-order']}-${infoKeyMap['manifest-type']}`;
+    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
   } else {
     // eslint-disable-next-line prefer-destructuring
     config.manifestType = infoKeyMap[1];
