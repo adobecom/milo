@@ -100,9 +100,7 @@ const getStatusText = (status, state, count) => {
 const displayDate = (newDate) => {
   const date = new Date(newDate);
   const today = new Date();
-  const isToday = date.getDate() === today.getDate()
-    && date.getMonth() === today.getMonth()
-    && date.getFullYear() === today.getFullYear();
+  const isToday = date.toDateString() === today.toDateString();
   return isToday ? date.toLocaleTimeString() : date.toLocaleString().replace(',', '');
 };
 
