@@ -45,7 +45,7 @@ class AppPrompt {
     await this.getData(content);
     // TODO: we might need to set this at the page level through metadata
     // so that the same prompt can lead to different apps
-    if (!this.options['redirect-url']) return;
+    if (!this.options['redirect-url'] || !this.options['product-name']) return;
 
     this.template = this.decorate();
 
