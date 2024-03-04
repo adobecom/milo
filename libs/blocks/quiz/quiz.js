@@ -21,7 +21,7 @@ export async function loadFragments(fragmentURL) {
 const App = ({
   initialIsDataLoaded = false,
   preQuestions = {}, initialStrings = {}, shortQuiz: isShortQuiz = false,
-  preselections = [], nextQuizViewsExist: preNextQuizViewsExist = true,
+  preselections = [], nextQuizViewsExist: preNextQuizViewsExist = true, storedQuizState = {},
 }) => {
   const [btnAnalytics, setBtnAnalytics] = useState(null);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
@@ -56,7 +56,14 @@ const App = ({
         strMap[question.q] = question;
       });
 
-      setUserFlow([questions.questions.data[0].questions]);
+      if (!!Object.keys(storedQuizState).length
+        && !!storedQuizState?.userFlow.length
+        && !!storedQuizState?.userSelection.length) {
+        setUserFlow(storedQuizState.userFlow);
+        updateUserSelection(storedQuizState.userSelection);
+      } else {
+        setUserFlow([questions.questions.data[0].questions]);
+      }
 
       setStringData(dataStrings);
       setQuestionData(questions);
@@ -332,6 +339,14 @@ export default async function init(
 ) {
   const configData = initConfigPathGlob(el);
   const updatedShortQuiz = shortQuiz || configData.shortQuiz;
+  let storedQuizState = localStorage.getItem('stored-quiz-state');
+
+  try {
+    storedQuizState = JSON.parse(storedQuizState);
+  } catch (e) {
+    storedQuizState = {};
+  }
+
   el.replaceChildren();
   render(html`<${App} 
     initialIsDataLoaded=${initialIsDataLoaded} 
@@ -340,5 +355,6 @@ export default async function init(
     shortQuiz=${updatedShortQuiz}
     preselections=${preselections}
     nextQuizViewsExist=${nextQuizViewsExist}
+    storedQuizState=${storedQuizState}
   />`, el);
 }
