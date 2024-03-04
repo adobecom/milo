@@ -1,0 +1,18 @@
+on:
+  push:
+    branches:
+      - stage
+
+jobs:
+  pull-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: pull-request
+        uses: actions/checkout@v3
+      - name: Create Pull Request
+        uses: diillson/auto-pull-request@v1.0.1
+        with:
+          destination_branch: "main"
+          pr_title: "Ready for Main"
+          pr_body: "Merge to main, commit: ${{ github.sha }}"
+          pr_label: "Ready for Main"
