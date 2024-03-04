@@ -672,7 +672,7 @@ function compareExecutionOrder(a, b) {
 export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
   manifests.forEach((manifest) => {
-    manifest.manifestPath = normalizePath(manifest.manifestUrl);
+    manifest.manifestPath = normalizePath(manifest.manifestUrl || manifest.manifest);
     if (manifest.manifestPath in manifestObj) {
       let fullManifest = manifestObj[manifest.manifestPath];
       let freshManifest = manifest;

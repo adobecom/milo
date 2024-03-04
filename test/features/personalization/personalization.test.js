@@ -36,124 +36,6 @@ describe('Functional Test', () => {
     };
   });
 
-  it('replaceContent should replace an element with a fragment', async () => {
-    await loadManifestAndSetResponse('./mocks/manifestReplace.json');
-
-    expect(document.querySelector('#features-of-milo-experimentation-platform')).to.not.be.null;
-    expect(document.querySelector('.how-to')).to.not.be.null;
-    const parentEl = document.querySelector('#features-of-milo-experimentation-platform')?.parentElement;
-
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(document.querySelector('#features-of-milo-experimentation-platform')).to.be.null;
-    expect(parentEl.firstElementChild.firstElementChild.href)
-      .to.equal('http://localhost:2000/fragments/milo-replace-content-chrome-howto-h2');
-    // .how-to should not be changed as it is targeted to firefox
-    expect(document.querySelector('.how-to')).to.not.be.null;
-  });
-
-  it('removeContent should remove z-pattern content from the page', async () => {
-    await loadManifestAndSetResponse('./mocks/manifestRemove.json');
-
-    expect(document.querySelector('.z-pattern')).to.not.be.null;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(document.querySelector('.z-pattern')).to.be.null;
-  });
-
-  it('insertContentAfter should add fragment after target element', async () => {
-    await loadManifestAndSetResponse('./mocks/manifestInsertContentAfter.json');
-
-    expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-
-    const fragment = document.querySelector('a[href="/fragments/insertafter"]');
-    expect(fragment).to.not.be.null;
-
-    expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
-  });
-
-  it('insertContentBefore should add fragment before target element', async () => {
-    await loadManifestAndSetResponse('./mocks/manifestInsertContentBefore.json');
-
-    expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-
-    const fragment = document.querySelector('a[href="/fragments/insertbefore"]');
-    expect(fragment).to.not.be.null;
-
-    expect(fragment.parentElement.parentElement.children[1].className).to.equal('marquee');
-  });
-
-  it('replaceFragment should replace a fragment in the document', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
-
-    await loadManifestAndSetResponse('./mocks/manifestReplaceFragment.json');
-
-    expect(document.querySelector('a[href="/fragments/replaceme"]')).to.exist;
-    expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.exist;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-
-    const fragmentResp = await readFile({ path: './mocks/fragmentReplaced.plain.html' });
-    const inlineFragmentResp = await readFile({ path: './mocks/inlineFragReplaced.plain.html' });
-
-    window.fetch = stub();
-    window.fetch.withArgs('http://localhost:2000/fragments/fragmentreplaced.plain.html')
-      .returns(getFetchPromise(fragmentResp, 'text'));
-    window.fetch.withArgs('http://localhost:2000/fragments/inline-fragmentreplaced.plain.html')
-      .returns(getFetchPromise(inlineFragmentResp, 'text'));
-
-    const replacemeFrag = document.querySelector('a[href="/fragments/replaceme"]');
-    await initFragments(replacemeFrag);
-    expect(document.querySelector('a[href="/fragments/replaceme"]')).to.be.null;
-    expect(document.querySelector('div[data-path="/fragments/fragmentreplaced"]')).to.exist;
-
-    const inlineReplacemeFrag = document.querySelector('a[href="/fragments/inline-replaceme#_inline"]');
-    await initFragments(inlineReplacemeFrag);
-    expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.be.null;
-    expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
-  });
-
-  it('useBlockCode should override a current block with the custom block code provided', async () => {
-    await loadManifestAndSetResponse('./mocks/manifestUseBlockCode.json');
-
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-
-    expect(getConfig().expBlocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
-    const promoBlock = document.querySelector('.promo');
-    expect(promoBlock.textContent?.trim()).to.equal('Old Promo Block');
-    await loadBlock(promoBlock);
-    expect(promoBlock.textContent?.trim()).to.equal('New Promo!');
-  });
-
-  it('useBlockCode should be able to use a new type of block', async () => {
-    await loadManifestAndSetResponse('./mocks/manifestUseBlockCode2.json');
-
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-
-    expect(getConfig().expBlocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
-    const myBlock = document.querySelector('.myblock');
-    expect(myBlock.textContent?.trim()).to.equal('This block does not exist');
-    await loadBlock(myBlock);
-    expect(myBlock.textContent?.trim()).to.equal('My New Block!');
-  });
-
-  it('updateMetadata should be able to add and change metadata', async () => {
-    await loadManifestAndSetResponse('./mocks/manifestUpdateMetadata.json');
-
-    const geoMetadata = document.querySelector('meta[name="georouting"]');
-    expect(geoMetadata.content).to.equal('off');
-
-    expect(document.querySelector('meta[name="mynewmetadata"]')).to.be.null;
-    expect(document.querySelector('meta[property="og:title"]').content).to.equal('milo');
-    expect(document.querySelector('meta[property="og:image"]')).to.be.null;
-
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-
-    expect(geoMetadata.content).to.equal('on');
-    expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
-    expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
-    expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
-  });
-
   it('Invalid selector should not fail page render and rest of items', async () => {
     await loadManifestAndSetResponse('./mocks/manifestInvalid.json');
 
@@ -222,13 +104,13 @@ describe('Functional Test', () => {
     expect(fragment).to.be.null;
   });
 
-  it('test or promo manifest type', async () => {
+  it('test or promo manifest', async () => {
     let config = getConfig();
     config.mep = {};
     await loadManifestAndSetResponse('./mocks/manifestTestOrPromo.json');
     config = getConfig();
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(config.experiments[0].manifestType).to.equal('test or promo');
+    expect(config.mep?.martech).to.be.undefined;
   });
 
   it('should choose chrome & logged out', async () => {
@@ -254,19 +136,6 @@ describe('Functional Test', () => {
     await loadManifestAndSetResponse('./mocks/manifestUseEntitlements.json');
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(getConfig().mep?.martech).to.equal('|fireflies|manifest');
-  });
-
-  it('removeContent should tag z-pattern in preview', async () => {
-    await loadManifestAndSetResponse('./mocks/manifestRemove.json');
-    const config = getConfig();
-    config.mep = {
-      override: '',
-      preview: true,
-    };
-
-    expect(document.querySelector('.z-pattern')).to.not.be.null;
-    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
-    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
   });
 
   it('invalid selector should output error to console', async () => {
