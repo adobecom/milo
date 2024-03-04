@@ -7,6 +7,7 @@ import {
   canRefresh,
   loadHeadingCheck,
   loadDetailsCheck,
+  enableActionButton,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../../locui/utils/franklin.js';
@@ -33,6 +34,10 @@ export async function loadProjectSettings(projSettings) {
     floodgate: `${repo}-${settings.FloodgateColor || 'pink'}`,
   };
   getEventTimeFg();
+  const pdOverrideParam = urlParams.get('pdoverride');
+  if (pdOverrideParam && pdOverrideParam.toLowerCase() === 'true') {
+    enableActionButton.value = true;
+  }
   if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localization service.');
     setStatus('service');
