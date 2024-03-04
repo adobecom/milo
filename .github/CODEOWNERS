@@ -1,6 +1,0 @@
-# Sign-Off Teams
-# This is used to manage the MILO SOTs as found in this wiki: https://wiki.corp.adobe.com/pages/viewpage.action?pageId=3096561529#MILOPointofContact(MPoC)-Sign-OffTeamsa.k.aT1Consumers
-# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
-
-# MILO Core
-/libs/ @adobecom/creative-cloud-sot @adobecom/document-cloud-sot @adobecom/bacom-sot @adobecom/homepage-sot @adobecom/miq-sot
