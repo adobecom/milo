@@ -11,6 +11,8 @@ const CONFIG = {
   icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1" title="Adobe, Inc."><defs><style>.cls-1 {fill: #eb1000;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
 };
 
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 const getElemText = (elem) => elem?.textContent?.trim().toLowerCase();
 
 // Note: this might be used outside of Milo,
@@ -25,12 +27,13 @@ const getMetadata = (el) => [...el.childNodes].reduce((acc, row) => {
 }, {});
 
 class AppPrompt {
-  constructor({ promptPath, id, profileApi } = {}) {
+  constructor({ promptPath, id, profileApi, entName } = {}) {
     this.promptPath = promptPath;
     this.id = id;
     this.profileApi = profileApi;
     this.elements = {};
-
+    // TODO - make sure this is still valid after we have the entitlements mapping
+    this.productName = capitalize(entName);
     if (this.isDismissedPrompt()) return;
 
     this.init();
@@ -108,8 +111,8 @@ class AppPrompt {
 
   // TODO: should we allow for app icon to be set as SVG?
   decorate = () => {
-    this.elements.closeIcon = toFragment`<button class="appPrompt-close"></button>`;
-    this.elements.cta = toFragment`<button class="appPrompt-cta appPrompt-cta--close">${this.cancelText}</button>`;
+    this.elements.closeIcon = toFragment`<button daa-ll="Close Modal" class="appPrompt-close"></button>`;
+    this.elements.cta = toFragment`<button daa-ll="${this.cancelText}" class="appPrompt-cta appPrompt-cta--close">${this.cancelText}</button>`;
     this.elements.profile = Object.keys(this.profile).length
       ? toFragment`<div class="appPrompt-profile">
         <div class="appPrompt-avatar">
@@ -122,7 +125,7 @@ class AppPrompt {
       </div>`
       : '';
 
-    return toFragment`<div class="appPrompt">
+    return toFragment`<div daa-state="true" daa-im="true" daa-lh="PEP Modal_${this.productName}" class="appPrompt">
       ${this.elements.closeIcon}
       <div class="appPrompt-icon">
         ${this.image}

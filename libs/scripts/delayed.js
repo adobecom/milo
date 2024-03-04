@@ -97,7 +97,7 @@ export const loadAppPrompt = async (getConfig, getMetadata, loadStyle) => {
     loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
   ]);
 
-  webappPrompt.default({ promptPath, id, profileApi });
+  webappPrompt.default({ promptPath, id, profileApi, entName });
 };
 
 /**
