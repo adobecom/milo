@@ -11,7 +11,7 @@ const CONFIG = {
   icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1" title="Adobe, Inc."><defs><style>.cls-1 {fill: #eb1000;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
 };
 
-const capitalize = (str) => str && (str.charAt(0).toUpperCase() + str.slice(1));
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 const getElemText = (elem) => elem?.textContent?.trim().toLowerCase();
 
