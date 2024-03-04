@@ -1,5 +1,3 @@
-import { fetchWithCacheRules } from '../utils/helpers.js';
-
 const fetchedPlaceholders = {};
 
 const getPlaceholdersPath = (config, sheet) => {
@@ -8,8 +6,9 @@ const getPlaceholdersPath = (config, sheet) => {
   return `${path}${query}`;
 };
 
-const fetchPlaceholders = (config, sheet) => {
+const fetchPlaceholders = async (config, sheet) => {
   const placeholdersPath = getPlaceholdersPath(config, sheet);
+  const { fetchWithCacheRules } = await import('../utils/helpers.js');
 
   fetchedPlaceholders[placeholdersPath] = fetchedPlaceholders[placeholdersPath]
     // eslint-disable-next-line no-async-promise-executor

@@ -1,5 +1,4 @@
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
-import { fetchWithCacheRules } from '../../utils/helpers.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
@@ -81,6 +80,7 @@ export default async function init(a) {
     return;
   }
 
+  const { fetchWithCacheRules } = await import('../../utils/helpers.js');
   const resp = await fetchWithCacheRules(`${a.href}.plain.html`).catch(() => ({}));
 
   if (!resp.ok) {
