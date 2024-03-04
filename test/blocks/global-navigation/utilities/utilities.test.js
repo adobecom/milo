@@ -44,31 +44,155 @@ describe('global navigation utilities', () => {
   });
 
   describe('federatePictureSources', () => {
-    it('should use federated content root for image sources', async () => {
-      const imgPath = 'test/blocks/global-navigation/mocks/media_medium_dropdown.png';
-      const template = toFragment`<picture>
-          <source
-            type="image/webp"
-            srcset="./${imgPath}"
-            media="(min-width: 600px)"/>
-          <source
-            type="image/webp"
-            srcset="./${imgPath}"/>
-          <source
-            type="image/png"
-            srcset="/${imgPath}"
-            media="(min-width: 600px)"/>
-          <img
-            loading="lazy"
-            alt=""
-            type="image/png"
-            src="/${imgPath}"/>
-        </picture>`;
-
-      federatePictureSources(template);
+    // The test scenarios tests decorated or non decorated links.
+    // https://adobe.com/media.png
+    // https://adobe.com/federal/media.png
+    // https://adobe.com/ch_de/federal/globalnav/media.png
+    // ./foo.png
+    // ./federal/foo.png
+    // ./ch_de/federal/globalnav/foo.png
+    const getImageTemplate = ({ host = '', path = '', locale = '' }) => toFragment`<picture>
+    <source
+      type="image/webp"
+      srcset="${host}${locale}${path}"
+      media="(min-width: 600px)"/>
+    <source
+      type="image/webp"
+      srcset="${host}${locale}${path}"/>
+    <source
+      type="image/png"
+      srcset="${host}${locale}${path}"
+      media="(min-width: 600px)"/>
+    <img
+      loading="lazy"
+      alt=""
+      type="image/png"
+      src="${host}${locale}${path}"/>
+  </picture>`;
+    const verifyImageTemplate = ({ host = '', path = '', locale = '', template }) => {
       template.querySelectorAll('source, img').forEach((source) => {
         const attr = source.hasAttribute('src') ? 'src' : 'srcset';
-        expect(source.getAttribute(attr)).to.equal(`https://main--federal--adobecom.hlx.page/${imgPath}`);
+        expect(source.getAttribute(attr)).to.equal(`${host}${locale}${path}`);
+      });
+    };
+
+    it('shouldnt change non-federal absolute sources', async () => {
+      const template = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/test/path/federal/media.png',
+        locale: '',
+      });
+      federatePictureSources(template);
+      verifyImageTemplate({
+        host: 'https://adobe.com',
+        path: '/test/path/federal/media.png',
+        locale: '',
+        template,
+      });
+    });
+
+    it('shouldnt change non-federal absolute localized sources', async () => {
+      const localeUrlsTemplate = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/test/federal/media.png',
+        locale: '/ch_de',
+      });
+      federatePictureSources(localeUrlsTemplate);
+      verifyImageTemplate({
+        host: 'https://adobe.com',
+        path: '/test/federal/media.png',
+        locale: '/ch_de',
+        template: localeUrlsTemplate,
+      });
+    });
+
+    it('should change federal absolute sources', async () => {
+      const template = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/federal/media.png',
+        locale: '',
+      });
+      federatePictureSources(template);
+      verifyImageTemplate({
+        host: 'https://main--federal--adobecom.hlx.page',
+        path: '/federal/media.png',
+        locale: '',
+        template,
+      });
+    });
+
+    it('should change federal absolute localized sources', async () => {
+      const template = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/federal/media.png',
+        locale: '/ch_de',
+      });
+      federatePictureSources(template);
+      verifyImageTemplate({
+        host: 'https://main--federal--adobecom.hlx.page',
+        path: '/federal/media.png',
+        locale: '/ch_de',
+        template,
+      });
+    });
+
+    it('shouldnt change non-federal relative sources', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/test/path/federal/media.png',
+        locale: '',
+      });
+      federatePictureSources(template);
+      verifyImageTemplate({
+        host: '.',
+        path: '/test/path/federal/media.png',
+        locale: '',
+        template,
+      });
+    });
+
+    it('shouldnt change non-federal relative localized sources', async () => {
+      const localeUrlsTemplate = getImageTemplate({
+        host: '.',
+        path: '/test/federal/media.png',
+        locale: '/ch_de',
+      });
+      federatePictureSources(localeUrlsTemplate);
+      verifyImageTemplate({
+        host: '.',
+        path: '/test/federal/media.png',
+        locale: '/ch_de',
+        template: localeUrlsTemplate,
+      });
+    });
+
+    it('should change federal relative sources', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/federal/media.png',
+        locale: '',
+      });
+      federatePictureSources(template);
+      verifyImageTemplate({
+        host: 'https://main--federal--adobecom.hlx.page',
+        path: '/federal/media.png',
+        locale: '',
+        template,
+      });
+    });
+
+    it('should change federal relative localized sources', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/federal/media.png',
+        locale: '/ch_de',
+      });
+      federatePictureSources(template);
+      verifyImageTemplate({
+        host: 'https://main--federal--adobecom.hlx.page',
+        path: '/federal/media.png',
+        locale: '/ch_de',
+        template,
       });
     });
   });
@@ -137,7 +261,7 @@ describe('global navigation utilities', () => {
 
   describe('active logic', () => {
     it('can have its state updated', () => {
-      const currentState = hasActiveLink();
+      const currentState = hasActiveLink() || false;
       setActiveLink(!currentState);
       expect(hasActiveLink()).to.equal(!currentState);
       setActiveLink(currentState);
