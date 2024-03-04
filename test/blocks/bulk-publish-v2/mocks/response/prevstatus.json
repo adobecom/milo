@@ -5,15 +5,15 @@
     "createTime": "2024-01-22T22:04:59.396Z",
     "data": {
         "paths": [
-            "/drafts/sarchibeque/bulk-publish-test"
+            "/tools/bulk-publish-v2-test"
         ],
         "forceUpdate": true,
         "phase": "completed",
         "resources": [
             {
                 "status": 503,
-                "path": "/drafts/sarchibeque/bulk-publish-test",
-                "resourcePath": "/drafts/sarchibeque/bulk-publish-test.md"
+                "path": "/tools/bulk-publish-v2-test",
+                "resourcePath": "/tools/bulk-publish-v2-test.md"
             }
         ]
     },

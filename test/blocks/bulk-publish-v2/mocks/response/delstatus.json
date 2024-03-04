@@ -6,20 +6,20 @@
   "data": {
     "paths": [
       {
-        "path": "/drafts/sarchibeque/bulk-publish-test"
+        "path": "/tools/bulk-publish-v2-test"
       },
       {
-        "path": "/drafts/sarchibeque/bulk-publish-test1"
+        "path": "/tools/bulk-publish-v2-test1"
       }
     ],
     "phase": "completed",
     "resources": [
       {
-        "webPath": "/drafts/sarchibeque/bulk-publish-test",
+        "webPath": "/tools/bulk-publish-v2-test",
         "status": 200
       },
       {
-        "webPath": "/drafts/sarchibeque/bulk-publish-test1",
+        "webPath": "/tools/bulk-publish-v2-test1",
         "status": 200
       }
     ]
