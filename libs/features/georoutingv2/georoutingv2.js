@@ -103,8 +103,7 @@ function getGeoroutingOverride() {
   const param = urlParams.get('georouting');
   const georouting = param || getCookie('georouting');
   if (param === 'off') {
-    const domain = window.location.host === 'adobe.com'
-      || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+    const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     const d = new Date();
     d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
     const expires = `expires=${d.toUTCString()}`;
