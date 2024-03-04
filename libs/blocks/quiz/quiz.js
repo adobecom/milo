@@ -21,7 +21,7 @@ export async function loadFragments(fragmentURL) {
 const App = ({
   initialIsDataLoaded = false,
   preQuestions = {}, initialStrings = {}, shortQuiz: isShortQuiz = false,
-  preselections = [], nextQuizViewsExist: preNextQuizViewsExist = true, storedQuizState = {},
+  preselections = [], nextQuizViewsExist: preNextQuizViewsExist = true, storedQuizState = true,
 }) => {
   const [btnAnalytics, setBtnAnalytics] = useState(null);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
@@ -339,7 +339,7 @@ export default async function init(
 ) {
   const configData = initConfigPathGlob(el);
   const updatedShortQuiz = shortQuiz || configData.shortQuiz;
-  let storedQuizState = localStorage.getItem('stored-quiz-state');
+  let storedQuizState = localStorage.getItem('stored-quiz-state') || {};
 
   try {
     storedQuizState = JSON.parse(storedQuizState);
