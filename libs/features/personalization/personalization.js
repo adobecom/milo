@@ -124,12 +124,22 @@ const createFrag = (el, url, manifestId) => {
   return frag;
 };
 
+const GLOBAL_CMDS = [
+  'insertscript',
+  'replacepage',
+  'updatemetadata',
+  'useblockcode',
+];
+
+const CREATE_CMDS = {
+  insertafter: 'afterend',
+  insertbefore: 'beforebegin',
+  prependtosection: 'afterbegin',
+  appendtosection: 'beforeend',
+};
+
 const COMMANDS = {
-  insertcontentafter: (el, target, manifestId) => el
-    .insertAdjacentElement('afterend', createFrag(el, target, manifestId)),
-  insertcontentbefore: (el, target, manifestId) => el
-    .insertAdjacentElement('beforebegin', createFrag(el, target, manifestId)),
-  removecontent: (el, target, manifestId) => {
+  remove: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
       el.dataset.removedManifestId = manifestId;
@@ -137,22 +147,16 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  replacecontent: (el, target, manifestId) => {
-    if (el.classList.contains(CLASS_EL_REPLACE)) return;
+  replace: (el, target, manifestId) => {
+    if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
 
-const VALID_COMMANDS = Object.keys(COMMANDS);
-
-const GLOBAL_CMDS = [
-  'insertscript',
-  'replacefragment',
-  'replacepage',
-  'updatemetadata',
-  'useblockcode',
-];
+function checkSelectorType(selector) {
+  return selector?.includes('/fragments/') ? 'fragment' : 'css';
+}
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
@@ -172,12 +176,11 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fSelector, fVal) => {
-  let selector = fSelector;
+const getBlockProps = (fVal) => {
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
-  selector = val?.split('/').pop();
+  const blockSelector = val?.split('/').pop();
   const { origin } = PAGE_URL;
   if (origin.includes('.hlx.') || origin.includes('localhost')) {
     if (val.startsWith('/libs/')) {
@@ -188,14 +191,28 @@ const getBlockProps = (fSelector, fVal) => {
       val = `${origin}${val}`;
     }
   }
-  return { selector, val };
+  return { blockSelector, blockTarget: val };
 };
 
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
-    let { selector, val } = i;
-    if (prop === 'blocks') ({ selector, val } = getBlockProps(selector, val));
-    propMap[selector] = val;
+    const { selector, val } = i;
+    if (prop === 'blocks') {
+      propMap[selector] = val;
+      return;
+    }
+
+    if (selector in propMap) return;
+    const action = {
+      fragment: val,
+      manifestPath: item.manifestPath,
+      action: i.action,
+    };
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key in propMap) {
+      if (propMap[key].fragment === selector) propMap[key] = action;
+    }
+    propMap[selector] = action;
   });
   return propMap;
 }, {});
@@ -245,16 +262,36 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-function handleCommands(commands, manifestId, rootEl = document) {
-  commands.forEach((cmd) => {
-    if (VALID_COMMANDS.includes(cmd.action)) {
-      try {
-        const selectorEl = rootEl.querySelector(cmd.selector);
-        if (!selectorEl) return;
-        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
-      } catch (e) {
-        console.log('Invalid selector: ', cmd.selector);
+function getSelectedElement(selector, action) {
+  try {
+    if ((action.includes('appendtosection') || action.includes('prependtosection')) && selector.includes('section')) {
+      let section = selector.trim().replace('section', '');
+      if (section === '') section = 1;
+      if (Number.isNaN(section)) return null;
+      return document.querySelector(`main > :nth-child(${section})`);
+    }
+    if (checkSelectorType(selector) === 'fragment') {
+      const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
+      if (fragment) {
+        return fragment.parentNode;
       }
+      return null;
+    }
+    return document.querySelector(selector);
+  } catch (e) {
+    return null;
+  }
+}
+
+function handleCommands(commands, manifestId) {
+  commands.forEach((cmd) => {
+    const { action, selector, target } = cmd;
+    if (action in COMMANDS) {
+      const el = getSelectedElement(selector, action);
+      COMMANDS[action](el, target, manifestId);
+    } else if (action in CREATE_CMDS) {
+      const el = getSelectedElement(selector, action);
+      el?.insertAdjacentElement(CREATE_CMDS[action], createFrag(el, target, manifestId));
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
@@ -263,30 +300,47 @@ function handleCommands(commands, manifestId, rootEl = document) {
 }
 
 const getVariantInfo = (line, variantNames, variants) => {
-  const action = line.action?.toLowerCase();
+  const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
   const { selector } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
   variantNames.forEach((vn) => {
-    if (!line[vn]) return;
+    if (!line[vn] || line[vn].toLowerCase() === 'false') return;
 
     const variantInfo = {
       action,
       selector,
       pageFilter,
       target: line[vn],
+      selectorType: checkSelectorType(selector),
     };
 
-    if (GLOBAL_CMDS.includes(action)) {
+    if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
+      variants[vn].fragments.push({
+        selector: normalizePath(variantInfo.selector),
+        val: normalizePath(line[vn]),
+        action,
+      });
+    } else if (GLOBAL_CMDS.includes(action)) {
       variants[vn][action] = variants[vn][action] || [];
 
-      variants[vn][action].push({
-        selector: normalizePath(selector),
-        val: normalizePath(line[vn]),
-      });
-    } else if (VALID_COMMANDS.includes(action)) {
+      if (action === 'useblockcode') {
+        const { blockSelector, blockTarget } = getBlockProps(line[vn]);
+        variants[vn][action].push({
+          selector: blockSelector,
+          val: blockTarget,
+          pageFilter,
+        });
+      } else {
+        variants[vn][action].push({
+          selector: normalizePath(selector),
+          val: normalizePath(line[vn]),
+          pageFilter,
+        });
+      }
+    } else if (action in COMMANDS || action in CREATE_CMDS) {
       variants[vn].commands.push(variantInfo);
     } else {
       /* c8 ignore next 2 */
@@ -307,7 +361,7 @@ export function parseConfig(data) {
       .filter((vn) => !MANIFEST_KEYS.includes(vn));
 
     variantNames.forEach((vn) => {
-      variants[vn] = { commands: [] };
+      variants[vn] = { commands: [], fragments: [] };
     });
 
     experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
@@ -487,9 +541,10 @@ const deleteMarkedEls = () => {
     .forEach((el) => el.remove());
 };
 
-const normalizeFragPaths = ({ selector, val }) => ({
+const normalizeFragPaths = ({ selector, val, action }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
+  action,
 });
 
 export async function runPersonalization(info, config) {
@@ -521,12 +576,13 @@ export async function runPersonalization(info, config) {
   }
   handleCommands(selectedVariant.commands, manifestId);
 
-  selectedVariant.replacefragment &&= selectedVariant.replacefragment.map(normalizeFragPaths);
+  selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
   return {
+    manifestPath,
     experiment,
     blocks: selectedVariant.useblockcode,
-    fragments: selectedVariant.replacefragment,
+    fragments: selectedVariant.fragments,
   };
 }
 
@@ -557,7 +613,7 @@ const createDefaultExperiment = (manifest) => ({
   manifest: manifest.manifestPath,
   variantNames: ['all'],
   selectedVariantName: 'default',
-  selectedVariant: { commands: [] },
+  selectedVariant: { commands: [], fragments: [] },
 });
 
 export async function applyPers(manifests) {
@@ -601,4 +657,20 @@ export async function applyPers(manifests) {
   });
   if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  config.mep.handleFragmentCommand = (command, a) => {
+    const { action, fragment, manifestPath } = command;
+    if (action === 'replace') {
+      a.href = fragment;
+      if (config.mep.preview) a.dataset.manifestId = manifestPath;
+      return fragment;
+    }
+    if (action === 'remove') {
+      if (config.mep.preview) {
+        a.parentElement.dataset.removedManifestId = manifestPath;
+      } else {
+        a.parentElement.remove();
+      }
+    }
+    return false;
+  };
 }
