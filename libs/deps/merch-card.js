@@ -1,4 +1,4 @@
-// Tue, 05 Mar 2024 20:40:53 GMT
+// Tue, 05 Mar 2024 21:09:54 GMT
 import{html as a,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var h="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var w=x`
     :host {
         position: relative;
@@ -633,7 +633,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 
 /* mini compare chart card styles */
 merch-card[variant="mini-compare-chart"] [slot="body-m"] {
-    padding-bottom: var(--consonant-merch-spacing-xs);
+    padding: var(--consonant-merch-spacing-xs) 0;
 }
 
 merch-card[variant="mini-compare-chart"] span.placeholder-resolved[data-template="strikethrough"] {
