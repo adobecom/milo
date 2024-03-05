@@ -578,12 +578,16 @@ export async function getPersConfig(info) {
     }, {});
     config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
     config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    const executionOrder = {
+      'manifest-type': 1,
+      'manifest-execution-order': 1,
+    };
     Object.keys(infoObj).forEach((key) => {
       if (!infoKeyMap[key]) return;
       const index = infoKeyMap[key].indexOf(infoObj[key]);
-      infoKeyMap[key] = index > -1 ? index : 1;
+      executionOrder[key] = index > -1 ? index : 1;
     });
-    config.executionOrder = `${infoKeyMap['manifest-execution-order']}-${infoKeyMap['manifest-type']}`;
+    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
   } else {
     // eslint-disable-next-line prefer-destructuring
     config.manifestType = infoKeyMap[1];
@@ -681,8 +685,8 @@ export function cleanAndSortManifestList(manifests) {
         freshManifest = manifestObj[manifest.manifestPath];
       }
       freshManifest.name = fullManifest.name;
-      freshManifest.selectedVariant = fullManifest.selectedVariant;
       freshManifest.selectedVariantName = fullManifest.selectedVariantName;
+      freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
       manifestObj[manifest.manifestPath] = freshManifest;
     } else {
       manifestObj[manifest.manifestPath] = manifest;
