@@ -22,6 +22,16 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "/fragments/notonpage",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafterfragment",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"
