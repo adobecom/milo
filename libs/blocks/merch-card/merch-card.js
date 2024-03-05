@@ -345,8 +345,9 @@ const decorateFooterRows = (merchCard, footerRows) => {
 
 const setMiniCompareOfferSlot = (merchCard, offers) => {
   if (merchCard.variant !== MINI_COMPARE_CHART) return;
-  const miniCompareOffers = createTag('div', { slot: 'offers' }, offers);
-  if (offers === undefined) { miniCompareOffers.appendChild(createTag('p')); }
+  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]');
+  // eslint-disable-next-line chai-friendly/no-unused-expressions
+  offers ? miniCompareOffers.append(offers) : miniCompareOffers.appendChild(createTag('p'));
   merchCard.appendChild(miniCompareOffers);
 };
 
@@ -490,7 +491,11 @@ const init = async (el) => {
   merchCard.appendChild(footer);
 
   if (MULTI_OFFER_CARDS.includes(cardType)) {
-    const quantitySelect = extractQuantitySelect(el);
+    if (merchCard.variant === MINI_COMPARE_CHART) {
+      const miniCompareOffers = createTag('div', { slot: 'offers' });
+      merchCard.append(miniCompareOffers);
+    }
+    const quantitySelect = extractQuantitySelect(el, cardType);
     const offerSelection = el.querySelector('ul');
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');
