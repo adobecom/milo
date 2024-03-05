@@ -689,7 +689,8 @@ async function decorateIcons(area, config) {
   const { miloLibs, codeRoot } = config;
   const base = miloLibs || codeRoot;
   await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
-  const { default: loadIcons } = await import('../features/icons/icons.js');
+  const { default: loadIcons, setNodeIndexClass } = await import('../features/icons/icons.js');
+  setNodeIndexClass(icons);
   await loadIcons(icons, config);
 }
 
@@ -903,6 +904,7 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
+  decorateIcons(document, config);
 }
 
 export function scrollToHashedElement(hash) {
@@ -1051,8 +1053,6 @@ async function processSection(section, config, isDoc) {
   }
 
   const loaded = section.blocks.map((block) => loadBlock(block));
-
-  await decorateIcons(section.el, config);
 
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loaded);

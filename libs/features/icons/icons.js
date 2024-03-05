@@ -49,6 +49,18 @@ function decorateToolTip(icon) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
+export function setNodeIndexClass(icons) {
+  icons.forEach(async (icon) => {
+    const parent = icon.parentNode;
+    const children = parent.childNodes;
+    const nodeIndex = Array.prototype.indexOf.call(children, icon);
+    let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
+    if (nodeIndex === 0) indexClass = 'first'
+    if (children.length === 1) indexClass = 'only'
+    icon.classList.add(`node-index-${indexClass}`);
+  });
+}
+
 export default async function loadIcons(icons, config) {
   const iconSVGs = await fetchIcons(config);
   if (!iconSVGs) return;
@@ -60,14 +72,7 @@ export default async function loadIcons(icons, config) {
     if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
     if (parent.childNodes.length > 1) {
-      if (parent.lastChild === icon) {
-        icon.classList.add('margin-left');
-      } else if (parent.firstChild === icon) {
-        icon.classList.add('margin-right');
-        if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
-      } else {
-        icon.classList.add('margin-left', 'margin-right');
-      }
+      if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
     }
     icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
   });
