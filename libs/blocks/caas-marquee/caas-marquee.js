@@ -545,7 +545,10 @@ function addLoadingSpinner(marquee) {
 function getModalHtml(ctaUrl, classes, ctaText, html = '') {
   const [fragment, hash] = ctaUrl.split('#');
   const innerContent = html || ctaText;
-  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
+  if (hash && hash !== '_blank') {
+    return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
+  }
+  return `<a href="${fragment}" daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
 }
 
 const isValidModal = (u) => VALID_MODAL_RE.test(u);
