@@ -1,0 +1,15 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "prependToSection",
+      "selector": "section2",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/prependToSection"
+    }
+  ],
+  ":type": "sheet"
+}
