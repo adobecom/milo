@@ -1,4 +1,4 @@
-// Mon, 12 Feb 2024 17:51:13 GMT
+// Tue, 05 Mar 2024 20:40:53 GMT
 
 // src/merch-quantity-select.js
 import { html, css as css2, LitElement } from "/libs/deps/lit-all.min.js";
@@ -153,6 +153,7 @@ var [ARROW_LEFT, ARROW_RIGHT, ARROW_UP, ARROW_DOWN, ENTER, TAB] = [
 ];
 
 // src/merch-quantity-select.js
+var MINI_COMPARE_CHART = "mini-compare-chart";
 var MerchQuantitySelect = class extends LitElement {
   static get properties() {
     return {
@@ -182,6 +183,12 @@ var MerchQuantitySelect = class extends LitElement {
     this.boundKeydownListener = this.handleKeydown.bind(this);
     this.addEventListener("keydown", this.boundKeydownListener);
     window.addEventListener("mousedown", this.handleClickOutside);
+  }
+  /**
+   * @returns {LitElement} Parent merch card
+   */
+  get merchCard() {
+    return this.closest("merch-card");
   }
   handleKeyup() {
     this.handleInput();
@@ -247,6 +254,9 @@ var MerchQuantitySelect = class extends LitElement {
       this.highlightedIndex = 0;
       this.handleMenuOption(this.options[0]);
       this.requestUpdate();
+      if (this.merchCard.variant === MINI_COMPARE_CHART) {
+        this.merchCard.requestUpdate();
+      }
     }
   }
   handleClickOutside(event) {
