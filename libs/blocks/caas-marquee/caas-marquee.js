@@ -522,9 +522,8 @@ function getModalHtml(ctaUrl, classes, ctaText, html = '') {
   const innerContent = html || ctaText;
   if (hash) {
     return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
-  } else {
-    return `<a href="${fragment}" daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
   }
+  return `<a href="${fragment}" daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
 }
 
 const isValidModal = (u) => VALID_MODAL_RE.test(u);
