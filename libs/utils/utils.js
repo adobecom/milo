@@ -995,6 +995,25 @@ function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
 
+  const pageBackgroundImg = getMetadata('page-background');
+  const pageBackgroundSize = getMetadata('page-background-size');
+  if (pageBackgroundImg) {
+    const main = document.querySelector('main');
+    if (pageBackgroundImg.includes('media_')) {
+      const bgStyles = `
+      main {
+        background: url(${pageBackgroundImg}) no-repeat;
+        background-size: ${pageBackgroundSize};
+      }
+    `;
+      const style = createTag('style', {});
+      style.append(bgStyles);
+      main.prepend(style);
+    } else {
+      main.style.background = pageBackgroundImg;
+    }
+  }
+
   import('./samplerum.js').then(({ addRumListeners }) => {
     addRumListeners();
   });
@@ -1017,6 +1036,7 @@ async function documentPostSectionLoading(config) {
     const { default: addRichResults } = await import('../features/richresults.js');
     addRichResults(richResults, { createTag, getMetadata });
   }
+
   loadFooter();
   const { default: loadFavIcon } = await import('./favicon.js');
   loadFavIcon(createTag, getConfig(), getMetadata);
