@@ -8,7 +8,7 @@
       "selector": ".marquee",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/test/features/personalization/mocks/fragments/insertbefore",
+      "chrome": "/fragments/insertbefore",
       "firefox": "",
       "android": "",
       "ios": ""
