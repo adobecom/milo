@@ -30,6 +30,13 @@ describe('Decorate SVGs', () => {
     expect(pic.querySelector('img').src).to.equal('https://milo.adobe.com/my-icon.svg');
   });
 
+  it('Fully qualified SVG', async () => {
+    const el = document.querySelector('#in-fragments-folder');
+    const pic = decorateSVG(el);
+    expect(pic.nodeName).to.equal('PICTURE');
+    expect(pic.querySelector('img').src).to.equal('https://milo.adobe.com/fragments/my-icon.svg');
+  });
+
   it('Alt text SVG', async () => {
     const el = document.querySelector('#alttext');
     const pic = decorateSVG(el);
