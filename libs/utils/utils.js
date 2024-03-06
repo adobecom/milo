@@ -537,7 +537,6 @@ export function decorateImageLinks(el) {
 }
 
 export function decorateAutoBlock(a) {
-  if (a?.href.endsWith('.svg')) return false;
   const config = getConfig();
   const { hostname } = window.location;
   let url;
@@ -563,7 +562,8 @@ export function decorateAutoBlock(a) {
     }
 
     if (key === 'fragment') {
-      if (a.href === window.location.href) {
+      const nameSplit = a.href.split('/').pop().split('.');
+      if (a.href === window.location.href || nameSplit.length >= 2) {
         return false;
       }
 
