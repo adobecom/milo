@@ -202,6 +202,8 @@ const App = ({
     const nextQuizViewsLen = nextQuizViews.length;
     const [firstQuizView] = nextQuizViews;
 
+    localStorage.removeItem('stored-quiz-state');
+
     if (nextQuizViewsLen === 1 && isValidUrl(firstQuizView)) {
       window.location.href = firstQuizView;
       return;
