@@ -50,7 +50,16 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: 'X',
     LOCALE: 'fr',
   },
-  { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' }],
+  { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' },
+  {
+    PRODUCT_FAMILY: 'PREMIERE',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/premiere',
+    FREE_TRIAL_PATH: '/test/blocks/merch/mocks/fragments/twp',
+    BUY_NOW_PATH: '',
+    LOCALE: '',
+  },
+  ],
 };
 
 const config = {
@@ -547,6 +556,33 @@ describe('Merch Block', () => {
       const modal = document.getElementById('checkout-link-modal');
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
+    });
+
+    it('renders Milo TWP modal', async () => {
+      mockIms();
+      const el = document.querySelector('.merch.cta.milo.twp');
+      const cta = await merch(el);
+      const { nodeName, textContent } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      expect(textContent).to.equal('Free Trial');
+      expect(cta.getAttribute('href')).to.equal('#');
+      cta.click();
+      await delay(100);
+      let modal = document.getElementById('checkout-link-modal');
+      expect(modal.querySelector('[data-path]').dataset.path).to.equal('/test/blocks/merch/mocks/fragments/twp');
+      expect(modal.querySelector('h1').innerText).to.equal('twp modal');
+      document.querySelector('.modal-curtain').click();
+      await delay(100);
+      const [,,,, checkoutLinkConfig] = CHECKOUT_LINK_CONFIGS.data;
+      checkoutLinkConfig.FREE_TRIAL_PATH = 'http://main--milo--adobecom.hlx.page/test/blocks/merch/mocks/fragments/twp-url';
+      await cta.render();
+      cta.click();
+      await delay(100);
+      modal = document.getElementById('checkout-link-modal');
+      expect(modal.querySelector('h1').innerText).to.equal('twp modal #2');
+      expect(modal.querySelector('[data-path]').dataset.path).to.equal('/test/blocks/merch/mocks/fragments/twp-url');
+      document.querySelector('.modal-curtain').click();
+      await delay(100);
     });
 
     it('renders D2P modal', async () => {
