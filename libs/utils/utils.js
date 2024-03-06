@@ -562,9 +562,9 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
-    if (key === 'fragment') {
-      const nameSplit = a.href.split('/').pop().split('.');
-      if (a.href === window.location.href || nameSplit.length >= 2) {
+    const nameSplit = a.href.split('/').pop().split('.');
+    if (key === 'fragment' && nameSplit.length <= 1) {
+      if (a.href === window.location.href) {
         return false;
       }
 
