@@ -7,7 +7,6 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 const API_KEY = 'CCHomeMLRepo1';
-const ENDPOINT = 'acom-prd-recom-v2';
 
 let configPath;
 let quizKey;
@@ -15,6 +14,7 @@ let shortQuiz;
 let analyticsType;
 let analyticsQuiz;
 let metaData;
+let communityEndpoint;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
@@ -35,6 +35,7 @@ export const initConfigPathGlob = (rootElement) => {
   quizKey = metaData.storage?.text.toLowerCase();
   analyticsType = metaData.analyticstype?.text;
   analyticsQuiz = metaData.analyticsquiz?.text;
+  communityEndpoint = metaData.communityendpoint?.text;
   return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
@@ -55,7 +56,7 @@ export async function fetchFiCodes(input, numberOfItems, validFiCodes) {
   const subdomain = env === 'prod' ? 'cchome-dev' : 'cchome-dev';
   const apiUrl = `https://${subdomain}.adobe.io/int/v1/models`;
   const params = {
-    endpoint: ENDPOINT,
+    endpoint: communityEndpoint,
     contentType: 'application/json',
     payload: {
       data: {
