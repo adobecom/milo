@@ -35,30 +35,6 @@ export const getCookie = (name) => document.cookie
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-/* c8 ignore next 16 */
-const geo2jsonp = (callback, errorCallback) => {
-  // Setup a unique name that can be called & destroyed
-  const callbackName = `jsonp_${Math.round(100000 * Math.random())}`;
-
-  const script = document.createElement('script');
-  script.src = `https://geo2.adobe.com/json/?callback=${callbackName}`;
-
-  // Define the function that the script will call
-  window[callbackName] = (data) => {
-    delete window[callbackName];
-    document.body.removeChild(script);
-    callback(data);
-  };
-
-  script.onerror = () => {
-    delete window[callbackName];
-    document.body.removeChild(script);
-    errorCallback('Error while trying to get akamai code from geo2.adobe.com');
-  };
-
-  document.body.appendChild(script);
-};
-
 const getAkamaiCode = () => new Promise((resolve, reject) => {
   const urlParams = new URLSearchParams(window.location.search);
   const akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
