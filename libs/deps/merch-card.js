@@ -1,4 +1,4 @@
-// Tue, 05 Mar 2024 21:09:54 GMT
+// Wed, 06 Mar 2024 23:36:17 GMT
 import{html as a,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var h="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var w=x`
     :host {
         position: relative;
@@ -93,6 +93,7 @@ import{html as a,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x
         box-sizing: border-box;
         width: 100%;
         padding: var(--consonant-merch-spacing-xs);
+        flex-flow: wrap;
     }
 
     hr {
@@ -273,7 +274,6 @@ import{html as a,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x
     :host([variant='mini-compare-chart']) footer {
         padding: var(--consonant-merch-spacing-xs)
             var(--consonant-merch-spacing-s);
-        flex-flow: wrap;
     }
 
     @media screen and ${p(h)} {
@@ -421,6 +421,8 @@ import{html as a,LitElement as T}from"/libs/deps/lit-all.min.js";import{css as x
     /*mini compare chart */
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-body-height: 50px;
+    --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
+    --consonant-merch-card-mini-compare-mobile-cta-width: 75px;
     --consonant-merch-card-mini-compare-offers-height: 0;
 
     /* inline SVGs */
@@ -742,12 +744,15 @@ merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
         margin-bottom: var(--consonant-merch-spacing-xxs);
     }
 
-    merch-card[variant="mini-compare-chart"] div[slot="footer"] a.con-button {
+    merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
         margin-left: 0;
-        padding: 6px 18px 8px 21px;
+        padding: 4px 18px 5px 21px;
+        font-size: var(--consonant-merch-card-mini-compare-mobile-cta-font-size);
+        width: var(--consonant-merch-card-mini-compare-mobile-cta-width);
+        text-align: center;
     }
 
-    merch-card[variant="mini-compare-chart"] div[slot="footer"] a.con-button:first-child {
+    merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button:first-child {
         margin-bottom: var(--consonant-merch-spacing-xs);
     }
 }
