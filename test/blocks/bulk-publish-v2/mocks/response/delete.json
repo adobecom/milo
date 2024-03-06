@@ -1,0 +1,24 @@
+{
+  "messageId": "9415982c-deac-49ae-bedb-fc8218b35fa5",
+  "job": {
+    "topic": "preview-remove",
+    "name": "job-2024-01-24t23-16-20-377z",
+    "state": "created",
+    "createTime": "2024-01-24T23:16:20.377Z",
+    "startTime": "2024-01-24T23:16:20.377Z",
+    "data": {
+      "paths": [
+        {
+          "path": "/tools/bulk-publish-v2-test"
+        },
+        {
+          "path": "/tools/bulk-publish-v2-test1"
+        }
+      ]
+    }
+  },
+  "links": {
+    "list": "https://admin.hlx.page/job/adobecom/milo/main/preview-remove",
+    "self": "https://admin.hlx.page/job/adobecom/milo/main/preview-remove/job-2024-01-24t23-16-20-377z"
+  }
+}

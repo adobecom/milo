@@ -15,8 +15,11 @@ const MILO_BLOCKS = [
   'author-header',
   'brick',
   'bulk-publish',
+  'bulk-publish-v2',
   'caas',
   'caas-config',
+  'caas-marquee',
+  'caas-marquee-metadata',
   'card',
   'card-horizontal',
   'card-metadata',
@@ -229,6 +232,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       config.entitlements = handleEntitlements;
+      config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
       return config;
     },
@@ -775,7 +779,7 @@ export async function loadIms() {
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
     window.adobeid = {
       client_id: imsClientId,
-      scope: imsScope || 'AdobeID,openid,gnav',
+      scope: imsScope || 'AdobeID,openid,gnav,pps.read,firefly_api',
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
@@ -796,7 +800,7 @@ export async function loadIms() {
   return imsLoaded;
 }
 
-async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
+export async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
     return true;
@@ -1152,3 +1156,5 @@ export function loadLana(options = {}) {
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
 }
+
+export const reloadPage = () => window.location.reload();

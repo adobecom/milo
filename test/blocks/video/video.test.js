@@ -81,7 +81,7 @@ describe('video uploaded using franklin bot', () => {
     expect(video.hasAttribute('data-hoverplay')).to.be.false;
   });
 
-  it('no hoverplay attribute added when only hoverplay is added to url', async () => {
+  it('decorate video with hoverplay when only hoverplay is added to url', async () => {
     const block = document.querySelector('.video.hoveronly');
     const a = block.querySelector('a');
     const { href } = a;
@@ -90,6 +90,6 @@ describe('video uploaded using franklin bot', () => {
 
     init(a);
     const video = await waitForElement('.video.hoveronly video');
-    expect(video.hasAttribute('data-hoverplay')).to.be.false;
+    expect(video.hasAttribute('data-hoverplay')).to.be.true;
   });
 });

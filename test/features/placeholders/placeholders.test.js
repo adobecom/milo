@@ -35,4 +35,9 @@ describe('Placeholders', () => {
     const text = await replaceKey('this-wont-work', config);
     expect(text).to.equal('this wont work');
   });
+
+  it('Does show an empty value', async () => {
+    const text = await replaceKey('empty-value', config);
+    expect(text).to.equal('');
+  });
 });

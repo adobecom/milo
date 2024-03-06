@@ -124,7 +124,7 @@ const config = {
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
-  imsScope: 'AdobeID,openid,gnav',
+  imsScope: 'AdobeID,openid,gnav,pps.read,firefly_api',
   codeRoot: '/libs',
   locales,
   prodDomains,
