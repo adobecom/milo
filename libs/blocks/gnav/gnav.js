@@ -367,15 +367,24 @@ class Gnav {
       this.searchType = SEARCH_TYPE_CONTEXTUAL;
     }
 
-    const advancedSearchEl = searchBlock.querySelector('a');
+    const advancedSearchEl = searchBlock.querySelector('a:not([href$=".json"])');
     let advancedSearchWrapper = null;
     if (advancedSearchEl) {
       advancedSearchWrapper = createTag('li', null, advancedSearchEl);
     }
 
+    const contextualConfig = {};
+    [...searchBlock.children].forEach(({ children }, index) => {
+      if (index === 0 || children.length !== 2) return;
+      const key = children[0].textContent?.toLowerCase();
+      const link = children[1].querySelector('a');
+      const value = link ? link.href : children[1].textContent;
+      contextualConfig[key] = value;
+    });
+
     const label = searchBlock.querySelector('p').textContent;
     const searchEl = createTag('div', { class: `gnav-search ${isContextual ? SEARCH_TYPE_CONTEXTUAL : ''}` });
-    const searchBar = this.decorateSearchBar(label, advancedSearchWrapper);
+    const searchBar = this.decorateSearchBar(label, advancedSearchWrapper, contextualConfig);
     const searchButton = createTag(
       'button',
       {
@@ -395,7 +404,7 @@ class Gnav {
     return searchEl;
   };
 
-  decorateSearchBar = (label, advancedSearchEl) => {
+  decorateSearchBar = (label, advancedSearchEl, contextualConfig) => {
     const searchBar = createTag('aside', { id: 'gnav-search-bar', class: 'gnav-search-bar' });
     const searchField = createTag('div', { class: 'gnav-search-field' }, SEARCH_ICON);
     const searchInput = createTag('input', {
@@ -417,6 +426,7 @@ class Gnav {
         locale,
         searchInputEl: searchInput,
         advancedSearchEl,
+        contextualConfig, // ToDo: Pick back up here
       });
     });
 
