@@ -66,11 +66,17 @@ const getAkamaiCode = () => new Promise((resolve, reject) => {
     resolve(akamaiLocale.toLowerCase());
   } else {
     /* c8 ignore next 5 */
-    geo2jsonp((data) => {
-      const code = data.country.toLowerCase();
-      sessionStorage.setItem('akamai', code);
-      resolve(code);
-    }, reject);
+    fetch('https://geo2.adobe.com/json/').then((resp) => {
+      if (resp.ok) {
+        resp.json().then((data) => {
+          const code = data.country.toLowerCase();
+          sessionStorage.setItem('akamai', code);
+          resolve(code);
+        });
+      }
+    }).catch(() => {
+      reject(new Error('Failed to get akamai code'));
+    });
   }
 });
 
