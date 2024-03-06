@@ -207,7 +207,22 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
-  activeSlide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
+  const indexOfActive = [...activeSlide.parentElement.children]
+    .findIndex((ele) => activeSlide.isSameNode(ele));
+  const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
+  const tempSlides = [...slides.slice(indexOfActive), ...slides.slice(0, indexOfActive)];
+  if (IndexOfShowClass >= 0) {
+    const show = parseInt(carouselElements.el.classList[IndexOfShowClass].split('-')[1], 10);
+    tempSlides.forEach((slide, index) => {
+      let tabIndex = -1;
+      if (index < show) {
+        tabIndex = 0;
+      }
+      slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
+    });
+  } else {
+    activeSlide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
+  }
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('tabindex', 0);
 
@@ -373,6 +388,11 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
-  slides.slice(1).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
+  const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
+  let NoOfVisibleSlides = 1;
+  if (IndexOfShowClass >= 0) {
+    NoOfVisibleSlides = parseInt(el.classList[IndexOfShowClass].split('-')[1], 10);
+  }
+  slides.slice(NoOfVisibleSlides).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
   handleChangingSlides(carouselElements);
 }
