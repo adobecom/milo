@@ -96,12 +96,12 @@ export default async function init(el) {
   const media = foreground.querySelector(':scope > div:not([class])');
 
   if (media) {
-    media.classList.add('media');
+    media.classList.add('asset');
     if (!media.querySelector('video, a[href*=".mp4"]')) decorateImage(media);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
-  if (firstDivInForeground?.classList.contains('media')) el.classList.add('row-reversed');
+  if (firstDivInForeground?.classList.contains('asset')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
@@ -116,7 +116,7 @@ export default async function init(el) {
     }
 
     let mediaCreditInner;
-    const txtContent = media?.lastChild.textContent.trim();
+    const txtContent = media?.lastChild?.textContent?.trim();
     if (txtContent) {
       mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
     } else if (media.lastElementChild?.tagName !== 'PICTURE') {
