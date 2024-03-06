@@ -33,9 +33,9 @@ function decorateText(el, size) {
 }
 
 function decorateMultipleIconArea(iconArea) {
-  let picCount = 0
+  let count = 0
   iconArea.querySelectorAll(':scope > picture').forEach((picture) => {
-    picCount += 1;
+    count += 1;
     const src = picture.querySelector('img')?.getAttribute('src');
     const a = picture.nextElementSibling;
     if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
@@ -45,7 +45,7 @@ function decorateMultipleIconArea(iconArea) {
       a.appendChild(picture);
     }
   });
-  if (picCount > 1) iconArea.classList.add('icon-area-multiple', `pics-${picCount}`);
+  if (count > 1) iconArea.setAttribute('icon-count', count);
 }
 
 function extendButtonsClass(text) {
