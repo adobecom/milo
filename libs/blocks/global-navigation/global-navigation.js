@@ -523,24 +523,30 @@ class Gnav {
 
     const onAnalyticsEvent = (data) => {
       if (!data) return;
-
       const getInteraction = () => {
-        const {
-          event: { type, subtype } = {},
-          source: { name } = {},
-          content: { name: contentName } = {},
-        } = data;
+        const { workflow, type, subtype } = data.event || data;
+        const contentName = data.content?.name;
 
-        switch (`${name}|${type}|${subtype}|${contentName || ''}`) {
-          case 'profile|click|sign-in|':
+        switch (`${workflow}|${type}|${subtype}${contentName ? `|${contentName}` : ''}`) {
+          case 'UNC|click|icon':
+            return 'Open Notifications panel';
+          case 'UNC|click|link':
+            return 'Open Notification';
+          case 'UNC|click|markRead':
+            return 'Mark Notification as read';
+          case 'UNC|click|dismiss':
+            return 'Dismiss Notifications';
+          case 'UNC|click|markUnread':
+            return 'Mark Notification as unread';
+          case 'profile|click|sign-in':
             return `Sign In|gnav|${experienceName}|unav`;
-          case 'profile|render|component|':
+          case 'profile|render|component':
             return `Account|gnav|${experienceName}`;
-          case 'profile|click|account|':
+          case 'profile|click|account':
             return `View Account|gnav|${experienceName}`;
-          case 'profile|click|sign-out|':
+          case 'profile|click|sign-out':
             return `Sign Out|gnav|${experienceName}|unav`;
-          case 'app-switcher|render|component|':
+          case 'app-switcher|render|component':
             return 'AppLauncher.appIconToggle';
           case `app-switcher|click|app|${contentName}`:
             return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
@@ -552,7 +558,6 @@ class Gnav {
             return 'AppLauncher.adobe.com';
           case 'app-switcher|click|footer|see-all-apps':
             return 'AppLauncher.allapps';
-            // TODO: add support for notifications
           default:
             return null;
         }
