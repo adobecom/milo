@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 
-const { fetchWithCacheRules: fetchMaybeCache } = await import('../../libs/utils/helpers.js');
+const { customFetch } = await import('../../libs/utils/helpers.js');
 
 describe('Cache control', async () => {
   it('fetches with cache param', async () => {
@@ -11,7 +11,7 @@ describe('Cache control', async () => {
     const mockUrl = './mocks/taxonomy.json';
     paramsGet.withArgs('cache').returns('off');
     fetchStub.withArgs(mockUrl, { cache: 'reload' }).resolves(goodResponse);
-    const resp = await fetchMaybeCache(mockUrl);
+    const resp = await customFetch({ resource: mockUrl, withCacheRules: true });
     expect(resp.json()).to.be.true;
     paramsGet.restore();
     fetchStub.restore();
