@@ -76,9 +76,11 @@ export const getFederatedContentRoot = () => {
     ? origin
     : 'https://www.adobe.com';
 
-  if (origin.includes('localhost') || origin.includes('.hlx.page')) {
+  if (origin.includes('localhost') || origin.includes('.hlx.')) {
     // Akamai as proxy to avoid 401s, given AEM-EDS MS auth multi project limitations
-    federatedContentRoot = 'https://www.stage.adobe.com';
+    federatedContentRoot = origin.includes('.hlx.live')
+      ? 'https://main--federal--adobecom.hlx.live'
+      : 'https://www.stage.adobe.com';
   }
 
   return federatedContentRoot;
