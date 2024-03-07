@@ -67,10 +67,6 @@ a[is='checkout-link'] > span {
   max-height: 850px;
 }
 
-#checkout-link-modal iframe.crm {
-  height: 600px;
-}
-
 .upgrade-flow-content {
   display: flex;
   height: 100%;
