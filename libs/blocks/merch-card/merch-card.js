@@ -295,7 +295,7 @@ const simplifyHrs = (el) => {
   });
 };
 
-function extractQuantitySelect(el) {
+async function extractQuantitySelect(el) {
   const quantitySelectConfig = el.querySelector('ul');
   if (!quantitySelectConfig) return null;
   const configMarkup = quantitySelectConfig.querySelector('li');
@@ -307,7 +307,7 @@ function extractQuantitySelect(el) {
   const quantityValues = config[1].textContent.split(',').map((value) => value.trim())
     .filter((value) => /^\d+$/.test(value));
   if (quantityValues.length !== 3) return null;
-  import('../../deps/merch-quantity-select.js');
+  await import('../../deps/merch-quantity-select.js');
   [attributes.min, attributes.max, attributes.step] = quantityValues.map(Number);
   const quantitySelect = createTag('merch-quantity-select', attributes);
   quantitySelectConfig.remove();
@@ -495,7 +495,7 @@ const init = async (el) => {
       const miniCompareOffers = createTag('div', { slot: 'offers' });
       merchCard.append(miniCompareOffers);
     }
-    const quantitySelect = extractQuantitySelect(el, cardType);
+    const quantitySelect = await extractQuantitySelect(el, cardType);
     const offerSelection = el.querySelector('ul');
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');
