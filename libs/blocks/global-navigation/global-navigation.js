@@ -247,7 +247,7 @@ const getUniversalNavLocale = (locale) => {
 };
 
 const convertToPascalCase = (str) => str
-  ?.slice(1)
+  ?.replace('|', '')
   .split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
