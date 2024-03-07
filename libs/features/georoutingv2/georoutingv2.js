@@ -42,7 +42,7 @@ const getAkamaiCode = () => new Promise((resolve, reject) => {
     resolve(akamaiLocale.toLowerCase());
   } else {
     /* c8 ignore next 5 */
-    fetch('https://geo2.adobe.com/json/').then((resp) => {
+    fetch('https://geo2.adobe.com/json/', { cache: 'no-cache' }).then((resp) => {
       if (resp.ok) {
         resp.json().then((data) => {
           const code = data.country.toLowerCase();
