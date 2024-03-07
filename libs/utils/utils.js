@@ -133,7 +133,7 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
+export const MILO_EVENTS = { DEFERRED: 'milo:deferred', LCP_LOADED: 'milo:LCP:loaded' };
 
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
@@ -663,6 +663,10 @@ function decorateDefaults(el) {
 function decorateHeader() {
   const header = document.querySelector('header');
   if (!header) return;
+  if (getMetadata('custom-header') === 'on') {
+    header.classList.add('custom-header');
+    return;
+  }
   const headerMeta = getMetadata('header');
   if (headerMeta === 'off') {
     document.body.classList.add('nav-off');
@@ -705,6 +709,10 @@ async function decoratePlaceholders(area, config) {
 async function loadFooter() {
   const footer = document.querySelector('footer');
   if (!footer) return;
+  if (getMetadata('custom-footer') === 'on') {
+    footer.classList.add('custom-footer');
+    return;
+  }
   const footerMeta = getMetadata('footer');
   if (footerMeta === 'off') {
     footer.remove();
@@ -888,6 +896,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
@@ -895,7 +904,7 @@ async function loadPostLCP(config) {
   }
   loadMartech();
   const header = document.querySelector('header');
-  if (header) {
+  if (header && !header.classList.contains('custom-header')) {
     header.classList.add('gnav-hide');
     await loadBlock(header);
     header.classList.remove('gnav-hide');

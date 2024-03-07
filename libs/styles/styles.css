@@ -669,7 +669,7 @@ body {
   opacity: 1 !important; /* Fix Target hiding */
 }
 
-header:not(.global-navigation) {
+header:not(.global-navigation, .custom-header) {
   height: 57px;
   position: fixed;
   top: 0;
@@ -681,11 +681,11 @@ header:not(.global-navigation) {
   box-sizing: border-box;
 }
 
-header:not(.global-navigation) nav {
+header:not(.global-navigation, .custom-header) nav {
   display: none;
 }
 
-header:not(.global-navigation) ~ main {
+header:not(.global-navigation, .custom-header) ~ main {
   margin-top: 57px;
 }
 
@@ -871,25 +871,25 @@ a.static:hover {
 
 /* tablet large up */
 @media (min-width: 900px) {
-  header:not(.global-navigation) {
+  header:not(.global-navigation, .custom-header) {
     min-height: var(--global-height-nav);
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
   }
 
-  header:not(.global-navigation) ~ main {
+  header:not(.global-navigation, .custom-header) ~ main {
     margin-top: 64px;
   }
 
-  header:not(.global-navigation).has-breadcrumbs {
+  header:not(.global-navigation, .custom-header).has-breadcrumbs {
     min-height: 97px;
   }
 
-  header:not(.global-navigation) nav {
+  header:not(.global-navigation, .custom-header) nav {
     display: unset;
   }
 
-  header:not(.global-navigation).has-breadcrumbs + main {
+  header:not(.global-navigation, .custom-header).has-breadcrumbs + main {
     margin-top: 97px;
   }
 }
