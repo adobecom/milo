@@ -20,8 +20,11 @@ export function updateLinkWithLangRoot(link) {
   }
 }
 
-export async function fetchWithCacheRules(path) {
-  const params = new URLSearchParams(window.location.search);
-  const cache = params.get('cache') === 'off' ? 'reload' : 'default';
-  return fetch(path, { cache });
+export async function customFetch({ resource, withCacheRules }) {
+  const options = {};
+  if (withCacheRules) {
+    const params = new URLSearchParams(window.location.search);
+    options.cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  }
+  return fetch(resource, options);
 }

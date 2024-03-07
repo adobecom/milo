@@ -122,8 +122,9 @@ export function processMarkData(series, xUnit) {
 }
 
 export async function fetchData(link) {
-  const { fetchWithCacheRules } = await import('../../utils/helpers.js');
-  const resp = await fetchWithCacheRules(link.href.toLowerCase()).catch(() => ({}));
+  const { customFetch } = await import('../../utils/helpers.js');
+  const resp = await customFetch({ resource: link.href.toLowerCase(), withCacheRules: true })
+    .catch(() => ({}));
 
   if (!resp.ok) return {};
 
