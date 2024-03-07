@@ -90,7 +90,10 @@ export async function fetchCheckoutLinkConfigs(base = '') {
 }
 
 export async function getCheckoutLinkConfig(productFamily) {
-  const { base } = getConfig();
+  let { base } = getConfig();
+  if (/\.live\//.test(document.location.origin)) {
+    base = base.replace('.live', '.page');
+  }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
   const { locale: { region } } = getConfig();
   const productFamilyConfigs = checkoutLinkConfigs.data?.filter(
