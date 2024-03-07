@@ -133,7 +133,7 @@ import { buildFigure } from '../figure/figure.js';
 //   }
 // }
 
-// export default async function init(blockEl) {
+export default async function init(blockEl) {
 //   if (!getTaxonomyModule()) {
 //     await loadTaxonomy();
 //   }
@@ -175,4 +175,4 @@ import { buildFigure } from '../figure/figure.js';
 //   featureFigEl.classList.add('figure-feature');
 //   featureImgContainer.prepend(featureFigEl);
 //   featureImgContainer.lastElementChild.remove();
-// }
+}
