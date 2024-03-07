@@ -49,9 +49,11 @@ const getAkamaiCode = () => new Promise((resolve, reject) => {
           sessionStorage.setItem('akamai', code);
           resolve(code);
         });
+      } else {
+        reject(new Error(`Something went wrong getting the akamai Code. Response status text: ${resp.statusText}`));
       }
-    }).catch(() => {
-      reject(new Error('Failed to get akamai code'));
+    }).catch((error) => {
+      reject(new Error(`Something went wrong getting the akamai Code. ${error.message}`));
     });
   }
 });
