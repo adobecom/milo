@@ -525,9 +525,9 @@ class Gnav {
       if (!data) return;
       const getInteraction = () => {
         const { workflow, type, subtype } = data.event || data;
-        const contentName = data.content?.name;
+        const contentName = data.content?.name ? `|${data.content.name}` : '';
 
-        switch (`${workflow}|${type}|${subtype}${contentName ? `|${contentName}` : ''}`) {
+        switch (`${workflow}|${type}|${subtype}${contentName}`) {
           case 'UNC|click|icon':
             return 'Open Notifications panel';
           case 'UNC|click|link':
