@@ -200,9 +200,9 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   return propMap;
 }, {});
 
-const matchGlob = (searchStr, inputStr) => {
+export const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
-  const reg = new RegExp(`^${pattern}$`, 'i'); // devtool bug needs this backtick: `
+  const reg = new RegExp(`^${pattern}(\\.html)?$`, 'i'); // devtool bug needs this backtick: `
   return reg.test(inputStr);
 };
 
