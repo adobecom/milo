@@ -247,7 +247,8 @@ const getUniversalNavLocale = (locale) => {
 };
 
 const convertToPascalCase = (str) => str
-  ?.split('-')
+  ?.slice(1)
+  .split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
 
@@ -548,7 +549,7 @@ class Gnav {
             return `Sign Out|gnav|${experienceName}|unav`;
           case 'app-switcher|render|component':
             return 'AppLauncher.appIconToggle';
-          case `app-switcher|click|app|${contentName}`:
+          case `app-switcher|click|app${contentName}`:
             return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
           case 'app-switcher|click|footer|adobe-home':
             return 'AppLauncher.adobe.com';
