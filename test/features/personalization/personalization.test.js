@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
-import { applyPers } from '../../../libs/features/personalization/personalization.js';
+import { applyPers, matchGlob } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -36,9 +36,9 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('.marquee')).to.not.be.null;
-    expect(document.querySelector('a[href="/fragments/insertafter2"]')).to.be.null;
+    expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter2"]')).to.be.null;
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    const fragment = document.querySelector('a[href="/fragments/insertafter2"]');
+    const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter2"]');
     expect(fragment).to.not.be.null;
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
   });
@@ -47,11 +47,11 @@ describe('Functional Test', () => {
     let manifestJson = await readFile({ path: './mocks/manifestScheduledActive.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
-    expect(document.querySelector('a[href="/fragments/insertafter3"]')).to.be.null;
+    expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter3"]')).to.be.null;
     const event = { name: 'bts', start: new Date('2023-11-24T13:00:00+00:00'), end: new Date('2222-11-24T13:00:00+00:00') };
     await applyPers([{ manifestPath: '/promos/bts/manifest.json', disabled: false, event }]);
 
-    const fragment = document.querySelector('a[href="/fragments/insertafter3"]');
+    const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter3"]');
     expect(fragment).to.not.be.null;
 
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
@@ -109,5 +109,27 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(getConfig().mep?.martech).to.equal('|fireflies|manifest');
+  });
+});
+
+describe('matchGlob function', () => {
+  it('should match page', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers');
+    expect(result).to.be.true;
+  });
+
+  it('should match page with HTML extension', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers.html');
+    expect(result).to.be.true;
+  });
+
+  it('should not match child page', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers/free-download');
+    expect(result).to.be.false;
+  });
+
+  it('should match child page', async () => {
+    const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
+    expect(result).to.be.true;
   });
 });
