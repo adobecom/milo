@@ -133,7 +133,7 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = { DEFERRED: 'milo:deferred', LCP_LOADED: 'milo:LCP:loaded' };
+export const MILO_EVENTS = { DEFERRED: 'milo:deferred', LCP_LOADED: 'milo:LCP:loaded', POST_SECTION_LOADING: 'milo:postSection:loading' };
 
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
@@ -1011,6 +1011,7 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
+  window.dispatchEvent(new Event(MILO_EVENTS.POST_SECTION_LOADING));
   decorateFooterPromo();
 
   const appendage = getMetadata('title-append');
