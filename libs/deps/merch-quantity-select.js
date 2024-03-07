@@ -1,4 +1,4 @@
-// Thu, 07 Mar 2024 15:35:11 GMT
+// Thu, 07 Mar 2024 18:31:56 GMT
 
 // src/merch-quantity-select.js
 import { html, css as css2, LitElement } from "/libs/deps/lit-all.min.js";
@@ -182,12 +182,6 @@ var MerchQuantitySelect = class extends LitElement {
     this.boundKeydownListener = this.handleKeydown.bind(this);
     this.addEventListener("keydown", this.boundKeydownListener);
     window.addEventListener("mousedown", this.handleClickOutside);
-  }
-  /**
-   * @returns {LitElement} Parent merch card
-   */
-  get merchCard() {
-    return this.closest("merch-card");
   }
   handleKeyup() {
     this.handleInput();

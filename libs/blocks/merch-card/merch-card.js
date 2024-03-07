@@ -111,7 +111,7 @@ const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
 const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
-    const container = entry.target.closest('main > div');
+    const container = entry.target.closest('main > div:not([data-status])');
     if (!container) return;
     [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
     intersectionObserver.unobserve(entry.target);
@@ -140,7 +140,7 @@ const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
 const appendSlot = (slotEls, slotName, merchCard) => {
-  if (slotEls.length === 0) return;
+  if (slotEls.length === 0 && merchCard.variant !== MINI_COMPARE_CHART) return;
   const newEl = createTag(
     'p',
     { slot: slotName, class: slotName },
@@ -410,9 +410,9 @@ const init = async (el) => {
   }
   let footerRows;
   if (cardType === MINI_COMPARE_CHART) {
+    intersectionObserver.observe(merchCard);
     const container = el.closest('[data-status="decorated"]');
     if (container) {
-      intersectionObserver.observe(container);
       addTabClickListener(container);
     }
     footerRows = getMiniCompareChartFooterRows(el);
