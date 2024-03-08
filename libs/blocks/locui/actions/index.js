@@ -56,18 +56,18 @@ async function findPageFragments(path) {
 }
 
 async function findDeepFragments(path) {
-  const deepFragments = await findPageFragments(path);
-  if (!deepFragments) return [];
   const searched = [];
-  while (deepFragments.length !== searched.length) {
-    const search = deepFragments.filter((frag) => !searched.includes(frag.pathname));
-    for (const fragment of search) {
-      const nested = await findPageFragments(fragment.pathname);
-      searched.push(fragment.pathname);
-      if (nested && nested.length) deepFragments.push(...nested);
+  const fragments = await findPageFragments(path);
+  if (!fragments) return [];
+  while (fragments.length !== searched.length) {
+    const needsSearch = fragments.filter((fragment) => !searched.includes(fragment.pathname));
+    for (const search of needsSearch) {
+      const nestedFragments = await findPageFragments(search.pathname);
+      if (nestedFragments?.length) fragments.push(...nestedFragments);
+      searched.push(search.pathname);
     }
   }
-  return deepFragments.length ? getUrls(deepFragments) : [];
+  return fragments.length ? getUrls(fragments) : [];
 }
 
 export async function findFragments() {
