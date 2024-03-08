@@ -60,46 +60,6 @@ export const loadGoogleLogin = async (getMetadata, loadIms, loadScript) => {
   initGoogleLogin(loadIms, getMetadata, loadScript);
 };
 
-// TODO: adapt logic to only start execution after App Switcher loads;
-// we then need to position the prompt relative to it
-export const loadAppPrompt = async (getConfig, getMetadata, loadStyle) => {
-  const state = getMetadata('app-prompt')?.toLowerCase();
-  const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
-  const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
-  const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
-  if (state === 'off'
-    || !window.adobeIMS?.isSignedInUser()
-    || !desktopViewport
-    || !entName?.length
-    || !promptPath?.length) return;
-
-  const id = promptPath.split('/').pop();
-  const isDismissed = JSON.parse(document.cookie
-    .split(';')
-    .find((item) => item.trim().startsWith('dismissedAppPrompts='))
-    ?.split('=')[1] || '[]')
-    .includes(id);
-
-  if (isDismissed) return;
-
-  // TODO: factor in multiple entitlements, one for app, one for web app usage?
-  // const entitlements = await getConfig().entitlements();
-  const entitlements = ['photoshop']; // TODO: replace this line with the one above
-
-  if (!entitlements?.length || !entitlements.includes(entName)) return;
-
-  const { base, env } = getConfig();
-  const profileApi = `https://${env.adobeIO}/profile`;
-  const [
-    webappPrompt,
-  ] = await Promise.all([
-    import('../features/webapp-prompt/webapp-prompt.js'),
-    loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
-  ]);
-
-  webappPrompt.default({ promptPath, id, profileApi });
-};
-
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -114,7 +74,6 @@ const loadDelayed = ([
     loadPrivacy(getConfig, loadScript);
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript);
-    loadAppPrompt(getConfig, getMetadata, loadStyle);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;
