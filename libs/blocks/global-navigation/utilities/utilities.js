@@ -337,3 +337,35 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   body.innerHTML = await replaceText(body.innerHTML, getFedsPlaceholderConfig());
   return body;
 }
+
+export const [setUserProfile, getUserProfile] = (() => {
+  let profileData;
+  let profileResolve;
+  let profileTimeout;
+
+  const profilePromise = new Promise((resolve) => {
+    profileResolve = resolve;
+
+    profileTimeout = setTimeout(() => {
+      profileData = {};
+      resolve(profileData);
+    }, 5000);
+  });
+
+  return [
+    (data) => {
+      // TODO: debate whether to reject on empty profile or just return empty object;
+      // it might be that:
+      // * acc mgmt event is not fired
+      // * acc mgmt method isn't defined/doesn't return data/throws
+      // * user is not signed in
+      // * previous profile logic is used
+      if (data && !profileData) {
+        profileData = data;
+        clearTimeout(profileTimeout);
+        profileResolve(profileData);
+      }
+    },
+    () => profilePromise,
+  ];
+})();

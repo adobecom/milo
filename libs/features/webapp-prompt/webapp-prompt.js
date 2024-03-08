@@ -1,4 +1,4 @@
-import { toFragment } from '../../blocks/global-navigation/utilities/utilities.js';
+import { getUserProfile, toFragment } from '../../blocks/global-navigation/utilities/utilities.js';
 import { getConfig } from '../../utils/utils.js'; // TODO: doesn't make sense outside of Milo
 import { replaceKey, replaceText } from '../placeholders.js';
 
@@ -25,10 +25,9 @@ const getMetadata = (el) => [...el.childNodes].reduce((acc, row) => {
 }, {});
 
 class AppPrompt {
-  constructor({ promptPath, id, profileApi } = {}) {
+  constructor({ promptPath, id } = {}) {
     this.promptPath = promptPath;
     this.id = id;
-    this.profileApi = profileApi;
     this.elements = {};
 
     if (this.isDismissedPrompt()) return;
@@ -86,19 +85,14 @@ class AppPrompt {
     // TODO: add placeholder to sheet and document that consumers will need to add it too
     this.cancelText = cancelText?.innerText || await replaceKey('pep-prompt-cancel', getConfig());
 
-    this.profile = {};
-    const accessToken = window.adobeIMS.getAccessToken()?.token;
+    await getUserProfile()
+      .then((data) => {
+        const requiredFields = ['display_name', 'email', 'avatar'];
+        const hasRequiredFields = requiredFields.every((field) => !!data[field]);
+        if (!hasRequiredFields) return;
 
-    const [imsProfile, ppsProfile] = await Promise.all([
-      window.adobeIMS.getProfile(),
-      // TODO: get profile data from the new PPS service, no clear API as of yet
-      fetch(this.profileApi, { headers: new Headers({ Authorization: `Bearer ${accessToken}` }) }),
-    ]).catch(() => [null, null]);
-
-    if (imsProfile && ppsProfile) {
-      ({ displayName: this.profile.name, email: this.profile.email } = imsProfile);
-      ({ user: { avatar: this.profile.avatar } } = await ppsProfile.json());
-    }
+        this.profile = data;
+      });
 
     const metadata = getMetadata(content.querySelector('.section-metadata'));
     metadata['loader-duration'] = parseInt(metadata['loader-duration'] || CONFIG.delay, 10);
@@ -110,13 +104,13 @@ class AppPrompt {
   decorate = () => {
     this.elements.closeIcon = toFragment`<button daa-ll="Close Modal" class="appPrompt-close"></button>`;
     this.elements.cta = toFragment`<button daa-ll="Stay on this page" class="appPrompt-cta appPrompt-cta--close">${this.cancelText}</button>`;
-    this.elements.profile = Object.keys(this.profile).length
+    this.elements.profile = this.profile
       ? toFragment`<div class="appPrompt-profile">
         <div class="appPrompt-avatar">
           <img class="appPrompt-avatar-image" src="${this.profile.avatar}" />
         </div>
         <div class="appPrompt-user">
-          <div class="appPrompt-name">${this.profile.name}</div>
+          <div class="appPrompt-name">${this.profile.display_name}</div>
           <div class="appPrompt-email">${this.profile.email}</div>
         </div>
       </div>`

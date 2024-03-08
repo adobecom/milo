@@ -8,29 +8,30 @@ import {
   loadStyle,
 } from '../../utils/utils.js';
 import {
-  toFragment,
-  getFedsPlaceholderConfig,
-  getAnalyticsValue,
-  decorateCta,
-  getExperienceName,
-  loadDecorateMenu,
-  loadBlock,
-  loadStyles,
-  trigger,
-  setActiveDropdown,
   closeAllDropdowns,
-  loadBaseStyles,
-  yieldToMain,
+  decorateCta,
+  fetchAndProcessPlainHtml,
+  getActiveLink,
+  getAnalyticsValue,
+  getExperienceName,
+  getFedsPlaceholderConfig,
+  hasActiveLink,
   isDesktop,
   isTangentToViewport,
-  setCurtainState,
-  hasActiveLink,
-  setActiveLink,
-  getActiveLink,
-  selectors,
-  logErrorFor,
   lanaLog,
-  fetchAndProcessPlainHtml,
+  loadBaseStyles,
+  loadBlock,
+  loadDecorateMenu,
+  loadStyles,
+  logErrorFor,
+  selectors,
+  setActiveDropdown,
+  setActiveLink,
+  setCurtainState,
+  setUserProfile,
+  toFragment,
+  trigger,
+  yieldToMain,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -63,6 +64,13 @@ const CONFIG = {
             config: {
               enableLocalSection: true,
               miniAppContext: {
+                onMessage: (name, payload) => {
+                  if (name === 'System' && payload.subType === 'AppInitiated') {
+                    window.adobeProfile?.getUserProfile()
+                      .then((data) => { setUserProfile(data); })
+                      .catch(() => { setUserProfile({}); });
+                  }
+                },
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -254,6 +262,45 @@ const convertToPascalCase = (str) => str
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
 
+// TODO: debate whether this should be here or in a separate file,
+// since it's not time-sensitive and we want to potentially bundle it
+// TODO: position the prompt relative to the App Switcher
+const loadAppPrompt = async () => {
+  const state = getMetadata('app-prompt')?.toLowerCase();
+  const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+  const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+  const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
+  if (state === 'off'
+    || !window.adobeIMS?.isSignedInUser()
+    || !desktopViewport
+    || !entName?.length
+    || !promptPath?.length) return;
+
+  const id = promptPath.split('/').pop();
+  const isDismissed = JSON.parse(document.cookie
+    .split(';')
+    .find((item) => item.trim().startsWith('dismissedAppPrompts='))
+    ?.split('=')[1] || '[]')
+    .includes(id);
+
+  if (isDismissed) return;
+
+  // const entitlements = await getConfig().entitlements();
+  const entitlements = ['photoshop']; // TODO: replace this line with the one above
+
+  if (!entitlements?.length || !entitlements.includes(entName)) return;
+
+  const { base } = getConfig();
+  const [
+    webappPrompt,
+  ] = await Promise.all([
+    import('../../features/webapp-prompt/webapp-prompt.js'),
+    loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
+  ]);
+
+  webappPrompt.default({ promptPath, id });
+};
+
 class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
@@ -425,7 +472,11 @@ class Gnav {
   };
 
   imsReady = async () => {
-    const tasks = [this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile];
+    if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
+
+    const tasks = this.useUniversalNav
+      ? [this.decorateUniversalNav, loadAppPrompt]
+      : [this.decorateProfile];
 
     try {
       for await (const task of tasks) {
