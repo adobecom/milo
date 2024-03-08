@@ -1,4 +1,4 @@
-import { createTag, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, getMetadata, MILO_EVENTS } from '../../utils/utils.js';
 import { getModal, closeModal } from '../modal/modal.js';
 import { iphoneFrame, ipadFrame } from './mobileFrames.js';
 
@@ -15,6 +15,13 @@ const CLASS = {
   OVERLAY: 'gb-overlay',
 };
 
+const METADATA = {
+  DESC: 'gb-desc',
+  FOOTER: 'gb-footer',
+  GNAV: 'gb-gnav',
+  TITLE: 'gb-title',
+};
+
 const USER_AGENT = {
   iPhone: 'Mozilla/5.0 (iPhone13,2; U; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1',
   iPad: 'Mozilla/5.0 (iPad; CPU OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
@@ -28,7 +35,10 @@ const getTableValues = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent?.trim().toLowerCase();
     const content = row.children[1];
-    const text = content?.textContent.trim().toLowerCase();
+    let text = content?.textContent.trim();
+    if (key !== 'title' && key !== 'desc') {
+      text = text.toLowerCase();
+    }
     if (key && content) {
       rdx.keys.push(key);
       rdx[key] = { content, text };
@@ -37,13 +47,19 @@ const getTableValues = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, { keys: [] });
 
+const getOptions = (text, metadata) => {
+  const options = text || getMetadata(metadata);
+  return options?.toLowerCase().split(',').map((opt) => opt.trim());
+};
+
 const decorateFooter = (footer, options) => {
-  if (options.footer?.text === OPTION.CHANGED) {
+  const footerOptions = getOptions(options.footer?.text, METADATA.FOOTER);
+  if (footerOptions?.includes(OPTION.CHANGED)) {
     footer.classList.add(CLASS.CHANGED);
   } else {
     footer.classList.add(CLASS.OVERLAY);
   }
-  if (options.footer?.text === OPTION.NO_CLICK) {
+  if (footerOptions?.includes(OPTION.NO_CLICK)) {
     footer.classList.add(CLASS.NO_CLICK);
   }
 };
@@ -74,13 +90,14 @@ const checkGnav = (options, globalNoClick) => {
   const gnav = document.querySelector('.global-navigation');
   if (gnav) {
     gnav.style.zIndex = '1002';
-    if (!(options.gnav?.text === OPTION.CHANGED)) {
+    const gnavOptions = getOptions(options.gnav?.text, METADATA.GNAV);
+    if (!(gnavOptions?.includes(OPTION.CHANGED))) {
       gnav.classList.add(CLASS.OVERLAY);
       if (globalNoClick) {
         gnav.classList.add(CLASS.NO_CLICK);
       }
     }
-    if (options.gnav?.text === OPTION.NO_CLICK) {
+    if (gnavOptions?.includes(OPTION.NO_CLICK)) {
       gnav.classList.add(CLASS.NO_CLICK);
     }
   }
@@ -154,7 +171,9 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
   }
 
   const grayboxText = createTag('div', { class: 'graybox-text' }, null, { parent: grayboxMenu });
-  grayboxText.innerHTML = '<p>Review Update</p>'; // TODO: add text from options
+  const title = options.title?.text || getMetadata(METADATA.TITLE) || 'Review Update';
+  const desc = options.desc?.text || getMetadata(METADATA.DESC) || '';
+  grayboxText.innerHTML = `<p>${title}</p>${desc && `<p>${desc}</p>`}`;
 
   const grayboxDevices = createTag('div', { class: 'graybox-devices' }, null, { parent: grayboxMenu });
 
@@ -166,7 +185,6 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
       { parent: grayboxDevices },
     );
     button.addEventListener('click', openDeviceModal);
-    return button;
   });
 
   const toggleBtn = document.createElement('button');

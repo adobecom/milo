@@ -1,3 +1,8 @@
+:root {
+  --gb-container-border: 1px solid #707070;
+  --gb-overlay-color: rgba(0 0 0 / 45%);
+}
+
 .graybox {
   display: none;
 }
@@ -6,32 +11,21 @@
   position: relative;
 }
 
-.gb-no-change::before {
-  content: "";
-  position: absolute;
-  display: block;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0 0 0 / 45%);
-  pointer-events: none;
-}
-
 .gb-overlay {
   position: relative;
 }
 
-.gb-overlay::before {
+.gb-no-change::before, .gb-overlay::before {
+  background-color: var(--gb-overlay-color);
   content: "";
+  display: block;
+  height: 100%;
+  left: 0;
+  pointer-events: none;
   position: absolute;
   top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  background-color: rgba(0 0 0 / 45%);
   z-index: 1000;
-  pointer-events: none;
 }
 
 .gb-no-click::before {
@@ -49,77 +43,77 @@ body.gb-overlay::before {
 }
 
 .graybox-container {
-  --border: 1px solid #707070;
-
   position: fixed;
-  top: 15%;
   right: 0;
+  top: 15%;
   z-index: 2001;
 }
 
 .graybox-container .gb-toggle {
-  position: absolute;
-  left: -40px;
-  width: 40px;
-  height: 58px;
   background-color: white;
-  border: var(--border);
+  border: var(--gb-container-border);
   cursor: pointer;
+  height: 58px;
+  left: -40px;
+  position: absolute;
+  width: 40px;
 }
 
 .graybox-container .gb-toggle::before {
+  border-bottom: var(--gb-container-border);
+  border-left: var(--gb-container-border);
   content: " ";
-  border-left: var(--border);
-  border-bottom: var(--border);
-  width: 8px;
-  height: 8px;
-  transform: rotate(140deg) scaleX(-1);
   cursor: pointer;
   display: block;
+  height: 8px;
   margin-left: 10px;
-  transition: transform 0.2s ease-in-out, margin-left 0.2s ease-in-out;
   scale: 85%;
+  transform: rotate(140deg) scaleX(-1);
+  transition: transform 0.2s ease-in-out, margin-left 0.2s ease-in-out;
+  width: 8px;
 }
 
 .graybox-container.open .gb-toggle::before {
-  transform: rotate(225deg) scaleX(1);
   margin-left: 5px;
+  transform: rotate(225deg) scaleX(1);
 }
 
 .graybox-container .graybox-menu {
-  display: grid;
-  grid-template-rows: 1fr 66px;
-  position: absolute;
-  right: 39px;
   background-color: white;
-  width: 0;
-  overflow: hidden;
-  border: 0;
-  box-sizing: border-box;
   border-radius: 3px;
   border-top-right-radius: 0;
+  border: 0;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 1fr 66px;
+  overflow: hidden;
+  position: absolute;
+  right: 39px;
+  width: 0;
 }
 
 .graybox-container .graybox-menu.hide-devices {
-  grid-template-rows: 1fr 0;
   border-bottom-right-radius: 0;
+  grid-template-rows: 1fr 0;
 }
 
 .graybox-container.open .graybox-menu {
-  min-width: 320px;
+  border: var(--gb-container-border);
   min-height: 60px;
-  border: var(--border);
+  min-width: 320px;
 }
 
 .graybox-text {
-  padding: 16px;
-  font-weight: bold;
-  font-size: 24px;
   color: #000;
+  font-size: 14px;
+  font-weight: normal;
   line-height: 24px;
+  padding: 16px;
 }
 
-.graybox-text > p {
+.graybox-text > p:first-child {
+  font-weight: bold;
+  font-size: 24px;
   margin: 0;
 }
 
@@ -132,7 +126,8 @@ body.gb-overlay::before {
   padding: 16px;
   column-gap: 10px;
   height: 34px;
-  border-top: var(--border);
+  border-top: var(--gb-container-border);
+  box-sizing: content-box;
 }
 
 .graybox-devices > a {
