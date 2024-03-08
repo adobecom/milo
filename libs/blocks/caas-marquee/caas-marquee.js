@@ -1,6 +1,12 @@
 /* eslint-disable no-shadow, consistent-return, max-len, quote-props, prefer-const */
 import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
+const startTime = performance.now();
+let segmentsTime = 'n/a';
+let spectraTime = 'n/a';
+let martechTime = 'n/a';
+let marqueeType = 'Fallback';
+
 const SEGMENTS_MAP = {
   attributes: {
     'acrobat': ['pdf', 'convert document', 'reader'],
@@ -67,22 +73,24 @@ const SEGMENTS_MAP = {
     },
   },
   prod: {
+    source: {
     'b446a9cf-a45c-40a7-ae67-33c2cf7f0bf7': 'acrobat',
     '389deb08-1522-46e5-ba26-1df898934f4f': 'adobecom',
     '079734f3-b593-4c58-8805-592d71f88d95': 'apro-cart-abandoner',
     '295bea12-8443-41c9-9da1-8f75df77dd80': 'business',
     '235a97a1-bf2e-4e92-bf18-13a9bfcf6ec9': 'cc-lapsed',
-    'f6553238-548f-4e39-bfa4-b299caaca62e': 'commerce',
-    'f569e4f9-f20a-4d6e-ba95-2abe4facdd1b': 'creative-cloud',
-    '5114ecd1-d1ac-4caa-869c-5652ab83afed': 'express',
-    '1d33382e-0c2c-4d24-8b1f-08be98cee22a': 'firefly',
-    '3f27d856-bbdd-431b-9e8f-44f6fe0cfbd0': 'helpx',
-    '5b88bec0-99f2-4736-b2d8-4809463b7fbd': 'illustrator',
-    '3822c05b-8074-4629-b493-59cc12a78650': 'lightroom',
-    '5b5c991e-2633-4390-8ee4-e58931da088e': 'photoshop',
-    '395264bb-b584-45fa-af53-a4396e64838b': 'premiere',
-    'c02e9190-cc42-47cd-85c0-421924c47f2b': 'sign',
-    '9aba8c9e-dce9-427e-8122-a6c796ee2d03': 'stock',
+      'f6553238-548f-4e39-bfa4-b299caaca62e': 'commerce',
+      'f569e4f9-f20a-4d6e-ba95-2abe4facdd1b': 'creative-cloud',
+      '5114ecd1-d1ac-4caa-869c-5652ab83afed': 'express',
+      '1d33382e-0c2c-4d24-8b1f-08be98cee22a': 'firefly',
+      '3f27d856-bbdd-431b-9e8f-44f6fe0cfbd0': 'helpx',
+      '5b88bec0-99f2-4736-b2d8-4809463b7fbd': 'illustrator',
+      '3822c05b-8074-4629-b493-59cc12a78650': 'lightroom',
+      '5b5c991e-2633-4390-8ee4-e58931da088e': 'photoshop',
+      '395264bb-b584-45fa-af53-a4396e64838b': 'premiere',
+      'c02e9190-cc42-47cd-85c0-421924c47f2b': 'sign',
+      '9aba8c9e-dce9-427e-8122-a6c796ee2d03': 'stock',
+    },
   },
 };
 
@@ -197,6 +205,7 @@ function isProd() {
     || host.includes('hlx.live')
     || host.includes('localhost')
     || host.includes('stage.adobe')
+    || host.includes('milo.adobe.com')
     || host.includes('corp.adobe'));
 }
 
@@ -325,9 +334,11 @@ async function segmentApiEventHandler(e) {
       } catch (e) {
         log(`${getAttributes}: Unable to parse mapped user segments: ${e} ${mappedUserSegments} `, LANA_OPTIONS);
       }
+
       // eslint-disable-next-line no-use-before-define
       selectedId = await getMarqueeId();
       // eslint-disable-next-line no-use-before-define
+
       return renderMarquee(marquee, marquees, selectedId, metadata);
     }
   }
@@ -372,6 +383,7 @@ async function getAllMarquees(promoId, origin) {
  * @returns {string} id - currently marquee index (eventually will be marquee ID from Spectra)
  */
 async function getMarqueeId() {
+  const spectraApiStart= performance.now();
   const visitedLinks = [document.referrer];
   log(`Segments: ${segments} sent to Spectra AI`, LANA_OPTIONS);
   const endPoint = isProd() ? API_CONFIGS.spectra.prod : API_CONFIGS.spectra.stage;
@@ -386,6 +398,10 @@ async function getMarqueeId() {
   }).catch((error) => fetchExceptionHandler('getMarqueeId', error));
 
   const json = await responseHandler(response, 'getMarqueeId');
+
+  marqueeType = 'SpectraAI';
+  spectraTime = `${Math.round(performance.now() - spectraApiStart)}ms`;
+
   return json?.data?.[0]?.content_id || '';
 }
 
@@ -786,7 +802,7 @@ function handleAuthoringMistakes(authoredFields) {
  * function init()
  * @param {*} el - element with metadata for marquee
  */
-export default async function init(el) {
+export default async function init(el) {  
   metadata = getMetadata(el);
   metadata.leftbrick = parseEncodedBrick(metadata.leftbrick);
   metadata.rightbrick = parseEncodedBrick(metadata.rightbrick);
@@ -798,18 +814,32 @@ export default async function init(el) {
   el.parentNode.prepend(marquee);
 
   if (shouldLoadFallback()) {
+    console.log(`**** [Fallback] Marquee load time: ${Math.round(performance.now() - startTime)}ms`);
     return loadFallback(marquee, metadata);
   }
 
-  const martechPromise = loadMartech();
+  const martechApiStart = performance.now();
+  const martechPromise = loadMartech().then(() => {
+    martechTime = `${Math.round(performance.now() - martechApiStart)}ms`;
+   });
+
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
+
+  const segmentApiStart = performance.now();
   const event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+  const segmentsTime = `${Math.round(performance.now() - segmentApiStart)}ms`;
 
   if (authorPreview()) {
+    console.log(`**** [URLParam] Marquee load time: ${Math.round(performance.now() - startTime)}ms`);
     return renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
   }
 
   await segmentApiEventHandler(event);
+  
+  console.log(`**** Segment: ${segmentsTime} (interact)`);
+  console.log(`**** MarTech: ${martechTime}`);
+  console.log(`**** Spectra: ${spectraTime} (models)`);
+  console.log(`**** [${marqueeType}] Marquee load time: ${Math.round(performance.now() - startTime)}ms`);
 }
