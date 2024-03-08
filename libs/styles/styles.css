@@ -551,16 +551,18 @@ span.icon {
   min-height: 18px;
   min-width: 18px;
   margin-inline-end: var(--spacing-xxs);
-  max-width: 100%;
-  height: auto;
+}
+
+span.icon.node-first { margin-inline-start: unset; }
+span.icon.node-middle {  margin-inline: var(--spacing-xxs); }
+span.icon.node-only {  margin-inline: unset; }
+
+span.icon.node-last {  
+  margin-inline-end: unset; 
+  margin-inline-start: var(--spacing-xxs); 
 }
 
 .icon-area:not(.con-button) span.icon { margin-inline: unset;}
-
-span.icon.node-index-first { margin-inline-start: unset; }
-span.icon.node-index-middle {  margin-inline: var(--spacing-xxs); }
-span.icon.node-index-last {  margin-inline-end: unset; }
-span.icon.node-index-only {  margin-inline: unset; }
 
 /* Con Block Utils */
 .con-block.xs-spacing { padding: var(--spacing-xs) 0; }

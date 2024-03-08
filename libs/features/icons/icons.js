@@ -50,14 +50,14 @@ function decorateToolTip(icon) {
 }
 
 export function setNodeIndexClass(icons) {
-  icons.forEach(async (icon) => {
+  icons.forEach((icon) => {
     const parent = icon.parentNode;
     const children = parent.childNodes;
     const nodeIndex = Array.prototype.indexOf.call(children, icon);
     let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
     if (nodeIndex === 0) indexClass = 'first'
     if (children.length === 1) indexClass = 'only'
-    icon.classList.add(`node-index-${indexClass}`);
+    icon.classList.add(`node-${indexClass}`);
   });
 }
 
