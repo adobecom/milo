@@ -52,14 +52,28 @@ async function findPageFragments(path) {
     return acc;
   }, []);
   if (fragmentUrls.length === 0) return [];
-  return getUrls(fragmentUrls);
+  return fragmentUrls;
+}
+
+async function findDeepFragments(path) {
+  const searched = [];
+  const fragments = await findPageFragments(path);
+  if (!fragments) return [];
+  while (fragments.length !== searched.length) {
+    const needsSearch = fragments.filter((fragment) => !searched.includes(fragment.pathname));
+    for (const search of needsSearch) {
+      const nestedFragments = await findPageFragments(search.pathname);
+      if (nestedFragments?.length) fragments.push(...nestedFragments);
+      searched.push(search.pathname);
+    }
+  }
+  return fragments.length ? getUrls(fragments) : [];
 }
 
 export async function findFragments() {
   setStatus('fragments', 'info', 'Finding fragments.');
-  const found = urls.value.map((url) => findPageFragments(url.pathname));
+  const found = urls.value.map((url) => findDeepFragments(url.pathname));
   const pageFragments = await Promise.all(found);
-
   // For each page, loop through all the found fragments
   const forExcel = pageFragments.reduce((acc, fragments) => {
     if (fragments.length > 0) {
