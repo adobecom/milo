@@ -49,7 +49,7 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 let log;
 let upgradeOffer = null;
 
-export function polyfills() {
+export async function polyfills() {
   if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
   document.createElement('div', {
