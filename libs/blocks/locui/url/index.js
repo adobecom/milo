@@ -1,4 +1,5 @@
-import { getStatus } from '../utils/franklin.js';
+import { getStatus, preview } from '../utils/franklin.js';
+import { setStatus } from '../utils/status.js';
 
 const TIME_FORMAT = { hour12: false, hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
 
@@ -8,10 +9,6 @@ function getPrettyDate(string) {
   const date = rawDate.toLocaleDateString();
   const time = rawDate.toLocaleTimeString([], TIME_FORMAT);
   return [date, time];
-}
-
-export function handleAction(url) {
-  window.open(url, '_blank');
 }
 
 async function getDetails(path) {
@@ -33,6 +30,32 @@ async function getDetails(path) {
       modified: getPrettyDate(json.live.lastModified),
     },
   };
+}
+
+async function previewAction(url, item) {
+  try {
+    await preview(url.pathname);
+    const details = await getDetails(item.value.path);
+    item.value = { ...item.value, ...details };
+    window.open(url, '_blank');
+  } catch (error) {
+    setStatus(
+      'details',
+      'error',
+      'Previewing document',
+      'Sync to Langstore to perform this action',
+      9000,
+    );
+  }
+}
+
+export async function handleAction(e, item, isPrev = false) {
+  e.target.classList.add('locui-action-loading');
+  const action = item.value[preview ? 'preview' : 'live'];
+  const url = new URL(action.url);
+  if (isPrev) await previewAction(url, item);
+  else window.open(url, '_blank');
+  e.target.classList.remove('locui-action-loading');
 }
 
 export async function openWord(e, item) {

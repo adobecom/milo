@@ -7,6 +7,7 @@ function useSignal(value) {
 
 function Actions({ item }) {
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
+  const isDisabled = (status) => (!status || status !== 200 ? ' disabled' : '');
   return html`
     <div class=locui-url-source-actions>
       <button
@@ -14,13 +15,11 @@ function Actions({ item }) {
         class="locui-url-action locui-url-action-edit${isExcel}"
         onClick=${(e) => { openWord(e, item); }}>Edit</button>
       <button
-        disabled=${item.value.preview?.status !== 200}
-        class="locui-url-action locui-url-action-view"
-        onClick=${() => { handleAction(item.value.preview.url); }}>Preview</button>
+        class="locui-url-action locui-url-action-view${isDisabled(item.value.preview?.status)}"
+        onClick=${(e) => { handleAction(e, item, true); }}>Preview</button>
       <button
-        disabled=${item.value.live?.status !== 200}
-        class="locui-url-action locui-url-action-view"
-        onClick=${() => { handleAction(item.value.live.url); }}>Live</button>
+        class="locui-url-action locui-url-action-view${isDisabled(item.value.live?.status)}"
+        onClick=${(e) => { handleAction(e, item); }}>Live</button>
     </div>
   `;
 }
