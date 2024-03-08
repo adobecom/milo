@@ -56,7 +56,6 @@ export default async function decorate(block) {
     'pinterest',
     'reddit',
   ];
-  block.innerHTML = '';
   const clipboardSupport = !!navigator.clipboard;
   if (clipboardSupport) platforms.push('clipboard');
   const svgs = await getSVGsfromFile(
@@ -101,8 +100,13 @@ export default async function decorate(block) {
         return null;
     }
   };
-  if (!block.classList.contains('inline')) {
-    const heading = toSentenceCase(await replaceKey('share-this-page', config));
+  const authoredContent = block.innerText.trim() !== '';
+  if (authoredContent) {
+    const rows = block.querySelectorAll(':scope > div');
+    rows[0].classList.add('tracking-header');
+  } else if (!authoredContent && !block.classList.contains('inline')) {
+    const heading =  toSentenceCase(await replaceKey('share-this-page', config));
+    block.innerHTML = '';
     block.append(createTag('p', { class: 'tracking-header' }, heading));
   }
   const container = createTag('p', { class: 'icon-container' });
