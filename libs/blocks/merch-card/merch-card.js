@@ -295,11 +295,13 @@ function extractQuantitySelect(el) {
   if (config.length !== 2) return null;
   const attributes = {};
   attributes.title = config[0].textContent.trim();
-  const quantityValues = config[1].textContent.split(',').map((value) => value.trim())
-    .filter((value) => /^\d+$/.test(value));
-  if (quantityValues.length !== 3 && quantityValues.length !== 4) return null;
+  const values = config[1].textContent.split(',')
+    .map((value) => value.trim())
+    .filter((value) => /^\d*$/.test(value)) // Allow empty values as well
+    .map((value) => (value === '' ? undefined : Number(value)));
+  if (![3, 4, 5].includes(values.length)) return null;
   import('../../deps/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step, attributes['max-input']] = quantityValues.map(Number);
+  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
   const quantitySelect = createTag('merch-quantity-select', attributes);
   quantitySelectConfig.remove();
   return quantitySelect;

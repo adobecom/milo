@@ -1,4 +1,4 @@
-// Fri, 01 Mar 2024 23:31:57 GMT
+// Fri, 08 Mar 2024 20:47:23 GMT
 
 // src/merch-quantity-select.js
 import { html, LitElement } from "/libs/deps/lit-all.min.js";
@@ -8,7 +8,7 @@ import { css } from "/libs/deps/lit-all.min.js";
 var styles = css`
     :host {
         --background-color: var(--qs-background-color, #f6f6f6);
-        --text-color: var(--qs-text-color, #000);
+        --text-color: #000;
         --radius: 5px;
         --border-color: var(--qs-border-color, #e8e8e8);
         --border-width: var(--qs-border-width, 1px);
@@ -156,6 +156,7 @@ var MerchQuantitySelect = class extends LitElement {
       max: { type: Number },
       step: { type: Number },
       maxInput: { type: Number, attribute: "max-input" },
+      defaultValue: { type: Number, attribute: "default-value" },
       title: { type: String }
     };
   }
@@ -171,6 +172,7 @@ var MerchQuantitySelect = class extends LitElement {
     this.max = 0;
     this.step = 0;
     this.maxInput = void 0;
+    this.defaultValue = void 0;
     this.selectedValue = 0;
     this.highlightedIndex = 0;
     this.toggleMenu = this.toggleMenu.bind(this);
@@ -241,10 +243,12 @@ var MerchQuantitySelect = class extends LitElement {
     return options;
   }
   updated(changedProperties) {
-    if (changedProperties.has("min") || changedProperties.has("max") || changedProperties.has("step")) {
+    if (changedProperties.has("min") || changedProperties.has("max") || changedProperties.has("step") || changedProperties.has("defaultValue")) {
       this.options = this.generateOptionsArray();
-      this.highlightedIndex = 0;
-      this.handleMenuOption(this.options[0]);
+      this.highlightedIndex = this.defaultValue ? this.options.indexOf(this.defaultValue) : 0;
+      this.handleMenuOption(
+        this.defaultValue ? this.defaultValue : this.options[0]
+      );
       this.requestUpdate();
     }
   }
