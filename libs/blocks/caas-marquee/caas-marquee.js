@@ -88,7 +88,7 @@ const SEGMENTS_MAP = {
   },
 };
 
-const ALLOY_TIMEOUT = 500;
+const ALLOY_TIMEOUT = 750;
 
 const WIDTHS = {
   split: 1199,
