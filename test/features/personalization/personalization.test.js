@@ -261,6 +261,18 @@ describe('Functional Test', () => {
     await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
     expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
   });
+
+  it('replaceMerchCard should tag an element with a fragment', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestReplaceMerchCard.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    const el = document.querySelector('#features-of-milo-experimentation-platform');
+    expect(el).to.not.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    // replaceMerchCard sole action at personalisation level is to tag element
+    // with list of fragments path the element will have to deal with later
+    expect(el.dataset.overrides).to.equal('/fragments/fragmentreplaced,/fragments/fragmentalsoreplaced');
+  });
 });
 
 describe('normalizePath function', () => {

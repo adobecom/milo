@@ -5,6 +5,7 @@ import '../merch/merch.js';
 import '../merch-card/merch-card.js';
 import { createTag, decorateLinks, getConfig, loadBlock, loadStyle } from '../../utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
+import { OVERRIDE_PATHS } from '../../features/personalization/personalization.js';
 
 const DIGITS_ONLY = /^\d+$/;
 
@@ -65,25 +66,24 @@ export function parsePreferences(elements) {
   });
 }
 
-async function initMerchCards(config, type, filtered, el, preferences) {
-  let cardsData;
-  let err;
+const localizedPath = (path, config) => `${config?.locale?.prefix ?? ''}${path}`;
 
+const fetchOverrideCard = (path, config) => new Promise((resolve, reject) => {
   try {
-    const res = await fetch(`${config?.locale?.prefix ?? ''}${config.queryIndexCardPath}.json?sheet=${type}`);
-    if (res.ok) {
-      cardsData = await res.json();
-    } else {
-      err = res.statusText || res.status;
-    }
+    fetch(`${localizedPath(path, config)}.plain.html`).then((res) => {
+      if (res.ok) {
+        res.text().then((cardContent) => {
+          resolve({ path, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] });
+        });
+      }
+    });
   } catch (error) {
-    err = error.message;
+    reject(error);
   }
-  if (!cardsData) {
-    fail(el, err);
-  }
+});
 
-  const cards = `<div>${cardsData.data.map(({ cardContent }) => cardContent).join('\n')}</div>`;
+async function generateCards(html, config) {
+  const cards = `<div>${html}</div>`;
   const fragment = document.createRange().createContextualFragment(cards);
   const cardsRoot = fragment.firstElementChild;
   await makePause();
@@ -93,6 +93,7 @@ async function initMerchCards(config, type, filtered, el, preferences) {
   const autoBlocks = await decorateLinks(cardsRoot).map(loadBlock);
   await Promise.all(autoBlocks);
   await makePause();
+
   const blocks = [...cardsRoot.querySelectorAll(':scope > div')].map(loadBlock);
 
   // process merch card blocks in batches of 3.
@@ -102,6 +103,56 @@ async function initMerchCards(config, type, filtered, el, preferences) {
     await Promise.all(batch);
     await makePause();
   }
+  return cardsRoot;
+}
+
+async function overrideCards(root, overridePromises, config) {
+  try {
+    if (overridePromises?.length > 0) {
+      // Wait for all override cards to be fetched
+      const overrideData = await Promise.all(overridePromises);
+
+      if (overrideData?.length > 0) {
+        const overrideRoot = await generateCards(overrideData?.map(({ cardContent }) => cardContent).join('\n'), config);
+        const overrideMap = {};
+        overrideRoot.querySelectorAll('merch-card').forEach((card) => { if (card.name) { overrideMap[card.name] = card; } });
+        root.querySelectorAll('merch-card').forEach((card) => {
+          if (card.name && overrideMap[card.name]) {
+            card.replaceWith(overrideMap[card.name]);
+          }
+        });
+      }
+    }
+  } catch (error) {
+    window?.lana.error('Failed to override cards', error);
+  }
+  return root;
+}
+
+async function initMerchCards(config, type, filtered, el, preferences, overrides) {
+  let cardsData;
+  let err;
+
+  const overridePromises = overrides?.split(',').map(fetchOverrideCard);
+
+  try {
+    const url = `${localizedPath(config.queryIndexCardPath, config)}.json?sheet=${type}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      cardsData = await res.json();
+    } else {
+      err = res.statusText || res.status;
+    }
+  } catch (error) {
+    err = error.message;
+  }
+  if (!cardsData?.data) {
+    fail(el, err);
+  }
+
+  let cardsRoot = await generateCards(cardsData.data.map(({ cardContent }) => cardContent).join('\n'), config);
+
+  cardsRoot = await overrideCards(cardsRoot, overridePromises, config);
 
   if (filtered) {
     filterMerchCards(cardsRoot, filtered);
@@ -129,6 +180,7 @@ export default async function init(el) {
     return fail(el, 'Missing collection type');
   }
 
+  const overrides = el.dataset[OVERRIDE_PATHS];
   const config = getConfig();
   if (!config.queryIndexCardPath) {
     return fail(el, 'Missing queryIndexCardPath config');
@@ -229,7 +281,7 @@ export default async function init(el) {
   } else if (!merchCards.filtered) {
     merchCards.filtered = 'all';
   }
-  await initMerchCards(config, type, attributes.filtered, el, preferences)
+  await initMerchCards(config, type, attributes.filtered, el, preferences, overrides)
     .then((async (cardsRoot) => {
       const cards = [...cardsRoot.children];
       const batchSize = 3;
