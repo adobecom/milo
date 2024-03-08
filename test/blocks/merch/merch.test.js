@@ -138,6 +138,8 @@ describe('Merch Block', () => {
     await initService(true);
     Log.reset();
     Log.use(Log.Plugins.quietFilter);
+    fetchCheckoutLinkConfigs.promise = undefined;
+    await fetchCheckoutLinkConfigs('http://localhost:3000/libs');
   });
 
   afterEach(() => {
@@ -465,7 +467,7 @@ describe('Merch Block', () => {
     it('fetchCheckoutLinkConfigs: returns null if mapping cannot be fetched', async () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(null);
-      const mappings = await fetchCheckoutLinkConfigs();
+      const mappings = await fetchCheckoutLinkConfigs('http://localhost:2000/libs');
       expect(mappings).to.be.undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
       fetchCheckoutLinkConfigs.promise = undefined;
