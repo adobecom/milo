@@ -11,7 +11,7 @@ import merch, {
   buildCta,
   getCheckoutContext,
   initService,
-  priceLiteralsURL,
+  PRICE_LITERALS_URL,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
@@ -64,7 +64,7 @@ const CHECKOUT_LINK_CONFIGS = {
 
 const config = {
   codeRoot: '/libs',
-  commerce: { priceLiteralsURL },
+  commerce: { priceLiteralsURL: PRICE_LITERALS_URL },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },

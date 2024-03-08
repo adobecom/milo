@@ -1,4 +1,6 @@
-import { createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink,
+} from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 export const PRICE_LITERALS_URL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
