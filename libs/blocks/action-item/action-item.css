@@ -138,7 +138,7 @@
 }
 
 .action-item.float-icon .floated-icon {
-  display: inline-flex;
+  display: flex;
   position: absolute;
   bottom: -9px;
   right: -19px;
