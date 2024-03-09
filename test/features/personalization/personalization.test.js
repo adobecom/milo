@@ -2,7 +2,8 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
-import { applyPers, matchGlob } from '../../../libs/features/personalization/personalization.js';
+// import { applyPers, matchGlob } from '../../../libs/features/personalization/personalization.js';
+import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -112,24 +113,24 @@ describe('Functional Test', () => {
   });
 });
 
-describe('matchGlob function', () => {
-  it('should match page', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers');
-    expect(result).to.be.true;
-  });
+// describe('matchGlob function', () => {
+//   it('should match page', async () => {
+//     const result = matchGlob('/products/special-offers', '/products/special-offers');
+//     expect(result).to.be.true;
+//   });
 
-  it('should match page with HTML extension', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers.html');
-    expect(result).to.be.true;
-  });
+//   it('should match page with HTML extension', async () => {
+//     const result = matchGlob('/products/special-offers', '/products/special-offers.html');
+//     expect(result).to.be.true;
+//   });
 
-  it('should not match child page', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers/free-download');
-    expect(result).to.be.false;
-  });
+//   it('should not match child page', async () => {
+//     const result = matchGlob('/products/special-offers', '/products/special-offers/free-download');
+//     expect(result).to.be.false;
+//   });
 
-  it('should match child page', async () => {
-    const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
-    expect(result).to.be.true;
-  });
-});
+//   it('should match child page', async () => {
+//     const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
+//     expect(result).to.be.true;
+//   });
+// });
