@@ -217,9 +217,9 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   return propMap;
 }, {});
 
-export const matchGlob = (searchStr, inputStr) => {
+const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
-  const reg = new RegExp(`^${pattern}(\\.html)?$`, 'i'); // devtool bug needs this backtick: `
+  const reg = new RegExp(`^${pattern}$`, 'i'); // devtool bug needs this backtick: `
   return reg.test(inputStr);
 };
 
@@ -497,14 +497,32 @@ export async function getPersConfig(info) {
   }
 
   const infoTab = manifestInfo || data?.info?.data;
-  config.manifestType = infoTab
-    ?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase()
-    || 'personalization';
-
-  config.manifestOverrideName = infoTab
-    ?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')
-    ?.value?.toLowerCase();
-
+  const infoKeyMap = {
+    'manifest-type': ['Personalization', 'Promo', 'Test'],
+    'manifest-execution-order': ['First', 'Normal', 'Last'],
+  };
+  if (infoTab) {
+    const infoObj = infoTab?.reduce((acc, item) => {
+      acc[item.key] = item.value;
+      return acc;
+    }, {});
+    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
+    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    const executionOrder = {
+      'manifest-type': 1,
+      'manifest-execution-order': 1,
+    };
+    Object.keys(infoObj).forEach((key) => {
+      if (!infoKeyMap[key]) return;
+      const index = infoKeyMap[key].indexOf(infoObj[key]);
+      executionOrder[key] = index > -1 ? index : 1;
+    });
+    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+  } else {
+    // eslint-disable-next-line prefer-destructuring
+    config.manifestType = infoKeyMap[1];
+    config.executionOrder = '1-1';
+  }
   const selectedVariantName = await getPersonalizationVariant(
     manifestPath,
     config.variantNames,
@@ -547,17 +565,11 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
   action,
 });
 
-export async function runPersonalization(info, config) {
-  const { manifestPath } = info;
-
-  const experiment = await getPersConfig(info);
+export async function runPersonalization(experiment, config) {
   if (!experiment) return null;
-
-  const { selectedVariant } = experiment;
+  const { manifestPath, selectedVariant } = experiment;
   if (!selectedVariant) return {};
-  if (selectedVariant === 'default') {
-    return { experiment };
-  }
+  if (selectedVariant === 'default') return { experiment };
 
   if (selectedVariant.replacepage) {
     // only one replacepage can be defined
@@ -586,25 +598,31 @@ export async function runPersonalization(info, config) {
   };
 }
 
-function cleanManifestList(manifests) {
-  const manifestPaths = [];
-  const cleanedList = [];
+function compareExecutionOrder(a, b) {
+  if (a.executionOrder === b.executionOrder) return 0;
+  return a.executionOrder > b.executionOrder ? 1 : -1;
+}
+
+export function cleanAndSortManifestList(manifests) {
+  const manifestObj = {};
   manifests.forEach((manifest) => {
-    try {
-      const url = new URL(manifest.manifestPath);
-      manifest.manifestPath = url.pathname;
-    } catch (e) {
-      // do nothing
-    }
-    const foundIndex = manifestPaths.indexOf(manifest.manifestPath);
-    if (foundIndex === -1) {
-      manifestPaths.push(manifest.manifestPath);
-      cleanedList.push(manifest);
+    manifest.manifestPath = normalizePath(manifest.manifestUrl || manifest.manifest);
+    if (manifest.manifestPath in manifestObj) {
+      let fullManifest = manifestObj[manifest.manifestPath];
+      let freshManifest = manifest;
+      if (manifest.name) {
+        fullManifest = manifest;
+        freshManifest = manifestObj[manifest.manifestPath];
+      }
+      freshManifest.name = fullManifest.name;
+      freshManifest.selectedVariantName = fullManifest.selectedVariantName;
+      freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
+      manifestObj[manifest.manifestPath] = freshManifest;
     } else {
-      cleanedList[foundIndex] = { ...cleanedList[foundIndex], ...manifest };
+      manifestObj[manifest.manifestPath] = manifest;
     }
   });
-  return cleanedList;
+  return Object.values(manifestObj).sort(compareExecutionOrder);
 }
 
 const createDefaultExperiment = (manifest) => ({
@@ -620,20 +638,23 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) return;
+  let experiments = manifests;
+  for (let i = 0; i < experiments.length; i += 1) {
+    experiments[i] = await getPersConfig(experiments[i]);
+  }
 
-  const cleanedManifests = cleanManifestList(manifests);
+  experiments = cleanAndSortManifestList(experiments);
 
   const override = config.mep?.override;
   let results = [];
-  const experiments = [];
-  for (const manifest of cleanedManifests) {
-    if (manifest.disabled && !override) {
-      experiments.push(createDefaultExperiment(manifest));
+
+  for (const experiment of experiments) {
+    if (experiment.disabled && !override) {
+      experiments.push(createDefaultExperiment(experiment));
     } else {
-      const result = await runPersonalization(manifest, config);
+      const result = await runPersonalization(experiment, config);
       if (result) {
         results.push(result);
-        experiments.push(result.experiment);
       }
     }
   }
