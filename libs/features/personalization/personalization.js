@@ -33,7 +33,7 @@ const COLUMN_NOT_OPERATOR = 'not';
 const TARGET_EXP_PREFIX = 'target-';
 const PAGE_URL = new URL(window.location.href);
 
-export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
+export const TRACKED_MANIFEST_TYPE = 'personalization';
 
 // Replace any non-alpha chars except comma, space, ampersand and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
@@ -650,7 +650,7 @@ export async function applyPers(manifests) {
 
   for (const experiment of experiments) {
     if (experiment.disabled && !override) {
-      experiments.push(createDefaultExperiment(experiment));
+      results.push(createDefaultExperiment(experiment));
     } else {
       const result = await runPersonalization(experiment, config);
       if (result) {
@@ -665,7 +665,7 @@ export async function applyPers(manifests) {
   config.expBlocks = consolidateObjects(results, 'blocks');
   config.expFragments = consolidateObjects(results, 'fragments');
 
-  const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
+  const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
 
   const pznVariants = pznList.map((r) => {
