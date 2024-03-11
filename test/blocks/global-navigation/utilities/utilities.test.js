@@ -83,7 +83,7 @@ describe('global navigation utilities', () => {
         path: '/test/path/federal/media.png',
         locale: '',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
         host: 'https://adobe.com',
         path: '/test/path/federal/media.png',
@@ -98,7 +98,7 @@ describe('global navigation utilities', () => {
         path: '/test/federal/media.png',
         locale: '/ch_de',
       });
-      federatePictureSources(localeUrlsTemplate);
+      federatePictureSources({ section: localeUrlsTemplate });
       verifyImageTemplate({
         host: 'https://adobe.com',
         path: '/test/federal/media.png',
@@ -113,7 +113,7 @@ describe('global navigation utilities', () => {
         path: '/federal/media.png',
         locale: '',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
         host: baseHost,
         path: '/federal/media.png',
@@ -128,7 +128,7 @@ describe('global navigation utilities', () => {
         path: '/federal/media.png',
         locale: '/ch_de',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
         host: baseHost,
         path: '/federal/media.png',
@@ -143,7 +143,7 @@ describe('global navigation utilities', () => {
         path: '/test/path/federal/media.png',
         locale: '',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
         host: '.',
         path: '/test/path/federal/media.png',
@@ -158,7 +158,7 @@ describe('global navigation utilities', () => {
         path: '/test/federal/media.png',
         locale: '/ch_de',
       });
-      federatePictureSources(localeUrlsTemplate);
+      federatePictureSources({ section: localeUrlsTemplate });
       verifyImageTemplate({
         host: '.',
         path: '/test/federal/media.png',
@@ -173,7 +173,7 @@ describe('global navigation utilities', () => {
         path: '/federal/media.png',
         locale: '',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
         host: baseHost,
         path: '/federal/media.png',
@@ -188,11 +188,26 @@ describe('global navigation utilities', () => {
         path: '/federal/media.png',
         locale: '/ch_de',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
         host: baseHost,
         path: '/federal/media.png',
         locale: '/ch_de',
+        template,
+      });
+    });
+
+    it('should allow to force picture federation to /federal/media.png', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/media.png',
+        locale: '',
+      });
+      federatePictureSources({ section: template, forceFederate: true });
+      verifyImageTemplate({
+        host: 'https://main--federal--adobecom.hlx.page',
+        path: '/federal/media.png',
+        locale: '',
         template,
       });
     });
