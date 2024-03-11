@@ -243,16 +243,9 @@ export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
     (area) => {
       if (hasActiveLink() || !(area instanceof HTMLElement)) return null;
       const { origin, pathname } = window.location;
-      let activeLink;
-
-      [`${origin}${pathname}`, pathname].forEach((path) => {
-        if (activeLink) return;
-        const linkElements = area.querySelectorAll('a:not([data-modal-hash])');
-        activeLink = [...linkElements].find((el) => {
-          const regex = new RegExp(`^${path}(\\?[^#]*)?(#.*)?$`);
-          return regex.test(el.href);
-        });
-      });
+      const activeLink = [
+        ...area.querySelectorAll('a:not([data-modal-hash])'),
+      ].find((el) => new RegExp(`^${`${origin}${pathname}`}(\\?[^#]*)?(#.*)?$`).test(el.href));
 
       if (!activeLink) return null;
 
