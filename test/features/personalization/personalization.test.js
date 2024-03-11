@@ -120,7 +120,7 @@ describe('matchGlob function', () => {
 
   it('should match page with HTML extension', async () => {
     const result = matchGlob('/products/special-offers', '/products/special-offers.html');
-    expect(result).to.be.false;
+    expect(result).to.be.true;
   });
 
   it('should not match child page', async () => {
