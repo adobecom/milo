@@ -19,3 +19,12 @@ export function updateLinkWithLangRoot(link) {
     return link;
   }
 }
+
+export async function customFetch({ resource, withCacheRules }) {
+  const options = {};
+  if (withCacheRules) {
+    const params = new URLSearchParams(window.location.search);
+    options.cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  }
+  return fetch(resource, options);
+}

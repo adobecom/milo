@@ -1,3 +1,9 @@
+
+.library-container-end,
+.section.masonry-layout .library-container-end[class*='grid-'] {
+  display: none;
+}
+
 .library-container-end::before {
   display: block;
   content: 'Library Container End';
