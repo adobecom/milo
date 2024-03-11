@@ -177,7 +177,7 @@ function createPreviewPill(manifests) {
     const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
     const scheduled = manifest.event
       ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
-        <p>On: ${manifest.event.start?.toLocaleString()}</p>
+         <p>On: ${manifest.event.start?.toLocaleString()} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
          <p>Off: ${manifest.event.end?.toLocaleString()}</p>` : '';
     let analyticsTitle = '';
     if (manifestType === NON_TRACKED_MANIFEST_TYPE) {
