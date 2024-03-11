@@ -111,21 +111,12 @@ const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
 const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
-    const container = entry.target.closest('main > div:not([data-status])');
+    const container = entry.target.closest('main > div');
     if (!container) return;
     [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
     intersectionObserver.unobserve(entry.target);
   });
 });
-
-const addTabClickListener = (container) => {
-  const buttons = document.querySelectorAll('button[role="tab"]');
-  buttons.forEach((button) => {
-    button.addEventListener('click', () => {
-      intersectionObserver.observe(container);
-    });
-  });
-};
 
 const textStyles = {
   H5: 'detail-m',
@@ -140,7 +131,7 @@ const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
 const appendSlot = (slotEls, slotName, merchCard) => {
-  if (slotEls.length === 0 && merchCard.variant !== MINI_COMPARE_CHART) return;
+  if (slotEls.length === 0) return;
   const newEl = createTag(
     'p',
     { slot: slotName, class: slotName },
@@ -295,7 +286,7 @@ const simplifyHrs = (el) => {
   });
 };
 
-async function extractQuantitySelect(el) {
+function extractQuantitySelect(el) {
   const quantitySelectConfig = el.querySelector('ul');
   if (!quantitySelectConfig) return null;
   const configMarkup = quantitySelectConfig.querySelector('li');
@@ -307,7 +298,7 @@ async function extractQuantitySelect(el) {
   const quantityValues = config[1].textContent.split(',').map((value) => value.trim())
     .filter((value) => /^\d+$/.test(value));
   if (quantityValues.length !== 3) return null;
-  await import('../../deps/merch-quantity-select.js');
+  import('../../deps/merch-quantity-select.js');
   [attributes.min, attributes.max, attributes.step] = quantityValues.map(Number);
   const quantitySelect = createTag('merch-quantity-select', attributes);
   quantitySelectConfig.remove();
@@ -345,9 +336,8 @@ const decorateFooterRows = (merchCard, footerRows) => {
 
 const setMiniCompareOfferSlot = (merchCard, offers) => {
   if (merchCard.variant !== MINI_COMPARE_CHART) return;
-  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]');
-  // eslint-disable-next-line chai-friendly/no-unused-expressions
-  offers ? miniCompareOffers.append(offers) : miniCompareOffers.appendChild(createTag('p'));
+  const miniCompareOffers = createTag('div', { slot: 'offers' }, offers);
+  if (offers === undefined) { miniCompareOffers.appendChild(createTag('p')); }
   merchCard.appendChild(miniCompareOffers);
 };
 
@@ -410,10 +400,9 @@ const init = async (el) => {
   }
   let footerRows;
   if (cardType === MINI_COMPARE_CHART) {
-    intersectionObserver.observe(merchCard);
     const container = el.closest('[data-status="decorated"]');
     if (container) {
-      addTabClickListener(container);
+      intersectionObserver.observe(container);
     }
     footerRows = getMiniCompareChartFooterRows(el);
   }
@@ -491,11 +480,7 @@ const init = async (el) => {
   merchCard.appendChild(footer);
 
   if (MULTI_OFFER_CARDS.includes(cardType)) {
-    if (merchCard.variant === MINI_COMPARE_CHART) {
-      const miniCompareOffers = createTag('div', { slot: 'offers' });
-      merchCard.append(miniCompareOffers);
-    }
-    const quantitySelect = await extractQuantitySelect(el, cardType);
+    const quantitySelect = extractQuantitySelect(el);
     const offerSelection = el.querySelector('ul');
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');
