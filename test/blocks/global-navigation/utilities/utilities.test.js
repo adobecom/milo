@@ -205,7 +205,7 @@ describe('global navigation utilities', () => {
       });
       federatePictureSources({ section: template, forceFederate: true });
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
         locale: '',
         template,
