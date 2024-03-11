@@ -123,8 +123,7 @@ const config = {
   geoRouting: 'on',
   fallbackRouting: 'on',
   links: 'on',
-  // will be reverted before merging
-  imsClientId: 'fedsmilo',
+  imsClientId: 'milo',
   imsScope: 'AdobeID,openid,gnav,pps.read,firefly_api',
   codeRoot: '/libs',
   locales,

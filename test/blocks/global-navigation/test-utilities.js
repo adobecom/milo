@@ -70,11 +70,11 @@ export const analyticsTestData = {
   'profile|click|sign-in': 'Sign In|gnav|milo|unav',
   'profile|click|sign-out': 'Sign Out|gnav|milo|unav',
   'profile|render|component': 'Account|gnav|milo',
-  'UNC|click|dismiss': 'Dismiss Notifications',
-  'UNC|click|icon': 'Open Notifications panel',
-  'UNC|click|link': 'Open Notification',
-  'UNC|click|markRead': 'Mark Notification as read',
-  'UNC|click|markUnread': 'Mark Notification as unread',
+  'unc|click|dismiss': 'Dismiss Notifications',
+  'unc|click|icon': 'Open Notifications panel',
+  'unc|click|link': 'Open Notification',
+  'unc|click|markRead': 'Mark Notification as read',
+  'unc|click|markUnread': 'Mark Notification as unread',
 };
 
 export const unavLocalesTestData = Object.entries(LANGMAP).reduce((acc, curr) => {

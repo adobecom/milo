@@ -250,8 +250,7 @@ export const getUniversalNavLocale = (locale) => {
 };
 
 const convertToPascalCase = (str) => str
-  ?.replace('|', '')
-  .split('-')
+  ?.split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
 
@@ -527,20 +526,26 @@ class Gnav {
 
     const onAnalyticsEvent = (data) => {
       if (!data) return;
-      const getInteraction = () => {
-        const { workflow, type, subtype } = data.event || data;
-        const contentName = data.content?.name ? `|${data.content.name}` : '';
+      if (!data.event) data.event = { type: data.type, subtype: data.subtype };
+      if (!data.source) data.source = { name: data.workflow?.toLowerCase().trim() };
 
-        switch (`${workflow}|${type}|${subtype}${contentName}`) {
-          case 'UNC|click|icon':
+      const getInteraction = () => {
+        const {
+          event: { type, subtype } = {},
+          source: { name } = {},
+          content: { name: contentName } = {},
+        } = data;
+
+        switch (`${name}|${type}|${subtype}${contentName ? `|${contentName}` : ''}`) {
+          case 'unc|click|icon':
             return 'Open Notifications panel';
-          case 'UNC|click|link':
+          case 'unc|click|link':
             return 'Open Notification';
-          case 'UNC|click|markRead':
+          case 'unc|click|markRead':
             return 'Mark Notification as read';
-          case 'UNC|click|dismiss':
+          case 'unc|click|dismiss':
             return 'Dismiss Notifications';
-          case 'UNC|click|markUnread':
+          case 'unc|click|markUnread':
             return 'Mark Notification as unread';
           case 'profile|click|sign-in':
             return `Sign In|gnav|${experienceName}|unav`;
@@ -552,7 +557,7 @@ class Gnav {
             return `Sign Out|gnav|${experienceName}|unav`;
           case 'app-switcher|render|component':
             return 'AppLauncher.appIconToggle';
-          case `app-switcher|click|app${contentName}`:
+          case `app-switcher|click|app|${contentName}`:
             return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
           case 'app-switcher|click|footer|adobe-home':
             return 'AppLauncher.adobe.com';
