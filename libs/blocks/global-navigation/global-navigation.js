@@ -537,16 +537,6 @@ class Gnav {
         } = data;
 
         switch (`${name}|${type}|${subtype}${contentName ? `|${contentName}` : ''}`) {
-          case 'unc|click|icon':
-            return 'Open Notifications panel';
-          case 'unc|click|link':
-            return 'Open Notification';
-          case 'unc|click|markRead':
-            return 'Mark Notification as read';
-          case 'unc|click|dismiss':
-            return 'Dismiss Notifications';
-          case 'unc|click|markUnread':
-            return 'Mark Notification as unread';
           case 'profile|click|sign-in':
             return `Sign In|gnav|${experienceName}|unav`;
           case 'profile|render|component':
@@ -567,6 +557,16 @@ class Gnav {
             return 'AppLauncher.adobe.com';
           case 'app-switcher|click|footer|see-all-apps':
             return 'AppLauncher.allapps';
+          case 'unc|click|icon':
+            return 'Open Notifications panel';
+          case 'unc|click|link':
+            return 'Open Notification';
+          case 'unc|click|markRead':
+            return 'Mark Notification as read';
+          case 'unc|click|dismiss':
+            return 'Dismiss Notifications';
+          case 'unc|click|markUnread':
+            return 'Mark Notification as unread';
           default:
             return null;
         }
