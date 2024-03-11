@@ -54,7 +54,7 @@ a[is='checkout-link'] > span {
 
   #checkout-link-modal.crm,
   #checkout-link-modal.crm .milo-iframe {
-    height: 600px;
+    height: 640px;
   }
 }
 
