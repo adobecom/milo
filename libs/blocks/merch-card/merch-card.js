@@ -248,9 +248,7 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
 const init = async (el) => {
   const styles = [...el.classList];
   const cardType = getPodType(styles) || 'product';
-  if (!styles.includes(cardType)) {
-    styles.push(cardType);
-  }
+  if (!styles.includes(cardType)) styles.push(cardType);
   let section = el.closest('.section');
   if (section) {
     const merchCards = addMerchCardGridIfMissing(section, cardType);
