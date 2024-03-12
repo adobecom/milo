@@ -204,6 +204,7 @@ async function openExternalModal(url, getModal) {
 
 export async function openModal(e, url, offerType) {
   e.preventDefault();
+  e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
