@@ -8,12 +8,11 @@ import {
   isElementVisible,
   mockRes,
   viewports,
-  config,
   unavLocalesTestData,
   analyticsTestData,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import initGnav, { osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import initGnav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
@@ -48,7 +47,7 @@ describe('global navigation', () => {
       sinon.restore();
     });
 
-    it('should log when could not load IMS', async () => {
+    it('should send log when could not load IMS', async () => {
       const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
       await createFullGlobalNavigation({
         customConfig: {
@@ -59,7 +58,34 @@ describe('global navigation', () => {
         },
       });
 
-      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('GNAV: Error with IMS'))).to.exist;
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Error with IMS'))).to.exist;
+    });
+
+    it('should send log when sign in link is not found', async () => {
+      const mockWithWrongSignInHref = globalNavigationMock.replace('https://adobe.com?sign-in=true', 'https://adobe.com');
+      await createFullGlobalNavigation({
+        signedIn: false,
+        globalNavigation: mockWithWrongSignInHref,
+      });
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Sign in link not found in dropdown.'))).to.exist;
+    });
+
+    it("should log when there's issues within onReady", async () => {
+      const gnav = await createFullGlobalNavigation({});
+      sinon.stub(gnav, 'decorateProfile').callsFake(() => {
+        throw new Error('error');
+      });
+      await gnav.imsReady();
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('issues within onReady'))).to.exist;
+    });
+
+    it('should log when IMS signIn method is not available', async () => {
+      const ogIms = window.adobeIMS;
+      window.adobeIMS = { signIn: 'not-a-function' };
+      await createFullGlobalNavigation({ signedIn: false });
+      document.querySelector(`${selectors.signInDropdown} ${selectors.signIn}`).click();
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('IMS signIn method not available'))).to.exist;
+      window.adobeIMS = ogIms;
     });
   });
 
@@ -449,6 +475,11 @@ describe('global navigation', () => {
 
         expect(navLink.getAttribute('aria-expanded')).to.equal('false');
         expect(isElementVisible(popup)).to.equal(false);
+      });
+
+      it('should not decorate breadcrumbs when has-breadcrumbs class is not present', async () => {
+        const gnav = await createFullGlobalNavigation({ hasBreadcrumbs: false });
+        expect(await gnav.decorateBreadcrumbs()).to.be.null;
       });
     });
 
@@ -1202,7 +1233,12 @@ describe('global navigation', () => {
 
   describe('Universal navigation', () => {
     const orgAlloy = window.alloy;
+    let clock;
     beforeEach(async () => {
+      clock = sinon.useFakeTimers({
+        toFake: ['setTimeout'],
+        shouldAdvanceTime: true,
+      });
       window.UniversalNav = sinon.spy();
       window.UniversalNav.reload = sinon.spy();
       // eslint-disable-next-line no-underscore-dangle
@@ -1234,6 +1270,7 @@ describe('global navigation', () => {
       it('should reload unav on viewport change', async () => {
         await createFullGlobalNavigation({ unavContent: 'on' });
         await setViewport(viewports.mobile);
+        await clock.runAllAsync();
         expect(window.UniversalNav.reload.getCall(0)).to.exist;
       });
 
@@ -1291,21 +1328,7 @@ describe('global navigation', () => {
 
       it('should send the correct locale to unav', async () => {
         for (const data of unavLocalesTestData) {
-          await createFullGlobalNavigation({
-            unavContent: 'on',
-            customConfig: {
-              ...config,
-              contentRoot: `${window.location.origin}${data.prefix}`,
-              pathname: `${data.prefix}`,
-              locale: {
-                prefix: data.prefix,
-                ietf: data.ietf,
-              },
-              locales: { [data.prefix.replace('/', '')]: { ietf: data.ietf, tk: 'hah7vzn.css' } },
-            },
-          });
-          expect(window.UniversalNav.getCall(0).args[0].locale).to.equal(data.expectedLocale);
-          window.UniversalNav.resetHistory();
+          expect(getUniversalNavLocale({ prefix: data.prefix })).to.equal(data.expectedLocale);
         }
       });
     });
@@ -1370,7 +1393,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://www.stage.adobe.com/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
 
@@ -1380,7 +1403,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://www.stage.adobe.com/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
   });

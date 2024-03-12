@@ -33,7 +33,7 @@ const COLUMN_NOT_OPERATOR = 'not';
 const TARGET_EXP_PREFIX = 'target-';
 const PAGE_URL = new URL(window.location.href);
 
-export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
+export const TRACKED_MANIFEST_TYPE = 'personalization';
 
 // Replace any non-alpha chars except comma, space, ampersand and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
@@ -217,9 +217,9 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   return propMap;
 }, {});
 
-const matchGlob = (searchStr, inputStr) => {
+export const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
-  const reg = new RegExp(`^${pattern}$`, 'i'); // devtool bug needs this backtick: `
+  const reg = new RegExp(`^${pattern}(\\.html)?$`, 'i'); // devtool bug needs this backtick: `
   return reg.test(inputStr);
 };
 
@@ -704,6 +704,24 @@ const createDefaultExperiment = (manifest) => ({
   selectedVariant: { commands: [], fragments: [] },
 });
 
+export function handleFragmentCommand(command, a) {
+  const config = getConfig();
+  const { action, fragment, manifestPath } = command;
+  if (action === 'replace') {
+    a.href = fragment;
+    if (config.mep.preview) a.dataset.manifestId = manifestPath;
+    return fragment;
+  }
+  if (action === 'remove') {
+    if (config.mep.preview) {
+      a.parentElement.dataset.removedManifestId = manifestPath;
+    } else {
+      a.parentElement.remove();
+    }
+  }
+  return false;
+}
+
 export async function applyPers(manifests) {
   const config = getConfig();
 
@@ -720,7 +738,7 @@ export async function applyPers(manifests) {
 
   for (const experiment of experiments) {
     if (experiment.disabled && !override) {
-      experiments.push(createDefaultExperiment(experiment));
+      results.push(createDefaultExperiment(experiment));
     } else {
       const result = await runPersonalization(experiment, config);
       if (result) {
@@ -735,7 +753,7 @@ export async function applyPers(manifests) {
   config.expBlocks = consolidateObjects(results, 'blocks');
   config.expFragments = consolidateObjects(results, 'fragments');
 
-  const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
+  const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
 
   const pznVariants = pznList.map((r) => {
@@ -748,20 +766,5 @@ export async function applyPers(manifests) {
   });
   if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-  config.mep.handleFragmentCommand = (command, a) => {
-    const { action, fragment, manifestPath } = command;
-    if (action === 'replace') {
-      a.href = fragment;
-      if (config.mep.preview) a.dataset.manifestId = manifestPath;
-      return fragment;
-    }
-    if (action === 'remove') {
-      if (config.mep.preview) {
-        a.parentElement.dataset.removedManifestId = manifestPath;
-      } else {
-        a.parentElement.remove();
-      }
-    }
-    return false;
-  };
+  config.mep.handleFragmentCommand = handleFragmentCommand;
 }
