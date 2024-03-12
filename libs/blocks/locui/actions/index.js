@@ -9,16 +9,16 @@ import {
   allowRollout,
   allowFindFragments,
   syncFragments,
-  showModal,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
-import { decorateSections } from '../../../utils/utils.js';
+import { createTag, decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import { createProject, startSync, startProject, getServiceUpdates, rolloutLang } from '../utils/miloc.js';
 import { signal } from '../../../deps/htm-preact.js';
+import SyncLangStoreModal from './modal.js';
 
 export const showRolloutOptions = signal(false);
 
@@ -117,6 +117,13 @@ export async function syncToExcel(paths) {
   }
 }
 
+export async function startSyncToLangstore() {
+  const { getModal } = await import('../../modal/modal.js');
+  const div = createTag('div');
+  const content = SyncLangStoreModal(div);
+  return getModal(null, { id: 'sync-modal', content, closeEvent: 'closeModal' });
+}
+
 export async function findAllFragments() {
   setStatus('fragments', 'info', 'Finding fragments.');
   const forExcel = await findFragments();
@@ -144,8 +151,12 @@ export async function syncToLangstore() {
   }
 }
 
+export function closeSyncModal() {
+  document.querySelector('.dialog-modal').dispatchEvent(new Event('closeModal'));
+}
+
 export async function syncFragsLangstore() {
-  showModal.value = '';
+  closeSyncModal();
   if (syncFragments.value?.length) {
     await syncToExcel(syncFragments.value);
     syncFragments.value = [];

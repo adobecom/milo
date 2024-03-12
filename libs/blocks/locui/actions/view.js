@@ -6,9 +6,15 @@ import {
   allowSyncToLangstore,
   allowSendForLoc,
   allowRollout,
-  showModal,
 } from '../utils/state.js';
-import { findAllFragments, sendForLoc, showRolloutOptions, showRollout, rolloutAll } from './index.js';
+import {
+  findAllFragments,
+  sendForLoc,
+  showRolloutOptions,
+  showRollout,
+  rolloutAll,
+  startSyncToLangstore,
+} from './index.js';
 
 export default function Actions() {
   const canAct = allowFindFragments.value
@@ -33,7 +39,7 @@ export default function Actions() {
         `}
         ${allowSyncToLangstore.value && html`
           <button
-            onClick=${() => { showModal.value = 'startSync'; }}
+            onClick=${startSyncToLangstore}
             class=locui-urls-heading-action>
             Sync to Langstore <span>(${urls.value[0].langstore.lang})</span>
           </button>

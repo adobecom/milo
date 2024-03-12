@@ -558,38 +558,17 @@ button.locui-url-action-view {
   backdrop-filter: unset;
 }
 
-body:has(.locui-modal-container) {
-  overflow: hidden
-}
-
-.locui-modal-container {
-  content: "";
-  background: rgb(255 251 251 / 80%);
-  width: 100vw;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  position: fixed;
-  display: inline-block;
-}
-
 .locui-modal-title {
   margin: 0;
 }
 
 .locui-modal-content {
-  position: fixed;
   min-width: 50vw;
-  top: 30%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   max-width: 80vw;
   background-color: white;
   border: 4px solid #B8B8B8;
   border-radius: 6px;
   padding: 15px;
-  max-height: 80vh;
 }
 
 .locui-sync-actions {

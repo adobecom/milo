@@ -1,6 +1,6 @@
-import { html, useEffect, useState } from '../../../deps/htm-preact.js';
-import { showModal, urls, syncFragments } from '../utils/state.js';
-import { findFragments, syncFragsLangstore } from './index.js';
+import { html, useEffect, useState, render } from '../../../deps/htm-preact.js';
+import { urls, syncFragments } from '../utils/state.js';
+import { closeSyncModal, findFragments, syncFragsLangstore } from './index.js';
 
 function SyncFragments() {
   const [fragments, setFragments] = useState(undefined);
@@ -70,21 +70,33 @@ function SyncFragments() {
   `;
 }
 
-export default function SyncLangStoreModal() {
+function SyncLangStoreModal() {
   return html`
-    <div class=locui-sync-modal-content>
-      <strong>This will start the project.</strong> <i>You will no longer be able to add URLs.</i>
-      <${SyncFragments} />
-      <div class=locui-sync-actions>
-        <button 
-          class=locui-urls-heading-action
-          onClick=${syncFragsLangstore}>Start Sync
-        </button>
-        <button 
-          class="locui-urls-heading-action cancel"
-          onClick=${() => { showModal.value = ''; }}>Cancel
-        </button>
+    <div class=locui-modal-container>
+      <div class=locui-modal-content>
+        <h2 class=locui-modal-title>
+          Sync to Langstore (${urls.value[0].langstore.lang})?
+        </h2>
+        <div class=locui-sync-modal-content>
+          <strong>This will create the project.</strong> <i>You will no longer be able to add URLs.</i>
+          <${SyncFragments} />
+          <div class=locui-sync-actions>
+            <button 
+              class=locui-urls-heading-action
+              onClick=${syncFragsLangstore}>Start Sync
+            </button>
+            <button 
+              class="locui-urls-heading-action cancel"
+              onClick=${() => { closeSyncModal(); }}>Cancel
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   `;
+}
+
+export default function renderModal(el) {
+  render(html`<${SyncLangStoreModal} />`, el);
+  return el;
 }
