@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, setConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { applyPers, normalizePath } from '../../../libs/features/personalization/personalization.js';
+import { applyPers, normalizePath, matchGlob } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -295,5 +295,27 @@ describe('normalizePath function', () => {
     config.locale = config.locales.de;
     const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
     expect(path).to.equal('/de/path/to/fragment.plain.html');
+  });
+});
+
+describe('matchGlob function', () => {
+  it('should match page', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers');
+    expect(result).to.be.true;
+  });
+
+  it('should match page with HTML extension', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers.html');
+    expect(result).to.be.true;
+  });
+
+  it('should not match child page', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers/free-download');
+    expect(result).to.be.false;
+  });
+
+  it('should match child page', async () => {
+    const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
+    expect(result).to.be.true;
   });
 });

@@ -4,6 +4,8 @@ import { replaceText } from '../../../features/placeholders.js';
 
 loadLana();
 
+const FEDERAL_PATH_KEY = 'federal';
+
 // TODO when porting this to milo core, we should define this on config level
 // and allow consumers to add their own origins
 const allowedOrigins = [
@@ -75,7 +77,10 @@ export const getFederatedContentRoot = () => {
     : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    federatedContentRoot = `https://main--federal--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
+    // Akamai as proxy to avoid 401s, given AEM-EDS MS auth cross project limitations
+    federatedContentRoot = origin.includes('.hlx.live')
+      ? 'https://main--federal--adobecom.hlx.live'
+      : 'https://www.stage.adobe.com';
   }
 
   return federatedContentRoot;
@@ -95,13 +100,24 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
+const getPath = (urlOrPath = '') => {
+  try {
+    const url = new URL(urlOrPath);
+    return url.pathname;
+  } catch (error) {
+    return urlOrPath.replace(/^\.\//, '/');
+  }
+};
+
 export const federatePictureSources = (section) => {
-  section?.querySelectorAll('[src], [srcset]').forEach((source) => {
-    const type = source.hasAttribute('src') ? 'src' : 'srcset';
-    const value = source.getAttribute(type);
-    if (!value) return;
-    source.setAttribute(type, value.replace(/^\.?\//, `${getFederatedContentRoot()}/`));
-  });
+  section?.querySelectorAll(`[src*="/${FEDERAL_PATH_KEY}/"], [srcset*="/${FEDERAL_PATH_KEY}/"]`)
+    .forEach((source) => {
+      const type = source.hasAttribute('src') ? 'src' : 'srcset';
+      const path = getPath(source.getAttribute(type));
+      const [, localeOrKeySegment, keyOrPathSegment] = path.split('/');
+      if (![localeOrKeySegment, keyOrPathSegment].includes(FEDERAL_PATH_KEY)) return;
+      source.setAttribute(type, `${getFederatedContentRoot()}${path}`);
+    });
 };
 
 let fedsPlaceholderConfig;
@@ -311,7 +327,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
 
   if (shouldDecorateLinks) decorateLinks(body);
 
-  if (path.includes('/federal/')) federatePictureSources(body);
+  federatePictureSources(body);
 
   const blocks = body.querySelectorAll('.martech-metadata');
   if (blocks.length) {
