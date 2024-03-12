@@ -417,7 +417,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   if (config.mep?.override) {
     let manifest;
     /* c8 ignore start */
-    config.mep?.override?.split(',').some((item) => {
+    config.mep?.override?.split('---').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
         [, manifest] = pair;
@@ -606,6 +606,7 @@ function compareExecutionOrder(a, b) {
 export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
   manifests.forEach((manifest) => {
+    if (!manifest) return;
     manifest.manifestPath = normalizePath(manifest.manifestUrl || manifest.manifest);
     if (manifest.manifestPath in manifestObj) {
       let fullManifest = manifestObj[manifest.manifestPath];
