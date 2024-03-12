@@ -146,7 +146,7 @@ export async function getDownloadAction(options, imsSignedInPromise, offerFamily
 }
 
 export async function getUpgradeAction(options, imsSignedInPromise, productFamily) {
-  if (options.entitlement === false) return null;
+  if (options.entitlement === false) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
