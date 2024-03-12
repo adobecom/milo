@@ -180,6 +180,7 @@ const defaultOptions = {
     random: 'Random',
   },
   source: {
+    events: 'Events',
     bacom: 'Bacom',
     doccloud: 'DocCloud',
     experienceleague: 'Experience League',

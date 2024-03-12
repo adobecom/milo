@@ -814,7 +814,7 @@ export const defaultState = {
   sortReservoirSample: 3,
   sortTitleAsc: false,
   sortTitleDesc: false,
-  source: ['hawks'],
+  source: ['events'],
   tagsUrl: 'www.adobe.com/chimera-api/tags',
   targetActivity: '',
   targetEnabled: false,
