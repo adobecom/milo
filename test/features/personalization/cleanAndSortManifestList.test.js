@@ -24,6 +24,17 @@ describe('Functional test', () => {
     expect(selectedVariant.commands[0].target).to.include('fresh-from-json-version');
   });
 
+  it('Duplicate manifests in reverse order, Target version is updated', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-other-one-from-target.json' });
+    manifestJson = JSON.parse(manifestJson);
+    const manifestList = cleanAndSortManifestList(manifestJson);
+    const [first] = manifestList;
+    const { name, selectedVariantName, selectedVariant } = first;
+    expect(name).to.equal('MILO0013b - use fresh manifest over saved');
+    expect(selectedVariantName).to.equal('all');
+    expect(selectedVariant.commands[0].target).to.include('fresh-from-json-version');
+  });
+
   it('One of each, all normal', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestLists/three-manifest-types-all-normal.json' });
     manifestJson = JSON.parse(manifestJson);
