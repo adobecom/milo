@@ -2,7 +2,7 @@ const https = require('https');
 const { execSync } = require('child_process');
 const fs = require('fs');
 
-const fetch = () =>
+const fetchImsScript = () =>
   new Promise((resolve, reject) => {
     https
       .get('https://auth.services.adobe.com/imslib/imslib.min.js', (res) => {
@@ -29,7 +29,7 @@ const fetch = () =>
   });
 
 const main = async ({ github, context, local = false }) => {
-  const response = await fetch();
+  const response = await fetchImsScript();
   const lastModified = new Date(response.headers['last-modified']);
   const now = new Date();
   const diffHours = Math.ceil((now - lastModified) / 1000 / 60 / 60);
@@ -37,14 +37,15 @@ const main = async ({ github, context, local = false }) => {
     `imslib.min.js last modified: ${lastModified}. Last modified ${diffHours} hours ago <= 24H, means new PR created.`
   );
 
-  if (diffHours <= 2400 || local) {
+  if (diffHours <= 24 || local) {
     console.log('Diff detected in the last 24h, creating PR.');
     const header = `// Last modified ${lastModified.toISOString()}\n// Build at ${new Date().toISOString()}\n`;
 
     if (local) return console.log('Local mode - skipped git commands.');
+
     // If you run this on local, this might overwrite ur current git configs.
-    if (!local) execSync('git config --global user.name "GitHub Action"');
-    if (!local) execSync('git config --global user.email "action@github.com"');
+    execSync('git config --global user.name "GitHub Action"');
+    execSync('git config --global user.email "action@github.com"');
     execSync('git fetch');
     execSync('git checkout stage');
     try {
