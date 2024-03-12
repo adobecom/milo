@@ -634,6 +634,24 @@ const createDefaultExperiment = (manifest) => ({
   selectedVariant: { commands: [], fragments: [] },
 });
 
+export function handleFragmentCommand(command, a) {
+  const config = getConfig();
+  const { action, fragment, manifestPath } = command;
+  if (action === 'replace') {
+    a.href = fragment;
+    if (config.mep.preview) a.dataset.manifestId = manifestPath;
+    return fragment;
+  }
+  if (action === 'remove') {
+    if (config.mep.preview) {
+      a.parentElement.dataset.removedManifestId = manifestPath;
+    } else {
+      a.parentElement.remove();
+    }
+  }
+  return false;
+}
+
 export async function applyPers(manifests) {
   const config = getConfig();
 
@@ -678,20 +696,5 @@ export async function applyPers(manifests) {
   });
   if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-  config.mep.handleFragmentCommand = (command, a) => {
-    const { action, fragment, manifestPath } = command;
-    if (action === 'replace') {
-      a.href = fragment;
-      if (config.mep.preview) a.dataset.manifestId = manifestPath;
-      return fragment;
-    }
-    if (action === 'remove') {
-      if (config.mep.preview) {
-        a.parentElement.dataset.removedManifestId = manifestPath;
-      } else {
-        a.parentElement.remove();
-      }
-    }
-    return false;
-  };
+  config.mep.handleFragmentCommand = handleFragmentCommand;
 }
