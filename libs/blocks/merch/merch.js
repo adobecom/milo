@@ -172,6 +172,7 @@ export async function getUpgradeAction(options, imsSignedInPromise, productFamil
 
 async function openFragmentModal(path, getModal) {
   const root = createTag('div');
+  root.style.visibility = 'hidden';
   createTag('a', { href: `${path}` }, '', { parent: root });
   const modal = await getModal(null, {
     id: 'checkout-link-modal',
@@ -180,6 +181,7 @@ async function openFragmentModal(path, getModal) {
     class: 'commerce-frame',
   });
   await loadArea(modal);
+  root.style.visibility = '';
   return modal;
 }
 
