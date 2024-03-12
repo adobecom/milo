@@ -90,7 +90,6 @@ export async function fetchBlogArticleIndex(config) {
         blogIndex.data.push(post);
         blogIndex.byPath[post.path.split('.')[0]] = post;
       });
-
       blogIndex.complete = complete;
 
       return blogIndex;

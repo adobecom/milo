@@ -426,7 +426,7 @@ class Gnav {
         locale,
         searchInputEl: searchInput,
         advancedSearchEl,
-        contextualConfig, // ToDo: Pick back up here
+        contextualConfig,
       });
     });
 
