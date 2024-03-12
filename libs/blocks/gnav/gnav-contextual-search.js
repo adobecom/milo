@@ -65,7 +65,9 @@ async function fetchResults(signal, terms, config) {
     }
   }
 
-  if (!signal.aborted && (!articles.length || (hits.length !== LIMIT && !complete))) {
+  const getMoreArticles = !articles.length || (hits.length !== LIMIT && !complete);
+
+  if (!signal.aborted && getMoreArticles) {
     const index = await fetchBlogArticleIndex(config);
     articles = index.data;
     complete = index.complete;
