@@ -85,7 +85,7 @@ export async function fetchBlogArticleIndex(config) {
   return fetch(indexPath)
     .then((response) => response.json())
     .then((json) => {
-      const complete = (json.limit + json.offset) === json.total;
+      const complete = (json.limit + json.offset) >= json.total;
       json.data.forEach((post) => {
         blogIndex.data.push(post);
         blogIndex.byPath[post.path.split('.')[0]] = post;
