@@ -1,10 +1,14 @@
 import { html } from '../../../deps/htm-preact.js';
 import {
-  urls, languages, allowFindFragments, allowSyncToLangstore, allowSendForLoc, allowRollout,
+  urls,
+  languages,
+  allowFindFragments,
+  allowSyncToLangstore,
+  allowSendForLoc,
+  allowRollout,
+  showModal,
 } from '../utils/state.js';
-import {
-  findFragments, syncToLangstore, sendForLoc, showRolloutOptions, showRollout, rolloutAll,
-} from './index.js';
+import { findAllFragments, sendForLoc, showRolloutOptions, showRollout, rolloutAll } from './index.js';
 
 export default function Actions() {
   const canAct = allowFindFragments.value
@@ -24,12 +28,12 @@ export default function Actions() {
         ${allowFindFragments.value && html`
           <button 
             class=locui-urls-heading-action
-            onClick=${findFragments}>Find Fragments
+            onClick=${findAllFragments}>Find All Fragments
           </button>
         `}
         ${allowSyncToLangstore.value && html`
           <button
-            onClick=${syncToLangstore}
+            onClick=${() => { showModal.value = 'startSync'; }}
             class=locui-urls-heading-action>
             Sync to Langstore <span>(${urls.value[0].langstore.lang})</span>
           </button>

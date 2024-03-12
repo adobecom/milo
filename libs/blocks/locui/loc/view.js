@@ -6,6 +6,7 @@ import { account } from '../../../tools/sharepoint/state.js';
 import Heading from '../heading/view.js';
 import Langs from '../langs/view.js';
 import Actions from '../actions/view.js';
+import Modal from '../modal/view.js';
 import Urls from '../urls/view.js';
 import Status from '../status/view.js';
 import Sync from '../sync/view.js';
@@ -30,5 +31,6 @@ export default function Localization() {
     <div>${languages.value.length > 0 && html`<${Langs} />`}</div>
     <div>${urls.value.length > 0 && html`<${Urls} />`}</div>
     <div><${Status} /></div>
+    <div><${Modal} /></div>
   `;
 }

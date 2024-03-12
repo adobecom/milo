@@ -1,6 +1,16 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import { heading, urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout, allowFindFragments } from '../utils/state.js';
+import {
+  heading,
+  urls,
+  languages,
+  allowSyncToLangstore,
+  allowSendForLoc,
+  allowRollout,
+  allowFindFragments,
+  syncFragments,
+  showModal,
+} from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
@@ -71,42 +81,46 @@ async function findDeepFragments(path) {
 }
 
 export async function findFragments() {
-  setStatus('fragments', 'info', 'Finding fragments.');
   const found = urls.value.map((url) => findDeepFragments(url.pathname));
   const pageFragments = await Promise.all(found);
   // For each page, loop through all the found fragments
-  const forExcel = pageFragments.reduce((acc, fragments) => {
+  const foundFragments = pageFragments.reduce((acc, fragments) => {
     if (fragments.length > 0) {
       fragments.forEach((fragment) => {
         // De-dupe across pages that share fragments
         const dupe = acc.some((url) => url[0] === fragment.href);
-        if (!dupe) {
-          // Push into urls state for the UI
-          urls.value.push(fragment);
-          // Push into excel
-          acc.push([fragment.href]);
-        }
+        if (!dupe) acc.push([fragment.href]);
       });
     }
     return acc;
   }, []);
-  setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
-  setExcelStatus('Find fragments', `Found ${forExcel.length} fragments.`);
-  if (forExcel.length > 0) {
-    urls.value = [...urls.value];
+  return foundFragments;
+}
+
+export async function syncToExcel(paths) {
+  setStatus('fragments', 'info', `${paths.length} fragments found.`, null, 1500);
+  setExcelStatus('Find fragments', `Found ${paths.length} fragments.`);
+  if (paths.length > 0) {
+    urls.value = [...urls.value, ...paths.map((path) => new URL(path[0]))];
     // Update language cards count
     languages.value = [...languages.value.map((lang) => {
       lang.size = urls.value.length;
       return lang;
     })];
     const itemId = getItemId();
-    const resp = await updateExcelTable({ itemId, tablename: 'URL', values: forExcel });
+    const resp = await updateExcelTable({ itemId, tablename: 'URL', values: paths });
     if (resp.status !== 201) {
       setStatus('fragments', 'error', 'Couldn\'t add to Excel.');
       return;
     }
     updateExcelJson();
   }
+}
+
+export async function findAllFragments() {
+  setStatus('fragments', 'info', 'Finding fragments.');
+  const forExcel = await findFragments();
+  await syncToExcel(forExcel);
 }
 
 export async function syncToLangstore() {
@@ -128,6 +142,15 @@ export async function syncToLangstore() {
   } else {
     await startSync();
   }
+}
+
+export async function syncFragsLangstore() {
+  showModal.value = '';
+  if (syncFragments.value?.length) {
+    await syncToExcel(syncFragments.value);
+    syncFragments.value = [];
+  }
+  await syncToLangstore();
 }
 
 export async function sendForLoc() {
