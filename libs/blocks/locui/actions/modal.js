@@ -14,8 +14,8 @@ function SyncFragments() {
     return () => { cancelled = true; };
   }, []);
 
-  const handleClick = (event) => {
-    const fragment = event.target.type ? event.target.parentElement : event.target;
+  const handleClick = ({ target }) => {
+    const fragment = target.hasAttribute('frag-url') ? target : target.parentElement;
     const fragmentUrl = fragment.getAttribute('frag-url');
     if (!syncFragments.value.find((sync) => sync[0] === fragmentUrl)) {
       syncFragments.value = [...syncFragments.value, [fragmentUrl]];
