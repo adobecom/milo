@@ -6,13 +6,15 @@ const getPlaceholdersPath = (config, sheet) => {
   return `${path}${query}`;
 };
 
-const fetchPlaceholders = (config, sheet) => {
+const fetchPlaceholders = async (config, sheet) => {
   const placeholdersPath = getPlaceholdersPath(config, sheet);
+  const { customFetch } = await import('../utils/helpers.js');
 
   fetchedPlaceholders[placeholdersPath] = fetchedPlaceholders[placeholdersPath]
     // eslint-disable-next-line no-async-promise-executor
     || new Promise(async (resolve) => {
-      const resp = await fetch(placeholdersPath).catch(() => ({}));
+      const resp = await customFetch({ resource: placeholdersPath, withCacheRules: true })
+        .catch(() => ({}));
       const json = resp.ok ? await resp.json() : { data: [] };
       if (json.data.length === 0) { resolve({}); return; }
       const placeholders = {};

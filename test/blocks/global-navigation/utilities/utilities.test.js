@@ -19,6 +19,7 @@ import {
 import { setConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config } from '../test-utilities.js';
 
+const baseHost = 'https://www.stage.adobe.com';
 describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
@@ -39,7 +40,7 @@ describe('global navigation utilities', () => {
   describe('getFedsContentRoot', () => {
     it('should return content source for localhost', () => {
       const contentSource = getFederatedContentRoot();
-      expect(contentSource).to.equal('https://main--federal--adobecom.hlx.page');
+      expect(contentSource).to.equal(baseHost);
     });
   });
 
@@ -114,7 +115,7 @@ describe('global navigation utilities', () => {
       });
       federatePictureSources(template);
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
         locale: '',
         template,
@@ -129,7 +130,7 @@ describe('global navigation utilities', () => {
       });
       federatePictureSources(template);
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
         locale: '/ch_de',
         template,
@@ -174,7 +175,7 @@ describe('global navigation utilities', () => {
       });
       federatePictureSources(template);
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
         locale: '',
         template,
@@ -189,7 +190,7 @@ describe('global navigation utilities', () => {
       });
       federatePictureSources(template);
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
         locale: '/ch_de',
         template,
@@ -207,7 +208,7 @@ describe('global navigation utilities', () => {
       const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig(placeholderConfig);
       expect(ietf).to.equal('en-US');
       expect(prefix).to.equal('');
-      expect(contentRoot).to.equal('https://main--federal--adobecom.hlx.page/federal/globalnav');
+      expect(contentRoot).to.equal(`${baseHost}/federal/globalnav`);
     });
 
     it('should return a config object for a specific locale', () => {
@@ -223,7 +224,7 @@ describe('global navigation utilities', () => {
       const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig(placeholderConfig);
       expect(ietf).to.equal('fi-FI');
       expect(prefix).to.equal('/fi');
-      expect(contentRoot).to.equal('https://main--federal--adobecom.hlx.page/fi/federal/globalnav');
+      expect(contentRoot).to.equal(`${baseHost}/fi/federal/globalnav`);
     });
   });
 
@@ -399,12 +400,12 @@ describe('global navigation utilities', () => {
       expect(
         getFederatedUrl('https://adobe.com/federal/foo-fragment.html'),
       ).to.equal(
-        'https://main--federal--adobecom.hlx.page/federal/foo-fragment.html',
+        `${baseHost}/federal/foo-fragment.html`,
       );
       expect(
         getFederatedUrl('https://adobe.com/lu_de/federal/gnav/foofooter.html'),
       ).to.equal(
-        'https://main--federal--adobecom.hlx.page/lu_de/federal/gnav/foofooter.html',
+        `${baseHost}/lu_de/federal/gnav/foofooter.html`,
       );
     });
 
@@ -412,7 +413,7 @@ describe('global navigation utilities', () => {
       expect(
         getFederatedUrl('/federal/foo-fragment.html'),
       ).to.equal(
-        'https://main--federal--adobecom.hlx.page/federal/foo-fragment.html',
+        `${baseHost}/federal/foo-fragment.html`,
       );
     });
 
@@ -420,7 +421,7 @@ describe('global navigation utilities', () => {
       expect(
         getFederatedUrl('/federal/foo-fragment.html?foo=bar#test'),
       ).to.equal(
-        'https://main--federal--adobecom.hlx.page/federal/foo-fragment.html?foo=bar#test',
+        `${baseHost}/federal/foo-fragment.html?foo=bar#test`,
       );
     });
 
