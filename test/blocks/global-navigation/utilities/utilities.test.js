@@ -81,13 +81,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: 'https://adobe.com',
         path: '/test/path/federal/media.png',
-        locale: '',
       });
       federatePictureSources({ section: template });
       verifyImageTemplate({
         host: 'https://adobe.com',
         path: '/test/path/federal/media.png',
-        locale: '',
         template,
       });
     });
@@ -111,13 +109,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: 'https://adobe.com',
         path: '/federal/media.png',
-        locale: '',
       });
       federatePictureSources({ section: template });
       verifyImageTemplate({
         host: baseHost,
         path: '/federal/media.png',
-        locale: '',
         template,
       });
     });
@@ -141,13 +137,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: '.',
         path: '/test/path/federal/media.png',
-        locale: '',
       });
       federatePictureSources({ section: template });
       verifyImageTemplate({
         host: '.',
         path: '/test/path/federal/media.png',
-        locale: '',
         template,
       });
     });
@@ -171,13 +165,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: '.',
         path: '/federal/media.png',
-        locale: '',
       });
       federatePictureSources({ section: template });
       verifyImageTemplate({
         host: baseHost,
         path: '/federal/media.png',
-        locale: '',
         template,
       });
     });
@@ -201,13 +193,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: '.',
         path: '/media.png',
-        locale: '',
       });
       federatePictureSources({ section: template, forceFederate: true });
       verifyImageTemplate({
         host: baseHost,
         path: '/federal/media.png',
-        locale: '',
         template,
       });
     });
