@@ -220,7 +220,7 @@ export async function openModal(e, url, offerType) {
 }
 
 export async function getModalAction(offers, options, productFamily) {
-  if (options.modal !== true) return null;
+  if (options.modal !== true) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(productFamily);
   if (!checkoutLinkConfig) return undefined;
   const [{ offerType }] = offers;
