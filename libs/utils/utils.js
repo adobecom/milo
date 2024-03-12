@@ -771,7 +771,7 @@ export async function decorateFooterPromo() {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const { locale, imsClientId, imsScope, env } = getConfig();
+    const { locale, imsClientId, imsScope, env, base } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
       return;
@@ -790,7 +790,7 @@ export async function loadIms() {
       },
       onError: reject,
     };
-    loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+    loadScript(`${base}/deps/imslib.min.js`);
   }).then(() => {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);

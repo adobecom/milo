@@ -1,0 +1,23 @@
+name: Update imslib.min.js
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Update file and create PR if needed
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const script = require('./.github/workflows/update-ims.js')
+          script({github, context})
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
