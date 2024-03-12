@@ -331,10 +331,6 @@
     max-width: 234px;
   }
 
-  .icon-block.inline .icon-area picture img {
-    width: 100%;
-  }
-
   .icon-block.bio .foreground .icon-area,
   .icon-block.bio .foreground .icon-area img {
     width: var(--icon-size-xxl);
