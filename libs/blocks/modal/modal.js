@@ -147,11 +147,7 @@ export async function getModal(details, custom) {
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
 
-  const close = createTag('button', {
-    class: 'dialog-close',
-    'aria-label': 'Close',
-    'daa-ll': `Close--${id}`,
-  }, CLOSE_ICON);
+  const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
 
   const focusVisible = { focusVisible: true };
   const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
