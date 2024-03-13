@@ -1,5 +1,5 @@
 import { html, useEffect, useState, render } from '../../../deps/htm-preact.js';
-import { urls, syncFragments } from '../utils/state.js';
+import { urls, syncFragments, heading } from '../utils/state.js';
 import { closeSyncModal, findFragments, syncFragsLangstore } from './index.js';
 
 function SyncFragments() {
@@ -71,6 +71,8 @@ function SyncFragments() {
 }
 
 function SyncLangStoreModal() {
+  const warning = html`<strong>This will create the project.</strong> <i>You will no longer be able to add URLs.</i>`;
+  const message = heading.value.projectId ? '' : warning;
   return html`
     <div class=locui-modal-container>
       <div class=locui-modal-content>
@@ -78,7 +80,7 @@ function SyncLangStoreModal() {
           Sync to Langstore (${urls.value[0].langstore.lang})?
         </h2>
         <div class=locui-sync-modal-content>
-          <strong>This will create the project.</strong> <i>You will no longer be able to add URLs.</i>
+          ${message}
           <${SyncFragments} />
           <div class=locui-sync-actions>
             <button 
