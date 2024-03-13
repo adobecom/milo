@@ -17,6 +17,7 @@ notifications:
         watchers:
           - casalino
           - jmichnow
+          - mauchley
         labels:
           - "OriginatingProcess=Kodiak"
         components:
