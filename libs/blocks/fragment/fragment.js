@@ -88,7 +88,9 @@ export default async function init(a) {
     return;
   }
 
-  const resp = await fetch(`${a.href}.plain.html`);
+  const { customFetch } = await import('../../utils/helpers.js');
+  const resp = await customFetch({ resource: `${a.href}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
 
   if (!resp.ok) {
     window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
