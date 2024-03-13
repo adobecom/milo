@@ -66,7 +66,7 @@ export function parsePreferences(elements) {
   });
 }
 
-const localizedPath = (path, config) => `${config?.locale?.prefix ?? ''}${path}`;
+const localizedPath = (path, config) => `${config?.locale?.prefix && path.indexOf(config.locale.prefix) !== 0 ? config.locale.prefix : ''}${path}`;
 
 const fetchOverrideCard = (path, config) => new Promise((resolve, reject) => {
   try {
@@ -75,6 +75,8 @@ const fetchOverrideCard = (path, config) => new Promise((resolve, reject) => {
         res.text().then((cardContent) => {
           resolve({ path, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] });
         });
+      } else {
+        reject(res.statusText || res.status);
       }
     });
   } catch (error) {
