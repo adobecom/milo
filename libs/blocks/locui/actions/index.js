@@ -102,7 +102,8 @@ export async function syncToExcel(paths) {
   setStatus('fragments', 'info', `${paths.length} fragments found.`, null, 1500);
   setExcelStatus('Find fragments', `Found ${paths.length} fragments.`);
   if (paths.length > 0) {
-    urls.value = [...urls.value, ...paths.map((path) => new URL(path[0]))];
+    const newUrls = paths.map((path) => new URL(path[0]));
+    urls.value = [...urls.value, ...getUrls(newUrls)];
     // Update language cards count
     languages.value = [...languages.value.map((lang) => {
       lang.size = urls.value.length;
