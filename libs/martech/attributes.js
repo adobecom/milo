@@ -24,9 +24,6 @@ export function decorateDefaultLinkAnalytics(block, config) {
     const headers = block.querySelectorAll(headerSelector);
     if (!headers.length) headerSelector = `${headerSelector}, b, strong`;
     block.querySelectorAll(`${headerSelector}, a:not(.video.link-block), button`).forEach((item) => {
-      if (item.nodeName === 'STRONG' || item.nodeName === 'B') {
-        item.classList.add('tracking-header');
-      }
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (item.classList.contains('tracking-header')) {
           header = processTrackingLabels(item.textContent, config, 20);
@@ -50,6 +47,9 @@ export function decorateDefaultLinkAnalytics(block, config) {
         }
         linkCount += 1;
       } else {
+        if (item.nodeName === 'STRONG' || item.nodeName === 'B') {
+          item.classList.add('tracking-header');
+        }
         header = processTrackingLabels(item.textContent, config, 20);
       }
     });
