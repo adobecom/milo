@@ -56,7 +56,7 @@ export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}
 export const normalizePath = (p) => {
   let path = p;
 
-  if (!path.includes('/')) {
+  if (!path?.includes('/')) {
     return path;
   }
 
@@ -480,6 +480,7 @@ export async function getPersConfig(info) {
     disabled,
     event,
   } = info;
+  if (disabled) return false;
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
@@ -606,6 +607,7 @@ function compareExecutionOrder(a, b) {
 export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
   manifests.forEach((manifest) => {
+    if (!manifest) return;
     manifest.manifestPath = normalizePath(manifest.manifestUrl || manifest.manifest);
     if (manifest.manifestPath in manifestObj) {
       let fullManifest = manifestObj[manifest.manifestPath];
