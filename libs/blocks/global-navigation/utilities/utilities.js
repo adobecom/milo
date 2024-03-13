@@ -256,9 +256,10 @@ export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
     (area) => {
       if (hasActiveLink() || !(area instanceof HTMLElement)) return null;
       const { origin, pathname } = window.location;
+      const url = `${origin}${pathname}`;
       const activeLink = [
         ...area.querySelectorAll('a:not([data-modal-hash])'),
-      ].find((el) => new RegExp(`^${`${origin}${pathname}`}(\\?[^#]*)?(#.*)?$`).test(el.href));
+      ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
 
       if (!activeLink) return null;
 
