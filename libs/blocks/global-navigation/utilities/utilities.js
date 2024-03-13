@@ -109,14 +109,19 @@ const getPath = (urlOrPath = '') => {
   }
 };
 
-export const federatePictureSources = (section) => {
-  section?.querySelectorAll(`[src*="/${FEDERAL_PATH_KEY}/"], [srcset*="/${FEDERAL_PATH_KEY}/"]`)
+export const federatePictureSources = ({ section, forceFederate } = {}) => {
+  const selector = forceFederate
+    ? '[src], [srcset]'
+    : `[src*="/${FEDERAL_PATH_KEY}/"], [srcset*="/${FEDERAL_PATH_KEY}/"]`;
+  section?.querySelectorAll(selector)
     .forEach((source) => {
       const type = source.hasAttribute('src') ? 'src' : 'srcset';
       const path = getPath(source.getAttribute(type));
       const [, localeOrKeySegment, keyOrPathSegment] = path.split('/');
-      if (![localeOrKeySegment, keyOrPathSegment].includes(FEDERAL_PATH_KEY)) return;
-      source.setAttribute(type, `${getFederatedContentRoot()}${path}`);
+      if (forceFederate || [localeOrKeySegment, keyOrPathSegment].includes(FEDERAL_PATH_KEY)) {
+        const federalPrefix = path.includes('/federal/') ? '' : '/federal';
+        source.setAttribute(type, `${getFederatedContentRoot()}${federalPrefix}${path}`);
+      }
     });
 };
 
@@ -327,7 +332,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
 
   if (shouldDecorateLinks) decorateLinks(body);
 
-  federatePictureSources(body);
+  federatePictureSources({ section: body, forceFederate: path.includes('/federal/') });
 
   const blocks = body.querySelectorAll('.martech-metadata');
   if (blocks.length) {
