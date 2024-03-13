@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, getConfig } from '../../../libs/utils/utils.js';
+import { stub } from 'sinon';
+import { setConfig, getConfig, createTag } from '../../../libs/utils/utils.js';
 
 const { default: loadIcons } = await import('../../../libs/features/icons/icons.js');
 
@@ -14,10 +15,26 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 let icons;
 
 describe('Icon Suppprt', () => {
+  let paramsGetStub;
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
   before(async () => {
     icons = document.querySelectorAll('span.icon');
     await loadIcons(icons, config);
     await loadIcons(icons, config); // Test duplicate icon not created if run twice
+  });
+
+  it('Fetches successfully with cache control enabled', async () => {
+    const otherIcons = [createTag('span', { class: 'icon icon-play' })];
+    await loadIcons(otherIcons, config);
   });
 
   it('Replaces span.icon', async () => {
