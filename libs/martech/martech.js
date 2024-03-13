@@ -95,12 +95,12 @@ const getTargetPersonalization = async () => {
   return manifests;
 };
 
-const getDtmLib = (env) => ({
+const getDtmLib = (env, base) => ({
   edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
   url:
     env.name === 'prod'
-      ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
+      ? env.consumer?.marTechUrl || `${base}/deps/launch-5dd5dd2177e6.min.js`
+      : env.consumer?.marTechUrl || `${base}/deps/launch-a27b33fc2dc0-development.min.js`,
 });
 
 const setupEntitlementCallback = () => {
@@ -173,7 +173,7 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
 export default async function init({ persEnabled = false, persManifests = [] }) {
   const config = getConfig();
 
-  const { url, edgeConfigId } = getDtmLib(config.env);
+  const { url, edgeConfigId } = getDtmLib(config.env, config.base);
   loadLink(url, { as: 'script', rel: 'preload' });
 
   const martechPromise = loadMartechFiles(config, url, edgeConfigId);

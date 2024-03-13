@@ -1,0 +1,46 @@
+name: Update dependencies
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Update file and create PR if needed
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const updateDependency = require('./.github/workflows/update-script.js')
+          updateDependency({
+            github, 
+            context, 
+            title: '[AUTOMATED-PR] Update imslib.min.js dependency', 
+            path: 'https://auth.services.adobe.com/imslib/imslib.min.js',
+            branch: 'update-imslib',
+            scriptPath: './libs/deps/imslib.min.js'
+          })
+          updateDependency({
+            github, 
+            context, 
+            title: '[AUTOMATED-PR] Update launch prod dependency', 
+            path: 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js',
+            branch: 'update-launch-prod',
+            scriptPath: './libs/deps/launch-5dd5dd2177e6.min.js'
+          })
+          updateDependency({
+            github, 
+            context, 
+            title: '[AUTOMATED-PR] Update imslib.min.js dependency', 
+            path: 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
+            branch: 'update-launch-development',
+            scriptPath: './libs/deps/launch-a27b33fc2dc0-development.min.js'
+          })
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
