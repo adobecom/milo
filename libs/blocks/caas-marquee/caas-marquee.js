@@ -807,7 +807,17 @@ export default async function init(el) {
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
-  const event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+
+  let event;
+  if (window.alloy_pageView) {
+    // eslint-disable-next-line camelcase, no-undef
+    const sent = await alloy_pageView.sent;
+    if (sent.destinations[0].segments) {
+      event = { detail: { type: 'pageView', result: { destinations: sent.destinations } } };
+    }
+  } else {
+    event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+  }
 
   if (authorPreview()) {
     return renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
