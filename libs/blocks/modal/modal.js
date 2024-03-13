@@ -150,7 +150,7 @@ export async function getModal(details, custom) {
   const close = createTag('button', {
     class: 'dialog-close',
     'aria-label': 'Close',
-    'daa-ll': `Close--${id}`,
+    'daa-ll': `Close Modal--${id}`,
   }, CLOSE_ICON);
 
   const focusVisible = { focusVisible: true };
