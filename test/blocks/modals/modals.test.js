@@ -25,7 +25,7 @@ describe('Modals', () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
     const close = document.querySelector('.dialog-close');
-    expect(close.getAttribute('daa-ll')).to.equal('Close Modal--milo');
+    expect(close.getAttribute('daa-ll')).to.equal('milo:modalClose:buttonClose');
     close.click();
     await waitForRemoval('#milo');
     expect(window.location.hash).to.be.empty;
