@@ -94,7 +94,7 @@ export async function fetchCheckoutLinkConfigs(base = '') {
 export async function getCheckoutLinkConfig(productFamily) {
   let { base } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
-    /* c8 ignore next */
+    /* c8 ignore next 2 */
     base = base.replace('.live', '.page');
   }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
