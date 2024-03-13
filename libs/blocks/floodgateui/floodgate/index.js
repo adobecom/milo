@@ -7,12 +7,10 @@ import {
   canRefresh,
   loadHeadingCheck,
   loadDetailsCheck,
-  enableActionButton,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../../locui/utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
-import { getEventTimeFg } from '../utils/miloc.js';
 import { getUrls } from '../../locui/loc/index.js';
 
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B12F9079D-E580-4407-973D-2330B171B2CB%7D&file=DemoFgUI.xlsx&action=default&mobileredirect=true';
@@ -33,11 +31,6 @@ export async function loadProjectSettings(projSettings) {
     source: `${repo}`,
     floodgate: `${repo}-${settings.FloodgateColor || 'pink'}`,
   };
-  getEventTimeFg();
-  const pdOverrideParam = urlParams.get('pdoverride');
-  if (pdOverrideParam && pdOverrideParam.toLowerCase() === 'true') {
-    enableActionButton.value = true;
-  }
   if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localization service.');
     setStatus('service');

@@ -3,7 +3,8 @@ import {
   deleteStatusCheck,
   promoteStatusCheck,
   heading,
-  enableActionButton,
+  enablePromoteButton,
+  enableDeleteButton,
 } from '../utils/state.js';
 
 class ConfirmationModal extends Component {
@@ -136,17 +137,23 @@ class ConfirmationModal extends Component {
                 deleteStatusCheck.value === 'IN PROGRESS')
                 ? undefined
                 : this.openModal,
-            disabled:
-            true,
-            title:
-              (confirmMessage === 'Promote' &&
-                promoteStatusCheck.value === 'IN PROGRESS') ||
-              (confirmMessage === 'Delete' &&
-                deleteStatusCheck.value === 'IN PROGRESS')
-                ? 'Operation is in progress. Please wait.'
-                : ((new Date() < new Date(heading.value.endTime) && !enableActionButton.value)
-                ? 'Operation is not accessible during the event time'
-                : ''),
+                disabled:
+                confirmMessage === 'Promote'
+                  ? (promoteStatusCheck.value === 'IN PROGRESS'  ||
+                  !enablePromoteButton.value)
+                  : confirmMessage === 'Delete'
+                  ? (deleteStatusCheck.value === 'IN PROGRESS' ||
+                  !enableDeleteButton.value)
+                  : false,
+              title:
+                (confirmMessage === 'Promote' &&
+                  promoteStatusCheck.value === 'IN PROGRESS') ||
+                (confirmMessage === 'Delete' &&
+                  deleteStatusCheck.value === 'IN PROGRESS')
+                  ? 'Operation is in progress. Please wait.'
+                  : (((!enablePromoteButton.value || !enableDeleteButton.value))
+                  ? 'Operation is not accessible during the event time'
+                  : ''),
           },
           actionName
         )
