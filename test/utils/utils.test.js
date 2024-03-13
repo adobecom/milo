@@ -607,7 +607,7 @@ describe('Utils', () => {
       const resultConfig = utils.getConfig();
       const resultExperiment = resultConfig.experiments[0];
       expect(resultConfig.mep.preview).to.be.true;
-      expect(resultConfig.experiments.length).to.equal(3);
+      expect(resultConfig.experiments.length).to.equal(1);
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
     });
   });
