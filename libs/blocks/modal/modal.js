@@ -36,14 +36,9 @@ export function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
-  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
-  const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
-  const closeEventAnalytics = new Event(`${analyticsEventName}:modalClose:buttonClose`);
   // removing the 'message' and 'resize' event listener set for commerce modals
   messageAbortController?.abort();
   resizeAbortController?.abort();
-
-  sendAnalytics(closeEventAnalytics);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
@@ -147,10 +142,12 @@ export async function getModal(details, custom) {
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
 
+  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
+  const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
   const close = createTag('button', {
     class: 'dialog-close',
     'aria-label': 'Close',
-    'daa-ll': `Close Modal--${id}`,
+    'daa-ll': `${analyticsEventName}:modalClose:buttonClose`,
   }, CLOSE_ICON);
 
   const focusVisible = { focusVisible: true };
