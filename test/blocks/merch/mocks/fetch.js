@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 
-import { priceLiteralsURL } from '../../../../libs/blocks/merch/merch.js';
+import { PRICE_LITERALS_URL } from '../../../../libs/blocks/merch/merch.js';
 
 export async function mockFetch() {
   // this path allows to import this mock from tests for other blocks (e.g. commerce)
@@ -24,7 +24,7 @@ export async function mockFetch() {
   sinon.stub(window, 'fetch').callsFake((...args) => {
     const { href, pathname, searchParams } = new URL(String(args[0]));
     // literals mock
-    if (href === priceLiteralsURL) {
+    if (href === PRICE_LITERALS_URL) {
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve(literals),

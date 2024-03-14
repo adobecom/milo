@@ -63,6 +63,14 @@ export default async function init(a) {
   let relHref = localizeLink(a.href);
   let inline = false;
 
+  if (a.parentElement?.nodeName === 'P') {
+    const children = a.parentElement.childNodes;
+    const div = createTag('div');
+    for (const attr of a.parentElement.attributes) div.setAttribute(attr.name, attr.value);
+    a.parentElement.replaceWith(div);
+    div.append(...children);
+  }
+
   if (a.href.includes('#_inline')) {
     inline = true;
     a.href = a.href.replace('#_inline', '');
