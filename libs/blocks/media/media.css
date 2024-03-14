@@ -172,13 +172,13 @@ div[class*="-up"] .media .foreground > .media-row {
 .media.qr-code .app-store {
   width: 135px;
   max-width: 140px;
-  height: 50px;
+  height: 40px;
   font-size: 19px;
   align-items: center;
   justify-content: center;
   padding: 0;
   display: inline-flex;
-  margin: var(--spacing-xxs) var(--spacing-s) 0 0;
+  margin: var(--spacing-xs) var(--spacing-s) 0 0;
 }
 
 .media.qr-code .google-play {
