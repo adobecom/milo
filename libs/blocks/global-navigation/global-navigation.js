@@ -259,8 +259,6 @@ const convertToPascalCase = (str) => str
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
 
-// TODO: debate whether this should be here or in a separate file,
-// since it's not time-sensitive and we want to potentially bundle it
 // TODO: position the prompt relative to the App Switcher
 const loadAppPrompt = async () => {
   const state = getMetadata('app-prompt')?.toLowerCase();
@@ -273,20 +271,6 @@ const loadAppPrompt = async () => {
     || !entName?.length
     || !promptPath?.length) return;
 
-  const id = promptPath.split('/').pop();
-  const isDismissed = JSON.parse(document.cookie
-    .split(';')
-    .find((item) => item.trim().startsWith('dismissedAppPrompts='))
-    ?.split('=')[1] || '[]')
-    .includes(id);
-
-  if (isDismissed) return;
-
-  // const entitlements = await getConfig().entitlements();
-  const entitlements = ['photoshop']; // TODO: replace this line with the one above
-
-  if (!entitlements?.length || !entitlements.includes(entName)) return;
-
   const { base } = getConfig();
   const [
     webappPrompt,
@@ -295,7 +279,7 @@ const loadAppPrompt = async () => {
     loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
   ]);
 
-  webappPrompt.default({ promptPath, id });
+  webappPrompt.default({ promptPath, entName });
 };
 
 class Gnav {

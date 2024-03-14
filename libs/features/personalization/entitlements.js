@@ -1,9 +1,5 @@
 import { getConfig } from '../../utils/utils.js';
 
-// TODO: add PEP segment map here when we have it;
-// However, we need to decide if these are relevant to others or not;
-// if not, we should find a better place for them
-// and add a method to return raw segments
 const ENTITLEMENT_MAP = {
   '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'photoshop-any',
   '8ba78b22-90fb-4b97-a1c4-f8c03a45cbc2': 'indesign-any',
@@ -17,6 +13,11 @@ const ENTITLEMENT_MAP = {
   'ab713720-91a2-4e8e-b6d7-6f613e049566': 'any-cc-product-no-stock',
   'b0f65e1c-7737-4788-b3ae-0011c80bcbe1': 'any-cc-product-with-stock',
   '934fdc1d-7ba6-4644-908b-53e01e550086': 'any-dc-product',
+  // PEP segments
+  '6cb0d58c-3a65-47e2-b459-c52bb158d5b6': 'lightroom-web-usage',
+  'caa3de84-6336-4fa8-8db2-240fc88106cc': 'photoshop-web-usage',
+  '5c6a4bb8-a2f3-4202-8cca-f5e918b969dc': 'firefly-web-usage',
+  '3df0b0b0-d06e-4fcc-986e-cc97f54d04d8': 'acrobat-web-usage',
 };
 
 export const getEntitlementMap = async () => {

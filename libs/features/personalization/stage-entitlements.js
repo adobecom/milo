@@ -7,6 +7,11 @@ const STAGE_ENTITLEMENTS = {
   '07609803-48a0-4762-be51-94051ccffb45': 'premiere-pro-any',
   '67129b31-eb1a-4c9e-b251-4561ac7c8602': 'any-cc-product-no-stock',
   '569f0f9d-83e8-45b4-adbf-07ef08a83398': 'any-cc-product-with-stock',
+  // PEP segments
+  '9202b767-77dc-4e6e-8d74-488d9ef08900': 'lightroom-web-usage',
+  '3a7ffcce-11b8-4242-8cdf-8c8d059ae1cd': 'photoshop-web-usage',
+  'cbe1d7ab-db7d-49cb-969e-a6a2bbe8c660': 'firefly-web-usage',
+  '96adf81f-97ca-4943-81ff-c41fbe8f3af7': 'acrobat-web-usage',
 };
 
 export default STAGE_ENTITLEMENTS;
