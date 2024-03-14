@@ -1,3 +1,4 @@
+
 /* eslint-disable no-shadow, consistent-return, max-len, quote-props, prefer-const */
 import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
@@ -812,8 +813,10 @@ export default async function init(el) {
   if (window.alloy_pageView) {
     // eslint-disable-next-line camelcase, no-undef
     const sent = await alloy_pageView.sent;
-    if (sent.destinations[0].segments) {
+    if (sent?.destinations[0]?.segments) {
       event = { detail: { type: 'pageView', result: { destinations: sent.destinations } } };
+    } else {
+      return loadFallback(marquee, metadata);
     }
   } else {
     event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
