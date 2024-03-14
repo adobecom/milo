@@ -25,17 +25,21 @@ const getMetadata = (el) => [...el.childNodes].reduce((acc, row) => {
 }, {});
 
 class AppPrompt {
-  constructor({ promptPath, id } = {}) {
+  constructor({ promptPath, entName } = {}) {
     this.promptPath = promptPath;
-    this.id = id;
+    this.entName = entName;
+    this.id = this.promptPath.split('/').pop();
     this.elements = {};
-
-    if (this.isDismissedPrompt()) return;
 
     this.init();
   }
 
   init = async () => {
+    if (this.isDismissedPrompt()) return;
+
+    const entMatch = await this.doesEntitlementMatch();
+    if (!entMatch) return;
+
     const content = await this.fetchContent();
     if (!content) return;
 
@@ -52,6 +56,15 @@ class AppPrompt {
     this.elements.closeIcon.focus();
 
     this.redirectFn = this.initRedirect();
+  };
+
+  doesEntitlementMatch = async () => {
+    const entitlements = await getConfig().entitlements();
+    // TODO: remove below 2 lines, just for testing purposes
+    const extraEnts = new URLSearchParams(window.location.search).get('extraPepEnts');
+    extraEnts?.split(',').forEach((ent) => entitlements.push(ent.trim()));
+
+    return entitlements?.length && entitlements.includes(this.entName);
   };
 
   fetchContent = async () => {
