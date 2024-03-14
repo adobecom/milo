@@ -1,4 +1,5 @@
 import { createTag, getConfig } from '../utils/utils.js';
+import { decorateSectionAnalytics } from '../martech/attributes.js';
 
 async function getPromoFromTaxonomy(contentRoot) {
   const NAME_KEY = 'Name';
@@ -25,7 +26,8 @@ async function getPromoFromTaxonomy(contentRoot) {
 }
 
 export default async function initFooterPromo(footerPromoTag, footerPromoType) {
-  const { locale: { contentRoot } } = getConfig();
+  const config = getConfig();
+  const { locale: { contentRoot } } = config;
   let href = footerPromoTag && `${contentRoot}/fragments/footer-promos/${footerPromoTag}`;
 
   if (footerPromoType === 'taxonomy') {
@@ -42,4 +44,6 @@ export default async function initFooterPromo(footerPromoTag, footerPromoType) {
   document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
   await loadFragment(a);
   section.classList.add('section');
+  const sections = document.querySelectorAll('main > div');
+  decorateSectionAnalytics(section, sections.length - 1, config);
 }

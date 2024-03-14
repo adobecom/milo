@@ -3,20 +3,22 @@ import { createTag, getConfig, loadMartech } from '../../utils/utils.js';
 
 const SEGMENTS_MAP = {
   attributes: {
+    'acrobat': ['pdf', 'convert document', 'reader'],
     'adobecom': ['news', 'community', 'plan'],
+    'apro-cart-abandoner': ['abandon'],
     'business': ['analytics', 'solution', 'adobe experience manager'],
+    'cc-lapsed': ['lapsed'],
     'commerce': ['apps', 'digital design', 'photography'],
     'creative-cloud': ['apps', 'digital design', 'photography'],
     'express': ['create', 'quickactions', 'video'],
     'firefly': ['generative', 'artificial intelligence', 'images'],
     'helpx': ['knowledgebase', 'install', 'help'],
-    'stock': ['images', 'vector', 'video'],
+    'illustrator': ['drawing', 'vector', 'logo design'],
     'lightroom': ['photo editing', 'image adjust', 'enhancing color'],
     'photoshop': ['generative', 'image adjust', 'compositing'],
-    'acrobat': ['pdf', 'convert document', 'reader'],
     'premiere': ['video editing', 'visual effects', 'motion graphics'],
     'sign': ['Pdf', 'signature', 'document'],
-    'illustrator': ['drawing', 'vector', 'logo design'],
+    'stock': ['images', 'vector', 'video'],
     'adobecom,commerce': ['accounts', 'legal', 'offer'],
     'adobecom,creative-cloud': ['creativecloud', 'apps', 'learn'],
     'adobecom,express': ['image', 'create', 'templates'],
@@ -30,38 +32,63 @@ const SEGMENTS_MAP = {
   },
   stage: {
     source: {
-      '00000000-0000-0000-0000-000000000000': 'adobecom', // TODO: Update to final one
-      '00000000-0000-0000-0000-000000000001': 'business', // TODO: Update to final one
+      '7344ee35-bcb8-4cf8-8254-b6849401c091': 'acrobat',
+      'd990c795-ba6b-4e2c-bf71-e72285a8309a': 'adobecom',
+      '6011a4ec-7583-461a-986c-9db89c831a20': 'apro-cart-abandoner',
+      'e67ae60c-b45f-4941-ab80-30ae68bd3bc4': 'business',
+      'f88d9441-c12e-4e9c-9eb7-5cbabc2ae6ba': 'cc-lapsed',
+      '7bf58e8a-fc10-4c70-baa2-3340eb3c206c': 'commerce',
+      '70816192-33ed-4196-919e-7599b5428667': 'creative-cloud',
+      '07462c1a-bbf8-4453-9e1b-b4fe27ccddb1': 'express',
+      'd55f0dd4-bc36-45f9-9ac7-7e37b5cafa30': 'firefly',
+      '9a358206-7bab-4c20-bf91-f70710effb49': 'helpx',
+      '83ed65cc-9720-440c-82d1-3f9ec0a6e6a9': 'illustrator',
+      'f0d5997f-c6df-49b5-b8d9-ee53c3b75993': 'lightroom',
+      '06d5772c-f769-49a1-a08e-aef4ca66a579': 'photoshop',
+      'b0e015bc-2388-41a7-967d-93da36834d4d': 'premiere',
+      'cd6eaf04-1e9f-4239-8366-6f37702c376e': 'sign',
+      'cb151073-b006-451c-86bf-be69a11070d1': 'stock',
+      '0668f6cf-a981-433e-af60-ec967ef90423': 'acrobat',
+      '5fc172f1-0a4e-4281-b766-85312ecf30f2': 'adobecom',
+      'c861a4fe-8b07-4d1b-9f6e-d8c5150166e6': 'apro-cart-abandoner',
+      'dd2cbdc1-4e5a-43bb-bb18-762504ab4ac8': 'business',
+      '451c1c66-24c3-4ce1-af54-200a03c2655e': 'cc-lapsed',
       '7199b3ea-600f-4035-ab62-86fe93dcafd5': 'commerce',
       '6841adaf-9eb8-4c8e-90ef-c0eb711e0e55': 'creative-cloud',
       'b790a4d3-c1eb-4ce5-8313-20e225b1c7a8': 'express',
       '510409d5-bf01-4ea9-a080-dd0b162ff854': 'firefly',
       'a9765398-b8e6-4086-a7f5-d80c7e0a3eb2': 'helpx',
-      'fd3085a1-a77b-43fc-9f67-65092fc7bf49': 'stock',
+      'ecbe1189-f9fe-4a89-9823-c5ae77e8bfd9': 'illustrator',
       '604da2f2-00f8-4a67-b42d-5b21107eeb93': 'lightroom',
       '28fc7790-6273-4803-a53e-641ea3aa0692': 'photoshop',
-      '0668f6cf-a981-433e-af60-ec967ef90423': 'acrobat',
       'f6622923-afab-4f5e-a1fe-fcc4103e7906': 'premiere',
       '763a8323-2087-42fc-acd8-aac45dbf7532': 'sign',
-      'ecbe1189-f9fe-4a89-9823-c5ae77e8bfd9': 'illustrator',
+      'fd3085a1-a77b-43fc-9f67-65092fc7bf49': 'stock',
     },
   },
   prod: {
-    '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'PHSP',
-    '8d3c8ac2-2937-486b-b6ff-37f02271b09b': 'ILST',
-    '8ba78b22-90fb-4b97-a1c4-f8c03a45cbc2': 'IDSN',
-    'fd30e9c7-9ae9-44db-8e70-5c652a5bb1d2': 'CCSN',
-    '4e2f2a6e-48c4-49eb-9dd5-c44070abb3f0': 'AEFT',
-    'e7650448-268b-4a0d-9795-05f604d7e42f': 'LPES',
-    '619130fc-c7b5-4b39-a687-b32061326869': 'PPRO',
-    'cec4d899-4b41-469e-9f2d-4658689abf29': 'PHLT',
-    '8da44606-9841-43d0-af72-86d5a9d3bba0': 'Any cc product with stock add-ons active users',
-    'ab713720-91a2-4e8e-b6d7-6f613e049566': 'Any CC product without stock add-ons active users',
-    '934fdc1d-7ba6-4644-908b-53e01e550086': 'DC Paid Active entitlements',
+    source: {
+      'b446a9cf-a45c-40a7-ae67-33c2cf7f0bf7': 'acrobat',
+      '389deb08-1522-46e5-ba26-1df898934f4f': 'adobecom',
+      '079734f3-b593-4c58-8805-592d71f88d95': 'apro-cart-abandoner',
+      '295bea12-8443-41c9-9da1-8f75df77dd80': 'business',
+      '235a97a1-bf2e-4e92-bf18-13a9bfcf6ec9': 'cc-lapsed',
+      'f6553238-548f-4e39-bfa4-b299caaca62e': 'commerce',
+      'f569e4f9-f20a-4d6e-ba95-2abe4facdd1b': 'creative-cloud',
+      '5114ecd1-d1ac-4caa-869c-5652ab83afed': 'express',
+      '1d33382e-0c2c-4d24-8b1f-08be98cee22a': 'firefly',
+      '3f27d856-bbdd-431b-9e8f-44f6fe0cfbd0': 'helpx',
+      '5b88bec0-99f2-4736-b2d8-4809463b7fbd': 'illustrator',
+      '3822c05b-8074-4629-b493-59cc12a78650': 'lightroom',
+      '5b5c991e-2633-4390-8ee4-e58931da088e': 'photoshop',
+      '395264bb-b584-45fa-af53-a4396e64838b': 'premiere',
+      'c02e9190-cc42-47cd-85c0-421924c47f2b': 'sign',
+      '9aba8c9e-dce9-427e-8122-a6c796ee2d03': 'stock',
+    },
   },
 };
 
-const ALLOY_TIMEOUT = 500;
+const ALLOY_TIMEOUT = 750;
 
 const WIDTHS = {
   split: 1199,
@@ -520,7 +547,10 @@ function addLoadingSpinner(marquee) {
 function getModalHtml(ctaUrl, classes, ctaText, html = '') {
   const [fragment, hash] = ctaUrl.split('#');
   const innerContent = html || ctaText;
-  return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
+  if (hash && hash !== '_blank') {
+    return `<a href="#${hash}" data-modal-path="${fragment}" data-modal-hash="#${hash}"  daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
+  }
+  return `<a href="${fragment}" daa-ll="${ctaText}" class="modal link-block ${classes}">${innerContent}</a>`;
 }
 
 const isValidModal = (u) => VALID_MODAL_RE.test(u);
@@ -777,7 +807,19 @@ export default async function init(el) {
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
-  const event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+
+  let event;
+  if (window.alloy_pageView) {
+    // eslint-disable-next-line camelcase, no-undef
+    const sent = await alloy_pageView.sent;
+    if (sent?.destinations[0]?.segments) {
+      event = { detail: { type: 'pageView', result: { destinations: sent.destinations } } };
+    } else {
+      return loadFallback(marquee, metadata);
+    }
+  } else {
+    event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+  }
 
   if (authorPreview()) {
     return renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);
