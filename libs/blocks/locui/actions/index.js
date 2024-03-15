@@ -23,18 +23,21 @@ import SyncLangStoreModal from './modal.js';
 export const showRolloutOptions = signal(false);
 
 async function updateExcelJson() {
-  let count = 1;
-  const excelUpdated = setInterval(async () => {
-    setStatus('excel', 'info', `Refreshing project. Try #${count}`);
-    const previewResp = await preview(`${heading.value.path}.json`);
-    const resp = await fetch(previewResp.preview.url);
-    const json = await resp.json();
-    count += 1;
-    if (count > 10 || json.urls.data.length === urls.value.length) {
-      clearInterval(excelUpdated);
-      setStatus('excel', 'info', 'Excel refreshed.', null, 1500);
-    }
-  }, 1000);
+  return new Promise((resolve) => {
+    let count = 1;
+    const excelUpdated = setInterval(async () => {
+      setStatus('excel', 'info', `Refreshing project. Try #${count}`);
+      const previewResp = await preview(`${heading.value.path}.json`);
+      const resp = await fetch(previewResp.preview.url);
+      const json = await resp.json();
+      count += 1;
+      if (count > 10 || json.urls.data.length === urls.value.length) {
+        clearInterval(excelUpdated);
+        setStatus('excel', 'info', 'Excel refreshed.', null, 1500);
+        resolve();
+      }
+    }, 1000);
+  });
 }
 
 async function findPageFragments(path) {
@@ -115,7 +118,7 @@ export async function syncToExcel(paths) {
       setStatus('fragments', 'error', 'Couldn\'t add to Excel.');
       return;
     }
-    updateExcelJson();
+    await updateExcelJson();
   }
 }
 
