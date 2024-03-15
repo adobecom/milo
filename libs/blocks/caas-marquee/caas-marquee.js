@@ -67,26 +67,28 @@ const SEGMENTS_MAP = {
     },
   },
   prod: {
-    'b446a9cf-a45c-40a7-ae67-33c2cf7f0bf7': 'acrobat',
-    '389deb08-1522-46e5-ba26-1df898934f4f': 'adobecom',
-    '079734f3-b593-4c58-8805-592d71f88d95': 'apro-cart-abandoner',
-    '295bea12-8443-41c9-9da1-8f75df77dd80': 'business',
-    '235a97a1-bf2e-4e92-bf18-13a9bfcf6ec9': 'cc-lapsed',
-    'f6553238-548f-4e39-bfa4-b299caaca62e': 'commerce',
-    'f569e4f9-f20a-4d6e-ba95-2abe4facdd1b': 'creative-cloud',
-    '5114ecd1-d1ac-4caa-869c-5652ab83afed': 'express',
-    '1d33382e-0c2c-4d24-8b1f-08be98cee22a': 'firefly',
-    '3f27d856-bbdd-431b-9e8f-44f6fe0cfbd0': 'helpx',
-    '5b88bec0-99f2-4736-b2d8-4809463b7fbd': 'illustrator',
-    '3822c05b-8074-4629-b493-59cc12a78650': 'lightroom',
-    '5b5c991e-2633-4390-8ee4-e58931da088e': 'photoshop',
-    '395264bb-b584-45fa-af53-a4396e64838b': 'premiere',
-    'c02e9190-cc42-47cd-85c0-421924c47f2b': 'sign',
-    '9aba8c9e-dce9-427e-8122-a6c796ee2d03': 'stock',
+    source: {
+      'b446a9cf-a45c-40a7-ae67-33c2cf7f0bf7': 'acrobat',
+      '389deb08-1522-46e5-ba26-1df898934f4f': 'adobecom',
+      '079734f3-b593-4c58-8805-592d71f88d95': 'apro-cart-abandoner',
+      '295bea12-8443-41c9-9da1-8f75df77dd80': 'business',
+      '235a97a1-bf2e-4e92-bf18-13a9bfcf6ec9': 'cc-lapsed',
+      'f6553238-548f-4e39-bfa4-b299caaca62e': 'commerce',
+      'f569e4f9-f20a-4d6e-ba95-2abe4facdd1b': 'creative-cloud',
+      '5114ecd1-d1ac-4caa-869c-5652ab83afed': 'express',
+      '1d33382e-0c2c-4d24-8b1f-08be98cee22a': 'firefly',
+      '3f27d856-bbdd-431b-9e8f-44f6fe0cfbd0': 'helpx',
+      '5b88bec0-99f2-4736-b2d8-4809463b7fbd': 'illustrator',
+      '3822c05b-8074-4629-b493-59cc12a78650': 'lightroom',
+      '5b5c991e-2633-4390-8ee4-e58931da088e': 'photoshop',
+      '395264bb-b584-45fa-af53-a4396e64838b': 'premiere',
+      'c02e9190-cc42-47cd-85c0-421924c47f2b': 'sign',
+      '9aba8c9e-dce9-427e-8122-a6c796ee2d03': 'stock',
+    },
   },
 };
 
-const ALLOY_TIMEOUT = 500;
+const ALLOY_TIMEOUT = 750;
 
 const WIDTHS = {
   split: 1199,
@@ -805,7 +807,19 @@ export default async function init(el) {
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
-  const event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+
+  let event;
+  if (window.alloy_pageView) {
+    // eslint-disable-next-line camelcase, no-undef
+    const sent = await alloy_pageView.sent;
+    if (sent?.destinations[0]?.segments) {
+      event = { detail: { type: 'pageView', result: { destinations: sent.destinations } } };
+    } else {
+      return loadFallback(marquee, metadata);
+    }
+  } else {
+    event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+  }
 
   if (authorPreview()) {
     return renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);

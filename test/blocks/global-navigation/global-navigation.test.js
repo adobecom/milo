@@ -1280,12 +1280,9 @@ describe('global navigation', () => {
           .args[0].analyticsContext.onAnalyticsEvent;
 
         for (const [eventData, interaction] of Object.entries(analyticsTestData)) {
-          const [name, type, subtype, contentName] = eventData.split('|');
-          analyticsFn({
-            event: { type, subtype },
-            source: { name },
-            content: { name: contentName },
-          });
+          const [workflow, type, subtype, name] = eventData.split('|');
+          analyticsFn({ workflow, type, subtype, content: { name } });
+
           // eslint-disable-next-line no-underscore-dangle
           expect(window._satellite.track.lastCall.calledWith('event', {
             xdm: {},
@@ -1393,7 +1390,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://www.stage.adobe.com/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
 
@@ -1403,7 +1400,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://www.stage.adobe.com/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
   });
