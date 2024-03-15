@@ -56,7 +56,7 @@ export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}
 export const normalizePath = (p) => {
   let path = p;
 
-  if (!path.includes('/')) {
+  if (!path?.includes('/')) {
     return path;
   }
 
@@ -487,7 +487,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   if (config.mep?.override) {
     let manifest;
     /* c8 ignore start */
-    config.mep?.override?.split(',').some((item) => {
+    config.mep?.override?.split('---').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
         [, manifest] = pair;
@@ -538,7 +538,16 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   return matchingVariant;
 }
 
-export async function getPersConfig(info) {
+const createDefaultExperiment = (manifest) => ({
+  disabled: manifest.disabled,
+  event: manifest.event,
+  manifest: manifest.manifestPath,
+  variantNames: ['all'],
+  selectedVariantName: 'default',
+  selectedVariant: { commands: [], fragments: [] },
+});
+
+export async function getPersConfig(info, override = false) {
   const {
     name,
     manifestData,
@@ -550,6 +559,9 @@ export async function getPersConfig(info) {
     disabled,
     event,
   } = info;
+  if (disabled && !override) {
+    return createDefaultExperiment(info);
+  }
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
@@ -567,6 +579,32 @@ export async function getPersConfig(info) {
   }
 
   const infoTab = manifestInfo || data?.info?.data;
+  const infoKeyMap = {
+    'manifest-type': ['Personalization', 'Promo', 'Test'],
+    'manifest-execution-order': ['First', 'Normal', 'Last'],
+  };
+  if (infoTab) {
+    const infoObj = infoTab?.reduce((acc, item) => {
+      acc[item.key] = item.value;
+      return acc;
+    }, {});
+    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
+    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    const executionOrder = {
+      'manifest-type': 1,
+      'manifest-execution-order': 1,
+    };
+    Object.keys(infoObj).forEach((key) => {
+      if (!infoKeyMap[key]) return;
+      const index = infoKeyMap[key].indexOf(infoObj[key]);
+      executionOrder[key] = index > -1 ? index : 1;
+    });
+    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+  } else {
+    // eslint-disable-next-line prefer-destructuring
+    config.manifestType = infoKeyMap[1];
+    config.executionOrder = '1-1';
+  }
   const infoKeyMap = {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
@@ -675,7 +713,15 @@ function compareExecutionOrder(a, b) {
 
 export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
+function compareExecutionOrder(a, b) {
+  if (a.executionOrder === b.executionOrder) return 0;
+  return a.executionOrder > b.executionOrder ? 1 : -1;
+}
+
+export function cleanAndSortManifestList(manifests) {
+  const manifestObj = {};
   manifests.forEach((manifest) => {
+    if (!manifest) return;
     manifest.manifestPath = normalizePath(manifest.manifestUrl || manifest.manifest);
     if (manifest.manifestPath in manifestObj) {
       let fullManifest = manifestObj[manifest.manifestPath];
@@ -690,11 +736,30 @@ export function cleanAndSortManifestList(manifests) {
       manifestObj[manifest.manifestPath] = freshManifest;
     } else {
       manifestObj[manifest.manifestPath] = manifest;
+      manifestObj[manifest.manifestPath] = manifest;
     }
   });
   return Object.values(manifestObj).sort(compareExecutionOrder);
+  return Object.values(manifestObj).sort(compareExecutionOrder);
 }
 
+export function handleFragmentCommand(command, a) {
+  const config = getConfig();
+  const { action, fragment, manifestPath } = command;
+  if (action === 'replace') {
+    a.href = fragment;
+    if (config.mep.preview) a.dataset.manifestId = manifestPath;
+    return fragment;
+  }
+  if (action === 'remove') {
+    if (config.mep.preview) {
+      a.parentElement.dataset.removedManifestId = manifestPath;
+    } else {
+      a.parentElement.remove();
+    }
+  }
+  return false;
+}
 const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
   event: manifest.event,
@@ -728,22 +793,17 @@ export async function applyPers(manifests) {
   if (!manifests?.length) return;
   let experiments = manifests;
   for (let i = 0; i < experiments.length; i += 1) {
-    experiments[i] = await getPersConfig(experiments[i]);
+    experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
   }
 
   experiments = cleanAndSortManifestList(experiments);
 
-  const override = config.mep?.override;
   let results = [];
 
   for (const experiment of experiments) {
-    if (experiment.disabled && !override) {
-      results.push(createDefaultExperiment(experiment));
-    } else {
-      const result = await runPersonalization(experiment, config);
-      if (result) {
-        results.push(result);
-      }
+    const result = await runPersonalization(experiment, config);
+    if (result) {
+      results.push(result);
     }
   }
   results = results.filter(Boolean);
