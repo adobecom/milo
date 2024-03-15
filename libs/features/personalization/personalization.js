@@ -628,8 +628,10 @@ export async function getPersConfig(info, override = false) {
     config.manifestType = infoKeyMap[1];
     config.executionOrder = '1-1';
   }
+
+  config.manifestPath = normalizePath(manifestPath);
   const selectedVariantName = await getPersonalizationVariant(
-    manifestPath,
+    config.manifestPath,
     config.variantNames,
     variantLabel,
   );
@@ -712,7 +714,6 @@ export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
   manifests.forEach((manifest) => {
     if (!manifest) return;
-    manifest.manifestPath = normalizePath(manifest.manifestUrl || manifest.manifest);
     if (manifest.manifestPath in manifestObj) {
       let fullManifest = manifestObj[manifest.manifestPath];
       let freshManifest = manifest;
