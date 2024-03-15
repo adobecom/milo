@@ -1,3 +1,5 @@
+import { createTag } from '../../utils/utils.js';
+
 const PREFS = 'bulk-pub-prefs';
 const FORM_MODES = ['full', 'half'];
 const DEFAULT_PREFS = { mode: FORM_MODES[0], resume: [] };
@@ -97,6 +99,23 @@ const getStatusText = (status, state, count) => {
   return { code, text, color };
 };
 
+const updateItemProgress = (detail, tool) => {
+  const resources = detail.data?.resources?.filter((res) => res.status !== 0);
+  if (resources) {
+    resources.forEach(({ path, status }) => {
+      const item = tool.renderRoot.querySelector(`[job-item='${path}']`);
+      if (!item?.hasAttribute('updated')) {
+        const { text, color } = getStatusText(status, null);
+        const newStatus = createTag('span', { class: `status ${color}` }, text);
+        const display = item.querySelector('.status');
+        display.insertAdjacentElement('afterend', newStatus);
+        item.setAttribute('updated', '');
+        display.setAttribute('has-update', '');
+      }
+    });
+  }
+};
+
 const displayDate = (newDate) => {
   const date = new Date(newDate);
   const today = new Date();
@@ -109,6 +128,11 @@ const processJobResult = (jobs) => jobs.reduce((result, job) => {
   return result;
 }, { complete: [], error: [] });
 
+const getProcessedCount = (jobs) => jobs.reduce((count, { progress }) => {
+  const processed = progress?.processed ?? 0;
+  return count + processed;
+}, 0);
+
 export {
   frisk,
   displayDate,
@@ -117,10 +141,12 @@ export {
   getErrorText,
   getJobErrorText,
   getAemUrl,
+  getProcessedCount,
   isDelete,
   PROCESS_TYPES,
   processJobResult,
   getStatusText,
+  updateItemProgress,
   sticky,
   isValidUrl,
   delay,

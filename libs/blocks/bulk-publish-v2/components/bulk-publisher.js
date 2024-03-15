@@ -8,6 +8,7 @@ import {
   editEntry,
   FORM_MODES,
   getJobErrorText,
+  getProcessedCount,
   isValidUrl,
   processJobResult,
   PROCESS_TYPES,
@@ -276,15 +277,8 @@ class BulkPublish2 extends LitElement {
     const { name, progress } = event.detail;
     const jobProcess = this.jobs.find(({ result }) => result.job.name === name);
     if (jobProcess) jobProcess.progress = progress;
-    this.requestUpdate();
-  }
-
-  renderProgress(done) {
-    if (!done) return '';
-    return `${this.jobs.reduce((count, { progress }) => {
-      const processed = progress?.processed ?? 0;
-      return count + processed;
-    }, 0)}/${done}`;
+    const update = this.renderRoot.querySelector('#progress');
+    if (update) update.innerHTML = getProcessedCount(this.jobs);
   }
 
   clearJobs = () => {
@@ -315,7 +309,7 @@ class BulkPublish2 extends LitElement {
             <img src=${clearJobsIcon} alt="Clear List Icon" title="Clear Job List" />
           </div>
           <div class="job-progress${loading}">
-            ${this.renderProgress(count)}
+            <span id="progress">0</span>/${count}
           </div>
           <div class="loading-jobs${loading}">
             <div class="loader pink"></div>
@@ -427,6 +421,7 @@ class BulkPublish2 extends LitElement {
   }
 
   render() {
+    console.log('render');
     const { full, half, toggleMode } = this.getModeState();
     return html`
       ${this.renderLoginPrompt()}

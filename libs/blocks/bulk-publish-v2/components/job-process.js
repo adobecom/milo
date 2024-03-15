@@ -1,6 +1,6 @@
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
-import { displayDate, getStatusText, delay } from '../utils.js';
+import { displayDate, getStatusText, delay, updateItemProgress } from '../utils.js';
 import { pollJobStatus, updateRetry } from '../services.js';
 import { getConfig } from '../../../utils/utils.js';
 
@@ -30,7 +30,11 @@ class JobProcess extends LitElement {
     this.renderRoot.adoptedStyleSheets = [styleSheet];
     if (this.job?.useBulk) {
       await pollJobStatus(this.job, (detail) => {
-        this.jobStatus = detail;
+        if (detail.state === 'stopped') {
+          this.jobStatus = detail;
+        } else {
+          updateItemProgress(detail, this);
+        }
         this.dispatchEvent(new CustomEvent('progress', { detail }));
       });
     } else {
@@ -39,10 +43,11 @@ class JobProcess extends LitElement {
   }
 
   async updated() {
-    if (this.jobStatus?.state === 'stopped') {
+    const stopped = this.jobStatus?.state === 'stopped';
+    if (stopped) {
       this.dispatchEvent(new CustomEvent('stopped', { detail: this.jobStatus }));
     }
-    if (this.jobStatus?.progress?.failed !== 0) {
+    if (stopped && this.jobStatus?.progress?.failed !== 0) {
       const timeouts = this.jobStatus?.data?.resources?.filter((job) => job.status === 503) ?? [];
       this.retry(timeouts);
     }
@@ -118,30 +123,33 @@ class JobProcess extends LitElement {
     };
   }
 
+  renderJobItem(path, pathIndex) {
+    const jobPath = typeof path === 'object' ? path.path : path;
+    const { style, status, topic, url, time } = this.getJob(jobPath);
+    return html`
+      <div
+        job-item=${path}
+        class="result${style}"
+        @click=${() => this.onClick({ url, code: status.code, topic }, pathIndex)}>
+        <div class="process">
+          ${topic} <span class="url">${url}</span>
+        </div>
+        <div class="meta">
+          <span class="status ${status.color}">${status.text}</span>
+          <span
+            class="date-stamp"
+            @mouseover=${() => { this.expandDate = url; }}
+            @mouseleave=${() => { this.expandDate = false; }}>
+            <i>${this.expandDate === url ? time.label : ''}</i> ${displayDate(time.stamp)}
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     const { job } = this.job.result;
-    return job.data.paths.map((path, pathIndex) => {
-      const jobPath = typeof path === 'object' ? path.path : path;
-      const { style, status, topic, url, time } = this.getJob(jobPath);
-      return html`
-        <div 
-          class="result${style}"
-          @click=${() => this.onClick({ url, code: status.code, topic }, pathIndex)}>
-          <div class="process">
-            ${topic} <span class="url">${url}</span>
-          </div>
-          <div class="meta">
-            <span class="${status.color}">${status.text}</span>
-            <span
-              class="date-stamp"
-              @mouseover=${() => { this.expandDate = url; }}
-              @mouseleave=${() => { this.expandDate = false; }}>
-              <i>${this.expandDate === url ? time.label : ''}</i> ${displayDate(time.stamp)}
-            </span>
-          </div>
-        </div>
-      `;
-    });
+    return job.data.paths.map((path, pathIndex) => this.renderJobItem(path, pathIndex));
   }
 }
 
