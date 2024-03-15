@@ -37,7 +37,7 @@ function isLocalFragment(link, baseUrlOrigin) {
 }
 
 function isReferencedAsset(link, baseUrlOrigin) {
-  return link && link.startsWith(baseUrlOrigin) && link.endsWith('.svg');
+  return link && link.startsWith(baseUrlOrigin) && (link.endsWith('.svg') || link.endsWith('.pdf'));
 }
 
 function getOriginFromLink(link) {
