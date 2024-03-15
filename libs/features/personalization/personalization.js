@@ -468,7 +468,16 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   return matchingVariant;
 }
 
-export async function getPersConfig(info) {
+const createDefaultExperiment = (manifest) => ({
+  disabled: manifest.disabled,
+  event: manifest.event,
+  manifest: manifest.manifestPath,
+  variantNames: ['all'],
+  selectedVariantName: 'default',
+  selectedVariant: { commands: [], fragments: [] },
+});
+
+export async function getPersConfig(info, override = false) {
   const {
     name,
     manifestData,
@@ -480,7 +489,9 @@ export async function getPersConfig(info) {
     disabled,
     event,
   } = info;
-  if (disabled) return false;
+  if (disabled && !override) {
+    return createDefaultExperiment(info);
+  }
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
@@ -627,15 +638,6 @@ export function cleanAndSortManifestList(manifests) {
   return Object.values(manifestObj).sort(compareExecutionOrder);
 }
 
-const createDefaultExperiment = (manifest) => ({
-  disabled: manifest.disabled,
-  event: manifest.event,
-  manifest: manifest.manifestPath,
-  variantNames: ['all'],
-  selectedVariantName: 'default',
-  selectedVariant: { commands: [], fragments: [] },
-});
-
 export function handleFragmentCommand(command, a) {
   const config = getConfig();
   const { action, fragment, manifestPath } = command;
@@ -660,22 +662,17 @@ export async function applyPers(manifests) {
   if (!manifests?.length) return;
   let experiments = manifests;
   for (let i = 0; i < experiments.length; i += 1) {
-    experiments[i] = await getPersConfig(experiments[i]);
+    experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
   }
 
   experiments = cleanAndSortManifestList(experiments);
 
-  const override = config.mep?.override;
   let results = [];
 
   for (const experiment of experiments) {
-    if (experiment.disabled && !override) {
-      results.push(createDefaultExperiment(experiment));
-    } else {
-      const result = await runPersonalization(experiment, config);
-      if (result) {
-        results.push(result);
-      }
+    const result = await runPersonalization(experiment, config);
+    if (result) {
+      results.push(result);
     }
   }
   results = results.filter(Boolean);
