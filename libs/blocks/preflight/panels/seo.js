@@ -13,6 +13,11 @@ const descResult = signal({ icon: DEF_ICON, title: 'Meta description', descripti
 const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC });
 const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC });
 const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC });
+const psiMarkup = signal({
+  icon: 'external',
+  title: 'Page Speed Insights',
+  description: 'Click here to open page in PSI',
+});
 
 function checkH1s() {
   const h1s = document.querySelectorAll('h1');
@@ -154,6 +159,10 @@ async function checkLinks() {
   return result.icon;
 }
 
+function psiUrl() {
+  return `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(window.location.href)}`;
+}
+
 export async function sendResults() {
   const robots = document.querySelector('meta[name="robots"]').content || 'all';
 
@@ -222,7 +231,7 @@ export default function Panel() {
   useEffect(() => { getResults(); }, []);
 
   return html`
-      <div class=seo-columns>
+    <div class=seo-columns>
       <div class=seo-column>
         <${SeoItem} icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
         <${SeoItem} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
@@ -233,6 +242,9 @@ export default function Panel() {
         <${SeoItem} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
         <${SeoItem} icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
         <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
+        <a href=${psiUrl()} target="_blank">
+          <${SeoItem} icon=${psiMarkup.value.icon} title=${psiMarkup.value.title} description=${psiMarkup.value.description} />
+        </a>
       </div>
     </div>`;
 }

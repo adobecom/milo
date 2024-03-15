@@ -303,6 +303,17 @@ span.preflight-time {
   background-size: 60px;
 }
 
+.result-icon.external {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-icon.external::before {
+  content: '↗️';
+  font-size: 3.2rem;
+}
+
 .seo-item-title {
   margin: 0;
   font-weight: 700;
@@ -312,6 +323,11 @@ span.preflight-time {
 
 .seo-item-description {
   margin: 0;
+}
+
+.seo-column > a {
+  color: var(--color-white);
+  text-decoration: none;
 }
 
 /* Accessibility css */
