@@ -760,14 +760,6 @@ export function handleFragmentCommand(command, a) {
   }
   return false;
 }
-const createDefaultExperiment = (manifest) => ({
-  disabled: manifest.disabled,
-  event: manifest.event,
-  manifest: manifest.manifestPath,
-  variantNames: ['all'],
-  selectedVariantName: 'default',
-  selectedVariant: { commands: [], fragments: [] },
-});
 
 export function handleFragmentCommand(command, a) {
   const config = getConfig();
