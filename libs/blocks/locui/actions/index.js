@@ -119,13 +119,6 @@ export async function syncToExcel(paths) {
   }
 }
 
-export async function startSyncToLangstore() {
-  const { getModal } = await import('../../modal/modal.js');
-  const div = createTag('div');
-  const content = SyncLangStoreModal(div);
-  return getModal(null, { id: 'sync-modal', content, closeEvent: 'closeModal' });
-}
-
 export async function findAllFragments() {
   setStatus('fragments', 'info', 'Finding fragments.');
   const forExcel = await findFragments();
@@ -150,6 +143,17 @@ export async function syncToLangstore() {
     }, 3000);
   } else {
     await startSync();
+  }
+}
+
+export async function startSyncToLangstore() {
+  if (heading.value.projectId) {
+    await syncToLangstore();
+  } else {
+    const { getModal } = await import('../../modal/modal.js');
+    const div = createTag('div');
+    const content = SyncLangStoreModal(div);
+    getModal(null, { id: 'sync-modal', content, closeEvent: 'closeModal' });
   }
 }
 
