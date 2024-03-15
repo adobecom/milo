@@ -97,14 +97,14 @@ describe('Utils', () => {
       it('Does not unwrap when sibling content present', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
 
       it('Does not unwrap when not in paragraph tag', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
     });
