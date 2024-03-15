@@ -61,7 +61,7 @@ export function adjustStyles({ dialog, iframe }) {
   if (isAutoHeightAdjustment) {
     dialog.classList.add('height-fit-content');
   } else {
-    iframe.style.height = '100%';
+    iframe.style.height = '100vh';
   }
 }
 
