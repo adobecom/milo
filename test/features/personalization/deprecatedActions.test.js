@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { applyPers } from '../../../libs/features/personalization/personalization.js';
+import { applyPers, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -25,6 +25,7 @@ describe('Functional Test', () => {
     // Add custom keys so tests doesn't rely on real data
     const config = getConfig();
     config.env = { name: 'prod' };
+    config.mep = { handleFragmentCommand };
   });
 
   it('replaceContent should replace an element with a fragment', async () => {
