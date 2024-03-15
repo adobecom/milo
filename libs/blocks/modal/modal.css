@@ -200,7 +200,8 @@
   }
 
   .dialog-modal.commerce-frame > .fragment,
-  .dialog-modal.commerce-frame > .section {
+  .dialog-modal.commerce-frame > .section,
+  .dialog-modal.commerce-frame > .fragment > .section {
     height: 100vh;
   }
 }
@@ -221,7 +222,8 @@
   }
 
   .dialog-modal.commerce-frame > .fragment,
-  .dialog-modal.commerce-frame > .section {
+  .dialog-modal.commerce-frame > .section,
+  .dialog-modal.commerce-frame > .fragment > .section {
     height: 100%;
   }
 
