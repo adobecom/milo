@@ -1,10 +1,5 @@
 :root {
   --timeline-col-widths: 33.33% 66.66%;
-  --timeline-bg-left: linear-gradient(to right, #E63888, #E97040);
-  --timeline-bg-right: #FFCE2E;
-  --timeline-bar-bg-one: #E63888;
-  --timeline-bar-bg-two: #FFCE2E;
-  --timeline-bar-bg-three: #FFCE2E;
 }
 
 .timeline {
@@ -18,7 +13,6 @@
   display: grid;
   grid-template-columns: var(--timeline-col-widths);
 }
-
 
 .timeline h1,
 .timeline h2,
@@ -66,18 +60,6 @@
   margin: var(--spacing-xxs) 0;
 }
 
-.timeline .row .left .bar {
-  background: var(--timeline-bar-bg-one);
-}
-
-.timeline .row .right .bar:first-of-type {
-  background: var(--timeline-bar-bg-two);
-}
-
-.timeline .row .right .bar:nth-of-type(2) {
-  background: var(--timeline-bar-bg-three);
-}
-
 .timeline .row:nth-of-type(3) p {
   text-align: center;
   font-weight: 700;
@@ -90,12 +72,10 @@
 }
 
 .timeline .row:nth-of-type(3) .left p {
-  background: var(--timeline-bg-left);
   margin-right: 2px;
 }
 
 .timeline .row:nth-of-type(3) .right p {
-  background: var(--timeline-bg-right);
   margin-left: 2px;
 }
 

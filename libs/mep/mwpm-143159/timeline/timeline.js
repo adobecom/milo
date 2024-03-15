@@ -112,7 +112,6 @@ export default function init(el) {
   const [textRow, left, right] = createRow();
   const rows = el.querySelectorAll(':scope > div > div');
   const colors = [], periodText = [], colWidths = [];
-  let rootStyle;
   rows.forEach((row, index) => {
     const  side = index === 0 ? left : right;
     const color = row.firstElementChild?.textContent?.trim();
