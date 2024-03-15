@@ -758,24 +758,6 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
-export function handleFragmentCommand(command, a) {
-  const config = getConfig();
-  const { action, fragment, manifestPath } = command;
-  if (action === 'replace') {
-    a.href = fragment;
-    if (config.mep.preview) a.dataset.manifestId = manifestPath;
-    return fragment;
-  }
-  if (action === 'remove') {
-    if (config.mep.preview) {
-      a.parentElement.dataset.removedManifestId = manifestPath;
-    } else {
-      a.parentElement.remove();
-    }
-  }
-  return false;
-}
-
 export async function applyPers(manifests) {
   const config = getConfig();
 
