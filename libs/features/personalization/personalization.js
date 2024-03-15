@@ -710,13 +710,6 @@ function compareExecutionOrder(a, b) {
 
 export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
-function compareExecutionOrder(a, b) {
-  if (a.executionOrder === b.executionOrder) return 0;
-  return a.executionOrder > b.executionOrder ? 1 : -1;
-}
-
-export function cleanAndSortManifestList(manifests) {
-  const manifestObj = {};
   manifests.forEach((manifest) => {
     if (!manifest) return;
     manifest.manifestPath = normalizePath(manifest.manifestUrl || manifest.manifest);
@@ -736,7 +729,6 @@ export function cleanAndSortManifestList(manifests) {
       manifestObj[manifest.manifestPath] = manifest;
     }
   });
-  return Object.values(manifestObj).sort(compareExecutionOrder);
   return Object.values(manifestObj).sort(compareExecutionOrder);
 }
 
