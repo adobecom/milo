@@ -51,7 +51,7 @@ const getLeaf = (node, type, parent = null) => {
 const addBoldHeaders = (mdast) => {
   const tables = mdast.children.filter((child) => child.type === 'gridTable'); // gets all block
   const tableMap = tables.forEach((table) => {
-    var { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
+    const { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
     if (parent.type !== 'strong') {
       let idx = parent.children.indexOf(node);
       parent.children[idx] = { type: 'strong', children: [node] };
@@ -63,11 +63,33 @@ const addBoldHeaders = (mdast) => {
 const hashToContentMap = new Map();
 function processMdast(nodes) {
   const arrayWithContentHash = [];
-  nodes.forEach((node) => {
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    const blockName = getLeaf(node, 'text')?.node?.value;
     const hash = objectHash.sha1(node);
-    arrayWithContentHash.push(hash);
-    hashToContentMap.set(hash, node);
-  });
+    if (blockName?.toLowerCase().startsWith('block-group-start')) {
+      const groupArray = [];
+      groupArray.push(node);
+      for (let j = i + 1; j < nodes.length; j++) {
+        const nextNode = nodes[j];
+        const nextBlockName = getLeaf(nextNode, 'text')?.node?.value;
+        i = j;
+        if (!nextBlockName?.toLowerCase().startsWith('block-group-end')) {
+          groupArray.push(nextNode);
+        } else {
+          nextNode.endNode = true;
+          groupArray.push(nextNode);
+          break;
+        }
+      }
+      const hashOfGroupArray = objectHash.sha1(groupArray);
+      arrayWithContentHash.push(hashOfGroupArray);
+      hashToContentMap.set(hashOfGroupArray, groupArray);
+    } else {
+      arrayWithContentHash.push(hash);
+      hashToContentMap.set(hash, node);
+    }
+  }
   return arrayWithContentHash;
 }
 
@@ -116,9 +138,10 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
     function addTrackChangesInfoToChildren(content) {
       if (content?.children) {
         const { children } = content;
+        const typesToTrack = ['text', 'gtRow', 'image', 'html', 'paragraph', 'heading'];
         for (let i = 0; i < children.length; i += 1) {
           const child = children[i];
-          if (child.type === 'text' || child.type === 'gtRow' || child.type === 'image' || child.type === 'html') {
+          if (typesToTrack.includes(child.type)) {
             child.author = author;
             child.action = action;
           }
@@ -195,11 +218,34 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
     // Creating new object of langstoreContent to avoid mutation of original object
     const newContent = JSON.parse(JSON.stringify(content));
     if (elem.classType === 'deleted') {
-      addTrackChangesInfo('Langstore Version', elem.classType, newContent);
+      if (Array.isArray(newContent)) {
+        newContent.forEach((el) =>  {
+          addTrackChangesInfo('Langstore Version', elem.classType, el);
+          if (el.type === 'gridTable') {
+            if (el.endNode) delete el.endNode;
+            else el.group = true;
+          }
+        });
+      }
+      else 
+        addTrackChangesInfo('Langstore Version', elem.classType, newContent);
     } else if (elem.classType === 'added') {
-      addTrackChangesInfo('Regional Version', elem.classType, newContent);
+      if (Array.isArray(newContent)) {
+        newContent.forEach((el) => {
+          addTrackChangesInfo('Regional Version', elem.classType, el);
+          if (el.type === 'gridTable') {
+            if (el.endNode) delete el.endNode;
+            else el.group = true;
+          }
+        });
+      }
+      else 
+        addTrackChangesInfo('Regional Version', elem.classType, newContent);
     }
-    mergedMdast.children.push(newContent);
+    if (Array.isArray(newContent))
+      mergedMdast.children.push(...newContent);
+    else
+      mergedMdast.children.push(newContent);
   });
   return mergedMdast;
 }
