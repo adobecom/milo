@@ -262,35 +262,106 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-function getSelectedElement(selector, action) {
+const getDivInTargetedCell = (tableCell) => {
+  tableCell.replaceChildren();
+  const div = document.createElement('div');
+  tableCell.appendChild(div);
+  return div;
+};
+
+const querySelector = (el, selector, all = false) => {
   try {
-    if ((action.includes('appendtosection') || action.includes('prependtosection')) && selector.includes('section')) {
-      let section = selector.trim().replace('section', '');
-      if (section === '') section = 1;
-      if (Number.isNaN(section)) return null;
-      return document.querySelector(`main > :nth-child(${section})`);
-    }
-    if (checkSelectorType(selector) === 'fragment') {
-      const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
-      if (fragment) {
-        return fragment.parentNode;
-      }
-      return null;
-    }
-    return document.querySelector(selector);
+    return all ? el.querySelectorAll(selector) : el.querySelector(selector);
   } catch (e) {
+    /* eslint-disable-next-line no-console */
+    console.log('Invalid selector: ', selector);
     return null;
   }
+};
+
+function getTrailingNumber(s) {
+  const match = s.match(/\d+$/);
+  return match ? parseInt(match[0], 10) : null;
 }
 
-function handleCommands(commands, manifestId) {
+function getSection(rootEl, idx) {
+  return rootEl === document
+    ? document.querySelector(`body > main > div:nth-child(${idx})`)
+    : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
+}
+
+function getSelectedElement(selector, action, rootEl) {
+  if (!selector) return null;
+  if ((action.includes('appendtosection') || action.includes('prependtosection'))) {
+    if (!selector.includes('section')) return null;
+    const section = selector.trim().replace('section', '');
+    if (section !== '' && Number.isNaN(section)) return null;
+  }
+  if (checkSelectorType(selector) === 'fragment') {
+    try {
+      const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
+      if (fragment) return fragment.parentNode;
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  let selectedEl;
+  if (selector.includes('.') || !['section', 'block', 'row'].some((s) => selector.includes(s))) {
+    selectedEl = querySelector(rootEl, selector);
+    if (selectedEl) return selectedEl;
+  }
+
+  const terms = selector.split(/\s+/);
+
+  let section = null;
+  if (terms[0]?.startsWith('section')) {
+    const sectionIdx = getTrailingNumber(terms[0]) || 1;
+    section = getSection(rootEl, sectionIdx);
+    terms.shift();
+  }
+
+  if (terms.length) {
+    const blockStr = terms.shift();
+    if (blockStr.includes('.')) {
+      selectedEl = querySelector(section || rootEl, blockStr);
+    } else {
+      const blockIndex = getTrailingNumber(blockStr) || 1;
+      const blockName = blockStr.replace(`${blockIndex}`, '');
+      if (blockName === 'block') {
+        if (!section) section = getSection(rootEl, 1);
+        selectedEl = querySelector(section, `:scope > div:nth-of-type(${blockIndex})`);
+      } else {
+        selectedEl = querySelector(section || rootEl, `.${blockName}`, true)?.[blockIndex - 1];
+      }
+    }
+  } else if (section) {
+    return section;
+  }
+
+  if (terms.length) {
+    // find targeted table cell in rowX colY format
+    const rowColMatch = /row(?<row>\d+)\s+col(?<col>\d+)/gm.exec(terms.join(' '));
+    if (rowColMatch) {
+      const { row, col } = rowColMatch.groups;
+      const tableCell = querySelector(selectedEl, `:nth-child(${row}) > :nth-child(${col})`);
+      if (!tableCell) return null;
+      return getDivInTargetedCell(tableCell);
+    }
+  }
+
+  return selectedEl;
+}
+
+function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (action in COMMANDS) {
-      const el = getSelectedElement(selector, action);
+      const el = getSelectedElement(selector, action, rootEl);
       COMMANDS[action](el, target, manifestId);
     } else if (action in CREATE_CMDS) {
-      const el = getSelectedElement(selector, action);
+      const el = getSelectedElement(selector, action, rootEl);
       el?.insertAdjacentElement(CREATE_CMDS[action], createFrag(el, target, manifestId));
     } else {
       /* c8 ignore next 2 */
@@ -396,7 +467,6 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   }
   return config;
 }
-/* c8 ignore stop */
 
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
@@ -535,6 +605,29 @@ export async function getPersConfig(info, override = false) {
     config.manifestType = infoKeyMap[1];
     config.executionOrder = '1-1';
   }
+
+  if (infoTab) {
+    const infoObj = infoTab?.reduce((acc, item) => {
+      acc[item.key] = item.value;
+      return acc;
+    }, {});
+    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
+    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    const executionOrder = {
+      'manifest-type': 1,
+      'manifest-execution-order': 1,
+    };
+    Object.keys(infoObj).forEach((key) => {
+      if (!infoKeyMap[key]) return;
+      const index = infoKeyMap[key].indexOf(infoObj[key]);
+      executionOrder[key] = index > -1 ? index : 1;
+    });
+    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+  } else {
+    // eslint-disable-next-line prefer-destructuring
+    config.manifestType = infoKeyMap[1];
+    config.executionOrder = '1-1';
+  }
   const selectedVariantName = await getPersonalizationVariant(
     manifestPath,
     config.variantNames,
@@ -617,6 +710,13 @@ function compareExecutionOrder(a, b) {
 
 export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
+function compareExecutionOrder(a, b) {
+  if (a.executionOrder === b.executionOrder) return 0;
+  return a.executionOrder > b.executionOrder ? 1 : -1;
+}
+
+export function cleanAndSortManifestList(manifests) {
+  const manifestObj = {};
   manifests.forEach((manifest) => {
     if (!manifest) return;
     manifest.manifestPath = normalizePath(manifest.manifestUrl || manifest.manifest);
@@ -633,8 +733,10 @@ export function cleanAndSortManifestList(manifests) {
       manifestObj[manifest.manifestPath] = freshManifest;
     } else {
       manifestObj[manifest.manifestPath] = manifest;
+      manifestObj[manifest.manifestPath] = manifest;
     }
   });
+  return Object.values(manifestObj).sort(compareExecutionOrder);
   return Object.values(manifestObj).sort(compareExecutionOrder);
 }
 
