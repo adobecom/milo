@@ -605,10 +605,7 @@ export async function getPersConfig(info, override = false) {
     config.manifestType = infoKeyMap[1];
     config.executionOrder = '1-1';
   }
-  const infoKeyMap = {
-    'manifest-type': ['Personalization', 'Promo', 'Test'],
-    'manifest-execution-order': ['First', 'Normal', 'Last'],
-  };
+
   if (infoTab) {
     const infoObj = infoTab?.reduce((acc, item) => {
       acc[item.key] = item.value;
