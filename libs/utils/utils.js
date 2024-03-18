@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { lanaLog } from '../blocks/global-navigation/utilities/utilities.js';
 
 const MILO_TEMPLATES = [
   '404',
@@ -465,9 +464,9 @@ export async function loadBlock(block, error = {}) {
 
         const { message, errorType, module } = error;
         if (message && errorType && module) {
-          lanaLog({
-            message: `${message}; blockPath: ${blockPath}`,
-            e: err,
+          window.lana.log(`${message}; blockPath: ${blockPath} | href: ${window.location.href} | ${err.reason || err.error || err.message || err}`, {
+            clientId: 'feds-milo',
+            sampleRate: 1,
             tags: `errorType=${errorType},module=${module}`,
           });
         }
