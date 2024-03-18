@@ -3,10 +3,21 @@ import { urls } from '../utils/state.js';
 import Url from '../url/view.js';
 import { origin } from '../utils/franklin.js';
 
-function Modal({ lang, prefix }) {
+function Modal({ lang, prefix, error }) {
   const localeUrls = urls.value.map(
     (url) => new URL(`${origin}/${prefix}${url.pathname}`),
   );
+
+  if (error) {
+    const { statusText, errors } = lang;
+    return html`
+      <h2><span class="error-icon" /> ${statusText}</h2>
+      <p>Errors reported for this language:</p>
+      <ol class=locui-urls>
+        ${errors.map((err) => html`<li>${err}</li>`)}
+      </ol>
+    `;
+  }
 
   return html`
     <h2>${lang.Language} (${prefix})</h2>
@@ -18,7 +29,7 @@ function Modal({ lang, prefix }) {
   `;
 }
 
-export default function renderModal(el, lang, prefix) {
-  render(html`<${Modal} lang=${lang} prefix=${prefix} />`, el);
+export default function renderModal(el, lang, prefix, error = null) {
+  render(html`<${Modal} lang=${lang} prefix=${prefix} error=${error} />`, el);
   return el;
 }

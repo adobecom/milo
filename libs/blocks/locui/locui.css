@@ -286,6 +286,11 @@ li.locui-subproject.locui-subproject-in-progress .locui-subproject-badge {
 li.locui-subproject.locui-subproject-error {
   border-color: #e40909;
   background: rgb(249 148 148 / 20%);
+  cursor: pointer;
+}
+
+li.locui-subproject.locui-subproject-error:hover {
+  background: rgb(249 148 148 / 40%);
 }
 
 li.locui-subproject.locui-subproject-error .locui-subproject-badge {
@@ -564,4 +569,42 @@ button.locui-url-action-view {
   #locui-modal {
     min-width: 800px;
   }
+
+  #locui-modal.locui-modal-errors {
+    min-width: 500px;
+  }
+}
+
+.error-icon {
+  box-sizing: border-box;
+  position: relative;
+  display: inline-block;
+  transform: scale(var(--ggs, 1));
+  width: 20px;
+  height: 20px;
+  border: 2px solid;
+  border-radius: 40px;
+  color: red;
+}
+
+.error-icon::after,
+.error-icon::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  border-radius: 3px;
+  width: 2px;
+  background: red;
+  left: 7px
+}
+
+.error-icon::after {
+  bottom: 2px;
+  height: 8px
+}
+
+.error-icon::before {
+  height: 2px;
+  top: 2px
 }

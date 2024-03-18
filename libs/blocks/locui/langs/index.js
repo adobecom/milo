@@ -26,3 +26,17 @@ export async function rollout(item, idx) {
 
   await rolloutLang(item.code, reroll);
 }
+
+export function showLangErrors(event, item) {
+  if (!item.errors.length
+    || event.target.classList.contains('locui-subproject-locale')) return null;
+  const div = createTag('div');
+  const content = Modal(div, item, null, item);
+  const modalOpts = {
+    class: 'locui-modal-errors',
+    id: 'locui-modal',
+    content,
+    closeEvent: 'closeModal',
+  };
+  return getModal(null, modalOpts);
+}

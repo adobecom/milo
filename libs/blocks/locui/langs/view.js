@@ -1,6 +1,6 @@
 import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
-import { rollout, showUrls } from './index.js';
+import { rollout, showLangErrors, showUrls } from './index.js';
 
 function getPrettyStatus(status) {
   switch (status) {
@@ -28,7 +28,7 @@ function Language({ item, idx }) {
   const total = item.locales?.length && completeType === 'Rolled out' ? item.locales.length * item.size : null;
   const rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
   return html`
-    <li class="locui-subproject ${cssStatus}">
+    <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
       ${item.status && html`<${Badge} status=${item.status} />`}
       <p class=locui-project-label>Language</p>
       <h3 class=locui-subproject-name>${item.Language}</h3>
