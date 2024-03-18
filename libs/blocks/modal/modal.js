@@ -179,7 +179,7 @@ export async function getModal(details, custom) {
 // Deep link-based
 export default function init(el) {
   const { modalHash } = el.dataset;
-  if (window.location.hash === modalHash) {
+  if (window.location.hash === modalHash && !document.querySelector(`div.dialog-modal${modalHash}`)) {
     const details = findDetails(window.location.hash, el);
     if (details) return getModal(details);
   }
