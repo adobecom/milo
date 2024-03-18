@@ -35,6 +35,15 @@ export async function getSVGsfromFile(path, selectors) {
   });
 }
 
+function removePlatformEls(el) {
+  const manualShares = el.querySelectorAll('a');
+  if (manualShares.length === 0) return null;
+  [...manualShares].forEach((share) => {
+    const parentP = share.closest('p');
+    parentP?.remove();
+  });
+}
+
 function getPlatforms(el) {
   const manualShares = el.querySelectorAll('a');
   if (manualShares.length === 0) return null;
@@ -49,6 +58,7 @@ function getPlatforms(el) {
 export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
+  const rows = block.querySelectorAll(':scope > div');
   const platforms = getPlatforms(block) || [
     'facebook',
     'twitter',
@@ -56,6 +66,34 @@ export default async function decorate(block) {
     'pinterest',
     'reddit',
   ];
+  /* eslint-disable  no-confusing-arrow,no-useless-escape */
+  const toSentenceCase = (str) => str && typeof str === 'string' ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
+  removePlatformEls(block)
+  rows[0]?.classList.add('tracking-header');
+  const childDiv = rows[0].querySelector(':scope > div');
+  const emptyRow = childDiv?.innerText.trim() === '';
+
+  // wrap innerHTML in <p> tag if none are present
+  if (childDiv?.innerHTML !== undefined && !emptyRow) {
+    const innerPs = childDiv.querySelectorAll(':scope > p');
+    if (innerPs.length === 0) {
+      const text = childDiv.innerHTML;
+      childDiv.innerHTML = ''
+      childDiv.append(createTag('p', null, text));
+    }
+  }
+
+
+  // add share key title if empty row 
+  if (childDiv && emptyRow) {
+      if (!block.classList.contains('inline')) {
+        const heading = toSentenceCase(await replaceKey('share-this-page', config));
+        childDiv.append(createTag('p', null, heading));
+      } else {
+        rows[0].innerHTML = '';
+      }
+  }
+
   const clipboardSupport = !!navigator.clipboard;
   if (clipboardSupport) platforms.push('clipboard');
   const svgs = await getSVGsfromFile(
@@ -63,8 +101,7 @@ export default async function decorate(block) {
     platforms,
   );
   if (!svgs) return;
-  /* eslint-disable  no-confusing-arrow,no-useless-escape */
-  const toSentenceCase = (str) => str && typeof str === 'string' ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
+
   const shareToText = toSentenceCase(await replaceKey('share-to', config));
   const url = encodeURIComponent(window.location.href);
   const title = document.title ?? url;
@@ -100,15 +137,7 @@ export default async function decorate(block) {
         return null;
     }
   };
-  const authoredContent = block.innerText.trim() !== '';
-  if (authoredContent) {
-    const rows = block.querySelectorAll(':scope > div');
-    rows[0].classList.add('tracking-header');
-  } else if (!authoredContent && !block.classList.contains('inline')) {
-    const heading =  toSentenceCase(await replaceKey('share-this-page', config));
-    block.innerHTML = '';
-    block.append(createTag('p', { class: 'tracking-header' }, heading));
-  }
+
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
     if (svg.name === 'clipboard') return;

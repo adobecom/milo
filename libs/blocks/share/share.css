@@ -124,12 +124,12 @@
 
 .share.inline {
   margin: 0 auto;
-  text-align: unset;
+  text-align: center;
   padding: 8px 0 16px;
 }
 
 .share.inline .tracking-header {
-  margin-bottom: 1em;
+  text-align: left;
 }
 
 .share.inline p.icon-container {
