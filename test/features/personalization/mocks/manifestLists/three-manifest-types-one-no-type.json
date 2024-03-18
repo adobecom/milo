@@ -33,7 +33,8 @@
           "fragments": []
       },
       "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/none.json",
-      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/none.json"
+      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/none.json",
+      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/none.json"
   },
   {
       "variants": {
@@ -71,7 +72,8 @@
           "fragments": []
       },
       "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
-      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json"
+      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
+      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json"
   },
   {
       "variants": {
@@ -109,6 +111,7 @@
           "fragments": []
       },
       "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
-      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json"
+      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
+      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json"
   }
 ]

@@ -727,7 +727,6 @@ export function cleanAndSortManifestList(manifests) {
       manifestObj[manifest.manifestPath] = freshManifest;
     } else {
       manifestObj[manifest.manifestPath] = manifest;
-      manifestObj[manifest.manifestPath] = manifest;
     }
   });
   return Object.values(manifestObj).sort(compareExecutionOrder);
