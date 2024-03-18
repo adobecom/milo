@@ -1,8 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
-import { getConfig, setConfig } from '../../../libs/utils/utils.js';
-import { applyPers } from '../../../libs/features/personalization/personalization.js';
+import { getConfig, setConfig, loadBlock } from '../../../libs/utils/utils.js';
+import initFragments from '../../../libs/blocks/fragment/fragment.js';
+import { applyPers, normalizePath, matchGlob } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -28,6 +29,141 @@ describe('Functional Test', () => {
       '11111111-aaaa-bbbb-6666-cccccccccccc': 'my-special-app',
       '22222222-xxxx-bbbb-7777-cccccccccccc': 'fireflies',
     };
+  });
+
+  it('replaceContent should replace an element with a fragment', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestReplace.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('#features-of-milo-experimentation-platform')).to.not.be.null;
+    expect(document.querySelector('.how-to')).to.not.be.null;
+    const parentEl = document.querySelector('#features-of-milo-experimentation-platform')?.parentElement;
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.querySelector('#features-of-milo-experimentation-platform')).to.be.null;
+    expect(parentEl.firstElementChild.firstElementChild.href)
+      .to.equal('http://localhost:2000/fragments/milo-replace-content-chrome-howto-h2');
+    // .how-to should not be changed as it is targeted to firefox
+    expect(document.querySelector('.how-to')).to.not.be.null;
+  });
+
+  it('removeContent should remove z-pattern content from the page', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestRemove.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('.z-pattern')).to.not.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.querySelector('.z-pattern')).to.be.null;
+  });
+
+  it('insertContentAfter should add fragment after target element', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestInsertContentAfter.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    const fragment = document.querySelector('a[href="/fragments/insertafter"]');
+    expect(fragment).to.not.be.null;
+
+    expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
+  });
+
+  it('insertContentBefore should add fragment before target element', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestInsertContentBefore.json' });
+
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    const fragment = document.querySelector('a[href="/fragments/insertbefore"]');
+    expect(fragment).to.not.be.null;
+
+    expect(fragment.parentElement.parentElement.children[1].className).to.equal('marquee');
+  });
+
+  it('replaceFragment should replace a fragment in the document', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+
+    let manifestJson = await readFile({ path: './mocks/manifestReplaceFragment.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('a[href="/fragments/replaceme"]')).to.exist;
+    expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.exist;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    const fragmentResp = await readFile({ path: './mocks/fragmentReplaced.plain.html' });
+    const inlineFragmentResp = await readFile({ path: './mocks/inlineFragReplaced.plain.html' });
+
+    window.fetch = stub();
+    window.fetch.withArgs('http://localhost:2000/fragments/fragmentreplaced.plain.html')
+      .returns(getFetchPromise(fragmentResp, 'text'));
+    window.fetch.withArgs('http://localhost:2000/fragments/inline-fragmentreplaced.plain.html')
+      .returns(getFetchPromise(inlineFragmentResp, 'text'));
+
+    const replacemeFrag = document.querySelector('a[href="/fragments/replaceme"]');
+    await initFragments(replacemeFrag);
+    expect(document.querySelector('a[href="/fragments/replaceme"]')).to.be.null;
+    expect(document.querySelector('div[data-path="/fragments/fragmentreplaced"]')).to.exist;
+
+    const inlineReplacemeFrag = document.querySelector('a[href="/fragments/inline-replaceme#_inline"]');
+    await initFragments(inlineReplacemeFrag);
+    expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.be.null;
+    expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
+  });
+
+  it('useBlockCode should override a current block with the custom block code provided', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestUseBlockCode.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    expect(getConfig().expBlocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
+    const promoBlock = document.querySelector('.promo');
+    expect(promoBlock.textContent?.trim()).to.equal('Old Promo Block');
+    await loadBlock(promoBlock);
+    expect(promoBlock.textContent?.trim()).to.equal('New Promo!');
+  });
+
+  it('useBlockCode should be able to use a new type of block', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestUseBlockCode2.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    expect(getConfig().expBlocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
+    const myBlock = document.querySelector('.myblock');
+    expect(myBlock.textContent?.trim()).to.equal('This block does not exist');
+    await loadBlock(myBlock);
+    expect(myBlock.textContent?.trim()).to.equal('My New Block!');
+  });
+
+  it('updateMetadata should be able to add and change metadata', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestUpdateMetadata.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    const geoMetadata = document.querySelector('meta[name="georouting"]');
+    expect(geoMetadata.content).to.equal('off');
+
+    expect(document.querySelector('meta[name="mynewmetadata"]')).to.be.null;
+    expect(document.querySelector('meta[property="og:title"]').content).to.equal('milo');
+    expect(document.querySelector('meta[property="og:image"]')).to.be.null;
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    expect(geoMetadata.content).to.equal('on');
+    expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
+    expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
+    expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
   });
 
   it('Invalid selector should not fail page render and rest of items', async () => {
@@ -69,7 +205,7 @@ describe('Functional Test', () => {
     expect(fragment).to.be.null;
   });
 
-  it('test or promo manifest type', async () => {
+  it('test or promo manifest', async () => {
     let config = getConfig();
     config.mep = {};
     let manifestJson = await readFile({ path: './mocks/manifestTestOrPromo.json' });
@@ -77,7 +213,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
     config = getConfig();
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(config.experiments[0].manifestType).to.equal('test or promo');
+    expect(config.mep?.martech).to.be.undefined;
   });
 
   it('should choose chrome & logged out', async () => {
@@ -109,5 +245,77 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(getConfig().mep?.martech).to.equal('|fireflies|manifest');
+  });
+
+  it('removeContent should tag z-pattern in preview', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestRemove.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    const config = getConfig();
+    config.mep = {
+      override: '',
+      preview: true,
+    };
+
+    expect(document.querySelector('.z-pattern')).to.not.be.null;
+    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+  });
+});
+
+describe('normalizePath function', () => {
+  it('does not localize for US page', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
+    expect(path).to.equal('/path/to/fragment.plain.html');
+  });
+
+  it('does not localize for #_dnt', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html#_dnt');
+    expect(path).to.equal('/path/to/fragment.plain.html');
+  });
+
+  it('does not localize if fragment is already localized', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/de/path/to/fragment.plain.html#_dnt');
+    expect(path).to.equal('/de/path/to/fragment.plain.html');
+  });
+
+  it('does not localize json', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/manifest.json');
+    expect(path).to.equal('/path/to/manifest.json');
+  });
+
+  it('does localize otherwise', async () => {
+    const config = getConfig();
+    config.locales = {
+      de: {
+        ietf: 'de-DE',
+        prefix: '/de',
+      },
+    };
+    config.locale = config.locales.de;
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
+    expect(path).to.equal('/de/path/to/fragment.plain.html');
+  });
+});
+
+describe('matchGlob function', () => {
+  it('should match page', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers');
+    expect(result).to.be.true;
+  });
+
+  it('should match page with HTML extension', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers.html');
+    expect(result).to.be.true;
+  });
+
+  it('should not match child page', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers/free-download');
+    expect(result).to.be.false;
+  });
+
+  it('should match child page', async () => {
+    const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
+    expect(result).to.be.true;
   });
 });

@@ -1,8 +1,10 @@
-import { createTag, getConfig, loadScript, localizeLink } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink,
+} from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
-export const checkoutLinkConfigURL = 'https://milo.adobe.com/libs/commerce/checkout-link.json';
+export const PRICE_LITERALS_URL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
+export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
@@ -47,7 +49,7 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 let log;
 let upgradeOffer = null;
 
-export function polyfills() {
+export async function polyfills() {
   if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
   document.createElement('div', {
@@ -78,9 +80,9 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
-export async function fetchCheckoutLinkConfigs() {
+export async function fetchCheckoutLinkConfigs(base = '') {
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(checkoutLinkConfigURL).catch(() => {
+    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch(() => {
       log?.error('Failed to fetch checkout link configs');
     }).then((mappings) => {
       if (!mappings?.ok) return undefined;
@@ -90,7 +92,12 @@ export async function fetchCheckoutLinkConfigs() {
 }
 
 export async function getCheckoutLinkConfig(productFamily) {
-  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs();
+  let { base } = getConfig();
+  if (/\.page$/.test(document.location.origin)) {
+    /* c8 ignore next 2 */
+    base = base.replace('.live', '.page');
+  }
+  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
   const { locale: { region } } = getConfig();
   const productFamilyConfigs = checkoutLinkConfigs.data?.filter(
     ({ [NAME_PRODUCT_FAMILY]: mappingProductFamily }) => mappingProductFamily === productFamily,
@@ -115,7 +122,7 @@ export async function getCheckoutLinkConfig(productFamily) {
 }
 
 export async function getDownloadAction(options, imsSignedInPromise, offerFamily) {
-  if (options.entitlement !== true) return null;
+  if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -140,7 +147,7 @@ export async function getDownloadAction(options, imsSignedInPromise, offerFamily
 }
 
 export async function getUpgradeAction(options, imsSignedInPromise, productFamily) {
-  if (options.entitlement === false) return null;
+  if (options.entitlement === false) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -164,34 +171,59 @@ export async function getUpgradeAction(options, imsSignedInPromise, productFamil
   return undefined;
 }
 
-async function openExternalModal(url, getModal, offerType) {
-  const iframe = createTag('iframe', {
+async function openFragmentModal(path, getModal) {
+  const root = createTag('div');
+  root.style.visibility = 'hidden';
+  createTag('a', { href: `${path}` }, '', { parent: root });
+  const modal = await getModal(null, {
+    id: 'checkout-link-modal',
+    content: root,
+    closeEvent: 'closeModal',
+    class: 'commerce-frame',
+  });
+  await loadArea(modal);
+  root.style.visibility = '';
+  return modal;
+}
+
+async function openExternalModal(url, getModal) {
+  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+  const root = createTag('div', { class: 'milo-iframe' });
+  createTag('iframe', {
     src: url,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
     allowfullscreen: 'true',
     loading: 'lazy',
-    class: offerType === OFFER_TYPE_TRIAL ? 'twp' : 'd2p',
-  });
+  }, '', { parent: root });
   return getModal(null, {
     id: 'checkout-link-modal',
-    content: iframe,
+    content: root,
     closeEvent: 'closeModal',
-    class: ['commerce-frame'],
+    class: 'commerce-frame',
   });
 }
 
 export async function openModal(e, url, offerType) {
   e.preventDefault();
+  e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
-  if (/^https?:/.test(url)) {
-    openExternalModal(url, getModal, offerType);
+  const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
+  let modal;
+  if (/\/fragments\//.test(url)) {
+    const fragmentPath = url.split(/hlx.(page|live)/).pop();
+    modal = await openFragmentModal(fragmentPath, getModal);
+  } else if (/^https?:/.test(url)) {
+    modal = await openExternalModal(url, getModal);
+  }
+  if (modal) {
+    modal.classList.add(offerTypeClass);
   }
 }
 
 export async function getModalAction(offers, options, productFamily) {
-  if (options.modal !== true) return null;
+  if (options.modal !== true) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(productFamily);
   if (!checkoutLinkConfig) return undefined;
   const [{ offerType }] = offers;
@@ -227,7 +259,7 @@ export async function initService(force = false) {
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const commerceLib = await import('../../deps/commerce.js');
     const { env, commerce = {}, locale } = getConfig();
-    commerce.priceLiteralsURL = priceLiteralsURL;
+    commerce.priceLiteralsURL = PRICE_LITERALS_URL;
     const service = await commerceLib.init(() => ({
       env,
       commerce,
