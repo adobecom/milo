@@ -336,6 +336,7 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(buttons[0].textContent).to.be.equal('Buy now');
     expect(buttons[1].textContent).to.be.equal('free trial');
   });
+
   it('Supports Mini Compare Chart with quantity select', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
@@ -345,6 +346,25 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(quantitySelect.getAttribute('min')).to.equal('1');
     expect(quantitySelect.getAttribute('max')).to.equal('10');
     expect(quantitySelect.getAttribute('step')).to.equal('1');
+  });
+
+  it('Supports Mini Compare Chart with offer select', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('#mini-compare-offer-select'));
+    const offerSelect = merchCard.querySelector('merch-offer-select');
+    const merchOffer = offerSelect.querySelector('merch-offer');
+    expect(offerSelect).to.exist;
+    expect(merchOffer).to.exist;
+    expect(merchOffer.getAttribute('text')).to.equal('20GB');
+  });
+
+  it('Supports Mini Compare Chart intersection observer', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('#mini-compare-hidden-card'));
+    merchCard.style.visibility = 'hidden';
+    setTimeout(() => {
+      merchCard.style.visibility = 'visible';
+    }, 500);
   });
 });
 
