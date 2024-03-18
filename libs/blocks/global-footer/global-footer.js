@@ -221,7 +221,8 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
-      await loadBlock(regionPickerElem); // load modal logic and styles
+      // load modal logic and styles
+      await loadBlock(regionPickerElem, { message: `Failed loading region picker; locale: ${locale}`, errorType: 'warn', module: 'global-footer' });
       // 'decorateAutoBlock' logic replaces class name entirely, need to add it back
       regionPickerElem.classList.add(regionPickerClass);
       regionPickerElem.addEventListener('click', () => {
@@ -240,7 +241,8 @@ class Footer {
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
-      await loadBlock(regionSelector); // load fragment and replace original link
+      // load fragment and replace original link
+      await loadBlock(regionSelector, { message: `Failed loading region picker; locale: ${locale}`, errorType: 'warn', module: 'global-footer' });
       // Update aria-expanded on click
       regionPickerElem.addEventListener('click', (e) => {
         e.preventDefault();

@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { lanaLog } from '../blocks/global-navigation/utilities/utilities.js';
 
 const MILO_TEMPLATES = [
   '404',
@@ -434,7 +435,7 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
-export async function loadBlock(block) {
+export async function loadBlock(block, error = {}) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
@@ -461,6 +462,16 @@ export async function loadBlock(block) {
         await init(block);
       } catch (err) {
         console.log(`Failed loading ${name}`, err);
+
+        const { message, errorType, module } = error;
+        if (message && errorType && module) {
+          lanaLog({
+            message: `${message}; blockPath: ${blockPath}`,
+            e: err,
+            tags: `errorType=${errorType},module=${module}`,
+          });
+        }
+
         const config = getConfig();
         if (config.env.name !== 'prod') {
           const { showError } = await import('../blocks/fallback/fallback.js');
