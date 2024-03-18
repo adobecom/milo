@@ -11,6 +11,7 @@ export const statuses = signal({});
 export const heading = signal({ name: '' });
 export const languages = signal([]);
 export const urls = signal([]);
+export const syncFragments = signal([]);
 export const siteConfig = signal(null);
 export const user = signal();
 export const spAccessToken = signal();
