@@ -12,10 +12,8 @@ function Modal({ lang, prefix, error }) {
     const { statusText, errors } = lang;
     return html`
       <h2><span class="error-icon" /> ${statusText}</h2>
-      <p>Errors reported for this language:</p>
-      <ol class=locui-urls>
-        ${errors.map((err) => html`<li>${err}</li>`)}
-      </ol>
+      <p>Errors reported for <i><strong>${lang.Language}</strong>:</i></p>
+      <ol>${errors.map((err) => html`<li>${err}</li>`)}</ol>
     `;
   }
 
@@ -29,7 +27,7 @@ function Modal({ lang, prefix, error }) {
   `;
 }
 
-export default function renderModal(el, lang, prefix, error = null) {
+export default function renderModal(el, lang, prefix, error = false) {
   render(html`<${Modal} lang=${lang} prefix=${prefix} error=${error} />`, el);
   return el;
 }
