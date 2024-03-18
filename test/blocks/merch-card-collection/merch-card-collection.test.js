@@ -6,7 +6,7 @@ import { setConfig } from '../../../libs/utils/utils.js';
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const conf = { locales, miloLibs: '/libs', queryIndexCardPath: '/test' };
+const conf = { locales, miloLibs: '/libs' };
 setConfig(conf);
 
 const getVisibleCards = (merchCards) => [...merchCards.querySelectorAll('merch-card')]
@@ -54,9 +54,9 @@ describe('Merch Cards', async () => {
         json: () => Promise.resolve(data),
       });
     });
-    ({ default: init } = await import('../../../libs/blocks/merch-cards/merch-cards.js'));
+    ({ default: init } = await import('../../../libs/blocks/merch-card-collection/merch-card-collection.js'));
     // this allows to run the test in the normal browser.
-    pageContent = await originalFetch(new URL('./mocks/merch-cards.html', import.meta.url).href).then((r) => r.text());
+    pageContent = await originalFetch(new URL('./mocks/merch-card-collection.html', import.meta.url).href).then((r) => r.text());
   });
 
   beforeEach(async () => {
@@ -74,7 +74,7 @@ describe('Merch Cards', async () => {
   it('should set "all" as default filter', async () => {
     const el = document.getElementById('defaultFilter');
     const merchCards = await init(el);
-    expect(merchCards.tagName).to.equal('MERCH-CARDS');
+    expect(merchCards.tagName).to.equal('MERCH-CARD-COLLECTION');
     expect(merchCards.getAttribute('filter')).to.equal('all');
   });
 
@@ -92,7 +92,7 @@ describe('Merch Cards', async () => {
     expect(merchCards.getAttribute('limit')).to.equal('9');
   });
 
-  it('should freeze the filter"', async () => {
+  it('should freeze the filter', async () => {
     const el = document.getElementById('onlyPhoto');
     cards = [...document.querySelectorAll('#cards .merch-card')]
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
