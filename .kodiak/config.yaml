@@ -1,0 +1,24 @@
+version: 1.0
+
+snow:
+  - id: 324444 # Milo/Helix (milo.adobe.com)
+
+notifications:
+  jira:
+    default:
+      project: MWPW # Mandatory
+      filters:
+        include:
+          risk_rating: R5
+      fields:
+        assignee:
+          name: casalino
+        customfield_11800: MWPW-140779 #epic link
+        watchers:
+          - casalino
+          - jmichnow
+          - mauchley
+        labels:
+          - "OriginatingProcess=Kodiak"
+        components:
+          - name: "DevOps Security"

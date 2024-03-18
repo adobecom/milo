@@ -36,6 +36,7 @@
     "@babel/core": "7.17.7",
     "@babel/eslint-parser": "7.17.0",
     "@esm-bundle/chai": "4.3.4-fix.0",
+    "@octokit/rest": "^20.0.2",
     "@web/dev-server-import-maps": "^0.0.6",
     "@web/test-runner": "0.13.27",
     "@web/test-runner-commands": "0.6.1",
