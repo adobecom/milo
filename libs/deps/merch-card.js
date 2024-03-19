@@ -1,4 +1,4 @@
-// Thu, 14 Mar 2024 18:38:01 GMT
+// Tue, 19 Mar 2024 19:07:31 GMT
 import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var w=x`
     :host {
         position: relative;
@@ -238,25 +238,13 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
         height: var(--consonant-merch-card-mini-compare-chart-icon-size);
     }
 
-    :host([variant='mini-compare-chart']) .top-section {
-        padding-top: var(--consonant-merch-spacing-s);
-    }
 
-    :host([variant='mini-compare-chart']) .top-section .icons {
+    :host([variant='mini-compare-chart']) .icons {
         padding-left: var(--consonant-merch-spacing-s);
     }
 
-    :host([variant='mini-compare-chart']) .top-section .icons img {
+    :host([variant='mini-compare-chart'])  .icons img {
         padding-bottom: var(--consonant-merch-spacing-xs);
-    }
-
-    :host([variant='mini-compare-chart'])
-        .top-section
-        .mini-compare-chart-badge {
-        position: relative;
-        margin-left: auto;
-        top: 0;
-        align-self: flex-start;
     }
 
     :host([variant='mini-compare-chart']) .body {
@@ -276,11 +264,13 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
     }
 
     @media screen and ${p(m)} {
-        :host([variant='mini-compare-chart']) .top-section {
-            padding-top: var(--consonant-merch-spacing-xs);
-        }
         :host([variant='mini-compare-chart']) .mini-compare-chart-badge {
             font-size: var(--consonant-merch-card-detail-font-size);
+            padding-top: var(--consonant-merch-spacing-xs);
+            position: relative;
+            margin-left: auto;
+            top: 0;
+            align-self: flex-start;
         }
 
         :host([variant='mini-compare-chart']) .price {
@@ -643,12 +633,13 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 /* mini compare chart card styles */
 merch-card[variant="mini-compare-chart"] [slot="heading-m"] {
     min-height: var(--consonant-merch-card-mini-compare-heading-height);
-    padding: 0 var(--consonant-merch-spacing-s);
+    padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) 0;
 }
 
 merch-card[variant="mini-compare-chart"] [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
     min-height: var(--consonant-merch-card-mini-compare-body-slot-height);
+    height: var(--consonant-merch-card-mini-compare-body-slot-height);
 }
 
 merch-card[variant="mini-compare-chart"] span.placeholder-resolved[data-template="strikethrough"] {
@@ -1296,9 +1287,7 @@ merch-card .footer-row-cell:nth-child(8) {
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.secureLabelFooter}`}renderMiniCompareChart(){return a` <div class="top-section">
-                ${this.renderIcons()} ${this.badge}
-            </div>
+            ${this.secureLabelFooter}`}renderMiniCompareChart(){return a` ${this.renderIcons()} ${this.badge}
             <slot name="heading-m"></slot>
             <slot name="body-m"></slot>
             <div class="price">
