@@ -106,8 +106,15 @@ function colWidthsMatchDefault(widths) {
   return widths.every((value, index) => value === defWidths[index]);
 }
 
+function updateSiblingTextClass(el) {
+ const text = el.parentElement.firstElementChild;
+ if (text.classList.contains('text-block')) {
+  text.classList.add('xl-spacing');
+  text.classList.remove('xxl-spacing');
+ }
+}
 export default function init(el) {
-  const hasTextSibling = el.parentElement.firstElementChild.classList.contains('text-block');
+  updateSiblingTextClass(el);
   const fragment = document.createDocumentFragment();
   const [textRow, left, right] = createRow();
   const rows = el.querySelectorAll(':scope > div > div');
