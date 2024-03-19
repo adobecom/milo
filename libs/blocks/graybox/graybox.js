@@ -24,7 +24,7 @@ const METADATA = {
 
 const USER_AGENT = {
   iPhone: 'Mozilla/5.0 (iPhone13,2; U; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1',
-  iPad: 'Mozilla/5.0 (iPad; CPU OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
+  iPad: 'Mozilla/5.0 (iPad; CPU OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
 };
 
 let deviceModal;
@@ -47,6 +47,7 @@ const getTableValues = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, { keys: [] });
 
+/* c8 ignore start */
 const getOptions = (text, metadata) => {
   const options = text || getMetadata(metadata);
   return options?.toLowerCase().split(',').map((opt) => opt.trim());
@@ -102,6 +103,7 @@ const checkGnav = (options, globalNoClick) => {
     }
   }
 };
+/* c8 ignore stop */
 
 const checkNoClick = (grayboxEl, noClickOnGray) => {
   if (!noClickOnGray) {

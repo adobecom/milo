@@ -10,6 +10,15 @@
   display: none;
 }
 
+.gb-no-click::before {
+  content: "";
+  height: 100%;
+  pointer-events: all;
+  position: absolute;
+  width: 100%;
+  z-index: 1000;
+}
+
 .gb-no-change {
   position: relative;
 }
@@ -29,10 +38,6 @@
   top: 0;
   width: 100%;
   z-index: 1000;
-}
-
-.gb-no-click::before {
-  pointer-events: all;
 }
 
 body.gb-overlay::before {
