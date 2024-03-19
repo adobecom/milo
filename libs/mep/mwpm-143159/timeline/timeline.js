@@ -15,11 +15,9 @@ function isColorOrGradient(str) {
   return isColor(str) || isGradient(str);
 }
 
-function getColWidth(row, colWidths) {
+function getColWidth(text, colWidths) {
   const numRegex = /\b\d{1,3}\b/;
-  row.querySelectorAll(':scope > *:first-child').forEach((el) => {
-    colWidths.push((el.textContent.match(numRegex) || [])[0]);
-  });
+  colWidths.push((text.match(numRegex) || [])[0]);
 }
 function createRow() {
   return [createTag('div', { class: 'row' }),
@@ -93,16 +91,17 @@ function setColors(colors, fragment) {
   }
 }
 function colWidthsNotValid(colWidths) {
-  return (colWidths.length !== 3 || colWidths.some((value) => isNaN(value)));
+  return (colWidths.length !== 2 || colWidths.some((value) => isNaN(value)));
 }
 function updateColWidths(colWidths, fragment) {
   if (colWidthsNotValid(colWidths) || colWidthsMatchDefault(colWidths)) return;
-  const left = Math.floor(Number(colWidths[1]) / Number(colWidths[2]) * 10000) / 100; 
-  const right = Math.floor((Number(colWidths[2]) - Number(colWidths[1]))  / Number(colWidths[2]) * 10000) / 100; 
+  const total = Number(colWidths[0]) + Number(colWidths[1]);
+  const left = Math.floor((Number(colWidths[0]) / total)* 10000)/100;
+  const right = Math.floor((Number(colWidths[1]) / total)* 10000)/100;
   fragment.querySelectorAll('.row').forEach((row) => row.style.gridTemplateColumns = `${String(left)}% ${String(right)}%`);
 }
 function colWidthsMatchDefault(widths) {
-  const defWidths = ['1', '7', '21'];
+  const defWidths = ['7', '14'];
   return widths.every((value, index) => value === defWidths[index]);
 }
 
@@ -125,7 +124,10 @@ export default function init(el) {
     const p = row.querySelector(':scope > p:last-child');
     if (p) {
       const [text, period] = p.textContent?.trim().split('|');
-      if (period) periodText.push(period);
+      if (period) {
+        periodText.push(period);
+        getColWidth(period, colWidths);
+      }
       p.textContent = text.trim();
     }
     
@@ -133,7 +135,6 @@ export default function init(el) {
       colors.push(color);
       row.firstElementChild.remove();
     }
-    getColWidth(row,colWidths);
     row.removeAttribute('data-valign');
     row.parentElement.remove();
     side.append(row);
