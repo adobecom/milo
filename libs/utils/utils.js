@@ -562,9 +562,9 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
-    const hasExtension = a.href.split('/').pop().split('.');
+    const hasExtension = a.href.split('/').pop().includes('.');
     const mp4Match = a.textContent.match('media_.*.mp4');
-    if (key === 'fragment' && (hasExtension.length <= 1 || mp4Match)) {
+    if (key === 'fragment' && (!hasExtension || mp4Match)) {
       if (a.href === window.location.href) {
         return false;
       }
