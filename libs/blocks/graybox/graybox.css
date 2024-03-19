@@ -1,6 +1,9 @@
 :root {
   --gb-container-border: 1px solid #707070;
+  --gb-container-bg: white;
+  --gb-container-btn-bg: #505050;
   --gb-overlay-color: rgba(0 0 0 / 45%);
+  --gb-modal-bg: #323232;
 }
 
 .graybox {
@@ -50,7 +53,7 @@ body.gb-overlay::before {
 }
 
 .graybox-container .gb-toggle {
-  background-color: white;
+  background-color: var(--gb-container-bg);
   border: var(--gb-container-border);
   cursor: pointer;
   height: 58px;
@@ -79,7 +82,7 @@ body.gb-overlay::before {
 }
 
 .graybox-container .graybox-menu {
-  background-color: white;
+  background-color: var(--gb-container-bg);
   border-radius: 3px;
   border-top-right-radius: 0;
   border: 0;
@@ -134,13 +137,13 @@ body.gb-overlay::before {
   box-sizing: border-box;
   width: 85px;
   text-align: center;
-  color: #505050;
-  border-color: #505050;
+  color: var(--gb-container-btn-bg);
+  border-color: var(--gb-container-btn-bg);
   cursor: default;
 }
 
 .graybox-devices > a:hover {
-  background-color: #505050;
+  background-color: var(--gb-container-btn-bg);
   text-decoration: none;
 }
 
@@ -175,14 +178,14 @@ body.gb-overlay::before {
 .dialog-modal.graybox-modal.mobile {
   width: 417px;
   border-radius: 66px;
-  background: rgb(50 50 50);
+  background: var(--gb-modal-bg);
   overflow-y: hidden;
 }
 
 .dialog-modal.graybox-modal.tablet {
   width: 858px;
   border-radius: 66px;
-  background: rgb(50 50 50);
+  background: var(--gb-modal-bg);
   border-top-right-radius: 60px 78px;
   border-bottom-right-radius: 51px 69px;
   border-bottom-left-radius: 55px 84px;
@@ -210,6 +213,6 @@ body.gb-overlay::before {
 }
 
 .modal-curtain.graybox-curtain.is-open {
-  background: rgb(50 50 50);
+  background: var(--gb-modal-bg);
   z-index: 1999;
 }
