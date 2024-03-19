@@ -93,7 +93,7 @@
   margin: 12px;
 }
 
-.locale-modal{
+.locale-modal {
   text-align: center;
   padding: 48px 32px 30px;
 }
@@ -203,6 +203,17 @@
   .dialog-modal.commerce-frame > .section,
   .dialog-modal.commerce-frame > .fragment > .section {
     height: 100vh;
+  }
+
+  .dialog-modal.whats-included,
+  .dialog-modal.whats-included > .fragment,
+  .dialog-modal.whats-included > .fragment > .section {
+    height: 100%;
+  }
+
+  .dialog-modal.whats-included .milo-iframe {
+    height: 100%;
+    padding-bottom: 0;
   }
 }
 

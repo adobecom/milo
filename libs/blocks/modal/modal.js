@@ -171,6 +171,9 @@ export async function getModal(details, custom) {
       For modals without the 'commerce-frame' class height auto adjustment is not applicable */
       iframe.style.height = '100%';
     }
+    if (/\/creativecloud\/whats-included\//.test(iframe.src)) {
+      dialog.classList.add('whats-included');
+    }
   }
 
   return dialog;
