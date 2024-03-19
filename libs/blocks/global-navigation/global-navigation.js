@@ -949,7 +949,7 @@ export default async function init(block) {
   try {
     const { locale, mep } = getConfig();
     const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-    const content = await fetchAndProcessPlainHtml({ url })
+    const content = await fetchAndProcessPlainHtml({ url, shouldDecorateLinks: false })
       .catch((e) => lanaLog({
         message: `Error fetching gnav content url: ${url}`,
         e,
