@@ -772,15 +772,17 @@ export async function decorateFooterPromo() {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const { locale, imsClientId, imsScope, env } = getConfig();
+    const { locale, imsClientId, imsScope, env, base } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
+    const unavMeta = getMetadata('universal-nav')?.trim();
+    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
     window.adobeid = {
       client_id: imsClientId,
-      scope: imsScope || 'AdobeID,openid,gnav,pps.read,firefly_api',
+      scope: imsScope || defaultScope,
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
@@ -791,7 +793,7 @@ export async function loadIms() {
       },
       onError: reject,
     };
-    loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+    loadScript(`${base}/deps/imslib.min.js`);
   }).then(() => {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
