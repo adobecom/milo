@@ -95,4 +95,23 @@ describe('Fragments', () => {
     const pic = document.querySelector('picture.frag-image');
     expect(pic.classList.contains('decorated')).to.be.true;
   });
+
+  it('only valid HTML should exist after resolving the fragments', async () => {
+    const { body } = new DOMParser().parseFromString(await readFile({ path: './mocks/body.html' }), 'text/html');
+    for (const a of body.querySelectorAll('a[href*="/fragment"]')) await getFragment(a);
+    const innerHtml = body.innerHTML;
+    // eslint-disable-next-line
+    body.innerHTML = body.innerHTML; // after reassignment, the parser guarantees the presence of only valid HTML
+    expect(innerHtml).to.equal(body.innerHTML);
+  });
+
+  it('should transfer all attributes when replacing a paragraph parent with a div parent', async () => {
+    const a = document.querySelector('a.frag-p');
+    const { attributes } = a.parentElement;
+    await getFragment(a);
+    const wrapper = document.querySelector('.frag-p-wrapper');
+    for (const attr of attributes) {
+      expect(wrapper.getAttribute(attr.name)).to.equal(attr.value);
+    }
+  });
 });
