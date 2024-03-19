@@ -68,8 +68,11 @@ describe('Functional Test', () => {
 
     const fragment = document.querySelector('a[href="/fragments/insertafter"]');
     expect(fragment).to.not.be.null;
-
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
+
+    const delayedModalFragment = document.querySelector('a[href="/fragments/insertafter#delayed-modal:delay=1"]');
+    expect(delayedModalFragment).to.not.be.null;
+    delayedModalFragment.remove();
   });
 
   it('insertContentBefore should add fragment before target element', async () => {
