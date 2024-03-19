@@ -714,7 +714,7 @@ export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
   manifests.forEach((manifest) => {
     if (!manifest?.manifest) return;
-    manifest.manifestPath = normalizePath(manifest.manifest);
+    if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
     if (manifest.manifestPath in manifestObj) {
       let fullManifest = manifestObj[manifest.manifestPath];
       let freshManifest = manifest;
