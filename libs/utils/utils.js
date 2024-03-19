@@ -563,8 +563,8 @@ export function decorateAutoBlock(a) {
     }
 
     const nameSplit = a.href.split('/').pop().split('.');
-    const mp4Match = 'media_.*.mp4';
-    if (key === 'fragment' && (nameSplit.length <= 1 || a.textContent.match(mp4Match))) {
+    const mp4Match = a.textContent.match('media_.*.mp4');
+    if (key === 'fragment' && (nameSplit.length <= 1 || mp4Match)) {
       if (a.href === window.location.href) {
         return false;
       }
@@ -581,7 +581,7 @@ export function decorateAutoBlock(a) {
       }
 
       // previewing a fragment page with mp4 video
-      if (a.textContent.match(mp4Match)) {
+      if (mp4Match) {
         a.className = 'video link-block';
         return false;
       }
