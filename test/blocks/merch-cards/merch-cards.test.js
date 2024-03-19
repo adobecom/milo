@@ -24,6 +24,21 @@ describe('Merch Cards', async () => {
     const originalFetch = window.fetch;
     window.fetch = sinon.stub(window, 'fetch').callsFake((url) => {
       let data;
+      const overrideUrl = /override-(.*).plain.html/;
+      const overrideMatch = overrideUrl.exec(url);
+      if (overrideMatch) {
+        return new Promise((resolve) => {
+          originalFetch(new URL(`./mocks/${overrideMatch[1]}-override.html`, import.meta.url).href)
+            .then((r) => {
+              resolve({
+                status: 200,
+                statusText: '',
+                ok: true,
+                text: () => Promise.resolve(r.text()),
+              });
+            });
+        });
+      }
       if (url) {
         data = {
           total: 0,
@@ -122,5 +137,19 @@ describe('Merch Cards', async () => {
     const merchCards = await init(document.getElementById('placeholders'));
     await delay(500);
     expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
+  });
+
+  it('should override cards when asked to', async () => {
+    const el = document.getElementById('multipleFilters');
+    el.dataset.overrides = '/override-photoshop,/override-express';
+    cards = [...document.querySelectorAll('#cards .merch-card')]
+      .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
+    const merchCards = await init(el);
+    expect(merchCards.filter).to.equal('all');
+    await delay(500);
+    const photoshop = merchCards.querySelector('merch-card[name="photoshop"]');
+    const express = merchCards.querySelector('merch-card[name="express"]');
+    expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.true;
+    expect(express.title.indexOf('PROMOTION') > 0).to.be.true;
   });
 });
