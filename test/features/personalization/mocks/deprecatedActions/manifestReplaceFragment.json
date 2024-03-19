@@ -8,7 +8,7 @@
       "selector": "/fragments/replaceme",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/fragments/fragmentreplaced",
+      "chrome": "/test/features/personalization/mocks/fragments/fragmentReplaced",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -18,7 +18,7 @@
       "selector": "/fragments/inline-replaceme",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/fragments/inline-fragmentreplaced",
+      "chrome": "/test/features/personalization/mocks/fragments/inlineFragReplaced",
       "firefox": "",
       "android": "",
       "ios": ""
