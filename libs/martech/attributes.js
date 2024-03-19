@@ -19,7 +19,11 @@ export function decorateDefaultLinkAnalytics(block, config) {
     && block.nodeName === 'DIV') {
     let header = '';
     let linkCount = 1;
-    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .tracking-header').forEach((item) => {
+
+    let headerSelector = 'h1, h2, h3, h4, h5, h6, .tracking-header';
+    const headers = block.querySelectorAll(headerSelector);
+    if (!headers.length) headerSelector = `${headerSelector}, b, strong`;
+    block.querySelectorAll(`${headerSelector}, a:not(.video.link-block), button`).forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (item.classList.contains('tracking-header')) {
           header = processTrackingLabels(item.textContent, config, 20);
@@ -43,6 +47,9 @@ export function decorateDefaultLinkAnalytics(block, config) {
         }
         linkCount += 1;
       } else {
+        if (item.nodeName === 'STRONG' || item.nodeName === 'B') {
+          item.classList.add('tracking-header');
+        }
         header = processTrackingLabels(item.textContent, config, 20);
       }
     });
