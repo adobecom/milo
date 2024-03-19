@@ -43,7 +43,7 @@ class AppPrompt {
     await this.getData(content);
     // TODO: we might need to set this at the page level through metadata
     // so that the same prompt can lead to different apps
-    if (!this.options['redirect-url']) return;
+    if (!this.options['redirect-url'] || !this.options['product-name']) return;
 
     this.template = this.decorate();
 
@@ -108,8 +108,8 @@ class AppPrompt {
 
   // TODO: should we allow for app icon to be set as SVG?
   decorate = () => {
-    this.elements.closeIcon = toFragment`<button class="appPrompt-close"></button>`;
-    this.elements.cta = toFragment`<button class="appPrompt-cta appPrompt-cta--close">${this.cancelText}</button>`;
+    this.elements.closeIcon = toFragment`<button daa-ll="Close Modal" class="appPrompt-close"></button>`;
+    this.elements.cta = toFragment`<button daa-ll="Stay on this page" class="appPrompt-cta appPrompt-cta--close">${this.cancelText}</button>`;
     this.elements.profile = Object.keys(this.profile).length
       ? toFragment`<div class="appPrompt-profile">
         <div class="appPrompt-avatar">
@@ -122,7 +122,7 @@ class AppPrompt {
       </div>`
       : '';
 
-    return toFragment`<div class="appPrompt">
+    return toFragment`<div daa-state="true" daa-im="true" daa-lh="PEP Modal_${this.options['product-name']}" class="appPrompt">
       ${this.elements.closeIcon}
       <div class="appPrompt-icon">
         ${this.image}
