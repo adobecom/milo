@@ -1,5 +1,5 @@
 :root {
-  --timeline-col-widths: 33.33% 66.66%;
+  --timeline-default-col-widths: 33.33% 66.66%;
 }
 
 .timeline {
@@ -8,10 +8,13 @@
   padding: 0 30px var(--spacing-xl) 30px;
   max-width: 968px;
 }
+.timeline.neg-spacing {
+  margin-top: -8px;
+}
 
 .timeline .row {
   display: grid;
-  grid-template-columns: var(--timeline-col-widths);
+  grid-template-columns: var(--timeline-default-col-widths);
 }
 
 .timeline h1,
@@ -88,6 +91,9 @@
 @media screen and (min-width: 1200px) {
   .timeline {
     padding: 0 var(--spacing-xxl) var(--spacing-xxl) var(--spacing-xxl);
+  }
+  .timeline.neg-spacing {
+    margin-top: -24px;
   }
 }
 

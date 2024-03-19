@@ -105,11 +105,15 @@ function colWidthsMatchDefault(widths) {
   return widths.every((value, index) => value === defWidths[index]);
 }
 
+function isModalSibling(el) {
+  const dialog = el.closest('.dialog-modal');
+  if (!dialog || !dialog.querySelector('.fragment > div .text-block')) return false;
+  return true;
+}
 function updateSiblingTextClass(el) {
  const text = el.parentElement.firstElementChild;
- if (text.classList.contains('text-block')) {
-  text.classList.add('xl-spacing');
-  text.classList.remove('xxl-spacing');
+ if (text.classList.contains('text-block') || isModalSibling(el)) {
+  el.classList.add('neg-spacing');
  }
 }
 export default function init(el) {
