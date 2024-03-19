@@ -5,102 +5,6 @@ import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/merch-card.js';
 
-const PRODUCT_NAMES = [
-  'acrobat-pdf-pack',
-  'acrobat-pro-2020',
-  'acrobat-reader-dc-mobile',
-  'acrobat-reader-dc',
-  'acrobat-sign-solutions-mobile',
-  'acrobat-sign-solutions',
-  'acrobat-standard-2020',
-  'acrobat-standard-dc',
-  'acrobat',
-  'adobe-connect',
-  'adobe-export-pdf',
-  'adobe-firefly',
-  'adobe-scan',
-  'advertising-cloud',
-  'aero',
-  'aftereffects',
-  'analytics',
-  'animate',
-  'audience-manager',
-  'audition',
-  'behance',
-  'bridge',
-  'campaign',
-  'captivate-prime',
-  'captivate',
-  'capture',
-  'all-apps',
-  'express',
-  'character-animator',
-  'cloud-service',
-  'coldfusion-aws',
-  'coldfusion-builder',
-  'coldfusion-enterprise',
-  'coldfusion',
-  'color',
-  'commerce-cloud',
-  'content-server',
-  'customer-journey-analytics',
-  'design-to-print',
-  'digital-editions',
-  'dreamweaver',
-  'embedded-print-engine',
-  'experience-manager-assets',
-  'experience-manager-forms',
-  'experience-manager-sites',
-  'experience-manager',
-  'experience-platform',
-  'fill-sign',
-  'fonts',
-  'frame',
-  'framemaker-publishing-server',
-  'framemaker',
-  'fresco',
-  'http-dynamic-streaming',
-  'illustrator',
-  'incopy',
-  'indesign-server',
-  'indesign',
-  'intelligent-services',
-  'journey-orchestration',
-  'lightroom-classic',
-  'lightroom',
-  'magento',
-  'marketo',
-  'media-encoder',
-  'media-server-aws',
-  'media-server-extended',
-  'media-server-professional',
-  'media-server-standard',
-  'mixamo',
-  'pdf-print-engine',
-  'pepe',
-  'photoshop-elements',
-  'photoshop-express',
-  'photoshop',
-  'portfolio',
-  'postscript',
-  'premiere-elements',
-  'premierepro',
-  'presenter-video-express',
-  'real-time-customer-data-platform',
-  'robohelp-server',
-  'robohelp',
-  'stock',
-  'substance-3d-designer',
-  'substance-3d-modeler',
-  'substance-3d-painter',
-  'substance-3d-sampler',
-  'substance-3d-stager',
-  'target',
-  'technical-communication-suite',
-  'type',
-  'xml-documentation',
-];
-
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
 const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart'];
@@ -111,10 +15,9 @@ const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
 const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
-    const container = entry.target.closest('main > div');
-    if (!container) return;
-    [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
+    if (entry.target.clientHeight === 0) return;
     intersectionObserver.unobserve(entry.target);
+    entry.target.requestUpdate();
   });
 });
 
@@ -131,7 +34,7 @@ const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
 const appendSlot = (slotEls, slotName, merchCard) => {
-  if (slotEls.length === 0) return;
+  if (slotEls.length === 0 && merchCard.variant !== MINI_COMPARE_CHART) return;
   const newEl = createTag(
     'p',
     { slot: slotName, class: slotName },
@@ -286,7 +189,7 @@ const simplifyHrs = (el) => {
   });
 };
 
-function extractQuantitySelect(el) {
+async function extractQuantitySelect(el) {
   const quantitySelectConfig = el.querySelector('ul');
   if (!quantitySelectConfig) return null;
   const configMarkup = quantitySelectConfig.querySelector('li');
@@ -298,7 +201,7 @@ function extractQuantitySelect(el) {
   const quantityValues = config[1].textContent.split(',').map((value) => value.trim())
     .filter((value) => /^\d+$/.test(value));
   if (quantityValues.length !== 3) return null;
-  import('../../deps/merch-quantity-select.js');
+  await import('../../deps/merch-quantity-select.js');
   [attributes.min, attributes.max, attributes.step] = quantityValues.map(Number);
   const quantitySelect = createTag('merch-quantity-select', attributes);
   quantitySelectConfig.remove();
@@ -336,15 +239,17 @@ const decorateFooterRows = (merchCard, footerRows) => {
 
 const setMiniCompareOfferSlot = (merchCard, offers) => {
   if (merchCard.variant !== MINI_COMPARE_CHART) return;
-  const miniCompareOffers = createTag('div', { slot: 'offers' }, offers);
-  if (offers === undefined) { miniCompareOffers.appendChild(createTag('p')); }
+  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]');
+  if (offers) {
+    miniCompareOffers.append(offers);
+  } else {
+    miniCompareOffers.appendChild(createTag('p'));
+  }
   merchCard.appendChild(miniCompareOffers);
 };
 
 const init = async (el) => {
   const styles = [...el.classList];
-  const lastClass = styles[styles.length - 1];
-  const name = PRODUCT_NAMES.includes(lastClass) ? lastClass : undefined;
   const cardType = getPodType(styles) || 'product';
   if (!styles.includes(cardType)) {
     styles.push(cardType);
@@ -371,11 +276,15 @@ const init = async (el) => {
   if (el.dataset.removedManifestId) {
     merchCard.dataset.removedManifestId = el.dataset.removedManifestId;
   }
-  if (name) {
-    merchCard.setAttribute('name', name);
-  }
   let tags = {};
-  if (el.lastElementChild) {
+  if (el.lastElementChild?.previousElementSibling?.querySelector('h3,h4,h5,h6')) {
+    // tag section is available
+    const nameSelector = 'h3,h4,h5,h6';
+    const nameEl = el.lastElementChild.querySelector(nameSelector);
+    if (nameEl) {
+      merchCard.setAttribute('name', nameEl.textContent?.trim());
+      nameEl.remove();
+    }
     tags = extractTags(el.lastElementChild);
     if (tags.categories?.length > 1 || tags.types?.length > 0) {
     // this div contains tags, remove it from further processing.
@@ -400,10 +309,7 @@ const init = async (el) => {
   }
   let footerRows;
   if (cardType === MINI_COMPARE_CHART) {
-    const container = el.closest('[data-status="decorated"]');
-    if (container) {
-      intersectionObserver.observe(container);
-    }
+    intersectionObserver.observe(merchCard);
     footerRows = getMiniCompareChartFooterRows(el);
   }
   const images = el.querySelectorAll('picture');
@@ -480,7 +386,11 @@ const init = async (el) => {
   merchCard.appendChild(footer);
 
   if (MULTI_OFFER_CARDS.includes(cardType)) {
-    const quantitySelect = extractQuantitySelect(el);
+    if (merchCard.variant === MINI_COMPARE_CHART) {
+      const miniCompareOffers = createTag('div', { slot: 'offers' });
+      merchCard.append(miniCompareOffers);
+    }
+    const quantitySelect = await extractQuantitySelect(el, cardType);
     const offerSelection = el.querySelector('ul');
     if (offerSelection) {
       const { initOfferSelection } = await import('./merch-offer-select.js');

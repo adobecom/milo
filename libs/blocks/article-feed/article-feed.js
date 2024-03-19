@@ -71,27 +71,26 @@ export function readBlockConfig(block) {
  * fetches blog article index.
  * @returns {object} index with data and path lookup
  */
-export async function fetchBlogArticleIndex() {
+export async function fetchBlogArticleIndex(config) {
+  if (blogIndex.complete) return (blogIndex);
   const pageSize = 500;
-  const { feed } = blogIndex.config;
+  const { feed } = config || blogIndex.config;
   const queryParams = `?limit=${pageSize}&offset=${blogIndex.offset}`;
+  blogIndex.offset += pageSize;
   const defaultPath = updateLinkWithLangRoot(`${getConfig().locale.contentRoot}/query-index.json`);
   const indexPath = feed
     ? `${feed}${queryParams}`
     : `${defaultPath}${queryParams}`;
 
-  if (blogIndex.complete) return (blogIndex);
-
   return fetch(indexPath)
     .then((response) => response.json())
     .then((json) => {
-      const complete = (json.limit + json.offset) === json.total;
+      const complete = (json.limit + json.offset) >= json.total;
       json.data.forEach((post) => {
         blogIndex.data.push(post);
         blogIndex.byPath[post.path.split('.')[0]] = post;
       });
       blogIndex.complete = complete;
-      blogIndex.offset = json.offset + pageSize;
 
       return blogIndex;
     });
