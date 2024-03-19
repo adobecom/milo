@@ -8,7 +8,7 @@
       "selector": ".marquee",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/fragments/insertafter3",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter3",
       "firefox": "",
       "android": "",
       "ios": ""
