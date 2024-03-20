@@ -64,6 +64,7 @@ export const normalizePath = (p) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
+    || path.includes('adobe.com/')
     || path.startsWith(`https://${config.productionDomain}`)) {
     try {
       const url = new URL(path);
@@ -714,7 +715,9 @@ export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
   manifests.forEach((manifest) => {
     if (!manifest?.manifest) return;
-    if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
+    if (!manifest.manifestPath || !manifest.manifestPath.startsWith('/')) {
+      manifest.manifestPath = normalizePath(manifest.manifest);
+    }
     if (manifest.manifestPath in manifestObj) {
       let fullManifest = manifestObj[manifest.manifestPath];
       let freshManifest = manifest;
