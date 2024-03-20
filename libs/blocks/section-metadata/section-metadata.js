@@ -27,6 +27,12 @@ export async function handleStyle(text, section) {
   section.classList.add(...styles);
 }
 
+async function handleAlignment(text, section) {
+  const supportedAlignment = ['left', 'center', 'right'];
+  if (!supportedAlignment.includes(text) || !section) return;
+  section.classList.add(text);
+}
+
 function handleMasonry(text, section) {
   section.classList.add(...['masonry-layout', 'masonry-up']);
   const divs = section.querySelectorAll(":scope > div:not([class*='metadata'])");
@@ -69,6 +75,7 @@ export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
   if (metadata.style) await handleStyle(metadata.style.text, section);
+  if (metadata.alignment) handleAlignment(metadata.alignment.text, section);
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);

@@ -83,6 +83,16 @@
   width: 100%;
 }
 
+.section.left .content > h1,
+.section.left .content > h2,
+.section.left .content > h3,
+.section.left .content > h4,
+.section.left .content > h5,
+.section.left .content > h6,
+.section.left .content > p {
+  text-align: left;
+}
+
 .section.center .content > h1,
 .section.center .content > h2,
 .section.center .content > h3,
@@ -91,6 +101,16 @@
 .section.center .content > h6,
 .section.center .content > p {
   text-align: center;
+}
+
+.section.right .content > h1,
+.section.right .content > h2,
+.section.right .content > h3,
+.section.right .content > h4,
+.section.right .content > h5,
+.section.right .content > h6,
+.section.right .content > p {
+  text-align: right;
 }
 
 .section.divider {
