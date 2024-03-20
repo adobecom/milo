@@ -1,11 +1,26 @@
 import { readFile, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
-import init, { getModal } from '../../../libs/blocks/modal/modal.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const {
+  default: init,
+  getModal,
+  getHashParams,
+  delayedModal,
+} = await import('../../../libs/blocks/modal/modal.js');
 
 describe('Modals', () => {
+  beforeEach(() => {
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite = { track: sinon.spy() };
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it('Doesnt load modals on page load with no hash', async () => {
     window.location.hash = '';
     const modal = document.querySelector('.dialog-modal');
@@ -168,5 +183,44 @@ describe('Modals', () => {
 
     // Test passing, means there was no error thrown
     await hashChangeTriggered;
+  });
+
+  it('validates and returns proper hash parameters', () => {
+    expect(getHashParams()).to.deep.equal({});
+    expect(getHashParams('#delayed-modal:delay=0')).to.deep.equal({ hash: '#delayed-modal' });
+    expect(getHashParams('#delayed-modal:delay=1')).to.deep.equal({
+      delay: 1000,
+      hash: '#delayed-modal',
+    });
+  });
+
+  it('shows the modal with a delay, and remembers it was shown on this page', async () => {
+    window.sessionStorage.removeItem('shown:#delayed-modal');
+    const el = document.createElement('a');
+    el.setAttribute('data-modal-hash', '#delayed-modal:delay=1');
+    expect(delayedModal(el)).to.be.true;
+    await delay(1000);
+    expect(el.classList.contains('hide-block')).to.be.true;
+    const modal = waitForElement('#delayed-modal');
+    expect(modal).to.be.not.null;
+    expect(window.sessionStorage.getItem('shown:#delayed-modal').includes(window.location.pathname)).to.be.true;
+    // eslint-disable-next-line no-underscore-dangle
+    expect(window._satellite.track.called).to.be.true;
+    window.sessionStorage.removeItem('shown:#delayed-modal');
+    el.remove();
+  });
+
+  it('does not show the modal if it was shown on this page', async () => {
+    const el = document.createElement('a');
+    el.setAttribute('data-modal-hash', '#dm:delay=1');
+    window.sessionStorage.setItem('shown:#dm', window.location.pathname);
+    expect(delayedModal(el)).to.be.true;
+    await delay(1000);
+    // eslint-disable-next-line no-underscore-dangle
+    expect(window._satellite.track.called).to.be.false;
+    const modal = document.querySelector('#dm');
+    expect(modal).to.not.exist;
+    window.sessionStorage.removeItem('shown:#dm');
+    el.remove();
   });
 });
