@@ -159,18 +159,29 @@ const startJob = async (details) => {
       };
     }
   });
-  const results = await Promise.all(requests);
+  // batch to limit concurrency
+  const results = [];
+  while (requests.length) {
+    await delay(5000);
+    const result = await Promise.all(requests.splice(0, 4));
+    results.push(...result);
+  }
   return results;
 };
 
+// fetch one job status at a time
+const statusQueue = [];
 const getJobStatus = async (link) => {
-  await delay();
+  await delay(5000);
+  if (!statusQueue.includes(link)) statusQueue.push(link);
+  if (statusQueue.indexOf(link) !== 0) return null;
   try {
     const status = await fetch(link, { headers });
     const result = await status.json();
     return result;
   /* c8 ignore next 3 */
   } catch (error) {
+    console.log('error from status:', error);
     return error;
   }
 };
@@ -181,11 +192,12 @@ const pollJobStatus = async (job, setProgress) => {
   let stopped = false;
   while (!stopped) {
     const status = await getJobStatus(`${result.links.self}/details`);
-    if (status.stopTime) {
+    if (status?.stopTime) {
       jobStatus = status;
       stopped = true;
+      statusQueue.shift();
     }
-    setProgress(status);
+    if (status) setProgress(status);
   }
   return jobStatus;
 };

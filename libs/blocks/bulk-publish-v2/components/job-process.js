@@ -128,7 +128,7 @@ class JobProcess extends LitElement {
     const { style, status, topic, url, time } = this.getJob(jobPath);
     return html`
       <div
-        job-item=${path}
+        job-item=${jobPath}
         class="result${style}"
         @click=${() => this.onClick({ url, code: status.code, topic }, pathIndex)}>
         <div class="process">

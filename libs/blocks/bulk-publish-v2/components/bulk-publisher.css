@@ -39,6 +39,10 @@
   right: 0;
 }
 
+.error-btns {
+  display: flex;
+}
+
 .prompt .load-indicator {
   display: inline-flex;
   gap: 22px;

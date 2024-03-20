@@ -104,13 +104,13 @@ const updateItemProgress = (detail, tool) => {
   if (resources) {
     resources.forEach(({ path, status }) => {
       const item = tool.renderRoot.querySelector(`[job-item='${path}']`);
-      if (!item?.hasAttribute('updated')) {
+      if (item && !item?.hasAttribute('updated')) {
         const { text, color } = getStatusText(status, null);
         const newStatus = createTag('span', { class: `status ${color}` }, text);
         const display = item.querySelector('.status');
         display.insertAdjacentElement('afterend', newStatus);
-        item.setAttribute('updated', '');
         display.setAttribute('has-update', '');
+        item.setAttribute('updated', '');
       }
     });
   }

@@ -165,8 +165,14 @@ class BulkPublish2 extends LitElement {
     return html`
       <div class="errors">
         <span>Error: <strong>${text}</strong></span>
-        <div class="fix-btn" @click=${() => startEdit(true)}>
-          ${count === 1 ? 'Done' : btnText}
+        <div class="error-btns">
+          ${count > 1 ? html`
+            <div class="fix-btn" @click=${() => startEdit(true)}>
+              ${btnText}
+            </div>` : ''}
+          <div class="fix-btn" @click=${() => this.reset()}>
+            Clear
+          </div>
         </div>
       </div>
     `;
@@ -421,7 +427,6 @@ class BulkPublish2 extends LitElement {
   }
 
   render() {
-    console.log('render');
     const { full, half, toggleMode } = this.getModeState();
     return html`
       ${this.renderLoginPrompt()}
