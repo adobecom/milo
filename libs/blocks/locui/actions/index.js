@@ -7,7 +7,6 @@ import {
   allowSyncToLangstore,
   allowSendForLoc,
   allowRollout,
-  allowFindFragments,
   syncFragments,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
@@ -129,9 +128,6 @@ export async function findAllFragments() {
 }
 
 export async function syncToLangstore() {
-  // Disable finding fragments
-  allowFindFragments.value = false;
-
   // Disable all langstore syncing, the project is being sent.
   allowSyncToLangstore.value = false;
 
@@ -174,9 +170,6 @@ export async function syncFragsLangstore() {
 }
 
 export async function sendForLoc() {
-  // Disable finding fragments
-  allowFindFragments.value = false;
-
   // Disable all langstore syncing, the project is being sent.
   allowSyncToLangstore.value = false;
 

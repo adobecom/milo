@@ -1,14 +1,6 @@
 import { html } from '../../../deps/htm-preact.js';
+import { urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout } from '../utils/state.js';
 import {
-  urls,
-  languages,
-  allowFindFragments,
-  allowSyncToLangstore,
-  allowSendForLoc,
-  allowRollout,
-} from '../utils/state.js';
-import {
-  findAllFragments,
   sendForLoc,
   showRolloutOptions,
   showRollout,
@@ -17,8 +9,7 @@ import {
 } from './index.js';
 
 export default function Actions() {
-  const canAct = allowFindFragments.value
-              || allowSyncToLangstore.value
+  const canAct = allowSyncToLangstore.value
               || allowSendForLoc.value
               || allowRollout.value;
   const canActStyle = canAct ? 'locui-section-label' : 'locui-section-label is-invisible';
@@ -31,12 +22,6 @@ export default function Actions() {
         <h2 class="${canActStyle}">Actions</h2>
       </div>
       <div class=locui-url-heading-actions>
-        ${allowFindFragments.value && html`
-          <button 
-            class=locui-urls-heading-action
-            onClick=${findAllFragments}>Find All Fragments
-          </button>
-        `}
         ${allowSyncToLangstore.value && html`
           <button
             onClick=${startSyncToLangstore}
