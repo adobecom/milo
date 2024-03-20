@@ -181,7 +181,6 @@ const getJobStatus = async (link) => {
     return result;
   /* c8 ignore next 3 */
   } catch (error) {
-    console.log('error from status:', error);
     return error;
   }
 };
