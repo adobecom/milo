@@ -320,9 +320,11 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
     await Promise.all(fragPromises);
   }
 
-  if (shouldDecorateLinks) decorateLinks(body);
-
-  federatePictureSources({ section: body, forceFederate: path.includes('/federal/') });
+  // federatePictureSources should only be called after decorating the links.
+  if (shouldDecorateLinks) {
+    decorateLinks(body);
+    federatePictureSources({ section: body, forceFederate: path.includes('/federal/') });
+  }
 
   const blocks = body.querySelectorAll('.martech-metadata');
   if (blocks.length) {
