@@ -1,0 +1,60 @@
+.loader {
+  --width: 4px;
+  --height: 10px;
+  --height-tall: 18px;
+
+  width: var(--width);
+  height: var(--height);
+  border-radius: 4px;
+  display: block;
+  margin: 0 auto;
+  position: relative;
+  background: white;
+  color: #FFF;
+  box-sizing: border-box;
+  animation: animate 0.3s 0.3s linear infinite alternate;
+}
+
+.loader::after,
+.loader::before {
+  content: '';
+  width: var(--width);
+  height: var(--height);
+  border-radius: 4px;
+  background: white;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 10px;
+  box-sizing: border-box;
+  animation: animate 0.3s 0.45s linear infinite alternate;
+}
+
+.loader.pink,
+.loader.pink::after,
+.loader.pink::before {
+  background: #ff2095;
+}
+
+.loader::before {
+  left: -10px;
+  animation-delay: 0s;
+}
+
+button .loader {
+  margin-left: 20px;
+}
+
+.loader.hide {
+  display: none;
+}
+
+@keyframes animate {
+  0% {
+    height: var(--height-tall)
+  }
+
+  100% {
+    height: var(--height)
+  }
+}
