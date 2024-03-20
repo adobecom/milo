@@ -33,7 +33,7 @@ const COLUMN_NOT_OPERATOR = 'not';
 const TARGET_EXP_PREFIX = 'target-';
 const PAGE_URL = new URL(window.location.href);
 
-export const TRACKED_MANIFEST_TYPE = 'personalization';
+export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
 
 // Replace any non-alpha chars except comma, space, ampersand and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
@@ -56,7 +56,7 @@ export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}
 export const normalizePath = (p) => {
   let path = p;
 
-  if (!path?.includes('/')) {
+  if (!path.includes('/')) {
     return path;
   }
 
@@ -124,22 +124,12 @@ const createFrag = (el, url, manifestId) => {
   return frag;
 };
 
-const GLOBAL_CMDS = [
-  'insertscript',
-  'replacepage',
-  'updatemetadata',
-  'useblockcode',
-];
-
-const CREATE_CMDS = {
-  insertafter: 'afterend',
-  insertbefore: 'beforebegin',
-  prependtosection: 'afterbegin',
-  appendtosection: 'beforeend',
-};
-
 const COMMANDS = {
-  remove: (el, target, manifestId) => {
+  insertcontentafter: (el, target, manifestId) => el
+    .insertAdjacentElement('afterend', createFrag(el, target, manifestId)),
+  insertcontentbefore: (el, target, manifestId) => el
+    .insertAdjacentElement('beforebegin', createFrag(el, target, manifestId)),
+  removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
       el.dataset.removedManifestId = manifestId;
@@ -147,16 +137,22 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  replace: (el, target, manifestId) => {
-    if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
+  replacecontent: (el, target, manifestId) => {
+    if (el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
 
-function checkSelectorType(selector) {
-  return selector?.includes('/fragments/') ? 'fragment' : 'css';
-}
+const VALID_COMMANDS = Object.keys(COMMANDS);
+
+const GLOBAL_CMDS = [
+  'insertscript',
+  'replacefragment',
+  'replacepage',
+  'updatemetadata',
+  'useblockcode',
+];
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
@@ -176,11 +172,12 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fVal) => {
+const getBlockProps = (fSelector, fVal) => {
+  let selector = fSelector;
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
-  const blockSelector = val?.split('/').pop();
+  selector = val?.split('/').pop();
   const { origin } = PAGE_URL;
   if (origin.includes('.hlx.') || origin.includes('localhost')) {
     if (val.startsWith('/libs/')) {
@@ -191,28 +188,14 @@ const getBlockProps = (fVal) => {
       val = `${origin}${val}`;
     }
   }
-  return { blockSelector, blockTarget: val };
+  return { selector, val };
 };
 
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
-    const { selector, val } = i;
-    if (prop === 'blocks') {
-      propMap[selector] = val;
-      return;
-    }
-
-    if (selector in propMap) return;
-    const action = {
-      fragment: val,
-      manifestPath: item.manifestPath,
-      action: i.action,
-    };
-    // eslint-disable-next-line no-restricted-syntax
-    for (const key in propMap) {
-      if (propMap[key].fragment === selector) propMap[key] = action;
-    }
-    propMap[selector] = action;
+    let { selector, val } = i;
+    if (prop === 'blocks') ({ selector, val } = getBlockProps(selector, val));
+    propMap[selector] = val;
   });
   return propMap;
 }, {});
@@ -262,107 +245,16 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-const getDivInTargetedCell = (tableCell) => {
-  tableCell.replaceChildren();
-  const div = document.createElement('div');
-  tableCell.appendChild(div);
-  return div;
-};
-
-const querySelector = (el, selector, all = false) => {
-  try {
-    return all ? el.querySelectorAll(selector) : el.querySelector(selector);
-  } catch (e) {
-    /* eslint-disable-next-line no-console */
-    console.log('Invalid selector: ', selector);
-    return null;
-  }
-};
-
-function getTrailingNumber(s) {
-  const match = s.match(/\d+$/);
-  return match ? parseInt(match[0], 10) : null;
-}
-
-function getSection(rootEl, idx) {
-  return rootEl === document
-    ? document.querySelector(`body > main > div:nth-child(${idx})`)
-    : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
-}
-
-function getSelectedElement(selector, action, rootEl) {
-  if (!selector) return null;
-  if ((action.includes('appendtosection') || action.includes('prependtosection'))) {
-    if (!selector.includes('section')) return null;
-    const section = selector.trim().replace('section', '');
-    if (section !== '' && Number.isNaN(section)) return null;
-  }
-  if (checkSelectorType(selector) === 'fragment') {
-    try {
-      const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
-      if (fragment) return fragment.parentNode;
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  let selectedEl;
-  if (selector.includes('.') || !['section', 'block', 'row'].some((s) => selector.includes(s))) {
-    selectedEl = querySelector(rootEl, selector);
-    if (selectedEl) return selectedEl;
-  }
-
-  const terms = selector.split(/\s+/);
-
-  let section = null;
-  if (terms[0]?.startsWith('section')) {
-    const sectionIdx = getTrailingNumber(terms[0]) || 1;
-    section = getSection(rootEl, sectionIdx);
-    terms.shift();
-  }
-
-  if (terms.length) {
-    const blockStr = terms.shift();
-    if (blockStr.includes('.')) {
-      selectedEl = querySelector(section || rootEl, blockStr);
-    } else {
-      const blockIndex = getTrailingNumber(blockStr) || 1;
-      const blockName = blockStr.replace(`${blockIndex}`, '');
-      if (blockName === 'block') {
-        if (!section) section = getSection(rootEl, 1);
-        selectedEl = querySelector(section, `:scope > div:nth-of-type(${blockIndex})`);
-      } else {
-        selectedEl = querySelector(section || rootEl, `.${blockName}`, true)?.[blockIndex - 1];
-      }
-    }
-  } else if (section) {
-    return section;
-  }
-
-  if (terms.length) {
-    // find targeted table cell in rowX colY format
-    const rowColMatch = /row(?<row>\d+)\s+col(?<col>\d+)/gm.exec(terms.join(' '));
-    if (rowColMatch) {
-      const { row, col } = rowColMatch.groups;
-      const tableCell = querySelector(selectedEl, `:nth-child(${row}) > :nth-child(${col})`);
-      if (!tableCell) return null;
-      return getDivInTargetedCell(tableCell);
-    }
-  }
-
-  return selectedEl;
-}
-
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
-    const { action, selector, target } = cmd;
-    if (action in COMMANDS) {
-      const el = getSelectedElement(selector, action, rootEl);
-      COMMANDS[action](el, target, manifestId);
-    } else if (action in CREATE_CMDS) {
-      const el = getSelectedElement(selector, action, rootEl);
-      el?.insertAdjacentElement(CREATE_CMDS[action], createFrag(el, target, manifestId));
+    if (VALID_COMMANDS.includes(cmd.action)) {
+      try {
+        const selectorEl = rootEl.querySelector(cmd.selector);
+        if (!selectorEl) return;
+        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
+      } catch (e) {
+        console.log('Invalid selector: ', cmd.selector);
+      }
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
@@ -371,47 +263,30 @@ function handleCommands(commands, manifestId, rootEl = document) {
 }
 
 const getVariantInfo = (line, variantNames, variants) => {
-  const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
+  const action = line.action?.toLowerCase();
   const { selector } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
   variantNames.forEach((vn) => {
-    if (!line[vn] || line[vn].toLowerCase() === 'false') return;
+    if (!line[vn]) return;
 
     const variantInfo = {
       action,
       selector,
       pageFilter,
       target: line[vn],
-      selectorType: checkSelectorType(selector),
     };
 
-    if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
-      variants[vn].fragments.push({
-        selector: normalizePath(variantInfo.selector),
-        val: normalizePath(line[vn]),
-        action,
-      });
-    } else if (GLOBAL_CMDS.includes(action)) {
+    if (GLOBAL_CMDS.includes(action)) {
       variants[vn][action] = variants[vn][action] || [];
 
-      if (action === 'useblockcode') {
-        const { blockSelector, blockTarget } = getBlockProps(line[vn]);
-        variants[vn][action].push({
-          selector: blockSelector,
-          val: blockTarget,
-          pageFilter,
-        });
-      } else {
-        variants[vn][action].push({
-          selector: normalizePath(selector),
-          val: normalizePath(line[vn]),
-          pageFilter,
-        });
-      }
-    } else if (action in COMMANDS || action in CREATE_CMDS) {
+      variants[vn][action].push({
+        selector: normalizePath(selector),
+        val: normalizePath(line[vn]),
+      });
+    } else if (VALID_COMMANDS.includes(action)) {
       variants[vn].commands.push(variantInfo);
     } else {
       /* c8 ignore next 2 */
@@ -432,7 +307,7 @@ export function parseConfig(data) {
       .filter((vn) => !MANIFEST_KEYS.includes(vn));
 
     variantNames.forEach((vn) => {
-      variants[vn] = { commands: [], fragments: [] };
+      variants[vn] = { commands: [] };
     });
 
     experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
@@ -467,6 +342,7 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   }
   return config;
 }
+/* c8 ignore stop */
 
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
@@ -487,7 +363,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   if (config.mep?.override) {
     let manifest;
     /* c8 ignore start */
-    config.mep?.override?.split('---').some((item) => {
+    config.mep?.override?.split(',').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
         [, manifest] = pair;
@@ -538,16 +414,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   return matchingVariant;
 }
 
-const createDefaultExperiment = (manifest) => ({
-  disabled: manifest.disabled,
-  event: manifest.event,
-  manifest: manifest.manifestPath,
-  variantNames: ['all'],
-  selectedVariantName: 'default',
-  selectedVariant: { commands: [], fragments: [] },
-});
-
-export async function getPersConfig(info, override = false) {
+export async function getPersConfig(info) {
   const {
     name,
     manifestData,
@@ -559,9 +426,6 @@ export async function getPersConfig(info, override = false) {
     disabled,
     event,
   } = info;
-  if (disabled && !override) {
-    return createDefaultExperiment(info);
-  }
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
@@ -579,59 +443,16 @@ export async function getPersConfig(info, override = false) {
   }
 
   const infoTab = manifestInfo || data?.info?.data;
-  const infoKeyMap = {
-    'manifest-type': ['Personalization', 'Promo', 'Test'],
-    'manifest-execution-order': ['First', 'Normal', 'Last'],
-  };
-  if (infoTab) {
-    const infoObj = infoTab?.reduce((acc, item) => {
-      acc[item.key] = item.value;
-      return acc;
-    }, {});
-    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
-    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    const executionOrder = {
-      'manifest-type': 1,
-      'manifest-execution-order': 1,
-    };
-    Object.keys(infoObj).forEach((key) => {
-      if (!infoKeyMap[key]) return;
-      const index = infoKeyMap[key].indexOf(infoObj[key]);
-      executionOrder[key] = index > -1 ? index : 1;
-    });
-    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
-  } else {
-    // eslint-disable-next-line prefer-destructuring
-    config.manifestType = infoKeyMap[1];
-    config.executionOrder = '1-1';
-  }
+  config.manifestType = infoTab
+    ?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase()
+    || 'personalization';
 
-  if (infoTab) {
-    const infoObj = infoTab?.reduce((acc, item) => {
-      acc[item.key] = item.value;
-      return acc;
-    }, {});
-    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
-    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    const executionOrder = {
-      'manifest-type': 1,
-      'manifest-execution-order': 1,
-    };
-    Object.keys(infoObj).forEach((key) => {
-      if (!infoKeyMap[key]) return;
-      const index = infoKeyMap[key].indexOf(infoObj[key]);
-      executionOrder[key] = index > -1 ? index : 1;
-    });
-    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
-  } else {
-    // eslint-disable-next-line prefer-destructuring
-    config.manifestType = infoKeyMap[1];
-    config.executionOrder = '1-1';
-  }
+  config.manifestOverrideName = infoTab
+    ?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')
+    ?.value?.toLowerCase();
 
-  config.manifestPath = normalizePath(manifestPath);
   const selectedVariantName = await getPersonalizationVariant(
-    config.manifestPath,
+    manifestPath,
     config.variantNames,
     variantLabel,
   );
@@ -666,17 +487,22 @@ const deleteMarkedEls = () => {
     .forEach((el) => el.remove());
 };
 
-const normalizeFragPaths = ({ selector, val, action }) => ({
+const normalizeFragPaths = ({ selector, val }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
-  action,
 });
 
-export async function runPersonalization(experiment, config) {
+export async function runPersonalization(info, config) {
+  const { manifestPath } = info;
+
+  const experiment = await getPersConfig(info);
   if (!experiment) return null;
-  const { manifestPath, selectedVariant } = experiment;
+
+  const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
-  if (selectedVariant === 'default') return { experiment };
+  if (selectedVariant === 'default') {
+    return { experiment };
+  }
 
   if (selectedVariant.replacepage) {
     // only one replacepage can be defined
@@ -695,79 +521,64 @@ export async function runPersonalization(experiment, config) {
   }
   handleCommands(selectedVariant.commands, manifestId);
 
-  selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
+  selectedVariant.replacefragment &&= selectedVariant.replacefragment.map(normalizeFragPaths);
 
   return {
-    manifestPath,
     experiment,
     blocks: selectedVariant.useblockcode,
-    fragments: selectedVariant.fragments,
+    fragments: selectedVariant.replacefragment,
   };
 }
 
-function compareExecutionOrder(a, b) {
-  if (a.executionOrder === b.executionOrder) return 0;
-  return a.executionOrder > b.executionOrder ? 1 : -1;
-}
-
-export function cleanAndSortManifestList(manifests) {
-  const manifestObj = {};
+function cleanManifestList(manifests) {
+  const manifestPaths = [];
+  const cleanedList = [];
   manifests.forEach((manifest) => {
-    if (!manifest?.manifest) return;
-    if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
-    if (manifest.manifestPath in manifestObj) {
-      let fullManifest = manifestObj[manifest.manifestPath];
-      let freshManifest = manifest;
-      if (manifest.name) {
-        fullManifest = manifest;
-        freshManifest = manifestObj[manifest.manifestPath];
-      }
-      freshManifest.name = fullManifest.name;
-      freshManifest.selectedVariantName = fullManifest.selectedVariantName;
-      freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
-      manifestObj[manifest.manifestPath] = freshManifest;
+    try {
+      const url = new URL(manifest.manifestPath);
+      manifest.manifestPath = url.pathname;
+    } catch (e) {
+      // do nothing
+    }
+    const foundIndex = manifestPaths.indexOf(manifest.manifestPath);
+    if (foundIndex === -1) {
+      manifestPaths.push(manifest.manifestPath);
+      cleanedList.push(manifest);
     } else {
-      manifestObj[manifest.manifestPath] = manifest;
+      cleanedList[foundIndex] = { ...cleanedList[foundIndex], ...manifest };
     }
   });
-  return Object.values(manifestObj).sort(compareExecutionOrder);
+  return cleanedList;
 }
 
-export function handleFragmentCommand(command, a) {
-  const config = getConfig();
-  const { action, fragment, manifestPath } = command;
-  if (action === 'replace') {
-    a.href = fragment;
-    if (config.mep.preview) a.dataset.manifestId = manifestPath;
-    return fragment;
-  }
-  if (action === 'remove') {
-    if (config.mep.preview) {
-      a.parentElement.dataset.removedManifestId = manifestPath;
-    } else {
-      a.parentElement.remove();
-    }
-  }
-  return false;
-}
+const createDefaultExperiment = (manifest) => ({
+  disabled: manifest.disabled,
+  event: manifest.event,
+  manifest: manifest.manifestPath,
+  variantNames: ['all'],
+  selectedVariantName: 'default',
+  selectedVariant: { commands: [] },
+});
 
 export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) return;
-  let experiments = manifests;
-  for (let i = 0; i < experiments.length; i += 1) {
-    experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
-  }
 
-  experiments = cleanAndSortManifestList(experiments);
+  const cleanedManifests = cleanManifestList(manifests);
 
+  const override = config.mep?.override;
   let results = [];
-
-  for (const experiment of experiments) {
-    const result = await runPersonalization(experiment, config);
-    if (result) {
-      results.push(result);
+  const experiments = [];
+  for (const manifest of cleanedManifests) {
+    if (manifest.disabled && !override) {
+      experiments.push(createDefaultExperiment(manifest));
+    } else {
+      const result = await runPersonalization(manifest, config);
+      if (result) {
+        results.push(result);
+        experiments.push(result.experiment);
+      }
     }
   }
   results = results.filter(Boolean);
@@ -777,7 +588,7 @@ export async function applyPers(manifests) {
   config.expBlocks = consolidateObjects(results, 'blocks');
   config.expFragments = consolidateObjects(results, 'fragments');
 
-  const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
+  const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
 
   const pznVariants = pznList.map((r) => {
@@ -790,5 +601,4 @@ export async function applyPers(manifests) {
   });
   if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-  config.mep.handleFragmentCommand = handleFragmentCommand;
 }

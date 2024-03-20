@@ -185,7 +185,6 @@ describe('preview feature', () => {
     expect(document.querySelector('input#mepHighlightCheckbox').getAttribute('checked')).to.equal('checked');
   });
   it('updates preview button', () => {
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
     document.querySelector('#new-manifest').value = 'https://main--homepage--adobecom.hlx.live/homepage/fragments/mep/new-manifest.json';
     document.querySelector('input[name="/homepage/fragments/mep/selected-example.json"][value="default"]').click();
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('new-manifest.json');
@@ -194,7 +193,6 @@ describe('preview feature', () => {
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.not.contain('mepHighlight');
     document.querySelector('input#mepPreviewButtonCheckbox').click();
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('mepButton=off');
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
   });
   it('opens manifest', () => {
     document.querySelector('a.mep-edit-manifest').click();
