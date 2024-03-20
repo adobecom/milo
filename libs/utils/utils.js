@@ -562,7 +562,9 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
-    if (key === 'fragment') {
+    const hasExtension = a.href.split('/').pop().includes('.');
+    const mp4Match = a.textContent.match('media_.*.mp4');
+    if (key === 'fragment' && (!hasExtension || mp4Match)) {
       if (a.href === window.location.href) {
         return false;
       }
@@ -579,7 +581,7 @@ export function decorateAutoBlock(a) {
       }
 
       // previewing a fragment page with mp4 video
-      if (a.textContent.match('media_.*.mp4')) {
+      if (mp4Match) {
         a.className = 'video link-block';
         return false;
       }
@@ -1042,6 +1044,7 @@ async function processSection(section, config, isDoc) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
     await Promise.all(fragPromises);
+    await decoratePlaceholders(section.el, config);
     const newlyDecoratedSection = decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;

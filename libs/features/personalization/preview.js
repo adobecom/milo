@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
-import { NON_TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
+import { TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -28,7 +28,7 @@ function updatePreviewButton() {
   });
 
   const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('mep', manifestParameter.join(','));
+  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 
   const mepHighlightCheckbox = document.querySelector(
     '.mep-popup input[type="checkbox"]#mepHighlightCheckbox',
@@ -180,7 +180,7 @@ function createPreviewPill(manifests) {
         <p>On: ${manifest.event.start?.toLocaleString()}</p>
          <p>Off: ${manifest.event.end?.toLocaleString()}</p>` : '';
     let analyticsTitle = '';
-    if (manifestType === NON_TRACKED_MANIFEST_TYPE) {
+    if (manifestType === TRACKED_MANIFEST_TYPE) {
       analyticsTitle = 'N/A for this manifest type';
     } else if (manifestOverrideName) {
       analyticsTitle = manifestOverrideName;
@@ -203,7 +203,7 @@ function createPreviewPill(manifests) {
   const personalizationOn = getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('manifest', manifestParameter.join(','));
+  simulateHref.searchParams.set('manifest', manifestParameter.join('---'));
 
   const config = getConfig();
   let mepHighlightChecked = '';
