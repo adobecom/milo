@@ -27,7 +27,7 @@ export default async function addPreviewToConfig({
       }
     });
 
-    config.mep.override.split(',').forEach((manifestPair) => {
+    config.mep.override.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
       if (!persManifestPaths.includes(manifestPath)) {
         persManifests.push({ manifestPath });

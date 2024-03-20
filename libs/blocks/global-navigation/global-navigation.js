@@ -269,7 +269,6 @@ class Gnav {
     };
 
     this.setupUniversalNav();
-    decorateLinks(this.content);
     this.elements = {};
   }
 
@@ -949,7 +948,7 @@ export default async function init(block) {
   try {
     const { locale, mep } = getConfig();
     const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-    const content = await fetchAndProcessPlainHtml({ url, shouldDecorateLinks: false })
+    const content = await fetchAndProcessPlainHtml({ url })
       .catch((e) => lanaLog({
         message: `Error fetching gnav content url: ${url}`,
         e,
