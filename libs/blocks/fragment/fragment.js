@@ -147,7 +147,7 @@ class Node {
   }
 }
 
-class Tree {
+export class Tree {
   constructor(key, value = key) {
     this.root = new Node(key, value);
   }
