@@ -162,7 +162,7 @@ const startJob = async (details) => {
   // batch to limit concurrency
   const results = [];
   while (requests.length) {
-    await delay(5000);
+    if (requests.length > 5) await delay(5000);
     const result = await Promise.all(requests.splice(0, 4));
     results.push(...result);
   }

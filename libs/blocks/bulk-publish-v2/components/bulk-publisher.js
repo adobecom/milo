@@ -166,11 +166,11 @@ class BulkPublish2 extends LitElement {
       <div class="errors">
         <span>Error: <strong>${text}</strong></span>
         <div class="error-btns">
-          ${count > 1 ? html`
+          ${count >= 1 ? html`
             <div class="fix-btn" @click=${() => startEdit(true)}>
               ${btnText}
             </div>` : ''}
-          <div class="fix-btn" @click=${() => this.reset()}>
+          <div class="clear-btn" @click=${() => this.reset()}>
             Clear
           </div>
         </div>
