@@ -7,7 +7,6 @@ import {
   getSiteConfig,
   showLogin,
   telemetry,
-  allowFindFragments,
   allowSyncToLangstore,
   canRefresh,
 } from '../utils/state.js';
@@ -65,7 +64,6 @@ async function loadProjectSettings(projSettings) {
     setStatus('service');
   } else {
     canRefresh.value = true;
-    allowFindFragments.value = true;
     allowSyncToLangstore.value = true;
     allowSendForLoc.value = true;
   }

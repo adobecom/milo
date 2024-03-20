@@ -1,5 +1,4 @@
 import {
-  allowFindFragments,
   allowSendForLoc,
   allowSyncToLangstore,
   heading,
@@ -122,7 +121,6 @@ export async function createProject() {
   const resp = await fetch(`${url}create-project`, opts);
   if (resp.status === 201) {
     canRefresh.value = false;
-    allowFindFragments.value = false;
     const projectId = window.md5(body);
     heading.value = { ...heading.value, projectId };
     const values = [['Project ID', projectId]];
