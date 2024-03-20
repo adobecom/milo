@@ -110,14 +110,8 @@ function isModalSibling(el) {
   if (!dialog || !dialog.querySelector('.fragment > div .text-block')) return false;
   return true;
 }
-function updateSiblingTextClass(el) {
- const text = el.parentElement.firstElementChild;
- if (text.classList.contains('text-block') || isModalSibling(el)) {
-  el.classList.add('neg-spacing');
- }
-}
+
 export default function init(el) {
-  updateSiblingTextClass(el);
   const fragment = document.createDocumentFragment();
   const [textRow, left, right] = createRow();
   const rows = el.querySelectorAll(':scope > div > div');
