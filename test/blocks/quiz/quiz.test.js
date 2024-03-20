@@ -4,6 +4,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { handleResultFlow } from '../../../libs/blocks/quiz/utils.js';
+import { storedData } from './mocks/mock-states.js';
 
 const { initConfigPathGlob, getQuizData } = await import('../../../libs/blocks/quiz/utils.js');
 const { default: init } = await import('../../../libs/blocks/quiz/quiz.js');
@@ -147,6 +148,57 @@ describe('Quiz', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(document.querySelector('.quiz-step-container').children[1].classList.contains('current')).to.be.true;
+  });
+});
+
+describe('Stored Quiz Data', () => {
+  beforeEach(async () => {
+    fetchStub = sinon.stub(window, 'fetch');
+    document.body.innerHTML = await readFile({ path: './mocks/index.html' });
+    quiz = document.querySelector('.quiz');
+    initConfigPathGlob(quiz);
+    await mockQuizResourceCall('./mocks/questions.json', 'questions.json');
+    await mockQuizResourceCall('./mocks/strings.json', 'strings.json');
+    await mockQuizResourceCall('./mocks/results.json', 'results.json');
+    const [questions, dataStrings] = await getQuizData(quiz);
+    mockQuestionsData = questions;
+    mockDataStrings = dataStrings;
+    const initQuestion = {
+      questionData: {
+        questions: 'q-category',
+        'max-selections': '3',
+        'min-selections': '1',
+      },
+    };
+
+    localStorage.setItem('stored-quiz-state', JSON.stringify(storedData));
+
+    const el = document.querySelector('.quiz');
+    await init(el, true, mockQuestionsData, mockDataStrings, initQuestion);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should start on q-rather', async () => {
+    const el = document.querySelector('.quiz');
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(el.querySelector('.quiz-question-title').textContent).to.equal('For your projects, would you rather:');
+  });
+
+  it('should remove stored quiz state on next', async () => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const quizOption = document.querySelector('.quiz-option');
+    quizOption.click();
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const quizButton = document.querySelector('.quiz-button');
+    quizButton.click();
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const storedQuizData = localStorage.getItem('stored-quiz-state');
+    expect(storedQuizData).to.be.null;
   });
 });
 
