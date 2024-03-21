@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - stage
 
 jobs:
   dispatch-dc:
@@ -29,5 +30,8 @@ jobs:
               owner: 'adobecom',
               repo: 'dc',
               workflow_id: 'test-milo.yml',
-              ref: 'main',
+              ref: 'stage',
+              inputs: {
+                miloBranch: '${{ github.ref_name }}'
+              },              
             }) 
