@@ -3,12 +3,11 @@
 }
 
 .timeline {
-  margin: 0 auto;
-  padding: 0 30px var(--spacing-xl) 30px;
+  box-sizing: border-box;
+  padding: 0 0 var(--spacing-xl) 0;
+  width: var(--grid-container-width);
   max-width: 968px;
-}
-.timeline.neg-spacing {
-  margin-top: -8px;
+  margin: 0 auto;
 }
 
 .timeline .row {
@@ -83,6 +82,7 @@
 
 @media screen and (min-width: 600px) {
   .timeline {
+    width: 100%;
     padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
   }
 }
@@ -90,9 +90,8 @@
 @media screen and (min-width: 1200px) {
   .timeline {
     padding: 0 var(--spacing-xxl) var(--spacing-xxl) var(--spacing-xxl);
-  }
-  .timeline.neg-spacing {
-    margin-top: -24px;
+    width: 968px;
+    max-width: 100%;
   }
 }
 
