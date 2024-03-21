@@ -1,0 +1,38 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "insertAfter",
+      "selector": ".marquee",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "/fragments/insertaround",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafterfragment",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "/fragments/notonpage",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafterfragment",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}
