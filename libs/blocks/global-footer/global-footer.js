@@ -221,6 +221,7 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
+      // TODO remove log after finding the root cause for the region picker 404s -> MWPW-143627
       if (regionPickerElem.classList[0] !== 'modal') {
         lanaLog({
           message: `Modal block class missing from region picker; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
