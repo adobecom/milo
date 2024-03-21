@@ -64,7 +64,7 @@ export const normalizePath = (p) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
-    || path.startsWith(`https://${config.productionDomain}`)) {
+    || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
       const firstFolder = url.pathname.split('/')[1];
@@ -86,14 +86,13 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   manifests = manifests.concat(
     persManifests.map((manifest) => ({
       ...manifest,
-      manifestPath: appendJsonExt(manifest.manifestPath),
+      manifestPath: normalizePath(appendJsonExt(manifest.manifestPath)),
       manifestUrl: manifest.manifestPath,
     })),
   );
 
   for (const manifest of manifests) {
     if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
-      manifest.manifestPath = normalizePath(manifest.manifestPath);
       loadLink(
         manifest.manifestPath,
         { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
