@@ -269,7 +269,6 @@ class Gnav {
     };
 
     this.setupUniversalNav();
-    decorateLinks(this.content);
     this.elements = {};
   }
 

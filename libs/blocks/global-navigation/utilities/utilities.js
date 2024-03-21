@@ -264,12 +264,10 @@ export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
     (area) => {
       if (hasActiveLink() || !(area instanceof HTMLElement)) return null;
       const { origin, pathname } = window.location;
-      let activeLink;
-
-      [`${origin}${pathname}`, pathname].forEach((path) => {
-        if (activeLink) return;
-        activeLink = area.querySelector(`a[href = '${path}'], a[href ^= '${path}?'], a[href ^= '${path}#']`);
-      });
+      const url = `${origin}${pathname}`;
+      const activeLink = [
+        ...area.querySelectorAll('a:not([data-modal-hash])'),
+      ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
 
       if (!activeLink) return null;
 
@@ -322,9 +320,11 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
     await Promise.all(fragPromises);
   }
 
-  if (shouldDecorateLinks) decorateLinks(body);
-
-  federatePictureSources({ section: body, forceFederate: path.includes('/federal/') });
+  // federatePictureSources should only be called after decorating the links.
+  if (shouldDecorateLinks) {
+    decorateLinks(body);
+    federatePictureSources({ section: body, forceFederate: path.includes('/federal/') });
+  }
 
   const blocks = body.querySelectorAll('.martech-metadata');
   if (blocks.length) {
