@@ -434,7 +434,7 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
-export async function loadBlock(block, error = {}) {
+export async function loadBlock(block) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
@@ -461,16 +461,6 @@ export async function loadBlock(block, error = {}) {
         await init(block);
       } catch (err) {
         console.log(`Failed loading ${name}`, err);
-
-        const { message, errorType, module } = error;
-        if (message && errorType && module) {
-          window.lana.log(`${message}; blockPath: ${blockPath} | href: ${window.location.href} | ${err.reason || err.error || err.message || err}`, {
-            clientId: 'feds-milo',
-            sampleRate: 1,
-            tags: `errorType=${errorType},module=${module}`,
-          });
-        }
-
         const config = getConfig();
         if (config.env.name !== 'prod') {
           const { showError } = await import('../blocks/fallback/fallback.js');
