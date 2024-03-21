@@ -64,8 +64,7 @@ export const normalizePath = (p) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
-    || path.includes('adobe.com/')
-    || path.startsWith(`https://${config.productionDomain}`)) {
+    || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
       const firstFolder = url.pathname.split('/')[1];
