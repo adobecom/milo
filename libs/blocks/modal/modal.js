@@ -176,14 +176,45 @@ export async function getModal(details, custom) {
   return dialog;
 }
 
+export function getHashParams(hashStr) {
+  if (!hashStr) return {};
+  return hashStr.split(':').reduce((params, part) => {
+    if (part.startsWith('#')) {
+      params.hash = part;
+    } else {
+      const [key, val] = part.split('=');
+      if (key === 'delay' && parseInt(val, 10) > 0) {
+        params.delay = parseInt(val, 10) * 1000;
+      }
+    }
+    return params;
+  }, {});
+}
+
+export function delayedModal(el) {
+  const { hash, delay } = getHashParams(el?.dataset.modalHash);
+  if (!delay || !hash) return false;
+  el.classList.add('hide-block');
+  const modalOpenEvent = new Event(`${hash}:modalOpen`);
+  const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
+  el.dataset.modalHash = hash;
+  el.href = hash;
+  if (!pagesModalWasShownOn?.includes(window.location.pathname)) {
+    setTimeout(() => {
+      window.location.replace(hash);
+      sendAnalytics(modalOpenEvent);
+      window.sessionStorage.setItem(`shown:${hash}`, `${pagesModalWasShownOn || ''} ${window.location.pathname}`);
+    }, delay);
+  }
+  return true;
+}
+
 // Deep link-based
 export default function init(el) {
   const { modalHash } = el.dataset;
-  if (window.location.hash === modalHash && !document.querySelector(`div.dialog-modal${modalHash}`)) {
-    const details = findDetails(window.location.hash, el);
-    if (details) return getModal(details);
-  }
-  return null;
+  if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
+  const details = findDetails(window.location.hash, el);
+  return details ? getModal(details) : null;
 }
 
 // Click-based modal
