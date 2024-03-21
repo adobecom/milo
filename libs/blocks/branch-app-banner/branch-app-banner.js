@@ -71,6 +71,7 @@ export default async function init(el) {
   const header = document.querySelector('.global-navigation');
   let row = el.querySelector(':scope > div');
   const product = row.textContent.trim();
+  row.innerHTML = '';
   const key = await getKey(product);
   branchInit(header, key);
 }
