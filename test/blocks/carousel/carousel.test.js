@@ -51,6 +51,8 @@ describe('Carousel', () => {
   });
 
   it('Keyboard navigation to go to next and previous slide', async () => {
+    const carouselContainer = document.body.querySelector('.carousel');
+    carouselContainer.classList.add('show-2');
     const nextButton = document.body.querySelector('.carousel-next');
     const previousButton = document.body.querySelector('.carousel-next');
     const slides = document.body.querySelectorAll('.carousel-slide');

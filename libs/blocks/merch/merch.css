@@ -26,10 +26,12 @@ a[is='checkout-link'] > span {
   content: "\00a0";
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1199px) {
   #checkout-link-modal {
     height: 100vh;
     border-radius: 0;
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }
 
@@ -37,10 +39,31 @@ a[is='checkout-link'] > span {
   display: flex;
 }
 
+#checkout-link-modal > .section {
+  width: 100%;
+  height: auto;
+}
+
+@media (min-width: 1200px) {
+  #checkout-link-modal.twp,
+  #checkout-link-modal.twp .milo-iframe,
+  #checkout-link-modal.d2p,
+  #checkout-link-modal.d2p .milo-iframe {
+    height: 850px;
+  }
+
+  #checkout-link-modal.crm,
+  #checkout-link-modal.crm .milo-iframe {
+    height: 640px;
+  }
+}
+
 #checkout-link-modal iframe {
+  height: 100%;
   flex: 1;
 }
 
+#checkout-link-modal iframe.twp,
 #checkout-link-modal iframe.d2p {
   max-height: 850px;
 }

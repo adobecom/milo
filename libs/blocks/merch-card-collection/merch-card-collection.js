@@ -190,12 +190,12 @@ export default async function init(el) {
     import('../../deps/merch-card.js'),
   ];
 
-  const { miloLibs } = getConfig();
+  const { base } = getConfig();
   const merchStyles = new Promise((resolve) => {
-    loadStyle(`${miloLibs}/blocks/merch/merch.css`, resolve);
+    loadStyle(`${base}/blocks/merch/merch.css`, resolve);
   });
   const merchCardStyles = new Promise((resolve) => {
-    loadStyle(`${miloLibs}/blocks/merch-card/merch-card.css`, resolve);
+    loadStyle(`${base}/blocks/merch-card/merch-card.css`, resolve);
   });
 
   const cardsData = await cardsDataPromise;
@@ -214,12 +214,12 @@ export default async function init(el) {
   deps = !filtered
     ? [
       ...deps,
-      import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
-      import(`${miloLibs}/features/spectrum-web-components/dist/button.js`),
-      import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
-      import(`${miloLibs}/features/spectrum-web-components/dist/overlay.js`),
-      import(`${miloLibs}/features/spectrum-web-components/dist/menu.js`),
-      import(`${miloLibs}/features/spectrum-web-components/dist/popover.js`),
+      import(`${base}/features/spectrum-web-components/dist/theme.js`),
+      import(`${base}/features/spectrum-web-components/dist/button.js`),
+      import(`${base}/features/spectrum-web-components/dist/search.js`),
+      import(`${base}/features/spectrum-web-components/dist/overlay.js`),
+      import(`${base}/features/spectrum-web-components/dist/menu.js`),
+      import(`${base}/features/spectrum-web-components/dist/popover.js`),
     ] : [];
 
   const preferences = {};
