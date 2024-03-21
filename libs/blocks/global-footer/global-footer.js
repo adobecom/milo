@@ -226,14 +226,20 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
-      // TODO remove log after finding the root cause for the region picker 404s -> MWPW-143627
+      // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
       if (regionPickerElem.classList[0] !== 'modal') {
         lanaLog({
-          message: `Modal block class missing from region picker; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
+          message: `Modal block class missing from region picker pre loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
           tags: 'errorType=warn,module=global-footer',
         });
       }
       await loadBlock(regionPickerElem); // load modal logic and styles
+      if (regionPickerElem.classList[0] !== 'modal') {
+        lanaLog({
+          message: `Modal block class missing from region picker post loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
+          tags: 'errorType=warn,module=global-footer',
+        });
+      }
       // 'decorateAutoBlock' logic replaces class name entirely, need to add it back
       regionPickerElem.classList.add(regionPickerClass);
       regionPickerElem.addEventListener('click', () => {
