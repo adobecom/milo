@@ -1,0 +1,161 @@
+/*
+Quote
+variants: inline, borders
+options: dark, contained, *-spacing (xs-xl), alignment (left, right)
+*/
+
+.quote {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.quote p {
+  margin: 0
+}
+
+.quote figure {
+  margin: 0;
+  padding: 0;
+}
+
+.quote.contained figure {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.quote .quote-image {
+  margin-bottom: var(--spacing-xs);
+}
+
+.quote .quote-image > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quote .quote-image picture{
+  display: inline-flex;
+}
+
+.quote .quote-image img {
+  max-height: 80px;
+  width: auto;
+}
+
+.quote blockquote {
+  margin: 0 auto;
+}
+
+.quote blockquote .quote-copy {
+  font-size: var(--type-heading-m-size);
+  margin-top: 0;
+}
+
+.quote figcaption .figcaption {
+  font-size: var(--type-body-s-size);
+  margin-top: var(--spacing-s);
+}
+
+.quote figcaption cite {
+  font-size: var(--type-body-xs-size);
+}
+
+.quote blockquote .quote-copy,
+.quote figcaption .figcaption {
+  font-weight: bold;
+}
+
+/* borders */
+.quote.borders figure {
+  border-top: 1px solid #cacaca;
+  border-bottom: 1px solid #cacaca;
+  padding: var(--spacing-s) 0;
+}
+
+/* inline */
+.quote.inline figure {
+  text-align: start;
+  padding: var(--spacing-m);
+}
+
+.quote.inline.align-right figure {
+  text-align: right;
+}
+
+.quote.inline figure .quote-image img {
+  height: 200px;
+  max-height: 200px;
+}
+
+/* options */
+.quote.dark {
+  color: #fff;
+}
+
+.quote.long-form blockquote .quote-copy {
+  font-weight: unset;
+}
+
+.quote.xsmall blockquote .quote-copy {
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-heading-xs-lh);
+}
+
+.quote.small blockquote .quote-copy {
+  font-size: var(--type-heading-s-size);
+  line-height: var(--type-heading-s-lh);
+}
+
+.quote.large blockquote .quote-copy {
+  font-size: var(--type-heading-l-size);
+  line-height: var(--type-heading-l-lh);
+}
+
+.quote.xlarge blockquote .quote-copy {
+  font-size: var(--type-heading-xl-size);
+  line-height: var(--type-heading-xl-lh);
+}
+
+.quote.xxlarge blockquote .quote-copy {
+  font-size: var(--type-heading-xxl-size);
+  line-height: var(--type-heading-xxl-lh);
+}
+
+/* align */
+.quote.align-left {
+  text-align: left;
+}
+
+.quote.align-right {
+  text-align: right;
+}
+
+.quote.align-left .quote-image > div {
+  justify-content: start;
+}
+
+.quote.align-right .quote-image > div {
+  justify-content: end;
+}
+
+/* Tablet */
+@media screen and (min-width: 600px) {
+  .quote.inline figure {
+    display: flex;
+    gap: var(--spacing-s);
+  }
+
+  .quote.inline figure .quote-image {
+    display: flex;
+    align-content: center;
+    flex: 1 0 40%;
+    margin: 0;
+    justify-content: center;
+  }
+
+  .quote.inline figure .quote-wrapper {
+    flex: 1 1 auto;
+  }
+}
+
+/* update */
