@@ -1,7 +1,3 @@
-:root {
-  --timeline-default-col-widths: 33.33% 66.66%;
-}
-
 .timeline {
   box-sizing: border-box;
   padding: 0 0 var(--spacing-xl) 0;
@@ -12,7 +8,6 @@
 
 .timeline .row {
   display: grid;
-  grid-template-columns: var(--timeline-default-col-widths);
 }
 
 .timeline h1,
@@ -36,22 +31,33 @@
 
 .timeline .row:nth-of-type(1)>.right>div+div {
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.timeline .row:nth-of-type(1)>.right>div+div > * {
+  max-width: 100px;
 }
 
-.timeline .row:nth-of-type(1)>.right,
-.timeline .row:nth-of-type(2)>.right {
-  display: flex;
-  flex-direction: row;
+.timeline .row:nth-of-type(1)>.left>div > * {
+  max-width: 100px;
+  padding-right: var(--spacing-m);
+}
+
+.timeline .row:nth-of-type(1)>.right{
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) 1fr; 
   justify-content: space-between;
 }
-
-.timeline .row:nth-of-type(1)>.left>div,
-.timeline .row:nth-of-type(1)>.right>div {
-  max-width: 100px;
+.timeline .row:nth-of-type(2)>.right {
+  display: grid;
+  grid-template-columns: 2px 2px;
+  justify-content: space-between;
 }
 
 .timeline .row:nth-of-type(1)>.right>div:nth-of-type(1) {
   max-width: 135px;
+  padding-right: var(--spacing-xxs);
 }
 
 .timeline .bar {

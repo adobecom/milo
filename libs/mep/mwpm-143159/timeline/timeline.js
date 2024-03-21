@@ -94,23 +94,13 @@ function colWidthsNotValid(colWidths) {
   return (colWidths.length !== 2 || colWidths.some((value) => isNaN(value)));
 }
 function updateColWidths(colWidths, fragment) {
-  if (colWidthsNotValid(colWidths) || colWidthsMatchDefault(colWidths)) return;
+  if (colWidthsNotValid(colWidths)) return;
   const total = Number(colWidths[0]) + Number(colWidths[1]);
   const left = Math.floor((Number(colWidths[0]) / total)* 10000)/100;
   const right = Math.floor((Number(colWidths[1]) / total)* 10000)/100;
-  fragment.querySelectorAll('.row').forEach((row) => row.style.gridTemplateColumns = `${String(left)}% ${String(right)}%`);
+  let colString = left <= right ? `minmax(106px, ${String(left)}%) 1fr` : `1fr minmax(${String(right)}%, 150px)`;
+  fragment.querySelectorAll('.row').forEach((row) => row.style.gridTemplateColumns = colString); 
 }
-function colWidthsMatchDefault(widths) {
-  const defWidths = ['7', '14'];
-  return widths.every((value, index) => value === defWidths[index]);
-}
-
-function isModalSibling(el) {
-  const dialog = el.closest('.dialog-modal');
-  if (!dialog || !dialog.querySelector('.fragment > div .text-block')) return false;
-  return true;
-}
-
 export default function init(el) {
   const fragment = document.createDocumentFragment();
   const [textRow, left, right] = createRow();
