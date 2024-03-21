@@ -2,6 +2,7 @@ import { createTag, decorateLinks, getConfig, loadBlock, loadStyle } from '../..
 import { replaceText } from '../../features/placeholders.js';
 
 const DIGITS_ONLY = /^\d+$/;
+export const OVERRIDE_PATHS = 'overrides';
 
 const LITERAL_SLOTS = [
   'searchText',
@@ -182,10 +183,8 @@ export default async function init(el) {
   const cardsDataPromise = fetchCardsData(config, type, el);
 
   const merchCardCollectionDep = import('../../deps/merch-card-collection.js');
-  const personalizationDep = import('../../features/personalization/personalization.js');
   let deps = [
     merchCardCollectionDep,
-    personalizationDep,
     import('../merch-card/merch-card.js'),
     import('../../deps/merch-card.js'),
   ];
@@ -296,7 +295,6 @@ export default async function init(el) {
   }
 
   const cardsRoot = await cardsRootPromise;
-  const { OVERRIDE_PATHS } = await personalizationDep;
   const overrides = el.dataset[OVERRIDE_PATHS];
   const overridePromises = overrides?.split(',').map(fetchOverrideCard);
   await overrideCards(cardsRoot, overridePromises, config);

@@ -32,8 +32,6 @@ const CLASS_EL_REPLACE = 'p13n-replaced';
 const COLUMN_NOT_OPERATOR = 'not';
 const TARGET_EXP_PREFIX = 'target-';
 const PAGE_URL = new URL(window.location.href);
-export const OVERRIDE_PATHS = 'overrides';
-export const MERCH_CARDS_SELECTOR = '.merch-cards';
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -153,13 +151,6 @@ const COMMANDS = {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
-  },
-  replacemerchcard: (el, cardPath) => {
-    const paths = el.dataset[OVERRIDE_PATHS]?.split(',') || [];
-    if (!paths.includes(cardPath)) {
-      paths.push(cardPath);
-    }
-    el.dataset[OVERRIDE_PATHS] = paths.join(',');
   },
 };
 
