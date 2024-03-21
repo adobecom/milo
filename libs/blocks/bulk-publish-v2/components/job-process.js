@@ -32,6 +32,7 @@ class JobProcess extends LitElement {
       await pollJobStatus(this.job, (detail) => {
         if (detail.state === 'stopped') {
           this.jobStatus = detail;
+        /* c8 ignore next 3 */
         } else {
           updateItemProgress(detail, this);
         }

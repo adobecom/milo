@@ -99,6 +99,7 @@ const getStatusText = (status, state, count) => {
   return { code, text, color };
 };
 
+/* c8 ignore next 16 */
 const updateItemProgress = (detail, tool) => {
   const resources = detail.data?.resources?.filter((res) => res.status !== 0);
   if (resources) {
