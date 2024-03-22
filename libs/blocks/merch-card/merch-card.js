@@ -9,6 +9,20 @@ const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
 const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart'];
 
+const TEXT_STYLES = {
+  H5: 'detail-m',
+  H4: 'body-xxs',
+  H3: 'heading-xs',
+  H2: 'heading-m',
+};
+
+const HEADING_MAP = {
+  'special-offers': {
+    H5: 'H4',
+    H3: 'H3',
+  },
+};
+
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
 const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
@@ -21,13 +35,6 @@ const intersectionObserver = new IntersectionObserver((entries) => {
     intersectionObserver.unobserve(entry.target);
   });
 });
-
-const textStyles = {
-  H5: 'detail-m',
-  H4: 'body-xxs',
-  H3: 'heading-xs',
-  H2: 'heading-m',
-};
 
 const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style));
 
@@ -70,17 +77,21 @@ const parseContent = (el, merchCard) => {
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
-      let slotName = textStyles[tagName];
+      let slotName = TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
-          if (tagName === 'H2') {
-            headingMCount += 1;
+          if (HEADING_MAP[merchCard.variant] && HEADING_MAP[merchCard.variant][tagName]) {
+            tagName = HEADING_MAP[merchCard.variant][tagName];
+          } else {
+            if (tagName === 'H2') {
+              headingMCount += 1;
+            }
+            if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
+              slotName = 'heading-m-price';
+            }
+            tagName = `H${headingSize}`;
+            headingSize += 1;
           }
-          if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
-            slotName = 'heading-m-price';
-          }
-          tagName = `H${headingSize}`;
-          headingSize += 1;
         }
         element.setAttribute('slot', slotName);
         const newElement = createTag(tagName);
