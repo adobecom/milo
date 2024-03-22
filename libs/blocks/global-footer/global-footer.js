@@ -18,6 +18,8 @@ import {
   lanaLog,
   logErrorFor,
   toFragment,
+  getFederatedUrl,
+  federatePictureSources,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -89,6 +91,9 @@ class Footer {
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+
+    const path = getFederatedUrl(url);
+    federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
