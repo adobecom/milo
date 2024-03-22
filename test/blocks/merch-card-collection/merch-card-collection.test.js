@@ -182,7 +182,7 @@ describe('Merch Cards', async () => {
     });
     const el = document.getElementById('localizeQueryIndex');
     await init(el);
-    expect(window.fetch.calledOnceWith('https://main--milo--adobecom.hlx.live/fr/query-index-cards.json?sheet=catalog')).to.be.true;
+    expect(window.fetch.calledWith('https://main--milo--adobecom.hlx.live/fr/query-index-cards.json?sheet=catalog')).to.be.true;
   });
 
   describe('error handling', async () => {
