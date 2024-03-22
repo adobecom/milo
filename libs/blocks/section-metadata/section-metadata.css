@@ -184,7 +184,8 @@
 }
 
 .section[class*='grid-width-'] > .content,
-main > .section[class*='-up'] > .content {
+main > .section[class*='-up'] > .content,
+.section[class*='grid-width-'] > .contained {
   max-width: initial;
   margin: 0;
 }
