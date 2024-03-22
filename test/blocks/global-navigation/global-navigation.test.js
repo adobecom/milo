@@ -522,6 +522,9 @@ describe('global navigation', () => {
         templateActiveElem.setAttribute('href', window.location.href);
         await createFullGlobalNavigation({ globalNavigation: template.innerHTML });
         const markupActiveElem = document.querySelector(targetSelector);
+        expect(markupActiveElem.getAttribute('role')).to.equal('link');
+        expect(markupActiveElem.getAttribute('aria-disabled')).to.equal('true');
+        expect(markupActiveElem.getAttribute('aria-current')).to.equal('page');
         expect(markupActiveElem.closest(selectors.activeNavItem) instanceof HTMLElement).to.be.true;
       });
 
