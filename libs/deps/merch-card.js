@@ -1,4 +1,4 @@
-// Fri, 22 Mar 2024 16:51:38 GMT
+// Fri, 22 Mar 2024 17:16:56 GMT
 import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var d="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var w=x`
     :host {
         position: relative;
@@ -92,6 +92,7 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
         justify-content: flex-end;
         box-sizing: border-box;
         width: 100%;
+        padding: var(--consonant-merch-spacing-xs);
         flex-flow: wrap;
         gap: var(--consonant-merch-spacing-xs);
     }
@@ -193,8 +194,6 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
         gap: var(--consonant-merch-spacing-xxs);
         align-items: center;
         flex: 1;
-        height: inherit;
-        padding-left: var(--consonant-merch-spacing-xs);
     }
 
     .secure-transaction-label::before {
