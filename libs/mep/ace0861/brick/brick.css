@@ -383,7 +383,8 @@
     border-radius: inherit;
   }
 
-  .brick.split.row .foreground picture {
+  .brick.prioritized-placement.split.row .foreground picture {
+    display: flex;
     justify-content: center;
   }
 
