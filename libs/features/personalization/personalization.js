@@ -64,7 +64,7 @@ export const normalizePath = (p) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
-    || path.startsWith(`https://${config.productionDomain}`)) {
+    || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
       const firstFolder = url.pathname.split('/')[1];
@@ -86,14 +86,13 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   manifests = manifests.concat(
     persManifests.map((manifest) => ({
       ...manifest,
-      manifestPath: appendJsonExt(manifest.manifestPath),
+      manifestPath: normalizePath(appendJsonExt(manifest.manifestPath)),
       manifestUrl: manifest.manifestPath,
     })),
   );
 
   for (const manifest of manifests) {
     if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
-      manifest.manifestPath = normalizePath(manifest.manifestPath);
       loadLink(
         manifest.manifestPath,
         { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
@@ -755,6 +754,8 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) return;
+  if (!config?.mep) config.mep = {};
+  config.mep.handleFragmentCommand = handleFragmentCommand;
   let experiments = manifests;
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
@@ -788,7 +789,5 @@ export async function applyPers(manifests) {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
-  if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-  config.mep.handleFragmentCommand = handleFragmentCommand;
 }
