@@ -173,7 +173,7 @@ describe('Merch Cards', async () => {
     expect(express.title.indexOf('PROMOTION') > 0).to.be.true;
   });
 
-  it.only('should localize the query-index url', async () => {
+  it('should localize the query-index url', async () => {
     setConfig({
       ...conf,
       pathname: '/fr/test.html',
