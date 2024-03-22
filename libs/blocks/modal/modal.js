@@ -32,11 +32,6 @@ export function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
-  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
-  const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
-  const closeEventAnalytics = new Event(`${analyticsEventName}:modalClose:buttonClose`);
-
-  sendAnalytics(closeEventAnalytics);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
@@ -102,7 +97,13 @@ export async function getModal(details, custom) {
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
 
-  const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
+  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
+  const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
+  const close = createTag('button', {
+    class: 'dialog-close',
+    'aria-label': 'Close',
+    'daa-ll': `${analyticsEventName}:modalClose:buttonClose`,
+  }, CLOSE_ICON);
 
   const focusVisible = { focusVisible: true };
   const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
