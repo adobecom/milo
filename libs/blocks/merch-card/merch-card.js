@@ -80,7 +80,7 @@ const parseContent = (el, merchCard) => {
       let slotName = TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
-          if (HEADING_MAP[merchCard.variant] && HEADING_MAP[merchCard.variant][tagName]) {
+          if (HEADING_MAP[merchCard.variant]?.[tagName]) {
             tagName = HEADING_MAP[merchCard.variant][tagName];
           } else {
             if (tagName === 'H2') {
