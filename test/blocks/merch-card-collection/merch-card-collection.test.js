@@ -173,7 +173,7 @@ describe('Merch Cards', async () => {
     expect(express.title.indexOf('PROMOTION') > 0).to.be.true;
   });
 
-  it('should localize the query-index url', async () => {
+  it.only('should localize the query-index url', async () => {
     setConfig({
       ...conf,
       pathname: '/fr/test.html',
@@ -182,6 +182,7 @@ describe('Merch Cards', async () => {
     });
     const el = document.getElementById('localizeQueryIndex');
     await init(el);
+    expect(window.fetch.calledOnceWith('https://main--milo--adobecom.hlx.live/fr/query-index-cards.json?sheet=catalog')).to.be.true;
   });
 
   describe('error handling', async () => {
