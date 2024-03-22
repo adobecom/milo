@@ -7,7 +7,6 @@ const LIMIT = 12;
 let abortController;
 let articles = [];
 let complete = false;
-let lastSearch = null;
 
 function highlightTextElements(terms, elements) {
   elements.forEach((element) => {
@@ -53,25 +52,33 @@ function highlightTextElements(terms, elements) {
   });
 }
 
-async function fetchResults(signal, terms, config) {
-  let hits = [];
+async function getResults(signal, terms, config, resultsEl, dataSegment, prevHits) {
+  const data = dataSegment || articles;
+  const hits = prevHits || [];
 
-  for (const article of articles) {
+  for (const article of data) {
     if (hits.length === LIMIT || signal.aborted) break;
     const { category } = getArticleTaxonomy(article);
     const text = [category, article.title, article.description].join(' ').toLowerCase();
     if (terms.every((term) => text.includes(term))) {
+      const card = buildArticleCard(article);
+      const listItemEl = createTag('li', null, card);
+      resultsEl.append(listItemEl);
+      highlightTextElements(terms, listItemEl.querySelectorAll('h3, .article-card-category, .article-card-body > p'));
       hits.push(article);
     }
   }
 
-  const getMoreArticles = !articles.length || (hits.length !== LIMIT && !complete);
+  const noArticles = !articles.length;
+  const getMoreArticles = noArticles || (hits.length !== LIMIT && !complete);
 
   if (!signal.aborted && getMoreArticles) {
-    const index = await fetchBlogArticleIndex(config);
+    const fetchLimit = noArticles ? 500 : 10000;
+    const index = await fetchBlogArticleIndex(config, fetchLimit);
     articles = index.data;
     complete = index.complete;
-    hits = await fetchResults(signal, terms, config);
+    const newDataSet = data.length === 0 ? index.data : index.offsetData;
+    hits.push(...await getResults(signal, terms, config, resultsEl, newDataSet, hits));
   }
 
   return hits;
@@ -80,8 +87,8 @@ async function fetchResults(signal, terms, config) {
 export default async function onSearchInput(
   { value, resultsEl, searchInputEl, advancedSearchEl, contextualConfig: config },
 ) {
+  resultsEl.innerHTML = '';
   if (!value.length) {
-    resultsEl.innerHTML = '';
     searchInputEl.classList.remove('gnav-search-input--isPopulated');
     return;
   }
@@ -94,40 +101,23 @@ export default async function onSearchInput(
   resultsEl.classList.remove('no-results');
   searchInputEl.classList.add('gnav-search-input--isPopulated');
 
-  lastSearch = {};
-  const currentSearch = lastSearch;
-
   const terms = value.toLowerCase().split(' ').filter(Boolean);
   if (!terms.length) return;
 
-  const hits = await fetchResults(abortController.signal, terms, config);
+  const hits = await getResults(abortController.signal, terms, config, resultsEl);
 
-  if (currentSearch === lastSearch) {
-    if (!hits.length) {
-      const noResults = await replaceKey('no-results', getConfig());
-      const emptyMessage = createTag('p', {}, noResults);
-      let emptyList = createTag('li', null, emptyMessage);
-      if (advancedSearchEl) {
-        const advancedLink = advancedSearchEl.querySelector('a');
-        const href = new URL(advancedLink.href);
-        href.searchParams.set('q', value);
-        advancedLink.href = href.toString();
-        emptyList = advancedSearchEl;
-      }
-      resultsEl.replaceChildren(emptyList);
-      resultsEl.classList.add('no-results');
-      return;
+  if (!hits.length) {
+    const noResults = await replaceKey('no-results', getConfig());
+    const emptyMessage = createTag('p', {}, noResults);
+    let emptyList = createTag('li', null, emptyMessage);
+    if (advancedSearchEl) {
+      const advancedLink = advancedSearchEl.querySelector('a');
+      const href = new URL(advancedLink.href);
+      href.searchParams.set('q', value);
+      advancedLink.href = href.toString();
+      emptyList = advancedSearchEl;
     }
-
-    const fragment = document.createDocumentFragment();
-    hits.forEach((hit) => {
-      const card = buildArticleCard(hit);
-      const listItemEl = createTag('li', null, card);
-      fragment.appendChild(listItemEl);
-    });
-    resultsEl.innerHTML = '';
-    resultsEl.appendChild(fragment);
-
-    highlightTextElements(terms, resultsEl.querySelectorAll('h3, .article-card-category, .article-card-body > p'));
+    resultsEl.replaceChildren(emptyList);
+    resultsEl.classList.add('no-results');
   }
 }
