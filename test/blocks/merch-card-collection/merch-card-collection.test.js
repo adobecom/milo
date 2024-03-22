@@ -16,17 +16,32 @@ const getVisibleCards = (merchCards) => [...merchCards.querySelectorAll('merch-c
 describe('Merch Cards', async () => {
   let init;
   let pageContent;
+  let overrideThrowError = false;
+  let overrideRespondError = false;
+  let queryIndexRespondError = false;
 
   let cards = [];
 
   before(async () => {
-    window.lana = { log: () => {} };
+    window.lana = { log: sinon.stub() };
     const originalFetch = window.fetch;
     window.fetch = sinon.stub(window, 'fetch').callsFake((url) => {
       let data;
       const overrideUrl = /override-(.*).plain.html/;
       const overrideMatch = overrideUrl.exec(url);
+      const queryIndexMatch = /-cards.json/.test(url);
+      if ((overrideMatch && overrideRespondError) || (queryIndexMatch && queryIndexRespondError)) {
+        return Promise.resolve({
+          status: 500,
+          statusText: 'Internal Server Error',
+          ok: false,
+          json: () => Promise.resolve({}),
+        });
+      }
       if (overrideMatch) {
+        if (overrideThrowError) {
+          return Promise.reject(new Error('fetch error'));
+        }
         return new Promise((resolve) => {
           originalFetch(new URL(`./mocks/${overrideMatch[1]}-override.html`, import.meta.url).href)
             .then((r) => {
@@ -39,7 +54,7 @@ describe('Merch Cards', async () => {
             });
         });
       }
-      if (url) {
+      if (queryIndexMatch) {
         data = {
           total: 0,
           offset: 0,
@@ -63,6 +78,11 @@ describe('Merch Cards', async () => {
     document.location.hash = '';
     cards = [];
     document.body.innerHTML = pageContent;
+    overrideThrowError = false;
+    overrideRespondError = false;
+    queryIndexRespondError = false;
+    window.lana.log.reset();
+    setConfig(conf);
   });
 
   it('should require a type', async () => {
@@ -134,7 +154,7 @@ describe('Merch Cards', async () => {
   });
 
   it('should parse literals', async () => {
-    const merchCards = await init(document.getElementById('placeholders'));
+    const merchCards = await init(document.getElementById('literals'));
     await delay(500);
     expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
   });
@@ -151,5 +171,61 @@ describe('Merch Cards', async () => {
     const express = merchCards.querySelector('merch-card[name="express"]');
     expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.true;
     expect(express.title.indexOf('PROMOTION') > 0).to.be.true;
+  });
+
+  it('should localize the query-index url', async () => {
+    setConfig({
+      ...conf,
+      pathname: '/fr/test.html',
+      locales: { fr: { ietf: 'fr-FR' } },
+      prodDomains: ['main--milo--adobecom.hlx.live'],
+    });
+    const el = document.getElementById('localizeQueryIndex');
+    await init(el);
+  });
+
+  describe('error handling', async () => {
+    it('fails gracefully if no query-index endpoint is provided ', async () => {
+      const el = document.getElementById('noQueryIndexEndpoint');
+      await init(el);
+      expect(el.innerHTML).to.equal('');
+      expect(window.lana.log.calledOnce).to.be.true;
+      expect(window.lana.log.calledWith('Failed to initialize merch cards: Error: No query-index endpoint provided')).to.be.true;
+    });
+
+    it('fails gracefully if query-index fetch fails ', async () => {
+      queryIndexRespondError = true;
+      const el = document.getElementById('queryIndexFail');
+      await init(el);
+      expect(el.innerHTML).to.equal('');
+      expect(window.lana.log.calledOnce).to.be.true;
+      expect(window.lana.log.calledWith('Failed to initialize merch cards: Error: Internal Server Error')).to.be.true;
+    });
+
+    it('should handle fetch errors while retrieving override cards', async () => {
+      overrideThrowError = true;
+      cards = [...document.querySelectorAll('#cards .merch-card')]
+        .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
+
+      const el = document.getElementById('handleFetchError1');
+      el.dataset.overrides = '/override-photoshop';
+      const merchCards = await init(el);
+      const photoshop = merchCards.querySelector('merch-card[name="photoshop"]');
+      expect(photoshop.title).to.equal('Photoshop');
+      expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.false;
+    });
+
+    it('should handle errors while retrieving override cards', async () => {
+      overrideRespondError = true;
+      cards = [...document.querySelectorAll('#cards .merch-card')]
+        .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
+
+      const el = document.getElementById('handleFetchError2');
+      el.dataset.overrides = '/override-photoshop';
+      const merchCards = await init(el);
+      const photoshop = merchCards.querySelector('merch-card[name="photoshop"]');
+      expect(photoshop.title).to.equal('Photoshop');
+      expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.false;
+    });
   });
 });

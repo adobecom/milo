@@ -1,4 +1,6 @@
-import { createTag, decorateLinks, getConfig, loadBlock, loadStyle } from '../../utils/utils.js';
+import {
+  createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
+} from '../../utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
 
 const DIGITS_ONLY = /^\d+$/;
@@ -26,9 +28,6 @@ const LITERAL_SLOTS = [
 // eslint-disable-next-line no-promise-executor-return
 const makePause = async (timeout = 0) => new Promise((resolve) => setTimeout(resolve, timeout));
 
-const localizedPath = (path, config) => `${config?.locale?.prefix
-    && path.indexOf(config.locale.prefix) !== 0 ? config.locale.prefix : ''}${path}`;
-
 const fail = (el, err = '') => {
   window.lana?.log(`Failed to initialize merch cards: ${err}`);
   el.innerHTML = '';
@@ -55,19 +54,19 @@ async function getCardsRoot(config, html) {
 }
 
 const fetchOverrideCard = (path, config) => new Promise((resolve, reject) => {
-  try {
-    fetch(`${localizedPath(path, config)}.plain.html`).then((res) => {
-      if (res.ok) {
-        res.text().then((cardContent) => {
-          resolve({ path, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] });
-        });
-      } else {
-        reject(res.statusText || res.status);
-      }
-    });
-  } catch (error) {
+  fetch(`${localizeLink(path, config)}.plain.html`).then((res) => {
+    if (res.ok) {
+      res.text().then((cardContent) => {
+        resolve({ path, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] });
+      });
+    } else {
+      reject(res.statusText
+      /* c8 ignore next */
+         || res.status);
+    }
+  }).catch((error) => {
     reject(error);
-  }
+  });
 });
 
 async function overrideCards(root, overridePromises, config) {
@@ -88,7 +87,8 @@ async function overrideCards(root, overridePromises, config) {
       }
     }
   } catch (error) {
-    window?.lana.error('Failed to override cards', error);
+    /* c8 ignore next */
+    window?.lana?.log('Failed to override cards', error);
   }
 }
 
@@ -122,31 +122,22 @@ export function parsePreferences(elements) {
 /** Retrieve cards from query-index  */
 async function fetchCardsData(config, type, el) {
   let cardsData;
-  let err;
   const endpointElement = el.querySelector('a[href*="query-index-cards.json"]');
   if (!endpointElement) {
-    return fail(el, 'Missing query-index-cards configuration');
+    throw new Error('No query-index endpoint provided');
   }
   endpointElement.remove();
-  let queryIndexCardPath = localizedPath(endpointElement.getAttribute('href'), config);
-  if (!queryIndexCardPath) {
-    return fail(el, 'Missing query-index-cards configuration');
-  }
+  let queryIndexCardPath = localizeLink(endpointElement.getAttribute('href'), config);
   if (/\.json$/.test(queryIndexCardPath)) {
     queryIndexCardPath = `${queryIndexCardPath}?sheet=${type}`;
   }
-  try {
-    const res = await fetch(queryIndexCardPath);
-    if (res.ok) {
-      cardsData = await res.json();
-    } else {
-      err = res.statusText || res.status;
-    }
-  } catch (error) {
-    err = error.message;
-  }
-  if (!cardsData) {
-    fail(el, err);
+  const res = await fetch(queryIndexCardPath);
+  if (res.ok) {
+    cardsData = await res.json();
+  } else {
+    throw new Error(res.statusText
+      /* c8 ignore next */
+      || res.status);
   }
   return cardsData;
 }
@@ -197,7 +188,12 @@ export default async function init(el) {
     loadStyle(`${base}/blocks/merch-card/merch-card.css`, resolve);
   });
 
-  const cardsData = await cardsDataPromise;
+  let cardsData;
+  try {
+    cardsData = await cardsDataPromise;
+  } catch (error) {
+    return fail(el, error);
+  }
 
   const cardsRootPromise = getCardsRoot(config, cardsData.data.map(({ cardContent }) => cardContent).join('\n'));
 
