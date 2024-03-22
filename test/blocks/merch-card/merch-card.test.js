@@ -31,15 +31,15 @@ describe('Merch Card', () => {
   it('Supports Special Offers card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
     const merchCard = await init(document.querySelector('.special-offers'));
-    const heading = merchCard.querySelector('h3[slot="detail-m"]');
-    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
+    const category = merchCard.querySelector('h4[slot="detail-m"]');
+    const title = merchCard.querySelector('h3[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
     const buttons = footer.querySelectorAll('.con-button');
 
     expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
+    expect(category).to.exist;
+    expect(title).to.exist;
     expect(body).to.exist;
     expect(merchCard.getAttribute('variant')).to.be.equal('special-offers');
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
