@@ -2,15 +2,15 @@ import { getMetadata } from '../../utils/utils.js';
 
 const GMTStringToLocalDate = (gmtString) => new Date(`${gmtString}+00:00`);
 
-export const isDisabled = (event) => {
+export const isDisabled = (event, searchParams) => {
   if (!event) return false;
-  const currentDate = new Date();
+  const currentDate = searchParams?.get('instant') ? new Date(searchParams.get('instant')) : new Date();
   if ((!event.start && event.end) || (!event.end && event.start)) return true;
   return Boolean(event.start && event.end
     && (currentDate < event.start || currentDate > event.end));
 };
 
-export default function getPromoManifests(manifestNames) {
+export default function getPromoManifests(manifestNames, searchParams) {
   const attachedManifests = manifestNames
     ? manifestNames.split(',')?.map((manifest) => manifest?.trim())
     : [];
@@ -27,7 +27,7 @@ export default function getPromoManifests(manifestNames) {
           start: GMTStringToLocalDate(start),
           end: GMTStringToLocalDate(end),
         };
-        const disabled = isDisabled(event);
+        const disabled = isDisabled(event, searchParams);
         return { manifestPath, disabled, event };
       }
       return null;

@@ -145,16 +145,16 @@ describe('preview feature', () => {
         disabled: false,
         event: {
           name: 'black-friday-global',
-          start: '2023-11-10T00:00:00.000Z',
-          end: '2024-11-24T00:00:00.000Z',
+          start: new Date('2023-11-10T00:00:00.000Z'),
+          end: new Date('2024-11-24T00:00:00.000Z'),
         },
       },
       {
         disabled: true,
         event: {
           name: 'cyber-monday-emea',
-          start: '2024-11-24T00:00:00.000Z',
-          end: '2024-11-24T00:00:00.000Z',
+          start: new Date('2024-11-24T00:00:00.000Z'),
+          end: new Date('2024-11-24T00:00:00.000Z'),
         },
         manifest: '/promos/2023/emea/cyber-monday/cyber-monday-emea.json',
         variantNames: [
