@@ -7,6 +7,7 @@ import {
 } from './utils.js';
 import {
   b64ToUtf8,
+  utf8ToB64,
   createIntersectionObserver,
   getConfig,
   getMetadata,
@@ -16,6 +17,7 @@ import {
 const ROOT_MARGIN = 1000;
 const P_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 const S_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1zdGFnZS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
+const D_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1kZXYuYWRvYmVpb3J1bnRpbWUubmV0L2FwaS92MS93ZWIvY2hpbWVyYS0wLjAuMS9jb2xsZWN0aW9u');
 
 const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
   if (placeholderUrl) {
@@ -58,6 +60,8 @@ const loadCaas = async (a) => {
 
   if (host.includes('stage.adobe') || env?.name === 'local') {
     chimeraEndpoint = S_CAAS_AIO;
+  } else if (host.includes('--event-milo--')) {
+    chimeraEndpoint = D_CAAS_AIOl;
   } else if (host.includes('.hlx.')) {
     // If invoking URL is not an Acom URL, then switch to AIO
     chimeraEndpoint = P_CAAS_AIO;
