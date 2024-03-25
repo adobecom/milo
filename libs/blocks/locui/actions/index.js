@@ -184,12 +184,14 @@ export async function sendForLoc() {
   // If no Project ID, create project first.
   if (!heading.value.projectId) {
     const status = await createProject();
-    if (status !== 201) {
-      setStatus('service', 'error', 'Error creating new project.');
+    if (status === 201) {
+      // Give the service time to digest and error check creating a project
+      setStatus('service', 'info', 'Starting project.');
+    } else {
+      allowSyncToLangstore.value = true;
+      allowSendForLoc.value = true;
       return;
     }
-    setStatus('service', 'info', 'Starting project.');
-    // Give the service time to digest and error check creating a project
   }
 
   await startProject({ skipSync: true });
