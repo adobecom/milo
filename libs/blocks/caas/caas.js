@@ -60,7 +60,7 @@ const loadCaas = async (a) => {
 
   if (host.includes('stage.adobe') || env?.name === 'local') {
     chimeraEndpoint = S_CAAS_AIO;
-  } else if (host.includes('--event-milo--')) {
+  } else if (host.includes('--events-milo--')) {
     chimeraEndpoint = D_CAAS_AIO;
   } else if (host.includes('.hlx.')) {
     // If invoking URL is not an Acom URL, then switch to AIO
