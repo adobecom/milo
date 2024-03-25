@@ -64,19 +64,19 @@ export default async function decorate(block) {
     rows[0].innerHTML = '';
   } else {
     rows[0]?.classList.add('tracking-header');
-    // add share placeholder if empty row 
+    // add share placeholder if empty row
     if (childDiv && emptyRow) {
       const heading = toSentenceCase(await replaceKey('share-this-page', config));
       childDiv.append(createTag('p', null, heading));
     }
   }
-  
+
   // wrap innerHTML in <p> tag if none are present
   if (childDiv && !emptyRow) {
     const innerPs = childDiv.querySelectorAll(':scope > p');
     if (innerPs.length === 0) {
       const text = childDiv.innerText;
-      childDiv.innerText = ''
+      childDiv.innerText = '';
       childDiv.append(createTag('p', null, text));
     }
   }
