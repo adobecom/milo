@@ -57,5 +57,4 @@ describe('Analytics', async () => {
     }, 20);
     expect(processedString).to.equal('Buy now');
   });
-    
 });
