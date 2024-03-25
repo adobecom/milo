@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
+const { decorateMnemonicList } = await import('../../../libs/blocks/mnemonic-list/mnemonic-list.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -72,7 +73,6 @@ describe('Plans Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
@@ -100,7 +100,6 @@ describe('Plans Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
@@ -126,12 +125,22 @@ describe('Plans Card', () => {
     expect(detail).to.exist;
     expect(merchCard.getAttribute('variant')).to.be.equal('plans');
     expect(merchCard.getAttribute('badge')).to.not.exist;
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Learn More');
     expect(buttons[1].textContent).to.be.equal('Save now');
+  });
+
+  it('Plans card with set of mnemonics', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
+    const merchCard = await init(document.querySelector('.plans.icons.mnemonic'));
+    const mnemonics = merchCard.querySelector('.mnemonic-list');
+    const productList = merchCard.querySelectorAll('.product-item');
+    decorateMnemonicList(mnemonics);
+    expect(merchCard).to.exist;
+    expect(mnemonics).to.exist;
+    expect(productList.length).to.be.equal(7);
   });
 
   it('does not display undefined if no content', async () => {

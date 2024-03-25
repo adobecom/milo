@@ -3,11 +3,14 @@ import { getConfig, createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { decorateMnemonicList } from '../mnemonic-list/mnemonic-list.js';
 import '../../deps/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
 const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart'];
+
+const CARD_SIZES = ['wide', 'super-wide'];
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
@@ -49,10 +52,7 @@ const appendSlot = (slotEls, slotName, merchCard) => {
   merchCard.append(newEl);
 };
 
-const parseContent = (el, merchCard) => {
-  const innerElements = [
-    ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
-  ];
+const parseContent = async (el, merchCard) => {
   let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
 
@@ -66,7 +66,13 @@ const parseContent = (el, merchCard) => {
 
   let headingSize = 3;
   const bodySlot = createTag('div', { slot: bodySlotName });
-
+  const mnemonicList = el.querySelector('.mnemonic-list');
+  if (mnemonicList) {
+    await decorateMnemonicList(mnemonicList);
+  }
+  const innerElements = [
+    ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
+  ];
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
@@ -96,6 +102,7 @@ const parseContent = (el, merchCard) => {
       bodySlot.append(element);
       merchCard.append(bodySlot);
     }
+    if (mnemonicList) bodySlot.append(mnemonicList);
   });
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
@@ -270,6 +277,7 @@ const init = async (el) => {
   }
   const merchCard = createTag('merch-card', { class: styles.join(' '), 'data-block': '' });
   merchCard.setAttribute('variant', cardType);
+  merchCard.setAttribute('size', styles.find((style) => CARD_SIZES.includes(style)) || '');
   if (el.dataset.removedManifestId) {
     merchCard.dataset.removedManifestId = el.dataset.removedManifestId;
   }
@@ -312,10 +320,11 @@ const init = async (el) => {
     }
     footerRows = getMiniCompareChartFooterRows(el);
   }
-  const images = el.querySelectorAll('picture');
+  const allPictures = el.querySelectorAll('picture');
+  const pictures = Array.from(allPictures).filter((picture) => !picture.closest('.mnemonic-list'));
   let image;
   const icons = [];
-  images.forEach((img) => {
+  pictures.forEach((img) => {
     const imgNode = img.querySelector('img');
     const { width, height } = imgNode;
     const isSquare = Math.abs(width - height) <= 10;
@@ -402,7 +411,6 @@ const init = async (el) => {
       }
     }
   }
-
   decorateBlockHrs(merchCard);
   simplifyHrs(merchCard);
   if (merchCard.classList.contains('has-divider')) {
