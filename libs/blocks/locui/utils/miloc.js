@@ -131,7 +131,7 @@ export async function createProject() {
     }
     return resp.status;
   } catch (error) {
-    console.log(error);
+    setStatus('service', 'error', 'Error creating project', error.message);
     return error.status;
   }
 }

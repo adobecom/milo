@@ -137,8 +137,13 @@ export async function syncToLangstore() {
   if (!heading.value.projectId) {
     const status = await createProject();
     setTimeout(async () => {
-      if (status === 201) await startSync();
-      getServiceUpdates();
+      if (status === 201) {
+        await startSync();
+        getServiceUpdates();
+      } else {
+        allowSyncToLangstore.value = true;
+        allowSendForLoc.value = true;
+      }
     }, 3000);
   } else {
     await startSync();
