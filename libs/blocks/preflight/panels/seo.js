@@ -1,4 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import getServiceConfig from '../../../utils/service-config.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
@@ -13,6 +14,7 @@ const descResult = signal({ icon: DEF_ICON, title: 'Meta description', descripti
 const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC });
 const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC });
 const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC });
+const badLinks = signal([]);
 
 function checkH1s() {
   const h1s = document.querySelectorAll('h1');
@@ -133,25 +135,113 @@ async function checkLorem() {
   return result.icon;
 }
 
-async function checkLinks() {
-  const result = { ...linksResult.value };
-  const links = document.querySelectorAll('a[href^="/"]');
+function makeGroups(items, size = 20) {
+  const groups = [];
+  while (items.length) {
+    groups.push(items.splice(0, size));
+  }
+  return groups;
+}
 
-  let badLink;
-  for (const link of links) {
-    const resp = await fetch(link.href, { method: 'HEAD' });
-    if (!resp.ok) badLink = true;
+async function checkLinks() {
+  const { spidy } = await getServiceConfig(window.location.origin);
+  if (linksResult.value.checked) return;
+
+  const connectionError = () => {
+    linksResult.value = {
+      icon: fail,
+      title: 'Links',
+      description: `A VPN connection is required to use the link check service.
+      Please turn on VPN and refresh the page. If VPN is running contact your site engineers for help.`,
+    };
+  };
+
+  // Check to see if Spidy is available.
+  try {
+    const resp = await fetch(spidy.url, { method: 'HEAD' });
+    if (!resp.ok) {
+      connectionError();
+      return;
+    }
+  } catch (e) {
+    connectionError();
+    // eslint-disable-next-line no-console
+    console.error(`There was a problem connecting to the link check API ${spidy.url}. ${e}`);
+    return;
   }
 
-  if (badLink) {
+  const result = { ...linksResult.value };
+
+  /* Find all links.
+   * Remove any local or existing preflight links.
+   * Set link to use hlx.live
+   * */
+  const links = [...document.querySelectorAll('a')]
+    .filter((link) => {
+      if (!link.href.includes('local') && !link.closest('.preflight')) {
+        link.dataset.liveHref = link.href.replace('hlx.page', 'hlx.live');
+        return true;
+      }
+      return false;
+    });
+  const groups = makeGroups(links);
+
+  for (const group of groups) {
+    const urls = group.map((link) => {
+      const { liveHref } = link.dataset;
+      return liveHref;
+    });
+    const opts = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls }),
+    };
+    let resp;
+
+    try {
+      resp = await fetch(`${spidy.url}/api/url-http-status`, opts);
+      if (!resp.ok) return;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(`There was a problem connecting to the link check API ${spidy.url}/api/url-http-status. ${e}`);
+    }
+
+    const json = await resp.json();
+    if (!json) return;
+    json.data.forEach((linkResult) => {
+      const status = linkResult.status === 'ECONNREFUSED' ? 503 : linkResult.status;
+      // Response will come back out of order, use ID to find the correct index
+      group[linkResult.id].status = status;
+
+      if (status >= 399) {
+        let parent = '';
+        if (group[linkResult.id].closest('header')) parent = 'Gnav';
+        if (group[linkResult.id].closest('main')) parent = 'Main content';
+        if (group[linkResult.id].closest('footer')) parent = 'Footer';
+        badLinks.value = [...badLinks.value,
+          {
+            // Diplay .hlx.live URL in broken link list for relative links
+            href: group[linkResult.id].dataset.liveHref,
+            status: group[linkResult.id].status,
+            parent,
+          }];
+        group[linkResult.id].classList.add('broken-link');
+        group[linkResult.id].dataset.status = status;
+      }
+    });
+  }
+
+  if (badLinks.value.length) {
     result.icon = fail;
-    result.description = 'Reason: There are one or more broken links.';
-  } else {
+    result.description = `Reason: ${badLinks.value.length} broken link(s) found on the page. Use the list below to identify and fix them.`;
+  }
+
+  // No broken links
+  if (badLinks.value.length === 0) {
     result.icon = pass;
     result.description = 'Links are valid.';
   }
-  linksResult.value = result;
-  return result.icon;
+  linksResult.value = { ...result, checked: true };
 }
 
 export async function sendResults() {
@@ -220,19 +310,37 @@ async function getResults() {
 
 export default function Panel() {
   useEffect(() => { getResults(); }, []);
-
   return html`
-      <div class=seo-columns>
+    <div class=seo-columns>
       <div class=seo-column>
         <${SeoItem} icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
         <${SeoItem} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
         <${SeoItem} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
-        <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
+        <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
       </div>
       <div class=seo-column>
         <${SeoItem} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
         <${SeoItem} icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
-        <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
+        <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
       </div>
+    </div>
+    <div class='broken-links'>
+    ${badLinks.value.length > 0 && html`
+      <p class="note">Broken links can also be found on the page. Close preflight to see problem links highlighted in red.</p>
+      <table>
+        <tr>
+          <th></th>
+          <th>Broken URLs</th>
+          <th>Located in</th>
+          <th>Status</th>
+        </tr>
+        ${badLinks.value.map((link, idx) => html`
+          <tr>
+            <td>${idx + 1}.</td>
+            <td><a href='${link.href}' target='_blank'>${link.href}</a></td>
+            <td><span>${link.parent}</span></td>
+            <td><span>${link.status}</span></td>
+          </tr>`)}
+      </table>`}
     </div>`;
 }
