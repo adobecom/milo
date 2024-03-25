@@ -4,7 +4,7 @@
 
 import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
-import { loadMnemonicList } from '../mnemonic-list/mnemonic-list.js';
+import { decorateMnemonicList } from '../mnemonic-list/mnemonic-list.js';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
@@ -116,6 +116,6 @@ export default async function init(el) {
     }
   }
   if (el.classList.contains('mnemonic-list') && foreground) {
-    await loadMnemonicList(foreground);
+    await decorateMnemonicList(foreground);
   }
 }

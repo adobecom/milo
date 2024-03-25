@@ -3,7 +3,7 @@ import { getConfig, createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { loadMnemonicList } from '../mnemonic-list/mnemonic-list.js';
+import { decorateMnemonicList } from '../mnemonic-list/mnemonic-list.js';
 import '../../deps/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
@@ -68,7 +68,7 @@ const parseContent = async (el, merchCard) => {
   const bodySlot = createTag('div', { slot: bodySlotName });
   const mnemonicList = el.querySelector('.mnemonic-list');
   if (mnemonicList) {
-    await loadMnemonicList(mnemonicList);
+    await decorateMnemonicList(mnemonicList);
   }
   const innerElements = [
     ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
@@ -320,7 +320,8 @@ const init = async (el) => {
     }
     footerRows = getMiniCompareChartFooterRows(el);
   }
-  const pictures = el.querySelectorAll('p:first-child picture');
+  const allPictures = el.querySelectorAll('picture');
+  const pictures = Array.from(allPictures).filter((picture) => !picture.closest('.mnemonic-list'));
   let image;
   const icons = [];
   pictures.forEach((img) => {
