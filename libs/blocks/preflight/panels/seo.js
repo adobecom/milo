@@ -165,6 +165,7 @@ async function checkLinks() {
     }
   } catch (e) {
     connectionError();
+    // eslint-disable-next-line no-console
     console.error(`There was a problem connecting to the link check API ${spidy.url}. ${e}`);
     return;
   }
@@ -187,47 +188,50 @@ async function checkLinks() {
 
   for (const group of groups) {
     const urls = group.map((link) => {
-      const liverHref = link.dataset.liveHref;
-      return liverHref;
+      const { liveHref } = link.dataset;
+      return liveHref;
     });
     const opts = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ urls }),
     };
+    let resp;
+
     try {
-      const resp = await fetch(`${spidy.url}/api/url-http-status`, opts);
+      resp = await fetch(`${spidy.url}/api/url-http-status`, opts);
       if (!resp.ok) return;
-
-      const json = await resp.json();
-      if (!json) return;
-      json.data.forEach((linkResult) => {
-        const status = linkResult.status === 'ECONNREFUSED' ? 503 : linkResult.status;
-        // Response will come back out of order, use ID to find the correct index
-        group[linkResult.id].status = status;
-
-        if (status >= 399) {
-          let parent = '';
-          if (group[linkResult.id].closest('header')) parent = 'Gnav';
-          if (group[linkResult.id].closest('main')) parent = 'Main content';
-          if (group[linkResult.id].closest('footer')) parent = 'Footer';
-          badLinks.value = [...badLinks.value,
-            {
-              // Diplay .hlx.live URL in broken link list for relative links
-              href: group[linkResult.id].dataset.liveHref,
-              status: group[linkResult.id].status,
-              parent,
-            }];
-          group[linkResult.id].classList.add('broken-link');
-          group[linkResult.id].dataset.status = status;
-        }
-      });
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error(`There was a problem connecting to the link check API ${spidy.url}/api/url-http-status. ${e}`);
     }
+
+    const json = await resp.json();
+    if (!json) return;
+    json.data.forEach((linkResult) => {
+      const status = linkResult.status === 'ECONNREFUSED' ? 503 : linkResult.status;
+      // Response will come back out of order, use ID to find the correct index
+      group[linkResult.id].status = status;
+
+      if (status >= 399) {
+        let parent = '';
+        if (group[linkResult.id].closest('header')) parent = 'Gnav';
+        if (group[linkResult.id].closest('main')) parent = 'Main content';
+        if (group[linkResult.id].closest('footer')) parent = 'Footer';
+        badLinks.value = [...badLinks.value,
+          {
+            // Diplay .hlx.live URL in broken link list for relative links
+            href: group[linkResult.id].dataset.liveHref,
+            status: group[linkResult.id].status,
+            parent,
+          }];
+        group[linkResult.id].classList.add('broken-link');
+        group[linkResult.id].dataset.status = status;
+      }
+    });
   }
 
-  if (badLinks.value.length > 0) {
+  if (badLinks.value.length) {
     result.icon = fail;
     result.description = `Reason: ${badLinks.value.length} broken link(s) found on the page. Use the list below to identify and fix them.`;
   }
@@ -322,7 +326,7 @@ export default function Panel() {
     </div>
     <div class='broken-links'>
     ${badLinks.value.length > 0 && html`
-      <p class="note">Broken links can also be found highlighted on the page. Close preflight to see problem links highlighted in red.</p>
+      <p class="note">Broken links can also be found on the page. Close preflight to see problem links highlighted in red.</p>
       <table>
         <tr>
           <th></th>
