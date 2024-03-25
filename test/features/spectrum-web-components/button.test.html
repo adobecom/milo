@@ -21,6 +21,8 @@
       describe('Spectrum: button module', async () => {
         it('sp-button has a shadow-root', () => {
           expect(document.querySelector('sp-button').shadowRoot).to.exist;
+          expect(document.querySelector('sp-clear-button').shadowRoot).to.exist;
+          expect(document.querySelector('sp-close-button').shadowRoot).to.exist;
         });
       });
     });
@@ -33,6 +35,8 @@
   </script>
   <sp-theme theme="spectrum" color="light" scale="medium">
     <sp-button>Click me</sp-button>
+    <sp-clear-button>clear</sp-clear-button>
+    <sp-close-button>Close</sp-close-button>
   </sp-theme>
 </body>
 
