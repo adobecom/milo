@@ -128,10 +128,6 @@
   padding: 8px 0 16px;
 }
 
-.share.inline .tracking-header {
-  text-align: left;
-}
-
 .share.inline p.icon-container {
   justify-content: flex-start;
   margin: 0;

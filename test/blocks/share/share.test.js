@@ -61,6 +61,13 @@ describe('Share', () => {
     expect(re).to.exist;
     expect(tw).to.not.exist;
   });
+  it('Share w/ custom title exists', async () => {
+    const shareEl = document.querySelector('.share.title');
+    await init(shareEl);
+    const p = shareEl.querySelector('.tracking-header p');
+    console.log('P', p);
+    expect(p).to.exist;
+  });
   it('Inline variant (with inline siblings) creates an inline-wrapper element', async () => {
     const section = document.querySelector('.section.inline-has-siblings');
     const shareEls = section.querySelectorAll('.share.inline');
