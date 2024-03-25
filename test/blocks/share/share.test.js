@@ -65,7 +65,6 @@ describe('Share', () => {
     const shareEl = document.querySelector('.share.title');
     await init(shareEl);
     const p = shareEl.querySelector('.tracking-header p');
-    console.log('P', p);
     expect(p).to.exist;
   });
   it('Inline variant (with inline siblings) creates an inline-wrapper element', async () => {
