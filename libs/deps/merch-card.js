@@ -1,4 +1,4 @@
-// Fri, 22 Mar 2024 17:16:56 GMT
+// branch: MWPW-143192 commit: 8d233401e8d043cf7defdc58be1ca9ef69475bbd Tue, 26 Mar 2024 16:40:47 GMT
 import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var d="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var w=x`
     :host {
         position: relative;
@@ -92,7 +92,6 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
         justify-content: flex-end;
         box-sizing: border-box;
         width: 100%;
-        padding: var(--consonant-merch-spacing-xs);
         flex-flow: wrap;
         gap: var(--consonant-merch-spacing-xs);
     }
@@ -194,6 +193,11 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
         gap: var(--consonant-merch-spacing-xxs);
         align-items: center;
         flex: 1;
+        height: inherit;
+        padding-inline-start: var(--consonant-merch-spacing-xs);
+        padding-inline-end: var(--consonant-merch-spacing-xs);
+        padding-top: var(--consonant-merch-spacing-xs);
+        padding-bottom: var(--consonant-merch-spacing-xs);
     }
 
     .secure-transaction-label::before {
@@ -268,10 +272,6 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
     }
 
     :host([variant='mini-compare-chart']) .price {
-        padding: 0 var(--consonant-merch-spacing-s);
-    }
-
-    :host([variant='mini-compare-chart']) footer {
         padding: 0 var(--consonant-merch-spacing-s);
     }
 
@@ -388,8 +388,14 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
     /* colors */
     --consonant-merch-card-border-color: #eaeaea;
     --color-accent: #1473E6;
+    --merch-color-focus-ring: #1473E6;
     --merch-color-grey-80: #2c2c2c;
     --merch-color-green-promo: #12805C;
+
+    /* focus */
+    --merch-focused-outline: var(--merch-color-focus-ring) auto 1px;
+    --merch-hovered-shadow: 0 0 0 1px #aaa;
+    --merch-selected-shadow: 0 0 0 2px var(--color-accent);
 
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
@@ -424,13 +430,13 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
     --consonant-merch-card-mini-compare-mobile-cta-width: 75px;
 
     /* inline SVGs */
-    --checkmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 10 10'%3E%3Cpath fill='%23fff' d='M3.788 9A.999.999 0 0 1 3 8.615l-2.288-3a1 1 0 1 1 1.576-1.23l1.5 1.991 3.924-4.991a1 1 0 1 1 1.576 1.23l-4.712 6A.999.999 0 0 1 3.788 9z' class='spectrum-UIIcon--medium'/%3E%3C/svg%3E%0A");
+    --checkmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath fill='%23fff' d='M3.788 9A.999.999 0 0 1 3 8.615l-2.288-3a1 1 0 1 1 1.576-1.23l1.5 1.991 3.924-4.991a1 1 0 1 1 1.576 1.23l-4.712 6A.999.999 0 0 1 3.788 9z' class='spectrum-UIIcon--medium'/%3E%3C/svg%3E%0A");
 
     --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23757575' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
 
     --info-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><circle cx='18' cy='12' r='2.15'%3E%3C/circle%3E%3Cpath d='M20.333 24H20v-7.6a.4.4 0 0 0-.4-.4h-3.933s-1.167.032-1.167 1 1.167 1 1.167 1H16v6h-.333s-1.167.032-1.167 1 1.167 1 1.167 1h4.667s1.167-.033 1.167-1-1.168-1-1.168-1z'%3E%3C/path%3E%3Cpath d='M18 2.1A15.9 15.9 0 1 0 33.9 18 15.9 15.9 0 0 0 18 2.1zm0 29.812A13.912 13.912 0 1 1 31.913 18 13.912 13.912 0 0 1 18 31.913z'%3E%3C/path%3E%3C/svg%3E");
 
-    --ellipsis-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" data-name="Group 308011"><circle cx="2" cy="2" r="2" fill="%232c2c2c" data-name="Ellipse 70" transform="translate(6 6)"/><circle cx="2" cy="2" r="2" fill="%232c2c2c" data-name="Ellipse 71" transform="translate(12 6)"/><circle cx="2" cy="2" r="2" fill="%232c2c2c" data-name="Ellipse 72" transform="translate(0 6)"/></svg>');
+    --ellipsis-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="2" cy="2" r="2" fill="%232c2c2c" transform="translate(6 6)"/><circle cx="2" cy="2" r="2" fill="%232c2c2c" data-name="Ellipse 71" transform="translate(12 6)"/><circle cx="2" cy="2" r="2" fill="%232c2c2c" transform="translate(0 6)"/></svg>');
 
 }
 
@@ -790,8 +796,7 @@ div[slot="footer"] {
     display: inline-flex;
     align-items: center;
     flex: 1;
-    height: 45px;
-    padding: var(--consonant-merch-spacing-s) var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs);
+    padding: var(--consonant-merch-spacing-xs);
 }
 
 div[slot="footer"] a.con-button {
