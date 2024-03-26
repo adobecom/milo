@@ -111,10 +111,10 @@ const main = async ({
       fs.existsSync(scriptPath) &&
       fs.readFileSync(scriptPath, 'utf8').replace(/^\/\/ Built .*\n/, '');
 
-      const scriptHasChanged = script !== selfHostedScript;
-      console.log(`Validating if "${scriptPath}" has changed. Script change: ${scriptHasChanged}`);
-
-      if (scriptHasChanged || localExecution) {
+      const scriptIsEqual = script === selfHostedScript;
+      console.log(`Validating if "${scriptPath}" has changed. Script is equal: ${scriptIsEqual}`);
+      console.log({script, selfHostedScript})
+      if (!scriptIsEqual || localExecution) {
       const { data: openPRs } = await github.rest.pulls.list({
         owner: context.repo.owner,
         repo: context.repo.repo,
