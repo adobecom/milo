@@ -790,4 +790,8 @@ export async function applyPers(manifests) {
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+
+  if (window.milo) {
+    window.milo.mep = { experiments };
+  }
 }
