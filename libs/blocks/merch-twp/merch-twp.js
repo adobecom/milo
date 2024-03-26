@@ -55,20 +55,14 @@ export default async function init(el) {
   if (cards.length) {
     const { base } = getConfig();
     await import(`${base}/features/spectrum-web-components/dist/theme.js`);
-
     const layout = createTag('merch-subscription-layout', { }, '', { });
-
     const merchCards = [...cards].map((card) => {
       card.setAttribute('slot', 'cards');
       return card;
     });
-    layout.append(merchCards[0]);
-    const panel = createPanel();
-    layout.append(panel);
-
+    layout.append(...merchCards);
+    layout.append(createPanel());
     el.append(layout);
-    await cards[0].querySelector('[data-wcs-osi]')?.onceSettled();
-    panel.card = cards[0];
   }
   return el;
 }

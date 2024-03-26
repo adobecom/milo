@@ -1,5 +1,5 @@
-// branch: MWPW-144805-twp commit: 3f2b985bb0f93cdac2c759c36f7e58aa704f3c16 Mon, 25 Mar 2024 16:01:55 GMT
-import{LitElement as s,html as i}from"/libs/deps/lit-all.min.js";import{css as o,unsafeCSS as a}from"/libs/deps/lit-all.min.js";var e="(min-width: 768px)",n="(min-width: 1200px)";var r=o`
+// branch: MWPW-144805-twp commit: 3f2b985bb0f93cdac2c759c36f7e58aa704f3c16 Tue, 26 Mar 2024 15:57:34 GMT
+import{LitElement as m,html as h}from"/libs/deps/lit-all.min.js";import{css as p,unsafeCSS as c}from"/libs/deps/lit-all.min.js";var r="(min-width: 768px)",o="(min-width: 1200px)";var d=p`
     :host {
         background-color: #fbfbfb;
         border-radius: var(--consonant-merch-spacing-xs);
@@ -40,10 +40,10 @@ import{LitElement as s,html as i}from"/libs/deps/lit-all.min.js";import{css as o
         grid-area: panel;
     }
 
-    @media ${a(e)} {
+    @media ${c(r)} {
     }
 
-    @media ${a(n)} {
+    @media ${c(o)} {
         :host {
             padding: 0;
         }
@@ -64,7 +64,7 @@ import{LitElement as s,html as i}from"/libs/deps/lit-all.min.js";import{css as o
             grid-template-areas: 'cards panel';
         }
     }
-`;var d="merch-subscription-layout",t=class extends s{static styles=[r];render(){return i`
+`;var u="merch-subscription-layout",n=class extends m{static styles=[d];cards;panel;tabs={individual:[],business:[],students:[]};connectedCallback(){if(super.connectedCallback(),this.cards=this.querySelectorAll("merch-card"),this.panel=this.querySelector("merch-subscription-panel"),this.panel&&this.cards.length){let i=[];[...this.cards].forEach(a=>{let t=a.querySelectorAll('[is="inline-price"][data-template="price"]');t.length&&(i=[...i,...[...t].map(e=>e.onceSettled())])}),Promise.all(i).then(()=>{this.cards.forEach(t=>{let e=t.querySelector('[is="inline-price"][data-template="price"]');if(!e.value)return;let{marketSegments:s,customerSegment:l}=e.value[0];s&&(s[0]==="COM"&&l==="INDIVIDUAL"?this.tabs.individual=[...this.tabs.individual,t]:s[0]==="COM"?this.tabs.business=[...this.tabs.business,t]:s[0]==="EDU"&&(this.tabs.students=[...this.tabs.students,t]))});let a=this.cards[1];this.panel.card=this.cards[0]})}}render(){return h`
             <sp-theme theme="spectrum" color="light" scale="medium">
                 <div id="layout">
                     <div id="cards">
@@ -75,5 +75,5 @@ import{LitElement as s,html as i}from"/libs/deps/lit-all.min.js";import{css as o
                     </div>
                 </div>
             </div>
-        `}};window.customElements.define(d,t);export{t as SubscriptionLayout};
+        `}};window.customElements.define(u,n);export{n as SubscriptionLayout};
 //# sourceMappingURL=merch-subscription-layout.js.map
