@@ -25,7 +25,7 @@ function Language({ item, idx }) {
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
   const completeType = item.status === 'translated' || item.status === 'in-progress' ? 'Translated' : 'Rolled out';
-  const total = item.total && completeType === 'Rolled out' ? item.total * item.size : null;
+  const total = item.total && completeType === 'Rolled out' ? item.total : null;
   const rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
