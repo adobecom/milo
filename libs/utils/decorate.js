@@ -8,8 +8,8 @@ export function decorateButtons(el, size) {
     let buttonType = 'outline';
     if (parent.nodeName === 'EM' || parent.nodeName === 'STRONG') {
       buttonType = parent.nodeName === 'EM' ? 'outline' : 'blue';
-      if ((parent.parentElement?.nodeName === 'EM') ||
-          (parent.parentElement?.nodeName === 'STRONG')) {
+      if ((parent.parentElement?.nodeName === 'EM')
+        || (parent.parentElement?.nodeName === 'STRONG')) {
         buttonType = 'fill';
       }
     }
@@ -19,7 +19,7 @@ export function decorateButtons(el, size) {
     } else {
       button.classList.add('con-button', buttonType);
       if (size) button.classList.add(size);
-    }    
+    }
     const actionArea = button.closest('p, div');
     if (actionArea) {
       actionArea.classList.add('action-area');
@@ -29,7 +29,7 @@ export function decorateButtons(el, size) {
 
   for (const btn of buttons) {
     const parent = btn.parentElement;
-    if (parent.parentElement?.nodeName === 'EM' || parent.parentElement?.nodeName === 'STRONG') { 
+    if (parent.parentElement?.nodeName === 'EM' || parent.parentElement?.nodeName === 'STRONG') {
       const grandParentBtns = parent.parentElement.querySelectorAll('.con-button');
       parent.parentElement.replaceWith(...grandParentBtns);
     } else if (parent.nodeName === 'EM' || parent.nodeName === 'STRONG') {
