@@ -49,31 +49,32 @@ Resolves: NO TICKET - AUTOMATED CREATED PR.
 - Before: https://main--milo--adobecom.hlx.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off
 - After: https://${branch}--milo--adobecom.hlx.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off`;
 
-const fetchScript = (path) => new Promise((resolve, reject) => {
-  console.log(`Fetching script from ${path}`);
-  https
-    .get(path, (res) => {
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        return reject(new Error(`statusCode=${res.statusCode}`));
-      }
+const fetchScript = (path) =>
+  new Promise((resolve, reject) => {
+    console.log(`Fetching script from ${path}`);
+    https
+      .get(path, (res) => {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          return reject(new Error(`statusCode=${res.statusCode}`));
+        }
 
-      let data = '';
+        let data = '';
 
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-
-      res.on('end', () => {
-        resolve({
-          data,
-          headers: res.headers,
+        res.on('data', (chunk) => {
+          data += chunk;
         });
+
+        res.on('end', () => {
+          resolve({
+            data,
+            headers: res.headers,
+          });
+        });
+      })
+      .on('error', (err) => {
+        reject(err);
       });
-    })
-    .on('error', (err) => {
-      reject(err);
-    });
-});
+  });
 
 // Use this for conditional execution of commands
 const execSyncSafe = (command) => {
@@ -84,7 +85,13 @@ const execSyncSafe = (command) => {
   }
 };
 
-const createAndPushBranch = ({ script, branch, scriptPath, origin = 'origin', lastModified }) => {
+const createAndPushBranch = ({
+  script,
+  branch,
+  scriptPath,
+  origin = 'origin',
+  lastModified,
+}) => {
   // When testing locally, u likely do not want to kill your dev branch
   if (!localExecution) {
     execSync('git config --global user.name "GitHub Action"');
@@ -95,30 +102,38 @@ const createAndPushBranch = ({ script, branch, scriptPath, origin = 'origin', la
     execSync(`git checkout -b ${branch}`);
   }
   console.log('writing script to file', scriptPath);
-  fs.writeFileSync(scriptPath, `// Built ${new Date().toISOString()} - Last Modified ${lastModified}\n${script}`);
+  fs.writeFileSync(
+    scriptPath,
+    `// Built ${new Date().toISOString()} - Last Modified ${lastModified}\n${script}`
+  );
   execSync(`git add ${scriptPath}`);
   execSyncSafe('git commit -m "Update self hosted dependency"');
   execSync(`git push --force ${origin} ${branch}`);
 };
 
 const main = async ({
-  github, context, title, path, branch, scriptPath, origin,
+  github,
+  context,
+  title,
+  path,
+  branch,
+  scriptPath,
+  origin,
 }) => {
   try {
     const { data: script, headers } = await fetchScript(path);
-    const lastModified = new Date(headers["last-modified"]).toISOString()
+    const lastModified = new Date(headers['last-modified']).toISOString();
     const selfHostedScript =
-      fs.existsSync(scriptPath) &&
-      fs.readFileSync(scriptPath, 'utf8');
+      fs.existsSync(scriptPath) && fs.readFileSync(scriptPath, 'utf8');
 
-      console.log(`/libs/deps script build date: ${selfHostedScript.match(/^\/\/ Built (.*?) -/)[1]}`);
-      console.log(`/libs/deps script last modified date: ${selfHostedScript.match(/- Last Modified (.*?)\n/)[1]}`);
-      console.log(`External script last modified date: ${lastModified}`)
+    console.log(`/libs/deps script build date: ${selfHostedScript.match(/^\/\/ Built (.*?) -/)[1]}`);
+    console.log(`/libs/deps script last modified date: ${selfHostedScript.match(/- Last Modified (.*?)\n/)[1]}`);
+    console.log(`External script last modified date: ${lastModified}`);
 
-      const scriptIsEqual = script === selfHostedScript.replace(/^\/\/ Built .*\n/, '')
-      console.log(`Validating if "${scriptPath}" has changed. Script is the same: ${scriptIsEqual}`);
+    const scriptIsEqual = script === selfHostedScript.replace(/^\/\/ Built .*\n/, '');
+    console.log(`Validating if "${scriptPath}" has changed. Script is the same: ${scriptIsEqual}`);
 
-      if (!scriptIsEqual || localExecution) {
+    if (!scriptIsEqual || localExecution) {
       const { data: openPRs } = await github.rest.pulls.list({
         owner: context.repo.owner,
         repo: context.repo.repo,
@@ -150,7 +165,12 @@ const main = async ({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: pr.data.number,
-        reviewers: ['overmyheadandbody', 'mokimo', 'robert-bogos', 'narcis-radu'],
+        reviewers: [
+          'overmyheadandbody',
+          'mokimo',
+          'robert-bogos',
+          'narcis-radu',
+        ],
         assignees: ['SilviuLCF'],
       });
     }
