@@ -143,6 +143,7 @@ const main = async ({
         repo: context.repo.repo,
         pull_number: pr.data.number,
         reviewers: ['overmyheadandbody'],
+        assignees: ['overmyheadandbody'],
       });
     }
   } catch (error) {
