@@ -146,8 +146,8 @@ const main = async ({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: pr.data.number,
-        reviewers: ['overmyheadandbody'],
-        assignees: ['overmyheadandbody'],
+        reviewers: ['overmyheadandbody', 'mokimo', 'robert-bogos', 'narcis-radu'],
+        assignees: ['SilviuLCF'],
       });
     }
   } catch (error) {
