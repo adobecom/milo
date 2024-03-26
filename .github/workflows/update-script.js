@@ -142,7 +142,7 @@ const main = async ({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: pr.data.number,
-        reviewers: ['mokimo', 'overmyheadandbody', 'narcis-radu', 'robert-bogos'],
+        reviewers: ['overmyheadandbody'],
       });
     }
   } catch (error) {
