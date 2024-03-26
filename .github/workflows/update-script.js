@@ -12,30 +12,39 @@ const localRunConfigs = {
   origin: process.env.LOCAL_RUN_ORIGIN || 'origin',
 };
 
+
 const getPrDescription = ({ branch, scriptPath }) => `## Description
 Update ${scriptPath} to the latest version
+
 ## Related Issue
 Resolves: NO TICKET - AUTOMATED CREATED PR.
+
 ## Testing instructions
 1. Signing in should still function
 2. Signing out should still work
 3. Regression tests on all consumers
+
 ## Test URLs
 **Acrobat:**
 - Before: https://www.stage.adobe.com/acrobat/online/sign-pdf.html?martech=off
 - After: https://www.stage.adobe.com/acrobat/online/sign-pdf.html?martech=off&milolibs=${branch}--milo--adobecom
+
 **BACOM:**
 - Before: https://business.stage.adobe.com/fr/customer-success-stories.html?martech=off
 - After: https://business.stage.adobe.com/fr/customer-success-stories.html?martech=off&milolibs=${branch}--milo--adobecom
+
 **CC:**
 - Before: https://main--cc--adobecom.hlx.live/?martech=off
 - After: https://main--cc--adobecom.hlx.live/?martech=off&milolibs=${branch}--milo--adobecom
+
 **Homepage:**
 - Before: https://main--homepage--adobecom.hlx.page/homepage/index-loggedout?martech=off
 - After: https://main--homepage--adobecom.hlx.page/homepage/index-loggedout?martech=off&milolibs=${branch}--milo--adobecom
+
 **Blog:**
 - Before: https://main--blog--adobecom.hlx.page/?martech=off
 - After: https://main--blog--adobecom.hlx.page/?martech=off&milolibs=${branch}--milo--adobecom
+
 **Milo:**
 - Before: https://main--milo--adobecom.hlx.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off
 - After: https://${branch}--milo--adobecom.hlx.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off`;
@@ -133,7 +142,6 @@ const main = async ({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: pr.data.number,
-        team_reviewers: ['admins'],
         reviewers: ['mokimo', 'overmyheadandbody', 'narcis-radu', 'robert-bogos'],
       });
     }
