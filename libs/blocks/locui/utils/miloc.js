@@ -116,41 +116,24 @@ export async function createProject() {
   const url = await getMilocUrl();
   setStatus('service', 'info', 'Creating new project.');
   setExcelStatus('Creating new project.', '');
-  const body = `${origin}${heading.value.path}.json`;
-  const opts = { method: 'POST', body, headers: { 'Content-Type': 'text/plain' } };
-  const resp = await fetch(`${url}create-project`, opts);
-  debugger;
-  console.log(resp);
-  if (resp.status === 201) {
-    canRefresh.value = false;
-    const projectId = window.md5(body);
-    heading.value = { ...heading.value, projectId };
-    const values = [['Project ID', projectId]];
-    const itemId = getItemId();
-    await updateExcelTable({ itemId, tablename: 'settings', values });
-    await preview(`${heading.value.path}.json`);
+  try {
+    const body = `${origin}${heading.value.path}.json`;
+    const opts = { method: 'POST', body };
+    const resp = await fetch(`${url}create-project`, opts);
+    if (resp.status === 201) {
+      canRefresh.value = false;
+      const projectId = window.md5(body);
+      heading.value = { ...heading.value, projectId };
+      const values = [['Project ID', projectId]];
+      const itemId = getItemId();
+      await updateExcelTable({ itemId, tablename: 'settings', values });
+      await preview(`${heading.value.path}.json`);
+    }
+    return resp.status;
+  } catch (error) {
+    setStatus('service', 'error', 'Error creating project', error.message);
+    return error.status;
   }
-  return resp.status;
-  // try {
-  //   const body = `${origin}${heading.value.path}.json`;
-  //   const opts = { method: 'POST', body, headers: { 'Content-Type': 'text/plain' } };
-  //   const resp = await fetch(`${url}create-project`, opts);
-  //   if (resp.status === 201) {
-  //     canRefresh.value = false;
-  //     const projectId = window.md5(body);
-  //     heading.value = { ...heading.value, projectId };
-  //     const values = [['Project ID', projectId]];
-  //     const itemId = getItemId();
-  //     await updateExcelTable({ itemId, tablename: 'settings', values });
-  //     await preview(`${heading.value.path}.json`);
-  //   }
-  //   return resp.status;
-  // } catch (error) {
-  //   debugger;
-  //   console.log({ error });
-  //   setStatus('service', 'error', 'Error creating project', error.message);
-  //   return error.status;
-  // }
 }
 
 export async function getServiceUpdates() {
