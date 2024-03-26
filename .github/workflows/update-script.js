@@ -95,7 +95,7 @@ const createAndPushBranch = ({ script, branch, scriptPath, origin = 'origin', la
     execSync(`git checkout -b ${branch}`);
   }
   console.log('writing script to file', scriptPath);
-  fs.writeFileSync(scriptPath, `// Built ${new Date().toISOString()} - IMS Last Modified ${lastModified}\n${script}`);
+  fs.writeFileSync(scriptPath, `// Built ${new Date().toISOString()} - Last Modified ${lastModified}\n${script}`);
   execSync(`git add ${scriptPath}`);
   execSyncSafe('git commit -m "Update self hosted dependency"');
   execSync(`git push --force ${origin} ${branch}`);
@@ -109,11 +109,15 @@ const main = async ({
     const lastModified = new Date(headers["last-modified"]).toISOString()
     const selfHostedScript =
       fs.existsSync(scriptPath) &&
-      fs.readFileSync(scriptPath, 'utf8').replace(/^\/\/ Built .*\n/, '');
+      fs.readFileSync(scriptPath, 'utf8');
 
-      const scriptIsEqual = script === selfHostedScript;
-      console.log(`Validating if "${scriptPath}" has changed. Script is equal: ${scriptIsEqual}`);
-      console.log({script, selfHostedScript})
+      console.log(`/libs/deps script build date: ${selfHostedScript.match(/^\/\/ Built (.*?) -/)[1]}`);
+      console.log(`/libs/deps script last modified date: ${selfHostedScript.match(/- Last Modified (.*?)\n/)[1]}`);
+      console.log(`External script last modified date: ${lastModified}`)
+
+      const scriptIsEqual = script === selfHostedScript.replace(/^\/\/ Built .*\n/, '')
+      console.log(`Validating if "${scriptPath}" has changed. Script is the same: ${scriptIsEqual}`);
+
       if (!scriptIsEqual || localExecution) {
       const { data: openPRs } = await github.rest.pulls.list({
         owner: context.repo.owner,
