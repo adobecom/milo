@@ -9,6 +9,7 @@ jobs:
     steps:
     - uses: yogevbd/enforce-label-action@2.1.0
       with:
-        REQUIRED_LABELS_ANY: "verified,trivial,needs-verification"
-        REQUIRED_LABELS_ANY_DESCRIPTION: "PR must be labeled with 'trivial', 'needs-verification', or 'verified'"
-        BANNED_LABELS: "do-not-merge,duplicate,invalid,wontfix"
+        REQUIRED_LABELS_ANY: "verified,trivial,needs-verification,zero impact"
+        REQUIRED_LABELS_ANY_DESCRIPTION: "PR must be labeled with 'trivial', 'zero impact', 'needs-verification', or 'verified'"
+        BANNED_LABELS: "do not merge,duplicate,invalid,wontfix"
+        BANNED_LABELS_DESCRIPTION: "This PR has a banned label, if a PR is not ready or should not be merged, please close it and open a new one."
