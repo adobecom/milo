@@ -84,7 +84,7 @@ const execSyncSafe = (command) => {
   }
 };
 
-const createAndPushBranch = ({ script, branch, scriptPath, origin = 'origin' }) => {
+const createAndPushBranch = ({ script, branch, scriptPath, origin = 'origin', lastModified }) => {
   // When testing locally, u likely do not want to kill your dev branch
   if (!localExecution) {
     execSync('git config --global user.name "GitHub Action"');
@@ -95,7 +95,7 @@ const createAndPushBranch = ({ script, branch, scriptPath, origin = 'origin' }) 
     execSync(`git checkout -b ${branch}`);
   }
   console.log('writing script to file', scriptPath);
-  fs.writeFileSync(scriptPath, script);
+  fs.writeFileSync(scriptPath, `// Built ${new Date().toISOString()} - IMS Last Modified ${lastModified}\n${script}`);
   execSync(`git add ${scriptPath}`);
   execSyncSafe('git commit -m "Update self hosted dependency"');
   execSync(`git push --force ${origin} ${branch}`);
@@ -105,12 +105,16 @@ const main = async ({
   github, context, title, path, branch, scriptPath, origin,
 }) => {
   try {
-    const { data: script } = await fetchScript(path);
-    const selfHostedScript = fs.existsSync(scriptPath) && fs.readFileSync(scriptPath, 'utf8');
-    const scriptHasChanged = script !== selfHostedScript;
-    console.log(`Validating if "${scriptPath}" has changed. Script change: ${scriptHasChanged}`);
+    const { data: script, headers } = await fetchScript(path);
+    const lastModified = new Date(headers["last-modified"]).toISOString()
+    const selfHostedScript =
+      fs.existsSync(scriptPath) &&
+      fs.readFileSync(scriptPath, 'utf8').replace(/^\/\/ Built .*\n/, '');
 
-    if (scriptHasChanged || localExecution) {
+      const scriptHasChanged = script !== selfHostedScript;
+      console.log(`Validating if "${scriptPath}" has changed. Script change: ${scriptHasChanged}`);
+
+      if (scriptHasChanged || localExecution) {
       const { data: openPRs } = await github.rest.pulls.list({
         owner: context.repo.owner,
         repo: context.repo.repo,
@@ -120,7 +124,7 @@ const main = async ({
       const hasPR = openPRs.find((pr) => pr.head.ref === branch);
       if (hasPR) return console.log(`PR already exists for branch ${branch}. Execution stopped.`);
 
-      createAndPushBranch({ script, branch, scriptPath, origin });
+      createAndPushBranch({ script, branch, scriptPath, origin, lastModified });
 
       const pr = await github.rest.pulls.create({
         owner: context.repo.owner,
