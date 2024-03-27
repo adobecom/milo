@@ -104,6 +104,18 @@ export async function startProject({ skipSync }) {
   return resp.status;
 }
 
+export async function cancelProject() {
+  let url = await getMilocUrl();
+  setStatus('service', 'info', 'Cancelling project.');
+  const opts = { method: 'POST' };
+  url = `${url}cancel-project?project=${heading.value.projectId}`;
+  // const resp = await fetch(url, opts);
+  const resp = { url, opts, status: 201 };
+  if (resp.status === 201) setExcelStatus('Localization project cancelled.', '');
+  setStatus('service');
+  return resp.status;
+}
+
 export async function rolloutLang(languageCode, reroll = false) {
   setExcelStatus('Rolling out.', `Lang: ${languageCode} - Reroll: ${reroll ? 'yes' : 'no'}`);
   const url = await getMilocUrl();

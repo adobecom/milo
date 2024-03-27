@@ -8,6 +8,7 @@ import {
   allowSendForLoc,
   allowRollout,
   syncFragments,
+  allowCancel,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
@@ -15,7 +16,14 @@ import { createTag, decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
-import { createProject, startSync, startProject, getServiceUpdates, rolloutLang } from '../utils/miloc.js';
+import {
+  createProject,
+  startSync,
+  startProject,
+  getServiceUpdates,
+  rolloutLang,
+  cancelProject,
+} from '../utils/miloc.js';
 import { signal } from '../../../deps/htm-preact.js';
 import SyncLangStoreModal from './modal.js';
 
@@ -176,6 +184,9 @@ export async function sendForLoc() {
   // Disable sending for loc as this is in progress.
   allowSendForLoc.value = false;
 
+  // Enable cancel loc button
+  allowCancel.value = true;
+
   // If no Project ID, create project first.
   if (!heading.value.projectId) {
     const status = await createProject();
@@ -191,6 +202,9 @@ export async function sendForLoc() {
   setStatus('service');
   // Start polling for updates since this has not been kicked off.
   getServiceUpdates();
+
+  // Disable cancel loc button
+  allowCancel.value = false;
 }
 
 export function showRollout() {
@@ -201,4 +215,13 @@ export async function rolloutAll(e, reroll) {
   showRolloutOptions.value = false;
   allowRollout.value = false;
   await rolloutLang('all', reroll);
+}
+
+export async function cancelLocProject() {
+  allowSyncToLangstore.value = true;
+  allowSendForLoc.value = true;
+  allowCancel.value = false;
+  showRolloutOptions.value = false;
+  allowRollout.value = false;
+  await cancelProject();
 }

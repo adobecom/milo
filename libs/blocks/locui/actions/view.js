@@ -1,11 +1,19 @@
 import { html } from '../../../deps/htm-preact.js';
-import { urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout } from '../utils/state.js';
+import {
+  urls,
+  languages,
+  allowSyncToLangstore,
+  allowSendForLoc,
+  allowRollout,
+  allowCancel,
+} from '../utils/state.js';
 import {
   sendForLoc,
   showRolloutOptions,
   showRollout,
   rolloutAll,
   startSyncToLangstore,
+  cancelLocProject,
 } from './index.js';
 
 export default function Actions() {
@@ -62,6 +70,13 @@ export default function Actions() {
               `}
             `}
           </div>
+        `}
+        ${allowCancel.value && html`
+          <button
+            onClick=${() => cancelLocProject()}
+            class=locui-urls-heading-action>
+            Re-rollout all completed
+          </button>
         `}
       </div>
     </div>
