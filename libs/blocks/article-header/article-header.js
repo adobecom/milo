@@ -145,8 +145,11 @@ export default async function init(blockEl) {
 
   const categoryContainer = childrenEls[0];
   const categoryEl = categoryContainer.firstElementChild.firstElementChild;
-  const categoryTag = getLinkForTopic(categoryEl.textContent);
-  categoryEl.innerHTML = categoryTag;
+  const categoryText = categoryEl.textContent;
+  if (categoryText) {
+    const categoryTag = getLinkForTopic(categoryText);
+    categoryEl.innerHTML = categoryTag;
+  }
   categoryContainer.classList.add('article-category');
 
   const titleContainer = childrenEls[1];
