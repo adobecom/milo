@@ -1,0 +1,23 @@
+name: PR Reminders
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4.1.1
+
+    - name: Remind PR initiators
+      uses: actions/github-script@v7.0.1
+      with:
+        script: |
+          const main = require('./.github/workflows/pr-reminders.js')
+          main({ github, context })
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
