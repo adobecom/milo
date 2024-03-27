@@ -1,7 +1,7 @@
-import { getConfig, loadIms, loadLink, loadScript } from '../utils/utils.js';
+import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
-const TARGET_TIMEOUT_MS = 2000;
+const TARGET_TIMEOUT_MS = 3500;
 const ENTITLEMENT_TIMEOUT = 3000;
 
 const setDeep = (obj, path, value) => {
@@ -77,7 +77,9 @@ const getTargetPersonalization = async () => {
   const experimentParam = params.get('experiment');
   if (experimentParam) return getExpFromParam(experimentParam);
 
-  const timeout = parseInt(params.get('target-timeout'), 10) || TARGET_TIMEOUT_MS;
+  const timeout = parseInt(params.get('target-timeout'), 10)
+    || parseInt(getMetadata('target-timeout'), 10)
+    || TARGET_TIMEOUT_MS;
 
   let response;
   try {
