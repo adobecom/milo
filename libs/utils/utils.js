@@ -827,11 +827,13 @@ async function checkForPageMods() {
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
   const targetMd = getMetadata('target');
+  const dynamicNavMd = getMetadata('dynamic-nav');
   let persManifests = [];
   const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
   const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
   const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
+  const dynamicNavEnabled = dynamicNavMd && dynamicNavMd === 'entry' || dynamicNavMd === 'on';
 
   if (mepEnabled) {
     const { base } = getConfig();
@@ -851,6 +853,23 @@ async function checkForPageMods() {
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
     persManifests = persManifests.concat(getPromoManifests(promoMd));
+  }
+
+  if (dynamicNavEnabled) {
+    const gns = getMetadata('gnav-source');
+
+    if (dynamicNavMd === 'entry') {
+      window.sessionStorage.setItem('gnavSource', gns);
+    }
+
+    if (dynamicNavMd === 'on') {
+      const source = window.sessionStorage.getItem('gnavSource');
+      document.querySelector('meta[name="gnav-source"]').content = source;
+    }
+
+    if (!dynamicNavMd) {
+      sessionStorage.removeItem('gnavSource');
+    }
   }
 
   const { env } = getConfig();
