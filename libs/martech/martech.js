@@ -103,7 +103,7 @@ const getTargetPersonalization = async () => {
   const responseStart = performance.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = performance.now() - responseStart;
-    sendAnalytics(Math.ceil(responseTime / 250) / 4);
+    sendAnalytics(`target response time ${Math.ceil(responseTime / 250) / 4}`);
   }, { once: true });
 
   try {
