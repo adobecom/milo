@@ -119,9 +119,6 @@ export async function createProject() {
   const body = `${origin}${heading.value.path}.json`;
   const opts = { method: 'POST', body };
   const resp = await fetch(`${url}create-project`, opts);
-  if (resp.status === 200 && resp.error) {
-    setStatus('service', 'error', 'Error creating project', resp.error);
-  }
   if (resp.status === 201) {
     canRefresh.value = false;
     const projectId = window.md5(body);
@@ -130,6 +127,9 @@ export async function createProject() {
     const itemId = getItemId();
     await updateExcelTable({ itemId, tablename: 'settings', values });
     await preview(`${heading.value.path}.json`);
+  } else if (resp.status === 500) {
+    const json = await resp.json();
+    setStatus('service', 'error', 'Creating project', json.error);
   }
   return resp.status;
 }
