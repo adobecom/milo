@@ -136,6 +136,7 @@ export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
+
 function getEnv(conf) {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
