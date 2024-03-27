@@ -71,6 +71,23 @@ const handleAlloyResponse = (response) => {
     .filter(Boolean);
 };
 
+function sendAnalytics(val) {
+  window.alloy('sendEvent', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
+        },
+      },
+    },
+    data: { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
 const getTargetPersonalization = async () => {
   const params = new URL(window.location.href).searchParams;
 
@@ -83,20 +100,20 @@ const getTargetPersonalization = async () => {
 
   let response;
 
-  try {
-    response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log(e);
-
-    // TODO: Timeout happened, update analytics here
-  }
-
   const responseStart = performance.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = performance.now() - responseStart;
-    // TODO: update analytics here
-  });
+    sendAnalytics(Math.ceil(responseTime / 250) / 4);
+  }, { once: true });
+
+  try {
+    response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
+    sendAnalytics('target timed out false');
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+    sendAnalytics('target timed out true');
+  }
 
   let manifests = [];
   if (response) {
