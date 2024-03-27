@@ -93,7 +93,7 @@
   margin: 12px;
 }
 
-.locale-modal{
+.locale-modal {
   text-align: center;
   padding: 48px 32px 30px;
 }
@@ -203,6 +203,17 @@
   .dialog-modal.commerce-frame > .section,
   .dialog-modal.commerce-frame > .fragment > .section {
     height: 100vh;
+  }
+
+  .dialog-modal.xl-size,
+  .dialog-modal.xl-size > .fragment,
+  .dialog-modal.xl-size > .fragment > .section {
+    height: 100%;
+  }
+
+  .dialog-modal.xl-size .milo-iframe {
+    height: 100%;
+    padding-bottom: 0;
   }
 }
 
