@@ -57,8 +57,11 @@ export default async function decorate(block) {
   const rows = block.querySelectorAll(':scope > div');
   const childDiv = rows[0].querySelector(':scope > div');
   const emptyRow = childDiv?.innerText.trim() === '';
-  /* eslint-disable  no-confusing-arrow,no-useless-escape */
-  const toSentenceCase = (str) => str && typeof str === 'string' ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
+  const toSentenceCase = (str) => {
+    if (!str || typeof str !== 'string') return '';
+    /* eslint-disable-next-line no-useless-escape */
+    return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
+  };
 
   if (block.classList.contains('inline')) {
     rows[0].innerHTML = '';
