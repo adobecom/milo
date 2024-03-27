@@ -1,14 +1,12 @@
 import { createTag } from '../../../utils/utils.js';
-  
+
 function isColor(str) {
   const hexRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
   const rgbRegex = /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/;
-  if (hexRegex.test(str) || rgbRegex.test(str)) {
-    return true;
-  } 
-  return false;
+  return hexRegex.test(str) || rgbRegex.test(str);
 }
-function isGradient(str) {  
+
+function isGradient(str) {
   return str.startsWith('linear-gradient');
 }
 function isColorOrGradient(str) {
@@ -21,35 +19,34 @@ function getColWidth(text, colWidths) {
 }
 function createRow() {
   return [createTag('div', { class: 'row' }),
-  createTag('div', { class: 'left' }),
-  createTag('div', { class: 'right' })
+    createTag('div', { class: 'left' }),
+    createTag('div', { class: 'right' }),
   ];
 }
 function createBars(index) {
-  return index === 0 ?
-    [createTag('div', { class: 'bar' })] :
-    [createTag('div', { class: 'bar' }), createTag('div', { class: 'bar' })];
+  return index === 0
+    ? [createTag('div', { class: 'bar' })] : [createTag('div', { class: 'bar' }), createTag('div', { class: 'bar' })];
 }
 function addBarRow() {
   const [barRow, left, right] = createRow();
-  const sides= [left, right];
+  const sides = [left, right];
   sides.forEach((text, index) => {
-      sides[index].append(...createBars(index));
-      barRow.append(sides[index]);
+    sides[index].append(...createBars(index));
+    barRow.append(sides[index]);
   });
   return barRow;
 }
 function addBottomRow(periodText) {
   const [periodRow, left, right] = createRow();
-  const sides= [left, right];
+  const sides = [left, right];
   periodText.forEach((text, index) => {
-      sides[index].append(createTag('p', { class: 'period body-s' }, text));
-      periodRow.append(sides[index]);
+    sides[index].append(createTag('p', { class: 'period body-s' }, text));
+    periodRow.append(sides[index]);
   });
   return periodRow;
 }
 
-function setBG(el,color) {
+function setBG(el, color) {
   el.style.background = color;
 }
 
@@ -60,7 +57,7 @@ function setColors(colors, fragment) {
     if (barEls.length === 3 || periodEls.length === 2) {
       const leftColor = colors[0];
       const rightColor = colors[1];
-      let firstBar, secondBar, thirdBar;
+      let firstBar; let secondBar; let thirdBar;
       if (isGradient(leftColor)) {
         leftColor.split(' ').forEach((color) => {
           if (isColor(color) && !firstBar) {
@@ -70,7 +67,7 @@ function setColors(colors, fragment) {
             secondBar = color;
             setBG(barEls[1], secondBar);
           }
-        })
+        });
       } else {
         setBG(barEls[0], leftColor);
         setBG(barEls[1], leftColor);
@@ -81,7 +78,7 @@ function setColors(colors, fragment) {
             thirdBar = color;
             setBG(barEls[2], thirdBar);
           }
-        })
+        });
       } else {
         setBG(barEls[2], rightColor);
       }
@@ -90,47 +87,49 @@ function setColors(colors, fragment) {
     }
   }
 }
+
 function colWidthsNotValid(colWidths) {
-  return (colWidths.length !== 2 || colWidths.some((value) => isNaN(value)));
+  return (colWidths.length !== 2 || colWidths.some((value) => Number.isNaN(value)));
 }
-function updateColWidths(colWidths, fragment) {
+function updateColWidths(colWidths, fragment, el) {
   if (colWidthsNotValid(colWidths)) return;
   const total = Number(colWidths[0]) + Number(colWidths[1]);
-  const left = Math.floor((Number(colWidths[0]) / total)* 10000)/100;
-  const right = Math.floor((Number(colWidths[1]) / total)* 10000)/100;
-  let colString = left <= right ? `minmax(106px, ${String(left)}%) 1fr` : `1fr minmax(${String(right)}%, 150px)`;
-  fragment.querySelectorAll('.row').forEach((row) => row.style.gridTemplateColumns = colString); 
+  const right = Math.floor((Number(colWidths[1]) / total) * 10000) / 100;
+  const colString = el.classList.contains('reversed') ? `minmax(150px, ${String(right)}%) 1fr` : `1fr minmax(${String(right)}%, 150px)`;
+  fragment.querySelectorAll('.row').forEach((row) => {
+    row.style.gridTemplateColumns = colString;
+  });
 }
 export default function init(el) {
   const fragment = document.createDocumentFragment();
   const [textRow, left, right] = createRow();
   const rows = el.querySelectorAll(':scope > div > div');
-  const colors = [], periodText = [], colWidths = [];
+  const colors = []; const periodText = []; const colWidths = [];
   rows.forEach((row, index) => {
-    const  side = index === 0 ? left : right;
+    const side = index === 0 ? left : right;
     const color = row.firstElementChild?.textContent?.trim();
     const p = row.querySelector(':scope > p:last-child');
     if (p) {
-      const [text, period] = p.textContent?.trim().split('|');
+      const [text, period] = p.textContent.trim().split('|');
       if (period) {
-        periodText.push(period);
+        periodText.push(period.trim());
         getColWidth(period, colWidths);
       }
-      p.textContent = text.trim();
+      if (text) {
+        p.textContent = text.trim();
+      }
     }
-    
+
     if (isColorOrGradient(color)) {
       colors.push(color);
       row.firstElementChild.remove();
     }
-    row.removeAttribute('data-valign');
     row.parentElement.remove();
     side.append(row);
   });
-  
-  textRow.append(left,right);
+  textRow.append(left, right);
   [textRow, addBarRow(), addBottomRow(periodText)].forEach((row) => fragment.append(row));
-  updateColWidths(colWidths ,fragment);
+  updateColWidths(colWidths, fragment, el);
   setColors(colors, fragment);
   el.append(fragment);
 }
