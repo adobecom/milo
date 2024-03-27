@@ -82,12 +82,21 @@ const getTargetPersonalization = async () => {
     || TARGET_TIMEOUT_MS;
 
   let response;
+
   try {
     response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.log(e);
+
+    // TODO: Timeout happened, update analytics here
   }
+
+  const responseStart = performance.now();
+  window.addEventListener(ALLOY_SEND_EVENT, () => {
+    const responseTime = performance.now() - responseStart;
+    // TODO: update analytics here
+  });
 
   let manifests = [];
   if (response) {
