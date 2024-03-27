@@ -1,4 +1,4 @@
-// Run from the root of the project for local testing: node --env-file=.env .github/workflows/ready-for-stage-reminder.js
+// Run from the root of the project for local testing: node --env-file=.env .github/workflows/pr-reminders.js
 
 const main = async ({ github, context }) => {
   const comment = async ({ pr, message, comments }) => {
@@ -10,7 +10,7 @@ const main = async ({ github, context }) => {
     }
     process.env.LOCAL_RUN
       ? console.log(
-          `Local execution SKIPPED: Commenting on #${pr.number}... ${message}`
+          `PR #${pr.number} Local execution commenting SKIPPED message: ${message}`
         )
       : await github.rest.issues
           .createComment({
@@ -19,6 +19,7 @@ const main = async ({ github, context }) => {
             issue_number: pr.number,
             body: message,
           })
+          .then(() => console.log(`PR #${pr.number} Commented: ${message}`))
           .catch(console.error);
   };
 
