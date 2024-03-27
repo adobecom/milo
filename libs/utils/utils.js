@@ -866,10 +866,10 @@ async function checkForPageMods() {
       const source = window.sessionStorage.getItem('gnavSource');
       document.querySelector('meta[name="gnav-source"]').content = source;
     }
-
-    if (!dynamicNavMd) {
-      sessionStorage.removeItem('gnavSource');
-    }
+  }
+  
+  if (!dynamicNavEnabled) {
+    sessionStorage.removeItem('gnavSource');
   }
 
   const { env } = getConfig();
