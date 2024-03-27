@@ -116,24 +116,22 @@ export async function createProject() {
   const url = await getMilocUrl();
   setStatus('service', 'info', 'Creating new project.');
   setExcelStatus('Creating new project.', '');
-  try {
-    const body = `${origin}${heading.value.path}.json`;
-    const opts = { method: 'POST', body };
-    const resp = await fetch(`${url}create-project`, opts);
-    if (resp.status === 201) {
-      canRefresh.value = false;
-      const projectId = window.md5(body);
-      heading.value = { ...heading.value, projectId };
-      const values = [['Project ID', projectId]];
-      const itemId = getItemId();
-      await updateExcelTable({ itemId, tablename: 'settings', values });
-      await preview(`${heading.value.path}.json`);
-    }
-    return resp.status;
-  } catch (error) {
-    setStatus('service', 'error', 'Error creating project', error.message);
-    return error.status;
+  const body = `${origin}${heading.value.path}.json`;
+  const opts = { method: 'POST', body };
+  const resp = await fetch(`${url}create-project`, opts);
+  if (resp.status === 200 && resp.error) {
+    setStatus('service', 'error', 'Error creating project', resp.error);
   }
+  if (resp.status === 201) {
+    canRefresh.value = false;
+    const projectId = window.md5(body);
+    heading.value = { ...heading.value, projectId };
+    const values = [['Project ID', projectId]];
+    const itemId = getItemId();
+    await updateExcelTable({ itemId, tablename: 'settings', values });
+    await preview(`${heading.value.path}.json`);
+  }
+  return resp.status;
 }
 
 export async function getServiceUpdates() {
