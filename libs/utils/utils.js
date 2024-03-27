@@ -793,7 +793,13 @@ export async function loadIms() {
       },
       onError: reject,
     };
-    loadScript(`${base}/deps/imslib.min.js`);
+    const params = new URLSearchParams(window.location.search);
+    const useLHControlGroup = params.get('useAlternateImsDomain');
+    if (useLHControlGroup) {
+      loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+    } else {
+      loadScript(`${base}/deps/imslib.min.js`);
+    }
   }).then(() => {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
