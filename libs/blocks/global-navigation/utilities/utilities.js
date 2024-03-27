@@ -1,4 +1,6 @@
-import { getConfig, getMetadata, loadStyle, loadLana, decorateLinks } from '../../../utils/utils.js';
+import {
+  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
+} from '../../../utils/utils.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
@@ -314,7 +316,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => {
-      link.href = getFederatedUrl(link.href);
+      link.href = getFederatedUrl(localizeLink(link.href));
       return loadInlineFrags(link);
     });
     await Promise.all(fragPromises);
