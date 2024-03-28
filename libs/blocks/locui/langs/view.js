@@ -24,8 +24,7 @@ function Badge({ status }) {
 function Language({ item, idx }) {
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
-  const completeType = item.status === 'translated' || item.status === 'in-progress' ? 'Translated' : 'Rolled out';
-  const total = item.total && completeType === 'Rolled out' ? item.total : null;
+  const completeLabel = item.Action === 'Translate' ? 'Translated' : 'Rolled out';
   const rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
@@ -41,12 +40,12 @@ function Language({ item, idx }) {
         </div>
         ${item.done > 0 && html`
         <div>
-          <p class=locui-project-label>${completeType}</p>
+          <p class=locui-project-label>${completeLabel}</p>
           <div class=locui-project-name-totals>
             <h3 class=locui-subproject-name>${item.done}</h3>
-            ${total > 0 && html`
+            ${item.total > 0 && html`
               <h4 class=locui-subproject-of>of</h4>
-              <h4 class=locui-subproject-name>${total}</h3>
+              <h4 class=locui-subproject-name>${item.total}</h3>
             `}
           </div>
         </div>
