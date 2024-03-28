@@ -191,9 +191,30 @@
   display: none;
 }
 
+/* Text Alignment */
+.section[class*="-up"] .text-block,
+.section[class*="-up"] .text-block .foreground {
+  display: flex;
+  align-self: stretch;
+}
+
+.section[class*="-up"] .text-block .foreground > div {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+
+.section[class*="-up"] .text-block [class^="heading"],
+.section[class*="-up"] .text-block p,
+.section[class*="-up"] .text-block [class^="body-"] {
+  margin-bottom: 0;
+}
+
+.section[class*="-up"] .text-block .action-area {
+  align-self: end;
+}
+
 /* Tablet up */
 @media screen and (min-width: 600px) {
-
   .inset.text-block .foreground::before {
     display: none;
   }

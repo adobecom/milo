@@ -254,6 +254,34 @@ div[class*="-up"] .media .foreground > .media-row {
   height: var(--icon-size-xxl);
 }
 
+/* Text Alignment */
+.section[class*="-up"] .media,
+.section[class*="-up"] .media .foreground {
+  display: flex;
+  align-self: stretch;
+}
+
+.section[class*="-up"] .media .foreground > div.media-row {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.section[class*="-up"] .media .foreground .text {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-self: stretch;
+}
+
+.section[class*="-up"] .media [class^="heading"],
+.section[class*="-up"] .media p,
+.section[class*="-up"] .media [class^="body-"] {
+  margin-bottom: 0;
+}
+
+.section[class*="-up"] .media .action-area {
+  align-self: end;
+}
+
 @media screen and (min-width: 600px) {
   .media > .foreground .media-row {
     gap: var(--spacing-m);
@@ -317,6 +345,10 @@ div[class*="-up"] .media .foreground > .media-row {
   
   .media .icon-stack-area {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section[class*="-up"] .media .foreground > div.media-row {
+    gap: 0;
   }
 }
 
