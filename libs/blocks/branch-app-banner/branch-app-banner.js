@@ -1,8 +1,9 @@
-// import branchInit from "../../deps/branch-io.js";
+/* eslint-disable */ 
+import { getConfig } from '../../utils/utils.js';
 
 async function getKey(product) {
-  //const resp = await fetch(`${config.contentRoot ?? ''}/branch-io-key-mapping.json`);
-  const resp = await fetch('/drafts/ruchika/branch-io/branch-io-key-mapping.json');
+  const config = getConfig();
+  const resp = await fetch(`${config.contentRoot ?? ''}/branch-io-key-mapping.json`);
   if (resp.ok) {
     const json = await resp.json();
     const keyMatch = json.data.filter(
@@ -50,8 +51,7 @@ function branchInit(header, key) {
       !!window.adobePrivacy && window.adobePrivacy.hasUserProvidedConsent();
     branch.init(key, {
       tracking_disabled: !privacyConsent,
-    });
-    // branch.init("key_test_eaNdoH8nTxeZXfOsgkELrjgpFrhm4q2m", { 'tracking_disabled' : !privacyConsent });
+    });   
     branch.addListener('didShowJourney', function (event) {
       header.style.position = 'relative';
     });
@@ -66,10 +66,9 @@ function branchInit(header, key) {
       });
 }
 
-
 export default async function init(el) {
   const header = document.querySelector('.global-navigation');
-  let row = el.querySelector(':scope > div');
+  const row = el.querySelector(':scope > div');
   const product = row.textContent.trim();
   row.innerHTML = '';
   const key = await getKey(product);

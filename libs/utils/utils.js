@@ -13,6 +13,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'branch-app-banner',
   'brick',
   'bulk-publish',
   'bulk-publish-v2',
