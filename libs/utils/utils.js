@@ -860,7 +860,7 @@ async function checkForPageMods() {
   let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
   if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
-    previewOn = true;
+    previewOn = !offFlag('mepButton');
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
