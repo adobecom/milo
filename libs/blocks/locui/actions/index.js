@@ -145,8 +145,13 @@ export async function syncToLangstore() {
   if (!heading.value.projectId) {
     const status = await createProject();
     setTimeout(async () => {
-      if (status === 201) await startSync();
-      getServiceUpdates();
+      if (status === 201) {
+        await startSync();
+        getServiceUpdates();
+      } else {
+        allowSyncToLangstore.value = true;
+        allowSendForLoc.value = true;
+      }
     }, 3000);
   } else {
     await startSync();
@@ -190,12 +195,14 @@ export async function sendForLoc() {
   // If no Project ID, create project first.
   if (!heading.value.projectId) {
     const status = await createProject();
-    if (status !== 201) {
-      setStatus('service', 'error', 'Error creating new project.');
+    if (status === 201) {
+      // Give the service time to digest and error check creating a project
+      setStatus('service', 'info', 'Starting project.');
+    } else {
+      allowSyncToLangstore.value = true;
+      allowSendForLoc.value = true;
       return;
     }
-    setStatus('service', 'info', 'Starting project.');
-    // Give the service time to digest and error check creating a project
   }
 
   await startProject({ skipSync: true });
