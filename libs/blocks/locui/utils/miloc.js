@@ -127,6 +127,9 @@ export async function createProject() {
     const itemId = getItemId();
     await updateExcelTable({ itemId, tablename: 'settings', values });
     await preview(`${heading.value.path}.json`);
+  } else if (resp.status === 500) {
+    const json = await resp.json();
+    setStatus('service', 'error', 'Creating project', json.error);
   }
   return resp.status;
 }
