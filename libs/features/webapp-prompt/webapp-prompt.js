@@ -1,20 +1,20 @@
-import { getUserProfile, toFragment } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getConfig } from '../../utils/utils.js'; // TODO: doesn't make sense outside of Milo
+import {
+  getFedsPlaceholderConfig,
+  getUserProfile,
+  icons,
+  toFragment,
+} from '../../blocks/global-navigation/utilities/utilities.js';
+import { getConfig } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
 
 const CONFIG = {
   selectors: { prompt: '.appPrompt' },
   delay: 7000,
   loaderColor: '#EB1000',
-  // TODO: depending on microbundle investigations,
-  // import this from global-navigation or its utilities
-  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1" title="Adobe, Inc."><defs><style>.cls-1 {fill: #eb1000;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
 };
 
 const getElemText = (elem) => elem?.textContent?.trim().toLowerCase();
 
-// Note: this might be used outside of Milo,
-// thus trying to reduce imported modules that would cause an overhead
 const getMetadata = (el) => [...el.childNodes].reduce((acc, row) => {
   if (row.children?.length === 2) {
     const key = getElemText(row.children[0]);
@@ -25,9 +25,11 @@ const getMetadata = (el) => [...el.childNodes].reduce((acc, row) => {
 }, {});
 
 class AppPrompt {
-  constructor({ promptPath, entName } = {}) {
+  constructor({ promptPath, entName, parent, getAnchorState } = {}) {
     this.promptPath = promptPath;
     this.entName = entName;
+    this.parent = parent;
+    this.getAnchorState = getAnchorState;
     this.id = this.promptPath.split('/').pop();
     this.elements = {};
 
@@ -35,7 +37,7 @@ class AppPrompt {
   }
 
   init = async () => {
-    if (this.isDismissedPrompt()) return;
+    if (this.isDismissedPrompt() || !this.parent) return;
 
     const entMatch = await this.doesEntitlementMatch();
     if (!entMatch) return;
@@ -44,15 +46,20 @@ class AppPrompt {
     if (!content) return;
 
     await this.getData(content);
-    // TODO: we might need to set this at the page level through metadata
-    // so that the same prompt can lead to different apps
     if (!this.options['redirect-url'] || !this.options['product-name']) return;
 
+    ({ id: this.anchorId, isOpen: this.isAnchorExpanded } = await this.getAnchorState()
+      .catch(() => ({})));
+    if (this.isAnchorExpanded) return;
+
+    if (this.anchorId) this.anchor = document.querySelector(`#${this.anchorId}`);
+    this.offset = this.anchor
+      ? this.parent.offsetWidth - (this.anchor.offsetWidth + this.anchor.offsetLeft) : 0;
     this.template = this.decorate();
 
     this.addEventListeners();
 
-    document.body.appendChild(this.template);
+    this.parent.prepend(this.template);
     this.elements.closeIcon.focus();
 
     this.redirectFn = this.initRedirect();
@@ -73,30 +80,30 @@ class AppPrompt {
     if (!res.ok) return '';
 
     const text = await res.text();
-    // TODO: fetch placeholders from the federal project
-    const content = await replaceText(text, getConfig());
+    const content = await replaceText(text, getFedsPlaceholderConfig());
     const html = new DOMParser().parseFromString(content, 'text/html');
 
     return html;
   };
 
   getData = async (content) => {
-    // TODO: should we have a default app image?
     const image = content.querySelector('picture');
-    this.image = image || CONFIG.icon;
+    this.image = image || icons.company;
 
-    const title = content.querySelector('h2');
-    // TODO: add placeholder to sheet and document that consumers will need to add it too
-    this.title = title?.innerText || await replaceKey('pep-prompt-title', getConfig());
+    const selectors = {
+      title: 'h2',
+      subtitle: 'h3',
+      cancel: 'em > a',
+    };
 
-    const subtitle = content.querySelector('h3');
-    // TODO: add placeholder to sheet and document that consumers will need to add it too
-    this.subtitle = subtitle?.innerText || await replaceKey('pep-prompt-subtitle', getConfig());
-
-    // TODO: we might need to also define a primary-like CTA
-    const cancelText = content.querySelector('em > a');
-    // TODO: add placeholder to sheet and document that consumers will need to add it too
-    this.cancelText = cancelText?.innerText || await replaceKey('pep-prompt-cancel', getConfig());
+    await Promise.all(Object.keys(selectors).map(async (key) => {
+      const element = content.querySelector(selectors[key]);
+      if (element?.innerText) this[key] = element.innerText;
+      else {
+        const label = await replaceKey(`pep-prompt-${key}`, getFedsPlaceholderConfig());
+        this[key] = label === `pep prompt ${key}` ? '' : label;
+      }
+    }));
 
     await getUserProfile()
       .then((data) => {
@@ -113,10 +120,9 @@ class AppPrompt {
     this.options = metadata;
   };
 
-  // TODO: should we allow for app icon to be set as SVG?
   decorate = () => {
     this.elements.closeIcon = toFragment`<button daa-ll="Close Modal" class="appPrompt-close"></button>`;
-    this.elements.cta = toFragment`<button daa-ll="Stay on this page" class="appPrompt-cta appPrompt-cta--close">${this.cancelText}</button>`;
+    this.elements.cta = toFragment`<button daa-ll="Stay on this page" class="appPrompt-cta appPrompt-cta--close">${this.cancel}</button>`;
     this.elements.profile = this.profile
       ? toFragment`<div class="appPrompt-profile">
         <div class="appPrompt-avatar">
@@ -129,7 +135,9 @@ class AppPrompt {
       </div>`
       : '';
 
-    return toFragment`<div daa-state="true" daa-im="true" daa-lh="PEP Modal_${this.options['product-name']}" class="appPrompt">
+    return toFragment`<div
+      daa-state="true" daa-im="true" daa-lh="PEP Modal_${this.options['product-name']}"
+      class="appPrompt" style="margin: 0 ${this.offset}px">
       ${this.elements.closeIcon}
       <div class="appPrompt-icon">
         ${this.image}
@@ -147,11 +155,7 @@ class AppPrompt {
   };
 
   addEventListeners = () => {
-    // TODO: not clear if this is still needed
-    // document.addEventListener('click', (e) => {
-    //   if (!e.target.closest(CONFIG.selectors.prompt)) AppPrompt.close();
-    // });
-
+    this.anchor?.addEventListener('click', this.close);
     document.addEventListener('keydown', this.handleKeyDown);
 
     [this.elements.closeIcon, this.elements.cta]
@@ -182,6 +186,8 @@ class AppPrompt {
     clearTimeout(this.redirectFn);
     this.setDismissedPrompt();
     document.removeEventListener('keydown', this.handleKeyDown);
+    this.anchor?.focus();
+    this.anchor?.removeEventListener('click', this.close);
   };
 
   static getDismissedPrompts = () => {
