@@ -1,5 +1,9 @@
+*.json
+!*/**/*.json
 .*
 *.md
-LICENSE
 test/*
 build/*
+LICENSE
+web-test-runner.config.mjs
+codecov.yaml
