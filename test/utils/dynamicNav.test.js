@@ -1,11 +1,10 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, loadArea } from '../../libs/utils/utils.js';
+import { loadArea } from '../../libs/utils/utils.js';
 
 describe('Dynamic nav', () => {
   beforeEach(() => {
     window.sessionStorage.setItem('gnavSource', 'some-source-string');
-    setConfig({ locale: { contentRoot: '/root' } });
   });
 
   it('Does not set the gnav source in storage if the meta tag is not present', async () => {
