@@ -16,6 +16,7 @@ import {
   getExperienceName,
   getFedsPlaceholderConfig,
   hasActiveLink,
+  icons,
   isDesktop,
   isTangentToViewport,
   lanaLog,
@@ -36,11 +37,8 @@ import {
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
-const CONFIG = {
-  icons: {
-    company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1"><defs><style>.cls-1 {fill: #eb1000;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
-    search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
-  },
+export const CONFIG = {
+  icons,
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
@@ -262,29 +260,6 @@ const convertToPascalCase = (str) => str
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
 
-// TODO: position the prompt relative to the App Switcher
-const loadAppPrompt = async () => {
-  const state = getMetadata('app-prompt')?.toLowerCase();
-  const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
-  const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
-  const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
-  if (state === 'off'
-    || !window.adobeIMS?.isSignedInUser()
-    || !desktopViewport
-    || !entName?.length
-    || !promptPath?.length) return;
-
-  const { base } = getConfig();
-  const [
-    webappPrompt,
-  ] = await Promise.all([
-    import('../../features/webapp-prompt/webapp-prompt.js'),
-    loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
-  ]);
-
-  webappPrompt.default({ promptPath, entName });
-};
-
 class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
@@ -455,9 +430,7 @@ class Gnav {
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
 
-    const tasks = this.useUniversalNav
-      ? [this.decorateUniversalNav, loadAppPrompt]
-      : [this.decorateProfile];
+    const tasks = [this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile];
 
     try {
       for await (const task of tasks) {
@@ -536,8 +509,8 @@ class Gnav {
     };
 
     await Promise.all([
-      loadScript(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.js`),
-      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.css`),
+      loadScript(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.js`),
+      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.css`),
     ]);
 
     const getChildren = () => {
@@ -621,6 +594,9 @@ class Gnav {
       locale,
       imsClientId: window.adobeid?.client_id,
       theme: 'light',
+      onReady: () => {
+        this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
+      },
       analyticsContext: {
         consumer: {
           name: 'adobecom',
@@ -640,6 +616,27 @@ class Gnav {
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
     });
+  };
+
+  decorateAppPrompt = async ({ getAnchorState } = {}) => {
+    const state = getMetadata('app-prompt')?.toLowerCase();
+    const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+    const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    if (state === 'off'
+      || !window.adobeIMS?.isSignedInUser()
+      || !isDesktop.matches
+      || !entName?.length
+      || !promptPath?.length) return;
+
+    const { base } = getConfig();
+    const [
+      webappPrompt,
+    ] = await Promise.all([
+      import('../../features/webapp-prompt/webapp-prompt.js'),
+      loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
+    ]);
+
+    webappPrompt.default({ promptPath, entName, parent: this.blocks.universalNav, getAnchorState });
   };
 
   loadSearch = () => {
