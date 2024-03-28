@@ -22,11 +22,11 @@ function getTable(strings) {
 
 async function checkMartechMeta() {
   const specializedElements = '.tracking-header, .click-link, .con-button';
-  const standardElements = 'h1, h2, h3, h4, h5, h6, a';
-  const strings = [...document.querySelectorAll(`main :is(${standardElements}, ${specializedElements})`)]
-    .filter((el) => !el.closest('[class*="metadata"]') && !el.innerText.startsWith('http'))
+  const allElements = `main :is(h1, h2, h3, h4, h5, h6, a, ${specializedElements})`;
+  const strings = [...document.querySelectorAll(allElements)]
+    .filter((el) => !el.closest('[class*="metadata"]') && !el.innerText.startsWith('http')
+      && !el.querySelector(specializedElements))
     .reduce((acc, curr) => {
-      if (curr.querySelector(specializedElements)) return false;
       const str = curr.innerText.trim();
       if (str) acc.push(str);
       return acc;
