@@ -858,13 +858,23 @@ async function checkForPageMods() {
   if (dynamicNavEnabled) {
     const gns = getMetadata('gnav-source');
 
-    if (dynamicNavMd === 'entry') {
+    if (dynamicNavMd === 'entry' && gns) {
       window.sessionStorage.setItem('gnavSource', gns);
     }
 
     if (dynamicNavMd === 'on') {
       const source = window.sessionStorage.getItem('gnavSource');
-      document.querySelector('meta[name="gnav-source"]').content = source;
+
+      if (source && gns) {
+        document.querySelector('meta[name="gnav-source"]').content = source;
+      }
+
+      if (source && !gns) {
+        const gnMeta = document.createElement('meta');
+        gnMeta.setAttribute('name', 'gnav-source');
+        gnMeta.setAttribute('content', source);
+        document.head.append(gnMeta);
+      }
     }
   } else {
     sessionStorage.removeItem('gnavSource');
