@@ -71,7 +71,15 @@ const handleAlloyResponse = (response) => {
     .filter(Boolean);
 };
 
-function sendAnalytics(val) {
+function calculateResponseTime(responseStart) {
+  const responseTime = performance.now() - responseStart;
+  return Math.ceil(responseTime / 250) / 4;
+}
+
+function sendTargetResponseAnalytics(failure, responseStart) {
+  // temporary solution until we can decide on a better timeout value
+  const responseTime = calculateResponseTime(responseStart);
+  const val = `target response time ${responseTime}:timed out ${failure}`;
   window.alloy('sendEvent', {
     documentUnloading: true,
     xdm: {
@@ -102,17 +110,17 @@ const getTargetPersonalization = async () => {
 
   const responseStart = performance.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
-    const responseTime = performance.now() - responseStart;
-    sendAnalytics(`target response time ${Math.ceil(responseTime / 250) / 4}`);
+    const responseTime = calculateResponseTime(responseStart);
+    window.lana.log('target response time', responseTime);
   }, { once: true });
 
   try {
     response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
-    sendAnalytics('target timed out false');
+    sendTargetResponseAnalytics(true, responseStart);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.log(e);
-    sendAnalytics('target timed out true');
+    sendTargetResponseAnalytics(false, responseStart);
   }
 
   let manifests = [];
