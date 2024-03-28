@@ -7,7 +7,17 @@ import '../../deps/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
-const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart'];
+const CARD_TYPES = [
+  'segment',
+  'special-offers',
+  'plans',
+  'catalog',
+  'product',
+  'inline-heading',
+  'image',
+  'mini-compare-chart',
+  'twp',
+];
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
@@ -34,21 +44,46 @@ const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style
 const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
-const appendSlot = (slotEls, slotName, merchCard) => {
+const appendSlot = (slotEls, slotName, merchCard, nodeName = 'p') => {
   if (slotEls.length === 0) return;
   const newEl = createTag(
-    'p',
+    nodeName,
     { slot: slotName, class: slotName },
   );
-  slotEls.forEach((e, index) => {
+  slotEls.forEach((e) => {
     newEl.innerHTML += e.innerHTML;
-    if (index < slotEls.length - 1) {
-      newEl.innerHTML += '<br>';
-    }
   });
   merchCard.append(newEl);
 };
 
+const parseTwpContent = (el, merchCard) => {
+  const allElements = Array.from(el.children[0].children[0].children);
+  const contentGroups = allElements.reduce((acc, curr) => {
+    if (curr.tagName.toLowerCase() === 'p' && curr.textContent.trim() === '--') {
+      acc.push([]);
+    } else {
+      acc[acc.length - 1].push(curr);
+    }
+    return acc;
+  }, [[]]);
+
+  contentGroups.forEach((group, index) => {
+    if (index === 0) { // Top section
+      const headings = group.filter((e) => e.tagName.toLowerCase() === 'h3');
+      const topBody = group.filter((e) => e.tagName.toLowerCase() === 'p');
+      appendSlot(headings, 'heading-xs', merchCard);
+      appendSlot(topBody, 'body-xs-top', merchCard);
+    } else if (index === 1) { // Body section
+      const content = group.filter((e) => e.tagName.toLowerCase() === 'p' || e.tagName.toLowerCase() === 'ul');
+      const bodySlot = createTag('div', { slot: 'body-xs' }, content);
+      merchCard.append(bodySlot);
+    } else if (index === 2) { // Footer section
+      const footerContent = group.filter((e) => ['ul', 'h5', 'p'].includes(e.tagName.toLowerCase()));
+      const footer = createTag('div', { slot: 'footer' }, footerContent);
+      merchCard.append(footer);
+    }
+  });
+};
 const parseContent = (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
@@ -373,42 +408,48 @@ const init = async (el) => {
   }
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
-  parseContent(el, merchCard);
-  const footer = createTag('div', { slot: 'footer' });
-  if (ctas) {
-    if (merchCard.variant === 'mini-compare-chart') {
-      decorateButtons(ctas, 'button-l');
-    } else {
-      decorateButtons(ctas);
-    }
-    footer.append(ctas);
-  }
-  merchCard.appendChild(footer);
 
-  if (MULTI_OFFER_CARDS.includes(cardType)) {
-    const quantitySelect = extractQuantitySelect(el);
-    const offerSelection = el.querySelector('ul');
-    if (offerSelection) {
-      const { initOfferSelection } = await import('./merch-offer-select.js');
-      setMiniCompareOfferSlot(merchCard, undefined);
-      initOfferSelection(merchCard, offerSelection, quantitySelect);
-    }
-    if (quantitySelect) {
-      if (merchCard.variant === MINI_COMPARE_CHART) {
-        setMiniCompareOfferSlot(merchCard, quantitySelect);
+  if (merchCard.variant !== 'twp') {
+    parseContent(el, merchCard);
+
+    const footer = createTag('div', { slot: 'footer' });
+    if (ctas) {
+      if (merchCard.variant === 'mini-compare-chart') {
+        decorateButtons(ctas, 'button-l');
       } else {
-        const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
-        bodySlot.append(quantitySelect);
+        decorateButtons(ctas);
+      }
+      footer.append(ctas);
+    }
+    merchCard.appendChild(footer);
+
+    if (MULTI_OFFER_CARDS.includes(cardType)) {
+      const quantitySelect = extractQuantitySelect(el);
+      const offerSelection = el.querySelector('ul');
+      if (offerSelection) {
+        const { initOfferSelection } = await import('./merch-offer-select.js');
+        setMiniCompareOfferSlot(merchCard, undefined);
+        initOfferSelection(merchCard, offerSelection, quantitySelect);
+      }
+      if (quantitySelect) {
+        if (merchCard.variant === MINI_COMPARE_CHART) {
+          setMiniCompareOfferSlot(merchCard, quantitySelect);
+        } else {
+          const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+          bodySlot.append(quantitySelect);
+        }
       }
     }
-  }
 
-  decorateBlockHrs(merchCard);
-  simplifyHrs(merchCard);
-  if (merchCard.classList.contains('has-divider')) {
-    merchCard.setAttribute('custom-hr', true);
+    decorateBlockHrs(merchCard);
+    simplifyHrs(merchCard);
+    if (merchCard.classList.contains('has-divider')) {
+      merchCard.setAttribute('custom-hr', true);
+    }
+    decorateFooterRows(merchCard, footerRows);
+  } else {
+    parseTwpContent(el, merchCard);
   }
-  decorateFooterRows(merchCard, footerRows);
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
