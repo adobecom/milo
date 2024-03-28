@@ -116,11 +116,11 @@ const getTargetPersonalization = async () => {
 
   try {
     response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
-    sendTargetResponseAnalytics(true, responseStart);
+    sendTargetResponseAnalytics(false, responseStart);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.log(e);
-    sendTargetResponseAnalytics(false, responseStart);
+    sendTargetResponseAnalytics(true, responseStart);
   }
 
   let manifests = [];
