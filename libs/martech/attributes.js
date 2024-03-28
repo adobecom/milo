@@ -31,7 +31,7 @@ export function decorateDefaultLinkAnalytics(block, config) {
         } else if (!header) {
           const section = block.closest('.section');
           if (section?.className.includes('-up') || section?.classList.contains('milo-card-section')) {
-            const previousHeader = section?.previousElementSibling.querySelector(headerSelector);
+            const previousHeader = section?.previousElementSibling?.querySelector(headerSelector);
             if (previousHeader) {
               header = processTrackingLabels(previousHeader.textContent, config, 20);
             }
