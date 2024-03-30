@@ -3,13 +3,13 @@ import { getConfig } from '../../utils/utils.js';
 
 async function getKey(product) {
   const config = getConfig();
-  const resp = await fetch(`${config.contentRoot ?? ''}/branch-io-key-mapping.json`);
+  const resp = await fetch(`${config.contentRoot ?? ''}/branch-io-key.json`);
   if (resp.ok) {
     const json = await resp.json();
     const keyMatch = json.data.filter(
       (p) => p.product === product,
     );
-    return keyMatch[0].key;
+    return keyMatch[0]?.key;
   }
 }
 
@@ -19,7 +19,6 @@ function branchInit(header, key) {
     if (init) {
       return;
     }
-
     init = true;
     (function (b, r, a, n, c, h, _, s, d, k) {
       if (!b[n] || !b[n]._q) {
@@ -48,10 +47,10 @@ function branchInit(header, key) {
       0
     );
     var privacyConsent =
-      !!window.adobePrivacy && window.adobePrivacy.hasUserProvidedConsent();
+      !!window.adobePrivacy && window.adobePrivacy.hasUserProvidedConsent(); 
     branch.init(key, {
       tracking_disabled: !privacyConsent,
-    });   
+    });  
     branch.addListener('didShowJourney', function (event) {
       header.style.position = 'relative';
     });
@@ -70,7 +69,6 @@ export default async function init(el) {
   const header = document.querySelector('.global-navigation');
   const row = el.querySelector(':scope > div');
   const product = row.textContent.trim();
-  row.innerHTML = '';
   const key = await getKey(product);
-  branchInit(header, key);
+  if (key) branchInit(header, key);
 }
