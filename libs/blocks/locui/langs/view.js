@@ -60,9 +60,11 @@ function Language({ item, idx }) {
           `)}
         </div>
       `}
-      ${(item.status === 'translated' || item.status === 'completed') && html`
+      ${['translated', 'completed', 'error'].find((i) => i === item.status) && html`
         <div class=locui-subproject-action-area>
-          <button class=locui-urls-heading-action onClick=${() => rollout(item, idx)}>${rolloutType}</button>
+          <button class=locui-urls-heading-action onClick=${() => rollout(item, idx)}>
+            ${item.status === 'error' ? 'Retry' : rolloutType}
+          </button>
         </div>
       `}
     </li>
