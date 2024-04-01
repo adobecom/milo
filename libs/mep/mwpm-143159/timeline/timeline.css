@@ -135,7 +135,7 @@
 
 @media screen and (min-width: 1200px) {
   .timeline {
-    padding: 0 var(--spacing-xxl) var(--spacing-xxl) var(--spacing-xxl);
+    padding: 0 0 var(--spacing-xxl) 0;
     width: 968px;
     max-width: 100%;
   }
