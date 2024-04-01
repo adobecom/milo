@@ -833,7 +833,7 @@ async function checkForPageMods() {
   const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
   const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
-  const dynamicNavEnabled = dynamicNavMd && dynamicNavMd === 'entry' || dynamicNavMd === 'on';
+  const dynamicNavEnabled = dynamicNavMd && (dynamicNavMd === 'entry' || dynamicNavMd === 'on');
 
   if (mepEnabled) {
     const { base } = getConfig();
