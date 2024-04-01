@@ -1,28 +1,29 @@
-/* eslint-disable */ 
+/* eslint-disable */
 import { getConfig } from '../../utils/utils.js';
 
 async function getKey(product) {
   const config = getConfig();
+  let keyMatch = [];
   const resp = await fetch(`${config.contentRoot ?? ''}/branch-io-key.json`);
   if (resp.ok) {
     const json = await resp.json();
-    const keyMatch = json.data.filter(
+    keyMatch = json.data.filter(
       (p) => p.product === product,
     );
-    return keyMatch[0]?.key;
   }
+  return keyMatch[0]?.key;
 }
 
 function branchInit(header, key) {
-  var init = false;
+  let initValue = false;
   function initBranch() {
-    if (init) {
+    if (initValue) {
       return;
     }
-    init = true;
+    initValue = true;
     (function (b, r, a, n, c, h, _, s, d, k) {
       if (!b[n] || !b[n]._q) {
-        for (; s < _.length; ) c(h, _[s++]);
+        for (; s < _.length;) c(h, _[s++]);
         d = r.createElement(a);
         // d.async = 1;
         d.src = 'https://cdn.branch.io/branch-latest.min.js';
@@ -46,23 +47,20 @@ function branchInit(header, key) {
       ),
       0
     );
-    var privacyConsent =
-      !!window.adobePrivacy && window.adobePrivacy.hasUserProvidedConsent(); 
-    branch.init(key, {
-      tracking_disabled: !privacyConsent,
-    });  
-    branch.addListener('didShowJourney', function (event) {
+    const privacyConsent = !!window.adobePrivacy && window.adobePrivacy.hasUserProvidedConsent();
+    branch.init(key, { tracking_disabled: !privacyConsent });
+    branch.addListener('didShowJourney', () => {
       header.style.position = 'relative';
     });
-    branch.addListener('didCloseJourney', function (event) {
+    branch.addListener('didCloseJourney', () => {
       header.style.position = 'sticky';
     });
   }
   // initBranch();
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
-      .forEach(function (event) {
-          window.addEventListener(event, initBranch);
-      });
+    .forEach((event) => {
+      window.addEventListener(event, initBranch);
+    });
 }
 
 export default async function init(el) {
