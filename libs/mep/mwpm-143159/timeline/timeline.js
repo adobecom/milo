@@ -9,6 +9,7 @@ function isColor(str) {
 function isGradient(str) {
   return str.startsWith('linear-gradient');
 }
+
 function isColorOrGradient(str) {
   return isColor(str) || isGradient(str);
 }
@@ -50,7 +51,24 @@ function setBG(el, color) {
   el.style.background = color;
 }
 
-function setColors(colors, fragment) {
+function updateForRTL(lgStr, el) {
+  if (el.closest('[dir="rtl"]')) {
+    return lgStr.replace(/to right|to left|90deg|180deg|turn 0.25|turn 0.75/g, (match) => {
+      const converter = {
+        'turn 0.25': 'turn 0.75',
+        'turn 0.75': 'turn 0.25',
+        '90deg': '180deg',
+        '180deg': '90deg',
+        'to right': 'to left',
+        'to left': 'to right',
+      };
+
+      return converter[match];
+    });
+  }
+  return lgStr;
+}
+function setColors(colors, fragment, el) {
   const barEls = fragment.querySelectorAll('.bar');
   const periodEls = fragment.querySelectorAll('.period');
   if (colors?.length === 2 && isColorOrGradient(colors[0]) && isColorOrGradient(colors[1])) {
@@ -82,8 +100,8 @@ function setColors(colors, fragment) {
       } else {
         setBG(barEls[2], rightColor);
       }
-      setBG(periodEls[0], leftColor);
-      setBG(periodEls[1], rightColor);
+      setBG(periodEls[0], updateForRTL(leftColor, el));
+      setBG(periodEls[1], updateForRTL(rightColor, el));
     }
   }
 }
@@ -91,11 +109,11 @@ function setColors(colors, fragment) {
 function colWidthsNotValid(colWidths) {
   return (colWidths.length !== 2 || colWidths.some((value) => Number.isNaN(value)));
 }
-function updateColWidths(colWidths, fragment, el) {
+function updateColWidths(colWidths, fragment) {
   if (colWidthsNotValid(colWidths)) return;
   const total = Number(colWidths[0]) + Number(colWidths[1]);
   const right = Math.floor((Number(colWidths[1]) / total) * 10000) / 100;
-  const colString = el.classList.contains('reversed') ? `minmax(150px, ${String(right)}%) 1fr` : `1fr minmax(${String(right)}%, 150px)`;
+  const colString = `1fr minmax(${String(right)}%, 150px)`;
   fragment.querySelectorAll('.row').forEach((row) => {
     row.style.gridTemplateColumns = colString;
   });
@@ -130,6 +148,6 @@ export default function init(el) {
   textRow.append(left, right);
   [textRow, addBarRow(), addBottomRow(periodText)].forEach((row) => fragment.append(row));
   updateColWidths(colWidths, fragment, el);
-  setColors(colors, fragment);
+  setColors(colors, fragment, el);
   el.append(fragment);
 }
