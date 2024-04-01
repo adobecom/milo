@@ -1,0 +1,119 @@
+[
+  {
+      "variants": {
+          "all": {
+              "commands": [
+                  {
+                      "action": "appendtosection",
+                      "selector": "section1",
+                      "pageFilter": "",
+                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test-or-promo",
+                      "selectorType": "css"
+                  }
+              ],
+              "fragments": []
+          }
+      },
+      "variantNames": [
+          "all"
+      ],
+      "manifestOverrideName": "",
+      "manifestType": "test or promo",
+      "executionOrder": "1-1",
+      "run": true,
+      "selectedVariantName": "all",
+      "selectedVariant": {
+          "commands": [
+              {
+                  "action": "appendtosection",
+                  "selector": "section1",
+                  "pageFilter": "",
+                  "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test-or-promo",
+                  "selectorType": "css"
+              }
+          ],
+          "fragments": []
+      },
+      "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-or-promo.json",
+      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-or-promo.json",
+      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-or-promo.json"
+  },
+  {
+      "variants": {
+          "all": {
+              "commands": [
+                  {
+                      "action": "appendtosection",
+                      "selector": "section1",
+                      "pageFilter": "",
+                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
+                      "selectorType": "css"
+                  }
+              ],
+              "fragments": []
+          }
+      },
+      "variantNames": [
+          "all"
+      ],
+      "manifestOverrideName": "",
+      "manifestType": "test",
+      "executionOrder": "1-2",
+      "run": true,
+      "selectedVariantName": "all",
+      "selectedVariant": {
+          "commands": [
+              {
+                  "action": "appendtosection",
+                  "selector": "section1",
+                  "pageFilter": "",
+                  "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
+                  "selectorType": "css"
+              }
+          ],
+          "fragments": []
+      },
+      "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
+      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
+      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json"
+  },
+  {
+      "variants": {
+          "all": {
+              "commands": [
+                  {
+                      "action": "appendtosection",
+                      "selector": "section1",
+                      "pageFilter": "",
+                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
+                      "selectorType": "css"
+                  }
+              ],
+              "fragments": []
+          }
+      },
+      "variantNames": [
+          "all"
+      ],
+      "manifestOverrideName": "",
+      "manifestType": "personalization",
+      "executionOrder": "1-0",
+      "run": true,
+      "selectedVariantName": "all",
+      "selectedVariant": {
+          "commands": [
+              {
+                  "action": "appendtosection",
+                  "selector": "section1",
+                  "pageFilter": "",
+                  "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
+                  "selectorType": "css"
+              }
+          ],
+          "fragments": []
+      },
+      "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
+      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
+      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json"
+  }
+]
