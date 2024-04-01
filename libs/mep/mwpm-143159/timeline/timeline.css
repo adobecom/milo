@@ -125,6 +125,10 @@
 @media screen and (min-width: 600px) {
   .timeline {
     width: 100%;
+    padding: 0 var(--grid-margins-width) var(--spacing-xl) var(--grid-margins-width);
+  }
+
+  .dialog-modal .timeline {
     padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
   }
 }
