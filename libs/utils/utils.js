@@ -27,7 +27,6 @@ const MILO_BLOCKS = [
   'chart',
   'columns',
   'faas',
-  'faq',
   'featured-article',
   'figure',
   'form',
@@ -855,7 +854,7 @@ async function checkForPageMods() {
 
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoMd));
+    persManifests = persManifests.concat(getPromoManifests(promoMd, PAGE_URL.searchParams));
   }
 
   const { env } = getConfig();
