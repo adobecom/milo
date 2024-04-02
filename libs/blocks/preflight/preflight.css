@@ -320,6 +320,27 @@ span.preflight-time {
   gap: 48px;
 }
 
+.access-columns .grid-heading {
+  margin-bottom: 20px;
+}
+
+.access-columns .grid-heading + .access-columns .grid-heading {
+  margin-top: 20px;
+}
+
+.access-columns .grid-heading.is-closed {
+  transform: none;
+}
+
+.access-columns .grid-toggle {
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+}
+
 .access-item {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -340,9 +361,18 @@ span.preflight-time {
 
 .access-image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   grid-gap: 20px;
+  margin-bottom: 35px;
   width: 100%;
+}
+
+.access-image-grid:last-child {
+  margin-bottom: 0;
+}
+
+.access-columns .grid-heading.is-closed + .access-image-grid {
+  display: none;
 }
 
 .access-image-grid-item {
@@ -354,6 +384,19 @@ span.preflight-time {
   align-items: center;
   padding: 10px;
   border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.access-image-grid-item.full-width {
+  width: 100%;
+  max-width: initial;
+}
+
+.access-image-grid .filter {
+  grid-column: 1 / 5;
+  align-items: start;
+  background: none;
+  display: block;
 }
 
 img[data-alt-check] {
@@ -368,7 +411,7 @@ img[data-alt-check]::after {
 }
 
 .access-image-grid-item span {
-  font-size: smaller;
+  font-size: 16px;
   font-weight: bold;
   margin-top: 10px;
   line-height: 1.3rem;
@@ -378,6 +421,27 @@ img[data-alt-check]::after {
   font-weight: initial;
   opacity: 0.8;
   margin-top: 0;
+}
+
+.show-main .access-image-grid-item.in-gnav,
+.show-main .access-image-grid-item.in-footer {
+  display: none;
+}
+
+.show-gnav .access-image-grid-item.in-main-content,
+.show-gnav .access-image-grid-item.in-footer {
+  display: none;
+}
+
+.show-footer .access-image-grid-item.in-main-content,
+.show-footer .access-image-grid-item.in-gnav {
+  display: none;
+}
+
+.preflight .image-filter {
+  padding: 3px;
+  margin-left: 5px;
+  border-radius: 5px
 }
 
 .preflight .martech {
