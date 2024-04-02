@@ -112,7 +112,8 @@ export async function cancelProject() {
   // const resp = await fetch(url, opts);
   const resp = { url, opts, status: 201 };
   if (resp.status === 201) setExcelStatus('Localization project cancelled.', '');
-  setStatus('service');
+  const cancelMessage = 'Cancelling your project stops all processes but does not delete documents from langstore.';
+  setStatus('service', 'info', 'Localization project successfuly cancelled.', cancelMessage);
   return resp.status;
 }
 

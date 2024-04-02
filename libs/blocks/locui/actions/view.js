@@ -19,7 +19,8 @@ import {
 export default function Actions() {
   const canAct = allowSyncToLangstore.value
               || allowSendForLoc.value
-              || allowRollout.value;
+              || allowRollout.value
+              || allowCancel.value;
   const canActStyle = canAct ? 'locui-section-label' : 'locui-section-label is-invisible';
   const canReRollAll = languages.value.some((lang) => lang.status === 'completed');
   const canRollAll = languages.value.some((lang) => lang.status === 'translated');
@@ -74,8 +75,8 @@ export default function Actions() {
         ${allowCancel.value && html`
           <button
             onClick=${() => cancelLocProject()}
-            class=locui-urls-heading-action>
-            Re-rollout all completed
+            class="locui-urls-heading-action cancel">
+            Cancel Project
           </button>
         `}
       </div>

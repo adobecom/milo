@@ -142,6 +142,9 @@ export async function syncToLangstore() {
   // Disable sending for loc as this is in progress.
   allowSendForLoc.value = false;
 
+  // Enable cancel loc button
+  allowCancel.value = true;
+
   if (!heading.value.projectId) {
     const status = await createProject();
     setTimeout(async () => {
@@ -151,6 +154,7 @@ export async function syncToLangstore() {
       } else {
         allowSyncToLangstore.value = true;
         allowSendForLoc.value = true;
+        allowCancel.value = false;
       }
     }, 3000);
   } else {
@@ -201,6 +205,7 @@ export async function sendForLoc() {
     } else {
       allowSyncToLangstore.value = true;
       allowSendForLoc.value = true;
+      allowCancel.value = false;
       return;
     }
   }
@@ -209,9 +214,6 @@ export async function sendForLoc() {
   setStatus('service');
   // Start polling for updates since this has not been kicked off.
   getServiceUpdates();
-
-  // Disable cancel loc button
-  allowCancel.value = false;
 }
 
 export function showRollout() {
@@ -221,7 +223,9 @@ export function showRollout() {
 export async function rolloutAll(e, reroll) {
   showRolloutOptions.value = false;
   allowRollout.value = false;
+  allowCancel.value = true;
   await rolloutLang('all', reroll);
+  allowCancel.value = false;
 }
 
 export async function cancelLocProject() {
