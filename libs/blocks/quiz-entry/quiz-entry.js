@@ -5,12 +5,12 @@ import { mlField, getFiResults } from './mlField.js';
 import { GetQuizOption } from './quizoption.js';
 
 const App = ({
-  quizPath = null,
-  analyticsQuiz = null,
-  analyticsType = null,
+  // quizPath = null,
+  // analyticsQuiz = null,
+  // analyticsType = null,
   dataPath = null,
 }) => {
-  const [btnAnalytics, setBtnAnalytics] = useState(null);
+  // const [btnAnalytics, setBtnAnalytics] = useState(null);
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
   const [isDataLoaded, setDataLoaded] = useState(false);
   const [questionData, setQuestionData] = useState({});
@@ -76,7 +76,7 @@ const App = ({
           }
         });
         setMLData(mlmap);
-        console.log('quizState', quizState);
+        // console.log('quizState', quizState);
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -86,7 +86,7 @@ const App = ({
     (async () => {
       if (Object.keys(mlData).length !== 0) {
         setHasMLData(true);
-        console.log('mlData', mlData);
+        // console.log('mlData', mlData);
       } else {
         setHasMLData(false);
       }
@@ -105,11 +105,11 @@ const App = ({
     }
   }, [countSelectedCards]);
 
-  let minSelections = 0;
+  // let minSelections = 0;
   let maxSelections = 10;
 
   if (selectedQuestion) {
-    minSelections = +selectedQuestion['min-selections'];
+    // minSelections = +selectedQuestion['min-selections'];
     maxSelections = +selectedQuestion['max-selections'];
   }
 
@@ -165,10 +165,10 @@ const App = ({
   };
 
   return html`<div class="quiz-entry-container">
-                <div class="quiz-entry-title">Not sure which apps are best for you?</div>
-                <div class="quiz-entry-subtitle">Tell us what you’re interested in. We’ll help you figure it out.</div>
-                ${hasMLData && html`<${mlField} placeholderText="Describe your interest here"/><div class="results-container"></div>`}
-                <div class="quiz-entry-text">Or pick up to 3 below</div>
+                <div class="quiz-entry-title">${stringQList[selectedQuestion.questions].heading}</div>
+                <div class="quiz-entry-subtitle">${stringQList[selectedQuestion.questions]['sub-head']}</div>
+                ${hasMLData && html`<${mlField} placeholderText="${stringData[selectedQuestion.questions].data.find((option) => option.options === 'fi_code').title}"/><div class="results-container"></div>`}
+                <div class="quiz-entry-text">${stringQList[selectedQuestion.questions].text}</div>
                 ${selectedQuestion.questions && html`<${GetQuizOption} 
                                 maxSelections=${maxSelections} 
                                 options=${stringData[selectedQuestion.questions]}
@@ -179,10 +179,10 @@ const App = ({
                                 getOptionsIcons=${getOptionsIcons}/>`}
                 <div class="quiz-button-container">
                     <button 
-                      aria-label="Continue" 
+                      aria-label="${stringQList[selectedQuestion.questions].btn}" 
                       class="quiz-button" 
                       onClick=${() => { handleQuizButton(); }}>
-                        <span class="quiz-button-label">Continue</span>
+                        <span class="quiz-button-label">${stringQList[selectedQuestion.questions].btn}</span>
                     </button>
                   </div>
               </div>`;
