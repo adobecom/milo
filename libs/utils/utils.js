@@ -776,13 +776,15 @@ export async function loadIms() {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
-    const unavMeta = getMetadata('universal-nav')?.trim();
+    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
     window.adobeid = {
       client_id: imsClientId,
       scope: imsScope || defaultScope,
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
+      redirect_uri: ahomeMeta === 'on'
+        ? `https://www${env !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
