@@ -2,6 +2,7 @@ import { getConfig } from '../../utils/utils.js';
 import './components/bulk-publisher.js';
 
 export default async function init(el) {
+  console.log('use local');
   el.append(document.createElement('bulk-publish'));
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot || 'libs';
