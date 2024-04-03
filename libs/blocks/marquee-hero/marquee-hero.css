@@ -172,6 +172,23 @@ todo: we need this unit */
   margin: var(--spacing-xs) 0; 
 }
 
+.marquee-hero .meta-list ul.icon-list,
+.marquee-hero .meta-list ol.icon-list {
+  padding-inline-start: 24px;
+}
+
+.marquee-hero li.icon-item {
+  position: relative;
+}
+
+.marquee-hero li.icon-item::marker {
+  color: transparent;
+}
+
+.marquee-hero li.icon-item span.icon {
+  position: absolute;
+  left: -24px;
+}
 
 /* CLS */
 
@@ -197,12 +214,9 @@ todo: we need this unit */
 }
 
 @media screen and (min-width: 920px) {
-  .marquee-hero .foreground {
+  .marquee-hero .foreground.cols-1 {
     max-width: 800px;
     min-width: unset;
-
-    /* padding-left: calc((100vw - 800px) / 2);
-    padding-right: calc((100vw - 800px) / 2); */
   }
 }
 

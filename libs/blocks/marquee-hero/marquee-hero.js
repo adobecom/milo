@@ -33,6 +33,18 @@ function decorateQr(el) {
   });
 }
 
+function decorateList(el) {
+  el.classList.add('heading-s', 'align-left');
+  const listItems = el.querySelectorAll('ul li', 'ol li');
+  if (listItems.length) {
+    [...listItems].forEach((item) => {
+      const firstElemIsIcon = item.children[0]?.classList.contains('icon');
+      if (firstElemIsIcon) item.classList.add('icon-item');
+      if (!item.parentElement.classList.contains('icon-list')) item.parentElement.classList.add('icon-list');
+    });
+  }
+}
+
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
@@ -51,7 +63,7 @@ function parseKeyString(str) {
 
 function loadContentType(type, el, ...classes) {
   if (type === 'list') {
-    el.classList.add('heading-s', 'align-left');
+    decorateList(el);
   }
   if (type === 'qrcode') {
     decorateQr(el);
@@ -78,8 +90,8 @@ export default async function init(el) {
   }
 
   const foreground = rows[0];
-  foreground.classList.add('foreground');
   const fRows = foreground.querySelectorAll(':scope > div');
+  foreground.classList.add('foreground', `cols-${fRows.length}`);
   let copy = fRows[0];
 
   const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
