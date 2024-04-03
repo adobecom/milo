@@ -57,13 +57,13 @@ export default async function init(el) {
     const { base } = getConfig();
     await import(`${base}/features/spectrum-web-components/dist/theme.js`);
     const layout = createTag('merch-subscription-layout', { }, '', { });
-    createTag('h3', { slot: 'title' }, 'Try the full version of Adobe apps with a 7-day free trial.', { parent: layout });
-    createTag('h5', { slot: 'sub-title' }, 'Choose a plan:', { parent: layout });
+    createTag('h3', { slot: 'content' }, 'Try the full version of Adobe apps with a 7-day free trial.', { parent: layout });
+    createTag('h5', { slot: 'content' }, 'Choose a plan:', { parent: layout });
     const merchCards = [...cards].map((card) => {
       card.setAttribute('slot', 'cards');
       return card;
     });
-    const tabs = createTag('merch-subscription-tabs', { slot: 'tabs' }, '', {});
+    const tabs = createTag('merch-subscription-tabs', { slot: 'content' }, '', {});
     tabs.append(...merchCards);
     layout.append(tabs);
     layout.append(createPanel());
