@@ -10,7 +10,7 @@
 
 /* Alignment */
 .marquee-hero .action-area,
-.marquee-hero .lockup { 
+.marquee-hero .flex-row { 
   justify-content: left; 
   display: flex;
 }
@@ -22,25 +22,25 @@
 
 /* lockup 
 todo: we need this unit */
-.marquee-hero .lockup { 
+.marquee-hero .flex-row { 
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 12px;
 } 
 
-.marquee-hero .lockup picture { 
+.marquee-hero .flex-row picture { 
   line-height: 0;
   display: block;
 } 
 
-.marquee-hero .lockup a {
+.marquee-hero .flex-row a {
   color: inherit;
   text-decoration: underline 0.15em transparent;
   transition: text-decoration-color 250ms;
 }
 
-.marquee-hero .lockup a:hover {
+.marquee-hero .flex-row a:hover {
   text-decoration-color: inherit
 }
 
@@ -51,7 +51,7 @@ todo: we need this unit */
 }
 
 .marquee-hero.center .action-area,
-.marquee-hero.center .lockup { 
+.marquee-hero.center .flex-row { 
   justify-content: center; 
 }
 

@@ -1,12 +1,12 @@
 import { decorateBlockBg, decorateBlockHrs, decorateBlockText } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const contentTypes = ['list', 'qrcode', 'lockup'];
+const contentTypes = ['list', 'qrcode', 'lockup', 'text'];
 
 function decorateLockup(el) {
   const rows = el.querySelectorAll(':scope > p');
   const firstRowImg = rows[0]?.querySelector('img');
-  if (firstRowImg) rows[0].classList.add('lockup');
+  if (firstRowImg) rows[0].classList.add('flex-row');
 }
 
 function decorateBadge(el) {
@@ -58,7 +58,7 @@ function loadContentType(type, el, ...classes) {
   }
   if (type === 'lockup') {
     const child = el.querySelector(':scope > div');
-    if (child) child.classList.add('lockup');
+    if (child) child.classList.add('flex-row');
   }
   if (classes.length) {
     el.classList.add(...classes);
