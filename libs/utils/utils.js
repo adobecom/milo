@@ -27,7 +27,6 @@ const MILO_BLOCKS = [
   'chart',
   'columns',
   'faas',
-  'faq',
   'featured-article',
   'figure',
   'form',
@@ -100,7 +99,6 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
-  { 'offer-preview': '/tools/commerce' },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -562,7 +560,9 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
-    if (key === 'fragment') {
+    const hasExtension = a.href.split('/').pop().includes('.');
+    const mp4Match = a.textContent.match('media_.*.mp4');
+    if (key === 'fragment' && (!hasExtension || mp4Match)) {
       if (a.href === window.location.href) {
         return false;
       }
@@ -579,7 +579,7 @@ export function decorateAutoBlock(a) {
       }
 
       // previewing a fragment page with mp4 video
-      if (a.textContent.match('media_.*.mp4')) {
+      if (mp4Match) {
         a.className = 'video link-block';
         return false;
       }
@@ -771,18 +771,20 @@ export async function decorateFooterPromo() {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const { locale, imsClientId, imsScope, env } = getConfig();
+    const { locale, imsClientId, imsScope, env, base } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
-    const unavMeta = getMetadata('universal-nav')?.trim();
+    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
     window.adobeid = {
       client_id: imsClientId,
       scope: imsScope || defaultScope,
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
+      redirect_uri: ahomeMeta === 'on'
+        ? `https://www${env !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
@@ -792,7 +794,7 @@ export async function loadIms() {
       },
       onError: reject,
     };
-    loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+    loadScript(`${base}/deps/imslib.min.js`);
   }).then(() => {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
@@ -852,7 +854,7 @@ async function checkForPageMods() {
 
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoMd));
+    persManifests = persManifests.concat(getPromoManifests(promoMd, PAGE_URL.searchParams));
   }
 
   const { env } = getConfig();
@@ -1042,6 +1044,7 @@ async function processSection(section, config, isDoc) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
     await Promise.all(fragPromises);
+    await decoratePlaceholders(section.el, config);
     const newlyDecoratedSection = decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;

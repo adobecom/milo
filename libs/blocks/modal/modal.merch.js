@@ -57,7 +57,6 @@ function reactToMessage({ data, source }) {
 
 export function adjustStyles({ dialog, iframe }) {
   const isAutoHeightAdjustment = /\/mini-plans\/.*mid=ft.*web=1/.test(iframe.src); // matches e.g. https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1
-  console.log('isAutoHeightAdjustment', isAutoHeightAdjustment);
   if (isAutoHeightAdjustment) {
     dialog.classList.add('height-fit-content');
   } else {
