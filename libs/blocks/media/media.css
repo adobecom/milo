@@ -70,6 +70,7 @@
   display: flex;
   gap: var(--spacing-s);
   align-items: flex-start;
+  width: 100%;
 }
 
 .media .text .icon-area {
@@ -255,31 +256,46 @@ div[class*="-up"] .media .foreground > .media-row {
 }
 
 /* Text Alignment */
-.section[class*="-up"] .media,
-.section[class*="-up"] .media .foreground {
+.section[class*="-up"] .media:not(.media-reverse-mobile) {
   display: flex;
   align-self: stretch;
 }
 
-.section[class*="-up"] .media .foreground > div.media-row {
-  display: grid;
-  grid-template-rows: auto 1fr;
-}
-
-.section[class*="-up"] .media .foreground .text {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
+.section[class*="-up"] .media:not(.media-reverse-mobile) .foreground {
+  display: flex;
   align-self: stretch;
+  width: 100%
 }
 
-.section[class*="-up"] .media [class^="heading"],
-.section[class*="-up"] .media p,
-.section[class*="-up"] .media [class^="body-"] {
+.section[class*="-up"] .media:not(.media-reverse-mobile) .foreground > div.media-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile) .foreground .text {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile) [class*="heading-"],
+.section[class*="-up"] .media:not(.media-reverse-mobile) p:not([class*="detail-"]):not(.subcopy-link),
+.section[class*="-up"] .media:not(.media-reverse-mobile) [class*="body-"] {
   margin-bottom: 0;
 }
 
-.section[class*="-up"] .media .action-area {
-  align-self: end;
+.section[class*="-up"] .media.merch.bio:not(.media-reverse-mobile) [class*="body-"]:first-child:not(.action-area, .icon-stack-area) {
+  margin-top: 0;
+  margin-bottom: revert;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile) .action-area-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
 }
 
 @media screen and (min-width: 600px) {
@@ -347,7 +363,7 @@ div[class*="-up"] .media .foreground > .media-row {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .section[class*="-up"] .media .foreground > div.media-row {
+  .section[class*="-up"] .media:not(.media-reverse-mobile) .foreground > div.media-row {
     gap: 0;
   }
 }

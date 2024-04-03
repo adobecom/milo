@@ -16,6 +16,7 @@
 
 .text-block [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
 
+.text-block .action-area-container,
 .text-block p.action-area { margin-top: var(--spacing-s); }
 
 .text-block div > *:last-child { margin-bottom: 0; }
@@ -60,6 +61,10 @@
   gap: var(--spacing-s);
   flex-wrap: wrap;
   align-items: center;
+}
+
+.text-block .action-area-container .action-area {
+  width: 100%;
 }
 
 .text-block hr {
@@ -192,25 +197,34 @@
 }
 
 /* Text Alignment */
-.section[class*="-up"] .text-block,
-.section[class*="-up"] .text-block .foreground {
+.section[class*="-up"] .text-block:not(.legal, .link-farm) {
   display: flex;
   align-self: stretch;
 }
 
-.section[class*="-up"] .text-block .foreground > div {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground {
+  display: flex;
+  align-self: stretch;
+  width: 100%;
 }
 
-.section[class*="-up"] .text-block [class^="heading"],
-.section[class*="-up"] .text-block p,
-.section[class*="-up"] .text-block [class^="body-"] {
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.section[class*="-up"] .text-block:not(.legal, .link-farm) [class^="heading"],
+.section[class*="-up"] .text-block:not(.legal, .link-farm) p:not([class^="detail-"]),
+.section[class*="-up"] .text-block:not(.legal, .link-farm) [class^="body-"] {
   margin-bottom: 0;
 }
 
-.section[class*="-up"] .text-block .action-area {
-  align-self: end;
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .action-area-container {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
 }
 
 /* Tablet up */

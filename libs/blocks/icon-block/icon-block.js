@@ -14,6 +14,7 @@
 * Icon Block - v5.1
 */
 
+import action from '../../utils/action.js';
 import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
@@ -74,6 +75,17 @@ function decorateContent(el) {
       });
       if (secondColumn.children.length === 1) el.classList.add('items-center');
       el.querySelector('.foreground .text-content').append(secondColumn);
+    }
+    const ctas = el.querySelectorAll('.action-area');
+    if (ctas.length) {
+      const div = createTag('div', { class: 'action-area-container' });
+      const lastCta = ctas[ctas.length - 1];
+      const secondLastCta = ctas[ctas.length - 2];
+      lastCta.insertAdjacentElement('afterend', div);
+      if (secondLastCta && lastCta.previousElementSibling === secondLastCta) {
+        div.append(secondLastCta);
+      }
+      div.append(lastCta);
     }
   }
 }

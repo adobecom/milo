@@ -1,3 +1,4 @@
+import action from '../../utils/action.js';
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
@@ -109,5 +110,10 @@ export default function init(el) {
   if (hasLinkFarm) decorateLinkFarms(el);
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
-  if (!hasLinkFarm) decorateMultiViewport(el);
+  const actionArea = el.querySelector('.action-area:last-of-type');
+  if (actionArea) {
+    const div = createTag('div', { class: 'action-area-container' });
+    actionArea.insertAdjacentElement('afterend', div);
+    div.append(actionArea);
+  }
 }
