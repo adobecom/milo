@@ -11,6 +11,7 @@ const ctaTextOption = {
     { id: 'change-plan-team-payment', name: 'Change Plan Team Payment' },
     { id: 'take-the-quiz', name: 'Take the quiz' },
     { id: 'see-more', name: 'See more' },
+    { id: 'upgrade-now', name: 'Upgrade now' },
   ],
 
   getDefaultText() {
