@@ -30,17 +30,13 @@ function decorateQr(el) {
   const classes = ['qr-code-img', 'google-play', 'app-store'];
   [...text.children].forEach((e, i) => {
     e.classList.add(classes[i]);
-    if (i > 0) {
-      console.log('textContent', e.textContent);
-      // e.textContent = '';
-    }
   });
 }
 
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
+  buttons.forEach((button) => { button.classList.add('button-l', 'button-justified-mobile'); });
 }
 
 function parseKeyString(str) {
@@ -129,7 +125,7 @@ export default async function init(el) {
     if (isBlockMetaRow) {
       const metaValue = firstColText.replace(keyword, '').trim();
       const parsed = parseKeyString(metaValue);
-      console.log('metaVlue', metaValue, 'parsed', parsed);
+      // console.log('metaVlue', metaValue, 'parsed', parsed);
       firstCol.parentElement.classList.add(`meta-${parsed.key}`);
       firstCol.remove();
       cols[1].classList.add('meta-wrapper');
