@@ -22,8 +22,7 @@ function getTable(strings) {
 
 async function checkMartechMeta() {
   const elementList = 'h1, h2, h3, h4, h5, h6, a, .tracking-header, .click-link, .con-button';
-  const allElements = `main :is(${elementList})`;
-  const strings = [...document.querySelectorAll(allElements)]
+  const strings = [...document.querySelectorAll(`main :is(${elementList})`)]
     .filter((el) => !el.closest('[class*="metadata"]') && !el.innerText.startsWith('http')
       && !el.querySelector(elementList))
     .reduce((acc, curr) => {
