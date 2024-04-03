@@ -361,6 +361,18 @@ describe('Merch Card with Offer Selection', () => {
     expect(quantitySelect.getAttribute('step')).to.equal('1');
   });
 
+  describe('TwP Merch Card', () => {
+    it('Displays expected slots ', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/twp.html' });
+      await init(document.querySelector('.twp'));
+      const merchCard = document.querySelector('merch-card');
+      const topSection = merchCard.shadowRoot.querySelector('.top-section');
+      const body = merchCard.shadowRoot.querySelector('.body');
+      expect(topSection).to.exist;
+      expect(body).to.exist;
+    });
+  });
+
   it('Change quantity select ', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
     await init(document.querySelector('.quantity-select'));
