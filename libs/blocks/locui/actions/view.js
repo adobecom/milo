@@ -26,12 +26,22 @@ export default function Actions() {
   const canReRollAll = languages.value.some((lang) => lang.status === 'completed');
   const canRollAll = languages.value.some((lang) => lang.status === 'translated');
 
+  if (projectCancelled.value) {
+    return html`
+      <div class=locui-section>
+        <div class=locui-section-heading>
+            <div>
+              <h2 class="locui-section-label cancelled">Project Cancelled</h2>
+              <i>Note: All processes have been stopped but documents were not deleted from SharePoint.</i>
+            </div>
+        </div>
+      </div>
+    `;
+  }
+
   return html`
     <div class=locui-section>
       <div class=locui-section-heading>
-        ${projectCancelled.value && html`
-          <h2 class="locui-section-label cancelled">This Project was Cancelled</h2>
-        `}
         <h2 class="${canActStyle}">Actions</h2>
       </div>
       <div class=locui-url-heading-actions>

@@ -127,8 +127,7 @@ export async function cancelProject() {
   url = `${url}cancel-project?project=${heading.value.projectId}`;
   const resp = await fetch(url, opts);
   if (resp.status === 200) setExcelStatus('Project cancelled', '');
-  const cancelMessage = 'All processes have been cancelled but this action does not delete documents from SharePoint';
-  setStatus('service', 'info', 'Successfully Cancelled Project', cancelMessage, 5000);
+  setStatus('service', 'info', 'Successfully Cancelled Project', null, 5000);
   return resp.status;
 }
 
@@ -172,6 +171,7 @@ export async function getServiceUpdates() {
       waiting = true;
       const json = await getProjectStatus(url);
       if (json) projectStatus.value = json;
+      // stop polling for project status if cancelled
       if (json.projectStatus === 'cancelled') clearInterval(excelUpdated);
       waiting = false;
     }
