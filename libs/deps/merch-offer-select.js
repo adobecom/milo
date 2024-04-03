@@ -1,15 +1,19 @@
-// branch: twp-panel commit: b84d063bcc7cfeff3355cf9950d3a24f0ba37040 Wed, 03 Apr 2024 13:20:13 GMT
+// branch: twp-panel commit: 1db48026128e58b82f612c98c350b6335065998e Wed, 03 Apr 2024 15:12:50 GMT
 import{html as f,LitElement as x}from"/libs/deps/lit-all.min.js";import{css as u,html as d,LitElement as b}from"/libs/deps/lit-all.min.js";var o=class extends b{static styles=u`
         :host .horizontal {
             display: flex;
             flex-direction: row;
         }
     `;static properties={offers:{type:Array},selectedOffer:{type:Object},defaults:{type:Object},variant:{type:String}};constructor(){super(),this.defaults={}}saveContainerDefaultValues(){let e=this.closest(this.getAttribute("container")),t=e?.querySelector('[slot="description"]:not(merch-offer > *)')?.cloneNode(!0),i=e?.badgeText;return{description:t,badgeText:i}}getSlottedElement(e,t){return(t||this.closest(this.getAttribute("container"))).querySelector(`[slot="${e}"]:not(merch-offer > *)`)}updateSlot(e,t){let i=this.getSlottedElement(e,t);if(!i)return;let s=this.selectedOffer.getOptionValue(e)?this.selectedOffer.getOptionValue(e):this.defaults[e];s&&i.replaceWith(s.cloneNode(!0))}handleOfferSelection(e){let t=e.detail;this.selectOffer(t)}handleOfferSelectionByQuantity(e){let t=e.detail.option,i=Number.parseInt(t),s=this.findAppropriateOffer(i);this.selectOffer(s),this.getSlottedElement("cta").setAttribute("data-quantity",t)}selectOffer(e){if(!e)return;let t=this.selectedOffer;t&&(t.selected=!1),this.selectedOffer=e,this.updateContainer()}findAppropriateOffer(e){let t=null;return this.offers.find(s=>{let r=Number.parseInt(s.getAttribute("value"));if(r===e)return!0;if(r>e)return!1;t=s})||t}updateBadgeText(e){this.selectedOffer.badgeText===""?e.badgeText=null:this.selectedOffer.badgeText?e.badgeText=this.selectedOffer.badgeText:e.badgeText=this.defaults.badgeText}updateContainer(){let e=this.closest(this.getAttribute("container"));!e||!this.selectedOffer||(this.updateSlot("cta",e),this.updateSlot("secondary-cta",e),this.updateSlot("price",e),!this.manageableMode&&(this.updateSlot("description",e),this.updateBadgeText(e)))}connectedCallback(){super.connectedCallback();let e=this.closest("merch-quantity-select");this.manageableMode=e,this.offers=[...this.querySelectorAll("merch-offer")],this.manageableMode?e.addEventListener("change",t=>this.handleOfferSelectionByQuantity(t)):(this.defaults=this.saveContainerDefaultValues(),this.addEventListener("offer-selected",this.handleOfferSelection),this.offers[0]?.select()),this.selectedOffer=this.offers[0],this.updateContainer()}render(){return this.variant?d`<slot class="${this.variant}"></slot>`:d`<slot></slot>`}disconnectedCallback(){this.removeEventListener("offer-selected",this.handleOfferSelection),this.removeEventListener("change",this.handleOfferSelectionByQuantity)}};customElements.define("merch-offer-select",o);import{css as m}from"/libs/deps/lit-all.min.js";var h=m`
-    .merch-Radio {
+    :host {
         --merch-radio: rgba(82, 88, 228);
         --merch-radio-hover: rgba(64, 70, 202);
         --merch-radio-down: rgba(50, 54, 168);
         --merch-radio-selected: rgb(2, 101, 220);
+        --merch-hovered-shadow: 0 0 0 1px #aaa;
+        --merch-selected-shadow: 0 0 0 2px var(--merch-radio-selected);
+    }
+    .merch-Radio {
         align-items: flex-start;
         display: flex;
         max-inline-size: 100%;

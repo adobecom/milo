@@ -1,6 +1,7 @@
-// branch: twp-panel commit: f19db18cb1184615d0f7d3afead626d724d62121 Wed, 03 Apr 2024 14:11:30 GMT
-import{html as o,LitElement as n}from"/libs/deps/lit-all.min.js";import{css as s}from"/libs/deps/lit-all.min.js";var i=s`
+// branch: twp-panel commit: 1db48026128e58b82f612c98c350b6335065998e Wed, 03 Apr 2024 15:12:50 GMT
+import{html as s,LitElement as n}from"/libs/deps/lit-all.min.js";import{css as i}from"/libs/deps/lit-all.min.js";var r=i`
     :host {
+        --merch-focused-outline: var(--merch-color-focus-ring) auto 1px;
         background-color: #f5f5f5;
         border-radius: var(--consonant-merch-spacing-xs);
         display: block;
@@ -61,10 +62,10 @@ import{html as o,LitElement as n}from"/libs/deps/lit-all.min.js";import{css as s
         outline: var(--merch-focused-outline);
         outline-offset: 8px;
     }
-`;var a="header",r=class extends n{static styles=[i];static properties={card:{type:Object}};renderOption(){return o` <div id="opt">I am an option</div> `}get listLayout(){let e=this.card.querySelector("merch-offer-select").cloneNode(!0);return e.append(...[...this.querySelectorAll("template")].map(t=>t.cloneNode(!0))),e.setAttribute("container","merch-subscription-layout"),e.querySelectorAll("merch-offer").forEach(t=>{t.type="div"}),o`
+`;var c="header",o=class extends n{static styles=[r];static properties={card:{type:Object}};get listLayout(){let e=this.card.querySelector("merch-offer-select").cloneNode(!0);return e.append(...[...this.querySelectorAll("template")].map(t=>t.cloneNode(!0))),e.setAttribute("container","merch-subscription-layout"),e.querySelectorAll("merch-offer").forEach(t=>{t.type="div"}),s`
             <div id="panel">
                 <div id="header" tabindex="0">
-                    <slot name="${a}"></slot>
+                    <slot name="${c}"></slot>
                 </div>
                 <div id="offers">${e}</div>
                 <div id="footer">
@@ -72,11 +73,11 @@ import{html as o,LitElement as n}from"/libs/deps/lit-all.min.js";import{css as s
                     <slot name="cta"></slot>
                 </div>
             </div>
-        `}get waitLayout(){return o`
+        `}get waitLayout(){return s`
             <sp-theme theme="spectrum" color="light" scale="medium">
                 <div id="spinner">
                     <sp-progress-circle indeterminate size="l" />
                 </div>
             </sp-theme>
-        `}render(){return this.card?this.listLayout:this.waitLayout}};window.customElements.define("merch-subscription-panel",r);export{a as SLOT_HEADER};
+        `}render(){return this.card?this.listLayout:this.waitLayout}};window.customElements.define("merch-subscription-panel",o);export{c as SLOT_HEADER};
 //# sourceMappingURL=merch-subscription-panel.js.map
