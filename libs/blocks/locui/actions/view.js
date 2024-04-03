@@ -5,7 +5,8 @@ import {
   allowSyncToLangstore,
   allowSendForLoc,
   allowRollout,
-  allowCancel,
+  allowCancelProject,
+  projectCancelled,
 } from '../utils/state.js';
 import {
   sendForLoc,
@@ -20,7 +21,7 @@ export default function Actions() {
   const canAct = allowSyncToLangstore.value
               || allowSendForLoc.value
               || allowRollout.value
-              || allowCancel.value;
+              || allowCancelProject.value;
   const canActStyle = canAct ? 'locui-section-label' : 'locui-section-label is-invisible';
   const canReRollAll = languages.value.some((lang) => lang.status === 'completed');
   const canRollAll = languages.value.some((lang) => lang.status === 'translated');
@@ -28,6 +29,9 @@ export default function Actions() {
   return html`
     <div class=locui-section>
       <div class=locui-section-heading>
+        ${projectCancelled.value && html`
+          <h2 class="locui-section-label cancelled">This Project was Cancelled</h2>
+        `}
         <h2 class="${canActStyle}">Actions</h2>
       </div>
       <div class=locui-url-heading-actions>
@@ -72,7 +76,7 @@ export default function Actions() {
             `}
           </div>
         `}
-        ${allowCancel.value && html`
+        ${allowCancelProject.value && html`
           <button
             onClick=${() => cancelLocProject()}
             class="locui-urls-heading-action cancel">

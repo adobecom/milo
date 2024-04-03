@@ -9,7 +9,6 @@ import {
   telemetry,
   allowSyncToLangstore,
   canRefresh,
-  allowCancel,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../utils/franklin.js';
@@ -62,7 +61,6 @@ async function loadProjectSettings(projSettings) {
   if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localization service.');
     await getServiceUpdates();
-    allowCancel.value = true;
     setStatus('service');
   } else {
     canRefresh.value = true;

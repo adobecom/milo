@@ -1,6 +1,7 @@
 import { html, useEffect, useState, render } from '../../../deps/htm-preact.js';
+import { cancelProject } from '../utils/miloc.js';
 import { urls, syncFragments } from '../utils/state.js';
-import { closeSyncModal, findFragments, syncFragsLangstore } from './index.js';
+import { closeActionModal, findFragments, syncFragsLangstore } from './index.js';
 
 function SyncFragments() {
   const [fragments, setFragments] = useState(undefined);
@@ -87,7 +88,7 @@ function SyncLangStoreModal() {
             </button>
             <button 
               class="locui-urls-heading-action cancel"
-              onClick=${() => { closeSyncModal(); }}>Cancel
+              onClick=${() => { closeActionModal(); }}>Cancel
             </button>
           </div>
         </div>
@@ -96,7 +97,39 @@ function SyncLangStoreModal() {
   `;
 }
 
-export default function renderModal(el) {
-  render(html`<${SyncLangStoreModal} />`, el);
+function ConfirmCancelModal() {
+  return html`
+    <div class=locui-modal-container>
+      <div class=locui-modal-content>
+        <h2 class=locui-modal-title>
+          Are you sure you want to cancel this project?
+        </h2>
+        <div class=locui-sync-modal-content>
+          <strong>There is no turning back.</strong> <i>You will no longer be able to make updates.</i>
+          <div class=locui-sync-actions>
+            <button 
+              class=locui-urls-heading-action
+              onClick=${() => { cancelProject(); closeActionModal(); }}>Yes, cancel this project
+            </button>
+            <button 
+              class="locui-urls-heading-action cancel"
+              onClick=${() => { closeActionModal(); }}>Nevermind
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function Modal({ type }) {
+  if (type === 'cancel') {
+    return html`<${ConfirmCancelModal} />`;
+  }
+  return html`<${SyncLangStoreModal} />`;
+}
+
+export default function renderModal(el, type = 'sync') {
+  render(html`<${Modal} type=${type} />`, el);
   return el;
 }

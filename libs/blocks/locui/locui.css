@@ -201,6 +201,10 @@ h2.locui-section-label {
   line-height: 1;
 }
 
+h2.locui-section-label.cancelled {
+  color: red;
+}
+
 h2.locui-section-label.is-invisible {
   opacity: 0;
 }
