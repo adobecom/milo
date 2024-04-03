@@ -24,7 +24,7 @@ function Badge({ status }) {
 function Language({ item, idx }) {
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
-  const completeLabel = item.Action === 'Translate' ? 'Translated' : 'Rolled out';
+  const completeLabel = (item.Action === 'Translate' && 'Translated') || (item.Action === 'English Copy' && 'Copied') || 'Rolled out';
   const rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
