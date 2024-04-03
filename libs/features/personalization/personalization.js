@@ -605,29 +605,6 @@ export async function getPersConfig(info, override = false) {
     config.executionOrder = '1-1';
   }
 
-  if (infoTab) {
-    const infoObj = infoTab?.reduce((acc, item) => {
-      acc[item.key] = item.value;
-      return acc;
-    }, {});
-    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
-    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    const executionOrder = {
-      'manifest-type': 1,
-      'manifest-execution-order': 1,
-    };
-    Object.keys(infoObj).forEach((key) => {
-      if (!infoKeyMap[key]) return;
-      const index = infoKeyMap[key].indexOf(infoObj[key]);
-      executionOrder[key] = index > -1 ? index : 1;
-    });
-    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
-  } else {
-    // eslint-disable-next-line prefer-destructuring
-    config.manifestType = infoKeyMap[1];
-    config.executionOrder = '1-1';
-  }
-
   config.manifestPath = normalizePath(manifestPath);
   const selectedVariantName = await getPersonalizationVariant(
     config.manifestPath,
