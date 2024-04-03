@@ -42,7 +42,7 @@ const createPanel = () => {
         </div>
         <div slot="vat">Includes VAT</div>
     </template>
-    <a is="checkout-link" class="con-button blue" slot="footer"
+    <a is="checkout-link" class="con-button blue" slot="cta"
         >Continue</a
     ></merch-subscription-panel>`;
   const el = document.createElement('div');
