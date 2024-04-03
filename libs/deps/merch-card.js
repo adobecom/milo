@@ -1,4 +1,4 @@
-// branch: MWPW-143192 commit: 8d233401e8d043cf7defdc58be1ca9ef69475bbd Tue, 26 Mar 2024 16:40:47 GMT
+// branch: MWPW-143192 commit: e25d5c4c33e66da84b2a7cfaa4d09069cd6b47a9 Wed, 03 Apr 2024 15:02:25 GMT
 import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var d="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var w=x`
     :host {
         position: relative;
@@ -93,7 +93,6 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as x
         box-sizing: border-box;
         width: 100%;
         flex-flow: wrap;
-        gap: var(--consonant-merch-spacing-xs);
     }
 
     hr {
