@@ -43,7 +43,17 @@ function extendButtonsClass(text) {
   buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
 }
 
-function loadContentType(type, el) {
+function parseKeyString(str) {
+  const regex = /^(\w+)\s*\((.*)\)$/;
+  const match = str.match(regex);
+  if (!match) return { key: str };
+  const id = match[1];
+  const classes = match[2].split(',').map((classStr) => classStr.trim());
+  const result = { key: id, classes };
+  return result;
+}
+
+function loadContentType(type, el, ...classes) {
   if (type === 'list') {
     el.classList.add('heading-s', 'align-left');
   }
@@ -53,6 +63,9 @@ function loadContentType(type, el) {
   if (type === 'lockup') {
     const child = el.querySelector(':scope > div');
     if (child) child.classList.add('lockup');
+  }
+  if (classes.length) {
+    el.classList.add(...classes);
   }
 }
 
@@ -114,12 +127,13 @@ export default async function init(el) {
     const firstColText = firstCol.textContent.toLowerCase().trim();
     const isBlockMetaRow = firstColText.includes(keyword);
     if (isBlockMetaRow) {
-      const metaValue = firstColText.replace(keyword, '');
-      firstCol.parentElement.classList.add(`meta-${metaValue}`);
-      firstCol.classList.add('key');
+      const metaValue = firstColText.replace(keyword, '').trim();
+      const parsed = parseKeyString(metaValue);
+      console.log('metaVlue', metaValue, 'parsed', parsed);
+      firstCol.parentElement.classList.add(`meta-${parsed.key}`);
       firstCol.remove();
       cols[1].classList.add('meta-wrapper');
-      if (contentTypes.includes(metaValue)) loadContentType(metaValue, row);
+      if (contentTypes.includes(parsed.key)) loadContentType(parsed.key, row, parsed.classes);
     } else {
       row.classList.add('static');
       decorateBlockHrs(row);

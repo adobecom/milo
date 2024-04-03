@@ -78,6 +78,10 @@ todo: we need this unit */
   gap: var(--spacing-xs);
 }
 
+.marquee-hero .foreground .copy .order-1 {
+  order: -1;
+}
+
 .marquee-hero hr {
   width: 100%;
   border: none;
@@ -162,6 +166,10 @@ todo: we need this unit */
 
 .marquee-hero.center .meta-list .meta-wrapper { 
   margin: 0 auto; 
+}
+
+.marquee-hero .meta-lockup { 
+  margin: var(--spacing-xs) 0; 
 }
 
 
