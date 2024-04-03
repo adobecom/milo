@@ -351,12 +351,15 @@
   }
 
   .brick.prioritized-placement.split .foreground .brick-text,
-  .brick.prioritized-placement.split.row.media-right .foreground .brick-text,
-  .brick.prioritized-placement.split.row.media-left .foreground .brick-media {
+  .brick.prioritized-placement.split.row.media-right .foreground .brick-text {
     max-width: 460px;
     align-self: center;
     justify-self: center;
     grid-column: span 5;
+  }
+
+  .brick.prioritized-placement.split.row.media-left .foreground .brick-media {
+    grid-column: span 7;
   }
 
   .brick.split.row.media-left .foreground .brick-text,
@@ -364,7 +367,10 @@
     grid-column: 7 / span 6;
   }
 
-  .brick.prioritized-placement.split.row.media-left .foreground .brick-text,
+  .brick.prioritized-placement.split.row.media-left .foreground .brick-text {
+    grid-column: 8 / span 5;
+  }
+
   .brick.prioritized-placement.split.row.media-right .foreground .brick-media {
     grid-column: 6 / span 7;
   }
@@ -418,18 +424,8 @@
     flex-direction: row;
   }
 
-  .brick.split.row.prioritized-placement .foreground img {
-    margin: var(--spacing-l);
-    height: calc(100% - (var(--spacing-l) * 2));
-    width: calc(50% - var(--spacing-l));
-  }
-
-  .brick.split.row.media-right.prioritized-placement .foreground img {
-    margin-left: 0;
-  }
-
-  .brick.split.row.media-left.prioritized-placement .foreground img {
-    margin-right: 0;
+  .brick.prioritized-placement .foreground div > picture {
+    margin-top: 0;
   }
   
   .brick .foreground .brick-media video,
