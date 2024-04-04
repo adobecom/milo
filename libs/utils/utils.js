@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
