@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+import dynamicNav from '../features/dynamic-navigation.js';
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -833,7 +835,6 @@ async function checkForPageMods() {
   const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
   const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
-  const dynamicNavEnabled = ['entry', 'on'].includes(dynamicNavMd);
 
   if (mepEnabled) {
     const { base } = getConfig();
@@ -855,29 +856,11 @@ async function checkForPageMods() {
     persManifests = persManifests.concat(getPromoManifests(promoMd));
   }
 
-  if (dynamicNavEnabled) {
-    const gnavSourceContent = getMetadata('gnav-source');
-
-    if (dynamicNavMd === 'entry' && gnavSourceContent) {
-      window.sessionStorage.setItem('gnavSource', gnavSourceContent);
-    }
-
-    if (dynamicNavMd === 'on') {
-      const source = window.sessionStorage.getItem('gnavSource');
-
-      if (source && gnavSourceContent) {
-        document.querySelector('meta[name="gnav-source"]').content = source;
-      }
-
-      if (source && !gnavSourceContent) {
-        const gnMeta = document.createElement('meta');
-        gnMeta.setAttribute('name', 'gnav-source');
-        gnMeta.setAttribute('content', source);
-        document.head.append(gnMeta);
-      }
-    }
+  if (dynamicNavMd) {
+    const { default: setDynamicNav } = await import('../features/dynamic-navigation.js');
+    setDynamicNav(dynamicNavMd, { getConfig, getMetadata });
   } else {
-    sessionStorage.removeItem('gnavSource');
+    window.sessionStorage.removeItem('gnavSource');
   }
 
   const { env } = getConfig();
