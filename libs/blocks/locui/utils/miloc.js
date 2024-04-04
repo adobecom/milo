@@ -127,6 +127,11 @@ export async function cancelProject() {
   url = `${url}cancel-project?project=${heading.value.projectId}`;
   const resp = await fetch(url, opts);
   if (resp.status === 200) setExcelStatus('Project cancelled', '');
+  if (resp.status === 500) {
+    const json = await resp.json();
+    setStatus('service', 'error', 'Cancelling project', json.error);
+    return resp.status;
+  }
   setStatus('service', 'info', 'Successfully Cancelled Project', null, 5000);
   return resp.status;
 }
