@@ -45,8 +45,16 @@ function getUrl(el) {
 }
 
 function findLinks(selector) {
+  const hrefs = [];
   return [...document.body.querySelectorAll(selector)]
-    .map((el) => ({ url: getUrl(el), edit: null, preview: 'Fetching', live: 'Fetching' }));
+    .reduce((links, el) => {
+      const url = getUrl(el);
+      if (!hrefs.includes(url.href)) {
+        hrefs.push(url.href);
+        links.push({ url, edit: null, preview: 'Fetching', live: 'Fetching' });
+      }
+      return links;
+    }, []);
 }
 
 async function setContent() {
@@ -54,7 +62,7 @@ async function setContent() {
 
   content.value = {
     page: { items: [{ url: new URL(window.location.href), edit: null, preview: 'Fetching', live: 'Fetching' }] },
-    fragments: { items: findLinks('main .fragment, a[data-modal-path]') },
+    fragments: { items: findLinks('main .fragment, a[data-modal-path], [data-path]') },
     links: { items: findLinks('main a[href^="/"') },
     nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
