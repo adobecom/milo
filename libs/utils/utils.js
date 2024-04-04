@@ -1,7 +1,4 @@
 /* eslint-disable no-console */
-
-import dynamicNav from '../features/dynamic-navigation.js';
-
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
