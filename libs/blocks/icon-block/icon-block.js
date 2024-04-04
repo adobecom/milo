@@ -14,7 +14,6 @@
 * Icon Block - v5.1
 */
 
-import action from '../../utils/action.js';
 import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
