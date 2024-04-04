@@ -1,8 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-const bodyMock = await readFile({ path: './mocks/body.html' });
-document.body.innerHTML = bodyMock;
+document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/text/text.js');
 
 describe('text block', () => {
