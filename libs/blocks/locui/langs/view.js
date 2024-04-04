@@ -39,7 +39,7 @@ function Language({ item, idx }) {
         </div>
         ${item.done > 0 && html`
         <div>
-          <p class=locui-project-label>Progress</p>
+          <p class=locui-project-label>${item.statusText}</p>
           <div class=locui-project-name-totals>
             <h3 class=locui-subproject-name>${item.done}</h3>
             ${item.total > 0 && html`
