@@ -40,8 +40,7 @@
 
 .icon-block .foreground .text-content {
   display: flex;
-  /* flex-wrap: wrap; */
-  flex-direction: column; /* new */
+  flex-direction: column;
   align-content: center;
   width: 100%;
 }
@@ -461,8 +460,6 @@
   }
 
   .icon-block.vertical .foreground .text-content {
-    /* flex-grow: 1;
-    flex-basis: 0; */
     margin-bottom: 0;
   }
 
