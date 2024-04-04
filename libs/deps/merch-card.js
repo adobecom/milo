@@ -1,4 +1,4 @@
-// branch: MWPW-136871 commit: cd56e2d85b07c470417ecea93301bb68dfa02b93 Thu, 04 Apr 2024 04:44:49 GMT
+// branch: MWPW-136871 commit: cd56e2d85b07c470417ecea93301bb68dfa02b93 Thu, 04 Apr 2024 18:08:04 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as f,unsafeCSS as p}from"/libs/deps/lit-all.min.js";var d="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var y=f`
     :host {
         position: relative;
@@ -269,13 +269,9 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as f
     }
 
     :host([variant='twp']) footer {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        height: 100%;
         gap: var(--consonant-merch-spacing-xxs);
-        padding: var(--consonant-merch-spacing-xs);
+        flex-direction: column;
+        align-self: flex-start;
     }
 
     :host([variant='mini-compare-chart']) .icons .img {
@@ -711,7 +707,11 @@ merch-card[variant="twp"] [slot="body-xs"] ul li::before {
 merch-card[variant="twp"] [slot="footer"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
+    padding: var(--consonant-merch-spacing-s)
+    var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs);
     color: var(--merch-color-grey-80);
+    display: flex;
+    flex-flow: wrap;
 }
 
 

@@ -18,6 +18,11 @@ div[class*="-merch-card"] > div,
   color: var(--text-color);
 }
 
+.twp.merch-card .merch-card-price {
+  font-weight: 700;
+  margin: 0;
+}
+
 merch-card.special-offers del span[is="inline-price"] {
   text-decoration: line-through;
 }
