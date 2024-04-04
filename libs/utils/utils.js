@@ -855,8 +855,8 @@ async function checkForPageMods() {
   }
 
   if (dynamicNavMd) {
-    const { default: setDynamicNav } = await import('../features/dynamic-navigation.js');
-    setDynamicNav(dynamicNavMd, { getConfig, getMetadata });
+    const { default: dynamicNav } = await import('../features/dynamic-navigation.js');
+    dynamicNav(dynamicNavMd, { getConfig, getMetadata });
   } else {
     window.sessionStorage.removeItem('gnavSource');
   }
