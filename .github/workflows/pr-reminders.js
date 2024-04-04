@@ -80,7 +80,7 @@ const main = async ({ github, context }) => {
           pr,
           comments,
           message:
-            'This pull request is not passing all required checks. Please see [this discussion](https://github.com/orgs/adobecom/discussions/997) for information on how to get all checks passing. Inconsistent checks can be manually retried.',
+            'This pull request is not passing all required checks. Please see [this discussion](https://github.com/orgs/adobecom/discussions/997) for information on how to get all checks passing. Inconsistent checks can be manually retried. If a test absolutely can't pass for a good reason, please add a comment with an explanation to the PR.',
         });
         continue;
       }
