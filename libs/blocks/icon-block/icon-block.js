@@ -78,7 +78,7 @@ function decorateContent(el) {
     }
     const ctas = el.querySelectorAll('.action-area');
     if (ctas.length) {
-      const div = createTag('div', { class: 'action-area-container' });
+      const div = createTag('div', { class: 'cta-container' });
       const lastCta = ctas[ctas.length - 1];
       const secondLastCta = ctas[ctas.length - 2];
       lastCta.insertAdjacentElement('afterend', div);

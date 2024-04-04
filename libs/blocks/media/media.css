@@ -290,7 +290,7 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-bottom: revert;
 }
 
-.section[class*="-up"] .media:not(.media-reverse-mobile) .action-area-container {
+.section[class*="-up"] .media:not(.media-reverse-mobile) .cta-container {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;

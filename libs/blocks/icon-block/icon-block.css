@@ -252,7 +252,7 @@
   margin-bottom: 0;
 }
 
-.icon-block .action-area-container .action-area {
+.icon-block .cta-container .action-area {
   width: 100%;
 }
 
@@ -347,11 +347,11 @@
   align-self: stretch;
 }
 
-.icon-block .action-area-container {
+.icon-block .cta-container {
   margin-top: var(--spacing-s);
 }
 
-.section[class*="-up"] .icon-block .action-area-container {
+.section[class*="-up"] .icon-block .cta-container {
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;

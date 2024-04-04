@@ -16,7 +16,7 @@
 
 .text-block [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
 
-.text-block .action-area-container,
+.text-block .cta-container,
 .text-block p.action-area { margin-top: var(--spacing-s); }
 
 .text-block div > *:last-child { margin-bottom: 0; }
@@ -63,7 +63,7 @@
   align-items: center;
 }
 
-.text-block .action-area-container .action-area {
+.text-block .cta-container .action-area {
   width: 100%;
 }
 
@@ -220,7 +220,7 @@
   margin-bottom: 0;
 }
 
-.section[class*="-up"] .text-block:not(.legal, .link-farm) .action-area-container {
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .cta-container {
   display: flex;
   align-items: flex-end;
   width: 100%;
