@@ -2,6 +2,28 @@ import { decorateBlockBg, decorateBlockHrs, decorateBlockText } from '../../util
 import { createTag } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text'];
+const blockMetaKeyword = 'block-metadata-';
+
+function decorateList(el) {
+  el.classList.add('heading-s', 'align-left');
+  const listItems = el.querySelectorAll('ul li', 'ol li');
+  if (listItems.length) {
+    [...listItems].forEach((item) => {
+      const firstElemIsIcon = item.children[0]?.classList.contains('icon');
+      if (firstElemIsIcon) item.classList.add('icon-item');
+      if (!item.parentElement.classList.contains('icon-list')) item.parentElement.classList.add('icon-list');
+    });
+  }
+}
+
+function decorateQr(el) {
+  const text = el.querySelector(':scope > div');
+  if (!text && !text.children) return;
+  const classes = ['qr-code-img', 'google-play', 'app-store'];
+  [...text.children].forEach((e, i) => {
+    e.classList.add(classes[i]);
+  });
+}
 
 function decorateLockup(el) {
   const rows = el.querySelectorAll(':scope > p');
@@ -24,27 +46,6 @@ function decorateBadge(el) {
   });
 }
 
-function decorateQr(el) {
-  const text = el.querySelector(':scope > div');
-  if (!text && !text.children) return;
-  const classes = ['qr-code-img', 'google-play', 'app-store'];
-  [...text.children].forEach((e, i) => {
-    e.classList.add(classes[i]);
-  });
-}
-
-function decorateList(el) {
-  el.classList.add('heading-s', 'align-left');
-  const listItems = el.querySelectorAll('ul li', 'ol li');
-  if (listItems.length) {
-    [...listItems].forEach((item) => {
-      const firstElemIsIcon = item.children[0]?.classList.contains('icon');
-      if (firstElemIsIcon) item.classList.add('icon-item');
-      if (!item.parentElement.classList.contains('icon-list')) item.parentElement.classList.add('icon-list');
-    });
-  }
-}
-
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
@@ -54,7 +55,7 @@ function extendButtonsClass(text) {
 function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
   const match = str.match(regex);
-  if (!match) return { key: str };
+  if (!match) return { key: str, classes: null };
   const id = match[1];
   const classes = match[2].split(',').map((classStr) => classStr.trim());
   const result = { key: id, classes };
@@ -71,6 +72,9 @@ function loadContentType(type, el, ...classes) {
   if (type === 'lockup') {
     const child = el.querySelector(':scope > div');
     if (child) child.classList.add('flex-row');
+  }
+  if (type === 'text') {
+    console.log('text type', el, classes);
   }
   if (classes.length) {
     el.classList.add(...classes);
@@ -89,11 +93,14 @@ export default async function init(el) {
     rows = tail;
   }
 
-  const foreground = rows[0];
+  const mainRowIndex = rows.findIndex((row) => {
+    const firstColText = row.children[0].textContent.toLowerCase().trim();
+    return !firstColText.includes(blockMetaKeyword);
+  });
+  const foreground = rows[mainRowIndex];
   const fRows = foreground.querySelectorAll(':scope > div');
   foreground.classList.add('foreground', `cols-${fRows.length}`);
   let copy = fRows[0];
-
   const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
   const asset = foreground.querySelector('div > picture', 'div > video');
   copy = anyTag.closest('div');
@@ -122,22 +129,30 @@ export default async function init(el) {
   if (assetRow) el.classList.add('asset-left');
   const staticCopy = createTag('div', { class: 'static' }, copy.innerHTML);
   decorateBadge(staticCopy);
-  rows.shift();
-
+  rows.splice(mainRowIndex, 1);
+  if (mainRowIndex > 0) {
+    for (let i = 0; i < mainRowIndex; i += 1) {
+      rows[i].classList.add('prepend');
+    }
+  }
   copy.innerHTML = '';
   copy.append(staticCopy);
-  copy.append(...rows);
+  [...rows].forEach((row) => {
+    if (row.classList.contains('prepend')) {
+      copy.prepend(row);
+    } else {
+      copy.append(row);
+    }
+  });
 
   [...rows].forEach(async (row) => {
     const cols = row.querySelectorAll(':scope > div');
-    const keyword = 'block-metadata-';
     const firstCol = cols[0];
     const firstColText = firstCol.textContent.toLowerCase().trim();
-    const isBlockMetaRow = firstColText.includes(keyword);
+    const isBlockMetaRow = firstColText.includes(blockMetaKeyword);
     if (isBlockMetaRow) {
-      const metaValue = firstColText.replace(keyword, '').trim();
+      const metaValue = firstColText.replace(blockMetaKeyword, '').trim();
       const parsed = parseKeyString(metaValue);
-      // console.log('metaVlue', metaValue, 'parsed', parsed);
       firstCol.parentElement.classList.add(`meta-${parsed.key}`);
       firstCol.remove();
       cols[1].classList.add('meta-wrapper');
