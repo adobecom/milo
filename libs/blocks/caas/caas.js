@@ -7,7 +7,6 @@ import {
 } from './utils.js';
 import {
   b64ToUtf8,
-  utf8ToB64,
   createIntersectionObserver,
   getConfig,
   getMetadata,
