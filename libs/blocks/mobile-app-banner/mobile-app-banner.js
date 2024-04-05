@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { getConfig } from '../../utils/utils.js';
 
 async function getKey(product) {
@@ -14,6 +13,7 @@ async function getKey(product) {
   return keyMatch[0]?.key;
 }
 
+/* eslint-disable */
 function branchInit(header, key) {
   let initValue = false;
   function initBranch() {
@@ -56,13 +56,13 @@ function branchInit(header, key) {
       header.style.position = 'sticky';
     });
   }
-  // initBranch();
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
     .forEach((event) => {
       window.addEventListener(event, initBranch);
     });
 }
 
+/* eslint-enable */
 export default async function init(el) {
   const header = document.querySelector('.global-navigation');
   const row = el.querySelector(':scope > div');
