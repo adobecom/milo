@@ -228,6 +228,15 @@ main > .section[class*='-up'] > .content {
   }
 }
 
+@media screen and (max-width: 900px) {
+  .section.two-up.one-up-tablet,
+  .section.three-up.one-up-tablet,
+  .section.four-up.one-up-tablet,
+  .section.five-up.one-up-tablet {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media screen and (min-width: 720px) {
   .section.grid-width-6 {
     padding-left: calc((100vw - 600px) / 2);
