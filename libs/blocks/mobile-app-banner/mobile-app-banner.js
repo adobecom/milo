@@ -25,7 +25,7 @@ function branchInit(header, key) {
       if (!b[n] || !b[n]._q) {
         for (; s < _.length;) c(h, _[s++]);
         d = r.createElement(a);
-        // d.async = 1;
+        d.async = 1;
         d.src = 'https://cdn.branch.io/branch-latest.min.js';
         k = r.getElementsByTagName(a)[0];
         k.parentNode.insertBefore(d, k);
@@ -65,6 +65,7 @@ function branchInit(header, key) {
 /* eslint-enable */
 export default async function init(el) {
   const header = document.querySelector('.global-navigation');
+  if (!header) return;
   const row = el.querySelector(':scope > div');
   const product = row.textContent.trim().toLowerCase();
   const key = await getKey(product);
