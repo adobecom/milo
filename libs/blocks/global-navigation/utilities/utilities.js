@@ -1,6 +1,7 @@
 import { getConfig, getMetadata, loadStyle, loadLana, decorateLinks } from '../../../utils/utils.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
+import { handleGlobalNavCommands } from '../../../features/personalization/personalization.js';
 
 loadLana();
 
@@ -305,10 +306,18 @@ export function trigger({ element, event, type } = {}) {
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
 export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
+  const { mep } = getConfig();
+
   const path = getFederatedUrl(url);
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
+
+  if (mep.globalnav.length) { // just in case
+    mep.globalnav.forEach(({ manifestId, commands }) => {
+      handleGlobalNavCommands(commands, manifestId, body);
+    });
+  }
 
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {

@@ -35,6 +35,8 @@ const PAGE_URL = new URL(window.location.href);
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
+const GLOBAL_NAV_SELECTOR = 'global-navigation';
+
 // Replace any non-alpha chars except comma, space, ampersand and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
 
@@ -154,7 +156,9 @@ const COMMANDS = {
 };
 
 function checkSelectorType(selector) {
-  return selector?.includes('/fragments/') ? 'fragment' : 'css';
+  if (selector?.includes('/fragments/')) return 'fragment';
+  if (selector?.startsWith(GLOBAL_NAV_SELECTOR)) return GLOBAL_NAV_SELECTOR;
+  return 'css';
 }
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
@@ -393,6 +397,10 @@ const getVariantInfo = (line, variantNames, variants) => {
         val: normalizePath(line[vn]),
         action,
       });
+    } else if ((action in COMMANDS || action in CREATE_CMDS)
+        && variantInfo.selectorType === GLOBAL_NAV_SELECTOR) {
+      variantInfo.selector = variantInfo.selector.replace(GLOBAL_NAV_SELECTOR, '');
+      variants[vn].globalnav.push(variantInfo);
     } else if (GLOBAL_CMDS.includes(action)) {
       variants[vn][action] = variants[vn][action] || [];
 
@@ -431,7 +439,7 @@ export function parseConfig(data) {
       .filter((vn) => !MANIFEST_KEYS.includes(vn));
 
     variantNames.forEach((vn) => {
-      variants[vn] = { commands: [], fragments: [] };
+      variants[vn] = { commands: [], fragments: [], globalnav: [] };
     });
 
     experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
@@ -543,7 +551,7 @@ const createDefaultExperiment = (manifest) => ({
   manifest: manifest.manifestPath,
   variantNames: ['all'],
   selectedVariantName: 'default',
-  selectedVariant: { commands: [], fragments: [] },
+  selectedVariant: { commands: [], fragments: [], globalnav: [] },
 });
 
 export async function getPersConfig(info, override = false) {
@@ -637,8 +645,8 @@ export async function getPersConfig(info, override = false) {
   return config;
 }
 
-const deleteMarkedEls = () => {
-  [...document.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+const deleteMarkedEls = (rootEl = document) => {
+  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
     .forEach((el) => el.remove());
 };
 
@@ -678,6 +686,7 @@ export async function runPersonalization(experiment, config) {
     experiment,
     blocks: selectedVariant.useblockcode,
     fragments: selectedVariant.fragments,
+    globalnav: { manifestId, commands: selectedVariant.globalnav },
   };
 }
 
@@ -727,12 +736,18 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
+export const handleGlobalNavCommands = (commands, manifestId, rootEl) => {
+  handleCommands(commands, manifestId, rootEl);
+  deleteMarkedEls(rootEl);
+};
+
 export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) return;
   if (!config?.mep) config.mep = {};
   config.mep.handleFragmentCommand = handleFragmentCommand;
+  config.mep.globalnav = [];
   let experiments = manifests;
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
@@ -746,6 +761,7 @@ export async function applyPers(manifests) {
     const result = await runPersonalization(experiment, config);
     if (result) {
       results.push(result);
+      if (result.globalnav) config.mep.globalnav.push(result.globalnav);
     }
   }
   results = results.filter(Boolean);
