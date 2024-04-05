@@ -484,7 +484,14 @@
   .marquee.split .asset.bleed picture,
   .marquee.split .asset.bleed video {
     height: 100%;
+  }
+
+  .marquee.split .asset.bleed picture {
     object-fit: fill;
+  }
+
+  .marquee.split .asset.bleed video {
+    object-fit: cover;
   }
 
   .marquee.split.large .icon-area img {

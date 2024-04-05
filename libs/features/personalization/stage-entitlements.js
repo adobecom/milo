@@ -7,6 +7,8 @@ const STAGE_ENTITLEMENTS = {
   '07609803-48a0-4762-be51-94051ccffb45': 'premiere-pro-any',
   '67129b31-eb1a-4c9e-b251-4561ac7c8602': 'any-cc-product-no-stock',
   '569f0f9d-83e8-45b4-adbf-07ef08a83398': 'any-cc-product-with-stock',
+  '47e204a3-220a-4e53-a95e-94b6eded0d26': '3d-substance-collection',
+  '4ec7b469-42c9-4367-a7da-39f11a32d880': '3d-substance-texturing',
 };
 
 export default STAGE_ENTITLEMENTS;
