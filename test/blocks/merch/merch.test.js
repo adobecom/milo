@@ -1,4 +1,3 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
@@ -8,6 +7,7 @@ import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
   PRICE_TEMPLATE_STRIKETHROUGH,
+  CHECKOUT_ALLOWED_KEYS,
   buildCta,
   getCheckoutContext,
   initService,
@@ -20,7 +20,7 @@ import merch, {
   getCheckoutAction,
 } from '../../../libs/blocks/merch/merch.js';
 
-import { mockFetch, unmockFetch } from './mocks/fetch.js';
+import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
@@ -126,8 +126,8 @@ describe('Merch Block', () => {
 
   before(async () => {
     window.lana = { log: () => { } };
-    document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    document.head.innerHTML = await readMockText('head.html');
+    document.body.innerHTML = await readMockText('body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
@@ -422,9 +422,6 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('TWP and D2P modals', () => {
-  });
-
   describe('Download flow', () => {
     it('supports download use case', async () => {
       mockIms();
@@ -601,6 +598,28 @@ describe('Merch Block', () => {
       const modal = document.getElementById('checkout-link-modal');
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
+    });
+  });
+
+  describe.only('checkout link with optional params', async () => {
+    const CHECKOUT_ALLOWED_KEYS_VALUES = { mal: 2 };
+    CHECKOUT_ALLOWED_KEYS.forEach((key, index) => {
+    // ['usid'].forEach((key, index) => {
+      it(`renders checkout link with "${key}" parameter`, async () => {
+        const a = document.createElement('a', { is: 'checkout-link' });
+        a.classList.add('merch');
+        const searchParams = new URLSearchParams();
+        searchParams.set('osi', index);
+        searchParams.set('type', 'checkoutUrl');
+        const value = CHECKOUT_ALLOWED_KEYS_VALUES[key] || 'test';
+        searchParams.set(key, value);
+        a.setAttribute('href', `/tools/ost?${searchParams.toString()}`);
+        document.body.appendChild(a);
+        const el = await merch(a);
+        await el.onceSettled();
+        expect(el.getAttribute('href')).to.match(new RegExp(`&cli=adobe_com&ctx=fp&co=US&${key}=${value}&lang=en`));
+        el.remove();
+      });
     });
   });
 });

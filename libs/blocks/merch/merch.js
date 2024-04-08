@@ -34,6 +34,46 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
+/* Optional checkout link params that are appened to checkout url as is */
+export const CHECKOUT_ALLOWED_KEYS = [
+  'af',
+  'ai',
+  'appctxid',
+  'context.guid',
+  // 'countrySpecific', //TODO not allowed in checkout url builder.
+  'csm',
+  'ctxRtUrl',
+  'DCWATC',
+  'dp', // Enable digital payments for iframe context
+  'fr', // represents the commerce app redirecting to UC
+  'gsp',
+  'jit',
+  'lo',
+  'mal',
+  'mv',
+  'mv2',
+  'nglwfdata',
+  'otac',
+  'pcid', // Unified Paywall configuration ID for analytics
+  'promoid',
+  'rf',
+  'rUrl',
+  'sc',
+  'scl',
+  'sdid',
+  'sid', // x-adobe-clientsession
+  'so.ca',
+  'so.su',
+  'so.tr',
+  'so.va',
+  'svar',
+  'th',
+  'thm',
+  'trackingid',
+  'usid',
+  'workflowid',
+];
+
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
 export const CC_ALL_APPS = ['CC_ALL_APPS',
@@ -306,6 +346,14 @@ export async function getCheckoutContext(el, params) {
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const modal = params?.get('modal');
+
+  const extraOptions = {};
+  params.forEach((value, key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      extraOptions[key] = value;
+    }
+  });
+
   return {
     ...context,
     checkoutClientId,
@@ -314,6 +362,7 @@ export async function getCheckoutContext(el, params) {
     checkoutMarketSegment,
     entitlement,
     modal,
+    extraOptions: JSON.stringify(extraOptions),
   };
 }
 
@@ -364,7 +413,9 @@ export async function buildCta(el, params) {
   if (!context) return null;
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
+
   const cta = service.createCheckoutLink(context, text);
+
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
   } else {
