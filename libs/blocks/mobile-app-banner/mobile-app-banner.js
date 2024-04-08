@@ -47,14 +47,10 @@ function branchInit(header, key) {
       ),
       0
     );
-    const privacyConsent = !!window.adobePrivacy && window.adobePrivacy.hasUserProvidedConsent();
+    const privacyConsent = window.adobePrivacy?.hasUserProvidedConsent();
     branch.init(key, { tracking_disabled: !privacyConsent });
-    branch.addListener('didShowJourney', () => {
-      header.style.position = 'relative';
-    });
-    branch.addListener('didCloseJourney', () => {
-      header.style.position = 'sticky';
-    });
+    branch.addListener('didShowJourney', () => header.style.position = 'relative');
+    branch.addListener('didCloseJourney', () => header.style.position = 'sticky');
   }
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
     .forEach((event) => {
