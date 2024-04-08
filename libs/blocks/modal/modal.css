@@ -218,6 +218,10 @@
 }
 
 @media (min-width: 1200px) {
+  .dialog-modal.s-size {
+    max-width: 650px;
+  }
+
   .region-selector .content {
     column-count: 5;
   }
