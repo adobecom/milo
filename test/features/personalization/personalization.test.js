@@ -150,27 +150,14 @@ describe('Functional Test', () => {
     assert.calledWith(window.console.log, 'Invalid selector: ', '.bad...selector');
     window.console.log.reset();
   });
-});
 
-describe('matchGlob function', () => {
-  it('should match page', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers');
-    expect(result).to.be.true;
-  });
-
-  it('should match page with HTML extension', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers.html');
-    expect(result).to.be.true;
-  });
-
-  it('should not match child page', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers/free-download');
-    expect(result).to.be.false;
-  });
-
-  it('should match child page', async () => {
-    const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
-    expect(result).to.be.true;
+  it('should override to param-newoffer=123', async () => {
+    let config = getConfig();
+    config.mep = { override: '/path/to/manifest.json--param-newoffer=123' };
+    await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    config = getConfig();
+    expect(config.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
   });
 });
 
@@ -196,11 +183,24 @@ describe('matchGlob function', () => {
   });
 });
 
-it('should choose override to firefox', async () => {
-  let config = getConfig();
-  config.mep = { override: '/path/to/manifest.json--param-newoffer=123' };
-  await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
-  await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-  config = getConfig();
-  expect(config.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
+describe('matchGlob function', () => {
+  it('should match page', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers');
+    expect(result).to.be.true;
+  });
+
+  it('should match page with HTML extension', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers.html');
+    expect(result).to.be.true;
+  });
+
+  it('should not match child page', async () => {
+    const result = matchGlob('/products/special-offers', '/products/special-offers/free-download');
+    expect(result).to.be.false;
+  });
+
+  it('should match child page', async () => {
+    const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
+    expect(result).to.be.true;
+  });
 });

@@ -669,7 +669,6 @@ function overridePersonalizationVariant(manifest, config) {
   const { manifestPath, variantNames } = manifest;
   if (!config.mep?.override) return;
   let selectedVariant;
-  /* c8 ignore start */
   config.mep?.override?.split('---').some((item) => {
     const pair = item.trim().split('--');
     if (pair[0] === manifestPath && pair.length > 1) {
@@ -678,7 +677,6 @@ function overridePersonalizationVariant(manifest, config) {
     }
     return false;
   });
-  /* c8 ignore stop */
   if (selectedVariant && variantNames.includes(selectedVariant)) {
     manifest.selectedVariantName = selectedVariant;
     manifest.selectedVariant = manifest.variants[selectedVariant];
