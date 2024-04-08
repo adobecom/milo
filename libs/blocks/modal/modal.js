@@ -1,7 +1,7 @@
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
-const FOCUSABLES = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
+const FOCUSABLES = 'a:not(.hide-video), button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
     <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
@@ -9,6 +9,10 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
     <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
   </g>
 </svg>`;
+const MOBILE_MAX = 599;
+const TABLET_MAX = 1199;
+let messageAbortController;
+let resizeAbortController;
 
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
@@ -32,6 +36,14 @@ export function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
+  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
+  const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
+  const closeEventAnalytics = new Event(`${analyticsEventName}:modalClose:buttonClose`);
+  // removing the 'message' and 'resize' event listener set for commerce modals
+  messageAbortController?.abort();
+  resizeAbortController?.abort();
+
+  sendAnalytics(closeEventAnalytics);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
@@ -87,6 +99,44 @@ async function getPathModal(path, dialog) {
   await getFragment(block);
 }
 
+function sendViewportDimensionsToiFrame(source) {
+  const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+  source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
+}
+
+export function sendViewportDimensionsOnRequest({ messageInfo, debounce }) {
+  const { data, source } = messageInfo || {};
+  if (data !== 'viewportWidth' || !source || !debounce) return;
+  resizeAbortController = new AbortController();
+  sendViewportDimensionsToiFrame(source);
+  window.addEventListener('resize', debounce(() => sendViewportDimensionsToiFrame(source), 10), { signal: resizeAbortController.signal });
+}
+
+/** For the modal height adjustment to work the following conditions must be met:
+ * 1. The modal must have classes 'commerce-frame height-fit-content';
+ * 2. The iframe inside must send a postMessage with the contentHeight (a number of px or '100%);
+ */
+function adjustModalHeight({ contentHeight, dialog }) {
+  const iframe = dialog?.querySelector('iframe');
+  const iframeWrapper = dialog?.querySelector('.milo-iframe');
+  if (!contentHeight || !iframe || !iframeWrapper) return;
+  if (contentHeight === '100%') {
+    // the initial iframe height was set to 0 in CSS for the content height to be measured properly
+    iframe.style.height = '100%';
+    iframeWrapper.style.height = contentHeight;
+    dialog.style.height = contentHeight;
+  } else {
+    const verticalMargins = 20;
+    const clientHeight = document.documentElement.clientHeight - verticalMargins;
+    if (clientHeight <= 0) return;
+    const newHeight = contentHeight > clientHeight ? clientHeight : contentHeight;
+    // the initial iframe height was set to 0 in CSS for the content height to be measured properly
+    iframe.style.height = '100%';
+    iframeWrapper.style.height = `${newHeight}px`;
+    dialog.style.height = `${newHeight}px`;
+  }
+}
+
 export async function getModal(details, custom) {
   if (!(details?.path || custom)) return null;
   const { id } = details || custom;
@@ -97,22 +147,14 @@ export async function getModal(details, custom) {
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
 
-  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
-  const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
-  const close = createTag('button', {
-    class: 'dialog-close',
-    'aria-label': 'Close',
-    'daa-ll': `${analyticsEventName}:modalClose:buttonClose`,
-  }, CLOSE_ICON);
+  const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
 
   const focusVisible = { focusVisible: true };
   const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
   const titleOnLoad = dialog.querySelector('h1, h2, h3, h4, h5');
-  const isVideoFragment = dialog.querySelector('.fragment:first-child')?.dataset?.path?.includes('modals/videos');
   let firstFocusable;
 
-  if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])
-    && !isVideoFragment) {
+  if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])) {
     firstFocusable = focusablesOnLoad[0]; // eslint-disable-line prefer-destructuring
   } else if (titleOnLoad) {
     titleOnLoad.setAttribute('tabIndex', 0);
@@ -163,61 +205,30 @@ export async function getModal(details, custom) {
     [...document.querySelectorAll('header, main, footer')]
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
-
-  const iframe = dialog.querySelector('iframe');
-  if (iframe) {
-    if (dialog.classList.contains('commerce-frame')) {
-      const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
-      await enableCommerceFrameFeatures({ dialog, iframe });
-    } else {
-      /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
-      For modals without the 'commerce-frame' class height auto adjustment is not applicable */
-      iframe.style.height = '100%';
-    }
-  }
-
-  return dialog;
-}
-
-export function getHashParams(hashStr) {
-  if (!hashStr) return {};
-  return hashStr.split(':').reduce((params, part) => {
-    if (part.startsWith('#')) {
-      params.hash = part;
-    } else {
-      const [key, val] = part.split('=');
-      if (key === 'delay' && parseInt(val, 10) > 0) {
-        params.delay = parseInt(val, 10) * 1000;
+  if (dialog.classList.contains('commerce-frame')) {
+    const { debounce } = await import('../../utils/action.js');
+    messageAbortController = new AbortController();
+    window.addEventListener('message', (messageInfo) => {
+      if (dialog.classList.contains('height-fit-content')) {
+        adjustModalHeight({ contentHeight: messageInfo?.data?.contentHeight, dialog });
       }
-    }
-    return params;
-  }, {});
-}
-
-export function delayedModal(el) {
-  const { hash, delay } = getHashParams(el?.dataset.modalHash);
-  if (!delay || !hash) return false;
-  el.classList.add('hide-block');
-  const modalOpenEvent = new Event(`${hash}:modalOpen`);
-  const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
-  el.dataset.modalHash = hash;
-  el.href = hash;
-  if (!pagesModalWasShownOn?.includes(window.location.pathname)) {
-    setTimeout(() => {
-      window.location.replace(hash);
-      sendAnalytics(modalOpenEvent);
-      window.sessionStorage.setItem(`shown:${hash}`, `${pagesModalWasShownOn || ''} ${window.location.pathname}`);
-    }, delay);
+      /* If the page inside iFrame comes from another domain, it won't be able to retrieve
+      the viewport dimensions, so it sends a request to receive the viewport dimensions
+      from the parent window. */
+      sendViewportDimensionsOnRequest({ debounce, messageInfo });
+    }, { signal: messageAbortController.signal });
   }
-  return true;
+  return dialog;
 }
 
 // Deep link-based
 export default function init(el) {
   const { modalHash } = el.dataset;
-  if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
-  const details = findDetails(window.location.hash, el);
-  return details ? getModal(details) : null;
+  if (window.location.hash === modalHash) {
+    const details = findDetails(window.location.hash, el);
+    if (details) return getModal(details);
+  }
+  return null;
 }
 
 // Click-based modal
