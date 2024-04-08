@@ -33,6 +33,20 @@ const HEADING_MAP = {
   },
 };
 
+const TEXT_STYLES = {
+  H5: 'detail-m',
+  H4: 'body-xxs',
+  H3: 'heading-xs',
+  H2: 'heading-m',
+};
+
+const HEADING_MAP = {
+  'special-offers': {
+    H5: 'H4',
+    H3: 'H3',
+  },
+};
+
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
 const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART, 'twp'];
