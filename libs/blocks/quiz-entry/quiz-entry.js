@@ -178,10 +178,10 @@ const App = ({
       getOptionsIcons=${getOptionsIcons}/>`}
     <div class="quiz-button-container">
         <button 
-          aria-label="Continue" 
+          aria-label="${stringQList[selectedQuestion.questions].btn}" 
           class="quiz-button" 
           onClick=${() => { onQuizButton(); }}>
-            <span class="quiz-button-label">Continue</span>
+            <span class="quiz-button-label">${stringQList[selectedQuestion.questions].btn}</span>
         </button>
       </div>
   </div>`;
