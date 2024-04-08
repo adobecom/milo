@@ -601,10 +601,9 @@ describe('Merch Block', () => {
     });
   });
 
-  describe.only('checkout link with optional params', async () => {
+  describe('checkout link with optional params', async () => {
     const CHECKOUT_ALLOWED_KEYS_VALUES = { mal: 2 };
     CHECKOUT_ALLOWED_KEYS.forEach((key, index) => {
-    // ['usid'].forEach((key, index) => {
       it(`renders checkout link with "${key}" parameter`, async () => {
         const a = document.createElement('a', { is: 'checkout-link' });
         a.classList.add('merch');
