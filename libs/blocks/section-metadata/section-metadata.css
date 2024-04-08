@@ -70,6 +70,38 @@
   padding: var(--spacing-xxs) 0;
 }
 
+.section.xxxl-padding {
+  padding: var(--spacing-xxxl);
+}
+
+.section.xxl-padding {
+  padding: var(--spacing-xxl);
+}
+
+.section.xl-padding {
+  padding: var(--spacing-xl);
+}
+
+.section.l-padding {
+  padding: var(--spacing-l);
+}
+
+.section.m-padding {
+  padding: var(--spacing-m);
+}
+
+.section.s-padding {
+  padding: var(--spacing-s);
+}
+
+.section.xs-padding {
+  padding: var(--spacing-xs);
+}
+
+.section.xxs-padding {
+  padding: var(--spacing-xxs);
+}
+
 .section picture.section-background {
   display: block;
   position: absolute;
