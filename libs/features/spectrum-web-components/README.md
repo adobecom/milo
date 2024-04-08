@@ -7,6 +7,18 @@ Please know that SWC is heavy, impacts page performance and is not suitable for 
 
 To load SWC components, do as follows:
 
+1. copy the spectrum WC in /libs/features/spectrum-web-components/src
+create a file, e.g. 'tabs.js'
+navigate to spectrum docu, e.g. https://opensource.adobe.com/spectrum-web-components/components/tabs/
+copy imports
+add a new dependency in the package.json 
+
+2. run 'npm install' in /libs/features/spectrum-web-components
+
+3. run 'npm run build' in /libs/features/spectrum-web-components
+
+4. Consume in your code
+
 ```
 const { base } = getConfig();
 await Promise.all([

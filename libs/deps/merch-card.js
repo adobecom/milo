@@ -428,6 +428,11 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as f
     --merch-color-grey-80: #2c2c2c;
     --merch-color-green-promo: #12805C;
 
+    /* focus */
+    --merch-focused-outline: var(--merch-color-focus-ring) auto 1px;
+    --merch-hovered-shadow: 0 0 0 1px #aaa;
+    --merch-selected-shadow: 0 0 0 2px var(--color-accent);
+
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
     --transition: cmax-height 0.3s linear, opacity 0.3s linear;
@@ -1317,6 +1322,7 @@ merch-card .footer-row-cell:nth-child(8) {
                     <span></span>
                     ${this.checkboxLabel}
                 </label>`:""}get cardImage(){return n` <div class="image">
+                </label>`:""}get cardImage(){return n` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
         </div>`}get secureLabelFooter(){let r=this.secureLabel?n`<span class="secure-transaction-label"
@@ -1343,6 +1349,7 @@ merch-card .footer-row-cell:nth-child(8) {
                       >
                           <slot name="detail-bg"></slot>
                       </div>
+                  `:n`
                   `:n`
                       <hr />
                       ${this.secureLabelFooter}
@@ -1391,12 +1398,14 @@ merch-card .footer-row-cell:nth-child(8) {
                 <slot name="body-xs"></slot>
             </div>
             ${this.evergreen?n`
+            ${this.evergreen?n`
                       <div
                           class="detail-bg-container"
                           style="background: ${this.detailBg}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
+                  `:n`
                   `:n`
                       <hr />
                       ${this.secureLabelFooter}
