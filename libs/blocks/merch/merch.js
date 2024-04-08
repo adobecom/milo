@@ -413,9 +413,7 @@ export async function buildCta(el, params) {
   if (!context) return null;
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
-
   const cta = service.createCheckoutLink(context, text);
-
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
   } else {
