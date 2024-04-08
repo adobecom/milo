@@ -708,7 +708,7 @@ export function cleanAndSortManifestList(manifests) {
     } else {
       manifestObj[manifest.manifestPath] = manifest;
     }
-    // if (config.mep?.override) overridePersonalizationVariant(manifest, config);
+    if (config.mep?.override) overridePersonalizationVariant(manifest, config);
   });
   return Object.values(manifestObj).sort(compareExecutionOrder);
 }
