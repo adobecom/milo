@@ -64,7 +64,7 @@ export const normalizePath = (p) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
-    || path.startsWith(`https://${config.productionDomain}`)) {
+    || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
       const firstFolder = url.pathname.split('/')[1];
@@ -86,14 +86,13 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   manifests = manifests.concat(
     persManifests.map((manifest) => ({
       ...manifest,
-      manifestPath: appendJsonExt(manifest.manifestPath),
+      manifestPath: normalizePath(appendJsonExt(manifest.manifestPath)),
       manifestUrl: manifest.manifestPath,
     })),
   );
 
   for (const manifest of manifests) {
     if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
-      manifest.manifestPath = normalizePath(manifest.manifestPath);
       loadLink(
         manifest.manifestPath,
         { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
@@ -606,29 +605,6 @@ export async function getPersConfig(info, override = false) {
     config.executionOrder = '1-1';
   }
 
-  if (infoTab) {
-    const infoObj = infoTab?.reduce((acc, item) => {
-      acc[item.key] = item.value;
-      return acc;
-    }, {});
-    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
-    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    const executionOrder = {
-      'manifest-type': 1,
-      'manifest-execution-order': 1,
-    };
-    Object.keys(infoObj).forEach((key) => {
-      if (!infoKeyMap[key]) return;
-      const index = infoKeyMap[key].indexOf(infoObj[key]);
-      executionOrder[key] = index > -1 ? index : 1;
-    });
-    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
-  } else {
-    // eslint-disable-next-line prefer-destructuring
-    config.manifestType = infoKeyMap[1];
-    config.executionOrder = '1-1';
-  }
-
   config.manifestPath = normalizePath(manifestPath);
   const selectedVariantName = await getPersonalizationVariant(
     config.manifestPath,
@@ -675,8 +651,7 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
 export async function runPersonalization(experiment, config) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
-  if (!selectedVariant) return {};
-  if (selectedVariant === 'default') return { experiment };
+  if (!selectedVariant || selectedVariant === 'default') return { experiment };
 
   if (selectedVariant.replacepage) {
     // only one replacepage can be defined
@@ -755,6 +730,8 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) return;
+  if (!config?.mep) config.mep = {};
+  config.mep.handleFragmentCommand = handleFragmentCommand;
   let experiments = manifests;
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
@@ -788,7 +765,5 @@ export async function applyPers(manifests) {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
-  if (!config?.mep) config.mep = {};
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-  config.mep.handleFragmentCommand = handleFragmentCommand;
 }
