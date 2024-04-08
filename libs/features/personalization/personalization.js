@@ -482,22 +482,6 @@ const checkForParamMatch = (paramStr) => {
 };
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
-  const config = getConfig();
-  if (config.mep?.override) {
-    let manifest;
-    /* c8 ignore start */
-    config.mep?.override?.split('---').some((item) => {
-      const pair = item.trim().split('--');
-      if (pair[0] === manifestPath && pair.length > 1) {
-        [, manifest] = pair;
-        return true;
-      }
-      return false;
-    });
-    /* c8 ignore stop */
-    if (manifest) return manifest;
-  }
-
   const variantInfo = variantNames.reduce((acc, name) => {
     let nameArr = [name];
     if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
@@ -512,6 +496,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
+    const config = getConfig();
     userEntitlements = await config.entitlements();
   }
 
@@ -601,7 +586,7 @@ export async function getPersConfig(info, override = false) {
     config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
   } else {
     // eslint-disable-next-line prefer-destructuring
-    config.manifestType = infoKeyMap[1];
+    config.manifestType = infoKeyMap['manifest-type'][1];
     config.executionOrder = '1-1';
   }
 
@@ -680,6 +665,26 @@ export async function runPersonalization(experiment, config) {
   };
 }
 
+function overridePersonalizationVariant(manifest, config) {
+  const { manifestPath, variantNames } = manifest;
+  if (!config.mep?.override) return;
+  let selectedVariant;
+  /* c8 ignore start */
+  config.mep?.override?.split('---').some((item) => {
+    const pair = item.trim().split('--');
+    if (pair[0] === manifestPath && pair.length > 1) {
+      [, selectedVariant] = pair;
+      return true;
+    }
+    return false;
+  });
+  /* c8 ignore stop */
+  if (selectedVariant && variantNames.includes(selectedVariant)) {
+    manifest.selectedVariantName = selectedVariant;
+    manifest.selectedVariant = manifest.variants[selectedVariant];
+  }
+}
+
 function compareExecutionOrder(a, b) {
   if (a.executionOrder === b.executionOrder) return 0;
   return a.executionOrder > b.executionOrder ? 1 : -1;
@@ -687,6 +692,7 @@ function compareExecutionOrder(a, b) {
 
 export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
+  const config = getConfig();
   manifests.forEach((manifest) => {
     if (!manifest?.manifest) return;
     if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
@@ -704,6 +710,7 @@ export function cleanAndSortManifestList(manifests) {
     } else {
       manifestObj[manifest.manifestPath] = manifest;
     }
+    if (config.mep.override) overridePersonalizationVariant(manifest, config);
   });
   return Object.values(manifestObj).sort(compareExecutionOrder);
 }
