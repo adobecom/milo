@@ -13,6 +13,9 @@ describe('mobile-app-banner', () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     document.head.innerHTML = '<script/>'; // This block needs a script in head.
   });
+  afterEach(() => {
+    sinon.restore();   
+  });
 
   it('should not call branch init if no branch-io-key.json', async () => {
     sinon.stub(window, 'fetch');
@@ -31,7 +34,6 @@ describe('mobile-app-banner', () => {
       scriptSrcs.push(scriptTag.getAttribute('src'));
     });
     expect(scriptSrcs).to.not.include('https://cdn.branch.io/branch-latest.min.js');
-    sinon.restore();
   });
 
   it('should not call branch init if product not found in branch-io-key file', async () => {
