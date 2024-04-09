@@ -27,7 +27,6 @@ const MILO_BLOCKS = [
   'chart',
   'columns',
   'faas',
-  'faq',
   'featured-article',
   'figure',
   'form',
@@ -48,9 +47,10 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'merch-card',
-  'merch-cards',
+  'merch-card-collection',
   'merch-offers',
   'mnemonic-list',
+  'mobile-app-banner',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -777,13 +777,15 @@ export async function loadIms() {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
-    const unavMeta = getMetadata('universal-nav')?.trim();
+    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
     window.adobeid = {
       client_id: imsClientId,
       scope: imsScope || defaultScope,
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
+      redirect_uri: ahomeMeta === 'on'
+        ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
@@ -853,7 +855,7 @@ async function checkForPageMods() {
 
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoMd));
+    persManifests = persManifests.concat(getPromoManifests(promoMd, PAGE_URL.searchParams));
   }
 
   const { env } = getConfig();

@@ -179,7 +179,7 @@
   background: transparent;
   padding-right: 0;
   padding-left: 0;
-  margin-inline-start: 16px;
+  margin-inline-start: 24px;
 }
 
 .tabs[class*='pill'] {

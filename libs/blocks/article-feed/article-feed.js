@@ -20,6 +20,7 @@ const blogIndex = {
   offset: 0,
   complete: false,
   config: {},
+  offsetData: [],
 };
 
 /**
@@ -71,9 +72,9 @@ export function readBlockConfig(block) {
  * fetches blog article index.
  * @returns {object} index with data and path lookup
  */
-export async function fetchBlogArticleIndex(config) {
+export async function fetchBlogArticleIndex(config, limit) {
   if (blogIndex.complete) return (blogIndex);
-  const pageSize = 500;
+  const pageSize = limit || 500;
   const { feed } = config || blogIndex.config;
   const queryParams = `?limit=${pageSize}&offset=${blogIndex.offset}`;
   blogIndex.offset += pageSize;
@@ -90,6 +91,7 @@ export async function fetchBlogArticleIndex(config) {
         blogIndex.data.push(post);
         blogIndex.byPath[post.path.split('.')[0]] = post;
       });
+      blogIndex.offsetData = json.data;
       blogIndex.complete = complete;
 
       return blogIndex;
