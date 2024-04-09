@@ -21,7 +21,7 @@ const CARD_TYPES = [
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
-const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
+const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART, 'twp'];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
 const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -56,7 +56,7 @@ const appendSlot = (slotEls, slotName, merchCard, nodeName = 'p') => {
   merchCard.append(newEl);
 };
 
-const parseTwpContent = (el, merchCard) => {
+const parseTwpContent = async (el, merchCard) => {
   const allElements = Array.from(el.children[0].children[0].children);
   const contentGroups = allElements.reduce((acc, curr) => {
     if (curr.tagName.toLowerCase() === 'p' && curr.textContent.trim() === '--') {
@@ -78,11 +78,17 @@ const parseTwpContent = (el, merchCard) => {
       const bodySlot = createTag('div', { slot: 'body-xs' }, content);
       merchCard.append(bodySlot);
     } else if (index === 2) { // Footer section
-      const footerContent = group.filter((e) => ['ul', 'h5', 'p'].includes(e.tagName.toLowerCase()));
+      const footerContent = group.filter((e) => ['h5', 'p'].includes(e.tagName.toLowerCase()));
       const footer = createTag('div', { slot: 'footer' }, footerContent);
       merchCard.append(footer);
     }
   });
+
+  const offerSelection = el.querySelector('ul');
+  if (offerSelection) {
+    const { initOfferSelection } = await import('./merch-offer-select.js');
+    initOfferSelection(merchCard, offerSelection, undefined);
+  }
 };
 const parseContent = (el, merchCard) => {
   const innerElements = [

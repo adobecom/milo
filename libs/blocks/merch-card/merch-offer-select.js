@@ -9,22 +9,25 @@ function createDynamicSlots(el, bodySlot) {
   if (pricePlaceholder) {
     pricePlaceholder.parentNode.replaceChild(createTag('span', { slot: 'price', is: 'inline-price' }), pricePlaceholder);
   } else {
-    const priceSlot = createTag('h5', { class: 'merch-card-price' });
+    const tagName = el.variant === 'twp' ? 'p' : 'h5';
+    const priceSlot = createTag(tagName, { class: 'merch-card-price' });
     createTag('span', { slot: 'price', is: 'inline-price' }, null, { parent: priceSlot });
     bodySlot.append(priceSlot);
   }
-  const p = createTag('p', { class: 'action-area' });
-  createTag('a', { slot: 'secondary-cta', is: 'checkout-link' }, null, { parent: p });
-  createTag('a', { slot: 'cta', is: 'checkout-link' }, null, { parent: p });
-  const footer = el.querySelector('div[slot="footer"]');
-  footer.append(p);
-  bodySlot.querySelector('p')?.setAttribute('slot', 'description');
-  if (el.variant === MINI_COMPARE_CHART) {
-    const description = el.querySelector('div[slot="body-m"] p:last-child');
-    if (description) {
-      const descriptionSlot = el.querySelector('p[slot="description"]');
-      if (descriptionSlot) {
-        descriptionSlot.innerHTML += description.innerHTML;
+  if (el.variant !== 'twp') {
+    const p = createTag('p', { class: 'action-area' });
+    createTag('a', { slot: 'secondary-cta', is: 'checkout-link' }, null, { parent: p });
+    createTag('a', { slot: 'cta', is: 'checkout-link' }, null, { parent: p });
+    const footer = el.querySelector('div[slot="footer"]');
+    footer.append(p);
+    bodySlot.querySelector('p')?.setAttribute('slot', 'description');
+    if (el.variant === MINI_COMPARE_CHART) {
+      const description = el.querySelector('div[slot="body-m"] p:last-child');
+      if (description) {
+        const descriptionSlot = el.querySelector('p[slot="description"]');
+        if (descriptionSlot) {
+          descriptionSlot.innerHTML += description.innerHTML;
+        }
       }
     }
   }
@@ -57,9 +60,20 @@ function createMerchOffer(option, quantitySelector, variant) {
 const isHorizontal = (offerSelection) => [...offerSelection.querySelectorAll('merch-offer')].map((o) => o.text).every((t) => /^\d+.B$/.test(t));
 
 export const initOfferSelection = (merchCard, offerSelection, quantitySelector) => {
-  const bodySlot = merchCard.querySelector(`div[slot="${merchCard.variant === 'mini-compare-chart' ? 'offers' : 'body-xs'}"]`);
-  if (!bodySlot) return;
-  createDynamicSlots(merchCard, bodySlot);
+  let merchOfferSlot;
+  switch (merchCard.variant) {
+    case 'mini-compare-chart':
+      merchOfferSlot = merchCard.querySelector('div[slot="body-m"]');
+      break;
+    case 'twp':
+      merchOfferSlot = merchCard.querySelector('div[slot="footer"]');
+      break;
+    default:
+      merchOfferSlot = merchCard.querySelector('div[slot="body-xs"]');
+      break;
+  }
+  if (!merchOfferSlot) return;
+  createDynamicSlots(merchCard, merchOfferSlot);
   const merchOffers = createTag('merch-offer-select', { container: 'merch-card' });
   [...offerSelection.children].forEach((option) => {
     merchOffers.append(createMerchOffer(option, quantitySelector, merchCard.variant));
@@ -81,8 +95,10 @@ export const initOfferSelection = (merchCard, offerSelection, quantitySelector) 
   if (quantitySelector) {
     quantitySelector.append(merchOffers);
   } else {
-    bodySlot.append(merchOffers);
+    merchOfferSlot.append(merchOffers);
   }
+  // eslint-disable-next-line chai-friendly/no-unused-expressions
+  merchCard.variant === 'twp' ? merchOffers.style.display = 'none' : null;
 };
 
 export default initOfferSelection;
