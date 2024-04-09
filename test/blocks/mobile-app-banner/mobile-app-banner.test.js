@@ -14,7 +14,7 @@ describe('mobile-app-banner', () => {
     document.head.innerHTML = '<script/>'; // This block needs a script in head.
   });
   afterEach(() => {
-    sinon.restore();   
+    sinon.restore();
   });
 
   it('should not call branch init if no branch-io-key.json', async () => {
