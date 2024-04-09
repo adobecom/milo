@@ -670,8 +670,7 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
-  header.className = headerQuery || headerMeta || 'gnav';
+  header.className = headerMeta || 'gnav';
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
@@ -711,8 +710,7 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  const footerQuery = new URLSearchParams(window.location.search).get('footerqa');
-  footer.className = footerQuery || footerMeta || 'footer';
+  footer.className = footerMeta || 'footer';
   await loadBlock(footer);
 }
 
@@ -795,7 +793,10 @@ export async function loadIms() {
       },
       onError: reject,
     };
-    loadScript(`${base}/deps/imslib.min.js`);
+    const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
+      ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
+      : `${base}/deps/imslib.min.js`;
+    loadScript(path);
   }).then(() => {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
@@ -826,8 +827,7 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
 }
 
 async function checkForPageMods() {
-  const search = new URLSearchParams(window.location.search);
-  const offFlag = (val) => search.get(val) === 'off';
+  const offFlag = (val) => PAGE_URL.searchParams.get(val) === 'off';
   if (offFlag('mep')) return;
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
