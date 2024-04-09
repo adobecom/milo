@@ -127,7 +127,7 @@ function addPillEventListeners(div) {
 }
 
 function createPreviewPill(manifests) {
-  const overlay = createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
+  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   document.body.append(overlay);
   const div = document.createElement('div');
   div.classList.add('mep-hidden');
