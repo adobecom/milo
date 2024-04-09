@@ -651,8 +651,7 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
 export async function runPersonalization(experiment, config) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
-  if (!selectedVariant) return {};
-  if (selectedVariant === 'default') return { experiment };
+  if (!selectedVariant || selectedVariant === 'default') return { experiment };
 
   if (selectedVariant.replacepage) {
     // only one replacepage can be defined
