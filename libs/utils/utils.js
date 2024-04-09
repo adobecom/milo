@@ -785,7 +785,7 @@ export async function loadIms() {
       scope: imsScope || defaultScope,
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
       redirect_uri: ahomeMeta === 'on'
-        ? `https://www${env !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+        ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
