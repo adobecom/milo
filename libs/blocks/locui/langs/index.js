@@ -20,7 +20,7 @@ export async function rollout(item, idx) {
   const reroll = item.status === 'completed';
 
   // Update the UI immediate instead of waiting on polling
-  languages.value[idx].status = 'rolling-out';
+  languages.value[idx].status = item.status === 'error' ? 'retrying' : 'rolling-out';
   languages.value[idx].done = 0;
   languages.value = [...languages.value];
 
