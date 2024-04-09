@@ -677,9 +677,14 @@ function overridePersonalizationVariant(manifest, config) {
     }
     return false;
   });
-  if (selectedVariant && variantNames.includes(selectedVariant)) {
-    manifest.selectedVariantName = selectedVariant;
-    manifest.selectedVariant = manifest.variants[selectedVariant];
+  if (selectedVariant) {
+    if (variantNames.includes(selectedVariant)) {
+      manifest.selectedVariantName = selectedVariant;
+      manifest.selectedVariant = manifest.variants[selectedVariant];
+    } else {
+      manifest.selectedVariantName = selectedVariant;
+      manifest.selectedVariant = manifest.variants[selectedVariant];
+    }
   }
 }
 
