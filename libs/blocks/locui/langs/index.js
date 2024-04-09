@@ -1,4 +1,4 @@
-import { rolloutLang } from '../utils/miloc.js';
+import { postReqLang } from '../utils/miloc.js';
 import { languages } from '../utils/state.js';
 import { getModal } from '../../modal/modal.js';
 import Modal from './modal.js';
@@ -24,7 +24,8 @@ export async function rollout(item, idx) {
   languages.value[idx].done = 0;
   languages.value = [...languages.value];
 
-  await rolloutLang(item.code, reroll);
+  if (item.status === 'error') await postReqLang(item.code, reroll, 'retry', 'Retry.');
+  else await postReqLang(item.code, reroll);
 }
 
 export function showLangErrors(event, item) {

@@ -24,7 +24,8 @@ function Badge({ status }) {
 function Language({ item, idx }) {
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
-  const rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
+  let rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
+  if (item.status === 'error') { rolloutType = 'Retry'; }
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
       ${item.status && html`<${Badge} status=${item.status} />`}
@@ -59,7 +60,7 @@ function Language({ item, idx }) {
           `)}
         </div>
       `}
-      ${(item.status === 'translated' || item.status === 'completed') && html`
+      ${['translated', 'completed', 'error'].includes(item.status) && html`
         <div class=locui-subproject-action-area>
           <button class=locui-urls-heading-action onClick=${() => rollout(item, idx)}>${rolloutType}</button>
         </div>
