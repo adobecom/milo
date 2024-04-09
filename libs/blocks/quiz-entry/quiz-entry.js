@@ -1,6 +1,6 @@
 import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
 import { createTag } from '../../utils/utils.js';
-import { getQuizEntryData, getQuizJson } from './utils.js';
+import { getQuizEntryData } from './utils.js';
 import { mlField, getFiResults } from './mlField.js';
 import { GetQuizOption } from './quizoption.js';
 
@@ -8,66 +8,61 @@ const App = ({
   // quizPath = null,
   // analyticsQuiz = null,
   // analyticsType = null,
-  dataPath = null,
+  questionData = {},
+  stringsData = {},
 }) => {
-  // const [btnAnalytics, setBtnAnalytics] = useState(null);
-  const [countSelectedCards, setCountOfSelectedCards] = useState(0);
-  const [isDataLoaded, setDataLoaded] = useState(false);
-  const [questionData, setQuestionData] = useState({});
-  const [questionList, setQuestionList] = useState({});
-  const [selectedCards, setSelectedCards] = useState({});
-  const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [stringData, setStringData] = useState({});
-  const [stringQList, setStringQList] = useState({});
-  const [userFlow, setUserFlow] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [quizState, setQuizState] = useState({ userFlow: [], userSelections: [] });
+  const [quizLists, setQuizLists] = useState({});
+  const [quizData, setQuizData] = useState({});
   const [hasMLData, setHasMLData] = useState(false);
   const [mlData, setMLData] = useState({});
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [selectedCards, setSelectedCards] = useState({});
+  const [countSelectedCards, setCountOfSelectedCards] = useState(0);
 
   useEffect(() => {
     (async () => {
-      const [questions, dataStrings] = await getQuizJson(dataPath);
       const qMap = {};
-      questions.questions.data.forEach((question) => {
+      questionData.questions.data.forEach((question) => {
         qMap[question.questions] = question;
       });
 
       const strMap = {};
-      dataStrings.questions.data.forEach((question) => {
+      stringsData.questions.data.forEach((question) => {
         strMap[question.q] = question;
       });
 
+      const qLists = {
+        questions: qMap,
+        strings: strMap,
+      };
+
+      const qData = {
+        questions: questionData,
+        strings: stringsData,
+      };
+
       setQuizState({
-        userFlow: [questions.questions.data[0].questions],
+        userFlow: [questionData.questions.data[0].questions],
         userSelections: quizState.userSelections,
       });
 
-      setUserFlow([questions.questions.data[0].questions]);
-
-      setStringData(dataStrings);
-      setQuestionData(questions);
-      setStringQList(strMap);
-      setQuestionList(qMap);
+      setQuizData(qData);
+      setQuizLists(qLists);
       setDataLoaded(true);
+      // console.log('qData', qData);
+      // console.log('qLists', qLists);
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (userFlow && userFlow.length) {
-      const currentFlow = userFlow.shift();
-      if (currentFlow && currentFlow.length) {
-        setSelectedQuestion(questionList[currentFlow] || []);
-      }
-    }
-  }, [userFlow, questionList]);
+  }, [setDataLoaded]);
 
   useEffect(() => {
     (async () => {
-      if (isDataLoaded) {
+      if (dataLoaded) {
         const currentQuestion = quizState.userFlow[0];
         const mlmap = { mlDetails: {}, mlOptions: [], mlValues: [] };
-        questionData[currentQuestion].data.forEach((row) => {
+        quizData.questions[currentQuestion].data.forEach((row) => {
           if (row.type === 'form') {
             mlmap.mlDetails = row;
           } else if (row.type === 'api_return_code') {
@@ -78,9 +73,16 @@ const App = ({
         setMLData(mlmap);
         // console.log('quizState', quizState);
       }
+
+      if (quizState.userFlow && quizState.userFlow.length) {
+        const currentFlow = quizState.userFlow.shift();
+        if (currentFlow && currentFlow.length) {
+          setSelectedQuestion(quizLists.questions[currentFlow] || []);
+        }
+      }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quizState]);
+  }, [quizState, quizLists]);
 
   useEffect(() => {
     (async () => {
@@ -113,6 +115,36 @@ const App = ({
     maxSelections = +selectedQuestion['max-selections'];
   }
 
+  const getStringValue = (propName) => {
+    if (!selectedQuestion?.questions) return '';
+    const question = quizLists.strings[selectedQuestion.questions];
+    return question?.[propName] || '';
+  };
+
+  const getOptionsIcons = (optionsType, prop) => {
+    const optionItem = quizData.strings[selectedQuestion.questions].data.find(
+      (item) => item.options === optionsType,
+    );
+    return optionItem && optionItem[prop] ? optionItem[prop] : '';
+  };
+
+  const onQuizButton = async () => {
+    const { mlDetails, mlValues } = mlData;
+    const mlFieldText = document.querySelector('#ml-field-input').value;
+    const resultContainer = document.querySelector('.results-container');
+    if (mlFieldText.length > 0) {
+      const fiResults = await getFiResults(mlDetails.endpoint, mlDetails['api-key'], mlFieldText, 10, mlValues);
+      const { data } = fiResults;
+      resultContainer.replaceChildren();
+      data.forEach((value) => {
+        const fiCode = createTag('p', '', `ficode: ${value.ficode} | prob: ${value.prob}`);
+        resultContainer.appendChild(fiCode);
+      });
+    } else {
+      resultContainer.replaceChildren();
+    }
+  };
+
   const onOptionClick = (option) => () => {
     const newState = { ...selectedCards };
 
@@ -130,71 +162,39 @@ const App = ({
     setCountOfSelectedCards(Object.keys(newState).length);
   };
 
-  if (!isDataLoaded || !selectedQuestion) {
-    return null;
-  }
-
-  const getStringValue = (propName) => {
-    if (!selectedQuestion?.questions) return '';
-    const question = stringQList[selectedQuestion.questions];
-    return question?.[propName] || '';
-  };
-
-  const getOptionsIcons = (optionsType, prop) => {
-    const optionItem = stringData[selectedQuestion.questions].data.find(
-      (item) => item.options === optionsType,
-    );
-    return optionItem && optionItem[prop] ? optionItem[prop] : '';
-  };
-
-  const handleQuizButton = async () => {
-    const { mlDetails, mlValues } = mlData;
-    const mlFieldText = document.querySelector('#ml-field-input').value;
-    const resultContainer = document.querySelector('.results-container');
-    if (mlFieldText.length > 0) {
-      const fiResults = await getFiResults(mlDetails.endpoint, mlDetails['api-key'], mlFieldText, 10, mlValues);
-      const { data } = fiResults;
-      resultContainer.replaceChildren();
-      data.forEach((value) => {
-        const fiCode = createTag('p', '', `ficode: ${value.ficode} | prob: ${value.prob}`);
-        resultContainer.appendChild(fiCode);
-      });
-    } else {
-      resultContainer.replaceChildren();
-    }
-  };
-
+  if (!dataLoaded || !selectedQuestion) return null;
   return html`<div class="quiz-entry-container">
-                <div class="quiz-entry-title">${stringQList[selectedQuestion.questions].heading}</div>
-                <div class="quiz-entry-subtitle">${stringQList[selectedQuestion.questions]['sub-head']}</div>
-                ${hasMLData && html`<${mlField} placeholderText="${stringData[selectedQuestion.questions].data.find((option) => option.options === 'fi_code').title}"/><div class="results-container"></div>`}
-                <div class="quiz-entry-text">${stringQList[selectedQuestion.questions].text}</div>
-                ${selectedQuestion.questions && html`<${GetQuizOption} 
-                                maxSelections=${maxSelections} 
-                                options=${stringData[selectedQuestion.questions]}
-                                background=${getStringValue('icon-background-color')}
-                                countSelectedCards=${countSelectedCards}
-                                selectedCards=${selectedCards}
-                                onOptionClick=${onOptionClick}
-                                getOptionsIcons=${getOptionsIcons}/>`}
-                <div class="quiz-button-container">
-                    <button 
-                      aria-label="${stringQList[selectedQuestion.questions].btn}" 
-                      class="quiz-button" 
-                      onClick=${() => { handleQuizButton(); }}>
-                        <span class="quiz-button-label">${stringQList[selectedQuestion.questions].btn}</span>
-                    </button>
-                  </div>
-              </div>`;
+    <div class="quiz-entry-title">${quizLists.strings[selectedQuestion.questions].heading}</div>
+    <div class="quiz-entry-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</div>
+    ${hasMLData && html`<${mlField} placeholderText="${quizData.strings[selectedQuestion.questions].data.find((option) => option.options === 'fi_code').title}"/><div class="results-container"></div>`}
+    <div class="quiz-entry-text">${quizLists.strings[selectedQuestion.questions].text}</div>
+    ${selectedQuestion.questions && html`<${GetQuizOption} 
+      maxSelections=${maxSelections} 
+      options=${quizData.strings[selectedQuestion.questions]}
+      background=${getStringValue('icon-background-color')}
+      countSelectedCards=${countSelectedCards}
+      selectedCards=${selectedCards}
+      onOptionClick=${onOptionClick}
+      getOptionsIcons=${getOptionsIcons}/>`}
+    <div class="quiz-button-container">
+        <button 
+          aria-label="${quizLists.strings[selectedQuestion.questions].btn}" 
+          class="quiz-button" 
+          onClick=${() => { onQuizButton(); }}>
+            <span class="quiz-button-label">${quizLists.strings[selectedQuestion.questions].btn}</span>
+        </button>
+      </div>
+  </div>`;
 };
 
 export default async function init(el) {
-  const quizEntry = getQuizEntryData(el);
+  const quizEntry = await getQuizEntryData(el);
   el.replaceChildren();
   render(html`<${App} 
     quizPath="${quizEntry.quizPath}"
     analyticsQuiz="${quizEntry.analyticsQuiz}"
     analyticsType="${quizEntry.analyticsType}"
-    dataPath="${quizEntry.dataPath}"
+    questionData="${quizEntry.questionData}"
+    stringsData="${quizEntry.stringsData}"
   />`, el);
 }

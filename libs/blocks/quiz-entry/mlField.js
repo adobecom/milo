@@ -47,5 +47,5 @@ const handleInput = () => {
 };
 
 export const mlField = ({ placeholderText }) => html`<div class="ml-field-container">
-    <input id="ml-field-input" class="ml-input" type="textarea" placeholder="${placeholderText}" oninput="${handleInput}"/>
+    <input id="ml-field-input" class="ml-input" type="textarea" placeholder="${placeholderText}" oninput="${handleInput}" />
   </div>`;

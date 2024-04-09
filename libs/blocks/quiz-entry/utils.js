@@ -17,11 +17,12 @@ export async function getQuizJson(path) {
   return [];
 }
 
-export function getQuizEntryData(el) {
+export async function getQuizEntryData(el) {
   const blockData = getNormalizedMetadata(el);
   const dataPath = blockData.data.text;
   const quizPath = blockData.quiz.text;
   const analyticsType = blockData.analyticstype?.text;
   const analyticsQuiz = blockData.analyticsquiz?.text;
-  return { quizPath, analyticsQuiz, analyticsType, dataPath };
+  const [questionData, stringsData] = await getQuizJson(dataPath);
+  return { quizPath, analyticsQuiz, analyticsType, questionData, stringsData };
 }
