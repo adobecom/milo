@@ -89,6 +89,7 @@ const defaultOptions = {
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
     carousel: 'Carousel',
+    events: 'Events',
   },
   ctaActions: {
     _blank: 'New Tab',
