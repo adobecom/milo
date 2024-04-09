@@ -1,0 +1,321 @@
+.hero-milo {
+  padding: var(--spacing-m) 0;
+  position: relative;
+}
+
+.dark .hero-milo,
+.hero-milo.dark {
+  color: var(--color-white);
+}
+
+/* Alignment */
+.hero-milo .action-area,
+.hero-milo .flex-row { 
+  justify-content: left; 
+  display: flex;
+}
+
+.hero-milo .action-area { 
+  flex-direction: column;
+  gap: var(--spacing-xxs); 
+  width: 100%;
+}
+
+.hero-milo .main-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-milo .background-split picture img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+/* Lockup Icon sizes */
+.hero-milo .row-lockup { 
+  margin: 0 0 var(--spacing-xs); 
+  font-size: var(--type-body-m-size);
+}
+
+.hero-milo .row-lockup picture img, 
+.hero-milo .row-lockup.icon-size-m picture img {
+  min-width:var(--icon-size-m);
+  height: var(--icon-size-m);
+}
+
+.hero-milo .row-lockup.icon-size-s {
+  font-size: var(--type-body-s-size);
+}
+
+.hero-milo .row-lockup.icon-size-s picture img {
+  min-width:var(--icon-size-s);
+  height: var(--icon-size-s);
+}
+
+.hero-milo .row-lockup.icon-size-l {
+  font-size: var(--type-body-l-size);
+}
+
+.hero-milo .row-lockup.icon-size-l picture img {
+  min-width:var(--icon-size-l);
+  height: var(--icon-size-l);
+}
+
+.hero-milo .row-lockup.icon-size-xl {
+  font-size: var(--type-body-xl-size);
+}
+
+.hero-milo .row-lockup.icon-size-xl picture img {
+  min-width:var(--icon-size-xl);
+  height: var(--icon-size-xl);
+}
+
+/* Action area below heading mobile/tablet */
+.hero-milo .main-copy .action-area {
+  order: 2;
+}
+
+.hero-milo .main-copy [class*='heading-'] + [class*='body-'] {
+  order: 3;
+}
+
+/* lockup 
+todo: we need this unit */
+.hero-milo .flex-row { 
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+} 
+
+.hero-milo .flex-row picture { 
+  line-height: 0;
+  display: block;
+} 
+
+.hero-milo .flex-row a {
+  color: inherit;
+  text-decoration: underline 0.15em transparent;
+  transition: text-decoration-color 250ms;
+}
+
+.hero-milo .flex-row a:hover {
+  text-decoration-color: inherit
+}
+
+.hero-milo.center,
+.hero-milo.center .static {
+  text-align: center;
+  align-items: center;
+}
+
+.hero-milo.center .action-area,
+.hero-milo.center .flex-row { 
+  justify-content: center; 
+}
+
+.hero-milo .static p { margin: var(--spacing-xs) 0; }
+.hero-milo .static p:only-child { margin: 0; }
+.hero-milo .static p:first-child { margin-top: 0; }
+.hero-milo .static [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
+.hero-milo .static [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
+.hero-milo .static *:last-child { margin-bottom: 0; }
+
+.hero-milo > .foreground {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  display: grid;
+  gap: var(--spacing-m);
+}
+
+.hero-milo > .foreground.fw {
+  width: 100%;
+}
+
+.hero-milo .foreground .copy {
+  display: grid;
+  gap: var(--spacing-xs);
+}
+
+.hero-milo .foreground .copy .order-1 {
+  order: -1;
+}
+
+.hero-milo hr {
+  width: 100%;
+  border: none;
+  height: 1px;
+  margin: 0;
+}
+
+.hero-milo .has-divider {
+  margin: var(--spacing-xxs) 0;
+}
+
+.hero-milo .badge {
+  font-size: 14px;
+  line-height: 1em;
+  font-weight: 400;
+  vertical-align: middle;
+  padding: 4px 8px;
+  margin-left: 4px;
+  border-radius: 4px;
+  background-color: #FFEB00;
+  color: var(--text-color);
+  white-space: no-wrap;
+}
+
+
+/* content hidden */
+.hero-milo .hidden {
+  visibility: hidden;
+  height: 0;
+}
+
+.hero-milo .foreground div:empty {
+  display: none;
+}
+
+
+/* Row Types */
+.hero-milo .row-list {
+  text-align: left;
+} 
+
+.hero-milo .row-list .row-wrapper {
+  display: table;
+}
+
+/* row-qr */
+.hero-milo .row-qrcode .row-wrapper {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin: var(--spacing-xxs) 0;
+}
+
+.hero-milo .row-qrcode .qr-code-img {
+  display: none;
+}
+
+.hero-milo .row-qrcode .google-play a,
+.hero-milo .row-qrcode .app-store a {
+  width: 135px;
+  height: 40px;
+  display: inline-flex;
+  text-indent:-999em;
+}
+
+.hero-milo .row-qrcode .google-play a {
+  background: url('/libs/img/ui/google-play.svg') no-repeat transparent;
+}
+
+.hero-milo .row-qrcode .app-store a {
+  background: url('/libs/img/ui/app-store.svg') no-repeat transparent;
+}
+
+.hero-milo.center .row-qrcode .row-wrapper {
+  justify-content: center;
+}
+
+.hero-milo.center .row-list .row-wrapper { 
+  margin: 0 auto; 
+}
+
+.hero-milo .row-list ul.icon-list,
+.hero-milo .row-list ol.icon-list {
+  padding-inline-start: 24px;
+}
+
+.hero-milo li.icon-item {
+  position: relative;
+}
+
+.hero-milo li.icon-item::marker {
+  color: transparent;
+}
+
+.hero-milo li.icon-item span.icon {
+  position: absolute;
+  left: -24px;
+}
+
+/* CLS */
+
+/* mobile only */
+@media (max-width: 600px) {
+  .hero-milo .con-button {
+    display: block;
+    text-align: center;
+  }
+
+}
+
+/* Tablet UP */
+@media screen and (min-width: 600px) {
+  .hero-milo .action-area { 
+    flex-direction: row;
+  }
+
+  .hero-milo.center .action-area {
+    justify-content: center;
+  }
+  
+}
+
+@media screen and (min-width: 920px) {
+  .hero-milo .foreground.cols-1 {
+    max-width: 800px;
+    min-width: unset;
+  }
+}
+
+/* desktop up */
+@media screen and (min-width: 1200px) {
+  .hero-milo {
+    align-items: center;
+    display: flex;
+    min-height: 700px;
+  }
+
+  .hero-milo > .foreground {
+    /* min-width: var(--grid-container-width); */
+  }
+
+  .hero-milo > .foreground.has-asset {
+    grid-template-columns: minmax(50%, 1fr) minmax(50%, 1fr);
+    align-items: center;
+  }
+
+  .hero-milo .background-split {
+    position: absolute;
+    width: calc(50vw - var(--spacing-m));
+    height: 100%;
+    right: 0;
+    top: 0;
+  }
+
+  .hero-milo.asset-left .background-split {
+    right: unset;
+  }
+
+  /* Action area order */
+  .hero-milo .main-copy .action-area,
+  .hero-milo .main-copy [class*='heading-'] + [class*='body-'] {
+    order: unset;
+  }
+
+  /* meta blocks */
+  .hero-milo .row-qrcode .qr-code-img {
+    display: inline-block;
+    max-width: 140px;
+    max-height: 140px;
+    margin-top: var(--spacing-s);
+  }
+
+  .hero-milo .row-qrcode .google-play,
+  .hero-milo .row-qrcode .app-store {
+    display: none;
+  }
+
+}
