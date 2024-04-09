@@ -59,7 +59,7 @@ async function loadProjectSettings(projSettings) {
   const settings = projSettings.reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
   heading.value = { ...heading.value, env: settings.env, projectId: settings['Project ID'] };
   if (settings['Project ID']) {
-    setStatus('service', 'info', 'Connecting to localiztion service.');
+    setStatus('service', 'info', 'Connecting to localization service.');
     await getServiceUpdates();
     setStatus('service');
   } else {

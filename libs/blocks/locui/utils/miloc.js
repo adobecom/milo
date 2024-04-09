@@ -8,6 +8,8 @@ import {
   serviceStatus,
   allowRollout,
   serviceStatusDate,
+  projectCancelled,
+  allowCancelProject,
 } from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
@@ -54,13 +56,15 @@ export async function getProjectStatus() {
     if (json.projectStatus === 'created') {
       allowSyncToLangstore.value = true;
       allowSendForLoc.value = true;
+      allowCancelProject.value = true;
     }
 
     if (json.projectStatus === 'sync'
-      || json.projectStatus === 'download'
-      || json.projectStatus === 'start-glaas') {
+    || json.projectStatus === 'download'
+    || json.projectStatus === 'start-glaas') {
       allowSyncToLangstore.value = false;
       allowSendForLoc.value = false;
+      allowCancelProject.value = false;
       setStatus('service', 'info', json.projectStatusText);
     }
 
@@ -68,10 +72,19 @@ export async function getProjectStatus() {
       setStatus('service');
       allowSyncToLangstore.value = true;
       allowSendForLoc.value = true;
+      allowCancelProject.value = true;
     }
 
     if (json.projectStatus === 'waiting') {
       setStatus('service');
+      allowSyncToLangstore.value = false;
+      allowSendForLoc.value = false;
+      allowCancelProject.value = true;
+    }
+
+    if (json.projectStatus === 'cancelled') {
+      projectCancelled.value = true;
+      allowCancelProject.value = false;
       allowSyncToLangstore.value = false;
       allowSendForLoc.value = false;
     }
@@ -86,7 +99,7 @@ export async function getProjectStatus() {
 export async function startSync() {
   setStatus('service', 'info', 'Syncing documents to Langstore.');
   const url = await getMilocUrl();
-  setExcelStatus('Sync to langstore/en.', '');
+  setExcelStatus('Sync to langstore/en', '');
   const opts = { method: 'POST' };
   const resp = await fetch(`${url}start-sync?project=${heading.value.projectId}`, opts);
   return resp.status;
@@ -94,13 +107,32 @@ export async function startSync() {
 
 export async function startProject({ skipSync }) {
   let url = await getMilocUrl();
-  setStatus('service', 'info', 'Starting project.');
+  setStatus('service', 'info', 'Starting project');
   const opts = { method: 'POST' };
   url = `${url}start-project?project=${heading.value.projectId}`;
   if (skipSync) url = `${url}&skipsync=true`;
   const resp = await fetch(url, opts);
-  if (resp.status === 201) setExcelStatus('Sent to localization service.', '');
+  if (resp.status === 201) setExcelStatus('Sent to localization service', '');
   setStatus('service');
+  return resp.status;
+}
+
+export async function cancelProject() {
+  allowSyncToLangstore.value = false;
+  allowSendForLoc.value = false;
+  allowCancelProject.value = false;
+  let url = await getMilocUrl();
+  setStatus('service', 'info', 'Cancelling project');
+  const opts = { method: 'POST' };
+  url = `${url}cancel-project?project=${heading.value.projectId}`;
+  const resp = await fetch(url, opts);
+  if (resp.status === 200) setExcelStatus('Project cancelled', '');
+  if (resp.status === 500) {
+    const json = await resp.json();
+    setStatus('service', 'error', 'Cancelling project', json.error);
+    return resp.status;
+  }
+  setStatus('service', 'info', 'Successfully Cancelled Project', null, 5000);
   return resp.status;
 }
 
@@ -115,11 +147,11 @@ export async function rolloutLang(languageCode, reroll = false) {
 export async function createProject() {
   const url = await getMilocUrl();
   setStatus('service', 'info', 'Creating new project.');
-  setExcelStatus('Creating new project.', '');
   const body = `${origin}${heading.value.path}.json`;
   const opts = { method: 'POST', body };
   const resp = await fetch(`${url}create-project`, opts);
   if (resp.status === 201) {
+    setExcelStatus('Project Created', '');
     canRefresh.value = false;
     const projectId = window.md5(body);
     heading.value = { ...heading.value, projectId };
@@ -144,6 +176,8 @@ export async function getServiceUpdates() {
       waiting = true;
       const json = await getProjectStatus(url);
       if (json) projectStatus.value = json;
+      // stop polling for project status if cancelled
+      if (json.projectStatus === 'cancelled') clearInterval(excelUpdated);
       waiting = false;
     }
     count += 1;

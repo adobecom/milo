@@ -201,6 +201,10 @@ h2.locui-section-label {
   line-height: 1;
 }
 
+h2.locui-section-label.cancelled {
+  color: red;
+}
+
 h2.locui-section-label.is-invisible {
   opacity: 0;
 }
@@ -374,8 +378,11 @@ li.locui-subproject.locui-subproject-translated button.locui-urls-heading-action
 }
 
 button.locui-urls-heading-action.cancel {
-  background: #999;
-  margin-left: 10px;
+  background: #777;
+}
+
+button.locui-urls-heading-action.cancel:hover {
+  background: #666;
 }
 
 ul.locui-urls {
@@ -578,6 +585,8 @@ button.locui-url-action-view {
 
 .locui-sync-actions {
   margin-top: 15px;
+  display: flex;
+  gap: 12px;
 }
 
 .locui-fragments-container {

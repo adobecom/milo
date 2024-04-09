@@ -8,6 +8,7 @@ import {
   allowSendForLoc,
   allowRollout,
   syncFragments,
+  allowCancelProject,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
@@ -15,9 +16,15 @@ import { createTag, decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
-import { createProject, startSync, startProject, getServiceUpdates, rolloutLang } from '../utils/miloc.js';
+import {
+  createProject,
+  startSync,
+  startProject,
+  getServiceUpdates,
+  rolloutLang,
+} from '../utils/miloc.js';
 import { signal } from '../../../deps/htm-preact.js';
-import SyncLangStoreModal from './modal.js';
+import Modal from './modal.js';
 
 export const showRolloutOptions = signal(false);
 
@@ -134,6 +141,9 @@ export async function syncToLangstore() {
   // Disable sending for loc as this is in progress.
   allowSendForLoc.value = false;
 
+  // Disable cancel project
+  allowCancelProject.value = false;
+
   if (!heading.value.projectId) {
     const status = await createProject();
     setTimeout(async () => {
@@ -143,6 +153,7 @@ export async function syncToLangstore() {
       } else {
         allowSyncToLangstore.value = true;
         allowSendForLoc.value = true;
+        allowCancelProject.value = false;
       }
     }, 3000);
   } else {
@@ -156,17 +167,17 @@ export async function startSyncToLangstore() {
   } else {
     const { getModal } = await import('../../modal/modal.js');
     const div = createTag('div');
-    const content = SyncLangStoreModal(div);
+    const content = Modal(div, 'sync');
     getModal(null, { id: 'sync-modal', content, closeEvent: 'closeModal' });
   }
 }
 
-export function closeSyncModal() {
+export function closeActionModal() {
   document.querySelector('.dialog-modal').dispatchEvent(new Event('closeModal'));
 }
 
 export async function syncFragsLangstore() {
-  closeSyncModal();
+  closeActionModal();
   if (syncFragments.value?.length) {
     await syncToExcel(syncFragments.value);
     syncFragments.value = [];
@@ -181,6 +192,9 @@ export async function sendForLoc() {
   // Disable sending for loc as this is in progress.
   allowSendForLoc.value = false;
 
+  // Disable cancel project
+  allowCancelProject.value = false;
+
   // If no Project ID, create project first.
   if (!heading.value.projectId) {
     const status = await createProject();
@@ -190,6 +204,7 @@ export async function sendForLoc() {
     } else {
       allowSyncToLangstore.value = true;
       allowSendForLoc.value = true;
+      allowCancelProject.value = false;
       return;
     }
   }
@@ -208,4 +223,11 @@ export async function rolloutAll(e, reroll) {
   showRolloutOptions.value = false;
   allowRollout.value = false;
   await rolloutLang('all', reroll);
+}
+
+export async function cancelLocProject() {
+  const { getModal } = await import('../../modal/modal.js');
+  const div = createTag('div');
+  const content = Modal(div, 'cancel');
+  getModal(null, { id: 'cancel-modal', content, closeEvent: 'closeModal' });
 }

@@ -1,20 +1,43 @@
 import { html } from '../../../deps/htm-preact.js';
-import { urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout } from '../utils/state.js';
+import {
+  urls,
+  languages,
+  allowSyncToLangstore,
+  allowSendForLoc,
+  allowRollout,
+  allowCancelProject,
+  projectCancelled,
+} from '../utils/state.js';
 import {
   sendForLoc,
   showRolloutOptions,
   showRollout,
   rolloutAll,
   startSyncToLangstore,
+  cancelLocProject,
 } from './index.js';
 
 export default function Actions() {
   const canAct = allowSyncToLangstore.value
               || allowSendForLoc.value
-              || allowRollout.value;
+              || allowRollout.value
+              || allowCancelProject.value;
   const canActStyle = canAct ? 'locui-section-label' : 'locui-section-label is-invisible';
   const canReRollAll = languages.value.some((lang) => lang.status === 'completed');
   const canRollAll = languages.value.some((lang) => lang.status === 'translated');
+
+  if (projectCancelled.value) {
+    return html`
+      <div class=locui-section>
+        <div class=locui-section-heading>
+            <div>
+              <h2 class="locui-section-label cancelled">Project Cancelled</h2>
+              <i>Note: All processes have been stopped but documents were not deleted from SharePoint.</i>
+            </div>
+        </div>
+      </div>
+    `;
+  }
 
   return html`
     <div class=locui-section>
@@ -62,6 +85,13 @@ export default function Actions() {
               `}
             `}
           </div>
+        `}
+        ${allowCancelProject.value && html`
+          <button
+            onClick=${() => cancelLocProject()}
+            class="locui-urls-heading-action cancel">
+            Cancel Project
+          </button>
         `}
       </div>
     </div>
