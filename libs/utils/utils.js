@@ -1038,7 +1038,7 @@ async function documentPostSectionLoading(config) {
     document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
 
-  document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none' }));
+  document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
 }
 
 async function processSection(section, config, isDoc) {
