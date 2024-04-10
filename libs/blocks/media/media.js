@@ -87,14 +87,14 @@ export default function init(el) {
         link.className = 'body-xxs';
       });
     }
-    const lastCta = el.querySelector('.action-area:last-of-type');
-    if (lastCta) {
+    const lastActionArea = el.querySelector('.action-area:last-of-type');
+    if (lastActionArea) {
       const div = createTag('div', { class: 'cta-container' });
-      lastCta.insertAdjacentElement('afterend', div);
-      if (lastCta.previousElementSibling.className.includes('icon-stack-area')) {
-        div.append(lastCta.previousElementSibling);
+      lastActionArea.insertAdjacentElement('afterend', div);
+      if (lastActionArea.previousElementSibling.className.includes('icon-stack-area')) {
+        div.append(lastActionArea.previousElementSibling);
       }
-      div.append(lastCta);
+      div.append(lastActionArea);
     }
     container.append(row);
   });

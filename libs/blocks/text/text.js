@@ -110,10 +110,11 @@ export default function init(el) {
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
   if (!hasLinkFarm) decorateMultiViewport(el);
-  const actionArea = el.querySelector('.action-area:last-of-type');
-  if (actionArea) {
+
+  const lastActionArea = el.querySelector('.action-area:last-of-type');
+  if (lastActionArea) {
     const div = createTag('div', { class: 'cta-container' });
-    actionArea.insertAdjacentElement('afterend', div);
-    div.append(actionArea);
+    lastActionArea.insertAdjacentElement('afterend', div);
+    div.append(lastActionArea);
   }
 }

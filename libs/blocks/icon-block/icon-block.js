@@ -75,16 +75,14 @@ function decorateContent(el) {
       if (secondColumn.children.length === 1) el.classList.add('items-center');
       el.querySelector('.foreground .text-content').append(secondColumn);
     }
-    const actionAreas = el.querySelectorAll('.action-area');
-    if (actionAreas.length) {
+    const lastActionArea = el.querySelector('.action-area:last-of-type');
+    if (lastActionArea) {
       const div = createTag('div', { class: 'cta-container' });
-      const lastCta = actionAreas[actionAreas.length - 1];
-      const secondLastCta = actionAreas[actionAreas.length - 2];
-      lastCta.insertAdjacentElement('afterend', div);
-      if (secondLastCta && lastCta.previousElementSibling === secondLastCta) {
-        div.append(secondLastCta);
+      lastActionArea.insertAdjacentElement('afterend', div);
+      if (lastActionArea.previousElementSibling.className.includes('action-area')) {
+        div.append(lastActionArea.previousElementSibling);
       }
-      div.append(lastCta);
+      div.append(lastActionArea);
     }
   }
 }

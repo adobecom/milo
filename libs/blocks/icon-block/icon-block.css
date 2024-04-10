@@ -104,6 +104,10 @@
   margin-bottom: 0;
 }
 
+.icon-block.inline .body-s.action-area {
+  padding-top: 24px;
+}
+
 .icon-block.inline .icon-area,
 .icon-block.inline .icon-area picture img {
   min-width: var(--icon-size-xxl);
@@ -255,10 +259,6 @@
   width: 100%;
 }
 
-.section[class*="-up"] .icon-block .action-area {
-  align-self: end;
-}
-
 .icon-block.full-width .foreground .text-content .action-area {
   justify-content: center;
 }
@@ -348,6 +348,10 @@
 
 .icon-block .cta-container {
   margin-top: var(--spacing-s);
+}
+
+.icon-block.inline .cta-container .body-s.action-area {
+  padding-top: 0;
 }
 
 .section[class*="-up"] .icon-block .cta-container {
