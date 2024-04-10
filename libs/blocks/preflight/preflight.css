@@ -1,5 +1,6 @@
 :root {
   --notch-size: 12px;
+  --action-color: #FF1593;
 }
 
 #preflight .fragment,
@@ -237,7 +238,7 @@ span.preflight-time {
 }
 
 .preflight-action {
-  background: #FF1593;
+  background: var(--action-color);
   color: #FFF;
   font-weight: 700;
   outline: transparent solid 0;
@@ -356,13 +357,12 @@ span.preflight-time {
 
 .access-item-description {
   margin: 10px 0 48px;
-
 }
 
 .access-image-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  grid-gap: 20px;
+  grid-gap: 10px;
   margin-bottom: 35px;
   width: 100%;
 }
@@ -397,6 +397,7 @@ span.preflight-time {
   align-items: start;
   background: none;
   display: block;
+  font-size: 16px;
 }
 
 img[data-alt-check] {
@@ -424,15 +425,9 @@ img[data-alt-check]::after {
 }
 
 .show-main .access-image-grid-item.in-gnav,
-.show-main .access-image-grid-item.in-footer {
-  display: none;
-}
-
+.show-main .access-image-grid-item.in-footer,
 .show-gnav .access-image-grid-item.in-main-content,
-.show-gnav .access-image-grid-item.in-footer {
-  display: none;
-}
-
+.show-gnav .access-image-grid-item.in-footer,
 .show-footer .access-image-grid-item.in-main-content,
 .show-footer .access-image-grid-item.in-gnav {
   display: none;
@@ -441,7 +436,11 @@ img[data-alt-check]::after {
 .preflight .image-filter {
   padding: 3px;
   margin-left: 5px;
-  border-radius: 5px
+  border-radius: 4px;
+}
+
+.preflight .image-filter:focus-visible {
+  outline-color: var(--action-color);
 }
 
 .preflight .martech {
