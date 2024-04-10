@@ -117,6 +117,7 @@ const defaultOptions = {
   filterBuildPanel: {
     automatic: 'Automatic',
     custom: 'Custom',
+    events: 'Events',
   },
   filterEvent: {
     '': 'All',
@@ -610,12 +611,39 @@ const FilterPanel = ({ tagsData }) => {
     <//>
   `;
 
+  const FilterEventsPanel = html`
+    <${FilterOptions}>
+    <${MultiField}
+      onChange=${onChange('filters')}
+      className="filters"
+      values=${context.state.filters}
+      title="Level 1 Filters"
+      subTitle=""
+    >
+      <${TagSelect} id="eventsFilterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${FormInput} label="Icon Path" name="icon" />
+    <//>
+
+    <${MultiField}
+    onChange=${onChange('filters')}
+    className="filters"
+    values=${context.state.filters}
+    title="Level 2 Filters"
+    subTitle=""
+  >
+    <${TagSelect} id="eventsFilterTag" options=${allTags} label="Main Tag" singleSelect />
+    <${FormInput} label="Icon Path" name="icon" />
+  <//>
+  `;
+
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
     ${state.showFilters
       && (state.filterBuildPanel === 'custom'
         ? FilterCustomBuildPanel
-        : FilterBuildPanel)}
+        : state.filterBuildPanel === 'events' 
+          ? FilterEventsPanel 
+          : FilterBuildPanel)}
   `;
 };
 
