@@ -1,3 +1,24 @@
+.job-info {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0 10px;
+  font-size: 15px;
+  background-color: rgba(238 238 238 / 90%);
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+}
+
+.process {
+  width: 65%;
+}
+
+.job-info .process {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
 .result {
   position: relative;
   display: flex;
@@ -28,7 +49,6 @@
   font-style: italic;
   color: #666;
   white-space: nowrap;
-  width: 65%;
   overflow-x: scroll;
 }
 
@@ -69,7 +89,7 @@
 }
 
 .meta > *:first-child {
-  width: 100px;
+  min-width: 100px;
 }
 
 .meta > *:last-child {

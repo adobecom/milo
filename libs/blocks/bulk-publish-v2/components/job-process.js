@@ -1,7 +1,8 @@
+import './job-info.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
-import { getSheet } from '../../../../tools/utils/utils.js';
 import { displayDate, getStatusText, delay, updateItemProgress } from '../utils.js';
 import { pollJobStatus, updateRetry } from '../services.js';
+import { getSheet } from '../../../../tools/utils/utils.js';
 import { getConfig } from '../../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -133,7 +134,7 @@ class JobProcess extends LitElement {
         class="result${style}"
         @click=${() => this.onClick({ url, code: status.code, topic }, pathIndex)}>
         <div class="process">
-          ${topic} <span class="url">${url}</span>
+          <span class="url">${url}</span>
         </div>
         <div class="meta">
           <span class="status ${status.color}">${status.text}</span>
@@ -150,7 +151,13 @@ class JobProcess extends LitElement {
 
   render() {
     const { job } = this.job.result;
-    return job.data.paths.map((path, pathIndex) => this.renderJobItem(path, pathIndex));
+    const jobData = this.jobStatus ?? this.job.result.job;
+    return html`
+      <div class="job-process">
+        <job-info .status=${jobData}></job-info>
+        ${job.data.paths.map((path, pathIndex) => this.renderJobItem(path, pathIndex))}
+      </div>
+    `;
   }
 }
 

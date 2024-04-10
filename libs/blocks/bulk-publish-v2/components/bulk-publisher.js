@@ -326,7 +326,7 @@ class BulkPublish2 extends LitElement {
       </div>
       <div class="job${showList}">
         <div class="job-head">
-          <div class="job-url">JOB</div>
+          <div class="job-url">JOB${this.jobs.length > 1 ? 'S' : ''}</div>
           <div class="job-meta">
             <span>STATUS</span>
             <span>DATE/TIME</span>

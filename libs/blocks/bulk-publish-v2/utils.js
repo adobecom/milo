@@ -99,8 +99,10 @@ const getStatusText = (status, state, count) => {
   return { code, text, color };
 };
 
-/* c8 ignore next 16 */
+/* c8 ignore next 18 */
 const updateItemProgress = (detail, tool) => {
+  const jobInfo = tool.renderRoot.querySelector('job-info');
+  if (jobInfo) jobInfo.status = detail;
   const resources = detail.data?.resources?.filter((res) => res.status !== 0);
   if (resources) {
     resources.forEach(({ path, status }) => {
@@ -134,6 +136,27 @@ const getProcessedCount = (jobs) => jobs.reduce((count, { progress }) => {
   return count + processed;
 }, 0);
 
+const getElapsedTime = (date1, date2) => {
+  const start = new Date(date1);
+  const end = new Date(date2);
+  const diff = Math.abs(end - start);
+  return (diff / 1000) > 60 ? `${Math.round(diff / (1000 * 60))}m` : `${Math.round(diff / 1000)}s`;
+};
+
+const setJobTime = (tool) => {
+  const { state, createTime, startTime, stopTime } = tool.status;
+  let start = startTime;
+  let end = new Date();
+  if (state === 'created') start = createTime;
+  if (state === 'stopped') end = stopTime;
+  tool.timer = getElapsedTime(start, end);
+  if (state !== 'stopped') {
+    setInterval(() => {
+      tool.timer = getElapsedTime(start, new Date());
+    }, 1000);
+  }
+};
+
 export {
   frisk,
   displayDate,
@@ -142,6 +165,7 @@ export {
   getErrorText,
   getJobErrorText,
   getAemUrl,
+  getElapsedTime,
   getProcessedCount,
   isDelete,
   PROCESS_TYPES,
@@ -151,4 +175,5 @@ export {
   sticky,
   isValidUrl,
   delay,
+  setJobTime,
 };
