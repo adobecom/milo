@@ -75,11 +75,11 @@ function decorateContent(el) {
       if (secondColumn.children.length === 1) el.classList.add('items-center');
       el.querySelector('.foreground .text-content').append(secondColumn);
     }
-    const ctas = el.querySelectorAll('.action-area');
-    if (ctas.length) {
+    const actionAreas = el.querySelectorAll('.action-area');
+    if (actionAreas.length) {
       const div = createTag('div', { class: 'cta-container' });
-      const lastCta = ctas[ctas.length - 1];
-      const secondLastCta = ctas[ctas.length - 2];
+      const lastCta = actionAreas[actionAreas.length - 1];
+      const secondLastCta = actionAreas[actionAreas.length - 2];
       lastCta.insertAdjacentElement('afterend', div);
       if (secondLastCta && lastCta.previousElementSibling === secondLastCta) {
         div.append(secondLastCta);
