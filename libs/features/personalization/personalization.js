@@ -677,7 +677,7 @@ function overridePersonalizationVariant(manifest, config) {
     }
     return false;
   });
-  if (!selectedVariant) return
+  if (!selectedVariant) return;
   if (variantNames.includes(selectedVariant)) {
     manifest.selectedVariantName = selectedVariant;
     manifest.selectedVariant = manifest.variants[selectedVariant];
