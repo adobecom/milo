@@ -1,0 +1,19 @@
+name: "Close stale pull requests"
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-pr-message: 'This PR has not been updated recently and will be closed in 7 days if no action is taken. Please ensure all checks are passing, https://github.com/orgs/adobecom/discussions/997 provides instructions. If the PR is ready to be merged, please mark it with the "Ready for Stage" label.'
+          close-pr-message: 'Closing this PR due to inactivity.'
+          days-before-stale: 7
+          days-before-close: 7
+          exempt-pr-labels: 'Ready for Stage'
+          operations-per-run: 100
