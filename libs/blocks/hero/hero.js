@@ -1,4 +1,4 @@
-import { decorateBlockBg, decorateBlockHrs, decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text'];
@@ -158,6 +158,7 @@ export default async function init(el) {
     } else {
       row.classList.add('static');
       decorateBlockHrs(row);
+      decorateTextOverrides(el);
     }
   });
 }
