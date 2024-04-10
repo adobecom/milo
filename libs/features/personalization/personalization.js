@@ -682,7 +682,7 @@ function overridePersonalizationVariant(manifest, config) {
     manifest.selectedVariantName = selectedVariant;
     manifest.selectedVariant = manifest.variants[selectedVariant];
     return
-  } 
+  }
   manifest.selectedVariantName = selectedVariant;
   manifest.selectedVariant = manifest.variants[selectedVariant];
 }
