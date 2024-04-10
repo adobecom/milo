@@ -35,6 +35,8 @@ import {
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
+import dynamicNav from '../../features/dynamic-navigation.js';
+
 const CONFIG = {
   icons: {
     company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1"><defs><style>.cls-1 {fill: #eb1000;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
@@ -949,8 +951,11 @@ class Gnav {
 
 export default async function init(block) {
   try {
-    const { locale, mep } = getConfig();
-    const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+    const { locale, mep, dynamicNavKey } = getConfig();
+    let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+    if (dynamicNavKey) {
+      url = dynamicNav(url, dynamicNavKey);
+    }
     const content = await fetchAndProcessPlainHtml({ url })
       .catch((e) => lanaLog({
         message: `Error fetching gnav content url: ${url}`,
