@@ -681,7 +681,7 @@ function overridePersonalizationVariant(manifest, config) {
   if (variantNames.includes(selectedVariant)) {
     manifest.selectedVariantName = selectedVariant;
     manifest.selectedVariant = manifest.variants[selectedVariant];
-    return
+    return;
   }
   manifest.selectedVariantName = selectedVariant;
   manifest.selectedVariant = manifest.variants[selectedVariant];
