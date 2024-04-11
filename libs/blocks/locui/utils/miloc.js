@@ -136,7 +136,7 @@ export async function cancelProject() {
   return resp.status;
 }
 
-export async function postReqLang(
+export async function rolloutLang(
   languageCode,
   reroll = false,
   ep = 'start-rollout',

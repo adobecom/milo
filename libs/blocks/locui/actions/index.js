@@ -21,7 +21,7 @@ import {
   startSync,
   startProject,
   getServiceUpdates,
-  postReqLang,
+  rolloutLang,
 } from '../utils/miloc.js';
 import { signal } from '../../../deps/htm-preact.js';
 import Modal from './modal.js';
@@ -222,7 +222,7 @@ export function showRollout() {
 export async function rolloutAll(e, reroll) {
   showRolloutOptions.value = false;
   allowRollout.value = false;
-  await postReqLang('all', reroll);
+  await rolloutLang('all', reroll);
 }
 
 export async function cancelLocProject() {
