@@ -1,6 +1,9 @@
 .hero-milo {
   padding: var(--spacing-m) 0;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .dark .hero-milo,
@@ -124,6 +127,7 @@ todo: we need this unit */
 
 .hero-milo > .foreground {
   max-width: var(--grid-container-width);
+  min-width: var(--grid-container-width);
   margin: 0 auto;
   display: grid;
   gap: var(--spacing-m);
@@ -136,10 +140,6 @@ todo: we need this unit */
 .hero-milo .foreground .copy {
   display: grid;
   gap: var(--spacing-xs);
-}
-
-.hero-milo .foreground .copy .order-1 {
-  order: -1;
 }
 
 .hero-milo hr {
@@ -240,6 +240,14 @@ todo: we need this unit */
   left: -24px;
 }
 
+.hero-milo.split.reverse {
+  flex-direction: column-reverse;
+}
+
+.hero-milo.reverse > .foreground .copy {
+  order: 2;
+} 
+
 /* CLS */
 
 /* mobile only */
@@ -248,6 +256,14 @@ todo: we need this unit */
     display: block;
     text-align: center;
   }
+
+  .hero-milo.split.reverse-mobile {
+    flex-direction: column-reverse;
+  }
+
+  .hero-milo.reverse-mobile > .foreground .copy {
+    order: 2;
+  } 
 
 }
 
@@ -276,6 +292,15 @@ todo: we need this unit */
     align-items: center;
     display: flex;
     min-height: 700px;
+    flex-direction: row;
+  }
+
+  .hero-milo.split.reverse {
+    flex-direction: row;
+  }
+
+  .hero-milo.reverse > .foreground .copy {
+      order: unset;
   }
 
   .hero-milo > .foreground {

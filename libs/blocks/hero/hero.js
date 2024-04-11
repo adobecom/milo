@@ -109,6 +109,7 @@ export default async function init(el) {
     foreground.classList.add('has-asset');
     if (el.classList.contains('split')) {
       el.appendChild(createTag('div', { class: 'background-split' }, asset));
+      asset.remove();
     }
   } else {
     [...fRows].forEach((row) => {
