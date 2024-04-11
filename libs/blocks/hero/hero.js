@@ -55,7 +55,7 @@ function extendButtonsClass(text) {
 function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
   const match = str.match(regex);
-  if (!match) return { key: str, classes: null };
+  if (!match) return { key: str };
   const id = match[1];
   const classes = match[2].split(',').map((classStr) => classStr.trim());
   const result = { key: id, classes };
@@ -72,9 +72,6 @@ function loadContentType(type, el, ...classes) {
   if (type === 'lockup') {
     const child = el.querySelector(':scope > div');
     if (child) child.classList.add('flex-row');
-  }
-  if (type === 'text') {
-    console.log('text type', el, classes);
   }
   if (classes.length) {
     el.classList.add(...classes);
@@ -109,7 +106,6 @@ export default async function init(el) {
     foreground.classList.add('has-asset');
     if (el.classList.contains('split')) {
       el.appendChild(createTag('div', { class: 'background-split' }, asset));
-      asset.remove();
     }
   } else {
     [...fRows].forEach((row) => {
@@ -138,7 +134,7 @@ export default async function init(el) {
   copy.append(mainCopy);
   [...rows].forEach((row) => {
     if (row.classList.contains('prepend')) {
-      copy.prepend(row);
+      mainCopy.before(row);
     } else {
       copy.append(row);
     }
@@ -152,7 +148,7 @@ export default async function init(el) {
     if (isKeywordRow) {
       const keyValue = firstColText.replace(blockKeyword, '').trim();
       const parsed = parseKeyString(keyValue);
-      firstCol.parentElement.classList.add(`row-${parsed.key}`);
+      firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
       if (contentTypes.includes(parsed.key)) loadContentType(parsed.key, row, parsed.classes);
