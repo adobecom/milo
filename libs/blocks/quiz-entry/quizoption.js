@@ -54,28 +54,28 @@ export const OptionCard = ({
 
 export const CreateOptions = ({
   options, handleCardSelection, selectedCards, countSelectedCards = 0, maxSelections,
-  getOptionsIcons, background,
+  getOptionsValue, background, mlInputUsed,
 }) => html`
       ${options?.data.filter((option) => option.options !== 'fi_code').map((option, index) => (
     html`<div key=${index} onClick=${handleCardSelection(option)}>
           <${OptionCard} 
             text=${option.text}
             title=${option.title} 
-            icon=${getOptionsIcons(option.options, 'icon')}
-            iconTablet=${getOptionsIcons(option.options, 'icon-tablet')}
-            iconDesktop=${getOptionsIcons(option.options, 'icon-desktop')}
-            image=${getOptionsIcons(option.options, 'image')}
+            icon=${getOptionsValue(option.options, 'icon')}
+            iconTablet=${getOptionsValue(option.options, 'icon-tablet')}
+            iconDesktop=${getOptionsValue(option.options, 'icon-desktop')}
+            image=${getOptionsValue(option.options, 'image')}
             background=${background}
             options=${option.options}
             selected=${selectedCards[option.options] ? 'selected' : ''}
-            disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) ? 'disabled' : ''}/>
+            disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) || mlInputUsed ? 'disabled' : ''}/>
         </div>`
   ))}`;
 
 export const GetQuizOption = ({
   options, maxSelections, selectedCards,
-  onOptionClick, countSelectedCards, getOptionsIcons,
-  background,
+  onOptionClick, countSelectedCards, getOptionsValue,
+  background, mlInputUsed,
 }) => html`
     <div class="quiz-question">
         <div class="quiz-options-container" role="group" aria-labelledby="question">
@@ -84,8 +84,9 @@ export const GetQuizOption = ({
             selectedCards=${selectedCards}
             countSelectedCards=${countSelectedCards} 
             maxSelections=${maxSelections}
-            getOptionsIcons=${getOptionsIcons}
+            getOptionsValue=${getOptionsValue}
             handleCardSelection=${onOptionClick}
-            background=${background} />
+            background=${background}
+            mlInputUsed=${mlInputUsed} />
         </div>
     </div>`;
