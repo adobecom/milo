@@ -17,6 +17,8 @@ const App = ({
   const [quizData, setQuizData] = useState({});
   const [hasMLData, setHasMLData] = useState(false);
   const [mlData, setMLData] = useState({});
+  const [mlInputUsed, setMLInputUsed] = useState(false);
+  const [cardsUsed, setCardsUsed] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [selectedCards, setSelectedCards] = useState({});
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
@@ -71,6 +73,7 @@ const App = ({
           }
         });
         setMLData(mlmap);
+        if (Object.keys(mlmap.mlDetails).length !== 0) setHasMLData(true);
         // console.log('quizState', quizState);
       }
 
@@ -85,25 +88,10 @@ const App = ({
   }, [quizState, quizLists]);
 
   useEffect(() => {
-    (async () => {
-      if (Object.keys(mlData).length !== 0) {
-        setHasMLData(true);
-        // console.log('mlData', mlData);
-      } else {
-        setHasMLData(false);
-      }
-    })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mlData]);
-
-  useEffect(() => {
-    const mlFieldInput = document.querySelector('#ml-field-input');
-    if (countSelectedCards === 0 && mlFieldInput && mlFieldInput.disabled) {
-      mlFieldInput.disabled = false;
-    }
-
-    if (countSelectedCards > 0 && mlFieldInput && !mlFieldInput.disabled) {
-      mlFieldInput.disabled = true;
+    if (countSelectedCards > 0) {
+      setCardsUsed(true);
+    } else {
+      setCardsUsed(false);
     }
   }, [countSelectedCards]);
 
@@ -121,11 +109,20 @@ const App = ({
     return question?.[propName] || '';
   };
 
-  const getOptionsIcons = (optionsType, prop) => {
+  const getOptionsValue = (optionsType, prop) => {
     const optionItem = quizData.strings[selectedQuestion.questions].data.find(
       (item) => item.options === optionsType,
     );
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
+  };
+
+  const onMLInput = (event) => {
+    const inputValue = event.target.value;
+    if (inputValue.length > 0) {
+      if (!mlInputUsed) setMLInputUsed(true);
+    } else {
+      setMLInputUsed(false);
+    }
   };
 
   const onQuizButton = async () => {
@@ -143,6 +140,7 @@ const App = ({
     } else {
       resultContainer.replaceChildren();
     }
+    // console.log('quizPath', quizPath);
   };
 
   const onOptionClick = (option) => () => {
@@ -166,7 +164,7 @@ const App = ({
   return html`<div class="quiz-entry-container">
     <div class="quiz-entry-title">${quizLists.strings[selectedQuestion.questions].heading}</div>
     <div class="quiz-entry-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</div>
-    ${hasMLData && html`<${mlField} placeholderText="${quizData.strings[selectedQuestion.questions].data.find((option) => option.options === 'fi_code').title}"/><div class="results-container"></div>`}
+    ${hasMLData && html`<${mlField} cardsUsed="${cardsUsed}" onMLInput="${onMLInput}" placeholderText="${getOptionsValue('fi_code', 'title')}"/><div class="results-container"></div>`}
     <div class="quiz-entry-text">${quizLists.strings[selectedQuestion.questions].text}</div>
     ${selectedQuestion.questions && html`<${GetQuizOption} 
       maxSelections=${maxSelections} 
@@ -175,7 +173,8 @@ const App = ({
       countSelectedCards=${countSelectedCards}
       selectedCards=${selectedCards}
       onOptionClick=${onOptionClick}
-      getOptionsIcons=${getOptionsIcons}/>`}
+      getOptionsValue=${getOptionsValue}
+      mlInputUsed=${mlInputUsed}/>`}
     <div class="quiz-button-container">
         <button 
           aria-label="${quizLists.strings[selectedQuestion.questions].btn}" 

@@ -31,21 +31,6 @@ export const getFiResults = async (endpoint, apiKey, input, numberOfItems, valid
   return result;
 };
 
-const handleInput = () => {
-  const mlFieldText = document.querySelector('#ml-field-input').value;
-  if (mlFieldText.length > 0) {
-    const quizoptions = document.querySelectorAll('.quiz-option');
-    quizoptions.forEach((option) => {
-      option.classList.add('disabled');
-    });
-  } else {
-    const quizoptions = document.querySelectorAll('.quiz-option');
-    quizoptions.forEach((option) => {
-      option.classList.remove('disabled');
-    });
-  }
-};
-
-export const mlField = ({ placeholderText }) => html`<div class="ml-field-container">
-    <input id="ml-field-input" class="ml-input" type="textarea" placeholder="${placeholderText}" oninput="${handleInput}" />
+export const mlField = ({ cardsUsed, onMLInput, placeholderText }) => html`<div class="ml-field-container">
+    <input id="ml-field-input" class="ml-input" type="textarea" placeholder="${placeholderText}" oninput="${onMLInput}" disabled="${cardsUsed}" />
   </div>`;
