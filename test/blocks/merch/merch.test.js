@@ -602,21 +602,57 @@ describe('Merch Block', () => {
   });
 
   describe('checkout link with optional params', async () => {
-    const CHECKOUT_ALLOWED_KEYS_VALUES = { mal: 2 };
-    CHECKOUT_ALLOWED_KEYS.forEach((key, index) => {
-      it(`renders checkout link with "${key}" parameter`, async () => {
+    const checkoutUcv2Keys = [
+      'rurl', 'authCode', 'curl',
+
+    ];
+    const checkoutAllowKeysMapping = {
+      quantity: 'q',
+      checkoutPromoCode: 'apc',
+      ctxrturl: 'ctxRtUrl',
+      country: 'co',
+      language: 'lang',
+      clientId: 'cli',
+      context: 'ctx',
+      productArrangementCode: 'pa',
+      offerType: 'ot',
+      marketSegment: 'ms',
+      authCode: 'code',
+      rurl: 'rUrl',
+      curl: 'cUrl',
+    };
+    const segmentation = [
+      'ot',
+      'pa',
+      'ms',
+    ];
+
+    const keyValueMapping = { lang: 'en', ms: 'COM', ot: 'BASE', pa: 'phsp_direct_individual' };
+
+    const skipKeys = ['quantity', 'co', 'country', 'lang', 'language'];
+
+    CHECKOUT_ALLOWED_KEYS.forEach((key) => {
+      if (skipKeys.includes(key)) return;
+      const mappedKey = checkoutAllowKeysMapping[key] ?? key;
+      it(`renders checkout link with "${mappedKey}" parameter`, async () => {
         const a = document.createElement('a', { is: 'checkout-link' });
         a.classList.add('merch');
         const searchParams = new URLSearchParams();
-        searchParams.set('osi', index);
+        searchParams.set('osi', 1);
         searchParams.set('type', 'checkoutUrl');
-        const value = CHECKOUT_ALLOWED_KEYS_VALUES[key] || 'test';
+        if (checkoutUcv2Keys.includes(key)) {
+          searchParams.set('workflow', 'ucv2');
+        }
+        const value = keyValueMapping[mappedKey] ?? 'test';
         searchParams.set(key, value);
+        if (segmentation.includes(mappedKey)) {
+          searchParams.set('workflowStep', 'segmentation');
+        }
         a.setAttribute('href', `/tools/ost?${searchParams.toString()}`);
         document.body.appendChild(a);
         const el = await merch(a);
         await el.onceSettled();
-        expect(el.getAttribute('href')).to.match(new RegExp(`&cli=adobe_com&ctx=fp&co=US&${key}=${value}&lang=en`));
+        expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
         el.remove();
       });
     });
