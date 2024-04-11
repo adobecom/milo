@@ -29,9 +29,10 @@ class JobInfo extends LitElement {
     if (state === 'created') return 'Created';
     return html`
       <div class="progress">
-        <span class="${complete > 0 ? 'success' : ''}" title="Completed Pages">${complete}</span>
-        ${error > 0 ? html`- <span class="error" title="Rework Errors">${error}</span>` : ''}
-        / ${total} page${total > 1 ? 's' : ''}
+        <span class="${complete > 0 ? 'success' : ''}" title="Completed Pages">
+          ${complete}</span> / ${total} page${total > 1 ? 's' : ''}
+        ${error > 0 ? html`- <span class="error" title="Rework Errors">
+          ${error} Error${error > 1 ? 's' : ''}</span>` : ''}
       </div>
     `;
   }
