@@ -116,7 +116,7 @@ class AppPrompt {
 
     const metadata = getMetadata(content.querySelector('.section-metadata'));
     metadata['loader-duration'] = parseInt(metadata['loader-duration'] || CONFIG.delay, 10);
-    metadata['loader-color'] = metadata['loader-color'] || CONFIG.defaultColor;
+    metadata['loader-color'] = metadata['loader-color'] || CONFIG.loaderColor;
     this.options = metadata;
   };
 
