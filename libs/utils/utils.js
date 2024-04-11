@@ -714,6 +714,24 @@ async function loadFooter() {
   await loadBlock(footer);
 }
 
+export function filterDuplicatedLinkBlocks(blocks) {
+  if (!blocks?.length) return [];
+  const uniqueModalKeys = new Set();
+  const uniqueBlocks = [];
+  for (const obj of blocks) {
+    if (obj.className.includes('modal')) {
+      const key = `${obj.dataset.modalHash}-${obj.dataset.modalPath}`;
+      if (!uniqueModalKeys.has(key)) {
+        uniqueModalKeys.add(key);
+        uniqueBlocks.push(obj);
+      }
+    } else {
+      uniqueBlocks.push(obj);
+    }
+  }
+  return uniqueBlocks;
+}
+
 function decorateSection(section, idx) {
   let links = decorateLinks(section);
   decorateDefaults(section);
@@ -749,7 +767,7 @@ function decorateSection(section, idx) {
     blocks: [...links, ...blocks],
     el: section,
     idx,
-    preloadLinks: blockLinks.autoBlocks,
+    preloadLinks: filterDuplicatedLinkBlocks(blockLinks.autoBlocks),
   };
 }
 
@@ -862,7 +880,7 @@ async function checkForPageMods() {
   let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
   if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
-    previewOn = true;
+    previewOn = !offFlag('mepButton');
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
