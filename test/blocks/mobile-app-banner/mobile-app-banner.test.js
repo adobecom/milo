@@ -11,7 +11,6 @@ setConfig(mockConfig);
 describe('mobile-app-banner', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    document.head.innerHTML = '<script/>'; // This block needs a script in head.
   });
   afterEach(() => {
     sinon.restore();
@@ -26,7 +25,7 @@ describe('mobile-app-banner', () => {
     const banner = document.body.querySelector('.mobile-app-banner.product-test');
     await module.default(banner);
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
-    await delay(100);
+    await delay(0);
 
     const scriptTags = document.querySelectorAll('head > script');
     const scriptSrcs = [];
@@ -41,7 +40,7 @@ describe('mobile-app-banner', () => {
     const banner = document.body.querySelector('.mobile-app-banner.product-test1');
     await module.default(banner);
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
-    await delay(100);
+    await delay(0);
 
     const scriptTags = document.querySelectorAll('head > script');
     const scriptSrcs = [];
@@ -57,9 +56,7 @@ describe('mobile-app-banner', () => {
     const banner = document.body.querySelector('.mobile-app-banner.product-test');
     await module.default(banner);
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
-    await delay(100);
-    window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyCustom')); // no init twice
-    await delay(100);
+    await delay(0);
     const scriptTags = document.querySelectorAll('head > script');
     const scriptSrcs = [];
     scriptTags.forEach((scriptTag) => {
