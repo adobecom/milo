@@ -62,8 +62,8 @@ function branchInit(header, key) {
 export default async function init(el) {
   const header = document.querySelector('.global-navigation');
   if (!header) return;
-  const row = el.querySelector(':scope > div');
-  const product = row.textContent.trim().toLowerCase();
+  const classListArray = Array.from(el.classList);
+  const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
   const key = await getKey(product);
   if (key) branchInit(header, key);
 }
