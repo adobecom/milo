@@ -21,7 +21,7 @@ const ENTITLEMENT_MAP = {
 
 export const getEntitlementMap = async () => {
   const { env, consumerEntitlements } = getConfig();
-  if (env.name === 'prod') return { ...consumerEntitlements, ...ENTITLEMENT_MAP };
+  if (env?.name === 'prod') return { ...consumerEntitlements, ...ENTITLEMENT_MAP };
   const { default: STAGE_ENTITLEMENTS } = await import('./stage-entitlements.js');
   return { ...consumerEntitlements, ...STAGE_ENTITLEMENTS };
 };

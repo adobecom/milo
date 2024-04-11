@@ -882,6 +882,9 @@ class Gnav {
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
         if (itemHasActiveLink) {
           linkElem.removeAttribute('href');
+          linkElem.setAttribute('role', 'link');
+          linkElem.setAttribute('aria-disabled', 'true');
+          linkElem.setAttribute('aria-current', 'page');
           linkElem.setAttribute('tabindex', 0);
         }
 

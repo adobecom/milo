@@ -47,9 +47,10 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'merch-card',
-  'merch-cards',
+  'merch-card-collection',
   'merch-offers',
   'mnemonic-list',
+  'mobile-app-banner',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -669,8 +670,7 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
-  header.className = headerQuery || headerMeta || 'gnav';
+  header.className = headerMeta || 'gnav';
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
@@ -710,9 +710,26 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  const footerQuery = new URLSearchParams(window.location.search).get('footerqa');
-  footer.className = footerQuery || footerMeta || 'footer';
+  footer.className = footerMeta || 'footer';
   await loadBlock(footer);
+}
+
+export function filterDuplicatedLinkBlocks(blocks) {
+  if (!blocks?.length) return [];
+  const uniqueModalKeys = new Set();
+  const uniqueBlocks = [];
+  for (const obj of blocks) {
+    if (obj.className.includes('modal')) {
+      const key = `${obj.dataset.modalHash}-${obj.dataset.modalPath}`;
+      if (!uniqueModalKeys.has(key)) {
+        uniqueModalKeys.add(key);
+        uniqueBlocks.push(obj);
+      }
+    } else {
+      uniqueBlocks.push(obj);
+    }
+  }
+  return uniqueBlocks;
 }
 
 function decorateSection(section, idx) {
@@ -750,7 +767,7 @@ function decorateSection(section, idx) {
     blocks: [...links, ...blocks],
     el: section,
     idx,
-    preloadLinks: blockLinks.autoBlocks,
+    preloadLinks: filterDuplicatedLinkBlocks(blockLinks.autoBlocks),
   };
 }
 
@@ -784,7 +801,7 @@ export async function loadIms() {
       scope: imsScope || defaultScope,
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
       redirect_uri: ahomeMeta === 'on'
-        ? `https://www${env !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+        ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
@@ -794,7 +811,10 @@ export async function loadIms() {
       },
       onError: reject,
     };
-    loadScript(`${base}/deps/imslib.min.js`);
+    const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
+      ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
+      : `${base}/deps/imslib.min.js`;
+    loadScript(path);
   }).then(() => {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
@@ -825,8 +845,7 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
 }
 
 async function checkForPageMods() {
-  const search = new URLSearchParams(window.location.search);
-  const offFlag = (val) => search.get(val) === 'off';
+  const offFlag = (val) => PAGE_URL.searchParams.get(val) === 'off';
   if (offFlag('mep')) return;
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
@@ -861,7 +880,7 @@ async function checkForPageMods() {
   let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
   if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
-    previewOn = true;
+    previewOn = !offFlag('mepButton');
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
