@@ -122,17 +122,21 @@ const getTargetPersonalization = async () => {
     // eslint-disable-next-line no-console
     console.log(e);
     if (e.message.startsWith('Timeout waiting for alloy_sendEvent after')) {
+      // eslint-disable-next-line no-use-before-define
+      window.removeEventListener(ALLOY_SEND_EVENT, sendAnalytics);
       let analyticsSent = false;
       const timer = setTimeout(() => {
         sendTargetResponseAnalytics(true, responseStart);
         analyticsSent = true;
       }, 5100 - timeout);
 
-      window.addEventListener(ALLOY_SEND_EVENT, () => {
+      const sendAnalytics = () => {
         clearTimeout(timer);
         if (analyticsSent) return;
         sendTargetResponseAnalytics(true, responseStart);
-      }, { once: true });
+      };
+
+      window.addEventListener(ALLOY_SEND_EVENT, sendAnalytics, { once: true });
     } else {
       sendTargetResponseAnalytics(false, responseStart, e.message);
     }
