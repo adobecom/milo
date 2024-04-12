@@ -1,7 +1,7 @@
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
-const TARGET_TIMEOUT_MS = 3500;
+const TARGET_TIMEOUT_MS = 4000;
 const ENTITLEMENT_TIMEOUT = 3000;
 
 const setDeep = (obj, path, value) => {
@@ -76,10 +76,11 @@ function calculateResponseTime(responseStart) {
   return Math.ceil(responseTime / 250) / 4;
 }
 
-function sendTargetResponseAnalytics(failure, responseStart) {
+function sendTargetResponseAnalytics(failure, responseStart, message) {
   // temporary solution until we can decide on a better timeout value
   const responseTime = calculateResponseTime(responseStart);
-  const val = `target response time ${responseTime}:timed out ${failure}`;
+  let val = `target response time ${responseTime}:timed out ${failure}`;
+  if (message) val += `:${message}`;
   window.alloy('sendEvent', {
     documentUnloading: true,
     xdm: {
@@ -120,7 +121,18 @@ const getTargetPersonalization = async () => {
   } catch (e) {
     // eslint-disable-next-line no-console
     console.log(e);
-    sendTargetResponseAnalytics(true, responseStart);
+    if (e.message.startsWith('Timeout waiting for alloy_sendEvent after')) {
+      const timer = setTimeout(() => {
+        sendTargetResponseAnalytics(true, responseStart);
+      }, 5100);
+
+      window.addEventListener(ALLOY_SEND_EVENT, () => {
+        clearTimeout(timer);
+        sendTargetResponseAnalytics(true, responseStart);
+      }, { once: true });
+    } else {
+      sendTargetResponseAnalytics(false, responseStart, e.message);
+    }
   }
 
   let manifests = [];
