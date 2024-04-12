@@ -123,11 +123,10 @@ const getTargetPersonalization = async () => {
     console.log(e);
     if (e.message.startsWith('Timeout waiting for alloy_sendEvent after')) {
       let analyticsSent = false;
-      const lapsedTime = performance.now() - responseStart;
       const timer = setTimeout(() => {
         sendTargetResponseAnalytics(true, responseStart);
         analyticsSent = true;
-      }, 5100 - lapsedTime);
+      }, 1100);
 
       window.addEventListener(ALLOY_SEND_EVENT, () => {
         clearTimeout(timer);
