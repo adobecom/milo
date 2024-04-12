@@ -182,10 +182,6 @@
   margin-inline-start: 24px;
 }
 
-.tabs[class*='pill'] {
-  background: unset;
-}
-
 .tabs[class*='pill'] .tab-content {
   border-bottom: none;
 }
