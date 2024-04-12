@@ -1,4 +1,9 @@
+.job-process {
+  position: relative;
+}
+
 .job-info {
+  height: 26px;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -10,13 +15,109 @@
   justify-content: space-between;
 }
 
-.process {
-  width: 65%;
-}
-
-.job-info .process {
+.job-info .process .topic {
   text-transform: uppercase;
   font-weight: bold;
+}
+
+.job-info .progress {
+  display: flex;
+}
+
+.job-totals {
+  background-color: white;
+  padding: 0 7px;
+  border-radius: 4px;
+}
+
+.job-totals.errors {
+  border-radius: 5px 0 0 5px;
+}
+
+.error-tools {
+  background-color: var(--error);
+  border-radius: 0 5px 5px 0;
+  color: white;
+  cursor: pointer;
+}
+
+.error-tools .tools {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 0 7px;
+}
+
+.error-tools .count {
+  padding: 7px;
+}
+
+.error-tools:hover {
+  background-color: #ba3a2f;
+}
+
+.error-tools .tools .rework {
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.error-tools .tools .rework img,
+.error-tools .tools .close img {
+  width: 10px;
+}
+
+.filtered .error-tools {
+  border-radius: 5px;
+}
+
+.timer {
+  cursor: pointer;
+  background: white;
+  border-radius: 5px;
+  padding: 0 7px;
+  width: 81px;
+  text-align: center;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.timer:hover {
+  font-weight: bold;
+}
+
+.show-times {
+  padding-bottom: 7px;
+  border-radius: 5px 5px 0 0;
+  z-index: 2;
+  position: relative;
+}
+
+.job-timing {
+  background-color: white;
+  border-radius: 0 0 5px 5px;
+  border: 1px solid #eee;
+  position: absolute;
+  top: 36px;
+  right: 9px;
+  z-index: 1;
+  padding: 3px 10px;
+  min-width: 132px;
+}
+
+.job-timing .stat {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.status {
+  display: flex;
+  gap: 7px;
 }
 
 .result {
@@ -43,6 +144,10 @@
 .result.success.link:hover {
   cursor: pointer;
   background-color: #f9f9f9;
+}
+
+.filter-errors .success {
+  display: none;
 }
 
 .result .process {
@@ -76,7 +181,7 @@
 
 .meta {
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
   min-width: var(--meta-width);
 }
 
@@ -86,14 +191,6 @@
 
 .meta .error {
   color: var(--error);
-}
-
-.meta > *:first-child {
-  min-width: 100px;
-}
-
-.meta > *:last-child {
-  text-align: right;
 }
 
 .meta i {
@@ -109,8 +206,19 @@
 }
 
 @keyframes dotty {
-  0% { content: '' }
-  25% { content: '.' }
-  50% { content: '..' }
-  75% { content: '...' }
+  0% {
+    content: ''
+  }
+
+  25% {
+    content: '.'
+  }
+
+  50% {
+    content: '..'
+  }
+
+  75% {
+    content: '...'
+  }
 }

@@ -1,6 +1,6 @@
 import './job-info.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
-import { displayDate, getStatusText, delay, updateItemProgress } from '../utils.js';
+import { getStatusText, delay, updateItemProgress } from '../utils.js';
 import { pollJobStatus, updateRetry } from '../services.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
 import { getConfig } from '../../../utils/utils.js';
@@ -13,9 +13,9 @@ class JobProcess extends LitElement {
   static get properties() {
     return {
       job: { type: Object },
+      reworkErrors: { type: Function },
       jobStatus: { state: true },
       queue: { state: true },
-      expandDate: { state: true },
     };
   }
 
@@ -23,7 +23,6 @@ class JobProcess extends LitElement {
     super();
     this.jobStatus = undefined;
     this.queue = [];
-    this.expandDate = false;
   }
 
   async connectedCallback() {
@@ -127,7 +126,7 @@ class JobProcess extends LitElement {
 
   renderJobItem(path, pathIndex) {
     const jobPath = typeof path === 'object' ? path.path : path;
-    const { style, status, topic, url, time } = this.getJob(jobPath);
+    const { style, status, topic, url } = this.getJob(jobPath);
     return html`
       <div
         job-item=${jobPath}
@@ -138,12 +137,6 @@ class JobProcess extends LitElement {
         </div>
         <div class="meta">
           <span class="status ${status.color}">${status.text}</span>
-          <span
-            class="date-stamp"
-            @mouseover=${() => { this.expandDate = url; }}
-            @mouseleave=${() => { this.expandDate = false; }}>
-            <i>${this.expandDate === url ? time.label : ''}</i> ${displayDate(time.stamp)}
-          </span>
         </div>
       </div>
     `;
@@ -154,7 +147,7 @@ class JobProcess extends LitElement {
     const jobData = this.jobStatus ?? this.job.result.job;
     return html`
       <div class="job-process">
-        <job-info .status=${jobData}></job-info>
+        <job-info .status=${jobData} .reworkErrors=${() => this.reworkErrors(jobData)}></job-info>
         ${job.data.paths.map((path, pathIndex) => this.renderJobItem(path, pathIndex))}
       </div>
     `;

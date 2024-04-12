@@ -294,6 +294,22 @@ class BulkPublish2 extends LitElement {
     if (this.mode === 'full') this.openJobs = false;
   };
 
+  async reworkErrors(job) {
+    /* c8 ignore next 8 */
+    if (this.mode === 'full') {
+      this.openJobs = false;
+      await delay(300);
+    }
+    const { data, name } = job;
+    const { origin } = this.jobs.find((item) => item.result.job.name === name);
+    const errored = data.resources?.filter((path) => path.status !== 200);
+    if (errored.length) {
+      const textarea = this.renderRoot.querySelector('#Urls');
+      textarea.focus();
+      textarea.value = errored.map((error) => (`${origin}${error.path}`)).join('\r\n');
+    }
+  }
+
   renderResults() {
     const { showList, showClear, loading, count } = this.getJobState();
     const handleToggle = () => {
@@ -307,7 +323,6 @@ class BulkPublish2 extends LitElement {
         class="panel-title"
         @click=${handleToggle}>
         <span class="title">
-          ${count ? html`<strong>${count}</strong>` : ''}
           Job Results
         </span>
         <div class="jobs-tools${showList}">
@@ -329,13 +344,13 @@ class BulkPublish2 extends LitElement {
           <div class="job-url">JOB${this.jobs.length > 1 ? 'S' : ''}</div>
           <div class="job-meta">
             <span>STATUS</span>
-            <span>DATE/TIME</span>
           </div>
         </div>
         <div class="job-list">
           ${this.jobs.map((job) => html`
             <job-process 
               .job=${job}
+              .reworkErrors=${(errors) => this.reworkErrors(errors)}
               @progress="${this.setJobProgress}"
               @stopped="${this.setJobStopped}">
             </job-process>

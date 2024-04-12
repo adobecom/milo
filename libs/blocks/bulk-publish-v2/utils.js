@@ -143,17 +143,21 @@ const getElapsedTime = (date1, date2) => {
   return (diff / 1000) > 60 ? `${Math.round(diff / (1000 * 60))}m` : `${Math.round(diff / 1000)}s`;
 };
 
-const setJobTime = (tool) => {
+const setJobTime = async (tool) => {
+  await tool.updateComplete;
   const { state, createTime, startTime, stopTime } = tool.status;
+  const timer = tool.renderRoot.querySelector('#TimerTime');
   let start = startTime;
   let end = new Date();
   if (state === 'created') start = createTime;
   if (state === 'stopped') end = stopTime;
-  tool.timer = getElapsedTime(start, end);
-  if (state !== 'stopped') {
-    setInterval(() => {
-      tool.timer = getElapsedTime(start, new Date());
-    }, 1000);
+  if (timer) {
+    timer.innerText = getElapsedTime(start, end);
+    if (state !== 'stopped') {
+      setInterval(() => {
+        timer.innerText = getElapsedTime(start, new Date());
+      }, 1000);
+    }
   }
 };
 
