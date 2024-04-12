@@ -56,26 +56,20 @@ function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
   const match = str.match(regex);
   if (!match) return { key: str };
-  const id = match[1];
-  const classes = match[2].split(',').map((classStr) => classStr.trim());
-  const result = { key: id, classes };
+  const key = match[1];
+  const classes = match[2].split(',').map((c) => c.trim());
+  const result = { key, classes };
   return result;
 }
 
-function loadContentType(type, el, ...classes) {
-  if (type === 'list') {
-    decorateList(el);
-  }
-  if (type === 'qrcode') {
-    decorateQr(el);
-  }
-  if (type === 'lockup') {
+function loadContentType(el, key, classes) {
+  if (key === 'lockup') {
     const child = el.querySelector(':scope > div');
     if (child) child.classList.add('flex-row');
   }
-  if (classes.length) {
-    el.classList.add(...classes);
-  }
+  if (key === 'list') decorateList(el);
+  if (key === 'qrcode') decorateQr(el);
+  if (classes.length) el.classList.add(...classes);
 }
 
 export default async function init(el) {
@@ -151,7 +145,7 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
-      if (contentTypes.includes(parsed.key)) loadContentType(parsed.key, row, parsed.classes);
+      if (contentTypes.includes(parsed.key)) loadContentType(row, parsed.key, parsed.classes);
     } else {
       row.classList.add('static');
       decorateBlockHrs(row);
