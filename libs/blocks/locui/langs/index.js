@@ -20,11 +20,12 @@ export async function rollout(item, idx) {
   const reroll = item.status === 'completed';
 
   // Update the UI immediate instead of waiting on polling
-  languages.value[idx].status = 'rolling-out';
+  languages.value[idx].status = item.status === 'error' ? 'retrying' : 'rolling-out';
   languages.value[idx].done = 0;
   languages.value = [...languages.value];
 
-  await rolloutLang(item.code, reroll);
+  if (item.status === 'error') await rolloutLang(item.code, reroll, 'retry', 'Retry.');
+  else await rolloutLang(item.code, reroll);
 }
 
 export function showLangErrors(event, item) {

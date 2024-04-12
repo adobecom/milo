@@ -136,11 +136,18 @@ export async function cancelProject() {
   return resp.status;
 }
 
-export async function rolloutLang(languageCode, reroll = false) {
-  setExcelStatus('Rolling out.', `Lang: ${languageCode} - Reroll: ${reroll ? 'yes' : 'no'}`);
+export async function rolloutLang(
+  languageCode,
+  reroll = false,
+  ep = 'start-rollout',
+  statAction = 'Rolling out.',
+) {
+  let statNotes = `Lang: ${languageCode}`;
+  if (ep === 'start-rollout') { statNotes = `${statNotes} - Reroll: ${reroll ? 'yes' : 'no'}`; }
+  setExcelStatus(statAction, statNotes);
   const url = await getMilocUrl();
   const opts = { method: 'POST' };
-  const resp = await fetch(`${url}start-rollout?project=${heading.value.projectId}&languageCode=${languageCode}&reroll=${reroll}`, opts);
+  const resp = await fetch(`${url}${ep}?project=${heading.value.projectId}&languageCode=${languageCode}&reroll=${reroll}`, opts);
   return resp.json();
 }
 
