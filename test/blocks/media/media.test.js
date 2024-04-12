@@ -104,4 +104,18 @@ describe('media', () => {
       expect(iconStack).to.exist;
     });
   });
+  describe('medium compact', () => {
+    it('has a heading-xl', () => {
+      const heading = medias[7].querySelector('.heading-xl');
+      expect(heading).to.exist;
+    });
+    it('has a body-m', () => {
+      const body = medias[7].querySelector('.body-m');
+      expect(body).to.exist;
+    });
+    it('has a detail-l', () => {
+      const detail = medias[7].querySelector('.detail-l');
+      expect(detail).to.exist;
+    });
+  });
 });

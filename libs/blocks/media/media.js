@@ -6,6 +6,7 @@ import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
   medium: ['m', 's', 'm'],
+  'medium-compact': ['xl', 'm', 'l'],
   large: ['xl', 'm', 'l'],
   xlarge: ['xxl', 'm', 'l'],
 };

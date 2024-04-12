@@ -265,6 +265,14 @@ div[class*="-up"] .media .foreground > .media-row {
   .media.large > .foreground .media-row .image {
     width: 50%;
   }
+
+  .media.medium-compact > .foreground .media-row .image {
+    width: 41.667%;
+  }
+
+  .media.medium-compact > .foreground .media-row .text {
+    width: 55%;
+  }
   
   .media[class*="-up"] .foreground > .media-row .image,
   div[class*="-up"] .media .foreground > .media-row .image {
@@ -273,6 +281,10 @@ div[class*="-up"] .media .foreground > .media-row {
 
   .media.small > .foreground .media-row {
     max-width: 800px;
+  }
+
+  .media.medium-compact > .foreground .media-row {
+    max-width: 1200px;
   }
 
   .media.large > .foreground .media-row {
