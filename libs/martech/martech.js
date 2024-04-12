@@ -122,19 +122,17 @@ const getTargetPersonalization = async () => {
     // eslint-disable-next-line no-console
     console.log(e);
     if (e.message.startsWith('Timeout waiting for alloy_sendEvent after')) {
-      // eslint-disable-next-line no-use-before-define
-      window.removeEventListener(ALLOY_SEND_EVENT, sendAnalytics);
-      let analyticsSent = false;
       const timer = setTimeout(() => {
+        // eslint-disable-next-line no-use-before-define
+        window.removeEventListener(ALLOY_SEND_EVENT, sendAnalytics);
         sendTargetResponseAnalytics(true, responseStart);
-        analyticsSent = true;
       }, 5100 - timeout);
 
-      const sendAnalytics = () => {
+      // eslint-disable-next-line no-inner-declarations
+      function sendAnalytics() {
         clearTimeout(timer);
-        if (analyticsSent) return;
         sendTargetResponseAnalytics(true, responseStart);
-      };
+      }
 
       window.addEventListener(ALLOY_SEND_EVENT, sendAnalytics, { once: true });
     } else {
