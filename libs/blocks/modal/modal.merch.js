@@ -66,6 +66,7 @@ export function adjustStyles({ dialog, iframe }) {
 
 export default async function enableCommerceFrameFeatures({ dialog, iframe }) {
   if (!dialog || !iframe) return;
+  iframe.setAttribute('referrerpolicy', 'origin-when-cross-origin');
   adjustStyles({ dialog, iframe });
   window.addEventListener('message', reactToMessage);
 }
