@@ -122,12 +122,16 @@ const getTargetPersonalization = async () => {
     // eslint-disable-next-line no-console
     console.log(e);
     if (e.message.startsWith('Timeout waiting for alloy_sendEvent after')) {
+      let analyticsSent = false;
+      const lapsedTime = performance.now() - responseStart;
       const timer = setTimeout(() => {
         sendTargetResponseAnalytics(true, responseStart);
-      }, 5100);
+        analyticsSent = true;
+      }, 5100 - lapsedTime);
 
       window.addEventListener(ALLOY_SEND_EVENT, () => {
         clearTimeout(timer);
+        if (analyticsSent) return;
         sendTargetResponseAnalytics(true, responseStart);
       }, { once: true });
     } else {
