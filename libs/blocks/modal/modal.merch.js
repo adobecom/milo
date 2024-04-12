@@ -24,22 +24,22 @@ export function adjustModalHeight(contentHeight) {
   }
 }
 
-export function sendViewportDimensionsToIframe(source) {
+export function sendViewportDimensionsToIframe({ source, origin }) {
   const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-  source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
+  source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, origin);
 }
 
-export function sendViewportDimensionsOnRequest(source) {
-  sendViewportDimensionsToIframe(source);
-  window.addEventListener('resize', debounce(() => sendViewportDimensionsToIframe(source), 10));
+export function sendViewportDimensionsOnRequest({ source, origin }) {
+  sendViewportDimensionsToIframe({ source, origin });
+  window.addEventListener('resize', debounce(() => sendViewportDimensionsToIframe({ source, origin }), 10));
 }
 
-function reactToMessage({ data, source }) {
-  if (data === 'viewportWidth' && source) {
+function reactToMessage({ data, source, origin }) {
+  if (data === 'viewportWidth' && source && origin) {
     /* If the page inside iframe comes from another domain, it won't be able to retrieve
     the viewport dimensions, so it sends a request to receive the viewport dimensions
     from the parent window. */
-    sendViewportDimensionsOnRequest(source);
+    sendViewportDimensionsOnRequest({ source, origin });
   }
 
   if (data?.contentHeight) {
