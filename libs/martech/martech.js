@@ -126,7 +126,7 @@ const getTargetPersonalization = async () => {
       const timer = setTimeout(() => {
         sendTargetResponseAnalytics(true, responseStart);
         analyticsSent = true;
-      }, 1100);
+      }, 5100 - timeout);
 
       window.addEventListener(ALLOY_SEND_EVENT, () => {
         clearTimeout(timer);
