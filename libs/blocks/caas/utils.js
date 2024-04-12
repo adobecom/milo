@@ -423,20 +423,25 @@ const getFilterArray = async (state, country, lang, strs) => {
   /* ****** ((( Carlos ))) ****** */
   const useEventFilters = state.filterBuildPanel === 'events';
   let filters = [];
+  // let categories = [];
+
+  console.log('STATE', state);
   if (useCustomFilters) {
     filters = state.filtersCustom.length > 0
-    ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
-    : [];
-  } else if (useEventFilters) {
-    filters = state.filters
-      .map((filter) => getFilterObj(filter, tags, state, country, lang))
-      .filter((filter) => filter !== null);
+      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
+      : [];
+    console.log('Custom filters', filters);
+  // } else if (useEventFilters) {
+  //   filters = state.filters
+  //     .map((filter) => getFilterObj(filter, tags, state, country, lang))
+  //     .filter((filter) => filter !== null);
+  //   console.log('Event filters', filters);
   } else {
     filters = state.filters
       .map((filter) => getFilterObj(filter, tags, state, country, lang))
       .filter((filter) => filter !== null);
+    console.log('Automatic filters', filters);
   }
-  console.log('filters', filters);
   return filters;
 };
 
@@ -729,6 +734,8 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     headers: caasRequestHeaders,
   };
+  console.log('CAAS_CONFIG:', config);
+
   return config;
 };
 
@@ -747,7 +754,6 @@ export const initCaas = async (state, caasStrs, el) => {
   appEl.append(newEl);
 
   const config = await getConfig(state, caasStrs);
-
   // eslint-disable-next-line no-new, no-undef
   new ConsonantCardCollection(config, newEl);
 };
@@ -787,6 +793,7 @@ export const defaultState = {
   filterLogic: 'or',
   filters: [],
   filtersCustom: [],
+  filtersCategories: [],
   filtersShowEmpty: false,
   gutter: '4x',
   headers: [],

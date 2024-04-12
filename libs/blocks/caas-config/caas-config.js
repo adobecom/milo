@@ -614,10 +614,10 @@ const FilterPanel = ({ tagsData }) => {
   const FilterEventsPanel = html`
     <${FilterOptions}>
     <${MultiField}
-      onChange=${onChange('filters')}
-      className="filters"
-      values=${context.state.filters}
-      title="Level 1 Filters"
+      onChange=${onChange('filtersCategories')}
+      className="filtersCategories"
+      values=${context.state.filtersCategories}
+      title="Categories"
       subTitle=""
     >
       <${TagSelect} id="eventsFilterTag" options=${allTags} label="Main Tag" singleSelect />
@@ -628,23 +628,26 @@ const FilterPanel = ({ tagsData }) => {
     onChange=${onChange('filters')}
     className="filters"
     values=${context.state.filters}
-    title="Level 2 Filters"
+    title="Filters"
     subTitle=""
   >
     <${TagSelect} id="eventsFilterTag" options=${allTags} label="Main Tag" singleSelect />
     <${FormInput} label="Icon Path" name="icon" />
   <//>
   `;
-
+  /* eslint-disable no-nested-ternary */
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
+
     ${state.showFilters
       && (state.filterBuildPanel === 'custom'
         ? FilterCustomBuildPanel
-        : state.filterBuildPanel === 'events' 
-          ? FilterEventsPanel 
+        : state.filterBuildPanel === 'events'
+          ? FilterEventsPanel
           : FilterBuildPanel)}
+
   `;
+  /* eslint-enable no-nested-ternary */
 };
 
 const SearchPanel = () => html`
