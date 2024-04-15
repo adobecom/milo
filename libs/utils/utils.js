@@ -619,6 +619,10 @@ export function decorateLinks(el) {
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
     } else {
+      [...a.href.matchAll(/#_([^#_]+)/g)].forEach(([, s]) => {
+        a.classList.add(s);
+        a.href = a.href.replace(`#_${s}`, '');
+      });
       const autoBlock = decorateAutoBlock(a);
       if (autoBlock) {
         rdx.push(a);
