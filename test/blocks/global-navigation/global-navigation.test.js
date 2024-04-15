@@ -34,7 +34,7 @@ describe('global navigation', () => {
   before(() => {
     document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
     <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://stage.adobeccstatic.com/unav/1.1/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
   });
 
@@ -71,12 +71,15 @@ describe('global navigation', () => {
     });
 
     it("should log when there's issues within onReady", async () => {
+      const ogIms = window.adobeIMS;
       const gnav = await createFullGlobalNavigation({});
       sinon.stub(gnav, 'decorateProfile').callsFake(() => {
         throw new Error('error');
       });
+      window.adobeIMS = { isSignedInUser: () => true };
       await gnav.imsReady();
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('issues within onReady'))).to.exist;
+      window.adobeIMS = ogIms;
     });
 
     it('should log when IMS signIn method is not available', async () => {
