@@ -9,6 +9,7 @@ const OPTION = {
 
 const CLASS = {
   CHANGED: 'gb-changed',
+  GRAYBOX_BODY: 'gb-graybox-body',
   NO_CHANGE: 'gb-no-change',
   NO_CLICK: 'gb-no-click',
   NO_OVERLAY: 'gb-no-overlay',
@@ -215,6 +216,7 @@ export default function init(grayboxEl) {
 
   const options = getTableValues(grayboxEl);
   const grayboxThePage = () => {
+    document.body.classList.add(CLASS.GRAYBOX_BODY);
     const hasGrayboxChanged = !!document.querySelector(`.${CLASS.CHANGED}`);
     if (hasGrayboxChanged) {
       document.body.classList.add(CLASS.OVERLAY);

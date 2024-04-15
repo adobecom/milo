@@ -1,13 +1,33 @@
 :root {
-  --gb-container-border: 1px solid #707070;
   --gb-container-bg: white;
+  --gb-outline-color: #1473E6;
   --gb-container-btn-bg: #505050;
   --gb-overlay-color: rgba(0 0 0 / 45%);
   --gb-modal-bg: #323232;
+  --gb-container-border: 4px solid var(--gb-outline-color);
+  --gb-page-outline-border: 8px solid var(--gb-outline-color);
+  --gb-toggle-arrow: 3px solid white;
 }
 
 .graybox {
   display: none;
+}
+
+.gb-graybox-body {
+  position: relative;
+}
+
+.gb-graybox-body::after {
+  content: '';
+  position: absolute;
+  top: calc(50% + 8px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 15.5px);
+  height: 100%;
+  border: var(--gb-page-outline-border);
+  z-index: 3000;
+  pointer-events: none;
 }
 
 .gb-no-click::before {
@@ -58,23 +78,24 @@ body.gb-overlay::before {
 }
 
 .graybox-container .gb-toggle {
-  background-color: var(--gb-container-bg);
+  background-color: var(--gb-outline-color);
   border: var(--gb-container-border);
   cursor: pointer;
-  height: 58px;
+  height: 64px;
   left: -40px;
   position: absolute;
   width: 40px;
 }
 
 .graybox-container .gb-toggle::before {
-  border-bottom: var(--gb-container-border);
-  border-left: var(--gb-container-border);
+  border-bottom: var(--gb-toggle-arrow);
+  border-left: var(--gb-toggle-arrow);
+  border-radius: 2px;
   content: " ";
   cursor: pointer;
   display: block;
   height: 8px;
-  margin-left: 10px;
+  margin-left: 8px;
   scale: 85%;
   transform: rotate(140deg) scaleX(-1);
   transition: transform 0.2s ease-in-out, margin-left 0.2s ease-in-out;
@@ -82,7 +103,7 @@ body.gb-overlay::before {
 }
 
 .graybox-container.open .gb-toggle::before {
-  margin-left: 5px;
+  margin-left: 3px;
   transform: rotate(225deg) scaleX(1);
 }
 
