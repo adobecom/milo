@@ -7,6 +7,7 @@ describe('PEP', () => {
   let allSelectors;
   let defaultConfig;
   let mockRes;
+  let initPep;
 
   beforeEach(async () => {
     clock = sinon.useFakeTimers({
@@ -20,7 +21,7 @@ describe('PEP', () => {
     allSelectors = importedAllSelectors;
     defaultConfig = importedDefaultConfig;
     mockRes = importedMockRes;
-
+    initPep = (await import('./test-utilities.js')).initPep;
     document.body.innerHTML = `<div class="${allSelectors.fedsUtilities.replace('.', '')}" style="position:relative">
     <div id="${allSelectors.appSwitcher.replace('#', '')}" tabindex="0">App Switcher</div>
     </div>`;
@@ -39,20 +40,20 @@ describe('PEP', () => {
 
   describe('PEP rendering tests', () => {
     it('should render PEP', async () => {
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.exist;
     });
 
     it('should not render PEP when previously dismissed', async () => {
       document.cookie = 'dismissedAppPrompts=["pep-prompt-content.plain.html"]';
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
 
     it('should not render PEP when the entitlement does not match', async () => {
-      await (await import('./test-utilities.js')).initPep({ entName: 'not-matching-entitlement' });
+      await initPep({ entName: 'not-matching-entitlement' });
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
@@ -69,7 +70,7 @@ describe('PEP', () => {
         }
         return null;
       });
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
@@ -80,13 +81,13 @@ describe('PEP', () => {
         if (url.includes('pep-prompt-content.plain.html')) return mockRes({ payload: pepPromptContent({ ...defaultConfig, redirectUrl: false, productName: false }) });
         return null;
       });
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
 
     it('should not render PEP when the anchor element is open', async () => {
-      await (await import('./test-utilities.js')).initPep({ isAnchorOpen: true });
+      await initPep({ isAnchorOpen: true });
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
@@ -99,7 +100,7 @@ describe('PEP', () => {
         if (url.includes('pep-prompt-content.plain.html')) return mockRes({ payload: pepPromptContent({ ...defaultConfig, color: false, loaderDuration: false }) });
         return null;
       });
-      const pep = await (await import('./test-utilities.js')).initPep({});
+      const pep = await initPep({});
       await clock.runAllAsync();
       const { 'loader-color': pepColor, 'loader-duration': pepDuration } = pep.options;
       expect(!!pepColor && !!pepDuration).to.equal(true);
@@ -108,28 +109,28 @@ describe('PEP', () => {
 
   describe('PEP interaction tests', () => {
     it('should close PEP on Escape key', async () => {
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
 
     it('should close PEP on clicking the close icon', async () => {
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       document.querySelector(allSelectors.closeIcon).click();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
 
     it('should close PEP on clicking the CTA', async () => {
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       document.querySelector(allSelectors.cta).click();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
 
     it('should close PEP on clicking the anchor element', async () => {
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       document.querySelector(allSelectors.appSwitcher).click();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
@@ -138,13 +139,13 @@ describe('PEP', () => {
 
   describe('PEP focus tests', () => {
     it('should focus on the close icon on initial render', async () => {
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       expect(document.activeElement).to.equal(document.querySelector(allSelectors.closeIcon));
     });
 
     it('should focus on the anchor element after closing', async () => {
-      await (await import('./test-utilities.js')).initPep({});
+      await initPep({});
       await clock.runAllAsync();
       document.querySelector(allSelectors.closeIcon).click();
       expect(document.activeElement).to.equal(document.querySelector(allSelectors.appSwitcher));
