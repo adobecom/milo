@@ -36,6 +36,7 @@
 .icon-block .foreground {
   position: relative;
   text-align: center;
+  width: 100%;
 }
 
 .icon-block .foreground .text-content {
@@ -310,7 +311,6 @@
 .section[class*="-up"] .icon-block .foreground {
   display: flex;
   align-self: stretch;
-  width: 100%;
 }
 
 [class*="-up"] .icon-block.bio.inline .foreground {
