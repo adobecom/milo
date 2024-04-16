@@ -55,7 +55,7 @@ class JobInfo extends LitElement {
     const error = progress ? progress.failed : 0;
     const total = progress ? progress.total : data.paths.length;
     const hasErrors = error > 0;
-    if (state === 'created') return html`<span class="job-totals">Created</span>`;
+    if (state === 'created') return html`<span class="job-totals">Waiting</span>`;
     return html`
       <div class="progress${this.errFilter ? ' filtered' : ''}">
         ${!this.errFilter ? html`
@@ -126,12 +126,12 @@ class JobInfo extends LitElement {
   }
 
   render() {
-    const { topic, state } = this.status;
+    const { topic, invocationId } = this.status;
     return html`
       <div class="job-info">
         <div class="process">
           <span class="topic">${topic}</span>
-          ${state === 'stopped' ? html`
+          ${invocationId ? html`
             <span class="job-id-link" @click=${this.copyInvocationId}>
               copy invocation ID
             </span>
