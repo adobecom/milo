@@ -1,5 +1,5 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -24,6 +24,58 @@ const blockTypeSizes = {
   },
 };
 
+function decorateMultiViewport(el) {
+  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
+  const foreground = el.querySelector('.foreground');
+  if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
+    [...foreground.children].forEach((child, index) => {
+      child.className = viewports[index];
+      if (foreground.childElementCount === 2 && index === 1) child.className = 'tablet-up desktop-up';
+    });
+  }
+  return foreground;
+}
+
+function decorateBlockIconArea(el) {
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (!headings) return;
+  headings.forEach((h) => {
+    const hPrevElem = h.previousElementSibling;
+    if (hPrevElem?.childElementCount) {
+      const picCount = [...hPrevElem.children].reduce((result, item) => {
+        let count = result;
+        if (item.nodeName === 'PICTURE') count += 1;
+        return count;
+      }, 0);
+      if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
+    }
+  });
+}
+
+function decorateLinkFarms(el) {
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/blocks/text/link-farms.css`);
+  const [title, foregroundDiv] = [...el.querySelectorAll('.foreground')];
+  const hCount = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
+  title.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading-l');
+  foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
+  foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
+    const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
+    heading?.classList.add('heading-xs');
+    if (!hCount) return;
+    if (!heading) {
+      divElem.prepend(createTag('h3', { class: 'no-heading heading-xs' }));
+      return;
+    }
+    const sibling = index % 2 === 0
+      ? divElem.nextElementSibling
+      : divElem.previousElementSibling;
+    sibling?.classList.add('hspace');
+    if (index > 0) divElem.classList.add('has-heading');
+    if (index > 1) foregroundDiv.classList.add('gap-xl');
+  });
+}
+
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -42,9 +94,11 @@ export default function init(el) {
       blockType = (index > 0) ? 'standard' : variant;
     }
   });
+  const hasLinkFarm = el.classList.contains('link-farm');
   rows.forEach((row) => {
     row.classList.add('foreground');
-    decorateBlockText(row, blockTypeSizes[blockType][size]);
+    if (!hasLinkFarm) decorateBlockText(row, blockTypeSizes[blockType][size]);
+    decorateBlockIconArea(row);
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
@@ -52,16 +106,8 @@ export default function init(el) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-s');
   }
-  if (el.classList.contains('link-farm')) {
-    const foregroundDiv = el.querySelectorAll('.foreground')[1];
-    const count = foregroundDiv.querySelectorAll('h3').length;
-    foregroundDiv.querySelectorAll('div').forEach((divElem) => {
-      if (!divElem.querySelector('h3') && count) {
-        const headingElem = createTag('h3', { class: 'no-heading' });
-        divElem.insertBefore(headingElem, divElem.firstChild);
-      }
-    });
-  }
+  if (hasLinkFarm) decorateLinkFarms(el);
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
+  if (!hasLinkFarm) decorateMultiViewport(el);
 }

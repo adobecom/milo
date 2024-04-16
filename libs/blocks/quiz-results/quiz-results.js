@@ -1,5 +1,7 @@
-import { createTag } from '../../utils/utils.js';
-import { getMetadata, handleStyle } from '../section-metadata/section-metadata.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+import { handleStyle } from '../section-metadata/section-metadata.js';
+import { getNormalizedMetadata } from '../quiz/utils.js';
+import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
 export const LOADING_ERROR = 'Could not load quiz results:';
 
@@ -12,6 +14,8 @@ async function loadFragments(el, experiences) {
     el.append(a);
     await createFragment(a);
   }
+  document.querySelectorAll('main > div, .quiz-results').forEach((quiz) => quiz.removeAttribute('daa-lh'));
+  document.querySelectorAll('.quiz-results.basic > .fragment > .section').forEach((section, idx) => decorateSectionAnalytics(section, idx, getConfig()));
 }
 
 function redirectPage(quizUrl, debug, message) {
@@ -44,16 +48,20 @@ function setAnalytics(hashValue, debug) {
 }
 
 export default async function init(el, debug = null, localStoreKey = null) {
-  const data = getMetadata(el);
+  const data = getNormalizedMetadata(el);
   const params = new URL(document.location).searchParams;
-  const quizUrl = data['quiz-url'];
+  const quizUrl = data.quizurl;
   const BASIC_KEY = 'basicFragments';
   const NESTED_KEY = 'nestedFragments';
   const HASH_KEY = 'pageloadHash';
 
   /* eslint-disable no-param-reassign */
   // handle these two query param values in this way to facilitate unit tests
-  localStoreKey ??= params.get('quizKey');
+  localStoreKey ??= params.get('quizkey');
+
+  const { locale } = getConfig();
+  localStoreKey = locale?.ietf ? `${localStoreKey}-${locale.ietf}` : localStoreKey;
+
   debug ??= params.get('debug');
 
   el.replaceChildren();
@@ -71,8 +79,8 @@ export default async function init(el, debug = null, localStoreKey = null) {
     return;
   }
 
-  if (data['nested-fragments'] && el.classList.contains('nested')) {
-    const nested = results[NESTED_KEY][data['nested-fragments'].text];
+  if (data.nestedfragments && el.classList.contains('nested')) {
+    const nested = results[NESTED_KEY][data.nestedfragments.text];
     if (nested) loadFragments(el, nested);
   } else if (el.classList.contains('basic')) {
     const basic = results[BASIC_KEY];

@@ -2,7 +2,11 @@
   display: block;
   width: 100%;
   position: relative;
-  overflow: hidden;
+}
+
+.dark .icon-block,
+.icon-block.dark {
+  color: #fff;
 }
 
 .icon-block p {
@@ -42,7 +46,6 @@
 }
 
 .five-up .icon-block .foreground .text-content {
-  text-align: left;
   padding-bottom: var(--spacing-xs);
 }
 
@@ -68,9 +71,18 @@
   overflow: hidden;
 }
 
+.icon-block .foreground .icon-area picture {
+  line-height: 0;
+  display: block;
+}
+
 .icon-block .foreground .icon-area img {
   max-height: var(--icon-size-xxl);
   width: auto;
+}
+
+.icon-block .foreground .text-content [class*="heading"] {
+  margin: 0 0 var(--spacing-xs);
 }
 
 .icon-block.inline .foreground {
@@ -82,6 +94,14 @@
   flex-flow: row nowrap;
   text-align: start;
   gap: 16px;
+}
+
+.icon-block.inline.items-center .foreground .text-content {
+  align-items: center;
+}
+
+.icon-block.inline.items-center .foreground .text-content [class*="heading"] {
+  margin-bottom: 0;
 }
 
 .icon-block.inline .body-s.action-area {
@@ -168,6 +188,7 @@
 
 .icon-block.inline .foreground .text-content .icon-area {
   width: fit-content;
+  display: contents;
 }
 
 .five-up .icon-block:not(.full-width) .foreground .icon-area img {
@@ -210,10 +231,6 @@
 
 .icon-block.bio .foreground .text-content .body-s {
   margin-bottom: var(--spacing-s);
-}
-
-.icon-block .foreground .text-content [class*="heading"] {
-  margin: 0 0 var(--spacing-xs);
 }
 
 .icon-block .foreground .text-content .action-area > a:last-child {
@@ -273,6 +290,10 @@
   text-align: center;
 }
 
+[class*='-up'] .icon-block.inline .foreground { 
+  margin: unset; 
+}
+
 [class*="-up"] .icon-block.bio.inline .foreground {
   max-width: unset;
   width: unset;
@@ -304,10 +325,6 @@
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
-  }
-
-  .icon-block.inline .icon-area picture img {
-    width: 100%;
   }
 
   .icon-block.bio .foreground .icon-area,

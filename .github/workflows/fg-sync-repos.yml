@@ -2,6 +2,15 @@ name: Floodgate Repo Sync
 
 on:
   workflow_dispatch:
+    inputs:
+      syncBranch:
+        description: 'Branch to sync'
+        required: true
+        default: 'stage'
+        type: choice
+        options:
+          - 'stage'
+          - 'main'
 
 jobs:
   build:
@@ -20,18 +29,30 @@ jobs:
         uses: actions/checkout@v2
         with:
           persist-credentials: false
+          ref: ${{ inputs.syncBranch }}
 
-      - name: Clone Floodgate Repository
+      - name: Clone Floodgate Repository and Checkout Selected Branch
         run: |
           git clone https://github.com/adobecom/milo-pink.git ../milo-pink
+          cd ../milo-pink
+          git checkout $FG_SYNC_BRANCH
+          echo "milo-pink branch"
+          git branch
+          cd ../milo
+          echo "milo branch"
+          git branch
+        env:
+          FG_SYNC_BRANCH: ${{ inputs.syncBranch }}
 
       - name: Overwrite floodgate repo files with latest from source repo
         run: |
-          rsync -av --exclude='fstab.yaml' --exclude='.github' --exclude='.git' --exclude='.idea' ./ ../milo-pink/
+          rsync -av --exclude='fstab.yaml' --exclude='.github' --exclude='.kodiak' --exclude='.git' --exclude='.idea' --exclude='.husky' --exclude='.vscode' --exclude='tools/sidekick/config.json' ./ ../milo-pink/
 
       - name: Commit and Push Changes to Floodgate Repository
         run: |
           cd ../milo-pink
+          echo "milo-pink branch"
+          git branch
           git config user.email "$FG_SYNC_BOT_EMAIL"
           git config user.name "$FG_SYNC_BOT_NAME"
           git status          
@@ -39,8 +60,9 @@ jobs:
           git remote -v
           git add .
           git commit -m "Syncing milo to milo-pink"
-          git push origin main --force
+          git push origin $FG_SYNC_BRANCH --force
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
           FG_SYNC_BOT_EMAIL: ${{ secrets.FG_SYNC_BOT_EMAIL }}
           FG_SYNC_BOT_NAME: ${{ secrets.FG_SYNC_BOT_NAME }}
+          FG_SYNC_BRANCH: ${{ inputs.syncBranch }}

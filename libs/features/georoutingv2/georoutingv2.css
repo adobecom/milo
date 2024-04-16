@@ -1,13 +1,27 @@
 .dialog-modal.locale-modal-v2 .georouting-wrapper {
+  display: block !important;
   padding: 56px 24px 40px;
 }
 
 .dialog-modal.locale-modal-v2 {
-  background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Mobile.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  overflow: hidden;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+.dialog-modal.locale-modal-v2 .georouting-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: -1;
+}
+
+.dialog-modal.locale-modal-v2 .georouting-bg svg {
+  width: 100%;
 }
 
 .dialog-modal.locale-modal-v2 .picker {
@@ -85,6 +99,7 @@
 .dialog-modal.locale-modal-v2 .tabs div[role="tablist"]  {
   box-shadow: initial;
   background: initial;
+  margin: 0;
 }
 
 .dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tab-list-container {
@@ -92,8 +107,18 @@
   margin: 2px;
 }
 
+.dialog-modal.locale-modal-v2 .tabs .tab-paddles .paddle {
+  margin: 2px 0;
+  background: var(--tabs-active-bg-color);
+  border-width: 0 0 2px;
+}
+
 .dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-text-color);
+}
+
+.dialog-modal.locale-modal-v2 .tabs .tab-paddles .paddle:disabled {
+  display: none;
 }
 
 .dialog-modal.locale-modal-v2 .tabs button {
@@ -117,6 +142,13 @@
 @media (min-width: 480px) {
   .dialog-modal.locale-modal-v2 {
     background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Tablet.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .dialog-modal.locale-modal-v2 .georouting-bg {
+    display: none;
   }
 }
 

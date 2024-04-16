@@ -1,0 +1,96 @@
+.result {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  background-color: white;
+  border-bottom: 1px solid #eee;
+  padding: 7px 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.result.copied.indicator::after {
+  content: 'Copied!';
+  width: 25%;
+  position: absolute;
+  background: linear-gradient(90deg, rgba(255 255 255 / 100%) 0%, rgba(255 255 255 / 0%) 100%);
+  transition: all 0.6s;
+}
+
+.result.success.link:hover {
+  cursor: pointer;
+  background-color: #f9f9f9;
+}
+
+.result .process {
+  font-style: italic;
+  color: #666;
+  white-space: nowrap;
+  width: 65%;
+  overflow-x: scroll;
+}
+
+.result .process::-webkit-scrollbar {
+  display: none;
+}
+
+.result .url {
+  margin-left: 5px;
+  font-style: normal;
+  color: black;
+}
+
+.status[has-update] {
+  display: none;
+}
+
+.result.success.link .url {
+  color: var(--link-color);
+}
+
+.result.success.link.opened .url {
+  color: var(--accent);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  min-width: var(--meta-width);
+}
+
+.meta .success {
+  color: var(--success);
+}
+
+.meta .error {
+  color: var(--error);
+}
+
+.meta > *:first-child {
+  width: 100px;
+}
+
+.meta > *:last-child {
+  text-align: right;
+}
+
+.meta i {
+  color: #999;
+}
+
+.working::after {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+  animation: dotty steps(1, end) 1s infinite;
+  content: '';
+}
+
+@keyframes dotty {
+  0% { content: '' }
+  25% { content: '.' }
+  50% { content: '..' }
+  75% { content: '...' }
+}

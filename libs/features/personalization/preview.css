@@ -2,7 +2,7 @@
   z-index: 101;
   position: fixed;
   bottom: 32px;
-  right: 40px;
+  left: 40px;
   color: #eee;
   font-weight: 600;
   font-size: 24px;
@@ -32,12 +32,16 @@
   height: 22px;
   border: 2px solid;
   border-radius: 100px;
-  margin-left: 16px;
+  margin-right: 16px;
+}
+
+.mep-popup-header > div > div:not(.mep-manifest-page-info-title) {
+  padding-left: 15px;
 }
 
 @media screen and (max-width: 599px) {
   .mep-hidden .mep-badge .mep-open {
-    margin-left: 0;
+    margin-right: 0;
   }
 
   .mep-hidden .mep-badge .mep-manifest-count {
@@ -70,8 +74,8 @@
 }
 
 .mep-hidden .mep-badge .mep-open::after {
-  transform: rotate(-135deg);
-  left: 7px;
+  transform: rotate(45deg);
+  left: 5px;
   bottom: 6px;
 }
 
@@ -96,7 +100,7 @@
 
 .mep-popup-header .mep-close {
   position: absolute;
-  right: 15px;
+  right: 5px;
   cursor: pointer;
   top: 15px;
 }
@@ -116,7 +120,7 @@
 .mep-popup {
   position: absolute;
   bottom: 64px;
-  right: -8px;
+  left: -8px;
   background-color: #444;
   min-width: 300px;
   border-radius: 16px;
@@ -176,7 +180,7 @@
   border-right: 15px solid transparent;
   border-top: 15px solid #444;
   bottom: -15px;
-  right: 30px;
+  left: 30px;
 }
 
 .mep-hidden .mep-popup {
@@ -286,6 +290,10 @@ body[data-mep-highlight='true'] [data-removed-manifest-id] {
   outline: 3px #ef3726 dashed !important;
 }
 
+body:not([data-mep-highlight='true']) [data-removed-manifest-id] {
+  display: none !important;
+}
+
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
@@ -324,4 +332,8 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
 
 body[data-mep-highlight='true'] main[data-manifest-id]::before {
   content: 'page replaced by: ' attr(data-manifest-id);
+}
+
+body[data-mep-highlight='true'] .section[class*="-merch-cards"] .fragment[data-manifest-id]::before {
+  display: none;
 }

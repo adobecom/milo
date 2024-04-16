@@ -2,7 +2,8 @@
 import { getConfig } from '../../../utils/utils.js';
 
 const API_WAIT_TIMEOUT = 10000;
-const entitlements = {};
+const FORMAT_RAW = 'raw';
+let entitlements = {};
 
 const getAcceptLanguage = (locale = 'en-US') => [
   `${locale}`,
@@ -24,14 +25,14 @@ const getQueryParameters = (params) => {
   return query.length ? `?${query.join('&')}` : '';
 };
 
-const emptyEntitlements = () => ({
+const emptyEntitlements = (format) => (format === FORMAT_RAW ? [] : ({
   clouds: {},
   arrangement_codes: {},
   fulfilled_codes: {},
   offer_families: {},
   offers: {},
   list: { fulfilled_codes: [] },
-});
+}));
 const CREATIVE_CLOUD = 'creative_cloud';
 const DOCUMENT_CLOUD = 'document_cloud';
 const EXPERIENCE_CLOUD = 'experience_cloud';
@@ -94,7 +95,7 @@ const mapSubscriptionCodes = (allOffers) => {
   };
 };
 
-const getSubscriptions = async ({ queryParams }) => {
+const getSubscriptions = async ({ queryParams }, format) => {
   const config = getConfig();
   const profile = await window.adobeIMS.getProfile();
   const apiUrl = config.env.name === 'prod'
@@ -111,7 +112,7 @@ const getSubscriptions = async ({ queryParams }) => {
       'Accept-Language': getAcceptLanguage(config.locale.ietf),
     },
   })
-    .then((response) => (response.status === 200 ? response.json() : emptyEntitlements()));
+    .then((response) => (response.status === 200 ? response.json() : emptyEntitlements(format)));
   return res;
 };
 
@@ -123,29 +124,32 @@ const getSubscriptions = async ({ queryParams }) => {
  * @returns {object} JIL Entitlements
  */
 const getUserEntitlements = async ({ params, format } = {}) => {
-  if (!window.adobeIMS?.isSignedInUser()) return Promise.resolve(emptyEntitlements());
+  if (!window.adobeIMS?.isSignedInUser()) {
+    entitlements = {};
+    return Promise.resolve(emptyEntitlements(format));
+  }
 
   const queryParams = getQueryParameters(params);
   if (entitlements[queryParams]) {
-    return format === 'raw'
+    return format === FORMAT_RAW
       ? entitlements[queryParams]
       : entitlements[queryParams]
         .then((res) => mapSubscriptionCodes(res))
-        .catch(() => emptyEntitlements());
+        .catch(() => emptyEntitlements(format));
   }
 
   entitlements[queryParams] = entitlements[queryParams]
    || new Promise((resolve) => {
-     getSubscriptions({ queryParams })
+     getSubscriptions({ queryParams }, format)
        .then((data) => resolve(data))
-       .catch(() => resolve(emptyEntitlements()));
+       .catch(() => resolve(emptyEntitlements(format)));
    });
 
-  return format === 'raw'
+  return format === FORMAT_RAW
     ? entitlements[queryParams]
     : entitlements[queryParams]
       .then((res) => mapSubscriptionCodes(res))
-      .catch(() => emptyEntitlements());
+      .catch(() => emptyEntitlements(format));
 };
 
 export default getUserEntitlements;

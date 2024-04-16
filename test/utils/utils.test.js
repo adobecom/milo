@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
+import { createTag } from '../../libs/utils/utils.js';
 
 const utils = {};
 
@@ -96,14 +97,14 @@ describe('Utils', () => {
       it('Does not unwrap when sibling content present', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
 
       it('Does not unwrap when not in paragraph tag', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
     });
@@ -235,8 +236,7 @@ describe('Utils', () => {
     });
 
     it('Sets up milo.deferredPromise', async () => {
-      window.milo = {};
-      const resolveDeferred = utils.setupDeferredPromise();
+      const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
       utils.loadDeferred(document, [], {}, resolveDeferred);
       const result = await window.milo.deferredPromise;
@@ -474,6 +474,17 @@ describe('Utils', () => {
       utils.scrollToHashedElement('');
       expect(scrollToCalled).to.be.false;
     });
+
+    it('should scroll to the hashed element with special character', () => {
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+
+      utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
+      expect(scrollToCalled).to.be.true;
+      expect(document.getElementById('tools-für-das-verhalten')).to.exist;
+    });
   });
 
   describe('useDotHtml', async () => {
@@ -559,6 +570,68 @@ describe('Utils', () => {
       await utils.decorateFooterPromo(promoConfig);
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+  });
+
+  describe('createTag', async () => {
+    /**
+       * create tag creates a tag from first parameter tag name,
+       * second parameter is requested attributes map in created tag,
+       * third parameter is the innerHTML of the tag, can be either node or text,
+       * fourth parameter is an object of creation options:
+       *  - @parent parent element to append the tag to.
+       */
+    createTag('var', { class: 'foo' }, 'bar', { parent: document.body });
+    const varTag = document.querySelector('body > var.foo');
+    expect(varTag).to.exist;
+    expect(varTag.textContent).to.equal('bar');
+  });
+
+  describe('personalization', async () => {
+    const MANIFEST_JSON = {
+      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
+    };
+    function htmlResponse() {
+      return new Promise((resolve) => {
+        resolve({
+          ok: true,
+          json: () => MANIFEST_JSON,
+        });
+      });
+    }
+
+    it('should process personalization manifest and save in config', async () => {
+      window.fetch = sinon.stub().returns(htmlResponse());
+      document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
+      await utils.loadArea();
+      const resultConfig = utils.getConfig();
+      const resultExperiment = resultConfig.experiments[2];
+      expect(resultConfig.mep.preview).to.be.true;
+      expect(resultConfig.experiments.length).to.equal(3);
+      expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
+    });
+  });
+
+  describe('filterDuplicatedLinkBlocks', () => {
+    it('returns empty array if receives invalid params', () => {
+      expect(utils.filterDuplicatedLinkBlocks()).to.deep.equal([]);
+    });
+
+    it('removes duplicated link-blocks', () => {
+      const block1 = document.createElement('div');
+      block1.classList.add('modal');
+      block1.setAttribute('data-modal-hash', 'modalHash1');
+      block1.setAttribute('data-modal-path', 'modalPath1');
+      const block2 = document.createElement('div');
+      block2.classList.add('modal');
+      block2.setAttribute('data-modal-hash', 'modalHash2');
+      block2.setAttribute('data-modal-path', 'modalPath2');
+      const block3 = document.createElement('div');
+      block3.classList.add('modal');
+      block3.setAttribute('data-modal-hash', 'modalHash2');
+      block3.setAttribute('data-modal-path', 'modalPath2');
+      const blocks = [block1, block2, block3];
+      expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
     });
   });
 });

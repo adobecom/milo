@@ -4,7 +4,9 @@ let fetched = false;
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
   if (!path) return null;
-  const resp = await fetch(path);
+  const { customFetch } = await import('../../utils/helpers.js');
+  const resp = await customFetch({ resource: path, withCacheRules: true })
+    .catch(() => ({}));
   /* c8 ignore next */
   if (!resp.ok) return null;
   const miloIcons = {};
@@ -56,7 +58,8 @@ export default async function loadIcons(icons, config) {
     const { classList } = icon;
     if (classList.contains('icon-tooltip')) decorateToolTip(icon);
     const iconName = icon.classList[1].replace('icon-', '');
-    if (!iconSVGs[iconName]) return;
+    const existingIcon = icon.querySelector('svg');
+    if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
     if (parent.childNodes.length > 1) {
       if (parent.lastChild === icon) {

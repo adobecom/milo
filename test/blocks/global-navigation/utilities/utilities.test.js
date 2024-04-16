@@ -3,16 +3,23 @@ import sinon from 'sinon';
 import {
   toFragment,
   getFedsPlaceholderConfig,
+  federatePictureSources,
+  getFederatedContentRoot,
   getAnalyticsValue,
   decorateCta,
+  hasActiveLink,
+  setActiveLink,
+  getActiveLink,
   closeAllDropdowns,
   trigger,
   getExperienceName,
   logErrorFor,
+  getFederatedUrl,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config } from '../test-utilities.js';
 
+const baseHost = 'https://www.stage.adobe.com';
 describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
@@ -28,37 +35,208 @@ describe('global navigation utilities', () => {
     expect(fragment2.tagName).to.equal('SPAN');
   });
 
-  // TODO - no tests for using the the live url and .hlx. urls
+  // No tests for using the the live url and .hlx. urls
+  // as mocking window.location.origin is not possible
+  describe('getFedsContentRoot', () => {
+    it('should return content source for localhost', () => {
+      const contentSource = getFederatedContentRoot();
+      expect(contentSource).to.equal(baseHost);
+    });
+  });
+
+  describe('federatePictureSources', () => {
+    // The test scenarios tests decorated or non decorated links.
+    // https://adobe.com/media.png
+    // https://adobe.com/federal/media.png
+    // https://adobe.com/ch_de/federal/globalnav/media.png
+    // ./foo.png
+    // ./federal/foo.png
+    // ./ch_de/federal/globalnav/foo.png
+    const getImageTemplate = ({ host = '', path = '', locale = '' }) => toFragment`<picture>
+    <source
+      type="image/webp"
+      srcset="${host}${locale}${path}"
+      media="(min-width: 600px)"/>
+    <source
+      type="image/webp"
+      srcset="${host}${locale}${path}"/>
+    <source
+      type="image/png"
+      srcset="${host}${locale}${path}"
+      media="(min-width: 600px)"/>
+    <img
+      loading="lazy"
+      alt=""
+      type="image/png"
+      src="${host}${locale}${path}"/>
+  </picture>`;
+    const verifyImageTemplate = ({ host = '', path = '', locale = '', template }) => {
+      template.querySelectorAll('source, img').forEach((source) => {
+        const attr = source.hasAttribute('src') ? 'src' : 'srcset';
+        expect(source.getAttribute(attr)).to.equal(`${host}${locale}${path}`);
+      });
+    };
+
+    it('shouldnt change non-federal absolute sources', async () => {
+      const template = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/test/path/federal/media.png',
+      });
+      federatePictureSources({ section: template });
+      verifyImageTemplate({
+        host: 'https://adobe.com',
+        path: '/test/path/federal/media.png',
+        template,
+      });
+    });
+
+    it('shouldnt change non-federal absolute localized sources', async () => {
+      const localeUrlsTemplate = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/test/federal/media.png',
+        locale: '/ch_de',
+      });
+      federatePictureSources({ section: localeUrlsTemplate });
+      verifyImageTemplate({
+        host: 'https://adobe.com',
+        path: '/test/federal/media.png',
+        locale: '/ch_de',
+        template: localeUrlsTemplate,
+      });
+    });
+
+    it('should change federal absolute sources', async () => {
+      const template = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/federal/media.png',
+      });
+      federatePictureSources({ section: template });
+      verifyImageTemplate({
+        host: baseHost,
+        path: '/federal/media.png',
+        template,
+      });
+    });
+
+    it('should change federal absolute localized sources', async () => {
+      const template = getImageTemplate({
+        host: 'https://adobe.com',
+        path: '/federal/media.png',
+        locale: '/ch_de',
+      });
+      federatePictureSources({ section: template });
+      verifyImageTemplate({
+        host: baseHost,
+        path: '/federal/media.png',
+        locale: '/ch_de',
+        template,
+      });
+    });
+
+    it('shouldnt change non-federal relative sources', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/test/path/federal/media.png',
+      });
+      federatePictureSources({ section: template });
+      verifyImageTemplate({
+        host: '.',
+        path: '/test/path/federal/media.png',
+        template,
+      });
+    });
+
+    it('shouldnt change non-federal relative localized sources', async () => {
+      const localeUrlsTemplate = getImageTemplate({
+        host: '.',
+        path: '/test/federal/media.png',
+        locale: '/ch_de',
+      });
+      federatePictureSources({ section: localeUrlsTemplate });
+      verifyImageTemplate({
+        host: '.',
+        path: '/test/federal/media.png',
+        locale: '/ch_de',
+        template: localeUrlsTemplate,
+      });
+    });
+
+    it('should change federal relative sources', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/federal/media.png',
+      });
+      federatePictureSources({ section: template });
+      verifyImageTemplate({
+        host: baseHost,
+        path: '/federal/media.png',
+        template,
+      });
+    });
+
+    it('should change federal relative localized sources', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/federal/media.png',
+        locale: '/ch_de',
+      });
+      federatePictureSources({ section: template });
+      verifyImageTemplate({
+        host: baseHost,
+        path: '/federal/media.png',
+        locale: '/ch_de',
+        template,
+      });
+    });
+
+    it('should allow to force picture federation to /federal/media.png', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/media.png',
+      });
+      federatePictureSources({ section: template, forceFederate: true });
+      verifyImageTemplate({
+        host: baseHost,
+        path: '/federal/media.png',
+        template,
+      });
+    });
+  });
+
+  // No tests for using the the live url and .hlx. urls
   // as mocking window.location.origin is not possible
   describe('getFedsPlaceholderConfig', () => {
     it('should return contentRoot for localhost', () => {
-      const locale = { ietf: 'en-US', prefix: '' };
-      setConfig(locale);
-      const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig();
+      const locale = { locale: { ietf: 'en-US', prefix: '' } };
+      setConfig({ ...config, ...locale });
+      const placeholderConfig = { useCache: false };
+      const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig(placeholderConfig);
       expect(ietf).to.equal('en-US');
       expect(prefix).to.equal('');
-      expect(contentRoot).to.equal('https://main--milo--adobecom.hlx.page');
+      expect(contentRoot).to.equal(`${baseHost}/federal/globalnav`);
     });
 
     it('should return a config object for a specific locale', () => {
-      setConfig({
+      const customConfig = {
         locales: {
           '': { ietf: 'en-US' },
           fi: { ietf: 'fi-FI' },
         },
         pathname: '/fi/',
-      });
-      const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig();
+      };
+      setConfig({ ...config, ...customConfig });
+      const placeholderConfig = { useCache: false };
+      const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig(placeholderConfig);
       expect(ietf).to.equal('fi-FI');
       expect(prefix).to.equal('/fi');
-      expect(contentRoot).to.equal('https://main--milo--adobecom.hlx.page/fi');
+      expect(contentRoot).to.equal(`${baseHost}/fi/federal/globalnav`);
     });
   });
 
   it('getAnalyticsValue should return a string', () => {
     expect(getAnalyticsValue('test')).to.equal('test');
-    expect(getAnalyticsValue('test test')).to.equal('test_test');
-    expect(getAnalyticsValue('test test 1', 2)).to.equal('test_test_1-2');
+    expect(getAnalyticsValue('test test?')).to.equal('test test');
+    expect(getAnalyticsValue('test test 1?', 2)).to.equal('test test 1-2');
   });
 
   describe('decorateCta', () => {
@@ -84,6 +262,32 @@ describe('global navigation utilities', () => {
       expect(el.children[0].getAttribute('href')).to.equal('test');
       expect(el.children[0].getAttribute('daa-ll')).to.equal('test');
       expect(el.children[0].textContent.trim()).to.equal('test');
+    });
+  });
+
+  describe('active logic', () => {
+    it('can have its state updated', () => {
+      const currentState = hasActiveLink() || false;
+      setActiveLink(!currentState);
+      expect(hasActiveLink()).to.equal(!currentState);
+      setActiveLink(currentState);
+      expect(hasActiveLink()).to.equal(currentState);
+    });
+
+    it('finds the active link from an area', () => {
+      setActiveLink(false);
+
+      const area = toFragment`<div>
+          <a href="https://www.adobe.com/">Home</a>
+        </div>`;
+
+      expect(getActiveLink(area)).to.be.null;
+      expect(hasActiveLink()).to.be.false;
+
+      area.append(toFragment`<a href="${window.location.href}">Current</a>`);
+
+      expect(getActiveLink(area) instanceof HTMLElement).to.be.true;
+      expect(hasActiveLink()).to.be.true;
     });
   });
 
@@ -179,6 +383,57 @@ describe('global navigation utilities', () => {
 
       // Restore the original window.lana.log method
       window.lana.log = originalLanaLog;
+    });
+  });
+
+  describe('getFederatedUrl', () => {
+    it('should return the url if its not federated', () => {
+      expect(getFederatedUrl('https://adobe.com/foo-fragment.html')).to.equal(
+        'https://adobe.com/foo-fragment.html',
+      );
+
+      expect(getFederatedUrl('/foo-fragment.html')).to.equal(
+        '/foo-fragment.html',
+      );
+
+      expect(getFederatedUrl('/lu_de/foo-fragment.html')).to.equal(
+        '/lu_de/foo-fragment.html',
+      );
+    });
+
+    it('should return the federated url', () => {
+      expect(
+        getFederatedUrl('https://adobe.com/federal/foo-fragment.html'),
+      ).to.equal(
+        `${baseHost}/federal/foo-fragment.html`,
+      );
+      expect(
+        getFederatedUrl('https://adobe.com/lu_de/federal/gnav/foofooter.html'),
+      ).to.equal(
+        `${baseHost}/lu_de/federal/gnav/foofooter.html`,
+      );
+    });
+
+    it('should return the federated url for a relative link', () => {
+      expect(
+        getFederatedUrl('/federal/foo-fragment.html'),
+      ).to.equal(
+        `${baseHost}/federal/foo-fragment.html`,
+      );
+    });
+
+    it('should return the federated url for a relative link including hashes and search params', () => {
+      expect(
+        getFederatedUrl('/federal/foo-fragment.html?foo=bar#test'),
+      ).to.equal(
+        `${baseHost}/federal/foo-fragment.html?foo=bar#test`,
+      );
+    });
+
+    it('should return the url for invalid urls', () => {
+      expect(getFederatedUrl('en-US/federal/')).to.equal('en-US/federal/');
+      expect(getFederatedUrl(null)).to.equal(null);
+      expect(getFederatedUrl(123121)).to.equal(123121);
     });
   });
 });

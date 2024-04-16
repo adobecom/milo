@@ -4,11 +4,13 @@ import { LOCALES } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
-const URL_POSTXDM = 'https://14257-milocaasproxy-stage.adobeio-static.net/api/v1/web/milocaas/postXDM';
+const URL_POSTXDM = 'https://14257-milocaasproxy.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
+const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
+const isValidModal = (u) => VALID_MODAL_RE.test(u);
 
 const [setConfig, getConfig] = (() => {
   let config = {
@@ -65,8 +67,11 @@ const flattenLink = (link) => {
 };
 
 const checkUrl = (url, errorMsg) => {
-  if (url === undefined) return url;
+  if (url === undefined || isValidModal(url)) return url;
   const flatUrl = url.includes('href=') ? flattenLink(url) : url;
+  if (isValidModal(flatUrl)) {
+    return flatUrl;
+  }
   return isValidUrl(flatUrl) ? prefixHttps(flatUrl) : { error: errorMsg };
 };
 
@@ -237,10 +242,11 @@ const getImagePathMd = (keyName) => {
 
 const getCardImageUrl = () => {
   const { doc } = getConfig();
-  const imageUrl = getImagePathMd('cardimage')
+  const imageUrl = getImagePathMd('image')
+    || getImagePathMd('cardimage')
     || getImagePathMd('cardimagepath')
-    || doc.querySelector('meta[property="og:image"]')?.content
-    || doc.querySelector('main')?.querySelector('img')?.src;
+    || doc.querySelector('main')?.querySelector('img')?.src.replace(/\?.*/, '')
+    || doc.querySelector('meta[property="og:image"]')?.content;
 
   if (!imageUrl) return null;
   return addHost(imageUrl);
@@ -315,11 +321,17 @@ const getCountryAndLang = async (options) => {
 
 const parseCardMetadata = () => {
   const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('.card-metadata');
+  const marqueeMetadata = getConfig().doc.querySelector('.caas-marquee-metadata');
+  const cardMetadata = getConfig().doc.querySelector('.card-metadata');
+  const mdEl = cardMetadata || marqueeMetadata;
+  const allowHtml = ['description'];
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
       const key = n.children?.[0]?.textContent?.toLowerCase();
-      const val = n.children?.[1]?.textContent;
+      let val = n.children?.[1]?.textContent;
+      if (marqueeMetadata && allowHtml.includes(key)) {
+        val = n.children?.[1]?.innerHTML;
+      }
       if (!key) return;
 
       pageMd[key] = val;
@@ -327,6 +339,12 @@ const parseCardMetadata = () => {
   }
   return pageMd;
 };
+
+function checkCtaUrl(s, options, i) {
+  if (s?.trim() === '') return '';
+  const url = s || options.prodUrl || window.location.origin + window.location.pathname;
+  return checkUrl(url, `Invalid Cta${i}Url: ${url}`);
+}
 
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
@@ -375,16 +393,14 @@ const props = {
   },
   cta1icon: (s) => checkUrl(s, `Invalid Cta1Icon url: ${s}`),
   cta1style: 0,
+  cta1target: 0,
   cta1text: 0,
-  cta1url: (s, options) => {
-    if (s?.trim() === '') return '';
-    const url = s || options.prodUrl || window.location.origin + window.location.pathname;
-    return checkUrl(url, `Invalid Cta1Url: ${url}`);
-  },
+  cta1url: (s, options) => checkCtaUrl(s, options, 1),
   cta2icon: (s) => checkUrl(s, `Invalid Cta2Icon url: ${s}`),
   cta2style: 0,
+  cta2target: 0,
   cta2text: 0,
-  cta2url: (s) => checkUrl(s, `Invalid Cta2Url: ${s}`),
+  cta2url: (s) => checkCtaUrl(s, {}, 2),
   description: (s) => s || getMetaContent('name', 'description') || '',
   details: 0,
   entityid: (_, options) => {
@@ -474,6 +490,7 @@ const getCaasProps = (p) => {
               url: p.cta1url,
               style: p.cta1style,
               icon: p.cta1icon,
+              target: p.cta1target,
             },
           }),
           ...(p.cta2url && {
@@ -482,6 +499,7 @@ const getCaasProps = (p) => {
               url: p.cta2url,
               style: p.cta2style,
               icon: p.cta2icon,
+              target: p.cta2target,
             },
           }),
         },

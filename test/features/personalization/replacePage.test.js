@@ -1,14 +1,18 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
+import { getConfig } from '../../../libs/utils/utils.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
 it('replacePage should replace all of the main block', async () => {
-  let manifestJson = await readFile({ path: './mocks/manifestReplacePage.json' });
+  const config = getConfig();
+  config.env = { name: 'prod' };
+
+  let manifestJson = await readFile({ path: './mocks/actions/manifestReplacePage.json' });
   manifestJson = JSON.parse(manifestJson);
-  const replacePageHtml = await readFile({ path: './mocks/replacePage.plain.html' });
+  const replacePageHtml = await readFile({ path: './mocks/fragments/replacePage.plain.html' });
 
   window.fetch = stub();
   window.fetch.onCall(0).returns(

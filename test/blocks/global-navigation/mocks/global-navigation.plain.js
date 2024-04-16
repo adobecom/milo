@@ -25,6 +25,17 @@ export default `<div>
   </div>
 </div>
 <div>
+  <div class="large-menu section feds">
+    <div>
+      <div>
+        <h2 id="feds-menu">
+          <a href="/federal/feds-menu">FEDS Menu</a>
+        </h2>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
   <h2 id="w-promo"><a href="https://business.adobe.com/">w/ Promo</a></h2>
   <ul>
     <li>
@@ -65,7 +76,7 @@ export default `<div>
           Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas
           porttitor congue massa.
         </p>
-        <p><a href="https://adobe.com/">Check it out</a></p>
+        <p><strong><a href="https://adobe.com/">Check it out</a></strong></p>
       </div>
     </div>
     <div>
@@ -117,23 +128,23 @@ export default `<div>
         <picture>
           <source
             type="image/webp"
-            srcset="http://localhost:2000/test/blocks/global-navigation/mocks/media_linkgroup.png?width=2000&format=webply&optimize=medium"
+            srcset="./test/blocks/global-navigation/mocks/media_linkgroup.png?width=2000&format=webply&optimize=medium"
             media="(min-width: 600px)"
           />
           <source
             type="image/webp"
-            srcset="http://localhost:2000/test/blocks/global-navigation/mocks/media_linkgroup.png?width=750&format=webply&optimize=medium"
+            srcset="./test/blocks/global-navigation/mocks/media_linkgroup.png?width=750&format=webply&optimize=medium"
           />
           <source
             type="image/png"
-            srcset="http://localhost:2000/test/blocks/global-navigation/mocks/media_linkgroup.png?width=2000&format=png&optimize=medium"
+            srcset="./test/blocks/global-navigation/mocks/media_linkgroup.png?width=2000&format=png&optimize=medium"
             media="(min-width: 600px)"
           />
           <img
             loading="lazy"
             alt=""
             type="image/png"
-            src="http://localhost:2000/test/blocks/global-navigation/mocks/media_linkgroup.png?width=750&format=png&optimize=medium"
+            src="./test/blocks/global-navigation/mocks/media_linkgroup.png?width=750&format=png&optimize=medium"
             width="52"
             height="51"
           />
@@ -282,4 +293,37 @@ export default `<div>
       <div><a href="https://www.adobe.com/">Adobe</a></div>
     </div>
   </div>
-</div>`;
+</div>
+        <div class="martech-attribute-metadata">
+          <div>
+            <div>Free trial</div>
+            <div>Free trial</div>
+          </div>
+          <div>
+            <div>Your go-to for Instagram-gorgeous graphics.</div>
+            <div>Your go-to for Instagram-gorgeous graphics.</div>
+          </div>
+          <div>
+            <div>
+              <p>Everyone can.</p>
+              <p>Photoshop.</p>
+            </div>
+            <div>Everyone can.<br>Photoshop.</div>
+          </div>
+          <div>
+            <div>Buy now</div>
+            <div>Buy now</div>
+          </div>
+          <div>
+            <div>How do I compress a PDF without losing quality?</div>
+            <div>How do I compress a PDF without losing quality?</div>
+          </div>
+          <div>
+            <div>What size PDFs can I compress?</div>
+            <div>What size PDFs can I compress?</div>
+          </div>
+          <div>
+            <div>How do I check my PDF file size?</div>
+            <div>How do I check my PDF file size?</div>
+          </div>
+        </div>`;

@@ -1,0 +1,54 @@
+name: Run Nala on Milo Libs
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Provide the live branch url. ex: https://main--cc--adobecom.hlx.live'
+        required: false
+        type: string
+      milolibs:
+        description: 'Provide MiloLibs param. ex: ?milolibs=marquee-static-hover'
+        required: false
+        type: string
+      tags:
+        description: 'Test scenario tags, if empty all tests will run. i.e., @marquee'
+        required: false
+        type: string
+      platform:
+        description: 'Platform to run tests on; select one, options: [ubuntu-latest, macos-latest]'
+        required: true
+        type: string
+
+jobs:
+  action:
+    name: Running tests
+    runs-on: ${{ inputs.platform }}
+    env:
+      WORKFLOW_NAME: 'Milo Libs Run'
+      MILO_LIBS_RUN: 'true'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set environment variables
+        run: |
+          echo "PR_BRANCH_MILOLIBS_LIVE_URL=${{ github.event.inputs.branch }}" >> $GITHUB_ENV
+          echo "MILO_LIBS=${{ github.event.inputs.milolibs }}" >> $GITHUB_ENV
+
+      - name: Run Nala ${{ inputs.platform }}
+        uses: adobecom/nala@main
+        env:
+          labels: ${{ inputs.tags }}
+          IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
+          IMS_PASS: ${{ secrets.IMS_PASS }}
+          HLX_TKN: ${{ secrets.HLX_TKN }}
+          SLACK_WH: ${{ secrets.SLACK_WH }}          
+      - name: Persist JSON Artifact
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: nala-results
+          path: nala-results.json
+          retention-days: 30

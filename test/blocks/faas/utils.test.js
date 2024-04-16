@@ -89,7 +89,7 @@ describe('Faas', () => {
     expect(getFaasHostSubDomain('stage')).to.equal('staging.');
     expect(getFaasHostSubDomain('dev')).to.equal('dev.');
     expect(getFaasHostSubDomain('qa')).to.equal('qa.');
-    expect(getFaasHostSubDomain()).to.equal('dev.');
+    expect(getFaasHostSubDomain()).to.equal('qa.');
   });
 
   it('localizes the destination url', () => {

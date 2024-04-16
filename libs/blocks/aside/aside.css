@@ -72,6 +72,7 @@
 
 .aside .foreground.container .image {
   position: relative;
+  display: flex;
 }
 
 .aside .foreground.container > div {
@@ -84,13 +85,7 @@
   flex-basis: 100%;
 }
 
-.aside .foreground.container .image,
-.aside .foreground.container div:has(.milo-video) {
-  display: flex;
-}
-
 .aside.inline .foreground.container .image,
-.aside.inline .foreground.container div:has(.milo-video),
 .aside.inline .foreground.container .text {
   padding: 0;
 }
@@ -140,6 +135,11 @@
   display: flex;
   gap: var(--spacing-s);
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.aside.notification .icon-area {
+  display: flex;
   align-items: center;
 }
 
@@ -329,6 +329,10 @@
   color: var(--link-color);
 }
 
+.static-links .aside.notification.extra-small .foreground.container a:not(.con-button):last-of-type {
+  color: inherit;
+}
+
 .aside.notification.small .foreground.container .text a.con-button {
   display: table;
   margin-left: 0;
@@ -350,7 +354,8 @@
 }
 
 .aside.notification .foreground.container .icon-area img {
-  height: 40px;
+  max-height: 40px;
+  height: auto;
 }
 
 .aside.notification.extra-small .foreground.container {
@@ -544,7 +549,6 @@
   border-radius: var(--spacing-xs);
   width: var(--grid-container-width);
   margin: auto;
-  bottom: var(--spacing-xs);
   box-shadow: 0 3px 6px #707070;
 }
 
@@ -646,8 +650,7 @@
     margin-bottom: 0;
   }
 
-  .aside .foreground.container .image,
-  .aside .foreground.container div:has(.milo-video) {
+  .aside .foreground.container .image {
     margin: 0;
   }
 
@@ -859,7 +862,6 @@
   }
 
   .aside.notification.small .foreground.container .text .icon-area {
-    width: 40px;
     height: 40px;
   }
 
@@ -918,8 +920,7 @@
     width: var(--grid-container-width);
   }
 
-  .aside .foreground.container > div,
-  .aside .foreground.container div:has(.milo-video) {
+  .aside .foreground.container > div {
     object-fit: cover;
     padding-left: 0;
   }
@@ -998,13 +999,14 @@
     flex-direction: row;
   }
 
+  .aside.promobar .foreground.container .icon-area,
+  .aside.promobar .foreground.container .icon-area img {
+    height: var(--icon-size-xxl);
+  }
+
   .aside.promobar.popup .promo-text .icon-area,
   .aside.promobar.popup .promo-text .icon-area img {
     height: var(--icon-size-m);
-  }
-
-  .aside.promobar .foreground.container .icon-area img {
-    height: var(--icon-size-xxl);
   }
 
   .aside.center:not(.notification) .foreground.container .text .icon-area img {
@@ -1066,10 +1068,6 @@
     margin-right: 0;
   }
 
-  .aside.promobar .foreground.container .icon-area {
-    height: var(--icon-size-xxl);
-  }
-
   .aside.promobar .promo-text .content-area {
     gap: var(--spacing-m);
   }
@@ -1094,6 +1092,8 @@
 
   .aside.promobar.popup {
     border-radius: var(--spacing-xl);
+    width: 85%;
+    max-width: 1600px;
   }
 
   .aside.promobar.popup .foreground.container .promo-text {

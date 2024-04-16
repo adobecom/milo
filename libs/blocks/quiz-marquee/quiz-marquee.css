@@ -1,0 +1,201 @@
+.quiz-marquee {
+  padding: var(--spacing-m) 0;
+  position: relative;
+}
+
+.dark .quiz-marquee,
+.quiz-marquee.dark {
+  color: var(--color-white);
+}
+
+/* Alignment */
+.quiz-marquee.center .static {
+  text-align: center;
+  align-items: center;
+}
+
+.quiz-marquee.center .static .action-area,
+.quiz-marquee.center .static .icon-area { justify-content: center; }
+
+.quiz-marquee .static p { margin: var(--spacing-xs) 0; }
+.quiz-marquee .static p:only-child { margin: 0; }
+.quiz-marquee .static p:first-child { margin-top: 0; }
+.quiz-marquee .static [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
+.quiz-marquee .static [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
+.quiz-marquee .static *:last-child { margin-bottom: 0; }
+
+.quiz-marquee > .foreground {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  display: grid;
+  gap: var(--spacing-m);
+}
+
+.quiz-marquee > .foreground.fw {
+  width: 100%;
+}
+
+.quiz-marquee .foreground .copy {
+  display: grid;
+  gap: var(--spacing-xs);
+}
+
+.quiz-marquee hr {
+  width: 100%;
+  border: none;
+  height: 1px;
+  margin: 0;
+}
+
+.quiz-marquee .has-divider {
+  margin: var(--spacing-xxs) 0;
+}
+
+.quiz-marquee .badge {
+  font-size: 14px;
+  line-height: 1em;
+  font-weight: 400;
+  vertical-align: middle;
+  padding: 4px 8px;
+  margin-left: 4px;
+  border-radius: 4px;
+  background-color: #FFEB00;
+  color: var(--text-color);
+  white-space: no-wrap;
+}
+
+/* content asset hidden on mobile/tablet */
+.quiz-marquee .background-split,
+.quiz-marquee .asset {
+  visibility: hidden;
+  height: 0;
+}
+
+.quiz-marquee .background-split picture img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+.quiz-marquee .foreground div:empty {
+  display: none;
+}
+
+/* Nested blocks */
+.quiz-marquee .con-block .container,
+.quiz-marquee .text-block .foreground,
+.quiz-marquee .aside.notification .foreground.container, 
+.quiz-marquee .fragment > .section > .content {
+  width: unset;
+  margin: 0;
+  max-width: initial;
+  padding: 0;
+}
+
+.quiz-marquee .aside.notification .foreground.container .icon-area img {
+  max-width: var(--icon-size-s);
+  height: auto;
+}
+
+.quiz-marquee .aside.notification.small {
+  min-height: auto;
+  display: block;
+}
+
+.quiz-marquee .aside.notification.small .foreground.container .text {
+  align-items: flex-start;
+  flex-flow: row nowrap;
+}
+
+.quiz-marquee .aside.notification.small .foreground.container .text .icon-area {
+  width: unset;
+  height: unset;
+  margin-right: var(--spacing-xxs);
+}
+
+.quiz-marquee .aside.notification.small .foreground.container .text .body-m {
+  margin: 0;
+}
+
+.quiz-marquee .nested.icon-bullet {
+  display: grid;
+  gap: var(--spacing-xxs);
+}
+
+.quiz-marquee .nested.check-bullet p {
+  margin: 0;
+}
+
+.quiz-marquee .commerce-card {
+  margin-top: var(--spacing-s);
+  display: grid;
+  gap: var(--spacing-m);
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, 378px);
+}
+
+.quiz-marquee.center .commerce-card {
+  justify-content: center;
+}
+
+/* CLS */
+.quiz-marquee .nested.check-bullet {
+  min-height: 27px;
+}
+
+.quiz-marquee .nested.marquee-plan {
+  min-height: 136px;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.quiz-marquee .commerce-card .consonant-Wrapper--1200MaxWidth .consonant-Wrapper-inner {
+  width: auto;
+}
+
+/* mobile only */
+@media (max-width: 600px) {
+  .quiz-marquee .con-button {
+    display: block;
+    text-align: center;
+  }
+}
+
+/* desktop up */
+@media screen and (min-width: 1200px) {
+  .quiz-marquee {
+    align-items: center;
+    display: flex;
+    min-height: 700px;
+  }
+
+  .quiz-marquee > .foreground {
+    min-width: var(--grid-container-width);
+  }
+
+  .quiz-marquee > .foreground.has-asset {
+    grid-template-columns: minmax(50%, 1fr) minmax(50%, 1fr);
+    align-items: center;
+  }
+
+  .quiz-marquee .background-split,
+  .quiz-marquee .asset {
+    visibility: visible;
+    height: unset;
+  }
+
+  .quiz-marquee .background-split {
+    position: absolute;
+    width: calc(50vw - var(--spacing-m));
+    height: 100%;
+    right: 0;
+    top: 0;
+  }
+
+  .quiz-marquee.asset-left .background-split {
+    right: unset;
+  }
+
+  .quiz-marquee .aside.notification.small .foreground.container .text .icon-area {
+    margin-top: 2px;
+  }
+}

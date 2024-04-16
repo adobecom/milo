@@ -5,11 +5,16 @@ import { getLocale, loadArea, setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
+const decorateArea = (doc) => {
+  doc.querySelector('picture.frag-image')?.classList.add('decorated');
+};
+
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
+  decorateArea,
   locales,
 };
 setConfig(config);
@@ -18,10 +23,28 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment } = await import('../../../libs/blocks/fragment/fragment.js');
 
 describe('Fragments', () => {
+  let paramsGetStub;
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
   it('Loads a fragment', async () => {
     const a = document.querySelector('a');
     await getFragment(a);
     const h1 = document.querySelector('h1');
+    expect(h1).to.exist;
+  });
+
+  it('Loads a fragment with cache control', async () => {
+    const a = document.querySelector('a.cache');
+    await getFragment(a);
+    const h1 = document.querySelector('h1.frag-cache');
     expect(h1).to.exist;
   });
 
@@ -57,5 +80,38 @@ describe('Fragments', () => {
     expect(cols.querySelector('.fragment')).to.exist;
     expect(cols.querySelector('.aside').style.background).to.equal('rgb(238, 238, 238)');
     expect(cols.innerHTML.includes('Hello World!!!')).to.be.true;
+  });
+
+  it('Makes media relative to fragment', async () => {
+    const section = document.querySelector('.default-section');
+    await loadArea(section);
+    expect(section.querySelector('source[srcset^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
+    expect(section.querySelector('img[src^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
+  });
+
+  it('"decorated" class added by decorateArea()', async () => {
+    const a = document.querySelector('a.frag-image');
+    await getFragment(a);
+    const pic = document.querySelector('picture.frag-image');
+    expect(pic.classList.contains('decorated')).to.be.true;
+  });
+
+  it('only valid HTML should exist after resolving the fragments', async () => {
+    const { body } = new DOMParser().parseFromString(await readFile({ path: './mocks/body.html' }), 'text/html');
+    for (const a of body.querySelectorAll('a[href*="/fragment"]')) await getFragment(a);
+    const innerHtml = body.innerHTML;
+    // eslint-disable-next-line
+    body.innerHTML = body.innerHTML; // after reassignment, the parser guarantees the presence of only valid HTML
+    expect(innerHtml).to.equal(body.innerHTML);
+  });
+
+  it('should transfer all attributes when replacing a paragraph parent with a div parent', async () => {
+    const a = document.querySelector('a.frag-p');
+    const { attributes } = a.parentElement;
+    await getFragment(a);
+    const wrapper = document.querySelector('.frag-p-wrapper');
+    for (const attr of attributes) {
+      expect(wrapper.getAttribute(attr.name)).to.equal(attr.value);
+    }
   });
 });
