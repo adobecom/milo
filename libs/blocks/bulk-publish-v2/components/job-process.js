@@ -1,6 +1,6 @@
 import './job-info.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
-import { getStatusText, delay, updateItemProgress } from '../utils.js';
+import { getStatusProps, delay, updateJobUrls, isSuccess, isDelete } from '../utils.js';
 import { pollJobStatus, updateRetry } from '../services.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
 import { getConfig } from '../../../utils/utils.js';
@@ -34,7 +34,7 @@ class JobProcess extends LitElement {
           this.jobStatus = detail;
         /* c8 ignore next 3 */
         } else {
-          updateItemProgress(detail, this);
+          updateJobUrls(detail, this);
         }
         this.dispatchEvent(new CustomEvent('progress', { detail }));
       });
@@ -72,8 +72,8 @@ class JobProcess extends LitElement {
 
   async onClick({ url, code, topic }, pathIndex) {
     const results = this.renderRoot.querySelectorAll('.result');
-    const isPOST = !['preview-remove', 'publish-remove'].includes(topic);
-    if (this.jobStatus && (code === 200 || code === 204) && isPOST) {
+    const isPOST = !isDelete(topic);
+    if (this.jobStatus && isSuccess(code) && isPOST) {
       results[pathIndex].classList.add('opened');
       window.open(url, '_blank');
     /* c8 ignore next 6 */
@@ -87,56 +87,52 @@ class JobProcess extends LitElement {
 
   getJob(path) {
     const jobData = this.jobStatus ?? this.job.result.job;
-    const { topic, data, startTime, stopTime, createTime } = jobData;
+    const { topic, data } = jobData;
     const resource = data?.resources?.find((src) => src.path === path || src.webPath === path);
-    let { state, status } = resource ?? jobData;
+    let { status } = resource ?? jobData;
 
-    const success = [200, 204];
     const retry = this.queue?.find((item) => item.path === path);
-    if (retry) {
-      status = retry.status;
-      state = !success.includes(status) && retry.count < 3 ? 'queued' : 'stopped';
-    }
+    if (retry) status = retry.status;
 
-    const style = success.includes(status)
-      ? ` success${['preview-remove', 'publish-remove'].includes(topic) ? '' : ' link'}`
-      : '';
-
-    const origin = ['publish', 'index'].includes(topic) && success.includes(status)
+    const origin = ['publish', 'index'].includes(topic) && isSuccess(status)
       ? this.job.origin.replace('.page', '.live')
       : this.job.origin;
 
-    // sometimes stopTime is returned from API as an empty string
-    const stop = stopTime && stopTime !== '' ? stopTime : undefined;
-    const stamp = stop ?? startTime ?? createTime;
-
-    const statusText = jobData.error ? { code: 404, text: jobData.error, color: 'error' } : null;
+    const statusProps = getStatusProps({
+      status,
+      topic,
+      count: retry?.count,
+      altText: jobData.error,
+    });
 
     return {
       topic,
-      style,
+      status: statusProps,
       url: resource?.href ?? `${origin}${path}`,
-      status: statusText ?? getStatusText(status, state, retry?.count),
-      time: {
-        stamp,
-        label: stopTime ? 'Finished' : 'Started',
-      },
     };
   }
 
   renderJobItem(path, pathIndex) {
     const jobPath = typeof path === 'object' ? path.path : path;
-    const { style, status, topic, url } = this.getJob(jobPath);
+    const { status, topic, url } = this.getJob(jobPath);
+    const link = isDelete(topic) ? '' : ' link';
     return html`
       <div
         job-item=${jobPath}
-        class="result${style}"
+        class="${status.style}${link}"
         @click=${() => this.onClick({ url, code: status.code, topic }, pathIndex)}>
         <div class="process">
+          <img 
+            class="process-icon ${status.color}" 
+            src=${status.icon} 
+            alt="${status.text} Icon" 
+            title="${status.text}" />
           <span class="url">${url}</span>
         </div>
         <div class="meta">
-          <span class="status ${status.color}">${status.text}</span>
+          <span class="status ${status.color}">
+            ${status.text !== 'Working' ? status.text : ''}
+          </span>
         </div>
       </div>
     `;

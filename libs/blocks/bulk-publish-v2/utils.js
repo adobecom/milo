@@ -1,4 +1,21 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
+const checkedIcon = `${base}/blocks/bulk-publish-v2/img/checked.svg`;
+const crossedIcon = `${base}/blocks/bulk-publish-v2/img/crossed.svg`;
+const indicatorIcon = `${base}/blocks/bulk-publish-v2/img/indicator.svg`;
+
+const getStatusIcon = (status) => {
+  switch (status) {
+    case 'success':
+      return checkedIcon;
+    case 'error':
+      return crossedIcon;
+    default:
+      return indicatorIcon;
+  }
+};
 
 const PREFS = 'bulk-pub-prefs';
 const FORM_MODES = ['full', 'half'];
@@ -11,7 +28,8 @@ const PROCESS_TYPES = [
   'index',
 ];
 
-const isDelete = (type) => ['delete', 'unpublish'].includes(type);
+const isSuccess = (status) => [200, 204].includes(status);
+const isDelete = (type) => ['delete', 'unpublish', 'preview-remove', 'publish-remove'].includes(type);
 
 const delay = (timeout = 3000) => new Promise((resolve) => {
   setTimeout(() => resolve(), timeout);
@@ -78,29 +96,36 @@ const getErrorText = (code) => {
   return errorText[codes.indexOf(code)];
 };
 
-const getStatusText = (status, state, count) => {
+// code color text icon style
+const getStatusProps = ({ status, count, altText }) => {
   let code = status;
   let text = 'Working';
-  let color = text.toLowerCase();
-  if (state === 'queued') {
+  let state = text.toLowerCase();
+  if (count) {
     text = `${count}/3 Retry`;
     code = null;
   }
   if (code && code !== 0) {
-    const success = status === 200 || status === 204;
-    if (success) {
-      text = 'Completed';
-      color = 'success';
+    if (isSuccess(status)) {
+      text = '';
+      state = 'success';
     } else {
       text = getErrorText(code);
-      color = 'error';
+      state = 'error';
     }
   }
-  return { code, text, color };
+  return {
+    code,
+    style: `result ${state}`,
+    color: state,
+    text: altText ?? text,
+    icon: getStatusIcon(state),
+  };
 };
 
-/* c8 ignore next 18 */
-const updateItemProgress = (detail, tool) => {
+/* c8 ignore next 28 */
+// update job items without re-render
+const updateJobUrls = (detail, tool) => {
   const jobInfo = tool.renderRoot.querySelector('job-info');
   if (jobInfo) jobInfo.status = detail;
   const resources = detail.data?.resources?.filter((res) => res.status !== 0);
@@ -108,12 +133,21 @@ const updateItemProgress = (detail, tool) => {
     resources.forEach(({ path, status }) => {
       const item = tool.renderRoot.querySelector(`[job-item='${path}']`);
       if (item && !item?.hasAttribute('updated')) {
-        const { text, color } = getStatusText(status, null);
-        const newStatus = createTag('span', { class: `status ${color}` }, text);
-        const display = item.querySelector('.status');
-        display.insertAdjacentElement('afterend', newStatus);
-        display.setAttribute('has-update', '');
-        item.setAttribute('updated', '');
+        const { text, color, icon, style } = getStatusProps({ status });
+        item.className = style;
+        if (color === 'error') {
+          const newStatus = createTag('span', { class: `status ${color}` }, text);
+          const display = item.querySelector('.status');
+          display.insertAdjacentElement('afterend', newStatus);
+          display.setAttribute('has-update', '');
+          item.setAttribute('updated', '');
+        }
+        const processIcon = item.querySelector('.process-icon');
+        if (processIcon) {
+          processIcon.src = icon;
+          processIcon.classList.remove('working');
+          processIcon.classList.add(color);
+        }
       }
     });
   }
@@ -172,10 +206,11 @@ export {
   getElapsedTime,
   getProcessedCount,
   isDelete,
+  isSuccess,
   PROCESS_TYPES,
   processJobResult,
-  getStatusText,
-  updateItemProgress,
+  getStatusProps,
+  updateJobUrls,
   sticky,
   isValidUrl,
   delay,

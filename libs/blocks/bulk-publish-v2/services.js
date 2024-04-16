@@ -5,6 +5,7 @@ import {
   delay,
   frisk,
   isDelete,
+  isSuccess,
 } from './utils.js';
 
 const BASE_URL = 'https://admin.hlx.page';
@@ -127,7 +128,7 @@ const formatResult = ({ status }, job) => {
       state: 'stopped',
       name: `job-${stopTime.toISOString()}`,
       data: { paths, resources: paths.map((path) => ({ path, status })) },
-      progress: { failed: [200, 204].includes(status) ? 0 : 1 },
+      progress: { failed: isSuccess(status) ? 0 : 1 },
     },
   };
 };

@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from '../../../deps/lit-all.min.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
 import { getConfig } from '../../../utils/utils.js';
-import { displayDate, setJobTime } from '../utils.js';
+import { delay, displayDate, setJobTime } from '../utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -18,6 +18,7 @@ class JobInfo extends LitElement {
       timer: { state: true },
       showTimes: { state: true },
       timesAutoOpened: { state: true },
+      copiedInvocationId: { state: true },
     };
   }
 
@@ -41,8 +42,11 @@ class JobInfo extends LitElement {
     }
   }
 
-  copyJobId() {
-    console.log(this.status);
+  async copyInvocationId() {
+    await navigator.clipboard.writeText(this.status.invocationId);
+    this.copiedInvocationId = true;
+    await delay(3000);
+    this.copiedInvocationId = false;
   }
 
   renderStatus() {
@@ -128,10 +132,15 @@ class JobInfo extends LitElement {
         <div class="process">
           <span class="topic">${topic}</span>
           ${state === 'stopped' ? html`
-            <span class="job-id-link" @click=${this.copyJobId}>
-              copy job ID
+            <span class="job-id-link" @click=${this.copyInvocationId}>
+              copy invocation ID
             </span>
-          ` : ''}
+          ` : nothing}
+          ${this.copiedInvocationId ? html`
+            <div class="job-id-copied">
+              Copied to clipboard!
+            </div>
+          ` : nothing}
         </div>
         <div class="meta">
           <span class="status">
