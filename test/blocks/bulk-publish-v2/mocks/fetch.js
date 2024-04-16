@@ -7,7 +7,7 @@ const requests = {
   prevstatus: 'https://admin.hlx.page/job/adobecom/milo/main/preview/job-2024-01-22t21-59-57-639z/details',
   publish: 'https://admin.hlx.page/live/adobecom/milo/main/*',
   pubstatus: 'https://admin.hlx.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z/details',
-  delete: 'https://admin.hlx.page/preview/adobecom/milo/main/*?paths[]=/tools/bulk-publish-v2-test&paths[]=/tools/bulk-publish-v2-test1',
+  delete: 'https://admin.hlx.page/preview/adobecom/milo/main/*',
   delstatus: 'https://admin.hlx.page/job/adobecom/milo/main/preview-remove/job-2024-01-24t23-16-20-377z/details',
   retry: 'https://admin.hlx.page/preview/adobecom/milo/main/tools/bulk-publish-v2-test',
   index: 'https://admin.hlx.page/index/adobecom/milo/main/tools/bulk-publish-v2-test',
@@ -17,8 +17,7 @@ const getMocks = async () => {
   const mocks = [];
   Object.keys(requests).forEach(async (request) => {
     const data = await readFile({ path: `./mocks/response/${request}.json` });
-    const method = request === 'delete' ? 'DELETE' : 'POST';
-    mocks.push({ url: requests[request], method, data, status: request === 'error' ? 401 : 200 });
+    mocks.push({ request, url: requests[request], method: 'POST', data, status: request === 'error' ? 401 : 200 });
   });
   return mocks;
 };
@@ -26,8 +25,10 @@ const getMocks = async () => {
 export async function mockFetch() {
   const mocks = await getMocks();
   stub(window, 'fetch').callsFake((...args) => {
+    const headers = args[1].body ?? null;
+    const body = headers ? JSON.parse(headers) : false;
     const [resource] = args;
-    const response = mocks.find((mock) => mock.url === resource);
+    const response = mocks.find((mock) => (body.delete ? mock.request === 'delete' : mock.url === resource));
     const { status, data } = response;
     return Promise.resolve({
       status,

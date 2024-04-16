@@ -25,6 +25,9 @@ describe('Analytics', async () => {
     section.querySelectorAll('a').forEach((link, idx) => {
       expect(link.getAttribute('daa-ll')).to.equal(expectedLinkValues[idx]);
     });
+
+    const cardLink = document.querySelector('.milo-card-section a');
+    expect(cardLink.getAttribute('daa-ll')).to.equal('Learn more AI for gr-1--Header for tiles bel');
   });
   it('should decorate pzn with attributes', async () => {
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
