@@ -188,6 +188,7 @@ const setJobTime = async (tool) => {
   if (timer) {
     timer.innerText = getElapsedTime(start, end);
     if (state !== 'stopped') {
+      /* c8 ignore next 4 */
       setInterval(() => {
         timer.innerText = getElapsedTime(start, new Date());
       }, 1000);

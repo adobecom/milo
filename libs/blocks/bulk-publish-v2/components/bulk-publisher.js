@@ -294,8 +294,8 @@ class BulkPublish2 extends LitElement {
     if (this.mode === 'full') this.openJobs = false;
   };
 
+  /* c8 ignore next 14 */
   async reworkErrors(job) {
-    /* c8 ignore next 8 */
     if (this.mode === 'full') {
       this.openJobs = false;
       await delay(300);

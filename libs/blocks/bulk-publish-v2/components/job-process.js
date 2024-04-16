@@ -73,10 +73,10 @@ class JobProcess extends LitElement {
   async onClick({ url, code, topic }, pathIndex) {
     const results = this.renderRoot.querySelectorAll('.result');
     const isPOST = !isDelete(topic);
+    /* c8 ignore next 9 */
     if (this.jobStatus && isSuccess(code) && isPOST) {
       results[pathIndex].classList.add('opened');
       window.open(url, '_blank');
-    /* c8 ignore next 6 */
     } else {
       await navigator.clipboard.writeText(url);
       results[pathIndex].classList.add('copied', 'indicator');

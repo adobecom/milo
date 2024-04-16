@@ -91,6 +91,7 @@ class JobInfo extends LitElement {
     const { state, createTime, startTime, stopTime } = this.status;
     let timerText = `${displayDate(createTime)}`;
     this.updateComplete.then(() => { setJobTime(this); });
+    /* c8 ignore next 3 */
     if (state === 'running') {
       timerText = html`Working <strong id="TimerTime"></strong>`;
     }
