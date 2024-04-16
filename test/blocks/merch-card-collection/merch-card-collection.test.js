@@ -161,7 +161,23 @@ describe('Merch Cards', async () => {
 
   it('should override cards when asked to', async () => {
     const el = document.getElementById('multipleFilters');
-    el.dataset.overrides = '/override-photoshop,/override-express';
+    setConfig({
+      ...conf,
+      mep: {
+        custom: {
+          'in-card-collection': [
+            {
+              action: 'replace',
+              target: '/override-photoshop',
+            },
+            {
+              action: 'replace',
+              target: '/override-express',
+            },
+          ],
+        },
+      },
+    });
     cards = [...document.querySelectorAll('#cards .merch-card')]
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
     const merchCards = await init(el);

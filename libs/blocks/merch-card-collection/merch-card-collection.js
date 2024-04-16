@@ -1,6 +1,7 @@
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
 } from '../../utils/utils.js';
+import { MERCH_CARD_COLLECTION_SELECTOR } from '../../features/personalization/personalization.js';
 import { replaceText } from '../../features/placeholders.js';
 
 const DIGITS_ONLY = /^\d+$/;
@@ -53,11 +54,11 @@ async function getCardsRoot(config, html) {
   return cardsRoot;
 }
 
-const fetchOverrideCard = (path, config) => new Promise((resolve, reject) => {
-  fetch(`${localizeLink(path, config)}.plain.html`).then((res) => {
+const fetchOverrideCard = (action, config) => new Promise((resolve, reject) => {
+  fetch(`${localizeLink(action?.target, config)}.plain.html`).then((res) => {
     if (res.ok) {
       res.text().then((cardContent) => {
-        resolve({ path, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] });
+        resolve({ path: action.target, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] });
       });
     } else {
       reject(res.statusText
@@ -180,7 +181,7 @@ export default async function init(el) {
     import('../../deps/merch-card.js'),
   ];
 
-  const { base } = getConfig();
+  const { base, mep } = getConfig();
   const merchStyles = new Promise((resolve) => {
     loadStyle(`${base}/blocks/merch/merch.css`, resolve);
   });
@@ -291,8 +292,7 @@ export default async function init(el) {
   }
 
   const cardsRoot = await cardsRootPromise;
-  const overrides = el.dataset[OVERRIDE_PATHS];
-  const overridePromises = overrides?.split(',').map(fetchOverrideCard);
+  const overridePromises = mep?.custom?.[MERCH_CARD_COLLECTION_SELECTOR]?.map(fetchOverrideCard);
   await overrideCards(cardsRoot, overridePromises, config);
   await initMerchCards(attributes.filtered, preferences, cardsRoot);
   await Promise.all([merchStyles, merchCardStyles, ...deps]);

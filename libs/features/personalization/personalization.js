@@ -51,6 +51,10 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
+export const MERCH_CARD_COLLECTION_SELECTOR = 'in-card-collection';
+
+const CUSTOM_SELECTORS = [MERCH_CARD_COLLECTION_SELECTOR];
+
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
 export const normalizePath = (p) => {
@@ -289,6 +293,14 @@ function getSection(rootEl, idx) {
     : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
 }
 
+function registerCustomAction(cmd) {
+  const { action, selector, target } = cmd;
+  const config = getConfig();
+  config.mep.custom ??= {};
+  config.mep.custom[selector] ??= [];
+  config.mep.custom[selector].push({ action, target });
+}
+
 function getSelectedElement(selector, action, rootEl) {
   if (!selector) return null;
   if ((action.includes('appendtosection') || action.includes('prependtosection'))) {
@@ -356,6 +368,10 @@ function getSelectedElement(selector, action, rootEl) {
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
+    if (CUSTOM_SELECTORS.indexOf(selector) >= 0) {
+      registerCustomAction(cmd);
+      return;
+    }
     if (action in COMMANDS) {
       const el = getSelectedElement(selector, action, rootEl);
       COMMANDS[action](el, target, manifestId);
