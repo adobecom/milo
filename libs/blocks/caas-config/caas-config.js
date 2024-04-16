@@ -999,6 +999,7 @@ const Configurator = ({ rootEl }) => {
   }, [state.placeholderUrl]);
 
   useEffect(async () => {
+    if (!state.tagsUrl) return;
     const { tags, errorMsg } = await loadCaasTags(state.tagsUrl);
     setPanels(getPanels(tags));
     setError(errorMsg || '');

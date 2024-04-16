@@ -8,6 +8,7 @@ import {
   editEntry,
   FORM_MODES,
   getJobErrorText,
+  getProcessedCount,
   isValidUrl,
   processJobResult,
   PROCESS_TYPES,
@@ -164,8 +165,14 @@ class BulkPublish2 extends LitElement {
     return html`
       <div class="errors">
         <span>Error: <strong>${text}</strong></span>
-        <div class="fix-btn" @click=${() => startEdit(true)}>
-          ${count === 1 ? 'Done' : btnText}
+        <div class="error-btns">
+          ${count >= 1 ? html`
+            <div class="fix-btn" @click=${() => startEdit(true)}>
+              ${btnText}
+            </div>` : ''}
+          <div class="clear-btn" @click=${() => this.reset()}>
+            Clear
+          </div>
         </div>
       </div>
     `;
@@ -269,6 +276,8 @@ class BulkPublish2 extends LitElement {
     if (this.jobs.filter((job) => !job.status).length === 0) {
       this.processing = false;
       sticky().set('resume', []);
+      const progressCount = this.renderRoot.querySelector('#progress');
+      if (progressCount) progressCount.innerHTML = 0;
     }
   }
 
@@ -276,15 +285,8 @@ class BulkPublish2 extends LitElement {
     const { name, progress } = event.detail;
     const jobProcess = this.jobs.find(({ result }) => result.job.name === name);
     if (jobProcess) jobProcess.progress = progress;
-    this.requestUpdate();
-  }
-
-  renderProgress(done) {
-    if (!done) return '';
-    return `${this.jobs.reduce((count, { progress }) => {
-      const processed = progress?.processed ?? 0;
-      return count + processed;
-    }, 0)}/${done}`;
+    const progressCount = this.renderRoot.querySelector('#progress');
+    if (progressCount) progressCount.innerHTML = getProcessedCount(this.jobs);
   }
 
   clearJobs = () => {
@@ -315,7 +317,7 @@ class BulkPublish2 extends LitElement {
             <img src=${clearJobsIcon} alt="Clear List Icon" title="Clear Job List" />
           </div>
           <div class="job-progress${loading}">
-            ${this.renderProgress(count)}
+            <span id="progress">0</span>/${count}
           </div>
           <div class="loading-jobs${loading}">
             <div class="loader pink"></div>

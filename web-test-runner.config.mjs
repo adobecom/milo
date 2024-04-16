@@ -35,6 +35,7 @@ export default {
       '**/blocks/library-config/**',
       '**/hooks/**',
       '**/special/tacocat/**',
+      '**/libs/martech/martech.js', // ticket to add unit test: https://jira.corp.adobe.com/browse/MWPW-145975
     ],
   },
   testFramework: { config: { retries: GITHUB_ACTIONS ? 1 : 0 } },

@@ -42,6 +42,10 @@
   color: black;
 }
 
+.status[has-update] {
+  display: none;
+}
+
 .result.success.link .url {
   color: var(--link-color);
 }
