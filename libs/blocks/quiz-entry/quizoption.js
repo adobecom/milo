@@ -1,26 +1,19 @@
-import { html } from '../../deps/htm-preact.js';
+import { html, useState, useEffect } from '../../deps/htm-preact.js';
 
 export const OptionCard = ({
-  text, title, image, icon, iconTablet, iconDesktop, options, disabled, selected, background,
+  text, title, image, icon, iconTablet, iconDesktop, options, disabled, selected, background, onClick,
 }) => {
   const getOptionClass = () => {
     let className = '';
     if (icon || iconTablet || iconDesktop) className += 'has-icon ';
     if (image) className += 'has-image ';
     if (background) className += 'has-background ';
-    if (disabled) className += disabled;
-    if (selected) className += selected;
+    if (disabled) className += 'disabled ';
+    if (selected) className += 'selected ';
     return className;
   };
 
-  const getIconClass = () => {
-    let className = '';
-    if (!icon) className += 'no-icon-default ';
-    if (!iconTablet && (icon || iconDesktop)) className += 'no-icon-tablet ';
-    return className;
-  };
-
-  const getIconHtml = () => html`<div class="quiz-option-icon ${getIconClass()}">
+  const getIconHtml = () => html`<div class="quiz-option-icon">
     <picture>
       ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${iconDesktop}" />`}
       ${iconTablet && html`<source media="(min-width: 600px)" srcset="${iconTablet}" />`}
@@ -28,21 +21,12 @@ export const OptionCard = ({
     </picture>
   </div>`;
 
-  const imageHtml = html`
-    <div class="quiz-option-image" 
-      style="background-image: url('${image}'); background-size: cover" loading="lazy">
-    </div>`;
-
-  const titleHtml = html`
-    <h2 class="quiz-option-title">${title}</h2>
-  `;
-
-  const textHtml = html`
-    <p class="quiz-option-text">${text}</p>
-  `;
+  const imageHtml = image ? html`<div class="quiz-option-image" style="background-image: url('${image}'); background-size: cover" loading="lazy"></div>` : null;
+  const titleHtml = title ? html`<h2 class="quiz-option-title">${title}</h2>` : null;
+  const textHtml = text ? html`<p class="quiz-option-text">${text}</p>` : null;
 
   return html`<button class="quiz-option ${getOptionClass()}" data-option-name="${options}" 
-        role="checkbox" aria-checked="${!!selected}" disabled="${disabled}">
+        role="checkbox" aria-checked="${selected ? 'true' : 'false'}" disabled="${disabled}" onclick=${onClick}>
         ${(icon || iconTablet || iconDesktop) && getIconHtml()}
         ${image && imageHtml}
         <div class="quiz-option-text-container">  
@@ -52,41 +36,76 @@ export const OptionCard = ({
     </button>`;
 };
 
-export const CreateOptions = ({
-  options, handleCardSelection, selectedCards, countSelectedCards = 0, maxSelections,
-  getOptionsValue, background, mlInputUsed,
-}) => html`
-      ${options?.data.filter((option) => option.options !== 'fi_code').map((option, index) => (
-    html`<div key=${index} onClick=${handleCardSelection(option)}>
-          <${OptionCard} 
-            text=${option.text}
-            title=${option.title} 
-            icon=${getOptionsValue(option.options, 'icon')}
-            iconTablet=${getOptionsValue(option.options, 'icon-tablet')}
-            iconDesktop=${getOptionsValue(option.options, 'icon-desktop')}
-            image=${getOptionsValue(option.options, 'image')}
-            background=${background}
-            options=${option.options}
-            selected=${selectedCards[option.options] ? 'selected' : ''}
-            disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) || mlInputUsed ? 'disabled' : ''}/>
-        </div>`
-  ))}`;
-
 export const GetQuizOption = ({
   options, maxSelections, selectedCards,
   onOptionClick, countSelectedCards, getOptionsValue,
   background, mlInputUsed,
-}) => html`
-    <div class="quiz-question">
+}) => {
+  const [index, setIndex] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(window.innerWidth >= 600 ? 5 : 2.5);
+  const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
+
+  useEffect(() => {
+    const handleResize = () => setVisibleCount(window.innerWidth >= 600 ? 5 : 2.5);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const next = () => {
+    if (index + visibleCount < options.data.length) {
+      setIndex(index + 1);
+    }
+  };
+
+  const prev = () => {
+    if (index > 0) {
+      setIndex(index - 1);
+    }
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      isRTL ? prev() : next();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      isRTL ? next() : prev();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const selectedOption = options.data[index];
+      selectedOption && onOptionClick(selectedOption.options);
+    }
+  };
+
+  useEffect(() => {
+    const entry = document.querySelector('.quiz-entry');
+    if (entry && entry.querySelector('.no-carousel')) {
+      entry.removeChild(entry.querySelector('.no-carousel'));
+    }
+  }, []);
+
+  return html`
+    <div class="quiz-question" tabindex="0" onkeydown=${handleKey}>
         <div class="quiz-options-container" role="group" aria-labelledby="question">
-          <${CreateOptions} 
-            options=${options} 
-            selectedCards=${selectedCards}
-            countSelectedCards=${countSelectedCards} 
-            maxSelections=${maxSelections}
-            getOptionsValue=${getOptionsValue}
-            handleCardSelection=${onOptionClick}
-            background=${background}
-            mlInputUsed=${mlInputUsed} />
+          ${index > 0 && html`<button onClick=${prev} style="pointer-events: none;" tabindex="-1">${isRTL ? '&gt;' : '&lt;'}</button>`}
+          <div class="carousel-slides">
+            ${options.data.slice(index, index + visibleCount).map((option, idx) => html`
+              <${OptionCard} 
+                key=${idx}
+                text=${option.text}
+                title=${option.title} 
+                icon=${getOptionsValue(option.options, 'icon')}
+                iconTablet=${getOptionsValue(option.options, 'icon-tablet')}
+                iconDesktop=${getOptionsValue(option.options, 'icon-desktop')}
+                image=${getOptionsValue(option.options, 'image')}
+                background=${background}
+                options=${option.options}
+                selected=${selectedCards[option.options] ? 'selected' : ''}
+                disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) || mlInputUsed ? 'disabled' : ''}
+                onClick=${() => onOptionClick(option.options)}
+              />`)}
+          </div>
+          ${(index + visibleCount < options.data.length) && html`<button onClick=${next} style="pointer-events: none;" tabindex="-1">${isRTL ? '&lt;' : '&gt;'}</button>`}
         </div>
     </div>`;
+};

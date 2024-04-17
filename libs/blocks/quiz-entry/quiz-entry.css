@@ -85,6 +85,10 @@ input:disabled {
   justify-content: center;
 }
 
+.carousel-slides {
+  display: flex;
+}
+
 .quiz-option {
   box-shadow: 10px 10px 6px 0 #00000029;
   flex-direction: column;
