@@ -1,7 +1,7 @@
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
-const TARGET_TIMEOUT_MS = 3500;
+const TARGET_TIMEOUT_MS = 4000;
 const ENTITLEMENT_TIMEOUT = 3000;
 
 const setDeep = (obj, path, value) => {
@@ -71,15 +71,21 @@ const handleAlloyResponse = (response) => {
     .filter(Boolean);
 };
 
-function calculateResponseTime(responseStart) {
-  const responseTime = performance.now() - responseStart;
-  return Math.ceil(responseTime / 250) / 4;
+function roundToQuarter(num) {
+  return Math.ceil(num / 250) / 4;
 }
 
-function sendTargetResponseAnalytics(failure, responseStart) {
+function calculateResponseTime(responseStart) {
+  const responseTime = performance.now() - responseStart;
+  return roundToQuarter(responseTime);
+}
+
+function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   // temporary solution until we can decide on a better timeout value
   const responseTime = calculateResponseTime(responseStart);
-  const val = `target response time ${responseTime}:timed out ${failure}`;
+  const timeoutTime = roundToQuarter(timeout);
+  let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
+  if (message) val += `:${message}`;
   window.alloy('sendEvent', {
     documentUnloading: true,
     xdm: {
@@ -116,11 +122,27 @@ const getTargetPersonalization = async () => {
 
   try {
     response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
-    sendTargetResponseAnalytics(false, responseStart);
+    sendTargetResponseAnalytics(false, responseStart, timeout);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.log(e);
-    sendTargetResponseAnalytics(true, responseStart);
+    if (e.message.startsWith('Timeout waiting for alloy_sendEvent after')) {
+      const timer = setTimeout(() => {
+        // eslint-disable-next-line no-use-before-define
+        window.removeEventListener(ALLOY_SEND_EVENT, sendAnalytics);
+        sendTargetResponseAnalytics(true, responseStart, timeout);
+      }, 5100 - timeout);
+
+      // eslint-disable-next-line no-inner-declarations
+      function sendAnalytics() {
+        clearTimeout(timer);
+        sendTargetResponseAnalytics(true, responseStart, timeout);
+      }
+
+      window.addEventListener(ALLOY_SEND_EVENT, sendAnalytics, { once: true });
+    } else {
+      sendTargetResponseAnalytics(false, responseStart, timeout, e.message);
+    }
   }
 
   let manifests = [];
