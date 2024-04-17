@@ -31,6 +31,7 @@ import {
   logErrorFor,
   lanaLog,
   fetchAndProcessPlainHtml,
+  toggleMenuMobile,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -281,7 +282,8 @@ class Gnav {
       delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
       this.blocks.universalNav.addEventListener('click', () => {
-        document.querySelector('.feds-toggle[aria-expanded=true]')?.click();
+        const openMenu = document.querySelector('.feds-toggle[aria-expanded=true]');
+        toggleMenuMobile(openMenu);
       }, true);
     }
   };
@@ -641,12 +643,8 @@ class Gnav {
     };
 
     const onToggleClick = async () => {
+      toggleMenuMobile(toggle);
       const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', !isExpanded);
-      this.elements.navWrapper.classList.toggle('feds-nav-wrapper--expanded', !isExpanded);
-      closeAllDropdowns();
-      setCurtainState(!isExpanded);
-      toggle.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
 
       if (this.blocks?.search?.instance) {
         this.blocks.search.instance.clearSearchForm();
