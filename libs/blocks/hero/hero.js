@@ -1,11 +1,11 @@
 import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const contentTypes = ['list', 'qrcode', 'lockup', 'text'];
+const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'background'];
 const blockKeyword = 'hero-';
 
 function decorateList(el) {
-  el.classList.add('heading-s', 'align-left');
+  el.classList.add('body-l', 'align-left');
   const listItems = el.querySelectorAll('ul li', 'ol li');
   if (listItems.length) {
     [...listItems].forEach((item) => {
@@ -29,6 +29,12 @@ function decorateLockup(el) {
   const rows = el.querySelectorAll(':scope > p');
   const firstRowImg = rows[0]?.querySelector('img');
   if (firstRowImg) rows[0].classList.add('flex-row');
+}
+
+function decorateBg(el) {
+  const block = el.closest('.hero');
+  block.style.background = el.textContent.trim();
+  el.remove();
 }
 
 function decorateBadge(el) {
@@ -58,6 +64,7 @@ function parseKeyString(str) {
   if (!match) return { key: str };
   const key = match[1];
   const classes = match[2].split(',').map((c) => c.trim());
+  console.log(str, classes);
   const result = { key, classes };
   return result;
 }
@@ -69,7 +76,8 @@ function loadContentType(el, key, classes) {
   }
   if (key === 'list') decorateList(el);
   if (key === 'qrcode') decorateQr(el);
-  if (classes.length) el.classList.add(...classes);
+  if (key === 'background') decorateBg(el);
+  if (classes !== undefined && classes.length) el.classList.add(...classes);
 }
 
 export default async function init(el) {

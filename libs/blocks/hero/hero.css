@@ -246,11 +246,11 @@ todo: we need this unit */
   left: -24px;
 }
 
-.hero-milo.split.reverse {
+.hero-milo.split.order-reverse-mobile-tablet {
   flex-direction: column-reverse;
 }
 
-.hero-milo.reverse > .foreground .copy {
+.hero-milo.order-reverse-mobile-tablet > .foreground .copy {
   order: 2;
 } 
 
@@ -275,11 +275,11 @@ todo: we need this unit */
     text-align: center;
   }
 
-  .hero-milo.split.reverse-mobile {
+  .hero-milo.split.order-reverse-mobile {
     flex-direction: column-reverse;
   }
 
-  .hero-milo.reverse-mobile > .foreground .copy {
+  .hero-milo.order-reverse-mobile > .foreground .copy {
     order: 2;
   } 
 
@@ -294,7 +294,6 @@ todo: we need this unit */
   .hero-milo.center .action-area {
     justify-content: center;
   }
-  
 }
 
 @media screen and (min-width: 920px) {
@@ -317,7 +316,7 @@ todo: we need this unit */
     display: unset;
   }
 
-  .hero-milo.split.reverse {
+  .hero-milo.split.order-reverse-mobile-tablet {
     flex-direction: row;
   }
   
@@ -325,7 +324,7 @@ todo: we need this unit */
     display: initial;
   }
 
-  .hero-milo.reverse > .foreground .copy {
+  .hero-milo.order-reverse-mobile-tablet > .foreground .copy {
       order: unset;
   }
 
