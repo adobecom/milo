@@ -211,6 +211,10 @@
   outline-offset: -1px;
 }
 
+.carousel-slides {
+  display: flex;
+}
+
 .quiz-option {
   flex: 0 0 138px;
   flex-direction: column;

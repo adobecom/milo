@@ -1,8 +1,7 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
 
 export const OptionCard = ({
-  text, title, image, icon, iconTablet, iconDesktop, options,
-  disabled, selected, background, onClick,
+  text, title, image, icon, iconTablet, iconDesktop, options, disabled, selected, background, onClick,
 }) => {
   const getOptionClass = () => {
     let className = '';
@@ -43,13 +42,11 @@ export const GetQuizOption = ({
   background, mlInputUsed,
 }) => {
   const [index, setIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(6);
-  setVisibleCount(window.innerWidth >= 600 ? 6 : 3);
-
+  const [visibleCount, setVisibleCount] = useState(window.innerWidth >= 600 ? 5 : 2.5);
   const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
 
   useEffect(() => {
-    const handleResize = () => setVisibleCount(window.innerWidth >= 600 ? 6 : 3);
+    const handleResize = () => setVisibleCount(window.innerWidth >= 600 ? 5 : 2.5);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -67,25 +64,16 @@ export const GetQuizOption = ({
   };
 
   const handleKey = (e) => {
-    if (e.key === 'ArrowRight') {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
-      if (isRTL) {
-        prev();
-      } else {
-        next();
-      }
-    } else if (e.key === 'ArrowLeft') {
+      isRTL ? prev() : next();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       e.preventDefault();
-      if (isRTL) {
-        next();
-      } else {
-        prev();
-      }
+      isRTL ? next() : prev();
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      if (e.target && e.target.click) {
-        e.target.click();
-      }
+      const selectedOption = options.data[index];
+      selectedOption && onOptionClick(selectedOption.options);
     }
   };
 
@@ -97,25 +85,27 @@ export const GetQuizOption = ({
   }, []);
 
   return html`
-    <div class="quiz-options-container" role="group" aria-labelledby="question" tabindex="0" onkeydown=${handleKey}>
-      ${index > 0 && html`<button onClick=${prev} class="carousel-arrow arrow-prev ${isRTL ? 'rtl' : ''}"></button>`}
-      <div class="carousel-slides ${index > 0 ? 'align-right' : ''}">
-        ${options.data.slice(index + 1, index + visibleCount).map((option, idx) => html`
-          <${OptionCard} 
-            key=${idx}
-            text=${option.text}
-            title=${option.title} 
-            icon=${getOptionsValue(option.options, 'icon')}
-            iconTablet=${getOptionsValue(option.options, 'icon-tablet')}
-            iconDesktop=${getOptionsValue(option.options, 'icon-desktop')}
-            image=${getOptionsValue(option.options, 'image')}
-            background=${background}
-            options=${option.options}
-            selected=${selectedCards[option.options] ? 'selected' : ''}
-            disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) || mlInputUsed ? 'disabled' : ''}
-            onClick=${onOptionClick(option)}
-            />`)}
-      </div>
-      ${(index + visibleCount < options.data.length) && html`<button onClick=${next} class="carousel-arrow arrow-next ${isRTL ? 'rtl' : ''}"></button>`}
+    <div class="quiz-question" tabindex="0" onkeydown=${handleKey}>
+        <div class="quiz-options-container" role="group" aria-labelledby="question">
+          ${index > 0 && html`<button onClick=${prev} style="pointer-events: none;" tabindex="-1">${isRTL ? '&gt;' : '&lt;'}</button>`}
+          <div class="carousel-slides">
+            ${options.data.slice(index, index + visibleCount).map((option, idx) => html`
+              <${OptionCard} 
+                key=${idx}
+                text=${option.text}
+                title=${option.title} 
+                icon=${getOptionsValue(option.options, 'icon')}
+                iconTablet=${getOptionsValue(option.options, 'icon-tablet')}
+                iconDesktop=${getOptionsValue(option.options, 'icon-desktop')}
+                image=${getOptionsValue(option.options, 'image')}
+                background=${background}
+                options=${option.options}
+                selected=${selectedCards[option.options] ? 'selected' : ''}
+                disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) || mlInputUsed ? 'disabled' : ''}
+                onClick=${() => onOptionClick(option.options)}
+              />`)}
+          </div>
+          ${(index + visibleCount < options.data.length) && html`<button onClick=${next} style="pointer-events: none;" tabindex="-1">${isRTL ? '&lt;' : '&gt;'}</button>`}
+        </div>
     </div>`;
 };
