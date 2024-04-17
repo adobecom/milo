@@ -238,6 +238,7 @@ describe('custom actions', async () => {
     expect(getConfig().mep.custom).to.deep.equal({
       'my-block': [{
         action: 'replace',
+        manifestId: 'manifest.json',
         target: '/fragments/fragmentreplaced',
       },
       ],

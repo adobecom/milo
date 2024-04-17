@@ -164,14 +164,17 @@ describe('Merch Cards', async () => {
     setConfig({
       ...conf,
       mep: {
+        preview: true,
         custom: {
           'merch-card-collection': [
             {
               action: 'replace',
+              manifestId: 'promo1.json',
               target: '/override-photoshop',
             },
             {
               action: 'replace',
+              manifestId: 'promo2.json',
               target: '/override-express',
             },
           ],
@@ -187,6 +190,7 @@ describe('Merch Cards', async () => {
     const express = merchCards.querySelector('merch-card[name="express"]');
     expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.true;
     expect(express.title.indexOf('PROMOTION') > 0).to.be.true;
+    expect(merchCards.dataset.overrides).to.equal('promo1.json:/override-photoshop,promo2.json:/override-express');
   });
 
   it('should localize the query-index url', async () => {

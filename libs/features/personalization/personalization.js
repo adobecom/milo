@@ -291,13 +291,13 @@ function getSection(rootEl, idx) {
     : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
 }
 
-function registerCustomAction(cmd) {
+function registerCustomAction(cmd, manifestId) {
   const { action, selector, target } = cmd;
   const config = getConfig();
   const blockName = selector.substring(CUSTOM_SELECTOR_PREFIX.length);
   config.mep.custom ??= {};
   config.mep.custom[blockName] ??= [];
-  config.mep.custom[blockName].push({ action, target });
+  config.mep.custom[blockName].push({ manifestId, action, target });
 }
 
 function getSelectedElement(selector, action, rootEl) {
@@ -368,7 +368,7 @@ function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
-      registerCustomAction(cmd);
+      registerCustomAction(cmd, manifestId);
       return;
     }
     if (action in COMMANDS) {
