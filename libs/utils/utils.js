@@ -732,7 +732,17 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
+function removeEmptyDivs(element) {
+  const divs = element.querySelector('div');
+  divs.forEach(div => {
+    if (divs.innerHTML === '') {
+      div.remove();
+    }
+  });
+}
+
 function decorateSection(section, idx) {
+  removeEmptyDivs(section);
   let links = decorateLinks(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
