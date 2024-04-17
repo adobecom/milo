@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: a561cf9a042eeb827dceb9fe5d951de0c01adb90 Wed, 17 Apr 2024 18:59:21 GMT
+// branch: MWPW-142003-stable commit: 5ea7c3c4cfcda4939c7e448d2345ca2de4dfab16 Wed, 17 Apr 2024 19:42:07 GMT
 import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -318,6 +318,9 @@ import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     }
     :host([variant='mini-compare-chart']) slot[name='promo-text'] {
         min-height: var(--consonant-merch-card-mini-compare-promo-text-height);
+    }
+    :host([variant='mini-compare-chart']) slot[name='secure-transaction-label'] {
+        min-height: var(--consonant-merch-card-mini-compare-secure-text-height);
     }
     :host([variant='mini-compare-chart']) slot[name='footer'] {
         min-height: var(--consonant-merch-card-mini-compare-footer-height);
@@ -1239,8 +1242,10 @@ merch-card .footer-row-cell:nth-child(8) {
                 </label>`:""}get cardImage(){return a` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}get secureLabelFooter(){let e=this.secureLabel?a`<span class="secure-transaction-label"
-                  >${this.secureLabel}</span
+        </div>`}get secureLabelFooter(){let e=this.secureLabel?a`<slot name="secure-transaction-label"
+                  ><span class="secure-transaction-label"
+                      >${this.secureLabel}</span
+                  ></slot
               >`:"";return a`<footer>${e}<slot name="footer"></slot></footer>`}get badge(){let e;if(!(!this.badgeBackgroundColor||!this.badgeColor||!this.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.badgeBackgroundColor}; border-right: none;`),a`
             <div
                 class="${this.variant}-badge"
@@ -1344,5 +1349,5 @@ merch-card .footer-row-cell:nth-child(8) {
             <slot name="offers"></slot>
             <slot name="promo-text"></slot>
             ${this.secureLabelFooter}
-            <slot name="footer-rows"><slot name="body-s"></slot></slot>`}connectedCallback(){super.connectedCallback(),this.#e=this.getContainer(),this.setAttribute("tabindex","0"),this.addEventListener("keydown",this.keydownHandler),this.addEventListener("mouseleave",this.toggleActionMenu),this.addEventListener("change",this.handleQuantitySelection)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener("keydown",this.keydownHandler),this.removeEventListener("change",this.handleQuantitySelection)}keydownHandler(e){let r=document.activeElement?.closest(M);if(!r)return;function t(l,u){let p=document.elementFromPoint(l,u)?.closest(M);p&&(e.preventDefault(),e.stopImmediatePropagation(),p.focus(),p.scrollIntoView({behavior:"smooth",block:"center"}))}let{x:n,y:o,width:h,height:x}=r.getBoundingClientRect(),g=64,{code:w}=e;if(w==="Tab"){let l=Array.from(this.querySelectorAll('a[href], button:not([disabled]), textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select')),u=l[0],p=l[l.length-1];(!e.shiftKey&&document.activeElement===p||e.shiftKey&&document.activeElement===u)&&(e.preventDefault(),e.stopImmediatePropagation())}else switch(w){case $:t(n-g,o);break;case E:t(n+h+g,o);break;case C:t(n,o-g);break;case S:t(n,o+x+g);break;case A:this.footerSlot?.querySelector("a")?.click();break}}async adjustMiniCompareBodySlots(){if(this.variant!==b||this.getBoundingClientRect().width===0)return;["heading-m","body-m","heading-m-price","price-commitment","offers","promo-text","footer"].forEach(r=>{let t=`--consonant-merch-card-mini-compare-${r}-height`,n=this.shadowRoot.querySelector(`slot[name="${r}"]`),o=Math.max(0,parseInt(window.getComputedStyle(n).height)||0),h=parseInt(this.#e.style.getPropertyValue(t))||0;o>h&&this.#e.style.setProperty(t,`${o}px`)})}adjustMiniCompareFooterRows(){if(this.variant!==b||this.getBoundingClientRect().width===0)return;[...this.querySelector('[slot="footer-rows"]').children].forEach((r,t)=>{let n=Math.max(P,parseInt(window.getComputedStyle(r).height)||0),o=parseInt(this.#e.style.getPropertyValue(R(t+1)))||0;n>o&&this.#e.style.setProperty(R(t+1),`${n}px`)})}};customElements.define(T,y);export{T as MERCH_CARD,M as MERCH_CARD_NODE_NAME,y as MerchCard};
+            <slot name="footer-rows"><slot name="body-s"></slot></slot>`}connectedCallback(){super.connectedCallback(),this.#e=this.getContainer(),this.setAttribute("tabindex","0"),this.addEventListener("keydown",this.keydownHandler),this.addEventListener("mouseleave",this.toggleActionMenu),this.addEventListener("change",this.handleQuantitySelection)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener("keydown",this.keydownHandler),this.removeEventListener("change",this.handleQuantitySelection)}keydownHandler(e){let r=document.activeElement?.closest(M);if(!r)return;function t(l,u){let p=document.elementFromPoint(l,u)?.closest(M);p&&(e.preventDefault(),e.stopImmediatePropagation(),p.focus(),p.scrollIntoView({behavior:"smooth",block:"center"}))}let{x:n,y:o,width:h,height:x}=r.getBoundingClientRect(),g=64,{code:w}=e;if(w==="Tab"){let l=Array.from(this.querySelectorAll('a[href], button:not([disabled]), textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select')),u=l[0],p=l[l.length-1];(!e.shiftKey&&document.activeElement===p||e.shiftKey&&document.activeElement===u)&&(e.preventDefault(),e.stopImmediatePropagation())}else switch(w){case $:t(n-g,o);break;case E:t(n+h+g,o);break;case C:t(n,o-g);break;case S:t(n,o+x+g);break;case A:this.footerSlot?.querySelector("a")?.click();break}}async adjustMiniCompareBodySlots(){if(this.variant!==b||this.getBoundingClientRect().width===0)return;["heading-m","body-m","heading-m-price","price-commitment","offers","promo-text","secure-transaction-label","footer"].forEach(r=>{let t=`--consonant-merch-card-mini-compare-${r}-height`,n=this.shadowRoot.querySelector(`slot[name="${r}"]`),o=Math.max(0,parseInt(window.getComputedStyle(n).height)||0),h=parseInt(this.#e.style.getPropertyValue(t))||0;o>h&&this.#e.style.setProperty(t,`${o}px`)})}adjustMiniCompareFooterRows(){if(this.variant!==b||this.getBoundingClientRect().width===0)return;[...this.querySelector('[slot="footer-rows"]').children].forEach((r,t)=>{let n=Math.max(P,parseInt(window.getComputedStyle(r).height)||0),o=parseInt(this.#e.style.getPropertyValue(R(t+1)))||0;n>o&&this.#e.style.setProperty(R(t+1),`${n}px`)})}};customElements.define(T,y);export{T as MERCH_CARD,M as MERCH_CARD_NODE_NAME,y as MerchCard};
 //# sourceMappingURL=merch-card.js.map
