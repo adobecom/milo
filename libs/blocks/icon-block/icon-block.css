@@ -252,6 +252,10 @@
   margin-bottom: var(--spacing-s);
 }
 
+.icon-block.bio .cta-container {
+  margin-top: 0;
+}
+
 .icon-block .foreground .text-content p.body-m.action-area {
   margin-bottom: 0;
 }
