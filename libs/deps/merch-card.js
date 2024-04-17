@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: 5ea7c3c4cfcda4939c7e448d2345ca2de4dfab16 Wed, 17 Apr 2024 19:42:07 GMT
+// branch: MWPW-142003-stable commit: 5ea7c3c4cfcda4939c7e448d2345ca2de4dfab16 Wed, 17 Apr 2024 19:44:16 GMT
 import{html as a,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -1246,7 +1246,7 @@ merch-card .footer-row-cell:nth-child(8) {
                   ><span class="secure-transaction-label"
                       >${this.secureLabel}</span
                   ></slot
-              >`:"";return a`<footer>${e}<slot name="footer"></slot></footer>`}get badge(){let e;if(!(!this.badgeBackgroundColor||!this.badgeColor||!this.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.badgeBackgroundColor}; border-right: none;`),a`
+              >`:'<slot name="secure-transaction-label"></slot>';return a`<footer>${e}<slot name="footer"></slot></footer>`}get badge(){let e;if(!(!this.badgeBackgroundColor||!this.badgeColor||!this.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.badgeBackgroundColor}; border-right: none;`),a`
             <div
                 class="${this.variant}-badge"
                 style="background-color: ${this.badgeBackgroundColor};
