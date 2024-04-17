@@ -1,4 +1,4 @@
-// branch: MWPW-138927-3 commit: e3cb8df31da39b8ec85b352935b88214b09851af Wed, 17 Apr 2024 19:07:15 GMT
+// branch: MWPW-138927-3 commit: 2115010c52938af1b0beb8f114cae259dce4e0b0 Wed, 17 Apr 2024 22:26:20 GMT
 import{html as h,LitElement as E}from"/libs/deps/lit-all.min.js";import{css as u,html as b,LitElement as m}from"/libs/deps/lit-all.min.js";var o="merch-offer:ready",d="merch-offer-select:ready";var s="merch-offer:selected";var a="merch-quantity-selector:change";var l=class extends m{static styles=u`
         :host .horizontal {
             display: flex;
@@ -199,7 +199,6 @@ import{html as h,LitElement as E}from"/libs/deps/lit-all.min.js";import{css as u
         gap: 8px;
         padding: 16px;
         min-height: 102px;
-        max-height: 135px;
     }
 
     :host([type='subscription-option']:hover) {
