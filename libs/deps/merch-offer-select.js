@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: a561cf9a042eeb827dceb9fe5d951de0c01adb90 Wed, 17 Apr 2024 18:26:30 GMT
+// branch: MWPW-142003-stable commit: 5ea7c3c4cfcda4939c7e448d2345ca2de4dfab16 Wed, 17 Apr 2024 19:31:21 GMT
 import{html as u,LitElement as p}from"/libs/deps/lit-all.min.js";import{css as d,html as a,LitElement as h}from"/libs/deps/lit-all.min.js";var o=class extends h{static styles=d`
         :host {
             display: inline-block;
@@ -21,8 +21,6 @@ import{html as u,LitElement as p}from"/libs/deps/lit-all.min.js";import{css as d
         min-block-size: 32px;
         position: relative;
         vertical-align: top;
-        display: block;
-        position: relative;
     }
 
     .merch-Radio-input {
