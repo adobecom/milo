@@ -733,9 +733,8 @@ export function filterDuplicatedLinkBlocks(blocks) {
 }
 
 function removeEmptyDivs(element) {
-  const divs = element.querySelector('div');
-  divs.forEach(div => {
-    if (divs.innerHTML === '') {
+  element.querySelectorAll('div').forEach((div) => {
+    if (div.innerHTML === '') {
       div.remove();
     }
   });
