@@ -5,7 +5,7 @@
   "data": [
     {
       "action": "replace",
-      "selector": "in-card-collection",
+      "selector": "in-block:my-block",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/fragments/fragmentreplaced",

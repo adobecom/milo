@@ -165,7 +165,7 @@ describe('Merch Cards', async () => {
       ...conf,
       mep: {
         custom: {
-          'in-card-collection': [
+          'merch-card-collection': [
             {
               action: 'replace',
               target: '/override-photoshop',

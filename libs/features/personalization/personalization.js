@@ -51,9 +51,7 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
-export const MERCH_CARD_COLLECTION_SELECTOR = 'in-card-collection';
-
-const CUSTOM_SELECTORS = [MERCH_CARD_COLLECTION_SELECTOR];
+export const CUSTOM_SELECTOR_PREFIX = 'in-block:';
 
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
@@ -296,9 +294,10 @@ function getSection(rootEl, idx) {
 function registerCustomAction(cmd) {
   const { action, selector, target } = cmd;
   const config = getConfig();
+  const blockName = selector.substring(CUSTOM_SELECTOR_PREFIX.length);
   config.mep.custom ??= {};
-  config.mep.custom[selector] ??= [];
-  config.mep.custom[selector].push({ action, target });
+  config.mep.custom[blockName] ??= [];
+  config.mep.custom[blockName].push({ action, target });
 }
 
 function getSelectedElement(selector, action, rootEl) {
@@ -368,7 +367,7 @@ function getSelectedElement(selector, action, rootEl) {
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
-    if (CUSTOM_SELECTORS.indexOf(selector) >= 0) {
+    if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
       registerCustomAction(cmd);
       return;
     }

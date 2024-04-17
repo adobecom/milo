@@ -236,7 +236,7 @@ describe('custom actions', async () => {
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(getConfig().mep.custom).to.deep.equal({
-      'in-card-collection': [{
+      'my-block': [{
         action: 'replace',
         target: '/fragments/fragmentreplaced',
       },

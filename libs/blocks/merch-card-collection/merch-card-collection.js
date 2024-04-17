@@ -1,7 +1,6 @@
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
 } from '../../utils/utils.js';
-import { MERCH_CARD_COLLECTION_SELECTOR } from '../../features/personalization/personalization.js';
 import { replaceText } from '../../features/placeholders.js';
 
 const DIGITS_ONLY = /^\d+$/;
@@ -28,6 +27,8 @@ const LITERAL_SLOTS = [
 // allows improve TBT by returning control to the main thread.
 // eslint-disable-next-line no-promise-executor-return
 const makePause = async (timeout = 0) => new Promise((resolve) => setTimeout(resolve, timeout));
+
+const BLOCK_NAME = 'merch-card-collection';
 
 const fail = (el, err = '') => {
   window.lana?.log(`Failed to initialize merch cards: ${err}`);
@@ -292,7 +293,7 @@ export default async function init(el) {
   }
 
   const cardsRoot = await cardsRootPromise;
-  const overridePromises = mep?.custom?.[MERCH_CARD_COLLECTION_SELECTOR]?.map(fetchOverrideCard);
+  const overridePromises = mep?.custom?.[BLOCK_NAME]?.map(fetchOverrideCard);
   await overrideCards(cardsRoot, overridePromises, config);
   await initMerchCards(attributes.filtered, preferences, cardsRoot);
   await Promise.all([merchStyles, merchCardStyles, ...deps]);
