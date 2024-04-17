@@ -46,7 +46,12 @@ export default async function init(el) {
     const merchSecureTransaction = createTag('merch-secure-transaction', { icon: true, label: label.innerText, tooltip: tooltip.innerText });
     el.replaceWith(merchSecureTransaction);
     return merchSecureTransaction;
-  } if (el.classList.contains('twp') && el.classList.contains('offer-literals')) {
+  } if (el.matches('.twp.stock')) {
+    const merchStock = createTag('merch-stock');
+    const [abm, puf, m2m] = [...el.querySelectorAll('p')].map((p) => createTag('div', {}, p.innerHTML));
+    merchStock.append(abm, puf, m2m);
+    return el.replaceWith(merchStock);
+  } if (el.matches('.twp.offer-literals')) {
     const [cci, cct, cce] = el.querySelectorAll(':scope > div > div');
     const cciTemplate = getLiteralsTemplate(cci, 'cci');
     const cctTemplate = getLiteralsTemplate(cct, 'cct');

@@ -4,11 +4,14 @@ import '../../deps/lit-all.min.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/tabs.js';
 import '../../features/spectrum-web-components/dist/icons-workflow.js';
+import '../../features/spectrum-web-components/dist/checkbox.js';
 import '../../features/spectrum-web-components/dist/button.js';
 import '../../features/spectrum-web-components/dist/overlay.js';
 import '../../features/spectrum-web-components/dist/tooltip.js';
 import '../../deps/merch-card.js';
 import '../../deps/merch-offer-select.js';
+import '../../deps/merch-stock.js';
+import '../../deps/merch-secure-transaction.js';
 import '../../deps/merch-subscription-panel.js';
 import '../../deps/merch-twp-d2p.js';
 
