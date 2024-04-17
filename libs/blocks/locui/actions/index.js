@@ -82,8 +82,9 @@ async function findDeepFragments(path) {
     const needsSearch = fragments.filter((fragment) => !searched.includes(fragment.pathname));
     for (const search of needsSearch) {
       const nestedFragments = await findPageFragments(search.pathname);
-      const notSearched = nestedFragments.filter((nested) => !searched.includes(nested.pathname));
-      if (notSearched?.length) fragments.push(...notSearched);
+      const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
+        && !fragments.find((fragment) => fragment.pathname === nested.pathname));
+      if (newFragments?.length) fragments.push(...newFragments);
       searched.push(search.pathname);
     }
   }
