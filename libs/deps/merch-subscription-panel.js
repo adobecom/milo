@@ -1,4 +1,4 @@
-// branch: MWPW-138927-3 commit: b2d9c1d7faf66c00dd14bcbdc95571c45e1f4d9f Wed, 17 Apr 2024 12:06:48 GMT
+// branch: MWPW-138927-3 commit: bba975c1a552dfe08cddba4fd8eaff5cffb802ab Wed, 17 Apr 2024 21:59:24 GMT
 import{html as c,LitElement as m}from"/libs/deps/lit-all.min.js";var i=class{constructor(t,e){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(e),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as u}from"/libs/deps/lit-all.min.js";var l=u`
     :host {
         --merch-focused-outline: var(--merch-color-focus-ring) auto 1px;
@@ -88,6 +88,7 @@ import{html as c,LitElement as m}from"/libs/deps/lit-all.min.js";var i=class{con
 
     :host([layout='mobile']) #footer {
         align-items: center;
+        justify-content: center;
         width: 100%;
         height: 187px;
         display: flex;

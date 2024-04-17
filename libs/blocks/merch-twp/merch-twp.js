@@ -19,6 +19,9 @@ const getPlanTypes = (offerSelect) => [
 ];
 
 export default async function init(el) {
+  // temporary modal styles.
+  const modal = el.closest('.dialog-modal');
+  modal?.classList.add('twp');
   const offerLiterals = el.querySelector('.twp.offer-literals');
   el.querySelectorAll('merch-offer-select').forEach((offerSelect) => {
     offerSelect.addEventListener('merch-offer-select:ready', () => {

@@ -1,4 +1,4 @@
-// branch: MWPW-138927-3 commit: e3cb8df31da39b8ec85b352935b88214b09851af Wed, 17 Apr 2024 20:34:18 GMT
+// branch: MWPW-138927-3 commit: bba975c1a552dfe08cddba4fd8eaff5cffb802ab Wed, 17 Apr 2024 21:54:16 GMT
 import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{constructor(e,a){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(a),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as u}from"/libs/deps/lit-all.min.js";var c=u`
     :host {
         display: flex;
@@ -83,7 +83,7 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{con
     }
 
     .mobile sp-tab-panel {
-        height: calc(100vh - 300px);
+        height: calc(100vh - 268px);
         flex: 1;
     }
 
