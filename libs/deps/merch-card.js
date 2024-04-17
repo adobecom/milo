@@ -1,4 +1,4 @@
-// branch: MWPW-138927-3 commit: b2d9c1d7faf66c00dd14bcbdc95571c45e1f4d9f Wed, 17 Apr 2024 12:06:48 GMT
+// branch: MWPW-138927-3 commit: e3cb8df31da39b8ec85b352935b88214b09851af Wed, 17 Apr 2024 20:51:01 GMT
 import{html as n,LitElement as P}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var d="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var E=v`
     :host {
         position: relative;
@@ -72,7 +72,6 @@ import{html as n,LitElement as P}from"/libs/deps/lit-all.min.js";import{css as v
     .icons {
         display: flex;
         width: fit-content;
-        fle-direction: row;
     }
 
     .icons img {
@@ -112,11 +111,11 @@ import{html as n,LitElement as P}from"/libs/deps/lit-all.min.js";import{css as v
 
     div[class$='-badge'] {
         position: absolute;
-        top: 16px;
+        top: 20px;
         right: 0;
         font-size: var(--type-heading-xxs-size);
         font-weight: 500;
-        max-width: 150px;
+        max-width: 180px;
         line-height: 16px;
         text-align: center;
         padding: 8px 11px;
@@ -252,6 +251,10 @@ import{html as n,LitElement as P}from"/libs/deps/lit-all.min.js";import{css as v
 
     :host([variant='twp']) {
         padding: 4px 10px 5px 10px;
+    }
+
+    :host([variant='twp']) ::slotted(merch-offer-select) {
+        display: none;
     }
 
     :host([variant='twp']) .top-section {
@@ -720,6 +723,12 @@ merch-card[variant="twp"] [slot="footer"] {
 merch-card[variant='twp'] merch-quantity-select,
 merch-card[variant='twp'] merch-offer-select {
     display: none;
+}
+
+[slot="cci-footer"] p,
+[slot="cct-footer"] p,
+[slot="cce-footer"] p {
+    margin: 0;
 }
 
 /* mini compare chart card styles */

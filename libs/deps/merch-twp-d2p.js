@@ -1,10 +1,11 @@
-// branch: MWPW-138927-3 commit: b2d9c1d7faf66c00dd14bcbdc95571c45e1f4d9f Wed, 17 Apr 2024 12:06:48 GMT
-import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{constructor(e,n){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(n),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as u}from"/libs/deps/lit-all.min.js";var c=u`
+// branch: MWPW-138927-3 commit: e3cb8df31da39b8ec85b352935b88214b09851af Wed, 17 Apr 2024 20:34:18 GMT
+import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{constructor(e,a){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(a),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as u}from"/libs/deps/lit-all.min.js";var c=u`
     :host {
         display: flex;
         box-sizing: border-box;
-        height: 100%;
         width: 100%;
+        max-width: 972px;
+        background-color: #f8f8f8;
     }
 
     sp-theme {
@@ -31,9 +32,10 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{con
         font-size: 18px;
         font-weight: bold;
         color: #2c2c2c;
+        margin: 0;
     }
 
-    ::slotted([slot$='-footer-link']) {
+    ::slotted([slot$='-footer']) {
         flex-basis: 100%;
     }
 
@@ -132,7 +134,7 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{con
     .desktop {
         display: flex;
         width: 972px;
-        height: 680px;
+        min-height: 680px;
         flex: 1;
     }
 
@@ -149,8 +151,6 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{con
 
     .desktop ::slotted([slot='detail-xl']) {
         font-size: 20px;
-        margin-inline-start: 30px;
-        margin-inline-end: 30px;
     }
 
     .desktop aside {
@@ -160,7 +160,6 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{con
         width: 360px;
         box-sizing: border-box;
         padding: 0 30px 0 30px;
-        max-height: 630px;
     }
 
     .desktop sp-tabs {
@@ -178,14 +177,14 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{con
     .desktop ::slotted(merch-subscription-panel) {
         margin-top: 40px;
     }
-`;var d="(max-width: 1200px)";var o="merch-card:ready",r="merch-offer:selected";var p="merch-quantity-selector:change";var b="merch-twp-d2p",l=class extends m{static styles=[c];static properties={individualsText:{type:String,attribute:"individuals-text"},businessText:{type:String,attribute:"business-text"},educationText:{type:String,attribute:"education-text"},continueText:{type:String,attribute:"continue-text"},step:{type:Number},ready:{type:Boolean}};#e=new a(this,d);#t;individualsText="Individuals";businessText="Business";educationText="Students and teachers";continueText="Continue";ready=!1;constructor(){super(),this.step=1}get individualsTab(){return this.cciCards.length===0?t``:t`
+`;var d="(max-width: 1200px)";var o="merch-card:ready",r="merch-offer:selected";var p="merch-quantity-selector:change";var b="merch-twp-d2p",l=class extends m{static styles=[c];static properties={individualsText:{type:String,attribute:"individuals-text"},businessText:{type:String,attribute:"business-text"},educationText:{type:String,attribute:"education-text"},continueText:{type:String,attribute:"continue-text"},step:{type:Number},ready:{type:Boolean}};#e=new n(this,d);#t;individualsText="Individuals";businessText="Business";educationText="Students and teachers";continueText="Continue";ready=!1;constructor(){super(),this.step=1}get individualsTab(){return this.cciCards.length===0?t``:t`
             <sp-tab value="individuals" label=${this.individualsText}>
                 <sp-icon-user slot="icon"></sp-icon-user>
             </sp-tab>
             <sp-tab-panel value="individuals">
                 <div class="cards">
                     <slot name="individuals"></slot>
-                    <slot name="cci-footer-link"></slot>
+                    <slot name="cci-footer"></slot>
                 </div>
             </sp-tab-panel>
         `}get businessTab(){return this.cctCards.length===0?t``:t`
@@ -195,7 +194,7 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{con
             <sp-tab-panel value="business">
                 <div class="cards">
                     <slot name="business"></slot>
-                    <slot name="cct-footer-link"></slot>
+                    <slot name="cct-footer"></slot>
                 </div>
             </sp-tab-panel>
         `}get educationTab(){return this.cceCards.length===0?t``:t`
@@ -205,7 +204,7 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{con
             <sp-tab-panel value="education">
             <div class="cards">
                 <slot name="education"></slot>
-                <slot name="cce-footer-link"></slot>
+                <slot name="cce-footer"></slot>
             </sp-tab-panel>
         `}get selectedTabPanel(){return this.shadowRoot.querySelector("sp-tab-panel[selected]")}get firstCardInSelectedTab(){return this.selectedTabPanel?.querySelector("slot").assignedElements()[0]}get tabs(){return this.cards.length<2?t``:t`
             <sp-tabs
@@ -262,5 +261,5 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var a=class{con
             <sp-theme theme="spectrum" color="light" scale="large">
                 ${this.#e.matches?this.mobileLayout:this.desktopLayout}
             </div>
-        `:t``}connectedCallback(){super.connectedCallback(),this.addEventListener(o,this.merchTwpReady),this.addEventListener(r,this.handleOfferSelected),this.addEventListener(p,this.handleQuantityChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(o,this.merchTwpReady),this.subscriptionPanel.removeEventListener(r,this.handleOfferSelected)}handleOfferSelected(e){this.selectedTabPanel&&(this.selectedTabPanel.card.querySelector(`merch-offer[plan-type="${e.target.planType}"]`)?.select(),this.selectedTabPanel.card.offerSelect.planType=e.target.planType,this.requestUpdate())}handleQuantityChange(e){this.selectedTabPanel&&(this.selectedTabPanel.card.quantitySelect.defaultValue=e.detail.option,this.requestUpdate())}get cards(){return this.querySelectorAll("merch-card[slot]")}get cciCards(){return this.querySelectorAll('merch-card[slot="individuals"]')}get cctCards(){return this.querySelectorAll('merch-card[slot="business"]')}get cceCards(){return this.querySelectorAll('merch-card[slot="education"]')}get subscriptionPanel(){return this.querySelector("merch-subscription-panel")}get tabElement(){return this.shadowRoot.querySelector("sp-tabs")}selectCard(e,n=!1){(n||!this.selectedTabPanel.card)&&(this.selectedTabPanel.card&&(this.selectedTabPanel.card.selected=void 0),this.selectedTabPanel.card=e,e.selected=!0),this.selectedTabPanel.card.focus(),this.subscriptionPanel.quantitySelect?.remove();let i=e.quantitySelect?.cloneNode(!0);i&&this.subscriptionPanel.appendChild(i);let s=e.offerSelect.cloneNode(!0);s.setAttribute("variant","subscription-options"),s.selectOffer(s.querySelector("merch-offer[aria-selected]")),this.subscriptionPanel.offerSelect?.remove(),this.subscriptionPanel.appendChild(s),this.subscriptionPanel.requestUpdate()}async processCards(){[...this.querySelectorAll("merch-card")].forEach((e,n)=>{let{customerSegment:i,marketSegment:s}=e.offerSelect.segments;i==="INDIVIDUAL"?s==="COM"?e.setAttribute("slot","individuals"):s==="EDU"&&e.setAttribute("slot","education"):i==="TEAM"&&e.setAttribute("slot","business"),e.addEventListener("click",()=>this.selectCard(e,!0))}),this.ready=!0,this.requestUpdate(),await this.updateComplete,await this.tabElement.updateComplete,this.selectCard(this.firstCardInSelectedTab,!0)}merchTwpReady(){this.querySelector("merch-card merch-offer-select:not([plan-type])")||this.processCards()}};window.customElements.define(b,l);export{l as MerchTwpD2P};
+        `:t``}connectedCallback(){super.connectedCallback(),this.addEventListener(o,this.merchTwpReady),this.addEventListener(r,this.handleOfferSelected),this.addEventListener(p,this.handleQuantityChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(o,this.merchTwpReady),this.subscriptionPanel.removeEventListener(r,this.handleOfferSelected)}handleOfferSelected(e){this.selectedTabPanel&&(this.selectedTabPanel.card.querySelector(`merch-offer[plan-type="${e.target.planType}"]`)?.select(),this.selectedTabPanel.card.offerSelect.planType=e.target.planType,this.requestUpdate())}handleQuantityChange(e){this.selectedTabPanel&&(this.selectedTabPanel.card.quantitySelect.defaultValue=e.detail.option,this.requestUpdate())}get cards(){return this.querySelectorAll("merch-card[slot]")}get cciCards(){return this.querySelectorAll('merch-card[slot="individuals"]')}get cctCards(){return this.querySelectorAll('merch-card[slot="business"]')}get cceCards(){return this.querySelectorAll('merch-card[slot="education"]')}get subscriptionPanel(){return this.querySelector("merch-subscription-panel")}get tabElement(){return this.shadowRoot.querySelector("sp-tabs")}selectCard(e,a=!1){(a||!this.selectedTabPanel.card)&&(this.selectedTabPanel.card&&(this.selectedTabPanel.card.selected=void 0),this.selectedTabPanel.card=e,e.selected=!0),this.selectedTabPanel.card.focus(),this.subscriptionPanel.quantitySelect?.remove();let i=e.quantitySelect?.cloneNode(!0);i&&this.subscriptionPanel.appendChild(i);let s=e.offerSelect.cloneNode(!0);s.setAttribute("variant","subscription-options"),s.selectOffer(s.querySelector("merch-offer[aria-selected]")),this.subscriptionPanel.offerSelect?.remove(),this.subscriptionPanel.appendChild(s),this.subscriptionPanel.requestUpdate()}async processCards(){[...this.querySelectorAll("merch-card")].forEach((e,a)=>{let{customerSegment:i,marketSegment:s}=e.offerSelect;i==="INDIVIDUAL"?s==="COM"?e.setAttribute("slot","individuals"):s==="EDU"&&e.setAttribute("slot","education"):i==="TEAM"&&e.setAttribute("slot","business"),e.addEventListener("click",()=>this.selectCard(e,!0))}),this.ready=!0,this.requestUpdate(),await this.updateComplete,await this.tabElement.updateComplete,this.selectCard(this.firstCardInSelectedTab,!0)}merchTwpReady(){this.querySelector("merch-card merch-offer-select:not([plan-type])")||this.processCards()}};window.customElements.define(b,l);export{l as MerchTwpD2P};
 //# sourceMappingURL=merch-twp-d2p.js.map

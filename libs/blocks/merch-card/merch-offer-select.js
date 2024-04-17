@@ -74,7 +74,7 @@ export const initOfferSelection = (merchCard, offerSelection, quantitySelector) 
   }
   if (!merchOfferSlot) return;
   createDynamicSlots(merchCard, merchOfferSlot);
-  const merchOffers = createTag('merch-offer-select', { container: 'merch-card' });
+  const merchOffers = createTag('merch-offer-select', { container: 'merch-card', stock: merchCard.classList.contains('stock') });
   [...offerSelection.children].forEach((option) => {
     merchOffers.append(createMerchOffer(option, quantitySelector, merchCard.variant));
   });
@@ -97,8 +97,6 @@ export const initOfferSelection = (merchCard, offerSelection, quantitySelector) 
   } else {
     merchOfferSlot.append(merchOffers);
   }
-  // eslint-disable-next-line chai-friendly/no-unused-expressions
-  merchCard.variant === 'twp' ? merchOffers.style.display = 'none' : null;
 };
 
 export default initOfferSelection;
