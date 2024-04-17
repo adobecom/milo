@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: 5ea7c3c4cfcda4939c7e448d2345ca2de4dfab16 Wed, 17 Apr 2024 19:46:39 GMT
+// branch: MWPW-142003-stable commit: 5ea7c3c4cfcda4939c7e448d2345ca2de4dfab16 Wed, 17 Apr 2024 19:53:59 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -319,8 +319,11 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     :host([variant='mini-compare-chart']) slot[name='promo-text'] {
         min-height: var(--consonant-merch-card-mini-compare-promo-text-height);
     }
-    :host([variant='mini-compare-chart']) slot[name='secure-transaction-label'] {
-        min-height: var(--consonant-merch-card-mini-compare-secure-text-height);
+    :host([variant='mini-compare-chart'])
+        slot[name='secure-transaction-label'] {
+        min-height: var(
+            --consonant-merch-card-mini-compare-secure-transaction-label-height
+        );
     }
     :host([variant='mini-compare-chart']) slot[name='footer'] {
         min-height: var(--consonant-merch-card-mini-compare-footer-height);
