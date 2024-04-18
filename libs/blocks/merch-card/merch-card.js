@@ -63,7 +63,32 @@ const appendSlot = (slotEls, slotName, merchCard, nodeName = 'p') => {
   merchCard.append(newEl);
 };
 
+function extractQuantitySelect(el) {
+  const quantitySelectConfig = [...el.querySelectorAll('ul')]
+    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+  const configMarkup = quantitySelectConfig?.querySelector('ul');
+  if (!configMarkup) return null;
+  const config = configMarkup.children;
+  if (config.length !== 2) return null;
+  const attributes = {};
+  attributes.title = config[0].textContent.trim();
+  const values = config[1].textContent.split(',')
+    .map((value) => value.trim())
+    .filter((value) => /^\d*$/.test(value))
+    .map((value) => (value === '' ? undefined : Number(value)));
+  if (![3, 4, 5].includes(values.length)) return null;
+  import('../../deps/merch-quantity-select.js');
+  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
+  const quantitySelect = createTag('merch-quantity-select', attributes);
+  quantitySelectConfig.remove();
+  return quantitySelect;
+}
+
 const parseTwpContent = async (el, merchCard) => {
+  const quantitySelect = extractQuantitySelect(el);
+  if (quantitySelect) {
+    merchCard.append(quantitySelect);
+  }
   const allElements = Array.from(el.children[0].children[0].children);
   const contentGroups = allElements.reduce((acc, curr) => {
     if (curr.tagName.toLowerCase() === 'p' && curr.textContent.trim() === '--') {
@@ -94,9 +119,10 @@ const parseTwpContent = async (el, merchCard) => {
   const offerSelection = el.querySelector('ul');
   if (offerSelection) {
     const { initOfferSelection } = await import('./merch-offer-select.js');
-    initOfferSelection(merchCard, offerSelection, undefined);
+    initOfferSelection(merchCard, offerSelection);
   }
 };
+
 const parseContent = (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
@@ -218,7 +244,7 @@ const decorateMerchCardLinkAnalytics = (el) => {
 };
 
 const addStock = (merchCard, styles) => {
-  if (styles.includes('add-stock')) {
+  if (styles.includes('add-stock') && merchCard.variant !== 'twp') {
     let stock;
     const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
     const [label, ...rest] = [...document.querySelectorAll(selector)];
@@ -241,27 +267,6 @@ const simplifyHrs = (el) => {
     }
   });
 };
-
-function extractQuantitySelect(el) {
-  const quantitySelectConfig = el.querySelector('ul');
-  if (!quantitySelectConfig) return null;
-  const configMarkup = quantitySelectConfig.querySelector('li');
-  if (!configMarkup || !configMarkup.textContent.includes('Quantity')) return null;
-  const config = configMarkup.querySelector('ul').querySelectorAll('li');
-  if (config.length !== 2) return null;
-  const attributes = {};
-  attributes.title = config[0].textContent.trim();
-  const values = config[1].textContent.split(',')
-    .map((value) => value.trim())
-    .filter((value) => /^\d*$/.test(value))
-    .map((value) => (value === '' ? undefined : Number(value)));
-  if (![3, 4, 5].includes(values.length)) return null;
-  import('../../deps/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
-  const quantitySelect = createTag('merch-quantity-select', attributes);
-  quantitySelectConfig.remove();
-  return quantitySelect;
-}
 
 const getMiniCompareChartFooterRows = (el) => {
   let footerRows = Array.from(el.children).slice(1);
