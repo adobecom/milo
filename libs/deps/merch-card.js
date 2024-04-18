@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: fd49fb6f54e6b8ef08dc8e8b5b1ad19ac5370e3b Thu, 18 Apr 2024 15:01:27 GMT
+// branch: MWPW-142003-stable commit: fd49fb6f54e6b8ef08dc8e8b5b1ad19ac5370e3b Thu, 18 Apr 2024 15:02:41 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",h="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -1355,7 +1355,7 @@ merch-card .footer-row-cell:nth-child(8) {
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.secureLabelFooter}`}renderMiniCompareChart(){return n` <div class="top-gap">
+            ${this.secureLabelFooter}`}renderMiniCompareChart(){return n` <div class="top-gap"></div>
             <div class="top-section">${this.renderIcons()} ${this.badge}</div>
             <slot name="heading-m"></slot>
             <slot name="body-m"></slot>
