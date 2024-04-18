@@ -74,15 +74,18 @@ export const initOfferSelection = (merchCard, offerSelection, quantitySelector) 
   }
   if (!merchOfferSlot) return;
   createDynamicSlots(merchCard, merchOfferSlot);
-  const merchOffers = createTag('merch-offer-select', { container: 'merch-card' });
-  [...offerSelection.children].forEach((option) => {
-    merchOffers.append(createMerchOffer(option, quantitySelector, merchCard.variant));
-  });
-  merchOffers.querySelectorAll('a[is="checkout-link"]').forEach((link) => { link.setAttribute('slot', 'cta'); });
-  if (isHorizontal(merchOffers)) {
-    merchOffers.setAttribute('variant', 'horizontal');
+  const merchOfferSelect = createTag('merch-offer-select', { container: 'merch-card' });
+  if (merchCard.classList.contains('add-stock')) {
+    merchOfferSelect.setAttribute('stock', '');
   }
-  merchOffers.querySelectorAll('merch-offer').forEach((offer) => {
+  [...offerSelection.children].forEach((option) => {
+    merchOfferSelect.append(createMerchOffer(option, quantitySelector, merchCard.variant));
+  });
+  merchOfferSelect.querySelectorAll('a[is="checkout-link"]').forEach((link) => { link.setAttribute('slot', 'cta'); });
+  if (isHorizontal(merchOfferSelect)) {
+    merchOfferSelect.setAttribute('variant', 'horizontal');
+  }
+  merchOfferSelect.querySelectorAll('merch-offer').forEach((offer) => {
     const links = offer.querySelectorAll('a[is="checkout-link"]');
     if (links.length > 1) {
       links[0].setAttribute('slot', 'secondary-cta');
@@ -91,14 +94,12 @@ export const initOfferSelection = (merchCard, offerSelection, quantitySelector) 
       links[0].setAttribute('slot', 'cta');
     }
   });
-  merchOffers.querySelectorAll('span[is="inline-price"]').forEach((price) => { price.setAttribute('slot', 'price'); });
+  merchOfferSelect.querySelectorAll('span[is="inline-price"]').forEach((price) => { price.setAttribute('slot', 'price'); });
   if (quantitySelector) {
-    quantitySelector.append(merchOffers);
+    quantitySelector.append(merchOfferSelect);
   } else {
-    merchOfferSlot.append(merchOffers);
+    merchOfferSlot.append(merchOfferSelect);
   }
-  // eslint-disable-next-line chai-friendly/no-unused-expressions
-  merchCard.variant === 'twp' ? merchOffers.style.display = 'none' : null;
 };
 
 export default initOfferSelection;

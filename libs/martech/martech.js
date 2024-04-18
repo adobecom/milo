@@ -1,7 +1,7 @@
-import { getConfig, loadIms, loadLink, loadScript } from '../utils/utils.js';
+import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
-const TARGET_TIMEOUT_MS = 2000;
+const TARGET_TIMEOUT_MS = 4000;
 const ENTITLEMENT_TIMEOUT = 3000;
 
 const setDeep = (obj, path, value) => {
@@ -71,20 +71,78 @@ const handleAlloyResponse = (response) => {
     .filter(Boolean);
 };
 
+function roundToQuarter(num) {
+  return Math.ceil(num / 250) / 4;
+}
+
+function calculateResponseTime(responseStart) {
+  const responseTime = performance.now() - responseStart;
+  return roundToQuarter(responseTime);
+}
+
+function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
+  // temporary solution until we can decide on a better timeout value
+  const responseTime = calculateResponseTime(responseStart);
+  const timeoutTime = roundToQuarter(timeout);
+  let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
+  if (message) val += `:${message}`;
+  window.alloy('sendEvent', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
+        },
+      },
+    },
+    data: { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
 const getTargetPersonalization = async () => {
   const params = new URL(window.location.href).searchParams;
 
   const experimentParam = params.get('experiment');
   if (experimentParam) return getExpFromParam(experimentParam);
 
-  const timeout = parseInt(params.get('target-timeout'), 10) || TARGET_TIMEOUT_MS;
+  const timeout = parseInt(params.get('target-timeout'), 10)
+    || parseInt(getMetadata('target-timeout'), 10)
+    || TARGET_TIMEOUT_MS;
 
   let response;
+
+  const responseStart = performance.now();
+  window.addEventListener(ALLOY_SEND_EVENT, () => {
+    const responseTime = calculateResponseTime(responseStart);
+    window.lana.log('target response time', responseTime);
+  }, { once: true });
+
   try {
     response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
+    sendTargetResponseAnalytics(false, responseStart, timeout);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.log(e);
+    if (e.message.startsWith('Timeout waiting for alloy_sendEvent after')) {
+      const timer = setTimeout(() => {
+        // eslint-disable-next-line no-use-before-define
+        window.removeEventListener(ALLOY_SEND_EVENT, sendAnalytics);
+        sendTargetResponseAnalytics(true, responseStart, timeout);
+      }, 5100 - timeout);
+
+      // eslint-disable-next-line no-inner-declarations
+      function sendAnalytics() {
+        clearTimeout(timer);
+        sendTargetResponseAnalytics(true, responseStart, timeout);
+      }
+
+      window.addEventListener(ALLOY_SEND_EVENT, sendAnalytics, { once: true });
+    } else {
+      sendTargetResponseAnalytics(false, responseStart, timeout, e.message);
+    }
   }
 
   let manifests = [];

@@ -1,73 +1,78 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+/* eslint-disable import/no-relative-packages */
+import { createTag } from '../../utils/utils.js';
+import '../../deps/lit-all.min.js';
+import '../../features/spectrum-web-components/dist/theme.js';
+import '../../features/spectrum-web-components/dist/tabs.js';
+import '../../features/spectrum-web-components/dist/icons-workflow.js';
+import '../../features/spectrum-web-components/dist/checkbox.js';
+import '../../features/spectrum-web-components/dist/button.js';
+import '../../features/spectrum-web-components/dist/overlay.js';
+import '../../features/spectrum-web-components/dist/tooltip.js';
+import '../../deps/merch-card.js';
+import '../../deps/merch-offer-select.js';
+import '../../deps/merch-stock.js';
+import '../../deps/merch-secure-transaction.js';
 import '../../deps/merch-subscription-panel.js';
-import '../../deps/merch-subscription-tabs.js';
-import '../../deps/merch-subscription-layout.js';
+import '../../deps/merch-twp-d2p.js';
 
-const createPanel = () => {
-  const template = `<merch-subscription-panel slot="panel">
-    <h4 slot="header">Pick a subscription:</h4>
-    <h5 slot="header">
-        You won't be charged until after your free trial ends.
-    </h5>
-    <template name="ABM">
-        <div slot="commitment">Annual, paid monthly</div>
-        <div slot="condition">
-            Fee applies if you cancel after 14 days.
-        </div>
-        <div slot="condition-tooltip">
-            If you cancel after 14 days, your service will continue
-            until the end of that month’s billing period, and you
-            will be charged an early termination fee.
-        </div>
-    </template>
-    <template name="M2M">
-        <div slot="commitment">Monthly</div>
-        <div slot="condition">Cancel anytime, no fee.</div>
-        <div slot="condition-tooltip">
-            If you cancel after 14 days, your payment is
-            non-refundable, and your service will continue until the
-            end of that month’s billing period.
-        </div>
-        <div slot="vat">Includes VAT</div>
-    </template>
-    <template name="PUF">
-        <div slot="commitment">Annual, prepaid</div>
-        <div slot="condition">
-            No refund if you cancel after 14 days.
-        </div>
-        <div slot="condition-tooltip">
-            If you cancel after 14 days, your payment is
-            non-refundable, and your service will continue until the
-            end of your contracted term.
-        </div>
-        <div slot="vat">Includes VAT</div>
-    </template>
-    <a is="checkout-link" class="con-button blue" slot="cta"
-        >Continue</a
-    ></merch-subscription-panel>`;
-  const el = document.createElement('div');
-  el.innerHTML = template;
-  return el.querySelector('merch-subscription-panel');
-};
+const getPlanTypes = (offerSelect) => [
+  offerSelect.querySelector('merch-offer[plan-type="ABM"]'),
+  offerSelect.querySelector('merch-offer[plan-type="PUF"]'),
+  offerSelect.querySelector('merch-offer[plan-type="M2M"]'),
+];
 
 export default async function init(el) {
-  const cards = el.querySelectorAll('merch-card');
-  el.firstElementChild.remove();
-  if (cards.length) {
-    const { base } = getConfig();
-    await import(`${base}/features/spectrum-web-components/dist/theme.js`);
-    const layout = createTag('merch-subscription-layout', { }, '', { });
-    createTag('h3', { slot: 'content' }, 'Try the full version of Adobe apps with a 7-day free trial.', { parent: layout });
-    createTag('h5', { slot: 'content' }, 'Choose a plan:', { parent: layout });
-    const merchCards = [...cards].map((card) => {
-      card.setAttribute('slot', 'cards');
-      return card;
-    });
-    const tabs = createTag('merch-subscription-tabs', { slot: 'content' }, '', {});
-    tabs.append(...merchCards);
-    layout.append(tabs);
-    layout.append(createPanel());
-    el.append(layout);
-  }
-  return el;
+  // temporary modal styles.
+  const modal = el.closest('.dialog-modal');
+  modal?.classList.add('twp');
+  const offerLiterals = el.querySelector('.twp.offer-literals');
+  el.querySelectorAll('merch-offer-select').forEach((offerSelect) => {
+    const augmentOfferSelect = () => {
+      const [cci, cct, cce] = [...offerLiterals.querySelectorAll('template')].map((template) => template.content.cloneNode(true).children);
+      const { customerSegment, marketSegment } = offerSelect;
+      if (marketSegment === 'COM' && customerSegment === 'INDIVIDUAL') {
+        const [abm, puf, m2m] = getPlanTypes(offerSelect);
+        abm.append(...(cci[0].childNodes));
+        puf.append(...(cci[1].childNodes));
+        m2m.append(...(cci[2].childNodes));
+      } else if (marketSegment === 'COM' && customerSegment === 'TEAM') {
+        const [abm, puf] = getPlanTypes(offerSelect);
+        abm.append(...(cct[0].childNodes));
+        puf.append(...(cct[1].childNodes));
+      } else if (marketSegment === 'EDU' && customerSegment === 'INDIVIDUAL') {
+        const [abm, puf] = getPlanTypes(offerSelect);
+        abm.append(...(cce[0].childNodes));
+        puf.append(...(cce[1].childNodes));
+      }
+    };
+    if (offerSelect.ready) {
+      augmentOfferSelect();
+    } else {
+      offerSelect.addEventListener('merch-offer-select:ready', augmentOfferSelect, { once: true });
+    }
+  });
+
+  const [content, panel] = el.querySelectorAll(':scope > div > div');
+
+  const twp = createTag('merch-twp-d2p');
+  content.querySelector('h4').setAttribute('slot', 'detail-xl');
+  twp.append(...[...content.querySelectorAll(':scope > h4, merch-card')]);
+
+  const cciFooter = createTag('div', { slot: 'cci-footer' });
+  cciFooter.append(...[...content.querySelectorAll('p:not(hr ~ p)')]);
+  const cctFooter = createTag('div', { slot: 'cct-footer' });
+  cctFooter.append(...[...content.querySelectorAll('hr:nth-of-type(1) ~ p:not(hr:nth-of-type(2) ~ p)')]);
+  const cceFooter = createTag('div', { slot: 'cce-footer' });
+  cceFooter.append(...[...content.querySelectorAll('hr:last-of-type ~ p')]);
+
+  twp.append(cciFooter, cctFooter, cceFooter);
+
+  panel.querySelectorAll(':scope > h4, :scope > h5').forEach((element) => element.setAttribute('slot', 'header'));
+
+  const subscriptionPanel = createTag('merch-subscription-panel', { slot: 'panel' });
+  subscriptionPanel.append(...panel.querySelectorAll(':scope > h4,:scope > h5,merch-stock,merch-subscription,merch-secure-transaction'));
+  twp.appendChild(subscriptionPanel);
+
+  el.replaceWith(twp);
+  return twp;
 }

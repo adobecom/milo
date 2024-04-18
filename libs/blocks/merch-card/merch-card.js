@@ -19,6 +19,20 @@ const CARD_TYPES = [
   'twp',
 ];
 
+const TEXT_STYLES = {
+  H5: 'detail-m',
+  H4: 'body-xxs',
+  H3: 'heading-xs',
+  H2: 'heading-m',
+};
+
+const HEADING_MAP = {
+  'special-offers': {
+    H5: 'H4',
+    H3: 'H3',
+  },
+};
+
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
 const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART, 'twp'];
@@ -31,13 +45,6 @@ const intersectionObserver = new IntersectionObserver((entries) => {
     intersectionObserver.unobserve(entry.target);
   });
 });
-
-const textStyles = {
-  H5: 'detail-m',
-  H4: 'body-xxs',
-  H3: 'heading-xs',
-  H2: 'heading-m',
-};
 
 const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style));
 
@@ -56,7 +63,32 @@ const appendSlot = (slotEls, slotName, merchCard, nodeName = 'p') => {
   merchCard.append(newEl);
 };
 
+function extractQuantitySelect(el) {
+  const quantitySelectConfig = [...el.querySelectorAll('ul')]
+    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+  const configMarkup = quantitySelectConfig?.querySelector('ul');
+  if (!configMarkup) return null;
+  const config = configMarkup.children;
+  if (config.length !== 2) return null;
+  const attributes = {};
+  attributes.title = config[0].textContent.trim();
+  const values = config[1].textContent.split(',')
+    .map((value) => value.trim())
+    .filter((value) => /^\d*$/.test(value))
+    .map((value) => (value === '' ? undefined : Number(value)));
+  if (![3, 4, 5].includes(values.length)) return null;
+  import('../../deps/merch-quantity-select.js');
+  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
+  const quantitySelect = createTag('merch-quantity-select', attributes);
+  quantitySelectConfig.remove();
+  return quantitySelect;
+}
+
 const parseTwpContent = async (el, merchCard) => {
+  const quantitySelect = extractQuantitySelect(el);
+  if (quantitySelect) {
+    merchCard.append(quantitySelect);
+  }
   const allElements = Array.from(el.children[0].children[0].children);
   const contentGroups = allElements.reduce((acc, curr) => {
     if (curr.tagName.toLowerCase() === 'p' && curr.textContent.trim() === '--') {
@@ -87,9 +119,10 @@ const parseTwpContent = async (el, merchCard) => {
   const offerSelection = el.querySelector('ul');
   if (offerSelection) {
     const { initOfferSelection } = await import('./merch-offer-select.js');
-    initOfferSelection(merchCard, offerSelection, undefined);
+    initOfferSelection(merchCard, offerSelection);
   }
 };
+
 const parseContent = (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
@@ -111,17 +144,21 @@ const parseContent = (el, merchCard) => {
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
-      let slotName = textStyles[tagName];
+      let slotName = TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
-          if (tagName === 'H2') {
-            headingMCount += 1;
+          if (HEADING_MAP[merchCard.variant]?.[tagName]) {
+            tagName = HEADING_MAP[merchCard.variant][tagName];
+          } else {
+            if (tagName === 'H2') {
+              headingMCount += 1;
+            }
+            if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
+              slotName = 'heading-m-price';
+            }
+            tagName = `H${headingSize}`;
+            headingSize += 1;
           }
-          if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
-            slotName = 'heading-m-price';
-          }
-          tagName = `H${headingSize}`;
-          headingSize += 1;
         }
         element.setAttribute('slot', slotName);
         const newElement = createTag(tagName);
@@ -207,7 +244,7 @@ const decorateMerchCardLinkAnalytics = (el) => {
 };
 
 const addStock = (merchCard, styles) => {
-  if (styles.includes('add-stock')) {
+  if (styles.includes('add-stock') && merchCard.variant !== 'twp') {
     let stock;
     const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
     const [label, ...rest] = [...document.querySelectorAll(selector)];
@@ -230,25 +267,6 @@ const simplifyHrs = (el) => {
     }
   });
 };
-
-function extractQuantitySelect(el) {
-  const quantitySelectConfig = el.querySelector('ul');
-  if (!quantitySelectConfig) return null;
-  const configMarkup = quantitySelectConfig.querySelector('li');
-  if (!configMarkup || !configMarkup.textContent.includes('Quantity')) return null;
-  const config = configMarkup.querySelector('ul').querySelectorAll('li');
-  if (config.length !== 2) return null;
-  const attributes = {};
-  attributes.title = config[0].textContent.trim();
-  const quantityValues = config[1].textContent.split(',').map((value) => value.trim())
-    .filter((value) => /^\d+$/.test(value));
-  if (quantityValues.length !== 3) return null;
-  import('../../deps/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step] = quantityValues.map(Number);
-  const quantitySelect = createTag('merch-quantity-select', attributes);
-  quantitySelectConfig.remove();
-  return quantitySelect;
-}
 
 const getMiniCompareChartFooterRows = (el) => {
   let footerRows = Array.from(el.children).slice(1);

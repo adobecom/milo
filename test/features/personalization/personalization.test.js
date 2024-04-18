@@ -150,6 +150,15 @@ describe('Functional Test', () => {
     assert.calledWith(window.console.log, 'Invalid selector: ', '.bad...selector');
     window.console.log.reset();
   });
+
+  it('should override to param-newoffer=123', async () => {
+    let config = getConfig();
+    config.mep = { override: '/path/to/manifest.json--param-newoffer=123' };
+    await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    config = getConfig();
+    expect(config.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
+  });
 });
 
 describe('matchGlob function', () => {
