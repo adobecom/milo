@@ -73,5 +73,6 @@ export default async function init(el) {
   subscriptionPanel.append(...panel.querySelectorAll(':scope > h4,:scope > h5,merch-stock,merch-subscription,merch-secure-transaction'));
   twp.appendChild(subscriptionPanel);
 
-  return el.replaceWith(twp);
+  el.replaceWith(twp);
+  return twp;
 }
