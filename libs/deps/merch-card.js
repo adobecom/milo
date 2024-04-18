@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: 3ba904f713082e0ba7323c2e2737a938b13643c8 Thu, 18 Apr 2024 20:50:35 GMT
+// branch: MWPW-142003-stable commit: 14ec61525f24e7ad038184620e04dc096acf1eb3 Thu, 18 Apr 2024 21:23:35 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",h="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -1315,7 +1315,7 @@ merch-card .footer-row-cell:nth-child(8) {
                     ${this.renderIcons()} ${this.badge}
                     <div
                         class="action-menu
-                        ${this.isMobileOrTablet?"always-visible":""}
+                        ${this.isMobileOrTablet&&this.actionMenu?"always-visible":""}
                         ${this.actionMenu?"invisible":"hidden"}"
                         @click="${this.toggleActionMenu}"
                     ></div>
