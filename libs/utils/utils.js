@@ -50,7 +50,6 @@ const MILO_BLOCKS = [
   'merch-card-collection',
   'merch-offers',
   'mnemonic-list',
-  'mobile-app-banner',
   'modal',
   'modal-metadata',
   'pdf-viewer',
