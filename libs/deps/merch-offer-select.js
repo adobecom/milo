@@ -1,4 +1,4 @@
-// branch: MWPW-138927-3 commit: 2115010c52938af1b0beb8f114cae259dce4e0b0 Wed, 17 Apr 2024 22:26:20 GMT
+// branch: MWPW-138927-3 commit: 2115010c52938af1b0beb8f114cae259dce4e0b0 Thu, 18 Apr 2024 05:58:10 GMT
 import{html as h,LitElement as E}from"/libs/deps/lit-all.min.js";import{css as u,html as b,LitElement as m}from"/libs/deps/lit-all.min.js";var o="merch-offer:ready",d="merch-offer-select:ready";var s="merch-offer:selected";var a="merch-quantity-selector:change";var l=class extends m{static styles=u`
         :host .horizontal {
             display: flex;
@@ -169,6 +169,13 @@ import{html as h,LitElement as E}from"/libs/deps/lit-all.min.js";import{css as u
         font-size: 12px;
     }
 
+    ::slotted([slot='teaser']) {
+        color: #2d9d78;
+        font-size: 14px;
+        font-weight: bold;
+        line-height: 17px;
+    }
+
     :host([type='subscription-option']) slot[name='price'] {
         display: flex;
         flex-direction: row-reverse;
@@ -178,7 +185,7 @@ import{html as h,LitElement as E}from"/libs/deps/lit-all.min.js";import{css as u
 
     ::slotted(span[is='inline-price']) {
         font-size: 16px;
-        font-weight: 700;
+        font-weight: bold;
         line-height: 24px;
     }
 
