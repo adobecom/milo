@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: fd49fb6f54e6b8ef08dc8e8b5b1ad19ac5370e3b Thu, 18 Apr 2024 14:20:30 GMT
+// branch: MWPW-142003-stable commit: fd49fb6f54e6b8ef08dc8e8b5b1ad19ac5370e3b Thu, 18 Apr 2024 14:24:45 GMT
 import{html as t,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -258,6 +258,7 @@ import{html as t,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     :host([variant='mini-compare-chart']) footer {
         padding: var(--consonant-merch-spacing-xs)
             var(--consonant-merch-spacing-xxs) 0;
+        justify-content: space-between;
     }
 
     @media screen and ${f(m)} {
