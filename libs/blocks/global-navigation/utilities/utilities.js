@@ -30,7 +30,6 @@ export const selectors = {
   menuColumn: '.feds-menu-column',
   gnavPromo: '.gnav-promo',
   columnBreak: '.column-break',
-  navWrapper: '.feds-nav-wrapper',
 };
 
 export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
@@ -295,16 +294,6 @@ export function closeAllDropdowns({ type } = {}) {
 
   if (isDesktop.matches) setCurtainState(false);
 }
-
-export const toggleMenuMobile = (toggle) => {
-  if (!toggle) return;
-  const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-  toggle.setAttribute('aria-expanded', !isExpanded);
-  document.querySelector(selectors.navWrapper)?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
-  closeAllDropdowns();
-  setCurtainState(!isExpanded);
-  toggle.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
-};
 
 export function trigger({ element, event, type } = {}) {
   if (event) event.preventDefault();
