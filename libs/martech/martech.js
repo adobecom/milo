@@ -18,8 +18,10 @@ const setDeep = (obj, path, value) => {
   currentObj[pathArr[pathArr.length - 1]] = value;
 };
 
-const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Promise((resolve, reject) => {
+// eslint-disable-next-line max-len
+const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Promise((resolve) => {
   const listener = (event) => {
+    // eslint-disable-next-line no-use-before-define
     clearTimeout(timer);
     resolve(event.detail);
   };
@@ -114,7 +116,6 @@ const getTargetPersonalization = async () => {
   const timeout = parseInt(params.get('target-timeout'), 10)
     || parseInt(getMetadata('target-timeout'), 10)
     || TARGET_TIMEOUT_MS;
-
 
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
