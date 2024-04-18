@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: fd49fb6f54e6b8ef08dc8e8b5b1ad19ac5370e3b Thu, 18 Apr 2024 15:04:02 GMT
+// branch: MWPW-142003-stable commit: 3ba904f713082e0ba7323c2e2737a938b13643c8 Thu, 18 Apr 2024 19:41:56 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",h="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -259,6 +259,7 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
         padding: var(--consonant-merch-spacing-xs)
             var(--consonant-merch-spacing-xxs) 0;
         justify-content: space-between;
+        flex-flow: nowrap;
     }
 
     @media screen and ${x(m)} {
@@ -333,6 +334,7 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     }
     :host([variant='mini-compare-chart']) slot[name='footer'] {
         min-height: var(--consonant-merch-card-mini-compare-footer-height);
+        margin-right: auto;
     }
 `,z=()=>{let d=[v`
         /* Tablet */
