@@ -64,6 +64,7 @@ export const normalizePath = (p) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
+    || path.includes('.aem.')
     || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
@@ -181,7 +182,7 @@ const getBlockProps = (fVal) => {
   if (!val?.startsWith('/')) val = `/${val}`;
   const blockSelector = val?.split('/').pop();
   const { origin } = PAGE_URL;
-  if (origin.includes('.hlx.') || origin.includes('localhost')) {
+  if (origin.includes('.hlx.') || origin.includes('.aem.') || origin.includes('localhost')) {
     if (val.startsWith('/libs/')) {
       /* c8 ignore next 2 */
       const { miloLibs, codeRoot } = getConfig();

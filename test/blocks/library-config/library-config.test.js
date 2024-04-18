@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 const { getContainers, getSearchTags, isMatching, getHtml } = await import('../../../libs/blocks/library-config/lists/blocks.js');
-const BLOCK_PAGE_URL = 'https://main--milo--adobecom.hlx.page/path/to/block/page';
+const BLOCK_PAGE_URL = 'https://main--milo--adobecom.aem.page/path/to/block/page';
 
 function verifyContainer(container, elementsLength, hasLibraryMetadata) {
   expect(container).to.exist;

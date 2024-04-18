@@ -57,7 +57,7 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, over
       () => (
         failStatus
           ? mockRes({ status: 500 })
-          : mockRes({ payload: { preview: { url: `https://hlx.page/${options.country}_${options.language}/drafts/page` } } })
+          : mockRes({ payload: { preview: { url: `https://aem.page/${options.country}_${options.language}/drafts/page` } } })
       ),
     )
     .onSecondCall()

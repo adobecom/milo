@@ -6,8 +6,8 @@ const { default: decoratePreviewMode } = await import('../../../libs/features/pe
 const { setConfig, MILO_EVENTS } = await import('../../../libs/utils/utils.js');
 
 const config = {
-  miloLibs: 'https://main--milo--adobecom.hlx.live/libs',
-  codeRoot: 'https://main--homepage--adobecom.hlx.live/homepage',
+  miloLibs: 'https://main--milo--adobecom.aem.live/libs',
+  codeRoot: 'https://main--homepage--adobecom.aem.live/homepage',
   mep: {
     preview: true,
     override: '',
@@ -47,7 +47,7 @@ describe('preview feature', () => {
                 action: 'replacecontent',
                 selector: 'main>div:nth-of-type(1)',
                 pageFilter: '',
-                target: 'https://main--homepage--adobecom.hlx.page/homepage/fragments/loggedout/personalization/marquees/apro-twp-abandon',
+                target: 'https://main--homepage--adobecom.aem.page/homepage/fragments/loggedout/personalization/marquees/apro-twp-abandon',
               },
             ],
           },
@@ -87,7 +87,7 @@ describe('preview feature', () => {
           ],
         },
         manifest: '/homepage/fragments/mep/selected-example.json',
-        manifestUrl: 'https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/unit-tests/manifest.json',
+        manifestUrl: 'https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/unit-tests/manifest.json',
       },
       {
         variants: {
@@ -97,7 +97,7 @@ describe('preview feature', () => {
                 action: 'replacecontent',
                 selector: 'main>div:nth-of-type(1)',
                 pageFilter: '',
-                target: 'https://main--homepage--adobecom.hlx.page/homepage/fragments/loggedout/personalization/marquees/apro-twp-abandon',
+                target: 'https://main--homepage--adobecom.aem.page/homepage/fragments/loggedout/personalization/marquees/apro-twp-abandon',
               },
             ],
           },
@@ -110,7 +110,7 @@ describe('preview feature', () => {
         selectedVariantName: 'default',
         selectedVariant: 'default',
         manifest: '/homepage/fragments/mep/default-selected.json',
-        manifestUrl: 'https://main--homepage--adobecom.hlx.live/homepage/fragments/mep/default-selected.json',
+        manifestUrl: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/default-selected.json',
       },
       {
         variants: {
@@ -141,7 +141,7 @@ describe('preview feature', () => {
           ],
         },
         manifest: '/promos/2023/global/black-friday/black-friday-global.json',
-        manifestUrl: 'https://main--cc--adobecom.hlx.page/promos/2023/global/black-friday/black-friday-global.json',
+        manifestUrl: 'https://main--cc--adobecom.aem.page/promos/2023/global/black-friday/black-friday-global.json',
         disabled: false,
         event: {
           name: 'black-friday-global',
@@ -186,7 +186,7 @@ describe('preview feature', () => {
   });
   it('updates preview button', () => {
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
-    document.querySelector('#new-manifest').value = 'https://main--homepage--adobecom.hlx.live/homepage/fragments/mep/new-manifest.json';
+    document.querySelector('#new-manifest').value = 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/new-manifest.json';
     document.querySelector('input[name="/homepage/fragments/mep/selected-example.json"][value="default"]').click();
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('new-manifest.json');
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('%2Fhomepage%2Ffragments%2Fmep%2Fselected-example.json--default');

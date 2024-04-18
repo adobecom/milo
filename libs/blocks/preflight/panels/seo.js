@@ -174,12 +174,12 @@ async function checkLinks() {
 
   /* Find all links.
    * Remove any local or existing preflight links.
-   * Set link to use hlx.live
+   * Set link to use hlx.live or aem.live
    * */
   const links = [...document.querySelectorAll('a')]
     .filter((link) => {
       if (!link.href.includes('local') && !link.closest('.preflight')) {
-        link.dataset.liveHref = link.href.replace('hlx.page', 'hlx.live');
+        link.dataset.liveHref = link.href.replace(/(hlx|aem)\.page/, '$1.live');
         return true;
       }
       return false;
@@ -220,7 +220,7 @@ async function checkLinks() {
         if (group[linkResult.id].closest('footer')) parent = 'Footer';
         badLinks.value = [...badLinks.value,
           {
-            // Diplay .hlx.live URL in broken link list for relative links
+            // Diplay .hlx.live or .aem.live URL in broken link list for relative links
             href: group[linkResult.id].dataset.liveHref,
             status: group[linkResult.id].status,
             parent,
@@ -262,7 +262,7 @@ export async function sendResults() {
   };
 
   await fetch(
-    'https://main--milo--adobecom.hlx.page/seo/preflight',
+    'https://main--milo--adobecom.aem.page/seo/preflight',
     {
       method: 'POST',
       credentials: 'same-origin',

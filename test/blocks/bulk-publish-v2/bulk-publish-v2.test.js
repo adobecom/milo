@@ -11,7 +11,7 @@ setConfig(conf);
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/bulk-publish-v2/bulk-publish-v2.js');
 
-const testPage = 'https://main--milo--adobecom.hlx.page/tools/bulk-publish-v2-test';
+const testPage = 'https://main--milo--adobecom.aem.page/tools/bulk-publish-v2-test';
 
 const mouseEvent = async (el, type = 'click') => {
   if (!el) return;
@@ -98,7 +98,7 @@ describe('Bulk Publish Tool', () => {
   });
 
   it('can handle api error response', async () => {
-    await setTextArea(rootEl, 'https://error--milo--adobecom.hlx.page/not/a/valid/path');
+    await setTextArea(rootEl, 'https://error--milo--adobecom.aem.page/not/a/valid/path');
     await mouseEvent(rootEl.querySelector('#RunProcess'));
     const errors = rootEl.querySelector('.errors');
     expect(errors.querySelector('strong').innerText).to.equal('Unauthorized');

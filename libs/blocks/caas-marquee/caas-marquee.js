@@ -194,12 +194,7 @@ function getMetadata(el) {
 }
 
 function isProd() {
-  const { host } = window.location;
-  return !(host.includes('hlx.page')
-    || host.includes('hlx.live')
-    || host.includes('localhost')
-    || host.includes('stage.adobe')
-    || host.includes('corp.adobe'));
+  return getConfig().env?.name === 'prod';
 }
 
 const BUTTON_STYLES = ['blue', 'outline'];

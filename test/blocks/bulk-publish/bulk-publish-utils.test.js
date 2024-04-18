@@ -17,10 +17,10 @@ import {
 } from '../../../libs/blocks/bulk-publish/bulk-publish-utils.js';
 import { setLocalStorage } from '../../../libs/blocks/utils/utils.js';
 
-const EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/existing';
-const NON_EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/nonexisting';
-const EXISTING_RESOURCE_PAGE_URL = 'https://main--milo--adobecom.hlx.page/existingresource';
-const NON_EXISTING_REPO_URL = 'https://main--nonexisting--adobecom.hlx.page/';
+const EXISTING_PAGE_URL = 'https://main--milo--adobecom.aem.page/existing';
+const NON_EXISTING_PAGE_URL = 'https://main--milo--adobecom.aem.page/nonexisting';
+const EXISTING_RESOURCE_PAGE_URL = 'https://main--milo--adobecom.aem.page/existingresource';
+const NON_EXISTING_REPO_URL = 'https://main--nonexisting--adobecom.aem.page/';
 const URLS = [EXISTING_PAGE_URL, NON_EXISTING_PAGE_URL, NON_EXISTING_REPO_URL];
 const DURLS = [EXISTING_PAGE_URL, NON_EXISTING_PAGE_URL, EXISTING_RESOURCE_PAGE_URL];
 
@@ -37,7 +37,7 @@ const mockBulkConfigJson = {
   },
   sites: {
     data: [
-      { origin: 'https://main--milo--adobecom.hlx.page' },
+      { origin: 'https://main--milo--adobecom.aem.page' },
     ],
   },
 };
@@ -254,9 +254,9 @@ describe('Bulk preview and publish', () => {
       name: 'preview',
       urlIdx: 2,
       urls: [
-        'https://main--milo--adobecom.hlx.page/existing',
-        'https://main--milo--adobecom.hlx.page/nonexisting',
-        'https://main--nonexisting--adobecom.hlx.page/',
+        'https://main--milo--adobecom.aem.page/existing',
+        'https://main--milo--adobecom.aem.page/nonexisting',
+        'https://main--nonexisting--adobecom.aem.page/',
       ]
       ,
     };
@@ -301,7 +301,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Preview',
-        domain: 'https://main--milo--adobecom.hlx.page',
+        domain: 'https://main--milo--adobecom.aem.page',
         urls: 2,
         success: 1,
       },
@@ -309,7 +309,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Preview',
-        domain: 'https://main--nonexisting--adobecom.hlx.page',
+        domain: 'https://main--nonexisting--adobecom.aem.page',
         urls: 1,
         success: 0,
       },
@@ -368,7 +368,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Publish',
-        domain: 'https://main--milo--adobecom.hlx.page',
+        domain: 'https://main--milo--adobecom.aem.page',
         urls: 2,
         success: 1,
       },
@@ -376,7 +376,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Publish',
-        domain: 'https://main--nonexisting--adobecom.hlx.page',
+        domain: 'https://main--nonexisting--adobecom.aem.page',
         urls: 1,
         success: 0,
       },
@@ -443,7 +443,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Preview & publish',
-        domain: 'https://main--milo--adobecom.hlx.page',
+        domain: 'https://main--milo--adobecom.aem.page',
         urls: 4,
         success: 2,
       },
@@ -451,7 +451,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Preview & publish',
-        domain: 'https://main--nonexisting--adobecom.hlx.page',
+        domain: 'https://main--nonexisting--adobecom.aem.page',
         urls: 2,
         success: 0,
       },
@@ -509,7 +509,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Unpublish',
-        domain: 'https://main--milo--adobecom.hlx.page',
+        domain: 'https://main--milo--adobecom.aem.page',
         urls: 3,
         success: 1,
       },
@@ -576,7 +576,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Delete',
-        domain: 'https://main--milo--adobecom.hlx.page',
+        domain: 'https://main--milo--adobecom.aem.page',
         urls: 6,
         success: 2,
       },
@@ -630,7 +630,7 @@ describe('Bulk preview and publish', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Preview & publish',
-        domain: 'https://main--nonexisting--adobecom.hlx.page',
+        domain: 'https://main--nonexisting--adobecom.aem.page',
         urls: 2,
         success: 0,
       },
@@ -681,9 +681,9 @@ describe('Bulk index', () => {
       name: 'index',
       urlIdx: 2,
       urls: [
-        'https://main--milo--adobecom.hlx.page/existing',
-        'https://main--milo--adobecom.hlx.page/nonexisting',
-        'https://main--nonexisting--adobecom.hlx.page/',
+        'https://main--milo--adobecom.aem.page/existing',
+        'https://main--milo--adobecom.aem.page/nonexisting',
+        'https://main--nonexisting--adobecom.aem.page/',
       ],
     };
     const expectedCompletion = {
@@ -727,7 +727,7 @@ describe('Bulk index', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Index',
-        domain: 'https://main--milo--adobecom.hlx.page',
+        domain: 'https://main--milo--adobecom.aem.page',
         urls: 2,
         success: 1,
       },
@@ -735,7 +735,7 @@ describe('Bulk index', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Index',
-        domain: 'https://main--nonexisting--adobecom.hlx.page',
+        domain: 'https://main--nonexisting--adobecom.aem.page',
         urls: 1,
         success: 0,
       },
@@ -790,7 +790,7 @@ describe('Bulk index', () => {
         timestamp: '2023-04-03T14:56:00.734Z',
         email: 'anonymous',
         action: 'Index',
-        domain: 'https://main--nonexisting--adobecom.hlx.page',
+        domain: 'https://main--nonexisting--adobecom.aem.page',
         urls: 1,
         success: 0,
       },

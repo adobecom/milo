@@ -573,7 +573,7 @@ describe('Merch Block', () => {
       document.querySelector('.modal-curtain').click();
       await delay(100);
       const [,,,, checkoutLinkConfig] = CHECKOUT_LINK_CONFIGS.data;
-      checkoutLinkConfig.FREE_TRIAL_PATH = 'http://main--milo--adobecom.hlx.page/test/blocks/merch/mocks/fragments/twp-url';
+      checkoutLinkConfig.FREE_TRIAL_PATH = 'http://main--milo--adobecom.aem.page/test/blocks/merch/mocks/fragments/twp-url';
       await cta.render();
       cta.click();
       await delay(100);

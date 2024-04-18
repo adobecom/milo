@@ -97,7 +97,7 @@ function Files() {
     function read(uri) {
         return promises.reject(new Error("could not open external image: '" + uri + "'\ncannot open linked files from a web browser"));
     }
-    
+
     return {
         read: read
     };
@@ -1047,7 +1047,7 @@ function createCommentsReader(bodyReader) {
                 });
             });
     }
-    
+
     return readCommentsXml;
 }
 
@@ -1080,7 +1080,7 @@ exports.defaultContentTypes = contentTypes({}, {});
 function readContentTypesFromXml(element) {
     var extensionDefaults = {};
     var overrides = {};
-    
+
     element.children.forEach(function(child) {
         if (child.name === "content-types:Default") {
             extensionDefaults[child.attributes.Extension] = child.attributes.ContentType;
@@ -1118,7 +1118,7 @@ function contentTypes(overrides, extensionDefaults) {
             }
         }
     };
-    
+
 }
 
 
@@ -1138,10 +1138,10 @@ var Result = (__webpack_require__(/*! ../results */ "./node_modules/@adobe/mammo
 
 function DocumentXmlReader(options) {
     var bodyReader = options.bodyReader;
-    
+
     function convertXmlToDocument(element) {
         var body = element.first("w:body");
-        
+
         var result = bodyReader.readXmlElements(body.children)
             .map(function(children) {
                 return new documents.Document(children, {
@@ -1151,7 +1151,7 @@ function DocumentXmlReader(options) {
             });
         return new Result(result.value, result.messages);
     }
-    
+
     return {
         convertXmlToDocument: convertXmlToDocument
     };
@@ -1423,7 +1423,7 @@ function createReader(noteType, bodyReader) {
                 return documents.Note({noteType: noteType, noteId: id, body: body});
             });
     }
-    
+
     return readNotesXml;
 }
 
@@ -1632,7 +1632,7 @@ function Relationships(relationships) {
     relationships.forEach(function(relationship) {
         targetsByRelationshipId[relationship.relationshipId] = relationship.target;
     });
-    
+
     var targetsByType = {};
     relationships.forEach(function(relationship) {
         if (!targetsByType[relationship.type]) {
@@ -1640,7 +1640,7 @@ function Relationships(relationships) {
         }
         targetsByType[relationship.type].push(relationship.target);
     });
-            
+
     return {
         findTargetByRelationshipId: function(relationshipId) {
             return targetsByRelationshipId[relationshipId];
@@ -1693,7 +1693,7 @@ function updateRelationships(docxFile) {
                 "Type": schema,
                 "Target": styleMapAbsolutePath
             });
-            
+
             var namespaces = {"": relationshipsUri};
             return docxFile.write(path, xml.writeString(relationshipsContainer, namespaces));
         });
@@ -1880,22 +1880,22 @@ var defaultStyleMap = exports._defaultStyleMap = [
     "p[style-name='heading 4'] => h4:fresh",
     "p[style-name='heading 5'] => h5:fresh",
     "p[style-name='heading 6'] => h6:fresh",
-    
+
     "r[style-name='Strong'] => strong",
-    
+
     "p[style-name='footnote text'] => p:fresh",
     "r[style-name='footnote reference'] =>",
     "p[style-name='endnote text'] => p:fresh",
     "r[style-name='endnote reference'] =>",
     "p[style-name='annotation text'] => p:fresh",
     "r[style-name='annotation reference'] =>",
-    
+
     // LibreOffice
     "p[style-name='Footnote'] => p:fresh",
     "r[style-name='Footnote anchor'] =>",
     "p[style-name='Endnote'] => p:fresh",
     "r[style-name='Endnote anchor'] =>",
-    
+
     "p:unordered-list(1) => ul > li:fresh",
     "p:unordered-list(2) => ul|ol > li > ul > li:fresh",
     "p:unordered-list(3) => ul|ol > li > ul|ol > li > ul > li:fresh",
@@ -1906,9 +1906,9 @@ var defaultStyleMap = exports._defaultStyleMap = [
     "p:ordered-list(3) => ul|ol > li > ul|ol > li > ol > li:fresh",
     "p:ordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh",
     "p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh",
-    
+
     "r[style-name='Hyperlink'] =>",
-    
+
     "p[style-name='Normal'] => p:fresh"
 ];
 
@@ -2205,27 +2205,27 @@ exports.readString = readString;
 
 function readString(xmlString, namespaceMap) {
     namespaceMap = namespaceMap || {};
-    
+
     var finished = false;
     var parser = sax.parser(true, {xmlns: true, position: false});
-    
+
     var rootElement = {children: []};
     var currentElement = rootElement;
     var stack = [];
-    
+
     var deferred = promises.defer();
-    
+
     parser.onopentag = function(node) {
         var attributes = mapObject(node.attributes, function(attribute) {
             return attribute.value;
         }, mapName);
-        
+
         var element = new Element(mapName(node), attributes);
         currentElement.children.push(element);
         stack.push(currentElement);
         currentElement = element;
     };
-    
+
     function mapName(node) {
         if (node.uri) {
             var mappedPrefix = namespaceMap[node.uri];
@@ -2240,33 +2240,33 @@ function readString(xmlString, namespaceMap) {
             return node.local;
         }
     }
-    
+
     parser.onclosetag = function(node) {
         currentElement = stack.pop();
     };
-    
+
     parser.ontext = function(text) {
         if (currentElement !== rootElement) {
             currentElement.children.push(nodes.text(text));
         }
     };
-    
+
     parser.onend = function() {
         if (!finished) {
             finished = true;
             deferred.resolve(rootElement.children[0]);
         }
     };
-    
+
     parser.onerror = function(error) {
         if (!finished) {
             finished = true;
             deferred.reject(error);
         }
     };
-    
+
     parser.write(xmlString).close();
-    
+
     return deferred.promise;
 }
 
@@ -2296,7 +2296,7 @@ exports.writeString = writeString;
 
 function writeString(root, namespaces) {
     var uriToPrefix = _.invert(namespaces);
-    
+
     var nodeWriters = {
         element: writeElement,
         text: writeTextNode
@@ -2312,7 +2312,7 @@ function writeString(root, namespaces) {
             writeNode(elementBuilder, child);
         });
     }
-    
+
     function mapElementName(name) {
         var longFormMatch = /^\{(.*)\}(.*)$/.exec(name);
         if (longFormMatch) {
@@ -2322,7 +2322,7 @@ function writeString(root, namespaces) {
             return name;
         }
     }
-    
+
     function writeDocument(root) {
         var builder = xmlbuilder
             .create(mapElementName(root.name), {
@@ -2330,12 +2330,12 @@ function writeString(root, namespaces) {
                 encoding: 'UTF-8',
                 standalone: true
             });
-        
+
         _.forEach(namespaces, function(uri, prefix) {
             var key = "xmlns" + (prefix === "" ? "" : ":" + prefix);
             builder.attribute(key, uri);
         });
-        
+
         root.children.forEach(function(child) {
             writeNode(builder, child);
         });
@@ -8259,28 +8259,28 @@ __webpack_require__(/*! ./some.js */ "./node_modules/bluebird/js/release/some.js
 __webpack_require__(/*! ./filter.js */ "./node_modules/bluebird/js/release/filter.js")(Promise, INTERNAL);
 __webpack_require__(/*! ./each.js */ "./node_modules/bluebird/js/release/each.js")(Promise, INTERNAL);
 __webpack_require__(/*! ./any.js */ "./node_modules/bluebird/js/release/any.js")(Promise);
-                                                         
-    util.toFastProperties(Promise);                                          
-    util.toFastProperties(Promise.prototype);                                
-    function fillTypes(value) {                                              
-        var p = new Promise(INTERNAL);                                       
-        p._fulfillmentHandler0 = value;                                      
-        p._rejectionHandler0 = value;                                        
-        p._promise0 = value;                                                 
-        p._receiver0 = value;                                                
-    }                                                                        
-    // Complete slack tracking, opt out of field-type tracking and           
-    // stabilize map                                                         
-    fillTypes({a: 1});                                                       
-    fillTypes({b: 2});                                                       
-    fillTypes({c: 3});                                                       
-    fillTypes(1);                                                            
-    fillTypes(function(){});                                                 
-    fillTypes(undefined);                                                    
-    fillTypes(false);                                                        
-    fillTypes(new Promise(INTERNAL));                                        
-    debug.setBounds(Async.firstLineError, util.lastLineError);               
-    return Promise;                                                          
+
+    util.toFastProperties(Promise);
+    util.toFastProperties(Promise.prototype);
+    function fillTypes(value) {
+        var p = new Promise(INTERNAL);
+        p._fulfillmentHandler0 = value;
+        p._rejectionHandler0 = value;
+        p._promise0 = value;
+        p._receiver0 = value;
+    }
+    // Complete slack tracking, opt out of field-type tracking and
+    // stabilize map
+    fillTypes({a: 1});
+    fillTypes({b: 2});
+    fillTypes({c: 3});
+    fillTypes(1);
+    fillTypes(function(){});
+    fillTypes(undefined);
+    fillTypes(false);
+    fillTypes(new Promise(INTERNAL));
+    debug.setBounds(Async.firstLineError, util.lastLineError);
+    return Promise;
 
 };
 
@@ -9115,8 +9115,8 @@ function ReductionPromiseArray(promises, fn, initialValue, _each) {
 util.inherits(ReductionPromiseArray, PromiseArray);
 
 ReductionPromiseArray.prototype._gotAccum = function(accum) {
-    if (this._eachValues !== undefined && 
-        this._eachValues !== null && 
+    if (this._eachValues !== undefined &&
+        this._eachValues !== null &&
         accum !== INTERNAL) {
         this._eachValues.push(accum);
     }
@@ -77579,7 +77579,7 @@ __webpack_require__.r(__webpack_exports__);
  * │       └─0 text "All 50+ Adobe apps explained in 10 minutes"
  * └─9 paragraph[1]
  *     └─0 image
- *          url: "https://ref--repo--owner.hlx.page/media_22205a4de0c419213733ecab0b0bd555257e9e5c#image.jpeg"
+ *          url: "https://ref--repo--owner.aem.page/media_22205a4de0c419213733ecab0b0bd555257e9e5c#image.jpeg"
  *          alt: "Video titled: All 50+ Adobe apps explained in 10 minutes"
  *
  * alternative / new format
@@ -77923,7 +77923,7 @@ function toMarkdown() {
 /************************************************************************/
 /******/ // The module cache
 /******/ var __webpack_module_cache__ = {};
-/******/ 
+/******/
 /******/ // The require function
 /******/ function __webpack_require__(moduleId) {
 /******/ 	// Check if module is in cache
@@ -77937,17 +77937,17 @@ function toMarkdown() {
 /******/ 		loaded: false,
 /******/ 		exports: {}
 /******/ 	};
-/******/ 
+/******/
 /******/ 	// Execute the module function
 /******/ 	__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/ 
+/******/
 /******/ 	// Flag the module as loaded
 /******/ 	module.loaded = true;
-/******/ 
+/******/
 /******/ 	// Return the exports of the module
 /******/ 	return module.exports;
 /******/ }
-/******/ 
+/******/
 /************************************************************************/
 /******/ /* webpack/runtime/define property getters */
 /******/ (() => {
@@ -77960,7 +77960,7 @@ function toMarkdown() {
 /******/ 		}
 /******/ 	};
 /******/ })();
-/******/ 
+/******/
 /******/ /* webpack/runtime/global */
 /******/ (() => {
 /******/ 	__webpack_require__.g = (function() {
@@ -77972,12 +77972,12 @@ function toMarkdown() {
 /******/ 		}
 /******/ 	})();
 /******/ })();
-/******/ 
+/******/
 /******/ /* webpack/runtime/hasOwnProperty shorthand */
 /******/ (() => {
 /******/ 	__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ })();
-/******/ 
+/******/
 /******/ /* webpack/runtime/make namespace object */
 /******/ (() => {
 /******/ 	// define __esModule on exports
@@ -77988,7 +77988,7 @@ function toMarkdown() {
 /******/ 		Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 	};
 /******/ })();
-/******/ 
+/******/
 /******/ /* webpack/runtime/node module decorator */
 /******/ (() => {
 /******/ 	__webpack_require__.nmd = (module) => {
@@ -77997,7 +77997,7 @@ function toMarkdown() {
 /******/ 		return module;
 /******/ 	};
 /******/ })();
-/******/ 
+/******/
 /************************************************************************/
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.

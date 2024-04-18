@@ -58,12 +58,14 @@ const loadCaas = async (a) => {
 
   if (host.includes('stage.adobe') || env?.name === 'local') {
     chimeraEndpoint = S_CAAS_AIO;
-  } else if (host.includes('.hlx.')) {
+  } else if (host.includes('.hlx.') || host.includes('.aem.')) {
     // If invoking URL is not an Acom URL, then switch to AIO
     chimeraEndpoint = P_CAAS_AIO;
   }
 
-  if (host.includes('hlx.page') || env?.name === 'local') {
+  if (host.includes('hlx.page')
+    || host.includes('aem.page')
+    || env?.name === 'local') {
     state.draftDb = true;
   }
 

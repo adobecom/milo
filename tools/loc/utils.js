@@ -65,6 +65,7 @@ export function getUrlInfo() {
     return urlInfo;
   }
   const location = new URL(document.location.href);
+  const SLD = location.hostname.includes('.aem.') ? 'aem' : 'hlx';
   function getParam(name) {
     return location.searchParams.get(name);
   }
@@ -81,7 +82,7 @@ export function getUrlInfo() {
     owner,
     repo,
     ref,
-    origin: `https://${ref}--${repo}--${owner}.hlx.page`,
+    origin: `https://${ref}--${repo}--${owner}.${SLD}.page`,
     isValid() {
       return sp && owner && repo && ref;
     },

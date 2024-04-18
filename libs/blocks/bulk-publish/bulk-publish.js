@@ -37,7 +37,7 @@ function User({ user }) {
 function UrlInput({ urlsElt }) {
   return html`
     <span class="max-urls">Maximum number of URLS processed: ${urlLimit} </span>
-    <textarea class="bulk-urls-input" placeholder="Ex: https://main--milo--adobecom.hlx.page/my/sample/page" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
+    <textarea class="bulk-urls-input" placeholder="Ex: https://main--milo--adobecom.aem.page/my/sample/page" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
   `;
 }
 

@@ -1,10 +1,12 @@
 {
   "project": "Milo",
   "host": "milo.adobe.com",
+  "previewHost": "main--milo--adobecom.aem.page",
+  "liveHost": "main--milo--adobecom.aem.live",
   "libraries": [
     {
       "text": "Blocks",
-      "paths": ["https://main--milo--adobecom.hlx.page/docs/library/blocks.json"]
+      "paths": ["https://main--milo--adobecom.aem.page/docs/library/blocks.json"]
     }
   ],
   "plugins": [
@@ -37,7 +39,7 @@
       "id": "localize-v2",
       "title": "Localize project (V2)",
       "environments": [ "edit" ],
-      "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
+      "url": "https://locui--milo--adobecom.aem.page/tools/loc",
       "passReferrer": true,
       "passConfig": true,
       "excludePaths": [ "/**" ],

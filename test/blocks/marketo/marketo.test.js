@@ -44,25 +44,25 @@ describe('marketo', () => {
 describe('marketo decorateURL', () => {
   it('decorates absolute URL with local base URL', () => {
     const baseURL = new URL('http://localhost:6456/marketo-block');
-    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    const result = decorateURL('https://main--milo--adobecom.aem.page/marketo-block/thank-you', baseURL);
     expect(result.href).to.equal('http://localhost:6456/marketo-block/thank-you');
   });
 
   it('decorates relative URL with absolute base URL', () => {
-    const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
+    const baseURL = new URL('https://main--milo--adobecom.aem.page/marketo-block');
     const result = decorateURL('/marketo-block/thank-you', baseURL);
-    expect(result.href).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
+    expect(result.href).to.equal('https://main--milo--adobecom.aem.page/marketo-block/thank-you');
   });
 
   it('decorates absolute URL with matching base URL', () => {
-    const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
-    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
-    expect(result.href).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
+    const baseURL = new URL('https://main--milo--adobecom.aem.page/marketo-block');
+    const result = decorateURL('https://main--milo--adobecom.aem.page/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('https://main--milo--adobecom.aem.page/marketo-block/thank-you');
   });
 
   it('decorates absolute URL with .html base URL', () => {
     const baseURL = new URL('https://business.adobe.com/marketo-block.html');
-    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    const result = decorateURL('https://main--milo--adobecom.aem.page/marketo-block/thank-you', baseURL);
     expect(result.href).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
   });
 

@@ -323,47 +323,47 @@ describe('Utils', () => {
       }
 
       it('Same domain link is relative and localized', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions');
       });
 
       it('Same domain fragment link is relative and localized', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fragments/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/fragments/gnav/solutions');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/fragments/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/fragments/gnav/solutions');
       });
 
       it('Same domain langstore link is relative and localized', () => {
         setConfigPath('/langstore/fr/page');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/langstore/fr/gnav/solutions');
         setConfigPath('/be_fr/page');
       });
 
       it('Same domain extensions /, .html, .json are handled', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.html', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.html');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.json', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.json');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions/', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions/');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/gnav/solutions.html', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions.html');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/gnav/solutions.json', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions.json');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/gnav/solutions/', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions/');
       });
 
       it('Same domain link that is already localized is returned as relative', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/be_fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi', 'main--milo--adobecom.hlx.page')).to.equal('/fi');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/be_fr/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/fi/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/fi/gnav/solutions');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/fi', 'main--milo--adobecom.aem.page')).to.equal('/fi');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/langstore/fr/gnav/solutions');
       });
 
       it('Same domain PDF link is returned as relative and not localized', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.pdf', 'main--milo--adobecom.hlx.page')).to.equal('/gnav/solutions.pdf');
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/gnav/solutions.pdf', 'main--milo--adobecom.aem.page')).to.equal('/gnav/solutions.pdf');
       });
 
       it('Same domain link with #_dnt is returned as relative, #_dnt is removed and not localized', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions#_dnt', 'main--milo--adobecom.hlx.page'))
+        expect(utils.localizeLink('https://main--milo--adobecom.aem.page/gnav/solutions#_dnt', 'main--milo--adobecom.aem.page'))
           .to
           .equal('/gnav/solutions');
       });
 
       it('Live domain html link  is absolute and localized', () => {
-        expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+        expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.aem.page'))
           .to
           .equal('https://milo.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
-        expect(utils.localizeLink('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+        expect(utils.localizeLink('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.aem.page'))
           .to
           .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
@@ -378,13 +378,13 @@ describe('Utils', () => {
       });
 
       it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
-        expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
+        expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.aem.page'))
           .to
           .equal('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html');
       });
 
       it('Invalid href fails gracefully', () => {
-        expect(utils.localizeLink('not-a-url', 'main--milo--adobecom.hlx.page'))
+        expect(utils.localizeLink('not-a-url', 'main--milo--adobecom.aem.page'))
           .to
           .equal('not-a-url');
       });
@@ -589,7 +589,7 @@ describe('Utils', () => {
 
   describe('personalization', async () => {
     const MANIFEST_JSON = {
-      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
+      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.aem.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
     };
     function htmlResponse() {
       return new Promise((resolve) => {

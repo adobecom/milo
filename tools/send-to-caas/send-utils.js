@@ -197,7 +197,7 @@ const getOrigin = (fgColor) => {
     return mappings[origin] || origin;
   }
 
-  if (window.location.hostname.endsWith('.hlx.page')) {
+  if (window.location.hostname.endsWith('.page')) {
     const [, singlePageRepo] = window.location.hostname.split('.')[0].split('--');
     return processRepoForFloodgate(singlePageRepo, fgColor);
   }
@@ -276,7 +276,7 @@ const getBadges = (p) => {
 const isPagePublished = async () => {
   let { branch, repo, owner } = getConfig();
   if (!(branch || repo || owner)
-    && window.location.hostname.endsWith('.hlx.page')) {
+    && window.location.hostname.endsWith('.page')) {
     [branch, repo, owner] = window.location.hostname.split('.')[0].split('--');
   }
 

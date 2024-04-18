@@ -274,7 +274,7 @@ export async function openModal(e, url, offerType) {
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
   if (/\/fragments\//.test(url)) {
-    const fragmentPath = url.split(/hlx.(page|live)/).pop();
+    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else if (/^https?:/.test(url)) {
     modal = await openExternalModal(url, getModal);

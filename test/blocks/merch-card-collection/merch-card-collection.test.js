@@ -178,11 +178,11 @@ describe('Merch Cards', async () => {
       ...conf,
       pathname: '/fr/test.html',
       locales: { fr: { ietf: 'fr-FR' } },
-      prodDomains: ['main--milo--adobecom.hlx.live'],
+      prodDomains: ['main--milo--adobecom.aem.live'],
     });
     const el = document.getElementById('localizeQueryIndex');
     await init(el);
-    expect(window.fetch.calledWith('https://main--milo--adobecom.hlx.live/fr/query-index-cards.json?sheet=catalog')).to.be.true;
+    expect(window.fetch.calledWith('https://main--milo--adobecom.aem.live/fr/query-index-cards.json?sheet=catalog')).to.be.true;
   });
 
   describe('error handling', async () => {

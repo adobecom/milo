@@ -7,7 +7,7 @@
                       "action": "appendtosection",
                       "selector": "section1",
                       "pageFilter": "",
-                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
+                      "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
                       "selectorType": "css"
                   }
               ],
@@ -28,15 +28,15 @@
                   "action": "appendtosection",
                   "selector": "section1",
                   "pageFilter": "",
-                  "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
+                  "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
                   "selectorType": "css"
               }
           ],
           "fragments": []
       },
       "name": "MILO0013 - manifest order",
-      "manifest": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
-      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
+      "manifest": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
+      "manifestUrl": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
       "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json"
   },
   {
@@ -47,7 +47,7 @@
                       "action": "appendtosection",
                       "selector": "section1",
                       "pageFilter": "",
-                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
+                      "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
                       "selectorType": "css"
                   }
               ],
@@ -68,14 +68,14 @@
                   "action": "appendtosection",
                   "selector": "section1",
                   "pageFilter": "",
-                  "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
+                  "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
                   "selectorType": "css"
               }
           ],
           "fragments": []
       },
       "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
-      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
+      "manifestUrl": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
       "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json"
   }
 ]

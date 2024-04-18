@@ -14,7 +14,7 @@ export const getPdfConfig = () => {
   let clientId = env.consumer?.pdfViewerClientId || env.pdfViewerClientId;
   let reportSuiteId = env.consumer?.pdfViewerReportSuite || env.pdfViewerReportSuite;
 
-  if (host.includes('hlx.live') || query === 'live') {
+  if (host.includes('hlx.live') || host.includes('aem.live') || query === 'live') {
     /* c8 ignore next 2 */
     clientId = live?.pdfViewerClientId || CLIENT_ID_LIVE;
     reportSuiteId = live?.pdfViewerReportSuite || env.pdfViewerReportSuite;
