@@ -48,7 +48,7 @@ const mergePRs = async ({ prs, owner, repo, github }) => {
       continue;
     }
 
-    await github.rest.pulls.merge({ owner, repo, pull_number: number });
+    // await github.rest.pulls.merge({ owner, repo, pull_number: number });
   }
 };
 
