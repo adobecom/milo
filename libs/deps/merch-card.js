@@ -1,4 +1,4 @@
-// branch: MWPW-138927-3 commit: e3cb8df31da39b8ec85b352935b88214b09851af Wed, 17 Apr 2024 20:51:01 GMT
+// branch: MWPW-138927-3 commit: dc1f6495255c4eb9d68f6f3b5f688547db576695 Thu, 18 Apr 2024 09:02:40 GMT
 import{html as n,LitElement as P}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var d="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var E=v`
     :host {
         position: relative;
@@ -1324,12 +1324,6 @@ merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-p
     position: absolute;
     left: 0;
     top: 20px;
-}
-
-merch-offer-select[variant="subscription-options"] merch-offer [slot='teaser'] {
-    color: #2d9d78;  /* default teaser color, can be overriden */
-    font-size: 14px;
-    font-weight: bold;
 }
 
 `;document.head.appendChild(T);var _="merch-offer-select:ready",L="merch-card:ready";var b="merch-quantity-selector:change";var M="MERCH-CARD",I="merch-card",N=32,y="mini-compare-chart",O=l=>`--consonant-merch-card-footer-row-${l}-min-height`,w=class extends P{static properties={name:{type:String},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color"},badgeBackgroundColor:{type:String,attribute:"badge-background-color"},badgeText:{type:String,attribute:"badge-text"},icons:{type:Array},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuContent:{type:String,attribute:"action-menu-content"},title:{type:String},description:{type:String},customHr:{type:Boolean,attribute:"custom-hr"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:e=>{let[r,t,a]=e.split(",");return{PUF:r,ABM:t,M2M:a}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:e=>Object.fromEntries(e.split(",").map(r=>{let[t,a,o]=r.split(":"),h=Number(a);return[t,{order:isNaN(h)?void 0:h,size:o}]})),toAttribute:e=>Object.entries(e).map(([r,{order:t,size:a}])=>[r,t,a].filter(o=>o!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0}};static styles=[E,...z()];customerSegment;marketSegment;constructor(){super(),this.filters={},this.types="",this.selected=!1}#e;get miniCompareHeading(){return this.querySelector('[slot="heading-m"]')}get miniCompareBodySlot(){return this.querySelector('[slot="body-m"]')}get priceSlot(){return this.querySelector('[slot="heading-m-price"]')}get priceCommitmentSlot(){return this.querySelector('[slot="price-commitment"]')}get offers(){return this.querySelector('[slot="offers"]')}get promoText(){return this.querySelector('[slot="promo-text"]')}get footer(){return this.shadowRoot.querySelector("footer")}updated(e){e.has("badgeBackgroundColor")&&this.variant!=="twp"&&(this.style.border=`1px solid ${this.badgeBackgroundColor}`),this.updateComplete.then(async()=>{this.adjustInnerContent(),this.adjustFooterRows()})}renderIcons(){return!this.icons||this.icons.length===0?n`<slot name="icons"></slot>`:n`
