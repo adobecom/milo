@@ -27,7 +27,7 @@ export default async function init(el) {
   modal?.classList.add('twp');
   const offerLiterals = el.querySelector('.twp.offer-literals');
   el.querySelectorAll('merch-offer-select').forEach((offerSelect) => {
-    offerSelect.addEventListener('merch-offer-select:ready', () => {
+    const augmentOfferSelect = () => {
       const [cci, cct, cce] = [...offerLiterals.querySelectorAll('template')].map((template) => template.content.cloneNode(true).children);
       const { customerSegment, marketSegment } = offerSelect;
       if (marketSegment === 'COM' && customerSegment === 'INDIVIDUAL') {
@@ -44,7 +44,12 @@ export default async function init(el) {
         abm.append(...(cce[0].childNodes));
         puf.append(...(cce[1].childNodes));
       }
-    }, { once: true });
+    };
+    if (offerSelect.ready) {
+      augmentOfferSelect();
+    } else {
+      offerSelect.addEventListener('merch-offer-select:ready', augmentOfferSelect, { once: true });
+    }
   });
 
   const [content, panel] = el.querySelectorAll(':scope > div > div');
