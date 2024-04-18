@@ -22,4 +22,13 @@ Then run: node --env-file=.env .github/workflows/update-ims.js`);
   };
 };
 
-module.exports = getLocalConfigs;
+const slackNotification = (text) =>
+  fetch(process.env.MILO_RELEASE_SLACK_WH, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ text }),
+  });
+
+module.exports = { getLocalConfigs, slackNotification };
