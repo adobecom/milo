@@ -121,7 +121,7 @@ class AppPrompt {
   };
 
   decorate = () => {
-    this.elements.closeIcon = toFragment`<button daa-ll="Close Modal" class="appPrompt-close"></button>`;
+    this.elements.closeIcon = toFragment`<button daa-ll="Close Modal" aria-label="${this.cancel}" class="appPrompt-close"></button>`;
     this.elements.cta = toFragment`<button daa-ll="Stay on this page" class="appPrompt-cta appPrompt-cta--close">${this.cancel}</button>`;
     this.elements.profile = this.profile
       ? toFragment`<div class="appPrompt-profile">
