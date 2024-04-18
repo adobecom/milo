@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: 14ec61525f24e7ad038184620e04dc096acf1eb3 Thu, 18 Apr 2024 21:23:35 GMT
+// branch: MWPW-142003-stable commit: 14ec61525f24e7ad038184620e04dc096acf1eb3 Thu, 18 Apr 2024 21:37:21 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",h="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -58,7 +58,7 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     .top-section {
         display: flex;
         justify-content: flex-start;
-        align-items: center;
+        align-items: flex-start;
     }
 
     .top-section > .icons img:last-child {
