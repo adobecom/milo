@@ -1,4 +1,38 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
+import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
+
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
+
+const ARROW_NEXT_IMG = `<img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16">`;
+const ARROW_PREVIOUS_IMG = `<img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16">`;
+// document.documentElement.dir = 'rtl';
+function decorateNextPreviousBtns() {
+  const previousBtn = createTag(
+    'button',
+    {
+      class: 'carousel-button carousel-previous',
+      'aria-label': 'Previous',
+      'data-toggle': 'previous',
+    },
+    ARROW_PREVIOUS_IMG,
+  );
+
+  const nextBtn = createTag(
+    'button',
+    {
+      class: 'carousel-button carousel-next',
+      'aria-label': 'Next',
+      'data-toggle': 'next',
+    },
+    ARROW_NEXT_IMG,
+  );
+  return [previousBtn, nextBtn];
+}
+
+const nextPreviousBtns = decorateNextPreviousBtns();
+const previousBtn = nextPreviousBtns[0];
+const nextBtn = nextPreviousBtns[1];
 
 export const OptionCard = ({
   text, title, image, icon, iconTablet, iconDesktop, options, disabled, selected, background, onClick,
@@ -72,8 +106,10 @@ export const GetQuizOption = ({
       isRTL ? next() : prev();
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      const selectedOption = options.data[index];
-      selectedOption && onOptionClick(selectedOption.options);
+      // Directly use the target element to trigger the click event
+      if (e.target && e.target.click) {
+        e.target.click();
+      }
     }
   };
 
@@ -87,7 +123,7 @@ export const GetQuizOption = ({
   return html`
     <div class="quiz-question" tabindex="0" onkeydown=${handleKey}>
         <div class="quiz-options-container" role="group" aria-labelledby="question">
-          ${index > 0 && html`<button onClick=${prev} style="pointer-events: none;" tabindex="-1">${isRTL ? '&gt;' : '&lt;'}</button>`}
+          ${index > 0 && html`<button tabIndex="-1" onClick=${prev} class="carousel-arrow-prev ${isRTL ? 'rtl' : ''}"></button>`}
           <div class="carousel-slides">
             ${options.data.slice(index, index + visibleCount).map((option, idx) => html`
               <${OptionCard} 
@@ -102,10 +138,10 @@ export const GetQuizOption = ({
                 options=${option.options}
                 selected=${selectedCards[option.options] ? 'selected' : ''}
                 disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) || mlInputUsed ? 'disabled' : ''}
-                onClick=${() => onOptionClick(option.options)}
-              />`)}
+                onClick=${onOptionClick(option)}
+                />`)}
           </div>
-          ${(index + visibleCount < options.data.length) && html`<button onClick=${next} style="pointer-events: none;" tabindex="-1">${isRTL ? '&lt;' : '&gt;'}</button>`}
+          ${(index + visibleCount < options.data.length) && html`<button tabIndex="-1" onClick=${next} class="carousel-arrow-next ${isRTL ? 'rtl' : ''}"></button>`}
         </div>
     </div>`;
 };
