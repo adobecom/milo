@@ -4,7 +4,7 @@ import { getMetadata, loadStyle, getConfig } from '../../utils/utils.js';
 import HelixReview from './components/helixReview/HelixReview.js';
 import { checkPostUrl } from './utils/utils.js';
 
-const COMMENT_THRESHOLD = 3;
+const COMMENT_THRESHOLD = getMetadata('comment-threshold') || 3;
 
 const getReviewPath = (url) => {
   try {
