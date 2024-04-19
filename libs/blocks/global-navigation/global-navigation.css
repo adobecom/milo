@@ -644,10 +644,6 @@ header.global-navigation {
     fill: var(--feds-color-link--hover--light);
   }
 
-  .feds-utilities {
-    padding: 0;
-  }
-
   /* Breadcrumbs */
   .feds-breadcrumbs-wrapper {
     position: absolute;

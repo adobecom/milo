@@ -611,4 +611,27 @@ describe('Utils', () => {
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
     });
   });
+
+  describe('filterDuplicatedLinkBlocks', () => {
+    it('returns empty array if receives invalid params', () => {
+      expect(utils.filterDuplicatedLinkBlocks()).to.deep.equal([]);
+    });
+
+    it('removes duplicated link-blocks', () => {
+      const block1 = document.createElement('div');
+      block1.classList.add('modal');
+      block1.setAttribute('data-modal-hash', 'modalHash1');
+      block1.setAttribute('data-modal-path', 'modalPath1');
+      const block2 = document.createElement('div');
+      block2.classList.add('modal');
+      block2.setAttribute('data-modal-hash', 'modalHash2');
+      block2.setAttribute('data-modal-path', 'modalPath2');
+      const block3 = document.createElement('div');
+      block3.classList.add('modal');
+      block3.setAttribute('data-modal-hash', 'modalHash2');
+      block3.setAttribute('data-modal-path', 'modalPath2');
+      const blocks = [block1, block2, block3];
+      expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
+    });
+  });
 });
