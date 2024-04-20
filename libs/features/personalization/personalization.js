@@ -294,6 +294,9 @@ function getSection(rootEl, idx) {
 function registerCustomAction(cmd, manifestId) {
   const { action, selector, target } = cmd;
   const config = getConfig();
+  // TODO: parse text after prefix, and add to object if fragment or array otherwise
+  // be sure to save selector for use if needed in array
+  // be sure to strip to path if needed for fragments
   const blockName = selector.substring(CUSTOM_SELECTOR_PREFIX.length);
   config.mep.custom ??= {};
   config.mep.custom[blockName] ??= [];

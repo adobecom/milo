@@ -6,7 +6,7 @@ import {
   decorateLinks,
   loadScript,
   loadStyle,
-} from '../../utils/utils.js';
+} from '../../../utils/utils.js';
 import {
   toFragment,
   getFedsPlaceholderConfig,
@@ -33,7 +33,7 @@ import {
   fetchAndProcessPlainHtml,
 } from './utilities/utilities.js';
 
-import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+import { replaceKey, replaceKeyArray } from '../../../features/placeholders.js';
 
 const CONFIG = {
   icons: {
@@ -948,6 +948,7 @@ class Gnav {
 }
 
 export default async function init(block) {
+  console.log('hello world');
   try {
     const { locale, mep } = getConfig();
     const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
@@ -958,7 +959,6 @@ export default async function init(block) {
         tags: 'errorType=error,module=gnav',
       }));
     if (!content) return null;
-    // TODO: Scan document for MEP updates
     const gnav = new Gnav({
       content,
       block,

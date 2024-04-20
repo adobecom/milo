@@ -1,8 +1,8 @@
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
-} from '../../../utils/utils.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
-import { replaceText } from '../../../features/placeholders.js';
+} from '../../../../utils/utils.js';
+import { processTrackingLabels } from '../../../../martech/attributes.js';
+import { replaceText } from '../../../../features/placeholders.js';
 
 loadLana();
 
@@ -307,7 +307,6 @@ export function trigger({ element, event, type } = {}) {
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
 export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
-  // TODO: check MEP and update url
   const path = getFederatedUrl(url);
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   const text = await res.text();

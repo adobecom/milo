@@ -1,0 +1,152 @@
+.feds-nav-wrapper.has-results .feds-nav {
+  display: none;
+}
+
+.feds-search-dropdown {
+  border-bottom: 1px solid var(--feds-borderColor--light);
+  background-color: var(--feds-background-nav--light);
+}
+
+.feds-search-bar {
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feds-search-field {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.feds-search-input {
+  padding: 7px 40px 7px 10px;
+  border: 1px solid #d3d3d3;
+  flex-grow: 1;
+  font-size: 16px;
+  font-weight: 300;
+  border-radius: 3px;
+  background-color: transparent;
+  box-shadow: none;
+  margin: 0;
+}
+
+[dir = "rtl"] .feds-search-input {
+  padding-left: 40px;
+  padding-right: 10px;
+}
+
+.feds-search-input--isPopulated {
+  border-radius: 3px 3px 0 0;
+}
+
+.feds-search-icons {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+[dir = "rtl"] .feds-search-icons {
+  right: auto;
+  left: 0;
+}
+
+.feds-search-icons svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.feds-search-icons svg path {
+  fill: #2d2d2d;
+}
+
+.feds-search-clear {
+  display: none;
+  padding: 0;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: #2d2d2d;
+  border-radius: var(--feds-radius-utilityIcon);
+  outline-offset: 2px;
+}
+
+.feds-search-clear:hover {
+  color: #2b9af3;
+}
+
+.feds-search-clear:before {
+  content: '\2715';
+}
+
+.feds-search-input--isPopulated + .feds-search-icons svg {
+  display: none;
+}
+
+.feds-search-input--isPopulated + .feds-search-icons .feds-search-clear {
+  display: flex;
+}
+
+.feds-search-results {
+  margin: 0;
+}
+
+.feds-search-results:not(:empty) {
+  padding: 10px 0;
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
+  border-color: #d3d3d3;
+  border-radius: 0 0 3px 3px;
+}
+
+.feds-search-result {
+  display: block;
+  padding: 5px 10px;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 700;
+  color: #2d2d2d;
+}
+
+.feds-search-result:hover,
+.feds-search-result:focus {
+  background: #f5f5f5;
+}
+
+.feds-search-result span {
+  font-weight: 400;
+}
+
+@media screen and (min-width: 900px) {
+  .feds-nav-wrapper.has-results .feds-nav {
+    display: flex;
+  }
+
+  .feds-search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    /* Relative to nav, not trigger, ensure top border is visible */
+    margin-top: 1px;
+    display: none;
+    z-index: 1;
+  }
+
+  .feds-search-bar {
+    width: 100%;
+    max-width: var(--feds-maxWidth-nav);
+    box-sizing: border-box;
+    padding: 20px 8px;
+  }
+
+  .feds-search-trigger[aria-expanded = "true"] + .feds-search-dropdown {
+    display: flex;
+    justify-content: center;
+  }
+}

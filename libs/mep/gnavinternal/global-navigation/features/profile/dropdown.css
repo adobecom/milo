@@ -1,0 +1,123 @@
+:root {
+  --feds-color-profile-heading: #707070;
+  --feds-color-profile: #4b4b4b;
+  --feds-color-profile--emphasis: #2c2c2c;
+  --feds-border-profile: 1px solid #e1e1e1;
+}
+
+.feds-profile-menu {
+  position: absolute;
+  width: 320px;
+  right: 0;
+  top: 100%;
+  border: var(--feds-border-profile);
+  border-radius: 0 0 4px 4px;
+  background: var(--color-white);
+  overflow: hidden;
+  box-shadow: 0 2px 6px -1px rgb(0 0 0 / 10%);
+  display: none;
+  line-height: 1;
+  white-space: nowrap;
+  z-index: 1;
+  transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
+}
+
+[dir = "rtl"] .feds-profile-menu {
+  right: initial;
+  left: 0;
+}
+
+.feds-profile-button[aria-expanded = "true"] + .feds-profile-menu {
+  display: block;
+}
+
+.feds-profile-header {
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+  outline-offset: -3px;
+  column-gap: 15px;
+}
+
+.feds-profile-header .feds-profile-img {
+  max-height: 64px;
+  max-width: 64px;
+}
+
+.feds-profile-details {
+  overflow: hidden;
+  line-height: 1.25;
+}
+
+.feds-profile-name,
+.feds-profile-email {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.feds-profile-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--feds-color-profile--emphasis);
+}
+
+.feds-profile-email {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--feds-color-profile-heading);
+}
+
+.feds-profile-account {
+  margin: 0;
+  font-size: 14px;
+  text-decoration: underline;
+  color: var(--feds-color-profile);
+}
+
+.feds-local-menu {
+  border-top: var(--feds-border-profile);
+  padding: 6px 0;
+}
+
+.feds-local-menu h5 {
+  margin: 0;
+  padding: 8px 20px;
+  color: var(--feds-color-profile-heading);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.feds-local-menu p {
+  margin: 0;
+}
+
+.feds-local-menu a,
+.feds-profile-actions a {
+  display: block;
+  color: var(--feds-color-link--light);
+}
+
+.feds-local-menu a:hover,
+.feds-profile-actions a:hover {
+  color: var(--feds-color-link--hover--light);
+  background-color: var(--feds-background-link--hover--light);
+}
+
+.feds-local-menu a {
+  padding: 6px 20px;
+  line-height: 1.4;
+  outline-offset: -1px;
+}
+
+.feds-profile-actions {
+  margin: 0;
+  padding: 0;
+}
+
+.feds-profile-action {
+  padding: 14px 20px;
+  border-top: var(--feds-border-profile);
+}
