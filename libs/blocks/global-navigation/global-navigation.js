@@ -281,7 +281,7 @@ class Gnav {
       delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
       this.blocks.universalNav.addEventListener('click', () => {
-        const isExpanded = this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
+        const isExpanded = this.isToggleExpanded();
         if (isExpanded) this.toggleMenuMobile();
       }, true);
     }
@@ -619,9 +619,11 @@ class Gnav {
     });
   };
 
+  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
+
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
-    const isExpanded = toggle?.getAttribute('aria-expanded') === 'true';
+    const isExpanded = this.isToggleExpanded();
     toggle?.setAttribute('aria-expanded', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
     closeAllDropdowns();
@@ -653,7 +655,7 @@ class Gnav {
 
     const onToggleClick = async () => {
       this.toggleMenuMobile();
-      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      const isExpanded = this.isToggleExpanded();
 
       if (this.blocks?.search?.instance) {
         this.blocks.search.instance.clearSearchForm();
