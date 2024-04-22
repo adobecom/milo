@@ -33,30 +33,15 @@ const HEADING_MAP = {
   },
 };
 
-const TEXT_STYLES = {
-  H5: 'detail-m',
-  H4: 'body-xxs',
-  H3: 'heading-xs',
-  H2: 'heading-m',
-};
-
-const HEADING_MAP = {
-  'special-offers': {
-    H5: 'H4',
-    H3: 'H3',
-  },
-};
-
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
 const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART, 'twp'];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
 const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
-    const container = entry.target.closest('main > div');
-    if (!container) return;
-    [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
+    if (entry.target.clientHeight === 0) return;
     intersectionObserver.unobserve(entry.target);
+    entry.target.requestUpdate();
   });
 });
 
@@ -65,8 +50,8 @@ const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style
 const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
-const appendSlot = (slotEls, slotName, merchCard, nodeName = 'p') => {
-  if (slotEls.length === 0) return;
+const appendSlot = (slotEls, slotName, merchCard) => {
+  if (slotEls.length === 0 && merchCard.variant !== MINI_COMPARE_CHART) return;
   const newEl = createTag(
     nodeName,
     { slot: slotName, class: slotName },
@@ -282,6 +267,27 @@ const simplifyHrs = (el) => {
   });
 };
 
+async function extractQuantitySelect(el) {
+  const quantitySelectConfig = el.querySelector('ul');
+  if (!quantitySelectConfig) return null;
+  const configMarkup = quantitySelectConfig.querySelector('li');
+  if (!configMarkup || !configMarkup.textContent.includes('Quantity')) return null;
+  const config = configMarkup.querySelector('ul').querySelectorAll('li');
+  if (config.length !== 2) return null;
+  const attributes = {};
+  attributes.title = config[0].textContent.trim();
+  const values = config[1].textContent.split(',')
+    .map((value) => value.trim())
+    .filter((value) => /^\d*$/.test(value))
+    .map((value) => (value === '' ? undefined : Number(value)));
+  if (![3, 4, 5].includes(values.length)) return null;
+  await import('../../deps/merch-quantity-select.js');
+  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
+  const quantitySelect = createTag('merch-quantity-select', attributes);
+  quantitySelectConfig.remove();
+  return quantitySelect;
+}
+
 const getMiniCompareChartFooterRows = (el) => {
   let footerRows = Array.from(el.children).slice(1);
   footerRows = footerRows.filter((row) => !row.querySelector('.footer-row-cell'));
@@ -298,7 +304,7 @@ const decorateFooterRows = (merchCard, footerRows) => {
     footerRows.forEach((row) => {
       const rowIcon = row.firstElementChild.querySelector('picture');
       const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
-      const rowTextParagraph = createTag('p', { class: 'footer-row-cell-description' }, rowText);
+      const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
       const footerRowCell = createTag('div', { class: 'footer-row-cell' });
       if (rowIcon) {
         rowIcon.classList.add('footer-row-icon');
@@ -313,8 +319,12 @@ const decorateFooterRows = (merchCard, footerRows) => {
 
 const setMiniCompareOfferSlot = (merchCard, offers) => {
   if (merchCard.variant !== MINI_COMPARE_CHART) return;
-  const miniCompareOffers = createTag('div', { slot: 'offers' }, offers);
-  if (offers === undefined) { miniCompareOffers.appendChild(createTag('p')); }
+  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]');
+  if (offers) {
+    miniCompareOffers.append(offers);
+  } else {
+    miniCompareOffers.appendChild(createTag('p'));
+  }
   merchCard.appendChild(miniCompareOffers);
 };
 
@@ -379,10 +389,7 @@ const init = async (el) => {
   }
   let footerRows;
   if (cardType === MINI_COMPARE_CHART) {
-    const container = el.closest('[data-status="decorated"]');
-    if (container) {
-      intersectionObserver.observe(container);
-    }
+    intersectionObserver.observe(merchCard);
     footerRows = getMiniCompareChartFooterRows(el);
   }
   const images = el.querySelectorAll('picture');
@@ -447,13 +454,21 @@ const init = async (el) => {
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
 
-  if (merchCard.variant !== 'twp') {
-    parseContent(el, merchCard);
-
-    const footer = createTag('div', { slot: 'footer' });
-    if (ctas) {
-      if (merchCard.variant === 'mini-compare-chart') {
-        decorateButtons(ctas, 'button-l');
+  if (MULTI_OFFER_CARDS.includes(cardType)) {
+    if (merchCard.variant === MINI_COMPARE_CHART) {
+      const miniCompareOffers = createTag('div', { slot: 'offers' });
+      merchCard.append(miniCompareOffers);
+    }
+    const quantitySelect = await extractQuantitySelect(el, cardType);
+    const offerSelection = el.querySelector('ul');
+    if (offerSelection) {
+      const { initOfferSelection } = await import('./merch-offer-select.js');
+      setMiniCompareOfferSlot(merchCard, undefined);
+      initOfferSelection(merchCard, offerSelection, quantitySelect);
+    }
+    if (quantitySelect) {
+      if (merchCard.variant === MINI_COMPARE_CHART) {
+        setMiniCompareOfferSlot(merchCard, quantitySelect);
       } else {
         decorateButtons(ctas);
       }
