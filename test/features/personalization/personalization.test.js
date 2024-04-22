@@ -82,6 +82,16 @@ describe('Functional Test', () => {
     expect(document.querySelector('.custom-block-3')).to.be.null;
   });
 
+  it('Parses commands prepended with "global-navigation" into the globalnav field of config', async () => {
+    const config = getConfig();
+    config.mep = {};
+    await loadManifestAndSetResponse('./mocks/manifestGlobalNav.json');
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(config.mep.globalnav.length).to.equal(1);
+    expect(config.mep.globalnav[0].commands[0].action).to.equal('replace');
+    expect(config.mep.globalnav[0].commands[0].selector).to.equal('.large-menu');
+  });
+
   it('scheduled manifest should apply changes if active (bts)', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestScheduledActive.json' });
     manifestJson = JSON.parse(manifestJson);

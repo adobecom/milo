@@ -1,0 +1,22 @@
+{
+  "total": 2,
+  "offset": 0,
+  "limit": 2,
+  "data": [
+    {
+      "action": "replaceContent",
+      "selector": ".marquee",
+      "page filter (optional)": "",
+      "target-challenger name": "",
+      "all": "on"
+    },
+    {
+      "action": "replaceContent",
+      "selector": "global-navigation.large-menu",
+      "page filter (optional)": "",
+      "target-challenger name": "",
+      "all": "on"
+    }
+  ],
+  ":type": "sheet"
+}
