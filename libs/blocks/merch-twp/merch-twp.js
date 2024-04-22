@@ -17,6 +17,11 @@ import '../../deps/merch-subscription-panel.js';
 import '../../deps/merch-twp-d2p.js';
 import { replaceKey } from '../../features/placeholders.js';
 
+/**
+ * All the possible elements that can be in the subscription panel.
+ */
+const SELECTOR_SUBSCRIPTION_CHILDREN = ':scope > h4,:scope > h5,merch-stock,merch-subscription,merch-secure-transaction';
+
 const getPlanTypes = (offerSelect) => [
   offerSelect.querySelector('merch-offer[plan-type="ABM"]'),
   offerSelect.querySelector('merch-offer[plan-type="PUF"]'),
@@ -92,7 +97,7 @@ export default async function init(el) {
   });
   subscriptionPanel.append(
     ...panel.querySelectorAll(
-      ':scope > h4,:scope > h5,merch-stock,merch-subscription,merch-secure-transaction',
+      SELECTOR_SUBSCRIPTION_CHILDREN,
     ),
   );
   twp.appendChild(subscriptionPanel);
