@@ -148,10 +148,11 @@ export const decorateBlockHrs = (el) => {
   if (hasHr) el.classList.add('has-divider');
 };
 
-function applyTextOverrides(el, override) {
+function applyTextOverrides(el, override, targetEl) {
   const parts = override.split('-');
   const type = parts[1];
-  const els = el.querySelectorAll(`[class^="${type}"]`);
+  const scopeEl = (targetEl !== false) ? targetEl : el;
+  const els = scopeEl.querySelectorAll(`[class^="${type}"]`);
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
@@ -159,12 +160,12 @@ function applyTextOverrides(el, override) {
   });
 }
 
-export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
+export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail'], target = false) {
   const overrides = [...el.classList]
     .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
   if (!overrides.length) return;
   overrides.forEach((override) => {
-    applyTextOverrides(el, override);
+    applyTextOverrides(el, override, target);
     el.classList.remove(override);
   });
 }

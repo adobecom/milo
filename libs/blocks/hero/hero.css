@@ -1,5 +1,5 @@
 .hero-milo {
-  padding: var(--spacing-m) 0;
+  padding: var(--spacing-l) 0;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -25,10 +25,6 @@
   width: 100%;
 }
 
-.hero-milo .main-copy {
-  display: flex;
-  flex-direction: column;
-}
 
 .hero-milo .background-split picture img {
   object-fit: cover;
@@ -43,7 +39,7 @@
 
 /* Lockup Icon sizes */
 .hero-milo .row-lockup { 
-  margin: 0 0 var(--spacing-xs); 
+  margin: var(--spacing-xxs) 0; 
   font-size: var(--type-body-m-size);
 }
 
@@ -80,9 +76,26 @@
   height: var(--icon-size-xl);
 }
 
+.hero-milo .row-lockup.icon-size-xxl {
+  font-size: var(--type-body-xxl-size);
+}
+
+.hero-milo .row-lockup.icon-size-xxl picture img {
+  min-width:var(--icon-size-xxl);
+  height: var(--icon-size-xxl);
+}
+
+
+.hero-milo .main-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
 /* Action area below heading mobile/tablet */
 .hero-milo .main-copy .action-area {
   order: 2;
+  padding: var(--spacing-xxs) 0;
 }
 
 .hero-milo .main-copy [class*='heading-'] + [class*='body-'] {
@@ -113,8 +126,7 @@ todo: we need this unit */
   text-decoration-color: inherit
 }
 
-.hero-milo.center,
-.hero-milo.center .static {
+.hero-milo.center {
   text-align: center;
   align-items: center;
 }
@@ -124,12 +136,11 @@ todo: we need this unit */
   justify-content: center; 
 }
 
-.hero-milo .static p { margin: var(--spacing-xs) 0; }
-.hero-milo .static p:only-child { margin: 0; }
-.hero-milo .static p:first-child { margin-top: 0; }
-.hero-milo .static [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
-.hero-milo .static [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
-.hero-milo .static *:last-child { margin-bottom: 0; }
+.hero-milo .main-copy p { margin: 0; }
+.hero-milo .main-copy p:only-child { margin: 0; }
+.hero-milo .main-copy [class^="heading"] { margin: 0 0 var(--spacing-xxs) 0; }
+/* .hero-milo .main-copy [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; } */
+/* .hero-milo .main-copy *:last-child { margin-bottom: 0; } */
 
 .hero-milo > .foreground {
   max-width: var(--grid-container-width);
@@ -172,7 +183,6 @@ todo: we need this unit */
   white-space: no-wrap;
 }
 
-
 /* content hidden */
 .hero-milo .hidden {
   visibility: hidden;
@@ -183,7 +193,6 @@ todo: we need this unit */
   display: none;
 }
 
-
 /* Row Types */
 .hero-milo .row-list {
   text-align: left;
@@ -192,6 +201,10 @@ todo: we need this unit */
 .hero-milo .row-list .row-wrapper {
   display: table;
 }
+
+.hero-milo .row-list li {
+  margin-bottom: var(--spacing-xs);
+} 
 
 /* row-qr */
 .hero-milo .row-qrcode .row-wrapper {
@@ -231,6 +244,7 @@ todo: we need this unit */
 .hero-milo .row-list ul.icon-list,
 .hero-milo .row-list ol.icon-list {
   padding-inline-start: 24px;
+  margin: var(--spacing-xs) 0;
 }
 
 .hero-milo li.icon-item {
@@ -266,6 +280,12 @@ todo: we need this unit */
   display: none;
 }
 
+/* con-vars support */
+.hero-milo.bg-stack-mobile,
+.hero-milo.bg-stack-mobile-table {
+  padding-top: 0;
+}
+
 /* CLS */
 
 /* mobile only */
@@ -282,7 +302,6 @@ todo: we need this unit */
   .hero-milo.order-reverse-mobile > .foreground .copy {
     order: 2;
   } 
-
 }
 
 /* Tablet UP */
@@ -294,6 +313,12 @@ todo: we need this unit */
   .hero-milo.center .action-area {
     justify-content: center;
   }
+
+  /* con-vars support */
+  .hero-milo.bg-stack-mobile {
+    padding-top: var(--spacing-m);
+  }
+
 }
 
 @media screen and (min-width: 920px) {
@@ -308,7 +333,7 @@ todo: we need this unit */
   .hero-milo {
     align-items: center;
     display: flex;
-    min-height: 700px;
+    min-height: 360px;
     flex-direction: row;
   }
 
@@ -356,12 +381,17 @@ todo: we need this unit */
     display: inline-block;
     max-width: 140px;
     max-height: 140px;
-    margin-top: var(--spacing-s);
+    margin: var(--spacing-s) 0 0;
   }
 
   .hero-milo .row-qrcode .google-play,
   .hero-milo .row-qrcode .app-store {
     display: none;
+  }
+
+  /* con-vars support */
+  .hero-milo.bg-stack-mobile-tablet {
+    padding-top: var(--spacing-m);
   }
 
 }

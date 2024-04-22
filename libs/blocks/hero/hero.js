@@ -8,6 +8,8 @@ function decorateList(el) {
   el.classList.add('body-l', 'align-left');
   const listItems = el.querySelectorAll('ul li', 'ol li');
   if (listItems.length) {
+    const firstDiv = el.querySelector(':scope > div');
+    firstDiv.classList.add('foreground');
     [...listItems].forEach((item) => {
       const firstElemIsIcon = item.children[0]?.classList.contains('icon');
       if (firstElemIsIcon) item.classList.add('icon-item');
@@ -64,7 +66,6 @@ function parseKeyString(str) {
   if (!match) return { key: str };
   const key = match[1];
   const classes = match[2].split(',').map((c) => c.trim());
-  console.log(str, classes);
   const result = { key, classes };
   return result;
 }
@@ -157,7 +158,7 @@ export default async function init(el) {
     } else {
       row.classList.add('static');
       decorateBlockHrs(row);
-      decorateTextOverrides(el);
     }
   });
+  decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
 }
