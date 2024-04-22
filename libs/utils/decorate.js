@@ -3,18 +3,22 @@ import { createTag } from './utils.js';
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
-  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
+    let buttonType = 'outline';
+    if (parent.nodeName === 'EM' || parent.nodeName === 'STRONG') {
+      buttonType = parent.nodeName === 'EM' ? 'outline' : 'blue';
+      if ((parent.parentElement?.nodeName === 'EM')
+        || (parent.parentElement?.nodeName === 'STRONG')) {
+        buttonType = 'fill';
+      }
+    }
     if (button.nodeName === 'STRONG') {
       parent.classList.add('con-button', buttonType);
-      if (size) parent.classList.add(size); /* button-l, button-xl */
+      if (size) parent.classList.add(size);
     } else {
       button.classList.add('con-button', buttonType);
-      if (size) button.classList.add(size); /* button-l, button-xl */
-      parent.insertAdjacentElement('afterend', button);
-      parent.remove();
+      if (size) button.classList.add(size);
     }
     const actionArea = button.closest('p, div');
     if (actionArea) {
@@ -22,6 +26,17 @@ export function decorateButtons(el, size) {
       actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
     }
   });
+
+  for (const btn of buttons) {
+    const parent = btn.parentElement;
+    if (parent.parentElement?.nodeName === 'EM' || parent.parentElement?.nodeName === 'STRONG') {
+      const grandParentBtns = parent.parentElement.querySelectorAll('.con-button');
+      parent.parentElement.replaceWith(...grandParentBtns);
+    } else if (parent.nodeName === 'EM' || parent.nodeName === 'STRONG') {
+      const parentBtns = parent.querySelectorAll('.con-button');
+      parent.replaceWith(...parentBtns);
+    }
+  }
 }
 
 export function decorateIconStack(el) {
