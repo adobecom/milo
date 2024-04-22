@@ -1,5 +1,5 @@
-// branch: MWPW-138927-3 commit: bba975c1a552dfe08cddba4fd8eaff5cffb802ab Wed, 17 Apr 2024 21:54:16 GMT
-import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{constructor(e,a){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(a),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as u}from"/libs/deps/lit-all.min.js";var c=u`
+// branch: MWPW-138927-4 commit: cb7e500629b2af27c05f23ca02f7f525ef64858b Fri, 19 Apr 2024 20:34:51 GMT
+import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{constructor(e,n){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(n),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as m}from"/libs/deps/lit-all.min.js";var d=m`
     :host {
         display: flex;
         box-sizing: border-box;
@@ -155,6 +155,7 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{con
 
     .desktop aside {
         background-color: #f5f5f5;
+        border-radius: 8px; /* not sure if necessary */
         display: flex;
         flex-direction: column;
         width: 360px;
@@ -177,7 +178,7 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{con
     .desktop ::slotted(merch-subscription-panel) {
         margin-top: 40px;
     }
-`;var d="(max-width: 1200px)";var o="merch-card:ready",r="merch-offer:selected";var p="merch-quantity-selector:change";var b="merch-twp-d2p",l=class extends m{static styles=[c];static properties={individualsText:{type:String,attribute:"individuals-text"},businessText:{type:String,attribute:"business-text"},educationText:{type:String,attribute:"education-text"},continueText:{type:String,attribute:"continue-text"},step:{type:Number},ready:{type:Boolean}};#e=new n(this,d);#t;individualsText="Individuals";businessText="Business";educationText="Students and teachers";continueText="Continue";ready=!1;constructor(){super(),this.step=1}get individualsTab(){return this.cciCards.length===0?t``:t`
+`;var p="(max-width: 1200px)";var r="merch-card:ready",l="merch-offer:selected";var h="merch-quantity-selector:change";var x="merch-twp-d2p",c=class extends b{static styles=[d];static properties={individualsText:{type:String,attribute:"individuals-text"},businessText:{type:String,attribute:"business-text"},educationText:{type:String,attribute:"education-text"},continueText:{type:String,attribute:"continue-text"},step:{type:Number},ready:{type:Boolean}};#e;#s;#t;#i=new o(this,p);individualsText="Individuals";businessText="Business";educationText="Students and teachers";continueText="Continue";ready=!1;constructor(){super(),this.step=1,this.#t=this.handleOfferSelected.bind(this)}get log(){return this.#e||(this.#e=document.head.querySelector("wcms-commerce")?.Log.module("twp")),this.#e}get individualsTab(){return this.cciCards.length===0?t``:t`
             <sp-tab value="individuals" label=${this.individualsText}>
                 <sp-icon-user slot="icon"></sp-icon-user>
             </sp-tab>
@@ -226,7 +227,7 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{con
                           <slot name="panel"></slot>
                       </aside>`:""}
             </div>
-        `}get showSubscriptionPanelInStep1(){return this.cciCards.length<3&&!this.#e.matches}get continueButton(){return this.step!==1?t``:t`
+        `}get showSubscriptionPanelInStep1(){return this.cciCards.length<3&&!this.#i.matches}get continueButton(){return this.step!==1?t``:t`
             <div id="continue">
                 <sp-button
                     variant="cta"
@@ -236,11 +237,11 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{con
                     ${this.continueText}
                 </sp-button>
             </div>
-        `}handleContinue(){if(this.step===1){this.#t=[...this.selectedTabPanel.card.querySelectorAll("merch-icon")].map(e=>e.cloneNode(!0)),this.step=2;return}}handleBack(){this.step=1}get mobileStepTwo(){return this.step!==2?t``:t`
+        `}handleContinue(){if(this.step===1){this.#s=[...this.selectedTabPanel.card.querySelectorAll("merch-icon")].map(e=>e.cloneNode(!0)),this.step=2;return}}handleBack(){this.step=1}get mobileStepTwo(){return this.step!==2?t``:t`
             ${this.backButton} ${this.stepTwoCardIconsAndTitle}
             <slot name="panel"></slot>
         `}get stepTwoCardIconsAndTitle(){if(this.selectedTabPanel?.card)return t`<div id="card-icons-title">
-            ${this.#t}
+            ${this.#s}
             <h3>${this.selectedTabPanel.card.title}</h3>
         </div>`}get backButton(){return this.step!==2?t``:t`<sp-button
             id="backButton"
@@ -259,7 +260,7 @@ import{LitElement as m,html as t}from"/libs/deps/lit-all.min.js";var n=class{con
             </div>
         `}render(){return this.ready?t`
             <sp-theme theme="spectrum" color="light" scale="large">
-                ${this.#e.matches?this.mobileLayout:this.desktopLayout}
+                ${this.#i.matches?this.mobileLayout:this.desktopLayout}
             </div>
-        `:t``}connectedCallback(){super.connectedCallback(),this.addEventListener(o,this.merchTwpReady),this.addEventListener(r,this.handleOfferSelected),this.addEventListener(p,this.handleQuantityChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(o,this.merchTwpReady),this.subscriptionPanel.removeEventListener(r,this.handleOfferSelected)}handleOfferSelected(e){this.selectedTabPanel&&(this.selectedTabPanel.card.querySelector(`merch-offer[plan-type="${e.target.planType}"]`)?.select(),this.selectedTabPanel.card.offerSelect.planType=e.target.planType,this.requestUpdate())}handleQuantityChange(e){this.selectedTabPanel&&(this.selectedTabPanel.card.quantitySelect.defaultValue=e.detail.option,this.requestUpdate())}get cards(){return this.querySelectorAll("merch-card[slot]")}get cciCards(){return this.querySelectorAll('merch-card[slot="individuals"]')}get cctCards(){return this.querySelectorAll('merch-card[slot="business"]')}get cceCards(){return this.querySelectorAll('merch-card[slot="education"]')}get subscriptionPanel(){return this.querySelector("merch-subscription-panel")}get tabElement(){return this.shadowRoot.querySelector("sp-tabs")}selectCard(e,a=!1){(a||!this.selectedTabPanel.card)&&(this.selectedTabPanel.card&&(this.selectedTabPanel.card.selected=void 0),this.selectedTabPanel.card=e,e.selected=!0),this.selectedTabPanel.card.focus(),this.subscriptionPanel.quantitySelect?.remove();let i=e.quantitySelect?.cloneNode(!0);i&&this.subscriptionPanel.appendChild(i);let s=e.offerSelect.cloneNode(!0);s.setAttribute("variant","subscription-options"),s.selectOffer(s.querySelector("merch-offer[aria-selected]")),this.subscriptionPanel.offerSelect?.remove(),this.subscriptionPanel.appendChild(s),this.subscriptionPanel.requestUpdate()}async processCards(){[...this.querySelectorAll("merch-card")].forEach((e,a)=>{let{customerSegment:i,marketSegment:s}=e.offerSelect;i==="INDIVIDUAL"?s==="COM"?e.setAttribute("slot","individuals"):s==="EDU"&&e.setAttribute("slot","education"):i==="TEAM"&&e.setAttribute("slot","business"),e.addEventListener("click",()=>this.selectCard(e,!0))}),this.ready=!0,this.requestUpdate(),await this.updateComplete,await this.tabElement.updateComplete,this.selectCard(this.firstCardInSelectedTab,!0)}merchTwpReady(){this.querySelector("merch-card merch-offer-select:not([plan-type])")||this.processCards()}};window.customElements.define(b,l);export{l as MerchTwpD2P};
+        `:t``}connectedCallback(){super.connectedCallback(),this.style.setProperty("mod-tabs-font-weight",600),this.addEventListener(r,this.merchTwpReady),this.subscriptionPanel.addEventListener(l,this.#t),this.addEventListener(h,this.handleQuantityChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(r,this.merchTwpReady),this.subscriptionPanel.removeEventListener(l,this.#t)}handleOfferSelected(e){this.log.debug("Selecting plan type",e.target.planType),this.selectedTabPanel.card.offerSelect.selectFromPlanType(e.target.planType),this.requestUpdate()}handleQuantityChange(e){this.selectedTabPanel&&(this.selectedTabPanel.card.quantitySelect.defaultValue=e.detail.option,this.requestUpdate())}get cards(){return this.querySelectorAll("merch-card[slot]")}get cciCards(){return this.querySelectorAll('merch-card[slot="individuals"]')}get cctCards(){return this.querySelectorAll('merch-card[slot="business"]')}get cceCards(){return this.querySelectorAll('merch-card[slot="education"]')}get subscriptionPanel(){return this.querySelector("merch-subscription-panel")}get tabElement(){return this.shadowRoot.querySelector("sp-tabs")}selectCard(e,n=!1){let s=this.selectedTabPanel.card;(n||!s)&&(s&&(s.selected=void 0),s=e,s.selected=!0,this.selectedTabPanel.card=s,this.log.debug("Selecting card",this.selectedTabPanel.value,s.title)),s.focus(),this.subscriptionPanel.quantitySelect?.remove();let i=s.quantitySelect?.cloneNode(!0);i&&this.subscriptionPanel.appendChild(i);let a=s.offerSelect.cloneNode(!0);a.setAttribute("variant","subscription-options"),a.selectOffer(a.querySelector("merch-offer[aria-selected]")),this.subscriptionPanel.offerSelect?.remove(),this.subscriptionPanel.appendChild(a),this.subscriptionPanel.requestUpdate()}async processCards(){[...this.querySelectorAll("merch-card")].forEach((e,n)=>{let{customerSegment:s,marketSegment:i}=e.offerSelect;s==="INDIVIDUAL"?i==="COM"?e.setAttribute("slot","individuals"):i==="EDU"&&e.setAttribute("slot","education"):s==="TEAM"&&e.setAttribute("slot","business"),e.addEventListener("click",()=>this.selectCard(e,!0))}),this.ready=!0,this.requestUpdate(),await this.updateComplete,await this.tabElement.updateComplete,this.selectCard(this.firstCardInSelectedTab,!0)}merchTwpReady(){this.querySelector("merch-card merch-offer-select:not([plan-type])")||this.processCards()}};window.customElements.define(x,c);export{c as MerchTwpD2P};
 //# sourceMappingURL=merch-twp-d2p.js.map
