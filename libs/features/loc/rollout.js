@@ -1,3 +1,7 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-plusplus */
+/* eslint-disable no-continue */
+/* global objectHash */
 import parseMarkdown from './helix/parseMarkdown.bundle.js';
 import { mdast2docx } from './helix/mdast2docx.bundle.js';
 
@@ -14,6 +18,8 @@ import {
   simulatePreview,
   stripExtension,
 } from './utils.js';
+
+const SAME_LIST_MATCH_COUNT = 2;
 
 async function persistDoc(srcPath, docx, dstPath) {
   try {
@@ -53,7 +59,7 @@ const addBoldHeaders = (mdast) => {
   const tableMap = tables.forEach((table) => {
     const { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
     if (parent.type !== 'strong') {
-      let idx = parent.children.indexOf(node);
+      const idx = parent.children.indexOf(node);
       parent.children[idx] = { type: 'strong', children: [node] };
     }
   });
@@ -134,6 +140,66 @@ function isSameListType(langstoreContent, livecopyContent) {
   && langstoreContent.spread === livecopyContent.spread;
 }
 
+function isModifiedListLine(node, nextNode) {
+  if (!node || !nextNode) return false;
+  return (
+    node.action === 'deleted' && node.author === 'Langstore Version'
+    && nextNode.action === 'added' && nextNode.author === 'Regional Version'
+  ) || (
+    node.action === 'added' && node.author === 'Regional Version'
+    && nextNode.action === 'deleted' && nextNode.author === 'Langstore Version'
+  );
+}
+
+function getLists(mergedProcessedMdast, classType) {
+  return mergedProcessedMdast.reduce((acc, elem, currentIndex) => {
+    if (elem.classType === classType && elem.content?.type === 'list') {
+      // hash all the list elements
+      elem.content.children.forEach((listItem) => {
+        listItem.hashcode = objectHash.sha1(listItem);
+      });
+      acc.push({ list: elem, index: currentIndex });
+    }
+    return acc;
+  }, []);
+}
+
+async function checkForListModifications(mergedProcessedMdast) {
+  const addedLists = getLists(mergedProcessedMdast, 'added');
+  const deletedLists = getLists(mergedProcessedMdast, 'deleted');
+
+  // do any of the added lists list.content.children match with any deleted list content.children
+  for (const addedList of addedLists) {
+    const addedListHashes = addedList.list.content.children.map((listItem) => listItem.hashcode);
+    for (const deletedList of deletedLists) {
+      if (!isSameListType(addedList.list.content, deletedList.list.content)) {
+        continue;
+      }
+
+      const deletedListHashes = deletedList.list.content.children.map((item) => item.hashcode);
+      const commonHashes = addedListHashes.filter((hash) => deletedListHashes.includes(hash));
+      if (commonHashes.length >= SAME_LIST_MATCH_COUNT) {
+        // lists have SAME_LIST_MATCH_COUNT or more common listItems,
+        // so we assume that the langstore list has been modified
+
+        // remove the deleted list from the mergedProcessedMdast
+        mergedProcessedMdast.splice(deletedList.index, 1);
+
+        // merge the deleted list into the added list
+        const [mergedList] = await getMergedListMdast(
+          [],
+          deletedList.list.content,
+          addedList.list.content,
+        );
+        addedList.list.content = mergedList?.content;
+        addedList.list.classType = '';
+        hashToContentMap.set(addedList.list.hashcode, addedList.list.content);
+      }
+    }
+  }
+  return mergedProcessedMdast;
+}
+
 async function getMergedListMdast(mergedProcessedMdast, langstoreContent, livecopyContent) {
   const langstoreChildrenHash = await getProcessedMdast(langstoreContent);
   const livecopyChildrenHash = await getProcessedMdast(livecopyContent);
@@ -149,8 +215,7 @@ async function getMergedListMdast(mergedProcessedMdast, langstoreContent, liveco
   for (let j = 0; j < diffedListContent.children.length; j += 1) {
     const child = diffedListContent.children[j];
     const nextChild = diffedListContent.children[j + 1];
-    if (child.action === 'deleted' && child.author === 'Langstore Version'
-      && nextChild.action === 'added' && nextChild.author === 'Regional Version') {
+    if (isModifiedListLine(child, nextChild)) {
       // merge the two into one listitem with track changes info
       const childChildrenHash = await getProcessedMdast(child);
       const nextChildChildrenHash = await getProcessedMdast(nextChild);
@@ -161,7 +226,10 @@ async function getMergedListMdast(mergedProcessedMdast, langstoreContent, liveco
         children: diffedListItemContent.children,
         checked: null,
         spread: child.spread,
+        author: child.author,
+        action: child.action,
       });
+      // j++; // Skip next child as it's already processed
       diffedListContent.children.splice(j + 1, 1);
     } else {
       // list item has not changed
@@ -174,26 +242,27 @@ async function getMergedListMdast(mergedProcessedMdast, langstoreContent, liveco
   return checkAndPush(mergedProcessedMdast, mergedListHash, '');
 }
 
-function checkAndPush(mergedArr, content, type) {
+function checkAndPush(mergedArr, contentHash, type) {
+  const content = hashToContentMap.get(contentHash);
   for (let i = 0; i < mergedArr.length; i++) {
-    if (mergedArr[i].hashcode === content) {
+    if (mergedArr[i].hashcode === contentHash) {
       if (mergedArr[i].classType === '') {
         continue;
       }
       if (mergedArr[i].classType === 'deleted') {
         if (type === 'added') {
           const newArr = [...mergedArr.slice(0, i), ...mergedArr.slice(i + 1)];
-          newArr.push({ hashcode: content, classType: '' });
+          newArr.push({ hashcode: contentHash, classType: '', content });
           return newArr;
         }
         if (type === 'deleted') {
-          mergedArr.push({ hashcode: content, classType: type });
+          mergedArr.push({ hashcode: contentHash, classType: type, content });
           return mergedArr;
         }
       }
       if (mergedArr[i].classType === 'added') {
         if (type === 'added') {
-          mergedArr.push({ hashcode: content, classType: type });
+          mergedArr.push({ hashcode: contentHash, classType: type, content });
           return mergedArr;
         }
         if (type === 'deleted') {
@@ -203,7 +272,7 @@ function checkAndPush(mergedArr, content, type) {
       }
     }
   }
-  mergedArr.push({ hashcode: content, classType: type });
+  mergedArr.push({ hashcode: contentHash, classType: type, content });
   return mergedArr;
 }
 
@@ -241,14 +310,8 @@ async function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast
     if (langstoreNowProcessedMdast[index] === livecopyProcessedMdast[index]) {
       mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], '');
     } else {
-      const langstoreContent = hashToContentMap.get(langstoreNowProcessedMdast[index]);
-      const livecopyContent = hashToContentMap.get(livecopyProcessedMdast[index]);
-      if (isSameListType(langstoreContent, livecopyContent)) {
-        mergedProcessedMdast = await getMergedListMdast(mergedProcessedMdast, langstoreContent, livecopyContent);
-      } else {
-        mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], 'deleted');
-        mergedProcessedMdast = checkAndPush(mergedProcessedMdast, livecopyProcessedMdast[index], 'added');
-      }
+      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], 'deleted');
+      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, livecopyProcessedMdast[index], 'added');
     }
   }
 
@@ -266,22 +329,24 @@ async function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast
     }
   }
 
-  mergedProcessedMdast.map((elem) => {
+  mergedProcessedMdast = await checkForListModifications(mergedProcessedMdast);
+
+  mergedProcessedMdast.forEach((elem) => {
     const content = hashToContentMap.get(elem.hashcode);
     // Creating new object of langstoreContent to avoid mutation of original object
     const newContent = JSON.parse(JSON.stringify(content));
     if (elem.classType === 'deleted') {
       if (Array.isArray(newContent)) {
-        newContent.forEach((el) =>  {
+        newContent.forEach((el) => {
           addTrackChangesInfo('Langstore Version', elem.classType, el);
           if (el.type === 'gridTable') {
             if (el.endNode) delete el.endNode;
             else el.group = true;
           }
         });
-      }
-      else
+      } else {
         addTrackChangesInfo('Langstore Version', elem.classType, newContent);
+      }
     } else if (elem.classType === 'added') {
       if (Array.isArray(newContent)) {
         newContent.forEach((el) => {
@@ -291,14 +356,15 @@ async function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast
             else el.group = true;
           }
         });
-      }
-      else
+      } else {
         addTrackChangesInfo('Regional Version', elem.classType, newContent);
+      }
     }
-    if (Array.isArray(newContent))
+    if (Array.isArray(newContent)) {
       mergedMdast.children.push(...newContent);
-    else
+    } else {
       mergedMdast.children.push(newContent);
+    }
   });
   return mergedMdast;
 }
