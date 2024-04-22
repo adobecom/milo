@@ -279,7 +279,6 @@ body[data-mep-highlight='true'] [data-code-manifest-id],
 body[data-mep-highlight='true'] [data-removed-manifest-id] {
   outline: 3px #26ceef dashed !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
-  position: relative;
 }
 
 body[data-mep-highlight='true'] [data-code-manifest-id] {

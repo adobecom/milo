@@ -309,7 +309,7 @@ function registerCustomAction(cmd, manifestId) {
     if (checkSelectorType(blockSelector) === 'fragment') {
       config.mep.inBlock[blockName].fragments ??= {};
       delete command.selector;
-      config.mep.inBlock[blockName].fragments[normalizePath(blockSelector)] = command;
+      config.mep.inBlock[blockName].fragments[blockSelector] = command;
       return;
     }
   }

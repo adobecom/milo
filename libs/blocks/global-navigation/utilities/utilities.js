@@ -307,11 +307,16 @@ export function trigger({ element, event, type } = {}) {
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
 export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
-  // TODO: check MEP and update url
-  const path = getFederatedUrl(url);
+  let path = getFederatedUrl(url);
+  const config = getConfig();
+  const mepFragment = config?.mep?.inBlock?.['global-navigation']?.fragments?.[path];
+  if (mepFragment) {
+    path = mepFragment.target;
+  }
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
+  if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
 
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {

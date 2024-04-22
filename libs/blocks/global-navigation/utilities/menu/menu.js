@@ -322,6 +322,11 @@ const decorateMenu = (config) => logErrorFor(async () => {
           ${menuContent}
         </div>
       </div>`;
+    if (content.dataset?.manifestId) {
+      const { manifestId } = content.dataset;
+      // menuContent.dataset.manifestId = manifestId;
+      menuTemplate.dataset.manifestId = manifestId;
+    }
     decorateCrossCloudMenu(menuTemplate);
 
     await decorateColumns({ content: menuContent });

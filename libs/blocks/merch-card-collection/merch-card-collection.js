@@ -300,8 +300,7 @@ export default async function init(el) {
   }
 
   const cardsRoot = await cardsRootPromise;
-  // TODO: update reference to sub-property in mep.custom[BLOCK_NAME]
-  const overridePromises = mep?.custom?.[BLOCK_NAME]?.map(
+  const overridePromises = mep?.inBlock?.[BLOCK_NAME]?.commands?.map(
     (action) => fetchOverrideCard(action, config),
   );
   const overrides = await overrideCards(cardsRoot, overridePromises, config);
