@@ -156,7 +156,7 @@ const COMMANDS = {
 };
 
 function checkSelectorType(selector) {
-  return selector?.includes('/fragments/') ? 'fragment' : 'css';
+  return selector?.startsWith('/') || selector?.startsWith('http') ? 'fragment' : 'css';
 }
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
@@ -292,15 +292,29 @@ function getSection(rootEl, idx) {
 }
 
 function registerCustomAction(cmd, manifestId) {
-  const { action, selector, target } = cmd;
+  const { action, target, selector } = cmd;
+  const command = { action, target, manifestId };
+
+  const blockAndSelector = selector.substring(CUSTOM_SELECTOR_PREFIX.length).trim().split(/\s+/);
+  const [blockName] = blockAndSelector;
+
   const config = getConfig();
-  // TODO: parse text after prefix, and add to object if fragment or array otherwise
-  // be sure to save selector for use if needed in array
-  // be sure to strip to path if needed for fragments
-  const blockName = selector.substring(CUSTOM_SELECTOR_PREFIX.length);
-  config.mep.custom ??= {};
-  config.mep.custom[blockName] ??= [];
-  config.mep.custom[blockName].push({ manifestId, action, target });
+  config.mep.inBlock ??= {};
+  config.mep.inBlock[blockName] ??= {};
+
+  let blockSelector;
+  if (blockAndSelector.length > 1) {
+    blockSelector = blockAndSelector.slice(1).join(' ');
+    command.selector = blockSelector;
+    if (checkSelectorType(blockSelector) === 'fragment') {
+      config.mep.inBlock[blockName].fragments ??= {};
+      delete command.selector;
+      config.mep.inBlock[blockName].fragments[normalizePath(blockSelector)] = command;
+      return;
+    }
+  }
+  config.mep.inBlock[blockName].commands ??= [];
+  config.mep.inBlock[blockName].commands.push(command);
 }
 
 function getSelectedElement(selector, action, rootEl) {
@@ -757,7 +771,7 @@ export async function applyPers(manifests) {
   const config = getConfig();
 
   if (!manifests?.length) return;
-  if (!config?.mep) config.mep = {};
+  config.mep ??= {};
   config.mep.handleFragmentCommand = handleFragmentCommand;
   let experiments = manifests;
   for (let i = 0; i < experiments.length; i += 1) {
