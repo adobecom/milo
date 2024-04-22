@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { loadArea, setConfig, getConfig, getMetadata } from '../../../libs/utils/utils.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 import dynamicNav from '../../../libs/features/dynamic-navigation.js';
 
 describe('Dynamic nav', () => {
@@ -23,7 +23,7 @@ describe('Dynamic nav', () => {
     const url = dynamicNav('gnav/aem-sites', 'nocom');
     expect(window.sessionStorage.getItem('gnavSource')).to.equal('some-source-string');
     expect(url).to.equal('gnav/aem-sites');
-  })
+  });
 
   it('Returns the provided url with when the wrong dynamicNavKey is passed', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/on.html' });
@@ -37,12 +37,12 @@ describe('Dynamic nav', () => {
     const url = dynamicNav('gnav/aem-sites', 'bacom');
     expect(window.sessionStorage.getItem('gnavSource')).to.equal('some-source-string');
     expect(url).to.equal('some-source-string');
-  })
+  });
 
   it('Returns the pprovided url if it does not find an item in sessionStorage and dynamic nav is on', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/on.html' });
     window.sessionStorage.removeItem('gnavSource');
     const url = dynamicNav('gnav/aem-sites', 'bacom');
     expect(url).to.equal('gnav/aem-sites');
-  })
+  });
 });
