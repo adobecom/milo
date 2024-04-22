@@ -18,24 +18,19 @@ const setDeep = (obj, path, value) => {
   currentObj[pathArr[pathArr.length - 1]] = value;
 };
 
-// eslint-disable-next-line max-len
-const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Promise((resolve) => {
-  const listener = (event) => {
-    // eslint-disable-next-line no-use-before-define
-    clearTimeout(timer);
-    resolve(event.detail);
-  };
-
+const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((resolve, reject) => {
   const timer = setTimeout(() => {
-    window.removeEventListener(eventName, listener);
-    if (returnValIfTimeout !== undefined) {
-      resolve(returnValIfTimeout);
+    if (timeoutVal !== undefined) {
+      resolve(timeoutVal);
     } else {
-      resolve({ timeout: true });
+      reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
     }
   }, timeout);
 
-  window.addEventListener(eventName, listener, { once: true });
+  window.addEventListener(eventName, (event) => {
+    clearTimeout(timer);
+    resolve(event.detail);
+  }, { once: true });
 });
 
 const getExpFromParam = (expParam) => {
@@ -81,7 +76,7 @@ function roundToQuarter(num) {
 }
 
 function calculateResponseTime(responseStart) {
-  const responseTime = Date.now() - responseStart;
+  const responseTime = performance.now() - responseStart;
   return roundToQuarter(responseTime);
 }
 
@@ -117,19 +112,41 @@ const getTargetPersonalization = async () => {
     || parseInt(getMetadata('target-timeout'), 10)
     || TARGET_TIMEOUT_MS;
 
-  const responseStart = Date.now();
+  let response;
+
+  const responseStart = performance.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
     window.lana.log('target response time', responseTime);
   }, { once: true });
 
-  let manifests = [];
-  const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
-  if (response.timeout) {
-    waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
-      .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
-  } else {
+  try {
+    response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
     sendTargetResponseAnalytics(false, responseStart, timeout);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+    if (e.message.startsWith('Timeout waiting for alloy_sendEvent after')) {
+      const timer = setTimeout(() => {
+        // eslint-disable-next-line no-use-before-define
+        window.removeEventListener(ALLOY_SEND_EVENT, sendAnalytics);
+        sendTargetResponseAnalytics(true, responseStart, timeout);
+      }, 5100 - timeout);
+
+      // eslint-disable-next-line no-inner-declarations
+      function sendAnalytics() {
+        clearTimeout(timer);
+        sendTargetResponseAnalytics(true, responseStart, timeout);
+      }
+
+      window.addEventListener(ALLOY_SEND_EVENT, sendAnalytics, { once: true });
+    } else {
+      sendTargetResponseAnalytics(false, responseStart, timeout, e.message);
+    }
+  }
+
+  let manifests = [];
+  if (response) {
     manifests = handleAlloyResponse(response.result);
   }
 
