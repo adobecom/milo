@@ -17,13 +17,17 @@ body {
 }
 
 .locui-sync-badge-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   width: 83.4%;
   margin: 0 auto;
   display: flex;
   justify-content: end;
   z-index: 100;
+}
+
+.locui-sync-badge-container.push-down {
+  top: 49px;
 }
 
 .locui-sync-badge {
@@ -106,8 +110,8 @@ span.locui-sync-badge-mono {
 }
 
 .locui-status-toast-section {
-  position: absolute;
-  top: 20px;
+  position: fixed;
+  top: 60px;
   left: 50%;
   transform: translateX(-50%);
 }
