@@ -76,7 +76,6 @@ function extractQuantitySelect(el) {
     .map((value) => value.trim())
     .filter((value) => /^\d*$/.test(value))
     .map((value) => (value === '' ? undefined : Number(value)));
-    // TODO comment what does this do.
   quantitySelectConfig.remove();
   if (![3, 4, 5].includes(values.length)) return null;
   import('../../deps/merch-quantity-select.js');
