@@ -1184,3 +1184,11 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+export const setAttributes = (el, attrs) => {
+  Object.keys(attrs).forEach((key) => el.setAttribute(key, attrs[key]));
+};
+
+export const removeAttributes = (el, attrsKeys) => {
+  attrsKeys.forEach((key) => el.removeAttribute(key));
+};

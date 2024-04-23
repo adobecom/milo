@@ -2,9 +2,9 @@
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
-import { createTag, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, MILO_EVENTS, removeAttributes, setAttributes } from '../../utils/utils.js';
 
-const RIGHT_PADDLE = '<svg viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
+const PADDLE = '<svg viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
 
 const isTabInTabListView = (tab) => {
   const tabList = tab.closest('[role="tablist"]');
@@ -138,15 +138,15 @@ function initPaddles(tabList, tabPaddles) {
     entries.forEach((entry) => {
       if (entry.target === firstTab) {
         if (entry.isIntersecting) {
-          left.setAttribute('disabled', '');
+          setAttributes(left, { disabled: '', 'aria-hidden': true });
         } else {
-          left.removeAttribute('disabled');
+          removeAttributes(left, ['disabled', 'aria-hidden']);
         }
       } else if (entry.target === lastTab) {
         if (entry.isIntersecting) {
-          right.setAttribute('disabled', '');
+          setAttributes(right, { disabled: '', 'aria-hidden': true });
         } else {
-          right.removeAttribute('disabled');
+          removeAttributes(right, ['disabled', 'aria-hidden']);
         }
       }
     });
@@ -243,9 +243,9 @@ const init = (block) => {
   }
 
   // Tab Paddles
-  const tabPaddles = createTag('div', { class: 'tab-paddles', role: 'scrollbar' });
-  const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '' }, RIGHT_PADDLE);
-  const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '' }, RIGHT_PADDLE);
+  const tabPaddles = createTag('div', { class: 'tab-paddles', role: 'scrollbar', 'aria-valuenow': 0 });
+  const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
+  const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
   tabPaddles.append(paddleLeft, paddleRight);
   tabList.after(tabPaddles);
   initPaddles(tabList, tabPaddles);
