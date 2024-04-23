@@ -99,13 +99,13 @@ describe('marquee', () => {
     it('using img', () => {
       const marquee = document.getElementById('using-images');
       init(marquee);
-      expect(marquee.querySelector('.icon-count')).to.exist;
+      expect(marquee.querySelector('[icon-count]')).to.exist;
     });
 
     it('using svg', () => {
       const marquee = document.getElementById('using-svgs');
       init(marquee);
-      expect(marquee.querySelector('.icon-count')).to.exist;
+      expect(marquee.querySelector('[icon-count]')).to.exist;
     });
   });
 

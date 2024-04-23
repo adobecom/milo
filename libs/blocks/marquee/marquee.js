@@ -34,10 +34,11 @@ function decorateText(el, size) {
 
 function decorateMultipleIconArea(iconArea) {
   let count = 0;
-  iconArea.querySelectorAll(':scope > picture').forEach((picture) => {
+  iconArea.querySelectorAll(':scope picture').forEach((picture) => {
     count += 1;
     const src = picture.querySelector('img')?.getAttribute('src');
     const a = picture.nextElementSibling;
+    if (count > 1) iconArea.setAttribute('icon-count', count);
     if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
     if (!a.querySelector('img')) {
       a.innerHTML = '';
@@ -45,7 +46,6 @@ function decorateMultipleIconArea(iconArea) {
       a.appendChild(picture);
     }
   });
-  if (count > 1) iconArea.setAttribute('icon-count', count);
 }
 
 function extendButtonsClass(text) {
