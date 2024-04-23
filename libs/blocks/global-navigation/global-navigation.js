@@ -281,8 +281,7 @@ class Gnav {
       delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
       this.blocks.universalNav.addEventListener('click', () => {
-        const isExpanded = this.isToggleExpanded();
-        if (isExpanded) this.toggleMenuMobile();
+        if (this.isToggleExpanded()) this.toggleMenuMobile();
       }, true);
     }
   };
@@ -655,7 +654,6 @@ class Gnav {
 
     const onToggleClick = async () => {
       this.toggleMenuMobile();
-      const isExpanded = this.isToggleExpanded();
 
       if (this.blocks?.search?.instance) {
         this.blocks.search.instance.clearSearchForm();
@@ -663,7 +661,7 @@ class Gnav {
         await this.loadSearch();
       }
 
-      if (isExpanded) setHamburgerPadding();
+      if (this.isToggleExpanded()) setHamburgerPadding();
     };
 
     toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'errorType=error,module=gnav'));
