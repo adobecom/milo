@@ -161,7 +161,26 @@ describe('Merch Cards', async () => {
 
   it('should override cards when asked to', async () => {
     const el = document.getElementById('multipleFilters');
-    el.dataset.overrides = '/override-photoshop,/override-express';
+    setConfig({
+      ...conf,
+      mep: {
+        preview: true,
+        custom: {
+          'merch-card-collection': [
+            {
+              action: 'replace',
+              manifestId: 'promo1.json',
+              target: '/override-photoshop',
+            },
+            {
+              action: 'replace',
+              manifestId: 'promo2.json',
+              target: '/override-express',
+            },
+          ],
+        },
+      },
+    });
     cards = [...document.querySelectorAll('#cards .merch-card')]
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
     const merchCards = await init(el);
@@ -171,6 +190,7 @@ describe('Merch Cards', async () => {
     const express = merchCards.querySelector('merch-card[name="express"]');
     expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.true;
     expect(express.title.indexOf('PROMOTION') > 0).to.be.true;
+    expect(merchCards.dataset.overrides).to.equal('promo1.json:/override-photoshop,promo2.json:/override-express');
   });
 
   it('should localize the query-index url', async () => {
