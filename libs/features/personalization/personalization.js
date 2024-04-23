@@ -308,8 +308,15 @@ function registerCustomAction(cmd, manifestId) {
     command.selector = blockSelector;
     if (checkSelectorType(blockSelector) === 'fragment') {
       config.mep.inBlock[blockName].fragments ??= {};
+      const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
-      config.mep.inBlock[blockName].fragments[blockSelector] = command;
+      if (blockSelector in fragments) return;
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const key in fragments) {
+        if (fragments[key].target === blockSelector) fragments[key] = command;
+      }
+      fragments[blockSelector] = command;
       return;
     }
   }
