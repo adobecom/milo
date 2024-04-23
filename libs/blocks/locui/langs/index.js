@@ -17,16 +17,16 @@ export function showUrls(item, prefix) {
 }
 
 export async function rollout(item, idx) {
+  const reroll = item.status === 'completed';
+  const retry = item.status === 'error';
+
   // stop polling until request is done
   polling.value = false;
 
   // Update the UI immediate instead of waiting on polling
-  languages.value[idx].status = item.status === 'error' ? 'retrying' : 'rolling-out';
+  languages.value[idx].status = retry ? 'retrying' : 'rolling-out';
   languages.value[idx].done = 0;
   languages.value = [...languages.value];
-
-  const reroll = item.status === 'completed';
-  const retry = item.status === 'error';
 
   if (retry) await rolloutLang(item.code, reroll, 'retry', 'Retry.');
   else await rolloutLang(item.code, reroll);
