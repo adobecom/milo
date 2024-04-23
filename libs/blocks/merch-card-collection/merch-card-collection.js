@@ -28,6 +28,8 @@ const LITERAL_SLOTS = [
 // eslint-disable-next-line no-promise-executor-return
 const makePause = async (timeout = 0) => new Promise((resolve) => setTimeout(resolve, timeout));
 
+const BLOCK_NAME = 'merch-card-collection';
+
 const fail = (el, err = '') => {
   window.lana?.log(`Failed to initialize merch cards: ${err}`);
   el.innerHTML = '';
@@ -53,11 +55,13 @@ async function getCardsRoot(config, html) {
   return cardsRoot;
 }
 
-const fetchOverrideCard = (path, config) => new Promise((resolve, reject) => {
-  fetch(`${localizeLink(path, config)}.plain.html`).then((res) => {
+const fetchOverrideCard = (action, config) => new Promise((resolve, reject) => {
+  fetch(`${localizeLink(action?.target, config)}.plain.html`).then((res) => {
     if (res.ok) {
       res.text().then((cardContent) => {
-        resolve({ path, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] });
+        const response = { path: action.target, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] };
+        if (config?.mep?.preview) response.manifestId = action.manifestId;
+        resolve(response);
       });
     } else {
       reject(res.statusText
@@ -70,6 +74,7 @@ const fetchOverrideCard = (path, config) => new Promise((resolve, reject) => {
 });
 
 async function overrideCards(root, overridePromises, config) {
+  let overrideString = '';
   try {
     if (overridePromises?.length > 0) {
       // Wait for all override cards to be fetched
@@ -84,12 +89,16 @@ async function overrideCards(root, overridePromises, config) {
             card.replaceWith(overrideMap[card.name]);
           }
         });
+        if (config.mep.preview) {
+          overrideString = overrideData.map(({ manifestId, path }) => `${manifestId}:${path}`).join(',');
+        }
       }
     }
   } catch (error) {
     /* c8 ignore next */
     window?.lana?.log('Failed to override cards', error);
   }
+  return overrideString;
 }
 
 /**
@@ -180,7 +189,7 @@ export default async function init(el) {
     import('../../deps/merch-card.js'),
   ];
 
-  const { base } = getConfig();
+  const { base, mep } = getConfig();
   const merchStyles = new Promise((resolve) => {
     loadStyle(`${base}/blocks/merch/merch.css`, resolve);
   });
@@ -291,14 +300,20 @@ export default async function init(el) {
   }
 
   const cardsRoot = await cardsRootPromise;
-  const overrides = el.dataset[OVERRIDE_PATHS];
-  const overridePromises = overrides?.split(',').map(fetchOverrideCard);
-  await overrideCards(cardsRoot, overridePromises, config);
+  const overridePromises = mep?.custom?.[BLOCK_NAME]?.map(
+    (action) => fetchOverrideCard(action, config),
+  );
+  const overrides = await overrideCards(cardsRoot, overridePromises, config);
   await initMerchCards(attributes.filtered, preferences, cardsRoot);
   await Promise.all([merchStyles, merchCardStyles, ...deps]);
 
   merchCardCollection.append(...cardsRoot.children);
+
   merchCardCollection.displayResult = true;
+  if (config?.mep?.preview && overrides) {
+    merchCardCollection.dataset.overrides = overrides;
+  }
+
   await merchCardCollection.updateComplete;
   performance.measure(
     'merch-card-collection-render',

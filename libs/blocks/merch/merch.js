@@ -40,6 +40,68 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
+/* Optional checkout link params that are appened to checkout url as is */
+export const CHECKOUT_ALLOWED_KEYS = [
+  'af',
+  'ai',
+  'apc',
+  'appctxid',
+  'cli',
+  'co',
+  'csm',
+  'ctx',
+  'ctxRtUrl',
+  'DCWATC',
+  'dp', // Enable digital payments for iframe context
+  'fr', // represents the commerce app redirecting to UC
+  'gsp',
+  'ijt',
+  'lang',
+  'lo',
+  'mal',
+  'ms',
+  'mv',
+  'mv2',
+  'nglwfdata',
+  'ot',
+  'otac',
+  'pa',
+  'pcid', // Unified Paywall configuration ID for analytics
+  'promoid',
+  'q',
+  'rf',
+  'sc',
+  'scl',
+  'sdid',
+  'sid', // x-adobe-clientsession
+  'spint',
+  'svar',
+  'th',
+  'thm',
+  'trackingid',
+  'usid',
+  'workflowid',
+  'context.guid',
+  'so.ca',
+  'so.su',
+  'so.tr',
+  'so.va',
+  // below keys are mapped to shorted versions.
+  'quantity',
+  'authCode',
+  'checkoutPromoCode',
+  'rurl',
+  'curl',
+  'ctxrturl',
+  'country',
+  'language',
+  'clientId',
+  'context',
+  'productArrangementCode',
+  'offerType',
+  'marketSegment',
+];
+
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
 export const CC_ALL_APPS = ['CC_ALL_APPS',
@@ -312,6 +374,14 @@ export async function getCheckoutContext(el, params) {
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const modal = params?.get('modal');
+
+  const extraOptions = {};
+  params.forEach((value, key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      extraOptions[key] = value;
+    }
+  });
+
   return {
     ...context,
     checkoutClientId,
@@ -320,6 +390,7 @@ export async function getCheckoutContext(el, params) {
     checkoutMarketSegment,
     entitlement,
     modal,
+    extraOptions: JSON.stringify(extraOptions),
   };
 }
 
