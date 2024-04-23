@@ -33,7 +33,7 @@ function decorateText(el, size) {
 }
 
 function decorateMultipleIconArea(iconArea) {
-  let count = 0
+  let count = 0;
   iconArea.querySelectorAll(':scope > picture').forEach((picture) => {
     count += 1;
     const src = picture.querySelector('img')?.getAttribute('src');
