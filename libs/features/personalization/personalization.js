@@ -55,7 +55,7 @@ export const CUSTOM_SELECTOR_PREFIX = 'in-block:';
 
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
-export const normalizePath = (p) => {
+export const normalizePath = (p, localize = true) => {
   let path = p;
 
   if (!path?.includes('/')) {
@@ -70,7 +70,11 @@ export const normalizePath = (p) => {
     try {
       const url = new URL(path);
       const firstFolder = url.pathname.split('/')[1];
-      if (config.locale.ietf === 'en-US' || url.hash === '#_dnt' || firstFolder in config.locales || path.includes('.json')) {
+      if (!localize
+        || config.locale.ietf === 'en-US'
+        || url.hash === '#_dnt'
+        || firstFolder in config.locales
+        || path.includes('.json')) {
         path = url.pathname;
       } else {
         path = `${config.locale.prefix}${url.pathname}`;
@@ -317,6 +321,13 @@ function registerCustomAction(cmd, manifestId) {
         if (fragments[key].target === blockSelector) fragments[key] = command;
       }
       fragments[blockSelector] = command;
+
+      blockSelector = normalizePath(blockSelector);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const key in fragments) {
+        if (fragments[key].target === blockSelector) fragments[key] = command;
+      }
+      fragments[blockSelector] = command;
       return;
     }
   }
@@ -333,8 +344,10 @@ function getSelectedElement(selector, action, rootEl) {
   }
   if (checkSelectorType(selector) === 'fragment') {
     try {
-      const fragment = document.querySelector(`a[href*="${normalizePath(selector)}"]`);
-      if (fragment) return fragment.parentNode;
+      for (let i = 0; i <= 1; i += 1) {
+        const fragment = document.querySelector(`a[href*="${normalizePath(selector, !!i)}"]`);
+        if (fragment) return fragment.parentNode;
+      }
       return null;
     } catch (e) {
       return null;
