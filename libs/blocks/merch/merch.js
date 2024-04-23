@@ -3,7 +3,13 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const PRICE_LITERALS_URL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
+if (!window.commerce) window.commerce = {};
+if (!window.commerce.priceLiteralsPromise) {
+  window.commerce.priceLiteralsPromise = new Promise((resolve) => {
+    window.fetch('https://milo.adobe.com/libs/commerce/price-literals.json')
+      .then((response) => response.json().then(({ data }) => resolve(data)));
+  });
+}
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
@@ -256,10 +262,10 @@ export async function initService(force = false) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
+  const { env, commerce = {}, locale } = getConfig();
+  commerce.priceLiteralsPromise = window.commerce.priceLiteralsPromise;
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const commerceLib = await import('../../deps/commerce.js');
-    const { env, commerce = {}, locale } = getConfig();
-    commerce.priceLiteralsURL = PRICE_LITERALS_URL;
     const service = await commerceLib.init(() => ({
       env,
       commerce,
