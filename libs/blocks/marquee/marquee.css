@@ -36,8 +36,14 @@
   display: inline-flex;
 }
 
-.marquee.static-links .icon-area a {
-  text-decoration: none;
+.marquee .icon-area a {
+  color: inherit;
+  text-decoration: underline 0.15em transparent;
+  transition: text-decoration-color 250ms;
+}
+
+.marquee .icon-area a:hover {
+  text-decoration-color: inherit
 }
 
 .marquee.mobile-light a:not(.con-button) {
@@ -110,6 +116,7 @@
   gap: var(--spacing-xs);
   align-items: center;
   font-size: var(--type-body-m-size);
+  font-weight: 700;
 }
 
 .marquee .icon-area img {
@@ -192,7 +199,7 @@
 }
 
 .marquee.large .icon-area {
-  font-size: 24px;
+  font-size: var(--type-body-xl-size);
 }
 
 .marquee.large .icon-area img {
