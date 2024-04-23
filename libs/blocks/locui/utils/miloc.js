@@ -10,6 +10,7 @@ import {
   serviceStatusDate,
   projectCancelled,
   allowCancelProject,
+  polling,
 } from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
@@ -53,13 +54,8 @@ export async function getProjectStatus() {
       allowSyncToLangstore.value = false;
     }
 
-    if (json.projectStatus === 'created') {
-      allowSyncToLangstore.value = true;
-      allowSendForLoc.value = true;
-      allowCancelProject.value = true;
-    }
-
     if (json.projectStatus === 'sync'
+    || json.projectStatus === 'created'
     || json.projectStatus === 'download'
     || json.projectStatus === 'start-glaas') {
       allowSyncToLangstore.value = false;
@@ -176,15 +172,21 @@ export async function createProject() {
 export async function getServiceUpdates() {
   const url = await getMilocUrl();
   let count = 1;
+  polling.value = true;
   const excelUpdated = setInterval(async () => {
     serviceStatus.value = 'connected';
     serviceStatusDate.value = new Date();
-    if (!waiting) {
+    if (!waiting && polling.value) {
       waiting = true;
       const json = await getProjectStatus(url);
-      if (json) projectStatus.value = json;
-      // stop polling for project status if cancelled
-      if (json.projectStatus === 'cancelled') clearInterval(excelUpdated);
+      if (json) {
+        projectStatus.value = json;
+        // stop polling for project status if cancelled or polling is turned off
+        if (json.projectStatus === 'cancelled' || !polling.value) {
+          clearInterval(excelUpdated);
+          polling.value = false;
+        }
+      }
       waiting = false;
     }
     count += 1;

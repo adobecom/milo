@@ -9,6 +9,7 @@ import {
   allowRollout,
   syncFragments,
   allowCancelProject,
+  polling,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
@@ -136,6 +137,9 @@ export async function findAllFragments() {
 }
 
 export async function syncToLangstore() {
+  // stop polling for updates until request is made
+  polling.value = false;
+
   // Disable all langstore syncing, the project is being sent.
   allowSyncToLangstore.value = false;
 
@@ -187,6 +191,9 @@ export async function syncFragsLangstore() {
 }
 
 export async function sendForLoc() {
+  // stop polling for updates until request is made
+  polling.value = false;
+
   // Disable all langstore syncing, the project is being sent.
   allowSyncToLangstore.value = false;
 
@@ -221,9 +228,12 @@ export function showRollout() {
 }
 
 export async function rolloutAll(e, reroll) {
+  // stop polling for updates until request is made
+  polling.value = false;
   showRolloutOptions.value = false;
   allowRollout.value = false;
   await rolloutLang('all', reroll);
+  getServiceUpdates();
 }
 
 export async function cancelLocProject() {
