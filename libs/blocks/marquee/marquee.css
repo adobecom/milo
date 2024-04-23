@@ -38,12 +38,11 @@
 
 .marquee .icon-area a {
   color: inherit;
-  text-decoration: underline 0.15em transparent;
-  transition: text-decoration-color 250ms;
+  text-decoration: none;
 }
 
 .marquee .icon-area a:hover {
-  text-decoration-color: inherit
+  text-decoration: none;
 }
 
 .marquee.mobile-light a:not(.con-button) {
