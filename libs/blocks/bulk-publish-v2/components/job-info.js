@@ -8,6 +8,7 @@ const base = miloLibs || codeRoot;
 const styleSheet = await getSheet(`${base}/blocks/bulk-publish-v2/components/job-process.css`);
 const reworkIcon = `${base}/blocks/bulk-publish-v2/img/rework.svg`;
 const closeIcon = `${base}/blocks/bulk-publish-v2/img/close.svg`;
+const copyIcon = `${base}/blocks/bulk-publish-v2/img/copy.svg`;
 
 class JobInfo extends LitElement {
   static get properties() {
@@ -17,7 +18,6 @@ class JobInfo extends LitElement {
       errFilter: { state: true },
       timer: { state: true },
       showTimes: { state: true },
-      timesAutoOpened: { state: true },
       copiedInvocationId: { state: true },
     };
   }
@@ -34,11 +34,6 @@ class JobInfo extends LitElement {
       this.scrollIntoView();
     } else {
       this.parentElement.classList.remove('filter-errors');
-    }
-    // expand time data when a job finishes
-    if (this.status.state === 'stopped' && !this.showTimes && !this.timesAutoOpened) {
-      this.timesAutoOpened = true;
-      this.showTimes = true;
     }
   }
 
@@ -61,7 +56,7 @@ class JobInfo extends LitElement {
         ${!this.errFilter ? html`
           <div class="job-totals${hasErrors ? ' errors' : ''}">
             <span class="${complete > 0 ? 'success' : ''}" title="Completed Pages">
-            ${complete}</span> / ${total}
+            ${complete}</span> / <span title="Total Pages">${total}</span>
           </div>
         ` : nothing}
         ${hasErrors ? html`
@@ -89,7 +84,7 @@ class JobInfo extends LitElement {
 
   renderTimer() {
     const { state, createTime, startTime, stopTime } = this.status;
-    let timerText = `${displayDate(createTime)}`;
+    let timerText = null;
     this.updateComplete.then(() => { setJobTime(this); });
     /* c8 ignore next 3 */
     if (state === 'running') {
@@ -98,31 +93,32 @@ class JobInfo extends LitElement {
     if (state === 'stopped') {
       timerText = html`Done in <strong id="TimerTime"></strong>`;
     }
+    if (!timerText) return nothing;
     const toggleTimes = () => { this.showTimes = !this.showTimes; };
     return html`
       <div class="timer${this.showTimes ? ' show-times' : ''}" @click=${toggleTimes}>
         ${timerText}
-      </div>
-      ${this.showTimes ? html`
-        <div class="job-timing">
-          <div class="stat">
-            Created
-            <strong>${displayDate(createTime)}</strong>
+        ${this.showTimes ? html`
+          <div class="job-timing">
+            <div class="stat">
+              Created
+              <strong>${displayDate(createTime)}</strong>
+            </div>
+            ${startTime ? html`
+              <div class="stat">
+                Started
+                <strong>${displayDate(startTime)}</strong>
+              </div>
+            ` : nothing}
+            ${stopTime ? html`
+              <div class="stat">
+                Finished
+                <strong>${displayDate(stopTime)}</strong>
+              </div>
+            ` : nothing}
           </div>
-          ${startTime ? html`
-            <div class="stat">
-              Started
-              <strong>${displayDate(startTime)}</strong>
-            </div>
-          ` : nothing}
-          ${stopTime ? html`
-            <div class="stat">
-              Finished
-              <strong>${displayDate(stopTime)}</strong>
-            </div>
-          ` : nothing}
-        </div>
-      ` : nothing}
+        ` : nothing}
+      </div>
     `;
   }
 
@@ -133,9 +129,11 @@ class JobInfo extends LitElement {
         <div class="process">
           <span class="topic">${topic}</span>
           ${invocationId ? html`
-            <span class="job-id-link" @click=${this.copyInvocationId}>
-              copy invocation ID
-            </span>
+            <img
+              title="Copy Job Invocation Id"
+              src="${copyIcon}"
+              class="job-id-link"
+              @click=${this.copyInvocationId} />
           ` : nothing}
           ${this.copiedInvocationId ? html`
             <div class="job-id-copied">
@@ -145,8 +143,8 @@ class JobInfo extends LitElement {
         </div>
         <div class="meta">
           <span class="status">
-            ${this.renderStatus()}
             ${this.renderTimer()}
+            ${this.renderStatus()}
           </span>
         </div>
       </div>

@@ -15,6 +15,12 @@
   justify-content: space-between;
 }
 
+.job-info .process {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .job-info .process .topic {
   text-transform: uppercase;
   font-weight: bold;
@@ -75,8 +81,7 @@
   cursor: pointer;
   background: white;
   border-radius: 5px;
-  padding: 0 7px;
-  width: 81px;
+  padding: 0 10px;
   text-align: center;
   height: 26px;
   display: flex;
@@ -101,11 +106,12 @@
   border-radius: 0 0 5px 5px;
   border: 1px solid #eee;
   position: absolute;
-  top: 36px;
-  right: 9px;
+  top: 32px;
+  right: -1px;
   z-index: 1;
   padding: 3px 10px;
   min-width: 132px;
+  border-top: 0;
 }
 
 .job-timing .stat {
@@ -116,6 +122,7 @@
 }
 
 .job-id-link {
+  width: 20px;
   cursor: pointer;
   color: var(--link-color);
 }
@@ -157,7 +164,7 @@
   transition: all 0.6s;
 }
 
-.result.success.link:hover {
+.result.link:hover {
   cursor: pointer;
   background-color: #f9f9f9;
 }

@@ -1,6 +1,6 @@
 import './job-info.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
-import { getStatusProps, delay, updateJobUrls, isSuccess, isDelete } from '../utils.js';
+import { getStatusProps, updateJobUrls, isSuccess, isDelete, delay } from '../utils.js';
 import { pollJobStatus, updateRetry } from '../services.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
 import { getConfig } from '../../../utils/utils.js';
@@ -48,7 +48,7 @@ class JobProcess extends LitElement {
     if (stopped) {
       this.dispatchEvent(new CustomEvent('stopped', { detail: this.jobStatus }));
     }
-    if (stopped && this.jobStatus?.progress?.failed !== 0) {
+    if (stopped && this.jobStatus?.progress?.failed > 0) {
       const timeouts = this.jobStatus?.data?.resources?.filter((job) => job.status === 503) ?? [];
       this.retry(timeouts);
     }
