@@ -12,8 +12,6 @@ function stylePublish(sk) {
 
       color-scheme: light dark;
       display: flex;
-      flex: 1 1 auto;
-      justify-content: end;
       order: 100;
     }
     .publish.plugin > button {
@@ -60,11 +58,12 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // manifest v3
   const sendToCaasListener = async (e) => {
     const { host, project, ref: branch, repo, owner } = e.detail.data.config;
+    // eslint-disable-next-line import/no-unresolved
     const { sendToCaaS } = await import('https://milo.adobe.com/tools/send-to-caas/send-to-caas.js');
     sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
   };
 
-  const checkSchemaListener = async (e) => {
+  const checkSchemaListener = async () => {
     const schema = document.querySelector('script[type="application/ld+json"]');
     if (schema === null) return;
     const resultsUrl = 'https://search.google.com/test/rich-results?url=';
