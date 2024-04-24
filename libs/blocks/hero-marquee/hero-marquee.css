@@ -14,7 +14,7 @@
 
 /* Alignment */
 .hero-marquee .action-area,
-.hero-marquee .flex-row { 
+.hero-marquee .lockup-area { 
   justify-content: left; 
   display: flex;
 }
@@ -37,55 +37,6 @@
   display: block;
 }
 
-/* Lockup Icon sizes */
-.hero-marquee .row-lockup { 
-  margin: var(--spacing-xxs) 0; 
-  font-size: var(--type-body-m-size);
-}
-
-.hero-marquee .row-lockup picture img, 
-.hero-marquee .row-lockup.icon-size-m picture img {
-  min-width:var(--icon-size-m);
-  height: var(--icon-size-m);
-}
-
-.hero-marquee .row-lockup.icon-size-s {
-  font-size: var(--type-body-s-size);
-}
-
-.hero-marquee .row-lockup.icon-size-s picture img {
-  min-width:var(--icon-size-s);
-  height: var(--icon-size-s);
-}
-
-.hero-marquee .row-lockup.icon-size-l {
-  font-size: var(--type-body-l-size);
-}
-
-.hero-marquee .row-lockup.icon-size-l picture img {
-  min-width:var(--icon-size-l);
-  height: var(--icon-size-l);
-}
-
-.hero-marquee .row-lockup.icon-size-xl {
-  font-size: var(--type-body-xl-size);
-}
-
-.hero-marquee .row-lockup.icon-size-xl picture img {
-  min-width:var(--icon-size-xl);
-  height: var(--icon-size-xl);
-}
-
-.hero-marquee .row-lockup.icon-size-xxl {
-  font-size: var(--type-body-xxl-size);
-}
-
-.hero-marquee .row-lockup.icon-size-xxl picture img {
-  min-width:var(--icon-size-xxl);
-  height: var(--icon-size-xxl);
-}
-
-
 .hero-marquee .main-copy {
   display: flex;
   flex-direction: column;
@@ -102,28 +53,80 @@
   order: 3;
 }
 
-/* lockup 
-todo: we need this unit */
-.hero-marquee .flex-row { 
+/* Lockup Area */
+.hero-marquee .lockup-area { 
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 12px;
+  margin: var(--spacing-xxs) 0; 
+  font-size: var(--type-body-m-size);
 } 
 
-.hero-marquee .flex-row picture { 
+.hero-marquee .lockup-area picture { 
   line-height: 0;
   display: block;
 } 
 
-.hero-marquee .flex-row a {
+.hero-marquee .lockup-area a {
   color: inherit;
   text-decoration: underline 0.15em transparent;
   transition: text-decoration-color 250ms;
 }
 
-.hero-marquee .flex-row a:hover {
+.hero-marquee .lockup-area a:hover {
   text-decoration-color: inherit
+}
+
+/* Lockup Area sizes */
+.hero-marquee .icon-size-m .lockup-area picture img, 
+.hero-marquee.icon-size-m .lockup-area picture img {
+  min-width:var(--icon-size-m);
+  height: var(--icon-size-m);
+}
+
+.hero-marquee .icon-size-s .lockup-area,
+.hero-marquee.icon-size-s .lockup-area {
+  font-size: var(--type-body-s-size);
+}
+
+.hero-marquee .icon-size-s .lockup-area picture img,
+.hero-marquee.icon-size-s .lockup-area picture img {
+  min-width:var(--icon-size-s);
+  height: var(--icon-size-s);
+}
+
+.hero-marquee .icon-size-l .lockup-area,
+.hero-marquee.icon-size-l .lockup-area {
+  font-size: var(--type-body-l-size);
+}
+
+.hero-marquee .icon-size-l .lockup-area picture img,
+.hero-marquee.icon-size-l .lockup-area picture img {
+  min-width:var(--icon-size-l);
+  height: var(--icon-size-l);
+}
+
+.hero-marquee .icon-size-xl .lockup-area,
+.hero-marquee.icon-size-xl .lockup-area {
+  font-size: var(--type-body-xl-size);
+}
+
+.hero-marquee .icon-size-xl .lockup-area picture img,
+.hero-marquee.icon-size-xl .lockup-area picture img {
+  min-width:var(--icon-size-xl);
+  height: var(--icon-size-xl);
+}
+
+.hero-marquee .icon-size-xxl .lockup-area,
+.hero-marquee.icon-size-xxl .lockup-area {
+  font-size: var(--type-body-xxl-size);
+}
+
+.hero-marquee .icon-size-xxl .lockup-area picture img,
+.hero-marquee.icon-size-xxl .lockup-area picture img {
+  min-width:var(--icon-size-xxl);
+  height: var(--icon-size-xxl);
 }
 
 .hero-marquee.center {
@@ -132,7 +135,7 @@ todo: we need this unit */
 }
 
 .hero-marquee.center .action-area,
-.hero-marquee.center .flex-row { 
+.hero-marquee.center .lockup-area { 
   justify-content: center; 
 }
 

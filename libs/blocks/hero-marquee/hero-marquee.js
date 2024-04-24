@@ -27,10 +27,10 @@ function decorateQr(el) {
   });
 }
 
-function decorateLockup(el) {
+function decorateLockupFromContent(el) {
   const rows = el.querySelectorAll(':scope > p');
   const firstRowImg = rows[0]?.querySelector('img');
-  if (firstRowImg) rows[0].classList.add('flex-row');
+  if (firstRowImg) rows[0].classList.add('lockup-area');
 }
 
 function decorateBg(el) {
@@ -54,6 +54,11 @@ function decorateBadge(el) {
   });
 }
 
+function decorateLockupRow(el) {
+  const child = el.querySelector(':scope > div');
+  if (child) child.classList.add('lockup-area');
+}
+
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
@@ -71,10 +76,7 @@ function parseKeyString(str) {
 }
 
 function loadContentType(el, key, classes) {
-  if (key === 'lockup') {
-    const child = el.querySelector(':scope > div');
-    if (child) child.classList.add('flex-row');
-  }
+  if (key === 'lockup') decorateLockupRow(el);
   if (key === 'list') decorateList(el);
   if (key === 'qrcode') decorateQr(el);
   if (key === 'background') decorateBg(el);
@@ -121,7 +123,7 @@ export default async function init(el) {
 
   // if (fRows.length === 1) foreground.classList.add('fw');
   decorateBlockText(copy, ['xxl', 'm', 'l']); // heading, body, detail
-  decorateLockup(copy);
+  decorateLockupFromContent(copy);
   extendButtonsClass(copy);
   const assetRow = foreground.querySelector(':scope > div').classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
