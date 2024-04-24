@@ -79,6 +79,7 @@
 }
 
 /* Lockup Area sizes */
+.hero-marquee .lockup-area picture img,
 .hero-marquee .icon-size-m .lockup-area picture img, 
 .hero-marquee.icon-size-m .lockup-area picture img {
   min-width:var(--icon-size-m);
