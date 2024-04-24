@@ -19,6 +19,7 @@ import { setExcelStatus, setStatus } from './status.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import '../../../deps/md5.min.js';
 
+let pollingInterval = null;
 const INTERVAL = 3000;
 const MAX_COUNT = 1200; // 3000 x 1200 = 3600000s = 1 hour
 const ROLLOUT_ALL_AVAILABLE = ['completed', 'translated'];
@@ -169,37 +170,46 @@ export async function createProject() {
   return resp.status;
 }
 
+const cancelPolling = () => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+    polling.value = false;
+  }
+};
+
 export async function getServiceUpdates() {
   const url = await getMilocUrl();
   let count = 1;
   polling.value = true;
-  const excelUpdated = setInterval(async () => {
-    serviceStatus.value = 'connected';
-    serviceStatusDate.value = new Date();
-    if (!waiting && polling.value) {
-      waiting = true;
-      const json = await getProjectStatus(url);
-      if (json) {
-        projectStatus.value = json;
-        // stop polling for project status if project cancelled
-        if (json.projectStatus === 'cancelled') {
-          clearInterval(excelUpdated);
-          polling.value = false;
+  if (!pollingInterval) {
+    pollingInterval = setInterval(async () => {
+      serviceStatus.value = 'connected';
+      serviceStatusDate.value = new Date();
+      if (!waiting && polling.value) {
+        waiting = true;
+        const json = await getProjectStatus(url);
+        if (json) {
+          projectStatus.value = json;
+          // stop polling for project status if project cancelled
+          if (json.projectStatus === 'cancelled') {
+            cancelPolling();
+          }
         }
+        waiting = false;
       }
-      waiting = false;
-    }
-    count += 1;
-    // Stop syncing after an hour
-    if (count > MAX_COUNT) {
-      setStatus(
-        'service',
-        'info',
-        'Sync stopped after 1 hour.',
-        'Please refresh the page if you wish to see the latest updates on your project',
-      );
-      clearInterval(excelUpdated);
-    }
-  }, INTERVAL);
+      count += 1;
+      // Stop syncing after an hour
+      if (count > MAX_COUNT) {
+        setStatus(
+          'service',
+          'info',
+          'Sync stopped after 1 hour.',
+          'Please refresh the page if you wish to see the latest updates on your project',
+        );
+        cancelPolling();
+      }
+    }, INTERVAL);
+  }
   return getProjectStatus(url);
 }

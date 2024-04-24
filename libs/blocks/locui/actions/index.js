@@ -163,6 +163,7 @@ export async function syncToLangstore() {
     }, 3000);
   } else {
     await startSync();
+    getServiceUpdates();
   }
 }
 
@@ -228,12 +229,11 @@ export function showRollout() {
 }
 
 export async function rolloutAll(e, reroll) {
-  // stop polling for updates until request is made
   polling.value = false;
   showRolloutOptions.value = false;
   allowRollout.value = false;
   await rolloutLang('all', reroll);
-  getServiceUpdates();
+  polling.value = true;
 }
 
 export async function cancelLocProject() {
