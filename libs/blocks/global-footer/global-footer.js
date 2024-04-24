@@ -117,6 +117,7 @@ class Footer {
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
 
     this.block.append(this.elements.footer);
+    this.block.dispatchEvent(new Event('milo:footer:loaded'));
   }, 'Failed to decorate footer content', 'errorType=error,module=global-footer');
 
   loadMenuLogic = async () => {

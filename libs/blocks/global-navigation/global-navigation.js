@@ -419,6 +419,7 @@ class Gnav {
         lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'errorType=warn,module=gnav' });
         resolve();
       }
+      this.block.dispatchEvent(new Event('milo:gnav:loaded'));
     });
 
     return this.ready;
@@ -973,7 +974,6 @@ export default async function init(block) {
       block,
     });
     gnav.init();
-    block.dispatchEvent(new Event('gnav:init'));
     block.setAttribute('daa-im', 'true');
     const mepMartech = mep?.martech || '';
     block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
