@@ -615,7 +615,7 @@ class Gnav {
 
     return this.loadDelayed().then(() => {
       this.blocks.search.instance = new this.Search(this.blocks.search.config);
-    });
+    }).catch(() => {});
   };
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';

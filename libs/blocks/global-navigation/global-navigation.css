@@ -62,7 +62,7 @@ header.global-navigation {
   right: 20px; /* hamburger menu gutter */
   display: none;
   flex-direction: column;
-  height: calc(100vh - var(--feds-height-nav));
+  height: 100vh;
   border-top: 1px solid var(--feds-borderColor--light);
   background-color: var(--feds-background-nav--light);
 }
