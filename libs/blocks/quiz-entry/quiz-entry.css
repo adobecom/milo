@@ -214,23 +214,40 @@ html[dir="rtl"] .quiz-option-icon {
   cursor: not-allowed;
 }
 
-.quiz-button {
-  width: 101px;
-  height: 40px;
-  background: #222;
-  border: 2px solid #FFF;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 17px;
-  line-height: 21px;
-  text-align: center;
-  color: #FFF;
-  cursor: pointer;
+.quiz-button-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 50px 0 24px;
 }
 
-.quiz-button-container {
-  margin-top: 56px;
-  margin-bottom: 104px;
+.quiz-button {
+  background: var(--color-gray-800);
+  border: 2px solid var(--color-white);
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  min-height: 32px;
+  min-width: 100%;
+  padding: 11px 86px;
+}
+
+.quiz-button-label {
+  color: var(--color-white);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.quiz-button[disabled] {
+  background: var(--color-gray-400);
+  cursor: not-allowed;
+}
+
+.quiz-button[disabled] .quiz-button-label{
+  color: var(--color-white);
 }
 
 /* Tablet up */
