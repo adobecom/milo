@@ -3,7 +3,7 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const PRICE_LITERALS_URL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
+export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
