@@ -34,7 +34,7 @@ function decorateLockup(el) {
 }
 
 function decorateBg(el) {
-  const block = el.closest('.hero');
+  const block = el.closest('.hero-marquee');
   block.style.background = el.textContent.trim();
   el.remove();
 }
