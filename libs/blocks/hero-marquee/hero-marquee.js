@@ -2,7 +2,7 @@ import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverr
 import { createTag } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'background'];
-const blockKeyword = 'hero-';
+const rowTypeKeyword = 'milo-row-type-';
 
 function decorateList(el) {
   el.classList.add('body-l', 'align-left');
@@ -82,7 +82,7 @@ function loadContentType(el, key, classes) {
 }
 
 export default async function init(el) {
-  el.classList.add('con-block', 'hero-milo');
+  el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1 && rows[0].textContent !== '') {
     el.classList.add('has-bg');
@@ -93,7 +93,7 @@ export default async function init(el) {
   // get first row that's not a keyword key/value row
   const mainRowIndex = rows.findIndex((row) => {
     const firstColText = row.children[0].textContent.toLowerCase().trim();
-    return !firstColText.includes(blockKeyword);
+    return !firstColText.includes(rowTypeKeyword);
   });
   const foreground = rows[mainRowIndex];
   const fRows = foreground.querySelectorAll(':scope > div');
@@ -147,9 +147,9 @@ export default async function init(el) {
     const cols = row.querySelectorAll(':scope > div');
     const firstCol = cols[0];
     const firstColText = firstCol.textContent.toLowerCase().trim();
-    const isKeywordRow = firstColText.includes(blockKeyword);
+    const isKeywordRow = firstColText.includes(rowTypeKeyword);
     if (isKeywordRow) {
-      const keyValue = firstColText.replace(blockKeyword, '').trim();
+      const keyValue = firstColText.replace(rowTypeKeyword, '').trim();
       const parsed = parseKeyString(keyValue);
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
