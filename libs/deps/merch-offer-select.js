@@ -1,4 +1,4 @@
-// branch: MWPW-138927-4 commit: 42b8009d8a924a19eec3948280fef72e1fc66edd Fri, 19 Apr 2024 19:51:01 GMT
+// branch: develop commit: efe6b8c0837c138286bb656a99b35aac3d4e4fd0 Wed, 24 Apr 2024 10:02:25 GMT
 import{html as h,LitElement as x}from"/libs/deps/lit-all.min.js";import{css as u,html as m,LitElement as b}from"/libs/deps/lit-all.min.js";var o="merch-offer:ready",c="merch-offer-select:ready";var d="merch-offer:selected";var n="merch-quantity-selector:change";var a=class extends b{static styles=u`
         :host .horizontal {
             display: flex;
@@ -243,5 +243,5 @@ import{html as h,LitElement as x}from"/libs/deps/lit-all.min.js";import{css as u
                         ><slot name="condition-tooltip"></slot
                     ></sp-tooltip>
                 </overlay-trigger>
-            </div>`}render(){return this.configuration||!this.price?"":this.type==="subscription-option"?this.asSubscriptionOption:this.asRadioOption}get price(){return this.querySelector('span[is="inline-price"]:not([data-template="strikethrough"])')}get prices(){return this.querySelectorAll('span[is="inline-price"]')}get customerSegment(){return this.price?.value?.[0].customerSegment}get marketSegment(){return this.price?.value?.[0].marketSegments[0]}async initOffer(){if(!this.price)return;this.prices.forEach(t=>t.setAttribute("slot","price")),await this.updateComplete,await Promise.all([...this.prices].map(t=>t.onceSettled()));let{value:[e]}=this.price;this.planType=e.planType,await this.updateComplete,this.dispatchEvent(new CustomEvent(o,{bubbles:!0}))}};customElements.define(E,l);
+            </div>`}render(){return this.configuration||!this.price?"":this.type==="subscription-option"?this.asSubscriptionOption:this.asRadioOption}get price(){return this.querySelector('span[is="inline-price"]:not([data-template="strikethrough"])')}get cta(){return this.querySelector('a[is="checkout-link"]')}get prices(){return this.querySelectorAll('span[is="inline-price"]')}get customerSegment(){return this.price?.value?.[0].customerSegment}get marketSegment(){return this.price?.value?.[0].marketSegments[0]}async initOffer(){if(!this.price)return;this.prices.forEach(t=>t.setAttribute("slot","price")),await this.updateComplete,await Promise.all([...this.prices].map(t=>t.onceSettled()));let{value:[e]}=this.price;this.planType=e.planType,await this.updateComplete,this.dispatchEvent(new CustomEvent(o,{bubbles:!0}))}};customElements.define(E,l);
 //# sourceMappingURL=merch-offer-select.js.map
