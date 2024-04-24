@@ -181,8 +181,8 @@ export async function getServiceUpdates() {
       const json = await getProjectStatus(url);
       if (json) {
         projectStatus.value = json;
-        // stop polling for project status if cancelled or polling is turned off
-        if (json.projectStatus === 'cancelled' || !polling.value) {
+        // stop polling for project status if project cancelled
+        if (json.projectStatus === 'cancelled') {
           clearInterval(excelUpdated);
           polling.value = false;
         }

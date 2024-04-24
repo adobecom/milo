@@ -1,4 +1,4 @@
-import { getServiceUpdates, rolloutLang } from '../utils/miloc.js';
+import { rolloutLang } from '../utils/miloc.js';
 import { languages, polling } from '../utils/state.js';
 import { getModal } from '../../modal/modal.js';
 import Modal from './modal.js';
@@ -30,7 +30,9 @@ export async function rollout(item, idx) {
 
   if (retry) await rolloutLang(item.code, reroll, 'retry', 'Retry.');
   else await rolloutLang(item.code, reroll);
-  getServiceUpdates();
+
+  // start status polling again when request finishes
+  polling.value = true;
 }
 
 export function showLangErrors(event, item) {
