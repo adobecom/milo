@@ -11,13 +11,14 @@ import merch, {
   buildCta,
   getCheckoutContext,
   initService,
-  PRICE_LITERALS_URL,
+  fetchLiterals,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
   getCheckoutAction,
+  PRICE_LITERALS_URL,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -64,7 +65,7 @@ const CHECKOUT_LINK_CONFIGS = {
 
 const config = {
   codeRoot: '/libs',
-  commerce: { priceLiteralsURL: PRICE_LITERALS_URL },
+  commerce: { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
