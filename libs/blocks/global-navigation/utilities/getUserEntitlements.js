@@ -105,6 +105,8 @@ const getSubscriptions = async ({ queryParams }, format) => {
     method: 'GET',
     cache: 'no-cache',
     credentials: 'same-origin',
+    // TODO: refactor to not use AbortSignal.timeout() as it's not supported for Safari 14
+    /* eslint-disable-next-line no-restricted-syntax */
     signal: AbortSignal.timeout(API_WAIT_TIMEOUT),
     headers: {
       Authorization: `Bearer ${window.adobeIMS.getAccessToken().token}`,
