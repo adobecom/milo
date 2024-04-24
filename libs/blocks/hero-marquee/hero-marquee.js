@@ -1,4 +1,4 @@
-import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides, decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'background'];
@@ -37,6 +37,11 @@ function decorateBg(el) {
   const block = el.closest('.hero-marquee');
   block.style.background = el.textContent.trim();
   el.remove();
+}
+
+function decorateText(el, classes) {
+  const btnClass = [...classes].filter((c) => c.startsWith('button-'));
+  decorateButtons(el, btnClass);
 }
 
 function decorateBadge(el) {
@@ -80,6 +85,7 @@ function loadContentType(el, key, classes) {
   if (key === 'list') decorateList(el);
   if (key === 'qrcode') decorateQr(el);
   if (key === 'background') decorateBg(el);
+  if (key === 'text') decorateText(el, classes);
   if (classes !== undefined && classes.length) el.classList.add(...classes);
 }
 
