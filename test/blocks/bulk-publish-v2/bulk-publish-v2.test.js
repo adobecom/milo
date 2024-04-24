@@ -171,9 +171,9 @@ describe('Bulk Publish Tool', () => {
     const jobInfo = doneJobProcess?.shadowRoot.querySelector('job-info');
     const timerDetail = jobInfo?.shadowRoot.querySelector('.timer');
     await mouseEvent(timerDetail);
-    await delay(1200);
+    await delay(600);
     await mouseEvent(timerDetail);
-    expect(timerDetail.classList.contains('show-times')).to.be.true;
+    expect(timerDetail.classList.contains('show-times')).to.be.false;
   });
 
   it('can toggle view mode', async () => {

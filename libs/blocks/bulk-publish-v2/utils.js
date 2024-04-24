@@ -125,14 +125,14 @@ const getStatusProps = ({ status, count, altText }) => {
 
 /* c8 ignore next 28 */
 // update job items without re-render
-const updateJobUrls = (detail, tool) => {
-  const jobInfo = tool.renderRoot.querySelector('job-info');
-  if (jobInfo) jobInfo.status = detail;
-  const resources = detail.data?.resources?.filter((res) => res.status !== 0);
+const updateJobUrls = (update, jobProcess) => {
+  const jobInfo = jobProcess.querySelector('job-info');
+  if (jobInfo) jobInfo.status = update;
+  const resources = update.data?.resources?.filter((res) => res.status !== 0);
   if (resources) {
     resources.forEach(({ path, status }) => {
-      const item = tool.renderRoot.querySelector(`[job-item='${path}']`);
-      if (item && !item?.hasAttribute('updated')) {
+      const item = jobProcess.querySelector(`[job-item='${path}']`);
+      if (item && !item.hasAttribute('updated')) {
         const { text, color, icon, style } = getStatusProps({ status });
         item.className = style;
         if (color === 'error') {

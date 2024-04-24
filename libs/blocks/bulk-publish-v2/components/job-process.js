@@ -34,7 +34,7 @@ class JobProcess extends LitElement {
           this.jobStatus = detail;
         /* c8 ignore next 3 */
         } else {
-          updateJobUrls(detail, this);
+          updateJobUrls(detail, this.renderRoot);
         }
         this.dispatchEvent(new CustomEvent('progress', { detail }));
       });
