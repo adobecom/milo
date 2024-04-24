@@ -159,7 +159,7 @@ const COMMANDS = {
 
 function checkSelectorType(selector) {
   if (selector?.includes('/fragments/')) return 'fragment';
-  if (selector?.startsWith(GLOBAL_NAV_SELECTOR)) return GLOBAL_NAV_SELECTOR;
+  if (selector?.trim().startsWith(GLOBAL_NAV_SELECTOR)) return GLOBAL_NAV_SELECTOR;
   return 'css';
 }
 
@@ -368,7 +368,7 @@ function getSelectedElement(selector, action, rootEl) {
   return selectedEl;
 }
 
-function handleCommands(commands, manifestId, rootEl = document) {
+export function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
@@ -412,8 +412,8 @@ const getVariantInfo = (line, variantNames, variants) => {
         val: normalizePath(line[vn]),
         action,
       });
-    } else if ((action in COMMANDS || action in CREATE_CMDS)
-        && variantInfo.selectorType === GLOBAL_NAV_SELECTOR) {
+    } else if (variantInfo.selectorType === GLOBAL_NAV_SELECTOR
+        && (action in COMMANDS || action in CREATE_CMDS)) {
       variantInfo.selector = variantInfo.selector.replace(GLOBAL_NAV_SELECTOR, '');
       variants[vn].globalnav.push(variantInfo);
     } else if (GLOBAL_CMDS.includes(action)) {
@@ -645,7 +645,7 @@ export async function getPersConfig(info, override = false) {
   return config;
 }
 
-const deleteMarkedEls = (rootEl = document) => {
+export const deleteMarkedEls = (rootEl = document) => {
   [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
     .forEach((el) => el.remove());
 };
@@ -758,11 +758,6 @@ export function handleFragmentCommand(command, a) {
   }
   return false;
 }
-
-export const handleGlobalNavCommands = (commands, manifestId, rootEl) => {
-  handleCommands(commands, manifestId, rootEl);
-  deleteMarkedEls(rootEl);
-};
 
 export async function applyPers(manifests) {
   const config = getConfig();

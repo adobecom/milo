@@ -3,7 +3,7 @@ import {
 } from '../../../utils/utils.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
-import { handleGlobalNavCommands } from '../../../features/personalization/personalization.js';
+import { handleCommands, deleteMarkedEls } from '../../../features/personalization/personalization.js';
 
 loadLana();
 
@@ -315,9 +315,10 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
 
-  if (mep.globalnav.length) { // just in case
+  if (mep.globalnav.length) {
     mep.globalnav.forEach(({ manifestId, commands }) => {
-      handleGlobalNavCommands(commands, manifestId, body);
+      handleCommands(commands, manifestId, body);
+      deleteMarkedEls(body);
     });
   }
 
