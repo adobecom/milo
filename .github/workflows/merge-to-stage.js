@@ -148,7 +148,8 @@ const mergePRs = async ({ prs }) => {
 
     files.forEach((file) => (seen[file] = true));
 
-    await github.rest.pulls.merge({ owner, repo, pull_number: number });
+    if (!process.env.LOCAL_RUN)
+      await github.rest.pulls.merge({ owner, repo, pull_number: number });
     await slackNotification(
       `:merged: Stage merge PR <${html_url}|${number}: ${title}>.`
     );
