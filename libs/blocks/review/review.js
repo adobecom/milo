@@ -4,7 +4,10 @@ import { getMetadata, loadStyle, getConfig } from '../../utils/utils.js';
 import HelixReview from './components/helixReview/HelixReview.js';
 import { checkPostUrl } from './utils/utils.js';
 
-const COMMENT_THRESHOLD = getMetadata('comment-threshold') || 3;
+const getCommentThreshold = (defaultThreshold = 3) => {
+  const threshold = parseInt(getMetadata('comment-threshold'), 10);
+  return (Number.isInteger(threshold) && threshold > 0) ? threshold : defaultThreshold;
+};
 
 const getReviewPath = (url) => {
   try {
@@ -44,7 +47,7 @@ const getProductJson = () => {
 const App = ({ strings }) => html`
     <${HelixReview}
       clickTimeout="5000"
-      commentThreshold=${COMMENT_THRESHOLD}
+      commentThreshold=${getCommentThreshold()}
       hideTitleOnReload=${strings.hideTitleOnReload}
       lang=${getPageLocale()}
       reviewTitle=${strings.reviewTitle}
