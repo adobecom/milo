@@ -2,6 +2,7 @@ import {
   getFedsPlaceholderConfig,
   getUserProfile,
   icons,
+  lanaLog,
   toFragment,
 } from '../../blocks/global-navigation/utilities/utilities.js';
 import { getConfig } from '../../utils/utils.js';
@@ -49,7 +50,14 @@ class AppPrompt {
     if (!this.options['redirect-url'] || !this.options['product-name']) return;
 
     ({ id: this.anchorId, isOpen: this.isAnchorExpanded } = await this.getAnchorState()
-      .catch(() => ({})));
+      .catch((e) => {
+        lanaLog({
+          message: 'Error on getting anchor state',
+          e,
+          tags: 'errorType=error,module=pep',
+        });
+        return {};
+      }));
     if (this.isAnchorExpanded) return;
 
     if (this.anchorId) this.anchor = document.querySelector(`#${this.anchorId}`);
@@ -67,17 +75,20 @@ class AppPrompt {
 
   doesEntitlementMatch = async () => {
     const entitlements = await getConfig().entitlements();
-    // TODO: remove below 2 lines, just for testing purposes
-    const extraEnts = new URLSearchParams(window.location.search).get('extraPepEnts');
-    extraEnts?.split(',').forEach((ent) => entitlements.push(ent.trim()));
-
     return entitlements?.length && entitlements.includes(this.entName);
   };
 
   fetchContent = async () => {
     const res = await fetch(`${this.promptPath}.plain.html`);
 
-    if (!res.ok) return '';
+    if (!res.ok) {
+      lanaLog({
+        message: `Error fetching content for prompt: ${this.promptPath}.plain.html`,
+        e: `Status ${res.status} when trying to fetch content for prompt`,
+        tags: 'errorType=error,module=pep',
+      });
+      return '';
+    }
 
     const text = await res.text();
     const content = await replaceText(text, getFedsPlaceholderConfig());
@@ -112,6 +123,12 @@ class AppPrompt {
         if (!hasRequiredFields) return;
 
         this.profile = data;
+      }).catch((e) => {
+        lanaLog({
+          message: 'Error fetching user profile',
+          e,
+          tags: 'errorType=error,module=pep',
+        });
       });
 
     const metadata = getMetadata(content.querySelector('.section-metadata'));
@@ -167,9 +184,8 @@ class AppPrompt {
   };
 
   initRedirect = () => setTimeout(() => {
-    // TODO: uncomment for actual redirect
-    // this.close();
-    // window.location = this.options['redirect-url'];
+    this.close();
+    window.location = this.options['redirect-url'];
   }, this.options['loader-duration']);
 
   isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
@@ -201,7 +217,11 @@ class AppPrompt {
 }
 
 export default async function init(config) {
-  // TODO: fail gracefully and log errors
-  const appPrompt = await new AppPrompt(config);
-  return appPrompt;
+  try {
+    const appPrompt = await new AppPrompt(config);
+    return appPrompt;
+  } catch (e) {
+    lanaLog({ message: 'Could not initialize PEP', e, tags: 'errorType=error,module=pep' });
+    return null;
+  }
 }

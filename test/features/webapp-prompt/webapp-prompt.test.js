@@ -151,4 +151,39 @@ describe('PEP', () => {
       expect(document.activeElement).to.equal(document.querySelector(allSelectors.appSwitcher));
     });
   });
+
+  describe('PEP logging tests', () => {
+    beforeEach(() => {
+      window.lana.log = sinon.spy();
+    });
+
+    it('should send log when not getting anchor state', async () => {
+      await initPep({
+        getAnchorStateMock: () => new Promise((resolve, reject) => {
+          reject(new Error('Cannot get anchor state'));
+        }),
+      });
+      await clock.runAllAsync();
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Error on getting anchor state'))).to.exist;
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=pep'))).to.exist;
+    });
+
+    it('should send log when cannot fetch content for prompt', async () => {
+      sinon.restore();
+      stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('pep-prompt-content.plain.html')) {
+          return mockRes({
+            payload: null,
+            ok: false,
+            status: 400,
+          });
+        }
+        return null;
+      });
+      await initPep({});
+      await clock.runAllAsync();
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Error fetching content for prompt'))).to.exist;
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=pep'))).to.exist;
+    });
+  });
 });

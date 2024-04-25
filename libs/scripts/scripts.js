@@ -123,7 +123,7 @@ const config = {
   geoRouting: 'on',
   fallbackRouting: 'on',
   links: 'on',
-  imsClientId: new URLSearchParams(window.location.search).get('imsClientId') || 'milo', // TODO: reset to original value
+  imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
   prodDomains,
