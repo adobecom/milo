@@ -14,7 +14,7 @@ async function getKey(product) {
 }
 
 /* eslint-disable */
-function branchInit(header, key) {
+function branchInit(key) {
   let initValue = false;
   function initBranch() {
     if (initValue) {
@@ -49,8 +49,6 @@ function branchInit(header, key) {
     );
     const privacyConsent = window.adobePrivacy?.hasUserProvidedConsent();
     branch.init(key, { tracking_disabled: !privacyConsent });
-    branch.addListener('didShowJourney', () => header.style.position = 'relative');
-    branch.addListener('didCloseJourney', () => header.style.position = 'sticky');
   }
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
     .forEach((event) => {
@@ -65,5 +63,5 @@ export default async function init(el) {
   const classListArray = Array.from(el.classList);
   const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
   const key = await getKey(product);
-  if (key) branchInit(header, key);
+  if (key) branchInit(key);
 }
