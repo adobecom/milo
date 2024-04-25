@@ -65,7 +65,8 @@ export const defaultRedirect = (url) => {
 export const handleResultFlow = async (
   answers = [],
   isML = false,
-  redirectFunc = defaultRedirect) => {
+  redirectFunc = defaultRedirect,
+) => {
   isMLUsing = isML;
   const { destinationPage } = await findAndStoreResultData(answers);
   const redirectUrl = getRedirectUrl(destinationPage);
