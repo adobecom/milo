@@ -1,6 +1,7 @@
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
+import { handleCommands } from '../../../features/personalization/personalization.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
@@ -309,7 +310,8 @@ export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 
 export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
   let path = getFederatedUrl(url);
   const config = getConfig();
-  const mepFragment = config?.mep?.inBlock?.['global-navigation']?.fragments?.[path];
+  const mepGnav = config?.mep?.inBlock?.['global-navigation'];
+  const mepFragment = mepGnav?.fragments?.[path];
   if (mepFragment) {
     path = mepFragment.target;
   }
@@ -317,8 +319,11 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
-
-  const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
+  const commands = mepGnav?.commands;
+  if (commands?.length) {
+    handleCommands(commands, commands[0].manifestId, body);
+  }
+  const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"], a[data-manifest-id]')];
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => {

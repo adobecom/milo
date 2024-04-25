@@ -401,7 +401,7 @@ function getSelectedElement(selector, action, rootEl) {
   return selectedEl;
 }
 
-function handleCommands(commands, manifestId, rootEl = document) {
+export function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
