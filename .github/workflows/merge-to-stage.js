@@ -3,7 +3,7 @@ const { slackNotification, getLocalConfigs } = require('./helpers.js');
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
 const PR_TITLE = '[Release] Stage to Main';
 const seen = {};
-const requiredApprovals = process.env.LOCAL_RUN ? 0 : 0; // TODO - change to 2
+const requiredApprovals = process.env.LOCAL_RUN ? 0 : 2; // TODO - change to 2
 let github, owner, repo, currPrNumber, core;
 
 let body = `
@@ -73,6 +73,8 @@ const addFiles = ({ pr }) =>
       pr.files = data.map(({ filename }) => filename);
       return pr;
     });
+
+const isHighPrio = (label) => label.includes('high priority');
 
 const getChecks = ({ pr }) =>
   github.rest.checks
@@ -146,7 +148,8 @@ const getPRs = async () => {
   return prs.reverse(); // OLD PRs first
 };
 
-const mergePRs = async ({ prs }) => {
+const merge = async ({ prs }) => {
+  console.log('Merging PRs that are ready... ');
   for await (const { number, files, html_url, title } of prs) {
     if (files.some((file) => seen[file])) {
       const message = `:fast_forward: Skipping <${html_url}|${number}: ${title}> due to overlap in files.`;
@@ -161,7 +164,6 @@ const mergePRs = async ({ prs }) => {
     await slackNotification(
       `:merged: Stage merge PR <${html_url}|${number}: ${title}>.`
     );
-    body = `- [${title}](${html_url})\n${body}`;
   }
 };
 
@@ -186,6 +188,23 @@ const openStageToMainPR = async () => {
 
   if (data.status === 'identical') return console.log('Stage&Main are equal');
 
+  const prSet = new Set();
+  for (const commit of data.commits) {
+    const { data } =
+      await github.rest.repos.listPullRequestsAssociatedWithCommit({
+        owner,
+        repo,
+        commit_sha: commit.sha,
+      });
+
+    for (const { title, html_url } of data) {
+      if (!prSet.has(html_url)) {
+        body = `- [${title}](${html_url})\n${body}`;
+        prSet.add(html_url);
+      }
+    }
+  }
+
   const { data: pr } = await github.rest.pulls.create({
     owner,
     repo,
@@ -199,6 +218,7 @@ const openStageToMainPR = async () => {
     `:sync_icon2: Prod release PR <${pr.html_url}|#${pr.number}> has been opened`
   );
 };
+
 const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
@@ -210,22 +230,19 @@ const main = async (params) => {
   for (const { start, end } of RCPDates) {
     if (start <= now && now <= end) {
       console.log('Current date is within a RCP. Stopping execution.');
-      process.exit(0);
+      return;
     }
   }
   try {
-    // TODO - test if existing PR adds to the seenFiles map
     const stageToMainPR = await getStageToMainPR();
-    if (stageToMainPR?.labels.includes('SOT')) return console.log('PR exists');
-
+    console.log('has Stage to Main PR: ', !!stageToMainPR);
+    if (stageToMainPR?.labels.some((label) => label.includes('SOT')))
+      return console.log('PR exists & testing started. Stopping execution.');
     const prs = await getPRs();
-    await mergePRs({
-      prs: prs.filter(({ labels }) => labels.includes('high priority')),
-    });
-    await mergePRs({
-      prs: prs.filter(({ labels }) => !labels.includes('high priority')),
-    });
-    await openStageToMainPR();
+    await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });
+    await merge({ prs: prs.filter(({ labels }) => !isHighPrio(labels)) });
+    if (!stageToMainPR) await openStageToMainPR();
+    console.log('Process successfully executed.');
   } catch (error) {
     console.error(error);
   }
