@@ -13,6 +13,7 @@ let shortQuiz;
 let analyticsType;
 let analyticsQuiz;
 let metaData;
+let isMLUsing;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
@@ -61,7 +62,11 @@ export const defaultRedirect = (url) => {
   window.location.href = url;
 };
 
-export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect) => {
+export const handleResultFlow = async (
+  answers = [],
+  isML = false,
+  redirectFunc = defaultRedirect) => {
+  isMLUsing = isML;
   const { destinationPage } = await findAndStoreResultData(answers);
   const redirectUrl = getRedirectUrl(destinationPage);
   redirectFunc(redirectUrl);
@@ -473,10 +478,13 @@ export const getAnalyticsDataForLocalStorage = (config) => {
       formattedResultString = formattedResultString ? `${formattedResultString}|${product}` : product;
     });
   }
-  answers?.forEach((answer) => {
-    const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
+
+  for (let i = 0; i < answers?.length; i += 1) {
+    const answer = answers[i];
+    const eachAnswer = i === 0 && isMLUsing ? `${answer[0]}/interest-${answer[1].join('-')}` : `${answer[0]}/${answer[1].join('/')}`;
     formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${eachAnswer}` : eachAnswer;
-  });
+  }
+
   const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&result=${formattedResultString}&selectedOptions=${formattedAnswerString}`;
   return analyticsHash;
 };

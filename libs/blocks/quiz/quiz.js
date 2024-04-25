@@ -41,6 +41,7 @@ const App = ({
   const [userFlow, setUserFlow] = useState([]);
   const validQuestions = useMemo(() => [], []);
   const [debugBuild, setDebugBuild] = useState(null);
+  const [isML, setIsML] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -61,6 +62,7 @@ const App = ({
         && !!storedQuizState?.userSelection.length) {
         setUserFlow(storedQuizState.userFlow);
         updateUserSelection(storedQuizState.userSelection);
+        setIsML(storedQuizState.isML);
       } else {
         setUserFlow([questions.questions.data[0].questions]);
       }
@@ -148,7 +150,7 @@ const App = ({
           console.log(`Error copying URL: ${err} URL: ${debugURL}`);
         });
       }
-      handleResultFlow(transformToFlowData(userSelection));
+      handleResultFlow(transformToFlowData(userSelection), isML);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSelection, nextQuizViewsExist]);
