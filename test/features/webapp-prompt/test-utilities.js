@@ -1,4 +1,5 @@
 import { setViewport } from '@web/test-runner-commands';
+import sinon from 'sinon';
 import init from '../../../libs/features/webapp-prompt/webapp-prompt.js';
 import { viewports, mockRes as importedMockRes } from '../../blocks/global-navigation/test-utilities.js';
 import { getConfig, loadStyle, setConfig, updateConfig } from '../../../libs/utils/utils.js';
@@ -27,7 +28,7 @@ export const defaultConfig = {
 
 export const mockRes = importedMockRes;
 
-export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = false }) => {
+export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = false, getAnchorStateMock = false }) => {
   setConfig({
     imsClientId: 'milo',
     codeRoot: '/libs',
@@ -37,10 +38,13 @@ export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = fa
   await setViewport(viewports.desktop);
   await loadStyle('../../../libs/features/webapp-prompt/webapp-prompt.css');
 
-  return init({
+  const pep = await init({
     promptPath: 'https://pep-mocks.test/pep-prompt-content.plain.html',
-    getAnchorState: async () => ({ id: 'unav-app-switcher', isOpen: isAnchorOpen }),
+    getAnchorState: getAnchorStateMock || (async () => ({ id: 'unav-app-switcher', isOpen: isAnchorOpen })),
     entName,
     parent: document.querySelector('div.feds-utilities'),
   });
+
+  sinon.stub(pep, 'initRedirect').callsFake(() => null);
+  return pep;
 };
