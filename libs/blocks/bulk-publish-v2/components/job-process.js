@@ -73,7 +73,7 @@ class JobProcess extends LitElement {
   async onClick({ url, code, topic }, pathIndex) {
     const results = this.renderRoot.querySelectorAll('.result');
     const isPOST = !isDelete(topic);
-    /* c8 ignore next 9 */
+    /* c8 ignore next 3 */
     if (this.jobStatus && isSuccess(code) && isPOST) {
       results[pathIndex].classList.add('opened');
       window.open(url, '_blank');
