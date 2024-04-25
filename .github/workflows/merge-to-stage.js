@@ -104,6 +104,12 @@ const getReviews = ({ pr }) =>
       return pr;
     });
 
+const hasFailingChecks = (checks) =>
+  checks.some(
+    ({ conclusion, name }) =>
+      name !== 'merge-to-stage' && conclusion === 'failure'
+  );
+
 const getPRs = async () => {
   let prs = await github.rest.pulls
     .list({ owner, repo, state: 'open', per_page: 100, base: 'stage' })
@@ -117,7 +123,7 @@ const getPRs = async () => {
   ]);
 
   prs = prs.filter(({ checks, reviews, html_url, number, title }) => {
-    if (checks.some(({ conclusion }) => conclusion === 'failure')) {
+    if (hasFailingChecks(checks)) {
       slackNotification(
         `:x: Skipping <${html_url}|${number}: ${title}> due to failing checks`
       );
@@ -177,7 +183,8 @@ const openStageToMainPR = async () => {
     base: 'main',
     head: 'stage',
   });
-  if (data.status !== 'divergent') return console.log('Stage&Main are equal');
+
+  if (data.status === 'identical') return console.log('Stage&Main are equal');
 
   const { data: pr } = await github.rest.pulls.create({
     owner,
