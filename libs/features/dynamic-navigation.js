@@ -9,13 +9,7 @@ export default function dynamicNav(url, key) {
     return url;
   }
 
-  if (metadataContent !== 'on') return url;
+  if (metadataContent !== 'on' || key !== window.sessionStorage.getItem('dynamicNavKey')) return url;
 
-  if (key !== window.sessionStorage.getItem('dynamicNavKey')) return url;
-
-  const source = window.sessionStorage.getItem('gnavSource');
-
-  if (!source) return url;
-
-  return source;
+  return window.sessionStorage.getItem('gnavSource') || url;
 }
