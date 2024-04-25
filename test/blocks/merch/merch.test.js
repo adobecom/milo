@@ -65,7 +65,6 @@ const CHECKOUT_LINK_CONFIGS = {
 
 const config = {
   codeRoot: '/libs',
-  commerce: { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
@@ -130,6 +129,7 @@ describe('Merch Block', () => {
     document.head.innerHTML = await readMockText('head.html');
     document.body.innerHTML = await readMockText('body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
+    config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
 
