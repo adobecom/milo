@@ -361,8 +361,6 @@ async function getAllMarquees(promoId, origin) {
 
   /* eslint-disable object-curly-newline */
   const response = await fetch(`${endPoint}?${payload}`, {
-    // TODO: refactor to not use AbortSignal.timeout() as it's not supported for Safari 14
-    /* eslint-disable-next-line */
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   }).catch((error) => fetchExceptionHandler('getAllMarquees', error));
 
@@ -386,8 +384,6 @@ async function getMarqueeId() {
       'x-api-key': 'ChimeraAcom',
     },
     body: `{"endpoint":"acom-banner-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${JSON.stringify(visitedLinks)}, "segment": ${JSON.stringify(segments)}}}}`,
-    // TODO: refactor to not use AbortSignal.timeout() as it's not supported for Safari 14
-    /* eslint-disable-next-line */
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   }).catch((error) => fetchExceptionHandler('getMarqueeId', error));
 
