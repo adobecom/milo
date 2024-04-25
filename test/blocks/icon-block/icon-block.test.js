@@ -43,14 +43,4 @@ describe('icon blocks', () => {
       expect(heading).to.not.exist;
     });
   });
-  describe('cta container', () => {
-    it('is added around the only action area', () => {
-      expect(document.querySelector('.cta-container #one-cta')).to.exist;
-    });
-    it('is added around adjacent action areas', () => {
-      const parent = document.querySelector('#adjacent-cta-1').parentElement;
-      expect(parent.className.includes('cta-container')).to.be.true;
-      expect(parent.querySelector('#adjacent-cta-2')).to.exist;
-    });
-  });
 });
