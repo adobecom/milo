@@ -41,6 +41,7 @@ function decorateBg(el) {
 
 function decorateText(el, classes) {
   const btnClass = [...classes].filter((c) => c.startsWith('button-'));
+  if (!btnClass.length) return;
   decorateButtons(el, btnClass);
 }
 
@@ -89,6 +90,15 @@ function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
 }
 
+function initMinHeightStyle(el) {
+  const mhKey = 'min-height-';
+  const mhClasses = [...el.classList].filter((c) => c.startsWith(mhKey));
+  if (mhClasses.length) {
+    const minHeightObj = mhClasses[0].split(mhKey);
+    if (minHeightObj[1]) el.style.minHeight = `${minHeightObj[1]}px`;
+  }
+}
+
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -98,6 +108,9 @@ export default async function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
+  // todo: do we want this feature
+  // initMinHeightStyle(el);
+
   // get first row that's not a keyword key/value row
   const mainRowIndex = rows.findIndex((row) => {
     const firstColText = row.children[0].textContent.toLowerCase().trim();

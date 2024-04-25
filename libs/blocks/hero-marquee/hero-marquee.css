@@ -5,6 +5,7 @@
   flex-direction: column;
   width: 100%;
   overflow: hidden;
+  min-height: 360px;
 }
 
 .dark .hero-marquee,
@@ -308,8 +309,13 @@
 
 /* Tablet UP */
 @media screen and (min-width: 600px) {
+  .hero-marquee,
   .hero-marquee .action-area { 
     flex-direction: row;
+  }
+  
+  .hero-marquee.split { 
+    flex-direction: column;
   }
 
   .hero-marquee.center .action-area {
@@ -336,6 +342,10 @@
     align-items: center;
     display: flex;
     min-height: 360px;
+    flex-direction: row;
+  }
+  
+  .hero-marquee.split { 
     flex-direction: row;
   }
 
