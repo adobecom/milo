@@ -1,4 +1,4 @@
-# title-append test
+# title-append
 
 The title-append feature allows you to append an arbitrary string to an HTML document's title by populating a "title-append" column for any given row in [Franklin's bulk-metadata](https://www.hlx.live/docs/bulk-metadata).
 
