@@ -167,7 +167,8 @@
   justify-content: start;
 }
 
-.text-block.icon-inline .foreground [class^="body-"] {
+.text-block.icon-inline .foreground [class^="body-"],
+.text-block.icon-inline .foreground .cta-container {
   grid-column: span 2;
   margin-top: 0;
 }
