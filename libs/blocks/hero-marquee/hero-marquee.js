@@ -55,7 +55,7 @@ function decorateBadge(el) {
     /* c8 ignore next */
     if (!badgeText) return;
     const badge = createTag('span', { class: 'badge' }, badgeText);
-    header.innerHTML = header.innerHTML.replace(regex, '');
+    header.innerHTML = header.innerHTML.replace(regex, '').trim();
     header.append(badge);
   });
 }

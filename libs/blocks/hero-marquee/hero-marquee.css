@@ -174,12 +174,12 @@
 }
 
 .hero-marquee .badge {
-  font-size: 14px;
+  font-size: var(--type-body-xs-size);
   line-height: 1em;
   font-weight: 400;
   vertical-align: middle;
   padding: 4px 8px;
-  margin-left: 4px;
+  margin-inline-start: var(--spacing-xs);
   border-radius: 4px;
   background-color: #FFEB00;
   color: var(--text-color);
