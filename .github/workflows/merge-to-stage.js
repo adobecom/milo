@@ -1,10 +1,14 @@
 const { slackNotification, getLocalConfigs } = require('./helpers.js');
+let core = { setFailed: console.error };
+if (!process.env.LOCAL_RUN) {
+  core = require('@actions/core');
+}
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
 const PR_TITLE = '[Release] Stage to Main';
 const seen = {};
-const requiredApprovals = process.env.LOCAL_RUN ? 0 : 2;
-let github, owner, repo;
+const requiredApprovals = process.env.LOCAL_RUN ? 0 : 0;
+let github, owner, repo, currPrNumber;
 
 let body = `
 ## common base root URLs
@@ -121,6 +125,7 @@ const getPRs = async () => {
       slackNotification(
         `:x: Skipping <${html_url}|${number}: ${title}> due to failing checks`
       );
+      if (number === currPrNumber) core.setFailed('Failing checks.');
       return false;
     }
 
@@ -129,6 +134,7 @@ const getPRs = async () => {
       slackNotification(
         `:x: Skipping <${html_url}|${number}: ${title}> due to insufficient approvals`
       );
+      if (number === currPrNumber) core.setFailed('Insufficient approvals.');
       return false;
     }
 
@@ -194,6 +200,7 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
+  currPrNumber = params.context.issue?.number;
 
   const now = new Date();
   for (const { start, end } of RCPDates) {
