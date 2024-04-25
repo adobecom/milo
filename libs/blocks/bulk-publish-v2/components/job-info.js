@@ -38,7 +38,6 @@ class JobInfo extends LitElement {
   }
 
   async copyInvocationId() {
-    /* c8 ignore next 4 */
     await navigator.clipboard.writeText(this.status.invocationId);
     this.copiedInvocationId = true;
     await delay(3000);

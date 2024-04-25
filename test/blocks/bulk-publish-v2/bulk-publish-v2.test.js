@@ -13,6 +13,8 @@ const { default: init } = await import('../../../libs/blocks/bulk-publish-v2/bul
 
 const testPage = 'https://main--milo--adobecom.hlx.page/tools/bulk-publish-v2-test';
 
+Object.defineProperty(navigator, 'clipboard', { value: { writeText: async () => {} } });
+
 const mouseEvent = async (el, type = 'click') => {
   if (!el) return;
   const rect = el?.getBoundingClientRect();
@@ -153,8 +155,8 @@ describe('Bulk Publish Tool', () => {
     const doneJobProcess = rootEl.querySelectorAll('job-process')[0];
     const jobInfo = doneJobProcess?.shadowRoot.querySelector('job-info');
     const jobIdLink = jobInfo?.shadowRoot.querySelector('.job-id-link');
-    await delay(200);
     await mouseEvent(jobIdLink);
+    await delay(200);
   });
 
   it('can submit valid index job', async () => {
