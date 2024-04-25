@@ -321,9 +321,9 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
-    handleCommands(commands, commands[0].manifestId, body);
+    handleCommands(commands, commands[0].manifestId, body, true);
   }
-  const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"], a[data-manifest-id]')];
+  const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => {

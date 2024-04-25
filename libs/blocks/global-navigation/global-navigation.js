@@ -958,7 +958,6 @@ export default async function init(block) {
         tags: 'errorType=error,module=gnav',
       }));
     if (!content) return null;
-    // TODO: Scan document for MEP updates
     const gnav = new Gnav({
       content,
       block,

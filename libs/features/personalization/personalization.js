@@ -401,7 +401,12 @@ function getSelectedElement(selector, action, rootEl) {
   return selectedEl;
 }
 
-export function handleCommands(commands, manifestId, rootEl = document) {
+const updateHash = (url, forceInline) => {
+  const urlNoHash = url.split('#')[0];
+  return forceInline ? `${urlNoHash}#_inline` : url;
+};
+
+export function handleCommands(commands, manifestId, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
@@ -410,10 +415,13 @@ export function handleCommands(commands, manifestId, rootEl = document) {
     }
     if (action in COMMANDS) {
       const el = getSelectedElement(selector, action, rootEl);
-      COMMANDS[action](el, target, manifestId);
+      COMMANDS[action](el, updateHash(target, forceInline), manifestId);
     } else if (action in CREATE_CMDS) {
       const el = getSelectedElement(selector, action, rootEl);
-      el?.insertAdjacentElement(CREATE_CMDS[action], createFrag(el, target, manifestId));
+      el?.insertAdjacentElement(
+        CREATE_CMDS[action],
+        createFrag(el, updateHash(target, forceInline), manifestId),
+      );
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
