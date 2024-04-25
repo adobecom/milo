@@ -38,6 +38,6 @@ jobs:
         with:
           script: |
             const main = require('./.github/workflows/merge-to-stage.js')
-            main({ github, context })
+            main({ github, context, core })
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

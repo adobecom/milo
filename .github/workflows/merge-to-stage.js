@@ -1,14 +1,10 @@
 const { slackNotification, getLocalConfigs } = require('./helpers.js');
-let core = { setFailed: console.error };
-if (!process.env.LOCAL_RUN) {
-  core = require('@actions/core');
-}
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
 const PR_TITLE = '[Release] Stage to Main';
 const seen = {};
-const requiredApprovals = process.env.LOCAL_RUN ? 0 : 0;
-let github, owner, repo, currPrNumber;
+const requiredApprovals = process.env.LOCAL_RUN ? 0 : 0; // TODO - change to 2
+let github, owner, repo, currPrNumber, core;
 
 let body = `
 ## common base root URLs
@@ -201,6 +197,7 @@ const main = async (params) => {
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
   currPrNumber = params.context.issue?.number;
+  core = params.core;
 
   const now = new Date();
   for (const { start, end } of RCPDates) {
@@ -232,6 +229,7 @@ if (process.env.LOCAL_RUN) {
   main({
     github,
     context,
+    core: { setFailed: console.error },
   });
 }
 
