@@ -40,8 +40,12 @@
   padding-left: 20px;
   width: 305px;
   height: 56px;
-  margin-bottom: 32px;
   cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ml-field-container {
+  position: relative;
 }
 
 input::placeholder {
@@ -54,6 +58,27 @@ input:disabled {
   cursor: not-allowed;
   outline: none;
   opacity: 0.5;
+}
+
+.ml-clear-icon {
+  background-color: transparent;
+  transform: scale3d(1.4,1.4,1.4);
+  background-image: url("data:image/svg+xml,%0A%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect id='Frame' x='4.14' y='3.77' width='12' height='12' style='fill:red;fill-opacity:0'/%3E%3Cg id='Line'%3E%3Cpath d='M14.88,13.16a1,1,0,0,1,0,1.35,1,1,0,0,1-.67.27.94.94,0,0,1-.67-.27l-3.4-3.4-3.39,3.4a1,1,0,0,1-1.35,0,1,1,0,0,1,0-1.35L8.8,9.77,5.4,6.37A1,1,0,0,1,5.4,5,1,1,0,0,1,6.75,5l3.39,3.39L13.54,5a.95.95,0,1,1,1.34,1.34l-3.39,3.4Z' style='fill:%236e6e6e'/%3E%3C/g%3E%3C/svg%3E");
+  display: block;
+  position: absolute;
+  right: 13px;
+  top: calc(50% - 16px);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px;
+}
+
+.ml-clear-icon.hidden {
+  display: none;
 }
 
 .quiz-entry-text {
@@ -70,6 +95,7 @@ input:disabled {
     font-weight: 900;
     line-height: 30px;
     margin-bottom: 8px;
+    margin-top: 32px;
 }
 
 /* from quiz.css */
@@ -248,6 +274,45 @@ html[dir="rtl"] .quiz-option-icon {
 
 .quiz-button[disabled] .quiz-button-label{
   color: var(--color-white);
+}
+
+/* popover */
+.popover-container {
+  position: relative;
+  display: inline-block;
+}
+
+.popover-content {
+  position: absolute;
+  z-index: 10;
+  background-color: white;
+  box-shadow: 0 0 5px 0 rgb(0 0 0 /15%);
+  padding: 20px;
+  max-height: 404px;
+  overflow: hidden;
+  text-align: left;
+  border-radius: 4px;
+  border: 2px solid #E6E6E6;
+  margin-top: 8px;
+  width: 489px;
+  box-sizing: border-box;
+}
+
+.popover-content div:hover {
+  background-color: #f0f0f0; /* Highlight color on hover */
+  text-decoration: underline;
+}
+
+.popover-bottom {
+  transform: translateX(-50%);
+} 
+
+.popover-item {
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #1473E6;
 }
 
 /* Tablet up */

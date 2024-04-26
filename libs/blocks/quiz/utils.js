@@ -61,7 +61,10 @@ export const defaultRedirect = (url) => {
   window.location.href = url;
 };
 
-export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect) => {
+export const handleResultFlow = async (
+  answers = [],
+  redirectFunc = defaultRedirect,
+) => {
   const { destinationPage } = await findAndStoreResultData(answers);
   const redirectUrl = getRedirectUrl(destinationPage);
   redirectFunc(redirectUrl);
@@ -441,6 +444,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
 export const transformToFlowData = (userSelection) => {
   const flowData = userSelection.map(({ selectedCards, selectedQuestion }) => [
     selectedQuestion.questions, Object.keys(selectedCards)]);
+  if (userSelection[0].isML) { flowData.push('isML'); }
   return flowData;
 };
 
@@ -473,10 +477,19 @@ export const getAnalyticsDataForLocalStorage = (config) => {
       formattedResultString = formattedResultString ? `${formattedResultString}|${product}` : product;
     });
   }
-  answers?.forEach((answer) => {
-    const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
+
+  for (let i = 0; i < answers.length - 1; i += 1) {
+    const answer = answers[i];
+    const eachAnswer = i === 0 && answers[answers.length - 1] === 'isML' ? `${answer[0]}/interest-${answer[1].join('-')}` : `${answer[0]}/${answer[1].join('/')}`;
     formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${eachAnswer}` : eachAnswer;
-  });
+  }
+
+  if (answers[answers.length - 1] !== 'isML') {
+    const answer = answers[answers.length - 1];
+    const lastFormattedAnswer = `${answer[0]}/${answer[1].join('/')}`;
+    formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${lastFormattedAnswer}` : `${lastFormattedAnswer}`;
+  }
+
   const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&result=${formattedResultString}&selectedOptions=${formattedAnswerString}`;
   return analyticsHash;
 };
