@@ -219,3 +219,29 @@ describe('useBlockCode action', async () => {
     expect(myBlock.textContent?.trim()).to.equal('My New Block!');
   });
 });
+
+describe('custom actions', async () => {
+  it('should not add custom configuration if not needed', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestReplace.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(getConfig().mep.custom).to.be.undefined;
+  });
+
+  it('should add a custom action configuration', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestCustomAction.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(getConfig().mep.custom).to.deep.equal({
+      'my-block': [{
+        action: 'replace',
+        manifestId: 'manifest.json',
+        target: '/fragments/fragmentreplaced',
+      },
+      ],
+    });
+  });
+});
