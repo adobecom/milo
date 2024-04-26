@@ -1,5 +1,5 @@
 .hero-marquee {
-  padding: var(--spacing-l) 0;
+  padding: var(--spacing-xl) 0;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -21,8 +21,9 @@
 }
 
 .hero-marquee .action-area { 
-  flex-direction: column;
-  gap: var(--spacing-xs); 
+  align-items: center;
+  flex-flow: column wrap;
+  gap: var(--spacing-s); 
   width: 100%;
 }
 
@@ -59,9 +60,9 @@
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-xs);
   margin: var(--spacing-xxs) 0; 
-  font-size: var(--type-body-m-size);
+  font-size: var(--type-body-l-size);
 } 
 
 .hero-marquee .lockup-area picture { 
@@ -79,8 +80,24 @@
   text-decoration-color: inherit
 }
 
-/* Lockup Area sizes */
+/* Lockup Area sizes - default large */
 .hero-marquee .lockup-area picture img,
+.hero-marquee .icon-size-l .lockup-area,
+.hero-marquee.icon-size-l .lockup-area {
+  font-size: var(--type-body-l-size);
+}
+
+.hero-marquee .icon-size-l .lockup-area picture img,
+.hero-marquee.icon-size-l .lockup-area picture img {
+  min-width:var(--icon-size-l);
+  height: var(--icon-size-l);
+}
+
+.hero-marquee .icon-size-m .lockup-area,
+.hero-marquee.icon-size-m .lockup-area {
+  font-size: var(--type-body-m-size);
+}
+
 .hero-marquee .icon-size-m .lockup-area picture img, 
 .hero-marquee.icon-size-m .lockup-area picture img {
   min-width:var(--icon-size-m);
@@ -96,17 +113,6 @@
 .hero-marquee.icon-size-s .lockup-area picture img {
   min-width:var(--icon-size-s);
   height: var(--icon-size-s);
-}
-
-.hero-marquee .icon-size-l .lockup-area,
-.hero-marquee.icon-size-l .lockup-area {
-  font-size: var(--type-body-l-size);
-}
-
-.hero-marquee .icon-size-l .lockup-area picture img,
-.hero-marquee.icon-size-l .lockup-area picture img {
-  min-width:var(--icon-size-l);
-  height: var(--icon-size-l);
 }
 
 .hero-marquee .icon-size-xl .lockup-area,
@@ -206,7 +212,7 @@
 }
 
 .hero-marquee .row-list li {
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-xxs);
 } 
 
 /* row-qr */
@@ -324,9 +330,12 @@
 
   /* con-vars support */
   .hero-marquee.bg-stack-mobile {
-    padding-top: var(--spacing-m);
+    padding-top: var(--spacing-xl);
   }
 
+  .hero-marquee.bg-stack-mobile-tablet {
+    flex-direction: column;
+  }
 }
 
 @media screen and (min-width: 920px) {

@@ -45,21 +45,6 @@ function decorateText(el, classes) {
   decorateButtons(el, btnClass);
 }
 
-function decorateBadge(el) {
-  const regex = /\[\[(.*?)\]\]/g;
-  const header = el.querySelector('h1, h2, h3, h4, h5, h6');
-  const matches = header.innerHTML.match(regex);
-  if (!matches) return;
-  matches.forEach((match) => {
-    const badgeText = match.substring(2, match.length - 2);
-    /* c8 ignore next */
-    if (!badgeText) return;
-    const badge = createTag('span', { class: 'badge' }, badgeText);
-    header.innerHTML = header.innerHTML.replace(regex, '').trim();
-    header.append(badge);
-  });
-}
-
 function decorateLockupRow(el) {
   const child = el.querySelector(':scope > div');
   if (child) child.classList.add('lockup-area');
@@ -68,7 +53,7 @@ function decorateLockupRow(el) {
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-l', 'button-justified-mobile'); });
+  buttons.forEach((button) => { button.classList.add('button-xl', 'button-justified-mobile'); });
 }
 
 function parseKeyString(str) {
@@ -147,7 +132,6 @@ export default async function init(el) {
   const assetRow = foreground.querySelector(':scope > div').classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
   const mainCopy = createTag('div', { class: 'main-copy static' }, copy.innerHTML);
-  decorateBadge(mainCopy);
   rows.splice(mainRowIndex, 1);
   if (mainRowIndex > 0) {
     for (let i = 0; i < mainRowIndex; i += 1) {
