@@ -1,8 +1,5 @@
 import { getNormalizedMetadata } from '../quiz/utils.js';
 
-let analyticsType;
-let analyticsQuiz;
-
 export async function fetchJson(path) {
   const response = await fetch(path);
   return response.json();
@@ -94,29 +91,13 @@ export const handleSelections = (prevSelections, selectedQuestion, selections) =
   return { nextSelections };
 };
 
-export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards, fiCodeResults) => {
-  const selectedCardNames = Object.keys(selectedCards);
-  if (selectedCardNames.length > 0) {
-    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion?.questions}/${selectedCardNames.join('/')}`;
-    return btnAnalytics;
-  }
-
-  if (fiCodeResults && fiCodeResults.length > 0) {
-    const fiCodes = fiCodeResults.map((result) => result.ficode);
-    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`;
-    return btnAnalytics;
-  }
-
-  return '';
-};
-
 export async function getQuizEntryData(el) {
   const blockData = getNormalizedMetadata(el);
   const dataPath = blockData.data.text;
   const quizPath = blockData.quiz.text;
   const maxQuestions = blockData.maxquestions?.text || 10;
-  analyticsType = blockData.analyticstype?.text;
-  analyticsQuiz = blockData.analyticsquiz?.text;
+  const analyticsType = blockData.analyticstype?.text;
+  const analyticsQuiz = blockData.analyticsquiz?.text;
   const [questionData, stringsData] = await getQuizJson(dataPath);
   return {
     quizPath,

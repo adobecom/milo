@@ -44,6 +44,10 @@
   box-sizing: border-box;
 }
 
+.ml-field-container {
+  position: relative;
+}
+
 input::placeholder {
   font-style: italic;
   color: #2C2C2C;
@@ -62,8 +66,8 @@ input:disabled {
   background-image: url("data:image/svg+xml,%0A%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect id='Frame' x='4.14' y='3.77' width='12' height='12' style='fill:red;fill-opacity:0'/%3E%3Cg id='Line'%3E%3Cpath d='M14.88,13.16a1,1,0,0,1,0,1.35,1,1,0,0,1-.67.27.94.94,0,0,1-.67-.27l-3.4-3.4-3.39,3.4a1,1,0,0,1-1.35,0,1,1,0,0,1,0-1.35L8.8,9.77,5.4,6.37A1,1,0,0,1,5.4,5,1,1,0,0,1,6.75,5l3.39,3.39L13.54,5a.95.95,0,1,1,1.34,1.34l-3.39,3.4Z' style='fill:%236e6e6e'/%3E%3C/g%3E%3C/svg%3E");
   display: block;
   position: absolute;
-  right: 37%;
-  top: 31%;
+  right: 13px;
+  top: calc(50% - 16px);
   cursor: pointer;
   width: 32px;
   height: 32px;

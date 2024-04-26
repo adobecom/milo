@@ -1,5 +1,5 @@
 import { render, html, useEffect, useState, useRef } from '../../deps/htm-preact.js';
-import { getQuizEntryData, handleNext, handleSelections, getAnalyticsDataForBtn } from './utils.js';
+import { getQuizEntryData, handleNext, handleSelections } from './utils.js';
 import { mlField, getMLResults } from './mlField.js';
 import { GetQuizOption } from './quizoption.js';
 import { quizPopover, getSuggestions } from './quizPopover.js';
@@ -8,13 +8,13 @@ const App = ({
   quizPath = null,
   maxQuestions = null,
   // analyticsQuiz = null,
-  // analyticsType = null,
+  analyticsType = null,
   questionData = {},
   stringsData = {},
   debug = false,
 }) => {
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [quizState, setQuizState] = useState({ userFlow: [], userSelection: [], isML: false });
+  const [quizState, setQuizState] = useState({ userFlow: [], userSelection: [] });
   const [quizLists, setQuizLists] = useState({});
   const [quizData, setQuizData] = useState({});
   const [hasMLData, setHasMLData] = useState(false);
@@ -132,8 +132,19 @@ const App = ({
   }, [selectedQuestion]);
 
   useEffect(() => {
-    setBtnAnalytics(getAnalyticsDataForBtn(selectedQuestion, selectedCards, fiCodeResults));
-  }, [selectedQuestion, selectedCards, fiCodeResults]);
+    let btnAnalyticsData = '';
+    const selectedCardNames = Object.keys(selectedCards);
+    if (selectedCardNames.length > 0) {
+      btnAnalyticsData = `Filters|${analyticsType}|${selectedQuestion?.questions}/${selectedCardNames.join('/')}`;
+    }
+
+    if (fiCodeResults && fiCodeResults.length > 0) {
+      const fiCodes = fiCodeResults.map((result) => result.ficode);
+      btnAnalyticsData = `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`;
+    }
+
+    setBtnAnalytics(btnAnalyticsData);
+  }, [selectedQuestion, selectedCards, fiCodeResults, analyticsType]);
 
   const continueQuiz = async () => {
     let selections = {};
@@ -180,10 +191,11 @@ const App = ({
         selections,
       );
 
+      if (mlInputUsed) { nextSelections[0].isML = true; }
+
       const currentQuizState = {
         userFlow: nextFlow,
         userSelection: nextSelections,
-        isML: mlInputUsed,
       };
       localStorage.setItem('stored-quiz-state', JSON.stringify(currentQuizState));
       setQuizState(currentQuizState);
@@ -238,6 +250,7 @@ const App = ({
     document.querySelector('#ml-field-input').value = suggestion.name;
     setSuggestions([]);
     setShowPopover(false);
+    document.querySelector('#ml-field-input').focus();
   };
 
   const onClearClick = () => {
