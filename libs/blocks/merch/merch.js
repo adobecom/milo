@@ -3,7 +3,7 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const PRICE_LITERALS_URL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
+export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
@@ -140,6 +140,14 @@ export async function fetchEntitlements() {
       },
     ));
   return fetchEntitlements.promise;
+}
+
+export async function fetchLiterals(url) {
+  fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
+    fetch(url)
+      .then((response) => response.json().then(({ data }) => resolve(data)));
+  });
+  return fetchLiterals.promise;
 }
 
 export async function fetchCheckoutLinkConfigs(base = '') {
@@ -318,10 +326,10 @@ export async function initService(force = false) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
+  const { env, commerce = {}, locale } = getConfig();
+  commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const commerceLib = await import('../../deps/commerce.js');
-    const { env, commerce = {}, locale } = getConfig();
-    commerce.priceLiteralsURL = PRICE_LITERALS_URL;
     const service = await commerceLib.init(() => ({
       env,
       commerce,
