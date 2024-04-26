@@ -8,6 +8,27 @@ describe('Rich Results', () => {
     setConfig({});
   });
 
+  it('add the Article rich results', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-article.html' });
+    await loadArea(document);
+    const script = document.querySelector('script[type="application/ld+json"]');
+    const actual = JSON.parse(script.innerHTML);
+    const expected = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headLine: 'The war is over',
+      image: 'https://example.com/photos/1x1/photo.jpg',
+      datePublished: '2022-12-24',
+      dateModified: '2022-12-25',
+      author: {
+        '@type': 'Person',
+        name: 'Emile Zola',
+        url: 'https://example.com/zola',
+      },
+    };
+    expect(actual).to.deep.equal(expected);
+  });
+
   it('add the NewsArticle rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
     await loadArea(document);
