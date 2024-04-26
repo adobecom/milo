@@ -98,7 +98,7 @@ const readyForm = (form) => {
 };
 
 const setPreference = (key, value) => {
-  if (key && value && key.includes('.')) {
+  if (value && key?.includes('.')) {
     const keyParts = key.split('.');
     const lastKey = keyParts.pop();
     const formDataObject = keyParts.reduce((obj, part) => {
