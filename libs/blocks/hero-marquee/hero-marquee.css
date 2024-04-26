@@ -412,7 +412,7 @@
 
   /* con-vars support */
   .hero-marquee.bg-stack-mobile-tablet {
-    padding-top: var(--spacing-m);
+    padding-top: var(--spacing-xl);
   }
 
 }
