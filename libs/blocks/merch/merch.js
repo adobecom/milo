@@ -4,7 +4,7 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 
 export const PRICE_LITERALS_URL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
-export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
+export const CHECKOUT_LINK_URL = 'https://www.adobe.com/federal/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
@@ -142,9 +142,9 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
-export async function fetchCheckoutLinkConfigs(base = '') {
+export async function fetchCheckoutLinkConfigs() {
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch(() => {
+    ?? fetch(CHECKOUT_LINK_URL).catch(() => {
       log?.error('Failed to fetch checkout link configs');
     }).then((mappings) => {
       if (!mappings?.ok) return undefined;
@@ -154,12 +154,7 @@ export async function fetchCheckoutLinkConfigs(base = '') {
 }
 
 export async function getCheckoutLinkConfig(productFamily) {
-  let { base } = getConfig();
-  if (/\.page$/.test(document.location.origin)) {
-    /* c8 ignore next 2 */
-    base = base.replace('.live', '.page');
-  }
-  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
+  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs();
   const { locale: { region } } = getConfig();
   const productFamilyConfigs = checkoutLinkConfigs.data?.filter(
     ({ [NAME_PRODUCT_FAMILY]: mappingProductFamily }) => mappingProductFamily === productFamily,
