@@ -136,6 +136,13 @@ function initPaddles(tabList, tabPaddles) {
     }
   });
 
+  tabList.addEventListener('scroll', () => {
+    tabPaddles.setAttribute(
+      'aria-valuenow',
+      ((tabList.scrollLeft / (tabList.scrollWidth - tabList.clientWidth)) * 100).toFixed(0),
+    );
+  });
+
   const options = {
     root: tabList,
     rootMargin: '0px',
