@@ -3,7 +3,7 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const PRICE_LITERALS_URL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
+export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
@@ -32,6 +32,68 @@ export const CC_SINGLE_APPS = [
   ['PREMIERE', 'PREMIERE_STOCK_BUNDLE'],
   ['RUSH'],
   ['XD'],
+];
+
+/* Optional checkout link params that are appened to checkout url as is */
+export const CHECKOUT_ALLOWED_KEYS = [
+  'af',
+  'ai',
+  'apc',
+  'appctxid',
+  'cli',
+  'co',
+  'csm',
+  'ctx',
+  'ctxRtUrl',
+  'DCWATC',
+  'dp', // Enable digital payments for iframe context
+  'fr', // represents the commerce app redirecting to UC
+  'gsp',
+  'ijt',
+  'lang',
+  'lo',
+  'mal',
+  'ms',
+  'mv',
+  'mv2',
+  'nglwfdata',
+  'ot',
+  'otac',
+  'pa',
+  'pcid', // Unified Paywall configuration ID for analytics
+  'promoid',
+  'q',
+  'rf',
+  'sc',
+  'scl',
+  'sdid',
+  'sid', // x-adobe-clientsession
+  'spint',
+  'svar',
+  'th',
+  'thm',
+  'trackingid',
+  'usid',
+  'workflowid',
+  'context.guid',
+  'so.ca',
+  'so.su',
+  'so.tr',
+  'so.va',
+  // below keys are mapped to shorted versions.
+  'quantity',
+  'authCode',
+  'checkoutPromoCode',
+  'rurl',
+  'curl',
+  'ctxrturl',
+  'country',
+  'language',
+  'clientId',
+  'context',
+  'productArrangementCode',
+  'offerType',
+  'marketSegment',
 ];
 
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
@@ -78,6 +140,14 @@ export async function fetchEntitlements() {
       },
     ));
   return fetchEntitlements.promise;
+}
+
+export async function fetchLiterals(url) {
+  fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
+    fetch(url)
+      .then((response) => response.json().then(({ data }) => resolve(data)));
+  });
+  return fetchLiterals.promise;
 }
 
 export async function fetchCheckoutLinkConfigs(base = '') {
@@ -256,10 +326,10 @@ export async function initService(force = false) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
+  const { env, commerce = {}, locale } = getConfig();
+  commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const commerceLib = await import('../../deps/commerce.js');
-    const { env, commerce = {}, locale } = getConfig();
-    commerce.priceLiteralsURL = PRICE_LITERALS_URL;
     const service = await commerceLib.init(() => ({
       env,
       commerce,
@@ -306,6 +376,14 @@ export async function getCheckoutContext(el, params) {
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const modal = params?.get('modal');
+
+  const extraOptions = {};
+  params.forEach((value, key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      extraOptions[key] = value;
+    }
+  });
+
   return {
     ...context,
     checkoutClientId,
@@ -314,6 +392,7 @@ export async function getCheckoutContext(el, params) {
     checkoutMarketSegment,
     entitlement,
     modal,
+    extraOptions: JSON.stringify(extraOptions),
   };
 }
 
