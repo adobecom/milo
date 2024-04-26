@@ -61,7 +61,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  margin: var(--spacing-xxs) 0; 
+  margin: 0 0 var(--spacing-xxs); 
   font-size: var(--type-body-l-size);
 } 
 
@@ -219,7 +219,7 @@
 .hero-marquee .row-qrcode .row-wrapper {
   display: flex;
   gap: var(--spacing-xs);
-  margin: var(--spacing-xxs) 0;
+  margin: 0;
 }
 
 .hero-marquee .row-qrcode .qr-code-img {
@@ -252,8 +252,8 @@
 
 .hero-marquee .row-list ul.icon-list,
 .hero-marquee .row-list ol.icon-list {
-  padding-inline-start: 24px;
-  margin: var(--spacing-xs) 0;
+  padding-inline-start: var(--spacing-m);
+  margin: 0;
 }
 
 .hero-marquee li.icon-item {
@@ -402,7 +402,7 @@
     display: inline-block;
     max-width: 140px;
     max-height: 140px;
-    margin: var(--spacing-s) 0 0;
+    margin: 0;
   }
 
   .hero-marquee .row-qrcode .google-play,
