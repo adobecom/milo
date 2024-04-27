@@ -1,4 +1,4 @@
-// branch: MWPW-138927-4 commit: 42b8009d8a924a19eec3948280fef72e1fc66edd Fri, 19 Apr 2024 18:46:16 GMT
+// branch: MWPW-142267 commit: 08563c8c5ba2d0f1e7a6213cffe42c399af21bfc Fri, 26 Apr 2024 00:32:27 GMT
 import{html as n,LitElement as P}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as f}from"/libs/deps/lit-all.min.js";var d="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",s="(min-width: 1600px)";var E=v`
     :host {
         position: relative;
@@ -251,6 +251,12 @@ import{html as n,LitElement as P}from"/libs/deps/lit-all.min.js";import{css as v
 
     :host([variant='twp']) {
         padding: 4px 10px 5px 10px;
+    }
+
+    slot[name='icons'] {
+        display: flex;
+        gap: 8px;
+        place-content: center;
     }
 
     :host([variant='twp']) ::slotted(merch-offer-select) {

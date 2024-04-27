@@ -1,12 +1,14 @@
-// branch: MWPW-138927-3 commit: b2d9c1d7faf66c00dd14bcbdc95571c45e1f4d9f Wed, 17 Apr 2024 12:06:48 GMT
-import{LitElement as s,html as e,css as r}from"/libs/deps/lit-all.min.js";var i=class extends s{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0}};constructor(){super(),this.size="m"}render(){let t=this.closest("merch-card")?.querySelector('div[slot="body-xs"]').querySelector('a[href$="#mnemonic-link"]');return t&&(t.href=t.href.replace("#mnemonic-link","")),t?e`<a href="${t.href||"#"}">
+// branch: MWPW-142267 commit: 08563c8c5ba2d0f1e7a6213cffe42c399af21bfc Fri, 26 Apr 2024 00:32:27 GMT
+import{LitElement as r,html as e,css as s}from"/libs/deps/lit-all.min.js";var i=class extends r{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0}};constructor(){super(),this.size="m"}render(){let t=this.closest("merch-card")?.querySelector('div[slot="body-xs"]').querySelector('a[href$="#mnemonic-link"]');return t&&(t.href=t.href.replace("#mnemonic-link","")),t?e`<a href="${t.href||"#"}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
                   />
-              </a>`:e` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=r`
+              </a>`:e` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=s`
         :host {
             --img-width: 32px;
             --img-height: 32px;
-            display: contents;
+            display: block;
+            width: var(--img-width);
+            height: var(--img-height);
         }
 
         :host([size='s']) {

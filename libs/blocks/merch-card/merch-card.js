@@ -109,6 +109,11 @@ const parseTwpContent = async (el, merchCard) => {
       const content = group.filter((e) => e.tagName.toLowerCase() === 'p' || e.tagName.toLowerCase() === 'ul');
       const bodySlot = createTag('div', { slot: 'body-xs' }, content);
       merchCard.append(bodySlot);
+
+      const whatsIncludedLink = bodySlot.querySelector('a[href*="merch-whats-included"]');
+      if (whatsIncludedLink) {
+        whatsIncludedLink.classList.add('merch-whats-included');
+      }
     } else if (index === 2) { // Footer section
       const footerContent = group.filter((e) => ['h5', 'p'].includes(e.tagName.toLowerCase()));
       const footer = createTag('div', { slot: 'footer' }, footerContent);
