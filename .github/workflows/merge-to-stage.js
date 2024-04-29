@@ -177,9 +177,7 @@ const openStageToMainPR = async () => {
 
   try {
     const {
-      data: {
-        pr: { html_url, number },
-      },
+      data: { html_url, number },
     } = await github.rest.pulls.create({
       owner,
       repo,
