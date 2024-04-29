@@ -247,6 +247,7 @@
 
 .table .section-head .section-head-title,
 .table .section-row .section-row-title,
+.table .section-row .section-row-title .table-title-text strong,
 .table.merch .section-head .col-merch,
 .table.merch .section-row .col-merch {
   display: flex;
