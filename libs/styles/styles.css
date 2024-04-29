@@ -642,7 +642,6 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 .con-block.bg-stack-mobile .background,
 .con-block.bg-stack-mobile-tablet .background {
   position: relative;
-  padding-bottom: var(--spacing-xs);
 }
 
 /*** Global Styles ***/

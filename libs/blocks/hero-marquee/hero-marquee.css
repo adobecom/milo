@@ -25,6 +25,13 @@
   color: var(--color-white);
 }
 
+.hero-marquee .background picture {
+  line-height: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
 /* Alignment */
 .hero-marquee .action-area,
 .hero-marquee .lockup-area { 
