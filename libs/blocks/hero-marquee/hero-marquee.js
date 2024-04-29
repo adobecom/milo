@@ -2,7 +2,7 @@ import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverr
 import { createTag } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'background'];
-const rowTypeKeyword = 'milo-row-type-';
+const rowTypeKeyword = 'con-block-row-';
 
 function decorateList(el) {
   el.classList.add('body-l', 'align-left');
@@ -20,7 +20,8 @@ function decorateList(el) {
 
 function decorateQr(el) {
   const text = el.querySelector(':scope > div');
-  if (!text && !text.children) return;
+  /* c8 ignore next */
+  if (!text) return;
   const classes = ['qr-code-img', 'google-play', 'app-store'];
   [...text.children].forEach((e, i) => {
     e.classList.add(classes[i]);
@@ -75,15 +76,6 @@ function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
 }
 
-function initMinHeightStyle(el) {
-  const mhKey = 'min-height-';
-  const mhClasses = [...el.classList].filter((c) => c.startsWith(mhKey));
-  if (mhClasses.length) {
-    const minHeightObj = mhClasses[0].split(mhKey);
-    if (minHeightObj[1]) el.style.minHeight = `${minHeightObj[1]}px`;
-  }
-}
-
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -93,8 +85,6 @@ export default async function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
-  // todo: do we want this feature
-  // initMinHeightStyle(el);
 
   // get first row that's not a keyword key/value row
   const mainRowIndex = rows.findIndex((row) => {

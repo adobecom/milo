@@ -920,7 +920,18 @@ a.static:hover {
     color: var(--color-black);
     text-decoration: none;
   }
-
+  
+  /* Static Links */
+  .con-block.static-links[class*="dark-"] a:not(.con-button),
+  .static-links .con-block[class*="dark-"] a:not(.con-button),
+  .con-block.static-links[class*="light-"] a:not(.con-button),
+  .static-links .con-block[class*="light-"] a:not(.con-button),
+  .con-block.static-links[class*="dark-"] a:not(.con-button):hover,
+  .static-links .con-block[class*="dark-"] a:not(.con-button):hover,
+  .con-block.static-links[class*="light-"] a:not(.con-button):hover,
+  .static-links .con-block[class*="light-"] a:not(.con-button):hover {
+    color: inherit;
+  }
 }
 
 /* tablet large up */
