@@ -203,7 +203,7 @@ const openChat = (event) => {
   }
 };
 
-const startInitialization = async (config, event) => {
+const startInitialization = async (config, event, onDemand) => {
   const asset = 'https://client.messaging.adobe.com/latest/AdobeMessagingClient';
   await Promise.all([
     loadStyle(`${asset}.css`),
@@ -238,8 +238,6 @@ const startInitialization = async (config, event) => {
         chatInitialized = !!data?.releaseControl?.showAdobeMessaging;
       },
       onReadyCallback: () => {
-        const onDemandMeta = getMetadata('jarvis-on-demand')?.toLowerCase();
-        const onDemand = onDemandMeta ? onDemandMeta === 'on' : config.jarvis.onDemand;
         if (onDemand) {
           openChat(event);
         }
@@ -300,7 +298,7 @@ const initJarvisChat = async (
     if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
     event.preventDefault();
     if (onDemand && !chatInitialized) {
-      await startInitialization(config, event);
+      await startInitialization(config, event, onDemand);
     } else {
       openChat(event);
     }
