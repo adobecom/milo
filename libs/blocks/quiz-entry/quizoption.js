@@ -6,7 +6,6 @@ const base = miloLibs || codeRoot;
 
 const ARROW_NEXT_IMG = `<img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16">`;
 const ARROW_PREVIOUS_IMG = `<img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16">`;
-// document.documentElement.dir = 'rtl';
 function decorateNextPreviousBtns() {
   const previousBtn = createTag(
     'button',
@@ -76,11 +75,13 @@ export const GetQuizOption = ({
   background, mlInputUsed,
 }) => {
   const [index, setIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(window.innerWidth >= 600 ? 5 : 2.5);
+  const [visibleCount, setVisibleCount] = useState(6);
+  setVisibleCount(window.innerWidth >= 600 ? 6 : 3);
+
   const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
 
   useEffect(() => {
-    const handleResize = () => setVisibleCount(window.innerWidth >= 600 ? 5 : 2.5);
+    const handleResize = () => setVisibleCount(window.innerWidth >= 600 ? 6 : 3);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -98,15 +99,14 @@ export const GetQuizOption = ({
   };
 
   const handleKey = (e) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    if (e.key === 'ArrowRight') {
       e.preventDefault();
       isRTL ? prev() : next();
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       isRTL ? next() : prev();
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      // Directly use the target element to trigger the click event
       if (e.target && e.target.click) {
         e.target.click();
       }
@@ -123,9 +123,9 @@ export const GetQuizOption = ({
   return html`
     <div class="quiz-question" tabindex="0" onkeydown=${handleKey}>
         <div class="quiz-options-container" role="group" aria-labelledby="question">
-          ${index > 0 && html`<button tabIndex="-1" onClick=${prev} class="carousel-arrow-prev ${isRTL ? 'rtl' : ''}"></button>`}
+          ${index > 0 && html`<button onClick=${prev} class="carousel-arrow-prev ${isRTL ? 'rtl' : ''}"></button>`}
           <div class="carousel-slides">
-            ${options.data.slice(index, index + visibleCount).map((option, idx) => html`
+            ${options.data.slice(index + 1, index + visibleCount).map((option, idx) => html`
               <${OptionCard} 
                 key=${idx}
                 text=${option.text}
@@ -141,7 +141,7 @@ export const GetQuizOption = ({
                 onClick=${onOptionClick(option)}
                 />`)}
           </div>
-          ${(index + visibleCount < options.data.length) && html`<button tabIndex="-1" onClick=${next} class="carousel-arrow-next ${isRTL ? 'rtl' : ''}"></button>`}
+          ${(index + visibleCount < options.data.length) && html`<button onClick=${next} class="carousel-arrow-next ${isRTL ? 'rtl' : ''}"></button>`}
         </div>
     </div>`;
 };
