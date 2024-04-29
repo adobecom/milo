@@ -2,12 +2,13 @@ import { render, html, useEffect, useState, useRef } from '../../deps/htm-preact
 import { getQuizEntryData, handleNext, handleSelections } from './utils.js';
 import { mlField, getMLResults } from './mlField.js';
 import { GetQuizOption } from './quizoption.js';
+import { quizPopover, getSuggestions } from './quizPopover.js';
 
 const App = ({
   quizPath = null,
   maxQuestions = null,
   // analyticsQuiz = null,
-  // analyticsType = null,
+  analyticsType = null,
   questionData = {},
   stringsData = {},
   debug = false,
@@ -23,6 +24,10 @@ const App = ({
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [selectedCards, setSelectedCards] = useState({});
   const questionCount = useRef(0);
+  const [btnAnalytics, setBtnAnalytics] = useState(null);
+  const [fiCodeResults, setFiCodeResults] = useState({});
+  const [showPopover, setShowPopover] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
   const fiCodeCount = 3;
   const enterKeyCode = 13;
@@ -126,6 +131,21 @@ const App = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuestion]);
 
+  useEffect(() => {
+    let btnAnalyticsData = '';
+    const selectedCardNames = Object.keys(selectedCards);
+    if (selectedCardNames.length > 0) {
+      btnAnalyticsData = `Filters|${analyticsType}|${selectedQuestion?.questions}/${selectedCardNames.join('/')}`;
+    }
+
+    if (fiCodeResults && fiCodeResults.length > 0) {
+      const fiCodes = fiCodeResults.map((result) => result.ficode);
+      btnAnalyticsData = `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`;
+    }
+
+    setBtnAnalytics(btnAnalyticsData);
+  }, [selectedQuestion, selectedCards, fiCodeResults, analyticsType]);
+
   const continueQuiz = async () => {
     let selections = {};
     let userFlow = [];
@@ -134,6 +154,8 @@ const App = ({
       const mlFieldText = document.querySelector('#ml-field-input').value;
       const fiResults = await getMLResults(mlDetails.endpoint, mlDetails['api-key'], mlDetails.threshold || defaultThreshold, mlFieldText, fiCodeCount, mlValues);
       const { filtered } = fiResults;
+
+      setFiCodeResults(filtered);
 
       filtered.forEach((item) => {
         selections[item.ficode] = true;
@@ -169,6 +191,8 @@ const App = ({
         selections,
       );
 
+      if (mlInputUsed) { nextSelections[0].isML = true; }
+
       const currentQuizState = {
         userFlow: nextFlow,
         userSelection: nextSelections,
@@ -199,16 +223,42 @@ const App = ({
     setSelectedCards(selected);
   };
 
-  const onMLInput = (event) => {
+  const onMLInput = async (event) => {
     const inputValue = event.target.value;
     setMLInputUsed(true);
+    const { mlDetails } = mlData;
+    const data = await getSuggestions(mlDetails['ac-endpoint'], mlDetails['ac-client-id'], inputValue, mlDetails['ac-scope']);
+    if (data && data.suggested_completions && data.suggested_completions.length > 0) {
+      setSuggestions(data.suggested_completions.slice(0, 5));
+      setShowPopover(true);
+    }
+
+    document.querySelector('#ml-field-clear').classList.toggle('hidden', !inputValue.length);
+
     if (inputValue.length === 0) {
       setMLInputUsed(false);
+      setSuggestions([]);
+      setShowPopover(false);
     }
   };
 
   const onMLEnter = (event) => {
     if (event.keyCode === enterKeyCode) continueQuiz();
+  };
+
+  const onSuggestionClick = (suggestion) => () => {
+    document.querySelector('#ml-field-input').value = suggestion.name;
+    setSuggestions([]);
+    setShowPopover(false);
+    document.querySelector('#ml-field-input').focus();
+  };
+
+  const onClearClick = () => {
+    document.querySelector('#ml-field-input').value = '';
+    document.querySelector('#ml-field-clear').classList.add('hidden');
+    setMLInputUsed(false);
+    setSuggestions([]);
+    setShowPopover(false);
   };
 
   if (selectedQuestion) {
@@ -223,8 +273,13 @@ const App = ({
     ${hasMLData && html`<${mlField} 
       cardsUsed="${cardsUsed}" 
       onMLInput="${onMLInput}"
-      onMLEnter="${onMLEnter}"
-      placeholderText="${getOptionsValue('fi_code', 'title')}"/><div class="results-container"></div>`}
+      onMLEnter="${onMLEnter}" 
+      onClearClick="${onClearClick}" 
+      placeholderText="${getOptionsValue('fi_code', 'title')}"/>`}
+    ${showPopover && html`<${quizPopover} 
+      suggestions=${suggestions} 
+      position="bottom" 
+      onSuggestionClick=${onSuggestionClick}/>`}
     <div class="quiz-entry-text">${quizLists.strings[selectedQuestion.questions].text}</div>
     ${selectedQuestion.questions && html`<${GetQuizOption} 
       maxSelections=${maxSelections} 
@@ -240,6 +295,7 @@ const App = ({
           disabled="${!!(!mlInputUsed && !cardsUsed)}"
           aria-label="${quizLists.strings[selectedQuestion.questions].btn}" 
           class="quiz-button" 
+          daa-ll="${btnAnalytics}" 
           onClick=${() => { continueQuiz(); }}>
             <span class="quiz-button-label">${quizLists.strings[selectedQuestion.questions].btn}</span>
         </button>
