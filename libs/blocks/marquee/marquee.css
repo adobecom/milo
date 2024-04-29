@@ -432,6 +432,10 @@
     padding: var(--spacing-xl) 0;
   }
 
+  html[dir="rtl"] .marquee.split .foreground.container {
+    flex-direction: row-reverse;
+  }
+
   .marquee.split .foreground.container .text {
     max-width: calc(50% - var(--grid-column-width));
   }
@@ -470,6 +474,10 @@
 
   .marquee.split.row-reversed .foreground.container {
     justify-content: flex-end;
+  }
+
+  html[dir="rtl"] .marquee.split.row-reversed .foreground.container {
+    justify-content: flex-start;
   }
 
   .marquee.split .asset img,
