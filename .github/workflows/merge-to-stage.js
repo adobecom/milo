@@ -7,7 +7,7 @@ const {
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
 const prTitle = '[Release] Stage to Main';
 const seen = {};
-const requiredApprovals = process.env.requiredApprovals || 2;
+const requiredApprovals = process.env.REQUIRED_APPROVALS || 2;
 const stage = 'stage';
 const prod = 'main';
 const labels = {
