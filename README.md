@@ -68,4 +68,3 @@ npm run test:watch
 ```
 ### Coverage
 `npm run test:watch` can give misleading coverage reports. Use `npm run test` for accurate coverage reporting.
-
