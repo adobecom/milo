@@ -32,12 +32,11 @@
   display: flex;
 }
 
-.hero-marquee .action-area { 
+.hero-marquee .action-area {
   flex-flow: column wrap;
   gap: var(--spacing-s); 
   width: 100%;
 }
-
 
 .hero-marquee .background-split picture img {
   object-fit: cover;
@@ -333,6 +332,10 @@
   .hero-marquee,
   .hero-marquee .action-area { 
     flex-direction: row;
+  }
+
+  .hero-marquee .action-area { 
+    align-items: center;
   }
   
   .hero-marquee.split { 
