@@ -1,9 +1,34 @@
-const { slackNotification, getLocalConfigs } = require('./helpers.js');
+const {
+  slackNotification,
+  getLocalConfigs,
+  pulls: { addLabels, addFiles, getChecks, getReviews },
+} = require('./helpers.js');
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
-const PR_TITLE = '[Release] Stage to Main';
+const prTitle = '[Release] Stage to Main';
 const seen = {};
-const requiredApprovals = process.env.LOCAL_RUN ? 0 : 2; // TODO - change to 2
+const requiredApprovals = process.env.requiredApprovals || 2;
+const stage = 'stage';
+const prod = 'main';
+const labels = {
+  highPriority: 'high priority',
+  readyForStage: 'Ready for Stage',
+  SOTPrefix: 'SOT',
+};
+
+const slack = {
+  fileOverlap: ({ html_url, number, title }) =>
+    `:fast_forward: Skipping <${html_url}|${number}: ${title}> due to overlap in files.`,
+  merge: ({ html_url, number, title }) =>
+    `:merged: Stage merge PR <${html_url}|${number}: ${title}>.`,
+  failingChecks: ({ html_url, number, title }) =>
+    `:x: Skipping <${html_url}|${number}: ${title}> due to failing checks`,
+  requireApprovals: ({ html_url, number, title }) =>
+    `:x: Skipping <${html_url}|${number}: ${title}> due to insufficient approvals`,
+  openedSyncPr: ({ html_url, number }) =>
+    `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
+};
+
 let github, owner, repo, currPrNumber, core;
 
 let body = `
@@ -58,53 +83,7 @@ const RCPDates = [
   },
 ];
 
-const addLabels = ({ pr }) =>
-  github.rest.issues
-    .listLabelsOnIssue({ owner, repo, issue_number: pr.number })
-    .then(({ data }) => {
-      pr.labels = data.map(({ name }) => name);
-      return pr;
-    });
-
-const addFiles = ({ pr }) =>
-  github.rest.pulls
-    .listFiles({ owner, repo, pull_number: pr.number })
-    .then(({ data }) => {
-      pr.files = data.map(({ filename }) => filename);
-      return pr;
-    });
-
-const isHighPrio = (label) => label.includes('high priority');
-
-const getChecks = ({ pr }) =>
-  github.rest.checks
-    .listForRef({ owner, repo, ref: pr.head.sha })
-    .then(({ data }) => {
-      const checksByName = data.check_runs.reduce((map, check) => {
-        if (
-          !map.has(check.name) ||
-          new Date(map.get(check.name).completed_at) <
-            new Date(check.completed_at)
-        ) {
-          map.set(check.name, check);
-        }
-        return map;
-      }, new Map());
-      pr.checks = Array.from(checksByName.values());
-      return pr;
-    });
-
-const getReviews = ({ pr }) =>
-  github.rest.pulls
-    .listReviews({
-      owner,
-      repo,
-      pull_number: pr.number,
-    })
-    .then(({ data }) => {
-      pr.reviews = data;
-      return pr;
-    });
+const isHighPrio = (label) => label.includes(labels.highPriority);
 
 const hasFailingChecks = (checks) =>
   checks.some(
@@ -114,30 +93,26 @@ const hasFailingChecks = (checks) =>
 
 const getPRs = async () => {
   let prs = await github.rest.pulls
-    .list({ owner, repo, state: 'open', per_page: 100, base: 'stage' })
+    .list({ owner, repo, state: 'open', per_page: 100, base: stage })
     .then(({ data }) => data);
-  await Promise.all(prs.map((pr) => addLabels({ pr })));
-  prs = prs.filter((pr) => pr.labels.includes('Ready for Stage'));
+  await Promise.all(prs.map((pr) => addLabels({ pr, github, owner, repo })));
+  prs = prs.filter((pr) => pr.labels.includes(labels.readyForStage));
   await Promise.all([
-    ...prs.map((pr) => addFiles({ pr })),
-    ...prs.map((pr) => getChecks({ pr })),
-    ...prs.map((pr) => getReviews({ pr })),
+    ...prs.map((pr) => addFiles({ pr, github, owner, repo })),
+    ...prs.map((pr) => getChecks({ pr, github, owner, repo })),
+    ...prs.map((pr) => getReviews({ pr, github, owner, repo })),
   ]);
 
   prs = prs.filter(({ checks, reviews, html_url, number, title }) => {
     if (hasFailingChecks(checks)) {
-      slackNotification(
-        `:x: Skipping <${html_url}|${number}: ${title}> due to failing checks`
-      );
+      slackNotification(slack.failingChecks({ html_url, number, title }));
       if (number === currPrNumber) core.setFailed('Failing checks.');
       return false;
     }
 
     const approvals = reviews.filter(({ state }) => state === 'APPROVED');
     if (approvals.length < requiredApprovals) {
-      slackNotification(
-        `:x: Skipping <${html_url}|${number}: ${title}> due to insufficient approvals`
-      );
+      slackNotification(slack.requireApprovals({ html_url, number, title }));
       if (number === currPrNumber) core.setFailed('Insufficient approvals.');
       return false;
     }
@@ -149,30 +124,25 @@ const getPRs = async () => {
 };
 
 const merge = async ({ prs }) => {
-  console.log('Merging PRs that are ready... ');
+  console.log(`Merging ${prs.length} PRs that are ready... `);
   for await (const { number, files, html_url, title } of prs) {
     if (files.some((file) => seen[file])) {
-      const message = `:fast_forward: Skipping <${html_url}|${number}: ${title}> due to overlap in files.`;
-      await slackNotification(message);
+      await slackNotification(slack.fileOverlap({ html_url, number, title }));
       continue;
     }
-
     files.forEach((file) => (seen[file] = true));
-
     if (!process.env.LOCAL_RUN)
       await github.rest.pulls.merge({ owner, repo, pull_number: number });
-    await slackNotification(
-      `:merged: Stage merge PR <${html_url}|${number}: ${title}>.`
-    );
+    await slackNotification(slack.merge({ html_url, number, title }));
   }
 };
 
 const getStageToMainPR = () =>
   github.rest.pulls
-    .list({ owner, repo, state: 'open', base: 'main' })
-    .then(({ data } = {}) => data.find(({ title } = {}) => title === PR_TITLE))
-    .then((pr) => pr && addLabels({ pr }))
-    .then((pr) => pr && addFiles({ pr }))
+    .list({ owner, repo, state: 'open', base: prod })
+    .then(({ data } = {}) => data.find(({ title } = {}) => title === prTitle))
+    .then((pr) => pr && addLabels({ pr, github, owner, repo }))
+    .then((pr) => pr && addFiles({ pr, github, owner, repo }))
     .then((pr) => {
       pr?.files.forEach((file) => (seen[file] = true));
       return pr;
@@ -182,11 +152,9 @@ const openStageToMainPR = async () => {
   const { data } = await github.rest.repos.compareCommits({
     owner,
     repo,
-    base: 'main',
-    head: 'stage',
+    base: prod,
+    head: stage,
   });
-
-  if (data.status === 'identical') return console.log('Stage&Main are equal');
 
   const prSet = new Set();
   for (const commit of data.commits) {
@@ -205,18 +173,25 @@ const openStageToMainPR = async () => {
     }
   }
 
-  const { data: pr } = await github.rest.pulls.create({
-    owner,
-    repo,
-    title: '[Release] Stage to Main',
-    head: 'stage',
-    base: 'main',
-    body,
-  });
-
-  await slackNotification(
-    `:sync_icon2: Prod release PR <${pr.html_url}|#${pr.number}> has been opened`
-  );
+  try {
+    const {
+      data: {
+        pr: { html_url, number },
+      },
+    } = await github.rest.pulls.create({
+      owner,
+      repo,
+      title: prTitle,
+      head: stage,
+      base: prod,
+      body,
+    });
+    await slackNotification(slack.openedSyncPr({ html_url, number }));
+  } catch (error) {
+    if (error.message.includes('No commits between main and stage'))
+      return console.log('No new commits, no stage->main PR opened');
+    throw error;
+  }
 };
 
 const main = async (params) => {
@@ -236,7 +211,7 @@ const main = async (params) => {
   try {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR: ', !!stageToMainPR);
-    if (stageToMainPR?.labels.some((label) => label.includes('SOT')))
+    if (stageToMainPR?.labels.some((label) => label.includes(labels.SOTPrefix)))
       return console.log('PR exists & testing started. Stopping execution.');
     const prs = await getPRs();
     await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });

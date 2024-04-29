@@ -33,4 +33,54 @@ const slackNotification = (text) => {
   });
 };
 
-module.exports = { getLocalConfigs, slackNotification };
+const addLabels = ({ pr, github, owner, repo }) =>
+  github.rest.issues
+    .listLabelsOnIssue({ owner, repo, issue_number: pr.number })
+    .then(({ data }) => {
+      pr.labels = data.map(({ name }) => name);
+      return pr;
+    });
+
+const addFiles = ({ pr, github, owner, repo }) =>
+  github.rest.pulls
+    .listFiles({ owner, repo, pull_number: pr.number })
+    .then(({ data }) => {
+      pr.files = data.map(({ filename }) => filename);
+      return pr;
+    });
+
+const getChecks = ({ pr, github, owner, repo }) =>
+  github.rest.checks
+    .listForRef({ owner, repo, ref: pr.head.sha })
+    .then(({ data }) => {
+      const checksByName = data.check_runs.reduce((map, check) => {
+        if (
+          !map.has(check.name) ||
+          new Date(map.get(check.name).completed_at) <
+            new Date(check.completed_at)
+        ) {
+          map.set(check.name, check);
+        }
+        return map;
+      }, new Map());
+      pr.checks = Array.from(checksByName.values());
+      return pr;
+    });
+
+const getReviews = ({ pr, github, owner, repo }) =>
+  github.rest.pulls
+    .listReviews({
+      owner,
+      repo,
+      pull_number: pr.number,
+    })
+    .then(({ data }) => {
+      pr.reviews = data;
+      return pr;
+    });
+
+module.exports = {
+  getLocalConfigs,
+  slackNotification,
+  pulls: { addLabels, addFiles, getChecks, getReviews },
+};
