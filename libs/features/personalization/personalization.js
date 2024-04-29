@@ -732,7 +732,7 @@ export function cleanAndSortManifestList(manifests) {
       if (config.mep?.override) overridePersonalizationVariant(manifest, config);
     } catch (e) {
       console.warn(e);
-      window.lana.log(`MEP Error parsing manifests: ${e.toString()}`);
+      window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
     }
   });
   return Object.values(manifestObj).sort(compareExecutionOrder);
@@ -799,6 +799,6 @@ export async function applyPers(manifests) {
     config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
   } catch (e) {
     console.warn(e);
-    window.lana.log(`MEP Error: ${e.toString()}`);
+    window.lana?.log(`MEP Error: ${e.toString()}`);
   }
 }
