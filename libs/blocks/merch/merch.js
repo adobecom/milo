@@ -34,7 +34,7 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
-/* Optional checkout link params that are appened to checkout url as is */
+/* Optional checkout link params that are appended to checkout urls as is */
 export const CHECKOUT_ALLOWED_KEYS = [
   'af',
   'ai',
