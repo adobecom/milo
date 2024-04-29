@@ -7,6 +7,9 @@ const pass = 'green';
 const fail = 'red';
 const limbo = 'orange';
 
+const KNOWN_BAD_URLS = ['news.adobe.com'];
+const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
+
 const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC });
 const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC });
 const canonResult = signal({ icon: DEF_ICON, title: 'Canonical', description: DEF_DESC });
@@ -135,113 +138,126 @@ async function checkLorem() {
   return result.icon;
 }
 
-function makeGroups(items, size = 20) {
-  const groups = [];
-  while (items.length) {
-    groups.push(items.splice(0, size));
+function makeGroups(arr, n = 20) {
+  const batchSize = Math.ceil(arr.length / n);
+  const size = Math.ceil(arr.length / batchSize);
+  return Array.from({ length: batchSize }, (v, i) => arr.slice(i * size, i * size + size));
+}
+
+const connectionError = () => {
+  linksResult.value = {
+    icon: fail,
+    title: 'Links',
+    description: `A VPN connection is required to use the link check service.
+    Please turn on VPN and refresh the page. If VPN is running contact your site engineers for help.`,
+  };
+};
+
+async function spidyCheck(url) {
+  try {
+    const resp = await fetch(url, { method: 'HEAD' });
+    if (resp.ok) return true;
+    connectionError();
+  } catch (e) {
+    connectionError();
+    window.lana.log(`There was a problem connecting to the link check API ${url}. ${e}`);
   }
-  return groups;
+  return false;
+}
+
+async function getSpidyResults(url, opts) {
+  try {
+    const resp = await fetch(`${url}/api/url-http-status`, opts);
+    if (!resp.ok) return [];
+
+    const json = await resp.json();
+    if (!json.data || json.data.length === 0) return [];
+
+    return json.data.reduce((acc, result) => {
+      const status = result.status === 'ECONNREFUSED' ? 503 : result.status;
+      if (status >= 399) {
+        result.status = status;
+        acc.push(result);
+      }
+      return acc;
+    }, []);
+  } catch (e) {
+    window.lana.log(`There was a problem connecting to the link check API ${url}/api/url-http-status. ${e}`);
+    return [];
+  }
+}
+
+function compareResults(result, link) {
+  const match = link.liveHref === result.url;
+  if (!match) return false;
+  if (link.closest('header')) link.parent = 'gnav';
+  if (link.closest('main')) link.parent = 'main';
+  if (link.closest('footer')) link.parent = 'footer';
+  link.classList.add('problem-link');
+  link.status = result.status;
+  link.dataset.status = link.status;
+  return true;
 }
 
 async function checkLinks() {
-  const { spidy } = await getServiceConfig(window.location.origin);
+  const { spidy, preflight } = await getServiceConfig(window.location.origin);
+  // Do not re-check if the page has already been checked
   if (linksResult.value.checked) return;
 
-  const connectionError = () => {
-    linksResult.value = {
-      icon: fail,
-      title: 'Links',
-      description: `A VPN connection is required to use the link check service.
-      Please turn on VPN and refresh the page. If VPN is running contact your site engineers for help.`,
-    };
-  };
-
   // Check to see if Spidy is available.
-  try {
-    const resp = await fetch(spidy.url, { method: 'HEAD' });
-    if (!resp.ok) {
-      connectionError();
-      return;
-    }
-  } catch (e) {
-    connectionError();
-    // eslint-disable-next-line no-console
-    console.error(`There was a problem connecting to the link check API ${spidy.url}. ${e}`);
-    return;
-  }
+  const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
+  const canSpidy = await spidyCheck(spidyUrl);
+  if (!canSpidy) return;
 
-  const result = { ...linksResult.value };
-
-  /* Find all links.
-   * Remove any local or existing preflight links.
-   * Set link to use hlx.live
+  /**
+   * Find all links with an href.
+   * Filter out any local or existing preflight links.
+   * Set link to use hlx.live so the service can see them without auth
    * */
+  const knownBadUrls = preflight?.ignoreDomains
+    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
+    : KNOWN_BAD_URLS;
+
   const links = [...document.querySelectorAll('a')]
     .filter((link) => {
-      if (!link.href.includes('local') && !link.closest('.preflight')) {
-        link.dataset.liveHref = link.href.replace('hlx.page', 'hlx.live');
+      if (
+        link.href // Has an href tag
+        && !link.href.includes('local') // Is not a local link
+        && !link.closest('.preflight') // Is not inside preflight
+        && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
+      ) {
+        link.liveHref = link.href.replace('hlx.page', 'hlx.live');
         return true;
       }
       return false;
     });
+
   const groups = makeGroups(links);
+  const baseOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+  const badResults = [];
 
   for (const group of groups) {
-    const urls = group.map((link) => {
-      const { liveHref } = link.dataset;
-      return liveHref;
-    });
-    const opts = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls }),
-    };
-    let resp;
-
-    try {
-      resp = await fetch(`${spidy.url}/api/url-http-status`, opts);
-      if (!resp.ok) return;
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(`There was a problem connecting to the link check API ${spidy.url}/api/url-http-status. ${e}`);
-    }
-
-    const json = await resp.json();
-    if (!json) return;
-    json.data.forEach((linkResult) => {
-      const status = linkResult.status === 'ECONNREFUSED' ? 503 : linkResult.status;
-      // Response will come back out of order, use ID to find the correct index
-      group[linkResult.id].status = status;
-
-      if (status >= 399) {
-        let parent = '';
-        if (group[linkResult.id].closest('header')) parent = 'Gnav';
-        if (group[linkResult.id].closest('main')) parent = 'Main content';
-        if (group[linkResult.id].closest('footer')) parent = 'Footer';
-        badLinks.value = [...badLinks.value,
-          {
-            // Diplay .hlx.live URL in broken link list for relative links
-            href: group[linkResult.id].dataset.liveHref,
-            status: group[linkResult.id].status,
-            parent,
-          }];
-        group[linkResult.id].classList.add('broken-link');
-        group[linkResult.id].dataset.status = status;
-      }
-    });
+    const urls = group.map((link) => link.liveHref);
+    const opts = { ...baseOpts, body: JSON.stringify({ urls }) };
+    const spidyResults = await getSpidyResults(spidyUrl, opts);
+    badResults.push(...spidyResults);
   }
 
-  if (badLinks.value.length) {
-    result.icon = fail;
-    result.description = `Reason: ${badLinks.value.length} broken link(s) found on the page. Use the list below to identify and fix them.`;
-  }
+  badLinks.value = badResults.map((result) => links.find((link) => compareResults(result, link)));
 
-  // No broken links
-  if (badLinks.value.length === 0) {
-    result.icon = pass;
-    result.description = 'Links are valid.';
-  }
-  linksResult.value = { ...result, checked: true };
+  // Format the results for display
+  const count = badLinks.value.length;
+  const linkText = count > 1 || count === 0 ? 'links' : 'link';
+  const badDesc = `Reason: ${count} problem ${linkText}. Use the list below to fix them.`;
+  const goodDesc = 'Links are valid.';
+
+  // Build the result display object
+  linksResult.value = {
+    title: linksResult.value.title,
+    checked: true,
+    icon: count > 0 ? fail : pass,
+    description: count > 0 ? badDesc : goodDesc,
+  };
 }
 
 export async function sendResults() {
@@ -324,20 +340,20 @@ export default function Panel() {
         <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
       </div>
     </div>
-    <div class='broken-links'>
+    <div class='problem-links'>
     ${badLinks.value.length > 0 && html`
-      <p class="note">Broken links can also be found on the page. Close preflight to see problem links highlighted in red.</p>
+      <p class="note">Close preflight to see problem links highlighted on page.</p>
       <table>
         <tr>
           <th></th>
-          <th>Broken URLs</th>
+          <th>Problematic URLs</th>
           <th>Located in</th>
           <th>Status</th>
         </tr>
         ${badLinks.value.map((link, idx) => html`
           <tr>
             <td>${idx + 1}.</td>
-            <td><a href='${link.href}' target='_blank'>${link.href}</a></td>
+            <td><a href='${link.liveHref}' target='_blank'>${link.liveHref}</a></td>
             <td><span>${link.parent}</span></td>
             <td><span>${link.status}</span></td>
           </tr>`)}
