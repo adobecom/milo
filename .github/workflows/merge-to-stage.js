@@ -126,7 +126,7 @@ const getPRs = async () => {
 };
 
 const merge = async ({ prs }) => {
-  console.log(`Merging ${prs.length} PRs that are ready... `);
+  console.log(`Merging ${prs.length || 0} PRs that are ready... `);
   for await (const { number, files, html_url, title } of prs) {
     if (files.some((file) => seen[file])) {
       await slackNotification(slack.fileOverlap({ html_url, number, title }));
@@ -135,6 +135,7 @@ const merge = async ({ prs }) => {
     files.forEach((file) => (seen[file] = true));
     if (!process.env.LOCAL_RUN)
       await github.rest.pulls.merge({ owner, repo, pull_number: number });
+    body = `- [${title}](${html_url})\n${body}`;
     await slackNotification(slack.merge({ html_url, number, title }));
   }
 };
@@ -158,7 +159,6 @@ const openStageToMainPR = async () => {
     head: stage,
   });
 
-  const seenPRs = new Set();
   for (const commit of comparisonData.commits) {
     const { data: pullRequestData } =
       await github.rest.repos.listPullRequestsAssociatedWithCommit({
@@ -168,10 +168,8 @@ const openStageToMainPR = async () => {
       });
 
     for (const pr of pullRequestData) {
-      if (!seenPRs.has(pr.html_url)) {
+      if (!body.includes(pr.html_url))
         body = `- [${pr.title}](${pr.html_url})\n${body}`;
-        seenPRs.add(pr.html_url);
-      }
     }
   }
 

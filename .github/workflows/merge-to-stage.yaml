@@ -28,13 +28,17 @@ jobs:
             const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
             if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
               const { label: { name } } = event;
-              return name === 'Ready for Stage';
+              if (name !== 'Ready for Stage') {
+                console.log('Label is not "Ready for Stage", stopping workflow...');
+                return false;
+              }
             }
             return true;
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge to stage or queue to merge
+        if: steps.check_label.outputs.result == 'true'
         uses: actions/github-script@v7.0.1
         with:
           script: |
