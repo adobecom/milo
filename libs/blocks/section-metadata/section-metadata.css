@@ -169,10 +169,7 @@
   gap: var(--spacing-xxxl);
 }
 
-.section.two-up,
-.section.three-up,
-.section.four-up,
-.section.five-up {
+.section[class*='-up'] {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr));
   gap: var(--spacing-m);
@@ -182,7 +179,7 @@
 }
 
 .section.five-up {
-  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
 }
 
 .section.sticky-top {
@@ -213,6 +210,11 @@
   padding-right: var(--grid-margins-width);
   display: grid;
   gap: var(--spacing-m);
+}
+
+.section.sticky-bottom.promo-sticky-section {
+  background: none;
+  z-index: 4;
 }
 
 .section[class*='grid-width-'] > .content,
@@ -313,6 +315,12 @@ main > .section[class*='-up'] > .content {
     grid-template-columns: repeat(5, 1fr);
   }
 
+  .section.center[class*='-up'] {
+    grid-template-columns: auto;
+    grid-auto-flow: column;
+    justify-content: center;
+  }
+
   .section.grid-template-columns-1-2 {
     grid-template-columns: 1fr 2fr;
   }
@@ -328,12 +336,12 @@ main > .section[class*='-up'] > .content {
   .section.grid-template-columns-3-1 {
     grid-template-columns: 3fr 1fr;
   }
-  
+
   .section.grid-width-6-desktop {
     padding-left: var(--grid-margins-width-6);
     padding-right: var(--grid-margins-width-6);
   }
-  
+
   .section.grid-width-8-desktop {
     padding-left: var(--grid-margins-width-8);
     padding-right: var(--grid-margins-width-8);
