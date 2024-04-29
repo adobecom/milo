@@ -1,7 +1,7 @@
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
-import { handleCommands } from '../../../features/personalization/personalization.js';
+import { handleCommands, deleteMarkedEls } from '../../../features/personalization/personalization.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
@@ -49,6 +49,16 @@ export const logErrorFor = async (fn, message, tags) => {
     lanaLog({ message, e, tags });
   }
 };
+
+export function addMepHighlight(el, source) {
+  let { manifestId } = source.dataset;
+  if (!manifestId) {
+    const closestManifestId = source?.closest('[data-manifest-id]');
+    if (closestManifestId) manifestId = closestManifestId.dataset.manifestId;
+  }
+  if (manifestId) el.dataset.manifestId = manifestId;
+  return el;
+}
 
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
@@ -309,8 +319,7 @@ export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 
 
 export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
   let path = getFederatedUrl(url);
-  const config = getConfig();
-  const mepGnav = config?.mep?.inBlock?.['global-navigation'];
+  const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[path];
   if (mepFragment) {
     path = mepFragment.target;
@@ -322,6 +331,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const commands = mepGnav?.commands;
   if (commands?.length) {
     handleCommands(commands, commands[0].manifestId, body, true);
+    deleteMarkedEls(body);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {

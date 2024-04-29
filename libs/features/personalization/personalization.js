@@ -31,6 +31,7 @@ const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
 const COLUMN_NOT_OPERATOR = 'not';
 const TARGET_EXP_PREFIX = 'target-';
+const INLINE_HASH = '_inline';
 const PAGE_URL = new URL(window.location.href);
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
@@ -401,12 +402,18 @@ function getSelectedElement(selector, action, rootEl) {
   return selectedEl;
 }
 
-const updateHash = (url, forceInline) => {
-  const urlNoHash = url.split('#')[0];
-  return forceInline ? `${urlNoHash}#_inline` : url;
+const forceHash = (url, newHash) => {
+  if (!newHash) return url;
+  try {
+    const { origin, pathname, search } = new URL(url);
+    return `${origin}${pathname}${search}#${newHash}`;
+  } catch (e) {
+    return `${url}#${newHash}`;
+  }
 };
 
 export function handleCommands(commands, manifestId, rootEl = document, forceInline = false) {
+  const newHash = forceInline ? INLINE_HASH : false;
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
@@ -415,12 +422,12 @@ export function handleCommands(commands, manifestId, rootEl = document, forceInl
     }
     if (action in COMMANDS) {
       const el = getSelectedElement(selector, action, rootEl);
-      COMMANDS[action](el, updateHash(target, forceInline), manifestId);
+      COMMANDS[action](el, forceHash(target, newHash), manifestId);
     } else if (action in CREATE_CMDS) {
       const el = getSelectedElement(selector, action, rootEl);
       el?.insertAdjacentElement(
         CREATE_CMDS[action],
-        createFrag(el, updateHash(target, forceInline), manifestId),
+        createFrag(el, forceHash(target, newHash), manifestId),
       );
     } else {
       /* c8 ignore next 2 */
@@ -682,8 +689,8 @@ export async function getPersConfig(info, override = false) {
   return config;
 }
 
-const deleteMarkedEls = () => {
-  [...document.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+export const deleteMarkedEls = (rootEl = document) => {
+  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
     .forEach((el) => el.remove());
 };
 
