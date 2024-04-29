@@ -106,14 +106,16 @@ const getPRs = async () => {
   prs = prs.filter(({ checks, reviews, html_url, number, title }) => {
     if (hasFailingChecks(checks)) {
       slackNotification(slack.failingChecks({ html_url, number, title }));
-      if (number === currPrNumber) core.setFailed('Failing checks.');
+      if (number === currPrNumber)
+        core.setFailed(`Failing checks on the current PR ${number}`);
       return false;
     }
 
     const approvals = reviews.filter(({ state }) => state === 'APPROVED');
     if (approvals.length < requiredApprovals) {
       slackNotification(slack.requireApprovals({ html_url, number, title }));
-      if (number === currPrNumber) core.setFailed('Insufficient approvals.');
+      if (number === currPrNumber)
+        core.setFailed(`Insufficient approvals on the current PR ${number}`);
       return false;
     }
 
@@ -210,7 +212,7 @@ const main = async (params) => {
   }
   try {
     const stageToMainPR = await getStageToMainPR();
-    console.log('has Stage to Main PR: ', !!stageToMainPR);
+    console.log('has Stage to Main PR:', !!stageToMainPR);
     if (stageToMainPR?.labels.some((label) => label.includes(labels.SOTPrefix)))
       return console.log('PR exists & testing started. Stopping execution.');
     const prs = await getPRs();
