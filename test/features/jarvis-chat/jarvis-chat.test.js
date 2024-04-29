@@ -104,8 +104,6 @@ describe('Jarvis Chat', () => {
     const args = initializeSpy.getCall(0).args[0];
     expect(args.appid).to.equal(defaultConfig.jarvis.id);
     expect(args.appver).to.equal(testVersion);
-    console.log('args.appid: ', args.appid);
-    console.log('args.appver: ', args.appver);
     expect(args.env).to.equal(config.env.name === 'prod' ? 'prod' : 'stage');
   });
 
