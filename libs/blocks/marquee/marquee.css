@@ -735,3 +735,8 @@
 .static-links .marquee a:not(.con-button):hover {
   color: inherit;
 }
+
+/* hide download links except the last one */
+.marquee a[is="checkout-link"].download:not(:last-of-type) {
+  display: none;
+}
