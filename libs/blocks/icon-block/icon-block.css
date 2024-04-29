@@ -225,10 +225,6 @@
   max-width: var(--icon-size-l);
 }
 
-.section.five-up  {
-  grid-template-columns: repeat(auto-fit, minmax(276px, 1fr)) !important;
-}
-
 .icon-block .foreground .text-content > * {
   width: 100%;
 }
@@ -448,9 +444,5 @@
 
   .three-up .icon-block.bio .foreground {
     max-width: 300px;
-  }
-
-  .section.five-up {
-    grid-template-columns: repeat(5, 1fr) !important;
   }
 }
