@@ -736,7 +736,7 @@
   color: inherit;
 }
 
-/* hide download links except the last one */
+/* hide download/upgrade links except the last one */
 .marquee a[is="checkout-link"].download:not(:last-of-type),
 .marquee a[is="checkout-link"].upgrade:not(:last-of-type) {
   display: none;
