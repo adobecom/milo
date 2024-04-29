@@ -1,40 +1,8 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
-import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
-
-const { miloLibs, codeRoot } = getConfig();
-const base = miloLibs || codeRoot;
-
-const ARROW_NEXT_IMG = `<img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16">`;
-const ARROW_PREVIOUS_IMG = `<img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16">`;
-function decorateNextPreviousBtns() {
-  const previousBtn = createTag(
-    'button',
-    {
-      class: 'carousel-button carousel-previous',
-      'aria-label': 'Previous',
-      'data-toggle': 'previous',
-    },
-    ARROW_PREVIOUS_IMG,
-  );
-
-  const nextBtn = createTag(
-    'button',
-    {
-      class: 'carousel-button carousel-next',
-      'aria-label': 'Next',
-      'data-toggle': 'next',
-    },
-    ARROW_NEXT_IMG,
-  );
-  return [previousBtn, nextBtn];
-}
-
-const nextPreviousBtns = decorateNextPreviousBtns();
-const previousBtn = nextPreviousBtns[0];
-const nextBtn = nextPreviousBtns[1];
 
 export const OptionCard = ({
-  text, title, image, icon, iconTablet, iconDesktop, options, disabled, selected, background, onClick,
+  text, title, image, icon, iconTablet, iconDesktop, options,
+  disabled, selected, background, onClick,
 }) => {
   const getOptionClass = () => {
     let className = '';
@@ -101,10 +69,18 @@ export const GetQuizOption = ({
   const handleKey = (e) => {
     if (e.key === 'ArrowRight') {
       e.preventDefault();
-      isRTL ? prev() : next();
+      if (isRTL) {
+        prev();
+      } else {
+        next();
+      }
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      isRTL ? next() : prev();
+      if (isRTL) {
+        next();
+      } else {
+        prev();
+      }
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       if (e.target && e.target.click) {
