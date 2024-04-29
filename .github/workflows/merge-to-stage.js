@@ -151,26 +151,26 @@ const getStageToMainPR = () =>
     });
 
 const openStageToMainPR = async () => {
-  const { data } = await github.rest.repos.compareCommits({
+  const { data: comparisonData } = await github.rest.repos.compareCommits({
     owner,
     repo,
     base: prod,
     head: stage,
   });
 
-  const prSet = new Set();
-  for (const commit of data.commits) {
-    const { data } =
+  const seenPRs = new Set();
+  for (const commit of comparisonData.commits) {
+    const { data: pullRequestData } =
       await github.rest.repos.listPullRequestsAssociatedWithCommit({
         owner,
         repo,
         commit_sha: commit.sha,
       });
 
-    for (const { title, html_url } of data) {
-      if (!prSet.has(html_url)) {
-        body = `- [${title}](${html_url})\n${body}`;
-        prSet.add(html_url);
+    for (const pr of pullRequestData) {
+      if (!seenPRs.has(pr.html_url)) {
+        body = `- [${pr.title}](${pr.html_url})\n${body}`;
+        seenPRs.add(pr.html_url);
       }
     }
   }
