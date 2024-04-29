@@ -1,4 +1,4 @@
-// branch: MWPW-142003-stable commit: 14ec61525f24e7ad038184620e04dc096acf1eb3 Thu, 18 Apr 2024 21:37:21 GMT
+// branch: stable commit: d93a08fc2123843319c48865f2b71b9ee0b4f5ed Wed, 24 Apr 2024 15:49:31 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",h="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -62,7 +62,7 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     }
 
     .top-section > .icons img:last-child {
-        margin-right: var(--consonant-merch-spacing-xs);
+        margin-inline-end: var(--consonant-merch-spacing-xs);
     }
 
     .icons {
@@ -74,7 +74,7 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     .icons img {
         width: var(--consonant-merch-card-plans-icon-size);
         height: var(--consonant-merch-card-plans-icon-size);
-        margin-right: var(--consonant-merch-spacing-xxs);
+        margin-inline-end: var(--consonant-merch-spacing-xxs);
     }
 
     .body {
