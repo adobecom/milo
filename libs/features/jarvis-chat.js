@@ -219,7 +219,7 @@ const startInitialization = async (config, event, onDemand) => {
 
   window.AdobeMessagingExperienceClient.initialize({
     appid: getMetadata('jarvis-surface-id') || config.jarvis.id,
-    appver: getMetadata('jarvis-version') || config.jarvis.version,
+    appver: getMetadata('jarvis-surface-version') || config.jarvis.version,
     env: config.env.name !== 'prod' ? 'stage' : 'prod',
     clientId: window.adobeid?.client_id,
     accessToken: window.adobeIMS?.isSignedInUser()

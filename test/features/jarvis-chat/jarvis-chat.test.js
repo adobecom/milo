@@ -99,7 +99,7 @@ describe('Jarvis Chat', () => {
     });
     const testVersion = '0.123';
     const getMetadataMock = sinon.stub();
-    getMetadataMock.withArgs('jarvis-version').returns(testVersion);
+    getMetadataMock.withArgs('jarvis-surface-version').returns(testVersion);
     await initJarvisChat(config, sinon.stub(), sinon.stub(), getMetadataMock);
     const args = initializeSpy.getCall(0).args[0];
     expect(args.appid).to.equal(defaultConfig.jarvis.id);
