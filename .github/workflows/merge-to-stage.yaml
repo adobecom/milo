@@ -2,7 +2,7 @@ name: Merge to stage
 
 on:
   schedule:
-    - cron: '0 * * * *' # Run every hour
+    - cron: '0 8 * * *' # Run once a day at 8:00 UTC. For any cases where adding the label wouldnt work
   workflow_dispatch: # Allow manual trigger
   pull_request:
     types: [labeled] # Run when a label is added to a PR
