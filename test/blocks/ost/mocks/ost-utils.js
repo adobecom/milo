@@ -1,8 +1,5 @@
 import sinon from 'sinon';
 
-const ogFetch = window.fetch;
-const ogUrl = window.location.href;
-
 const getConfig = () => ({
   env: { name: 'local' },
   locales: {
@@ -90,16 +87,6 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, over
   return { options, params };
 }
 
-function unmockOstDeps() {
-  document.body.innerHTML = '';
-  delete window.ost;
-  delete window.tacocat;
-  delete window.adobeid;
-  delete window.adobeIMS;
-  window.fetch = ogFetch;
-  window.history.replaceState({}, '', ogUrl);
-}
-
 export {
-  getConfig, getLocale, getMetadata, loadScript, loadStyle, mockOstDeps, mockRes, unmockOstDeps,
+  getConfig, getLocale, getMetadata, loadScript, loadStyle, mockOstDeps, mockRes,
 };
