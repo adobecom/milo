@@ -342,6 +342,7 @@ import{html as t,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
             :host([size='super-wide']) {
                 grid-column: span 2;
                 width: 100%;
+                max-width: var(--consonant-merch-card-tablet-wide-width);
             }
         }
 
@@ -373,6 +374,7 @@ import{html as t,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
 
     /* responsive width */
     --consonant-merch-card-mobile-width: 300px;
+    --consonant-merch-card-tablet-wide-width: 700px;
 
     /* spacing */
     --consonant-merch-spacing-xxxs: 4px;
