@@ -12,7 +12,7 @@ import {
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
-import { createTag, decorateSections } from '../../../utils/utils.js';
+import { createTag, decorateSections, decorateFooterPromo } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
@@ -56,10 +56,17 @@ async function findPageFragments(path) {
   const doc = parser.parseFromString(html, 'text/html');
   // Decorate the doc, but don't load any blocks (i.e. do not use loadArea)
   decorateSections(doc, true);
+  await decorateFooterPromo(doc);
   const fragments = [...doc.querySelectorAll('.fragment, .modal.link-block')];
   const fragmentUrls = fragments.reduce((acc, fragment) => {
     // Normalize the fragment path to support production urls.
-    const pathname = fragment.dataset.modalPath || new URL(fragment.href).pathname.replace('.html', '');
+    const originalUrl = fragment.dataset.modalPath || fragment.dataset.path || fragment.href;
+    let pathname;
+    try {
+      pathname = new URL(originalUrl, origin).pathname.replace('.html', '');
+    } catch (error) {
+      return acc;
+    }
 
     // Find dupes across current iterator as well as original url list
     const accDupe = acc.some((url) => url.pathname === pathname);
