@@ -111,6 +111,10 @@ input:disabled {
   justify-content: center;
 }
 
+.carousel-slides {
+  display: flex;
+}
+
 .quiz-option {
   box-shadow: 10px 10px 6px 0 #00000029;
   flex-direction: column;
@@ -467,4 +471,49 @@ html[dir="rtl"] .quiz-option-icon {
   .quiz-step-container.wide {
     width: 360px;
   }   
+}
+
+
+.carousel-arrow-next {
+  background-image: url('https://main--milo--adobecom.hlx.page/libs/blocks/carousel/img/arrow.svg');
+  background-size: 15px; 
+  background-position: 50% 50%; 
+  background-repeat: no-repeat;
+  border: none;
+  background-color: #fff;
+  height: 63px; 
+  width: 63px;  
+  border-radius: 50%;
+  box-shadow: 10px 10px 15px -5px rgba(0,0,0,0.23);
+  position: relative;
+  top: 90px;
+  left: -30px;
+  cursor: pointer;
+}
+
+.carousel-arrow-prev {
+  background-image: url('https://main--milo--adobecom.hlx.page/libs/blocks/carousel/img/arrow.svg');
+  background-size: 15px;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  border: none;
+  background-color: #fff;
+  height: 63px;
+  width: 63px;
+  border-radius: 50%;
+  box-shadow: -10px -10px 15px -5px rgba(0,0,0,0.23);
+  position: relative;
+  top: 90px;
+  left: -30px;
+  cursor: pointer;
+  transform: rotate(180deg);
+}
+
+.carousel-arrow-next.rtl {
+  transform: rotate(180deg);
+
+}
+
+.carousel-arrow-prev.rtl {
+  transform: rotate(0deg);
 }
