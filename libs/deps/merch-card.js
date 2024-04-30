@@ -1,4 +1,4 @@
-// branch: MWPW-146856 commit: e669b169339ab112125100842cd9bcc03780f3b8 Tue, 30 Apr 2024 03:52:58 GMT
+// branch: MWPW-147027 commit: cd26186731b5a87c95cf5c71f9bf3512c8cabfa6 Tue, 30 Apr 2024 07:05:43 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",h="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -731,6 +731,8 @@ merch-card[variant="mini-compare-chart"] [slot="footer"] .action-area {
 merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
     display: inline-flex;
     margin-top: 16px;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 merch-card[variant="mini-compare-chart"] .footer-row-icon {
@@ -864,7 +866,6 @@ div[slot="footer"] {
 
 div[slot="footer"] a.con-button {
     margin-inline-start: var(--consonant-merch-spacing-xs);
-    width: max-content;
 }
 
 div[slot="footer"] .action-area > a.con-button:only-child {
