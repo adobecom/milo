@@ -221,7 +221,7 @@ describe('OST: init', () => {
   });
 });
 
-describe('OST: merch link creation"', () => {
+describe('OST: merch link creation', () => {
   describe('checkout-link', () => {
     const type = types.checkoutUrl;
 
