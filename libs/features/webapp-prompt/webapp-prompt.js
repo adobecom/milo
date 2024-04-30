@@ -5,7 +5,7 @@ import {
   lanaLog,
   toFragment,
 } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, decorateSVG } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
 
 const CONFIG = {
@@ -24,6 +24,16 @@ const getMetadata = (el) => [...el.childNodes].reduce((acc, row) => {
   }
   return acc;
 }, {});
+
+const getIcon = (content) => {
+  const picture = content.querySelector('picture');
+  if (picture) return picture;
+
+  const svg = content.querySelector('a[href$=".svg"]');
+  if (svg) return decorateSVG(svg);
+
+  return icons.company;
+};
 
 class AppPrompt {
   constructor({ promptPath, entName, parent, getAnchorState } = {}) {
@@ -98,8 +108,7 @@ class AppPrompt {
   };
 
   getData = async (content) => {
-    const image = content.querySelector('picture');
-    this.image = image || icons.company;
+    this.icon = getIcon(content);
 
     const selectors = {
       title: 'h2',
@@ -157,7 +166,7 @@ class AppPrompt {
       class="appPrompt" style="margin: 0 ${this.offset}px">
       ${this.elements.closeIcon}
       <div class="appPrompt-icon">
-        ${this.image}
+        ${this.icon}
       </div>
       <div class="appPrompt-title">${this.title}</div>
       ${this.elements.profile}
@@ -184,8 +193,8 @@ class AppPrompt {
   };
 
   initRedirect = () => setTimeout(() => {
-    this.close();
-    window.location = this.options['redirect-url'];
+    this.close({ saveDismissal: false });
+    window.location.assign(this.options['redirect-url']);
   }, this.options['loader-duration']);
 
   isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
@@ -196,11 +205,11 @@ class AppPrompt {
     document.cookie = `dismissedAppPrompts=${JSON.stringify([...dismissedPrompts])};path=/`;
   };
 
-  close = () => {
+  close = ({ saveDismissal = true } = {}) => {
     const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
     appPromptElem?.remove();
     clearTimeout(this.redirectFn);
-    this.setDismissedPrompt();
+    if (saveDismissal) this.setDismissedPrompt();
     document.removeEventListener('keydown', this.handleKeyDown);
     this.anchor?.focus();
     this.anchor?.removeEventListener('click', this.close);
