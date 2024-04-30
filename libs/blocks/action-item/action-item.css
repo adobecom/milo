@@ -1,6 +1,5 @@
 .action-item {
   display: flex;
-  width: 160px;
 }
 
 .action-item img {
@@ -88,10 +87,6 @@
 
 .action-item.image-size-large img {
   max-height: var(--spacing-xxxl);
-}
-
-.action-item.float-icon {
-  margin: 0 var(--spacing-xs);
 }
 
 .action-item.float-icon .floated-icon img {
