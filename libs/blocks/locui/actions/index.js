@@ -65,6 +65,7 @@ async function findPageFragments(path) {
     try {
       pathname = new URL(originalUrl, origin).pathname.replace('.html', '');
     } catch (error) {
+      setStatus('service', 'error', 'Invalid Fragment Path in files', originalUrl);
       return acc;
     }
 
