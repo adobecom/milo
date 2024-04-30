@@ -2,6 +2,15 @@
   margin: var(--spacing-xs) 0 ;
 }
 
+.merch-card .mnemonic-list {
+  padding: var(--consonant-merch-spacing-xs) 0;
+}
+
+.merch-card .mnemonic-list .product-list {
+  justify-content: flex-start;
+  align-items: center;
+}
+
 .mnemonic-list .product-list {
   display: inline-flex;
   flex-wrap: wrap;
@@ -22,6 +31,7 @@
   flex: none;
   gap: var(--spacing-xxs);
   min-height: 32px;
+  line-height: initial;
 }
 
 .mnemonic-list .product-list .product-item strong {
