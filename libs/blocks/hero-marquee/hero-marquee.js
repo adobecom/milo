@@ -1,7 +1,7 @@
 import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides, decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'background'];
+const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'background', 'supplemental'];
 const rowTypeKeyword = 'con-block-row-';
 
 function decorateList(el) {
@@ -40,10 +40,25 @@ function decorateBg(el) {
   el.remove();
 }
 
+function distillClasses(el, classes) {
+  const taps = ['-heading', '-body', '-detail'];
+  classes.forEach((elClass) => {
+    const elTaps = taps.filter((tap) => elClass.endsWith(tap));
+    if (!elTaps.length) return;
+    const parts = elClass.split('-');
+    el.classList.add(`${parts[1]}-${parts[0]}`);
+    el.classList.remove(elClass);
+  });
+}
+
 function decorateText(el, classes) {
-  const btnClass = [...classes].filter((c) => c.startsWith('button-'));
+  const btnClass = [...classes].filter((c) => c.endsWith('-button'));
   if (!btnClass.length) return;
-  decorateButtons(el, btnClass);
+  const parts = btnClass[0].split('-');
+  el.classList.remove(btnClass[0]);
+  decorateButtons(el, `${parts[1]}-${parts[0]}`);
+  distillClasses(el, classes);
+  el.classList.add('norm');
 }
 
 function decorateLockupRow(el) {
@@ -68,12 +83,12 @@ function parseKeyString(str) {
 }
 
 function loadContentType(el, key, classes) {
+  if (classes !== undefined && classes.length) el.classList.add(...classes);
   if (key === 'lockup') decorateLockupRow(el);
   if (key === 'list') decorateList(el);
   if (key === 'qrcode') decorateQr(el);
   if (key === 'background') decorateBg(el);
   if (key === 'text') decorateText(el, classes);
-  if (classes !== undefined && classes.length) el.classList.add(...classes);
 }
 
 export default async function init(el) {
@@ -121,7 +136,7 @@ export default async function init(el) {
   extendButtonsClass(copy);
   const assetRow = foreground.querySelector(':scope > div').classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
-  const mainCopy = createTag('div', { class: 'main-copy static' }, copy.innerHTML);
+  const mainCopy = createTag('div', { class: 'main-copy' }, copy.innerHTML);
   rows.splice(mainRowIndex, 1);
   if (mainRowIndex > 0) {
     for (let i = 0; i < mainRowIndex; i += 1) {
@@ -151,8 +166,10 @@ export default async function init(el) {
       cols[1].classList.add('row-wrapper');
       if (contentTypes.includes(parsed.key)) loadContentType(row, parsed.key, parsed.classes);
     } else {
-      row.classList.add('static');
+      row.classList.add('norm');
       decorateBlockHrs(row);
+      // decorateBlockText(row, ['xxl', 'm', 'l']);
+      decorateButtons(row, 'button-xl');
     }
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
