@@ -9,6 +9,7 @@ import {
   telemetry,
   allowSyncToLangstore,
   canRefresh,
+  user,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../utils/franklin.js';
@@ -111,7 +112,31 @@ async function loginToSharePoint() {
   await login({ scopes, telemetry });
 }
 
+async function connectSidekick() {
+  return new Promise((resolve) => {
+    const statusFetched = ({ detail }) => {
+      if (detail?.data?.profile) {
+        user.value = detail.data.profile;
+        resolve();
+      }
+      setStatus('details', 'info', 'Please sign-in to AEM sidekick.');
+    };
+    const openSideKick = document.querySelector('helix-sidekick');
+    if (openSideKick) {
+      openSideKick.addEventListener('statusfetched', statusFetched);
+      /* c8 ignore next 6 */
+    } else {
+      setStatus('details', 'info', 'Please open AEM sidekick to continue.');
+      document.addEventListener('sidekick-ready', () => {
+        const sidekick = document.querySelector('helix-sidekick');
+        sidekick.addEventListener('statusfetched', statusFetched);
+      }, { once: true });
+    }
+  });
+}
+
 export async function setup() {
+  await connectSidekick();
   await loginToSharePoint();
   await loadHeading();
   await loadDetails();
