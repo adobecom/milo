@@ -1,4 +1,4 @@
-// branch: MWPW-147027 commit: cd26186731b5a87c95cf5c71f9bf3512c8cabfa6 Tue, 30 Apr 2024 07:05:43 GMT
+// branch: MWPW-147027 commit: cd03db8762f52324758990feb1b558bbaf9550e3 Tue, 30 Apr 2024 19:17:30 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",h="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -861,7 +861,6 @@ div[slot="footer"] {
     align-items: center;
     flex: 1;
     padding: var(--consonant-merch-spacing-xs);
-    padding-inline-start: 0;
 }
 
 div[slot="footer"] a.con-button {
