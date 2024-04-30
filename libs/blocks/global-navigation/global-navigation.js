@@ -947,14 +947,20 @@ class Gnav {
   };
 }
 
+const getSource = async () => {
+  const { locale, dynamicNavKey } = getConfig();
+  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  if (dynamicNavKey) {
+    const { default: dynamicNav } = await import('../../features/dynamic-navigation.js');
+    url = dynamicNav(url, dynamicNavKey);
+  }
+  return url;
+};
+
 export default async function init(block) {
   try {
-    const { locale, mep, dynamicNavKey } = getConfig();
-    let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-    if (dynamicNavKey) {
-      const { default: dynamicNav } = await import('../../features/dynamic-navigation.js');
-      url = dynamicNav(url, dynamicNavKey);
-    }
+    const { mep } = getConfig();
+    const url = await getSource();
     const content = await fetchAndProcessPlainHtml({ url })
       .catch((e) => lanaLog({
         message: `Error fetching gnav content url: ${url}`,
