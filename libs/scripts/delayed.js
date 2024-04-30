@@ -21,7 +21,7 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   if (jarvis === 'desktop' && !desktopViewport) return;
 
   const { initJarvisChat } = await import('../features/jarvis-chat.js');
-  initJarvisChat(config, loadScript, loadStyle);
+  initJarvisChat(config, loadScript, loadStyle, getMetadata);
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
