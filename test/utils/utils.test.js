@@ -97,14 +97,14 @@ describe('Utils', () => {
       it('Does not unwrap when sibling content present', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
 
       it('Does not unwrap when not in paragraph tag', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
     });
@@ -605,10 +605,33 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
       await utils.loadArea();
       const resultConfig = utils.getConfig();
-      const resultExperiment = resultConfig.experiments[0];
+      const resultExperiment = resultConfig.experiments[2];
       expect(resultConfig.mep.preview).to.be.true;
       expect(resultConfig.experiments.length).to.equal(3);
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
+    });
+  });
+
+  describe('filterDuplicatedLinkBlocks', () => {
+    it('returns empty array if receives invalid params', () => {
+      expect(utils.filterDuplicatedLinkBlocks()).to.deep.equal([]);
+    });
+
+    it('removes duplicated link-blocks', () => {
+      const block1 = document.createElement('div');
+      block1.classList.add('modal');
+      block1.setAttribute('data-modal-hash', 'modalHash1');
+      block1.setAttribute('data-modal-path', 'modalPath1');
+      const block2 = document.createElement('div');
+      block2.classList.add('modal');
+      block2.setAttribute('data-modal-hash', 'modalHash2');
+      block2.setAttribute('data-modal-path', 'modalPath2');
+      const block3 = document.createElement('div');
+      block3.classList.add('modal');
+      block3.setAttribute('data-modal-hash', 'modalHash2');
+      block3.setAttribute('data-modal-path', 'modalPath2');
+      const blocks = [block1, block2, block3];
+      expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
     });
   });
 });

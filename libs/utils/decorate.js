@@ -60,11 +60,11 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
         decorateIconArea(el);
       }
     }
-    const emptyPs = el.querySelectorAll(':scope p:not([class])');
-    if (emptyPs.length) {
-      emptyPs.forEach((p) => p.classList.add(`body-${config[1]}`));
+    const emptyEls = el.querySelectorAll('p:not([class]), ul:not([class]), ol:not([class])');
+    if (emptyEls.length) {
+      emptyEls.forEach((p) => p.classList.add(`body-${config[1]}`));
     } else {
-      [...el.querySelectorAll(':scope div:not([class])')]
+      [...el.querySelectorAll('div:not([class])')]
         .filter((emptyDivs) => emptyDivs.textContent.trim() !== '')
         .forEach((text) => text.classList.add(`body-${config[1]}`));
     }
@@ -182,6 +182,9 @@ export function getVideoAttrs(hash, dataset) {
   }
   if (playOnHover && isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
+  }
+  if (playOnHover) {
+    return `${globalAttrs} muted data-hoverplay`;
   }
   if (isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs}`;

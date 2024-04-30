@@ -1,5 +1,5 @@
+/* eslint-disable max-classes-per-file */
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
-import Tree from '../../utils/tree.js';
 
 const fragMap = {};
 
@@ -20,6 +20,7 @@ const updateFragMap = (fragment, a, href) => {
   if (!fragLinks.length) return;
 
   if (document.body.contains(a)) { // is fragment on page (not nested)
+    // eslint-disable-next-line no-use-before-define
     fragMap[href] = new Tree(href);
     fragLinks.forEach((link) => fragMap[href].insert(href, localizeLink(removeHash(link.href))));
   } else {
@@ -59,9 +60,17 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { expFragments, decorateArea } = getConfig();
+  const { expFragments, decorateArea, mep } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
+
+  if (a.parentElement?.nodeName === 'P') {
+    const children = a.parentElement.childNodes;
+    const div = createTag('div');
+    for (const attr of a.parentElement.attributes) div.setAttribute(attr.name, attr.value);
+    a.parentElement.replaceWith(div);
+    div.append(...children);
+  }
 
   if (a.href.includes('#_inline')) {
     inline = true;
@@ -70,9 +79,9 @@ export default async function init(a) {
   }
 
   const path = new URL(a.href).pathname;
-  if (expFragments?.[path]) {
-    a.href = expFragments[path];
-    relHref = expFragments[path];
+  if (expFragments?.[path] && mep) {
+    relHref = mep.handleFragmentCommand(expFragments[path], a);
+    if (!relHref) return;
   }
 
   if (isCircularRef(relHref)) {
@@ -80,7 +89,9 @@ export default async function init(a) {
     return;
   }
 
-  const resp = await fetch(`${a.href}.plain.html`);
+  const { customFetch } = await import('../../utils/helpers.js');
+  const resp = await customFetch({ resource: `${a.href}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
 
   if (!resp.ok) {
     window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
@@ -120,5 +131,61 @@ export default async function init(a) {
   } else {
     a.parentElement.replaceChild(fragment, a);
     await loadArea(fragment);
+  }
+}
+
+class Node {
+  constructor(key, value = key, parent = null) {
+    this.key = key;
+    this.value = value;
+    this.parent = parent;
+    this.children = [];
+  }
+
+  get isLeaf() {
+    return this.children.length === 0;
+  }
+}
+
+export class Tree {
+  constructor(key, value = key) {
+    this.root = new Node(key, value);
+  }
+
+  * traverse(node = this.root) {
+    yield node;
+    if (node.children.length) {
+      for (const child of node.children) {
+        yield* this.traverse(child);
+      }
+    }
+  }
+
+  insert(parentNodeKey, key, value = key) {
+    for (const node of this.traverse()) {
+      if (node.key === parentNodeKey) {
+        node.children.push(new Node(key, value, node));
+        return true;
+      }
+    }
+    return false;
+  }
+
+  remove(key) {
+    for (const node of this.traverse()) {
+      const filtered = node.children.filter((c) => c.key !== key);
+      if (filtered.length !== node.children.length) {
+        node.children = filtered;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  find(key) {
+    for (const node of this.traverse()) {
+      if (node.key === key) return node;
+    }
+    return undefined;
   }
 }

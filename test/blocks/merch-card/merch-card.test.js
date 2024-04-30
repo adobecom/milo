@@ -31,15 +31,15 @@ describe('Merch Card', () => {
   it('Supports Special Offers card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
     const merchCard = await init(document.querySelector('.special-offers'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+    const category = merchCard.querySelector('h4[slot="detail-m"]');
+    const title = merchCard.querySelector('h3[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
     const buttons = footer.querySelectorAll('.con-button');
 
     expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
+    expect(category).to.exist;
+    expect(title).to.exist;
     expect(body).to.exist;
     expect(merchCard.getAttribute('variant')).to.be.equal('special-offers');
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
@@ -56,8 +56,8 @@ describe('Plans Card', () => {
   it('Supports COM Plans card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
     const merchCard = await init(document.querySelector('.merch-card.plans.icons.secure'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+    const heading = merchCard.querySelector('h3[slot="heading-m"]');
+    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const detail = merchCard.querySelector('h5[slot="detail-m"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
@@ -84,8 +84,8 @@ describe('Plans Card', () => {
   it('Supports EDU Plans card with stock', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
     const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+    const heading = merchCard.querySelector('h3[slot="heading-m"]');
+    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const detail = merchCard.querySelector('h5[slot="detail-m"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
@@ -112,8 +112,8 @@ describe('Plans Card', () => {
   it('should skip ribbon and altCta creation', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
     const merchCard = await init(document.querySelector('.plans.icons.skip-ribbon.skip-altCta'));
-    const heading = merchCard.querySelector('h2[slot=heading-m]');
-    const headingXs = merchCard.querySelector('h3[slot=heading-xs]');
+    const heading = merchCard.querySelector('h3[slot=heading-m]');
+    const headingXs = merchCard.querySelector('h4[slot=heading-xs]');
     const body = merchCard.querySelector('div[slot=body-xs]');
     const detail = merchCard.querySelector('h5[slot=detail-m]');
     const footer = merchCard.querySelector('div[slot="footer"]');
@@ -146,8 +146,8 @@ describe('Catalog Card', () => {
   it('Supports Catalog card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
     const merchCard = await init(document.querySelector('.merch-card.ribbon'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+    const heading = merchCard.querySelector('h3[slot="heading-m"]');
+    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const actionMenu = merchCard.querySelector('div[slot="action-menu-content"]');
     const detail = merchCard.querySelector('h5[slot="detail-m"]');
@@ -175,8 +175,8 @@ describe('Catalog Card', () => {
   it('Supports Catalog card without badge', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-badge'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+    const heading = merchCard.querySelector('h3[slot="heading-m"]');
+    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const actionMenu = merchCard.querySelector('div[slot="action-menu-content"]');
     const detail = merchCard.querySelector('h5[slot="detail-m"]');
@@ -202,8 +202,8 @@ describe('Catalog Card', () => {
   it('Supports Catalog card without badge and action-menu', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-action-menu'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+    const heading = merchCard.querySelector('h3[slot="heading-m"]');
+    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const actionMenu = merchCard.querySelector('div[slot="actionMenuContent"]');
     const detail = merchCard.querySelector('h5[slot="detail-m"]');
@@ -229,8 +229,8 @@ describe('Catalog Card', () => {
   it('Supports Catalog card with badge without action-menu', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-badge.action-menu-exist'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h3[slot="heading-xs"]');
+    const heading = merchCard.querySelector('h3[slot="heading-m"]');
+    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const actionMenu = merchCard.querySelector('div[slot="actionMenuContent"]');
     const detail = merchCard.querySelector('h5[slot="detail-m"]');
@@ -258,6 +258,7 @@ describe('Catalog Card', () => {
   it('Parses the filters and types', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
     const merchCard = await init(document.querySelector('.merch-card.catalog.tags'));
+    expect(merchCard.name).equal('photoshop');
     expect(merchCard.filters).to.be.deep.equal({
       all: { order: undefined, size: undefined },
       'creativity-design': { order: undefined, size: undefined },
@@ -270,10 +271,10 @@ describe('Catalog Card', () => {
   it('Supports intro-pricing card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/intro-pricing.html' });
     const merchCard = await init(document.querySelector('.merch-card'));
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
-    const headingXs = merchCard.querySelector('h3[slot="heading-xs"]');
+    const heading = merchCard.querySelector('h3[slot="heading-xs"]');
+    const headingXs = merchCard.querySelector('h4[slot="heading-m"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
-    const detailBg = merchCard.querySelector('h4[slot="body-xxs"]');
+    const detailBg = merchCard.querySelector('h5[slot="body-xxs"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
     const buttons = footer.querySelectorAll('.con-button');
 
@@ -310,9 +311,9 @@ describe('Mini Compare Chart Merch Card', () => {
     document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
     document.querySelector('.section').removeAttribute('data-status');
-    const heading = merchCard.querySelector('h2[slot="heading-m"]');
+    const heading = merchCard.querySelector('h3[slot="heading-m"]');
     const body = merchCard.querySelector('div[slot="body-m"]');
-    const priceHeading = merchCard.querySelector('h2[slot="heading-m-price"]');
+    const priceHeading = merchCard.querySelector('h4[slot="heading-m-price"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
     const buttons = footer.querySelectorAll('.con-button');
     const footerRows = merchCard.querySelector('div[slot="footer-rows"]');
@@ -335,6 +336,7 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(buttons[0].textContent).to.be.equal('Buy now');
     expect(buttons[1].textContent).to.be.equal('free trial');
   });
+
   it('Supports Mini Compare Chart with quantity select', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
@@ -344,6 +346,25 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(quantitySelect.getAttribute('min')).to.equal('1');
     expect(quantitySelect.getAttribute('max')).to.equal('10');
     expect(quantitySelect.getAttribute('step')).to.equal('1');
+  });
+
+  it('Supports Mini Compare Chart with offer select', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('#mini-compare-offer-select'));
+    const offerSelect = merchCard.querySelector('merch-offer-select');
+    const merchOffer = offerSelect.querySelector('merch-offer');
+    expect(offerSelect).to.exist;
+    expect(merchOffer).to.exist;
+    expect(merchOffer.getAttribute('text')).to.equal('20GB');
+  });
+
+  it('Supports Mini Compare Chart intersection observer', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('#mini-compare-hidden-card'));
+    merchCard.style.visibility = 'hidden';
+    setTimeout(() => {
+      merchCard.style.visibility = 'visible';
+    }, 500);
   });
 });
 

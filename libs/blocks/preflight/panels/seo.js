@@ -1,10 +1,14 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import getServiceConfig from '../../../utils/service-config.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
 const pass = 'green';
 const fail = 'red';
 const limbo = 'orange';
+
+const KNOWN_BAD_URLS = ['news.adobe.com'];
+const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
 
 const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC });
 const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC });
@@ -13,6 +17,7 @@ const descResult = signal({ icon: DEF_ICON, title: 'Meta description', descripti
 const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC });
 const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC });
 const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC });
+const badLinks = signal([]);
 
 function checkH1s() {
   const h1s = document.querySelectorAll('h1');
@@ -133,25 +138,126 @@ async function checkLorem() {
   return result.icon;
 }
 
+function makeGroups(arr, n = 20) {
+  const batchSize = Math.ceil(arr.length / n);
+  const size = Math.ceil(arr.length / batchSize);
+  return Array.from({ length: batchSize }, (v, i) => arr.slice(i * size, i * size + size));
+}
+
+const connectionError = () => {
+  linksResult.value = {
+    icon: fail,
+    title: 'Links',
+    description: `A VPN connection is required to use the link check service.
+    Please turn on VPN and refresh the page. If VPN is running contact your site engineers for help.`,
+  };
+};
+
+async function spidyCheck(url) {
+  try {
+    const resp = await fetch(url, { method: 'HEAD' });
+    if (resp.ok) return true;
+    connectionError();
+  } catch (e) {
+    connectionError();
+    window.lana.log(`There was a problem connecting to the link check API ${url}. ${e}`);
+  }
+  return false;
+}
+
+async function getSpidyResults(url, opts) {
+  try {
+    const resp = await fetch(`${url}/api/url-http-status`, opts);
+    if (!resp.ok) return [];
+
+    const json = await resp.json();
+    if (!json.data || json.data.length === 0) return [];
+
+    return json.data.reduce((acc, result) => {
+      const status = result.status === 'ECONNREFUSED' ? 503 : result.status;
+      if (status >= 399) {
+        result.status = status;
+        acc.push(result);
+      }
+      return acc;
+    }, []);
+  } catch (e) {
+    window.lana.log(`There was a problem connecting to the link check API ${url}/api/url-http-status. ${e}`);
+    return [];
+  }
+}
+
+function compareResults(result, link) {
+  const match = link.liveHref === result.url;
+  if (!match) return false;
+  if (link.closest('header')) link.parent = 'gnav';
+  if (link.closest('main')) link.parent = 'main';
+  if (link.closest('footer')) link.parent = 'footer';
+  link.classList.add('problem-link');
+  link.status = result.status;
+  link.dataset.status = link.status;
+  return true;
+}
+
 async function checkLinks() {
-  const result = { ...linksResult.value };
-  const links = document.querySelectorAll('a[href^="/"]');
+  const { spidy, preflight } = await getServiceConfig(window.location.origin);
+  // Do not re-check if the page has already been checked
+  if (linksResult.value.checked) return;
 
-  let badLink;
-  for (const link of links) {
-    const resp = await fetch(link.href, { method: 'HEAD' });
-    if (!resp.ok) badLink = true;
+  // Check to see if Spidy is available.
+  const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
+  const canSpidy = await spidyCheck(spidyUrl);
+  if (!canSpidy) return;
+
+  /**
+   * Find all links with an href.
+   * Filter out any local or existing preflight links.
+   * Set link to use hlx.live so the service can see them without auth
+   * */
+  const knownBadUrls = preflight?.ignoreDomains
+    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
+    : KNOWN_BAD_URLS;
+
+  const links = [...document.querySelectorAll('a')]
+    .filter((link) => {
+      if (
+        link.href // Has an href tag
+        && !link.href.includes('local') // Is not a local link
+        && !link.closest('.preflight') // Is not inside preflight
+        && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
+      ) {
+        link.liveHref = link.href.replace('hlx.page', 'hlx.live');
+        return true;
+      }
+      return false;
+    });
+
+  const groups = makeGroups(links);
+  const baseOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+  const badResults = [];
+
+  for (const group of groups) {
+    const urls = group.map((link) => link.liveHref);
+    const opts = { ...baseOpts, body: JSON.stringify({ urls }) };
+    const spidyResults = await getSpidyResults(spidyUrl, opts);
+    badResults.push(...spidyResults);
   }
 
-  if (badLink) {
-    result.icon = fail;
-    result.description = 'Reason: There are one or more broken links.';
-  } else {
-    result.icon = pass;
-    result.description = 'Links are valid.';
-  }
-  linksResult.value = result;
-  return result.icon;
+  badLinks.value = badResults.map((result) => links.find((link) => compareResults(result, link)));
+
+  // Format the results for display
+  const count = badLinks.value.length;
+  const linkText = count > 1 || count === 0 ? 'links' : 'link';
+  const badDesc = `Reason: ${count} problem ${linkText}. Use the list below to fix them.`;
+  const goodDesc = 'Links are valid.';
+
+  // Build the result display object
+  linksResult.value = {
+    title: linksResult.value.title,
+    checked: true,
+    icon: count > 0 ? fail : pass,
+    description: count > 0 ? badDesc : goodDesc,
+  };
 }
 
 export async function sendResults() {
@@ -220,19 +326,37 @@ async function getResults() {
 
 export default function Panel() {
   useEffect(() => { getResults(); }, []);
-
   return html`
-      <div class=seo-columns>
+    <div class=seo-columns>
       <div class=seo-column>
         <${SeoItem} icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
         <${SeoItem} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
         <${SeoItem} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
-        <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
+        <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
       </div>
       <div class=seo-column>
         <${SeoItem} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
         <${SeoItem} icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
-        <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
+        <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
       </div>
+    </div>
+    <div class='problem-links'>
+    ${badLinks.value.length > 0 && html`
+      <p class="note">Close preflight to see problem links highlighted on page.</p>
+      <table>
+        <tr>
+          <th></th>
+          <th>Problematic URLs</th>
+          <th>Located in</th>
+          <th>Status</th>
+        </tr>
+        ${badLinks.value.map((link, idx) => html`
+          <tr>
+            <td>${idx + 1}.</td>
+            <td><a href='${link.liveHref}' target='_blank'>${link.liveHref}</a></td>
+            <td><span>${link.parent}</span></td>
+            <td><span>${link.status}</span></td>
+          </tr>`)}
+      </table>`}
     </div>`;
 }

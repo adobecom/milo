@@ -253,7 +253,7 @@ span.preflight-time {
 
 /* SEO */
 .seo-columns {
-  margin: 24px 48px;
+  margin: 24px 48px 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
@@ -264,6 +264,10 @@ span.preflight-time {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 12px;
+}
+
+.seo-item:last-child {
+  margin-bottom: 0;
 }
 
 .result-icon {
@@ -312,6 +316,102 @@ span.preflight-time {
 
 .seo-item-description {
   margin: 0;
+}
+
+.problem-links {
+  margin: 24px 48px;
+}
+
+.problem-links .title {
+  margin-bottom: 0;
+}
+
+.problem-links .note {
+  margin-top: 20px;
+}
+
+.dialog-modal#preflight .problem-links table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 6px;
+  background-color: rgb(0 0 0 / 8%);
+}
+
+.dialog-modal#preflight .problem-links table th {
+  text-transform: uppercase;
+  width: 10%;
+}
+
+.dialog-modal#preflight .problem-links table td a {
+  color: #fff;
+  display: inline-block;
+  overflow-x: scroll;  
+  position: absolute;
+  top: 50%;
+  left: 0;
+  scrollbar-width: none;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  width: 100%;
+}
+
+.dialog-modal#preflight .problem-links table th,
+.dialog-modal#preflight .problem-links table td {
+  padding: 12px 0;
+  text-align: center;
+}
+
+.dialog-modal#preflight .problem-links table th:nth-child(2),
+.dialog-modal#preflight .problem-links table td:nth-child(2) {
+  text-align: initial;
+  position: relative;
+  width: 75%;
+}
+
+.dialog-modal#preflight .problem-links table th:first-child {
+  width: 5%;
+}
+
+.dialog-modal#preflight .problem-links table th:nth-child(2) {
+  text-align: left;
+  width: 75%
+}
+
+.dialog-modal#preflight .problem-links table tr:first-child th {
+  padding-top: 15px;
+}
+
+.dialog-modal#preflight .problem-links table tr:hover td {
+  background-color: rgb(0 0 0 / 20%);
+}
+
+.problem-link {
+  border: 3px solid #000!important;
+  color: #fff!important;
+  font-size: larger!important;
+  font-weight: bold!important;
+  padding-top: 12px!important;
+  padding-bottom: 12px!important;
+  animation: pulse 1.5s ease-out infinite;
+}
+
+.problem-link:hover {
+  background-color: transparent!important;
+  color: inherit!important;
+  border-color:rgb(255 0 0)!important;
+}
+
+.problem-link::after {
+  content: '(' attr(data-status) ')';
+  margin-left: 5px;
+  font-size: smaller;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0% {background-color: rgb(255 0 0);}
+  50% {background-color: rgb(150 0 0);}
+  100% {background-color: rgb(255 0 0);}
 }
 
 /* Accessibility css */
