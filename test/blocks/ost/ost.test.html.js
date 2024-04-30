@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 
-import { mockOstDeps } from './mocks/ost-utils.js';
+import { mockOstDeps, unmockOstDeps } from './mocks/ost-utils.js';
 import { CheckoutWorkflow, CheckoutWorkflowStep } from '../../../libs/deps/commerce.js';
 import { DEFAULT_CTA_TEXT, createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
 
@@ -45,18 +45,15 @@ function createLink(params = {}) {
   );
 }
 
-let origUrl;
+beforeEach(() => {
+  sessionStorage.clear();
+});
+
+afterEach(() => {
+  unmockOstDeps();
+});
 
 describe('OST: loadOstEnv', async () => {
-  beforeEach(() => {
-    sessionStorage.clear();
-    origUrl = document.location.href;
-  });
-
-  afterEach(() => {
-    window.history.replaceState({}, '', origUrl);
-  });
-
   it('fetches and returns page status and metadata', async () => {
     const {
       options: { country, language, workflow },
@@ -129,15 +126,6 @@ describe('OST: loadOstEnv', async () => {
 });
 
 describe('OST: init', () => {
-  beforeEach(() => {
-    sessionStorage.clear();
-    origUrl = document.location.href;
-  });
-
-  afterEach(() => {
-    window.history.replaceState({}, '', origUrl);
-  });
-
   it('opens OST without waiting for IMS if query string includes token', async () => {
     const {
       options: { country, language, workflow },
