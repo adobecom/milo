@@ -1,4 +1,4 @@
-// branch: stable commit: d93a08fc2123843319c48865f2b71b9ee0b4f5ed Wed, 24 Apr 2024 15:49:31 GMT
+// branch: MWPW-146856 commit: e669b169339ab112125100842cd9bcc03780f3b8 Tue, 30 Apr 2024 03:52:58 GMT
 import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v,unsafeCSS as x}from"/libs/deps/lit-all.min.js";var m="(max-width: 767px)";var i="(min-width: 768px)",c="(min-width: 1200px)",h="(min-width: 1600px)";var k=v`
     :host {
         position: relative;
@@ -248,7 +248,7 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     }
 
     :host([variant='mini-compare-chart']) .top-section .icons {
-        padding-left: var(--consonant-merch-spacing-s);
+        padding-inline-start: var(--consonant-merch-spacing-s);
     }
 
     :host([variant='mini-compare-chart']) .top-section .icons img {
@@ -256,8 +256,6 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     }
 
     :host([variant='mini-compare-chart']) footer {
-        padding: var(--consonant-merch-spacing-xs)
-            var(--consonant-merch-spacing-xxs) 0;
         justify-content: space-between;
         flex-direction: column;
     }
@@ -335,7 +333,7 @@ import{html as n,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
     }
     :host([variant='mini-compare-chart']) slot[name='footer'] {
         min-height: var(--consonant-merch-card-mini-compare-footer-height);
-        margin-left: auto;
+        margin-inline-start: auto;
         display: flex;
     }
 `,z=()=>{let d=[v`
@@ -723,21 +721,16 @@ merch-card[variant="mini-compare-chart"] [slot="promo-text"] a {
     text-decoration: underline;
 }
 
-merch-card[variant="mini-compare-chart"] [slot="footer"] {
-    padding-top: var(--consonant-merch-spacing-xs);
-}
-
-merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button:first-child {
-    margin-left: 0;
-}
-
 merch-card[variant="mini-compare-chart"] [slot="footer"] .action-area {
     display: flex;
+    flex-wrap: wrap;
+    align-self: self-end;
     justify-content: flex-end;
 }
 
 merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
     display: inline-flex;
+    margin-top: 16px;
 }
 
 merch-card[variant="mini-compare-chart"] .footer-row-icon {
@@ -842,6 +835,7 @@ merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
         width: var(--consonant-merch-card-mini-compare-mobile-cta-width);
         text-align: center;
         justify-content: center;
+        margin: auto;
     }
 
     merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button:first-child {
@@ -855,6 +849,7 @@ merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     merch-card[variant="mini-compare-chart"] [slot="footer"] {
         white-space: initial;
         flex-direction: column-reverse;
+        padding: var(--consonant-merch-spacing-xs);
     }
 }
 
@@ -864,10 +859,11 @@ div[slot="footer"] {
     align-items: center;
     flex: 1;
     padding: var(--consonant-merch-spacing-xs);
+    padding-inline-start: 0;
 }
 
 div[slot="footer"] a.con-button {
-    margin-left: var(--consonant-merch-spacing-xs);
+    margin-inline-start: var(--consonant-merch-spacing-xs);
     width: max-content;
 }
 
@@ -895,6 +891,7 @@ div[slot='bg-image'] img {
     :root {
         --consonant-merch-card-mini-compare-chart-width: 142px;
         --consonant-merch-card-special-offers-width: 302px;
+        --consonant-merch-card-segment-mobile-width: 302px;
     }
 }
 
@@ -1060,6 +1057,15 @@ div[slot='bg-image'] img {
 .three-merch-cards.segment,
 .four-merch-cards.segment {
     grid-template-columns: minmax(276px, var(--consonant-merch-card-segment-width));
+}
+
+/* Mobile */
+@media screen and ${m} {
+    .two-merch-cards.segment,
+    .three-merch-cards.segment,
+    .four-merch-cards.segment {
+        grid-template-columns: var(--consonant-merch-card-segment-mobile-width);
+    }
 }
 
 /* Tablet */
@@ -1328,7 +1334,6 @@ merch-card .footer-row-cell:nth-child(8) {
                 >
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
-                <slot name="body-xxs"></slot>
                 <slot name="body-xs"></slot>
             </div>
             ${this.secureLabelFooter}`}renderImage(){return n`${this.cardImage}
