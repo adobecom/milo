@@ -1,10 +1,10 @@
 import { createTag, getConfig } from '../utils/utils.js';
 
-async function getPromoFromTaxonomy(contentRoot) {
+async function getPromoFromTaxonomy(contentRoot, doc) {
   const NAME_KEY = 'Name';
   const FOOTER_PROMO_LINK_KEY = 'Footer Promo Link';
   const taxonomyUrl = `${contentRoot}/taxonomy.json`;
-  const tags = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content);
+  const tags = [...doc.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content);
 
   if (!tags.length) return undefined;
 
@@ -24,12 +24,12 @@ async function getPromoFromTaxonomy(contentRoot) {
   return undefined;
 }
 
-export default async function initFooterPromo(footerPromoTag, footerPromoType) {
+export default async function initFooterPromo(footerPromoTag, footerPromoType, doc = document) {
   const { locale: { contentRoot } } = getConfig();
   let href = footerPromoTag && `${contentRoot}/fragments/footer-promos/${footerPromoTag}`;
 
   if (footerPromoType === 'taxonomy') {
-    const promo = await getPromoFromTaxonomy(contentRoot);
+    const promo = await getPromoFromTaxonomy(contentRoot, doc);
     if (promo) href = promo;
   }
 
@@ -39,7 +39,7 @@ export default async function initFooterPromo(footerPromoTag, footerPromoType) {
   const a = createTag('a', { href }, href);
   const div = createTag('div', null, a);
   const section = createTag('div', null, div);
-  document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+  doc.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
   await loadFragment(a);
   section.classList.add('section');
 }

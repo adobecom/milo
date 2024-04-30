@@ -63,7 +63,7 @@ async function findPageFragments(path) {
     const originalUrl = fragment.dataset.modalPath || fragment.dataset.path || fragment.href;
     let pathname;
     try {
-      pathname = new URL(originalUrl).pathname.replace('.html', '');
+      pathname = new URL(originalUrl, origin).pathname.replace('.html', '');
     } catch (error) {
       // Replace with whatever error handling you're using
       console.error(`findPageFragment pathname error: ${error}`);
