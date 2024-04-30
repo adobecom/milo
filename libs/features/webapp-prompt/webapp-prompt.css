@@ -27,6 +27,10 @@
     left: 0;
   }
 
+  .appPrompt-icon {
+    min-height: 32px;
+  }
+
   .appPrompt-icon img,
   .appPrompt-icon svg {
     width: 32px;
