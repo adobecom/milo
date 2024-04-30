@@ -534,6 +534,10 @@ header.global-navigation {
     display: none;
   }
 
+  .table:not(.merch) .row-highlight:has(:only-child) {
+    grid-template-columns: repeat(auto-fit, 100%);
+  }
+
   .table:not(.merch) .section-row-title {
     grid-row: 1;
     grid-column: 1 / x;
