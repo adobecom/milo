@@ -27,7 +27,6 @@ const MILO_BLOCKS = [
   'chart',
   'columns',
   'faas',
-  'faq',
   'featured-article',
   'figure',
   'form',
@@ -48,9 +47,10 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'merch-card',
-  'merch-cards',
+  'merch-card-collection',
   'merch-offers',
   'mnemonic-list',
+  'mobile-app-banner',
   'modal',
   'modal-metadata',
   'pdf-viewer',
@@ -100,7 +100,6 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
-  { 'offer-preview': '/tools/commerce' },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -562,7 +561,9 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
-    if (key === 'fragment') {
+    const hasExtension = a.href.split('/').pop().includes('.');
+    const mp4Match = a.textContent.match('media_.*.mp4');
+    if (key === 'fragment' && (!hasExtension || mp4Match)) {
       if (a.href === window.location.href) {
         return false;
       }
@@ -579,7 +580,7 @@ export function decorateAutoBlock(a) {
       }
 
       // previewing a fragment page with mp4 video
-      if (a.textContent.match('media_.*.mp4')) {
+      if (mp4Match) {
         a.className = 'video link-block';
         return false;
       }
@@ -669,8 +670,7 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
-  header.className = headerQuery || headerMeta || 'gnav';
+  header.className = headerMeta || 'gnav';
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
@@ -710,9 +710,26 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  const footerQuery = new URLSearchParams(window.location.search).get('footerqa');
-  footer.className = footerQuery || footerMeta || 'footer';
+  footer.className = footerMeta || 'footer';
   await loadBlock(footer);
+}
+
+export function filterDuplicatedLinkBlocks(blocks) {
+  if (!blocks?.length) return [];
+  const uniqueModalKeys = new Set();
+  const uniqueBlocks = [];
+  for (const obj of blocks) {
+    if (obj.className.includes('modal')) {
+      const key = `${obj.dataset.modalHash}-${obj.dataset.modalPath}`;
+      if (!uniqueModalKeys.has(key)) {
+        uniqueModalKeys.add(key);
+        uniqueBlocks.push(obj);
+      }
+    } else {
+      uniqueBlocks.push(obj);
+    }
+  }
+  return uniqueBlocks;
 }
 
 function decorateSection(section, idx) {
@@ -750,7 +767,7 @@ function decorateSection(section, idx) {
     blocks: [...links, ...blocks],
     el: section,
     idx,
-    preloadLinks: blockLinks.autoBlocks,
+    preloadLinks: filterDuplicatedLinkBlocks(blockLinks.autoBlocks),
   };
 }
 
@@ -771,16 +788,20 @@ export async function decorateFooterPromo() {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const { locale, imsClientId, imsScope, env } = getConfig();
+    const { locale, imsClientId, imsScope, env, base } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
+    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
+    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
     window.adobeid = {
       client_id: imsClientId,
-      scope: imsScope || 'AdobeID,openid,gnav,pps.read,firefly_api',
+      scope: imsScope || defaultScope,
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
+      redirect_uri: ahomeMeta === 'on'
+        ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
@@ -790,7 +811,10 @@ export async function loadIms() {
       },
       onError: reject,
     };
-    loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+    const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
+      ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
+      : `${base}/deps/imslib.min.js`;
+    loadScript(path);
   }).then(() => {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
@@ -821,8 +845,7 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
 }
 
 async function checkForPageMods() {
-  const search = new URLSearchParams(window.location.search);
-  const offFlag = (val) => search.get(val) === 'off';
+  const offFlag = (val) => PAGE_URL.searchParams.get(val) === 'off';
   if (offFlag('mep')) return;
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
@@ -850,14 +873,14 @@ async function checkForPageMods() {
 
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoMd));
+    persManifests = persManifests.concat(getPromoManifests(promoMd, PAGE_URL.searchParams));
   }
 
   const { env } = getConfig();
   let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
   if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
-    previewOn = true;
+    previewOn = !offFlag('mepButton');
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
@@ -1032,6 +1055,8 @@ async function documentPostSectionLoading(config) {
   import('../martech/attributes.js').then((analytics) => {
     document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
+
+  document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
 }
 
 async function processSection(section, config, isDoc) {
@@ -1040,6 +1065,7 @@ async function processSection(section, config, isDoc) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
     await Promise.all(fragPromises);
+    await decoratePlaceholders(section.el, config);
     const newlyDecoratedSection = decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;

@@ -1,15 +1,26 @@
-import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 
-import { priceLiteralsURL } from '../../../../libs/blocks/merch/merch.js';
+import { PRICE_LITERALS_URL } from '../../../../libs/blocks/merch/merch.js';
+
+const MOCKS_PATH = '/test/blocks/merch/mocks';
+
+const { fetch } = window;
+
+export const readMockJSON = async (fileName) => {
+  const json = await fetch(`${MOCKS_PATH}/${fileName}`).then((res) => res.json());
+  return json;
+};
+
+export const readMockText = async (fileName) => {
+  const text = await fetch(`${MOCKS_PATH}/${fileName}`).then((res) => res.text());
+  return text;
+};
 
 export async function mockFetch() {
   // this path allows to import this mock from tests for other blocks (e.g. commerce)
-  const literals = JSON.parse(await readFile({ path: '../merch/mocks/literals.json' }));
-  const offers = JSON.parse(await readFile({ path: '../merch/mocks/offers.json' }));
-  const namedOffers = JSON.parse(await readFile({ path: '../merch/mocks/named-offers.json' }));
-
-  const { fetch } = window;
+  const literals = await readMockJSON('literals.json');
+  const offers = await readMockJSON('offers.json');
+  const namedOffers = await readMockJSON('named-offers.json');
 
   let checkoutLinkConfigs;
   const setCheckoutLinkConfigs = (data) => {
@@ -24,7 +35,7 @@ export async function mockFetch() {
   sinon.stub(window, 'fetch').callsFake((...args) => {
     const { href, pathname, searchParams } = new URL(String(args[0]));
     // literals mock
-    if (href === priceLiteralsURL) {
+    if (href === PRICE_LITERALS_URL) {
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve(literals),

@@ -25,10 +25,9 @@ const getEndpoint = (url, type, usePath = false) => {
 };
 
 const getRequest = (url, process, useBulk = true) => {
-  const useDelete = isDelete(process);
   const href = useBulk ? [url.href] : url.href;
   const endpoint = getEndpoint(url, process, !useBulk);
-  const options = { headers, method: useDelete ? 'DELETE' : 'POST', body: {} };
+  const options = { headers, method: 'POST', body: {} };
   if (useBulk) options.body = { paths: [] };
   return {
     href,
@@ -110,11 +109,9 @@ const prepareJobs = (details, useBulk) => {
     if (!jobs[base]) jobs[base] = getRequest(url, process);
     const job = jobs[base];
     if (isDelete(process)) {
-      const param = job.endpoint.includes('?') ? '&' : '?';
-      job.endpoint = `${job.endpoint}${param}paths[]=${url.pathname}`;
-    } else {
-      job.options.body.paths.push(url.pathname.toLowerCase());
+      job.options.body.delete = true;
     }
+    job.options.body.paths.push(url.pathname.toLowerCase());
     job.href.push(url.href);
     return jobs;
   }, {}));
@@ -142,7 +139,7 @@ const startJob = async (details) => {
   const jobs = prepareJobs(details, useBulk);
   const requests = jobs.flatMap(async (job) => {
     const { options, origin, endpoint } = job;
-    if (!isDelete(process)) options.body.forceUpdate = true;
+    if (useBulk) options.body.forceUpdate = true;
     options.body = JSON.stringify(options.body);
     try {
       const request = await fetch(endpoint, options);
@@ -159,12 +156,22 @@ const startJob = async (details) => {
       };
     }
   });
-  const results = await Promise.all(requests);
+  // batch to limit concurrency
+  const results = [];
+  while (requests.length) {
+    if (requests.length > 5) await delay(5000);
+    const result = await Promise.all(requests.splice(0, 4));
+    results.push(...result);
+  }
   return results;
 };
 
+// fetch one job status at a time
+const statusQueue = [];
 const getJobStatus = async (link) => {
-  await delay();
+  await delay(5000);
+  if (!statusQueue.includes(link)) statusQueue.push(link);
+  if (statusQueue.indexOf(link) !== 0) return null;
   try {
     const status = await fetch(link, { headers });
     const result = await status.json();
@@ -181,11 +188,12 @@ const pollJobStatus = async (job, setProgress) => {
   let stopped = false;
   while (!stopped) {
     const status = await getJobStatus(`${result.links.self}/details`);
-    if (status.stopTime) {
+    if (status?.stopTime) {
       jobStatus = status;
       stopped = true;
+      statusQueue.shift();
     }
-    setProgress(status);
+    if (status) setProgress(status);
   }
   return jobStatus;
 };

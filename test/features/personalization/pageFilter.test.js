@@ -12,7 +12,7 @@ it('pageFilter should exclude page if it is not a match', async () => {
 
   let manifestJson = await readFile({ path: './mocks/manifestPageFilterExclude.json' });
   manifestJson = JSON.parse(manifestJson);
-  const replacePageHtml = await readFile({ path: './mocks/replacePage.plain.html' });
+  const replacePageHtml = await readFile({ path: './mocks/fragments/replacePage.plain.html' });
 
   window.fetch = stub();
   window.fetch.onCall(0).returns(
@@ -48,7 +48,7 @@ it('pageFilter should include page if it is a match', async () => {
 
   let manifestJson = await readFile({ path: './mocks/manifestPageFilterInclude.json' });
   manifestJson = JSON.parse(manifestJson);
-  const replacePageHtml = await readFile({ path: './mocks/replacePage.plain.html' });
+  const replacePageHtml = await readFile({ path: './mocks/fragments/replacePage.plain.html' });
 
   window.fetch = stub();
   window.fetch.onCall(0).returns(

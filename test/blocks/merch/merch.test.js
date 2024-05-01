@@ -1,4 +1,3 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
@@ -8,10 +7,11 @@ import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
   PRICE_TEMPLATE_STRIKETHROUGH,
+  CHECKOUT_ALLOWED_KEYS,
   buildCta,
   getCheckoutContext,
   initService,
-  priceLiteralsURL,
+  PRICE_LITERALS_URL,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
@@ -20,7 +20,7 @@ import merch, {
   getCheckoutAction,
 } from '../../../libs/blocks/merch/merch.js';
 
-import { mockFetch, unmockFetch } from './mocks/fetch.js';
+import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
@@ -50,12 +50,21 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: 'X',
     LOCALE: 'fr',
   },
-  { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' }],
+  { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' },
+  {
+    PRODUCT_FAMILY: 'PREMIERE',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/premiere',
+    FREE_TRIAL_PATH: '/test/blocks/merch/mocks/fragments/twp',
+    BUY_NOW_PATH: '',
+    LOCALE: '',
+  },
+  ],
 };
 
 const config = {
   codeRoot: '/libs',
-  commerce: { priceLiteralsURL },
+  commerce: { priceLiteralsURL: PRICE_LITERALS_URL },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
@@ -117,8 +126,8 @@ describe('Merch Block', () => {
 
   before(async () => {
     window.lana = { log: () => { } };
-    document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    document.head.innerHTML = await readMockText('head.html');
+    document.body.innerHTML = await readMockText('body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
@@ -129,6 +138,8 @@ describe('Merch Block', () => {
     await initService(true);
     Log.reset();
     Log.use(Log.Plugins.quietFilter);
+    fetchCheckoutLinkConfigs.promise = undefined;
+    await fetchCheckoutLinkConfigs('http://localhost:3000/libs');
   });
 
   afterEach(() => {
@@ -411,9 +422,6 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('TWP and D2P modals', () => {
-  });
-
   describe('Download flow', () => {
     it('supports download use case', async () => {
       mockIms();
@@ -456,7 +464,7 @@ describe('Merch Block', () => {
     it('fetchCheckoutLinkConfigs: returns null if mapping cannot be fetched', async () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(null);
-      const mappings = await fetchCheckoutLinkConfigs();
+      const mappings = await fetchCheckoutLinkConfigs('http://localhost:2000/libs');
       expect(mappings).to.be.undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
       fetchCheckoutLinkConfigs.promise = undefined;
@@ -549,6 +557,33 @@ describe('Merch Block', () => {
       document.querySelector('.modal-curtain').click();
     });
 
+    it('renders Milo TWP modal', async () => {
+      mockIms();
+      const el = document.querySelector('.merch.cta.milo.twp');
+      const cta = await merch(el);
+      const { nodeName, textContent } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      expect(textContent).to.equal('Free Trial');
+      expect(cta.getAttribute('href')).to.equal('#');
+      cta.click();
+      await delay(100);
+      let modal = document.getElementById('checkout-link-modal');
+      expect(modal.querySelector('[data-path]').dataset.path).to.equal('/test/blocks/merch/mocks/fragments/twp');
+      expect(modal.querySelector('h1').innerText).to.equal('twp modal');
+      document.querySelector('.modal-curtain').click();
+      await delay(100);
+      const [,,,, checkoutLinkConfig] = CHECKOUT_LINK_CONFIGS.data;
+      checkoutLinkConfig.FREE_TRIAL_PATH = 'http://main--milo--adobecom.hlx.page/test/blocks/merch/mocks/fragments/twp-url';
+      await cta.render();
+      cta.click();
+      await delay(100);
+      modal = document.getElementById('checkout-link-modal');
+      expect(modal.querySelector('h1').innerText).to.equal('twp modal #2');
+      expect(modal.querySelector('[data-path]').dataset.path).to.equal('/test/blocks/merch/mocks/fragments/twp-url');
+      document.querySelector('.modal-curtain').click();
+      await delay(100);
+    });
+
     it('renders D2P modal', async () => {
       mockIms();
       const el = document.querySelector('.merch.cta.d2p');
@@ -563,6 +598,63 @@ describe('Merch Block', () => {
       const modal = document.getElementById('checkout-link-modal');
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
+    });
+  });
+
+  describe('checkout link with optional params', async () => {
+    const checkoutUcv2Keys = [
+      'rurl', 'authCode', 'curl',
+
+    ];
+    const checkoutAllowKeysMapping = {
+      quantity: 'q',
+      checkoutPromoCode: 'apc',
+      ctxrturl: 'ctxRtUrl',
+      country: 'co',
+      language: 'lang',
+      clientId: 'cli',
+      context: 'ctx',
+      productArrangementCode: 'pa',
+      offerType: 'ot',
+      marketSegment: 'ms',
+      authCode: 'code',
+      rurl: 'rUrl',
+      curl: 'cUrl',
+    };
+    const segmentation = [
+      'ot',
+      'pa',
+      'ms',
+    ];
+
+    const keyValueMapping = { lang: 'en', ms: 'COM', ot: 'BASE', pa: 'phsp_direct_individual' };
+
+    const skipKeys = ['quantity', 'co', 'country', 'lang', 'language'];
+
+    CHECKOUT_ALLOWED_KEYS.forEach((key) => {
+      if (skipKeys.includes(key)) return;
+      const mappedKey = checkoutAllowKeysMapping[key] ?? key;
+      it(`renders checkout link with "${mappedKey}" parameter`, async () => {
+        const a = document.createElement('a', { is: 'checkout-link' });
+        a.classList.add('merch');
+        const searchParams = new URLSearchParams();
+        searchParams.set('osi', 1);
+        searchParams.set('type', 'checkoutUrl');
+        if (checkoutUcv2Keys.includes(key)) {
+          searchParams.set('workflow', 'ucv2');
+        }
+        const value = keyValueMapping[mappedKey] ?? 'test';
+        searchParams.set(key, value);
+        if (segmentation.includes(mappedKey)) {
+          searchParams.set('workflowStep', 'segmentation');
+        }
+        a.setAttribute('href', `/tools/ost?${searchParams.toString()}`);
+        document.body.appendChild(a);
+        const el = await merch(a);
+        await el.onceSettled();
+        expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
+        el.remove();
+      });
     });
   });
 });
