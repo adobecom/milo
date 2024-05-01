@@ -154,28 +154,40 @@ const App = ({
       const mlFieldText = document.querySelector('#ml-field-input').value;
       const fiResults = await getMLResults(mlDetails.endpoint, mlDetails['api-key'], mlDetails.threshold || defaultThreshold, mlFieldText, fiCodeCount, mlValues);
       const { filtered } = fiResults;
+      let fallback = [];
+      let error = 'Cannot connect to the ML endpoint';
 
-      setFiCodeResults(filtered);
-
-      filtered.forEach((item) => {
-        selections[item.ficode] = true;
-      });
+      if (mlDetails.fallback) fallback = mlDetails.fallback.split(',');
+      if (filtered) {
+        setFiCodeResults(filtered);
+        filtered.forEach((item) => {
+          selections[item.ficode] = true;
+        });
+      } else if (fiResults.errors || fiResults.error_code) {
+        for (const ficode of fallback) {
+          selections[ficode] = true;
+        }
+        if (fiResults.errors) error = fiResults.errors[0].title;
+        if (fiResults.error_code) error = fiResults.message;
+        window.lana.log(`ML results error - ${error}`);
+      }
 
       if (debug) {
-        // eslint-disable-next-line no-console
-        console.log('all', fiResults.data);
-        // eslint-disable-next-line no-console
-        console.log('filtered', filtered);
+        if (!fiResults.errors && !fiResults.error_code) {
+          // eslint-disable-next-line no-console
+          console.log('all', fiResults.data);
+          // eslint-disable-next-line no-console
+          console.log('filtered', filtered);
+        } else {
+          // eslint-disable-next-line no-console
+          console.log('fallback codes used', fallback);
+        }
       }
     }
 
     if (cardsUsed) {
       userFlow = quizState.userFlow;
       selections = selectedCards;
-      if (questionCount.current < maxQuestions) {
-        setSelectedCards({});
-        setSelectedQuestion(null);
-      }
     }
 
     if (Object.keys(selections).length > 0) {
@@ -202,7 +214,16 @@ const App = ({
 
       // eslint-disable-next-line no-console
       if (debug) console.log(currentQuizState);
-      if (!debug) window.location = quizPath;
+      if (questionCount.current === maxQuestions || currentQuizState.userFlow.length === 1) {
+        if (!debug) {
+          setSelectedQuestion(null);
+          window.location = quizPath;
+        }
+      } else {
+        setSelectedCards({});
+        setSelectedQuestion(null);
+        setMLInputUsed(false);
+      }
     }
   };
 
