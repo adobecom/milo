@@ -55,8 +55,8 @@ export default async function decorate(block) {
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(block);
   const rows = block.querySelectorAll(':scope > div');
-  const childDiv = rows[0].querySelector(':scope > div');
-  const emptyRow = childDiv?.innerText.trim() === '';
+  const childDiv = rows[0]?.querySelector(':scope > div');
+  const emptyRow = rows.lengh && childDiv?.innerText.trim() === '';
   const toSentenceCase = (str) => {
     if (!str || typeof str !== 'string') return '';
     /* eslint-disable-next-line no-useless-escape */
@@ -68,9 +68,9 @@ export default async function decorate(block) {
   } else {
     rows[0]?.classList.add('tracking-header');
     // add share placeholder if empty row
-    if (childDiv && emptyRow) {
+    if (!rows.length || emptyRow) {
       const heading = toSentenceCase(await replaceKey('share-this-page', config));
-      childDiv.append(createTag('p', null, heading));
+      block.append(createTag('p', null, heading));
     }
   }
 
