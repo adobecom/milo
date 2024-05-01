@@ -95,7 +95,7 @@ export async function getQuizEntryData(el) {
   const blockData = getNormalizedMetadata(el);
   const dataPath = blockData.data.text;
   const quizPath = blockData.quiz.text;
-  const maxQuestions = blockData.maxquestions?.text || 10;
+  const maxQuestions = Number(blockData.maxquestions?.text) || 10;
   const analyticsType = blockData.analyticstype?.text;
   const analyticsQuiz = blockData.analyticsquiz?.text;
   const [questionData, stringsData] = await getQuizJson(dataPath);

@@ -28,18 +28,24 @@ export const getMLResults = async (endpoint, apiKey, threshold, input, count, va
     .then((response) => response.json())
     .catch((error) => window.lana.log(`ERROR: Fetching fi codes ${error}`));
 
+  let value;
   let highestProb = null;
-  result.filtered = result?.data?.filter((item) => {
-    let isValid = false;
-    if (!highestProb) {
-      highestProb = item.prob;
-      isValid = true;
-    } else if (item.prob / highestProb > threshold) {
-      isValid = true;
-    }
-    return isValid;
-  });
-  return result;
+  if (result) {
+    result.filtered = result?.data?.filter((item) => {
+      let isValid = false;
+      if (!highestProb) {
+        highestProb = item.prob;
+        isValid = true;
+      } else if (item.prob / highestProb > threshold) {
+        isValid = true;
+      }
+      return isValid;
+    });
+    value = result;
+  } else {
+    value = { errors: [{ title: 'Unable to fetch fi codes' }] };
+  }
+  return value;
 };
 
 export const mlField = ({ cardsUsed, onMLInput, onMLEnter, placeholderText, onClearClick }) => html`<div class="ml-field-container">
