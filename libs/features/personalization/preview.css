@@ -274,7 +274,8 @@ input#new-manifest {
 }
 
 /* mepHighlight */
-body[data-mep-highlight='true'] [data-manifest-id],
+body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem),
+body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > *,
 body[data-mep-highlight='true'] [data-code-manifest-id],
 body[data-mep-highlight='true'] [data-removed-manifest-id] {
   outline: 3px #26ceef dashed !important;

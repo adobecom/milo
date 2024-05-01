@@ -32,6 +32,26 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "/fragments/hello-world",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter3",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "http\"",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter3",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"

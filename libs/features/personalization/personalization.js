@@ -5,7 +5,7 @@ import {
 } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
-/* c20 ignore start */
+/* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
@@ -25,7 +25,7 @@ export const PERSONALIZATION_TAGS = {
   loggedin: () => !!window.adobeIMS?.isSignedInUser(),
 };
 const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
-/* c20 ignore stop */
+/* c8 ignore stop */
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';

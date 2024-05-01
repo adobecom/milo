@@ -1,7 +1,6 @@
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
-import { handleCommands, deleteMarkedEls } from '../../../features/personalization/personalization.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
@@ -330,6 +329,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
+    const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
     handleCommands(commands, commands[0].manifestId, body, true);
     deleteMarkedEls(body);
   }

@@ -93,7 +93,7 @@ export default async function init(a) {
   const resp = await customFetch({ resource: `${a.href}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
-  if (!resp.ok) {
+  if (!resp?.ok) {
     window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
     return;
   }
