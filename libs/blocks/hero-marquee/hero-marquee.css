@@ -107,6 +107,7 @@
   font-size: var(--type-body-m-size);
 }
 
+.hero-marquee .lockup-area picture img,
 .hero-marquee .l-icon .lockup-area picture img,
 .hero-marquee.l-icon .lockup-area picture img {
   min-width:var(--icon-size-l);
@@ -224,7 +225,11 @@
 /* row-qr */
 .hero-marquee .row-qrcode .row-wrapper {
   display: flex;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-s);
+  margin: 0;
+}
+
+.hero-marquee .row-qrcode .row-wrapper > p {
   margin: 0;
 }
 
@@ -280,7 +285,7 @@
 }
 
 /* row-supplemental */
-.hero-marquee .row-supplemental {
+.hero-marquee .row-supplemental.bold {
   font-weight: 700;
 }
 

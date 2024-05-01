@@ -57,6 +57,8 @@ function decorateText(el, classes) {
     const parts = btnClass[0].split('-');
     el.classList.remove(btnClass[0]);
     decorateButtons(el, `${parts[1]}-${parts[0]}`);
+  } else {
+    decorateButtons(el, 'button-xl');
   }
   distillClasses(el, classes);
   el.classList.add('norm');
@@ -67,12 +69,33 @@ function decorateLockupRow(el) {
   if (child) child.classList.add('lockup-area');
 }
 
-function extendButtonsClass(text) {
-  const buttons = text.querySelectorAll('.con-button');
-  if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-xl', 'button-justified-mobile'); });
+function decorateSup(el, classes) {
+  distillClasses(el, classes);
 }
 
+function removeBodyClassOnEl(el) {
+  const actionArea = el.querySelector('.action-area');
+  const bodyClass = actionArea.classList.contains('body-m');
+  // const actionAreaStarts = el.querySelector('.action-area');
+  console.log('actionArea bodyClass', actionArea.classList, bodyClass);
+  // const hasBodyClass = [...actionArea.classList].filter((c) => {
+  //   console.log('class:', c);
+  //   if (!c.startsWith('body-') || !c.endsWith('-body')) return false;
+  //   return c;
+  // });
+  // if (!hasBodyClass.length) return;
+  // console.log('actionArea', el, actionArea, hasBodyClass, hasBodyClass.length);
+  // el.classList.remove(hasBodyClass[0]);
+}
+
+function extendButtonsClass(copy) {
+  const buttons = copy.querySelectorAll('.con-button');
+  if (buttons.length === 0) return;
+  buttons.forEach((button) => {
+    button.classList.add('button-xl', 'button-justified-mobile');
+  });
+  // removeBodyClassOnEl(copy);
+}
 function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
   const match = str.match(regex);
@@ -90,6 +113,7 @@ function loadContentType(el, key, classes) {
   if (key === 'qrcode') decorateQr(el);
   if (key === 'background') decorateBg(el);
   if (key === 'text') decorateText(el, classes);
+  if (key === 'supplemental') decorateSup(el, classes);
 }
 
 export default async function init(el) {
@@ -135,6 +159,7 @@ export default async function init(el) {
   decorateBlockText(copy, ['xxl', 'm', 'l']); // heading, body, detail
   decorateLockupFromContent(copy);
   extendButtonsClass(copy);
+
   const assetRow = foreground.querySelector(':scope > div').classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
   const mainCopy = createTag('div', { class: 'main-copy' }, copy.innerHTML);
