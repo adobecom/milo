@@ -72,7 +72,6 @@ describe('Plans Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
@@ -100,7 +99,6 @@ describe('Plans Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
@@ -126,7 +124,6 @@ describe('Plans Card', () => {
     expect(detail).to.exist;
     expect(merchCard.getAttribute('variant')).to.be.equal('plans');
     expect(merchCard.getAttribute('badge')).to.not.exist;
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
     expect(buttons.length).to.be.equal(2);

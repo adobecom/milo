@@ -12,18 +12,16 @@
 
 .action-scroller .scroller {
   display: grid;
-  grid-template-columns: repeat(var(--action-scroller-columns), var(--action-scroller-item-width));
-  grid-auto-columns: minmax(var(--action-scroller-column-width), var(--action-scroller-item-width));
+  grid-template-columns: repeat(var(--action-scroller-columns), 1fr);
+  grid-auto-columns: minmax(var(--action-scroller-column-width), 1fr);
   grid-auto-flow: column;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-m);
   padding: 0 var(--action-scroller-mobile-padding);
   overflow-x: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
   scroll-behavior: smooth;
-}
 
-.action-scroller .scroller[hide-mask='false'] {
   --mask-width: 60px;
   --mask-image-content: linear-gradient(to right,
       transparent,
@@ -46,6 +44,7 @@
   mask-position: 0 0, 100% 0;
   mask-repeat: no-repeat, no-repeat;
 }
+
 
 .action-scroller .scroller::-webkit-scrollbar {
   display: none;
@@ -139,9 +138,5 @@
   .action-scroller {
     width: var(--grid-container-width);
     margin: 0 auto;
-  }
-
-  .action-scroller .justify-center {
-    justify-content: center;
   }
 }
