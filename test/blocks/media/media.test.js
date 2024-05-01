@@ -23,7 +23,7 @@ describe('media', () => {
       expect(iconArea).to.exist;
     });
     it('has an icon area with blue button', () => {
-      const actionArea = medias[3].querySelector('.action-area');
+      const actionArea = medias[0].querySelector('.action-area');
       expect(actionArea).to.exist;
       const blueButton = actionArea.querySelector('.con-button.blue');
       expect(blueButton).to.exist;
