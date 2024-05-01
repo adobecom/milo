@@ -193,7 +193,7 @@ const getOrigin = (fgColor) => {
     cc: 'hawks',
     dc: 'doccloud',
   };
-  let originLC = (mappings[origin] || origin).toLowerCase();
+  const originLC = (mappings[origin] || origin).toLowerCase();
   if (originLC) {
     return originLC;
   }
