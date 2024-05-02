@@ -322,6 +322,8 @@
         const hash = copyTextArea.value.split('#')[1];
         if (hash === windowsHash || hash === osxHash) {
           isCorrectHash = true;
+        } else {
+          console.log('Expected Hash:', hash);
         }
         expect(isCorrectHash).to.be.true;
       });
