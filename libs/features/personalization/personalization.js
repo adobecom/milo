@@ -296,7 +296,7 @@ function getSection(rootEl, idx) {
     : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
 }
 
-function registerCustomAction(cmd, manifestId) {
+function registerInBlockActions(cmd, manifestId) {
   const { action, target, selector } = cmd;
   const command = { action, target, manifestId };
 
@@ -417,7 +417,7 @@ export function handleCommands(commands, manifestId, rootEl = document, forceInl
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
     if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
-      registerCustomAction(cmd, manifestId);
+      registerInBlockActions(cmd, manifestId);
       return;
     }
     if (action in COMMANDS) {
