@@ -152,8 +152,8 @@ export async function fetchLiterals(url) {
 
 export async function fetchCheckoutLinkConfigs(base = '') {
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch(() => {
-      log?.error('Failed to fetch checkout link configs');
+    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
+      log?.error('Failed to fetch checkout link configs', e);
     }).then((mappings) => {
       if (!mappings?.ok) return undefined;
       return mappings.json();
