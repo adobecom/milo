@@ -3,7 +3,6 @@
   --success: #3b853b;
   --error: #db4437;
   --panel-bg: rgba(255 255 255 / 60%);
-  --meta-width: 30%;
 
   display: flex;
   flex-direction: column;
@@ -372,12 +371,8 @@ label[for='urls'] i {
 
 .job-meta {
   display: flex;
-  justify-content: space-between;
-  min-width: var(--meta-width);
-}
-
-.job-meta>*:last-child {
-  text-align: right;
+  flex-direction: row;
+  justify-content: end;
 }
 
 .process {
