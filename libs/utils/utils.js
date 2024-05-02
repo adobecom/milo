@@ -776,13 +776,13 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map(decorateSection);
 }
 
-export async function decorateFooterPromo() {
-  const footerPromoTag = getMetadata('footer-promo-tag');
-  const footerPromoType = getMetadata('footer-promo-type');
+export async function decorateFooterPromo(doc = document) {
+  const footerPromoTag = getMetadata('footer-promo-tag', doc);
+  const footerPromoType = getMetadata('footer-promo-type', doc);
   if (!footerPromoTag && footerPromoType !== 'taxonomy') return;
 
   const { default: initFooterPromo } = await import('../features/footer-promo.js');
-  await initFooterPromo(footerPromoTag, footerPromoType);
+  await initFooterPromo(footerPromoTag, footerPromoType, doc);
 }
 
 let imsLoaded;
