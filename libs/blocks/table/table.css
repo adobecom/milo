@@ -160,11 +160,7 @@
 }
 
 .table.header-left .row-heading .col.col-heading .buttons-wrapper > * {
-  margin-left: 0;
-}
-
-[dir='rtl'] .table.header-left .row-heading .col.col-heading .buttons-wrapper > * {
-  margin-right: 0;
+  margin-inline-start: 0;
 }
 
 .table .row-heading .col-heading.top-left-rounded {
