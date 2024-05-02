@@ -504,8 +504,8 @@ class Gnav {
     };
 
     await Promise.all([
-      loadScript(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.js`),
-      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.css`),
+      loadScript(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.js`),
+      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.css`),
     ]);
 
     const getChildren = () => {
