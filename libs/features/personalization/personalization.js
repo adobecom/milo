@@ -812,13 +812,13 @@ export async function applyPers(manifests) {
   try {
     const config = getConfig();
 
-  if (!manifests?.length) return;
-  config.mep ??= {};
-  config.mep.handleFragmentCommand = handleFragmentCommand;
-  let experiments = manifests;
-  for (let i = 0; i < experiments.length; i += 1) {
-    experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
-  }
+    if (!manifests?.length) return;
+    config.mep ??= {};
+    config.mep.handleFragmentCommand = handleFragmentCommand;
+    let experiments = manifests;
+    for (let i = 0; i < experiments.length; i += 1) {
+      experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
+    }
 
     experiments = cleanAndSortManifestList(experiments);
 
