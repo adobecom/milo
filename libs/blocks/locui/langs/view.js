@@ -24,8 +24,8 @@ function Badge({ status }) {
 function Language({ item, idx }) {
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
-  const onButton = (e) => {
-    e.stopPropagation();
+  const onRollout = (e) => {
+    if (item.status === 'error') e.stopPropagation();
     rollout(item, idx);
   };
   let rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
@@ -66,7 +66,7 @@ function Language({ item, idx }) {
       `}
       ${['translated', 'completed', 'error'].includes(item.status) && html`
         <div class=locui-subproject-action-area>
-          <button class=locui-urls-heading-action onClick=${(e) => onButton(e)}>${rolloutType}</button>
+          <button class=locui-urls-heading-action onClick=${(e) => onRollout(e)}>${rolloutType}</button>
         </div>
       `}
     </li>
