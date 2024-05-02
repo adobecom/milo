@@ -1,6 +1,7 @@
 let chatInitialized = false;
 let loadScript;
 let loadStyle;
+let getMetadata;
 
 const isSilentEvent = (data) => (data['event.workflow'] === 'init' && data['event.type'] === 'request')
   || (data['event.workflow'] === 'Chat' && data['event.type'] === 'load' && data['event.subtype'] === 'window');
@@ -202,7 +203,7 @@ const openChat = (event) => {
   }
 };
 
-const startInitialization = async (config, event) => {
+const startInitialization = async (config, event, onDemand) => {
   const asset = 'https://client.messaging.adobe.com/latest/AdobeMessagingClient';
   await Promise.all([
     loadStyle(`${asset}.css`),
@@ -217,8 +218,8 @@ const startInitialization = async (config, event) => {
   }
 
   window.AdobeMessagingExperienceClient.initialize({
-    appid: config.jarvis.id,
-    appver: config.jarvis.version,
+    appid: getMetadata('jarvis-surface-id') || config.jarvis.id,
+    appver: getMetadata('jarvis-surface-version') || config.jarvis.version,
     env: config.env.name !== 'prod' ? 'stage' : 'prod',
     clientId: window.adobeid?.client_id,
     accessToken: window.adobeIMS?.isSignedInUser()
@@ -237,7 +238,7 @@ const startInitialization = async (config, event) => {
         chatInitialized = !!data?.releaseControl?.showAdobeMessaging;
       },
       onReadyCallback: () => {
-        if (config.jarvis.onDemand) {
+        if (onDemand) {
           openChat(event);
         }
       },
@@ -278,23 +279,31 @@ const startInitialization = async (config, event) => {
   });
 };
 
-const initJarvisChat = async (config, loadScriptFunction, loadStyleFunction) => {
+const initJarvisChat = async (
+  config,
+  loadScriptFunction,
+  loadStyleFunction,
+  getMetadataFunction,
+) => {
   if (!config?.jarvis) return;
 
   loadScript = loadScriptFunction;
   loadStyle = loadStyleFunction;
+  getMetadata = getMetadataFunction;
+
+  const onDemandMeta = getMetadata('jarvis-on-demand')?.toLowerCase();
+  const onDemand = onDemandMeta ? onDemandMeta === 'on' : config.jarvis.onDemand;
 
   document.addEventListener('click', async (event) => {
     if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
     event.preventDefault();
-    if (config.jarvis.onDemand && !chatInitialized) {
-      await startInitialization(config, event);
+    if (onDemand && !chatInitialized) {
+      await startInitialization(config, event, onDemand);
     } else {
       openChat(event);
     }
   });
-
-  if (!config.jarvis.onDemand) {
+  if (!onDemand) {
     await startInitialization(config);
   }
 };
