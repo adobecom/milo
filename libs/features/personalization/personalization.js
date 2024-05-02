@@ -651,7 +651,9 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
 
 export async function runPersonalization(experiment, config) {
   if (!experiment) return null;
-  const { manifestPath, selectedVariant } = experiment;
+  const { manifestPath } = experiment;
+  const searchParams = new URLSearchParams(document.location.search);
+  const selectedVariant = experiment.variants[`${searchParams?.get('target') || 'default'}`];
   if (!selectedVariant || selectedVariant === 'default') return { experiment };
 
   if (selectedVariant.replacepage) {
