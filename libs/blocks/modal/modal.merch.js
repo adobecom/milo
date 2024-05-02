@@ -4,8 +4,8 @@ export const MOBILE_MAX = 599;
 export const TABLET_MAX = 1199;
 
 export function adjustModalHeight(contentHeight) {
-  if (!window.location.hash) return;
-  const dialog = document.querySelector(`div.dialog-modal.commerce-frame${window.location.hash}`);
+  if (!(window.location.hash || document.getElementById('checkout-link-modal'))) return;
+  const dialog = document.querySelector(`div.dialog-modal.commerce-frame${window.location.hash}, #checkout-link-modal`);
   const iframe = dialog?.querySelector('iframe');
   const iframeWrapper = dialog?.querySelector('.milo-iframe');
   if (!contentHeight || !iframe || !iframeWrapper) return;
