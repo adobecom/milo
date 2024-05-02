@@ -51,10 +51,15 @@ const getLeaf = (node, type, parent = null) => {
 const addBoldHeaders = (mdast) => {
   const tables = mdast.children.filter((child) => child.type === 'gridTable'); // gets all block
   const tableMap = tables.forEach((table) => {
-    const { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
-    if (parent.type !== 'strong') {
-      let idx = parent.children.indexOf(node);
-      parent.children[idx] = { type: 'strong', children: [node] };
+    try {
+      const { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
+      if (parent.type !== 'strong') {
+        const idx = parent.children.indexOf(node);
+        parent.children[idx] = { type: 'strong', children: [node] };
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log('grid-table might be empty in mdast', e);
     }
   });
   return tableMap;
@@ -127,7 +132,14 @@ async function getMdast(path) {
   return getMdastFromMd(mdContent);
 }
 
-function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
+function isSameListType(langstoreContent, livecopyContent) {
+  return langstoreContent?.type === 'list'
+  && livecopyContent?.type === 'list'
+  && langstoreContent.ordered === livecopyContent.ordered
+  && langstoreContent.spread === livecopyContent.spread;
+}
+
+async function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
   const mergedMdast = { type: 'root', children: [] };
   let mergedProcessedMdast = [];
 
@@ -154,39 +166,6 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
     addTrackChangesInfoToChildren(root);
   }
 
-  function checkAndPush(mergedArr, content, type) {
-    for (let i = 0; i < mergedArr.length; i++) {
-      if (mergedArr[i].hashcode === content) {
-        if (mergedArr[i].classType === '') {
-          continue;
-        }
-        if (mergedArr[i].classType === 'deleted') {
-          if (type === 'added') {
-            const newArr = [...mergedArr.slice(0, i), ...mergedArr.slice(i + 1)];
-            newArr.push({ hashcode: content, classType: '' });
-            return newArr;
-          }
-          if (type === 'deleted') {
-            mergedArr.push({ hashcode: content, classType: type });
-            return mergedArr;
-          }
-        }
-        if (mergedArr[i].classType === 'added') {
-          if (type === 'added') {
-            mergedArr.push({ hashcode: content, classType: type });
-            return mergedArr;
-          }
-          if (type === 'deleted') {
-            mergedArr[i].classType = '';
-            return mergedArr;
-          }
-        }
-      }
-    }
-    mergedArr.push({ hashcode: content, classType: type });
-    return mergedArr;
-  }
-
   // Iterate and insert content in mergedMdast as long as both arrays have content
   const length = Math.min(langstoreNowProcessedMdast.length, livecopyProcessedMdast.length);
   let index;
@@ -194,8 +173,14 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
     if (langstoreNowProcessedMdast[index] === livecopyProcessedMdast[index]) {
       mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], '');
     } else {
-      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], 'deleted');
-      mergedProcessedMdast = checkAndPush(mergedProcessedMdast, livecopyProcessedMdast[index], 'added');
+      const langstoreContent = hashToContentMap.get(langstoreNowProcessedMdast[index]);
+      const livecopyContent = hashToContentMap.get(livecopyProcessedMdast[index]);
+      if (isSameListType(langstoreContent, livecopyContent)) {
+        mergedProcessedMdast = await getMergedListMdast(mergedProcessedMdast, langstoreContent, livecopyContent);
+      } else {
+        mergedProcessedMdast = checkAndPush(mergedProcessedMdast, langstoreNowProcessedMdast[index], 'deleted');
+        mergedProcessedMdast = checkAndPush(mergedProcessedMdast, livecopyProcessedMdast[index], 'added');
+      }
     }
   }
 
@@ -227,7 +212,7 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
           }
         });
       }
-      else 
+      else
         addTrackChangesInfo('Langstore Version', elem.classType, newContent);
     } else if (elem.classType === 'added') {
       if (Array.isArray(newContent)) {
@@ -239,7 +224,7 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
           }
         });
       }
-      else 
+      else
         addTrackChangesInfo('Regional Version', elem.classType, newContent);
     }
     if (Array.isArray(newContent))
@@ -248,6 +233,79 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
       mergedMdast.children.push(newContent);
   });
   return mergedMdast;
+}
+
+async function getMergedListMdast(mergedProcessedMdast, langstoreContent, livecopyContent) {
+  const langstoreChildrenHash = await getProcessedMdast(langstoreContent);
+  const livecopyChildrenHash = await getProcessedMdast(livecopyContent);
+  const diffedListContent = await getMergedMdast(langstoreChildrenHash, livecopyChildrenHash);
+  const mergedListContent = {
+    children: [],
+    ordered: langstoreContent.ordered,
+    spread: langstoreContent.spread,
+    type: 'list',
+  };
+
+  // process the new list content to have changes tracked line by line
+  for (let j = 0; j < diffedListContent.children.length; j += 1) {
+    const child = diffedListContent.children[j];
+    const nextChild = diffedListContent.children[j + 1];
+    if (child.action === 'deleted' && child.author === 'Langstore Version'
+      && nextChild.action === 'added' && nextChild.author === 'Regional Version') {
+      // merge the two into one listitem with track changes info
+      const childChildrenHash = await getProcessedMdast(child);
+      const nextChildChildrenHash = await getProcessedMdast(nextChild);
+      // eslint-disable-next-line max-len
+      const diffedListItemContent = await getMergedMdast(childChildrenHash, nextChildChildrenHash);
+      mergedListContent.children.push({
+        type: 'listItem',
+        children: diffedListItemContent.children,
+        checked: null,
+        spread: child.spread,
+      });
+      diffedListContent.children.splice(j + 1, 1);
+    } else {
+      // list item has not changed
+      mergedListContent.children.push(child);
+    }
+  }
+
+  const mergedListHash = objectHash.sha1(mergedListContent);
+  hashToContentMap.set(mergedListHash, mergedListContent);
+  return checkAndPush(mergedProcessedMdast, mergedListHash, '');
+}
+
+function checkAndPush(mergedArr, content, type) {
+  for (let i = 0; i < mergedArr.length; i++) {
+    if (mergedArr[i].hashcode === content) {
+      if (mergedArr[i].classType === '') {
+        continue;
+      }
+      if (mergedArr[i].classType === 'deleted') {
+        if (type === 'added') {
+          const newArr = [...mergedArr.slice(0, i), ...mergedArr.slice(i + 1)];
+          newArr.push({ hashcode: content, classType: '' });
+          return newArr;
+        }
+        if (type === 'deleted') {
+          mergedArr.push({ hashcode: content, classType: type });
+          return mergedArr;
+        }
+      }
+      if (mergedArr[i].classType === 'added') {
+        if (type === 'added') {
+          mergedArr.push({ hashcode: content, classType: type });
+          return mergedArr;
+        }
+        if (type === 'deleted') {
+          mergedArr[i].classType = '';
+          return mergedArr;
+        }
+      }
+    }
+  }
+  mergedArr.push({ hashcode: content, classType: type });
+  return mergedArr;
 }
 
 // If modified timestamp and rollout timestamp is less than 10seconds for livecopy, return true.
@@ -329,7 +387,7 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
       // get processed data Map for the livecopy file
       const livecopyProcessedMdast = await getProcessedMdast(livecopy);
       // get merged mdast
-      const livecopyMergedMdast = getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast);
+      const livecopyMergedMdast = await getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast);
       // save the merged livecopy file
       await persist(filePath, livecopyMergedMdast, livecopyFilePath);
       loadingON(`Rollout to ${livecopyFilePath} complete`);
