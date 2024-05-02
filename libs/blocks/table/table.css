@@ -22,6 +22,7 @@
 .table .col {
   min-height: 27px;
   border-left: 1px var(--border-color) solid;
+  border-right: 1px solid transparent;
   border-top: 1px var(--border-color) solid;
 }
 
@@ -131,6 +132,21 @@
   flex-wrap: wrap;
 }
 
+.table.header-left .row-heading .col.col-heading {
+  text-align: start;
+  padding: var(--spacing-s);
+}
+
+.table:not(.merch) .row-heading .col.col-heading .action-area {
+  display: flex;
+  gap: var(--spacing-s);
+  flex-wrap: wrap;
+}
+
+.table.header-left .row-heading .col.col-heading .buttons-wrapper {
+  justify-content: flex-start;
+}
+
 .table.button-right.merch .row-heading .col.col-heading .buttons-wrapper {
   justify-content: flex-end;
 }
@@ -143,6 +159,14 @@
   margin: 12px 6px;
 }
 
+.table.header-left .row-heading .col.col-heading .buttons-wrapper > * {
+  margin-left: 0;
+}
+
+[dir='rtl'] .table.header-left .row-heading .col.col-heading .buttons-wrapper > * {
+  margin-right: 0;
+}
+
 .table .row-heading .col-heading.top-left-rounded {
   border-top-left-radius: 16px;
 }
@@ -153,6 +177,21 @@
 
 .table .row-heading .col-1.col-heading:not(.no-rounded) {
   border-top-left-radius: 16px;
+}
+
+.table .row-heading .col-heading .header-product-tile {
+  display: inline-flex;
+  gap: var(--spacing-xxs);
+  justify-content: center;
+}
+
+.table.header-left .row-heading .col-heading .header-product-tile {
+  justify-content: flex-start;
+}
+
+.table .row-heading .col-heading .header-product-tile picture {
+  display: flex;
+  margin: 0;
 }
 
 .table .row-heading .col-heading .tracking-header {
@@ -171,6 +210,15 @@
 
 .table .row-heading .col-heading .body {
   font-size: var(--type-body-m-size);
+}
+
+.table:not(.merch) .row-heading .col-heading .body {
+  line-height: var(--type-body-m-lh);
+}
+
+.table:not(.merch) .row-heading .col-heading .table-heading-content {
+  display: flex;
+  flex-direction: column;
 }
 
 /* section */
@@ -223,6 +271,16 @@
 }
 
 /* icons */
+.table:not(.merch) .row .col span.milo-tooltip {
+  margin-left: var(--spacing-xs);
+  margin-right: 0;
+}
+
+[dir='rtl'] .table:not(.merch) .row .col span.milo-tooltip {
+  margin-left: 0;
+  margin-right: var(--spacing-xs);
+}
+
 .table .icon-milo-info {
   height: 18px;
 }
@@ -268,7 +326,7 @@
 /* rtl */
 [dir="rtl"] .table .col {
   border-right: 1px var(--border-color) solid;
-  border-left: 0;
+  border-left: 1px solid transparent;
 }
 
 [dir="rtl"] .table.merch .col {
@@ -523,6 +581,12 @@ header.global-navigation {
   .table:not(.highlight) .col-heading {
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .table.header-left .row-heading .col.col-heading {
+    padding: var(--spacing-xs);
   }
 }
 

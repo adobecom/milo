@@ -19,10 +19,23 @@ export function decorateDefaultLinkAnalytics(block, config) {
     && block.nodeName === 'DIV') {
     let header = '';
     let linkCount = 1;
-    block.querySelectorAll('h1, h2, h3, h4, h5, h6, a:not(.video.link-block), button, .tracking-header').forEach((item) => {
+
+    const headerSelector = 'h1, h2, h3, h4, h5, h6';
+    let analyticsSelector = `${headerSelector}, .tracking-header`;
+    const headers = block.querySelectorAll(analyticsSelector);
+    if (!headers.length) analyticsSelector = `${analyticsSelector}, b, strong`;
+    block.querySelectorAll(`${analyticsSelector}, a:not(.video.link-block), button`).forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (item.classList.contains('tracking-header')) {
           header = processTrackingLabels(item.textContent, config, 20);
+        } else if (!header) {
+          const section = block.closest('.section');
+          if (section?.className.includes('-up') || section?.classList.contains('milo-card-section')) {
+            const previousHeader = section?.previousElementSibling?.querySelector(headerSelector);
+            if (previousHeader) {
+              header = processTrackingLabels(previousHeader.textContent, config, 20);
+            }
+          }
         }
         if (item.hasAttribute('daa-ll')) {
           const labelArray = item.getAttribute('daa-ll').split('-').map((part) => {
@@ -43,6 +56,9 @@ export function decorateDefaultLinkAnalytics(block, config) {
         }
         linkCount += 1;
       } else {
+        if (item.nodeName === 'STRONG' || item.nodeName === 'B') {
+          item.classList.add('tracking-header');
+        }
         header = processTrackingLabels(item.textContent, config, 20);
       }
     });

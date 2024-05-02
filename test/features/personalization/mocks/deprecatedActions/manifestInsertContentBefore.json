@@ -1,0 +1,18 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "insertContentBefore",
+      "selector": ".marquee",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertbefore",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

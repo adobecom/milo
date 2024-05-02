@@ -1,4 +1,5 @@
 import { expect } from '@esm-bundle/chai';
+import { stub } from 'sinon';
 import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 import { replaceText, replaceKey, replaceKeyArray } from '../../../libs/features/placeholders.js';
 
@@ -8,9 +9,25 @@ setConfig(conf);
 const config = getConfig();
 
 describe('Placeholders', () => {
+  let paramsGetStub;
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
   it('Fails on JSON', async () => {
     const text = await replaceKey('recommended-for-you', config);
     expect(text).to.equal('recommended for you');
+  });
+
+  it('Works with cache control', async () => {
+    const text = await replaceText('Look at me, I am {{testing-cache}}', config);
+    expect(text).to.equal('Look at me, I am testing cache');
   });
 
   it('Replaces text & links', async () => {
@@ -34,5 +51,10 @@ describe('Placeholders', () => {
   it('Gracefully falls back', async () => {
     const text = await replaceKey('this-wont-work', config);
     expect(text).to.equal('this wont work');
+  });
+
+  it('Does show an empty value', async () => {
+    const text = await replaceKey('empty-value', config);
+    expect(text).to.equal('');
   });
 });

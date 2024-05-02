@@ -108,9 +108,29 @@ export const osMap = {
   iPhone: 'iOS',
 };
 
+export const LANGMAP = {
+  cs: ['cz'],
+  da: ['dk'],
+  de: ['at'],
+  en: ['africa', 'au', 'ca', 'ie', 'in', 'mt', 'ng', 'nz', 'sg', 'za'],
+  es: ['ar', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
+  et: ['ee'],
+  ja: ['jp'],
+  ko: ['kr'],
+  nb: ['no'],
+  pt: ['br'],
+  sl: ['si'],
+  sv: ['se'],
+  uk: ['ua'],
+  zh: ['cn', 'tw'],
+};
+
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = () => {
-  if (typeof window.adobeIMS?.signIn !== 'function') return;
+  if (typeof window.adobeIMS?.signIn !== 'function') {
+    lanaLog({ message: 'IMS signIn method not available', tags: 'errorType=warn,module=gnav' });
+    return;
+  }
 
   window.adobeIMS.signIn();
 };
@@ -214,24 +234,7 @@ const closeOnClickOutside = (e) => {
   }
 };
 
-const getUniversalNavLocale = (locale) => {
-  const LANGMAP = {
-    cs: ['cz'],
-    da: ['dk'],
-    de: ['at'],
-    en: ['africa', 'au', 'ca', 'ie', 'in', 'mt', 'ng', 'nz', 'sg', 'za'],
-    es: ['ar', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
-    et: ['ee'],
-    ja: ['jp'],
-    ko: ['kr'],
-    nb: ['no'],
-    pt: ['br'],
-    sl: ['si'],
-    sv: ['se'],
-    uk: ['ua'],
-    zh: ['cn', 'tw'],
-  };
-
+export const getUniversalNavLocale = (locale) => {
   if (!locale.prefix || locale.prefix === '/') return 'en_US';
   const prefix = locale.prefix.replace('/', '');
   if (prefix.includes('_')) {
@@ -266,7 +269,6 @@ class Gnav {
     };
 
     this.setupUniversalNav();
-    decorateLinks(this.content);
     this.elements = {};
   }
 
@@ -278,6 +280,9 @@ class Gnav {
     if (this.useUniversalNav) {
       delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
+      this.blocks.universalNav.addEventListener('click', () => {
+        if (this.isToggleExpanded()) this.toggleMenuMobile();
+      }, true);
     }
   };
 
@@ -499,8 +504,8 @@ class Gnav {
     };
 
     await Promise.all([
-      loadScript(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.js`),
-      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.css`),
+      loadScript(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.js`),
+      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.css`),
     ]);
 
     const getChildren = () => {
@@ -523,6 +528,8 @@ class Gnav {
 
     const onAnalyticsEvent = (data) => {
       if (!data) return;
+      if (!data.event) data.event = { type: data.type, subtype: data.subtype };
+      if (!data.source) data.source = { name: data.workflow?.toLowerCase().trim() };
 
       const getInteraction = () => {
         const {
@@ -531,16 +538,16 @@ class Gnav {
           content: { name: contentName } = {},
         } = data;
 
-        switch (`${name}|${type}|${subtype}|${contentName || ''}`) {
-          case 'profile|click|sign-in|':
+        switch (`${name}|${type}|${subtype}${contentName ? `|${contentName}` : ''}`) {
+          case 'profile|click|sign-in':
             return `Sign In|gnav|${experienceName}|unav`;
-          case 'profile|render|component|':
+          case 'profile|render|component':
             return `Account|gnav|${experienceName}`;
-          case 'profile|click|account|':
+          case 'profile|click|account':
             return `View Account|gnav|${experienceName}`;
-          case 'profile|click|sign-out|':
+          case 'profile|click|sign-out':
             return `Sign Out|gnav|${experienceName}|unav`;
-          case 'app-switcher|render|component|':
+          case 'app-switcher|render|component':
             return 'AppLauncher.appIconToggle';
           case `app-switcher|click|app|${contentName}`:
             return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
@@ -552,7 +559,16 @@ class Gnav {
             return 'AppLauncher.adobe.com';
           case 'app-switcher|click|footer|see-all-apps':
             return 'AppLauncher.allapps';
-            // TODO: add support for notifications
+          case 'unc|click|icon':
+            return 'Open Notifications panel';
+          case 'unc|click|link':
+            return 'Open Notification';
+          case 'unc|click|markRead':
+            return 'Mark Notification as read';
+          case 'unc|click|dismiss':
+            return 'Dismiss Notifications';
+          case 'unc|click|markUnread':
+            return 'Mark Notification as unread';
           default:
             return null;
         }
@@ -602,6 +618,18 @@ class Gnav {
     });
   };
 
+  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
+
+  toggleMenuMobile = () => {
+    const toggle = this.elements.mobileToggle;
+    const isExpanded = this.isToggleExpanded();
+    toggle?.setAttribute('aria-expanded', !isExpanded);
+    this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+    closeAllDropdowns();
+    setCurtainState(!isExpanded);
+    toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
+  };
+
   decorateToggle = () => {
     if (!this.mainNavItemCount) return '';
 
@@ -625,12 +653,7 @@ class Gnav {
     };
 
     const onToggleClick = async () => {
-      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', !isExpanded);
-      this.elements.navWrapper.classList.toggle('feds-nav-wrapper--expanded', !isExpanded);
-      closeAllDropdowns();
-      setCurtainState(!isExpanded);
-      toggle.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
+      this.toggleMenuMobile();
 
       if (this.blocks?.search?.instance) {
         this.blocks.search.instance.clearSearchForm();
@@ -638,7 +661,7 @@ class Gnav {
         await this.loadSearch();
       }
 
-      if (isExpanded) setHamburgerPadding();
+      if (this.isToggleExpanded()) setHamburgerPadding();
     };
 
     toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'errorType=error,module=gnav'));
@@ -869,6 +892,9 @@ class Gnav {
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
         if (itemHasActiveLink) {
           linkElem.removeAttribute('href');
+          linkElem.setAttribute('role', 'link');
+          linkElem.setAttribute('aria-disabled', 'true');
+          linkElem.setAttribute('aria-current', 'page');
           linkElem.setAttribute('tabindex', 0);
         }
 

@@ -114,3 +114,26 @@ export const resultData = {
     },
   ],
 };
+
+export const storedData = {
+  userFlow: [
+    'q-rather',
+    'q-photo',
+    'q-video',
+    'q-design',
+  ],
+  userSelection: [
+    {
+      selectedQuestion: {
+        questions: 'q-category',
+        'max-selections': '3',
+        'min-selections': '1',
+      },
+      selectedCards: {
+        photo: true,
+        video: true,
+        design: true,
+      },
+    },
+  ],
+};
