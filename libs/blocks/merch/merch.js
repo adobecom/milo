@@ -1,8 +1,10 @@
-import { createTag, getConfig, loadScript, localizeLink } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink,
+} from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const priceLiteralsURL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
-export const checkoutLinkConfigURL = 'https://milo.adobe.com/libs/commerce/checkout-link.json';
+export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
+export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
@@ -32,6 +34,68 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
+/* Optional checkout link params that are appended to checkout urls as is */
+export const CHECKOUT_ALLOWED_KEYS = [
+  'af',
+  'ai',
+  'apc',
+  'appctxid',
+  'cli',
+  'co',
+  'csm',
+  'ctx',
+  'ctxRtUrl',
+  'DCWATC',
+  'dp', // Enable digital payments for iframe context
+  'fr', // represents the commerce app redirecting to UC
+  'gsp',
+  'ijt',
+  'lang',
+  'lo',
+  'mal',
+  'ms',
+  'mv',
+  'mv2',
+  'nglwfdata',
+  'ot',
+  'otac',
+  'pa',
+  'pcid', // Unified Paywall configuration ID for analytics
+  'promoid',
+  'q',
+  'rf',
+  'sc',
+  'scl',
+  'sdid',
+  'sid', // x-adobe-clientsession
+  'spint',
+  'svar',
+  'th',
+  'thm',
+  'trackingid',
+  'usid',
+  'workflowid',
+  'context.guid',
+  'so.ca',
+  'so.su',
+  'so.tr',
+  'so.va',
+  // below keys are mapped to shorted versions.
+  'quantity',
+  'authCode',
+  'checkoutPromoCode',
+  'rurl',
+  'curl',
+  'ctxrturl',
+  'country',
+  'language',
+  'clientId',
+  'context',
+  'productArrangementCode',
+  'offerType',
+  'marketSegment',
+];
+
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
 export const CC_ALL_APPS = ['CC_ALL_APPS',
@@ -47,7 +111,7 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 let log;
 let upgradeOffer = null;
 
-export function polyfills() {
+export async function polyfills() {
   if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
   document.createElement('div', {
@@ -78,9 +142,17 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
-export async function fetchCheckoutLinkConfigs() {
+export async function fetchLiterals(url) {
+  fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
+    fetch(url)
+      .then((response) => response.json().then(({ data }) => resolve(data)));
+  });
+  return fetchLiterals.promise;
+}
+
+export async function fetchCheckoutLinkConfigs(base = '') {
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(checkoutLinkConfigURL).catch(() => {
+    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch(() => {
       log?.error('Failed to fetch checkout link configs');
     }).then((mappings) => {
       if (!mappings?.ok) return undefined;
@@ -90,7 +162,12 @@ export async function fetchCheckoutLinkConfigs() {
 }
 
 export async function getCheckoutLinkConfig(productFamily) {
-  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs();
+  let { base } = getConfig();
+  if (/\.page$/.test(document.location.origin)) {
+    /* c8 ignore next 2 */
+    base = base.replace('.live', '.page');
+  }
+  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
   const { locale: { region } } = getConfig();
   const productFamilyConfigs = checkoutLinkConfigs.data?.filter(
     ({ [NAME_PRODUCT_FAMILY]: mappingProductFamily }) => mappingProductFamily === productFamily,
@@ -114,8 +191,12 @@ export async function getCheckoutLinkConfig(productFamily) {
   return finalConfig;
 }
 
-export async function getDownloadAction(options, imsSignedInPromise, offerFamily) {
-  if (options.entitlement !== true) return null;
+export async function getDownloadAction(
+  options,
+  imsSignedInPromise,
+  [{ offerType, productArrangement: { productFamily: offerFamily } = {} }],
+) {
+  if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -136,11 +217,16 @@ export async function getDownloadAction(options, imsSignedInPromise, offerFamily
   const text = await replaceKey(checkoutLinkConfig.DOWNLOAD_TEXT
       || PLACEHOLDER_KEY_DOWNLOAD, config);
   const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
-  return { text, url };
+  const type = offerType?.toLowerCase() ?? '';
+  return { text, className: `download ${type}`, url };
 }
 
-export async function getUpgradeAction(options, imsSignedInPromise, productFamily) {
-  if (options.entitlement === false) return null;
+export async function getUpgradeAction(
+  options,
+  imsSignedInPromise,
+  [{ productArrangement: { productFamily: offerFamily } = {} }],
+) {
+  if (options.entitlement === false) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -150,10 +236,10 @@ export async function getUpgradeAction(options, imsSignedInPromise, productFamil
     upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
   }
   await upgradeOffer?.onceSettled();
-  if (upgradeOffer && entitlements?.length && productFamily) {
+  if (upgradeOffer && entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
     const upgradeAction = await handleUpgradeOffer(
-      productFamily,
+      offerFamily,
       upgradeOffer,
       entitlements,
       CC_SINGLE_APPS_ALL,
@@ -164,37 +250,62 @@ export async function getUpgradeAction(options, imsSignedInPromise, productFamil
   return undefined;
 }
 
-async function openExternalModal(url, getModal, offerType) {
-  const iframe = createTag('iframe', {
+async function openFragmentModal(path, getModal) {
+  const root = createTag('div');
+  root.style.visibility = 'hidden';
+  createTag('a', { href: `${path}` }, '', { parent: root });
+  const modal = await getModal(null, {
+    id: 'checkout-link-modal',
+    content: root,
+    closeEvent: 'closeModal',
+    class: 'commerce-frame',
+  });
+  await loadArea(modal);
+  root.style.visibility = '';
+  return modal;
+}
+
+async function openExternalModal(url, getModal) {
+  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+  const root = createTag('div', { class: 'milo-iframe' });
+  createTag('iframe', {
     src: url,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
     allowfullscreen: 'true',
     loading: 'lazy',
-    class: offerType === OFFER_TYPE_TRIAL ? 'twp' : 'd2p',
-  });
+  }, '', { parent: root });
   return getModal(null, {
     id: 'checkout-link-modal',
-    content: iframe,
+    content: root,
     closeEvent: 'closeModal',
-    class: ['commerce-frame'],
+    class: 'commerce-frame',
   });
 }
 
 export async function openModal(e, url, offerType) {
   e.preventDefault();
+  e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
-  if (/^https?:/.test(url)) {
-    openExternalModal(url, getModal, offerType);
+  const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
+  let modal;
+  if (/\/fragments\//.test(url)) {
+    const fragmentPath = url.split(/hlx.(page|live)/).pop();
+    modal = await openFragmentModal(fragmentPath, getModal);
+  } else if (/^https?:/.test(url)) {
+    modal = await openExternalModal(url, getModal);
+  }
+  if (modal) {
+    modal.classList.add(offerTypeClass);
   }
 }
 
-export async function getModalAction(offers, options, productFamily) {
-  if (options.modal !== true) return null;
-  const checkoutLinkConfig = await getCheckoutLinkConfig(productFamily);
+export async function getModalAction(offers, options) {
+  const [{ offerType, productArrangement: { productFamily: offerFamily } = {} }] = offers ?? [{}];
+  if (options.modal !== true) return undefined;
+  const checkoutLinkConfig = await getCheckoutLinkConfig(offerFamily);
   if (!checkoutLinkConfig) return undefined;
-  const [{ offerType }] = offers;
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
@@ -203,11 +314,10 @@ export async function getModalAction(offers, options, productFamily) {
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise) {
-  const [{ productArrangement: { productFamily } = {} }] = offers;
   const [downloadAction, upgradeAction, modalAction] = await Promise.all([
-    getDownloadAction(options, imsSignedInPromise, productFamily),
-    getUpgradeAction(options, imsSignedInPromise, productFamily),
-    getModalAction(offers, options, productFamily),
+    getDownloadAction(options, imsSignedInPromise, offers),
+    getUpgradeAction(options, imsSignedInPromise, offers),
+    getModalAction(offers, options),
   ]).catch((e) => {
     log?.error('Failed to resolve checkout action', e);
     return [];
@@ -224,10 +334,10 @@ export async function initService(force = false) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
+  const { env, commerce = {}, locale } = getConfig();
+  commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const commerceLib = await import('../../deps/commerce.js');
-    const { env, commerce = {}, locale } = getConfig();
-    commerce.priceLiteralsURL = priceLiteralsURL;
     const service = await commerceLib.init(() => ({
       env,
       commerce,
@@ -274,6 +384,14 @@ export async function getCheckoutContext(el, params) {
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const modal = params?.get('modal');
+
+  const extraOptions = {};
+  params.forEach((value, key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      extraOptions[key] = value;
+    }
+  });
+
   return {
     ...context,
     checkoutClientId,
@@ -282,6 +400,7 @@ export async function getCheckoutContext(el, params) {
     checkoutMarketSegment,
     entitlement,
     modal,
+    extraOptions: JSON.stringify(extraOptions),
   };
 }
 

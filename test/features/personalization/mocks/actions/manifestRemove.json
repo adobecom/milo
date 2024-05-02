@@ -1,0 +1,28 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "remove",
+      "selector": ".z-pattern",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "yes",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "remove",
+      "selector": "/fragments/removeme",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "yes",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}
