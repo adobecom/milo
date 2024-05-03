@@ -52,7 +52,7 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
-export const CUSTOM_SELECTOR_PREFIX = 'in-block:';
+const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
@@ -300,7 +300,7 @@ function registerInBlockActions(cmd, manifestId) {
   const { action, target, selector } = cmd;
   const command = { action, target, manifestId };
 
-  const blockAndSelector = selector.substring(CUSTOM_SELECTOR_PREFIX.length).trim().split(/\s+/);
+  const blockAndSelector = selector.substring(IN_BLOCK_SELECTOR_PREFIX.length).trim().split(/\s+/);
   const [blockName] = blockAndSelector;
 
   const config = getConfig();
@@ -416,7 +416,7 @@ export function handleCommands(commands, manifestId, rootEl = document, forceInl
   const newHash = forceInline ? INLINE_HASH : false;
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
-    if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
+    if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd, manifestId);
       return;
     }
