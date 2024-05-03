@@ -319,63 +319,74 @@ span.preflight-time {
   margin: 0;
 }
 
-.broken-links {
+.problem-links {
   margin: 24px 48px;
 }
 
-.broken-links .title {
+.problem-links .title {
   margin-bottom: 0;
 }
 
-.broken-links .note {
+.problem-links .note {
   margin-top: 20px;
 }
 
-.dialog-modal#preflight .broken-links table {
+.dialog-modal#preflight .problem-links table {
   width: 100%;
   border-collapse: collapse;
   border-radius: 6px;
   background-color: rgb(0 0 0 / 8%);
 }
 
-.dialog-modal#preflight .broken-links table th {
+.dialog-modal#preflight .problem-links table th {
   text-transform: uppercase;
   width: 10%;
 }
 
-.dialog-modal#preflight .broken-links table td a {
+.dialog-modal#preflight .problem-links table td a {
   color: #fff;
+  display: inline-block;
+  overflow-x: scroll;  
+  position: absolute;
+  top: 50%;
+  left: 0;
+  scrollbar-width: none;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  width: 100%;
 }
 
-.dialog-modal#preflight .broken-links table th,
-.dialog-modal#preflight .broken-links table td {
+.dialog-modal#preflight .problem-links table th,
+.dialog-modal#preflight .problem-links table td {
   padding: 12px 0;
   text-align: center;
 }
 
-.dialog-modal#preflight .broken-links table th:nth-child(2),
-.dialog-modal#preflight .broken-links table td:nth-child(2) {
+.dialog-modal#preflight .problem-links table th:nth-child(2),
+.dialog-modal#preflight .problem-links table td:nth-child(2) {
   text-align: initial;
+  position: relative;
+  width: 75%;
 }
 
-.dialog-modal#preflight .broken-links table th:first-child {
+.dialog-modal#preflight .problem-links table th:first-child {
   width: 5%;
 }
 
-.dialog-modal#preflight .broken-links table th:nth-child(2) {
+.dialog-modal#preflight .problem-links table th:nth-child(2) {
   text-align: left;
   width: 75%
 }
 
-.dialog-modal#preflight .broken-links table tr:first-child th {
+.dialog-modal#preflight .problem-links table tr:first-child th {
   padding-top: 15px;
 }
 
-.dialog-modal#preflight .broken-links table tr:hover td {
+.dialog-modal#preflight .problem-links table tr:hover td {
   background-color: rgb(0 0 0 / 20%);
 }
 
-.broken-link {
+.problem-link {
   border: 3px solid #000!important;
   color: #fff!important;
   font-size: larger!important;
@@ -385,13 +396,13 @@ span.preflight-time {
   animation: pulse 1.5s ease-out infinite;
 }
 
-.broken-link:hover {
+.problem-link:hover {
   background-color: transparent!important;
   color: inherit!important;
   border-color:rgb(255 0 0)!important;
 }
 
-.broken-link::after {
+.problem-link::after {
   content: '(' attr(data-status) ')';
   margin-left: 5px;
   font-size: smaller;

@@ -131,6 +131,7 @@ function prettyPath(url) {
 function Item({ name, item, idx }) {
   const isChecked = item.checked ? ' is-checked' : '';
   const isFetching = item.edit ? '' : ' is-fetching';
+  if (!item.url) return undefined;
 
   return html`
     <div class="preflight-group-row preflight-group-detail${isChecked}${isFetching}"

@@ -51,6 +51,8 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
+export const CUSTOM_SELECTOR_PREFIX = 'in-block:';
+
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
 export const normalizePath = (p) => {
@@ -289,6 +291,15 @@ function getSection(rootEl, idx) {
     : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
 }
 
+function registerCustomAction(cmd, manifestId) {
+  const { action, selector, target } = cmd;
+  const config = getConfig();
+  const blockName = selector.substring(CUSTOM_SELECTOR_PREFIX.length);
+  config.mep.custom ??= {};
+  config.mep.custom[blockName] ??= [];
+  config.mep.custom[blockName].push({ manifestId, action, target });
+}
+
 function getSelectedElement(selector, action, rootEl) {
   if (!selector) return null;
   if ((action.includes('appendtosection') || action.includes('prependtosection'))) {
@@ -356,6 +367,10 @@ function getSelectedElement(selector, action, rootEl) {
 function handleCommands(commands, manifestId, rootEl = document) {
   commands.forEach((cmd) => {
     const { action, selector, target } = cmd;
+    if (selector.startsWith(CUSTOM_SELECTOR_PREFIX)) {
+      registerCustomAction(cmd, manifestId);
+      return;
+    }
     if (action in COMMANDS) {
       const el = getSelectedElement(selector, action, rootEl);
       COMMANDS[action](el, target, manifestId);
@@ -526,9 +541,10 @@ const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
   event: manifest.event,
   manifest: manifest.manifestPath,
-  variantNames: ['all'],
-  selectedVariantName: 'default',
   selectedVariant: { commands: [], fragments: [] },
+  selectedVariantName: 'default',
+  variantNames: ['all'],
+  variants: {},
 });
 
 export async function getPersConfig(info, override = false) {
@@ -696,23 +712,28 @@ export function cleanAndSortManifestList(manifests) {
   const manifestObj = {};
   const config = getConfig();
   manifests.forEach((manifest) => {
-    if (!manifest?.manifest) return;
-    if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
-    if (manifest.manifestPath in manifestObj) {
-      let fullManifest = manifestObj[manifest.manifestPath];
-      let freshManifest = manifest;
-      if (manifest.name) {
-        fullManifest = manifest;
-        freshManifest = manifestObj[manifest.manifestPath];
+    try {
+      if (!manifest?.manifest) return;
+      if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
+      if (manifest.manifestPath in manifestObj) {
+        let fullManifest = manifestObj[manifest.manifestPath];
+        let freshManifest = manifest;
+        if (manifest.name) {
+          fullManifest = manifest;
+          freshManifest = manifestObj[manifest.manifestPath];
+        }
+        freshManifest.name = fullManifest.name;
+        freshManifest.selectedVariantName = fullManifest.selectedVariantName;
+        freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
+        manifestObj[manifest.manifestPath] = freshManifest;
+      } else {
+        manifestObj[manifest.manifestPath] = manifest;
       }
-      freshManifest.name = fullManifest.name;
-      freshManifest.selectedVariantName = fullManifest.selectedVariantName;
-      freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
-      manifestObj[manifest.manifestPath] = freshManifest;
-    } else {
-      manifestObj[manifest.manifestPath] = manifest;
+      if (config.mep?.override) overridePersonalizationVariant(manifest, config);
+    } catch (e) {
+      console.warn(e);
+      window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
     }
-    if (config.mep?.override) overridePersonalizationVariant(manifest, config);
   });
   return Object.values(manifestObj).sort(compareExecutionOrder);
 }
@@ -736,43 +757,48 @@ export function handleFragmentCommand(command, a) {
 }
 
 export async function applyPers(manifests) {
-  const config = getConfig();
+  try {
+    const config = getConfig();
 
-  if (!manifests?.length) return;
-  if (!config?.mep) config.mep = {};
-  config.mep.handleFragmentCommand = handleFragmentCommand;
-  let experiments = manifests;
-  for (let i = 0; i < experiments.length; i += 1) {
-    experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
-  }
-
-  experiments = cleanAndSortManifestList(experiments);
-
-  let results = [];
-
-  for (const experiment of experiments) {
-    const result = await runPersonalization(experiment, config);
-    if (result) {
-      results.push(result);
+    if (!manifests?.length) return;
+    if (!config?.mep) config.mep = {};
+    config.mep.handleFragmentCommand = handleFragmentCommand;
+    let experiments = manifests;
+    for (let i = 0; i < experiments.length; i += 1) {
+      experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
     }
+
+    experiments = cleanAndSortManifestList(experiments);
+
+    let results = [];
+
+    for (const experiment of experiments) {
+      const result = await runPersonalization(experiment, config);
+      if (result) {
+        results.push(result);
+      }
+    }
+    results = results.filter(Boolean);
+    deleteMarkedEls();
+
+    config.experiments = experiments;
+    config.expBlocks = consolidateObjects(results, 'blocks');
+    config.expFragments = consolidateObjects(results, 'fragments');
+
+    const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
+    if (!pznList.length) return;
+
+    const pznVariants = pznList.map((r) => {
+      const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
+      return val === 'default' ? 'nopzn' : val;
+    });
+    const pznManifests = pznList.map((r) => {
+      const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
+      return getFileName(val).replace('.json', '').trim().slice(0, 15);
+    });
+    config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  } catch (e) {
+    console.warn(e);
+    window.lana?.log(`MEP Error: ${e.toString()}`);
   }
-  results = results.filter(Boolean);
-  deleteMarkedEls();
-
-  config.experiments = experiments;
-  config.expBlocks = consolidateObjects(results, 'blocks');
-  config.expFragments = consolidateObjects(results, 'fragments');
-
-  const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
-  if (!pznList.length) return;
-
-  const pznVariants = pznList.map((r) => {
-    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-    return val === 'default' ? 'nopzn' : val;
-  });
-  const pznManifests = pznList.map((r) => {
-    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return getFileName(val).replace('.json', '').trim().slice(0, 15);
-  });
-  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }

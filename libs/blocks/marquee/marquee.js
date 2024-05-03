@@ -86,7 +86,7 @@ function decorateSplit(el, foreground, media) {
 
   let mediaCreditInner;
   const txtContent = media?.lastChild?.textContent?.trim();
-  if (txtContent.match(/^http.*\.mp4/)) return;
+  if (txtContent?.match(/^http.*\.mp4/)) return;
   if (txtContent) {
     mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
   } else if (media.lastElementChild?.tagName !== 'PICTURE') {
