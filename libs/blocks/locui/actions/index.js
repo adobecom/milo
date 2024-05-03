@@ -57,7 +57,7 @@ async function fetchDocument(hlxPath) {
     const doc = parser.parseFromString(html, 'text/html');
     return doc;
   } catch (error) {
-    setStatus('service', 'error', `${error.message} - ${path}`);
+    setStatus('service', 'error', `${error.message} Fragment`, `There was an issue fetching ${path}`, 10000);
     return null;
   }
 }
