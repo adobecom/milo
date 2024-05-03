@@ -542,9 +542,9 @@ class Gnav {
           case 'profile|click|sign-in':
             return `Sign In|gnav|${experienceName}|unav`;
           case 'profile|render|component':
-            return `Account|gnav|${experienceName}`;
+            return `Account|gnav|${experienceName}|unav`;
           case 'profile|click|account':
-            return `View Account|gnav|${experienceName}`;
+            return `View Account|gnav|${experienceName}|unav`;
           case 'profile|click|sign-out':
             return `Sign Out|gnav|${experienceName}|unav`;
           case 'app-switcher|render|component':
