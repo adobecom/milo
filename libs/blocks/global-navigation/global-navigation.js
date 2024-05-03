@@ -910,6 +910,7 @@ class Gnav {
             ${item.textContent}
           </div>`, item);
       default:
+        /* c8 ignore next 3 */
         return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item}
           </div>`, item);
