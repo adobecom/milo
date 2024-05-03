@@ -55,8 +55,8 @@ async function getCardsRoot(config, html) {
   return cardsRoot;
 }
 
-const fetchOverrideCard = (path, config) => new Promise((resolve, reject) => {
-  fetch(`${localizeLink(path, config)}.plain.html`).then((res) => {
+const fetchOverrideCard = (action, config) => new Promise((resolve, reject) => {
+  fetch(`${localizeLink(action?.target, config)}.plain.html`).then((res) => {
     if (res.ok) {
       res.text().then((cardContent) => {
         const response = { path: action.target, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] };
@@ -300,7 +300,7 @@ export default async function init(el) {
   }
 
   const cardsRoot = await cardsRootPromise;
-  const overridePromises = mep?.custom?.[BLOCK_NAME]?.map(
+  const overridePromises = mep?.inBlock?.[BLOCK_NAME]?.commands.map(
     (action) => fetchOverrideCard(action, config),
   );
   const overrides = await overrideCards(cardsRoot, overridePromises, config);
