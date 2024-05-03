@@ -3,6 +3,13 @@ import { debounce } from '../../utils/action.js';
 export const MOBILE_MAX = 599;
 export const TABLET_MAX = 1199;
 
+window.addEventListener('pageshow', (event) => {
+  // if there is a commerce modal with an iframe open, reload the page to avoid bfcache issues.
+  if (event.persisted && document.querySelector('.dialog-modal.commerce-frame iframe')) {
+    window.location.reload();
+  }
+});
+
 export function adjustModalHeight(contentHeight) {
   if (!(window.location.hash || document.getElementById('checkout-link-modal'))) return;
   const dialog = document.querySelector(`div.dialog-modal.commerce-frame${window.location.hash}, #checkout-link-modal`);
