@@ -48,15 +48,16 @@ async function updateExcelJson() {
 }
 
 async function fetchDocument(hlxPath) {
+  const path = `${origin}${hlxPath}`;
   try {
-    const resp = await fetch(`${origin}${hlxPath}`);
+    const resp = await fetch(path);
     if (!resp.ok) return null;
     const html = await resp.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     return doc;
   } catch (error) {
-    setStatus('service', 'error', error.message);
+    setStatus('service', 'error', `${error.message} - ${path}`);
     return null;
   }
 }
