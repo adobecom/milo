@@ -401,6 +401,20 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
   return filterObj;
 };
 
+const getCategoryArray = async (state, country, lang, strs) => {
+  // if (!state.showFilters || state.filtersCategories.length === 0) {
+  //   return [];
+  // }
+
+  // const { tags } = await getTags(state.tagsUrl);
+
+  // return state.filtersCategories
+  //   .map((category) => getFilterObj(category, tags, state, country, lang))
+  //   .filter((category) => category !== null);
+  console.log(state, country, lang, strs);
+  return ['1', '2', '3', '4', '5'];
+};
+
 const getFilterArray = async (state, country, lang, strs) => {
   if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
@@ -409,40 +423,65 @@ const getFilterArray = async (state, country, lang, strs) => {
   const { tags } = await getTags(state.tagsUrl);
   const useCustomFilters = state.filterBuildPanel === 'custom';
 
-  // let filters = [];
-  // if (!useCustomFilters) {
-  //   filters = state.filters
-  //     .map((filter) => getFilterObj(filter, tags, state, country, lang))
-  //     .filter((filter) => filter !== null);
-  // } else {
-  //   filters = state.filtersCustom.length > 0
-  //     ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
-  //     : [];
-  // }
-
-  /* ****** ((( Carlos ))) ****** */
-  const useEventFilters = state.filterBuildPanel === 'events';
+  // ORIGINAL IMPLEMENTATION ********************************
   let filters = [];
-  // let categories = [];
-
-  console.log('STATE', state);
-  if (useCustomFilters) {
-    filters = state.filtersCustom.length > 0
-      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
-      : [];
-    console.log('Custom filters', filters);
-  // } else if (useEventFilters) {
-  //   filters = state.filters
-  //     .map((filter) => getFilterObj(filter, tags, state, country, lang))
-  //     .filter((filter) => filter !== null);
-  //   console.log('Event filters', filters);
-  } else {
+  if (!useCustomFilters) {
     filters = state.filters
       .map((filter) => getFilterObj(filter, tags, state, country, lang))
       .filter((filter) => filter !== null);
-    console.log('Automatic filters', filters);
+  } else {
+    filters = state.filtersCustom.length > 0
+      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
+      : [];
   }
   return filters;
+  // END ORIGINAL IMPLEMENTATION ***************************
+
+  /* ****** ((( Carlos ))) ****** */
+  // const useEventFilters = state.filterBuildPanel === 'events';
+  // const useEventFilters = state.container === 'events';
+  // let filters = [];
+  // console.log('STATE', state);
+
+  // if (useCustomFilters) {
+  //   filters = state.filtersCustom.length > 0
+  //     ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
+  //     : [];
+  //   console.log('Using Custom Filters', filters);
+  // } else if (useEventFilters) {
+  //   console.log('Using Event Filters', state.filters);
+  //   // let categories = [];
+  //   // let subCategories = [];
+
+  //   console.log('TAGS:', tags);
+
+  //   const categories = Object.values(tags).map((tag) => {
+  //     if (tag.tagID === 'caas:product-categories') {
+  //       return tag.tags;
+  //     }
+  //     return null;
+  //   }).filter(Boolean);
+
+  //   // const categories = Object.values(tags['caas:product-categories']).map((tag) => {
+  //   //   if (typeof tag === 'object') {
+  //   //     return tag?.tagID || null;
+  //   //   }
+  //   //   return null;
+  //   // }).filter(Boolean);
+
+  //   console.log('CATEGORIES:', categories);
+
+  //   filters = state.filters
+  //     .map((filter) => getFilterObj(filter, tags, state, country, lang))
+  //     .filter((filter) => filter !== null);
+  //   console.log('Using Event Filters', filters);
+  // } else {
+  //   filters = state.filters
+  //     .map((filter) => getFilterObj(filter, tags, state, country, lang))
+  //     .filter((filter) => filter !== null);
+  //   console.log('Using Automatic Filters', filters);
+  // }
+  // return filters;
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
@@ -626,6 +665,7 @@ export const getConfig = async (originalState, strs = {}) => {
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
+      categories: await getCategoryArray(state, country, language, strs),
       filters: await getFilterArray(state, country, language, strs),
       filterLogic: state.filterLogic,
       i18n: {
