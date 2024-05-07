@@ -14,13 +14,14 @@ const labels = {
   highPriority: 'high priority',
   readyForStage: 'Ready for Stage',
   SOTPrefix: 'SOT',
+  highImpact: 'high-impact',
 };
 
 const slack = {
   fileOverlap: ({ html_url, number, title }) =>
     `:fast_forward: Skipping <${html_url}|${number}: ${title}> due to overlap in files.`,
-  merge: ({ html_url, number, title }) =>
-    `:merged: Stage merge PR <${html_url}|${number}: ${title}>.`,
+  merge: ({ html_url, number, title, highImpact }) =>
+    `:merged:${highImpact} Stage merge PR <${html_url}|${number}: ${title}>.`,
   failingChecks: ({ html_url, number, title }) =>
     `:x: Skipping <${html_url}|${number}: ${title}> due to failing checks`,
   requireApprovals: ({ html_url, number, title }) =>
@@ -83,7 +84,8 @@ const RCPDates = [
   },
 ];
 
-const isHighPrio = (label) => label.includes(labels.highPriority);
+const isHighPrio = (labels) => labels.includes(labels.highPriority);
+const isHighImpact = (labels) => labels.includes(labels.highImpact);
 
 const hasFailingChecks = (checks) =>
   checks.some(
@@ -127,7 +129,7 @@ const getPRs = async () => {
 
 const merge = async ({ prs }) => {
   console.log(`Merging ${prs.length || 0} PRs that are ready... `);
-  for await (const { number, files, html_url, title } of prs) {
+  for await (const { number, files, html_url, title, labels } of prs) {
     if (files.some((file) => seen[file])) {
       await slackNotification(slack.fileOverlap({ html_url, number, title }));
       continue;
@@ -136,7 +138,14 @@ const merge = async ({ prs }) => {
     if (!process.env.LOCAL_RUN)
       await github.rest.pulls.merge({ owner, repo, pull_number: number });
     body = `- [${title}](${html_url})\n${body}`;
-    await slackNotification(slack.merge({ html_url, number, title }));
+    await slackNotification(
+      slack.merge({
+        html_url,
+        number,
+        title,
+        highImpact: `${isHighImpact(labels)} ? ' :high-priority:' : ''`,
+      })
+    );
   }
 };
 
@@ -200,6 +209,10 @@ const main = async (params) => {
   core = params.core;
 
   const now = new Date();
+  // We need to revisit this every year
+  if (now.getFullYear() !== 2024) {
+    throw new Error('ADD NEW RCPs');
+  }
   for (const { start, end } of RCPDates) {
     if (start <= now && now <= end) {
       console.log('Current date is within a RCP. Stopping execution.');
