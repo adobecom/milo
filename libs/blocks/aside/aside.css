@@ -415,7 +415,7 @@
 }
 
 .aside.notification.center.small .foreground.container .text p {
-  text-align: left;
+  text-align: initial;
 }
 
 .aside.notification.large .foreground.container {
@@ -799,6 +799,11 @@
     margin-left: 24px;
   }
 
+  [dir = "rtl"] .aside.notification.small .foreground.container .text .body-m.action-area {
+    margin-left: 0;
+    margin-right: 24px;
+  }
+
   .aside.split.half .foreground.container .text {
     flex: 0 0 41.72%;
   }
@@ -837,6 +842,11 @@
     width: auto;
     margin-right: var(--spacing-xs);
     margin-bottom: 0;
+  }
+
+  [dir = "rtl"] .aside.notification .foreground.container .icon-area {
+    margin-left: var(--spacing-xs);
+    margin-right: 0;
   }
 
   .aside.notification.extra-small .foreground.container.no-image .text {

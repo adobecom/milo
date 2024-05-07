@@ -101,5 +101,5 @@ function unmockOstDeps() {
 }
 
 export {
-  getConfig, getLocale, getMetadata, loadScript, loadStyle, mockOstDeps, mockRes, unmockOstDeps,
+  getConfig, getLocale, getMetadata, loadScript, loadStyle, mockOstDeps, unmockOstDeps, mockRes,
 };
