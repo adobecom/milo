@@ -140,6 +140,7 @@ describe('Modal dialog with a `commerce-frame` class', () => {
   });
 
   it('initialises managed modals via merch block', async () => {
+    window.location.hash = '#page=2';
     const { dialog } = addModal('modal3');
     adjustModalHeight(600);
     expect(dialog.style.height).to.equal('580px');

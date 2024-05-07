@@ -12,7 +12,9 @@ window.addEventListener('pageshow', (event) => {
 
 export function adjustModalHeight(contentHeight) {
   if (!(window.location.hash || document.getElementById('checkout-link-modal'))) return;
-  const dialog = document.querySelector(`div.dialog-modal.commerce-frame${window.location.hash}, #checkout-link-modal`);
+  let selector = '#checkout-link-modal';
+  if (!/=/.test(window.location.hash)) selector = `${selector},div.dialog-modal.commerce-frame${window.location.hash}`;
+  const dialog = document.querySelector(selector);
   const iframe = dialog?.querySelector('iframe');
   const iframeWrapper = dialog?.querySelector('.milo-iframe');
   if (!contentHeight || !iframe || !iframeWrapper) return;
