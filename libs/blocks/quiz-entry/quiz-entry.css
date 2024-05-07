@@ -166,12 +166,7 @@
   overflow: hidden;
   padding: 8px;
   position: relative;
-  left: -8px;
   width: 100%;
-}
-
-.carousel-slides.align-right {
-  left: 8px;
 }
 
 .carousel-arrow {
@@ -418,10 +413,13 @@
 
   .carousel-slides {
     justify-content: left;
+    margin: 0 -8px;
+    width: calc(100% + 8px);
   }
 
   .carousel-slides.align-right {
     justify-content: right;
+    margin-left: 0;
   }
 
   .quiz-option-icon {
