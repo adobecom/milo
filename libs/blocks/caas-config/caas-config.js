@@ -89,7 +89,7 @@ const defaultOptions = {
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
     carousel: 'Carousel',
-    events: 'Events',
+    categories: 'Product Categories',
   },
   ctaActions: {
     _blank: 'New Tab',
@@ -117,7 +117,7 @@ const defaultOptions = {
   filterBuildPanel: {
     automatic: 'Automatic',
     custom: 'Custom',
-    events: 'Events',
+    categories: 'Categories',
   },
   filterEvent: {
     '': 'All',

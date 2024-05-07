@@ -39,7 +39,7 @@ export const parseEncodedConfig = stub().returns({
   disableBanners: false,
   draftDb: false,
   environment: '',
-  endpoint: 'www.adobe.com/chimera-api/collection',
+  endpoint: '',
   excludedCards: [],
   fallbackEndpoint: '',
   featuredCards: [],

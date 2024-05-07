@@ -373,7 +373,7 @@ const getFilterObj = (
   if (icon) {
     filterObj.icon = icon;
   }
-
+  console.log('filterObj:', filterObj);
   return filterObj;
 };
 
@@ -420,7 +420,7 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
 //   });
 //   /* eslint-enable */
 
-  // console.log('TAGS:', tags);
+// console.log('TAGS:', tags);
 //   console.log('FILTERS:', state.filters);
 //   console.log('CATEGORIES:', categories);
 //   console.log('SUBCATEGORIES:', subCategories);
@@ -428,7 +428,7 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
 //   return subCategories;
 // };
 
-const getCategoryArray = async (state) => {
+const getCategoryArray = async (state, country, lang) => {
   // Fetch tags
   const { tags } = await getTags(state.tagsUrl);
 
@@ -443,12 +443,15 @@ const getCategoryArray = async (state) => {
       group: key,
       id: value.tagID,
       label: value.title,
-      icon: '/path/to/icon.svg',
-      items: value.tags,
+      icon: value.icon,
+      // items: value.tags,
+      items: Object.entries(value.tags)
+        .map((filter) => getFilterObj(filter, tags, state, country, lang))
+        .filter((filter) => filter !== null),
     }));
 
   console.log('TAGS:', tags);
-  return subCategories;
+  return [{ group: 'All Topics', id: '', items: [] }, ...subCategories];
 };
 
 const getFilterArray = async (state, country, lang, strs) => {
@@ -628,14 +631,14 @@ export const getConfig = async (originalState, strs = {}) => {
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const localesQueryParam = locales ? `&locales=${locales}` : '';
-  const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '';
+  const debug = ((state.showIds && document.location.pathname.includes('/tools/caas'))
+    || (state.container === 'categories'))
+    ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
-
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags, state.notLogicTags);
 
   const caasRequestHeaders = addFloodgateHeader(state);
-
   const config = {
     collection: {
       mode: state.theme,
