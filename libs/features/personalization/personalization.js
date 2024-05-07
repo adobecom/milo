@@ -402,7 +402,7 @@ function getSelectedElement(selector, action, rootEl) {
   return selectedEl;
 }
 
-const forceHash = (url, newHash) => {
+const addHash = (url, newHash) => {
   if (!newHash) return url;
   try {
     const { origin, pathname, search } = new URL(url);
@@ -413,21 +413,22 @@ const forceHash = (url, newHash) => {
 };
 
 export function handleCommands(commands, manifestId, rootEl = document, forceInline = false) {
-  const newHash = forceInline ? INLINE_HASH : false;
   commands.forEach((cmd) => {
-    const { action, selector, target } = cmd;
+    const { action, selector, target: trgt } = cmd;
+    const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd, manifestId);
       return;
     }
+
     if (action in COMMANDS) {
       const el = getSelectedElement(selector, action, rootEl);
-      COMMANDS[action](el, forceHash(target, newHash), manifestId);
+      COMMANDS[action](el, target, manifestId);
     } else if (action in CREATE_CMDS) {
       const el = getSelectedElement(selector, action, rootEl);
       el?.insertAdjacentElement(
         CREATE_CMDS[action],
-        createFrag(el, forceHash(target, newHash), manifestId),
+        createFrag(el, target, manifestId),
       );
     } else {
       /* c8 ignore next 2 */
