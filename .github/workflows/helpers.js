@@ -12,7 +12,7 @@ Then run: node --env-file=.env .github/workflows/update-ims.js`);
 
   const { Octokit } = require('@octokit/rest');
   return {
-    github: { rest: new Octokit({ auth: process.env.GH_TOKEN }) },
+    github: { rest: new Octokit({ auth }) },
     context: {
       repo: {
         owner,
