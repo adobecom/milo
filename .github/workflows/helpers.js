@@ -22,9 +22,9 @@ Then run: node --env-file=.env .github/workflows/update-ims.js`);
   };
 };
 
-const slackNotification = (text) => {
+const slackNotification = (text, webhook) => {
   console.log(text);
-  return fetch(process.env.MILO_RELEASE_SLACK_WH, {
+  return fetch(webhook || process.env.MILO_RELEASE_SLACK_WH, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
