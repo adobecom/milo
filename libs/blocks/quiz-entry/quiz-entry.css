@@ -364,7 +364,7 @@
 
 .quiz-button {
   background: var(--color-gray-800);
-  border: none;
+  border: 2px solid var(--color-white);
   border-radius: 20px;
   cursor: pointer;
   font-family: inherit;
