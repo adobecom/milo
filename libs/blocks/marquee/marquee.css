@@ -119,7 +119,7 @@
 }
 
 .marquee .icon-area img {
-  height: 48px;
+  height: var(--icon-size-l);
   width: auto;
   display: block;
 }
