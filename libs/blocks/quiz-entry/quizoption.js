@@ -99,7 +99,7 @@ export const GetQuizOption = ({
   return html`
     <div class="quiz-options-container" role="group" aria-labelledby="question" tabindex="0" onkeydown=${handleKey}>
       ${index > 0 && html`<button onClick=${prev} class="carousel-arrow arrow-prev ${isRTL ? 'rtl' : ''}"></button>`}
-      <div class="carousel-slides ${index > 0 ? 'align-right': ''}">
+      <div class="carousel-slides ${index > 0 ? 'align-right' : ''}">
         ${options.data.slice(index + 1, index + visibleCount).map((option, idx) => html`
           <${OptionCard} 
             key=${idx}

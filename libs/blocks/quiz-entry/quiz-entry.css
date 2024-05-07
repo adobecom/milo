@@ -3,7 +3,7 @@
   color: var(--color-black);
   display: flex;
   flex-direction: column;
-  padding: 80px 48px;
+  padding: var(--spacing-xxxl) var(--spacing-xl);
 }
 
 .quiz-container *{
@@ -12,7 +12,7 @@
 
 .quiz-heading-container {
   color: #2C2C2C;
-  margin-bottom: 32px;
+  margin-bottom: var(--spacing-m);
   text-align: center;
 }
 
@@ -32,7 +32,7 @@
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
-  margin-bottom: 56px;
+  margin-bottom: var(--spacing-xl);
   max-width: 1130px;
   width: 100%;
 }
@@ -51,17 +51,17 @@
   background-position: center right 16px;
   border: 2px solid #e6e6e6;
   border-radius: 40px;
-  color: #2c2c2c;
+  color: var(--text-color);
   cursor: pointer;
   font-size: 16px;
   height: 56px;
-  line-height: 24px;
-  padding: 0 56px 0 20px;
+  line-height: var(--type-heading-m-lh);
+  padding: 0 var(--spacing-xxl) 0 var(--spacing-s);
   width: 100%;
 }
 
 .quiz-input::placeholder {
-  color: #2C2C2C;
+  color: var(--text-color);
   font-style: italic;
 }
 
@@ -107,7 +107,7 @@
 }
 
 .popover-content {
-  background-color: white;
+  background-color: var(--color-white);
   padding: 20px;
   max-height: 404px;
   overflow: hidden;
@@ -125,10 +125,10 @@
 
 .popover-item {
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--type-detail-l-size);
   font-weight: 400;
-  line-height: 24px;
-  color: #1473E6;
+  line-height: var(--type-heading-s-lh);
+  color: var(--link-color-dark);
 }
 
 .quiz-directions {
@@ -137,12 +137,12 @@
     border-radius: 8px;
     color: #FFF;
     display: flex;
-    font-size: 16px;
+    font-size: var(--type-detail-l-size);
     font-weight: 900;
     height: 40px;
     justify-content: center;
     line-height: 30px;
-    margin: 32px 0 8px;
+    margin: var(--spacing-m) 0 8px;
     width: 100%;
 }
 
@@ -277,9 +277,9 @@
 
 .quiz-option-title {
   color: white;
-  font-size: 16px;
+  font-size: var(--type-detail-l-size);
   font-weight: 900;
-  line-height: 24px;
+  line-height: var(--type-heading-s-lh);
   margin: 0 0 4px;
   text-align: start;
 }
@@ -290,7 +290,6 @@
   font-weight: 400;
   line-height: 21px;
   margin: 0;
-  
   text-align: start;
 }
 
@@ -403,9 +402,7 @@
   }
 
   .quiz-input {
-    width: 489px;
     height: 66px;
-    padding: 0 0 0 32px;
   }
   
   .quiz-input::placeholder {
@@ -486,8 +483,8 @@
   .quiz-option-text {
     display: none;
     text-align: center;
-    font-size: 16px;
-    line-height: 24px;
+    font-size: var(--type-detail-l-size);
+    line-height: var(--type-heading-s-lh);
   }
 
   .quiz-option:hover .quiz-option-text,
