@@ -346,7 +346,7 @@ function getSelectedElement(selector, action, rootEl) {
   if (checkSelectorType(selector) === 'fragment') {
     try {
       const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
-if (fragment) return fragment.parentNode;
+      if (fragment) return fragment.parentNode;
       return null;
     } catch (e) {
       return null;
