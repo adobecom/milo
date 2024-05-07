@@ -10,6 +10,7 @@ on:
 env:
   MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
   REQUIRED_APPROVALS: ${{ secrets.REQUIRED_APPROVALS }}
+  SLACK_HIGH_IMPACT_PR_WEBHOOK: ${{ secrets.SLACK_HIGH_IMPACT_PR_WEBHOOK }}
 
 jobs:
   merge-to-stage:

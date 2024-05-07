@@ -85,7 +85,6 @@ const RCPDates = [
 ];
 
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);
-const isHighImpact = (labels) => labels.includes(LABELS.highImpact);
 
 const hasFailingChecks = (checks) =>
   checks.some(
@@ -138,12 +137,19 @@ const merge = async ({ prs }) => {
     if (!process.env.LOCAL_RUN)
       await github.rest.pulls.merge({ owner, repo, pull_number: number });
     body = `- [${title}](${html_url})\n${body}`;
+    const isHighImpact = labels.includes(LABELS.highImpact);
+    if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
+      await slackNotification(
+        SLACK.merge({ html_url, number, title, highImpact: ' :alert:' }),
+        process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK
+      );
+    }
     await slackNotification(
       SLACK.merge({
         html_url,
         number,
         title,
-        highImpact: isHighImpact(labels) ? ' :alert:' : '',
+        highImpact: isHighImpact ? ' :alert:' : '',
       })
     );
   }
