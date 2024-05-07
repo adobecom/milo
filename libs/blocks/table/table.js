@@ -140,18 +140,17 @@ function handleTitleText(cell) {
   if (cell.querySelector('.table-title-text')) return;
   const textSpan = createTag('span', { class: 'table-title-text' });
   while (cell.firstChild) textSpan.append(cell.firstChild);
-  const iconCheckMark = textSpan.querySelector('.icon-checkmark');
-
-  if (iconCheckMark) {
-    const titleRowSpan = createTag('span', { class: 'table-title-row' });
-    titleRowSpan.append(iconCheckMark);
-    titleRowSpan.append(textSpan);
-    cell.append(titleRowSpan);
-  } else cell.append(textSpan);
 
   const iconTooltip = textSpan.querySelector('.icon-info, .icon-tooltip, .milo-tooltip');
-  if (!iconTooltip) return;
-  cell.append(iconTooltip.closest('em') || iconTooltip);
+  if (iconTooltip) cell.append(iconTooltip.closest('em') || iconTooltip);
+
+  const firstIcon = textSpan.querySelector('.icon:first-child');
+  if (firstIcon) {
+    const titleRowSpan = createTag('span', { class: 'table-title-row' });
+    titleRowSpan.append(firstIcon);
+    titleRowSpan.append(textSpan);
+    cell.insertBefore(titleRowSpan, cell.firstChild);
+  } else cell.insertBefore(textSpan, cell.firstChild);
 }
 
 /**
