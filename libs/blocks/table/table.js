@@ -141,7 +141,7 @@ function handleTitleText(cell) {
   const textSpan = createTag('span', { class: 'table-title-text' });
   while (cell.firstChild) textSpan.append(cell.firstChild);
   const iconCheckMark = textSpan.querySelector('.icon-checkmark');
-  
+
   if (iconCheckMark) {
     const titleRowSpan = createTag('span', { class: 'table-title-row' });
     titleRowSpan.append(iconCheckMark);
