@@ -345,10 +345,8 @@ function getSelectedElement(selector, action, rootEl) {
   }
   if (checkSelectorType(selector) === 'fragment') {
     try {
-      for (let i = 0; i <= 1; i += 1) {
-        const fragment = document.querySelector(`a[href*="${normalizePath(selector, !!i)}"]`);
-        if (fragment) return fragment.parentNode;
-      }
+const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
+if (fragment) return fragment.parentNode;
       return null;
     } catch (e) {
       return null;
