@@ -111,7 +111,7 @@ function loadContentType(el, key, classes) {
   if (key === 'lockup') decorateLockupRow(el);
   if (key === 'list') decorateList(el);
   if (key === 'qrcode') decorateQr(el);
-  if (key === 'background') decorateBg(el);
+  if (key === 'bgcolor') decorateBg(el);
   if (key === 'text') decorateText(el, classes);
   if (key === 'supplemental') decorateSup(el, classes);
 }
