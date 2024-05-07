@@ -1,7 +1,7 @@
 import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides, decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'background', 'supplemental'];
+const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
 const rowTypeKeyword = 'con-block-row-';
 
 function decorateList(el) {
