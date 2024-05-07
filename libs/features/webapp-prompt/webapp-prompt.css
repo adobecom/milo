@@ -1,0 +1,190 @@
+/* Hide banner if user shrinks to mobile after being displayed */
+.appPrompt {
+  --pep-background-prompt: #ffffff;
+  --pep-background-progress: #e9e9e9;
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .appPrompt {
+    position: absolute;
+    top: 90%;
+    right: 0;
+    width: 400px;
+    padding: 24px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 16px;
+    border-radius: 16px;
+    background: var(--pep-background-prompt);
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 0 3px 0 rgb(0 0 0 / 20%);
+  }
+
+  [dir = "rtl"] .appPrompt {
+    right: unset;
+    left: 0;
+  }
+
+  .appPrompt-icon {
+    min-height: 32px;
+  }
+
+  .appPrompt-icon img,
+  .appPrompt-icon svg {
+    width: 32px;
+    display: block;
+  }
+
+  .appPrompt-title {
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 800;
+  }
+
+  .appPrompt-profile {
+    display: flex;
+    column-gap: 12px;
+  }
+
+  .appPrompt-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .appPrompt-avatar-image {
+    display: block;
+    object-fit: cover;
+  }
+
+  .appPrompt-user {
+    overflow: hidden;
+  }
+
+  .appPrompt-name {
+    font-size: 16px;
+    line-height: 1.3;
+    font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .appPrompt-email {
+    font-size: 14px;
+    line-height: 1.5;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .appPrompt-footer {
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 12px;
+  }
+
+  .appPrompt-text {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .appPrompt-cta {
+    display: flex;
+    flex-shrink: 0;
+    height: 32px;
+    min-width: 72px;
+    padding: 0 14px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 0;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    white-space: nowrap;
+    transition-property: color, border-color, background-color;
+    transition-duration: 130ms;
+    transition-timing-function: ease-out;
+    cursor: pointer;
+  }
+
+  .appPrompt-cta--close {
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(75, 75, 75);
+    color: rgb(75, 75, 75);
+  }
+
+  .appPrompt-cta--close:hover,
+  .appPrompt-cta--close:focus {
+    background-color: rgb(75, 75, 75);
+    color: rgb(255, 255, 255);
+  }
+
+  .appPrompt-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    font: bold 15px Trebuchet MS, sans-serif;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .appPrompt-close:before {
+    content: '\2715';
+  }
+
+  .appPrompt-close:focus {
+    background-color: var(--pep-background-progress);
+    border-radius: 50%;
+    border: 3px solid var(--pep-background-prompt);
+  }
+
+  [dir = "rtl"] .appPrompt-close {
+    right: unset;
+    left: 12px;
+  }
+
+  .appPrompt-close:focus {
+    /* For Firefox */
+    outline: auto;
+    /* For Chrome, Edge, and Safari */
+    outline: 2px solid -webkit-focus-ring-color;
+  }
+
+  .appPrompt-progressWrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background-color: var(--pep-background-progress);
+  }
+
+  .appPrompt-progress {
+    width: 100%;
+    height: 100%;
+    animation: appPrompt-animate 7s linear forwards;
+    transform-origin: 0 0;
+    transform: scaleX(0) translateZ(0);
+  }
+
+  @keyframes appPrompt-animate {
+    100% {
+      transform: scaleX(1);
+    }
+  }
+}
