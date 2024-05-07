@@ -143,7 +143,7 @@ const merge = async ({ prs }) => {
         html_url,
         number,
         title,
-        highImpact: isHighImpact(labels) ? ' :high-priority:' : '',
+        highImpact: isHighImpact(labels) ? ' :exclamation:' : '',
       })
     );
   }
