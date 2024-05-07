@@ -3,7 +3,7 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const PRICE_LITERALS_URL = 'https://milo.adobe.com/libs/commerce/price-literals.json';
+export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
@@ -34,7 +34,7 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
-/* Optional checkout link params that are appened to checkout url as is */
+/* Optional checkout link params that are appended to checkout urls as is */
 export const CHECKOUT_ALLOWED_KEYS = [
   'af',
   'ai',
@@ -142,6 +142,14 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
+export async function fetchLiterals(url) {
+  fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
+    fetch(url)
+      .then((response) => response.json().then(({ data }) => resolve(data)));
+  });
+  return fetchLiterals.promise;
+}
+
 export async function fetchCheckoutLinkConfigs(base = '') {
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
     ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch(() => {
@@ -183,7 +191,11 @@ export async function getCheckoutLinkConfig(productFamily) {
   return finalConfig;
 }
 
-export async function getDownloadAction(options, imsSignedInPromise, offerFamily) {
+export async function getDownloadAction(
+  options,
+  imsSignedInPromise,
+  [{ offerType, productArrangement: { productFamily: offerFamily } = {} }],
+) {
   if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
@@ -205,10 +217,15 @@ export async function getDownloadAction(options, imsSignedInPromise, offerFamily
   const text = await replaceKey(checkoutLinkConfig.DOWNLOAD_TEXT
       || PLACEHOLDER_KEY_DOWNLOAD, config);
   const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
-  return { text, url };
+  const type = offerType?.toLowerCase() ?? '';
+  return { text, className: `download ${type}`, url };
 }
 
-export async function getUpgradeAction(options, imsSignedInPromise, productFamily) {
+export async function getUpgradeAction(
+  options,
+  imsSignedInPromise,
+  [{ productArrangement: { productFamily: offerFamily } = {} }],
+) {
   if (options.entitlement === false) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
@@ -219,10 +236,10 @@ export async function getUpgradeAction(options, imsSignedInPromise, productFamil
     upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
   }
   await upgradeOffer?.onceSettled();
-  if (upgradeOffer && entitlements?.length && productFamily) {
+  if (upgradeOffer && entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
     const upgradeAction = await handleUpgradeOffer(
-      productFamily,
+      offerFamily,
       upgradeOffer,
       entitlements,
       CC_SINGLE_APPS_ALL,
@@ -284,11 +301,11 @@ export async function openModal(e, url, offerType) {
   }
 }
 
-export async function getModalAction(offers, options, productFamily) {
+export async function getModalAction(offers, options) {
+  const [{ offerType, productArrangement: { productFamily: offerFamily } = {} }] = offers ?? [{}];
   if (options.modal !== true) return undefined;
-  const checkoutLinkConfig = await getCheckoutLinkConfig(productFamily);
+  const checkoutLinkConfig = await getCheckoutLinkConfig(offerFamily);
   if (!checkoutLinkConfig) return undefined;
-  const [{ offerType }] = offers;
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
@@ -297,11 +314,10 @@ export async function getModalAction(offers, options, productFamily) {
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise) {
-  const [{ productArrangement: { productFamily } = {} }] = offers;
   const [downloadAction, upgradeAction, modalAction] = await Promise.all([
-    getDownloadAction(options, imsSignedInPromise, productFamily),
-    getUpgradeAction(options, imsSignedInPromise, productFamily),
-    getModalAction(offers, options, productFamily),
+    getDownloadAction(options, imsSignedInPromise, offers),
+    getUpgradeAction(options, imsSignedInPromise, offers),
+    getModalAction(offers, options),
   ]).catch((e) => {
     log?.error('Failed to resolve checkout action', e);
     return [];
@@ -318,10 +334,10 @@ export async function initService(force = false) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
+  const { env, commerce = {}, locale } = getConfig();
+  commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const commerceLib = await import('../../deps/commerce.js');
-    const { env, commerce = {}, locale } = getConfig();
-    commerce.priceLiteralsURL = PRICE_LITERALS_URL;
     const service = await commerceLib.init(() => ({
       env,
       commerce,
