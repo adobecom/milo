@@ -131,7 +131,7 @@ const merge = async ({ prs }) => {
   for await (const { number, files, html_url, title, labels } of prs) {
     if (files.some((file) => SEEN[file])) {
       await slackNotification(SLACK.fileOverlap({ html_url, number, title }));
-      // continue;
+      continue;
     }
     files.forEach((file) => (SEEN[file] = true));
     if (!process.env.LOCAL_RUN)
