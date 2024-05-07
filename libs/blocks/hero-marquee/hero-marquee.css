@@ -100,6 +100,18 @@
   font-weight: 700;
 }
 
+.hero-marquee .foreground-split {
+  z-index: 1;
+}
+
+.hero-marquee .foreground-split picture img,
+.hero-marquee .foreground-split video {
+  object-fit: cover;
+  object-position: center top;
+  width: 100%;
+  height: 100%;
+}
+
 /* Lockup Area sizes - default large */
 .hero-marquee .lockup-area picture img,
 .hero-marquee .l-icon .lockup-area,
@@ -297,21 +309,14 @@
   order: 2;
 } 
 
-.hero-marquee.split.has-bg {
-  /* padding: 0; */
-}
-
-.hero-marquee.split.has-bg .copy {
- /* padding: var(--spacing-m) 0; */
-}
-
 .hero-marquee.split.has-bg .asset {
   display: none;
 }
 
+
 /* CLS */
 
-/* mobile only */
+/* mobile ONLY */
 @media (max-width: 600px) {
   .hero-marquee .con-button {
     display: block;
@@ -326,17 +331,42 @@
     order: 2;
   } 
 
+
   /* con-vars support */
-  .hero-marquee.hero-marquee.bg-stack-mobile,
-  .hero-marquee.hero-marquee.bg-stack-mobile-table {
+  .hero-marquee.split.asset-left {
+    padding-bottom: 0;
+  }
+
+  .hero-marquee.split.order-reverse-mobile,
+  .hero-marquee.split.order-reverse-mobile-tablet {
+    padding-top: 0;
+    padding-bottom: inital;
+  }
+
+  .hero-marquee.bg-stack-mobile,
+  .hero-marquee.bg-stack-mobile-table,
+  .hero-marquee.bg-stack-mobile.order-reverse-mobile, 
+  .hero-marquee.bg-stack-mobile-tablet.order-reverse-mobile {
     padding-top: 0;
   }
+  
 }
 
-/* tablet only */
+/* Tablet ONLY */
 @media screen and (min-width: 600px) and (max-width: 1199px) {
+  .hero-marquee.split,
+  .hero-marquee.split.asset-left {
+    padding-bottom: 0;
+  }
+  
+  .hero-marquee.split.order-reverse-mobile-tablet {
+    padding-top: 0;
+    padding-bottom: var(--spacing-xl);
+  }
+
   /* con-vars support */
-  .hero-marquee.hero-marquee.hero-marquee.bg-stack-mobile-table {
+  .hero-marquee.hero-marquee.bg-stack-mobile-table,
+  .hero-marquee.bg-stack-mobile-tablet.order-reverse-mobile-tablet {
     padding-top: 0;
   }
 }
@@ -421,7 +451,7 @@
   }
 
 
-  .hero-marquee .background-split {
+  .hero-marquee .foreground-split {
     position: absolute;
     width: 50vw;
     height: 100%;
@@ -429,7 +459,7 @@
     top: 0;
   }
 
-  .hero-marquee.asset-left .background-split {
+  .hero-marquee.asset-left .foreground-split {
     right: unset;
   }
 

@@ -71,6 +71,7 @@ function decorateLockupRow(el) {
 
 function decorateSup(el, classes) {
   distillClasses(el, classes);
+  el.classList.add('norm');
 }
 
 function removeBodyClassOnEl(el) {
@@ -136,7 +137,9 @@ export default async function init(el) {
   foreground.classList.add('foreground', `cols-${fRows.length}`);
   let copy = fRows[0];
   const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
-  const asset = foreground.querySelector('div > picture', 'div > video');
+  const asset = foreground.querySelector('div > picture, div > video, div > a[href*=".mp4"]');
+
+  console.log(el, 'asset', asset);
   copy = anyTag.closest('div');
   copy.classList.add('copy');
 
@@ -144,7 +147,7 @@ export default async function init(el) {
     asset.parentElement.classList.add('asset');
     foreground.classList.add('has-asset');
     if (el.classList.contains('split')) {
-      el.appendChild(createTag('div', { class: 'background-split' }, asset));
+      el.appendChild(createTag('div', { class: 'foreground-split' }, asset));
     }
   } else {
     [...fRows].forEach((row) => {
