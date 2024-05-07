@@ -20,8 +20,8 @@ export const getSuggestions = async (endpoint, clientId, input, scope) => {
   return data;
 };
 
-export const quizPopover = ({ suggestions, position = 'bottom', onSuggestionClick }) => html`<div class="popover-container">
-    <div class="popover-content popover-${position}">
+export const quizPopover = ({ suggestions, position = 'bottom', onSuggestionClick }) => html`<div class="popover-container popover-${position}">
+    <div class="popover-content">
       ${suggestions.map((suggestion, index) => html`
         <div key=${index} class="popover-item" onClick=${onSuggestionClick(suggestion)}>
           ${suggestion.name}
