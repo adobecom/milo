@@ -30,7 +30,7 @@ const SLACK = {
     `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
 
-let github, owner, repo, currPrNumber, core, getOctokit;
+let github, owner, repo, currPrNumber, core;
 
 let body = `
 ## common base root URLs
@@ -135,8 +135,7 @@ const merge = async ({ prs }) => {
     }
     files.forEach((file) => (SEEN[file] = true));
     if (!process.env.LOCAL_RUN) {
-      const octokit = getOctokit(process.env.MILO_GITHUB_TOKEN);
-      await octokit.rest.pulls.merge({
+      await github.rest.pulls.merge({
         owner,
         repo,
         pull_number: number,
@@ -225,7 +224,6 @@ const main = async (params) => {
   repo = params.context.repo.repo;
   currPrNumber = params.context.issue?.number;
   core = params.core;
-  getOctokit = params.getOctokit;
 
   const now = new Date();
   // We need to revisit this every year
