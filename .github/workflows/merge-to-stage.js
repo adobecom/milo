@@ -135,8 +135,7 @@ const merge = async ({ prs }) => {
     }
     files.forEach((file) => (SEEN[file] = true));
     if (!process.env.LOCAL_RUN) {
-      const octokit = github.getOctokit(process.env.MILO_GITHUB_TOKEN);
-      await octokit.rest.pulls.merge({
+      await github.rest.pulls.merge({
         owner,
         repo,
         pull_number: number,
