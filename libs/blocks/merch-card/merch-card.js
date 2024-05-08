@@ -95,6 +95,10 @@ const parseContent = async (el, merchCard) => {
       let slotName = TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+          if (merchCard.badgeText) {
+            const cardTitleEl = `<span class="merch-card-title">${element.innerHTML.split('<br>')[0]}</span>`;
+            element.innerHTML = element.innerHTML.replace(`${element.innerHTML.split('<br>')[0]}<br>`, cardTitleEl);
+          }
           if (HEADING_MAP[merchCard.variant]?.[tagName]) {
             tagName = HEADING_MAP[merchCard.variant][tagName];
           } else {
