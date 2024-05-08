@@ -20,10 +20,6 @@ const LABELS = {
 const SLACK = {
   merge: ({ html_url, number, title, highImpact }) =>
     `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
-  failingChecks: ({ html_url, number, title }) =>
-    `:x: Skipping <${html_url}|${number}: ${title}> due to failing checks`,
-  requireApprovals: ({ html_url, number, title }) =>
-    `:x: Skipping <${html_url}|${number}: ${title}> due to insufficient approvals`,
   openedSyncPr: ({ html_url, number }) =>
     `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
