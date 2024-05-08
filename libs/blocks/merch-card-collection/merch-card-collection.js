@@ -6,7 +6,7 @@ import { replaceText } from '../../features/placeholders.js';
 const DIGITS_ONLY = /^\d+$/;
 export const OVERRIDE_PATHS = 'overrides';
 
-const meta = document.createElement('meta', {
+const meta = createTag('meta', {
   name: 'urn:adobe:aue:system:aemconnection',
   content: 'aem:https://author-p22655-e59341.adobeaemcloud.com',
 });
