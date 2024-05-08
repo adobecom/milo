@@ -18,8 +18,6 @@ const LABELS = {
 };
 
 const SLACK = {
-  fileOverlap: ({ html_url, number, title }) =>
-    `:fast_forward: Skipping <${html_url}|${number}: ${title}> due to overlap in files.`,
   merge: ({ html_url, number, title, highImpact }) =>
     `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
   failingChecks: ({ html_url, number, title }) =>
@@ -30,7 +28,7 @@ const SLACK = {
     `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
 
-let github, owner, repo, currPrNumber, core;
+let github, owner, repo;
 
 let body = `
 ## common base root URLs
@@ -104,19 +102,15 @@ const getPRs = async () => {
     ...prs.map((pr) => getReviews({ pr, github, owner, repo })),
   ]);
 
-  prs = prs.filter(({ checks, reviews, html_url, number, title }) => {
+  prs = prs.filter(({ checks, reviews, number, title }) => {
     if (hasFailingChecks(checks)) {
-      slackNotification(SLACK.failingChecks({ html_url, number, title }));
-      if (number === currPrNumber)
-        core.setFailed(`Failing checks on the current PR ${number}`);
+      console.log(`Skipping ${number}: ${title} due to failing checks`);
       return false;
     }
 
     const approvals = reviews.filter(({ state }) => state === 'APPROVED');
     if (approvals.length < REQUIRED_APPROVALS) {
-      slackNotification(SLACK.requireApprovals({ html_url, number, title }));
-      if (number === currPrNumber)
-        core.setFailed(`Insufficient approvals on the current PR ${number}`);
+      console.log(`Skipping ${number}: ${title} due to insufficient approvals`);
       return false;
     }
 
@@ -130,7 +124,7 @@ const merge = async ({ prs }) => {
   console.log(`Merging ${prs.length || 0} PRs that are ready... `);
   for await (const { number, files, html_url, title, labels } of prs) {
     if (files.some((file) => SEEN[file])) {
-      await slackNotification(SLACK.fileOverlap({ html_url, number, title }));
+      console.log(`Skipping ${number}: ${title} due to overlap in files.`);
       continue;
     }
     files.forEach((file) => (SEEN[file] = true));
@@ -222,8 +216,6 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
-  currPrNumber = params.context.issue?.number;
-  core = params.core;
 
   const now = new Date();
   // We need to revisit this every year
@@ -256,7 +248,6 @@ if (process.env.LOCAL_RUN) {
   main({
     github,
     context,
-    core: { setFailed: console.error },
   });
 }
 
