@@ -1,19 +1,19 @@
 import {
   decorateCta,
+  fetchAndProcessPlainHtml,
   getActiveLink,
   getAnalyticsValue,
-  logErrorFor,
-  setActiveDropdown,
-  trigger,
+  icons,
   isDesktop,
-  selectors,
-  toFragment,
-  yieldToMain,
-  fetchAndProcessPlainHtml,
   lanaLog,
+  logErrorFor,
+  selectors,
+  setActiveDropdown,
+  toFragment,
+  trigger,
+  yieldToMain,
+  addMepHighlight,
 } from '../utilities.js';
-
-const homeIcon = '<svg xmlns="http://www.w3.org/2000/svg" height="25" viewBox="0 0 18 18" width="25"><path fill="#6E6E6E" d="M17.666,10.125,9.375,1.834a.53151.53151,0,0,0-.75,0L.334,10.125a.53051.53051,0,0,0,0,.75l.979.9785A.5.5,0,0,0,1.6665,12H2v4.5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5v-5a.5.5,0,0,1,.5-.5h3a.5.5,0,0,1,.5.5v5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5V12h.3335a.5.5,0,0,0,.3535-.1465l.979-.9785A.53051.53051,0,0,0,17.666,10.125Z"/></svg>';
 
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
@@ -279,7 +279,7 @@ const decorateCrossCloudMenu = (content) => {
   crossCloudMenuEl.className = 'feds-crossCloudMenu-wrapper';
   crossCloudMenuEl.querySelector('div').className = 'feds-crossCloudMenu';
   crossCloudMenuEl.querySelectorAll('ul li').forEach((el, index) => {
-    if (index === 0) el.querySelector('a')?.prepend(toFragment`${homeIcon}`);
+    if (index === 0) el.querySelector('a')?.prepend(toFragment`${icons.home}`);
     el.className = 'feds-crossCloudMenu-item';
   });
 
@@ -308,14 +308,12 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
 
-    const content = await fetchAndProcessPlainHtml({
-      url: pathElement.href,
-      message: 'Menu could not be fetched',
-    }).catch((e) => lanaLog({
-      message: `Menu could not be fetched ${pathElement.href}`,
-      e,
-      tags: 'errorType=error,module=menu',
-    }));
+    const content = await fetchAndProcessPlainHtml({ url: pathElement.href })
+      .catch((e) => lanaLog({
+        message: `Menu could not be fetched ${pathElement.href}`,
+        e,
+        tags: 'errorType=error,module=menu',
+      }));
     if (!content) return;
 
     const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
@@ -324,6 +322,8 @@ const decorateMenu = (config) => logErrorFor(async () => {
           ${menuContent}
         </div>
       </div>`;
+    addMepHighlight(menuTemplate, content);
+
     decorateCrossCloudMenu(menuTemplate);
 
     await decorateColumns({ content: menuContent });

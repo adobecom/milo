@@ -3,7 +3,6 @@
   --success: #3b853b;
   --error: #db4437;
   --panel-bg: rgba(255 255 255 / 60%);
-  --meta-width: 30%;
 
   display: flex;
   flex-direction: column;
@@ -37,6 +36,10 @@
   top: 43vh;
   left: 0;
   right: 0;
+}
+
+.error-btns {
+  display: flex;
 }
 
 .prompt .load-indicator {
@@ -238,7 +241,8 @@ label[for='urls'] i {
   justify-content: space-between;
 }
 
-.error-bar .fix-btn {
+.error-bar .fix-btn,
+.error-bar .clear-btn {
   background-color: white;
   color: var(--error);
   padding: 3px 8px;
@@ -248,7 +252,8 @@ label[for='urls'] i {
   font-size: 0.8em;
 }
 
-.error-bar .fix-btn:hover {
+.error-bar .fix-btn:hover,
+.error-bar .clear-btn:hover {
   background-color: #f9f9f9;
 }
 
@@ -366,12 +371,8 @@ label[for='urls'] i {
 
 .job-meta {
   display: flex;
-  justify-content: space-between;
-  min-width: var(--meta-width);
-}
-
-.job-meta > *:last-child {
-  text-align: right;
+  flex-direction: row;
+  justify-content: end;
 }
 
 .process {

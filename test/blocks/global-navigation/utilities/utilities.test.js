@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import {
+  fetchAndProcessPlainHtml,
   toFragment,
   getFedsPlaceholderConfig,
   federatePictureSources,
@@ -16,13 +17,27 @@ import {
   logErrorFor,
   getFederatedUrl,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
-import { setConfig } from '../../../../libs/utils/utils.js';
+import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config } from '../test-utilities.js';
+import mepInBlock from '../mocks/mep-config.js';
 
+const baseHost = 'https://www.stage.adobe.com';
 describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
   });
+  it('fetchAndProcessPlainHtml with MEP', () => {
+    expect(fetchAndProcessPlainHtml).to.exist;
+    const mepConfig = getConfig();
+    mepConfig.mep = mepInBlock;
+    fetchAndProcessPlainHtml({ url: '/old/navigation' }).then((fragment) => {
+      const inNewMenu = fragment.querySelector('#only-in-new-menu');
+      expect(inNewMenu).to.exist;
+      const newMenu = fragment.querySelector('a[href*="mep-large-menu-table"]');
+      expect(newMenu).to.exist;
+    });
+  });
+
   it('toFragment', () => {
     expect(toFragment).to.exist;
     const fragment = toFragment`<div>test</div>`;
@@ -39,7 +54,7 @@ describe('global navigation utilities', () => {
   describe('getFedsContentRoot', () => {
     it('should return content source for localhost', () => {
       const contentSource = getFederatedContentRoot();
-      expect(contentSource).to.equal('https://main--federal--adobecom.hlx.page');
+      expect(contentSource).to.equal(baseHost);
     });
   });
 
@@ -80,13 +95,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: 'https://adobe.com',
         path: '/test/path/federal/media.png',
-        locale: '',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
         host: 'https://adobe.com',
         path: '/test/path/federal/media.png',
-        locale: '',
         template,
       });
     });
@@ -97,7 +110,7 @@ describe('global navigation utilities', () => {
         path: '/test/federal/media.png',
         locale: '/ch_de',
       });
-      federatePictureSources(localeUrlsTemplate);
+      federatePictureSources({ section: localeUrlsTemplate });
       verifyImageTemplate({
         host: 'https://adobe.com',
         path: '/test/federal/media.png',
@@ -110,13 +123,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: 'https://adobe.com',
         path: '/federal/media.png',
-        locale: '',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
-        locale: '',
         template,
       });
     });
@@ -127,9 +138,9 @@ describe('global navigation utilities', () => {
         path: '/federal/media.png',
         locale: '/ch_de',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
         locale: '/ch_de',
         template,
@@ -140,13 +151,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: '.',
         path: '/test/path/federal/media.png',
-        locale: '',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
         host: '.',
         path: '/test/path/federal/media.png',
-        locale: '',
         template,
       });
     });
@@ -157,7 +166,7 @@ describe('global navigation utilities', () => {
         path: '/test/federal/media.png',
         locale: '/ch_de',
       });
-      federatePictureSources(localeUrlsTemplate);
+      federatePictureSources({ section: localeUrlsTemplate });
       verifyImageTemplate({
         host: '.',
         path: '/test/federal/media.png',
@@ -170,13 +179,11 @@ describe('global navigation utilities', () => {
       const template = getImageTemplate({
         host: '.',
         path: '/federal/media.png',
-        locale: '',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
-        locale: '',
         template,
       });
     });
@@ -187,11 +194,24 @@ describe('global navigation utilities', () => {
         path: '/federal/media.png',
         locale: '/ch_de',
       });
-      federatePictureSources(template);
+      federatePictureSources({ section: template });
       verifyImageTemplate({
-        host: 'https://main--federal--adobecom.hlx.page',
+        host: baseHost,
         path: '/federal/media.png',
         locale: '/ch_de',
+        template,
+      });
+    });
+
+    it('should allow to force picture federation to /federal/media.png', async () => {
+      const template = getImageTemplate({
+        host: '.',
+        path: '/media.png',
+      });
+      federatePictureSources({ section: template, forceFederate: true });
+      verifyImageTemplate({
+        host: baseHost,
+        path: '/federal/media.png',
         template,
       });
     });
@@ -207,7 +227,7 @@ describe('global navigation utilities', () => {
       const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig(placeholderConfig);
       expect(ietf).to.equal('en-US');
       expect(prefix).to.equal('');
-      expect(contentRoot).to.equal('https://main--federal--adobecom.hlx.page/federal/globalnav');
+      expect(contentRoot).to.equal(`${baseHost}/federal/globalnav`);
     });
 
     it('should return a config object for a specific locale', () => {
@@ -223,7 +243,7 @@ describe('global navigation utilities', () => {
       const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig(placeholderConfig);
       expect(ietf).to.equal('fi-FI');
       expect(prefix).to.equal('/fi');
-      expect(contentRoot).to.equal('https://main--federal--adobecom.hlx.page/fi/federal/globalnav');
+      expect(contentRoot).to.equal(`${baseHost}/fi/federal/globalnav`);
     });
   });
 
@@ -399,12 +419,12 @@ describe('global navigation utilities', () => {
       expect(
         getFederatedUrl('https://adobe.com/federal/foo-fragment.html'),
       ).to.equal(
-        'https://main--federal--adobecom.hlx.page/federal/foo-fragment.html',
+        `${baseHost}/federal/foo-fragment.html`,
       );
       expect(
         getFederatedUrl('https://adobe.com/lu_de/federal/gnav/foofooter.html'),
       ).to.equal(
-        'https://main--federal--adobecom.hlx.page/lu_de/federal/gnav/foofooter.html',
+        `${baseHost}/lu_de/federal/gnav/foofooter.html`,
       );
     });
 
@@ -412,7 +432,7 @@ describe('global navigation utilities', () => {
       expect(
         getFederatedUrl('/federal/foo-fragment.html'),
       ).to.equal(
-        'https://main--federal--adobecom.hlx.page/federal/foo-fragment.html',
+        `${baseHost}/federal/foo-fragment.html`,
       );
     });
 
@@ -420,7 +440,7 @@ describe('global navigation utilities', () => {
       expect(
         getFederatedUrl('/federal/foo-fragment.html?foo=bar#test'),
       ).to.equal(
-        'https://main--federal--adobecom.hlx.page/federal/foo-fragment.html?foo=bar#test',
+        `${baseHost}/federal/foo-fragment.html?foo=bar#test`,
       );
     });
 

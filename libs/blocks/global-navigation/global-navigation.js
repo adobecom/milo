@@ -8,38 +8,38 @@ import {
   loadStyle,
 } from '../../utils/utils.js';
 import {
-  toFragment,
-  getFedsPlaceholderConfig,
-  getAnalyticsValue,
-  decorateCta,
-  getExperienceName,
-  loadDecorateMenu,
-  loadBlock,
-  loadStyles,
-  trigger,
-  setActiveDropdown,
   closeAllDropdowns,
-  loadBaseStyles,
-  yieldToMain,
+  decorateCta,
+  fetchAndProcessPlainHtml,
+  getActiveLink,
+  getAnalyticsValue,
+  getExperienceName,
+  getFedsPlaceholderConfig,
+  hasActiveLink,
+  icons,
   isDesktop,
   isTangentToViewport,
-  setCurtainState,
-  hasActiveLink,
-  setActiveLink,
-  getActiveLink,
-  selectors,
-  logErrorFor,
   lanaLog,
-  fetchAndProcessPlainHtml,
+  loadBaseStyles,
+  loadBlock,
+  loadDecorateMenu,
+  loadStyles,
+  logErrorFor,
+  selectors,
+  setActiveDropdown,
+  setActiveLink,
+  setCurtainState,
+  setUserProfile,
+  toFragment,
+  trigger,
+  yieldToMain,
+  addMepHighlight,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
-const CONFIG = {
-  icons: {
-    company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1"><defs><style>.cls-1 {fill: #eb1000;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
-    search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
-  },
+export const CONFIG = {
+  icons,
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
@@ -63,6 +63,13 @@ const CONFIG = {
             config: {
               enableLocalSection: true,
               miniAppContext: {
+                onMessage: (name, payload) => {
+                  if (name === 'System' && payload.subType === 'AppInitiated') {
+                    window.adobeProfile?.getUserProfile()
+                      .then((data) => { setUserProfile(data); })
+                      .catch(() => { setUserProfile({}); });
+                  }
+                },
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -108,9 +115,29 @@ export const osMap = {
   iPhone: 'iOS',
 };
 
+export const LANGMAP = {
+  cs: ['cz'],
+  da: ['dk'],
+  de: ['at'],
+  en: ['africa', 'au', 'ca', 'ie', 'in', 'mt', 'ng', 'nz', 'sg', 'za'],
+  es: ['ar', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
+  et: ['ee'],
+  ja: ['jp'],
+  ko: ['kr'],
+  nb: ['no'],
+  pt: ['br'],
+  sl: ['si'],
+  sv: ['se'],
+  uk: ['ua'],
+  zh: ['cn', 'tw'],
+};
+
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = () => {
-  if (typeof window.adobeIMS?.signIn !== 'function') return;
+  if (typeof window.adobeIMS?.signIn !== 'function') {
+    lanaLog({ message: 'IMS signIn method not available', tags: 'errorType=warn,module=gnav' });
+    return;
+  }
 
   window.adobeIMS.signIn();
 };
@@ -214,24 +241,7 @@ const closeOnClickOutside = (e) => {
   }
 };
 
-const getUniversalNavLocale = (locale) => {
-  const LANGMAP = {
-    cs: ['cz'],
-    da: ['dk'],
-    de: ['at'],
-    en: ['africa', 'au', 'ca', 'ie', 'in', 'mt', 'ng', 'nz', 'sg', 'za'],
-    es: ['ar', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'],
-    et: ['ee'],
-    ja: ['jp'],
-    ko: ['kr'],
-    nb: ['no'],
-    pt: ['br'],
-    sl: ['si'],
-    sv: ['se'],
-    uk: ['ua'],
-    zh: ['cn', 'tw'],
-  };
-
+export const getUniversalNavLocale = (locale) => {
   if (!locale.prefix || locale.prefix === '/') return 'en_US';
   const prefix = locale.prefix.replace('/', '');
   if (prefix.includes('_')) {
@@ -266,7 +276,6 @@ class Gnav {
     };
 
     this.setupUniversalNav();
-    decorateLinks(this.content);
     this.elements = {};
   }
 
@@ -278,6 +287,9 @@ class Gnav {
     if (this.useUniversalNav) {
       delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
+      this.blocks.universalNav.addEventListener('click', () => {
+        if (this.isToggleExpanded()) this.toggleMenuMobile();
+      }, true);
     }
   };
 
@@ -420,6 +432,8 @@ class Gnav {
   };
 
   imsReady = async () => {
+    if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
+
     const tasks = [this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile];
 
     try {
@@ -499,8 +513,8 @@ class Gnav {
     };
 
     await Promise.all([
-      loadScript(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.js`),
-      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.0/UniversalNav.css`),
+      loadScript(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.js`),
+      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.css`),
     ]);
 
     const getChildren = () => {
@@ -523,6 +537,8 @@ class Gnav {
 
     const onAnalyticsEvent = (data) => {
       if (!data) return;
+      if (!data.event) data.event = { type: data.type, subtype: data.subtype };
+      if (!data.source) data.source = { name: data.workflow?.toLowerCase().trim() };
 
       const getInteraction = () => {
         const {
@@ -531,16 +547,16 @@ class Gnav {
           content: { name: contentName } = {},
         } = data;
 
-        switch (`${name}|${type}|${subtype}|${contentName || ''}`) {
-          case 'profile|click|sign-in|':
+        switch (`${name}|${type}|${subtype}${contentName ? `|${contentName}` : ''}`) {
+          case 'profile|click|sign-in':
             return `Sign In|gnav|${experienceName}|unav`;
-          case 'profile|render|component|':
-            return `Account|gnav|${experienceName}`;
-          case 'profile|click|account|':
-            return `View Account|gnav|${experienceName}`;
-          case 'profile|click|sign-out|':
+          case 'profile|render|component':
+            return `Account|gnav|${experienceName}|unav`;
+          case 'profile|click|account':
+            return `View Account|gnav|${experienceName}|unav`;
+          case 'profile|click|sign-out':
             return `Sign Out|gnav|${experienceName}|unav`;
-          case 'app-switcher|render|component|':
+          case 'app-switcher|render|component':
             return 'AppLauncher.appIconToggle';
           case `app-switcher|click|app|${contentName}`:
             return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
@@ -552,7 +568,16 @@ class Gnav {
             return 'AppLauncher.adobe.com';
           case 'app-switcher|click|footer|see-all-apps':
             return 'AppLauncher.allapps';
-            // TODO: add support for notifications
+          case 'unc|click|icon':
+            return 'Open Notifications panel';
+          case 'unc|click|link':
+            return 'Open Notification';
+          case 'unc|click|markRead':
+            return 'Mark Notification as read';
+          case 'unc|click|dismiss':
+            return 'Dismiss Notifications';
+          case 'unc|click|markUnread':
+            return 'Mark Notification as unread';
           default:
             return null;
         }
@@ -573,6 +598,9 @@ class Gnav {
       locale,
       imsClientId: window.adobeid?.client_id,
       theme: 'light',
+      onReady: () => {
+        this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
+      },
       analyticsContext: {
         consumer: {
           name: 'adobecom',
@@ -594,12 +622,45 @@ class Gnav {
     });
   };
 
+  decorateAppPrompt = async ({ getAnchorState } = {}) => {
+    const state = getMetadata('app-prompt')?.toLowerCase();
+    const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+    const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    if (state === 'off'
+      || !window.adobeIMS?.isSignedInUser()
+      || !isDesktop.matches
+      || !entName?.length
+      || !promptPath?.length) return;
+
+    const { base } = getConfig();
+    const [
+      webappPrompt,
+    ] = await Promise.all([
+      import('../../features/webapp-prompt/webapp-prompt.js'),
+      loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
+    ]);
+
+    webappPrompt.default({ promptPath, entName, parent: this.blocks.universalNav, getAnchorState });
+  };
+
   loadSearch = () => {
     if (this.blocks?.search?.instance) return null;
 
     return this.loadDelayed().then(() => {
       this.blocks.search.instance = new this.Search(this.blocks.search.config);
     });
+  };
+
+  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
+
+  toggleMenuMobile = () => {
+    const toggle = this.elements.mobileToggle;
+    const isExpanded = this.isToggleExpanded();
+    toggle?.setAttribute('aria-expanded', !isExpanded);
+    this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+    closeAllDropdowns();
+    setCurtainState(!isExpanded);
+    toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
   };
 
   decorateToggle = () => {
@@ -625,12 +686,7 @@ class Gnav {
     };
 
     const onToggleClick = async () => {
-      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', !isExpanded);
-      this.elements.navWrapper.classList.toggle('feds-nav-wrapper--expanded', !isExpanded);
-      closeAllDropdowns();
-      setCurtainState(!isExpanded);
-      toggle.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
+      this.toggleMenuMobile();
 
       if (this.blocks?.search?.instance) {
         this.blocks.search.instance.clearSearchForm();
@@ -638,7 +694,7 @@ class Gnav {
         await this.loadSearch();
       }
 
-      if (isExpanded) setHamburgerPadding();
+      if (this.isToggleExpanded()) setHamburgerPadding();
     };
 
     toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'errorType=error,module=gnav'));
@@ -853,22 +909,25 @@ class Gnav {
         observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
 
         delayDropdownDecoration({ template: triggerTemplate });
-        return triggerTemplate;
+        return addMepHighlight(triggerTemplate, item);
       }
       case 'primaryCta':
       case 'secondaryCta':
         // Remove its 'em' or 'strong' wrapper
         item.parentElement.replaceWith(item);
 
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
-          </div>`;
+          </div>`, item);
       case 'link': {
         const linkElem = item.querySelector('a');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
         if (itemHasActiveLink) {
           linkElem.removeAttribute('href');
+          linkElem.setAttribute('role', 'link');
+          linkElem.setAttribute('aria-disabled', 'true');
+          linkElem.setAttribute('aria-current', 'page');
           linkElem.setAttribute('tabindex', 0);
         }
 
@@ -876,16 +935,17 @@ class Gnav {
           <div class="feds-navItem${activeModifier}">
             ${linkElem}
           </div>`;
-        return linkTemplate;
+        return addMepHighlight(linkTemplate, item);
       }
       case 'text':
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item.textContent}
-          </div>`;
+          </div>`, item);
       default:
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        /* c8 ignore next 3 */
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item}
-          </div>`;
+          </div>`, item);
     }
   };
 

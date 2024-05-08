@@ -1,0 +1,35 @@
+name: Merge to stage
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Run every 4 hours
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
+  REQUIRED_APPROVALS: ${{ secrets.REQUIRED_APPROVALS }}
+  SLACK_HIGH_IMPACT_PR_WEBHOOK: ${{ secrets.SLACK_HIGH_IMPACT_PR_WEBHOOK }}
+
+jobs:
+  merge-to-stage:
+    runs-on: ubuntu-latest
+    environment: milo_pr_merge
+
+    steps:
+      - uses: actions/create-github-app-token@v1.10.0
+        id: milo-pr-merge-token
+        with:
+          app-id: ${{ secrets.MILO_PR_MERGE_APP_ID }}
+          private-key: ${{ secrets.MILO_PR_MERGE_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.4
+
+      - name: Merge to stage or queue to merge
+        uses: actions/github-script@v7.0.1
+        with:
+          script: |
+            const main = require('./.github/workflows/merge-to-stage.js')
+            main({ github, context, core })
+        env:
+          GITHUB_TOKEN: ${{ steps.milo-pr-merge-token.outputs.token }}

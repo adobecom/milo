@@ -80,6 +80,29 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
+function decorateSplit(el, foreground, media) {
+  if (foreground && media) {
+    media.classList.add('bleed');
+    foreground.insertAdjacentElement('beforebegin', media);
+  }
+
+  let mediaCreditInner;
+  const txtContent = media?.lastChild?.textContent?.trim();
+  if (txtContent?.match(/^http.*\.mp4/)) return;
+  if (txtContent) {
+    mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
+  } else if (media.lastElementChild?.tagName !== 'PICTURE') {
+    mediaCreditInner = media.lastElementChild;
+  }
+
+  if (mediaCreditInner) {
+    const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
+    el.appendChild(mediaCredit);
+    el.classList.add('has-credit');
+    media?.lastChild.remove();
+  }
+}
+
 export default async function init(el) {
   const excDark = ['light', 'quiet'];
   if (!excDark.some((s) => el.classList.contains(s))) el.classList.add('dark');
@@ -109,27 +132,7 @@ export default async function init(el) {
   const iconArea = text.querySelector('.icon-area');
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
   extendButtonsClass(text);
-  if (el.classList.contains('split')) {
-    if (foreground && media) {
-      media.classList.add('bleed');
-      foreground.insertAdjacentElement('beforebegin', media);
-    }
-
-    let mediaCreditInner;
-    const txtContent = media?.lastChild?.textContent?.trim();
-    if (txtContent) {
-      mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
-    } else if (media.lastElementChild?.tagName !== 'PICTURE') {
-      mediaCreditInner = media.lastElementChild;
-    }
-
-    if (mediaCreditInner) {
-      const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
-      el.appendChild(mediaCredit);
-      el.classList.add('has-credit');
-      media?.lastChild.remove();
-    }
-  }
+  if (el.classList.contains('split')) decorateSplit(el, foreground, media);
   if (el.classList.contains('mnemonic-list') && foreground) {
     await loadMnemonicList(foreground);
   }
