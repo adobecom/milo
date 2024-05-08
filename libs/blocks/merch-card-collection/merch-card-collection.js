@@ -77,7 +77,7 @@ async function getCardsRootOdin(config, json) {
     const blockEls = allBlockEls.slice(i, i + batchSize);
     await Promise.all(blockEls.map((cardEl) => Promise.all(
       decorateLinks(cardEl).map(loadBlock),
-    ).then(() => loadBlock(cardEl))));
+    )));
     await makePause();
   }
   return cardsRoot;
