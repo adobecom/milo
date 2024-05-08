@@ -240,7 +240,7 @@
   flex-shrink: 0;
 }
 
-.aside.notification .text [class^=heading-] + .action-area {
+.aside.notification .text [class^="heading-"] + .action-area {
   margin-top: var(--spacing-xs);
 }
 
