@@ -27,3 +27,9 @@ merch-card.special-offers del span[is="inline-price"] {
   background-color: var(--color-black);
   text-decoration: none;
 }
+
+/* hide download/upgrade links except the first one */
+merch-card a[is="checkout-link"].download:not(:first-of-type),
+merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
+  display: none;
+}

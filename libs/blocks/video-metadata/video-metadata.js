@@ -66,10 +66,9 @@ function addSeekToActionField(videoObj, blockKey, blockValue) {
   }
 }
 
-export function createVideoObject(blockMap) {
+export function createVideoObject(record) {
   const video = {};
-  Object.entries(blockMap).forEach(([key, val]) => {
-    const blockVal = val.content && val.content.textContent.trim();
+  Object.entries(record).forEach(([key, blockVal]) => {
     if (!blockVal) return;
     const blockKey = key && key.replaceAll(' ', '-');
     switch (true) {
@@ -110,10 +109,21 @@ export function createVideoObject(blockMap) {
   return null;
 }
 
+export function blockMapToRecord(blockMap) {
+  return blockMap && Object.entries(blockMap).reduce((rec, kv) => {
+    const [key, value] = kv;
+    const val = value?.content?.textContent?.trim();
+    if (!val) return rec;
+    rec[key] = val;
+    return rec;
+  }, {});
+}
+
 export default function init(el) {
   const metadata = getMetadata(el);
   el.remove();
-  const obj = createVideoObject(metadata);
+  const record = blockMapToRecord(metadata);
+  const obj = createVideoObject(record);
   if (!obj) return;
   const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
   document.head.append(script);
