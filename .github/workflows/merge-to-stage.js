@@ -134,13 +134,15 @@ const merge = async ({ prs }) => {
       continue;
     }
     files.forEach((file) => (SEEN[file] = true));
-    if (!process.env.LOCAL_RUN)
-      await github.rest.pulls.merge({
+    if (!process.env.LOCAL_RUN) {
+      const octokit = github.getOctokit(process.env.MILO_GITHUB_TOKEN);
+      await octokit.rest.pulls.merge({
         owner,
         repo,
         pull_number: number,
         merge_method: 'squash',
       });
+    }
     body = `- [${title}](${html_url})\n${body}`;
     const isHighImpact = labels.includes(LABELS.highImpact);
     if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
