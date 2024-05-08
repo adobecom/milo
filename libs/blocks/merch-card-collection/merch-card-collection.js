@@ -6,6 +6,13 @@ import { replaceText } from '../../features/placeholders.js';
 const DIGITS_ONLY = /^\d+$/;
 export const OVERRIDE_PATHS = 'overrides';
 
+const meta = document.createElement('meta', {
+  name: 'urn:adobe:aue:system:aemconnection',
+  content: 'aem:https://author-p22655-e59341.adobeaemcloud.com',
+});
+
+document.head.appendChild(meta);
+
 const LITERAL_SLOTS = [
   'searchText',
   'filtersText',
@@ -47,7 +54,7 @@ async function getCardsRootOdin(config, json) {
     prices,
     title,
   }) => (`
-   <merch-card variant="catalog" name="${name}" filters="all" itemid="urn:aemconnection:${_path}/jcr:content/data/master">
+   <merch-card variant="catalog" name="${name}" filters="all" data-aue-resource="urn:aemconnection:${_path}/jcr:content/data/master">
       <merch-icon slot="icons" src="${icon}"></merch-icon>
       <h3 slot="heading-xs">${title}</h3>
       <h2 slot="heading-m">${prices.html ?? ''}</h2>
