@@ -32,4 +32,4 @@ jobs:
             const main = require('./.github/workflows/merge-to-stage.js')
             main({ github, context, core })
         env:
-          GITHUB_TOKEN: ${{ steps.milo-pr-merge-token.outputs.token }}
+          MILO_GITHUB_TOKEN: ${{ steps.milo-pr-merge-token.outputs.token }}
