@@ -37,6 +37,44 @@ const fail = (el, err = '') => {
 };
 
 /** Parse andd prepare cards */
+async function getCardsRootOdin(config, json) {
+  const html = json.items.map(({
+    _path,
+    ctas,
+    description,
+    icon,
+    name,
+    prices,
+    title,
+  }) => (`
+   <merch-card class="catalog" variant="catalog" name="${name}" filters="all" itemid="urn:aemconnection:${_path}/jcr:content/data/master">
+      <merch-icon slot="icons" src="${icon}"></merch-icon>
+      <h3 slot="heading-xs">${title}</h3>
+      <h2 slot="heading-m">${prices.html ?? ''}</h2>
+      <div slot="body-xs">${description.html ?? ''}</div>
+      <div slot="footer">
+        <p class="action-area">${ctas.html ?? ''}</p>
+      </div>
+   </merch-card>
+   `)).join('\n');
+  const cards = `<div>${html}</div>`;
+  const fragment = document.createRange().createContextualFragment(
+    await replaceText(cards, config),
+  );
+  const cardsRoot = fragment.firstElementChild;
+  const allBlockEls = [...cardsRoot.querySelectorAll(':scope > merch-card')];
+  const batchSize = 12;
+  for (let i = 0; i < allBlockEls.length; i += batchSize) {
+    const blockEls = allBlockEls.slice(i, i + batchSize);
+    await Promise.all(blockEls.map((cardEl) => Promise.all(
+      decorateLinks(cardEl).map(loadBlock),
+    ).then(() => loadBlock(cardEl))));
+    await makePause();
+  }
+  return cardsRoot;
+}
+
+/** Parse andd prepare cards */
 async function getCardsRoot(config, html) {
   const cards = `<div>${html}</div>`;
   const fragment = document.createRange().createContextualFragment(
@@ -131,14 +169,17 @@ export function parsePreferences(elements) {
 /** Retrieve cards from query-index  */
 async function fetchCardsData(config, type, el) {
   let cardsData;
-  const endpointElement = el.querySelector('a[href*="query-index-cards.json"]');
+  const endpointElement = el.querySelector('a[href*="query-index-cards.json"],a[href*="/graphql/"]');
   if (!endpointElement) {
     throw new Error('No query-index endpoint provided');
   }
   endpointElement.remove();
   let queryIndexCardPath = localizeLink(endpointElement.getAttribute('href'), config);
-  if (/\.json$/.test(queryIndexCardPath)) {
-    queryIndexCardPath = `${queryIndexCardPath}?sheet=${type}`;
+  const isOdin = /graphql/.test(queryIndexCardPath);
+  if (!isOdin) {
+    if (/\.json$/.test(queryIndexCardPath)) {
+      queryIndexCardPath = `${queryIndexCardPath}?sheet=${type}`;
+    }
   }
   const res = await fetch(queryIndexCardPath);
   if (res.ok) {
@@ -183,9 +224,11 @@ export default async function init(el) {
   const cardsDataPromise = fetchCardsData(config, type, el);
 
   const merchCardCollectionDep = import('../../deps/merch-card-collection.js');
+  const merchCardDep = import('../../deps/merch-card.js');
+  const merchIconDep = import('../../deps/merch-icon.js');
   let deps = [
     merchCardCollectionDep,
-    import('../merch-card/merch-card.js'),
+    merchCardDep,
     import('../../deps/merch-card.js'),
   ];
 
@@ -204,7 +247,16 @@ export default async function init(el) {
     return fail(el, error);
   }
 
-  const cardsRootPromise = getCardsRoot(config, cardsData.data.map(({ cardContent }) => cardContent).join('\n'));
+  let cardsRootPromise;
+  const merchCardList = cardsData.data?.merchCardList; // source = Odin
+
+  if (merchCardList) {
+    await merchCardDep;
+    await merchIconDep;
+    cardsRootPromise = getCardsRootOdin(config, merchCardList);
+  } else {
+    cardsRootPromise = getCardsRoot(config, cardsData.data.map(({ cardContent }) => cardContent).join('\n'));
+  }
 
   const attributes = { filter: 'all', class: `${el.className}` };
   const settingsEl = el.firstElementChild?.firstElementChild;
