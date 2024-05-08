@@ -95,9 +95,9 @@ const parseContent = async (el, merchCard) => {
       let slotName = TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+          element.classList.add('card-heading');
           if (merchCard.badgeText) {
-            const cardTitleEl = `<span class="merch-card-title">${element.innerHTML.split('<br>')[0]}</span>`;
-            element.innerHTML = element.innerHTML.replace(`${element.innerHTML.split('<br>')[0]}<br>`, cardTitleEl);
+            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
           }
           if (HEADING_MAP[merchCard.variant]?.[tagName]) {
             tagName = HEADING_MAP[merchCard.variant][tagName];
@@ -339,6 +339,7 @@ const init = async (el) => {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
+        merchCard.classList.add('badge-card');
       }
     }
   }
