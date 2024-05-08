@@ -21,7 +21,7 @@ const SLACK = {
   fileOverlap: ({ html_url, number, title }) =>
     `:fast_forward: Skipping <${html_url}|${number}: ${title}> due to overlap in files.`,
   merge: ({ html_url, number, title, highImpact }) =>
-    `:merged:${highImpact} Stage merge PR <${html_url}|${number}: ${title}>.`,
+    `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
   failingChecks: ({ html_url, number, title }) =>
     `:x: Skipping <${html_url}|${number}: ${title}> due to failing checks`,
   requireApprovals: ({ html_url, number, title }) =>
@@ -145,7 +145,12 @@ const merge = async ({ prs }) => {
     const isHighImpact = labels.includes(LABELS.highImpact);
     if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
       await slackNotification(
-        SLACK.merge({ html_url, number, title, highImpact: ' :alert:' }),
+        SLACK.merge({
+          html_url,
+          number,
+          title,
+          highImpact: ' :alert: High impact',
+        }),
         process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK
       );
     }
@@ -154,7 +159,7 @@ const merge = async ({ prs }) => {
         html_url,
         number,
         title,
-        highImpact: isHighImpact ? ' :alert:' : '',
+        highImpact: isHighImpact ? ' :alert: High impact' : '',
       })
     );
   }
