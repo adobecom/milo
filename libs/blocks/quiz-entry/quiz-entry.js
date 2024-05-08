@@ -29,6 +29,8 @@ const App = ({
   const [showPopover, setShowPopover] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
 
+  const QUIZ_INPUT = '#quiz-input';
+  const QUIZ_INPUT_CLEAR = '#quiz-input-clear';
   const fiCodeCount = 3;
   const enterKeyCode = 13;
   const defaultThreshold = 0;
@@ -151,7 +153,7 @@ const App = ({
     let userFlow = [];
     if (mlInputUsed) {
       const { mlDetails, mlValues } = mlData;
-      const mlFieldText = document.querySelector('#ml-field-input').value;
+      const mlFieldText = document.querySelector(QUIZ_INPUT).value;
       const fiResults = await getMLResults(mlDetails.endpoint, mlDetails['api-key'], mlDetails.threshold || defaultThreshold, mlFieldText, fiCodeCount, mlValues);
       const { filtered } = fiResults;
       let fallback = [];
@@ -254,7 +256,7 @@ const App = ({
       setShowPopover(true);
     }
 
-    document.querySelector('#ml-field-clear').classList.toggle('hidden', !inputValue.length);
+    document.querySelector(QUIZ_INPUT_CLEAR).classList.toggle('hidden', !inputValue.length);
 
     if (inputValue.length === 0) {
       setMLInputUsed(false);
@@ -268,15 +270,16 @@ const App = ({
   };
 
   const onSuggestionClick = (suggestion) => () => {
-    document.querySelector('#ml-field-input').value = suggestion.name;
+    const input = document.querySelector(QUIZ_INPUT);
+    input.value = suggestion.name;
     setSuggestions([]);
     setShowPopover(false);
-    document.querySelector('#ml-field-input').focus();
+    input.focus();
   };
 
   const onClearClick = () => {
-    document.querySelector('#ml-field-input').value = '';
-    document.querySelector('#ml-field-clear').classList.add('hidden');
+    document.querySelector(QUIZ_INPUT).value = '';
+    document.querySelector(QUIZ_INPUT_CLEAR).classList.add('hidden');
     setMLInputUsed(false);
     setSuggestions([]);
     setShowPopover(false);
@@ -288,29 +291,36 @@ const App = ({
 
   if (!dataLoaded || !selectedQuestion) return null;
 
-  return html`<div class="quiz-entry-container">
-    <div class="quiz-entry-title">${quizLists.strings[selectedQuestion.questions].heading}</div>
-    <div class="quiz-entry-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</div>
-    ${hasMLData && html`<${mlField} 
-      cardsUsed="${cardsUsed}" 
-      onMLInput="${onMLInput}"
-      onMLEnter="${onMLEnter}" 
-      onClearClick="${onClearClick}" 
-      placeholderText="${getOptionsValue('fi_code', 'title')}"/>`}
-    ${showPopover && html`<${quizPopover} 
-      suggestions=${suggestions} 
-      position="bottom" 
-      onSuggestionClick=${onSuggestionClick}/>`}
-    <div class="quiz-entry-text">${quizLists.strings[selectedQuestion.questions].text}</div>
-    ${selectedQuestion.questions && html`<${GetQuizOption} 
-      maxSelections=${maxSelections} 
-      options=${quizData.strings[selectedQuestion.questions]}
-      background=${getStringValue('icon-background-color')}
-      countSelectedCards=${selectedCards.length}
-      selectedCards=${selectedCards}
-      onOptionClick=${onOptionClick}
-      getOptionsValue=${getOptionsValue}
-      mlInputUsed=${mlInputUsed}/>`}
+  return html`<div class="quiz-container">
+    <div class="quiz-heading-container">
+      <div id="question" class="quiz-title">${quizLists.strings[selectedQuestion.questions].heading}</div>
+      <div class="quiz-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</div>
+    </div>
+    <div class="quiz-question-container">
+      <div class="quiz-input-container">
+        ${hasMLData && html`
+        <${mlField} 
+          cardsUsed="${cardsUsed}" 
+          onMLInput="${onMLInput}"
+          onMLEnter="${onMLEnter}" 
+          onClearClick="${onClearClick}" 
+          placeholderText="${getOptionsValue('fi_code', 'title')}"/>`}
+        ${showPopover && html`<${quizPopover} 
+          suggestions=${suggestions} 
+          position="bottom" 
+          onSuggestionClick=${onSuggestionClick}/>`}
+      </div>
+      <div class="quiz-directions">${quizLists.strings[selectedQuestion.questions].text}</div>
+      ${selectedQuestion.questions && html`<${GetQuizOption} 
+        maxSelections=${maxSelections} 
+        options=${quizData.strings[selectedQuestion.questions]}
+        background=${getStringValue('icon-background-color')}
+        countSelectedCards=${Object.keys(selectedCards).length}
+        selectedCards=${selectedCards}
+        onOptionClick=${onOptionClick}
+        getOptionsValue=${getOptionsValue}
+        mlInputUsed=${mlInputUsed}/>`}
+    </div>
     <div class="quiz-button-container">
         <button 
           disabled="${!!(!mlInputUsed && !cardsUsed)}"

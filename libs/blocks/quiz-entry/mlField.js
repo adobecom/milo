@@ -48,7 +48,5 @@ export const getMLResults = async (endpoint, apiKey, threshold, input, count, va
   return value;
 };
 
-export const mlField = ({ cardsUsed, onMLInput, onMLEnter, placeholderText, onClearClick }) => html`<div class="ml-field-container">
-    <input id="ml-field-input" class="ml-input" type="textarea" placeholder="${placeholderText}" oninput="${onMLInput}" onkeypress="${onMLEnter}" disabled="${cardsUsed}" autocomplete="off"/>
-    <div id="ml-field-clear" class="ml-clear-icon hidden" onClick="${onClearClick}"></div>
-  </div>`;
+export const mlField = ({ cardsUsed, onMLInput, onMLEnter, placeholderText, onClearClick }) => html`<input id="quiz-input" class="quiz-input" type="textarea" placeholder="${placeholderText}" oninput="${onMLInput}" onkeypress="${onMLEnter}" disabled="${cardsUsed}" autocomplete="off"/>
+    <div id="quiz-input-clear" class="quiz-input-clear hidden" onClick="${onClearClick}"></div>`;
