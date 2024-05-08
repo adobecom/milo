@@ -67,7 +67,7 @@
 
 .quiz-input:focus-visible {
   outline: 4px solid #4B75FF;
-  outline-offset: 2px;
+  outline-offset:-1px;
 }
 
 .quiz-input:disabled {
@@ -208,7 +208,7 @@
 .quiz-options-container:focus-visible,
 .carousel-arrow:focus-visible {
   outline: 4px solid #4B75FF;
-  outline-offset: 2px;
+  outline-offset: -1px;
 }
 
 .quiz-option {
@@ -371,7 +371,6 @@
 
 .quiz-button:focus-visible {
   outline: 4px solid #4B75FF;
-  outline-offset: 2px;
 }
 
 .quiz-button-label {
@@ -412,13 +411,10 @@
   }
 
   .carousel-slides {
-    justify-content: left;
-    margin: 0 -8px;
-    width: calc(100% + 8px);
+    justify-content: center;
   }
 
   .carousel-slides.align-right {
-    justify-content: right;
     margin-left: 0;
   }
 
@@ -461,6 +457,17 @@
 
   .quiz-directions {
       height: 50px;
+  }
+
+  .carousel-slides {
+    justify-content: left;
+    margin: 0 -8px;
+    width: calc(100% + 8px);
+  }
+
+  .carousel-slides.align-right {
+    justify-content: right;
+    margin-left: 0;
   }
 
   .quiz-option {
