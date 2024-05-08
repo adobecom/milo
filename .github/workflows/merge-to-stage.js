@@ -135,7 +135,12 @@ const merge = async ({ prs }) => {
     }
     files.forEach((file) => (SEEN[file] = true));
     if (!process.env.LOCAL_RUN)
-      await github.rest.pulls.merge({ owner, repo, pull_number: number });
+      await github.rest.pulls.merge({
+        owner,
+        repo,
+        pull_number: number,
+        merge_method: 'squash',
+      });
     body = `- [${title}](${html_url})\n${body}`;
     const isHighImpact = labels.includes(LABELS.highImpact);
     if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
