@@ -1,5 +1,5 @@
 import {
-  createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
+  createTag, decorateLinks, getConfig, loadBlock, loadScript, loadStyle, localizeLink,
 } from '../../utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
 
@@ -12,6 +12,8 @@ const meta = document.createElement('meta', {
 });
 
 document.head.appendChild(meta);
+
+loadScript('https://universal-editor-service.experiencecloud.live/corslib/LATEST');
 
 const LITERAL_SLOTS = [
   'searchText',
