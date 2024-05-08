@@ -47,14 +47,26 @@ async function updateExcelJson() {
   });
 }
 
+async function fetchDocument(hlxPath) {
+  const path = `${origin}${hlxPath}`;
+  try {
+    const resp = await fetch(path);
+    if (!resp.ok) return null;
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    return doc;
+  } catch (error) {
+    setStatus('service', 'error', `${error.message} Fragment`, `There was an issue fetching ${path}`, 10000);
+    return null;
+  }
+}
+
 async function findPageFragments(path) {
   const isIndex = path.lastIndexOf('index');
   const hlxPath = isIndex > 0 ? path.substring(0, isIndex) : path;
-  const resp = await fetch(`${origin}${hlxPath}`);
-  if (!resp.ok) return [];
-  const html = await resp.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+  const doc = await fetchDocument(hlxPath);
+  if (!doc) return [];
   // Decorate the doc, but don't load any blocks (i.e. do not use loadArea)
   decorateSections(doc, true);
   await decorateFooterPromo(doc);
