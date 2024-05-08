@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { html, useRef } from '../../../../deps/htm-preact.js';
 
 function RatingSummary({
