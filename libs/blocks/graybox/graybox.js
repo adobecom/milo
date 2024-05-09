@@ -10,10 +10,13 @@ const OPTION = {
 const CLASS = {
   CHANGED: 'gb-changed',
   GRAYBOX_BODY: 'gb-graybox-body',
+  NO_BORDER: 'gb-no-border',
   NO_CHANGE: 'gb-no-change',
   NO_CLICK: 'gb-no-click',
   NO_OVERLAY: 'gb-no-overlay',
   OVERLAY: 'gb-overlay',
+  PHONE_PREVIEW: 'gb-phone-preview',
+  TABLET_PREVIEW: 'gb-tablet-preview',
 };
 
 const METADATA = {
@@ -155,12 +158,21 @@ const openDeviceModal = async (e) => {
 
   deviceModal = await getModal(null, { class: 'graybox-modal', id: 'graybox-modal', content: docFrag, closeEvent: 'closeGrayboxModal' });
   if (isMobile) {
+    document.body.classList.add(CLASS.PHONE_PREVIEW);
     deviceModal.classList.add('mobile');
     setUserAgent(iFrame.contentWindow, USER_AGENT.iPhone);
   } else if (isTablet) {
+    document.body.classList.add(CLASS.TABLET_PREVIEW);
     deviceModal.classList.add('tablet');
     setUserAgent(iFrame.contentWindow, USER_AGENT.iPad);
   }
+
+  const removeBodyPreviewClasses = () => document.body.classList.remove(
+    CLASS.PHONE_PREVIEW,
+    CLASS.TABLET_PREVIEW,
+  );
+
+  window.addEventListener('milo:modal:closed', removeBodyPreviewClasses, { once: true });
 
   const curtain = deviceModal.nextElementSibling;
   curtain.classList.add('graybox-curtain');
@@ -230,7 +242,9 @@ export default function init(grayboxEl) {
     checkGnav(options, globalNoClick);
     checkFooter(options);
     checkNoClick(grayboxEl, globalNoClick);
-    if (url.searchParams.get('graybox') !== 'menu-off') {
+    if (url.searchParams.get('graybox') === 'menu-off') {
+      document.body.classList.add(CLASS.NO_BORDER);
+    } else {
       createGrayboxMenu(options, { isOpen: true });
     }
   };
