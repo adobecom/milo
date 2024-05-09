@@ -55,6 +55,16 @@ export const logErrorFor = async (fn, message, tags) => {
   }
 };
 
+export function addMepHighlight(el, source) {
+  let { manifestId } = source.dataset;
+  if (!manifestId) {
+    const closestManifestId = source?.closest('[data-manifest-id]');
+    if (closestManifestId) manifestId = closestManifestId.dataset.manifestId;
+  }
+  if (manifestId) el.dataset.manifestId = manifestId;
+  return el;
+}
+
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
     if (values[index] instanceof HTMLElement) {
@@ -313,11 +323,22 @@ export function trigger({ element, event, type } = {}) {
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
 export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
-  const path = getFederatedUrl(url);
+  let path = getFederatedUrl(url);
+  const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
+  const mepFragment = mepGnav?.fragments?.[path];
+  if (mepFragment && mepFragment.action === 'replace') {
+    path = mepFragment.target;
+  }
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
-
+  if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
+  const commands = mepGnav?.commands;
+  if (commands?.length) {
+    const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
+    handleCommands(commands, commands[0].manifestId, body, true);
+    deleteMarkedEls(body);
+  }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');

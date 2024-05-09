@@ -33,7 +33,16 @@
 
 .marquee .icon-area picture,
 .marquee .icon-area a {
-  display: contents;
+  display: inline-flex;
+}
+
+.marquee .icon-area a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.marquee .icon-area a:hover {
+  text-decoration: none;
 }
 
 .marquee.mobile-light a:not(.con-button) {
@@ -102,11 +111,15 @@
 }
 
 .marquee .icon-area {
-  margin-bottom: var(--spacing-s);
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+  font-size: var(--type-body-m-size);
+  font-weight: 700;
 }
 
 .marquee .icon-area img {
-  height: 48px;
+  height: var(--icon-size-l);
   width: auto;
   display: block;
 }
@@ -184,8 +197,12 @@
   margin: 0 auto;
 }
 
+.marquee.large .icon-area {
+  font-size: var(--type-body-xl-size);
+}
+
 .marquee.large .icon-area img {
-  height: 64px;
+  height: var(--icon-size-xl);
 }
 
 .marquee.large .foreground {
@@ -228,7 +245,9 @@
 .marquee.center .foreground,
 .marquee.center .action-area,
 .marquee.centered .foreground,
-.marquee.centered .action-area {
+.marquee.centered .action-area,
+.marquee.center .icon-area,
+.marquee.centered .icon-area {
   justify-content: center;
 }
 
@@ -283,24 +302,22 @@
 
 .marquee.split .icon-area img {
   height: auto;
-  max-height: 56px;
+  max-height: var(--icon-size-l);
   max-width: 275px;
   object-fit: contain;
   object-position: left bottom;
 }
 
-.marquee .icon-area.icon-area-multiple {
-  display: flex;
+.marquee.small .icon-area,
+.marquee .icon-area[icon-count] {
+  font-size: var(--type-body-s-size);
 }
 
-.marquee .icon-area.icon-area-multiple img {
-  height: 40px;
-  max-height: 40px;
+.marquee.small .icon-area img,
+.marquee .icon-area[icon-count] img {
+  height: var(--icon-size-m);
+  max-height: var(--icon-size-m);
   max-width: 114px;
-}
-
-.marquee .icon-area.icon-area-multiple > :not(:first-child) img {
-  margin-left: var(--spacing-xxs);
 }
 
 .marquee.large .text .action-area {
@@ -737,6 +754,7 @@
   }
 }
 
+/* stylelint-disable no-descending-specificity */
 .marquee.static-links a:not(.con-button),
 .marquee.static-links a:not(.con-button):hover,
 .static-links .marquee a:not(.con-button),

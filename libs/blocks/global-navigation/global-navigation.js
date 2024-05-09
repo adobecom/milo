@@ -33,6 +33,7 @@ import {
   toFragment,
   trigger,
   yieldToMain,
+  addMepHighlight,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -550,9 +551,9 @@ class Gnav {
           case 'profile|click|sign-in':
             return `Sign In|gnav|${experienceName}|unav`;
           case 'profile|render|component':
-            return `Account|gnav|${experienceName}`;
+            return `Account|gnav|${experienceName}|unav`;
           case 'profile|click|account':
-            return `View Account|gnav|${experienceName}`;
+            return `View Account|gnav|${experienceName}|unav`;
           case 'profile|click|sign-out':
             return `Sign Out|gnav|${experienceName}|unav`;
           case 'app-switcher|render|component':
@@ -908,16 +909,16 @@ class Gnav {
         observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
 
         delayDropdownDecoration({ template: triggerTemplate });
-        return triggerTemplate;
+        return addMepHighlight(triggerTemplate, item);
       }
       case 'primaryCta':
       case 'secondaryCta':
         // Remove its 'em' or 'strong' wrapper
         item.parentElement.replaceWith(item);
 
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
-          </div>`;
+          </div>`, item);
       case 'link': {
         const linkElem = item.querySelector('a');
         linkElem.className = 'feds-navLink';
@@ -934,16 +935,17 @@ class Gnav {
           <div class="feds-navItem${activeModifier}">
             ${linkElem}
           </div>`;
-        return linkTemplate;
+        return addMepHighlight(linkTemplate, item);
       }
       case 'text':
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item.textContent}
-          </div>`;
+          </div>`, item);
       default:
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        /* c8 ignore next 3 */
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item}
-          </div>`;
+          </div>`, item);
     }
   };
 
