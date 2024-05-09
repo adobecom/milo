@@ -788,7 +788,7 @@ export async function decorateFooterPromo(doc = document) {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const { locale, imsClientId, imsScope, env, base } = getConfig();
+    const { locale, imsClientId, imsScope, env, base, apiParams, accessTokenExpired, reauthAccessToken, accessToken } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
       return;
@@ -810,6 +810,10 @@ export async function loadIms() {
         clearTimeout(timeout);
       },
       onError: reject,
+      api_parameters: apiParams,
+      onAccessTokenHasExpired: accessTokenExpired,
+      onReauthAccessToken: reauthAccessToken,
+      onAccessToken: accessToken,
     };
     const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
       ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
