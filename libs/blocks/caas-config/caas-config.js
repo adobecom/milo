@@ -100,6 +100,7 @@ const defaultOptions = {
     true: 'Draft',
   },
   endpoints: {
+    '14257-chimera-cmiqueo.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection': '14257-chimera-cmiqueo.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     'www.adobe.com/chimera-api/collection': 'www.adobe.com/chimera-api/collection',
     'business.adobe.com/chimera-api/collection': 'business.adobe.com/chimera-api/collection',
     'www.stage.adobe.com/chimera-api/collection': 'www.stage.adobe.com/chimera-api/collection',
