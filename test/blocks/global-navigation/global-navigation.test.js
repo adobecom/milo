@@ -71,12 +71,15 @@ describe('global navigation', () => {
     });
 
     it("should log when there's issues within onReady", async () => {
+      const ogIms = window.adobeIMS;
       const gnav = await createFullGlobalNavigation({});
       sinon.stub(gnav, 'decorateProfile').callsFake(() => {
         throw new Error('error');
       });
+      window.adobeIMS = { isSignedInUser: () => true };
       await gnav.imsReady();
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('issues within onReady'))).to.exist;
+      window.adobeIMS = ogIms;
     });
 
     it('should log when IMS signIn method is not available', async () => {
@@ -1273,6 +1276,7 @@ describe('global navigation', () => {
       it('should reload unav on viewport change', async () => {
         await createFullGlobalNavigation({ unavContent: 'on' });
         await setViewport(viewports.mobile);
+        isDesktop.dispatchEvent(new Event('change'));
         await clock.runAllAsync();
         expect(window.UniversalNav.reload.getCall(0)).to.exist;
       });
