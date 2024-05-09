@@ -354,6 +354,7 @@ div.locui-url-heading-action-group {
 
 button.loc-action,
 button.locui-urls-heading-action {
+  position: relative;
   outline: transparent solid 0;
   transition: outline 300ms;
   border: none;
@@ -678,6 +679,25 @@ button.locui-url-action-view {
 
 .un-synced-label.show {
   display: inline-block;
+}
+
+.locui-modal-errors ol li span {
+  display: flex;
+  max-width: 900px;
+  gap: 15px;
+  align-items: center;
+}
+
+.locui-modal-errors ol li span .locui-urls-heading-action {
+  width: 130px;
+}
+
+.locui-urls-heading-action.locui-action-loading {
+  color: #FF1593;
+}
+
+.locui-urls-heading-action.locui-action-loading::after {
+  top: 69%;
 }
 
 @media screen and (min-width: 1200px) {
