@@ -789,7 +789,8 @@ let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
     const {
- locale, imsClientId, imsScope, env, base, apiParams, accessTokenExpired, reauthAccessToken, accessToken } = getConfig();
+ locale, imsClientId, imsScope, env, base, apiParams, accessTokenExpired, reauthAccessToken, accessToken 
+} = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
       return;
