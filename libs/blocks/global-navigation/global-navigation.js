@@ -8,38 +8,38 @@ import {
   loadStyle,
 } from '../../utils/utils.js';
 import {
-  toFragment,
-  getFedsPlaceholderConfig,
-  getAnalyticsValue,
-  decorateCta,
-  getExperienceName,
-  loadDecorateMenu,
-  loadBlock,
-  loadStyles,
-  trigger,
-  setActiveDropdown,
   closeAllDropdowns,
-  loadBaseStyles,
-  yieldToMain,
+  decorateCta,
+  fetchAndProcessPlainHtml,
+  getActiveLink,
+  getAnalyticsValue,
+  getExperienceName,
+  getFedsPlaceholderConfig,
+  hasActiveLink,
+  icons,
   isDesktop,
   isTangentToViewport,
-  setCurtainState,
-  hasActiveLink,
-  setActiveLink,
-  getActiveLink,
-  selectors,
-  logErrorFor,
   lanaLog,
-  fetchAndProcessPlainHtml,
+  loadBaseStyles,
+  loadBlock,
+  loadDecorateMenu,
+  loadStyles,
+  logErrorFor,
+  selectors,
+  setActiveDropdown,
+  setActiveLink,
+  setCurtainState,
+  setUserProfile,
+  toFragment,
+  trigger,
+  yieldToMain,
+  addMepHighlight,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
-const CONFIG = {
-  icons: {
-    company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1"><defs><style>.cls-1 {fill: #eb1000;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
-    search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
-  },
+export const CONFIG = {
+  icons,
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
@@ -63,6 +63,13 @@ const CONFIG = {
             config: {
               enableLocalSection: true,
               miniAppContext: {
+                onMessage: (name, payload) => {
+                  if (name === 'System' && payload.subType === 'AppInitiated') {
+                    window.adobeProfile?.getUserProfile()
+                      .then((data) => { setUserProfile(data); })
+                      .catch(() => { setUserProfile({}); });
+                  }
+                },
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -425,6 +432,8 @@ class Gnav {
   };
 
   imsReady = async () => {
+    if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
+
     const tasks = [this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile];
 
     try {
@@ -542,9 +551,9 @@ class Gnav {
           case 'profile|click|sign-in':
             return `Sign In|gnav|${experienceName}|unav`;
           case 'profile|render|component':
-            return `Account|gnav|${experienceName}`;
+            return `Account|gnav|${experienceName}|unav`;
           case 'profile|click|account':
-            return `View Account|gnav|${experienceName}`;
+            return `View Account|gnav|${experienceName}|unav`;
           case 'profile|click|sign-out':
             return `Sign Out|gnav|${experienceName}|unav`;
           case 'app-switcher|render|component':
@@ -589,6 +598,9 @@ class Gnav {
       locale,
       imsClientId: window.adobeid?.client_id,
       theme: 'light',
+      onReady: () => {
+        this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
+      },
       analyticsContext: {
         consumer: {
           name: 'adobecom',
@@ -608,6 +620,27 @@ class Gnav {
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
     });
+  };
+
+  decorateAppPrompt = async ({ getAnchorState } = {}) => {
+    const state = getMetadata('app-prompt')?.toLowerCase();
+    const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+    const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    if (state === 'off'
+      || !window.adobeIMS?.isSignedInUser()
+      || !isDesktop.matches
+      || !entName?.length
+      || !promptPath?.length) return;
+
+    const { base } = getConfig();
+    const [
+      webappPrompt,
+    ] = await Promise.all([
+      import('../../features/webapp-prompt/webapp-prompt.js'),
+      loadStyle(`${base}/features/webapp-prompt/webapp-prompt.css`),
+    ]);
+
+    webappPrompt.default({ promptPath, entName, parent: this.blocks.universalNav, getAnchorState });
   };
 
   loadSearch = () => {
@@ -876,16 +909,16 @@ class Gnav {
         observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
 
         delayDropdownDecoration({ template: triggerTemplate });
-        return triggerTemplate;
+        return addMepHighlight(triggerTemplate, item);
       }
       case 'primaryCta':
       case 'secondaryCta':
         // Remove its 'em' or 'strong' wrapper
         item.parentElement.replaceWith(item);
 
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
-          </div>`;
+          </div>`, item);
       case 'link': {
         const linkElem = item.querySelector('a');
         linkElem.className = 'feds-navLink';
@@ -902,16 +935,17 @@ class Gnav {
           <div class="feds-navItem${activeModifier}">
             ${linkElem}
           </div>`;
-        return linkTemplate;
+        return addMepHighlight(linkTemplate, item);
       }
       case 'text':
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item.textContent}
-          </div>`;
+          </div>`, item);
       default:
-        return toFragment`<div class="feds-navItem feds-navItem--centered">
+        /* c8 ignore next 3 */
+        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item}
-          </div>`;
+          </div>`, item);
     }
   };
 

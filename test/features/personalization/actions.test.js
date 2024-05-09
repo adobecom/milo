@@ -235,13 +235,33 @@ describe('custom actions', async () => {
     setFetchResponse(manifestJson);
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    expect(getConfig().mep.custom).to.deep.equal({
-      'my-block': [{
-        action: 'replace',
-        manifestId: 'manifest.json',
-        target: '/fragments/fragmentreplaced',
+    console.log(getConfig().mep.inBlock);
+    expect(getConfig().mep.inBlock).to.deep.equal({
+      'my-block': {
+        commands: [{
+          action: 'replace',
+          target: '/fragments/fragmentreplaced',
+          manifestId: 'manifest.json',
+        },
+        {
+          action: 'replace',
+          target: '/fragments/new-large-menu',
+          manifestId: 'manifest.json',
+          selector: '.large-menu',
+        }],
+        fragments: {
+          '/fragments/sub-menu': {
+            action: 'replace',
+            target: '/fragments/even-more-new-sub-menu',
+            manifestId: 'manifest.json',
+          },
+          '/fragments/new-sub-menu': {
+            action: 'replace',
+            target: '/fragments/even-more-new-sub-menu',
+            manifestId: 'manifest.json',
+          },
+        },
       },
-      ],
     });
   });
 });
