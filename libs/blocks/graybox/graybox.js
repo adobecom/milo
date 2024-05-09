@@ -218,9 +218,9 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
 
 export default function init(grayboxEl) {
   const url = new URL(window.location.href);
-  // if (!url.pathname.includes('-graybox') || url.searchParams.get('graybox') !== 'on') {
-  //   return;
-  // }
+  if (!url.pathname.includes('-graybox') || url.searchParams.get('graybox') !== 'on') {
+    return;
+  }
 
   if (url.searchParams.get('graybox') === 'off') {
     return;
