@@ -107,3 +107,11 @@ describe('test the invalid article header', () => {
     expect(date.classList.contains('article-date-invalid')).to.be.false;
   });
 });
+
+describe('article header', () => {
+  it('allows a blank category', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body-without-category.html' });
+    await init(document.body.querySelector('.article-header'));
+    expect(document.body.querySelector('.article-category a')).to.be.null;
+  });
+});

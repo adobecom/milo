@@ -4,7 +4,9 @@ let fetched = false;
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
   if (!path) return null;
-  const resp = await fetch(path);
+  const { customFetch } = await import('../../utils/helpers.js');
+  const resp = await customFetch({ resource: path, withCacheRules: true })
+    .catch(() => ({}));
   /* c8 ignore next */
   if (!resp.ok) return null;
   const miloIcons = {};

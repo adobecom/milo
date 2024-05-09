@@ -1,0 +1,38 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replaceContent",
+      "selector": ".how-to",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "firefox": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replaceContent",
+      "selector": "#features-of-milo-experimentation-platform",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2",
+"firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replaceContent",
+      "selector": ".z-pattern.small row3 col2",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/milo-replace-r3c2",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

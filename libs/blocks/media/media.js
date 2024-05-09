@@ -87,6 +87,15 @@ export default function init(el) {
         link.className = 'body-xxs';
       });
     }
+    const lastActionArea = el.querySelector('.action-area:last-of-type');
+    if (lastActionArea) {
+      const div = createTag('div', { class: 'cta-container' });
+      lastActionArea.insertAdjacentElement('afterend', div);
+      if (lastActionArea.previousElementSibling.className.includes('icon-stack-area')) {
+        div.append(lastActionArea.previousElementSibling);
+      }
+      div.append(lastActionArea);
+    }
     container.append(row);
   });
 
