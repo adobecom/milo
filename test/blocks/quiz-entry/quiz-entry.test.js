@@ -80,7 +80,7 @@ describe('Quiz Entry Component', () => {
     const result = await getSuggestions('test-endpoint', 'test-client-id', 'query', 'test-scope');
     expect(fetchStub.calledOnce).to.be.true;
     expect(result).to.deep.equal({ suggested_completions: ['suggestion1', 'suggestion2'] });
-    const expectedUrl = `https://adobesearch.adobe.io/test-endpoint/completions?q[text]=query&q[locale]=en_us&scope=test-scope`;
+    const expectedUrl = 'https://adobesearch.adobe.io/test-endpoint/completions?q[text]=query&q[locale]=en_us&scope=test-scope';
     expect(fetchStub.calledWith(expectedUrl, {
       method: 'GET',
       headers: { 'x-api-key': 'test-client-id' },
