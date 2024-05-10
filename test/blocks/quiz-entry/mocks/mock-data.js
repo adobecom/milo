@@ -395,7 +395,7 @@ const resultsMock = {
           text: 'Track signatures and progress',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-pdf/6-Ac-TrackSignatures.png',
-        }
+        },
       ],
     },
     'q-design': {
