@@ -15,7 +15,7 @@ jobs:
   merge-to-main:
     runs-on: ubuntu-latest
     environment: milo_pr_merge
-    if: github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage'
+    if: (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage') || github.event_name != 'pull_request'
 
     steps:
       - uses: actions/create-github-app-token@v1.10.0
