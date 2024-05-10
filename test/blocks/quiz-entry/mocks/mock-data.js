@@ -255,7 +255,7 @@ const resultsMock = {
           text: 'Take the time to control every detail',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/2-CustomDesigns.png',
-        }
+        },
       ],
     },
     'q-photo': {
