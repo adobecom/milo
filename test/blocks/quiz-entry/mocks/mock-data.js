@@ -234,7 +234,7 @@ const resultsMock = {
           text: '',
           background: 'https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q4%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920',
           footerFragment: 'https://milo.adobe.com/fragments/quiz/sample-uar-fragments/footer/footer2',
-        }
+        },
       ],
     },
     'q-rather': {
