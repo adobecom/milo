@@ -226,7 +226,6 @@ const main = async (params) => {
   }
   try {
     const stageToMainPR = await getStageToMainPR();
-
     console.log('has Stage to Main PR:', !!stageToMainPR);
     if (stageToMainPR) body = stageToMainPR.body;
     if (stageToMainPR?.labels.some((label) => label.includes(LABELS.SOTPrefix)))
@@ -234,10 +233,7 @@ const main = async (params) => {
     const prs = await getPRs();
     await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });
     await merge({ prs: prs.filter(({ labels }) => !isHighPrio(labels)) });
-    if (!stageToMainPR) {
-      await openStageToMainPR();
-    }
-
+    if (!stageToMainPR) await openStageToMainPR();
     if (body !== stageToMainPR?.body) {
       console.log("Updating PR's body...");
       await github.rest.pulls.update({
@@ -247,7 +243,6 @@ const main = async (params) => {
         body: body,
       });
     }
-
     console.log('Process successfully executed.');
   } catch (error) {
     console.error(error);
