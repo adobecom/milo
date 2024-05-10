@@ -5,13 +5,12 @@ import { GetQuizOption } from './quizoption.js';
 import { quizPopover, getSuggestions } from './quizPopover.js';
 
 const App = ({
-  quizPath = null,
-  maxQuestions = null,
-  // analyticsQuiz = null,
-  analyticsType = null,
-  questionData = {},
-  stringsData = {},
-  debug = false,
+  quizPath,
+  maxQuestions,
+  analyticsType,
+  questionData = { questions: { data: [] } },
+  stringsData = { questions: { data: [] } },
+  debug,
 }) => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [quizState, setQuizState] = useState({ userFlow: [], userSelection: [] });
@@ -53,12 +52,14 @@ const App = ({
   useEffect(() => {
     (async () => {
       const qMap = {};
-      questionData.questions.data.forEach((question) => {
+      const questionDataArray = questionData?.questions?.data || [];
+      questionDataArray.forEach((question) => {
         qMap[question.questions] = question;
       });
 
       const strMap = {};
-      stringsData.questions.data.forEach((question) => {
+      const stringsDataArray = stringsData?.questions?.data || [];
+      stringsDataArray.forEach((question) => {
         strMap[question.q] = question;
       });
 
@@ -72,11 +73,13 @@ const App = ({
         strings: stringsData,
       };
 
-      setQuizState({
-        userFlow: [questionData.questions.data[0].questions],
-        userSelection: quizState.userSelection,
-      });
-
+      if (questionDataArray.length > 0) {
+        setQuizState({
+          userFlow: [questionDataArray[0].questions],
+          userSelection: quizState.userSelection,
+        });
+        setSelectedQuestion(qLists.questions[questionDataArray[0].questions]);
+      }
       setQuizData(qData);
       setQuizLists(qLists);
       setDataLoaded(true);
@@ -333,20 +336,45 @@ const App = ({
       </div>
   </div>`;
 };
-
-export default async function init(el, debug = null) {
-  const quizEntry = await getQuizEntryData(el);
-  const params = new URL(document.location).searchParams;
-  // eslint-disable-next-line no-param-reassign
-  debug ??= params.get('debug');
+export default async function init(
+  el,
+  config = {
+    quizPath: null,
+    maxQuestions: null,
+    analyticsType: null,
+    questionData: null,
+    stringsData: null,
+    debug: false,
+  },
+) {
+  let quizEntry;
+  if (config.questionData && config.stringsData) {
+    quizEntry = config;
+  } else {
+    try {
+      quizEntry = await getQuizEntryData(el);
+    } catch (error) {
+      console.error("Failed to load quiz data:", error);
+      quizEntry = {
+        quizPath: '',
+        maxQuestions: 0,
+        analyticsType: '',
+        questionData: { questions: { data: [] } },
+        stringsData: { questions: { data: [] } },
+        debug: false
+      };
+      // Optionally render an error message or a retry button
+    }
+  }
+  
   el.replaceChildren();
   render(html`<${App} 
-    quizPath="${quizEntry.quizPath}"
-    maxQuestions=${quizEntry.maxQuestions}
-    analyticsQuiz="${quizEntry.analyticsQuiz}"
-    analyticsType="${quizEntry.analyticsType}"
-    questionData="${quizEntry.questionData}"
-    stringsData="${quizEntry.stringsData}"
-    debug="${debug === 'quiz-entry'}"
+    quizPath=${quizEntry.quizPath || ''}
+    maxQuestions=${quizEntry.maxQuestions || 0}
+    analyticsType=${quizEntry.analyticsType || ''}
+    questionData=${quizEntry.questionData}
+    stringsData=${quizEntry.stringsData}
+    debug=${quizEntry.debug || false}
   />`, el);
 }
+
