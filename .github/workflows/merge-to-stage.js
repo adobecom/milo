@@ -199,6 +199,13 @@ const openStageToMainPR = async () => {
       head: STAGE,
       base: PROD,
       body,
+      team_reviewers: [
+        'adobecom/bacom-sot',
+        'adobecom/creative-cloud-sot',
+        'adobecom/document-cloud-sot',
+        'adobecom/miq-sot',
+        'adobecom/homepage-sot',
+      ],
     });
     await slackNotification(SLACK.openedSyncPr({ html_url, number }));
   } catch (error) {
@@ -226,13 +233,28 @@ const main = async (params) => {
   }
   try {
     const stageToMainPR = await getStageToMainPR();
+
     console.log('has Stage to Main PR:', !!stageToMainPR);
+    if (stageToMainPR) body = stageToMainPR.body;
     if (stageToMainPR?.labels.some((label) => label.includes(LABELS.SOTPrefix)))
       return console.log('PR exists & testing started. Stopping execution.');
     const prs = await getPRs();
     await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });
     await merge({ prs: prs.filter(({ labels }) => !isHighPrio(labels)) });
-    if (!stageToMainPR) await openStageToMainPR();
+    if (!stageToMainPR) {
+      await openStageToMainPR();
+    }
+
+    if (body !== stageToMainPR?.body) {
+      console.log("Updating PR's body...");
+      await github.rest.pulls.update({
+        owner,
+        repo,
+        pull_number: stageToMainPR.number,
+        body: body,
+      });
+    }
+
     console.log('Process successfully executed.');
   } catch (error) {
     console.error(error);
