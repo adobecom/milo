@@ -39,7 +39,7 @@ const resultsMock = {
           text: 'Edit, mix, and add sound effects',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-video/5-AU-SoundEffects.png',
-        }
+        },
       ],
     },
     'q-3d': {
