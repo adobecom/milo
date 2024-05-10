@@ -346,7 +346,7 @@ const resultsMock = {
           text: 'Model, texture, and render 3D assets and scenes',
           icon: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/6-3D-AR%20ICON.svg',
           image: '',
-        }
+        },
       ],
     },
     'q-pdf': {
