@@ -7,10 +7,10 @@ import { quizPopover, getSuggestions } from './quizPopover.js';
 const App = ({
   quizPath,
   maxQuestions,
-  analyticsType,
+  analyticsType = null,
   questionData = { questions: { data: [] } },
   stringsData = { questions: { data: [] } },
-  debug,
+  debug = false,
 }) => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [quizState, setQuizState] = useState({ userFlow: [], userSelection: [] });
