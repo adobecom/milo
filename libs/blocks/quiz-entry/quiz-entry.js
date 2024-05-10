@@ -368,8 +368,8 @@ export default async function init(
   }
 
   const params = new URL(document.location).searchParams;
-  // eslint-disable-next-line no-param-reassign
-  debug ??= params.get('debug');
+  const isDebug = params.get('debug') === 'quiz-entry';
+  quizEntry.debug = isDebug;
 
   el.replaceChildren();
   render(html`<${App} 
