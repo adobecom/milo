@@ -355,7 +355,7 @@ export default async function init(
       quizEntry = await getQuizEntryData(el);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error("Failed to load quiz data:", error);
+      console.error('Failed to load quiz data:', error);
       quizEntry = {
         quizPath: '',
         maxQuestions: 0,
