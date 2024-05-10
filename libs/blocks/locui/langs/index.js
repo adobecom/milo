@@ -17,12 +17,10 @@ export function showUrls(item, prefix) {
 }
 
 export async function rollout(item, idx) {
-  console.log('start rollout');
   const reroll = item.status === 'completed';
   const retry = item.status === 'error';
 
   // stop polling until request is done
-  console.log('pause polling');
   polling.value = false;
 
   // Update the UI immediate instead of waiting on polling
@@ -34,7 +32,6 @@ export async function rollout(item, idx) {
   else await rolloutLang(item.code, reroll);
 
   // start status polling again when request finishes
-  console.log('restart polling');
   polling.value = true;
 }
 
