@@ -3,10 +3,7 @@ import { createTag, getConfig } from '../../utils/utils.js';
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
-const [NAV, ALIGN] = ['navigation', 'grid-align'];
-const defaultItemWidth = 106;
-const defaultGridGap = 32;
-
+const defaultItemWidth = (cols) => (cols === 3 ? 160 : 147);
 const PREVBUTTON = `<button class="nav-button previous-button"><img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg"></button>`;
 const NEXTBUTTON = `<button class="nav-button next-button"><img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg"></button>`;
 
@@ -24,44 +21,36 @@ const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
 
 function setBlockProps(el, columns) {
   const attrs = getBlockProps(el);
-  const itemWidth = attrs['item width'] ?? defaultItemWidth;
+  const itemWidth = attrs['item width'] ?? defaultItemWidth(columns);
   const overrides = attrs.style
     ? attrs.style
       .split(', ')
       .map((style) => style.replaceAll(' ', '-'))
       .join(' ')
     : '';
-  const gridAlign = [...el.classList].filter((cls) => cls.toLowerCase().includes(ALIGN))
-    ?? 'grid-align-start';
   el.style.setProperty('--action-scroller-columns', columns);
   el.style.setProperty('--action-scroller-item-width', itemWidth);
-  return `scroller ${gridAlign} ${overrides}`;
+  return `scroller ${columns <= 5 ? 'justify-center' : ''} ${overrides}`;
 }
 
 function handleScroll(el, btn) {
-  const itemWidth = el.parentElement?.style?.getPropertyValue('--action-scroller-item-width')
-    ?? defaultItemWidth;
+  const itemWidth = el.parentElement?.style?.getPropertyValue('--action-scroller-item-width');
   const gapStyle = window
     .getComputedStyle(el, null)
     .getPropertyValue('column-gap');
-  const gridGap = gapStyle
-    ? parseInt(gapStyle.replace('px', ''), 10)
-    : defaultGridGap;
-  const scrollDistance = parseInt(itemWidth, 10) + gridGap;
+  const scrollDistance = parseInt(itemWidth, 10) + parseInt(gapStyle.replace('px', ''), 10);
   el.scrollLeft = btn[1].includes('next-button')
     ? el.scrollLeft + scrollDistance
     : el.scrollLeft - scrollDistance;
 }
 
-function handleBtnState(
-  { scrollLeft, scrollWidth, clientWidth },
-  [prev, next],
-) {
-  prev.setAttribute('hide-btn', scrollLeft === 0);
-  next.setAttribute(
-    'hide-btn',
-    Math.ceil(scrollLeft) === Math.ceil(scrollWidth - clientWidth),
-  );
+function handleBtnState(el, [prev, next]) {
+  const { scrollLeft, scrollWidth, clientWidth } = el;
+  const hidePrev = scrollLeft === 0;
+  const hideNext = Math.ceil(scrollLeft) === Math.ceil(scrollWidth - clientWidth);
+  prev.setAttribute('hide-btn', hidePrev);
+  next.setAttribute('hide-btn', hideNext);
+  el.setAttribute('hide-mask', hidePrev && hideNext);
 }
 
 function handleNavigation(el) {
@@ -76,7 +65,7 @@ function handleNavigation(el) {
 }
 
 export default function init(el) {
-  const hasNav = el.classList.contains(NAV);
+  const hasNav = el.classList.contains('navigation');
   const actions = el.parentElement.querySelectorAll('.action-item');
   const style = setBlockProps(el, actions.length);
   const items = createTag('div', { class: style }, null);
