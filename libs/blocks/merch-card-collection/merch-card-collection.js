@@ -56,7 +56,7 @@ async function getCardsRootOdin(config, json) {
     prices,
     title,
   }) => (`
-   <merch-card variant="catalog" name="${name}" filters="all" data-aue-label="${title}" data-aue-resource="urn:aemconnection:${_path}/jcr:content/data/master">
+   <merch-card variant="catalog" name="${name}" filters="all" data-aue-label="${title}" data-aue-resource="urn:aemconnection:${_path}/jcr:content/data/master" data-aue-type="container">
       <merch-icon slot="icons" src="${icon}"></merch-icon>
       <h3 slot="heading-xs">${title}</h3>
       <h2 slot="heading-m">${prices.html ?? ''}</h2>
