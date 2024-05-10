@@ -1,0 +1,36 @@
+name: Merge to main
+
+on:
+  pull_request:
+    types: [labeled]
+  schedule:
+    - cron: '0 9 * * *' # Run every day at 9am UTC
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
+  REQUIRED_APPROVALS: ${{ secrets.REQUIRED_APPROVALS }}
+
+jobs:
+  merge-to-main:
+    runs-on: ubuntu-latest
+    environment: milo_pr_merge
+    if: github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage'
+
+    steps:
+      - uses: actions/create-github-app-token@v1.10.0
+        id: milo-pr-merge-token
+        with:
+          app-id: ${{ secrets.MILO_PR_MERGE_APP_ID }}
+          private-key: ${{ secrets.MILO_PR_MERGE_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.4
+
+      - name: Merge to main
+        uses: actions/github-script@v7.0.1
+        with:
+          github-token: ${{ steps.milo-pr-merge-token.outputs.token }}
+          script: |
+            const main = require('./.github/workflows/merge-to-main.js')
+            main({ github, context })
