@@ -86,7 +86,8 @@ export async function getProjectStatus() {
       allowSendForLoc.value = false;
     }
 
-    handleProjectStatusDetail(json);
+    // addition check for polling state before updating lang cards
+    if (polling.value) handleProjectStatusDetail(json);
     return json;
   } catch (e) {
     return null;
