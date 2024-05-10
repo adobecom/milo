@@ -53,7 +53,7 @@
   border-radius: 40px;
   color: var(--text-color);
   cursor: pointer;
-  font-size: 16px;
+  font-size: var( --type-body-s-size);
   height: 56px;
   line-height: var(--type-heading-m-lh);
   padding: 0 var(--spacing-xxl) 0 var(--spacing-s);
@@ -62,6 +62,7 @@
 
 .quiz-input::placeholder {
   color: var(--text-color);
+  font-size: var( --type-body-s-size) !important;
   font-style: italic;
 }
 
@@ -137,7 +138,7 @@
     border-radius: 8px;
     color: #FFF;
     display: flex;
-    font-size: var(--type-detail-l-size);
+    font-size: 17px;
     font-weight: 900;
     height: 40px;
     justify-content: center;
@@ -411,10 +412,11 @@
   }
 
   .carousel-slides {
-    justify-content: center;
+    justify-content: left;
   }
 
   .carousel-slides.align-right {
+    justify-content: right;
     margin-left: 0;
   }
 
