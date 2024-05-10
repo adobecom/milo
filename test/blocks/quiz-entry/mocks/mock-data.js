@@ -423,7 +423,7 @@ const resultsMock = {
           text: 'Create graphics and designs that work at any size',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-design/3-Ai-CreateGraphics.png',
-        }
+        },
       ],
     },
     'q-illustration': {
