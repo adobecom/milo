@@ -297,7 +297,7 @@ const resultsMock = {
           text: 'Blend multiple shots into something new',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-photo/5-PS-BlendImages.png',
-        }
+        },
       ],
     },
     'q-fallback': {
