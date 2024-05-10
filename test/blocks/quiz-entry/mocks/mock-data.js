@@ -486,7 +486,7 @@ const resultsMock = {
           text: 'Neither apply',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q4/1-Individual.png',
-        }
+        },
       ],
     },
     ':version': 3,
