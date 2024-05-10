@@ -367,6 +367,10 @@ export default async function init(
     }
   }
 
+  const params = new URL(document.location).searchParams;
+  // eslint-disable-next-line no-param-reassign
+  debug ??= params.get('debug');
+
   el.replaceChildren();
   render(html`<${App} 
     quizPath=${quizEntry.quizPath || ''}
