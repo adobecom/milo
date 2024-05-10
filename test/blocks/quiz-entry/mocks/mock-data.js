@@ -137,7 +137,7 @@ const resultsMock = {
           text: 'Model, texture, and render 3D assets and scenes',
           icon: '',
           image: 'https://main--milo--adobecom.hlx.page/drafts/colloyd/quiz-entry/images/3dar.png',
-        }
+        },
       ],
     },
     questions: {
