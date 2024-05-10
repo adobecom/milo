@@ -199,13 +199,6 @@ const openStageToMainPR = async () => {
       head: STAGE,
       base: PROD,
       body,
-      team_reviewers: [
-        'adobecom/bacom-sot',
-        'adobecom/creative-cloud-sot',
-        'adobecom/document-cloud-sot',
-        'adobecom/miq-sot',
-        'adobecom/homepage-sot',
-      ],
     });
     await slackNotification(SLACK.openedSyncPr({ html_url, number }));
   } catch (error) {
