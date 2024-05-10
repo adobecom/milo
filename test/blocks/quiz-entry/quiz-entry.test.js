@@ -74,7 +74,7 @@ describe('Quiz Entry Component', () => {
   it('should fetch suggestions and return data on successful response', async () => {
     const mockApiResponse = {
       ok: true,
-      json: () => Promise.resolve({ suggested_completions: ['suggestion1', 'suggestion2'] })
+      json: () => Promise.resolve({ suggested_completions: ['suggestion1', 'suggestion2'] }),
     };
     fetchStub.resolves(mockApiResponse);
     const result = await getSuggestions('test-endpoint', 'test-client-id', 'query', 'test-scope');
