@@ -354,6 +354,7 @@ export default async function init(
     try {
       quizEntry = await getQuizEntryData(el);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Failed to load quiz data:", error);
       quizEntry = {
         quizPath: '',
@@ -361,12 +362,11 @@ export default async function init(
         analyticsType: '',
         questionData: { questions: { data: [] } },
         stringsData: { questions: { data: [] } },
-        debug: false
+        debug: false,
       };
-      // Optionally render an error message or a retry button
     }
   }
-  
+
   el.replaceChildren();
   render(html`<${App} 
     quizPath=${quizEntry.quizPath || ''}
@@ -377,4 +377,3 @@ export default async function init(
     debug=${quizEntry.debug || false}
   />`, el);
 }
-
