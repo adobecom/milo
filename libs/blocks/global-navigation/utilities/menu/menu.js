@@ -12,6 +12,7 @@ import {
   toFragment,
   trigger,
   yieldToMain,
+  addMepHighlight,
 } from '../utilities.js';
 
 const decorateHeadline = (elem, index) => {
@@ -321,6 +322,8 @@ const decorateMenu = (config) => logErrorFor(async () => {
           ${menuContent}
         </div>
       </div>`;
+    addMepHighlight(menuTemplate, content);
+
     decorateCrossCloudMenu(menuTemplate);
 
     await decorateColumns({ content: menuContent });

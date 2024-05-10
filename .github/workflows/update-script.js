@@ -1,17 +1,21 @@
 const https = require('https');
 const { execSync } = require('child_process');
 const fs = require('fs');
+const { getLocalConfigs } = require('./helpers.js');
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/update-script.js
 const localExecution = process.env.LOCAL_RUN || false;
 const localRunConfigs = {
   branch: process.env.LOCAL_RUN_BRANCH || 'update-imslib',
-  title: process.env.LOCAL_RUN_TITLTE || '[AUTOMATED-PR] Update imslib.min.js dependency',
-  path: process.env.LOCAL_RUN_SCRIPT || 'https://auth.services.adobe.com/imslib/imslib.min.js',
+  title:
+    process.env.LOCAL_RUN_TITLTE ||
+    '[AUTOMATED-PR] Update imslib.min.js dependency',
+  path:
+    process.env.LOCAL_RUN_SCRIPT ||
+    'https://auth.services.adobe.com/imslib/imslib.min.js',
   scriptPath: process.env.LOCAL_RUN_SCRIPT_PATH || './libs/deps/imslib.min.js',
   origin: process.env.LOCAL_RUN_ORIGIN || 'origin',
 };
-
 
 const getPrDescription = ({ branch, scriptPath }) => `## Description
 Update ${scriptPath} to the latest version
@@ -126,12 +130,23 @@ const main = async ({
     const selfHostedScript =
       fs.existsSync(scriptPath) && fs.readFileSync(scriptPath, 'utf8');
 
-    console.log(`/libs/deps script build date: ${selfHostedScript.match(/^\/\/ Built (.*?) -/)[1]}`);
-    console.log(`/libs/deps script last modified date: ${selfHostedScript.match(/- Last Modified (.*?)\n/)[1]}`);
+    console.log(
+      `/libs/deps script build date: ${
+        selfHostedScript.match(/^\/\/ Built (.*?) -/)[1]
+      }`
+    );
+    console.log(
+      `/libs/deps script last modified date: ${
+        selfHostedScript.match(/- Last Modified (.*?)\n/)[1]
+      }`
+    );
     console.log(`External script last modified date: ${lastModified}`);
 
-    const scriptIsEqual = script === selfHostedScript.replace(/^\/\/ Built .*\n/, '');
-    console.log(`Validating if "${scriptPath}" has changed. Script is the same: ${scriptIsEqual}`);
+    const scriptIsEqual =
+      script === selfHostedScript.replace(/^\/\/ Built .*\n/, '');
+    console.log(
+      `Validating if "${scriptPath}" has changed. Script is the same: ${scriptIsEqual}`
+    );
 
     if (!scriptIsEqual || localExecution) {
       const { data: openPRs } = await github.rest.pulls.list({
@@ -141,7 +156,10 @@ const main = async ({
       });
 
       const hasPR = openPRs.find((pr) => pr.head.ref === branch);
-      if (hasPR) return console.log(`PR already exists for branch ${branch}. Execution stopped.`);
+      if (hasPR)
+        return console.log(
+          `PR already exists for branch ${branch}. Execution stopped.`
+        );
 
       createAndPushBranch({ script, branch, scriptPath, origin, lastModified });
 
@@ -175,12 +193,15 @@ const main = async ({
       });
     }
   } catch (error) {
-    console.error(`An error occurred while running workflow for ${title}`, error);
+    console.error(
+      `An error occurred while running workflow for ${title}`,
+      error
+    );
   }
 };
 
 if (localExecution) {
-  const { github, context } = require('./localWorkflowConfigs.js')();
+  const { github, context } = getLocalConfigs();
   main({
     github,
     context,
