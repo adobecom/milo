@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - stage
 
 jobs:
   dispatch-dc:
@@ -16,6 +17,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: changes
         with:
+          base: ${{ github.ref }}
           filters: |
             src:
               - 'libs/**'    
@@ -29,5 +31,8 @@ jobs:
               owner: 'adobecom',
               repo: 'dc',
               workflow_id: 'test-milo.yml',
-              ref: 'main',
+              ref: 'stage',
+              inputs: {
+                miloBranch: '${{ github.ref_name }}'
+              },              
             }) 

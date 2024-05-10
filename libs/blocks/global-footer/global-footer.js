@@ -18,6 +18,8 @@ import {
   lanaLog,
   logErrorFor,
   toFragment,
+  getFederatedUrl,
+  federatePictureSources,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -89,6 +91,9 @@ class Footer {
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+
+    const path = getFederatedUrl(url);
+    federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
@@ -221,7 +226,20 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
+      // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
+      if (regionPickerElem.classList[0] !== 'modal') {
+        lanaLog({
+          message: `Modal block class missing from region picker pre loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
+          tags: 'errorType=warn,module=global-footer',
+        });
+      }
       await loadBlock(regionPickerElem); // load modal logic and styles
+      if (regionPickerElem.classList[0] !== 'modal') {
+        lanaLog({
+          message: `Modal block class missing from region picker post loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
+          tags: 'errorType=warn,module=global-footer',
+        });
+      }
       // 'decorateAutoBlock' logic replaces class name entirely, need to add it back
       regionPickerElem.classList.add(regionPickerClass);
       regionPickerElem.addEventListener('click', () => {

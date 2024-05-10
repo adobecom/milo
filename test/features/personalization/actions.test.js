@@ -219,3 +219,49 @@ describe('useBlockCode action', async () => {
     expect(myBlock.textContent?.trim()).to.equal('My New Block!');
   });
 });
+
+describe('custom actions', async () => {
+  it('should not add custom configuration if not needed', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestReplace.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(getConfig().mep.custom).to.be.undefined;
+  });
+
+  it('should add a custom action configuration', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestCustomAction.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    console.log(getConfig().mep.inBlock);
+    expect(getConfig().mep.inBlock).to.deep.equal({
+      'my-block': {
+        commands: [{
+          action: 'replace',
+          target: '/fragments/fragmentreplaced',
+          manifestId: 'manifest.json',
+        },
+        {
+          action: 'replace',
+          target: '/fragments/new-large-menu',
+          manifestId: 'manifest.json',
+          selector: '.large-menu',
+        }],
+        fragments: {
+          '/fragments/sub-menu': {
+            action: 'replace',
+            target: '/fragments/even-more-new-sub-menu',
+            manifestId: 'manifest.json',
+          },
+          '/fragments/new-sub-menu': {
+            action: 'replace',
+            target: '/fragments/even-more-new-sub-menu',
+            manifestId: 'manifest.json',
+          },
+        },
+      },
+    });
+  });
+});

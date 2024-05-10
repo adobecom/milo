@@ -222,6 +222,7 @@
   .feds-navLink[class *= '-gradient'] {
     display: flex;
     border-radius: 4px;
+    font-weight: 600;
   }
 
   .feds-menu-column--group .feds-navLink[class *= '-gradient'] {
@@ -280,5 +281,9 @@
 
   .feds-navLink--ai-gradient {
     background: linear-gradient(90deg, #bce3ff, #ffe9d3, #f8d5e4);
+  }
+
+  .feds-navLink--gray-gradient {
+    background: #eaeaea;
   }
 }
