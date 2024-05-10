@@ -81,7 +81,7 @@ const resultsMock = {
           text: 'Design 3D assets and materials',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q3/4-Designer@1x.png',
-        }
+        },
       ],
     },
     'q-category': {
