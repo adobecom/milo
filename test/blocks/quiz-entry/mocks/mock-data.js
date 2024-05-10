@@ -458,7 +458,7 @@ const resultsMock = {
           text: 'Blend multiple images into something new',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-illustration/4-PS-BlendImages.png',
-        }
+        },
       ],
     },
     'q-customer': {
