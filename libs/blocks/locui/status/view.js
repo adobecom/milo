@@ -5,18 +5,25 @@ function toggleDesc(e) {
   e.target.closest('.locui-status-toast').classList.toggle('open');
 }
 
+function renderMessage(description) {
+  let message = description;
+  if (Array.isArray(description) && description.length > 1) {
+    message = html`<ol>${description.map((desc) => html`<li>${desc}</li>`)}</ol>`;
+  }
+  return message;
+}
+
 function Toast({ status }) {
   return html`
-    <div onClick=${toggleDesc}
-      class="locui-status-toast locui-status-toast-type-${status.type}
+    <div class="locui-status-toast locui-status-toast-type-${status.type}
       ${status.description && 'has-description'}">
-      <div class=locui-status-toast-content>
+      <div class=locui-status-toast-content onClick=${toggleDesc}>
         <span class=locui-status-toast-content-type>${status.type}</span>
         <span class=locui-status-toast-text>${status.text}</span>
+        <div class=locui-status-toast-expand>Expand</div>
       </div>
       ${status.description && html`
-        <p class=locui-status-toast-description>${status.description}</p>
-        <div class=locui-status-toast-expand>Expand</div>`}
+        <p class=locui-status-toast-description>${renderMessage(status.description)}</p>`}
     </div>
   `;
 }
