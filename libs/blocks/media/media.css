@@ -427,3 +427,88 @@ div[class*="-up"] .media .foreground > .media-row {
     height: 120px;
   }
 }
+
+/* in delayed modal used in promotions */
+.media.in-modal > .container.foreground {
+  width: 250px;
+}
+
+.media.in-modal.full-bleed-image {
+  padding: 0;
+}
+
+.media.in-modal.full-bleed-image > .container.foreground {
+  width: 100%;
+}
+
+.media.in-modal.full-bleed-image > .container.foreground > .media-row > div:not(.text) {
+  width: 100%;
+}
+
+.media.in-modal.full-bleed-image > .container.foreground > .media-row > .text {
+  padding: 0 var(--spacing-m) var(--spacing-m) var(--spacing-m);
+  width: auto;
+}
+
+@media (min-width: 430px) and (orientation: portrait) {
+  .media.in-modal > .container.foreground {
+    width: 320px;
+  }
+}
+
+@media (min-width: 430px) and (orientation: landscape) {
+  .media.in-modal > .container.foreground {
+    width: 540px;
+  }
+
+  .media.in-modal > .foreground > .media-row {
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 600px) and (orientation: portrait) {
+  .media.in-modal > .foreground > .media-row {
+    flex-direction: column-reverse;
+  }
+}
+
+@media (min-width: 768px) {
+  .media.in-modal:not(.full-bleed-image) > .container.foreground {
+    width: 500px;
+  }
+}
+
+@media (min-width: 829px) {
+  .media.in-modal:not(.full-bleed-image) > .container.foreground {
+    width: 700px;
+  }
+
+  .media.in-modal > .container.foreground > .media-row {
+    flex-direction: row;
+  }
+
+  .media.in-modal.full-bleed-image > .container.foreground > .media-row  {
+    align-items: stretch;
+  }
+
+  .media.in-modal.full-bleed-image > .container.foreground > .media-row > .text {
+    padding: var(--spacing-l) 0 var(--spacing-l) var(--spacing-l);
+    width: auto;
+  }
+
+
+  .media.in-modal.full-bleed-image > .container.foreground > .media-row > .image > picture {
+    display: block;
+    height: 100%;
+  }
+
+  .media.in-modal.full-bleed-image > .container.foreground > .media-row > .image > picture > img {
+    height: 100%;
+  }
+}
+
+@media (min-width: 1366px) {
+  .media.in-modal > .container.foreground {
+    width: 800px;
+  }
+}
