@@ -334,14 +334,14 @@
 
 
   /* con-vars support */
-  .hero-marquee.split.asset-left {
+  .hero-marquee.split {
     padding-bottom: 0;
   }
 
   .hero-marquee.split.order-reverse-mobile,
   .hero-marquee.split.order-reverse-mobile-tablet {
     padding-top: 0;
-    padding-bottom: inital;
+    padding-bottom: var(--spacing-xl);
   }
 
   .hero-marquee.bg-stack-mobile,
@@ -355,7 +355,7 @@
 
 /* Tablet ONLY */
 @media screen and (min-width: 600px) and (max-width: 1199px) {
-  .hero-marquee.split.asset-left {
+  .hero-marquee.split {
     padding-bottom: 0;
   }
   
