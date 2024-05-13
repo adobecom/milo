@@ -38,6 +38,6 @@ merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
 @media screen and (min-width: 768px) {
   .badge-merch-cards .card-heading,
   .badge-card .card-heading {
-    margin-top: 24px;
+    margin-top: var(--spacing-s);
   }
 }
