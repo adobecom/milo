@@ -52,11 +52,8 @@ function editCtaToModuleClick(el) {
     if (cta.href.toLowerCase().includes('#module')) {
       cta.addEventListener('click', (e) => {
         e.preventDefault();
-        const moduleCta = document.querySelectorAll('.CTAButtons');
         window.scrollTo(0, 0);
-        if (moduleCta.length) {
-          moduleCta[0].click();
-        }
+        document.querySelector('.CTAButtons')?.click();
       });
     }
   });
