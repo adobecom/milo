@@ -149,14 +149,19 @@ const openDeviceModal = async (e) => {
   const isMobile = e.target.classList.contains('graybox-mobile');
   const isTablet = e.target.classList.contains('graybox-tablet');
   const docFrag = new DocumentFragment();
-  const iFrameSrc = `${window.location.href + (window.location.href.includes('?') ? '&' : '?')}graybox=menu-off`;
+  const iFrameUrl = new URL(window.location.href);
+  iFrameUrl.searchParams.set('graybox', 'menu-off');
   const deviceBorder = createTag('img', { class: 'graybox-device-border', src: isMobile ? iphoneFrame : ipadFrame });
-  const iFrame = createTag('iframe', { src: iFrameSrc, width: '100%', height: '100%' });
+  const iFrame = createTag('iframe', { src: iFrameUrl.href, width: '100%', height: '100%' });
 
   const modal = createTag('div', null, [deviceBorder, iFrame]);
   docFrag.append(modal);
 
   deviceModal = await getModal(null, { class: 'graybox-modal', id: 'graybox-modal', content: docFrag, closeEvent: 'closeGrayboxModal' });
+
+  // Disable modal.js forcing 100% height
+  iFrame.style.height = '';
+
   if (isMobile) {
     document.body.classList.add(CLASS.PHONE_PREVIEW);
     deviceModal.classList.add('mobile');
@@ -250,5 +255,5 @@ export default function init(grayboxEl) {
     }
   };
 
-  document.addEventListener(MILO_EVENTS.DEFERRED, grayboxThePage);
+  document.addEventListener(MILO_EVENTS.DEFERRED, grayboxThePage, { once: true });
 }
