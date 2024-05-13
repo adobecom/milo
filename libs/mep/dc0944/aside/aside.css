@@ -1141,14 +1141,14 @@
 }
 
 /* Added for frictionless dc0944 */
-.section.hide-on-step-start {
+.section.hide-on-step-start:not(.hide-sticky-section) {
   background: none !important;
   display: flex;
   justify-content: center;
-  padding: 0 7% 20px 7%;
+  padding: 0 7% 20px;
 }
 
-.section.hide-on-step-start > .aside.frictionless {
+.aside.frictionless {
   background-color: rgb(0, 11, 29);
   max-width: 1200px;
   border-radius: 50px;
@@ -1158,47 +1158,47 @@
   position: relative;
 }
 
-.section.hide-on-step-start .foreground.container {
+.aside.frictionless .foreground.container {
   position: relative; 
   flex-direction: row;
 }
 
-.section.hide-on-step-start .promo-close {
+.aside.frictionless .promo-close {
   background: rgb(0, 11, 29);
-  margin: 0 !important;
+  margin: 0;
   width: 20px;
   height: 20px
 }  
 
-.promo-text {
-  justify-content: center !important;
+.aside.frictionless .promo-text {
+  justify-content: center;
 }
 
-.section.hide-on-step-start .promo-text .text-area {
-  display: flex !important;
+.aside.frictionless .promo-text .text-area {
+  display: flex;
   flex-direction: row !important;
 }
 
-.section.hide-on-step-start .promo-text .icon-area {
+.aside.frictionless .promo-text .icon-area {
   height: auto !important;
 }
 
-.section.hide-on-step-start .promo-text .icon-area img {
-  height: 38px !important
+.aside.frictionless .promo-text .icon-area img {
+  height: 38px !important; 
 }
 
 body.dc-bc[data-current-event="start"] .section.hide-on-step-start {
-  display: none !important; 
-  background-color: none !important;
+  display: none; 
+  background-color: none;
 }
 
 @media screen and (min-width: 1440px) {
-  .section.hide-on-step-start .promo-close {
+  .aside.frictionless .promo-close {
     position: absolute;
     right: 40px;
   }
 }
 
-.tt-hide {
+.sticky-banner-disable {
   display: none !important;
 }

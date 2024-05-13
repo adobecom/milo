@@ -239,6 +239,6 @@ export default function init(el) {
     if (moduleCtas.length) {
       linkSectionToModuleStep(el);
       editCtaToModuleClick(el);
-    } else el.closest('.section').classList.add('tt-hide');
+    } else el.closest('.section').classList.add('.sticky-banner-disable');
   }
 }
