@@ -345,7 +345,7 @@
   }
 
   .hero-marquee.bg-stack-mobile,
-  .hero-marquee.bg-stack-mobile-table,
+  .hero-marquee.bg-stack-mobile-tablet,
   .hero-marquee.bg-stack-mobile.order-reverse-mobile, 
   .hero-marquee.bg-stack-mobile-tablet.order-reverse-mobile {
     padding-top: 0;
@@ -365,7 +365,7 @@
   }
 
   /* con-vars support */
-  .hero-marquee.hero-marquee.bg-stack-mobile-table,
+  .hero-marquee.hero-marquee.bg-stack-mobile-tablet,
   .hero-marquee.bg-stack-mobile-tablet.order-reverse-mobile-tablet {
     padding-top: 0;
   }
