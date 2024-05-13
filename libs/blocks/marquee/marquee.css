@@ -386,7 +386,7 @@
   }
 
   .marquee.quiet .foreground .text {
-    max-width: 600px;
+    max-width: 66.6667%;
   }
 
   .marquee.center .foreground .text,
