@@ -3,7 +3,7 @@ import { getConfig } from '../../utils/utils.js';
 
 export const getMLResults = async (endpoint, apiKey, threshold, input, count, validFiCodes) => {
   const { env } = getConfig();
-  const subdomain = env === 'prod' ? 'cchome-dev' : 'cchome-dev';
+  const subdomain = env === 'prod' ? 'cchome' : 'cchome-dev';
   const apiUrl = `https://${subdomain}.adobe.io/int/v1/models`;
   const params = {
     endpoint,
