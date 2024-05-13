@@ -877,10 +877,8 @@ async function checkForPageMods() {
   }
 
   const { env } = getConfig();
-  let previewOn = false;
   const mep = PAGE_URL.searchParams.get('mep');
   if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
-    previewOn = !offFlag('mepButton');
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
@@ -889,7 +887,7 @@ async function checkForPageMods() {
     });
   }
 
-  if (targetEnabled) {
+  if (targetEnabled && !targetMd.toLowerCase().includes('gnav')) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
     loadIms()
@@ -903,11 +901,6 @@ async function checkForPageMods() {
 
     await applyPers(manifests);
   }
-
-  if (previewOn) {
-    import('../features/personalization/preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
-  }
 }
 
 async function loadPostLCP(config) {
@@ -916,7 +909,11 @@ async function loadPostLCP(config) {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
-  loadMartech();
+  if (getMetadata('target')?.toLowerCase().includes('gnav')) {
+    await loadMartech({ persEnabled: true });
+  } else {
+    loadMartech();
+  }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
@@ -926,6 +923,10 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
+  if (config.mep?.preview) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+  }
 }
 
 export function scrollToHashedElement(hash) {
