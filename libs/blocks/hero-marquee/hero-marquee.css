@@ -110,6 +110,7 @@
   object-position: center top;
   width: 100%;
   height: 100%;
+  display: block;
 }
 
 /* Lockup Area sizes - default large */
@@ -354,10 +355,10 @@
 
 /* Tablet ONLY */
 @media screen and (min-width: 600px) and (max-width: 1199px) {
-  .hero-marquee.split,
+  /* .hero-marquee.split,
   .hero-marquee.split.asset-left {
     padding-bottom: 0;
-  }
+  } */
   
   .hero-marquee.split.order-reverse-mobile-tablet {
     padding-top: 0;

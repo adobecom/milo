@@ -37,6 +37,7 @@ const MILO_BLOCKS = [
   'global-navigation',
   'footer',
   'gnav',
+  'hero-marquee',
   'how-to',
   'icon-block',
   'iframe',
