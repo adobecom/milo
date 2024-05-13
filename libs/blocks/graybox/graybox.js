@@ -36,17 +36,17 @@ let deviceModal;
 const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 const getTableValues = (el) => [...el.childNodes].reduce((rdx, row) => {
-  if (row.children) {
-    const key = row.children[0].textContent?.trim().toLowerCase();
-    const content = row.children[1];
-    let text = content?.textContent.trim();
-    if (key !== 'title' && key !== 'desc') {
-      text = text.toLowerCase();
-    }
-    if (key && content) {
-      rdx.keys.push(key);
-      rdx[key] = { content, text };
-    }
+  if (!row.children) return rdx;
+
+  const key = row.children[0].textContent?.trim().toLowerCase();
+  const content = row.children[1];
+  let text = content?.textContent.trim();
+  if (key !== 'title' && key !== 'desc') {
+    text = text.toLowerCase();
+  }
+  if (key && content) {
+    rdx.keys.push(key);
+    rdx[key] = { content, text };
   }
   return rdx;
 }, { keys: [] });

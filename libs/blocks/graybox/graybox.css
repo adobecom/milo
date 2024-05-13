@@ -26,7 +26,7 @@
   width: calc(100% - 15.5px);
   height: 100%;
   border: var(--gb-page-outline-border);
-  z-index: 3000;
+  z-index: var(--above-all);
   pointer-events: none;
 }
 
@@ -45,7 +45,7 @@
   pointer-events: all;
   position: absolute;
   width: 100%;
-  z-index: 1000;
+  z-index: var(--above-all);
 }
 
 .gb-no-change {
@@ -66,7 +66,7 @@
   position: absolute;
   top: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: calc(var(--above-all) - 1);
 }
 
 body.gb-overlay::before {
@@ -76,14 +76,14 @@ body.gb-overlay::before {
 /* The elements that should appear above the overlay */
 .gb-changed {
   position: relative;
-  z-index: 1001;
+  z-index: var(--above-all);
 }
 
 .graybox-container {
   position: fixed;
   right: 0;
   top: 15%;
-  z-index: 2001;
+  z-index: calc(var(--above-all) + 1);
 }
 
 .graybox-container .gb-toggle {
@@ -183,7 +183,7 @@ body.gb-overlay::before {
 }
 
 .dialog-modal.graybox-modal {
-  z-index: 2000;
+  z-index: var(--above-all);
 }
 
 .dialog-modal.graybox-modal.mobile > div {
@@ -249,7 +249,7 @@ body.gb-overlay::before {
 
 .modal-curtain.graybox-curtain.is-open {
   background: var(--gb-modal-bg);
-  z-index: 1999;
+  z-index: calc(var(--above-all) - 1);
 }
 
 @media (max-height: 910px) {
@@ -262,7 +262,7 @@ body.gb-overlay::before {
     background-color: #f0f0f0;
     color: #000;
     font-size: 16px;
-    z-index: 2000;
+    z-index: var(--above-all);
     border-radius: 5px;
   }
 }
@@ -277,7 +277,7 @@ body.gb-overlay::before {
     background-color: #f0f0f0;
     color: #000;
     font-size: 16px;
-    z-index: 2000;
+    z-index: var(--above-all);
     border-radius: 5px;
   }
 }
