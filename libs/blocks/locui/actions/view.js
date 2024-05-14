@@ -40,7 +40,7 @@ export default function Actions() {
     `;
   }
 
-  if (!languages.value || languages.value.length === 0) {
+  if (!languages?.value?.length) {
     return html`
       <div class=locui-section>
         <div class=locui-section-heading>
