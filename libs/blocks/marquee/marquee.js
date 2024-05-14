@@ -135,3 +135,22 @@ export default async function init(el) {
     await loadMnemonicList(foreground);
   }
 }
+
+export async function initJSON({ content, background, mobileBackground, theme, variant }) {
+  return `<div class="marquee ${theme} ${variant} center">
+  <div>
+    <div data-valign="middle">
+      <picture>
+        <source type="image/jpeg" srcset="${background}" media="(min-width: 600px)">
+        <img loading="lazy" alt="Special Offers marquee gradient bg" src="${mobileBackground}}" width="720" height="800">
+      </picture>
+    </div>
+  </div>
+  <div>
+    <div data-valign="middle">
+      ${content}
+    </div>
+  </div>
+</div>
+</div>`;
+}

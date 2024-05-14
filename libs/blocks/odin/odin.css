@@ -1,0 +1,40 @@
+odin-search {
+  margin: 64px;
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+  flex-direction: column;
+}
+
+merch-card {
+  position: relative;
+}
+
+li[data-aue-label] {
+  list-style: none;
+  position: relative;
+}
+
+li[data-aue-label]:not(:first-of-type) {
+  border-top: 1px dodgerblue solid;
+  padding-top: 16px;
+}
+  
+li[data-aue-label] > .block {
+  padding-top: 64px;
+}
+
+li[data-aue-label] p.path {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  white-space: nowrap;
+  margin: 0;
+}
+
+li[data-aue-label] sp-button-group {
+  position: absolute;
+  top: 16px;
+  right: 0;
+}

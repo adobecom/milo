@@ -278,7 +278,23 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
   merchCard.appendChild(miniCompareOffers);
 };
 
-const init = async (el) => {
+export async function initJSON({
+  name, title, icon, description, prices, ctas,
+}) {
+  return `
+   <merch-card variant="catalog" name="${name}" filters="all" data-aue-label="${title}">
+      <merch-icon slot="icons" src="${icon}"></merch-icon>
+      <h3 slot="heading-xs">${title}</h3>
+      <h2 slot="heading-m">${(prices) ?? ''}</h2>
+      <div slot="body-xs">${(description) ?? ''}</div>
+      <div slot="footer">
+        <p class="action-area">${(ctas) ?? ''}</p>
+      </div>
+   </merch-card>
+   `;
+}
+
+export async function init(el) {
   const styles = [...el.classList];
   const cardType = getPodType(styles) || 'product';
   if (!styles.includes(cardType)) {
@@ -447,6 +463,4 @@ const init = async (el) => {
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
-};
-
-export default init;
+}

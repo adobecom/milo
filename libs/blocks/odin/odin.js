@@ -1,102 +1,121 @@
 /* eslint-disable import/no-relative-packages */
 /* eslint-disable import/no-unresolved */
-import { html, css, LitElement, unsafeHTML } from '../../deps/lit-all.min.js';
+import { html, css, LitElement } from '../../deps/lit-all.min.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/search.js';
 import '../../features/spectrum-web-components/dist/button.js';
 import '../../features/spectrum-web-components/dist/button-group.js';
 import '../../features/spectrum-web-components/dist/picker.js';
-import '../../deps/merch-card.js';
-import { decorateLinks, loadBlock, loadStyle } from '../../utils/utils.js';
+import { initJSON as initMerchCard } from '../merch-card/merch-card.js';
+import { initJSON as initMarquee } from '../marquee/marquee.js';
+import { decorateLinks, getConfig, loadBlock, loadStyle } from '../../utils/utils.js';
 
-loadStyle('../merch-card/merch-card.css');
+const { base } = getConfig();
+loadStyle(`${base}/blocks/merch-card/merch-card.css`);
 
 class OdinSearch extends LitElement {
   static styles = css`
-  :host {
-    display: block;
-  }
-`;
+    :host {
+      display: block;
+    }
 
-  static properties = { model: { type: String }, result: { type: Object } };
+    sp-theme {
+      display: contents;
+    }
+  `;
 
-  #csrfToken;
+  static properties = { model: { type: String } };
 
   #bearerToken;
 
   constructor() {
     super();
     this.query = '';
-    this.#csrfToken = localStorage.getItem('csrfToken');
     this.#bearerToken = localStorage.getItem('bearerToken');
   }
 
-  get marquees() {
-    return this.result?.marqueeList.items.map((marquee) => html`<li>${marquee.content.html}</li>`) ?? '';
-  }
-
-  get merchCards() {
-    return this.result?.merchCardList.items.map(({
-      _path,
-      ctas,
-      description,
-      icon,
-      name,
-      prices,
-      title,
-    }) => (html`
-    <div class="one-merch-card catalog" data-milo-block data-aue-label="${title}" data-aue-resource="urn:aemconnection:${_path}/jcr:content/data/master" data-aue-type="container">
-     <merch-card variant="catalog" name="${name}" filters="all">
-        <merch-icon slot="icons" src="${icon}"></merch-icon>
-        <h3 slot="heading-xs">${title}</h3>
-        <h2 slot="heading-m">${unsafeHTML(prices.html) ?? ''}</h2>
-        <div slot="body-xs">${unsafeHTML(description.html) ?? ''}</div>
-        <div slot="footer">
-          <p class="action-area">${unsafeHTML(ctas.html) ?? ''}</p>
-        </div>
-     </merch-card>
-     <sp-button-group>
+  async prepareItems(items) {
+    const wrap = async (block, { cfTitle, title, path }, classes = '') => {
+      const el = await block;
+      return `
+    <li
+      data-aue-label="${title ?? cfTitle}"
+      data-aue-resource="urn:aemconnection:${path}/jcr:content/data/master"
+      data-aue-type="reference"
+    >
+    <p class="path">${path}</p>
+    <sp-button-group>
       <sp-button>Use</sp-button>
       <sp-button>Publish</sp-button>
       <sp-button>Unpublish</sp-button>
-    </sp-button-group>
-  </div>
-     `));
+  </sp-button-group>
+    <div class="block ${classes}">${el}</div></li>`;
+    };
+
+    const list = await Promise.all(items.map(
+      ({ path, title, fields, model: { path: modelPath } }) => {
+        const item = {
+          modelPath,
+          path,
+          cfTitle: title,
+          ...Object.fromEntries(
+            fields.map(({ name, values: [value] }) => [name, value]),
+          ),
+        };
+        switch (modelPath) {
+          case '/conf/sandbox/settings/dam/cfm/models/merch-card':
+            return wrap(initMerchCard(item), item, `merch-card-collection ${item.type ?? 'catalog'} one-merch-card`);
+          case '/conf/sandbox/settings/dam/cfm/models/marquee':
+            return wrap(initMarquee(item), item);
+          default:
+            return '';
+        }
+      },
+    ));
+
+    this.querySelector('ul')?.remove();
+    const ul = document.createElement('ul');
+    ul.innerHTML = list.join('');
+    this.appendChild(ul);
+
+    const blocks = [...ul.querySelectorAll('li > *')];
+    Promise.all(
+      blocks.map((block) => Promise.all(decorateLinks(block).map(loadBlock))),
+    );
   }
 
   render() {
     return html`
-    <sp-theme color="light" scale="medium">
-      <sp-search placeholder="Search" value="All Apps"></sp-search>
-      <sp-picker placeholder="Refine block type">
-        <sp-menu-item value="/conf/sandbox/settings/dam/cfm/models/merch-card">Merch Card</sp-menu-item>
-        <sp-menu-item value="/conf/sandbox/settings/dam/cfm/models/marquee">Marquee</sp-menu-item>
-      </sp-picker>
-      <sp-button variant="cta" @click=${this.doSearch}>Search</sp-button>
-      <h3>Marquee</h3>
-      <ul>
-      </ul>
-      <h3>Merch card</h3>
-      <ul>
-      ${this.merchCards}
-      </ul>
-  `;
+      <sp-theme color="light" scale="medium">
+        <div>
+        <sp-search placeholder="Search" value="Photoshop"></sp-search>
+        <sp-picker placeholder="Refine block type">
+          <sp-menu-item value="/conf/sandbox/settings/dam/cfm/models/merch-card"
+            >Merch Card</sp-menu-item
+          >
+          <sp-menu-item value="/conf/sandbox/settings/dam/cfm/models/marquee"
+            >Marquee</sp-menu-item
+          >
+        </sp-picker>
+        <sp-button variant="cta" @click=${this.doSearch}>Search</sp-button>
+      </div>
+        <slot></slot>
+      </sp-theme>
+    `;
   }
 
-  updated(changedProperties) {
-    if (changedProperties.has('result')) {
-      const blocks = [...this.shadowRoot.querySelectorAll('[data-milo-block]')];
-      Promise.all(blocks.map((block) => Promise.all(
-        decorateLinks(block).map(loadBlock),
-      )));
-    }
+  get search() {
+    return this.shadowRoot.querySelector('sp-search');
   }
 
   async doSearch() {
-    // const query = e.target.value;
-    const res = await fetch('/libs/blocks/odin/odin-search-result.json');
-    const { data } = await res.json();
-    this.result = data;
+    const query = encodeURIComponent(this.search.value);
+    const res = await fetch(
+      `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=%7B%22filter%22%3A%7B%22path%22%3A%20%22%2Fcontent%2Fdam%2Fsandbox%2Filyas%22%2C%20%22fullText%22%3A%7B%22text%22%3A%22${query}%22%2C%22queryMode%22%3A%22EXACT_WORDS%22%7D%7D%7D`,
+      { headers: { Authorization: `Bearer ${this.#bearerToken}` } },
+    );
+    const { items } = await res.json();
+    this.prepareItems(items);
   }
 }
 

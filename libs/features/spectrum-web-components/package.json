@@ -29,6 +29,7 @@
     "@spectrum-web-components/menu": "^0.42.0",
     "@spectrum-web-components/modal": "^0.42.0",
     "@spectrum-web-components/overlay": "^0.42.0",
+    "@spectrum-web-components/picker": "^0.42.0",
     "@spectrum-web-components/popover": "^0.42.0",
     "@spectrum-web-components/progress-circle": "^0.42.0",
     "@spectrum-web-components/radio": "^0.42.0",
