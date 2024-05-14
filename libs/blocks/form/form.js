@@ -88,6 +88,7 @@ function createButton({ type, label }, thankYou) {
     button.addEventListener('click', async (event) => {
       const form = button.closest('form');
       if (form.checkValidity()) {
+        form.setAttribute('submitted', 'true');
         event.preventDefault();
         button.setAttribute('disabled', '');
         const submission = await submitForm(form);

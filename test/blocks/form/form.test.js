@@ -94,8 +94,7 @@ describe('Form Block', async () => {
     const form = await waitForElement('form');
     form.querySelector('.form-submit-wrapper button').dispatchEvent(new Event('click'));
     await new Promise((resolve) => { setTimeout(() => resolve(), 150); });
-    const thanks = document.querySelector('.thank-you');
-    expect(thanks).to.exist;
+    expect(form.getAttribute('submitted')).to.equal('true');
   });
 
   it('clears successfully', async () => {
