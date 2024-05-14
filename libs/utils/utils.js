@@ -856,8 +856,8 @@ async function checkForPageMods() {
   }
   if (getEnablement('mep')) return;
   const persEnabled = getEnablement('personalization');
-  const targetEnabled = getMetadata('manifestnames', 'promo');
-  const promoEnabled = getMetadata('target');
+  const promoEnabled = getMetadata('manifestnames', 'promo');
+  const targetEnabled = getMetadata('target');
 
   let persManifests = [];
   // const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
