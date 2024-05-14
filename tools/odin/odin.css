@@ -38,3 +38,7 @@ odin-search sp-button-group {
   top: 16px;
   right: 0;
 }
+
+odin-search > ul {
+  width: 100%;
+}
