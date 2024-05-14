@@ -39,3 +39,7 @@ odin-search sp-button-group {
 odin-search > ul {
   width: 80%;
 }
+
+#OverlayBlockingElement {
+  display: none;
+}
