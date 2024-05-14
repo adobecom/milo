@@ -1,4 +1,7 @@
-import { decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides, decorateButtons } from '../../utils/decorate.js';
+import {
+  // eslint-disable-next-line max-len
+  decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides, decorateButtons, handleObjectFit,
+} from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
@@ -95,7 +98,7 @@ function extendButtonsClass(copy) {
   buttons.forEach((button) => {
     button.classList.add('button-xl', 'button-justified-mobile');
   });
-  // removeBodyClassOnEl(copy);
+  removeBodyClassOnEl(copy);
 }
 function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
@@ -123,7 +126,8 @@ export default async function init(el) {
   if (rows.length > 1 && rows[0].textContent !== '') {
     el.classList.add('has-bg');
     const [head, ...tail] = rows;
-    decorateBlockBg(el, head);
+    handleObjectFit(head);
+    decorateBlockBg(el, head, { useHandleFocalpoint: true });
     rows = tail;
   }
 
@@ -138,8 +142,6 @@ export default async function init(el) {
   let copy = fRows[0];
   const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
   const asset = foreground.querySelector('div > picture, div > video, div > a[href*=".mp4"]');
-
-  console.log(el, 'asset', asset);
   copy = anyTag.closest('div');
   copy.classList.add('copy');
 

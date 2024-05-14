@@ -1,11 +1,13 @@
-import { decorateTextOverrides, decorateBlockText, decorateBlockBg, decorateIconStack, decorateButtons } from '../../utils/decorate.js';
+import {
+  // eslint-disable-next-line max-len
+  decorateTextOverrides, decorateBlockText, decorateBlockBg, decorateIconStack, decorateButtons, handleObjectFit,
+} from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   large: ['xxl', 'm', 'l'],
   default: ['xl', 'm', 'l'],
 };
-const objFitOptions = ['fill', 'contain', 'cover', 'none', 'scale-down'];
 
 function getBlockSize(el) {
   const sizes = Object.keys(blockTypeSizes);
@@ -19,30 +21,6 @@ function handleSupplementalText(foreground) {
   const lastP = foreground.querySelector('.action-area ~ p:last-child');
   if (nextP) nextP.className = '';
   if (lastP) lastP.className = 'supplemental-text';
-}
-
-function setObjectFitAndPos(text, pic, bgEl) {
-  const backgroundConfig = text.split(',').map((c) => c.toLowerCase().trim());
-  const fitOption = objFitOptions.filter((c) => backgroundConfig.includes(c));
-  const focusOption = backgroundConfig.filter((c) => !fitOption.includes(c));
-  if (fitOption) [pic.querySelector('img').style.objectFit] = fitOption;
-  bgEl.innerHTML = '';
-  bgEl.append(pic);
-  bgEl.append(document.createTextNode(focusOption.join(',')));
-}
-
-function handleObjectFit(bgRow) {
-  const bgConfig = bgRow.querySelectorAll('div');
-  [...bgConfig].forEach((r) => {
-    const pic = r.querySelector('picture');
-    if (!pic) return;
-    let text = '';
-    const pchild = [...r.querySelectorAll('p:not(:empty)')].filter((p) => p.innerHTML.trim() !== '');
-    if (pchild.length > 2) text = pchild[1]?.textContent.trim();
-    if (!text && r.textContent) text = r.textContent;
-    if (!text) return;
-    setObjectFitAndPos(text, pic, r);
-  });
 }
 
 function handleClickableBrick(el, foreground) {

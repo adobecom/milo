@@ -639,11 +639,6 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   display: none;
 }
 
-.con-block.bg-stack-mobile .background,
-.con-block.bg-stack-mobile-tablet .background {
-  position: relative;
-}
-
 /*** Global Styles ***/
 @font-face {
   font-family: 'Trebuchet MS';
@@ -841,11 +836,6 @@ a.static:hover {
 
   .con-block .background .tablet-only { display: block; }
 
-  .con-block.bg-stack-mobile .background {
-    position: absolute;
-    padding-bottom: unset;
-  }
-
   /* spacing */
   .con-block.xs-spacing-tablet { padding: var(--spacing-xs) 0; }
   .con-block.s-spacing-tablet { padding: var(--spacing-s) 0; }
@@ -971,11 +961,6 @@ a.static:hover {
   }
 
   .con-block .background .desktop-only { display: block; }
-
-  .con-block.bg-stack-mobile-tablet .background {
-    position: absolute;
-    padding-bottom: unset;
-  }
 
   /* spacing */
   .con-block.xs-spacing-desktop { padding: var(--spacing-xs) 0; }
