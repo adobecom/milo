@@ -6,6 +6,7 @@ import '../../features/spectrum-web-components/dist/search.js';
 import '../../features/spectrum-web-components/dist/button.js';
 import '../../features/spectrum-web-components/dist/button-group.js';
 import '../../features/spectrum-web-components/dist/picker.js';
+import '../../deps/merch-icon.js';
 import { initJSON as initMerchCard } from '../merch-card/merch-card.js';
 import { initJSON as initMarquee } from '../marquee/marquee.js';
 import { decorateLinks, getConfig, loadBlock, loadStyle } from '../../utils/utils.js';
