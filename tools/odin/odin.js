@@ -11,10 +11,19 @@ import '../../libs/features/spectrum-web-components/dist/picker.js';
 import '../../libs/deps/merch-icon.js';
 import { initJSON as initMerchCard } from '../../libs/blocks/merch-card/merch-card.js';
 import { initJSON as initMarquee } from '../../libs/blocks/marquee/marquee.js';
-import { decorateLinks, getConfig, loadBlock, loadStyle } from '../../libs/utils/utils.js';
+import { decorateLinks, getConfig, loadBlock, loadScript, loadStyle } from '../../libs/utils/utils.js';
 
 const { base } = getConfig();
 loadStyle(`${base}/blocks/merch-card/merch-card.css`);
+
+const meta = createTag('meta', {
+  name: 'urn:adobe:aue:system:aemconnection',
+  content: 'aem:https://author-p22655-e59341.adobeaemcloud.com',
+});
+
+document.head.appendChild(meta);
+
+loadScript('https://universal-editor-service.experiencecloud.live/corslib/LATEST');
 
 class OdinSearch extends LitElement {
   static styles = css`
