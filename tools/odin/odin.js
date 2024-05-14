@@ -11,7 +11,9 @@ import '../../libs/features/spectrum-web-components/dist/picker.js';
 import '../../libs/deps/merch-icon.js';
 import { initJSON as initMerchCard } from '../../libs/blocks/merch-card/merch-card.js';
 import { initJSON as initMarquee } from '../../libs/blocks/marquee/marquee.js';
-import { decorateLinks, getConfig, loadBlock, loadScript, loadStyle } from '../../libs/utils/utils.js';
+import {
+  createTag, decorateLinks, getConfig, loadBlock, loadScript, loadStyle,
+} from '../../libs/utils/utils.js';
 
 const { base } = getConfig();
 loadStyle(`${base}/blocks/merch-card/merch-card.css`);
