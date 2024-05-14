@@ -165,19 +165,21 @@ describe('Merch Cards', async () => {
       ...conf,
       mep: {
         preview: true,
-        custom: {
-          'merch-card-collection': [
-            {
-              action: 'replace',
-              manifestId: 'promo1.json',
-              target: '/override-photoshop',
-            },
-            {
-              action: 'replace',
-              manifestId: 'promo2.json',
-              target: '/override-express',
-            },
-          ],
+        inBlock: {
+          'merch-card-collection': {
+            commands: [
+              {
+                action: 'replace',
+                manifestId: 'promo1.json',
+                target: '/override-photoshop',
+              },
+              {
+                action: 'replace',
+                manifestId: 'promo2.json',
+                target: '/override-express',
+              },
+            ],
+          },
         },
       },
     });

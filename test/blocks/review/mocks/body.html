@@ -44,3 +44,26 @@
     <div>5</div>
   </div>
 </div>
+<style>
+.hlx-Review-ratingFields input[type="radio"].is-Active:after {
+    background-color: green;
+    border-color: green;
+    content: "";
+    display: block;
+    width: 12px;
+    height: 12px;
+    position: relative;
+    border-radius: 50%;
+}
+
+/* Additional visual cue for accessibility */
+.hlx-Review-ratingFields input[type="radio"]:checked:after {
+    content: "";
+    display: block;
+    width: 12px;
+    height: 12px;
+    background-color: red;
+    position: relative;
+    border-radius: 50%;
+}
+</style>

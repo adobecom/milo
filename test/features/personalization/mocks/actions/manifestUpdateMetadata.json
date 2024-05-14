@@ -7,29 +7,25 @@
       "action": "updateMetadata",
       "selector": "georouting",
       "page filter (optional)": "",
-      "param-newoffer=123": "",
-      "chrome": "on"
+      "all": "on"
     },
     {
       "action": "updateMetadata",
       "selector": "mynewmetadata",
       "page filter (optional)": "",
-      "param-newoffer=123": "",
-      "chrome": "woot"
+      "all": "woot"
     },
     {
       "action": "updateMetadata",
       "selector": "og:title",
       "page filter (optional)": "",
-      "param-newoffer=123": "",
-      "chrome": "New Title"
+      "all": "New Title"
     },
     {
       "action": "updateMetadata",
       "selector": "og:image",
       "page filter (optional)": "",
-      "param-newoffer=123": "",
-      "chrome": "https://adobe.com/path/to/image.jpg"
+      "all": "https://adobe.com/path/to/image.jpg"
     }
   ],
   ":type": "sheet"

@@ -151,6 +151,26 @@ describe('Functional Test', () => {
     window.console.log.reset();
   });
 
+  it('updateMetadata should be able to add and change metadata', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateMetadata.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    const geoMetadata = document.querySelector('meta[name="georouting"]');
+    expect(geoMetadata.content).to.equal('off');
+
+    expect(document.querySelector('meta[name="mynewmetadata"]')).to.be.null;
+    expect(document.querySelector('meta[property="og:title"]').content).to.equal('milo');
+    expect(document.querySelector('meta[property="og:image"]')).to.be.null;
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    expect(geoMetadata.content).to.equal('on');
+    expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
+    expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
+    expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
+  });
+
   it('should override to param-newoffer=123', async () => {
     let config = getConfig();
     config.mep = { override: '/path/to/manifest.json--param-newoffer=123' };
