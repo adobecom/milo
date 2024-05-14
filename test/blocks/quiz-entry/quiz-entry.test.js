@@ -60,14 +60,12 @@ describe('Quiz Entry Component', () => {
     popoverItem.innerHTML = 'design a logo';
     popoverItem.click();
     await new Promise((resolve) => setTimeout(resolve, 100));
-
     const enterKeyEvent = new KeyboardEvent('keypress', {
       key: 'Enter',
       code: 'Enter',
       keyCode: 13,
     });
     mlInputField.dispatchEvent(enterKeyEvent);
-
     await new Promise((resolve) => setTimeout(resolve, 100));
     mlInputField.value = 'design a logo';
     expect(mlInputField.value).to.equal('design a logo');

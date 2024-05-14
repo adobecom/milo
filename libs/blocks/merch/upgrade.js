@@ -140,7 +140,7 @@ export default async function handleUpgradeOffer(
       return getModal(null, { id: 'switch-modal', content, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
     };
     const text = await replaceKey('upgrade-now', getConfig());
-    return { text, url: upgradeUrl, handler: showModal };
+    return { text, className: 'upgrade', url: upgradeUrl, handler: showModal };
   }
   return undefined;
 }

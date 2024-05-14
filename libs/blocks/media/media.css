@@ -70,6 +70,7 @@
   display: flex;
   gap: var(--spacing-s);
   align-items: flex-start;
+  width: 100%;
 }
 
 .media .text .icon-area {
@@ -254,6 +255,49 @@ div[class*="-up"] .media .foreground > .media-row {
   height: var(--icon-size-xxl);
 }
 
+/* Text Alignment */
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) {
+  display: flex;
+  align-self: stretch;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) .foreground {
+  display: flex;
+  align-self: stretch;
+  width: 100%
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) .foreground > div.media-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) .foreground .text {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) [class*="heading-"],
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) p:not([class*="detail-"]):not(.subcopy-link),
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) [class*="body-"] {
+  margin-bottom: 0;
+}
+
+.section[class*="-up"] .media.merch.bio:not(.media-reverse-mobile, .qr-code) [class*="body-"]:first-child:not(.action-area, .icon-stack-area) {
+  margin-top: 0;
+  margin-bottom: revert;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) .cta-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
 @media screen and (min-width: 600px) {
   .media > .foreground .media-row {
     gap: var(--spacing-m);
@@ -317,6 +361,10 @@ div[class*="-up"] .media .foreground > .media-row {
   
   .media .icon-stack-area {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section[class*="-up"] .media:not(.media-reverse-mobile) .foreground > div.media-row {
+    gap: 0;
   }
 }
 

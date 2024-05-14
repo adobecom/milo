@@ -8,6 +8,7 @@ import {
   editEntry,
   FORM_MODES,
   getJobErrorText,
+  getProcessedCount,
   isValidUrl,
   processJobResult,
   PROCESS_TYPES,
@@ -164,8 +165,14 @@ class BulkPublish2 extends LitElement {
     return html`
       <div class="errors">
         <span>Error: <strong>${text}</strong></span>
-        <div class="fix-btn" @click=${() => startEdit(true)}>
-          ${count === 1 ? 'Done' : btnText}
+        <div class="error-btns">
+          ${count >= 1 ? html`
+            <div class="fix-btn" @click=${() => startEdit(true)}>
+              ${btnText}
+            </div>` : ''}
+          <div class="clear-btn" @click=${() => this.reset()}>
+            Clear
+          </div>
         </div>
       </div>
     `;
@@ -269,6 +276,8 @@ class BulkPublish2 extends LitElement {
     if (this.jobs.filter((job) => !job.status).length === 0) {
       this.processing = false;
       sticky().set('resume', []);
+      const progressCount = this.renderRoot.querySelector('#progress');
+      if (progressCount) progressCount.innerHTML = 0;
     }
   }
 
@@ -276,21 +285,30 @@ class BulkPublish2 extends LitElement {
     const { name, progress } = event.detail;
     const jobProcess = this.jobs.find(({ result }) => result.job.name === name);
     if (jobProcess) jobProcess.progress = progress;
-    this.requestUpdate();
-  }
-
-  renderProgress(done) {
-    if (!done) return '';
-    return `${this.jobs.reduce((count, { progress }) => {
-      const processed = progress?.processed ?? 0;
-      return count + processed;
-    }, 0)}/${done}`;
+    const progressCount = this.renderRoot.querySelector('#progress');
+    if (progressCount) progressCount.innerHTML = getProcessedCount(this.jobs);
   }
 
   clearJobs = () => {
     this.jobs = [];
     if (this.mode === 'full') this.openJobs = false;
   };
+
+  /* c8 ignore next 14 */
+  async reworkErrors(job) {
+    if (this.mode === 'full') {
+      this.openJobs = false;
+      await delay(300);
+    }
+    const { data, name } = job;
+    const { origin } = this.jobs.find((item) => item.result.job.name === name);
+    const errored = data.resources?.filter((path) => path.status !== 200);
+    if (errored.length) {
+      const textarea = this.renderRoot.querySelector('#Urls');
+      textarea.focus();
+      textarea.value = errored.map((error) => (`${origin}${error.path}`)).join('\r\n');
+    }
+  }
 
   renderResults() {
     const { showList, showClear, loading, count } = this.getJobState();
@@ -305,7 +323,6 @@ class BulkPublish2 extends LitElement {
         class="panel-title"
         @click=${handleToggle}>
         <span class="title">
-          ${count ? html`<strong>${count}</strong>` : ''}
           Job Results
         </span>
         <div class="jobs-tools${showList}">
@@ -315,7 +332,7 @@ class BulkPublish2 extends LitElement {
             <img src=${clearJobsIcon} alt="Clear List Icon" title="Clear Job List" />
           </div>
           <div class="job-progress${loading}">
-            ${this.renderProgress(count)}
+            <span id="progress">0</span>/${count}
           </div>
           <div class="loading-jobs${loading}">
             <div class="loader pink"></div>
@@ -324,16 +341,16 @@ class BulkPublish2 extends LitElement {
       </div>
       <div class="job${showList}">
         <div class="job-head">
-          <div class="job-url">JOB</div>
+          <div class="job-url">JOB${this.jobs.length > 1 ? 'S' : ''}</div>
           <div class="job-meta">
             <span>STATUS</span>
-            <span>DATE/TIME</span>
           </div>
         </div>
         <div class="job-list">
           ${this.jobs.map((job) => html`
             <job-process 
               .job=${job}
+              .reworkErrors=${(errors) => this.reworkErrors(errors)}
               @progress="${this.setJobProgress}"
               @stopped="${this.setJobStopped}">
             </job-process>

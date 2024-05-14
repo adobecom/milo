@@ -89,6 +89,16 @@ export const GetQuizOption = ({
     }
   };
 
+<<<<<<< HEAD
+=======
+  useEffect(() => {
+    const entry = document.querySelector('.quiz-entry');
+    if (entry && entry.querySelector('.no-carousel')) {
+      entry.removeChild(entry.querySelector('.no-carousel'));
+    }
+  }, []);
+
+>>>>>>> upstream/stage
   return html`
   <div class="quiz-options-container" role="group" aria-labelledby="question" tabindex="0" onkeydown=${handleKey}>
   ${index > 0 && html`<button onClick=${prev} class="carousel-arrow arrow-prev ${isRTL ? 'rtl' : ''}"></button>`}

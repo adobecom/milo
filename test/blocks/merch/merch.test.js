@@ -1,4 +1,3 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
@@ -8,19 +7,21 @@ import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
   PRICE_TEMPLATE_STRIKETHROUGH,
+  CHECKOUT_ALLOWED_KEYS,
   buildCta,
   getCheckoutContext,
   initService,
-  PRICE_LITERALS_URL,
+  fetchLiterals,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
   getCheckoutAction,
+  PRICE_LITERALS_URL,
 } from '../../../libs/blocks/merch/merch.js';
 
-import { mockFetch, unmockFetch } from './mocks/fetch.js';
+import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
@@ -64,7 +65,6 @@ const CHECKOUT_LINK_CONFIGS = {
 
 const config = {
   codeRoot: '/libs',
-  commerce: { priceLiteralsURL: PRICE_LITERALS_URL },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
@@ -126,9 +126,10 @@ describe('Merch Block', () => {
 
   before(async () => {
     window.lana = { log: () => { } };
-    document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    document.head.innerHTML = await readMockText('head.html');
+    document.body.innerHTML = await readMockText('body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
+    config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
 
@@ -422,9 +423,6 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('TWP and D2P modals', () => {
-  });
-
   describe('Download flow', () => {
     it('supports download use case', async () => {
       mockIms();
@@ -479,7 +477,7 @@ describe('Merch Block', () => {
     });
 
     it('getDownloadAction: returns undefined if not entitled', async () => {
-      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'ILLUSTRATOR');
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'ILLUSTRATOR' } }]);
       expect(checkoutLinkConfig).to.be.undefined;
     });
 
@@ -487,7 +485,7 @@ describe('Merch Block', () => {
       const [photoshopConfig] = CHECKOUT_LINK_CONFIGS.data;
       photoshopConfig.DOWNLOAD_URL = '';
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'PHOTOSHOP');
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'PHOTOSHOP' } }]);
       expect(checkoutLinkConfig).to.be.undefined;
     });
 
@@ -497,14 +495,14 @@ describe('Merch Block', () => {
       getUserEntitlements();
       mockIms('US');
       setSubscriptionsData(SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE);
-      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'CC_ALL_APPS');
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }]);
       expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
     });
 
     it('getModalAction: returns undefined if checkout-link config is not found', async () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction({}, { modal: true }, 'XYZ');
+      const action = await getModalAction([{ productArrangement: { productFamily: 'XZY' } }], { modal: true });
       expect(action).to.be.undefined;
     });
 
@@ -518,7 +516,7 @@ describe('Merch Block', () => {
       });
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{}], { modal: true }, 'PHOTOSHOP');
+      const action = await getModalAction([{ productArrangement: { productFamily: 'PHOTOSHOP' } }], { modal: true });
       expect(action).to.be.undefined;
     });
 
@@ -601,6 +599,63 @@ describe('Merch Block', () => {
       const modal = document.getElementById('checkout-link-modal');
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
+    });
+  });
+
+  describe('checkout link with optional params', async () => {
+    const checkoutUcv2Keys = [
+      'rurl', 'authCode', 'curl',
+
+    ];
+    const checkoutAllowKeysMapping = {
+      quantity: 'q',
+      checkoutPromoCode: 'apc',
+      ctxrturl: 'ctxRtUrl',
+      country: 'co',
+      language: 'lang',
+      clientId: 'cli',
+      context: 'ctx',
+      productArrangementCode: 'pa',
+      offerType: 'ot',
+      marketSegment: 'ms',
+      authCode: 'code',
+      rurl: 'rUrl',
+      curl: 'cUrl',
+    };
+    const segmentation = [
+      'ot',
+      'pa',
+      'ms',
+    ];
+
+    const keyValueMapping = { lang: 'en', ms: 'COM', ot: 'BASE', pa: 'phsp_direct_individual' };
+
+    const skipKeys = ['quantity', 'co', 'country', 'lang', 'language'];
+
+    CHECKOUT_ALLOWED_KEYS.forEach((key) => {
+      if (skipKeys.includes(key)) return;
+      const mappedKey = checkoutAllowKeysMapping[key] ?? key;
+      it(`renders checkout link with "${mappedKey}" parameter`, async () => {
+        const a = document.createElement('a', { is: 'checkout-link' });
+        a.classList.add('merch');
+        const searchParams = new URLSearchParams();
+        searchParams.set('osi', 1);
+        searchParams.set('type', 'checkoutUrl');
+        if (checkoutUcv2Keys.includes(key)) {
+          searchParams.set('workflow', 'ucv2');
+        }
+        const value = keyValueMapping[mappedKey] ?? 'test';
+        searchParams.set(key, value);
+        if (segmentation.includes(mappedKey)) {
+          searchParams.set('workflowStep', 'segmentation');
+        }
+        a.setAttribute('href', `/tools/ost?${searchParams.toString()}`);
+        document.body.appendChild(a);
+        const el = await merch(a);
+        await el.onceSettled();
+        expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
+        el.remove();
+      });
     });
   });
 });
