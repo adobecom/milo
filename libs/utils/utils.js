@@ -849,7 +849,7 @@ async function checkForPageMods() {
   if (offFlag('mep')) return;
   const persMd = getMetadata('personalization');
   const promoMd = getMetadata('manifestnames');
-  const targetMd = getMetadata('target');
+  const targetMd = getMetadata('target')?.toLowerCase();
   let persManifests = [];
   const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
   const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
