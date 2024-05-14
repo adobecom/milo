@@ -132,7 +132,7 @@ const merge = async ({ prs }) => {
         merge_method: 'squash',
       });
     }
-    body = `- [${title}](${html_url})\n${body}`;
+    body = `- ${html_url}\n${body}`;
     const isHighImpact = labels.includes(LABELS.highImpact);
     if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
       await slackNotification(
@@ -184,8 +184,7 @@ const openStageToMainPR = async () => {
       });
 
     for (const pr of pullRequestData) {
-      if (!body.includes(pr.html_url))
-        body = `- [${pr.title}](${pr.html_url})\n${body}`;
+      if (!body.includes(pr.html_url)) body = `- ${pr.html_url}\n${body}`;
     }
   }
 
