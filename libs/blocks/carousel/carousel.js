@@ -20,7 +20,7 @@ function decorateNextPreviousBtns() {
   const previousBtn = createTag(
     'button',
     {
-      class: 'carousel-button carousel-previous',
+      class: 'carousel-button carousel-previous d-none',
       'aria-label': 'Previous',
       'data-toggle': 'previous',
     },
@@ -30,7 +30,7 @@ function decorateNextPreviousBtns() {
   const nextBtn = createTag(
     'button',
     {
-      class: 'carousel-button carousel-next',
+      class: 'carousel-button carousel-next d-none',
       'aria-label': 'Next',
       'data-toggle': 'next',
     },
@@ -342,7 +342,7 @@ export default function init(el) {
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
   const slideIndicators = decorateSlideIndicators(slides);
-  const controlsContainer = createTag('div', { class: 'carousel-controls' });
+  const controlsContainer = createTag('div', { class: 'carousel-controls d-none' });
 
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
@@ -378,10 +378,21 @@ export default function init(el) {
 
   el.append(...nextPreviousBtns, controlsContainer);
 
+  function handleImageLoad() {
+    if (!controlsContainer.classList.contains('d-none') && nextPreviousBtns.findIndex((btnEl) => btnEl.classList.contains('d-none')) === -1) this.removeEventListener('load', handleImageLoad, false);
+    else {
+      if (controlsContainer.classList.contains('d-none')) controlsContainer.classList.remove('d-none');
+      nextPreviousBtns.forEach((btnEl) => {
+        if (btnEl.classList.contains('d-none')) btnEl.classList.remove('d-none');
+      });
+    }
+  }
+
   function handleDeferredImages() {
     const images = el.querySelectorAll('img[loading="lazy"]');
     images.forEach((img) => {
       img.removeAttribute('loading');
+      img.addEventListener('load', handleImageLoad);
     });
     parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
   }
