@@ -233,7 +233,7 @@ function lowercaseKeys(obj) {
   }, {});
 }
 
-async function createForm(formURL, thankYou, formData, endpoint = '') {
+async function createForm({ formURL, thankYou, formData, endpoint }) {
   const { pathname } = new URL(formURL);
   let json = formData;
   /* c8 ignore next 4 */
@@ -294,6 +294,7 @@ export default async function decorate(block, formData = null) {
   const [form, endpoint] = block.querySelectorAll(':scope > div:first-child a');
   const thankYou = block.querySelector(':scope > div:last-of-type > div');
   thankYou.remove();
+  const config = { formURL: form?.href, thankYou, formData, endpoint: endpoint?.href };
   if (endpoint) endpoint.parentElement.remove();
-  if (form) form.replaceWith(await createForm(form.href, thankYou, formData, endpoint?.href));
+  if (form) form.replaceWith(await createForm(config));
 }
