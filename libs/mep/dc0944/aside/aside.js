@@ -67,8 +67,7 @@ function getBlockData(el) {
 
 function decorateStaticLinks(el) {
   if (!el.classList.contains('notification')) return;
-  const textLinks = el.querySelectorAll('a:not([class])');
-  textLinks.forEach((link) => { link.classList.add('static'); });
+  el.querySelectorAll('a:not([class])').forEach((link) => { link.classList.add('static'); });
 }
 
 function decorateMedia(el) {
