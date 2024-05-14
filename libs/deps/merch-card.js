@@ -273,8 +273,8 @@ import{html as t,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
         }
         :host([variant='mini-compare-chart']) .mini-compare-chart-badge {
             font-size: var(--consonant-merch-card-detail-font-size);
-            padding: 6px 8px;
-            top: 10px;
+            padding: 5px 8px;
+            top: 9px;
         }
         :host([variant='mini-compare-chart']) footer {
             justify-content: center;
