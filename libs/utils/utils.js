@@ -845,15 +845,24 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
 }
 
 async function checkForPageMods() {
-  const offFlag = (val) => PAGE_URL.searchParams.get(val) === 'off';
-  if (offFlag('mep')) return;
-  const persMd = getMetadata('personalization');
-  const promoMd = getMetadata('manifestnames');
-  const targetMd = getMetadata('target')?.toLowerCase();
+  // const offFlag = (val) => PAGE_URL.searchParams.get(val)?.toLowerCase() === 'off';
+  function getEnablement(metadata, flag = false) {
+    const flagVal = PAGE_URL.searchParams.get(flag || metadata)?.toLowerCase();
+    if (flagVal === 'off') return false;
+    if (flagVal) return flagVal;
+    const metaVal = getMetadata(metadata)?.toLowerCase();
+    if (!metaVal || metaVal === 'off') return false;
+    return metaVal;
+  }
+  if (getEnablement('mep')) return;
+  const persEnabled = getEnablement('personalization');
+  const targetEnabled = getMetadata('manifestnames', 'promo');
+  const promoEnabled = getMetadata('target');
+
   let persManifests = [];
-  const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
-  const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
-  const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
+  // const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
+  // const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
+  // const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
   if (mepEnabled) {
@@ -865,7 +874,7 @@ async function checkForPageMods() {
   }
 
   if (persEnabled) {
-    persManifests = persMd.toLowerCase()
+    persManifests = persEnabled.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
       .map((manifestPath) => ({ manifestPath }));
@@ -873,7 +882,7 @@ async function checkForPageMods() {
 
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoMd, PAGE_URL.searchParams));
+    persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
   const { env } = getConfig();
@@ -882,13 +891,13 @@ async function checkForPageMods() {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
-      mepEnabled,
+      mepEnabled: !!mepEnabled,
       persManifests,
     });
   }
 
-  if (targetEnabled && !targetMd.toLowerCase().includes('gnav')) {
-    await loadMartech({ persEnabled: true, persManifests, targetMd });
+  if (targetEnabled && !targetEnabled.toLowerCase().includes('gnav')) {
+    await loadMartech({ persEnabled: true, persManifests, targetEnabled });
   } else if (persManifests.length) {
     loadIms()
       .then(() => {
