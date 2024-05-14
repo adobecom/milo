@@ -3,6 +3,7 @@ import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
+import '../../deps/merch-icon.js';
 import '../../deps/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
@@ -279,10 +280,15 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
 };
 
 export async function initJSON({
-  name, title, icon, description, prices, ctas,
+  name, title, type = 'catalog', icon, description, prices, ctas,
 }) {
+  const { base } = getConfig();
+  const stylePromise = new Promise((resolve) => {
+    loadStyle(`${base}/blocks/merch-card/merch-card.css`, resolve);
+  });
+  await stylePromise;
   return `
-   <merch-card variant="catalog" name="${name}" filters="all" data-aue-label="${title}">
+   <merch-card variant="${type}" name="${name}" filters="all" data-aue-label="${title}">
       <merch-icon slot="icons" src="${icon}"></merch-icon>
       <h3 slot="heading-xs">${title}</h3>
       <h2 slot="heading-m">${(prices) ?? ''}</h2>

@@ -100,6 +100,7 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { odin: '/tools/odin/' },
 ];
 const DO_NOT_INLINE = [
   'accordion',

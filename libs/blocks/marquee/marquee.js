@@ -137,17 +137,22 @@ export default async function init(el) {
 }
 
 export async function initJSON({ content, background, mobileBackground, theme, variant }) {
-  return `<div class="marquee ${theme} ${variant} center">
-  <div>
+  const { base } = getConfig();
+  const stylePromise = new Promise((resolve) => {
+    loadStyle(`${base}/blocks/marquee/marquee.css`, resolve);
+  });
+  await stylePromise;
+  return `<div class="marquee ${theme} ${variant} static-links">
+  <div class="background">
     <div data-valign="middle">
       <picture>
         <source type="image/jpeg" srcset="${background}" media="(min-width: 600px)">
-        <img loading="lazy" alt="Special Offers marquee gradient bg" src="${mobileBackground}}" width="720" height="800">
+        <img loading="lazy" src="${mobileBackground}}" width="720" height="800">
       </picture>
     </div>
   </div>
-  <div>
-    <div data-valign="middle">
+  <div class="foreground container">
+    <div data-valign="middle" class="text">
       ${content}
     </div>
   </div>
