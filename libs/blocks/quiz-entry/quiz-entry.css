@@ -412,7 +412,7 @@
   }
 
   .carousel-slides {
-    justify-content: center;
+    justify-content: left;
   }
 
   .carousel-slides.align-right {
