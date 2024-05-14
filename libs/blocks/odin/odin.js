@@ -38,18 +38,18 @@ class OdinSearch extends LitElement {
     const wrap = async (block, { cfTitle, title, path }, classes = '') => {
       const el = await block;
       return `
-    <li
-      data-aue-label="${title ?? cfTitle}"
-      data-aue-resource="urn:aemconnection:${path}/jcr:content/data/master"
-      data-aue-type="reference"
-    >
+    <li>
     <p class="path">${path}</p>
     <sp-button-group>
-      <sp-button>Use</sp-button>
-      <sp-button>Publish</sp-button>
-      <sp-button>Unpublish</sp-button>
+      <sp-button variant="cta">Use</sp-button>
+      <sp-button variant="secondary">Publish</sp-button>
+      <sp-button variant="secondary">Unpublish</sp-button>
   </sp-button-group>
-    <div class="block ${classes}">${el}</div></li>`;
+    <div 
+    data-aue-label="${title ?? cfTitle}"
+    data-aue-resource="urn:aemconnection:${path}/jcr:content/data/master"
+    data-aue-type="reference"
+    class="block ${classes}">${el}</div></li>`;
     };
 
     const list = await Promise.all(items.map(

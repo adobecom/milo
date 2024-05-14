@@ -11,21 +11,21 @@ merch-card {
   position: relative;
 }
 
-li[data-aue-label] {
+odin-search > ul > li {
   list-style: none;
   position: relative;
 }
 
-li[data-aue-label]:not(:first-of-type) {
+odin-search > ul > li:not(:first-of-type) {
   border-top: 1px dodgerblue solid;
   padding-top: 16px;
 }
   
-li[data-aue-label] > .block {
+odin-search .block {
   padding-top: 64px;
 }
 
-li[data-aue-label] p.path {
+odin-search p.path {
   position: absolute;
   top: 16px;
   left: 0;
@@ -33,7 +33,7 @@ li[data-aue-label] p.path {
   margin: 0;
 }
 
-li[data-aue-label] sp-button-group {
+odin-search sp-button-group {
   position: absolute;
   top: 16px;
   right: 0;
