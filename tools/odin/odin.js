@@ -141,6 +141,11 @@ class OdinSearch extends LitElement {
     return this.shadowRoot.querySelector('sp-search');
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.doSearch();
+  }
+
   async doSearch() {
     const query = encodeURIComponent(this.search.value);
     const res = await fetch(
