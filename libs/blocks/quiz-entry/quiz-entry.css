@@ -53,11 +53,7 @@
   border-radius: 40px;
   color: var(--text-color);
   cursor: pointer;
-<<<<<<< HEAD
-  font-size: 16px;
-=======
   font-size: var( --type-body-s-size);
->>>>>>> upstream/stage
   height: 56px;
   line-height: var(--type-heading-m-lh);
   padding: 0 var(--spacing-xxl) 0 var(--spacing-s);
@@ -66,10 +62,7 @@
 
 .quiz-input::placeholder {
   color: var(--text-color);
-<<<<<<< HEAD
-=======
   font-size: var( --type-body-s-size) !important;
->>>>>>> upstream/stage
   font-style: italic;
 }
 
