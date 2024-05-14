@@ -39,7 +39,7 @@ const resultsMock = {
           text: 'Edit, mix, and add sound effects',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-video/5-AU-SoundEffects.png',
-        }
+        },
       ],
     },
     'q-3d': {
@@ -81,7 +81,7 @@ const resultsMock = {
           text: 'Design 3D assets and materials',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q3/4-Designer@1x.png',
-        }
+        },
       ],
     },
     'q-category': {
@@ -137,7 +137,7 @@ const resultsMock = {
           text: 'Model, texture, and render 3D assets and scenes',
           icon: '',
           image: 'https://main--milo--adobecom.hlx.page/drafts/colloyd/quiz-entry/images/3dar.png',
-        }
+        },
       ],
     },
     questions: {
@@ -234,7 +234,7 @@ const resultsMock = {
           text: '',
           background: 'https://cc-prod.scene7.com/is/image/CCProdAuthor/DSK-Q4%20BKGD%202X?$pjpeg$&jpegSize=300&wid=1920',
           footerFragment: 'https://milo.adobe.com/fragments/quiz/sample-uar-fragments/footer/footer2',
-        }
+        },
       ],
     },
     'q-rather': {
@@ -255,7 +255,7 @@ const resultsMock = {
           text: 'Take the time to control every detail',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/2-CustomDesigns.png',
-        }
+        },
       ],
     },
     'q-photo': {
@@ -297,7 +297,7 @@ const resultsMock = {
           text: 'Blend multiple shots into something new',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-photo/5-PS-BlendImages.png',
-        }
+        },
       ],
     },
     'q-fallback': {
@@ -346,7 +346,7 @@ const resultsMock = {
           text: 'Model, texture, and render 3D assets and scenes',
           icon: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/6-3D-AR%20ICON.svg',
           image: '',
-        }
+        },
       ],
     },
     'q-pdf': {
@@ -395,7 +395,7 @@ const resultsMock = {
           text: 'Track signatures and progress',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-pdf/6-Ac-TrackSignatures.png',
-        }
+        },
       ],
     },
     'q-design': {
@@ -423,7 +423,7 @@ const resultsMock = {
           text: 'Create graphics and designs that work at any size',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-design/3-Ai-CreateGraphics.png',
-        }
+        },
       ],
     },
     'q-illustration': {
@@ -458,7 +458,7 @@ const resultsMock = {
           text: 'Blend multiple images into something new',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q2-illustration/4-PS-BlendImages.png',
-        }
+        },
       ],
     },
     'q-customer': {
@@ -486,7 +486,7 @@ const resultsMock = {
           text: 'Neither apply',
           icon: '',
           image: 'https://www.adobe.com/content/dam/cc/Images/app-recommender/multi-select/quiz-question-card-thumbnails/q4/1-Individual.png',
-        }
+        },
       ],
     },
     ':version': 3,
