@@ -143,7 +143,9 @@ class OdinSearch extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.doSearch();
+    this.updateComplete.then(() => {
+      this.doSearch();
+    });
   }
 
   async doSearch() {
