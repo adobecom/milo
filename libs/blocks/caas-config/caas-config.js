@@ -75,6 +75,7 @@ const defaultOptions = {
     'double-wide': 'Double Width Card',
     product: 'Product Card',
     'text-card': 'Text Card',
+    'icon-card': 'Icon Card',
     'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
