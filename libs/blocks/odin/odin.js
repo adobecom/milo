@@ -88,8 +88,8 @@ class OdinSearch extends LitElement {
     return html`
       <sp-theme color="light" scale="medium">
         <div>
-        <sp-search placeholder="Search" value="Photoshop"></sp-search>
-        <sp-picker placeholder="Refine block type">
+        <sp-search placeholder="Search" value="Photoshop" size="m"></sp-search>
+        <sp-picker placeholder="Refine block type" size="m">
           <sp-menu-item value="/conf/sandbox/settings/dam/cfm/models/merch-card"
             >Merch Card</sp-menu-item
           >
