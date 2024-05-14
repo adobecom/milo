@@ -47,8 +47,7 @@ function linkSectionToModuleStep(el) {
 }
 
 function editCtaToModuleClick(el) {
-  const ctas = el.querySelectorAll('a');
-  ctas.forEach((cta) => {
+  el.querySelectorAll('a').forEach((cta) => {
     if (cta.href.toLowerCase().includes('#module')) {
       cta.addEventListener('click', (e) => {
         e.preventDefault();
