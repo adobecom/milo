@@ -231,8 +231,7 @@ export default function init(el) {
   decorateStaticLinks(el);
   formatPromoButton(el);
   if (el.classList.contains('frictionless')) {
-    const moduleCtas = document.querySelectorAll('.CTAButtons');
-    if (moduleCtas.length) {
+    if (document.querySelectorAll('.CTAButtons').length) {
       linkSectionToModuleStep(el);
       editCtaToModuleClick(el);
     } else el.closest('.section').classList.add('.sticky-banner-disable');
