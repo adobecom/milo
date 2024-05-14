@@ -1141,7 +1141,7 @@
 }
 
 /* Added for frictionless dc0944 */
-.section.hide-on-step-start:not(.hide-sticky-section) {
+.section.hide-on-step-start:not(.hide-sticky-section):not(.close-sticky-section) {
   background: none !important;
   display: flex;
   justify-content: center;
