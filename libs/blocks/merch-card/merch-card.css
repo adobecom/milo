@@ -40,9 +40,4 @@ merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
   .badge-card .card-heading {
     margin-top: var(--spacing-s);
   }
-
-  .badge-merch-cards div[class$="-badge"],
-  .badge-card div[class$="-badge"] {
-    max-width: 0;
-  }
 }

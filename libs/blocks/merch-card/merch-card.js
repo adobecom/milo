@@ -339,6 +339,7 @@ const init = async (el) => {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
+        if (document.querySelector('html').dir === 'rtl') merchCard.setAttribute('is-rtl', 'true');
         merchCard.classList.add('badge-card');
       }
     }
