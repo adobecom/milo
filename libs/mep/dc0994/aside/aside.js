@@ -41,10 +41,7 @@ const closeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                     </g>
                   </svg>`;
 
-function linkSectionToModuleStep(el) {
-  const parentSection = el.closest('.section');
-  parentSection.classList.add('hide-on-step-start');
-}
+const linkSectionToModuleStep = (el) => el.closest('.section').classList.add('hide-on-step-start');
 
 function editCtaToModuleClick(el) {
   el.querySelectorAll('a').forEach((cta) => {
