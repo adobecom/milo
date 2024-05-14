@@ -112,7 +112,6 @@ import{html as t,LitElement as O}from"/libs/deps/lit-all.min.js";import{css as v
         right: 0;
         font-size: var(--type-heading-xxs-size);
         font-weight: 500;
-        max-width: 150px;
         line-height: 16px;
         text-align: center;
         padding: 8px 11px;
