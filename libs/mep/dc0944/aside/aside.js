@@ -115,8 +115,7 @@ function addCloseButton(el) {
 }
 
 function addPromobar(sourceEl, parent) {
-  const newPromo = sourceEl.cloneNode(true);
-  parent.appendChild(newPromo);
+  parent.appendChild(sourceEl.cloneNode(true));
 }
 
 function checkViewportPromobar(foreground) {
