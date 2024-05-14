@@ -149,6 +149,7 @@ export default async function init(el) {
     asset.parentElement.classList.add('asset');
     foreground.classList.add('has-asset');
     if (el.classList.contains('split')) {
+      el.classList.add('split-asset');
       el.appendChild(createTag('div', { class: 'foreground-split' }, asset));
     }
   } else {
