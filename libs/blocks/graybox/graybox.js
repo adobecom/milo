@@ -235,6 +235,7 @@ export default function init(grayboxEl) {
   const enableGraybox = grayboxParam === 'on'
     || url.hostname.includes('graybox.adobe.com')
     || url.hostname.includes('localhost')
+    || url.hostname.includes('-graybox--')
     || getMetadata('project') === 'graybox';
 
   if (grayboxParam === 'off' || !enableGraybox) {
