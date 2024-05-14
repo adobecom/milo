@@ -19,7 +19,7 @@ odin-search > ul > li {
 }
   
 odin-search .block {
-  padding-top: 64px;
+  margin-top: 64px;
 }
 
 odin-search p.path {
