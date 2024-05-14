@@ -11,6 +11,8 @@ const meta = createTag('meta', {
   content: 'aem:https://author-p22655-e59341.adobeaemcloud.com',
 });
 
+const bearerToken = localStorage.getItem('bearerToken');
+
 document.head.appendChild(meta);
 
 loadScript('https://universal-editor-service.experiencecloud.live/corslib/LATEST');
@@ -190,7 +192,7 @@ async function fetchCardsData(config, type, el) {
       queryIndexCardPath = `${queryIndexCardPath}?sheet=${type}`;
     }
   }
-  const res = await fetch(queryIndexCardPath);
+  const res = await fetch(queryIndexCardPath, { headers: { authorization: `Bearer ${bearerToken}` } });
   if (res.ok) {
     cardsData = await res.json();
   } else {
