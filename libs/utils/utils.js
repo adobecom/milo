@@ -65,6 +65,7 @@ const MILO_BLOCKS = [
   'preflight',
   'promo',
   'quiz',
+  'quiz-entry',
   'quiz-marquee',
   'quiz-results',
   'tabs',
