@@ -33,6 +33,19 @@ const USER_AGENT = {
 
 let deviceModal;
 
+const setMetadata = (metadata) => {
+  const { selector, val } = metadata;
+  if (!selector || !val) return;
+  const propName = selector.startsWith('og:') ? 'property' : 'name';
+  let metaEl = document.querySelector(`meta[${propName}="${selector}"]`);
+  if (!metaEl) {
+    metaEl = document.createElement('meta');
+    metaEl.setAttribute(propName, selector);
+    document.head.append(metaEl);
+  }
+  metaEl.setAttribute('content', val);
+};
+
 const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 const getTableValues = (el) => [...el.childNodes].reduce((rdx, row) => {
@@ -231,7 +244,7 @@ export default function init(grayboxEl) {
 
   const grayboxParam = url.searchParams.get('graybox');
 
-  /* c8 ignore next 8 */
+  /* c8 ignore next 9 */
   const enableGraybox = grayboxParam === 'on'
     || url.hostname.includes('graybox.adobe.com')
     || url.hostname.includes('localhost')
@@ -241,6 +254,8 @@ export default function init(grayboxEl) {
   if (grayboxParam === 'off' || !enableGraybox) {
     return;
   }
+
+  setMetadata({ selector: 'georouting', val: 'off' });
 
   const options = getTableValues(grayboxEl);
   const grayboxThePage = () => {
