@@ -78,8 +78,7 @@ function decorateMedia(el) {
     const siblingP = parentP?.nextElementSibling;
     if (!siblingP || siblingP.nodeName !== 'P') return false;
     const siblingText = siblingP.textContent;
-    const hasFormats = FORMAT_REGEX.test(siblingText);
-    if (!hasFormats) return false;
+    if (!FORMAT_REGEX.test(siblingText)) return false;
     const formats = siblingText.split(': ')[1]?.split(/\s+/);
     if (formats) {
       const formatClasses = [];
