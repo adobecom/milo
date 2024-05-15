@@ -49,6 +49,20 @@ class OdinSearch extends LitElement {
     e.stopPropagation();
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('aue:content-patch', this.onContentPatch);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('aue:content-patch', this.onContentPatch);
+  }
+
+  onContentPatch(e) {
+    console.log(e);
+  }
+
   async prepareItems(items) {
     const wrap = async (block, { cfTitle, title, path }, classes = '') => `
     <li>
