@@ -128,6 +128,7 @@ class OdinSearch extends LitElement {
   render() {
     return html`
       <sp-theme color="light" scale="medium">
+        <h1>Merch at Scale Fragments</h1>
         <div>
         <sp-search placeholder="Search" value="Photoshop" size="m"></sp-search>
         <sp-picker placeholder="Refine block type" size="m">
