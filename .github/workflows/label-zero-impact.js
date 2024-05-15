@@ -1,5 +1,17 @@
 const { getLocalConfigs } = require('./helpers.js');
-const zeroImpactDirs = ['.github', '.kodiak', '.vscode', '.test', 'libs/mep'];
+const zeroImpactDirs = [
+  '.github',
+  '.kodiak',
+  '.vscode',
+  '.test',
+  'libs/mep',
+  '.eslintrc.js',
+  'CODEOWNERS',
+  'web-test-runner.config.mjs',
+  'LICENSE',
+  'codecov.yaml',
+  '.gitignore',
+];
 const zeroImpactLabel = 'zero-impact';
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/label-zero-impact.js
