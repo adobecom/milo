@@ -392,11 +392,14 @@ export default function init(el) {
     const images = el.querySelectorAll('img[loading="lazy"]');
     images.forEach((img) => {
       img.removeAttribute('loading');
-      img.addEventListener('load', handleImageLoad);
     });
     parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
+
+  el.querySelectorAll('.carousel-wrapper img').forEach((img) => {
+    img.addEventListener('load', handleImageLoad);
+  });
 
   slides[0].classList.add('active');
   const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
