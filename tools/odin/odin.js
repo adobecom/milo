@@ -9,11 +9,7 @@ import '../../libs/features/spectrum-web-components/dist/button.js';
 import '../../libs/features/spectrum-web-components/dist/button-group.js';
 import '../../libs/features/spectrum-web-components/dist/picker.js';
 import '../../libs/deps/merch-icon.js';
-import { initJSON as initMerchCard } from '../../libs/blocks/merch-card/merch-card.js';
-import { initJSON as initMarquee } from '../../libs/blocks/marquee/marquee.js';
-import {
-  createTag, decorateLinks, getConfig, loadBlock, loadScript, loadStyle,
-} from '../../libs/utils/utils.js';
+import { createTag, getConfig, loadBlock, loadScript, loadStyle } from '../../libs/utils/utils.js';
 
 const { base } = getConfig();
 loadStyle(`${base}/blocks/merch-card/merch-card.css`);
@@ -54,9 +50,7 @@ class OdinSearch extends LitElement {
   }
 
   async prepareItems(items) {
-    const wrap = async (blockName, block, { cfTitle, title, path }, classes = '') => {
-      const el = await block;
-      return `
+    const wrap = async (block, { cfTitle, title, path }, classes = '') => `
     <li>
     <p class="path">${path}</p>
     <sp-button-group>
@@ -65,13 +59,11 @@ class OdinSearch extends LitElement {
       <sp-button variant="secondary">Unpublish</sp-button>
   </sp-button-group>
     <div
-    data-milo-block="${blockName}"
     data-odin-path="${path}"
     data-aue-label="${title ?? cfTitle}"
     data-aue-resource="urn:aemconnection:${path}/jcr:content/data/master"
     data-aue-type="reference"
-    class="block ${classes}">${el}</div></li>`;
-    };
+    class="block ${classes}"><div class="${block}"><a class="odin" href="?fragment=${path}"></a></div></li>`;
 
     const list = await Promise.all(items.map(
       ({ path, title, fields, model: { path: modelPath } }) => {
@@ -85,9 +77,9 @@ class OdinSearch extends LitElement {
         };
         switch (modelPath) {
           case '/conf/sandbox/settings/dam/cfm/models/merch-card':
-            return wrap('merch-card', initMerchCard(item), item, `merch-card-collection ${item.type ?? 'catalog'} one-merch-card`);
+            return wrap('merch-card', item, `merch-card-collection ${item.type ?? 'catalog'} one-merch-card`);
           case '/conf/sandbox/settings/dam/cfm/models/marquee':
-            return wrap('marquee', initMarquee(item), item, 'marquee');
+            return wrap('marquee', item, 'marquee');
           default:
             return '';
         }
@@ -99,10 +91,7 @@ class OdinSearch extends LitElement {
     ul.innerHTML = list.join('');
     this.appendChild(ul);
 
-    const blocks = [...ul.querySelectorAll('li > *')];
-    Promise.all(
-      blocks.map((block) => Promise.all(decorateLinks(block).map(loadBlock))),
-    );
+    ul.querySelectorAll('[data-odin-path] > *').forEach(loadBlock);
   }
 
   onClick(e) {

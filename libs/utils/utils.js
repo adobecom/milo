@@ -601,6 +601,14 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
+    if (key === 'odin') {
+      const { parentElement } = a;
+      const [blockName] = a.innerText.split(':');
+      const div = createTag('div', null, a);
+      div.className = blockName;
+      parentElement.replaceWith(div);
+    }
+
     a.className = `${key} link-block`;
     return true;
   });
