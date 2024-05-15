@@ -132,7 +132,7 @@ const merge = async ({ prs }) => {
         merge_method: 'squash',
       });
     }
-    body = `- [${title}](${html_url})\n${body}`;
+    body = `- ${html_url}\n${body}`;
     const isHighImpact = labels.includes(LABELS.highImpact);
     if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
       await slackNotification(
@@ -184,8 +184,7 @@ const openStageToMainPR = async () => {
       });
 
     for (const pr of pullRequestData) {
-      if (!body.includes(pr.html_url))
-        body = `- [${pr.title}](${pr.html_url})\n${body}`;
+      if (!body.includes(pr.html_url)) body = `- ${pr.html_url}\n${body}`;
     }
   }
 
@@ -227,12 +226,22 @@ const main = async (params) => {
   try {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
+    if (stageToMainPR) body = stageToMainPR.body;
     if (stageToMainPR?.labels.some((label) => label.includes(LABELS.SOTPrefix)))
       return console.log('PR exists & testing started. Stopping execution.');
     const prs = await getPRs();
     await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });
     await merge({ prs: prs.filter(({ labels }) => !isHighPrio(labels)) });
     if (!stageToMainPR) await openStageToMainPR();
+    if (body !== stageToMainPR?.body) {
+      console.log("Updating PR's body...");
+      await github.rest.pulls.update({
+        owner,
+        repo,
+        pull_number: stageToMainPR.number,
+        body: body,
+      });
+    }
     console.log('Process successfully executed.');
   } catch (error) {
     console.error(error);
