@@ -129,7 +129,7 @@ export async function initJSON(el, a) {
 export default async function init(el) {
   const cf = el.querySelector('.odin');
   if (cf) {
-    initJSON(el, cf);
+    await initJSON(el, cf);
     return;
   }
   const excDark = ['light', 'quiet'];
