@@ -293,7 +293,8 @@ li.locui-subproject.locui-subproject-translated .locui-subproject-badge {
 }
 
 li.locui-subproject.locui-subproject-rolling-out .locui-subproject-badge,
-li.locui-subproject.locui-subproject-completed .locui-subproject-badge {
+li.locui-subproject.locui-subproject-completed .locui-subproject-badge,
+li.locui-subproject.locui-subproject-retrying .locui-subproject-badge {
   background: rgb(246 97 182);
 }
 
