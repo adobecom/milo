@@ -467,17 +467,17 @@
       order: unset;
   }
 
-  .hero-marquee > .foreground.has-asset {
+  .hero-marquee > .foreground.cols-2 {
     grid-template-columns: minmax(50%, 1fr) minmax(50%, 1fr);
     align-items: center;
     gap: 0;
   }
 
-  .hero-marquee > .foreground.has-asset .copy {
+  .hero-marquee > .foreground.cols-2 .copy {
     padding-inline-end: 100px;
   }
 
-  .hero-marquee.asset-left > .foreground.has-asset .copy {
+  .hero-marquee.asset-left > .foreground.cols-2 .copy {
     padding-inline-start: 100px;
     padding-inline-end: unset;
   }

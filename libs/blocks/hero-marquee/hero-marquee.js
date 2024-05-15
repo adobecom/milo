@@ -98,7 +98,7 @@ function extendButtonsClass(copy) {
   buttons.forEach((button) => {
     button.classList.add('button-xl', 'button-justified-mobile');
   });
-  removeBodyClassOnEl(copy);
+  // removeBodyClassOnEl(copy);
 }
 function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
@@ -142,12 +142,12 @@ export default async function init(el) {
   let copy = fRows[0];
   const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
   const asset = foreground.querySelector('div > picture, div > video, div > a[href*=".mp4"]');
+  const allRows = foreground.querySelectorAll('div > div');
   copy = anyTag.closest('div');
   copy.classList.add('copy');
 
   if (asset) {
     asset.parentElement.classList.add('asset');
-    foreground.classList.add('has-asset');
     if (el.classList.contains('split')) {
       el.classList.add('split-asset');
       el.appendChild(createTag('div', { class: 'foreground-split' }, asset));
@@ -156,12 +156,16 @@ export default async function init(el) {
     [...fRows].forEach((row) => {
       if (row.childElementCount === 0) {
         row.classList.add('empty-asset');
-        foreground.classList.add('has-asset');
       }
     });
   }
 
-  // if (fRows.length === 1) foreground.classList.add('fw');
+  const assetUnknown = (allRows.length === 2
+    && allRows[1].classList.length === 0)
+    ? allRows[1]
+    : null;
+  if (assetUnknown) assetUnknown.classList.add('asset-unknown');
+
   decorateBlockText(copy, ['xxl', 'm', 'l']); // heading, body, detail
   decorateLockupFromContent(copy);
   extendButtonsClass(copy);
