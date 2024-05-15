@@ -81,6 +81,7 @@ const defaultOptions = {
     primary: 'Primary',
     'call-to-action': 'Call To Action',
     link: 'Link',
+    dark: 'Dark',
     hidden: 'Hide CTAs',
   },
   container: {
@@ -118,7 +119,7 @@ const defaultOptions = {
   filterBuildPanel: {
     automatic: 'Automatic',
     custom: 'Custom',
-    categories: 'Categories',
+    // categories: 'Categories',
   },
   filterEvent: {
     '': 'All',
@@ -612,41 +613,40 @@ const FilterPanel = ({ tagsData }) => {
     <//>
   `;
 
-  const FilterEventsPanel = html`
-    <${FilterOptions}>
-    <${MultiField}
-      onChange=${onChange('filtersCategories')}
-      className="filtersCategories"
-      values=${context.state.filtersCategories}
-      title="Categories"
-      subTitle=""
-    >
-      <${TagSelect} id="eventsFilterTag" options=${allTags} label="Main Tag" singleSelect />
-      <${FormInput} label="Icon Path" name="icon" />
-    <//>
+  // const FilterEventsPanel = html`
+  //   <${FilterOptions}>
+  //   <${MultiField}
+  //     onChange=${onChange('filtersCategories')}
+  //     className="filtersCategories"
+  //     values=${context.state.filtersCategories}
+  //     title="Categories"
+  //     subTitle=""
+  //   >
+  //     <${TagSelect} id="eventsFilterTag" options=${allTags} label="Main Tag" singleSelect />
+  //     <${FormInput} label="Icon Path" name="icon" />
+  //   <//>
 
-    <${MultiField}
-    onChange=${onChange('filters')}
-    className="filters"
-    values=${context.state.filters}
-    title="Filters"
-    subTitle=""
-  >
-    <${TagSelect} id="eventsFilterTag" options=${allTags} label="Main Tag" singleSelect />
-    <${FormInput} label="Icon Path" name="icon" />
-  <//>
-  `;
+  //   <${MultiField}
+  //   onChange=${onChange('filters')}
+  //   className="filters"
+  //   values=${context.state.filters}
+  //   title="Filters"
+  //   subTitle=""
+  // >
+  //   <${TagSelect} id="eventsFilterTag" options=${allTags} label="Main Tag" singleSelect />
+  //   <${FormInput} label="Icon Path" name="icon" />
+  // <//>
+  // `;
+
   /* eslint-disable no-nested-ternary */
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
 
+    
     ${state.showFilters
       && (state.filterBuildPanel === 'custom'
         ? FilterCustomBuildPanel
-        : state.filterBuildPanel === 'events'
-          ? FilterEventsPanel
-          : FilterBuildPanel)}
-
+        : FilterBuildPanel)}
   `;
   /* eslint-enable no-nested-ternary */
 };
