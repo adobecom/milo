@@ -87,7 +87,7 @@ class OdinSearch extends LitElement {
           case '/conf/sandbox/settings/dam/cfm/models/merch-card':
             return wrap('merch-card', initMerchCard(item), item, `merch-card-collection ${item.type ?? 'catalog'} one-merch-card`);
           case '/conf/sandbox/settings/dam/cfm/models/marquee':
-            return wrap('marquee', initMarquee(item), item);
+            return wrap('marquee', initMarquee(item), item, 'marquee');
           default:
             return '';
         }

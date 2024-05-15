@@ -41,3 +41,7 @@ odin-search sp-button-group {
 odin-search > ul {
   width: 80%;
 }
+
+.block.marquee {
+  width: 100%;
+}
