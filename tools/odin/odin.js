@@ -60,7 +60,10 @@ class OdinSearch extends LitElement {
   }
 
   onContentPatch(e) {
-    console.log(e);
+    e.stopPropagation();
+    const { miloBlock, odinPath } = e.target.dataset;
+    e.target.innerHTML = `<div class="${miloBlock}"><a class="odin" href="?fragment=${odinPath}"></a></div>`;
+    loadBlock(e.target.firstElementChild);
   }
 
   async prepareItems(items) {
@@ -73,6 +76,7 @@ class OdinSearch extends LitElement {
       <sp-button variant="secondary">Unpublish</sp-button>
   </sp-button-group>
     <div
+    data-milo-block="${block}"
     data-odin-path="${path}"
     data-aue-label="${title ?? cfTitle}"
     data-aue-resource="urn:aemconnection:${path}/jcr:content/data/master"
