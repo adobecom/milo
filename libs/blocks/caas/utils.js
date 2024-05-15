@@ -619,6 +619,7 @@ export const getConfig = async (originalState, strs = {}) => {
         pool: state.sortReservoirPool,
       },
       ctaAction: state.ctaAction,
+      cardHoverEffect: state.cardHoverEffect,
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
@@ -738,6 +739,7 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     headers: caasRequestHeaders,
   };
+  // *** REMOVE BEFORE TAKEOFF ***
   console.log('CAAS_CONFIG:', config);
 
   return config;

@@ -213,6 +213,10 @@ const defaultOptions = {
     default: 'Default',
     modifiedDate: 'Modified Date',
   },
+  cardHoverEffect: {
+    default: 'Default',
+    grow: 'Grow',
+  }
 };
 
 const getTagList = (root) => Object.entries(root).reduce((options, [, tag]) => {
@@ -364,6 +368,11 @@ const UiPanel = () => html`
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
   <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
+  <${Select}
+    label="Card Hover Effect"
+    prop="cardHoverEffect"
+    options=${defaultOptions.cardHoverEffect}
+  />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"
