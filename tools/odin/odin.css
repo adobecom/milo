@@ -42,6 +42,6 @@ odin-search > ul {
   width: 80%;
 }
 
-.block.marquee {
+.block.marquee, .block.marquee > div {
   width: 100%;
 }

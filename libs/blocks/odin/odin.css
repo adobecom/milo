@@ -1,7 +1,0 @@
-main > .section[class*="-merch-card"] div.content {
-  display: contents;
-}
-
-div.section.odin div.content {
-  display: contents;
-}
