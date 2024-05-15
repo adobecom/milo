@@ -44,22 +44,17 @@ const getLeaf = (node, type, parent = null) => {
       if (leaf) return leaf;
     }
   }
-  return undefined;
+  return {};
 };
 
 // MWPW-135315: remove after franklin fix for bold issue
 const addBoldHeaders = (mdast) => {
   const tables = mdast.children.filter((child) => child.type === 'gridTable'); // gets all block
   const tableMap = tables.forEach((table) => {
-    try {
-      const { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
-      if (parent.type !== 'strong') {
-        const idx = parent.children.indexOf(node);
-        parent.children[idx] = { type: 'strong', children: [node] };
-      }
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log('grid-table might be empty in mdast', e);
+    const { node, parent } = getLeaf(table, 'text'); // gets first text node i.e. header
+    if (parent && parent.type !== 'strong') {
+      const idx = parent.children.indexOf(node);
+      parent.children[idx] = { type: 'strong', children: [node] };
     }
   });
   return tableMap;
