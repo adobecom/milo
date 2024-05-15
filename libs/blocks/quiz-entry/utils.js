@@ -78,10 +78,7 @@ export const handleSelections = (prevSelections, selectedQuestion, selections) =
   // de-dup any existing data if they use the ml field and cards.
   if (prevSelections.length > 0) {
     prevSelections.forEach((selection) => {
-      const jsonSelectionSelectedQustion = JSON.stringify(selection.selectedQuestion);
-      const jsonSelectedQuesion = JSON.stringify(selectedQuestion[0].selectedQuestion);
-      const isSameQuestion = jsonSelectionSelectedQustion === jsonSelectedQuesion;
-      if (isSameQuestion) {
+      if (selection.selectedQuestion === selectedQuestion) {
         selection.selectedCards = selections;
         isNewQuestion = false;
       }

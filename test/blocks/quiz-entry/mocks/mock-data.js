@@ -100,7 +100,7 @@ const resultsMock = {
           options: 'photo',
           title: 'Photography',
           text: 'Edit or organize my photos',
-          icon: 'https://milo.adobe.com/drafts/quiz/quiz-ai/search.svg',
+          icon: '',
           image: 'https://main--milo--adobecom.hlx.page/drafts/colloyd/quiz-entry/images/photography.png',
         },
         {
@@ -664,7 +664,7 @@ const resultsMock = {
         },
         {
           options: 'video',
-          next: 'RESET',
+          next: 'q-rather,q-video',
           type: 'card',
           endpoint: '',
           'api-key': '',
