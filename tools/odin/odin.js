@@ -46,6 +46,11 @@ class OdinSearch extends LitElement {
     super();
     this.query = '';
     this.#bearerToken = localStorage.getItem('bearerToken');
+    this.addEventListener('click', this.onClick);
+  }
+
+  onClick(e) {
+    e.stopPropagation();
   }
 
   async prepareItems(items) {

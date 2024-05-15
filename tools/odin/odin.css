@@ -16,6 +16,8 @@ odin-search > ul > li {
   position: relative;
   border-top: 1px dodgerblue solid;
   margin-top: 16px;
+  display: flex;
+  justify-content: center;
 }
   
 odin-search .block {
