@@ -730,7 +730,7 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
   action,
 });
 
-export async function runPersonalization(experiment, config) {
+export async function categorizeActions(experiment) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
   if (!selectedVariant || selectedVariant === 'default') return { experiment };
@@ -743,14 +743,6 @@ export async function runPersonalization(experiment, config) {
 
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
-
-  let manifestId = getFileName(experiment.manifest);
-  if (!config.mep?.preview) {
-    manifestId = false;
-  } else if (experiment.name) {
-    manifestId = `${experiment.name}: ${manifestId}`;
-  }
-  // handleCommands(selectedVariant.commands, manifestId);
 
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
@@ -821,7 +813,6 @@ export function cleanAndSortManifestList(manifests) {
 }
 
 export function handleFragmentCommand(command, a) {
-  // const config = getConfig();
   const { action, fragment, manifestId } = command;
   if (action === 'replace') {
     a.href = fragment;
@@ -855,13 +846,12 @@ export async function applyPers(manifests, postLCP = false) {
     let results = [];
 
     for (const experiment of experiments) {
-      const result = await runPersonalization(experiment, config);
+      const result = await categorizeActions(experiment);
       if (result) {
         results.push(result);
       }
     }
     results = results.filter(Boolean);
-    deleteMarkedEls();
 
     config.mep.experiments ??= [];
     config.mep.experiments = [...config.mep.experiments, ...experiments];
@@ -870,6 +860,7 @@ export async function applyPers(manifests, postLCP = false) {
     config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
 
     if (!postLCP) handleCommands(config.mep.commands);
+    deleteMarkedEls();
 
     const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
     if (!pznList.length) return;

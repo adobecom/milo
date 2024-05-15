@@ -77,6 +77,7 @@ describe('replace action', () => {
 
 describe('insertAfter action', async () => {
   it('insertContentAfter should add fragment after target content and fragment', async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestInsertAfter.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
@@ -99,6 +100,7 @@ describe('insertAfter action', async () => {
 
 describe('insertBefore action', async () => {
   it('insertContentBefore should add fragment before target content and fragment', async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestInsertBefore.json' });
 
     manifestJson = JSON.parse(manifestJson);
@@ -121,6 +123,7 @@ describe('insertBefore action', async () => {
 
 describe('prependToSection action', async () => {
   it('appendToSection should add fragment to beginning of section', async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestPrependToSection.json' });
 
     manifestJson = JSON.parse(manifestJson);
@@ -136,6 +139,7 @@ describe('prependToSection action', async () => {
 
 describe('appendToSection action', async () => {
   it('appendToSection should add fragment to end of section', async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestAppendToSection.json' });
 
     manifestJson = JSON.parse(manifestJson);
@@ -151,6 +155,7 @@ describe('appendToSection action', async () => {
 
 describe('remove action', () => {
   before(async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
@@ -161,12 +166,14 @@ describe('remove action', () => {
   });
 
   it('remove should remove fragment', async () => {
+    config.mep = { handleFragmentCommand };
     const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
     await initFragments(removeMeFrag);
     expect(document.querySelector('a[href="/fragments/removeme"]')).to.be.null;
   });
 
   it('removeContent should tag but not remove content in preview', async () => {
+    config.mep = { handleFragmentCommand };
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
     let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
@@ -192,13 +199,14 @@ describe('remove action', () => {
 
 describe('useBlockCode action', async () => {
   it('useBlockCode should override a current block with the custom block code provided', async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestUseBlockCode.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(getConfig().expBlocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
+    expect(getConfig().mep.blocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
     const promoBlock = document.querySelector('.promo');
     expect(promoBlock.textContent?.trim()).to.equal('Old Promo Block');
     await loadBlock(promoBlock);
@@ -212,7 +220,7 @@ describe('useBlockCode action', async () => {
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(getConfig().expBlocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
+    expect(getConfig().mep.blocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
     const myBlock = document.querySelector('.myblock');
     expect(myBlock.textContent?.trim()).to.equal('This block does not exist');
     await loadBlock(myBlock);
@@ -222,6 +230,7 @@ describe('useBlockCode action', async () => {
 
 describe('custom actions', async () => {
   it('should not add custom configuration if not needed', async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestReplace.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
@@ -230,6 +239,7 @@ describe('custom actions', async () => {
   });
 
   it('should add a custom action configuration', async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestCustomAction.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
@@ -241,24 +251,24 @@ describe('custom actions', async () => {
         commands: [{
           action: 'replace',
           target: '/fragments/fragmentreplaced',
-          manifestId: 'manifest.json',
+          manifestId: false,
         },
         {
           action: 'replace',
           target: '/fragments/new-large-menu',
-          manifestId: 'manifest.json',
+          manifestId: false,
           selector: '.large-menu',
         }],
         fragments: {
           '/fragments/sub-menu': {
             action: 'replace',
             target: '/fragments/even-more-new-sub-menu',
-            manifestId: 'manifest.json',
+            manifestId: false,
           },
           '/fragments/new-sub-menu': {
             action: 'replace',
             target: '/fragments/even-more-new-sub-menu',
-            manifestId: 'manifest.json',
+            manifestId: false,
           },
         },
       },

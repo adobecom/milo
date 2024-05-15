@@ -445,7 +445,7 @@ export async function loadBlock(block) {
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
 
-  if (mep.blocks?.[name]) path = mep.blocks[name];
+  if (mep?.blocks?.[name]) path = mep.blocks[name];
 
   const blockPath = `${path}/${name}`;
 
