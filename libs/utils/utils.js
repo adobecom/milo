@@ -440,12 +440,12 @@ export async function loadBlock(block) {
   }
 
   const name = block.classList[0];
-  const { miloLibs, codeRoot, expBlocks } = getConfig();
+  const { miloLibs, codeRoot, mep } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
 
-  if (expBlocks?.[name]) path = expBlocks[name];
+  if (mep.blocks?.[name]) path = mep.blocks[name];
 
   const blockPath = `${path}/${name}`;
 
@@ -844,34 +844,32 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
   return true;
 }
 
+function getEnablement(metadata, flag = false) {
+  const flagVal = PAGE_URL.searchParams.get(flag || metadata)?.toLowerCase().trim();
+  if (flagVal === 'off') return false;
+  if (flagVal) return flagVal;
+  const metaVal = getMetadata(metadata)?.toLowerCase();
+  if (!metaVal || metaVal === 'off') return false;
+  if (metaVal.includes('gnav') && !metaVal.includes('/')) return 'gnav';
+  if (metaVal === 'on') return true;
+  return metaVal;
+}
+
 async function checkForPageMods() {
-  // const offFlag = (val) => PAGE_URL.searchParams.get(val)?.toLowerCase() === 'off';
-  function getEnablement(metadata, flag = false) {
-    const flagVal = PAGE_URL.searchParams.get(flag || metadata)?.toLowerCase();
-    if (flagVal === 'off') return false;
-    if (flagVal) return flagVal;
-    const metaVal = getMetadata(metadata)?.toLowerCase();
-    if (!metaVal || metaVal === 'off') return false;
-    return metaVal;
-  }
-  if (getEnablement('mep')) return;
+  if (getMetadata('mep')?.toLowerCase().includes('off')) return;
   const persEnabled = getEnablement('personalization');
   const promoEnabled = getEnablement('manifestnames', 'promo');
   const targetEnabled = getEnablement('target');
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
+  if (!mepEnabled) return;
 
   let persManifests = [];
-  // const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
-  // const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
-  // const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
-  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
 
-  if (mepEnabled) {
-    const { base } = getConfig();
-    loadLink(
-      `${base}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-  }
+  const { base } = getConfig();
+  loadLink(
+    `${base}/features/personalization/personalization.js`,
+    { as: 'script', rel: 'modulepreload' },
+  );
 
   if (persEnabled) {
     persManifests = persEnabled.toLowerCase()
@@ -886,17 +884,18 @@ async function checkForPageMods() {
   }
 
   const { env } = getConfig();
-  const mep = PAGE_URL.searchParams.get('mep');
-  if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
+  const mepParam = PAGE_URL.searchParams.get('mep');
+  if (mepParam !== null || (env?.name !== 'prod' && mepEnabled)) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
       mepEnabled: !!mepEnabled,
       persManifests,
+      targetEnabled,
     });
   }
 
-  if (targetEnabled && !targetEnabled.toLowerCase().includes('gnav')) {
+  if (targetEnabled === true) {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
   } else if (persManifests.length) {
     loadIms()
@@ -918,8 +917,8 @@ async function loadPostLCP(config) {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
-  if (getMetadata('target')?.toLowerCase().includes('gnav')) {
-    await loadMartech({ persEnabled: true });
+  if (config.mep?.targetEnabled === 'gnav') {
+    await loadMartech({ persEnabled: true, postLCP: true });
   } else {
     loadMartech();
   }

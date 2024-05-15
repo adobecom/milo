@@ -4,6 +4,7 @@ export default async function addPreviewToConfig({
   pageUrl,
   mepEnabled,
   persManifests,
+  targetEnabled,
 }) {
   const { mep: mepOverride, mepHighlight, mepButton } = Object.fromEntries(pageUrl.searchParams);
   const config = updateConfig({
@@ -12,6 +13,7 @@ export default async function addPreviewToConfig({
       preview: (mepButton !== 'off' && (mepOverride !== undefined || mepEnabled)),
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+      targetEnabled,
     },
   });
 

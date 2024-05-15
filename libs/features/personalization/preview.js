@@ -199,13 +199,14 @@ function createPreviewPill(manifests) {
       <div class="mep-manifest-variants">${radio}</div>
     </div>`;
   });
-  const targetOnText = getMetadata('target') === 'on' ? 'on' : 'off';
+  const config = getConfig();
+  let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
+  if (config.mep.targetEnabled === 'gnav') targetOnText = 'on for gnav only';
   const personalizationOn = getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 
-  const config = getConfig();
   let mepHighlightChecked = '';
   if (config.mep?.highlight) {
     mepHighlightChecked = 'checked="checked"';
@@ -287,10 +288,10 @@ function addHighlightData(manifests) {
 }
 
 export default async function decoratePreviewMode() {
-  const { miloLibs, codeRoot, experiments } = getConfig();
+  const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
-    createPreviewPill(experiments);
-    if (experiments) addHighlightData(experiments);
+    createPreviewPill(mep?.experiments);
+    if (mep?.experiments) addHighlightData(mep.experiments);
   }, { once: true });
 }

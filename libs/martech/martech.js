@@ -211,7 +211,11 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   return filesLoadedPromise;
 };
 
-export default async function init({ persEnabled = false, persManifests = [] }) {
+export default async function init({
+  persEnabled = false,
+  persManifests = [],
+  postLCP = false,
+}) {
   const config = getConfig();
 
   const { url, edgeConfigId } = getDtmLib(config.env);
@@ -229,7 +233,7 @@ export default async function init({ persEnabled = false, persManifests = [] }) 
     if (targetManifests?.length || persManifests?.length) {
       const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
       const manifests = preloadManifests({ targetManifests, persManifests });
-      await applyPers(manifests);
+      await applyPers(manifests, postLCP);
     }
   }
 
