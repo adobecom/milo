@@ -158,6 +158,7 @@ class OdinSearch extends LitElement {
     const query = encodeURIComponent(this.search.value);
     const res = await fetch(
       `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=%7B%22filter%22%3A%7B%22path%22%3A%20%22%2Fcontent%2Fdam%2Fsandbox%2Filyas%22%2C%20%22fullText%22%3A%7B%22text%22%3A%22${query}%22%2C%22queryMode%22%3A%22EXACT_WORDS%22%7D%7D%7D`,
+      { headers: { Authorization: `Bearer ${this.#bearerToken}` } },
     );
     const { items } = await res.json();
     this.prepareItems(items);
