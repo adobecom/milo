@@ -46,10 +46,10 @@ class OdinSearch extends LitElement {
     super();
     this.query = '';
     this.#bearerToken = localStorage.getItem('bearerToken');
-    this.addEventListener('click', this.onClick);
+    this.addEventListener('keydown', this.onKeydown);
   }
 
-  onClick(e) {
+  onKeydown(e) {
     e.stopPropagation();
   }
 
