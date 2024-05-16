@@ -87,6 +87,15 @@ describe('Utils', () => {
       });
     });
 
+    describe('Custom Link Actions', () => {
+      it('Implements a login action', async () => {
+        await waitForElement('.login-action');
+        const login = document.querySelector('.login-action');
+        utils.decorateLinks(login);
+        expect(login.href).to.equal('https://www.adobe.com/');
+      });
+    });
+
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
