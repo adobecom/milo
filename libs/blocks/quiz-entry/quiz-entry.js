@@ -4,6 +4,12 @@ import { mlField, getMLResults } from './mlField.js';
 import { GetQuizOption } from './quizoption.js';
 import { quizPopover, getSuggestions } from './quizPopover.js';
 
+export const locationWrapper = {
+  redirect: (url) => {
+    window.location = url;
+  },
+};
+
 const App = ({
   quizPath,
   maxQuestions,
@@ -222,7 +228,7 @@ const App = ({
       if (questionCount.current === maxQuestions || currentQuizState.userFlow.length === 1) {
         if (!debug) {
           setSelectedQuestion(null);
-          window.location = quizPath;
+          locationWrapper.redirect(quizPath);
         }
       } else {
         setSelectedCards({});
