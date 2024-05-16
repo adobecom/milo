@@ -241,7 +241,7 @@ const main = async (params) => {
     await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });
     await merge({ prs: prs.filter(({ labels }) => !isHighPrio(labels)) });
     if (!stageToMainPR) await openStageToMainPR();
-    if (body !== stageToMainPR?.body) {
+    if (stageToMainPR && body !== stageToMainPR.body) {
       console.log("Updating PR's body...");
       await github.rest.pulls.update({
         owner,
