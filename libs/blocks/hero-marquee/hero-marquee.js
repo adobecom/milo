@@ -55,6 +55,7 @@ function distillClasses(el, classes) {
 }
 
 function decorateText(el, classes) {
+  el.classList.add('norm');
   const btnClass = [...classes].filter((c) => c.endsWith('-button'));
   if (btnClass.length) {
     const parts = btnClass[0].split('-');
@@ -64,7 +65,6 @@ function decorateText(el, classes) {
     decorateButtons(el, 'button-xl');
   }
   distillClasses(el, classes);
-  el.classList.add('norm');
 }
 
 function decorateLockupRow(el) {
@@ -73,23 +73,8 @@ function decorateLockupRow(el) {
 }
 
 function decorateSup(el, classes) {
-  distillClasses(el, classes);
   el.classList.add('norm');
-}
-
-function removeBodyClassOnEl(el) {
-  const actionArea = el.querySelector('.action-area');
-  const bodyClass = actionArea.classList.contains('body-m');
-  // const actionAreaStarts = el.querySelector('.action-area');
-  console.log('actionArea bodyClass', actionArea.classList, bodyClass);
-  // const hasBodyClass = [...actionArea.classList].filter((c) => {
-  //   console.log('class:', c);
-  //   if (!c.startsWith('body-') || !c.endsWith('-body')) return false;
-  //   return c;
-  // });
-  // if (!hasBodyClass.length) return;
-  // console.log('actionArea', el, actionArea, hasBodyClass, hasBodyClass.length);
-  // el.classList.remove(hasBodyClass[0]);
+  distillClasses(el, classes);
 }
 
 function extendButtonsClass(copy) {
@@ -98,7 +83,6 @@ function extendButtonsClass(copy) {
   buttons.forEach((button) => {
     button.classList.add('button-xl', 'button-justified-mobile');
   });
-  // removeBodyClassOnEl(copy);
 }
 function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
@@ -179,6 +163,12 @@ export default async function init(el) {
       rows[i].classList.add('prepend');
     }
   }
+
+  // removeBodyClassOnEl
+  const actionAreaBody = mainCopy.querySelector('.body-m.action-area');
+  if (actionAreaBody) actionAreaBody.classList.remove('body-m');
+  console.log('removeBOdyClassOnEl', mainCopy, actionAreaBody);
+
   copy.innerHTML = '';
   copy.append(mainCopy);
   [...rows].forEach((row) => {
