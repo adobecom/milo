@@ -397,8 +397,10 @@ export default function init(el) {
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
-  el.querySelectorAll('.carousel-wrapper img').forEach((img) => {
-    img.addEventListener('load', handleImageLoad);
+  const slideImages = el.querySelectorAll('.carousel-wrapper .carousel-slides img');
+  slideImages.forEach((img) => {
+    if (img.complete) handleImageLoad.call(img);
+    else img.addEventListener('load', handleImageLoad);
   });
 
   slides[0].classList.add('active');
