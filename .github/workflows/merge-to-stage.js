@@ -16,7 +16,6 @@ const LABELS = {
   SOTPrefix: 'SOT',
   highImpact: 'high-impact',
 };
-
 const SLACK = {
   merge: ({ html_url, number, title, highImpact }) =>
     `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
@@ -153,6 +152,7 @@ const merge = async ({ prs }) => {
         highImpact: isHighImpact ? ' :alert: High impact' : '',
       })
     );
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 };
 
@@ -199,6 +199,14 @@ const openStageToMainPR = async () => {
       base: PROD,
       body,
     });
+
+    await github.rest.issues.createComment({
+      owner,
+      repo,
+      issue_number: number,
+      body: 'Testing can start @adobecom/miq-sot @adobecom/bacom-sot @adobecom/homepage-sot @adobecom/creative-cloud-sot @adobecom/document-cloud-sot ',
+    });
+
     await slackNotification(SLACK.openedSyncPr({ html_url, number }));
   } catch (error) {
     if (error.message.includes('No commits between main and stage'))
