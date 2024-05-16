@@ -206,7 +206,7 @@ const consolidateArray = (arr, prop, existing) => {
     results = [...results, ...i[prop]];
   });
   if (!existing) return results;
-  return { ...existing, ...results };
+  return [...existing, ...results];
 };
 
 const consolidateObjects = (arr, prop, existing) => arr.reduce((propMap, item) => {

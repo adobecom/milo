@@ -290,8 +290,6 @@ function addHighlightData(manifests) {
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
-    createPreviewPill(mep?.experiments);
-    if (mep?.experiments) addHighlightData(mep.experiments);
-  }, { once: true });
+  createPreviewPill(mep?.experiments);
+  if (mep?.experiments) addHighlightData(mep.experiments);
 }
