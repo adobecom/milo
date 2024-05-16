@@ -229,6 +229,17 @@
   padding: 0.2em 1em;
 }
 
+.tabs.radio div[role="tablist"] button {
+  padding: 0 0 var(--spacing-s);
+  font-size: var(--type-body-s-size);
+  font-weight: normal;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  white-space: normal;
+  text-align: start;
+}
+
 .tabs.quiet div[role="tablist"] button:first-of-type,
 .tabs[class*='pill'] div[role="tablist"] button:first-of-type {
   margin-inline-start: 0;
@@ -354,17 +365,6 @@
   flex-direction: column;
   align-items: start;
   width: 100%;
-}
-
-.tabs.radio div[role="tablist"] button {
-  padding: 0 0 var(--spacing-s);
-  font-size: var(--type-body-s-size);
-  font-weight: normal;
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-  white-space: normal;
-  text-align: start;
 }
 
 .tabs.radio div[role="tablist"] button:last-of-type {
