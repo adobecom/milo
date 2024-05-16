@@ -850,7 +850,7 @@ function getEnablement(metadata, flag = false) {
   if (flagVal) return flagVal;
   const metaVal = getMetadata(metadata)?.toLowerCase();
   if (!metaVal || metaVal === 'off') return false;
-  if (metaVal.includes('gnav') && !metaVal.includes('/')) return 'gnav';
+  if (metaVal.includes('gnav') && metadata === 'target') return 'gnav';
   if (metaVal === 'on') return true;
   return metaVal;
 }
