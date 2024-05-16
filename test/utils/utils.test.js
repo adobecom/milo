@@ -527,7 +527,6 @@ describe('Utils', () => {
     const analytics = '<meta property="article:tag" content="Analytics">';
     const commerce = '<meta property="article:tag" content="Commerce">';
     const summit = '<meta property="article:tag" content="Summit">';
-    const promoConfig = { locale: { contentRoot: '/test/utils/mocks' } };
     let oldHead;
     let promoBody;
     let taxonomyData;
@@ -553,21 +552,21 @@ describe('Utils', () => {
 
     it('loads from metadata', async () => {
       document.head.innerHTML = favicon + ccxVideo;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
 
     it('loads from taxonomy in order on sheet', async () => {
       document.head.innerHTML = ccxVideo + typeTaxonomy + analytics + commerce + summit;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/commerce');
     });
 
     it('loads backup from tag when taxonomy has no promo', async () => {
       document.head.innerHTML = ccxVideo + typeTaxonomy + summit;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
@@ -609,6 +608,29 @@ describe('Utils', () => {
       expect(resultConfig.mep.preview).to.be.true;
       expect(resultConfig.experiments.length).to.equal(3);
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
+    });
+  });
+
+  describe('filterDuplicatedLinkBlocks', () => {
+    it('returns empty array if receives invalid params', () => {
+      expect(utils.filterDuplicatedLinkBlocks()).to.deep.equal([]);
+    });
+
+    it('removes duplicated link-blocks', () => {
+      const block1 = document.createElement('div');
+      block1.classList.add('modal');
+      block1.setAttribute('data-modal-hash', 'modalHash1');
+      block1.setAttribute('data-modal-path', 'modalPath1');
+      const block2 = document.createElement('div');
+      block2.classList.add('modal');
+      block2.setAttribute('data-modal-hash', 'modalHash2');
+      block2.setAttribute('data-modal-path', 'modalPath2');
+      const block3 = document.createElement('div');
+      block3.classList.add('modal');
+      block3.setAttribute('data-modal-hash', 'modalHash2');
+      block3.setAttribute('data-modal-path', 'modalPath2');
+      const blocks = [block1, block2, block3];
+      expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
     });
   });
 });

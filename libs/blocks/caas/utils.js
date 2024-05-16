@@ -601,6 +601,7 @@ export const getConfig = async (originalState, strs = {}) => {
       },
       detailsTextOption: state.detailsTextOption,
       setCardBorders: state.setCardBorders,
+      showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
       collectionButtonStyle: state.collectionBtnStyle,
       banner: {
@@ -823,6 +824,7 @@ export const defaultState = {
   secondaryTags: [],
   secondarySource: [],
   setCardBorders: false,
+  showFooterDivider: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
   showFilters: false,

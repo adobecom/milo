@@ -423,3 +423,30 @@ input[type="checkbox"] + label {
     position: static;
   }
 }
+
+@media (min-width: 600px) and (max-width: 900px) {
+  .section.one-up-tablet .faas-form label,
+  .section.one-up-tablet .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
+  .section.one-up-tablet .faas-form select,
+  .section.one-up-tablet .faas-form textarea {
+    width: 50%;
+  }
+
+  .section.one-up-tablet .faas-form .row > label {
+    margin-bottom: 8px;
+  }
+
+  .section.one-up-tablet .faas.column2 {
+    padding: 48px 33px;
+  }
+
+  .section.one-up-tablet .faas.column2 .faas-form .row:not(.submit) {
+    width: 50%;
+    padding: 12px 15px 20px;
+  }
+
+  .section.one-up-tablet .faas.column2 .faas-form .row.legal,
+  .section.one-up-tablet .faas.column2 .faas-form .row:not(.submit).FaaS-35 {
+    width: 100%;
+  }
+}

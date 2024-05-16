@@ -41,14 +41,14 @@ describe('Jarvis Chat', () => {
   it('should not initialize when configuration is not available', async () => {
     setConfig({});
     const config = getConfig();
-    await initJarvisChat(config, sinon.stub(), sinon.stub());
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     expect(initializeSpy.called).to.be.false;
   });
 
   it('should initialize when configuration is available', async () => {
     setConfig(defaultConfig);
     const config = getConfig();
-    await initJarvisChat(config, sinon.stub(), sinon.stub());
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     expect(initializeSpy.called).to.be.true;
   });
 
@@ -60,7 +60,7 @@ describe('Jarvis Chat', () => {
         prefix: '/africa',
       },
     });
-    await initJarvisChat(config, sinon.stub(), sinon.stub());
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     const args = initializeSpy.getCall(0).args[0];
     expect(args.appid).to.equal(config.jarvis.id);
     expect(args.appver).to.equal(config.jarvis.version);
@@ -70,11 +70,90 @@ describe('Jarvis Chat', () => {
     expect(args.region).to.equal('africa');
   });
 
+  it('should receive the correct custom surface id configuration', async () => {
+    setConfig(defaultConfig);
+    const config = Object.assign(getConfig(), {
+      locale: {
+        ietf: 'en',
+        prefix: '/africa',
+      },
+    });
+
+    const testSurfaceId = 'test-id';
+    const getMetadataMock = sinon.stub();
+    getMetadataMock.withArgs('jarvis-surface-id').returns(testSurfaceId);
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), getMetadataMock);
+    const args = initializeSpy.getCall(0).args[0];
+    expect(args.appid).to.equal(testSurfaceId);
+    expect(args.appver).to.equal(defaultConfig.jarvis.version);
+    expect(args.env).to.equal(config.env.name === 'prod' ? 'prod' : 'stage');
+  });
+
+  it('should receive the correct custom version configuration', async () => {
+    setConfig(defaultConfig);
+    const config = Object.assign(getConfig(), {
+      locale: {
+        ietf: 'en',
+        prefix: '/africa',
+      },
+    });
+    const testVersion = '0.123';
+    const getMetadataMock = sinon.stub();
+    getMetadataMock.withArgs('jarvis-surface-version').returns(testVersion);
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), getMetadataMock);
+    const args = initializeSpy.getCall(0).args[0];
+    expect(args.appid).to.equal(defaultConfig.jarvis.id);
+    expect(args.appver).to.equal(testVersion);
+    expect(args.env).to.equal(config.env.name === 'prod' ? 'prod' : 'stage');
+  });
+
+  it('should receive the correct default onDemand configuration', async () => {
+    setConfig(defaultConfig);
+    const config = Object.assign(getConfig(), {
+      locale: {
+        ietf: 'en',
+        prefix: '/africa',
+      },
+      jarvis: {
+        id: 'milo',
+        version: '1.0',
+        onDemand: true,
+      },
+    });
+
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
+    expect(initializeSpy.called).to.be.false;
+  });
+
+  it('should receive the correct custom onDemand configuration', async () => {
+    setConfig(defaultConfig);
+    const config = Object.assign(getConfig(), {
+      locale: {
+        ietf: 'en',
+        prefix: '/africa',
+      },
+      jarvis: {
+        id: 'milo',
+        version: '1.0',
+        onDemand: true,
+      },
+    });
+
+    const getMetadataMock = sinon.stub();
+    getMetadataMock.withArgs('jarvis-on-demand').returns('off');
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), getMetadataMock);
+    expect(initializeSpy.called).to.be.true;
+    const args = initializeSpy.getCall(0).args[0];
+    expect(args.appid).to.equal(defaultConfig.jarvis.id);
+    expect(args.appver).to.equal(defaultConfig.jarvis.version);
+    expect(args.env).to.equal(config.env.name === 'prod' ? 'prod' : 'stage');
+  });
+
   it('should open a chat session upon click', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/jarvis-chat.html' });
     setConfig(defaultConfig);
     const config = getConfig();
-    await initJarvisChat(config, sinon.stub(), sinon.stub());
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     const args = initializeSpy.getCall(0).args[0];
     args.callbacks.initCallback({ releaseControl: { showAdobeMessaging: true } });
     openMessagingWindowSpy.resetHistory();
@@ -89,7 +168,7 @@ describe('Jarvis Chat', () => {
   it('should synchronize analytics', async () => {
     setConfig(defaultConfig);
     const config = getConfig();
-    await initJarvisChat(config, sinon.stub(), sinon.stub());
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     const args = initializeSpy.getCall(0).args[0];
 
     const iconRender = await readFile({ path: './mocks/sendChatIconRenderEvent.json' });
@@ -145,7 +224,7 @@ describe('Jarvis Chat', () => {
   it('should initialize on demand when configured', async () => {
     setConfig(defaultConfig);
     const config = getConfig();
-    await initJarvisChat(config, sinon.stub(), sinon.stub());
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     const args = initializeSpy.getCall(0).args[0];
     // Set uninitialized state
     args.callbacks.initCallback({ releaseControl: { showAdobeMessaging: false } });
@@ -153,7 +232,7 @@ describe('Jarvis Chat', () => {
 
     config.jarvis.onDemand = true;
     document.body.innerHTML = await readFile({ path: './mocks/jarvis-chat.html' });
-    await initJarvisChat(config, sinon.stub(), sinon.stub());
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     expect(initializeSpy.called).to.be.false;
     document.querySelector('a').click();
     await new Promise((resolve) => {

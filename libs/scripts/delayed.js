@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Adobe. All rights reserved.
+ * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,7 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   if (jarvis === 'desktop' && !desktopViewport) return;
 
   const { initJarvisChat } = await import('../features/jarvis-chat.js');
-  initJarvisChat(config, loadScript, loadStyle);
+  initJarvisChat(config, loadScript, loadStyle, getMetadata);
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {

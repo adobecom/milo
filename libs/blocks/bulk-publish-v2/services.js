@@ -5,6 +5,7 @@ import {
   delay,
   frisk,
   isDelete,
+  isSuccess,
 } from './utils.js';
 
 const BASE_URL = 'https://admin.hlx.page';
@@ -25,10 +26,9 @@ const getEndpoint = (url, type, usePath = false) => {
 };
 
 const getRequest = (url, process, useBulk = true) => {
-  const useDelete = isDelete(process);
   const href = useBulk ? [url.href] : url.href;
   const endpoint = getEndpoint(url, process, !useBulk);
-  const options = { headers, method: useDelete ? 'DELETE' : 'POST', body: {} };
+  const options = { headers, method: 'POST', body: {} };
   if (useBulk) options.body = { paths: [] };
   return {
     href,
@@ -110,27 +110,36 @@ const prepareJobs = (details, useBulk) => {
     if (!jobs[base]) jobs[base] = getRequest(url, process);
     const job = jobs[base];
     if (isDelete(process)) {
-      const param = job.endpoint.includes('?') ? '&' : '?';
-      job.endpoint = `${job.endpoint}${param}paths[]=${url.pathname}`;
-    } else {
-      job.options.body.paths.push(url.pathname.toLowerCase());
+      job.options.body.delete = true;
     }
+    job.options.body.paths.push(url.pathname.toLowerCase());
     job.href.push(url.href);
     return jobs;
   }, {}));
 };
 
-const formatResult = ({ status }, job) => {
+const formatIndexResult = (job, results, createTime) => {
+  const resources = results.map(({ result }) => (result));
   const paths = job.urls.map((url) => (new URL(url).pathname));
   const stopTime = new Date();
   return {
-    job: {
-      stopTime,
-      topic: job.process,
-      state: 'stopped',
-      name: `job-${stopTime.toISOString()}`,
-      data: { paths, resources: paths.map((path) => ({ path, status })) },
-      progress: { failed: [200, 204].includes(status) ? 0 : 1 },
+    ...job,
+    ...resources[0],
+    result: {
+      job: {
+        createTime,
+        startTime: createTime,
+        stopTime,
+        topic: job.process,
+        state: 'stopped',
+        name: `job-${stopTime.toISOString()}`,
+        data: { paths, resources },
+        progress: {
+          failed: resources.filter((item) => !isSuccess(item.status)).length,
+          processed: resources.length,
+          total: resources.length,
+        },
+      },
     },
   };
 };
@@ -142,29 +151,38 @@ const startJob = async (details) => {
   const jobs = prepareJobs(details, useBulk);
   const requests = jobs.flatMap(async (job) => {
     const { options, origin, endpoint } = job;
-    if (!isDelete(process)) options.body.forceUpdate = true;
+    if (useBulk) options.body.forceUpdate = true;
     options.body = JSON.stringify(options.body);
     try {
       const request = await fetch(endpoint, options);
       if (!request.ok && useBulk) {
         throw new Error(getErrorText(request.status), request, origin);
       }
-      const result = useBulk ? await request.json() : formatResult(request, details);
+      const result = useBulk
+        ? await request.json()
+        : { ...job, status: request.status };
       return { ...job, result, useBulk };
     } catch (error) {
       return {
         ...job,
+        result: error,
         error: error.status ?? 400,
         message: error.message,
       };
     }
   });
-  // batch to limit concurrency
   const results = [];
-  while (requests.length) {
-    if (requests.length > 5) await delay(5000);
-    const result = await Promise.all(requests.splice(0, 4));
-    results.push(...result);
+  if (useBulk) {
+    // batch to limit concurrency
+    while (requests.length) {
+      if (requests.length > 5) await delay(5000);
+      const result = await Promise.all(requests.splice(0, 4));
+      results.push(...result);
+    }
+  } else {
+    const createTime = new Date();
+    const result = await Promise.all(requests);
+    results.push(formatIndexResult(details, result, createTime));
   }
   return results;
 };

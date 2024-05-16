@@ -1,4 +1,5 @@
-import { html } from '../../../../deps/htm-preact.js';
+/* eslint-disable react-hooks/rules-of-hooks */
+import { html, useRef } from '../../../../deps/htm-preact.js';
 
 function RatingSummary({
   averageRating = 0,
@@ -11,17 +12,29 @@ function RatingSummary({
 
   if (!averageRating) return html`<div></div>`;
 
+  const spanAverage = useRef(html`
+    <span className="hlx-ReviewStats-average">${averageRatingRounded}</span>
+  `);
+  const spanMax = useRef(html`
+    <span className="hlx-ReviewStats-outOf">${maxRating}</span>
+  `);
+  const spanTotalReviews = useRef(html`
+    <span className="hlx-ReviewStats-total">${totalReviews}</span>
+  `);
+  const spanVote = useRef(html`
+    <span className="hlx-ReviewStats-vote">
+      ${totalReviews === 1 ? reviewString : reviewStringPlural}
+    </span>
+  `);
   // placeholder
   return html`
     <div className="hlx-ReviewStats is-Visible">
-      <span className="hlx-ReviewStats-average">${averageRatingRounded}</span>
+      ${spanAverage.current}
       <span className="hlx-ReviewStats-separator">/</span>
-      <span className="hlx-ReviewStats-outOf">${maxRating}</span>
+      ${spanMax.current}
       <span className="hlx-ReviewStats-separator">-</span>
-      <span className="hlx-ReviewStats-total">${totalReviews}</span>
-      <span className="hlx-ReviewStats-vote">
-        ${totalReviews === 1 ? reviewString : reviewStringPlural}
-      </span>
+      ${spanTotalReviews.current}
+      ${spanVote.current}
     </div>
   `;
 }
