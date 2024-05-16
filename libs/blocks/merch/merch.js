@@ -288,6 +288,7 @@ export async function openModal(e, url, offerType) {
   e.preventDefault();
   e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
+  await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
   if (/\/fragments\//.test(url)) {
