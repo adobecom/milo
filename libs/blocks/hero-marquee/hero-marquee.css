@@ -302,7 +302,6 @@
   font-weight: 700;
 }
 
-
 .hero-marquee.fg-media-cover.has-bg .asset {
   display: none;
 }
@@ -330,8 +329,8 @@
   .hero-marquee.fg-media-stack-top-mobile-tablet > .foreground .copy {
     order: 2;
   } 
-
-  .hero-marquee.fg-media-cover-asset:not(.bg-stack-bottom-mobile) {
+  
+  .hero-marquee.fg-media-cover:not(.bg-stack-bottom-mobile) {
     padding-bottom: 0;
   }
 
@@ -372,7 +371,7 @@
 
 /* Tablet ONLY */
 @media screen and (min-width: 600px) and (max-width: 1199px) {
-  .hero-marquee.fg-media-cover-asset:not(.bg-stack-bottom-mobile) {
+  .hero-marquee.fg-media-cover:not(.bg-stack-bottom-mobile) {
     padding-bottom: 0;
   }
 

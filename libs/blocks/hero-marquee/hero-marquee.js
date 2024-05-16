@@ -132,8 +132,7 @@ export default async function init(el) {
 
   if (asset) {
     asset.parentElement.classList.add('asset');
-    if (el.classList.contains('split')) {
-      el.classList.add('split-asset');
+    if (el.classList.contains('fg-media-cover')) {
       el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     }
   } else {
