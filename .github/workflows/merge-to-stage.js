@@ -204,7 +204,7 @@ const openStageToMainPR = async () => {
       owner,
       repo,
       issue_number: number,
-      body: 'Testing can start @adobecom/miq-sot @adobecom/bacom-sot @adobecom/homepage-sot @adobecom/creative-cloud-sot @adobecom/document-cloud-sot ',
+      body: 'Testing can start @adobecom/miq-sot @adobecom/bacom-sot @adobecom/homepage-sot @adobecom/creative-cloud-sot @adobecom/document-cloud-sot',
     });
 
     await slackNotification(SLACK.openedSyncPr({ html_url, number }));
