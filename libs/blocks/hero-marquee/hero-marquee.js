@@ -134,7 +134,7 @@ export default async function init(el) {
     asset.parentElement.classList.add('asset');
     if (el.classList.contains('split')) {
       el.classList.add('split-asset');
-      el.appendChild(createTag('div', { class: 'foreground-split' }, asset));
+      el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     }
   } else {
     [...fRows].forEach((row) => {
@@ -154,7 +154,7 @@ export default async function init(el) {
   decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
-  const assetRow = foreground.querySelector(':scope > div').classList.contains('asset');
+  const assetRow = allRows[0].classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
   const mainCopy = createTag('div', { class: 'main-copy' }, copy.innerHTML);
   rows.splice(mainRowIndex, 1);
@@ -165,9 +165,9 @@ export default async function init(el) {
   }
 
   // removeBodyClassOnEl
-  const actionAreaBody = mainCopy.querySelector('.body-m.action-area');
-  if (actionAreaBody) actionAreaBody.classList.remove('body-m');
-  console.log('removeBOdyClassOnEl', mainCopy, actionAreaBody);
+  // const actionAreaBody = mainCopy.querySelector('.body-m.action-area');
+  // if (actionAreaBody) actionAreaBody.classList.remove('body-m');
+  // console.log('removeBOdyClassOnEl', mainCopy, actionAreaBody);
 
   copy.innerHTML = '';
   copy.append(mainCopy);
