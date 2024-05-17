@@ -1,7 +1,3 @@
-.d-none {
-  display: none !important;
-}
-
 .carousel {
   /* Scope variables to carousel */
   --carousel-slide-button-height: 40px;
@@ -566,6 +562,13 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   .carousel.show-4 .carousel-indicators,
   .carousel.show-5 .carousel-indicators,
   .carousel.show-6 .carousel-indicators {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .carousel.no-buttons-mobile .carousel-previous,
+  .carousel.no-buttons-mobile .carousel-next {
     display: none;
   }
 }

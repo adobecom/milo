@@ -20,7 +20,7 @@ function decorateNextPreviousBtns() {
   const previousBtn = createTag(
     'button',
     {
-      class: 'carousel-button carousel-previous d-none',
+      class: 'carousel-button carousel-previous',
       'aria-label': 'Previous',
       'data-toggle': 'previous',
     },
@@ -30,7 +30,7 @@ function decorateNextPreviousBtns() {
   const nextBtn = createTag(
     'button',
     {
-      class: 'carousel-button carousel-next d-none',
+      class: 'carousel-button carousel-next',
       'aria-label': 'Next',
       'data-toggle': 'next',
     },
@@ -342,7 +342,7 @@ export default function init(el) {
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
   const slideIndicators = decorateSlideIndicators(slides);
-  const controlsContainer = createTag('div', { class: 'carousel-controls d-none' });
+  const controlsContainer = createTag('div', { class: 'carousel-controls' });
 
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
@@ -378,16 +378,6 @@ export default function init(el) {
 
   el.append(...nextPreviousBtns, controlsContainer);
 
-  function handleImageLoad() {
-    if (!controlsContainer.classList.contains('d-none') && nextPreviousBtns.findIndex((btnEl) => btnEl.classList.contains('d-none')) === -1) this.removeEventListener('load', handleImageLoad, false);
-    else {
-      if (controlsContainer.classList.contains('d-none')) controlsContainer.classList.remove('d-none');
-      nextPreviousBtns.forEach((btnEl) => {
-        if (btnEl.classList.contains('d-none')) btnEl.classList.remove('d-none');
-      });
-    }
-  }
-
   function handleDeferredImages() {
     const images = el.querySelectorAll('img[loading="lazy"]');
     images.forEach((img) => {
@@ -396,12 +386,6 @@ export default function init(el) {
     parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
-
-  const slideImages = el.querySelectorAll('.carousel-wrapper .carousel-slides img');
-  slideImages.forEach((img) => {
-    if (img.complete) handleImageLoad.call(img);
-    else img.addEventListener('load', handleImageLoad);
-  });
 
   slides[0].classList.add('active');
   const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
