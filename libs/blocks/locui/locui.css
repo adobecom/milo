@@ -421,6 +421,21 @@ li.locui-url {
   border-bottom: 1px solid #ccc;
 }
 
+li.locui-url.error .locui-url-path {
+  color: red;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+li.locui-url.error .locui-url-path span {
+  color: white;
+  background-color: red;
+  border-radius: 5px;
+  padding: 0 5px;
+  font-size: 12px;
+}
+
 li.locui-url:last-child {
   border-bottom: unset;
 }
