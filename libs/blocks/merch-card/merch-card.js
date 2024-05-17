@@ -95,6 +95,10 @@ const parseContent = async (el, merchCard) => {
       let slotName = TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+          element.classList.add('card-heading');
+          if (merchCard.badgeText) {
+            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
+          }
           if (HEADING_MAP[merchCard.variant]?.[tagName]) {
             tagName = HEADING_MAP[merchCard.variant][tagName];
           } else {
@@ -335,6 +339,8 @@ const init = async (el) => {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
+        if (document.querySelector('html').dir === 'rtl') merchCard.setAttribute('is-rtl', 'true');
+        merchCard.classList.add('badge-card');
       }
     }
   }
