@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init from '../../../libs/blocks/quiz-entry/quiz-entry.js';
-import { getSuggestions } from '../../../libs/blocks/quiz-entry/quizPopover.js'; // Correct the path as needed
+import { getSuggestions } from '../../../libs/blocks/quiz-entry/quizPopover.js';
 
 let fetchStub;
 let quizEntryElement;
@@ -155,5 +155,148 @@ describe('Quiz Entry Component', () => {
     continueButton.click();
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(continueButton.classList.contains('disabled')).to.be.false;
+  });
+  it('should navigate the carousel using keyboard commands', async () => {
+    const options = document.querySelectorAll('.quiz-option');
+    const option = document.querySelector('.quiz-option');
+    option.click();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const carousel = document.querySelector('.quiz-options-container');
+    const rightArrowEvent = new KeyboardEvent('keydown', { key: 'ArrowRight' });
+    const leftArrowEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
+    carousel.dispatchEvent(rightArrowEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    carousel.dispatchEvent(leftArrowEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const leftArrow = document.querySelector('.carousel-arrow.arrow-prev');
+    expect(leftArrow).to.not.exist;
+
+    const tabKeyEvent = new KeyboardEvent('keydown', { key: 'Tab' });
+    option.dispatchEvent(tabKeyEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(option.classList.contains('selected')).to.be.true;
+
+    const spaceKeyEvent = new KeyboardEvent('keydown', { key: ' ', keyCode: 32 });
+    carousel.dispatchEvent(spaceKeyEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const enterKeyEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+    });
+    carousel.dispatchEvent(enterKeyEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(options[1].classList.contains('selected')).to.be.false;
+  });
+});
+
+describe('RTL Quiz Entry', () => {
+  beforeEach(async () => {
+    window.lana = { log: sinon.stub() };
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.resolves({
+      ok: true,
+      json: () => Promise.resolve({ suggested_completions: ['designer desk', 'design logos'] }),
+    });
+    document.body.innerHTML = await readFile({ path: './mocks/index.html' });
+    document.documentElement.setAttribute('dir', 'rtl');
+    quizEntryElement = document.querySelector('.quiz-entry');
+    await init(quizEntryElement, quizConfig);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should navigate the carousel using keyboard commands', async () => {
+    const options = document.querySelectorAll('.quiz-option');
+    const option = document.querySelector('.quiz-option');
+    option.click();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const carousel = document.querySelector('.quiz-options-container');
+    const rightArrowEvent = new KeyboardEvent('keydown', { key: 'ArrowRight' });
+    const leftArrowEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
+    carousel.dispatchEvent(rightArrowEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    carousel.dispatchEvent(leftArrowEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const leftArrow = document.querySelector('.carousel-arrow.arrow-prev');
+    expect(leftArrow).to.exist;
+
+    const tabKeyEvent = new KeyboardEvent('keydown', { key: 'Tab' });
+    option.dispatchEvent(tabKeyEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(option.classList.contains('selected')).to.be.false;
+
+    const spaceKeyEvent = new KeyboardEvent('keydown', { key: ' ', keyCode: 32 });
+    carousel.dispatchEvent(spaceKeyEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const enterKeyEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+    });
+    carousel.dispatchEvent(enterKeyEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(options[1].classList.contains('selected')).to.be.false;
+  });
+});
+
+describe('ML Result Trigger', () => {
+  beforeEach(async () => {
+    window.lana = { log: sinon.stub() };
+    fetchStub = sinon.stub(window, 'fetch');
+    const mockApiResponse = {
+      statusCode: 200,
+      data: {
+        data: [
+          {
+            ficode: 'illustrator_cc',
+            prob: '0.33',
+          },
+          {
+            ficode: 'indesign_cc',
+            prob: '0.27',
+          },
+          {
+            ficode: 'free_spark',
+            prob: '0.22',
+          },
+        ],
+        jobName: '',
+      },
+    };
+    fetchStub.resolves({
+      ok: true,
+      json: () => Promise.resolve(mockApiResponse.data),
+    });
+    document.body.innerHTML = await readFile({ path: './mocks/index.html' });
+    quizEntryElement = document.querySelector('.quiz-entry');
+    await init(quizEntryElement, quizConfig);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('Should trigger results fetching scenario', async () => {
+    const mlInputField = document.querySelector('#quiz-input');
+    const testInput = 'design';
+    const inputEvent = new Event('input', { bubbles: true });
+    mlInputField.value = testInput;
+    mlInputField.dispatchEvent(inputEvent);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const enterKeyEvent = new KeyboardEvent('keypress', {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+    });
+    mlInputField.dispatchEvent(enterKeyEvent);
+    expect(mlInputField.value).to.equal('design');
   });
 });

@@ -12,7 +12,7 @@ export const getSuggestions = async (endpoint, clientId, input, scope) => {
   });
 
   if (!response.ok) {
-    window.lana.log('Failed to fetch suggestions');
+    window.lana.log('Failed to fetch suggestions', { tags: 'errorType=info,module=quiz-entry' });
     return '';
   }
 

@@ -4,6 +4,12 @@ import { mlField, getMLResults } from './mlField.js';
 import { GetQuizOption } from './quizoption.js';
 import { quizPopover, getSuggestions } from './quizPopover.js';
 
+export const locationWrapper = {
+  redirect: (url) => {
+    window.location = url;
+  },
+};
+
 const App = ({
   quizPath,
   maxQuestions,
@@ -174,7 +180,7 @@ const App = ({
         }
         if (fiResults.errors) error = fiResults.errors[0].title;
         if (fiResults.error_code) error = fiResults.message;
-        window.lana.log(`ML results error - ${error}`);
+        window.lana.log(`ML results error - ${error}`, { tags: 'errorType=info,module=quiz-entry' });
       }
 
       if (debug) {
@@ -222,7 +228,7 @@ const App = ({
       if (questionCount.current === maxQuestions || currentQuizState.userFlow.length === 1) {
         if (!debug) {
           setSelectedQuestion(null);
-          window.location = quizPath;
+          locationWrapper.redirect(quizPath);
         }
       } else {
         setSelectedCards({});
