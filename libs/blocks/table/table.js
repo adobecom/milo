@@ -145,12 +145,15 @@ function handleTitleText(cell) {
   if (iconTooltip) cell.append(iconTooltip.closest('em') || iconTooltip);
 
   const firstIcon = textSpan.querySelector('.icon:first-child');
+  let nodeToInsert = textSpan;
+
   if (firstIcon) {
     const titleRowSpan = createTag('span', { class: 'table-title-row' });
-    titleRowSpan.append(firstIcon);
-    titleRowSpan.append(textSpan);
-    cell.insertBefore(titleRowSpan, cell.firstChild);
-  } else cell.insertBefore(textSpan, cell.firstChild);
+    titleRowSpan.append(firstIcon, textSpan);
+    nodeToInsert = titleRowSpan;
+  }
+
+  cell.insertBefore(nodeToInsert, cell.firstChild);
 }
 
 /**
