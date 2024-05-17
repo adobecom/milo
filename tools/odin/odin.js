@@ -137,7 +137,7 @@ class OdinSearch extends LitElement {
         <div>
         <sp-search placeholder="Search" value="Photoshop" size="m"></sp-search>
         <sp-picker label="Fragment model" size="m">
-          <sp-menu-item value="">All</sp-menu-item>
+          <sp-menu-item value="all">All</sp-menu-item>
           <sp-menu-item value="L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk">Merch Card</sp-menu-item>
           <sp-menu-item value="L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl">Marquee</sp-menu-item>
         </sp-picker>
@@ -160,7 +160,7 @@ class OdinSearch extends LitElement {
     const query = encodeURIComponent(this.search.value);
     const modelId = encodeURIComponent(this.picker.value);
     const params = { filter: { path: '/content/dam/sandbox/ilyas', fullText: { text: query, queryMode: 'EXACT_WORDS' } } };
-    if (modelId) {
+    if (modelId && modelId !== 'all') {
       params.modelIds = [
         modelId,
       ];
