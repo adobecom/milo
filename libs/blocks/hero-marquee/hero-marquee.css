@@ -34,9 +34,12 @@
 
 /* Alignment */
 .hero-marquee .action-area,
-.hero-marquee .lockup-area { 
-  justify-content: left; 
+.hero-marquee .lockup-area {
   display: flex;
+}
+
+html[dir="rtl"] .hero-marquee .foreground {
+  flex-direction: row-reverse;
 }
 
 .hero-marquee .action-area {
@@ -227,6 +230,10 @@
   text-align: left;
 } 
 
+html[dir="rtl"] .hero-marquee .row-list {
+  text-align: right;
+}
+
 .hero-marquee .row-list .row-wrapper {
   display: table;
 }
@@ -295,6 +302,11 @@
 .hero-marquee li.icon-item span.icon {
   position: absolute;
   left: -28px;
+}
+
+html[dir="rtl"] .hero-marquee li.icon-item span.icon {
+  left: unset;
+  right: -38px;
 }
 
 /* row-supplemental */
