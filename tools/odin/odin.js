@@ -71,8 +71,8 @@ class OdinSearch extends LitElement {
     <li>
     <p class="path">${path}</p>
     <sp-action-group>
-      <sp-action-button emphasized><sp-icon-copy slot="icon"></sp-icon-copy>Copy</sp-action-button>
-      <sp-action-button><sp-icon-duplicate slot="icon"></sp-icon-duplicate>Duplicate</sp-action-button>
+      <sp-action-button id="copy" emphasized><sp-icon-copy slot="icon"></sp-icon-copy>Copy</sp-action-button>
+      <sp-action-button id="duplicate"><sp-icon-duplicate slot="icon"></sp-icon-duplicate>Duplicate</sp-action-button>
       <sp-action-button quiet>Publish</sp-action-button>
       <sp-action-button quiet>Unpublish</sp-action-button>
   </sp-action-group>
@@ -114,7 +114,7 @@ class OdinSearch extends LitElement {
   }
 
   onClick(e) {
-    if (e.target?.variant === 'accent') {
+    if (e.target?.id === 'copy') {
       const { dataset: { miloBlock, odinPath, aueLabel } } = e.target.closest('li').querySelector('.block');
       // create a link with the above params and copy it to clipboard both as text and html
       const link = document.createElement('a');
