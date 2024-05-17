@@ -180,7 +180,7 @@ const App = ({
         }
         if (fiResults.errors) error = fiResults.errors[0].title;
         if (fiResults.error_code) error = fiResults.message;
-        window.lana.log(`ML results error - ${error}`);
+        window.lana.log(`ML results error - ${error}`, { tags: 'errorType=info,module=quiz-entry' });
       }
 
       if (debug) {
