@@ -1,4 +1,5 @@
 import { html } from '../../../deps/htm-preact.js';
+import handleRefresh from '../heading/index.js';
 import {
   urls,
   languages,
@@ -19,6 +20,7 @@ import {
 } from './index.js';
 
 export default function Actions() {
+  const hasErrors = urls.value.filter((url) => !url.valid)?.length > 0;
   const canAct = allowSyncToLangstore.value
               || allowSendForLoc.value
               || allowRollout.value
@@ -26,6 +28,20 @@ export default function Actions() {
   const canActStyle = canAct ? 'locui-section-label' : 'locui-section-label is-invisible';
   const canReRollAll = languages.value.some((lang) => lang.status === 'completed');
   const canRollAll = languages.value.some((lang) => lang.status === 'translated');
+
+  if (hasErrors) {
+    return html`
+      <div class=locui-section>
+        <div class=locui-section-heading>
+            <div>
+              <h2 class="locui-section-label cancelled">Project has errors</h2>
+              <i>There are URLs with errors in the project configuration. 
+                  <a href="" onClick=${handleRefresh}> Try again</a></i>
+            </div>
+        </div>
+      </div>
+    `;
+  }
 
   if (projectCancelled.value) {
     return html`
@@ -40,7 +56,7 @@ export default function Actions() {
     `;
   }
 
-  if (!languages.value || languages.value.length === 0) {
+  if (!languages?.value?.length) {
     return html`
       <div class=locui-section>
         <div class=locui-section-heading>

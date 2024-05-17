@@ -23,6 +23,21 @@ const urlParams = new URLSearchParams(window.location.search);
 let resourcePath;
 let previewPath;
 
+async function validatedUrls(projectUrls) {
+  for (const [idx, url] of projectUrls.entries()) {
+    setStatus('details', 'info', `Validating Project URLs (${idx + 1})`);
+    let isValid;
+    try {
+      const resp = await fetch(url.href);
+      isValid = resp.ok;
+    } catch (error) {
+      isValid = false;
+    }
+    url.valid = isValid;
+  }
+  return projectUrls;
+}
+
 export function getUrls(jsonUrls) {
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
@@ -84,9 +99,15 @@ async function loadDetails() {
       return rdx;
     }, []);
     languages.value = projectLangs;
-    urls.value = projectUrls;
+    setStatus('details', 'info', 'Validating Project Configuration');
+    urls.value = await validatedUrls(projectUrls);
     if (json.settings) loadProjectSettings(json.settings.data);
-    setStatus('details');
+    const errors = urls.value.filter((url) => !url.valid);
+    if (errors?.length > 0) {
+      setStatus('details', 'error', 'Error validating URLs.', errors.map((url) => (`${url.href} was not found.`)));
+    } else {
+      setStatus('details');
+    }
   } catch {
     setStatus('details', 'error', 'Error loading languages and URLs.');
   }
@@ -99,7 +120,6 @@ async function loadHeading() {
   resourcePath = json.resourcePath;
   previewPath = json.preview.url;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
-  setStatus('details');
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
   window.document.title = `${projectName} - LocUI`;
