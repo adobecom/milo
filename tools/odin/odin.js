@@ -4,9 +4,13 @@
 
 import { html, css, LitElement } from '../../libs/deps/lit-all.min.js';
 import '../../libs/features/spectrum-web-components/dist/theme.js';
+import '../../libs/features/spectrum-web-components/dist/dialog.js';
 import '../../libs/features/spectrum-web-components/dist/search.js';
 import '../../libs/features/spectrum-web-components/dist/action-button.js';
 import '../../libs/features/spectrum-web-components/dist/action-group.js';
+import '../../libs/features/spectrum-web-components/dist/button-group.js';
+import '../../libs/features/spectrum-web-components/dist/overlay.js';
+import '../../libs/features/spectrum-web-components/dist/button.js';
 import '../../libs/features/spectrum-web-components/dist/picker.js';
 import '../../libs/deps/merch-icon.js';
 import { createTag, getConfig, loadBlock, loadScript, loadStyle } from '../../libs/utils/utils.js';
@@ -18,6 +22,12 @@ const meta = createTag('meta', {
   name: 'urn:adobe:aue:system:aemconnection',
   content: 'aem:https://author-p22655-e59341.adobeaemcloud.com',
 });
+
+const headers = {
+  Authorization: `Bearer ${localStorage.getItem('bearerToken')}`,
+  pragma: 'no-cache',
+  'cache-control': 'no-cache',
+};
 
 document.head.appendChild(meta);
 
@@ -34,15 +44,13 @@ class OdinSearch extends LitElement {
     }
   `;
 
-  static properties = { model: { type: String } };
-
-  #bearerToken;
+  static properties = { source: { type: Object } };
 
   constructor() {
     super();
     this.query = '';
-    this.#bearerToken = localStorage.getItem('bearerToken');
     this.addEventListener('keydown', this.onKeydown);
+    this.addEventListener('confirm', this.confirm);
   }
 
   onKeydown(e) {
@@ -72,7 +80,19 @@ class OdinSearch extends LitElement {
     <p class="path">${path}</p>
     <sp-action-group>
       <sp-action-button id="copy" emphasized><sp-icon-copy slot="icon"></sp-icon-copy>Copy</sp-action-button>
-      <sp-action-button id="duplicate"><sp-icon-duplicate slot="icon"></sp-icon-duplicate>Duplicate</sp-action-button>
+      <overlay-trigger type="modal">
+      <sp-dialog-wrapper
+          slot="click-content"
+          headline="New fragment title"
+          underlay
+          size="m"
+          confirm-label="Duplicate"
+          cancel-label="Cancel"
+      >
+        <sp-textfield size="l" value="${cfTitle || title}"></sp-textfield>
+      </sp-dialog-wrapper>
+      <sp-action-button slot="trigger" id="duplicate"><sp-icon-duplicate slot="icon"></sp-icon-duplicate>Duplicate</sp-action-button>
+    </overlay-trigger>
       <sp-action-button quiet>Publish</sp-action-button>
       <sp-action-button quiet>Unpublish</sp-action-button>
   </sp-action-group>
@@ -113,11 +133,47 @@ class OdinSearch extends LitElement {
     ul.querySelectorAll('[data-odin-path] > *').forEach(loadBlock);
   }
 
+  async confirm(e) {
+    const title = this.querySelector('sp-textfield').value;
+    const name = title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+    console.log('Duplicating', this.source.odinPath, 'to', this.source.destParentPath, name, title);
+    const bodyContent = new FormData();
+    bodyContent.append('cmd', 'copyPage');
+    bodyContent.append('srcPath', this.source.odinPath);
+    bodyContent.append('destParentPath', this.source.destParentPath);
+    bodyContent.append('shallow', 'false');
+    bodyContent.append('_charset_', 'UTF-8');
+    bodyContent.append('destName', name);
+    bodyContent.append('destTitle', title);
+
+    const response = await fetch('https://author-p22655-e59341.adobeaemcloud.com/bin/wcmcommand', {
+      method: 'POST',
+      body: bodyContent,
+      headers,
+    });
+
+    e.target.open = false;
+    await response.text();
+    this.doSearch();
+  }
+
   onClick(e) {
     if (e.target?.id === 'copy') {
       const { dataset: { miloBlock, odinPath, aueLabel } } = e.target.closest('li').querySelector('.block');
       window.top.postMessage({ type: 'odin:copy', data: { miloBlock, odinPath, aueLabel } }, '*');
     }
+    if (e.target?.id === 'duplicate') {
+      const { dataset: { odinPath, aueLabel } } = e.target.closest('li').querySelector('.block');
+      const pathArray = odinPath.split('/');
+      pathArray.pop();
+      const destParentPath = pathArray.join('/');
+      this.source = {
+        odinPath,
+        destParentPath,
+        aueLabel,
+      };
+    }
+    return false;
   }
 
   render() {
@@ -131,7 +187,7 @@ class OdinSearch extends LitElement {
           <sp-menu-item value="L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk">Merch Card</sp-menu-item>
           <sp-menu-item value="L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl">Marquee</sp-menu-item>
         </sp-picker>
-        <sp-button cta @click=${this.doSearch}>Search</sp-button>
+        <sp-button @click=${this.doSearch}>Search</sp-button>
       </div>
         <slot @click=${this.onClick}></slot>
       </sp-theme>
@@ -156,15 +212,11 @@ class OdinSearch extends LitElement {
       ];
     }
     const queryString = escape(JSON.stringify(params));
+    let url = `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`;
+    url = '/tools/odin/search.json';
     const res = await fetch(
-      `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.#bearerToken}`,
-          pragma: 'no-cache',
-          'cache-control': 'no-cache',
-        },
-      },
+      url,
+      { headers },
     );
     const { items } = await res.json();
     this.prepareItems(items);

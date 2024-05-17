@@ -45,3 +45,11 @@ odin-search > ul {
 .block.marquee, .block.marquee > div {
   width: 100%;
 }
+
+sp-action-button#confirm {
+  margin-left: 16px;
+}
+
+sp-textfield {
+  width: 360px;
+}
