@@ -328,6 +328,7 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+    expect(merchCard.classList.contains('badge-card')).to.be.true;
     expect(body.textContent).to.be.equal('Get Illustrator on desktop and iPad as part of Creative Cloud. This is promo text');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Buy now');
