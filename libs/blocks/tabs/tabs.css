@@ -361,11 +361,11 @@
   justify-content: center;
 }
 
-.tabs.radio div[role="tablist"].left {
+.tabs.radio.left div[role="tablist"] {
   justify-content: start;
 }
 
-.tabs.radio div[role="tablist"].right {
+.tabs.radio.right div[role="tablist"] {
   justify-content: end;
 }
 
