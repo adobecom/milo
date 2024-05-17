@@ -71,10 +71,10 @@ class OdinSearch extends LitElement {
     <li>
     <p class="path">${path}</p>
     <sp-action-group>
-      <sp-action-button variant="emphasized">Copy</sp-action-button>
-      <sp-action-button>Duplicate</sp-action-button>
-      <sp-action-button variant="quiet">Publish</sp-action-button>
-      <sp-action-button variant="quiet">Unpublish</sp-action-button>
+      <sp-action-button emphasized><sp-icon-copy slot="icon"></sp-icon-copy>Copy</sp-button>
+      <sp-action-button><sp-icon-duplicate slot="icon"></sp-icon-duplicate>Duplicate</sp-button>
+      <sp-action-button quiet>Publish</sp-button>
+      <sp-action-button quiet>Unpublish</sp-button>
   </sp-action-group>
     <div
     data-milo-block="${block}"
@@ -136,15 +136,12 @@ class OdinSearch extends LitElement {
         <h1>Merch at Scale Fragments</h1>
         <div>
         <sp-search placeholder="Search" value="Photoshop" size="m"></sp-search>
-        <sp-picker placeholder="Refine block type" size="m">
-          <sp-menu-item value="/conf/sandbox/settings/dam/cfm/models/merch-card"
-            >Merch Card</sp-menu-item
-          >
-          <sp-menu-item value="/conf/sandbox/settings/dam/cfm/models/marquee"
-            >Marquee</sp-menu-item
-          >
+        <sp-picker label="Fragment model" size="m">
+          <sp-menu-item value="">All</sp-menu-item>
+          <sp-menu-item value="L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk">Merch Card</sp-menu-item>
+          <sp-menu-item value="L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl">Marquee</sp-menu-item>
         </sp-picker>
-        <sp-button variant="cta" @click=${this.doSearch}>Search</sp-button>
+        <sp-button cta @click=${this.doSearch}>Search</sp-button>
       </div>
         <slot @click=${this.onClick}></slot>
       </sp-theme>
@@ -155,10 +152,22 @@ class OdinSearch extends LitElement {
     return this.shadowRoot.querySelector('sp-search');
   }
 
+  get picker() {
+    return this.shadowRoot.querySelector('sp-picker');
+  }
+
   async doSearch() {
     const query = encodeURIComponent(this.search.value);
+    const modelId = encodeURIComponent(this.picker.value);
+    const params = { filter: { path: '/content/dam/sandbox/ilyas', fullText: { text: query, queryMode: 'EXACT_WORDS' } } };
+    if (modelId) {
+      params.modelIds = [
+        modelId,
+      ];
+    }
+    const queryString = escape(JSON.stringify(params));
     const res = await fetch(
-      `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=%7B%22filter%22%3A%7B%22path%22%3A%20%22%2Fcontent%2Fdam%2Fsandbox%2Filyas%22%2C%20%22fullText%22%3A%7B%22text%22%3A%22${query}%22%2C%22queryMode%22%3A%22EXACT_WORDS%22%7D%7D%7D`,
+      `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`,
       {
         headers: {
           Authorization: `Bearer ${this.#bearerToken}`,
