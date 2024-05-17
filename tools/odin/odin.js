@@ -23,7 +23,6 @@ const meta = createTag('meta', {
   content: 'aem:https://author-p22655-e59341.adobeaemcloud.com',
 });
 
-const csrfTojen = localStorage.getItem('csrfToken');
 const headers = {
   Authorization: `Bearer ${localStorage.getItem('bearerToken')}`,
   pragma: 'no-cache',
@@ -152,7 +151,6 @@ class OdinSearch extends LitElement {
       body: bodyContent,
       headers: {
         ...headers,
-        'Csrf-Token': csrfTojen,
         'X-Api-Key': 'aem-headless-cf-admin',
         'x-aem-affinity-type': 'api',
       },
