@@ -1,5 +1,4 @@
 import { html } from '../../../deps/htm-preact.js';
-import handleRefresh from '../heading/index.js';
 import {
   urls,
   languages,
@@ -35,8 +34,7 @@ export default function Actions() {
         <div class=locui-section-heading>
             <div>
               <h2 class="locui-section-label cancelled">Project has errors</h2>
-              <i>There are URLs with errors in the project configuration. 
-                  <a href="" onClick=${handleRefresh}> Try again</a></i>
+              <i>There are URLs with errors in the project configuration.</i>
             </div>
         </div>
       </div>
