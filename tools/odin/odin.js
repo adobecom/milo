@@ -134,7 +134,7 @@ class OdinSearch extends LitElement {
   }
 
   async confirm() {
-    const title = this.querySelector('sp-textfield').value;
+    const title = this.querySelector('sp-dialog-wrapper sp-textfield').value;
     const name = title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
     console.log('Duplicating', this.source.odinPath, 'to', this.source.destParentPath, name, title);
 
