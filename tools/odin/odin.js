@@ -115,6 +115,7 @@ class OdinSearch extends LitElement {
 
   onClick(e) {
     if (e.target?.id === 'copy') {
+      window.focus();
       const { dataset: { miloBlock, odinPath, aueLabel } } = e.target.closest('li').querySelector('.block');
       // create a link with the above params and copy it to clipboard both as text and html
       const link = document.createElement('a');
