@@ -406,27 +406,25 @@ const getCategoryArray = async (state, country, lang) => {
   const { tags } = await getTags(state.tagsUrl);
   console.log('TAGS:', tags);
 
-  // Filter tags based on the condition
+  // Parse categories list from tags
   const categories = Object.values(tags)
     .filter((tag) => tag.tagID === 'caas:product-categories')
     .map((tag) => tag.tags);
 
-  console.log('CATEGORIES:', categories);
-
-  // Extract subcategories
-  const subCategories = Object.entries(categories[0])
+  // Extract categories
+  const categoryItems = Object.entries(categories[0])
     .map(([key, value]) => ({
       group: key,
       id: value.tagID,
       label: value.title,
-      icon: value.icon,
+      icon: value.icon || '',
       items: Object.entries(value.tags)
         .map((tag) => getFilterObj({excludeTags:[], filterTag: [tag[1].tagID], icon:'', openedOnLoad: false}, tags, state, country, lang))
         .filter((tag) => tag !== null),  
     }));
 
-  console.log('SUBCATEGORIES:', subCategories);
-  return [{ group: 'All Topics',  label: 'All Topics', id: '', items: [] }, ...subCategories];
+  console.log('CATEGORIES:', categoryItems);
+  return [{ group: 'All Topics',  label: 'All Topics', id: '', items: [] }, ...categoryItems];
 };
 
 const getFilterArray = async (state, country, lang, strs) => {
@@ -623,7 +621,7 @@ export const getConfig = async (originalState, strs = {}) => {
         pool: state.sortReservoirPool,
       },
       ctaAction: state.ctaAction,
-      cardHoverEffect: state.cardHoverEffect,
+      cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
@@ -743,6 +741,7 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     headers: caasRequestHeaders,
   };
+  console.log('CAAS_CONFIG', config);
   return config;
 };
 

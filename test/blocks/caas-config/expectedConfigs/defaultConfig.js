@@ -4,6 +4,7 @@ const defaultConfig = {
     layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
     button: { style: 'primary' },
     collectionButtonStyle: 'primary',
+    cardHoverEffect: 'default',
     resultsPerPage: 5,
     endpoint:
       'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
@@ -47,6 +48,70 @@ const defaultConfig = {
     '',
   ],
   filterPanel: {
+    categories: [
+      {
+        group: "All Topics",
+        id: "",
+        items: [],
+        label: "All Topics",
+      },
+      {
+        group: "photo",
+        icon: "",
+        id: "caas:product-categories/photo",
+        items: [],
+        label: "Photo",
+      },
+      {
+        group: "graphic-design",
+        id: "caas:product-categories/graphic-design",
+        icon: "",
+        items: [],
+        label: "Graphic Design",
+      },
+      {
+        group: "video",
+        id: "caas:product-categories/video",
+        icon: "",
+        items: [],
+        label: "Video",
+      },
+      {
+        group: "illustration",
+        id: "caas:product-categories/illustration",
+        icon: "",
+        items: [],
+        label: "Illustration",
+      },
+      {
+        group: "ui-and-ux",
+        id: "caas:product-categories/ui-and-ux",
+        icon: "",
+        items: [],
+        label: "UI and UX",
+      },
+      {
+        group: "acrobat-and-pdf",
+        id: "caas:product-categories/acrobat-and-pdf",
+        icon: "",
+        items: [],
+        label: "Acrobat and PDF"
+      },
+      {
+        group: "3d-and-ar",
+        id: "caas:product-categories/3d-and-ar",
+        icon: "",
+        items: [],
+        label: "3D and AR",
+      },
+      {
+        group: "social-media",
+        id: "caas:product-categories/social-media",
+        icon: "",
+        items: [],
+        label: "Social Media",
+      },
+    ],
     enabled: false,
     eventFilter: '',
     type: 'left',
