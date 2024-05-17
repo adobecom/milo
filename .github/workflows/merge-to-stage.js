@@ -16,6 +16,13 @@ const LABELS = {
   SOTPrefix: 'SOT',
   highImpact: 'high-impact',
 };
+const TEAM_MENTIONS = [
+  '@adobecom/miq-sot',
+  '@adobecom/bacom-sot',
+  '@adobecom/homepage-sot',
+  '@adobecom/creative-cloud-sot',
+  '@adobecom/document-cloud-sot',
+];
 const SLACK = {
   merge: ({ html_url, number, title, highImpact }) =>
     `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
@@ -204,7 +211,7 @@ const openStageToMainPR = async () => {
       owner,
       repo,
       issue_number: number,
-      body: 'Testing can start @adobecom/miq-sot @adobecom/bacom-sot @adobecom/homepage-sot @adobecom/creative-cloud-sot @adobecom/document-cloud-sot',
+      body: `Testing can start ${TEAM_MENTIONS.join(' ')}`,
     });
 
     await slackNotification(SLACK.openedSyncPr({ html_url, number }));
