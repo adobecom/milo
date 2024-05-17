@@ -846,16 +846,19 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
   return true;
 }
 
-function getEnablement(metadata, flag = false) {
-  const flagVal = PAGE_URL.searchParams.get(flag || metadata)?.toLowerCase().trim();
-  if (flagVal === 'off') return false;
-  if (flagVal) return flagVal;
-  const metaVal = getMetadata(metadata)?.toLowerCase();
-  if (!metaVal || metaVal === 'off') return false;
-  if (metaVal.includes('gnav') && metadata === 'target') return 'gnav';
-  if (metaVal === 'on') return true;
-  return metaVal;
-}
+const getEnablementValue = (val) => {
+  const valMap = { on: true, off: false, gnav: 'gnav' };
+  const finalVal = val?.toLowerCase().trim();
+  return valMap[finalVal] || finalVal;
+};
+
+const getEnablement = (mdKey, paramKey = false) => {
+  const paramValue = PAGE_URL.searchParams.get(paramKey || mdKey);
+  if (paramValue) return getEnablementValue(paramValue);
+  const mdValue = getMetadata(mdKey);
+  if (!mdValue) return false;
+  return getEnablementValue(mdValue);
+};
 
 async function checkForPageMods() {
   if (getMetadata('mep')?.toLowerCase().includes('off')) return;
