@@ -33,3 +33,11 @@ merch-card a[is="checkout-link"].download:not(:first-of-type),
 merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
   display: none;
 }
+
+/* Tablet and larger */
+@media screen and (min-width: 768px) {
+  .badge-merch-cards .card-heading,
+  .badge-card .card-heading {
+    margin-top: var(--spacing-s);
+  }
+}
