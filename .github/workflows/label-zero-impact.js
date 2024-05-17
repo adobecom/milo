@@ -33,34 +33,27 @@ const main = async ({ github, context }) => {
     console.log(`PR ${number} is zero impact: ${isZeroImpactPR}.`);
     if (isZeroImpactPR) {
       console.log('Adding zero-impact label to PR.');
-      await github.rest.issues
-        .addLabels({
-          owner,
-          repo,
-          issue_number: number,
-          labels: [zeroImpactLabel],
-        })
-        .catch((e) => console.log(e));
+      await github.rest.issues.addLabels({
+        owner,
+        repo,
+        issue_number: number,
+        labels: [zeroImpactLabel],
+      });
     } else {
       console.log('Removing zero-impact label from PR.');
-      await github.rest.issues
-        .removeLabel({
-          owner,
-          repo,
-          issue_number: number,
-          name: zeroImpactLabel,
-        })
-        .catch((e) => console.log(e));
-
+      await github.rest.issues.removeLabel({
+        owner,
+        repo,
+        issue_number: number,
+        name: zeroImpactLabel,
+      });
       console.log('Posting a comment on the PR.');
-      await github.rest.issues
-        .createComment({
-          owner,
-          repo,
-          issue_number: number,
-          body: 'This PR does not qualify for the zero-impact label as it touches code outside of the allowed areas. The label is auto applied, do not manually apply the label.',
-        })
-        .catch((e) => console.log(e));
+      await github.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number: number,
+        body: 'This PR does not qualify for the zero-impact label as it touches code outside of the allowed areas. The label is auto applied, do not manually apply the label.',
+      });
     }
 
     console.log('Process successfully executed.');
