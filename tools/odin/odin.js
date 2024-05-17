@@ -71,10 +71,10 @@ class OdinSearch extends LitElement {
     <li>
     <p class="path">${path}</p>
     <sp-action-group>
-      <sp-action-button emphasized><sp-icon-copy slot="icon"></sp-icon-copy>Copy</sp-button>
-      <sp-action-button><sp-icon-duplicate slot="icon"></sp-icon-duplicate>Duplicate</sp-button>
-      <sp-action-button quiet>Publish</sp-button>
-      <sp-action-button quiet>Unpublish</sp-button>
+      <sp-action-button emphasized><sp-icon-copy slot="icon"></sp-icon-copy>Copy</sp-action-button>
+      <sp-action-button><sp-icon-duplicate slot="icon"></sp-icon-duplicate>Duplicate</sp-action-button>
+      <sp-action-button quiet>Publish</sp-action-button>
+      <sp-action-button quiet>Unpublish</sp-action-button>
   </sp-action-group>
     <div
     data-milo-block="${block}"
