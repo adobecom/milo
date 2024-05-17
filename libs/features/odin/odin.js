@@ -12,7 +12,14 @@ export async function loadFragment(a, blockName) {
   const params = new URLSearchParams(url.search);
   const fragment = params.get('fragment');
   const path = `https://author-p22655-e59341.adobeaemcloud.com${fragment}.cfm.gql.json`;
-  const res = await fetch(path, { headers: { Authorization: `Bearer ${bearerToken}` } });
+  const res = await fetch(path, {
+    headers: {
+      Authorization: `Bearer ${bearerToken}`,
+      pragma: 'no-cache',
+      'cache-control': 'no-cache',
+
+    },
+  });
   const { data } = await res.json();
   const { item } = data[jsonPathMapping[blockName]];
   Object.entries(item).forEach(([key, value]) => {
