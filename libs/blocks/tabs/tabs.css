@@ -230,14 +230,13 @@
 }
 
 .tabs.radio div[role="tablist"] button {
+  background: transparent;
   padding: 0 0 var(--spacing-s);
   font-size: var(--type-body-s-size);
   font-weight: normal;
   color: var(--text-color);
   display: flex;
   align-items: center;
-  white-space: normal;
-  text-align: start;
 }
 
 .tabs.quiet div[role="tablist"] button:first-of-type,
@@ -356,6 +355,20 @@
   display: none;
 }
 
+.tabs.radio div[role="tablist"] {
+  margin: 0 auto;
+  width: var(--grid-container-width);
+  justify-content: center;
+}
+
+.tabs.radio div[role="tablist"].left {
+  justify-content: start;
+}
+
+.tabs.radio div[role="tablist"].right {
+  justify-content: end;
+}
+
 .tabs.radio div[role="tablist"] .tab-list-container {
   border: 1px solid #d9d9d9;
   border-radius: 24px;
@@ -423,6 +436,11 @@
 
   .tabs.radio .tab-list-container::before {
     margin-bottom: 0;
+  }
+
+  .tabs.radio div[role="tablist"] button {
+    white-space: normal;
+    text-align: start;
   }
 
   .tabs.radio div[role="tablist"] button,
