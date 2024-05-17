@@ -98,8 +98,8 @@
 }
 
 /* center tabs */
-.tabs.center div[role="tablist"]::after,
-.tabs.center div[role="tablist"]::before {
+.tabs.center > div[role="tablist"]::after,
+.tabs.center > div[role="tablist"]::before {
   content: "";
   margin: auto;
 }
@@ -239,11 +239,6 @@
   align-items: center;
 }
 
-.dark .tabs.radio .tab-list-container::before,
-.dark .tabs.radio div[role="tablist"] button {
-  color: var(--color-white);
-}
-
 .tabs.quiet div[role="tablist"] button:first-of-type,
 .tabs[class*='pill'] div[role="tablist"] button:first-of-type {
   margin-inline-start: 0;
@@ -363,15 +358,6 @@
 .tabs.radio div[role="tablist"] {
   margin: 0 auto;
   width: var(--grid-container-width);
-  justify-content: center;
-}
-
-.tabs.radio.left div[role="tablist"] {
-  justify-content: start;
-}
-
-.tabs.radio.right div[role="tablist"] {
-  justify-content: end;
 }
 
 .tabs.radio div[role="tablist"] .tab-list-container {
@@ -425,6 +411,19 @@
   background: transparent;
 }
 
+.tabs.radio.center div[role="tablist"] {
+  justify-content: center;
+}
+
+.tabs.radio.right div[role="tablist"] {
+  justify-content: end;
+}
+
+.dark .tabs.radio .tab-list-container::before,
+.dark .tabs.radio div[role="tablist"] button {
+  color: var(--color-white);
+}
+
 .tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-bg-color);
 }
@@ -437,6 +436,7 @@
     padding: 0 var(--spacing-s);
     width: auto;
     max-width: var(--grid-container-width);
+    margin: 0;
   }
 
   .tabs.radio .tab-list-container::before {
