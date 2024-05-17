@@ -153,6 +153,7 @@ class OdinSearch extends LitElement {
       headers: {
         ...headers,
         'Csrf-Token': csrfTojen,
+        'X-Api-Key': 'aem-headless-cf-admin',
       },
     });
 
