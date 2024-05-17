@@ -162,7 +162,7 @@ class OdinSearch extends LitElement {
     const params = { filter: { path: '/content/dam/sandbox/ilyas', fullText: { text: query, queryMode: 'EXACT_WORDS' } } };
     if (modelId && modelId !== 'all') {
       params.modelIds = [
-        modelId,
+        encodeURIComponent(modelId),
       ];
     }
     const queryString = escape(JSON.stringify(params));
