@@ -239,6 +239,11 @@
   align-items: center;
 }
 
+.dark .tabs.radio .tab-list-container::before,
+.dark .tabs.radio div[role="tablist"] button {
+  color: var(--color-white);
+}
+
 .tabs.quiet div[role="tablist"] button:first-of-type,
 .tabs[class*='pill'] div[role="tablist"] button:first-of-type {
   margin-inline-start: 0;
