@@ -1,1164 +1,1742 @@
 {
-    "items": [
-        {
-            "path": "/content/dam/sandbox/ilyas/copy-of-special-offers-promo",
-            "title": "Special Offers Promo",
-            "description": "",
-            "id": "497ad7d4-119a-4588-a75b-2deb47e4b19f",
-            "created": {
-                "at": "2024-05-16T17:07:44.702Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-17T10:58:28.472Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "theme",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "dark"
-                    ]
-                },
-                {
-                    "name": "variant",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "large"
-                    ]
-                },
-                {
-                    "name": "content",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 51% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
-                    ]
-                },
-                {
-                    "name": "background",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
-                    ]
-                },
-                {
-                    "name": "mobileBackground",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
-                "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
-                "name": "Marquee",
-                "title": "Marquee"
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/lightroom-classic",
-            "title": "Lightroom Classic",
-            "description": "",
-            "id": "4fb0c44c-a28b-4a1d-91f5-b145cdb993e0",
-            "created": {
-                "at": "2024-05-08T12:05:32.662Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-15T16:38:18.643Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "type",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "catalog"
-                    ]
-                },
-                {
-                    "name": "icon",
-                    "type": "text",
-                    "multiple": true,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/lightroom-classic.svg"
-                    ]
-                },
-                {
-                    "name": "name",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "lightroom-classic"
-                    ]
-                },
-                {
-                    "name": "title",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "Lightroom Ultra Classicc"
-                    ]
-                },
-                {
-                    "name": "link",
-                    "type": "text",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "prices",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c&amp;type=price\">PRICE - ABM - Lightrooom Classic</a></p>"
-                    ]
-                },
-                {
-                    "name": "description",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p>Photo editing optimized for desktop.</p><p><a href=\"https://www.adobe.com/products/photoshop-lightroom-classic.html\">Learn more</a></p>"
-                    ]
-                },
-                {
-                    "name": "secure",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "stock",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "ctas",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<a href=\"https://milo.adobe.com/tools/ost?osi=BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=OInILOo_tvV3OiYdJTxo1NhsVX4GxbHnM8JWexA9N8w&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
-                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
-                "name": "Merch Card",
-                "title": "Merch Card",
-                "description": "content for adobe.com merch-card web component."
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/photoshop-elements-premiere-elements",
-            "title": "Photoshop Elements 2024 ",
-            "description": "",
-            "id": "545b382c-102e-4cd5-af66-b4c229bc16fc",
-            "created": {
-                "at": "2024-05-08T12:05:36.952Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-15T13:08:48.909Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "type",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "catalog"
-                    ]
-                },
-                {
-                    "name": "icon",
-                    "type": "text",
-                    "multiple": true,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-elements.svg"
-                    ]
-                },
-                {
-                    "name": "name",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "photoshop-elements-premiere-elements"
-                    ]
-                },
-                {
-                    "name": "title",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "Photoshop Elements 2024 &amp; Premiere Elements 2024"
-                    ]
-                },
-                {
-                    "name": "link",
-                    "type": "text",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "prices",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p>Almost free</p>"
-                    ]
-                },
-                {
-                    "name": "description",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p>&nbsp;</p>\n<p>Organize, edit, create, and share your photos and videos.<br><a href=\"https://www.adobe.com/products/photoshop-premiere-elements.html\">Learn more</a></p>"
-                    ]
-                },
-                {
-                    "name": "secure",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "stock",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "ctas",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=dTv_VejD1QwlBhDLCy6wbJRifhllDnI0PBTvCFA37TU&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a>"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
-                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
-                "name": "Merch Card",
-                "title": "Merch Card",
-                "description": "content for adobe.com merch-card web component."
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/photoshop-elements",
-            "title": "Photoshop Elements 2024",
-            "description": "",
-            "id": "93cefe27-7a83-4179-a08c-e177977508a4",
-            "created": {
-                "at": "2024-05-08T12:05:21.8Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-08T12:05:22.018Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "type",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "icon",
-                    "type": "text",
-                    "multiple": true,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-elements.svg"
-                    ]
-                },
-                {
-                    "name": "name",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "photoshop-elements"
-                    ]
-                },
-                {
-                    "name": "title",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "Photoshop Elements 2024"
-                    ]
-                },
-                {
-                    "name": "link",
-                    "type": "text",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "prices",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": []
-                },
-                {
-                    "name": "description",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p>Organize, edit, create, and share your photos.<br><a href=\"https://www.adobe.com/products/photoshop-elements.html\">Learn more</a></p>"
-                    ]
-                },
-                {
-                    "name": "secure",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "stock",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "ctas",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=lJONM8HQs6lfv4cRRGXSouUr6iBScsczJKHz7Un3uow&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/photoshop-elements/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
-                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
-                "name": "Merch Card",
-                "title": "Merch Card",
-                "description": "content for adobe.com merch-card web component."
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/marquee/test123",
-            "title": "Special Offers Promo",
-            "description": "",
-            "id": "a622fb04-0bae-458f-a395-b09f0c672efd",
-            "created": {
-                "at": "2024-05-17T12:33:38.485Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-16T10:04:40.6Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "theme",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "dark"
-                    ]
-                },
-                {
-                    "name": "variant",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "large"
-                    ]
-                },
-                {
-                    "name": "content",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
-                    ]
-                },
-                {
-                    "name": "background",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
-                    ]
-                },
-                {
-                    "name": "mobileBackground",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
-                "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
-                "name": "Marquee",
-                "title": "Marquee"
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/creative-cloud",
-            "title": "Creative Cloud All Apps",
-            "description": "",
-            "id": "be9aa9c6-b8e9-4058-aa6b-f0125647479a",
-            "created": {
-                "at": "2024-05-08T12:05:03.588Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-15T12:16:09.741Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "published": {
-                "at": "2024-05-08T14:06:11.984Z",
-                "by": "vlassenko@adobe.com"
-            },
-            "status": "MODIFIED",
-            "fields": [
-                {
-                    "name": "type",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "icon",
-                    "type": "text",
-                    "multiple": true,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/creative-cloud.svg"
-                    ]
-                },
-                {
-                    "name": "name",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "creative-cloud"
-                    ]
-                },
-                {
-                    "name": "title",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "Creative Cloud All Apps"
-                    ]
-                },
-                {
-                    "name": "link",
-                    "type": "text",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "prices",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price\">PRICE - ABM - Creative Cloud All Apps</a></p>"
-                    ]
-                },
-                {
-                    "name": "description",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p>Get <strong>20</strong> apps plus fonts, storage, templates, and tutorials for less than the price of Acrobat Pro, Photoshop, and Premiere Pro sold separately. (Substance 3D apps not included.)</p>\n<p><a class=\"modal link-block \" href=\"#modal-see-whats-included\" data-modal-path=\"/cc-shared/fragments/modals/see-whats-included/cc-all-apps-see-whats-included-buy\" data-modal-hash=\"#modal-see-whats-included\">See what's included</a> | <a href=\"https://www.adobe.com/creativecloud/all-apps.html\">Learn more</a></p>"
-                    ]
-                },
-                {
-                    "name": "secure",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "stock",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "ctas",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p><a class=\"merch link-block con-button blue\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\"><strong>CTA Buy now</strong>&nbsp;</a><a class=\"merch link-block con-button outline\" href=\"https://milo.adobe.com/tools/ost?osi=JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\">Free trial</a></p>"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
-                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
-                "name": "Merch Card",
-                "title": "Merch Card",
-                "description": "content for adobe.com merch-card web component."
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/lightroom",
-            "title": "Lightroom (1TB)",
-            "description": "",
-            "id": "c08176b8-12c5-42f5-9520-03b521e57dad",
-            "created": {
-                "at": "2024-05-08T12:05:07.682Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-08T12:05:07.903Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "type",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "icon",
-                    "type": "text",
-                    "multiple": true,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/lightroom.svg"
-                    ]
-                },
-                {
-                    "name": "name",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "lightroom"
-                    ]
-                },
-                {
-                    "name": "title",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "Lightroom (1TB)"
-                    ]
-                },
-                {
-                    "name": "link",
-                    "type": "text",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "prices",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<a href=\"https://milo.adobe.com/tools/ost?osi=YbmrrnDXjKp75tHcS_wDjwLhuZl3uldCu00qBXGJFMc&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Lightroom 1TB</a>"
-                    ]
-                },
-                {
-                    "name": "description",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p>Photo editing optimized for desktop.</p><p><a href=\"https://www.adobe.com/products/photoshop-lightroom.html\">Learn more</a></p>"
-                    ]
-                },
-                {
-                    "name": "secure",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "stock",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "ctas",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<a href=\"https://milo.adobe.com/tools/ost?osi=YbmrrnDXjKp75tHcS_wDjwLhuZl3uldCu00qBXGJFMc&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=Fz6T5PHsegbhJA2Uyzm_EweshED45stvTIVGPS3SqQo&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
-                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
-                "name": "Merch Card",
-                "title": "Merch Card",
-                "description": "content for adobe.com merch-card web component."
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/marquee/copy-of-special-offers-promo",
-            "title": "Special Offers Promo",
-            "description": "",
-            "id": "c61af74f-2704-4fd4-80a5-3219086f2770",
-            "created": {
-                "at": "2024-05-16T17:04:28.109Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-16T17:08:44.747Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "theme",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "dark"
-                    ]
-                },
-                {
-                    "name": "variant",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "large"
-                    ]
-                },
-                {
-                    "name": "content",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
-                    ]
-                },
-                {
-                    "name": "background",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
-                    ]
-                },
-                {
-                    "name": "mobileBackground",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
-                    ]
-                }
-            ],
-            "variations": [
-                {
-                    "name": "cchome",
-                    "title": "cchome",
-                    "description": "",
-                    "fields": [
-                        {
-                            "name": "theme",
-                            "type": "enumeration",
-                            "multiple": false,
-                            "values": [
-                                "dark"
-                            ]
-                        },
-                        {
-                            "name": "variant",
-                            "type": "enumeration",
-                            "multiple": false,
-                            "values": [
-                                "large"
-                            ]
-                        },
-                        {
-                            "name": "content",
-                            "type": "long-text",
-                            "multiple": false,
-                            "mimeType": "text/html",
-                            "values": [
-                                "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
-                            ]
-                        },
-                        {
-                            "name": "background",
-                            "type": "text",
-                            "multiple": false,
-                            "values": [
-                                "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
-                            ]
-                        },
-                        {
-                            "name": "mobileBackground",
-                            "type": "text",
-                            "multiple": false,
-                            "values": [
-                                "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
-                            ]
-                        }
-                    ],
-                    "tags": [],
-                    "validationStatus": [],
-                    "references": [],
-                    "fieldTags": []
-                }
-            ],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
-                "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
-                "name": "Marquee",
-                "title": "Marquee"
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo",
-            "title": "Special Offers Promo",
-            "description": "",
-            "id": "cf1d3967-df7c-4408-925f-1cfb33f24055",
-            "created": {
-                "at": "2024-05-13T19:14:43.79Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-16T10:04:40.6Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "theme",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "dark"
-                    ]
-                },
-                {
-                    "name": "variant",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "large"
-                    ]
-                },
-                {
-                    "name": "content",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
-                    ]
-                },
-                {
-                    "name": "background",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
-                    ]
-                },
-                {
-                    "name": "mobileBackground",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
-                "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
-                "name": "Marquee",
-                "title": "Marquee"
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/photoshop",
-            "title": "Photoshop",
-            "description": "",
-            "id": "d52dcff2-9dea-439e-a7a4-a53099ec9315",
-            "created": {
-                "at": "2024-05-08T12:05:04.785Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-15T12:15:40.299Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "type",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "catalog"
-                    ]
-                },
-                {
-                    "name": "icon",
-                    "type": "text",
-                    "multiple": true,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop.svg"
-                    ]
-                },
-                {
-                    "name": "name",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "photoshop"
-                    ]
-                },
-                {
-                    "name": "title",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "Photoshop"
-                    ]
-                },
-                {
-                    "name": "link",
-                    "type": "text",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "prices",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&amp;type=price\">PRICE - ABM - Photoshop&nbsp;</a></p>"
-                    ]
-                },
-                {
-                    "name": "description",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p><strong>Edittt</strong>, composite, and create beautiful images, graphics, and art on desktop and iPad.</p>\n<p><a href=\"https://www.adobe.com/products/photoshop.html\">Learn more</a></p>"
-                    ]
-                },
-                {
-                    "name": "secure",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "stock",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "ctas",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p><a class=\"merch link-block con-button blue\" href=\"https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\">Buy now</a><a class=\"merch link-block con-button outline\" href=\"https://milo.adobe.com/tools/ost?osi=ZQwlmahh5YRWh8mRGxo-cr3eu91ShbpRv6vkbcsi3eQ&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\">Free trial</a></p>"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
-                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
-                "name": "Merch Card",
-                "title": "Merch Card",
-                "description": "content for adobe.com merch-card web component."
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/marquee/test1234",
-            "title": "Special Offers Promo",
-            "description": "",
-            "id": "ebde12aa-7639-4e03-93d4-a8257b220983",
-            "created": {
-                "at": "2024-05-17T12:37:18.134Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-16T10:04:40.6Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "theme",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "dark"
-                    ]
-                },
-                {
-                    "name": "variant",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": [
-                        "large"
-                    ]
-                },
-                {
-                    "name": "content",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
-                    ]
-                },
-                {
-                    "name": "background",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
-                    ]
-                },
-                {
-                    "name": "mobileBackground",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
-                "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
-                "name": "Marquee",
-                "title": "Marquee"
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        },
-        {
-            "path": "/content/dam/sandbox/ilyas/photoshop-express",
-            "title": "Photoshop Express",
-            "description": "",
-            "id": "ec8bc339-ea81-476a-b72d-902d44fe4d08",
-            "created": {
-                "at": "2024-05-08T12:05:13.126Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "modified": {
-                "at": "2024-05-14T23:33:47.304Z",
-                "by": "tuerkben@adobe.com"
-            },
-            "status": "DRAFT",
-            "fields": [
-                {
-                    "name": "type",
-                    "type": "enumeration",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "icon",
-                    "type": "text",
-                    "multiple": true,
-                    "values": [
-                        "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-express.svg"
-                    ]
-                },
-                {
-                    "name": "name",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "photoshop-express"
-                    ]
-                },
-                {
-                    "name": "title",
-                    "type": "text",
-                    "multiple": false,
-                    "values": [
-                        "Photoshop Expres"
-                    ]
-                },
-                {
-                    "name": "link",
-                    "type": "text",
-                    "multiple": false,
-                    "values": []
-                },
-                {
-                    "name": "prices",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": []
-                },
-                {
-                    "name": "description",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p>Edit and transform your photos on the go.</p><p><a href=\"https://www.adobe.com/products/photoshop-express.html\">Learn more</a></p>"
-                    ]
-                },
-                {
-                    "name": "secure",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "stock",
-                    "type": "boolean",
-                    "multiple": false,
-                    "values": [
-                        true
-                    ]
-                },
-                {
-                    "name": "ctas",
-                    "type": "long-text",
-                    "multiple": false,
-                    "mimeType": "text/html",
-                    "values": [
-                        "<p><a href=\"https://apps.apple.com/us/app/adobe-photoshop-express/id331975235?ls=1\">iOS</a> <a href=\"https://play.google.com/store/apps/details?id=com.adobe.psmobile\">Android</a> <a href=\"https://www.microsoft.com/en-us/p/adobe-photoshop-express-image-editor-adjustments-filters-effects-borders/9wzdncrfj27n?rtc=1&amp;activetab=pivot%3Aoverviewtab\">Windows</a></p>"
-                    ]
-                }
-            ],
-            "variations": [],
-            "tags": [],
-            "references": [],
-            "model": {
-                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
-                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
-                "name": "Merch Card",
-                "title": "Merch Card",
-                "description": "content for adobe.com merch-card web component."
-            },
-            "validationStatus": [],
-            "fieldTags": []
-        }
-    ]
+  "items": [
+      {
+          "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo16",
+          "title": "Special Offers Promo",
+          "description": "",
+          "id": "0445d32e-dfb0-4383-ad76-40607eb22da5",
+          "created": {
+              "at": "2024-05-17T14:56:43.658Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-16T17:08:44.747Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "theme",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "dark"
+                  ]
+              },
+              {
+                  "name": "variant",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "large"
+                  ]
+              },
+              {
+                  "name": "content",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "background",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                  ]
+              },
+              {
+                  "name": "mobileBackground",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                  ]
+              }
+          ],
+          "variations": [
+              {
+                  "name": "cchome",
+                  "title": "cchome",
+                  "description": "",
+                  "fields": [
+                      {
+                          "name": "theme",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "dark"
+                          ]
+                      },
+                      {
+                          "name": "variant",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "large"
+                          ]
+                      },
+                      {
+                          "name": "content",
+                          "type": "long-text",
+                          "multiple": false,
+                          "mimeType": "text/html",
+                          "values": [
+                              "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                          ]
+                      },
+                      {
+                          "name": "background",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                          ]
+                      },
+                      {
+                          "name": "mobileBackground",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                          ]
+                      }
+                  ],
+                  "tags": [],
+                  "validationStatus": [],
+                  "references": [],
+                  "fieldTags": []
+              }
+          ],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
+              "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
+              "name": "Marquee",
+              "title": "Marquee"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo15",
+          "title": "Special Offers Promo",
+          "description": "",
+          "id": "2cdc587d-d8a5-426d-b79d-cae71f28241e",
+          "created": {
+              "at": "2024-05-17T14:56:05.082Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-16T17:08:44.747Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "theme",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "dark"
+                  ]
+              },
+              {
+                  "name": "variant",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "large"
+                  ]
+              },
+              {
+                  "name": "content",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "background",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                  ]
+              },
+              {
+                  "name": "mobileBackground",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                  ]
+              }
+          ],
+          "variations": [
+              {
+                  "name": "cchome",
+                  "title": "cchome",
+                  "description": "",
+                  "fields": [
+                      {
+                          "name": "theme",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "dark"
+                          ]
+                      },
+                      {
+                          "name": "variant",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "large"
+                          ]
+                      },
+                      {
+                          "name": "content",
+                          "type": "long-text",
+                          "multiple": false,
+                          "mimeType": "text/html",
+                          "values": [
+                              "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                          ]
+                      },
+                      {
+                          "name": "background",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                          ]
+                      },
+                      {
+                          "name": "mobileBackground",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                          ]
+                      }
+                  ],
+                  "tags": [],
+                  "validationStatus": [],
+                  "references": [],
+                  "fieldTags": []
+              }
+          ],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
+              "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
+              "name": "Marquee",
+              "title": "Marquee"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/lightroom-classic",
+          "title": "Lightroom Classic",
+          "description": "",
+          "id": "4fb0c44c-a28b-4a1d-91f5-b145cdb993e0",
+          "created": {
+              "at": "2024-05-08T12:05:32.662Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-15T16:38:18.643Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "type",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "catalog"
+                  ]
+              },
+              {
+                  "name": "icon",
+                  "type": "text",
+                  "multiple": true,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/lightroom-classic.svg"
+                  ]
+              },
+              {
+                  "name": "name",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "lightroom-classic"
+                  ]
+              },
+              {
+                  "name": "title",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "Lightroom Ultra Classicc"
+                  ]
+              },
+              {
+                  "name": "link",
+                  "type": "text",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c&amp;type=price\">PRICE - ABM - Lightrooom Classic</a></p>"
+                  ]
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p>Photo editing optimized for desktop.</p><p><a href=\"https://www.adobe.com/products/photoshop-lightroom-classic.html\">Learn more</a></p>"
+                  ]
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "stock",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<a href=\"https://milo.adobe.com/tools/ost?osi=BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=OInILOo_tvV3OiYdJTxo1NhsVX4GxbHnM8JWexA9N8w&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+                  ]
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+              "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+              "name": "Merch Card",
+              "title": "Merch Card",
+              "description": "content for adobe.com merch-card web component."
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/photoshop-elements-premiere-elements",
+          "title": "Photoshop Elements 2024 ",
+          "description": "",
+          "id": "545b382c-102e-4cd5-af66-b4c229bc16fc",
+          "created": {
+              "at": "2024-05-08T12:05:36.952Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-15T13:08:48.909Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "type",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "catalog"
+                  ]
+              },
+              {
+                  "name": "icon",
+                  "type": "text",
+                  "multiple": true,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-elements.svg"
+                  ]
+              },
+              {
+                  "name": "name",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "photoshop-elements-premiere-elements"
+                  ]
+              },
+              {
+                  "name": "title",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "Photoshop Elements 2024 &amp; Premiere Elements 2024"
+                  ]
+              },
+              {
+                  "name": "link",
+                  "type": "text",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p>Almost free</p>"
+                  ]
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p>&nbsp;</p>\n<p>Organize, edit, create, and share your photos and videos.<br><a href=\"https://www.adobe.com/products/photoshop-premiere-elements.html\">Learn more</a></p>"
+                  ]
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "stock",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=dTv_VejD1QwlBhDLCy6wbJRifhllDnI0PBTvCFA37TU&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a>"
+                  ]
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+              "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+              "name": "Merch Card",
+              "title": "Merch Card",
+              "description": "content for adobe.com merch-card web component."
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo12",
+          "title": "Special Offers Promo",
+          "description": "",
+          "id": "80a0e465-c316-47af-b335-6ee20e124761",
+          "created": {
+              "at": "2024-05-17T14:54:32.876Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-16T17:08:44.747Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "theme",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "dark"
+                  ]
+              },
+              {
+                  "name": "variant",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "large"
+                  ]
+              },
+              {
+                  "name": "content",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "background",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                  ]
+              },
+              {
+                  "name": "mobileBackground",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                  ]
+              }
+          ],
+          "variations": [
+              {
+                  "name": "cchome",
+                  "title": "cchome",
+                  "description": "",
+                  "fields": [
+                      {
+                          "name": "theme",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "dark"
+                          ]
+                      },
+                      {
+                          "name": "variant",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "large"
+                          ]
+                      },
+                      {
+                          "name": "content",
+                          "type": "long-text",
+                          "multiple": false,
+                          "mimeType": "text/html",
+                          "values": [
+                              "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                          ]
+                      },
+                      {
+                          "name": "background",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                          ]
+                      },
+                      {
+                          "name": "mobileBackground",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                          ]
+                      }
+                  ],
+                  "tags": [],
+                  "validationStatus": [],
+                  "references": [],
+                  "fieldTags": []
+              }
+          ],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
+              "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
+              "name": "Marquee",
+              "title": "Marquee"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo1",
+          "title": "Special Offers Promo",
+          "description": "",
+          "id": "84ff822f-c498-4150-a2de-a56fcde3d7e7",
+          "created": {
+              "at": "2024-05-17T14:53:37.245Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-16T17:08:44.747Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "theme",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "dark"
+                  ]
+              },
+              {
+                  "name": "variant",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "large"
+                  ]
+              },
+              {
+                  "name": "content",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "background",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                  ]
+              },
+              {
+                  "name": "mobileBackground",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                  ]
+              }
+          ],
+          "variations": [
+              {
+                  "name": "cchome",
+                  "title": "cchome",
+                  "description": "",
+                  "fields": [
+                      {
+                          "name": "theme",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "dark"
+                          ]
+                      },
+                      {
+                          "name": "variant",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "large"
+                          ]
+                      },
+                      {
+                          "name": "content",
+                          "type": "long-text",
+                          "multiple": false,
+                          "mimeType": "text/html",
+                          "values": [
+                              "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                          ]
+                      },
+                      {
+                          "name": "background",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                          ]
+                      },
+                      {
+                          "name": "mobileBackground",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                          ]
+                      }
+                  ],
+                  "tags": [],
+                  "validationStatus": [],
+                  "references": [],
+                  "fieldTags": []
+              }
+          ],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
+              "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
+              "name": "Marquee",
+              "title": "Marquee"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/photoshop-elements",
+          "title": "Photoshop Elements 2024",
+          "description": "",
+          "id": "93cefe27-7a83-4179-a08c-e177977508a4",
+          "created": {
+              "at": "2024-05-08T12:05:21.8Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-08T12:05:22.018Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "type",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "icon",
+                  "type": "text",
+                  "multiple": true,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-elements.svg"
+                  ]
+              },
+              {
+                  "name": "name",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "photoshop-elements"
+                  ]
+              },
+              {
+                  "name": "title",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "Photoshop Elements 2024"
+                  ]
+              },
+              {
+                  "name": "link",
+                  "type": "text",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": []
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p>Organize, edit, create, and share your photos.<br><a href=\"https://www.adobe.com/products/photoshop-elements.html\">Learn more</a></p>"
+                  ]
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "stock",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=lJONM8HQs6lfv4cRRGXSouUr6iBScsczJKHz7Un3uow&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/photoshop-elements/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+                  ]
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+              "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+              "name": "Merch Card",
+              "title": "Merch Card",
+              "description": "content for adobe.com merch-card web component."
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo",
+          "title": "Special Offers Promo",
+          "description": "",
+          "id": "ad4e2e82-0aab-4f43-96bd-09bdc546aaae",
+          "created": {
+              "at": "2024-05-17T14:46:27.936Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-16T17:08:44.747Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "theme",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "dark"
+                  ]
+              },
+              {
+                  "name": "variant",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "large"
+                  ]
+              },
+              {
+                  "name": "content",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "background",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                  ]
+              },
+              {
+                  "name": "mobileBackground",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                  ]
+              }
+          ],
+          "variations": [
+              {
+                  "name": "cchome",
+                  "title": "cchome",
+                  "description": "",
+                  "fields": [
+                      {
+                          "name": "theme",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "dark"
+                          ]
+                      },
+                      {
+                          "name": "variant",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "large"
+                          ]
+                      },
+                      {
+                          "name": "content",
+                          "type": "long-text",
+                          "multiple": false,
+                          "mimeType": "text/html",
+                          "values": [
+                              "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                          ]
+                      },
+                      {
+                          "name": "background",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                          ]
+                      },
+                      {
+                          "name": "mobileBackground",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                          ]
+                      }
+                  ],
+                  "tags": [],
+                  "validationStatus": [],
+                  "references": [],
+                  "fieldTags": []
+              }
+          ],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
+              "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
+              "name": "Marquee",
+              "title": "Marquee"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/creative-cloud",
+          "title": "Creative Cloud All Apps",
+          "description": "",
+          "id": "be9aa9c6-b8e9-4058-aa6b-f0125647479a",
+          "created": {
+              "at": "2024-05-08T12:05:03.588Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-15T12:16:09.741Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "published": {
+              "at": "2024-05-08T14:06:11.984Z",
+              "by": "vlassenko@adobe.com"
+          },
+          "status": "MODIFIED",
+          "fields": [
+              {
+                  "name": "type",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "icon",
+                  "type": "text",
+                  "multiple": true,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/creative-cloud.svg"
+                  ]
+              },
+              {
+                  "name": "name",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "creative-cloud"
+                  ]
+              },
+              {
+                  "name": "title",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "Creative Cloud All Apps"
+                  ]
+              },
+              {
+                  "name": "link",
+                  "type": "text",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price\">PRICE - ABM - Creative Cloud All Apps</a></p>"
+                  ]
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p>Get <strong>20</strong> apps plus fonts, storage, templates, and tutorials for less than the price of Acrobat Pro, Photoshop, and Premiere Pro sold separately. (Substance 3D apps not included.)</p>\n<p><a class=\"modal link-block \" href=\"#modal-see-whats-included\" data-modal-path=\"/cc-shared/fragments/modals/see-whats-included/cc-all-apps-see-whats-included-buy\" data-modal-hash=\"#modal-see-whats-included\">See what's included</a> | <a href=\"https://www.adobe.com/creativecloud/all-apps.html\">Learn more</a></p>"
+                  ]
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "stock",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><a class=\"merch link-block con-button blue\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\"><strong>CTA Buy now</strong>&nbsp;</a><a class=\"merch link-block con-button outline\" href=\"https://milo.adobe.com/tools/ost?osi=JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\">Free trial</a></p>"
+                  ]
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+              "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+              "name": "Merch Card",
+              "title": "Merch Card",
+              "description": "content for adobe.com merch-card web component."
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/lightroom",
+          "title": "Lightroom (1TB)",
+          "description": "",
+          "id": "c08176b8-12c5-42f5-9520-03b521e57dad",
+          "created": {
+              "at": "2024-05-08T12:05:07.682Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-08T12:05:07.903Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "type",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "icon",
+                  "type": "text",
+                  "multiple": true,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/lightroom.svg"
+                  ]
+              },
+              {
+                  "name": "name",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "lightroom"
+                  ]
+              },
+              {
+                  "name": "title",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "Lightroom (1TB)"
+                  ]
+              },
+              {
+                  "name": "link",
+                  "type": "text",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<a href=\"https://milo.adobe.com/tools/ost?osi=YbmrrnDXjKp75tHcS_wDjwLhuZl3uldCu00qBXGJFMc&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Lightroom 1TB</a>"
+                  ]
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p>Photo editing optimized for desktop.</p><p><a href=\"https://www.adobe.com/products/photoshop-lightroom.html\">Learn more</a></p>"
+                  ]
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "stock",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<a href=\"https://milo.adobe.com/tools/ost?osi=YbmrrnDXjKp75tHcS_wDjwLhuZl3uldCu00qBXGJFMc&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=Fz6T5PHsegbhJA2Uyzm_EweshED45stvTIVGPS3SqQo&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+                  ]
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+              "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+              "name": "Merch Card",
+              "title": "Merch Card",
+              "description": "content for adobe.com merch-card web component."
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo11",
+          "title": "Special Offers Promo",
+          "description": "",
+          "id": "d2033138-5d80-4679-b5bb-f6ebc2057414",
+          "created": {
+              "at": "2024-05-17T14:54:05.054Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-16T17:08:44.747Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "theme",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "dark"
+                  ]
+              },
+              {
+                  "name": "variant",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "large"
+                  ]
+              },
+              {
+                  "name": "content",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "background",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                  ]
+              },
+              {
+                  "name": "mobileBackground",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                  ]
+              }
+          ],
+          "variations": [
+              {
+                  "name": "cchome",
+                  "title": "cchome",
+                  "description": "",
+                  "fields": [
+                      {
+                          "name": "theme",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "dark"
+                          ]
+                      },
+                      {
+                          "name": "variant",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "large"
+                          ]
+                      },
+                      {
+                          "name": "content",
+                          "type": "long-text",
+                          "multiple": false,
+                          "mimeType": "text/html",
+                          "values": [
+                              "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                          ]
+                      },
+                      {
+                          "name": "background",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                          ]
+                      },
+                      {
+                          "name": "mobileBackground",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                          ]
+                      }
+                  ],
+                  "tags": [],
+                  "validationStatus": [],
+                  "references": [],
+                  "fieldTags": []
+              }
+          ],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
+              "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
+              "name": "Marquee",
+              "title": "Marquee"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/photoshop",
+          "title": "Photoshop",
+          "description": "",
+          "id": "d52dcff2-9dea-439e-a7a4-a53099ec9315",
+          "created": {
+              "at": "2024-05-08T12:05:04.785Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-15T12:15:40.299Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "type",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "catalog"
+                  ]
+              },
+              {
+                  "name": "icon",
+                  "type": "text",
+                  "multiple": true,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop.svg"
+                  ]
+              },
+              {
+                  "name": "name",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "photoshop"
+                  ]
+              },
+              {
+                  "name": "title",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "Photoshop"
+                  ]
+              },
+              {
+                  "name": "link",
+                  "type": "text",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&amp;type=price\">PRICE - ABM - Photoshop&nbsp;</a></p>"
+                  ]
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><strong>Edittt</strong>, composite, and create beautiful images, graphics, and art on desktop and iPad.</p>\n<p><a href=\"https://www.adobe.com/products/photoshop.html\">Learn more</a></p>"
+                  ]
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "stock",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><a class=\"merch link-block con-button blue\" href=\"https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\">Buy now</a><a class=\"merch link-block con-button outline\" href=\"https://milo.adobe.com/tools/ost?osi=ZQwlmahh5YRWh8mRGxo-cr3eu91ShbpRv6vkbcsi3eQ&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\">Free trial</a></p>"
+                  ]
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+              "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+              "name": "Merch Card",
+              "title": "Merch Card",
+              "description": "content for adobe.com merch-card web component."
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo14",
+          "title": "Special Offers Promo",
+          "description": "",
+          "id": "d800a128-3a17-4089-8ffe-281e7a4dd130",
+          "created": {
+              "at": "2024-05-17T14:55:56.275Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-16T17:08:44.747Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "theme",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "dark"
+                  ]
+              },
+              {
+                  "name": "variant",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "large"
+                  ]
+              },
+              {
+                  "name": "content",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "background",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                  ]
+              },
+              {
+                  "name": "mobileBackground",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                  ]
+              }
+          ],
+          "variations": [
+              {
+                  "name": "cchome",
+                  "title": "cchome",
+                  "description": "",
+                  "fields": [
+                      {
+                          "name": "theme",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "dark"
+                          ]
+                      },
+                      {
+                          "name": "variant",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "large"
+                          ]
+                      },
+                      {
+                          "name": "content",
+                          "type": "long-text",
+                          "multiple": false,
+                          "mimeType": "text/html",
+                          "values": [
+                              "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                          ]
+                      },
+                      {
+                          "name": "background",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                          ]
+                      },
+                      {
+                          "name": "mobileBackground",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                          ]
+                      }
+                  ],
+                  "tags": [],
+                  "validationStatus": [],
+                  "references": [],
+                  "fieldTags": []
+              }
+          ],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
+              "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
+              "name": "Marquee",
+              "title": "Marquee"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/photoshop-express",
+          "title": "Photoshop Express",
+          "description": "",
+          "id": "ec8bc339-ea81-476a-b72d-902d44fe4d08",
+          "created": {
+              "at": "2024-05-08T12:05:13.126Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-14T23:33:47.304Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "type",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "icon",
+                  "type": "text",
+                  "multiple": true,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-express.svg"
+                  ]
+              },
+              {
+                  "name": "name",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "photoshop-express"
+                  ]
+              },
+              {
+                  "name": "title",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "Photoshop Expres"
+                  ]
+              },
+              {
+                  "name": "link",
+                  "type": "text",
+                  "multiple": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": []
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p>Edit and transform your photos on the go.</p><p><a href=\"https://www.adobe.com/products/photoshop-express.html\">Learn more</a></p>"
+                  ]
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "stock",
+                  "type": "boolean",
+                  "multiple": false,
+                  "values": [
+                      true
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><a href=\"https://apps.apple.com/us/app/adobe-photoshop-express/id331975235?ls=1\">iOS</a> <a href=\"https://play.google.com/store/apps/details?id=com.adobe.psmobile\">Android</a> <a href=\"https://www.microsoft.com/en-us/p/adobe-photoshop-express-image-editor-adjustments-filters-effects-borders/9wzdncrfj27n?rtc=1&amp;activetab=pivot%3Aoverviewtab\">Windows</a></p>"
+                  ]
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+              "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+              "name": "Merch Card",
+              "title": "Merch Card",
+              "description": "content for adobe.com merch-card web component."
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      },
+      {
+          "path": "/content/dam/sandbox/ilyas/marquee/special-offers-promo13",
+          "title": "Special Offers Promo",
+          "description": "",
+          "id": "f8d34fd5-f85c-458a-86de-8e86506937a4",
+          "created": {
+              "at": "2024-05-17T14:54:39.837Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "modified": {
+              "at": "2024-05-16T17:08:44.747Z",
+              "by": "tuerkben@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "theme",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "dark"
+                  ]
+              },
+              {
+                  "name": "variant",
+                  "type": "enumeration",
+                  "multiple": false,
+                  "values": [
+                      "large"
+                  ]
+              },
+              {
+                  "name": "content",
+                  "type": "long-text",
+                  "multiple": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "background",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                  ]
+              },
+              {
+                  "name": "mobileBackground",
+                  "type": "text",
+                  "multiple": false,
+                  "values": [
+                      "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                  ]
+              }
+          ],
+          "variations": [
+              {
+                  "name": "cchome",
+                  "title": "cchome",
+                  "description": "",
+                  "fields": [
+                      {
+                          "name": "theme",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "dark"
+                          ]
+                      },
+                      {
+                          "name": "variant",
+                          "type": "enumeration",
+                          "multiple": false,
+                          "values": [
+                              "large"
+                          ]
+                      },
+                      {
+                          "name": "content",
+                          "type": "long-text",
+                          "multiple": false,
+                          "mimeType": "text/html",
+                          "values": [
+                              "<h1 id=\"save-promo-discount-cci-all-apps-on-the-creative-cloud-all-apps-plan\" class=\"heading-xxl\">Save 50% on the Creative Cloud All Apps plan.</h1>\n<p class=\"body-xl\">Get Photoshop, Illustrator, Premiere Pro, and more apps plus generative AI features. Ends May 13. First year only.&nbsp;<a href=\"https://www.adobe.com/offer-terms/cc_full_special_offer.html\" target=\"_blank\" rel=\"noopener\">See terms</a>.</p>\n<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=priceStrikethrough&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a>&nbsp;<a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price&amp;promo=CCI_40OFF12_524&amp;term=true&amp;seat=false&amp;tax=false&amp;old=false&amp;exclusive=false\" data-failed=\"true\" data-reason=\"Failed loading merch block.\">PRICE - ABM - Creative Cloud All Apps 100GB</a></p>\n<p class=\"action-area\"><strong><a class=\"modal link-block con-button outline button-xl button-justified-mobile\" href=\"https://main--cc--adobecom.hlx.page/products/special-offers?martech=off#modal-crm\" data-modal-path=\"/cc-shared/fragments/modals/crm/all-apps\" data-modal-hash=\"#modal-crm\">Buy now</a></strong></p>"
+                          ]
+                      },
+                      {
+                          "name": "background",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.live/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=2000&format=webply&optimize=medium"
+                          ]
+                      },
+                      {
+                          "name": "mobileBackground",
+                          "type": "text",
+                          "multiple": false,
+                          "values": [
+                              "https://main--cc--adobecom.hlx.page/cc-shared/fragments/promos/2024/americas/cci-all-apps-q2/products/special-offers/media_15ecacaa558a3d769b643b47b5cca4c3d4ca720c7.jpeg?width=750&format=webply&optimize=medium"
+                          ]
+                      }
+                  ],
+                  "tags": [],
+                  "validationStatus": [],
+                  "references": [],
+                  "fieldTags": []
+              }
+          ],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl",
+              "path": "/conf/sandbox/settings/dam/cfm/models/marquee",
+              "name": "Marquee",
+              "title": "Marquee"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      }
+  ]
 }

@@ -23,6 +23,7 @@ const meta = createTag('meta', {
   content: 'aem:https://author-p22655-e59341.adobeaemcloud.com',
 });
 
+const bucket = 'author-p22655-e59341';
 const headers = {
   Authorization: `Bearer ${localStorage.getItem('bearerToken')}`,
   pragma: 'no-cache',
@@ -44,7 +45,7 @@ class OdinSearch extends LitElement {
     }
   `;
 
-  static properties = { source: { type: Object } };
+  static properties = { items: { type: Array }, source: { type: Object } };
 
   constructor() {
     super();
@@ -107,7 +108,6 @@ class OdinSearch extends LitElement {
     const list = await Promise.all(items.map(
       ({ path, title, fields, model: { path: modelPath } }) => {
         const item = {
-          modelPath,
           path,
           cfTitle: title,
           ...Object.fromEntries(
@@ -133,31 +133,30 @@ class OdinSearch extends LitElement {
     ul.querySelectorAll('[data-odin-path] > *').forEach(loadBlock);
   }
 
-  async confirm(e) {
+  async confirm() {
     const title = this.querySelector('sp-textfield').value;
     const name = title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
     console.log('Duplicating', this.source.odinPath, 'to', this.source.destParentPath, name, title);
-    const bodyContent = new FormData();
-    bodyContent.append('cmd', 'copyPage');
-    bodyContent.append('srcPath', this.source.odinPath);
-    bodyContent.append('destParentPath', this.source.destParentPath);
-    bodyContent.append('shallow', 'false');
-    bodyContent.append('_charset_', 'UTF-8');
-    bodyContent.append('destName', name);
-    bodyContent.append('destTitle', title);
 
-    const response = await fetch('https://author-p22655-e59341.adobeaemcloud.com/bin/wcmcommand', {
-      method: 'POST',
-      body: bodyContent,
-      headers: {
-        ...headers,
-        'X-Api-Key': 'aem-headless-cf-admin',
-        'x-aem-affinity-type': 'api',
+    const item = this.items.find(({ path }) => path === this.source.odinPath);
+    if (!item) return;
+
+    const resp = await fetch(
+      `https://${bucket}.adobeaemcloud.com/adobe/sites/cf/fragments`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          title,
+          name,
+          description: `This is a duplicate of ${this.source.odinPath}`,
+          modelId: item.model.id,
+          parentPath: this.source.destParentPath,
+          fields: item.fields,
+        }),
       },
-    });
-
-    e.target.open = false;
-    await response.text();
+    );
+    await resp.json();
     this.doSearch();
   }
 
@@ -217,12 +216,13 @@ class OdinSearch extends LitElement {
     }
     const queryString = escape(JSON.stringify(params));
     let url = `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`;
-    // url = '/tools/odin/search.json';
+    url = '/tools/odin/search.json';
     const res = await fetch(
       url,
       { headers },
     );
     const { items } = await res.json();
+    this.items = items;
     this.prepareItems(items);
   }
 }
