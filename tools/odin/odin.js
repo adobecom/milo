@@ -145,7 +145,10 @@ class OdinSearch extends LitElement {
       `https://${bucket}.adobeaemcloud.com/adobe/sites/cf/fragments`,
       {
         method: 'POST',
-        headers,
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           title,
           name,
@@ -215,7 +218,7 @@ class OdinSearch extends LitElement {
       ];
     }
     const queryString = escape(JSON.stringify(params));
-    let url = `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`;
+    const url = `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`;
     // url = '/tools/odin/search.json';
     const res = await fetch(
       url,
