@@ -177,7 +177,7 @@ describe('Functional Test', () => {
     await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     config = getConfig();
-    expect(config.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
+    expect(config.mep.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
   });
 });
 

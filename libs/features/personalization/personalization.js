@@ -828,8 +828,7 @@ export async function applyPers(manifests, postLCP = false) {
     const config = getConfig();
 
     if (!manifests?.length) return;
-    config.mep ??= {};
-    config.mep.handleFragmentCommand = handleFragmentCommand;
+    if (!postLCP) config.mep = { handleFragmentCommand };
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
       experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
