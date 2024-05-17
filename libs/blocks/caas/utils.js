@@ -401,6 +401,34 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
   return filterObj;
 };
 
+const getCategoryArray = async (state, country, lang) => {
+  // Fetch tags
+  const { tags } = await getTags(state.tagsUrl);
+  console.log('TAGS:', tags);
+
+  // Filter tags based on the condition
+  const categories = Object.values(tags)
+    .filter((tag) => tag.tagID === 'caas:product-categories')
+    .map((tag) => tag.tags);
+
+  console.log('CATEGORIES:', categories);
+
+  // Extract subcategories
+  const subCategories = Object.entries(categories[0])
+    .map(([key, value]) => ({
+      group: key,
+      id: value.tagID,
+      label: value.title,
+      icon: value.icon,
+      items: Object.entries(value.tags)
+        .map((tag) => getFilterObj({excludeTags:[], filterTag: [tag[1].tagID], icon:'', openedOnLoad: false}, tags, state, country, lang))
+        .filter((tag) => tag !== null),  
+    }));
+
+  console.log('SUBCATEGORIES:', subCategories);
+  return [{ group: 'All Topics',  label: 'All Topics', id: '', items: [] }, ...subCategories];
+};
+
 const getFilterArray = async (state, country, lang, strs) => {
   if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
@@ -595,6 +623,7 @@ export const getConfig = async (originalState, strs = {}) => {
         pool: state.sortReservoirPool,
       },
       ctaAction: state.ctaAction,
+      cardHoverEffect: state.cardHoverEffect,
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
@@ -605,6 +634,7 @@ export const getConfig = async (originalState, strs = {}) => {
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
+      categories: await getCategoryArray(state, country, language, strs),
       filters: await getFilterArray(state, country, language, strs),
       filterLogic: state.filterLogic,
       i18n: {
@@ -770,6 +800,7 @@ export const defaultState = {
   filterLocation: 'left',
   filterLogic: 'or',
   filters: [],
+  filtersCategories: [],
   filtersCustom: [],
   filtersShowEmpty: false,
   gutter: '4x',
