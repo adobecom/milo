@@ -40,7 +40,7 @@ const main = async ({ github, context }) => {
           issue_number: number,
           labels: [zeroImpactLabel],
         })
-        .catch(() => {});
+        .catch((e) => console.log(e));
     } else {
       console.log('Removing zero-impact label from PR.');
       await github.rest.issues
@@ -50,7 +50,7 @@ const main = async ({ github, context }) => {
           issue_number: number,
           name: zeroImpactLabel,
         })
-        .catch(() => {});
+        .catch((e) => console.log(e));
 
       console.log('Posting a comment on the PR.');
       await github.rest.issues
@@ -60,7 +60,7 @@ const main = async ({ github, context }) => {
           issue_number: number,
           body: 'This PR does not qualify for the zero-impact label as it touches code outside of the allowed areas. The label is auto applied, do not manually apply the label.',
         })
-        .catch(() => {});
+        .catch((e) => console.log(e));
     }
 
     console.log('Process successfully executed.');
