@@ -5,8 +5,8 @@
 import { html, css, LitElement } from '../../libs/deps/lit-all.min.js';
 import '../../libs/features/spectrum-web-components/dist/theme.js';
 import '../../libs/features/spectrum-web-components/dist/search.js';
-import '../../libs/features/spectrum-web-components/dist/button.js';
-import '../../libs/features/spectrum-web-components/dist/button-group.js';
+import '../../libs/features/spectrum-web-components/dist/action-button.js';
+import '../../libs/features/spectrum-web-components/dist/action-group.js';
 import '../../libs/features/spectrum-web-components/dist/picker.js';
 import '../../libs/deps/merch-icon.js';
 import { createTag, getConfig, loadBlock, loadScript, loadStyle } from '../../libs/utils/utils.js';
@@ -70,11 +70,12 @@ class OdinSearch extends LitElement {
     const wrap = async (block, { cfTitle, title, path }, classes = '') => `
     <li>
     <p class="path">${path}</p>
-    <sp-button-group>
-      <sp-button variant="accent">Copy</sp-button>
-      <sp-button variant="secondary">Publish</sp-button>
-      <sp-button variant="secondary">Unpublish</sp-button>
-  </sp-button-group>
+    <sp-action-group>
+      <sp-button variant="emphasized">Copy</sp-button>
+      <sp-button>Duplicate</sp-button>
+      <sp-button variant="quiet">Publish</sp-button>
+      <sp-button variant="quiet">Unpublish</sp-button>
+  </sp-action-group>
     <div
     data-milo-block="${block}"
     data-odin-path="${path}"
