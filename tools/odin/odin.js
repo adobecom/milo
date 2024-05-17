@@ -218,7 +218,7 @@ class OdinSearch extends LitElement {
     }
     const queryString = escape(JSON.stringify(params));
     let url = `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`;
-    url = '/tools/odin/search.json';
+    // url = '/tools/odin/search.json';
     const res = await fetch(
       url,
       { headers },
