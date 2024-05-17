@@ -72,7 +72,9 @@ class OdinSearch extends LitElement {
     e.stopPropagation();
     const { miloBlock, odinPath } = e.target.dataset;
     e.target.innerHTML = `<div class="${miloBlock}"><a class="odin" href="?fragment=${odinPath}"></a></div>`;
-    loadBlock(e.target.firstElementChild);
+    setTimeout(() => {
+      loadBlock(e.target.firstElementChild);
+    }, 500);
   }
 
   async prepareItems(items) {
