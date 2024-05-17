@@ -184,6 +184,7 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
         banner: {
@@ -379,6 +380,7 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
         banner: {
@@ -635,6 +637,7 @@ describe('getFloodgateCaasConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
         banner: {

@@ -11,13 +11,14 @@ import merch, {
   buildCta,
   getCheckoutContext,
   initService,
-  PRICE_LITERALS_URL,
+  fetchLiterals,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
   getCheckoutAction,
+  PRICE_LITERALS_URL,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -64,7 +65,6 @@ const CHECKOUT_LINK_CONFIGS = {
 
 const config = {
   codeRoot: '/libs',
-  commerce: { priceLiteralsURL: PRICE_LITERALS_URL },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
@@ -129,6 +129,7 @@ describe('Merch Block', () => {
     document.head.innerHTML = await readMockText('head.html');
     document.body.innerHTML = await readMockText('body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
+    config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
 
@@ -476,7 +477,7 @@ describe('Merch Block', () => {
     });
 
     it('getDownloadAction: returns undefined if not entitled', async () => {
-      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'ILLUSTRATOR');
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'ILLUSTRATOR' } }]);
       expect(checkoutLinkConfig).to.be.undefined;
     });
 
@@ -484,7 +485,7 @@ describe('Merch Block', () => {
       const [photoshopConfig] = CHECKOUT_LINK_CONFIGS.data;
       photoshopConfig.DOWNLOAD_URL = '';
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'PHOTOSHOP');
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'PHOTOSHOP' } }]);
       expect(checkoutLinkConfig).to.be.undefined;
     });
 
@@ -494,14 +495,14 @@ describe('Merch Block', () => {
       getUserEntitlements();
       mockIms('US');
       setSubscriptionsData(SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE);
-      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'CC_ALL_APPS');
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }]);
       expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
     });
 
     it('getModalAction: returns undefined if checkout-link config is not found', async () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction({}, { modal: true }, 'XYZ');
+      const action = await getModalAction([{ productArrangement: { productFamily: 'XZY' } }], { modal: true });
       expect(action).to.be.undefined;
     });
 
@@ -515,7 +516,7 @@ describe('Merch Block', () => {
       });
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{}], { modal: true }, 'PHOTOSHOP');
+      const action = await getModalAction([{ productArrangement: { productFamily: 'PHOTOSHOP' } }], { modal: true });
       expect(action).to.be.undefined;
     });
 
