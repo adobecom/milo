@@ -154,6 +154,7 @@ class OdinSearch extends LitElement {
         ...headers,
         'Csrf-Token': csrfTojen,
         'X-Api-Key': 'aem-headless-cf-admin',
+        'x-aem-affinity-type': 'api',
       },
     });
 
