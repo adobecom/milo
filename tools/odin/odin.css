@@ -32,7 +32,7 @@ odin-search p.path {
   margin: 0;
 }
 
-odin-search sp-button-group {
+odin-search sp-action-group {
   position: absolute;
   top: 16px;
   right: 0;
