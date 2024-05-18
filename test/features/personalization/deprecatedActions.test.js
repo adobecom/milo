@@ -115,18 +115,27 @@ describe('Functional Test', () => {
     expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
   });
 
-  it('removeContent should tag z-pattern in preview', async () => {
-    let manifestJson = await readFile({ path: './mocks/deprecatedActions/manifestRemoveContent.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
-    const config = getConfig();
-    config.mep = {
-      override: '',
-      preview: true,
-    };
+  it('removeContent should tag but not remove content in preview', async () => {
+    const url = new URL(window.location);
+    url.searchParams.set('mep', '');
+    window.history.pushState({}, '', url);
 
-    expect(document.querySelector('.z-pattern')).to.not.be.null;
-    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
-    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+    setTimeout(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+
+      let manifestJson = await readFile({ path: './mocks/deprecatedActions/manifestRemoveContent.json' });
+      manifestJson = JSON.parse(manifestJson);
+      setFetchResponse(manifestJson);
+
+      expect(document.querySelector('.z-pattern')).to.not.be.null;
+      await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+      expect(document.querySelector('.z-pattern')).to.not.be.null;
+      expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+
+      const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
+      await initFragments(removeMeFrag);
+      expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
+      expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
+    }, 100);
   });
 });

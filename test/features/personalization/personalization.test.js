@@ -172,12 +172,15 @@ describe('Functional Test', () => {
   });
 
   it('should override to param-newoffer=123', async () => {
-    let config = getConfig();
-    config.mep = { override: '/path/to/manifest.json--param-newoffer=123' };
+    const url = new URL(window.location);
+    url.searchParams.set('newoffer', '123');
+    window.history.pushState({}, '', url);
+    const config = getConfig();
     await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    config = getConfig();
-    expect(config.mep.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
+    setTimeout(async () => {
+      await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+      expect(config.mep.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
+    }, 100);
   });
 });
 

@@ -828,7 +828,17 @@ export async function applyPers(manifests, postLCP = false) {
     const config = getConfig();
 
     if (!manifests?.length) return;
-    if (!postLCP) config.mep = { handleFragmentCommand };
+    if (!postLCP) {
+      const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
+      const { env } = getConfig();
+      config.mep = {
+        handleFragmentCommand,
+        preview: (mepButton !== 'off' && (env?.name !== 'prod' || mepButton)),
+        override: mepParam ? decodeURIComponent(mepParam) : '',
+        highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+        mepParam,
+      };
+    }
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
       experiments[i] = await getPersConfig(experiments[i], config.mep?.override);

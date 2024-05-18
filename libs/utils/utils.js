@@ -861,11 +861,12 @@ const getEnablement = (mdKey, paramKey = false) => {
 };
 
 async function checkForPageMods() {
-  if (getMetadata('mep')?.toLowerCase().includes('off')) return;
+  const mepParam = PAGE_URL.searchParams.get('mep');
+  if (mepParam === 'off') return;
   const persEnabled = getEnablement('personalization');
   const promoEnabled = getEnablement('manifestnames', 'promo');
   const targetEnabled = getEnablement('target');
-  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled || mepParam;
   if (!mepEnabled) return;
 
   let persManifests = [];
@@ -888,32 +889,31 @@ async function checkForPageMods() {
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
-  const { env } = getConfig();
-  const mepParam = PAGE_URL.searchParams.get('mep');
-  if (mepParam !== null || (env?.name !== 'prod' && mepEnabled)) {
-    const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
-    persManifests = await addPreviewToConfig({
-      pageUrl: PAGE_URL,
-      mepEnabled: !!mepEnabled,
-      persManifests,
-      targetEnabled,
-    });
-  }
+  // const { env } = getConfig();
+  // if (mepParam !== null || (env?.name !== 'prod' && mepEnabled)) {
+  //   const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
+  //   persManifests = await addPreviewToConfig({
+  //     pageUrl: PAGE_URL,
+  //     mepEnabled: !!mepEnabled,
+  //     persManifests,
+  //     targetEnabled,
+  //   });
+  // }
 
   if (targetEnabled === true) {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
-  } else if (persManifests.length) {
-    loadIms()
-      .then(() => {
-        if (window.adobeIMS.isSignedInUser()) loadMartech();
-      })
-      .catch((e) => { console.log('Unable to load IMS:', e); });
-
-    const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-    const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
-
-    await applyPers(manifests);
+    return;
   }
+  loadIms()
+    .then(() => {
+      if (window.adobeIMS.isSignedInUser()) loadMartech();
+    })
+    .catch((e) => { console.log('Unable to load IMS:', e); });
+
+  const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
+  const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
+
+  await applyPers(manifests);
 }
 
 async function loadPostLCP(config) {
