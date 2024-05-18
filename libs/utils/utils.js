@@ -889,17 +889,6 @@ async function checkForPageMods() {
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
-  // const { env } = getConfig();
-  // if (mepParam !== null || (env?.name !== 'prod' && mepEnabled)) {
-  //   const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
-  //   persManifests = await addPreviewToConfig({
-  //     pageUrl: PAGE_URL,
-  //     mepEnabled: !!mepEnabled,
-  //     persManifests,
-  //     targetEnabled,
-  //   });
-  // }
-
   if (targetEnabled === true) {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
     return;
