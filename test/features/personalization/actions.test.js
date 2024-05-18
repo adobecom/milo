@@ -4,6 +4,7 @@ import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { applyPers, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import spoofParams from './spoofParams.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -168,17 +169,14 @@ describe('remove action', () => {
   });
 
   it('removeContent should tag but not remove content in preview', async () => {
-    const url = new URL(window.location);
-    url.searchParams.set('mep', '');
-    window.history.pushState({}, '', url);
+    spoofParams({ mep: '' });
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
 
     setTimeout(async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
-
-      let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
-      manifestJson = JSON.parse(manifestJson);
-      setFetchResponse(manifestJson);
-
       expect(document.querySelector('.z-pattern')).to.not.be.null;
       await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
       expect(document.querySelector('.z-pattern')).to.not.be.null;
@@ -188,7 +186,7 @@ describe('remove action', () => {
       await initFragments(removeMeFrag);
       expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
       expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
-    }, 100);
+    }, 50);
   });
 });
 

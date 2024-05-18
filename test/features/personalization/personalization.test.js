@@ -3,6 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import { applyPers, matchGlob } from '../../../libs/features/personalization/personalization.js';
+import spoofParams from './spoofParams.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -172,9 +173,7 @@ describe('Functional Test', () => {
   });
 
   it('should override to param-newoffer=123', async () => {
-    const url = new URL(window.location);
-    url.searchParams.set('newoffer', '123');
-    window.history.pushState({}, '', url);
+    spoofParams({ newoffer: '123' });
     const config = getConfig();
     await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
     setTimeout(async () => {

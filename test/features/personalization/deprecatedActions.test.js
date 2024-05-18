@@ -4,6 +4,7 @@ import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { applyPers, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import spoofParams from './spoofParams.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -116,10 +117,7 @@ describe('Functional Test', () => {
   });
 
   it('removeContent should tag but not remove content in preview', async () => {
-    const url = new URL(window.location);
-    url.searchParams.set('mep', '');
-    window.history.pushState({}, '', url);
-
+    spoofParams({ mep: '' });
     setTimeout(async () => {
       document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 

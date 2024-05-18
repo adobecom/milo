@@ -211,11 +211,6 @@ const consolidateObjects = (arr, prop, existing) => arr.reduce((propMap, item) =
       return;
     }
 
-    if (prop === 'commands') {
-      propMap[selector] = val;
-      return;
-    }
-
     if (selector in propMap) return;
     const action = {
       action: i.action,
