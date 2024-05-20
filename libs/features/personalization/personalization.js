@@ -93,8 +93,8 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
   manifests = manifests.concat(
     persManifests.map((manifest) => ({
       ...manifest,
-      manifestPath: normalizePath(appendJsonExt(manifest.manifestPath)),
-      manifestUrl: manifest.manifestPath,
+      manifestPath: normalizePath(appendJsonExt(manifest.manifestPath || manifest)),
+      manifestUrl: manifest.manifestPath || manifest,
     })),
   );
 
@@ -772,9 +772,11 @@ function compareExecutionOrder(a, b) {
 }
 
 export function cleanAndSortManifestList(manifests) {
-  const manifestObj = {};
   const config = getConfig();
-  manifests.forEach((manifest) => {
+  const manifestObj = {};
+  let allManifests = manifests;
+  if (config.mep.experiments) allManifests = [...manifests, ...config.mep.experiments]
+  allManifests.forEach((manifest) => {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
@@ -821,19 +823,9 @@ export function handleFragmentCommand(command, a) {
 export async function applyPers(manifests, postLCP = false) {
   try {
     const config = getConfig();
+    config.mep.handleFragmentCommand = handleFragmentCommand;
 
     if (!manifests?.length) return;
-    if (!postLCP) {
-      const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
-      const { env } = getConfig();
-      config.mep = {
-        handleFragmentCommand,
-        preview: (mepButton !== 'off' && (env?.name !== 'prod' || mepButton)),
-        override: mepParam ? decodeURIComponent(mepParam) : '',
-        highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
-        mepParam,
-      };
-    }
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
       experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
@@ -852,7 +844,7 @@ export async function applyPers(manifests, postLCP = false) {
     results = results.filter(Boolean);
 
     config.mep.experiments ??= [];
-    config.mep.experiments = [...config.mep.experiments, ...experiments];
+    config.mep.experiments = experiments;
     config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
     config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
     config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);

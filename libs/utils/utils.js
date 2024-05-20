@@ -846,26 +846,26 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
   return true;
 }
 
-const getEnablementValue = (val) => {
+const getMepValue = (val) => {
   const valMap = { on: true, off: false, gnav: 'gnav' };
   const finalVal = val?.toLowerCase().trim();
   return valMap[finalVal] || finalVal;
 };
 
-const getEnablement = (mdKey, paramKey = false) => {
+const getMepEnablement = (mdKey, paramKey = false) => {
   const paramValue = PAGE_URL.searchParams.get(paramKey || mdKey);
-  if (paramValue) return getEnablementValue(paramValue);
+  if (paramValue) return getMepValue(paramValue);
   const mdValue = getMetadata(mdKey);
   if (!mdValue) return false;
-  return getEnablementValue(mdValue);
+  return getMepValue(mdValue);
 };
 
 async function checkForPageMods() {
-  const mepParam = PAGE_URL.searchParams.get('mep');
+  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
-  const persEnabled = getEnablement('personalization');
-  const promoEnabled = getEnablement('manifestnames', 'promo');
-  const targetEnabled = getEnablement('target');
+  const persEnabled = getMepEnablement('personalization');
+  const promoEnabled = getMepEnablement('manifestnames', 'promo');
+  const targetEnabled = getMepEnablement('target');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled || mepParam;
   if (!mepEnabled) return;
 
@@ -889,6 +889,34 @@ async function checkForPageMods() {
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
+  persManifests = persManifests.map((manifest) => {
+    const { manifestPath } = manifest;
+    if (manifestPath.startsWith('/')) return manifestPath;
+    try {
+      const url = new URL(manifestPath);
+      return url.pathname;
+    } catch (e) {
+      return manifestPath;
+    }
+  });
+
+  if (mepParam) {
+    mepParam.split('---').forEach((manifestPair) => {
+      const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!persManifests.includes(manifestPath)) {
+        persManifests.push({ manifestPath });
+      }
+    });
+  }
+
+  const config = getConfig();
+  config.mep = {
+    preview: (mepButton !== 'off' && (config.env?.name !== 'prod' || mepButton)),
+    override: mepParam ? decodeURIComponent(mepParam) : '',
+    highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+    mepParam,
+    targetEnabled,
+  };
   if (targetEnabled === true) {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
     return;
