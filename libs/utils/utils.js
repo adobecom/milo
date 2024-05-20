@@ -889,7 +889,7 @@ async function checkForPageMods() {
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
-  if (mepParam !== '') {
+  if (mepParam && mepParam !== 'off') {
     const persManifestPaths = persManifests.map((manifest) => {
       const { manifestPath } = manifest;
       if (manifestPath.startsWith('/')) return manifestPath;
