@@ -91,6 +91,7 @@ const defaultOptions = {
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
     carousel: 'Carousel',
+    categories: 'Product Categories',
   },
   ctaActions: {
     _blank: 'New Tab',
@@ -114,6 +115,8 @@ const defaultOptions = {
       '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-cmiqueo.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-cmiqueo.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',  
   },
   filterBuildPanel: {
     automatic: 'Automatic',
@@ -182,6 +185,7 @@ const defaultOptions = {
     random: 'Random',
   },
   source: {
+    events: 'Events',
     bacom: 'Bacom',
     doccloud: 'DocCloud',
     experienceleague: 'Experience League',
