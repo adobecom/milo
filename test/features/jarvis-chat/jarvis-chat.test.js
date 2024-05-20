@@ -57,7 +57,7 @@ describe('Jarvis Chat', () => {
     const config = Object.assign(getConfig(), {
       locale: {
         ietf: 'en',
-        prefix: '/mena',
+        prefix: '/mena_en',
       },
     });
     await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
