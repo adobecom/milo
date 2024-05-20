@@ -453,12 +453,16 @@ div[class*="-up"] .media .foreground > .media-row {
   width: 100%;
 }
 
+.media.in-modal.full-bleed-image > .container.foreground > .media-row {
+  gap: 0;
+}
+
 .media.in-modal.full-bleed-image > .container.foreground > .media-row > div:not(.text) {
   width: 100%;
 }
 
 .media.in-modal.full-bleed-image > .container.foreground > .media-row > .text {
-  padding: 0 var(--spacing-m) var(--spacing-m) var(--spacing-m);
+  padding: var(--spacing-m);
   width: auto;
 }
 
@@ -502,12 +506,6 @@ div[class*="-up"] .media .foreground > .media-row {
   .media.in-modal.full-bleed-image > .container.foreground > .media-row  {
     align-items: stretch;
   }
-
-  .media.in-modal.full-bleed-image > .container.foreground > .media-row > .text {
-    padding: var(--spacing-l) 0 var(--spacing-l) var(--spacing-l);
-    width: auto;
-  }
-
 
   .media.in-modal.full-bleed-image > .container.foreground > .media-row > .image > picture {
     display: block;
