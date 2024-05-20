@@ -38,10 +38,6 @@
   display: flex;
 }
 
-html[dir="rtl"] .hero-marquee .foreground {
-  flex-direction: row-reverse;
-}
-
 .hero-marquee .action-area {
   flex-flow: column wrap;
   gap: var(--spacing-s); 
@@ -180,6 +176,10 @@ html[dir="rtl"] .hero-marquee .foreground {
   margin: 0 auto;
   display: grid;
   gap: var(--spacing-m);
+}
+
+html[dir="rtl"] .hero-marquee .foreground {
+  flex-direction: row-reverse;
 }
 
 .hero-marquee > .foreground.fw {

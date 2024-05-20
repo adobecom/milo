@@ -2,10 +2,11 @@ import {
   // eslint-disable-next-line max-len
   decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides, decorateButtons, handleObjectFit,
 } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
 const rowTypeKeyword = 'con-block-row-';
+const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
 
 function decorateList(el) {
   el.classList.add('body-l', 'align-left');
@@ -104,6 +105,11 @@ function loadContentType(el, key, classes) {
   if (key === 'supplemental') decorateSup(el, classes);
 }
 
+function loadBreakpointThemes() {
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/styles/breakpoint-theme.css`);
+}
+
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -153,6 +159,11 @@ export default async function init(el) {
   decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
+  const containsClassFromArray = () => breakpointThemeClasses.some(
+    (className) => el.classList.contains(className),
+  );
+  if (containsClassFromArray) loadBreakpointThemes();
+
   const assetRow = allRows[0].classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
   const mainCopy = createTag('div', { class: 'main-copy' }, copy.innerHTML);
@@ -167,6 +178,8 @@ export default async function init(el) {
   // const actionAreaBody = mainCopy.querySelector('.body-m.action-area');
   // if (actionAreaBody) actionAreaBody.classList.remove('body-m');
   // console.log('removeBOdyClassOnEl', mainCopy, actionAreaBody);
+
+  // if (el.classList.contains)
 
   copy.innerHTML = '';
   copy.append(mainCopy);

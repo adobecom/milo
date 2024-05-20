@@ -126,6 +126,9 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
+
+  /* z-index */
+  --above-all: 9000; /* Used for page tools that overlay page content */
 }
 
 :root:lang(ar) {
@@ -869,60 +872,6 @@ a.static:hover {
   .con-block.xl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xl-static); }
   .con-block.xxl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xxl-static); }
   .con-block.xxxl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xxxl-static); }
-
-  /* tablet theme */
-  .con-block.light-tablet { color: var(--text-color); }
-  .con-block.dark-tablet {  color: var(--color-white); }
-
-  .con-block.light-tablet a:not(.con-button) { color: var(--link-color); }
-  .con-block.dark-tablet a:not(.con-button) { color: var(--link-color-dark); }
-
-  .con-block.light-tablet a:not(.con-button):hover,
-  .con-block.light-tablet a:not(.con-button):focus,
-  .con-block.light-tablet a:not(.con-button):active { color: var(--link-hover-color); }
-  
-  .con-block.dark-tablet a:not(.con-button):hover,
-  .con-block.dark-tablet a:not(.con-button):focus,
-  .con-block.dark-tablet a:not(.con-button):active  { color: var(--link-hover-color-dark); }
-
-  .con-block.light-tablet a.con-button.outline {
-    border-color: var(--text-color);
-    color: var(--text-color);
-  }
-
-  .con-block.dark-tablet a.con-button.outline {
-    border-color: var(--color-white);
-    color: var(--color-white);
-  }
-
-  .con-block.light-tablet a.con-button.outline:hover,
-  .con-block.light-tablet a.con-button.outline:focus,
-  .con-block.light-tablet a.con-button.outline:active {
-    background-color: var(--color-black);
-    border-color: var(--color-black);
-    color: var(--color-white);
-  }
-
-  .con-block.dark-tablet a.con-button.outline:hover,
-  .con-block.dark-tablet a.con-button.outline:focus,
-  .con-block.dark-tablet a.con-button.outline:active {
-    background-color: var(--color-white);
-    border-color: var(--color-white);
-    color: var(--color-black);
-    text-decoration: none;
-  }
-  
-  /* Static Links */
-  .con-block.static-links[class*="dark-"] a:not(.con-button),
-  .static-links .con-block[class*="dark-"] a:not(.con-button),
-  .con-block.static-links[class*="light-"] a:not(.con-button),
-  .static-links .con-block[class*="light-"] a:not(.con-button),
-  .con-block.static-links[class*="dark-"] a:not(.con-button):hover,
-  .static-links .con-block[class*="dark-"] a:not(.con-button):hover,
-  .con-block.static-links[class*="light-"] a:not(.con-button):hover,
-  .static-links .con-block[class*="light-"] a:not(.con-button):hover {
-    color: inherit;
-  }
 }
 
 /* tablet large up */
@@ -995,49 +944,6 @@ a.static:hover {
   .con-block.xl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xl-static); }
   .con-block.xxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxl-static); }
   .con-block.xxxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxxl-static); }
-
-  /* desktop theme */
-  .con-block.light-desktop { color: var(--text-color); }
-  .con-block.dark-desktop {  color: var(--color-white); }
-
-  .con-block.light-desktop a:not(.con-button) { color: var(--link-color); }
-  .con-block.dark-desktop a:not(.con-button) { color: var(--link-color-dark); }
-
-  .con-block.light-desktop a:not(.con-button):hover,
-  .con-block.light-desktop a:not(.con-button):focus,
-  .con-block.light-desktop a:not(.con-button):active { color: var(--link-hover-color); }
-  
-  .con-block.dark-desktop a:not(.con-button):hover,
-  .con-block.dark-desktop a:not(.con-button):focus,
-  .con-block.dark-desktop a:not(.con-button):active  { color: var(--link-hover-color-dark); }
-
-  .con-block.light-desktop a.con-button.outline {
-    border-color: var(--text-color);
-    color: var(--text-color);
-  }
-
-  .con-block.dark-desktop a.con-button.outline {
-    border-color: var(--color-white);
-    color: var(--color-white);
-  }
-
-  .con-block.light-desktop a.con-button.outline:hover,
-  .con-block.light-desktop a.con-button.outline:focus,
-  .con-block.light-desktop a.con-button.outline:active {
-    background-color: var(--color-black);
-    border-color: var(--color-black);
-    color: var(--color-white);
-  }
-
-  .con-block.dark-desktop a.con-button.outline:hover,
-  .con-block.dark-desktop a.con-button.outline:focus,
-  .con-block.dark-desktop a.con-button.outline:active {
-    background-color: var(--color-white);
-    border-color: var(--color-white);
-    color: var(--color-black);
-    text-decoration: none;
-  }
-
 }
 
 /* desktop large < 1440 */
