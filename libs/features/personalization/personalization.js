@@ -775,7 +775,7 @@ export function cleanAndSortManifestList(manifests) {
   const config = getConfig();
   const manifestObj = {};
   let allManifests = manifests;
-  if (config.mep.experiments) allManifests = [...manifests, ...config.mep.experiments]
+  if (config.mep.experiments) allManifests = [...manifests, ...config.mep.experiments];
   allManifests.forEach((manifest) => {
     try {
       if (!manifest?.manifest) return;
