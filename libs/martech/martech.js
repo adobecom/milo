@@ -120,7 +120,7 @@ const getTargetPersonalization = async () => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
-    window.lana.log('target response time', responseTime);
+    window.lana.log(`target response time: ${responseTime}`, { tags: 'errorType=info,module=martech' });
   }, { once: true });
 
   let manifests = [];
