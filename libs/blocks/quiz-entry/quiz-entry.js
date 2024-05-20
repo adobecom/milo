@@ -55,6 +55,25 @@ const App = ({
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
+  const sendMLFieldTextAnalytics = (fieldText) => {
+    const val = `Filters|${analyticsType}|${fieldText}`;
+
+    window.alloy('sendEvent', {
+      documentUnloading: true,
+      xdm: {
+        eventType: 'web.webinteraction.linkClicks',
+        web: {
+          webInteraction: {
+            linkClicks: { value: 1 },
+            type: 'other',
+            name: val,
+          },
+        },
+      },
+      data: { _adobe_corpnew: { digitalData: { search: { searchInfo: { keyword: val } } } } },
+    });
+  };
+
   useEffect(() => {
     (async () => {
       const qMap = {};
@@ -183,6 +202,8 @@ const App = ({
         window.lana.log(`ML results error - ${error}`, { tags: 'errorType=info,module=quiz-entry' });
       }
 
+      sendMLFieldTextAnalytics(mlFieldText);
+
       if (debug) {
         if (!fiResults.errors && !fiResults.error_code) {
           // eslint-disable-next-line no-console
@@ -193,6 +214,8 @@ const App = ({
           // eslint-disable-next-line no-console
           console.log('fallback codes used', fallback);
         }
+        // eslint-disable-next-line no-console
+        console.log('sending ML field text to Adobe Analytics: ', `Filters|${analyticsType}|${mlFieldText}`);
       }
     }
 
