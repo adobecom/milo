@@ -861,7 +861,7 @@ const getMepEnablement = (mdKey, paramKey = false) => {
 };
 
 async function checkForPageMods() {
-  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
+  const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const persEnabled = getMepEnablement('personalization');
   const promoEnabled = getMepEnablement('manifestnames', 'promo');
@@ -909,14 +909,6 @@ async function checkForPageMods() {
     });
   }
 
-  const config = getConfig();
-  config.mep = {
-    preview: (mepButton !== 'off' && (config.env?.name !== 'prod' || mepButton)),
-    override: mepParam ? decodeURIComponent(mepParam) : '',
-    highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
-    mepParam,
-    targetEnabled,
-  };
   if (targetEnabled === true) {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
     return;

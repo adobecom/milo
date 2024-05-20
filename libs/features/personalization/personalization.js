@@ -775,7 +775,7 @@ export function cleanAndSortManifestList(manifests) {
   const config = getConfig();
   const manifestObj = {};
   let allManifests = manifests;
-  if (config.mep.experiments) allManifests = [...manifests, ...config.mep.experiments];
+  if (config.mep?.experiments) allManifests = [...manifests, ...config.mep.experiments];
   allManifests.forEach((manifest) => {
     try {
       if (!manifest?.manifest) return;
@@ -823,7 +823,22 @@ export function handleFragmentCommand(command, a) {
 export async function applyPers(manifests, postLCP = false) {
   try {
     const config = getConfig();
-    config.mep.handleFragmentCommand = handleFragmentCommand;
+    if (!postLCP) {
+      const {
+        mep: mepParam,
+        mepHighlight,
+        mepButton,
+        target,
+      } = Object.fromEntries(PAGE_URL.searchParams);
+      config.mep = {
+        handleFragmentCommand,
+        preview: (mepButton !== 'off' && (config.env?.name !== 'prod' || mepButton)),
+        override: mepParam ? decodeURIComponent(mepParam) : '',
+        highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+        mepParam,
+        targetEnabled: target,
+      };
+    }
 
     if (!manifests?.length) return;
     let experiments = manifests;
