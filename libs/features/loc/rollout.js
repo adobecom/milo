@@ -336,11 +336,6 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
       const fileMetadata = await getFileMetadata(livecopyFilePath);
       // does the live copy file exist?
       const isfileNotFound = fileMetadata?.status === 404;
-      // get langstore file prev version value from the rolled out live copy file's RolloutVersion value.
-      // the RolloutVersion basically gives which version of langstore file was previously rolled out
-      const langstorePrevVersion = fileMetadata.RolloutVersion;
-      // get RolloutStatus value - eg: 'Merged'
-      const previouslyMerged = fileMetadata.RolloutStatus;
 
       // if regional file does not exist, just copy the langstore file to region
       if (isfileNotFound) {
