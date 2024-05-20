@@ -1,0 +1,207 @@
+{
+  "total": 25,
+  "offset": 0,
+  "limit": 25,
+  "data": [
+      {
+          "product": "ps-edu",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "ps-bus",
+          "marquee": "/path/to/marquee",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "ps-ind",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "lr-edu",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "lr-bus",
+          "marquee": "/path/to/marquee",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "lr-ind",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "pr-edu",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "pr-bus",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "pr-ind",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "ae",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "an",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "/fragments/card/animate",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "au",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "id",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "ai",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "acrobat-pro",
+          "marquee": "/fragments/marquee/acrobat",
+          "card-list": "",
+          "commerce-card": "/fragments/card/acrobat",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-collection",
+          "marquee": "/fragments/marquee/subtance-3d",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-stager",
+          "marquee": "/fragments/marquee/subtance-3d-stager",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-painter",
+          "marquee": "/fragments/marquee/subtance-3d-painter",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-sampler",
+          "marquee": "/fragments/marquee/subtance-3d-sampler",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-modeler",
+          "marquee": "/fragments/marquee/subtance-3d-modeler",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-designer",
+          "marquee": "/fragments/marquee/subtance-3d-designer",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "express",
+          "marquee": "/path/to/marquee",
+          "card-list": "",
+          "commerce-card": "path-to-commerce-card",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "cc",
+          "marquee": "/path/to/marquee",
+          "card-list": "/path/to/cardlist",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "ac",
+          "marquee": "", 
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "3d-umbrella",
+          "marquee": "",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      }
+  ]
+}
