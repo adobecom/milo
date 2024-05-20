@@ -789,7 +789,7 @@ let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
     const {
-      locale, imsClientId, imsScope, env, base, apiParams, accessTokenExpired, reauthAccessToken, accessToken,
+      locale, imsClientId, imsScope, env, base, adobeid,
     } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
@@ -812,10 +812,7 @@ export async function loadIms() {
         clearTimeout(timeout);
       },
       onError: reject,
-      api_parameters: apiParams,
-      onAccessTokenHasExpired: accessTokenExpired,
-      onReauthAccessToken: reauthAccessToken,
-      onAccessToken: accessToken,
+      ...adobeid,
     };
     const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
       ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
