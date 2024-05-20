@@ -16,7 +16,13 @@ const LABELS = {
   SOTPrefix: 'SOT',
   highImpact: 'high-impact',
 };
-
+const TEAM_MENTIONS = [
+  '@adobecom/miq-sot',
+  '@adobecom/bacom-sot',
+  '@adobecom/homepage-sot',
+  '@adobecom/creative-cloud-sot',
+  '@adobecom/document-cloud-sot',
+];
 const SLACK = {
   merge: ({ html_url, number, title, highImpact }) =>
     `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
@@ -119,40 +125,45 @@ const getPRs = async () => {
 const merge = async ({ prs }) => {
   console.log(`Merging ${prs.length || 0} PRs that are ready... `);
   for await (const { number, files, html_url, title, labels } of prs) {
-    if (files.some((file) => SEEN[file])) {
-      console.log(`Skipping ${number}: ${title} due to overlap in files.`);
-      continue;
-    }
-    files.forEach((file) => (SEEN[file] = true));
-    if (!process.env.LOCAL_RUN) {
-      await github.rest.pulls.merge({
-        owner,
-        repo,
-        pull_number: number,
-        merge_method: 'squash',
-      });
-    }
-    body = `- ${html_url}\n${body}`;
-    const isHighImpact = labels.includes(LABELS.highImpact);
-    if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
+    try {
+      if (files.some((file) => SEEN[file])) {
+        console.log(`Skipping ${number}: ${title} due to overlap in files.`);
+        continue;
+      }
+      files.forEach((file) => (SEEN[file] = true));
+      if (!process.env.LOCAL_RUN) {
+        await github.rest.pulls.merge({
+          owner,
+          repo,
+          pull_number: number,
+          merge_method: 'squash',
+        });
+      }
+      body = `- ${html_url}\n${body}`;
+      const isHighImpact = labels.includes(LABELS.highImpact);
+      if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
+        await slackNotification(
+          SLACK.merge({
+            html_url,
+            number,
+            title,
+            highImpact: ' :alert: High impact',
+          }),
+          process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK
+        );
+      }
       await slackNotification(
         SLACK.merge({
           html_url,
           number,
           title,
-          highImpact: ' :alert: High impact',
-        }),
-        process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK
+          highImpact: isHighImpact ? ' :alert: High impact' : '',
+        })
       );
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    } catch (error) {
+      console.log(`Error merging ${number}: ${title}`, error.message);
     }
-    await slackNotification(
-      SLACK.merge({
-        html_url,
-        number,
-        title,
-        highImpact: isHighImpact ? ' :alert: High impact' : '',
-      })
-    );
   }
 };
 
@@ -199,6 +210,14 @@ const openStageToMainPR = async () => {
       base: PROD,
       body,
     });
+
+    await github.rest.issues.createComment({
+      owner,
+      repo,
+      issue_number: number,
+      body: `Testing can start ${TEAM_MENTIONS.join(' ')}`,
+    });
+
     await slackNotification(SLACK.openedSyncPr({ html_url, number }));
   } catch (error) {
     if (error.message.includes('No commits between main and stage'))
@@ -233,7 +252,7 @@ const main = async (params) => {
     await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });
     await merge({ prs: prs.filter(({ labels }) => !isHighPrio(labels)) });
     if (!stageToMainPR) await openStageToMainPR();
-    if (body !== stageToMainPR?.body) {
+    if (stageToMainPR && body !== stageToMainPR.body) {
       console.log("Updating PR's body...");
       await github.rest.pulls.update({
         owner,
