@@ -889,21 +889,21 @@ async function checkForPageMods() {
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
-  persManifests = persManifests.map((manifest) => {
-    const { manifestPath } = manifest;
-    if (manifestPath.startsWith('/')) return manifestPath;
-    try {
-      const url = new URL(manifestPath);
-      return url.pathname;
-    } catch (e) {
-      return manifestPath;
-    }
-  });
+  if (mepParam !== '') {
+    const persManifestPaths = persManifests.map((manifest) => {
+      const { manifestPath } = manifest;
+      if (manifestPath.startsWith('/')) return manifestPath;
+      try {
+        const url = new URL(manifestPath);
+        return url.pathname;
+      } catch (e) {
+        return manifestPath;
+      }
+    });
 
-  if (mepParam) {
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
-      if (!persManifests.includes(manifestPath)) {
+      if (!persManifestPaths.includes(manifestPath)) {
         persManifests.push({ manifestPath });
       }
     });
@@ -913,6 +913,7 @@ async function checkForPageMods() {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
     return;
   }
+  if (!persManifests.length) return;
   loadIms()
     .then(() => {
       if (window.adobeIMS.isSignedInUser()) loadMartech();
