@@ -203,7 +203,7 @@ const getBlockProps = (fVal) => {
 const consolidateArray = (arr, prop, existing = []) => arr
   .reduce((results, i) => [...results, ...i[prop]], existing);
 
-const consolidateObjects = (arr, prop, existing) => arr.reduce((propMap, item) => {
+const consolidateObjects = (arr, prop, existing = {}) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
     const { selector, val } = i;
     if (prop === 'blocks') {
@@ -225,7 +225,6 @@ const consolidateObjects = (arr, prop, existing) => arr.reduce((propMap, item) =
     }
     propMap[selector] = action;
   });
-  if (!existing) return propMap;
   return { ...existing, ...propMap };
 }, {});
 
