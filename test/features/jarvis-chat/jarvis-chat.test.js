@@ -57,6 +57,24 @@ describe('Jarvis Chat', () => {
     const config = Object.assign(getConfig(), {
       locale: {
         ietf: 'en',
+        prefix: '/mena',
+      },
+    });
+    await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
+    const args = initializeSpy.getCall(0).args[0];
+    expect(args.appid).to.equal(config.jarvis.id);
+    expect(args.appver).to.equal(config.jarvis.version);
+    expect(args.env).to.equal(config.env.name === 'prod' ? 'prod' : 'stage');
+    expect(args.accessToken).to.be.undefined;
+    expect(args.language).to.equal('en');
+    expect(args.region).to.equal('mena');
+  });
+
+  it('should receive the correct africa configuration', async () => {
+    setConfig(defaultConfig);
+    const config = Object.assign(getConfig(), {
+      locale: {
+        ietf: 'en',
         prefix: '/africa',
       },
     });
@@ -67,7 +85,7 @@ describe('Jarvis Chat', () => {
     expect(args.env).to.equal(config.env.name === 'prod' ? 'prod' : 'stage');
     expect(args.accessToken).to.be.undefined;
     expect(args.language).to.equal('en');
-    expect(args.region).to.equal('africa');
+    expect(args.region).to.equal('ZA');
   });
 
   it('should receive the correct custom surface id configuration', async () => {
