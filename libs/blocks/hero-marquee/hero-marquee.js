@@ -57,11 +57,11 @@ function distillClasses(el, classes) {
 
 function decorateText(el, classes) {
   el.classList.add('norm');
-  const btnClass = [...classes].filter((c) => c.endsWith('-button'));
-  if (btnClass.length) {
-    const parts = btnClass[0].split('-');
-    el.classList.remove(btnClass[0]);
-    decorateButtons(el, `${parts[1]}-${parts[0]}`);
+  const btnClass = classes?.find((c) => c.endsWith('-button'));
+  if (btnClass) {
+    const [theme, size] = btnClass.split('-').reverse();
+    el.classList.remove(btnClass);
+    decorateButtons(el, `${size}-${theme}`);
   } else {
     decorateButtons(el, 'button-xl');
   }
