@@ -604,7 +604,7 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
       await utils.loadArea();
       const resultConfig = utils.getConfig();
-      const resultExperiment = resultConfig.mep.experiments[0];
+      const resultExperiment = resultConfig.mep.experiments[2];
       expect(resultConfig.mep.preview).to.be.true;
       expect(resultConfig.mep.experiments.length).to.equal(3);
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
