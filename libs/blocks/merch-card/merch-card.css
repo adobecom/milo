@@ -32,17 +32,3 @@ merch-card.special-offers del span[is="inline-price"] {
   background-color: var(--color-black);
   text-decoration: none;
 }
-
-/* hide download/upgrade links except the first one */
-merch-card a[is="checkout-link"].download:not(:first-of-type),
-merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
-  display: none;
-}
-
-/* Tablet and larger */
-@media screen and (min-width: 768px) {
-  .badge-merch-cards .card-heading,
-  .badge-card .card-heading {
-    margin-top: var(--spacing-s);
-  }
-}
