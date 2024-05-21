@@ -364,6 +364,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
   .hero-marquee.bg-stack-mobile:not(.bg-stack-bottom-mobile),
   .hero-marquee.bg-stack-mobile-tablet:not(.bg-stack-bottom-mobile),
+  
   .hero-marquee.bg-stack-mobile.fg-media-stack-top-mobile, 
   .hero-marquee.bg-stack-mobile-tablet.fg-media-stack-top-mobile {
     padding-top: 0;
@@ -380,7 +381,9 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee .order-3-mobile { order: 3; }
   
   .hero-marquee.fg-media-hidden-mobile .foreground .asset,
-  .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset { display: none; }
+  .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset, 
+  .hero-marquee.fg-media-hidden-mobile .foreground-media,
+  .hero-marquee.fg-media-hidden-mobile-tablet .foreground-media { display: none; }
 
 }
 
@@ -432,7 +435,9 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   
   /* helper classes */
   .hero-marquee.fg-media-hidden-tablet .foreground .asset,
-  .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset { display: none; }
+  .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset,
+  .hero-marquee.fg-media-hidden-tablet .foreground-media,
+  .hero-marquee.fg-media-hidden-tablet-tablet .foreground-media { display: none; }
 }
 
 /* Tablet UP */

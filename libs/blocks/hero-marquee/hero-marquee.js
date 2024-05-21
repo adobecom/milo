@@ -8,8 +8,19 @@ const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplement
 const rowTypeKeyword = 'con-block-row-';
 const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
 
-function decorateList(el) {
-  el.classList.add('body-l', 'align-left');
+function distillClasses(el, classes) {
+  const taps = ['-heading', '-body', '-detail'];
+  classes.forEach((elClass) => {
+    const elTaps = taps.filter((tap) => elClass.endsWith(tap));
+    if (!elTaps.length) return;
+    const parts = elClass.split('-');
+    el.classList.add(`${parts[1]}-${parts[0]}`);
+    el.classList.remove(elClass);
+  });
+}
+
+function decorateList(el, classes) {
+  el.classList.add('body-l');
   const listItems = el.querySelectorAll('ul li', 'ol li');
   if (listItems.length) {
     const firstDiv = el.querySelector(':scope > div');
@@ -20,6 +31,7 @@ function decorateList(el) {
       if (!item.parentElement.classList.contains('icon-list')) item.parentElement.classList.add('icon-list');
     });
   }
+  distillClasses(el, classes);
 }
 
 function decorateQr(el) {
@@ -42,17 +54,6 @@ function decorateBg(el) {
   const block = el.closest('.hero-marquee');
   block.style.background = el.textContent.trim();
   el.remove();
-}
-
-function distillClasses(el, classes) {
-  const taps = ['-heading', '-body', '-detail'];
-  classes.forEach((elClass) => {
-    const elTaps = taps.filter((tap) => elClass.endsWith(tap));
-    if (!elTaps.length) return;
-    const parts = elClass.split('-');
-    el.classList.add(`${parts[1]}-${parts[0]}`);
-    el.classList.remove(elClass);
-  });
 }
 
 function decorateText(el, classes) {
@@ -98,9 +99,9 @@ function parseKeyString(str) {
 function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
   if (key === 'lockup') decorateLockupRow(el);
-  if (key === 'list') decorateList(el);
   if (key === 'qrcode') decorateQr(el);
   if (key === 'bgcolor') decorateBg(el);
+  if (key === 'list') decorateList(el, classes);
   if (key === 'text') decorateText(el, classes);
   if (key === 'supplemental') decorateSup(el, classes);
 }
