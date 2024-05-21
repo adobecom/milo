@@ -323,8 +323,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     text-align: center;
   }
   
-  .hero-marquee.fg-media-stack-top-mobile .foreground,
-  .hero-marquee.fg-media-stack-top-mobile-tablet .foreground {
+  .hero-marquee.fg-media-stack-top-mobile,
+  .hero-marquee.fg-media-stack-top-mobile-tablet {
     flex-direction: column-reverse;
   }
 
@@ -390,10 +390,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     padding-bottom: 0;
   }
   
-  .hero-marquee.fg-media-stack-top-tablet .foreground,
-  .hero-marquee.fg-media-stack-top-mobile-tablet .foreground,
-  .hero-marquee.fg-media-cover.fg-media-stack-top-tablet .foreground,
-  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet .foreground {
+  .hero-marquee.fg-media-stack-top-tablet,
+  .hero-marquee.fg-media-stack-top-mobile-tablet,
+  .hero-marquee.fg-media-cover.fg-media-stack-top-tablet,
+  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet {
     flex-direction: column-reverse;
   }
 
@@ -430,6 +430,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     order: 2;
   }
   
+  /* helper classes */
   .hero-marquee.fg-media-hidden-tablet .foreground .asset,
   .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset { display: none; }
 }
