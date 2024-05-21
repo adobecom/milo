@@ -70,6 +70,7 @@
   gap: var(--spacing-xs);
   margin: 0 0 var(--spacing-xxs); 
   font-size: var(--type-body-m-size);
+  text-transform: initial;
 } 
 
 .hero-marquee .lockup-area picture { 
