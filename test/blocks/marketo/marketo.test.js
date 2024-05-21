@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 import init, { setPreferences, decorateURL } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
@@ -45,31 +46,31 @@ describe('marketo decorateURL', () => {
   it('decorates absolute URL with local base URL', () => {
     const baseURL = new URL('http://localhost:6456/marketo-block');
     const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
-    expect(result.href).to.equal('http://localhost:6456/marketo-block/thank-you');
+    expect(result).to.equal('http://localhost:6456/marketo-block/thank-you');
   });
 
   it('decorates relative URL with absolute base URL', () => {
     const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
     const result = decorateURL('/marketo-block/thank-you', baseURL);
-    expect(result.href).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
+    expect(result).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
   });
 
   it('decorates absolute URL with matching base URL', () => {
     const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
     const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
-    expect(result.href).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
+    expect(result).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
   });
 
   it('decorates absolute URL with .html base URL', () => {
     const baseURL = new URL('https://business.adobe.com/marketo-block.html');
     const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
-    expect(result.href).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
+    expect(result).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
   });
 
   it('keeps identical absolute URL with .html base URL', () => {
     const baseURL = new URL('https://business.adobe.com/marketo-block.html');
     const result = decorateURL('https://business.adobe.com/marketo-block/thank-you.html', baseURL);
-    expect(result.href).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
+    expect(result).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
   });
 
   it('returns null when provided a malformed URL', () => {
@@ -81,6 +82,19 @@ describe('marketo decorateURL', () => {
   it('Does not add .html to ending slash', () => {
     const baseURL = new URL('https://business.adobe.com/marketo-block.html');
     const result = decorateURL('https://business.adobe.com/', baseURL);
-    expect(result.href).to.equal('https://business.adobe.com/');
+    expect(result).to.equal('https://business.adobe.com/');
+  });
+
+  it('localizes URL with .html base URL', () => {
+    setConfig({
+      pathname: '/uk/marketo-block.html',
+      locales: {
+        '': {},
+        uk: {},
+      },
+    });
+    const baseURL = new URL('https://business.adobe.com/uk/marketo-block.html');
+    const result = decorateURL('/marketo-block/thank-you', baseURL);
+    expect(result).to.equal('https://business.adobe.com/uk/marketo-block/thank-you.html');
   });
 });

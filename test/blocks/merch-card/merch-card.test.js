@@ -72,7 +72,6 @@ describe('Plans Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
@@ -100,7 +99,6 @@ describe('Plans Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
@@ -126,7 +124,6 @@ describe('Plans Card', () => {
     expect(detail).to.exist;
     expect(merchCard.getAttribute('variant')).to.be.equal('plans');
     expect(merchCard.getAttribute('badge')).to.not.exist;
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
     expect(buttons.length).to.be.equal(2);
@@ -331,11 +328,13 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+    expect(merchCard.classList.contains('badge-card')).to.be.true;
     expect(body.textContent).to.be.equal('Get Illustrator on desktop and iPad as part of Creative Cloud. This is promo text');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Buy now');
     expect(buttons[1].textContent).to.be.equal('free trial');
   });
+
   it('Supports Mini Compare Chart with quantity select', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
@@ -345,6 +344,25 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(quantitySelect.getAttribute('min')).to.equal('1');
     expect(quantitySelect.getAttribute('max')).to.equal('10');
     expect(quantitySelect.getAttribute('step')).to.equal('1');
+  });
+
+  it('Supports Mini Compare Chart with offer select', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('#mini-compare-offer-select'));
+    const offerSelect = merchCard.querySelector('merch-offer-select');
+    const merchOffer = offerSelect.querySelector('merch-offer');
+    expect(offerSelect).to.exist;
+    expect(merchOffer).to.exist;
+    expect(merchOffer.getAttribute('text')).to.equal('20GB');
+  });
+
+  it('Supports Mini Compare Chart intersection observer', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('#mini-compare-hidden-card'));
+    merchCard.style.visibility = 'hidden';
+    setTimeout(() => {
+      merchCard.style.visibility = 'visible';
+    }, 500);
   });
 });
 

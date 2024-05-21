@@ -160,11 +160,7 @@
 }
 
 .table.header-left .row-heading .col.col-heading .buttons-wrapper > * {
-  margin-left: 0;
-}
-
-[dir='rtl'] .table.header-left .row-heading .col.col-heading .buttons-wrapper > * {
-  margin-right: 0;
+  margin-inline-start: 0;
 }
 
 .table .row-heading .col-heading.top-left-rounded {
@@ -530,8 +526,12 @@ header.global-navigation {
 
   .table .section-head .col:not(.section-head-title),
   .table:not(.merch) .col-heading.col-1,
-  .table:not(.merch) .row-highlight .col-highlight.col-1 {
+  .table:not(.merch) .row-highlight .col-highlight.col-1:not(:only-child) {
     display: none;
+  }
+
+  .table:not(.merch) .row-highlight:has(:only-child) {
+    grid-template-columns: repeat(auto-fit, 100%);
   }
 
   .table:not(.merch) .section-row-title {
@@ -594,7 +594,7 @@ header.global-navigation {
   .table,
   .table.merch {
     margin: 0 2px;
-    min-width: 395px;
+    min-width: 100%;
   }
 
   .table.merch .col-merch .col-merch-content {

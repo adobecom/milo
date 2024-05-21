@@ -1,5 +1,6 @@
 :root {
   --notch-size: 12px;
+  --action-color: #FF1593;
 }
 
 #preflight .fragment,
@@ -237,7 +238,7 @@ span.preflight-time {
 }
 
 .preflight-action {
-  background: #FF1593;
+  background: var(--action-color);
   color: #FFF;
   font-weight: 700;
   outline: transparent solid 0;
@@ -318,63 +319,74 @@ span.preflight-time {
   margin: 0;
 }
 
-.broken-links {
+.problem-links {
   margin: 24px 48px;
 }
 
-.broken-links .title {
+.problem-links .title {
   margin-bottom: 0;
 }
 
-.broken-links .note {
+.problem-links .note {
   margin-top: 20px;
 }
 
-.dialog-modal#preflight .broken-links table {
+.dialog-modal#preflight .problem-links table {
   width: 100%;
   border-collapse: collapse;
   border-radius: 6px;
   background-color: rgb(0 0 0 / 8%);
 }
 
-.dialog-modal#preflight .broken-links table th {
+.dialog-modal#preflight .problem-links table th {
   text-transform: uppercase;
   width: 10%;
 }
 
-.dialog-modal#preflight .broken-links table td a {
+.dialog-modal#preflight .problem-links table td a {
   color: #fff;
+  display: inline-block;
+  overflow-x: scroll;  
+  position: absolute;
+  top: 50%;
+  left: 0;
+  scrollbar-width: none;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  width: 100%;
 }
 
-.dialog-modal#preflight .broken-links table th,
-.dialog-modal#preflight .broken-links table td {
+.dialog-modal#preflight .problem-links table th,
+.dialog-modal#preflight .problem-links table td {
   padding: 12px 0;
   text-align: center;
 }
 
-.dialog-modal#preflight .broken-links table th:nth-child(2),
-.dialog-modal#preflight .broken-links table td:nth-child(2) {
+.dialog-modal#preflight .problem-links table th:nth-child(2),
+.dialog-modal#preflight .problem-links table td:nth-child(2) {
   text-align: initial;
+  position: relative;
+  width: 75%;
 }
 
-.dialog-modal#preflight .broken-links table th:first-child {
+.dialog-modal#preflight .problem-links table th:first-child {
   width: 5%;
 }
 
-.dialog-modal#preflight .broken-links table th:nth-child(2) {
+.dialog-modal#preflight .problem-links table th:nth-child(2) {
   text-align: left;
   width: 75%
 }
 
-.dialog-modal#preflight .broken-links table tr:first-child th {
+.dialog-modal#preflight .problem-links table tr:first-child th {
   padding-top: 15px;
 }
 
-.dialog-modal#preflight .broken-links table tr:hover td {
+.dialog-modal#preflight .problem-links table tr:hover td {
   background-color: rgb(0 0 0 / 20%);
 }
 
-.broken-link {
+.problem-link {
   border: 3px solid #000!important;
   color: #fff!important;
   font-size: larger!important;
@@ -384,13 +396,13 @@ span.preflight-time {
   animation: pulse 1.5s ease-out infinite;
 }
 
-.broken-link:hover {
+.problem-link:hover {
   background-color: transparent!important;
   color: inherit!important;
   border-color:rgb(255 0 0)!important;
 }
 
-.broken-link::after {
+.problem-link::after {
   content: '(' attr(data-status) ')';
   margin-left: 5px;
   font-size: smaller;
@@ -409,39 +421,126 @@ span.preflight-time {
   gap: 48px;
 }
 
+.access-columns .grid-heading {
+  margin-bottom: 20px;
+}
+
+.access-columns .grid-heading + .access-columns .grid-heading {
+  margin-top: 20px;
+}
+
+.access-columns .grid-heading.is-closed {
+  transform: none;
+}
+
+.access-columns .grid-toggle {
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+}
+
 .access-item {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 12px;
 }
 
+.access-item-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.access-item-description {
+  margin: 10px 0 48px;
+}
+
 .access-image-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-gap: 20px;
-  max-width: 100%;
-  margin: 20px;
-  margin-left: 72px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-gap: 10px;
+  margin-bottom: 35px;
+  width: 100%;
+}
+
+.access-image-grid:last-child {
+  margin-bottom: 0;
+}
+
+.access-columns .grid-heading.is-closed + .access-image-grid {
+  display: none;
 }
 
 .access-image-grid-item {
-  border: solid white 4px;
   position: relative;
-  overflow: hidden;
-  width: 128px;
-  height: 128px;
+  height: auto;
+  background: rgb(0 0 0 / 20%);
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  padding: 10px;
+  border-radius: 6px;
+  box-sizing: border-box;
 }
 
-.access-image-grid-item img {
+.access-image-grid-item.full-width {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: initial;
 }
 
-.access-image-header {
-  text-transform: uppercase;
-  font-weight: 700;
-  margin-left: 72px;
+.access-image-grid .filter {
+  grid-column: 1 / 5;
+  align-items: start;
+  background: none;
+  display: block;
+  font-size: 16px;
+}
+
+img[data-alt-check] {
+  border: 5px solid rgb(255 234 2);
+  box-sizing: border-box;
+  filter: drop-shadow(8px 8px 18px rgb(199 182 2));
+}
+
+img[data-alt-check]::after {
+  content: attr(data-alt-check);
+  color: red;
+}
+
+.access-image-grid-item span {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+  line-height: 1.3rem;
+}
+
+.access-image-grid-item span:last-child {
+  font-weight: initial;
+  opacity: 0.8;
+  margin-top: 0;
+}
+
+.show-main .access-image-grid-item.in-gnav,
+.show-main .access-image-grid-item.in-footer,
+.show-gnav .access-image-grid-item.in-main-content,
+.show-gnav .access-image-grid-item.in-footer,
+.show-footer .access-image-grid-item.in-main-content,
+.show-footer .access-image-grid-item.in-gnav {
+  display: none;
+}
+
+.preflight .image-filter {
+  padding: 3px;
+  margin-left: 5px;
+  border-radius: 4px;
+}
+
+.preflight .image-filter:focus-visible {
+  outline-color: var(--action-color);
 }
 
 .preflight .martech {
