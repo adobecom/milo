@@ -834,7 +834,7 @@ export async function applyPers(manifests, postLCP = false) {
         override: mepParam ? decodeURIComponent(mepParam) : '',
         highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
         mepParam,
-        targetEnabled: config.mep?.target,
+        targetEnabled: config.mep?.targetEnabled,
       };
     }
 
