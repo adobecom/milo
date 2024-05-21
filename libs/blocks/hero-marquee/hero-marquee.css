@@ -333,7 +333,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     order: 2;
   } 
   
-  .hero-marquee.fg-media-cover:not(.bg-stack-bottom-mobile) {
+  .hero-marquee.fg-media-cover:not(.bg-stack-bottom-mobile),
+  .hero-marquee.fg-media-cover:not(.fg-media-hidden-mobile) {
     padding-bottom: 0;
   }
 
@@ -357,14 +358,15 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
   
   .hero-marquee.fg-media-cover.fg-media-stack-top-mobile,
-  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet {
+  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet,
+  .hero-marquee.fg-media-cover.fg-media-hidden-mobile,
+  .hero-marquee.fg-media-cover.fg-media-hidden-mobile-tablet  {
     padding-top: 0;
     padding-bottom: var(--spacing-xl);
   }
 
   .hero-marquee.bg-stack-mobile:not(.bg-stack-bottom-mobile),
   .hero-marquee.bg-stack-mobile-tablet:not(.bg-stack-bottom-mobile),
-  
   .hero-marquee.bg-stack-mobile.fg-media-stack-top-mobile, 
   .hero-marquee.bg-stack-mobile-tablet.fg-media-stack-top-mobile {
     padding-top: 0;
@@ -406,7 +408,9 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   } 
   
   .hero-marquee.fg-media-cover.fg-media-stack-top-tablet,
-  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet {
+  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet,
+  .hero-marquee.fg-media-cover.fg-media-hidden-tablet,
+  .hero-marquee.fg-media-cover.fg-media-hidden-mobile-tablet   {
     padding-top: 0;
     padding-bottom: var(--spacing-xl);
   }
