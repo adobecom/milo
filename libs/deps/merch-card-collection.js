@@ -1,5 +1,9 @@
-// branch: MWPW-138927-3 commit: b2d9c1d7faf66c00dd14bcbdc95571c45e1f4d9f Wed, 17 Apr 2024 12:06:48 GMT
-import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHTML as S}from"/libs/deps/lit-all.min.js";var d=class{constructor(t,e){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(e),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};var f="hashchange";function w(r=window.location.hash){let t=[],e=r.replace(/^#/,"").split("&");for(let o of e){let[n,i=""]=o.split("=");n&&t.push([n,decodeURIComponent(i)])}return Object.fromEntries(t)}function p(r){let t=new URLSearchParams(window.location.hash.slice(1));Object.entries(r).forEach(([e,o])=>{o?t.set(e,o):t.delete(e)}),t.sort(),window.location.hash=decodeURIComponent(t.toString())}function g(r){let t=e=>{let o=w(window.location.hash);r(o)};return t(),window.addEventListener(f,t),()=>{window.removeEventListener(f,t)}}var E=(r,t={})=>{r.querySelectorAll("span[data-placeholder]").forEach(e=>{let{placeholder:o}=e.dataset;e.innerText=t[o]??""})};var x="(max-width: 1200px)",T="(min-width: 768px)",y="(min-width: 1200px)";import{css as _,unsafeCSS as C}from"/libs/deps/lit-all.min.js";var b=_`
+// branch: develop commit: 369516f3cda51fb1219ad0b3cf2c94c8f094c49b Tue, 21 May 2024 08:39:16 GMT
+import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHTML as S}from"/libs/deps/lit-all.min.js";var d=class{constructor(t,e){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(e),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};var f="hashchange";function w(r=window.location.hash){let t=[],e=r.replace(/^#/,"").split("&");for(let o of e){let[n,i=""]=o.split("=");n&&t.push([n,decodeURIComponent(i)])}return Object.fromEntries(t)}function p(r){let t=new URLSearchParams(window.location.hash.slice(1));Object.entries(r).forEach(([e,o])=>{o?t.set(e,o):t.delete(e)}),t.sort(),window.location.hash=decodeURIComponent(t.toString())}function E(r){let t=e=>{let o=w(window.location.hash);r(o)};return t(),window.addEventListener(f,t),()=>{window.removeEventListener(f,t)}}var g=(r,t={})=>{r.querySelectorAll("span[data-placeholder]").forEach(e=>{let{placeholder:o}=e.dataset;e.innerText=t[o]??""})};var x="(max-width: 1199px)",T="(min-width: 768px)",y="(min-width: 1200px)";import{css as _,unsafeCSS as b}from"/libs/deps/lit-all.min.js";var C=_`
+    :host {
+        --mod-button-border-radius: 5px;
+    }
+
     #header,
     #resultText,
     #footer {
@@ -16,7 +20,7 @@ import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHT
         order: -2;
         display: grid;
         justify-items: top;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: auto max-content;
         grid-template-rows: auto;
         row-gap: var(--consonant-merch-spacing-m);
         align-self: baseline;
@@ -45,6 +49,10 @@ import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHT
         justify-self: end;
     }
 
+    sp-button {
+        align-self: baseline;
+    }
+
     sp-menu sp-button {
         min-width: 140px;
     }
@@ -58,7 +66,7 @@ import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHT
     }
 
     /* tablets */
-    @media screen and ${C(T)} {
+    @media screen and ${b(T)} {
         #header {
             grid-template-columns: 1fr fit-content(100%) fit-content(100%);
         }
@@ -77,7 +85,7 @@ import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHT
     }
 
     /* Laptop */
-    @media screen and ${C(y)} {
+    @media screen and ${b(y)} {
         #resultText {
             grid-column: span 2;
             order: -3;
@@ -91,7 +99,7 @@ import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHT
     }
 `;var u=(r,t)=>r.querySelector(`[slot="${t}"]`).textContent.trim();var v="merch-card-collection",l={alphabetical:"alphabetical",authored:"authored"},R={filters:["noResultText","resultText","resultsText"],mobile:["noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"],desktop:["noSearchResultsText","searchResultText","searchResultsText"]},N=(r,{filter:t})=>r.filter(e=>e.filters.hasOwnProperty(t)),M=(r,{types:t})=>t?(t=t.split(","),r.filter(e=>t.some(o=>e.types.includes(o)))):r,L=r=>r.sort((t,e)=>(t.title??"").localeCompare(e.title??"","en",{sensitivity:"base"})),$=(r,{filter:t})=>r.sort((e,o)=>o.filters[t]?.order==null||isNaN(o.filters[t]?.order)?-1:e.filters[t]?.order==null||isNaN(e.filters[t]?.order)?1:e.filters[t].order-o.filters[t].order),k=(r,{search:t})=>t?.length?(t=t.toLowerCase(),r.filter(e=>e.includes(t))):r,m=class extends A{static properties={filter:{type:String,attribute:"filter",reflect:!0},filtered:{type:String,attribute:"filtered"},search:{type:String,attribute:"search",reflect:!0},sort:{type:String,attribute:"sort",default:l.authored,reflect:!0},types:{type:String,attribute:"types",reflect:!0},limit:{type:Number,attribute:"limit"},page:{type:Number,attribute:"page",reflect:!0},singleApp:{type:String,attribute:"single-app",reflect:!0},hasMore:{type:Boolean},displayResult:{type:Boolean,attribute:"display-result"},resultCount:{type:Number},sidenav:{type:Object}};#e;#t;mobileAndTablet=new d(this,x);constructor(){super(),this.filter="all",this.hasMore=!1,this.resultCount=void 0,this.#t=0,this.displayResult=!1}render(){return a`${this.header}
             <slot></slot>
-            ${this.footer}`}updated(t){if(!this.querySelector("merch-card"))return;let e=[...this.children].filter(s=>s.tagName==="MERCH-CARD");if(e.length===0)return;t.has("singleApp")&&this.singleApp&&e.forEach(s=>{s.updateFilters(s.name===this.singleApp)});let o=this.sort===l.alphabetical?L:$,i=[N,M,k,o].reduce((s,h)=>h(s,this),e).map((s,h)=>[s,h]);if(this.resultCount=i.length,this.page&&this.limit){let s=this.page*this.limit;this.hasMore=i.length>s,i=i.filter(([,h])=>h<s)}let c=new Map(i);this.#t=(this.limit*(this.page-1)+1).toString(),e.forEach(s=>{c.has(s)?(s.style.order=c.get(s),s.style.order===this.#t&&(this.#e=s),s.size=s.filters[this.filter]?.size,s.style.removeProperty("display"),s.requestUpdate()):(s.style.display="none",s.size=void 0,s.style.removeProperty("order"))}),this.updateComplete.then(()=>{let s=this.shadowRoot.getElementById("resultText")?.firstElementChild?.assignedElements?.()?.[0];s&&E(s,{resultCount:this.resultCount,searchTerm:this.search,filter:this.sidenav?.filters.selectedText})})}connectedCallback(){super.connectedCallback(),this.filtered?(this.filter=this.filtered,this.page=1):this.startDeeplink(),this.sidenav=document.querySelector("merch-sidenav")}disconnectedCallback(){super.disconnectedCallback(),this.stopDeeplink?.()}get header(){if(!this.filtered)return a`<div id="header">
+            ${this.footer}`}updated(t){if(!this.querySelector("merch-card"))return;let e=[...this.children].filter(s=>s.tagName==="MERCH-CARD");if(e.length===0)return;t.has("singleApp")&&this.singleApp&&e.forEach(s=>{s.updateFilters(s.name===this.singleApp)});let o=this.sort===l.alphabetical?L:$,i=[N,M,k,o].reduce((s,h)=>h(s,this),e).map((s,h)=>[s,h]);if(this.resultCount=i.length,this.page&&this.limit){let s=this.page*this.limit;this.hasMore=i.length>s,i=i.filter(([,h])=>h<s)}let c=new Map(i);this.#t=(this.limit*(this.page-1)+1).toString(),e.forEach(s=>{c.has(s)?(s.style.order=c.get(s),s.style.order===this.#t&&(this.#e=s),s.size=s.filters[this.filter]?.size,s.style.removeProperty("display"),s.requestUpdate()):(s.style.display="none",s.size=void 0,s.style.removeProperty("order"))}),this.updateComplete.then(()=>{let s=this.shadowRoot.getElementById("resultText")?.firstElementChild?.assignedElements?.()?.[0];s&&g(s,{resultCount:this.resultCount,searchTerm:this.search,filter:this.sidenav?.filters.selectedText})})}connectedCallback(){super.connectedCallback(),this.filtered?(this.filter=this.filtered,this.page=1):this.startDeeplink(),this.sidenav=document.querySelector("merch-sidenav")}disconnectedCallback(){super.disconnectedCallback(),this.stopDeeplink?.()}get header(){if(!this.filtered)return a`<div id="header">
                 <sp-theme theme="spectrum" color="light" scale="medium">
                     ${this.searchBar} ${this.filtersButton} ${this.sortButton}
                 </sp-theme>
@@ -142,4 +150,4 @@ import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHT
                     </sp-menu>
                 </sp-popover>
             </overlay-trigger>
-        `}sortChanged(t){t.target.value===l.authored?p({sort:void 0}):p({sort:t.target.value})}async showMore(){let t=this.page+1;p({page:t}),this.page=t,await this.updateComplete,this.#e.scrollIntoView({behavior:"smooth"})}startDeeplink(){this.stopDeeplink=g(({category:t,filter:e,types:o,sort:n,search:i,single_app:c,page:s})=>{e=e||t,!this.filtered&&e&&e!==this.filter&&setTimeout(()=>{p({page:void 0}),this.page=1},1),this.filtered||(this.filter=e??this.filter),this.types=o??"",this.search=i??"",this.singleApp=c,this.sort=n,this.page=Number(s)||1})}openFilters({target:t}){this.sidenav?.showModal(t)}static styles=[b]};m.SortOrder=l;customElements.define(v,m);export{m as MerchCardCollection};
+        `}sortChanged(t){t.target.value===l.authored?p({sort:void 0}):p({sort:t.target.value})}async showMore(){let t=this.page+1;p({page:t}),this.page=t,await this.updateComplete,this.#e.scrollIntoView({behavior:"smooth"})}startDeeplink(){this.stopDeeplink=E(({category:t,filter:e,types:o,sort:n,search:i,single_app:c,page:s})=>{e=e||t,!this.filtered&&e&&e!==this.filter&&setTimeout(()=>{p({page:void 0}),this.page=1},1),this.filtered||(this.filter=e??this.filter),this.types=o??"",this.search=i??"",this.singleApp=c,this.sort=n,this.page=Number(s)||1})}openFilters({target:t}){this.sidenav?.showModal(t)}static styles=[C]};m.SortOrder=l;customElements.define(v,m);export{m as MerchCardCollection};

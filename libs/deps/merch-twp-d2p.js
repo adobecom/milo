@@ -1,5 +1,5 @@
-// branch: MWPW-138927-4 commit: cb7e500629b2af27c05f23ca02f7f525ef64858b Fri, 19 Apr 2024 20:34:51 GMT
-import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{constructor(e,n){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(n),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as m}from"/libs/deps/lit-all.min.js";var d=m`
+// branch: develop commit: 369516f3cda51fb1219ad0b3cf2c94c8f094c49b Tue, 21 May 2024 08:39:16 GMT
+import{LitElement as C,html as e}from"/libs/deps/lit-all.min.js";var o=class{constructor(t,s){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(s),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as E}from"/libs/deps/lit-all.min.js";var p=E`
     :host {
         display: flex;
         box-sizing: border-box;
@@ -23,8 +23,6 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
 
     #backButton {
         position: absolute;
-        top: 12px;
-        left: 12px;
         border-width: 0;
     }
 
@@ -53,6 +51,11 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
         gap: 16px;
     }
 
+    .mobile #backButton {
+        top: 12px;
+        left: 12px;
+    }
+
     .mobile ::slotted([slot='detail-xl']) {
         max-width: 455px;
         width: 100%;
@@ -61,6 +64,10 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
     .mobile[data-step='2'] {
         padding-top: 54px;
         background-color: #f5f5f5; /* make a variable */
+    }
+
+    [data-step='2'] sp-tabs {
+        display: none;
     }
 
     #card-icons-title {
@@ -96,7 +103,7 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
         padding-bottom: 50px;
     }
 
-    .mobile #continue {
+    .mobile #continueButton {
         align-items: center;
         width: 100%;
         height: 120px;
@@ -111,8 +118,9 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
         padding: 0 30px;
     }
 
-    #continue sp-button {
+    #continueButton sp-button {
         width: 80%;
+        min-width: 110px;
         max-width: 300px;
     }
 
@@ -127,14 +135,11 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
         padding: 30px 30px 0 30px;
     }
 
-    .mobile[data-step='2'] sp-tabs {
-        display: none;
-    }
-
     .desktop {
         display: flex;
         width: 972px;
         min-height: 680px;
+        position: relative;
         flex: 1;
     }
 
@@ -147,6 +152,16 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
         flex: 1;
         flex-direction: column;
         padding: 30px 30px 0 30px;
+    }
+
+    .desktop #content slot[name='single-card'] {
+        display: block;
+        margin-top: 24px;
+        margin-bottom: 24px;
+    }
+
+    ::slotted(merch-card[slot='single-card']) {
+        box-shadow: none;
     }
 
     .desktop ::slotted([slot='detail-xl']) {
@@ -178,57 +193,82 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
     .desktop ::slotted(merch-subscription-panel) {
         margin-top: 40px;
     }
-`;var p="(max-width: 1200px)";var r="merch-card:ready",l="merch-offer:selected";var h="merch-quantity-selector:change";var x="merch-twp-d2p",c=class extends b{static styles=[d];static properties={individualsText:{type:String,attribute:"individuals-text"},businessText:{type:String,attribute:"business-text"},educationText:{type:String,attribute:"education-text"},continueText:{type:String,attribute:"continue-text"},step:{type:Number},ready:{type:Boolean}};#e;#s;#t;#i=new o(this,p);individualsText="Individuals";businessText="Business";educationText="Students and teachers";continueText="Continue";ready=!1;constructor(){super(),this.step=1,this.#t=this.handleOfferSelected.bind(this)}get log(){return this.#e||(this.#e=document.head.querySelector("wcms-commerce")?.Log.module("twp")),this.#e}get individualsTab(){return this.cciCards.length===0?t``:t`
-            <sp-tab value="individuals" label=${this.individualsText}>
+
+    .desktop #continueButton {
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+    }
+
+    .desktop #backButton {
+        left: 30px;
+        bottom: 30px;
+    }
+`;var u="(max-width: 1199px)";var r="merch-card:ready",l="merch-offer:selected";var d="merch-storage:change",m="merch-quantity-selector:change";var T="merch-twp-d2p",c="individuals",b="business",x="education",h=class extends C{static styles=[p];static properties={individualsText:{type:String,attribute:"individuals-text"},businessText:{type:String,attribute:"business-text"},educationText:{type:String,attribute:"education-text"},continueText:{type:String,attribute:"continue-text"},ready:{type:Boolean},step:{type:Number},singleCard:{state:!0},selectedTab:{type:String,attribute:"selected-tab",reflect:!0}};selectedTab=c;#t;#s;#e;#i=new o(this,u);individualsText="Individuals";businessText="Business";educationText="Students and teachers";continueText="Continue";ready=!1;constructor(){super(),this.step=1,this.#e=this.handleOfferSelected.bind(this)}get log(){return this.#t||(this.#t=document.head.querySelector("wcms-commerce")?.Log.module("twp")),this.#t}get individualsTab(){return this.cciCards.length===0?e``:e`
+            <sp-tab value="${c}" label=${this.individualsText}>
                 <sp-icon-user slot="icon"></sp-icon-user>
             </sp-tab>
-            <sp-tab-panel value="individuals">
+            <sp-tab-panel value="${c}">
                 <div class="cards">
                     <slot name="individuals"></slot>
                     <slot name="cci-footer"></slot>
                 </div>
             </sp-tab-panel>
-        `}get businessTab(){return this.cctCards.length===0?t``:t`
-            <sp-tab value="business" label=${this.businessText}>
+        `}get businessTab(){return this.cctCards.length===0?e``:e`
+            <sp-tab value="${b}" label=${this.businessText}>
                 <sp-icon-user-group slot="icon"></sp-icon-user-group>
             </sp-tab>
-            <sp-tab-panel value="business">
+            <sp-tab-panel value="${b}">
                 <div class="cards">
                     <slot name="business"></slot>
                     <slot name="cct-footer"></slot>
                 </div>
             </sp-tab-panel>
-        `}get educationTab(){return this.cceCards.length===0?t``:t`
-            <sp-tab value="education" label=${this.educationText}>
+        `}get educationTab(){return this.cceCards.length===0?e``:e`
+            <sp-tab value="${x}" label=${this.educationText}>
                 <sp-icon-book slot="icon"></sp-icon-book>
             </sp-tab>
-            <sp-tab-panel value="education">
+            <sp-tab-panel value="${x}">
             <div class="cards">
                 <slot name="education"></slot>
                 <slot name="cce-footer"></slot>
             </sp-tab-panel>
-        `}get selectedTabPanel(){return this.shadowRoot.querySelector("sp-tab-panel[selected]")}get firstCardInSelectedTab(){return this.selectedTabPanel?.querySelector("slot").assignedElements()[0]}get tabs(){return this.cards.length<2?t``:t`
+        `}get selectedTabPanel(){return this.shadowRoot.querySelector("sp-tab-panel[selected]")}get firstCardInSelectedTab(){return this.selectedTabPanel?.querySelector("slot").assignedElements()[0]}get tabs(){return this.cards.length===1?e``:this.singleCard&&this.step===1?e``:e`
             <sp-tabs
                 emphasized
-                selected="individuals"
+                selected="${this.selectedTab}"
                 @change=${this.tabChanged}
             >
                 ${this.individualsTab} ${this.businessTab} ${this.educationTab}
             </sp-tabs>
-        `}async tabChanged(e){await e.target.updateComplete,this.selectCard(this.firstCardInSelectedTab)}get desktopLayout(){return t`
-            <div class="desktop">
+        `}async tabChanged(t){this.selectedTab=t.target.selected,await t.target.updateComplete,this.selectCard(this.firstCardInSelectedTab)}get singleCardFooter(){if(this.step===1)return e`
+            <slot name="cci-footer"></slot>
+            <slot name="cct-footer"></slot>
+            <slot name="cce-footer"></slot>
+        `}get desktopLayout(){return this.singleCard?e`<div class="desktop" data-step="${this.step}">
+                <div id="content">
+                    <slot name="detail-xl"></slot>
+                    ${this.tabs}
+                    <slot name="single-card"></slot>
+                    ${this.singleCardFooter} ${this.backButton}
+                </div>
+                <aside>
+                    <slot name="panel"></slot>
+                </aside>
+            </div>`:e`
+            <div class="desktop" data-step="${this.step}">
                 <div id="content">
                     <slot name="detail-xl"></slot>
                     ${this.tabs}
                     <slot name="footer-link"></slot>
                 </div>
-
-                ${this.cciCards.length<3?t`<aside>
+                ${this.cciCards.length<3?e`<aside>
                           <slot name="panel"></slot>
                       </aside>`:""}
+                ${this.continueButton}
             </div>
-        `}get showSubscriptionPanelInStep1(){return this.cciCards.length<3&&!this.#i.matches}get continueButton(){return this.step!==1?t``:t`
-            <div id="continue">
+        `}get showSubscriptionPanelInStep1(){return this.#i.matches?!1:this.cciCards.length<3}get continueButton(){return this.showSubscriptionPanelInStep1?e``:e`
+            <div id="continueButton">
                 <sp-button
                     variant="cta"
                     size="large"
@@ -237,13 +277,13 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
                     ${this.continueText}
                 </sp-button>
             </div>
-        `}handleContinue(){if(this.step===1){this.#s=[...this.selectedTabPanel.card.querySelectorAll("merch-icon")].map(e=>e.cloneNode(!0)),this.step=2;return}}handleBack(){this.step=1}get mobileStepTwo(){return this.step!==2?t``:t`
+        `}selectSingleCard(t){t.setAttribute("data-slot",t.getAttribute("slot")),t.setAttribute("slot","single-card"),this.singleCard=t}unSelectSingleCard(){this.singleCard&&(this.singleCard.setAttribute("slot",this.singleCard.getAttribute("data-slot")),this.singleCard.removeAttribute("data-slot"),this.step=1,this.singleCard=void 0)}handleContinue(){this.step=2,this.selectSingleCard(this.cardToSelect),this.#s=[...this.singleCard.querySelectorAll("merch-icon")].map(t=>t.cloneNode(!0))}handleBack(){this.unSelectSingleCard()}get cardToSelect(){return this.selectedTabPanel?.card??this.querySelector("merch-card[aria-selected]")}get selectedCard(){return this.singleCard??this.selectedTabPanel.card}get mobileStepTwo(){return this.singleCard?e`
             ${this.backButton} ${this.stepTwoCardIconsAndTitle}
             <slot name="panel"></slot>
-        `}get stepTwoCardIconsAndTitle(){if(this.selectedTabPanel?.card)return t`<div id="card-icons-title">
+        `:e``}get stepTwoCardIconsAndTitle(){if(this.selectedCard)return e`<div id="card-icons-title">
             ${this.#s}
-            <h3>${this.selectedTabPanel.card.title}</h3>
-        </div>`}get backButton(){return this.step!==2?t``:t`<sp-button
+            <h3>${this.selectedCard.title}</h3>
+        </div>`}get backButton(){return this.step!==2?e``:e`<sp-button
             id="backButton"
             treatment="outline"
             variant="secondary"
@@ -253,14 +293,20 @@ import{LitElement as b,html as t}from"/libs/deps/lit-all.min.js";var o=class{con
             <sp-icon-chevron-double-left
                 slot="icon"
             ></<sp-icon-chevron-double-left></sp-icon-chevron-double-left
-            > Back</sp-button>`}get mobileLayout(){return t`
+            > Back</sp-button>`}get mobileLayout(){return this.step===1?e`
+                <div class="mobile" data-step="${this.step}">
+                    <slot name="detail-xl"></slot>
+                    <slot name="single-card"></slot>
+                    ${this.tabs} ${this.continueButton}
+                </div>
+            `:e`
             <div class="mobile" data-step="${this.step}">
                 <slot name="detail-xl"></slot>
-                ${this.tabs} ${this.continueButton} ${this.mobileStepTwo}
+                ${this.tabs}${this.mobileStepTwo}
             </div>
-        `}render(){return this.ready?t`
+        `}render(){return this.ready?e`
             <sp-theme theme="spectrum" color="light" scale="large">
                 ${this.#i.matches?this.mobileLayout:this.desktopLayout}
             </div>
-        `:t``}connectedCallback(){super.connectedCallback(),this.style.setProperty("mod-tabs-font-weight",600),this.addEventListener(r,this.merchTwpReady),this.subscriptionPanel.addEventListener(l,this.#t),this.addEventListener(h,this.handleQuantityChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(r,this.merchTwpReady),this.subscriptionPanel.removeEventListener(l,this.#t)}handleOfferSelected(e){this.log.debug("Selecting plan type",e.target.planType),this.selectedTabPanel.card.offerSelect.selectFromPlanType(e.target.planType),this.requestUpdate()}handleQuantityChange(e){this.selectedTabPanel&&(this.selectedTabPanel.card.quantitySelect.defaultValue=e.detail.option,this.requestUpdate())}get cards(){return this.querySelectorAll("merch-card[slot]")}get cciCards(){return this.querySelectorAll('merch-card[slot="individuals"]')}get cctCards(){return this.querySelectorAll('merch-card[slot="business"]')}get cceCards(){return this.querySelectorAll('merch-card[slot="education"]')}get subscriptionPanel(){return this.querySelector("merch-subscription-panel")}get tabElement(){return this.shadowRoot.querySelector("sp-tabs")}selectCard(e,n=!1){let s=this.selectedTabPanel.card;(n||!s)&&(s&&(s.selected=void 0),s=e,s.selected=!0,this.selectedTabPanel.card=s,this.log.debug("Selecting card",this.selectedTabPanel.value,s.title)),s.focus(),this.subscriptionPanel.quantitySelect?.remove();let i=s.quantitySelect?.cloneNode(!0);i&&this.subscriptionPanel.appendChild(i);let a=s.offerSelect.cloneNode(!0);a.setAttribute("variant","subscription-options"),a.selectOffer(a.querySelector("merch-offer[aria-selected]")),this.subscriptionPanel.offerSelect?.remove(),this.subscriptionPanel.appendChild(a),this.subscriptionPanel.requestUpdate()}async processCards(){[...this.querySelectorAll("merch-card")].forEach((e,n)=>{let{customerSegment:s,marketSegment:i}=e.offerSelect;s==="INDIVIDUAL"?i==="COM"?e.setAttribute("slot","individuals"):i==="EDU"&&e.setAttribute("slot","education"):s==="TEAM"&&e.setAttribute("slot","business"),e.addEventListener("click",()=>this.selectCard(e,!0))}),this.ready=!0,this.requestUpdate(),await this.updateComplete,await this.tabElement.updateComplete,this.selectCard(this.firstCardInSelectedTab,!0)}merchTwpReady(){this.querySelector("merch-card merch-offer-select:not([plan-type])")||this.processCards()}};window.customElements.define(x,c);export{c as MerchTwpD2P};
+        `:e``}connectedCallback(){super.connectedCallback(),this.style.setProperty("--mod-tabs-font-weight",700),this.addEventListener(r,this.merchTwpReady),this.subscriptionPanel.addEventListener(l,this.#e),this.addEventListener(m,this.handleQuantityChange),this.addEventListener(d,this.handleStorageChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(r,this.merchTwpReady),this.subscriptionPanel.removeEventListener(l,this.#e),this.removeEventListener(d,this.handleStorageChange)}handleOfferSelected(t){this.log.debug("Selecting plan type",t.target.planType),this.selectedCard.selectMerchOffer(t.target.selectedOffer)}handleQuantityChange(t){this.selectedTabPanel&&(this.selectedCard.quantitySelect.defaultValue=t.detail.option,this.requestUpdate())}setOfferSelectOnPanel(t){t.setAttribute("variant","subscription-options"),this.subscriptionPanel.offerSelect?.remove(),this.subscriptionPanel.appendChild(t)}handleStorageChange(t){let s=t.detail.offerSelect;s&&this.setOfferSelectOnPanel(s)}selectCard(t,s=!1){let a=this.selectedTabPanel,i=a?.card;(s||!i)&&(i&&(i.selected=void 0),i=t,i.selected=!0,a?a.card=i:this.selectSingleCard(i)),i.focus(),this.subscriptionPanel.quantitySelect?.remove();let n=i.quantitySelect?.cloneNode(!0);n&&this.subscriptionPanel.appendChild(n);let f=i.offerSelect.cloneNode(!0);this.setOfferSelectOnPanel(f)}async processCards(){let t=[...this.querySelectorAll("merch-card")];t.forEach((s,a)=>{let{customerSegment:i,marketSegment:n}=s.offerSelect;i==="INDIVIDUAL"?n==="COM"?s.setAttribute("slot","individuals"):n==="EDU"&&s.setAttribute("slot","education"):i==="TEAM"&&s.setAttribute("slot","business"),s.addEventListener("click",()=>this.selectCard(s,!0))}),this.ready=!0,this.requestUpdate(),await this.updateComplete,await this.tabElement?.updateComplete,this.selectCard(t.length===1?t[0]:this.firstCardInSelectedTab,!0)}merchTwpReady(){this.querySelector("merch-card merch-offer-select:not([plan-type])")||this.processCards()}get cards(){return this.querySelectorAll("merch-card[slot]")}get cciCards(){return this.querySelectorAll('merch-card[slot="individuals"]')}get cctCards(){return this.querySelectorAll('merch-card[slot="business"]')}get cceCards(){return this.querySelectorAll('merch-card[slot="education"]')}get subscriptionPanel(){return this.querySelector("merch-subscription-panel")}get tabElement(){return this.shadowRoot.querySelector("sp-tabs")}};window.customElements.define(T,h);export{h as MerchTwpD2P};
 //# sourceMappingURL=merch-twp-d2p.js.map
