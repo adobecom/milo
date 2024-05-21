@@ -441,6 +441,7 @@
     width: auto;
     max-width: var(--grid-container-width);
     margin: 0;
+    gap: var(--spacing-s);
   }
 
   .tabs.radio .tab-list-container::before {
@@ -454,7 +455,7 @@
 
   .tabs.radio div[role="tablist"] button,
   .tabs.radio div[role="tablist"] button:last-of-type {
-    padding: var(--spacing-xs);
+    padding: var(--spacing-xs) 0;
   }
 }
 
