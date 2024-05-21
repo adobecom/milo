@@ -553,7 +553,17 @@ span.icon.margin-right { margin-right: 8px; }
 
 span.icon.margin-left { margin-left: 8px; }
 
-span.icon.margin-inline-end { margin-inline-end: 8px; }
+span.icon.margin-inline-end { 
+  -moz-margin-end: 8px;
+    -webkit-margin-end:8px;
+      margin-inline-end:8px;
+}
+
+span.icon.margin-inline-start { 
+  -webkit-margin-start:8px;
+    -moz-margin-start: 8px;
+      margin-inline-start:8px;
+}
 
 .button-l .con-button span.icon.margin-left,
 .con-button.button-l span.icon.margin-left { margin-left: 12px; }
