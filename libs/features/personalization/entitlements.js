@@ -21,8 +21,10 @@ const ENTITLEMENT_MAP = {
   '08216aa4-4a0f-4136-8b27-182212764a7c': 'free-dc',
   // PEP segments
   '6cb0d58c-3a65-47e2-b459-c52bb158d5b6': 'lightroom-web-usage',
-  'caa3de84-6336-4fa8-8db2-240fc88106cc': 'photoshop-web-usage',
-  '5c6a4bb8-a2f3-4202-8cca-f5e918b969dc': 'firefly-web-usage',
+  'caa3de84-6336-4fa8-8db2-240fc88106cc': 'photoshop-signup-source',
+  'ef82408e-1bab-4518-b655-a88981515d6b': 'photoshop-web-usage',
+  '5c6a4bb8-a2f3-4202-8cca-f5e918b969dc': 'firefly-signup-source',
+  '20106303-e88c-4b15-93e5-f6a1c3215a12': 'firefly-web-usage',
   '3df0b0b0-d06e-4fcc-986e-cc97f54d04d8': 'acrobat-web-usage',
 };
 
