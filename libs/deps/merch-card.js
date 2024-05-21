@@ -1,4 +1,4 @@
-// branch: develop commit: 142fa1eaf96719eee32ae2235e4ac34b93a60039 Tue, 21 May 2024 18:34:54 GMT
+// branch: develop commit: 0d5b59f601f50e7799719b31561e1639518b774e Tue, 21 May 2024 19:17:29 GMT
 import{html as n,LitElement as F}from"/libs/deps/lit-all.min.js";import{LitElement as B,html as $,css as I}from"/libs/deps/lit-all.min.js";var d=class extends B{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?$`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:$` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=I`
@@ -584,9 +584,12 @@ merch-card [slot='heading-xs'] {
     color: var(--merch-color-grey-80);
     font-size: var(--consonant-merch-card-heading-xs-font-size);
     line-height: var(--consonant-merch-card-heading-xs-line-height);
-    margin-bottom: var(--consonant-merch-spacing-xxs);
     margin: 0;
     text-decoration: none;
+}
+
+merch-card.dc-pricing [slot='heading-xs'] {
+    margin-bottom: var(--consonant-merch-spacing-xxs);
 }
 
 merch-card [slot='heading-xs'] a {
