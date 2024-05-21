@@ -527,7 +527,6 @@ describe('Utils', () => {
     const analytics = '<meta property="article:tag" content="Analytics">';
     const commerce = '<meta property="article:tag" content="Commerce">';
     const summit = '<meta property="article:tag" content="Summit">';
-    const promoConfig = { locale: { contentRoot: '/test/utils/mocks' } };
     let oldHead;
     let promoBody;
     let taxonomyData;
@@ -553,21 +552,21 @@ describe('Utils', () => {
 
     it('loads from metadata', async () => {
       document.head.innerHTML = favicon + ccxVideo;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
 
     it('loads from taxonomy in order on sheet', async () => {
       document.head.innerHTML = ccxVideo + typeTaxonomy + analytics + commerce + summit;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/commerce');
     });
 
     it('loads backup from tag when taxonomy has no promo', async () => {
       document.head.innerHTML = ccxVideo + typeTaxonomy + summit;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
@@ -605,10 +604,32 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
       await utils.loadArea();
       const resultConfig = utils.getConfig();
-      const resultExperiment = resultConfig.experiments[2];
+      const resultExperiment = resultConfig.mep.experiments[2];
       expect(resultConfig.mep.preview).to.be.true;
-      expect(resultConfig.experiments.length).to.equal(3);
+      expect(resultConfig.mep.experiments.length).to.equal(3);
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
+    });
+  });
+
+  describe('target set to gnav', async () => {
+    const MANIFEST_JSON = {
+      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
+    };
+    function htmlResponse() {
+      return new Promise((resolve) => {
+        resolve({
+          ok: true,
+          json: () => MANIFEST_JSON,
+        });
+      });
+    }
+
+    it('have target be set to gnav and save in config', async () => {
+      window.fetch = sinon.stub().returns(htmlResponse());
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-target-gnav.html' });
+      await utils.loadArea();
+      const resultConfig = utils.getConfig();
+      expect(resultConfig.mep.targetEnabled).to.equal('gnav');
     });
   });
 

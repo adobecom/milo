@@ -13,7 +13,7 @@
 /*
  * Marketo Form
  */
-import { parseEncodedConfig, loadScript, createTag, createIntersectionObserver } from '../../utils/utils.js';
+import { parseEncodedConfig, loadScript, localizeLink, createTag, createIntersectionObserver } from '../../utils/utils.js';
 
 const ROOT_MARGIN = 1000;
 const FORM_ID = 'form id';
@@ -48,7 +48,10 @@ export const decorateURL = (destination, baseURL = window.location) => {
       destinationUrl.pathname = `${pathname}.html`;
     }
 
-    return destinationUrl;
+    const localized = localizeLink(destinationUrl.href, null, true);
+    destinationUrl.pathname = new URL(localized, baseURL.origin).pathname;
+
+    return destinationUrl.href;
   } catch (e) {
     window.lana?.log(`Error with Marketo destination URL: ${destination} ${e.message}`);
   }
@@ -95,7 +98,7 @@ const readyForm = (form) => {
 };
 
 const setPreference = (key, value) => {
-  if (key && key.includes('.')) {
+  if (value && key?.includes('.')) {
     const keyParts = key.split('.');
     const lastKey = keyParts.pop();
     const formDataObject = keyParts.reduce((obj, part) => {
@@ -168,7 +171,7 @@ export default function init(el) {
 
     if (destinationUrl) {
       formData['form.success.type'] = 'redirect';
-      formData['form.success.content'] = destinationUrl.href;
+      formData['form.success.content'] = destinationUrl;
     }
   }
 

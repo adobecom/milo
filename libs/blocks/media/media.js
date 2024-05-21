@@ -6,6 +6,7 @@ import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
   medium: ['m', 's', 'm'],
+  'medium-compact': ['xl', 'm', 'l'],
   large: ['xl', 'm', 'l'],
   xlarge: ['xxl', 'm', 'l'],
 };
@@ -86,6 +87,15 @@ export default function init(el) {
         link.parentElement.className = 'subcopy-link';
         link.className = 'body-xxs';
       });
+    }
+    const lastActionArea = el.querySelector('.action-area:last-of-type');
+    if (lastActionArea) {
+      const div = createTag('div', { class: 'cta-container' });
+      lastActionArea.insertAdjacentElement('afterend', div);
+      if (lastActionArea.previousElementSibling.className.includes('icon-stack-area')) {
+        div.append(lastActionArea.previousElementSibling);
+      }
+      div.append(lastActionArea);
     }
     container.append(row);
   });

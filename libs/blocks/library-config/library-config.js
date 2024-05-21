@@ -163,6 +163,7 @@ function createList(libraries) {
       list.classList.add('inset');
       skLibrary.classList.add('allow-back');
       loadList(type, libraries[type], list);
+      window.hlx?.rum.sampleRUM('click', { source: e.target });
     });
   });
 

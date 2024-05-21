@@ -121,7 +121,7 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
 }
 
 export function getBlockSize(el, defaultSize = 1) {
-  const sizes = ['small', 'medium', 'large', 'xlarge'];
+  const sizes = ['small', 'medium', 'large', 'xlarge', 'medium-compact'];
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
