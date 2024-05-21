@@ -297,7 +297,7 @@ export function localizeLink(
       .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
-    return relative ? urlPath : `${url.origin}${urlPath}`;
+    return relative ? urlPath : `${originHostName === 'www.stage.adobe.com' && url.origin === 'https://www.adobe.com' ? 'https://www.stage.adobe.com' : url.origin}${urlPath}`;
   } catch (error) {
     return href;
   }
