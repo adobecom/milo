@@ -30,7 +30,6 @@ const App = ({
   const [selectedCards, setSelectedCards] = useState({});
   const questionCount = useRef(0);
   const [btnAnalytics, setBtnAnalytics] = useState(null);
-  const [fiCodeResults, setFiCodeResults] = useState({});
   const [showPopover, setShowPopover] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
 
@@ -53,6 +52,35 @@ const App = ({
       (item) => item.options === optionsType,
     );
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
+  };
+
+  const sendMLFieldFiCodesAnalytics = (filtered) => {
+    let val = '';
+    if (filtered.length > 0) {
+      const fiCodes = filtered.map((result) => result.ficode);
+      val = `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`;
+    }
+    window.alloy('sendEvent', {
+      documentUnloading: true,
+      xdm: {
+        eventType: 'web.webinteraction.linkClicks',
+        web: {
+          webInteraction: {
+            linkClicks: { value: 1 },
+            type: 'other',
+            name: val,
+          },
+        },
+      },
+      data: {
+        _adobe_corpnew: {
+          digitalData: {
+            primaryEvent:
+            { eventInfo: { eventName: val } },
+          },
+        },
+      },
+    });
   };
 
   useEffect(() => {
@@ -149,13 +177,8 @@ const App = ({
       btnAnalyticsData = `Filters|${analyticsType}|${selectedQuestion?.questions}/${selectedCardNames.join('/')}`;
     }
 
-    if (fiCodeResults && fiCodeResults.length > 0) {
-      const fiCodes = fiCodeResults.map((result) => result.ficode);
-      btnAnalyticsData = `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`;
-    }
-
     setBtnAnalytics(btnAnalyticsData);
-  }, [selectedQuestion, selectedCards, fiCodeResults, analyticsType]);
+  }, [selectedQuestion, selectedCards, analyticsType]);
 
   const continueQuiz = async () => {
     let selections = {};
@@ -170,10 +193,11 @@ const App = ({
 
       if (mlDetails.fallback) fallback = mlDetails.fallback.split(',');
       if (filtered) {
-        setFiCodeResults(filtered);
         filtered.forEach((item) => {
           selections[item.ficode] = true;
         });
+
+        sendMLFieldFiCodesAnalytics(filtered);
       } else if (fiResults.errors || fiResults.error_code) {
         for (const ficode of fallback) {
           selections[ficode] = true;
@@ -181,18 +205,25 @@ const App = ({
         if (fiResults.errors) error = fiResults.errors[0].title;
         if (fiResults.error_code) error = fiResults.message;
         window.lana.log(`ML results error - ${error}`, { tags: 'errorType=info,module=quiz-entry' });
+        sendMLFieldFiCodesAnalytics(fallback);
       }
 
       if (debug) {
+        let fiCodes = [];
         if (!fiResults.errors && !fiResults.error_code) {
           // eslint-disable-next-line no-console
           console.log('all', fiResults.data);
           // eslint-disable-next-line no-console
           console.log('filtered', filtered);
+
+          fiCodes = filtered.map((result) => result.ficode);
         } else {
           // eslint-disable-next-line no-console
           console.log('fallback codes used', fallback);
+          fiCodes = fallback.map((result) => result.ficode);
         }
+        // eslint-disable-next-line no-console
+        console.log('sending ML field fiCodes to Adobe Analytics: ', `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`);
       }
     }
 
@@ -227,7 +258,6 @@ const App = ({
       if (debug) console.log(currentQuizState);
       if (questionCount.current === maxQuestions || currentQuizState.userFlow.length === 1) {
         if (!debug) {
-          setSelectedQuestion(null);
           locationWrapper.redirect(quizPath);
         }
       } else {
