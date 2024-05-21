@@ -827,7 +827,6 @@ export async function applyPers(manifests, postLCP = false) {
         mep: mepParam,
         mepHighlight,
         mepButton,
-        target,
       } = Object.fromEntries(PAGE_URL.searchParams);
       config.mep = {
         handleFragmentCommand,
@@ -835,7 +834,7 @@ export async function applyPers(manifests, postLCP = false) {
         override: mepParam ? decodeURIComponent(mepParam) : '',
         highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
         mepParam,
-        targetEnabled: target,
+        targetEnabled: config.mep?.target,
       };
     }
 
