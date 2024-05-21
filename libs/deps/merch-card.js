@@ -1,4 +1,4 @@
-// branch: develop commit: 7ff521873f6595e470276881ccfda07dbb8263ac Tue, 21 May 2024 12:10:24 GMT
+// branch: develop commit: a3fa1ff7aa98c1dd092499e4a4830e34195c071c Tue, 21 May 2024 14:51:58 GMT
 import{html as n,LitElement as F}from"/libs/deps/lit-all.min.js";import{LitElement as B,html as $,css as I}from"/libs/deps/lit-all.min.js";var d=class extends B{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?$`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:$` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=I`
@@ -121,7 +121,7 @@ import{html as n,LitElement as F}from"/libs/deps/lit-all.min.js";import{LitEleme
 
     div[class$='-badge'] {
         position: absolute;
-        top: 20px;
+        top: 16px;
         right: 0;
         font-size: var(--type-heading-xxs-size);
         font-weight: 500;
