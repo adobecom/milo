@@ -34,6 +34,7 @@ const MILO_BLOCKS = [
   'featured-article',
   'global-footer',
   'global-navigation',
+  'graybox',
   'footer',
   'gnav',
   'how-to',
@@ -64,6 +65,7 @@ const MILO_BLOCKS = [
   'preflight',
   'promo',
   'quiz',
+  'quiz-entry',
   'quiz-marquee',
   'quiz-results',
   'tabs',
@@ -440,12 +442,12 @@ export async function loadBlock(block) {
   }
 
   const name = block.classList[0];
-  const { miloLibs, codeRoot, expBlocks } = getConfig();
+  const { miloLibs, codeRoot, mep } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
 
-  if (expBlocks?.[name]) path = expBlocks[name];
+  if (mep?.blocks?.[name]) path = mep.blocks[name];
 
   const blockPath = `${path}/${name}`;
 
@@ -847,28 +849,26 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
   return true;
 }
 
-async function checkForPageMods() {
-  const offFlag = (val) => PAGE_URL.searchParams.get(val) === 'off';
-  if (offFlag('mep')) return;
-  const persMd = getMetadata('personalization');
-  const promoMd = getMetadata('manifestnames');
-  const targetMd = getMetadata('target');
-  let persManifests = [];
-  const persEnabled = persMd && persMd !== 'off' && !offFlag('personalization');
-  const targetEnabled = targetMd && targetMd !== 'off' && !offFlag('target') && !offFlag('martech');
-  const promoEnabled = promoMd && promoMd !== 'off' && !offFlag('promo');
-  const mepEnabled = persEnabled || targetEnabled || promoEnabled;
+const getMepValue = (val) => {
+  const valMap = { on: true, off: false, gnav: 'gnav' };
+  const finalVal = val?.toLowerCase().trim();
+  if (finalVal in valMap) return valMap[finalVal];
+  return finalVal;
+};
 
-  if (mepEnabled) {
-    const { base } = getConfig();
-    loadLink(
-      `${base}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-  }
+export const getMepEnablement = (mdKey, paramKey = false) => {
+  const paramValue = PAGE_URL.searchParams.get(paramKey || mdKey);
+  if (paramValue) return getMepValue(paramValue);
+  const mdValue = getMetadata(mdKey);
+  if (!mdValue) return false;
+  return getMepValue(mdValue);
+};
+
+export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
+  let persManifests = [];
 
   if (persEnabled) {
-    persManifests = persMd.toLowerCase()
+    persManifests = persEnabled.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
       .map((manifestPath) => ({ manifestPath }));
@@ -876,41 +876,65 @@ async function checkForPageMods() {
 
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoMd, PAGE_URL.searchParams));
+    persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
-  const { env } = getConfig();
-  let previewOn = false;
-  const mep = PAGE_URL.searchParams.get('mep');
-  if (mep !== null || (env?.name !== 'prod' && mepEnabled)) {
-    previewOn = !offFlag('mepButton');
-    const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
-    persManifests = await addPreviewToConfig({
-      pageUrl: PAGE_URL,
-      mepEnabled,
-      persManifests,
+  if (mepParam && mepParam !== 'off') {
+    const persManifestPaths = persManifests.map((manifest) => {
+      const { manifestPath } = manifest;
+      if (manifestPath.startsWith('/')) return manifestPath;
+      try {
+        const url = new URL(manifestPath);
+        return url.pathname;
+      } catch (e) {
+        return manifestPath;
+      }
+    });
+
+    mepParam.split('---').forEach((manifestPair) => {
+      const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!persManifestPaths.includes(manifestPath)) {
+        persManifests.push({ manifestPath });
+      }
     });
   }
+  return persManifests;
+};
 
-  if (targetEnabled) {
-    await loadMartech({ persEnabled: true, persManifests, targetMd });
-  } else if (persManifests.length) {
-    loadIms()
-      .then(() => {
-        if (window.adobeIMS.isSignedInUser()) loadMartech();
-      })
-      .catch((e) => { console.log('Unable to load IMS:', e); });
+async function checkForPageMods() {
+  const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
+  if (mepParam === 'off') return;
+  const persEnabled = getMepEnablement('personalization');
+  const promoEnabled = getMepEnablement('manifestnames', 'promo');
+  const targetEnabled = getMepEnablement('target');
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled || mepParam;
+  if (!mepEnabled) return;
 
-    const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-    const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
+  const config = getConfig();
+  loadLink(
+    `${config.base}/features/personalization/personalization.js`,
+    { as: 'script', rel: 'modulepreload' },
+  );
 
-    await applyPers(manifests);
+  const persManifests = await combineMepSources(persEnabled, promoEnabled, mepParam);
+  if (targetEnabled === true) {
+    await loadMartech({ persEnabled: true, persManifests, targetEnabled });
+    return;
   }
-
-  if (previewOn) {
-    import('../features/personalization/preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+  if (!persManifests.length) {
+    config.mep = { targetEnabled };
+    return;
   }
+  loadIms()
+    .then(() => {
+      if (window.adobeIMS.isSignedInUser()) loadMartech();
+    })
+    .catch((e) => { console.log('Unable to load IMS:', e); });
+
+  const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
+  const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
+
+  await applyPers(manifests);
 }
 
 async function loadPostLCP(config) {
@@ -919,7 +943,11 @@ async function loadPostLCP(config) {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
-  loadMartech();
+  if (config.mep?.targetEnabled === 'gnav') {
+    await loadMartech({ persEnabled: true, postLCP: true });
+  } else {
+    loadMartech();
+  }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
@@ -929,6 +957,10 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
+  if (config.mep?.preview) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+  }
 }
 
 export function scrollToHashedElement(hash) {
