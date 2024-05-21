@@ -57,8 +57,8 @@
   }
 }
 
-/* Tablet up */
-@media screen and (min-width: 600px) {
+/* Tablet ONLY */
+@media screen and (min-width: 600px) and (max-width: 1199px) {
   /* tablet theme */
   .con-block.light-tablet { color: var(--text-color); }
   .con-block.dark-tablet {  color: var(--color-white); }

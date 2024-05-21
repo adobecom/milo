@@ -61,16 +61,6 @@
   gap: var(--spacing-xs);
 }
 
-/* Action area below heading mobile/tablet */
-.hero-marquee .main-copy .action-area {
-  order: 2;
-  padding: var(--spacing-xxs) 0;
-}
-
-.hero-marquee .main-copy [class*='heading-'] + [class*='body-'] {
-  order: 3;
-}
-
 /* Lockup Area */
 .hero-marquee .lockup-area { 
   font-weight: 700;
@@ -349,7 +339,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   /* con-vars support */
   .hero-marquee.bg-stack-mobile .background,
   .hero-marquee.bg-stack-top-mobile .background,
-  .hero-marquee.bg-stack-bottom-mobile .background {
+  .hero-marquee.bg-stack-bottom-mobile .background,
+  .hero-marquee.bg-stack-mobile-tablet .background,
+  .hero-marquee.bg-stack-top-mobile-tablet .background,
+  .hero-marquee.bg-stack-bottom-mobile-tablet .background   {
     position: relative;
   }
 
@@ -379,6 +372,15 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     order: 2;
   }
   
+  /* helper classes */
+  .hero-marquee .order-0-mobile { order: 0; }
+  .hero-marquee .order-1-mobile { order: 1; }
+  .hero-marquee .order-2-mobile { order: 2; }
+  .hero-marquee .order-3-mobile { order: 3; }
+  
+  .hero-marquee.fg-media-hidden-mobile .foreground .asset,
+  .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset { display: none; }
+
 }
 
 /* Tablet ONLY */
@@ -409,7 +411,9 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.bg-stack-tablet .background,
   .hero-marquee.bg-stack-top-tablet .background,
   .hero-marquee.bg-stack-bottom-tablet .background,
-  .hero-marquee.bg-stack-bottom-mobile-tablet .background {
+  .hero-marquee.bg-stack-mobile-tablet .background,
+  .hero-marquee.bg-stack-top-mobile-tablet .background,
+  .hero-marquee.bg-stack-bottom-mobile-tablet .background  {
     position: relative;
   }
 
@@ -425,6 +429,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     order: 2;
   }
   
+  .hero-marquee.fg-media-hidden-tablet .foreground .asset,
+  .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset { display: none; }
 }
 
 /* Tablet UP */
@@ -449,11 +455,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.bg-stack-tablet,
   .hero-marquee.bg-stack-mobile-tablet {
     flex-direction: column;
-  }
-
-  .hero-marquee.bg-stack-mobile .background {
-    position: absolute;
-    padding-bottom: unset;
   }
 
   /* min height */
