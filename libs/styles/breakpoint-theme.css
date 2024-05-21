@@ -12,44 +12,44 @@
   color: inherit;
 }
 
-/* mobile only */
+/* mobile ONLY */
 @media (max-width: 600px) {
   /* mobile-only theme */
-  .con-block.light-mobile { color: var(--text-color); }
-  .con-block.dark-mobile {  color: var(--color-white); }
+  .con-block.light-mobile-only { color: var(--text-color); }
+  .con-block.dark-mobile-only {  color: var(--color-white); }
 
-  .con-block.light-mobile a:not(.con-button) { color: var(--link-color); }
-  .con-block.dark-mobile a:not(.con-button) { color: var(--link-color-dark); }
+  .con-block.light-mobile-only a:not(.con-button) { color: var(--link-color); }
+  .con-block.dark-mobile-only a:not(.con-button) { color: var(--link-color-dark); }
 
-  .con-block.light-mobile a:not(.con-button):hover,
-  .con-block.light-mobile a:not(.con-button):focus,
-  .con-block.light-mobile a:not(.con-button):active { color: var(--link-hover-color); }
+  .con-block.light-mobile-only a:not(.con-button):hover,
+  .con-block.light-mobile-only a:not(.con-button):focus,
+  .con-block.light-mobile-only a:not(.con-button):active { color: var(--link-hover-color); }
   
-  .con-block.dark-mobile a:not(.con-button):hover,
-  .con-block.dark-mobile a:not(.con-button):focus,
-  .con-block.dark-mobile a:not(.con-button):active  { color: var(--link-hover-color-dark); }
+  .con-block.dark-mobile-only a:not(.con-button):hover,
+  .con-block.dark-mobile-only a:not(.con-button):focus,
+  .con-block.dark-mobile-only a:not(.con-button):active  { color: var(--link-hover-color-dark); }
 
-  .con-block.light-mobile a.con-button.outline {
+  .con-block.light-mobile-only a.con-button.outline {
     border-color: var(--text-color);
     color: var(--text-color);
   }
 
-  .con-block.dark-mobile a.con-button.outline {
+  .con-block.dark-mobile-only a.con-button.outline {
     border-color: var(--color-white);
     color: var(--color-white);
   }
 
-  .con-block.light-mobile a.con-button.outline:hover,
-  .con-block.light-mobile a.con-button.outline:focus,
-  .con-block.light-mobile a.con-button.outline:active {
+  .con-block.light-mobile-only a.con-button.outline:hover,
+  .con-block.light-mobile-only a.con-button.outline:focus,
+  .con-block.light-mobile-only a.con-button.outline:active {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .con-block.dark-mobile a.con-button.outline:hover,
-  .con-block.dark-mobile a.con-button.outline:focus,
-  .con-block.dark-mobile a.con-button.outline:active {
+  .con-block.dark-mobile-only a.con-button.outline:hover,
+  .con-block.dark-mobile-only a.con-button.outline:focus,
+  .con-block.dark-mobile-only a.con-button.outline:active {
     background-color: var(--color-white);
     border-color: var(--color-white);
     color: var(--color-black);
@@ -59,6 +59,51 @@
 
 /* Tablet ONLY */
 @media screen and (min-width: 600px) and (max-width: 1199px) {
+  /* tablet theme */
+  .con-block.light-tablet-only { color: var(--text-color); }
+  .con-block.dark-tablet-only {  color: var(--color-white); }
+
+  .con-block.light-tablet-only a:not(.con-button) { color: var(--link-color); }
+  .con-block.dark-tablet-only a:not(.con-button) { color: var(--link-color-dark); }
+
+  .con-block.light-tablet-only a:not(.con-button):hover,
+  .con-block.light-tablet-only a:not(.con-button):focus,
+  .con-block.light-tablet-only a:not(.con-button):active { color: var(--link-hover-color); }
+  
+  .con-block.dark-tablet-only a:not(.con-button):hover,
+  .con-block.dark-tablet-only a:not(.con-button):focus,
+  .con-block.dark-tablet-only a:not(.con-button):active  { color: var(--link-hover-color-dark); }
+
+  .con-block.light-tablet-only a.con-button.outline {
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  .con-block.dark-tablet-only a.con-button.outline {
+    border-color: var(--color-white);
+    color: var(--color-white);
+  }
+
+  .con-block.light-tablet-only a.con-button.outline:hover,
+  .con-block.light-tablet-only a.con-button.outline:focus,
+  .con-block.light-tablet-only a.con-button.outline:active {
+    background-color: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .con-block.dark-tablet-only a.con-button.outline:hover,
+  .con-block.dark-tablet-only a.con-button.outline:focus,
+  .con-block.dark-tablet-only a.con-button.outline:active {
+    background-color: var(--color-white);
+    border-color: var(--color-white);
+    color: var(--color-black);
+    text-decoration: none;
+  }
+}
+
+/* Tablet UP */
+@media screen and (min-width: 600px) {
   /* tablet theme */
   .con-block.light-tablet { color: var(--text-color); }
   .con-block.dark-tablet {  color: var(--color-white); }
