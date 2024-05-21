@@ -76,6 +76,18 @@ const handleAlloyResponse = (response) => {
     .filter(Boolean);
 };
 
+const getPropositionsInfo = (response) => {
+  const propositionsInfo = ((response.propositions?.length && response.propositions) || []).map((i) => {
+    return {
+      id : i.id,
+      scope : i.scope,
+      scopeDetails : i.scopeDetails,
+      renderAttempted :  i.renderAttempted
+    }
+  })
+  return propositionsInfo;
+};
+
 function roundToQuarter(num) {
   return Math.ceil(num / 250) / 4;
 }
@@ -123,7 +135,7 @@ const getTargetPersonalization = async () => {
     window.lana.log('target response time', responseTime);
   }, { once: true });
 
-  let manifests = [];
+  let manifests = [], propositionsInfo = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   if (response.timeout) {
     waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
@@ -131,9 +143,13 @@ const getTargetPersonalization = async () => {
   } else {
     sendTargetResponseAnalytics(false, responseStart, timeout);
     manifests = handleAlloyResponse(response.result);
+    propositionsInfo = getPropositionsInfo(response.result);
   }
 
-  return manifests;
+  return {
+    targetManifests : manifests,
+    targetPropositionsInfo : propositionsInfo
+  }
 };
 
 const getDtmLib = (env) => ({
@@ -225,11 +241,14 @@ export default async function init({ persEnabled = false, persManifests = [] }) 
       { as: 'script', rel: 'modulepreload' },
     );
 
-    const targetManifests = await getTargetPersonalization();
+    const {targetManifests, targetPropositionsInfo} = await getTargetPersonalization();
     if (targetManifests?.length || persManifests?.length) {
       const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
       const manifests = preloadManifests({ targetManifests, persManifests });
       await applyPers(manifests);
+      if(targetPropositionsInfo?.length) {
+        _satellite.track('propositionDisplay', targetPropositionsInfo);
+      }
     }
   }
 
