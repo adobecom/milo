@@ -392,7 +392,6 @@ const init = async (el) => {
   }
   parseContent(el, merchCard);
   if (!icons || icons.length > 0) {
-    const iconSize = cardType === 'catalog' ? 'm' : 'l';
     const iconImgs = Array.from(icons).map((icon) => {
       const img = {
         src: icon.querySelector('img').src,
@@ -402,7 +401,7 @@ const init = async (el) => {
       return img;
     });
     iconImgs.forEach((icon) => {
-      const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon.src, alt: icon.alt, href: icon.href, size: iconSize });
+      const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon.src, alt: icon.alt, href: icon.href, size: 'l' });
       merchCard.appendChild(merchIcon);
     });
     icons.forEach((icon) => icon.remove());
