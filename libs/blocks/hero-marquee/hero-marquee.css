@@ -465,7 +465,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* min height */
-  .hero-marquee.m-min-height-tablet { min-height: var(--m-min-height);}
+  .hero-marquee.s-min-height-tablet { min-height: var(--s-min-height);}
   .hero-marquee.l-min-height-tablet { min-height: var(--l-min-height);}
   
   /* helper classes */
@@ -563,7 +563,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* min height */
-  .hero-marquee.m-min-height-desktop { min-height: var(--m-min-height);}
+  .hero-marquee.s-min-height-desktop { min-height: var(--s-min-height);}
   .hero-marquee.l-min-height-desktop { min-height: var(--l-min-height);}
 
   /* helper classes */
