@@ -595,7 +595,7 @@ header.global-navigation {
   }
 }
 
-@media (max-width: 430px) {
+@media (max-width: 480px) {
   .table,
   .table.merch {
     margin: 0 2px;
@@ -604,5 +604,6 @@ header.global-navigation {
 
   .table.merch .col-merch .col-merch-content {
     flex-direction: column;
+    align-items: initial;
   }
 }
