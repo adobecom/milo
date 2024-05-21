@@ -5,15 +5,13 @@ import { applyPlanType } from '../../../../libs/deps/commerce.js';
 
 const { fetch } = window;
 
-const MOCKS_PATH = '/test/blocks/merch/mocks';
-
 export const readMockJSON = async (fileName) => {
   const json = await fetch(`${MOCKS_PATH}/${fileName}`).then((res) => res.json());
   return json;
 };
 
-export const readMockText = async (fileName) => {
-  const text = await fetch(`${MOCKS_PATH}/${fileName}`).then((res) => res.text());
+export const readMockText = async (path) => {
+  const text = await fetch(path).then((res) => res.text());
   return text;
 };
 

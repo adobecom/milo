@@ -126,8 +126,8 @@ describe('Merch Block', () => {
 
   before(async () => {
     window.lana = { log: () => { } };
-    document.head.innerHTML = await readMockText('head.html');
-    document.body.innerHTML = await readMockText('body.html');
+    document.head.innerHTML = await readMockText('/test/blocks/merch/mocks/head.html');
+    document.body.innerHTML = await readMockText('/test/blocks/merch/mocks/body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
     config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);

@@ -347,7 +347,7 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 
   it('Supports Mini Compare Chart with offer select', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('#mini-compare-offer-select'));
     const offerSelect = merchCard.querySelector('merch-offer-select');
     const merchOffer = offerSelect.querySelector('merch-offer');
@@ -357,7 +357,7 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 
   it('Supports Mini Compare Chart intersection observer', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('#mini-compare-hidden-card'));
     merchCard.style.visibility = 'hidden';
     setTimeout(() => {
@@ -381,7 +381,7 @@ describe('Merch Card with Offer Selection', () => {
 
   describe('TwP Merch Card', () => {
     it('Displays expected slots ', async () => {
-      document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/twp.html');
+      document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/twp-cards.html');
       await init(document.querySelector('.twp'));
       const merchCard = document.querySelector('merch-card');
       const topSection = merchCard.shadowRoot.querySelector('.top-section');
