@@ -4,6 +4,7 @@ import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { applyPers, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import spoofParams from './spoofParams.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -115,18 +116,24 @@ describe('Functional Test', () => {
     expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
   });
 
-  it('removeContent should tag z-pattern in preview', async () => {
-    let manifestJson = await readFile({ path: './mocks/deprecatedActions/manifestRemoveContent.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
-    const config = getConfig();
-    config.mep = {
-      override: '',
-      preview: true,
-    };
+  it('removeContent should tag but not remove content in preview', async () => {
+    spoofParams({ mep: '' });
+    setTimeout(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
-    expect(document.querySelector('.z-pattern')).to.not.be.null;
-    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
-    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+      let manifestJson = await readFile({ path: './mocks/deprecatedActions/manifestRemoveContent.json' });
+      manifestJson = JSON.parse(manifestJson);
+      setFetchResponse(manifestJson);
+
+      expect(document.querySelector('.z-pattern')).to.not.be.null;
+      await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+      expect(document.querySelector('.z-pattern')).to.not.be.null;
+      expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+
+      const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
+      await initFragments(removeMeFrag);
+      expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
+      expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
+    }, 100);
   });
 });
