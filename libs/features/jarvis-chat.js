@@ -215,6 +215,7 @@ const startInitialization = async (config, event, onDemand) => {
     [language, region] = config.locale.ietf.split('-');
   } else {
     [region, language] = config.locale.prefix.replace('/', '').split('_');
+    if (region === 'africa') region = 'ZA';
   }
 
   window.AdobeMessagingExperienceClient.initialize({
