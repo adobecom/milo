@@ -60,7 +60,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { expFragments, decorateArea, mep } = getConfig();
+  const { decorateArea, mep } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
 
@@ -79,8 +79,8 @@ export default async function init(a) {
   }
 
   const path = new URL(a.href).pathname;
-  if (expFragments?.[path] && mep) {
-    relHref = mep.handleFragmentCommand(expFragments[path], a);
+  if (mep?.fragments?.[path] && mep) {
+    relHref = mep.handleFragmentCommand(mep?.fragments[path], a);
     if (!relHref) return;
   }
 
