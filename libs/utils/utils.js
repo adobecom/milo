@@ -849,10 +849,11 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
 const getMepValue = (val) => {
   const valMap = { on: true, off: false, gnav: 'gnav' };
   const finalVal = val?.toLowerCase().trim();
-  return valMap[finalVal] || finalVal;
+  if (finalVal in valMap) return valMap[finalVal];
+  return finalVal;
 };
 
-const getMepEnablement = (mdKey, paramKey = false) => {
+export const getMepEnablement = (mdKey, paramKey = false) => {
   const paramValue = PAGE_URL.searchParams.get(paramKey || mdKey);
   if (paramValue) return getMepValue(paramValue);
   const mdValue = getMetadata(mdKey);
@@ -860,22 +861,8 @@ const getMepEnablement = (mdKey, paramKey = false) => {
   return getMepValue(mdValue);
 };
 
-async function checkForPageMods() {
-  const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
-  if (mepParam === 'off') return;
-  const persEnabled = getMepEnablement('personalization');
-  const promoEnabled = getMepEnablement('manifestnames', 'promo');
-  const targetEnabled = getMepEnablement('target');
-  const mepEnabled = persEnabled || targetEnabled || promoEnabled || mepParam;
-  if (!mepEnabled) return;
-
+export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
   let persManifests = [];
-
-  const { base } = getConfig();
-  loadLink(
-    `${base}/features/personalization/personalization.js`,
-    { as: 'script', rel: 'modulepreload' },
-  );
 
   if (persEnabled) {
     persManifests = persEnabled.toLowerCase()
@@ -908,12 +895,33 @@ async function checkForPageMods() {
       }
     });
   }
+  return persManifests;
+};
 
+async function checkForPageMods() {
+  const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
+  if (mepParam === 'off') return;
+  const persEnabled = getMepEnablement('personalization');
+  const promoEnabled = getMepEnablement('manifestnames', 'promo');
+  const targetEnabled = getMepEnablement('target');
+  const mepEnabled = persEnabled || targetEnabled || promoEnabled || mepParam;
+  if (!mepEnabled) return;
+
+  const config = getConfig();
+  loadLink(
+    `${config.base}/features/personalization/personalization.js`,
+    { as: 'script', rel: 'modulepreload' },
+  );
+
+  const persManifests = await combineMepSources(persEnabled, promoEnabled, mepParam);
   if (targetEnabled === true) {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
     return;
   }
-  if (!persManifests.length) return;
+  if (!persManifests.length) {
+    config.mep = { targetEnabled };
+    return;
+  }
   loadIms()
     .then(() => {
       if (window.adobeIMS.isSignedInUser()) loadMartech();

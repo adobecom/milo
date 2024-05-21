@@ -12,7 +12,6 @@ document.body.innerHTML = await readFile({ path: './mocks/personalization.html' 
 // Add custom keys so tests doesn't rely on real data
 const config = getConfig();
 config.env = { name: 'prod' };
-config.mep = { handleFragmentCommand };
 
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({
