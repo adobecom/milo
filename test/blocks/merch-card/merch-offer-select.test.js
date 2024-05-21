@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
-import { readMockText } from '../merch/mocks/fetch.js';
+import { mockFetch, unmockFetch, readMockText } from '../merch/mocks/fetch.js';
+import { initService } from '../../../libs/blocks/merch/merch.js';
 
 const { default: initCard } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
@@ -35,9 +36,15 @@ function validateMerchCard(card, badge, description, osi) {
 
 describe('Merch Offer Select', () => {
   before(async () => {
+    await mockFetch();
+    await initService(true);
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
     await initCard(document.querySelector('.acrobat'));
     await delay();
+  });
+
+  after(() => {
+    unmockFetch();
   });
 
   it('Should render offer select and inital card state', async () => {
