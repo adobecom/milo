@@ -354,6 +354,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   const mobileRenderer = () => {
+    table.dispatchEvent(tableHighlightLoadedEvent);
     const headings = table.querySelectorAll('.row-heading .col');
     const headingsLength = headings.length;
 
