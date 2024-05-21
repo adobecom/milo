@@ -30,7 +30,6 @@ const App = ({
   const [selectedCards, setSelectedCards] = useState({});
   const questionCount = useRef(0);
   const [btnAnalytics, setBtnAnalytics] = useState(null);
-  const [fiCodeResults, setFiCodeResults] = useState({});
   const [showPopover, setShowPopover] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
 
@@ -55,11 +54,17 @@ const App = ({
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
-  const sendMLFieldTextAnalytics = (fieldText) => {
-    const val = `Filters|${analyticsType}|${fieldText}`;
+  const sendMLFieldAnalytics = (input, isFieldText = true) => {
+    let val = '';
 
-    window.alloy('sendEvent', {
-      documentUnloading: true,
+    if (isFieldText) {
+      val = `Filters|${analyticsType}|${input}`;
+    } else if (input.length > 0) {
+      const fiCodes = input.map((result) => result.ficode);
+      val = `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`;
+    }
+
+    const eventData = {
       xdm: {
         eventType: 'web.webinteraction.linkClicks',
         web: {
@@ -70,8 +75,18 @@ const App = ({
           },
         },
       },
-      data: { _adobe_corpnew: { digitalData: { search: { searchInfo: { keyword: val } } } } },
-    });
+      data: {
+        _adobe_corpnew: {
+          digitalData: {
+            search: isFieldText ? { searchInfo: { keyword: val } } : undefined,
+            primaryEvent: !isFieldText ? { eventInfo: { eventName: val } } : undefined,
+          },
+        },
+      },
+    };
+
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite?.track('event', eventData);
   };
 
   useEffect(() => {
@@ -168,13 +183,8 @@ const App = ({
       btnAnalyticsData = `Filters|${analyticsType}|${selectedQuestion?.questions}/${selectedCardNames.join('/')}`;
     }
 
-    if (fiCodeResults && fiCodeResults.length > 0) {
-      const fiCodes = fiCodeResults.map((result) => result.ficode);
-      btnAnalyticsData = `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`;
-    }
-
     setBtnAnalytics(btnAnalyticsData);
-  }, [selectedQuestion, selectedCards, fiCodeResults, analyticsType]);
+  }, [selectedQuestion, selectedCards, analyticsType]);
 
   const continueQuiz = async () => {
     let selections = {};
@@ -189,10 +199,11 @@ const App = ({
 
       if (mlDetails.fallback) fallback = mlDetails.fallback.split(',');
       if (filtered) {
-        setFiCodeResults(filtered);
         filtered.forEach((item) => {
           selections[item.ficode] = true;
         });
+
+        sendMLFieldAnalytics(filtered, false);
       } else if (fiResults.errors || fiResults.error_code) {
         for (const ficode of fallback) {
           selections[ficode] = true;
@@ -200,22 +211,29 @@ const App = ({
         if (fiResults.errors) error = fiResults.errors[0].title;
         if (fiResults.error_code) error = fiResults.message;
         window.lana.log(`ML results error - ${error}`, { tags: 'errorType=info,module=quiz-entry' });
+        sendMLFieldAnalytics(fallback, false);
       }
 
-      sendMLFieldTextAnalytics(mlFieldText);
+      sendMLFieldAnalytics(mlFieldText, true);
 
       if (debug) {
+        let fiCodes = [];
         if (!fiResults.errors && !fiResults.error_code) {
           // eslint-disable-next-line no-console
           console.log('all', fiResults.data);
           // eslint-disable-next-line no-console
           console.log('filtered', filtered);
+
+          fiCodes = filtered.map((result) => result.ficode);
         } else {
           // eslint-disable-next-line no-console
           console.log('fallback codes used', fallback);
+          fiCodes = fallback.map((result) => result.ficode);
         }
         // eslint-disable-next-line no-console
         console.log('sending ML field text to Adobe Analytics: ', `Filters|${analyticsType}|${mlFieldText}`);
+        // eslint-disable-next-line no-console
+        console.log('sending ML field fiCodes to Adobe Analytics: ', `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`);
       }
     }
 
