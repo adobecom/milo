@@ -18,11 +18,6 @@ div[class*="-merch-card"] > div,
   color: var(--text-color);
 }
 
-.twp.merch-card .merch-card-price {
-  font-weight: 700;
-  margin: 0;
-}
-
 merch-card.special-offers del span[is="inline-price"] {
   text-decoration: line-through;
 }
@@ -31,4 +26,18 @@ merch-card.special-offers del span[is="inline-price"] {
   color: var(--color-white);
   background-color: var(--color-black);
   text-decoration: none;
+}
+
+/* hide download/upgrade links except the first one */
+merch-card a[is="checkout-link"].download:not(:first-of-type),
+merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
+  display: none;
+}
+
+/* Tablet and larger */
+@media screen and (min-width: 768px) {
+  .badge-merch-cards .card-heading,
+  .badge-card .card-heading {
+    margin-top: var(--spacing-s);
+  }
 }
