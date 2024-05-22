@@ -10,6 +10,8 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
   </g>
 </svg>`;
 
+let isDelayedModal = false;
+
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
@@ -53,6 +55,7 @@ export function closeModal(modal) {
 
   const hashId = window.location.hash.replace('#', '');
   if (hashId === modal.id) window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
+  isDelayedModal = false;
 }
 
 function isElementInView(element) {
@@ -96,6 +99,16 @@ export async function getModal(details, custom) {
 
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
+  if (isDelayedModal) {
+    dialog.classList.add('delayed-modal');
+    const mediaBlock = dialog.querySelector('div.media');
+    if (mediaBlock) {
+      mediaBlock.classList.add('in-modal');
+      const { miloLibs, codeRoot } = getConfig();
+      const base = miloLibs || codeRoot;
+      loadStyle(`${base}/styles/rounded-corners.css`);
+    }
+  }
 
   const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
   const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
@@ -195,6 +208,7 @@ export function getHashParams(hashStr) {
 export function delayedModal(el) {
   const { hash, delay } = getHashParams(el?.dataset.modalHash);
   if (!delay || !hash) return false;
+  isDelayedModal = true;
   el.classList.add('hide-block');
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
