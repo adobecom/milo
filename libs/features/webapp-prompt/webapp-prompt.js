@@ -248,7 +248,7 @@ class AppPrompt {
     this.anchor?.removeEventListener('click', this.close);
 
     window.testAnimation = (n, t = 3000) => playFocusAnimation(document.querySelector('#unav-app-switcher'), n, t);
-    playFocusAnimation(document.querySelector('#unav-app-switcher'), 2, 1000);
+    playFocusAnimation(document.querySelector('#unav-app-switcher'), 2,2500);
     showTooltip('', 0);
   };
 
