@@ -25,6 +25,48 @@
   z-index: 103;
 }
 
+.dialog-modal.delayed-modal {
+  width: 300px;
+  max-width: none;
+  border-radius: var(--l-rounded-corners);
+}
+
+@media (min-width: 430px) and (orientation: portrait) {
+  .dialog-modal.delayed-modal {
+    width: 370px;
+  }
+}
+
+@media (min-width: 430px) and (orientation: landscape) {
+  .dialog-modal.delayed-modal {
+    width: 600px;
+  }
+}
+
+@media (min-width: 576px) and (orientation: portrait) {
+  .dialog-modal.delayed-modal {
+    width: 516px;
+  }
+}
+
+@media (min-width: 768px) {
+  .dialog-modal.delayed-modal {
+    width: 600px;
+  }
+}
+
+@media (min-width: 829px) {
+  .dialog-modal.delayed-modal {
+    width: 800px;
+  }
+}
+
+@media (min-width: 1366px) {
+  .dialog-modal.delayed-modal {
+    width: 900px;
+  }
+}
+
 .dialog-modal.upgrade-flow-modal {
   height: 100%;
   width: 100%;
