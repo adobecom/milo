@@ -34,7 +34,7 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
-/* Optional checkout link params that are appened to checkout url as is */
+/* Optional checkout link params that are appended to checkout urls as is */
 export const CHECKOUT_ALLOWED_KEYS = [
   'af',
   'ai',
@@ -152,8 +152,8 @@ export async function fetchLiterals(url) {
 
 export async function fetchCheckoutLinkConfigs(base = '') {
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch(() => {
-      log?.error('Failed to fetch checkout link configs');
+    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
+      log?.error('Failed to fetch checkout link configs', e);
     }).then((mappings) => {
       if (!mappings?.ok) return undefined;
       return mappings.json();
@@ -191,7 +191,11 @@ export async function getCheckoutLinkConfig(productFamily) {
   return finalConfig;
 }
 
-export async function getDownloadAction(options, imsSignedInPromise, offerFamily) {
+export async function getDownloadAction(
+  options,
+  imsSignedInPromise,
+  [{ offerType, productArrangement: { productFamily: offerFamily } = {} }],
+) {
   if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
@@ -213,10 +217,15 @@ export async function getDownloadAction(options, imsSignedInPromise, offerFamily
   const text = await replaceKey(checkoutLinkConfig.DOWNLOAD_TEXT
       || PLACEHOLDER_KEY_DOWNLOAD, config);
   const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
-  return { text, url };
+  const type = offerType?.toLowerCase() ?? '';
+  return { text, className: `download ${type}`, url };
 }
 
-export async function getUpgradeAction(options, imsSignedInPromise, productFamily) {
+export async function getUpgradeAction(
+  options,
+  imsSignedInPromise,
+  [{ productArrangement: { productFamily: offerFamily } = {} }],
+) {
   if (options.entitlement === false) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
@@ -227,10 +236,10 @@ export async function getUpgradeAction(options, imsSignedInPromise, productFamil
     upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
   }
   await upgradeOffer?.onceSettled();
-  if (upgradeOffer && entitlements?.length && productFamily) {
+  if (upgradeOffer && entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
     const upgradeAction = await handleUpgradeOffer(
-      productFamily,
+      offerFamily,
       upgradeOffer,
       entitlements,
       CC_SINGLE_APPS_ALL,
@@ -279,6 +288,7 @@ export async function openModal(e, url, offerType) {
   e.preventDefault();
   e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
+  await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
   if (/\/fragments\//.test(url)) {
@@ -292,11 +302,11 @@ export async function openModal(e, url, offerType) {
   }
 }
 
-export async function getModalAction(offers, options, productFamily) {
+export async function getModalAction(offers, options) {
+  const [{ offerType, productArrangement: { productFamily: offerFamily } = {} }] = offers ?? [{}];
   if (options.modal !== true) return undefined;
-  const checkoutLinkConfig = await getCheckoutLinkConfig(productFamily);
+  const checkoutLinkConfig = await getCheckoutLinkConfig(offerFamily);
   if (!checkoutLinkConfig) return undefined;
-  const [{ offerType }] = offers;
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
@@ -305,11 +315,10 @@ export async function getModalAction(offers, options, productFamily) {
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise) {
-  const [{ productArrangement: { productFamily } = {} }] = offers;
   const [downloadAction, upgradeAction, modalAction] = await Promise.all([
-    getDownloadAction(options, imsSignedInPromise, productFamily),
-    getUpgradeAction(options, imsSignedInPromise, productFamily),
-    getModalAction(offers, options, productFamily),
+    getDownloadAction(options, imsSignedInPromise, offers),
+    getUpgradeAction(options, imsSignedInPromise, offers),
+    getModalAction(offers, options),
   ]).catch((e) => {
     log?.error('Failed to resolve checkout action', e);
     return [];

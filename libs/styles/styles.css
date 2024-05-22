@@ -126,6 +126,9 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
+
+  /* z-index */
+  --above-all: 9000; /* Used for page tools that overlay page content */
 }
 
 :root:lang(ar) {

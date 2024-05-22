@@ -36,11 +36,12 @@
 .icon-block .foreground {
   position: relative;
   text-align: center;
+  width: 100%;
 }
 
 .icon-block .foreground .text-content {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-content: center;
   width: 100%;
 }
@@ -167,6 +168,11 @@
   margin: var(--spacing-s) auto var(--spacing-xs) auto;
 }
 
+.section[class*="-up"] .icon-block .second-column {
+  display: flex;
+  flex-direction: column;
+}
+
 .icon-block.bio.center .foreground .second-column {
   margin-top: var(--spacing-s);
 }
@@ -225,6 +231,10 @@
   max-width: var(--icon-size-l);
 }
 
+.section.five-up  {
+  grid-template-columns: repeat(auto-fit, minmax(276px, 1fr)) !important;
+}
+
 .icon-block .foreground .text-content > * {
   width: 100%;
 }
@@ -242,8 +252,16 @@
   margin-bottom: var(--spacing-s);
 }
 
+.icon-block.bio .cta-container {
+  margin-top: 0;
+}
+
 .icon-block .foreground .text-content p.body-m.action-area {
   margin-bottom: 0;
+}
+
+.icon-block .cta-container .action-area {
+  width: 100%;
 }
 
 .icon-block.full-width .foreground .text-content .action-area {
@@ -294,6 +312,11 @@
   margin: unset; 
 }
 
+.section[class*="-up"] .icon-block .foreground {
+  display: flex;
+  align-self: stretch;
+}
+
 [class*="-up"] .icon-block.bio.inline .foreground {
   max-width: unset;
   width: unset;
@@ -320,6 +343,27 @@
   margin-top: var(--spacing-s);
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
+}
+
+.section[class*="-up"] .icon-block {
+  display: flex;
+  align-self: stretch;
+}
+
+.icon-block .cta-container {
+  margin-top: var(--spacing-s);
+}
+
+.icon-block.inline .cta-container .body-s.action-area {
+  padding-top: 0;
+}
+
+.section[class*="-up"] .icon-block .cta-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex-direction: column;
+  width: 100%;
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
@@ -424,8 +468,6 @@
   }
 
   .icon-block.vertical .foreground .text-content {
-    flex-grow: 1;
-    flex-basis: 0;
     margin-bottom: 0;
   }
 
@@ -444,5 +486,9 @@
 
   .three-up .icon-block.bio .foreground {
     max-width: 300px;
+  }
+
+  .section.five-up {
+    grid-template-columns: repeat(5, 1fr) !important;
   }
 }

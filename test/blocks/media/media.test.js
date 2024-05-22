@@ -28,6 +28,10 @@ describe('media', () => {
       const blueButton = actionArea.querySelector('.con-button.blue');
       expect(blueButton).to.exist;
     });
+    it('has a cta container', () => {
+      const ctaArea = medias[0].querySelector('.cta-container .action-area');
+      expect(ctaArea).to.exist;
+    });
   });
   describe('dark media large', () => {
     it('has a heading-xl', () => {
@@ -53,6 +57,10 @@ describe('media', () => {
     it('does have subcopy with links', () => {
       const links = medias[4].querySelectorAll('h3.heading-xs ~ p.subcopy-link > a');
       expect(links.length).to.greaterThanOrEqual(2);
+    });
+    it('does not have cta container around mid-body action area', () => {
+      const actionArea = medias[4].querySelector('.action-area');
+      expect(actionArea.parentElement.className.includes('cta-container')).to.be.false;
     });
   });
   describe('media with qr-code', () => {
@@ -102,6 +110,27 @@ describe('media', () => {
       const iconStack = medias[6].querySelectorAll('.icon-stack-area');
       expect(avatar).to.exist;
       expect(iconStack).to.exist;
+    });
+  });
+  describe('with merch variant', () => {
+    it('has a cta container around the icon stack and action area', () => {
+      const cta = medias[7].querySelector('.cta-container');
+      expect(cta.querySelector('.icon-stack-area')).to.exist;
+      expect(cta.querySelector('.action-area')).to.exist;
+    });
+  });
+  describe('medium compact', () => {
+    it('has a heading-xl', () => {
+      const heading = medias[8].querySelector('.heading-xl');
+      expect(heading).to.exist;
+    });
+    it('has a body-m', () => {
+      const body = medias[8].querySelector('.body-m');
+      expect(body).to.exist;
+    });
+    it('has a detail-l', () => {
+      const detail = medias[8].querySelector('.detail-l');
+      expect(detail).to.exist;
     });
   });
 });

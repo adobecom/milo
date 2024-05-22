@@ -8,6 +8,11 @@ describe('normalizePath function', () => {
     ietf: 'en-US',
     prefix: '',
   };
+  it('add forward slash when needed', async () => {
+    const path = await normalizePath('path/fragment.plain.html');
+    expect(path).to.equal('/path/fragment.plain.html');
+  });
+
   it('does not localize for US page', async () => {
     const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
     expect(path).to.equal('/path/to/fragment.plain.html');

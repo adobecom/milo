@@ -25,6 +25,20 @@ export const WCS_LANDSCAPE = 'PUBLISHED';
  */
 const METADATA_MAPPINGS = { 'checkout-workflow': 'workflow' };
 
+const priceDefaultOptions = {
+  term: true,
+  seat: true,
+  tax: false,
+  old: false,
+  exclusive: false,
+};
+
+const updateParams = (params, key, value) => {
+  if (value !== priceDefaultOptions[key]) {
+    params.set(key, value);
+  }
+};
+
 document.body.classList.add('tool', 'tool-ost');
 
 /**
@@ -65,11 +79,11 @@ export const createLinkMarkup = (
         displayOldPrice,
         forceTaxExclusive,
       } = options;
-      params.set('term', displayRecurrence);
-      params.set('seat', displayPerUnit);
-      params.set('tax', displayTax);
-      params.set('old', displayOldPrice);
-      params.set('exclusive', forceTaxExclusive);
+      updateParams(params, 'term', displayRecurrence);
+      updateParams(params, 'seat', displayPerUnit);
+      updateParams(params, 'tax', displayTax);
+      updateParams(params, 'old', displayOldPrice);
+      updateParams(params, 'exclusive', forceTaxExclusive);
     }
     return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };

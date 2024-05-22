@@ -1,4 +1,5 @@
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/pr-reminders.js
+const { getLocalConfigs } = require('./helpers.js');
 
 const main = async ({ github, context }) => {
   const comment = async ({ pr, message, comments }) => {
@@ -61,7 +62,11 @@ const main = async ({ github, context }) => {
         issue_number: pr.number,
       });
 
-      if (labels.some(({ name } = {}) => name === 'Ready for Stage' || name === 'Stale')) {
+      if (
+        labels.some(
+          ({ name } = {}) => name === 'Ready for Stage' || name === 'Stale'
+        )
+      ) {
         console.log(
           `PR #${pr.number} has the 'Ready for Stage' or 'Stale' label. Skipping...`
         );
@@ -101,12 +106,13 @@ const main = async ({ github, context }) => {
         continue;
       }
 
-      if(labels.some(({ name } = {}) => name === 'needs-verification')) {
+      if (labels.some(({ name } = {}) => name === 'needs-verification')) {
         comment({
           pr,
           comments,
-          message: 'This PR is currently in the `needs-verification` state. Please assign a QA engineer to verify the changes.'
-        })
+          message:
+            'This PR is currently in the `needs-verification` state. Please assign a QA engineer to verify the changes.',
+        });
         continue;
       }
 
@@ -123,7 +129,7 @@ const main = async ({ github, context }) => {
 };
 
 if (process.env.LOCAL_RUN) {
-  const { github, context } = require('./localWorkflowConfigs.js')();
+  const { github, context } = getLocalConfigs();
   main({
     github,
     context,

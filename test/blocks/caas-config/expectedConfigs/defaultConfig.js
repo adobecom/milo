@@ -24,6 +24,7 @@ const defaultConfig = {
     },
     detailsTextOption: 'default',
     setCardBorders: false,
+    showFooterDivider: false,
     useOverlayLinks: false,
     banner: {
       register: { description: 'Sign Up', url: '#registration' },

@@ -3,6 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import { applyPers, matchGlob } from '../../../libs/features/personalization/personalization.js';
+import spoofParams from './spoofParams.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -151,13 +152,34 @@ describe('Functional Test', () => {
     window.console.log.reset();
   });
 
-  it('should override to param-newoffer=123', async () => {
-    let config = getConfig();
-    config.mep = { override: '/path/to/manifest.json--param-newoffer=123' };
-    await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
+  it('updateMetadata should be able to add and change metadata', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateMetadata.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    const geoMetadata = document.querySelector('meta[name="georouting"]');
+    expect(geoMetadata.content).to.equal('off');
+
+    expect(document.querySelector('meta[name="mynewmetadata"]')).to.be.null;
+    expect(document.querySelector('meta[property="og:title"]').content).to.equal('milo');
+    expect(document.querySelector('meta[property="og:image"]')).to.be.null;
+
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    config = getConfig();
-    expect(config.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
+
+    expect(geoMetadata.content).to.equal('on');
+    expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
+    expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
+    expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
+  });
+
+  it('should override to param-newoffer=123', async () => {
+    spoofParams({ newoffer: '123' });
+    const config = getConfig();
+    await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
+    setTimeout(async () => {
+      await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+      expect(config.mep.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
+    }, 100);
   });
 });
 
