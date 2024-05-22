@@ -50,7 +50,8 @@ class AppPrompt {
   init = async () => {
     if (this.isDismissedPrompt() || !this.parent) return;
 
-    const entMatch = await this.doesEntitlementMatch();
+    const skipEntitlements = new URLSearchParams(window.location.search).get('skipPepEntitlements');
+    const entMatch = skipEntitlements || await this.doesEntitlementMatch();
     if (!entMatch) return;
 
     const content = await this.fetchContent();
@@ -86,10 +87,8 @@ class AppPrompt {
   doesEntitlementMatch = async () => {
     const config = getConfig();
     const entitlements = await config.entitlements();
-    if (config?.env?.name !== 'prod') {
-      const extraEnts = new URLSearchParams(window.location.search).get('mockPepEnts');
-      extraEnts?.split(',').forEach((ent) => entitlements.push(ent.trim()));
-    }
+    const extraEnts = new URLSearchParams(window.location.search).get('mockPepEnts');
+    extraEnts?.split(',').forEach((ent) => entitlements.push(ent.trim()));
     return entitlements?.length && entitlements.includes(this.entName);
   };
 
