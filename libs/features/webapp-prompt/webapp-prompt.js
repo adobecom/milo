@@ -98,7 +98,7 @@ class AppPrompt {
 
     // load animation css
     const { base } = getConfig();
-    await loadStyle(`${base}/libs/features/webapp-prompt/focus-animation.css`);
+    await loadStyle(`${base}/features/webapp-prompt/focus-animation.css`);
 
     if (this.anchorId) this.anchor = document.querySelector(`#${this.anchorId}`);
     this.offset = this.anchor
