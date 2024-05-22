@@ -5,7 +5,7 @@ import {
   lanaLog,
   toFragment,
 } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getConfig, decorateSVG } from '../../utils/utils.js';
+import { getConfig, decorateSVG, loadStyle } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
 
 const CONFIG = {
@@ -33,6 +33,31 @@ const getIcon = (content) => {
   if (svg) return decorateSVG(svg);
 
   return icons.company;
+};
+
+const showTooltip = (message, time) => {
+  console.log(message);
+  console.log(time);
+};
+
+const playFocusAnimation = (element, iterationCount = 2, animationDuration = 2500) => {
+  const rings = [];
+  for (let i = 0; i < 3; i += 1) {
+    const ring = document.createElement('div');
+    ring.classList.add('coach-indicator-ring');
+    element.insertAdjacentElement('afterbegin', ring);
+    document.documentElement.style.setProperty('--animation-duration', `${animationDuration}ms`);
+    ring.style.animationIterationCount = `${iterationCount}`;
+    rings.push(ring);
+  }
+  // The cleanup function is added to the event queue
+  // half a second after the end of the animation because
+  // the cleanup isn't high priority but it should be done
+  // eventually. (Animation truly ends slightly after
+  // animationDuration * iterationCount due to animation-delay)
+  setTimeout(() => {
+    rings.forEach((ring) => ring.remove());
+  }, (iterationCount + 1) * animationDuration);
 };
 
 class AppPrompt {
@@ -69,6 +94,9 @@ class AppPrompt {
         return {};
       }));
     if (this.isAnchorExpanded) return;
+
+    // load animation css
+    await loadStyle('/libs/features/webapp-prompt/focus-animation.css');
 
     if (this.anchorId) this.anchor = document.querySelector(`#${this.anchorId}`);
     this.offset = this.anchor
@@ -213,6 +241,10 @@ class AppPrompt {
     document.removeEventListener('keydown', this.handleKeyDown);
     this.anchor?.focus();
     this.anchor?.removeEventListener('click', this.close);
+
+    window.testAnimation = (n, t = 3000) => playFocusAnimation(document.querySelector('#unav-app-switcher'), n, t);
+    playFocusAnimation(document.querySelector('#unav-app-switcher'), 2, 1000);
+    showTooltip('', 0);
   };
 
   static getDismissedPrompts = () => {
