@@ -7,14 +7,15 @@ const main = async (params) => {
   const { context } = params;
 
   try {
-    if (context.payload.label.name === 'high-impact') {
-      const { html_url, number, title } = context.payload.pull_request;
-      console.log('High impact label detected, sending Slack notification');
-      slackNotification(`:alert: High Impact PR has been opened: <${html_url}|#${number}: ${title}>.` +
-         ` Please prioritize testing the proposed changes.`, process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK);
-    } else {
+    if (context.payload.label.name !== 'high-impact') {
       console.log('No high impact label detected');
+      return;
     }
+
+    const { html_url, number, title } = context.payload.pull_request;
+    console.log('High impact label detected, sending Slack notification');
+    slackNotification(`:alert: High Impact PR has been opened: <${html_url}|#${number}: ${title}>.` +
+      ` Please prioritize testing the proposed changes.`, process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK);
   } catch (error) {
     console.error(error);
   }
