@@ -439,3 +439,100 @@ div[class*="-up"] .media .foreground > .media-row {
     height: 120px;
   }
 }
+
+/* In the delayed modal used for promotions */
+.media.in-modal > .container.foreground {
+  width: 250px;
+}
+
+@media (min-width: 430px) and (orientation: portrait) {
+  .media.in-modal > .container.foreground {
+    width: 320px;
+  }
+}
+
+@media (min-width: 430px) and (orientation: landscape) {
+  .media.in-modal > .container.foreground {
+    width: 540px;
+  }
+}
+
+@media (min-width: 768px) {
+  .media.in-modal:not(.full-bleed-image) > .container.foreground {
+    width: 500px;
+  }
+}
+
+@media (min-width: 829px) {
+  .media.in-modal:not(.full-bleed-image) > .container.foreground {
+    width: 700px;
+  }
+}
+
+@media (min-width: 1366px) {
+  .media.in-modal > .container.foreground {
+    width: 800px;
+  }
+}
+
+.media.in-modal > .container.foreground > .media-row {
+  display: grid;
+  gap: 0;
+}
+
+.media.in-modal.full-bleed-image {
+  padding: 0;
+}
+
+.media.in-modal.full-bleed-image > .container.foreground {
+  width: 100%;
+}
+
+@media (orientation: portrait) {
+  .media.in-modal > .container.foreground > .media-row {
+    grid-template-rows: 1fr auto;
+  }
+
+  .media.in-modal.media-reverse-mobile > .container.foreground > .media-row div:first-child {
+    grid-area: 2 / 1 / 3 / 2;
+  }
+  
+  .media.in-modal.media-reverse-mobile > .container.foreground > .media-row div:nth-child(2) {
+    grid-area: 1 / 1 / 2 / 2;
+  }
+}
+
+@media (orientation: landscape) {
+  .media.in-modal > .container.foreground > .media-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .media.in-modal > .container.foreground > .media-row div:first-child {
+    grid-area: 1 / 1 / 2 / 2;
+  }
+  
+  .media.in-modal > .container.foreground > .media-row div:nth-child(2) {
+    grid-area: 1 / 2 / 2 / 3;
+  }
+}
+
+.media.in-modal > .container.foreground > .media-row > .text {
+  width: auto;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+}
+
+.media.in-modal.full-bleed-image > .container.foreground > .media-row > .text {
+  padding: var(--spacing-s);
+}
+
+.media.in-modal.full-bleed-image > .container.foreground > .media-row > .image {
+  height: 100%;
+}
+
+.media.in-modal.full-bleed-image > .container.foreground > .media-row > .image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
