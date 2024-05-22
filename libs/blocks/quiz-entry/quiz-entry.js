@@ -54,14 +54,17 @@ const App = ({
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
-  const sendMLFieldFiCodesAnalytics = (filtered) => {
+  const sendMLFieldAnalytics = (input, isFieldText = true) => {
     let val = '';
-    if (filtered.length > 0) {
-      const fiCodes = filtered.map((result) => result.ficode);
+
+    if (isFieldText) {
+      val = `Filters|${analyticsType}|${input}`;
+    } else if (input.length > 0) {
+      const fiCodes = input.map((result) => result.ficode);
       val = `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`;
     }
-    window.alloy('sendEvent', {
-      documentUnloading: true,
+
+    const eventData = {
       xdm: {
         eventType: 'web.webinteraction.linkClicks',
         web: {
@@ -75,12 +78,15 @@ const App = ({
       data: {
         _adobe_corpnew: {
           digitalData: {
-            primaryEvent:
-            { eventInfo: { eventName: val } },
+            search: isFieldText ? { searchInfo: { keyword: val } } : undefined,
+            primaryEvent: !isFieldText ? { eventInfo: { eventName: val } } : undefined,
           },
         },
       },
-    });
+    };
+
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite?.track('event', eventData);
   };
 
   useEffect(() => {
@@ -197,7 +203,7 @@ const App = ({
           selections[item.ficode] = true;
         });
 
-        sendMLFieldFiCodesAnalytics(filtered);
+        sendMLFieldAnalytics(filtered, false);
       } else if (fiResults.errors || fiResults.error_code) {
         for (const ficode of fallback) {
           selections[ficode] = true;
@@ -205,8 +211,10 @@ const App = ({
         if (fiResults.errors) error = fiResults.errors[0].title;
         if (fiResults.error_code) error = fiResults.message;
         window.lana.log(`ML results error - ${error}`, { tags: 'errorType=info,module=quiz-entry' });
-        sendMLFieldFiCodesAnalytics(fallback);
+        sendMLFieldAnalytics(fallback, false);
       }
+
+      sendMLFieldAnalytics(mlFieldText, true);
 
       if (debug) {
         let fiCodes = [];
@@ -222,6 +230,8 @@ const App = ({
           console.log('fallback codes used', fallback);
           fiCodes = fallback.map((result) => result.ficode);
         }
+        // eslint-disable-next-line no-console
+        console.log('sending ML field text to Adobe Analytics: ', `Filters|${analyticsType}|${mlFieldText}`);
         // eslint-disable-next-line no-console
         console.log('sending ML field fiCodes to Adobe Analytics: ', `Filters|${analyticsType}|${selectedQuestion?.questions}/interest-${fiCodes.join('-')}`);
       }
@@ -258,7 +268,6 @@ const App = ({
       if (debug) console.log(currentQuizState);
       if (questionCount.current === maxQuestions || currentQuizState.userFlow.length === 1) {
         if (!debug) {
-          setSelectedQuestion(null);
           locationWrapper.redirect(quizPath);
         }
       } else {
