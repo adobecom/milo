@@ -24,16 +24,18 @@ let resourcePath;
 let previewPath;
 
 async function validatedUrls(projectUrls) {
-  for (const [idx, url] of projectUrls.entries()) {
-    setStatus('details', 'info', `Validating Project URLs (${idx + 1})`);
-    let isValid;
+  const validateUrls = [...projectUrls];
+  while (validateUrls.length) {
     try {
-      const resp = await fetch(url.href);
-      isValid = resp.ok;
+      const reqs = await Promise.all(validateUrls.splice(0, 49).map((url) => fetch(url.href)));
+      setStatus('details', 'info', 'Validating Project URLs');
+      for (const res of reqs) {
+        const projectUrl = projectUrls.find((url) => url.href === res.url);
+        projectUrl.valid = res.ok;
+      }
     } catch (error) {
-      isValid = false;
+      setStatus('details', 'error', 'There was an error validating project URLs.', error);
     }
-    url.valid = isValid;
   }
   return projectUrls;
 }
@@ -104,7 +106,7 @@ async function loadDetails() {
     if (json.settings) loadProjectSettings(json.settings.data);
     const errors = urls.value.filter((url) => !url.valid);
     if (errors?.length > 0) {
-      setStatus('details', 'error', 'Error validating URLs.', errors.map((url) => (`${url.href} was not found.`)));
+      setStatus('details', 'error', 'Invalid URLs.', errors.map((url) => (`${url.href} was not found.`)));
     } else {
       setStatus('details');
     }
