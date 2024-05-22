@@ -297,7 +297,7 @@ export function localizeLink(
       .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
-    return relative ? urlPath : `${originHostName === 'www.stage.adobe.com' && url.origin === 'https://www.adobe.com' ? 'https://www.stage.adobe.com' : url.origin}${urlPath}`;
+    return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
     return href;
   }
@@ -614,6 +614,9 @@ export function decorateLinks(el) {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
+    if (window.location.hostname === 'www.stage.adobe.com' && a.hostname === 'www.adobe.com') {
+      a.href = a.href.replace('www.adobe.com', 'www.stage.adobe.com');
+    }
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
