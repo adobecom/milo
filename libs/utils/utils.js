@@ -917,6 +917,7 @@ async function checkForPageMods() {
   if (!mepEnabled) return;
 
   const config = getConfig();
+  config.mep = { targetEnabled };
   loadLink(
     `${config.base}/features/personalization/personalization.js`,
     { as: 'script', rel: 'modulepreload' },
@@ -927,10 +928,8 @@ async function checkForPageMods() {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
     return;
   }
-  if (!persManifests.length) {
-    config.mep = { targetEnabled };
-    return;
-  }
+  if (!persManifests.length) return;
+
   loadIms()
     .then(() => {
       if (window.adobeIMS.isSignedInUser()) loadMartech();
