@@ -85,28 +85,6 @@ function calculateResponseTime(responseStart) {
   return roundToQuarter(responseTime);
 }
 
-function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
-  // temporary solution until we can decide on a better timeout value
-  const responseTime = calculateResponseTime(responseStart);
-  const timeoutTime = roundToQuarter(timeout);
-  let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
-  if (message) val += `:${message}`;
-  window.alloy('sendEvent', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data: { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
 const getTargetPersonalization = async () => {
   const params = new URL(window.location.href).searchParams;
 
@@ -125,13 +103,7 @@ const getTargetPersonalization = async () => {
 
   let manifests = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
-  if (response.timeout) {
-    waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
-      .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
-  } else {
-    sendTargetResponseAnalytics(false, responseStart, timeout);
-    manifests = handleAlloyResponse(response.result);
-  }
+  manifests = handleAlloyResponse(response.result);
 
   return manifests;
 };
