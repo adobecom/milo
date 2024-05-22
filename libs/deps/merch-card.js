@@ -88,6 +88,7 @@ import{html as n,LitElement as F}from"/libs/deps/lit-all.min.js";import{LitEleme
         display: flex;
         justify-content: flex-start;
         align-items: flex-start;
+        gap: 16px;
     }
 
     .body {
