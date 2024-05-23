@@ -790,7 +790,9 @@ export async function decorateFooterPromo(doc = document) {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const { locale, imsClientId, imsScope, env, base } = getConfig();
+    const {
+      locale, imsClientId, imsScope, env, base, adobeid,
+    } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
       return;
@@ -812,6 +814,7 @@ export async function loadIms() {
         clearTimeout(timeout);
       },
       onError: reject,
+      ...adobeid,
     };
     const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
       ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
@@ -908,6 +911,7 @@ async function checkForPageMods() {
   if (!mepEnabled) return;
 
   const config = getConfig();
+  config.mep = { targetEnabled };
   loadLink(
     `${config.base}/features/personalization/personalization.js`,
     { as: 'script', rel: 'modulepreload' },
@@ -918,10 +922,8 @@ async function checkForPageMods() {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
     return;
   }
-  if (!persManifests.length) {
-    config.mep = { targetEnabled };
-    return;
-  }
+  if (!persManifests.length) return;
+
   loadIms()
     .then(() => {
       if (window.adobeIMS.isSignedInUser()) loadMartech();

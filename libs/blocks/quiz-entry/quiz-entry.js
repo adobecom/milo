@@ -268,7 +268,6 @@ const App = ({
       if (debug) console.log(currentQuizState);
       if (questionCount.current === maxQuestions || currentQuizState.userFlow.length === 1) {
         if (!debug) {
-          setSelectedQuestion(null);
           locationWrapper.redirect(quizPath);
         }
       } else {

@@ -197,18 +197,22 @@ describe('Modals', () => {
 
   it('shows the modal with a delay, and remembers it was shown on this page', async () => {
     window.sessionStorage.removeItem('shown:#delayed-modal');
-    const el = document.createElement('a');
-    el.setAttribute('data-modal-hash', '#delayed-modal:delay=1');
-    expect(delayedModal(el)).to.be.true;
+    const anchor = document.createElement('a');
+    anchor.setAttribute('data-modal-path', '/fragments/promos/fragments/cc-all-apps-promo-full-bleed-image');
+    anchor.setAttribute('data-modal-hash', '#delayed-modal:delay=1');
+    document.body.appendChild(anchor);
+    expect(delayedModal(anchor)).to.be.true;
     await delay(1000);
-    expect(el.classList.contains('hide-block')).to.be.true;
-    const modal = waitForElement('#delayed-modal');
+    expect(anchor.classList.contains('hide-block')).to.be.true;
+    const modal = await waitForElement('#delayed-modal');
     expect(modal).to.be.not.null;
+    expect(document.querySelector('#delayed-modal').classList.contains('delayed-modal'));
     expect(window.sessionStorage.getItem('shown:#delayed-modal').includes(window.location.pathname)).to.be.true;
     // eslint-disable-next-line no-underscore-dangle
     expect(window._satellite.track.called).to.be.true;
     window.sessionStorage.removeItem('shown:#delayed-modal');
-    el.remove();
+    modal.remove();
+    anchor.remove();
   });
 
   it('does not show the modal if it was shown on this page', async () => {
