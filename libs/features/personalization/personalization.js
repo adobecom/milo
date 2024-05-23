@@ -200,7 +200,10 @@ const getBlockProps = (fVal) => {
   return { blockSelector, blockTarget: val };
 };
 
-const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
+const consolidateArray = (arr, prop, existing = []) => arr
+  .reduce((results, i) => [...results, ...i[prop] || []], existing);
+
+const consolidateObjects = (arr, prop, existing = {}) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
     const { selector, val } = i;
     if (prop === 'blocks') {
@@ -210,9 +213,11 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
 
     if (selector in propMap) return;
     const action = {
-      fragment: val,
-      manifestPath: item.manifestPath,
       action: i.action,
+      fragment: val,
+      selector,
+      manifestPath: item.manifestPath,
+      manifestId: i.manifestId,
     };
     // eslint-disable-next-line no-restricted-syntax
     for (const key in propMap) {
@@ -220,7 +225,7 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
     }
     propMap[selector] = action;
   });
-  return propMap;
+  return { ...existing, ...propMap };
 }, {});
 
 export const matchGlob = (searchStr, inputStr) => {
@@ -410,8 +415,9 @@ const addHash = (url, newHash) => {
   }
 };
 
-export function handleCommands(commands, manifestId, rootEl = document, forceInline = false) {
+export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
+    const { manifestId } = cmd;
     const { action, selector, target: trgt } = cmd;
     const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
@@ -435,7 +441,7 @@ export function handleCommands(commands, manifestId, rootEl = document, forceInl
   });
 }
 
-const getVariantInfo = (line, variantNames, variants) => {
+const getVariantInfo = (line, variantNames, variants, manifestId) => {
   const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
   const { selector } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
@@ -451,6 +457,7 @@ const getVariantInfo = (line, variantNames, variants) => {
       pageFilter,
       target: line[vn],
       selectorType: checkSelectorType(selector),
+      manifestId,
     };
 
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
@@ -458,6 +465,7 @@ const getVariantInfo = (line, variantNames, variants) => {
         selector: normalizePath(variantInfo.selector),
         val: normalizePath(line[vn]),
         action,
+        manifestId,
       });
     } else if (GLOBAL_CMDS.includes(action)) {
       variants[vn][action] = variants[vn][action] || [];
@@ -468,12 +476,14 @@ const getVariantInfo = (line, variantNames, variants) => {
           selector: blockSelector,
           val: blockTarget,
           pageFilter,
+          manifestId,
         });
       } else {
         variants[vn][action].push({
           selector: normalizePath(selector),
           val: normalizePath(line[vn]),
           pageFilter,
+          manifestId,
         });
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
@@ -485,7 +495,7 @@ const getVariantInfo = (line, variantNames, variants) => {
   });
 };
 
-export function parseConfig(data) {
+export function parseConfig(data, manifestId) {
   if (!data?.length) return null;
 
   const config = {};
@@ -500,7 +510,7 @@ export function parseConfig(data) {
       variants[vn] = { commands: [], fragments: [] };
     });
 
-    experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
+    experiences.forEach((line) => getVariantInfo(line, variantNames, variants, manifestId));
 
     config.variants = variants;
     config.variantNames = variantNames;
@@ -621,7 +631,15 @@ export async function getPersConfig(info, override = false) {
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
-  const config = parseConfig(persData);
+
+  let manifestId = getFileName(manifestPath);
+  const globalConfig = getConfig();
+  if (!globalConfig.mep?.preview) {
+    manifestId = false;
+  } else if (name) {
+    manifestId = `${name}: ${manifestId}`;
+  }
+  const config = parseConfig(persData, manifestId);
 
   if (!config) {
     /* c8 ignore next 3 */
@@ -700,7 +718,7 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
   action,
 });
 
-export async function runPersonalization(experiment, config) {
+export async function categorizeActions(experiment) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
   if (!selectedVariant || selectedVariant === 'default') return { experiment };
@@ -714,14 +732,6 @@ export async function runPersonalization(experiment, config) {
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  let manifestId = getFileName(experiment.manifest);
-  if (!config.mep?.preview) {
-    manifestId = false;
-  } else if (experiment.name) {
-    manifestId = `${experiment.name}: ${manifestId}`;
-  }
-  handleCommands(selectedVariant.commands, manifestId);
-
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
   return {
@@ -729,6 +739,7 @@ export async function runPersonalization(experiment, config) {
     experiment,
     blocks: selectedVariant.useblockcode,
     fragments: selectedVariant.fragments,
+    commands: selectedVariant.commands,
   };
 }
 
@@ -760,9 +771,11 @@ function compareExecutionOrder(a, b) {
 }
 
 export function cleanAndSortManifestList(manifests) {
-  const manifestObj = {};
   const config = getConfig();
-  manifests.forEach((manifest) => {
+  const manifestObj = {};
+  let allManifests = manifests;
+  if (config.mep?.experiments) allManifests = [...manifests, ...config.mep.experiments];
+  allManifests.forEach((manifest) => {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
@@ -790,16 +803,15 @@ export function cleanAndSortManifestList(manifests) {
 }
 
 export function handleFragmentCommand(command, a) {
-  const config = getConfig();
-  const { action, fragment, manifestPath } = command;
+  const { action, fragment, manifestId } = command;
   if (action === 'replace') {
     a.href = fragment;
-    if (config.mep.preview) a.dataset.manifestId = manifestPath;
+    if (manifestId) a.dataset.manifestId = manifestId;
     return fragment;
   }
   if (action === 'remove') {
-    if (config.mep.preview) {
-      a.parentElement.dataset.removedManifestId = manifestPath;
+    if (manifestId) {
+      a.parentElement.dataset.removedManifestId = manifestId;
     } else {
       a.parentElement.remove();
     }
@@ -807,13 +819,26 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
-export async function applyPers(manifests) {
+export async function applyPers(manifests, postLCP = false) {
   try {
     const config = getConfig();
+    if (!postLCP) {
+      const {
+        mep: mepParam,
+        mepHighlight,
+        mepButton,
+      } = Object.fromEntries(PAGE_URL.searchParams);
+      config.mep = {
+        handleFragmentCommand,
+        preview: (mepButton !== 'off' && (config.env?.name !== 'prod' || mepButton)),
+        override: mepParam ? decodeURIComponent(mepParam) : '',
+        highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+        mepParam,
+        targetEnabled: config.mep?.targetEnabled,
+      };
+    }
 
     if (!manifests?.length) return;
-    config.mep ??= {};
-    config.mep.handleFragmentCommand = handleFragmentCommand;
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
       experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
@@ -824,17 +849,21 @@ export async function applyPers(manifests) {
     let results = [];
 
     for (const experiment of experiments) {
-      const result = await runPersonalization(experiment, config);
+      const result = await categorizeActions(experiment);
       if (result) {
         results.push(result);
       }
     }
     results = results.filter(Boolean);
-    deleteMarkedEls();
 
-    config.experiments = experiments;
-    config.expBlocks = consolidateObjects(results, 'blocks');
-    config.expFragments = consolidateObjects(results, 'fragments');
+    config.mep.experiments ??= [];
+    config.mep.experiments = experiments;
+    config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
+    config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
+    config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+    if (!postLCP) handleCommands(config.mep.commands);
+    deleteMarkedEls();
 
     const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
     if (!pznList.length) return;

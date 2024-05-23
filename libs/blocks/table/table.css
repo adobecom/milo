@@ -357,6 +357,10 @@
   border-top-right-radius: 0;
 }
 
+[dir="rtl"] .table.merch .col-merch .col-merch-content picture {
+  margin-right: 0;
+  margin-left: 16px;
+}
 
 /* hover */
 @media (min-width: 900px) {
@@ -554,6 +558,7 @@ header.global-navigation {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   margin: 20px 30px 0;
+  gap: 30px;
 }
 
 .filter-wrapper {
@@ -566,7 +571,7 @@ header.global-navigation {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
+  max-width: 146px;
   appearance: none;
   position: relative;
   padding-right: 30px;
@@ -590,7 +595,7 @@ header.global-navigation {
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 480px) {
   .table,
   .table.merch {
     margin: 0 2px;
@@ -599,5 +604,6 @@ header.global-navigation {
 
   .table.merch .col-merch .col-merch-content {
     flex-direction: column;
+    align-items: initial;
   }
 }
