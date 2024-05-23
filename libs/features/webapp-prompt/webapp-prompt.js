@@ -243,7 +243,7 @@ class AppPrompt {
     window.location.assign(this.options['redirect-url']);
   }, this.options['loader-duration']);
 
-  isDismissedPrompt = () => false && AppPrompt.getDismissedPrompts().includes(this.id);
+  isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
 
   setDismissedPrompt = () => {
     const dismissedPrompts = new Set(AppPrompt.getDismissedPrompts());
