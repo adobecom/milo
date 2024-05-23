@@ -515,7 +515,7 @@ class Gnav {
     const unavVersion = new URLSearchParams(window.location.search).get('unav');
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion || '1.1'}/UniversalNav.js`),
-      loadStyle(`https://${environment}.adobeccstatic.com/unav/${unavVersion || '1.1'}}/UniversalNav.css`),
+      loadStyle(`https://${environment}.adobeccstatic.com/unav/${unavVersion || '1.1'}/UniversalNav.css`),
     ]);
 
     const getChildren = () => {
