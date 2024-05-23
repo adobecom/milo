@@ -9,6 +9,17 @@
   ],
   "plugins": [
     {
+      "id": "path",
+      "title": "Path",
+      "environments": [ "edit" ],
+      "url": "/tools/where-am-i",
+      "isPalette": true,
+      "passReferrer": true,
+      "passConfig": true,
+      "paletteRect": "top: 50%; left: 50%; transform: translate(-50%,-50%); height: 84px; width: 900px; overflow: hidden; border-radius: 6px",
+      "includePaths": [ "**.docx**", "**.xlsx**" ]
+    },
+    {
       "id": "library",
       "title": "Library",
       "environments": [ "edit" ],
