@@ -1,0 +1,35 @@
+.tooltip {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  word-break: break-word;
+  background-color: rgb(20, 115, 230);
+  user-select: none;
+  min-inline-size: 12rem;
+  max-block-size: 2.5rem;
+  border-radius: .4375rem;
+  transform: translateX(-45%);
+  margin-top: 0.5rem;
+}
+
+.tooltip-body {
+  padding: 0.25rem;
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0.5rem;
+  color: white;
+  font-family: 'Adobe Clean';
+  font-size:0.8rem;
+}
+
+.tooltip-tip {
+  position: absolute;
+  background-color: rgb(20, 115, 230);
+  inset-block-end: 72%;
+  left: 50%;
+  transform: translateX(-50%);
+  clip-path: polygon(50% -6%, -3% 53%, 142% 100%);
+  block-size: 1rem;
+  inline-size: 1rem;
+}
+
+

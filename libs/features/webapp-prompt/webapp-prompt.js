@@ -35,9 +35,21 @@ const getIcon = (content) => {
   return icons.company;
 };
 
-const showTooltip = (message, time) => {
-  console.log(message);
-  console.log(time);
+const showTooltip = (element, message, time) => {
+  const tooltip = document.createElement('span');
+  tooltip.classList.add('tooltip');
+  const tooltipBody = document.createElement('span');
+  tooltipBody.classList.add('tooltip-body');
+  const tooltipTip = document.createElement('span');
+  tooltipTip.classList.add('tooltip-tip');
+  tooltipBody.textContent = message;
+
+  tooltip.replaceChildren(tooltipTip, tooltipBody);
+  element.appendChild(tooltip);
+
+  setTimeout(() => {
+    tooltip.remove();
+  }, time);
 };
 
 const playFocusAnimation = (element, iterationCount = 2, animationDuration = 2500) => {
@@ -99,6 +111,7 @@ class AppPrompt {
     // load animation css
     const { base } = getConfig();
     await loadStyle(`${base}/features/webapp-prompt/focus-animation.css`);
+    await loadStyle(`${base}/features/webapp-prompt/tooltip.css`);
 
     if (this.anchorId) this.anchor = document.querySelector(`#${this.anchorId}`);
     this.offset = this.anchor
@@ -230,7 +243,7 @@ class AppPrompt {
     window.location.assign(this.options['redirect-url']);
   }, this.options['loader-duration']);
 
-  isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
+  isDismissedPrompt = () => false && AppPrompt.getDismissedPrompts().includes(this.id);
 
   setDismissedPrompt = () => {
     const dismissedPrompts = new Set(AppPrompt.getDismissedPrompts());
@@ -247,9 +260,10 @@ class AppPrompt {
     this.anchor?.focus();
     this.anchor?.removeEventListener('click', this.close);
 
-    window.testAnimation = (n, t = 3000) => playFocusAnimation(document.querySelector('#unav-app-switcher'), n, t);
-    playFocusAnimation(document.querySelector('#unav-app-switcher'), 2,2500);
-    showTooltip('', 0);
+    const appSwitcher = document.querySelector('#unav-app-switcher');
+    window.testAnimation = (n, t = 3000) => playFocusAnimation(appSwitcher, n, t);
+    playFocusAnimation(appSwitcher, 2, 2500);
+    showTooltip(appSwitcher, 'Use the App Switcher to quickly find apps.', 5000);
   };
 
   static getDismissedPrompts = () => {
