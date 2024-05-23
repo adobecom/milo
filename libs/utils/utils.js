@@ -614,10 +614,7 @@ export function decorateLinks(el) {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (window.location.hostname.includes('.stage.adobe.com')
-    && a.hostname.includes('.adobe.com')
-    && !a.hostname.includes('.stage.adobe.com')
-    ) {
+    if (window.location.hostname.includes('.stage.adobe.com') && !a.hostname.includes('.stage.adobe.com')) {
       a.href = a.href.replace('.adobe.com', '.stage.adobe.com');
     }
     if (a.href.includes('#_blank')) {
