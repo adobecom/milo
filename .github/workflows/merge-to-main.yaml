@@ -9,13 +9,14 @@ on:
 
 env:
   MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
-  REQUIRED_APPROVALS: ${{ secrets.REQUIRED_APPROVALS }}
 
 jobs:
   merge-to-main:
     runs-on: ubuntu-latest
     environment: milo_pr_merge
-    if: (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage') || github.event_name != 'pull_request'
+    # Run this when manually triggered or on a schedule
+    # Otherwise run this only on PRs that are merged from stage to main
+    if: github.repository_owner == 'adobecom' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage'))
 
     steps:
       - uses: actions/create-github-app-token@v1.10.0

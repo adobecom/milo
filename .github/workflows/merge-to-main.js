@@ -39,18 +39,25 @@ const main = async (params) => {
   try {
     const stageToMainPR = await getStageToMainPR();
     const signOffs = stageToMainPR?.labels.filter((l) => l.includes('SOT'));
-    console.log(`Currently ${signOffs.length} sign offs on the PR`);
+    console.log(`${signOffs.length} SOT labels on PR ${stageToMainPR.number}`);
     if (signOffs.length >= 4) {
-      console.log('Stage to Main PR has all required labels. Merging...');
+      console.log('Stage to Main  PR has all required labels. Merging...');
       await github.rest.pulls.merge({
         owner,
         repo,
         pull_number: stageToMainPR.number,
         merge_method: 'merge',
       });
+
       await slackNotification(
         `:rocket: Production release <${stageToMainPR.html_url}|${stageToMainPR.number}>`
       );
+
+      await github.rest.repos.createDispatchEvent({
+        owner,
+        repo,
+        event_type: 'merge-to-stage',
+      });
     }
 
     console.log('Process successfully executed.');

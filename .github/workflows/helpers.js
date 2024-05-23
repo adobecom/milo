@@ -3,7 +3,7 @@
 const owner = process.env.REPO_OWNER || ''; // example owner: adobecom
 const repo = process.env.REPO_NAME || ''; // example repo name: milo
 const auth = process.env.GH_TOKEN || ''; // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
-
+const CURRENT_YEAR = 2024;
 const RCPDates = [
   {
     start: new Date('2024-05-26T00:00:00-07:00'),
@@ -45,9 +45,8 @@ const RCPDates = [
 
 const isWithinRCP = () => {
   const now = new Date();
-  let currentYear = 2024;
-  if (now.getFullYear() !== currentYear) {
-    console.log(`ADD NEW RCPs for ${currentYear + 1}`);
+  if (now.getFullYear() !== CURRENT_YEAR) {
+    console.log(`ADD NEW RCPs for ${CURRENT_YEAR + 1}`);
     return true;
   }
 
@@ -69,7 +68,12 @@ Then run: node --env-file=.env .github/workflows/update-ims.js`);
 
   const { Octokit } = require('@octokit/rest');
   return {
-    github: { rest: new Octokit({ auth }) },
+    github: {
+      rest: new Octokit({ auth }),
+      repos: {
+        createDispatchEvent: () => console.log('local mock createDispatch'),
+      },
+    },
     context: {
       repo: {
         owner,
