@@ -191,6 +191,7 @@ const defaultOptions = {
     northstar: 'Northstar',
     workfront: 'Workfront',
     'bacom-blog': 'Bacom Blog',
+    news: 'Newsroom',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
   titleHeadingLevel: {
