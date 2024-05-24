@@ -95,3 +95,33 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // Color code publish button
   stylePublish(sk);
 }
+
+function onSidekickAvailable(callback) {
+  // sidekick nextGen
+  const observer = new MutationObserver(() => {
+    const sidekick = document.querySelector('aem-sidekick');
+    if (sidekick) {
+      observer.disconnect();
+      callback(sidekick);
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // sidekick v1 ready event
+  document.addEventListener('sidekick-ready', () => {
+    callback(document.querySelector('helix-sidekick'));
+  }, { once: true });
+}
+
+export function connectAemSK(setStatus, notLoaded = null) {
+  const isOpen = document.querySelector('helix-sidekick')
+    || document.querySelector('aem-sidekick');
+  if (isOpen) {
+    isOpen.addEventListener('statusfetched', setStatus);
+  } else {
+    notLoaded?.();
+    onSidekickAvailable((sidekick) => {
+      sidekick?.addEventListener('statusfetched', setStatus);
+    });
+  }
+}

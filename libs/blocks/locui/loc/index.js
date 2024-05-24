@@ -9,11 +9,13 @@ import {
   telemetry,
   allowSyncToLangstore,
   canRefresh,
+  user,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
 import { getServiceUpdates } from '../utils/miloc.js';
+import { connectAemSK } from '../../../utils/sidekick.js';
 
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
@@ -133,7 +135,23 @@ async function loginToSharePoint() {
   await login({ scopes, telemetry });
 }
 
+async function connectSidekick() {
+  return new Promise((resolve) => {
+    const onConnected = ({ detail }) => {
+      if (detail?.data?.profile) {
+        user.value = detail.data.profile;
+        resolve();
+      }
+      setStatus('details', 'info', 'Please sign-in to AEM sidekick.');
+    };
+    connectAemSK(onConnected, () => {
+      setStatus('details', 'info', 'Please open AEM sidekick to continue.');
+    });
+  });
+}
+
 export async function setup() {
+  await connectSidekick();
   await loginToSharePoint();
   await loadHeading();
   await loadDetails();
