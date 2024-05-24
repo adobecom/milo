@@ -10,7 +10,7 @@ body {
   color: var(--hlx-sk-color);
 }
 
-.where-am-i form {
+.path-finder form {
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 90px 50px;
@@ -20,8 +20,8 @@ body {
   box-sizing: border-box;
 }
 
-.where-am-i button,
-.where-am-i input {
+.path-finder button,
+.path-finder input {
   color: #FFF;
   display: block;
   font-family: var(--body-font-family);
@@ -29,7 +29,7 @@ body {
   background: none;
 }
 
-.where-am-i input {
+.path-finder input {
   height: 49px;
   font-size: 18px;
   padding: 4px 12px;
@@ -37,18 +37,18 @@ body {
   outline: none !important;
 }
 
-.where-am-i span {
+.path-finder span {
   height: 49px;
   font-size: 18px;
   padding: 11px 12px 4px;
   display: inline-block;
 }
 
-.where-am-i form.error {
+.path-finder form.error {
   background: rgb(94 11 11);
 }
 
-.where-am-i button {
+.path-finder button {
   display: inline-block;
   font-style: normal;
   cursor: pointer;
@@ -67,7 +67,7 @@ body {
   color: #FFF;
 }
 
-.where-am-i button.new-tab {
+.path-finder button.new-tab {
   border-radius: 0 44px 44px 0;
   margin-right: 6px;
   padding: 14px 0;
@@ -75,7 +75,7 @@ body {
   background: var(--color-accent) url('./img/link-out.svg') center 5px / 18px no-repeat;
 }
 
-.where-am-i button.login {
+.path-finder button.login {
   cursor: pointer;
   background: #FF1593;
   border-radius: 0;
