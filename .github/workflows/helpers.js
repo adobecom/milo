@@ -50,11 +50,9 @@ const isWithinRCP = () => {
     return true;
   }
 
-  for (const { start, end } of RCPDates) {
-    if (start <= now && now <= end) {
-      console.log('Current date is within a RCP. Stopping execution.');
-      return true;
-    }
+  if (RCPDates.some(({ start, end }) => start <= now && now <= end)) {
+    console.log('Current date is within a RCP. Stopping execution.');
+    return true;
   }
 
   return false;
