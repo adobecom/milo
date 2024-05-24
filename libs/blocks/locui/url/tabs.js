@@ -9,7 +9,8 @@ function useSignal(value) {
 function Actions({ item }) {
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
   const isDisabled = (status) => (!status || status !== 200 ? ' disabled' : '');
-  const itemUrl = urls.value.find((url) => url.pathname === item.value.path);
+  const itemUrl = urls.value.find((url) => url.pathname === item.value.path
+  || url.langstore.pathname === item.value.path);
   return html`
     <div class=locui-url-source-actions>
       <button
