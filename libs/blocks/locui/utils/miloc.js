@@ -46,6 +46,7 @@ export async function getProjectStatus() {
     const json = await resp.json();
 
     if (json.errors) {
+      setStatus('service');
       setStatus('service-error', 'error', `${json['error-phase']}`, json.errors);
     } else {
       setStatus('service-error');
@@ -58,7 +59,8 @@ export async function getProjectStatus() {
     if (json.projectStatus === 'sync'
     || json.projectStatus === 'created'
     || json.projectStatus === 'download'
-    || json.projectStatus === 'start-glaas') {
+    || json.projectStatus === 'start-glaas'
+    || json.projectStatus === 'validation') {
       allowSyncToLangstore.value = false;
       allowSendForLoc.value = false;
       allowCancelProject.value = false;

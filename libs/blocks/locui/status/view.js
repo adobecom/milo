@@ -20,7 +20,7 @@ function Toast({ status }) {
       <div class=locui-status-toast-content onClick=${toggleDesc}>
         <span class=locui-status-toast-content-type>${status.type}</span>
         <span class=locui-status-toast-text>${status.text}</span>
-        <div class=locui-status-toast-expand>Expand</div>
+        ${status.description && html`<div class=locui-status-toast-expand>Expand</div>`}
       </div>
       ${status.description && html`
         <p class=locui-status-toast-description>${renderMessage(status.description)}</p>`}
