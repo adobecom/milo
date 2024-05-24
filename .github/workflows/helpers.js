@@ -1,7 +1,7 @@
 // Those env variables are set by an github action automatically
 // For local testing, you should test on your fork.
-const owner = process.env.REPO_OWNER || ''; // example owner: adobecom
-const repo = process.env.REPO_NAME || ''; // example repo name: milo
+const owner = process.env.REPO_OWNER || ''; // example owner: "adobecom"
+const repo = process.env.REPO_NAME || ''; // example repo name: "milo"
 const auth = process.env.GH_TOKEN || ''; // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 
 const getLocalConfigs = () => {
