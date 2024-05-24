@@ -16,7 +16,7 @@ function Actions({ item }) {
       <button
         disabled=${item.value.edit?.status === 404}
         class="locui-url-action locui-url-action-edit${isExcel}${!itemUrl?.valid ? ' disabled' : ''}"
-        onClick=${(e) => { openWord(e, item); }}>Edit</button>
+        onClick=${(e) => { if (itemUrl.valid) openWord(e, item); }}>Edit</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.preview?.status)}"
         onClick=${(e) => { handleAction(e, item, true); }}>Preview</button>
