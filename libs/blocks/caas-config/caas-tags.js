@@ -13150,57 +13150,57 @@ const caasTags = {
                   "description": "",
                   "cq:movedTo": "",
                   "tags": {
-                      "photography": {
-                          "path": "/content/cq:tags/caas/product-categories/photography",
-                          "tagID": "caas:product-categories/photography",
-                          "icon": "",
-                          "name": "photography",
-                          "tagImage": "",
-                          "title": "Photography",
-                          "description": "",
-                          "cq:movedTo": "",
-                          "tags": {
-                                      "photoshop": {
-                                          "path": "/content/cq:tags/caas/product-categories/photography/photoshop",
-                                          "tagID": "caas:product-categories/photography/photoshop",
-                                          "name": "photoshop",
-                                          "tagImage": "",
-                                          "title": "Photoshop",
-                                          "description": "",
-                                          "cq:movedTo": "",
-                                          "tags": {}
-                                      },
-                                      "photoshop-express": {
-                                          "path": "/content/cq:tags/caas/product-categories/photography/photoshop-express",
-                                          "tagID": "caas:product-categories/photography/photoshop-express",
-                                          "name": "photoshop-express",
-                                          "tagImage": "",
-                                          "title": "Photoshop Express",
-                                          "description": "",
-                                          "cq:movedTo": "",
-                                          "tags": {}
-                                      },
-                                      "photoshop-camera": {
-                                          "path": "/content/cq:tags/caas/product-categories/photography/photoshop-camera",
-                                          "tagID": "caas:product-categories/photography/photoshop-camera",
-                                          "name": "photoshop-camera",
-                                          "tagImage": "",
-                                          "title": "Photoshop Camera",
-                                          "description": "",
-                                          "cq:movedTo": "",
-                                          "tags": {}
-                                      },
-                                      "lightroom": {
-                                          "path": "/content/cq:tags/caas/product-categories/photography/lightroom",
-                                          "tagID": "caas:product-categories/photography/lightroom",
-                                          "name": "lightroom",
-                                          "tagImage": "",
-                                          "title": "Lightroom",
-                                          "description": "",
-                                          "cq:movedTo": "",
-                                          "tags": {}
-                                      }
-                                  }
+                      "photo": {
+                            "path": "/content/cq:tags/caas/product-categories/photo",
+                            "tagID": "caas:product-categories/photo",
+                            "icon": "",
+                            "name": "photo",
+                            "tagImage": "",
+                            "title": "Photo",
+                            "description": "",
+                            "cq:movedTo": "",
+                            "tags": {
+                                "photoshop": {
+                                    "path": "/content/cq:tags/caas/product-categories/photophotoshop",
+                                    "tagID": "caas:product-categories/photo/photoshop",
+                                    "name": "photoshop",
+                                    "tagImage": "",
+                                    "title": "Photoshop",
+                                    "description": "",
+                                    "cq:movedTo": "",
+                                    "tags": {}
+                                },
+                                "photoshop-express": {
+                                    "path": "/content/cq:tags/caas/product-categories/photophotoshop-express",
+                                    "tagID": "caas:product-categories/photo/photoshop-express",
+                                    "name": "photoshop-express",
+                                    "tagImage": "",
+                                    "title": "Photoshop Express",
+                                    "description": "",
+                                    "cq:movedTo": "",
+                                    "tags": {}
+                                },
+                                "photoshop-camera": {
+                                    "path": "/content/cq:tags/caas/product-categories/photophotoshop-camera",
+                                    "tagID": "caas:product-categories/photo/photoshop-camera",
+                                    "name": "photoshop-camera",
+                                    "tagImage": "",
+                                    "title": "Photoshop Camera",
+                                    "description": "",
+                                    "cq:movedTo": "",
+                                    "tags": {}
+                                },
+                                "lightroom": {
+                                    "path": "/content/cq:tags/caas/product-categories/photolightroom",
+                                    "tagID": "caas:product-categories/photo/lightroom",
+                                    "name": "lightroom",
+                                    "tagImage": "",
+                                    "title": "Lightroom",
+                                    "description": "",
+                                    "cq:movedTo": "",
+                                    "tags": {}
+                                }
+                            }
                       },
                       "graphic-design": {
                           "path": "/content/cq:tags/caas/product-categories/graphic-design",
@@ -13371,8 +13371,8 @@ const caasTags = {
                           "cq:movedTo": "",
                           "tags": {
                                       "3d-modeler": {
-                                          "path": "/content/cq:tags/caas/product-categories/3d-&-ar/3d-modeler",
-                                          "tagID": "caas:product-categories/3d-&-ar/3d-modeler",
+                                          "path": "/content/cq:tags/caas/product-categories/3d-and-ar/3d-modeler",
+                                          "tagID": "caas:product-categories/3d-and-ar/3d-modeler",
                                           "name": "3d-modeler",
                                           "tagImage": "",
                                           "title": "3D Modeler",
@@ -13381,8 +13381,8 @@ const caasTags = {
                                           "tags": {}
                                       },
                                       "3d-painter": {
-                                          "path": "/content/cq:tags/caas/product-categories/3d-&-ar/3d-painter",
-                                          "tagID": "caas:product-categories/3d-&-ar/3d-painter",
+                                          "path": "/content/cq:tags/caas/product-categories/3d-and-ar/3d-painter",
+                                          "tagID": "caas:product-categories/3d-and-ar/3d-painter",
                                           "name": "3d-painter",
                                           "tagImage": "",
                                           "title": "3D Painter",
@@ -13391,8 +13391,8 @@ const caasTags = {
                                           "tags": {}
                                       },
                                       "3d-designer": {
-                                          "path": "/content/cq:tags/caas/product-categories/3d-&-ar/3d-designer",
-                                          "tagID": "caas:product-categories/3d-&-ar/3d-designer",
+                                          "path": "/content/cq:tags/caas/product-categories/3d-and-ar/3d-designer",
+                                          "tagID": "caas:product-categories/3d-and-ar/3d-designer",
                                           "name": "3d-designer",
                                           "tagImage": "",
                                           "title": "3D Designer",
@@ -13414,7 +13414,7 @@ const caasTags = {
                           "tags": {
                               "adobe-express": {
                                   "path": "/content/cq:tags/caas/product-categories/social/adobe-express",
-                                  "tagID": "caas:product-categories/social/adobe-express",
+                                  "tagID": "caas:product-categories/social-media/adobe-express",
                                   "name": "adobe-express",
                                   "tagImage": "",
                                   "title": "Adobe Express",
@@ -13424,7 +13424,7 @@ const caasTags = {
                               },
                               "photoshop-express": {
                                   "path": "/content/cq:tags/caas/product-categories/social/photoshop-express",
-                                  "tagID": "caas:product-categories/social/photoshop-express",
+                                  "tagID": "caas:product-categories/social-media/photoshop-express",
                                   "name": "photoshop-express",
                                   "tagImage": "",
                                   "title": "Photoshop Express",
@@ -13440,7 +13440,7 @@ const caasTags = {
                           "icon": "",
                           "name": "genai",
                           "tagImage": "",
-                          "title": "GenAI",
+                          "title": "Gen AI",
                           "description": "",
                           "cq:movedTo": "",
                           "tags": {
@@ -13449,7 +13449,7 @@ const caasTags = {
                                   "tagID": "caas:product-categories/genai/genstudio",
                                   "name": "genstudio",
                                   "tagImage": "",
-                                  "title": "GenStudio",
+                                  "title": "Gen Studio",
                                   "description": "",
                                   "cq:movedTo": "",
                                   "tags": {}

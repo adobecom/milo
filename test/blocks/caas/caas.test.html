@@ -95,7 +95,6 @@
           await init(a);
           await waitForElement('#caas');
           await delay(5);
-          console.log('>>>>>>>>>>>>>>>>>>>> caasEl', caasEl);
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));

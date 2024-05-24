@@ -166,8 +166,7 @@ describe('getConfig', () => {
         cardHoverEffect: 'default',
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
-        endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&debug=true&flatFile=false',
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
@@ -212,31 +211,119 @@ describe('getConfig', () => {
           },
           {
             group: "photo",
+            label: "Photo",
             icon: "",
             id: "caas:product-categories/photo",
-            items: [],
-            label: "Photo",
+            items: [
+              {
+                group: "Photoshop",
+                id: "caas:product-categories/photo/photoshop",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Express",
+                id: "caas:product-categories/photo/photoshop-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Camera",
+                id: "caas:product-categories/photo/photoshop-camera",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Lightroom",
+                id: "caas:product-categories/photo/lightroom",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "graphic-design",
+            label: "Graphic Design",
             id: "caas:product-categories/graphic-design",
             icon: "",
-            items: [],
-            label: "Graphic Design",
+            items: [
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/graphic-design/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Illustrator",
+                id: "caas:product-categories/graphic-design/illustrator",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "video",
+            label: "Video",
             id: "caas:product-categories/video",
             icon: "",
-            items: [],
-            label: "Video",
+            items: [
+              {
+                group: "After Effects",
+                id: "caas:product-categories/video/after-effects",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Premier Pro",
+                id: "caas:product-categories/video/premier-pro",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/video/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Lightroom",
+                id: "caas:product-categories/video/lightroom",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "illustration",
+            label: "Illustration",
             id: "caas:product-categories/illustration",
             icon: "",
-            items: [],
-            label: "Illustration",
+            items: [
+              {
+                group: "Illustrator",
+                id: "caas:product-categories/illustration/illustrator",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "InDesign",
+                id: "caas:product-categories/illustration/indesign",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/illustration/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Fresco",
+                id: "caas:product-categories/illustration/fresco",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "ui-and-ux",
@@ -254,17 +341,75 @@ describe('getConfig', () => {
           },
           {
             group: "3d-and-ar",
+            label: "3D and AR",
             id: "caas:product-categories/3d-and-ar",
             icon: "",
-            items: [],
-            label: "3D and AR",
+            items: [
+              {
+                group: "3D Modeler",
+                id: "caas:product-categories/3d-and-ar/3d-modeler",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "3D Painter",
+                id: "caas:product-categories/3d-and-ar/3d-painter",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "3D Designer",
+                id: "caas:product-categories/3d-and-ar/3d-designer",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "social-media",
+            label: "Social Media",
             id: "caas:product-categories/social-media",
             icon: "",
-            items: [],
-            label: "Social Media",
+            items: [
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/social-media/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Express",
+                id: "caas:product-categories/social-media/photoshop-express",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
+          },
+          {
+            group: "genai",
+            label: "Gen AI",
+            id: "caas:product-categories/genai",
+            icon: "",
+            items: [
+              {
+                group: "Gen Studio",
+                id: "caas:product-categories/genai/genstudio",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Firefly",
+                id: "caas:product-categories/genai/firefly",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "AI Assistant",
+                id: "caas:product-categories/genai/ai-assistant",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
         ],
         enabled: true,
@@ -427,8 +572,7 @@ describe('getConfig', () => {
         cardHoverEffect: 'default',
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
-        endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&debug=true&flatFile=false',
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
@@ -473,31 +617,119 @@ describe('getConfig', () => {
           },
           {
             group: "photo",
+            label: "Photo",
             icon: "",
             id: "caas:product-categories/photo",
-            items: [],
-            label: "Photo",
+            items: [
+              {
+                group: "Photoshop",
+                id: "caas:product-categories/photo/photoshop",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Express",
+                id: "caas:product-categories/photo/photoshop-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Camera",
+                id: "caas:product-categories/photo/photoshop-camera",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Lightroom",
+                id: "caas:product-categories/photo/lightroom",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "graphic-design",
+            label: "Graphic Design",
             id: "caas:product-categories/graphic-design",
             icon: "",
-            items: [],
-            label: "Graphic Design",
+            items: [
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/graphic-design/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Illustrator",
+                id: "caas:product-categories/graphic-design/illustrator",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "video",
+            label: "Video",
             id: "caas:product-categories/video",
             icon: "",
-            items: [],
-            label: "Video",
+            items: [
+              {
+                group: "After Effects",
+                id: "caas:product-categories/video/after-effects",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Premier Pro",
+                id: "caas:product-categories/video/premier-pro",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/video/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Lightroom",
+                id: "caas:product-categories/video/lightroom",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "illustration",
+            label: "Illustration",
             id: "caas:product-categories/illustration",
             icon: "",
-            items: [],
-            label: "Illustration",
+            items: [
+              {
+                group: "Illustrator",
+                id: "caas:product-categories/illustration/illustrator",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "InDesign",
+                id: "caas:product-categories/illustration/indesign",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/illustration/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Fresco",
+                id: "caas:product-categories/illustration/fresco",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "ui-and-ux",
@@ -515,17 +747,75 @@ describe('getConfig', () => {
           },
           {
             group: "3d-and-ar",
+            label: "3D and AR",
             id: "caas:product-categories/3d-and-ar",
             icon: "",
-            items: [],
-            label: "3D and AR",
+            items: [
+              {
+                group: "3D Modeler",
+                id: "caas:product-categories/3d-and-ar/3d-modeler",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "3D Painter",
+                id: "caas:product-categories/3d-and-ar/3d-painter",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "3D Designer",
+                id: "caas:product-categories/3d-and-ar/3d-designer",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "social-media",
+            label: "Social Media",
             id: "caas:product-categories/social-media",
             icon: "",
-            items: [],
-            label: "Social Media",
+            items: [
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/social-media/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Express",
+                id: "caas:product-categories/social-media/photoshop-express",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
+          },
+          {
+            group: "genai",
+            label: "Gen AI",
+            id: "caas:product-categories/genai",
+            icon: "",
+            items: [
+              {
+                group: "Gen Studio",
+                id: "caas:product-categories/genai/genstudio",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Firefly",
+                id: "caas:product-categories/genai/firefly",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "AI Assistant",
+                id: "caas:product-categories/genai/ai-assistant",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
         ],
         enabled: true,
@@ -749,8 +1039,7 @@ describe('getFloodgateCaasConfig', () => {
         cardHoverEffect: 'default',
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
-        endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&debug=true&flatFile=false',
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
@@ -795,31 +1084,119 @@ describe('getFloodgateCaasConfig', () => {
           },
           {
             group: "photo",
+            label: "Photo",
             icon: "",
             id: "caas:product-categories/photo",
-            items: [],
-            label: "Photo",
+            items: [
+              {
+                group: "Photoshop",
+                id: "caas:product-categories/photo/photoshop",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Express",
+                id: "caas:product-categories/photo/photoshop-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Camera",
+                id: "caas:product-categories/photo/photoshop-camera",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Lightroom",
+                id: "caas:product-categories/photo/lightroom",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "graphic-design",
+            label: "Graphic Design",
             id: "caas:product-categories/graphic-design",
             icon: "",
-            items: [],
-            label: "Graphic Design",
+            items: [
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/graphic-design/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Illustrator",
+                id: "caas:product-categories/graphic-design/illustrator",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "video",
+            label: "Video",
             id: "caas:product-categories/video",
             icon: "",
-            items: [],
-            label: "Video",
+            items: [
+              {
+                group: "After Effects",
+                id: "caas:product-categories/video/after-effects",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Premier Pro",
+                id: "caas:product-categories/video/premier-pro",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/video/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Lightroom",
+                id: "caas:product-categories/video/lightroom",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "illustration",
+            label: "Illustration",
             id: "caas:product-categories/illustration",
             icon: "",
-            items: [],
-            label: "Illustration",
+            items: [
+              {
+                group: "Illustrator",
+                id: "caas:product-categories/illustration/illustrator",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "InDesign",
+                id: "caas:product-categories/illustration/indesign",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/illustration/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Fresco",
+                id: "caas:product-categories/illustration/fresco",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "ui-and-ux",
@@ -837,17 +1214,75 @@ describe('getFloodgateCaasConfig', () => {
           },
           {
             group: "3d-and-ar",
+            label: "3D and AR",
             id: "caas:product-categories/3d-and-ar",
             icon: "",
-            items: [],
-            label: "3D and AR",
+            items: [
+              {
+                group: "3D Modeler",
+                id: "caas:product-categories/3d-and-ar/3d-modeler",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "3D Painter",
+                id: "caas:product-categories/3d-and-ar/3d-painter",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "3D Designer",
+                id: "caas:product-categories/3d-and-ar/3d-designer",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
           {
             group: "social-media",
+            label: "Social Media",
             id: "caas:product-categories/social-media",
             icon: "",
-            items: [],
-            label: "Social Media",
+            items: [
+              {
+                group: "Adobe Express",
+                id: "caas:product-categories/social-media/adobe-express",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Photoshop Express",
+                id: "caas:product-categories/social-media/photoshop-express",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
+          },
+          {
+            group: "genai",
+            label: "Gen AI",
+            id: "caas:product-categories/genai",
+            icon: "",
+            items: [
+              {
+                group: "Gen Studio",
+                id: "caas:product-categories/genai/genstudio",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "Firefly",
+                id: "caas:product-categories/genai/firefly",
+                items: [],
+                openedOnLoad: false
+              },
+              {
+                group: "AI Assistant",
+                id: "caas:product-categories/genai/ai-assistant",
+                items: [],
+                openedOnLoad: false
+              }
+            ],
           },
         ],
         enabled: true,

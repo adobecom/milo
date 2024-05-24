@@ -404,7 +404,8 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
 const getCategoryArray = async (state, country, lang) => {
   // Fetch tags
   const { tags } = await getTags(state.tagsUrl);
-  console.log('TAGS:', tags);   // TODO: remove before takeoff
+  // console.log('STATE:', state);   // TODO: remove before takeoff
+  // console.log('TAGS:', tags);   // TODO: remove before takeoff
 
   // Parse categories list from tags
   const categories = Object.values(tags)
@@ -423,7 +424,7 @@ const getCategoryArray = async (state, country, lang) => {
         .filter((tag) => tag !== null),  
     }));
 
-  console.log('CATEGORIES:', categoryItems);   // TODO: remove before takeoff
+  // console.log('CATEGORIES:', categoryItems);   // TODO: remove before takeoff
   return [{ group: 'All Topics',  label: 'All Topics', id: '', items: [] }, ...categoryItems];
 };
 
@@ -557,7 +558,7 @@ export const getConfig = async (originalState, strs = {}) => {
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const localesQueryParam = locales ? `&locales=${locales}` : '';
-  const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '&debug=true';
+  const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
@@ -742,7 +743,7 @@ export const getConfig = async (originalState, strs = {}) => {
     headers: caasRequestHeaders,
   };
 
-  console.log('CAAS_CONFIG', config);  // TODO: remove before takeoff
+  // console.log('CAAS_CONFIG', config);  // TODO: remove before takeoff
   return config;
 };
 
