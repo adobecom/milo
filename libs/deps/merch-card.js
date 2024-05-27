@@ -1,4 +1,4 @@
-// branch: catalog-regressions-4 commit: ec62c90a6fad576aa706da940985e374f1f1b51d Mon, 27 May 2024 08:17:41 GMT
+// branch: catalog-regressions-4 commit: 6bf3062bc07fa4f4a3391312cf2e061c64722785 Mon, 27 May 2024 14:46:44 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as $,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?$`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:$` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -941,7 +941,7 @@ div[slot="footer"] a.con-button {
     width: max-content;
 }
 
-div[slot="footer"] a:not([class]) {
+[slot="footer"] a:not([class]) {
     font-weight: 700;
     font-size: var(--consonant-merch-card-cta-font-size);
 }
@@ -1311,22 +1311,22 @@ div[slot='bg-image'] img {
 /* desktop */
 @media screen and ${c} {
     .one-merch-card.mini-compare-chart {
-        grid-template-columns: repeat(1, minmax(378px, var(--consonant-merch-card-mini-compare-chart-width)));
+        grid-template-columns: repeat(1, minmax(300px, var(--consonant-merch-card-mini-compare-chart-width)));
     }
 
     .two-merch-cards.mini-compare-chart {
-        grid-template-columns: repeat(2, minmax(378px, var(--consonant-merch-card-mini-compare-chart-width)));
+        grid-template-columns: repeat(2, minmax(300px, var(--consonant-merch-card-mini-compare-chart-width)));
     }
 
     .three-merch-cards.mini-compare-chart,
     .four-merch-cards.mini-compare-chart {
-        grid-template-columns: repeat(3, minmax(378px, var(--consonant-merch-card-mini-compare-chart-width)));
+        grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-mini-compare-chart-width)));
     }
 }
 
 @media screen and ${h} {
     .four-merch-cards.mini-compare-chart {
-        grid-template-columns: repeat(4, minmax(378px, var(--consonant-merch-card-mini-compare-chart-width)));
+        grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-mini-compare-chart-width)));
     }
 }
 
