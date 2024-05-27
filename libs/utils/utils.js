@@ -134,7 +134,7 @@ ENVS.local = {
   name: 'local',
 };
 const STAGE_DOMAINS_MAP = {
-  'adobe.com': 'stage.adobe.com',
+  'www.adobe.com': 'www.stage.adobe.com',
   'blog.adobe.com': 'blog.stage.adobe.com',
   'business.adobe.com': 'business.stage.adobe.com',
   'helpx.adobe.com': 'helpx.stage.adobe.com',
