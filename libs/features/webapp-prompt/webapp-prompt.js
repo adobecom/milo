@@ -36,34 +36,24 @@ const getIcon = (content) => {
 };
 
 const showTooltip = (element, message, time) => {
-  const tooltip = document.createElement('span');
-  tooltip.classList.add('tooltip');
-  const tooltipBody = document.createElement('span');
-  tooltipBody.classList.add('tooltip-body');
-  const tooltipTip = document.createElement('span');
-  tooltipTip.classList.add('tooltip-tip');
-  tooltipBody.textContent = message;
-
-  tooltip.replaceChildren(tooltipTip, tooltipBody);
-  element.appendChild(tooltip);
-
+  element.setAttribute('data-pep-dismissal-tooltip', message);
   setTimeout(() => {
-    tooltip.remove();
+    element.removeAttribute('data-pep-dismissal-tooltip');
   }, time);
 };
 
 const playFocusAnimation = (element, iterationCount = 2, animationDuration = 2500) => {
+  document.documentElement.style.setProperty('--animation-duration', `${animationDuration}ms`);
   const rings = [];
   for (let i = 0; i < 3; i += 1) {
     const ring = document.createElement('div');
     ring.classList.add('coach-indicator-ring');
     element.insertAdjacentElement('afterbegin', ring);
-    document.documentElement.style.setProperty('--animation-duration', `${animationDuration}ms`);
     ring.style.animationIterationCount = `${iterationCount}`;
     rings.push(ring);
   }
   // The cleanup function is added to the event queue
-  // half a second after the end of the animation because
+  // some time after the end of the animation because
   // the cleanup isn't high priority but it should be done
   // eventually. (Animation truly ends slightly after
   // animationDuration * iterationCount due to animation-delay)

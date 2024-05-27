@@ -1,35 +1,39 @@
-.tooltip {
-  position: relative;
-  display: inline-flex;
-  flex-direction: row;
-  word-break: break-word;
-  background-color: rgb(20, 115, 230);
-  user-select: none;
-  min-inline-size: 12rem;
-  max-block-size: 2.5rem;
-  border-radius: .4375rem;
-  transform: translateX(-45%);
-  margin-top: 0.5rem;
-}
-
-.tooltip-body {
-  padding: 0.25rem;
-  margin-inline-start: 0.5rem;
-  margin-inline-end: 0.5rem;
-  color: white;
-  font-family: 'Adobe Clean';
-  font-size:0.8rem;
-}
-
-.tooltip-tip {
+[data-pep-dismissal-tooltip]::after {
+  content: attr(data-pep-dismissal-tooltip);
   position: absolute;
+  display: inline-flex;
+  z-index: 201;
   background-color: rgb(20, 115, 230);
-  inset-block-end: 72%;
-  left: 50%;
-  transform: translateX(-50%);
-  clip-path: polygon(50% -6%, -3% 53%, 142% 100%);
-  block-size: 1rem;
-  inline-size: 1rem;
+  height: fit-content;
+  width: 5rem;
+  top: 125%; 
+  left: -100%;
+  word-break: break-word;
+  border-radius: 0.4375rem;
+  padding: 0.1875rem 0.5625rem 0.3125rem 0.5625rem;
+  
+  transition: opacity 0.5s;
+
+  font-family: 'Adobe Clean';
+  font-size: 0.8rem;
+  color: white;
+  pointer-events: none;
 }
 
+[data-pep-dismissal-tooltip]::before { 
+  content: '';
+  position: absolute;
+  z-index: 200;
+  background-color: rgb(20, 115, 230);
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 0.1rem;
+  left: 33%;
+  top: 110%;
+  pointer-events: none;
+  
+  transform: rotate(45deg);
+
+  transition: opacity 0.5s;
+}
 
