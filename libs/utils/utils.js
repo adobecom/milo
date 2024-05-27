@@ -133,6 +133,13 @@ ENVS.local = {
   ...ENVS.stage,
   name: 'local',
 };
+const STAGE_DOMAINS_MAP = {
+  'adobe.com': 'stage.adobe.com',
+  'blog.adobe.com': 'blog.stage.adobe.com',
+  'business.adobe.com': 'business.stage.adobe.com',
+  'helpx.adobe.com': 'helpx.stage.adobe.com',
+  'news.adobe.com': 'news.stage.adobe.com',
+};
 
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
@@ -215,6 +222,9 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
+      config.stageDomainsMap = conf.stageDomainsMap
+        ? { ...STAGE_DOMAINS_MAP, ...conf.stageDomainsMap }
+        : STAGE_DOMAINS_MAP;
       config.doNotInline = conf.doNotInline
         ? [...DO_NOT_INLINE, ...conf.doNotInline]
         : DO_NOT_INLINE;
@@ -608,14 +618,15 @@ export function decorateAutoBlock(a) {
 }
 
 export function decorateLinks(el) {
+  const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (window.location.hostname.includes('.stage.adobe.com') && !a.hostname.includes('.stage.adobe.com')) {
-      a.href = a.href.replace('.adobe.com', '.stage.adobe.com');
+    if (config.env.name === 'stage' && config.stageDomainsMap[a.hostname]) {
+      a.href = a.href.replace(a.hostname, config.stageDomainsMap[a.hostname]);
     }
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
