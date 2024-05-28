@@ -416,10 +416,21 @@ describe('Utils', () => {
     });
 
     it('should convert prod links to stage links on stage env', async () => {
-      const links = document.body.querySelectorAll('a[href*="www.adobe.com"]');
-      utils.setConfig({ ...config, env: { name: 'stage' }, stageDomainsMap: { 'www.adobe.com': 'www.stage.adobe.com' } });
+      const stageDomainsMap = {
+        'www.adobe.com': 'www.stage.adobe.com',
+        'blog.adobe.com': 'blog.stage.adobe.com',
+        'business.adobe.com': 'business.stage.adobe.com',
+        'helpx.adobe.com': 'helpx.stage.adobe.com',
+        'news.adobe.com': 'news.stage.adobe.com',
+      };
+      utils.setConfig({
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+      });
+      const links = Object.keys(stageDomainsMap).map((prodDom) => document.body.appendChild(createTag('a', { href: `https://${prodDom}`, 'data-prod-dom': prodDom })));
       await utils.decorateLinks(document.body);
-      for (const link of links) expect(link.hostname === 'www.stage.adobe.com').to.be.true;
+      links.forEach((l) => expect(l.hostname === stageDomainsMap[l.dataset.prodDom]).to.be.true);
     });
   });
 
