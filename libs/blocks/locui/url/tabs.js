@@ -19,10 +19,10 @@ function Actions({ item }) {
         onClick=${(e) => { if (itemUrl.valid) openWord(e, item); }}>Edit</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.preview?.status)}"
-        onClick=${(e) => { handleAction(e, item, true); }}>Preview</button>
+        onClick=${(e) => { if (itemUrl.valid) handleAction(e, item, true); }}>Preview</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.live?.status)}"
-        onClick=${(e) => { handleAction(e, item); }}>Live</button>
+        onClick=${(e) => { if (itemUrl.valid) handleAction(e, item); }}>Live</button>
     </div>
   `;
 }

@@ -107,6 +107,7 @@ span.locui-sync-badge-mono {
   background-color: #0f7c41;
   height: 26px;
   border-radius: 2px;
+  cursor: pointer;
 }
 
 .locui-status-toast-section {
