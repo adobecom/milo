@@ -19,6 +19,8 @@ import {
 // Production Domain
 const prodDomains = ['milo.adobe.com'];
 
+const stageDomainsMap = { 'www.adobe.com': 'www.stage.adobe.com' };
+
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
   ae_ar: { ietf: 'ar-AE', tk: 'lpk1hwn.css', dir: 'rtl' },
@@ -127,6 +129,7 @@ const config = {
   codeRoot: '/libs',
   locales,
   prodDomains,
+  stageDomainsMap,
   jarvis: {
     id: 'milo',
     version: '1.0',

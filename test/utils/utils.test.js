@@ -414,6 +414,13 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
+
+    it('should convert prod links to stage links on stage env', async () => {
+      const links = document.body.querySelectorAll('a[href*="www.adobe.com"]');
+      utils.setConfig({ ...config, env: { name: 'stage' }, stageDomainsMap: { 'www.adobe.com': 'www.stage.adobe.com' } });
+      await utils.decorateLinks(document.body);
+      for (const link of links) expect(link.hostname === 'www.stage.adobe.com').to.be.true;
+    });
   });
 
   describe('title-append', async () => {
