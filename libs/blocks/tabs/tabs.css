@@ -392,7 +392,7 @@
   border-radius: 100%;
   block-size: 14px;
   min-inline-size: 14px;
-  margin-inline-end: 11px;
+  margin-inline-end: 12px;
   background: var(--tabs-radio-button-bg);
   transition: border 150ms;
   box-sizing: border-box;
@@ -408,7 +408,7 @@
 
 .tabs.radio .tab-list-container::before {
   content: attr(data-pretext);
-  font-weight: 700;
+  font-weight: var(--type-detail-all-weight);
   line-height: var(--type-body-xs-lh);
   margin-block-end: var(--spacing-xs);
 }
@@ -453,6 +453,7 @@
 
   .tabs.radio .tab-list-container::before {
     margin-block-end: 0;
+    margin-inline-end: -8px;
   }
 
   .tabs.radio div[role="tablist"] button {
@@ -464,6 +465,7 @@
   .tabs.radio div[role="tablist"] button:last-of-type {
     padding-block: var(--spacing-xs);
     padding-inline: 0;
+    min-block-size: 56px;
   }
 }
 
