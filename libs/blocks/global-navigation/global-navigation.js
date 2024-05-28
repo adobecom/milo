@@ -512,10 +512,10 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unav');
+    const unavVersion = new URLSearchParams(window.location.search).get('unav') || '1.1';
     await Promise.all([
-      loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion || '1.1'}/UniversalNav.js`),
-      loadStyle(`https://${environment}.adobeccstatic.com/unav/${unavVersion || '1.1'}/UniversalNav.css`),
+      loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
+      loadStyle(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`),
     ]);
 
     const getChildren = () => {
