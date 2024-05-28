@@ -14,7 +14,8 @@ const getSharePointDetails = (() => {
 
   return async () => {
     if (site && driveId && reqOpts) return { site, driveId, reqOpts };
-    console.log('fetching sp details');
+
+    // Fetching SharePoint details
     const { sharepoint } = await getServiceConfig(origin);
     ({ site } = sharepoint);
     driveId = sharepoint.driveId ? `drives/${sharepoint.driveId}` : 'drive';
@@ -62,7 +63,7 @@ function buildUi(el, path) {
 async function setup(el) {
   await login({ scopes: SCOPES, telemetry: TELEMETRY });
   if (!account.value.username) {
-    window.lana.log('Could not login to MS Graph');
+    window.lana.log('Could not login to MS Graph', { tags: 'errorType=info,module=path-finder' });
     return;
   }
   el.innerHTML = '';

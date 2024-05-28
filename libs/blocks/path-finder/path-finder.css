@@ -2,7 +2,8 @@
   /* Colors */
   --hlx-sk-bg: rgb(48 48 48);
   --hlx-sk-color: #FFF;
-  --notch-size: 12px;
+  --hlx-notch-size: 12px;
+  --hlx-path-height: 49px;
 }
 
 body {
@@ -16,7 +17,7 @@ body {
   grid-template-columns: 1fr 90px 50px;
   align-items: center;
   gap: 8px;
-  height: 49px;
+  height: var(--hlx-path-height);
   box-sizing: border-box;
 }
 
@@ -30,7 +31,7 @@ body {
 }
 
 .path-finder input {
-  height: 49px;
+  height: var(--hlx-path-height);
   font-size: 18px;
   padding: 4px 12px;
   border: none;
@@ -38,7 +39,7 @@ body {
 }
 
 .path-finder span {
-  height: 49px;
+  height: var(--hlx-path-height);
   font-size: 18px;
   padding: 11px 12px 4px;
   display: inline-block;
@@ -87,5 +88,5 @@ body {
   font-family: var(--body-font-family);
   padding: 0 18px;
   margin-left: 6px;
-  clip-path: polygon(0% 0%, var(--notch-size) 0%, calc(100% - var(--notch-size)) 0%, 100% var(--notch-size), 100% calc(100% - var(--notch-size)), 100% 100%, 0% 100%, 0% 100%);
+  clip-path: polygon(0% 0%, var(--hlx-notch-size) 0%, calc(100% - var(--hlx-notch-size)) 0%, 100% var(--hlx-notch-size), 100% calc(100% - var(--hlx-notch-size)), 100% 100%, 0% 100%, 0% 100%);
 }
