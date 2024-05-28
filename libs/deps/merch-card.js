@@ -1,4 +1,4 @@
-// branch: catalog-regressions-4 commit: 6bf3062bc07fa4f4a3391312cf2e061c64722785 Mon, 27 May 2024 14:46:44 GMT
+// branch: catalog-regressions-4 commit: feb1991ec3b18cc1cdc03076a45134541b576718 Tue, 28 May 2024 07:10:04 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as $,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?$`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:$` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -933,8 +933,8 @@ merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     }
 }
 
-div[slot="footer"] a:not(:first-of-type) {
-    margin-left: var(--consonant-merch-spacing-xs);
+div[slot="footer"] {
+    display: contents;
 }
 
 div[slot="footer"] a.con-button {

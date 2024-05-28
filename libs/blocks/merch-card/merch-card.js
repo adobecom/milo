@@ -27,6 +27,8 @@ const HEADING_MAP = {
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
+
 const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
 const intersectionObserver = new IntersectionObserver((entries) => {
@@ -87,7 +89,7 @@ const parseContent = async (el, merchCard) => {
     await loadMnemonicList(mnemonicList);
   }
   const innerElements = [
-    ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
+    ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
   ];
   innerElements.forEach((element) => {
     let { tagName } = element;
@@ -282,7 +284,8 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
   merchCard.appendChild(miniCompareOffers);
 };
 
-const init = async (el) => {
+export default async function init(el) {
+  if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return;
   const styles = [...el.classList];
   const cardType = getPodType(styles) || 'product';
   if (!styles.includes(cardType)) {
@@ -420,8 +423,9 @@ const init = async (el) => {
     } else {
       decorateButtons(ctas);
     }
-    ctas.setAttribute('slot', 'footer');
-    merchCard.append(ctas);
+    const footer = createTag('div', { slot: 'footer' });
+    footer.append(ctas);
+    merchCard.appendChild(footer);
   }
 
   if (MULTI_OFFER_CARDS.includes(cardType)) {
@@ -454,6 +458,4 @@ const init = async (el) => {
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
-};
-
-export default init;
+}
