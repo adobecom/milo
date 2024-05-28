@@ -285,7 +285,7 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
 };
 
 export default async function init(el) {
-  if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return;
+  if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
   const cardType = getPodType(styles) || 'product';
   if (!styles.includes(cardType)) {
