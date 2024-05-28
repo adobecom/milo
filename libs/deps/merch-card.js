@@ -1,4 +1,4 @@
-// branch: MWPW-146856 commit: 44ce0c8f9c2ac431aaf78b19272df363b8056c53 Sat, 25 May 2024 00:45:55 GMT
+// branch: MWPW-146856 commit: e258b043435708ccc2129e0ef552e63f96a194af Tue, 28 May 2024 16:36:42 GMT
 import{html as n,LitElement as F}from"/libs/deps/lit-all.min.js";import{LitElement as B,html as $,css as I}from"/libs/deps/lit-all.min.js";var d=class extends B{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?$`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:$` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=I`
@@ -1033,7 +1033,7 @@ div[slot='bg-image'] img {
     :root {
         --consonant-merch-card-catalog-width: 302px;
         --consonant-merch-card-plans-width: 302px;
-        --consonant-merch-card-segment-width: 302px;
+        --consonant-merch-card-segment-width: 276px;
         --consonant-merch-card-mini-compare-chart-width: 302px;
         --consonant-merch-card-special-offers-width: 302px;
         --consonant-merch-card-twp-width: 268px;
