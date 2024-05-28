@@ -615,7 +615,7 @@ export function decorateLinks(el) {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (config.env.name === 'stage' && config.stageDomainsMap?.[a.hostname]) {
+    if (config.env?.name === 'stage' && config.stageDomainsMap?.[a.hostname]) {
       a.href = a.href.replace(a.hostname, config.stageDomainsMap[a.hostname]);
     }
     if (a.href.includes('#_blank')) {
