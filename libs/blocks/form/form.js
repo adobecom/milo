@@ -233,7 +233,7 @@ function lowercaseKeys(obj) {
   }, {});
 }
 
-async function createForm({ formURL, thankYou, formData, endpoint }) {
+async function createForm({ formURL, thankYou, formData, endpoint } = {}) {
   const { pathname } = new URL(formURL);
   let json = formData;
   /* c8 ignore next 4 */
