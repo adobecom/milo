@@ -1,4 +1,4 @@
-// branch: catalog-regressions-4 commit: feb1991ec3b18cc1cdc03076a45134541b576718 Tue, 28 May 2024 07:10:04 GMT
+// branch: catalog-regressions-4 commit: feb1991ec3b18cc1cdc03076a45134541b576718 Tue, 28 May 2024 08:45:41 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as $,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?$`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:$` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -1377,6 +1377,11 @@ merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-p
     top: 20px;
 }
 
+body.merch-modal {
+    overflow: clip;
+    scrollbar-gutter: stable;
+    height: 100vh;
+}
 `;document.head.appendChild(P);var H="merch-offer-select:ready",D="merch-card:ready";var k="merch-storage:change",C="merch-quantity-selector:change";function I(p){let e=[];function r(t){t.nodeType===Node.TEXT_NODE?e.push(t):t.childNodes.forEach(r)}return r(p),e}var l="MERCH-CARD",g="merch-card",V=32,z="mini-compare-chart",B=p=>`--consonant-merch-card-footer-row-${p}-min-height`,d=class extends j{static properties={name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color"},badgeBackgroundColor:{type:String,attribute:"badge-background-color"},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuContent:{type:String,attribute:"action-menu-content"},customHr:{type:Boolean,attribute:"custom-hr"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:e=>{let[r,t,n]=e.split(",");return{PUF:r,ABM:t,M2M:n}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:e=>Object.fromEntries(e.split(",").map(r=>{let[t,n,o]=r.split(":"),m=Number(n);return[t,{order:isNaN(m)?void 0:m,size:o}]})),toAttribute:e=>Object.entries(e).map(([r,{order:t,size:n}])=>[r,t,n].filter(o=>o!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object}};static styles=[A,...R()];customerSegment;marketSegment;constructor(){super(),this.filters={},this.types="",this.selected=!1}#e;updated(e){e.has("badgeBackgroundColor")&&this.variant!=="twp"&&(this.style.border=`1px solid ${this.badgeBackgroundColor}`),this.updateComplete.then(async()=>{let r=Array.from(this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'));await Promise.all(r.map(t=>t.onceSettled())),this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows()})}get evergreen(){return this.classList.contains("intro-pricing")}get stockCheckbox(){return this.checkboxLabel?a`<label id="stock-checkbox">
                     <input type="checkbox" @change=${this.toggleStockOffer}></input>
                     <span></span>
