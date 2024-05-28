@@ -8,7 +8,7 @@ div[class*="-merch-card"] > div,
    grid-column: 1 / -1;
  }
 
- merch-card .action-area {
+ merch-card .action-area, merch-card div[slot="footer"] > p {
   display: contents;
  }
 

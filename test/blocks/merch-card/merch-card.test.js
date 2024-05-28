@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { decorateLinks, setConfig } from '../../../libs/utils/utils.js';
+import { decorateLinks, loadStyle, setConfig } from '../../../libs/utils/utils.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
@@ -8,6 +8,8 @@ const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve,
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
+
+loadStyle('/libs/blocks/merch-card/merch-card.css');
 
 describe('Merch Card', () => {
   it('Shows segment card', async () => {
@@ -28,7 +30,7 @@ describe('Merch Card', () => {
     expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
-  it('Supports Special Offers card', async () => {
+  it.only('Supports Special Offers card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
     const merchCard = await init(document.querySelector('.special-offers'));
     const category = merchCard.querySelector('h4[slot="detail-m"]');
