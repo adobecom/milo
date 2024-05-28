@@ -417,16 +417,16 @@ export default async function init(el) {
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
 
+  const footer = createTag('div', { slot: 'footer' });
   if (ctas) {
     if (merchCard.variant === 'mini-compare-chart') {
       decorateButtons(ctas, 'button-l');
     } else {
       decorateButtons(ctas);
     }
-    const footer = createTag('div', { slot: 'footer' });
     footer.append(ctas);
-    merchCard.appendChild(footer);
   }
+  merchCard.appendChild(footer);
 
   if (MULTI_OFFER_CARDS.includes(cardType)) {
     if (merchCard.variant === MINI_COMPARE_CHART) {

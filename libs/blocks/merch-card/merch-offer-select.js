@@ -13,10 +13,11 @@ function createDynamicSlots(el, bodySlot) {
     createTag('span', { slot: 'price', is: 'inline-price' }, null, { parent: priceSlot });
     bodySlot.append(priceSlot);
   }
-  const p = createTag('p', { class: 'action-area', slot: 'footer' });
+  const p = createTag('p', { class: 'action-area' });
   createTag('a', { slot: 'secondary-cta', is: 'checkout-link' }, null, { parent: p });
   createTag('a', { slot: 'cta', is: 'checkout-link' }, null, { parent: p });
-  el.append(p);
+  const footer = el.querySelector('div[slot="footer"]');
+  footer.append(p);
   bodySlot.querySelector('p')?.setAttribute('slot', 'description');
   if (el.variant === MINI_COMPARE_CHART) {
     const description = el.querySelector('div[slot="body-m"] p:last-child');
