@@ -14,7 +14,6 @@ const LABELS = {
   highPriority: 'high priority',
   readyForStage: 'Ready for Stage',
   SOTPrefix: 'SOT',
-  highImpact: 'high-impact',
 };
 const TEAM_MENTIONS = [
   '@adobecom/miq-sot',
@@ -24,8 +23,8 @@ const TEAM_MENTIONS = [
   '@adobecom/document-cloud-sot',
 ];
 const SLACK = {
-  merge: ({ html_url, number, title, highImpact }) =>
-    `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
+  merge: ({ html_url, number, title }) =>
+    `:merged: PR merged to stage: <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) =>
     `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
@@ -124,7 +123,8 @@ const getPRs = async () => {
 
 const merge = async ({ prs }) => {
   console.log(`Merging ${prs.length || 0} PRs that are ready... `);
-  for await (const { number, files, html_url, title, labels } of prs) {
+
+  for await (const { number, files, html_url, title } of prs) {
     try {
       if (files.some((file) => SEEN[file])) {
         console.log(`Skipping ${number}: ${title} due to overlap in files.`);
@@ -140,24 +140,11 @@ const merge = async ({ prs }) => {
         });
       }
       body = `- ${html_url}\n${body}`;
-      const isHighImpact = labels.includes(LABELS.highImpact);
-      if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
-        await slackNotification(
-          SLACK.merge({
-            html_url,
-            number,
-            title,
-            highImpact: ' :alert: High impact',
-          }),
-          process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK
-        );
-      }
       await slackNotification(
         SLACK.merge({
           html_url,
           number,
           title,
-          highImpact: isHighImpact ? ' :alert: High impact' : '',
         })
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
