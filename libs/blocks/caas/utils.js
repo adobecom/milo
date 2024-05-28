@@ -417,7 +417,8 @@ const getCategoryArray = async (state, country, lang) => {
     .map(([key, value]) => ({
       group: key,
       id: value.tagID,
-      label: value.title,
+      // label: value.title,
+      title: value.title,
       icon: value.icon || '',
       items: Object.entries(value.tags)
         .map((tag) => getFilterObj({excludeTags:[], filterTag: [tag[1].tagID], icon:'', openedOnLoad: false}, tags, state, country, lang))
@@ -425,7 +426,8 @@ const getCategoryArray = async (state, country, lang) => {
     }));
 
   // console.log('CATEGORIES:', categoryItems);   // TODO: remove before takeoff
-  return [{ group: 'All Topics',  label: 'All Topics', id: '', items: [] }, ...categoryItems];
+  // return [{ group: 'All Topics',  title: 'All Topics', label: 'All Topics', id: '', items: [] }, ...categoryItems];
+  return [{ group: 'All Topics',  title: 'All Topics', id: '', items: [] }, ...categoryItems];
 };
 
 const getFilterArray = async (state, country, lang, strs) => {

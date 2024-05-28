@@ -156,7 +156,7 @@ describe('getConfig', () => {
     },
   ];
 
-  it('*** NEW *** should return a caas config object', async () => {
+  it('should return a caas config object', async () => {
     const config = await getConfig(state, strings);
     expect(config).to.be.eql({
       collection: {
@@ -166,7 +166,7 @@ describe('getConfig', () => {
         cardHoverEffect: 'default',
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
-        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&debug=true&flatFile=false',
+        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
@@ -207,11 +207,11 @@ describe('getConfig', () => {
             group: "All Topics",
             id: "",
             items: [],
-            label: "All Topics",
+            title: "All Topics",
           },
           {
             group: "photo",
-            label: "Photo",
+            title: "Photo",
             icon: "",
             id: "caas:product-categories/photo",
             items: [
@@ -243,7 +243,7 @@ describe('getConfig', () => {
           },
           {
             group: "graphic-design",
-            label: "Graphic Design",
+            title: "Graphic Design",
             id: "caas:product-categories/graphic-design",
             icon: "",
             items: [
@@ -263,7 +263,7 @@ describe('getConfig', () => {
           },
           {
             group: "video",
-            label: "Video",
+            title: "Video",
             id: "caas:product-categories/video",
             icon: "",
             items: [
@@ -295,7 +295,7 @@ describe('getConfig', () => {
           },
           {
             group: "illustration",
-            label: "Illustration",
+            title: "Illustration",
             id: "caas:product-categories/illustration",
             icon: "",
             items: [
@@ -330,18 +330,18 @@ describe('getConfig', () => {
             id: "caas:product-categories/ui-and-ux",
             icon: "",
             items: [],
-            label: "UI and UX",
+            title: "UI and UX",
           },
           {
             group: "acrobat-and-pdf",
             id: "caas:product-categories/acrobat-and-pdf",
             icon: "",
             items: [],
-            label: "Acrobat and PDF"
+            title: "Acrobat and PDF"
           },
           {
             group: "3d-and-ar",
-            label: "3D and AR",
+            title: "3D and AR",
             id: "caas:product-categories/3d-and-ar",
             icon: "",
             items: [
@@ -367,7 +367,7 @@ describe('getConfig', () => {
           },
           {
             group: "social-media",
-            label: "Social Media",
+            title: "Social Media",
             id: "caas:product-categories/social-media",
             icon: "",
             items: [
@@ -387,7 +387,7 @@ describe('getConfig', () => {
           },
           {
             group: "genai",
-            label: "Gen AI",
+            title: "Gen AI",
             id: "caas:product-categories/genai",
             icon: "",
             items: [
@@ -572,7 +572,7 @@ describe('getConfig', () => {
         cardHoverEffect: 'default',
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
-        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&debug=true&flatFile=false',
+        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
@@ -613,11 +613,11 @@ describe('getConfig', () => {
             group: "All Topics",
             id: "",
             items: [],
-            label: "All Topics",
+            title: "All Topics",
           },
           {
             group: "photo",
-            label: "Photo",
+            title: "Photo",
             icon: "",
             id: "caas:product-categories/photo",
             items: [
@@ -649,7 +649,7 @@ describe('getConfig', () => {
           },
           {
             group: "graphic-design",
-            label: "Graphic Design",
+            title: "Graphic Design",
             id: "caas:product-categories/graphic-design",
             icon: "",
             items: [
@@ -669,7 +669,7 @@ describe('getConfig', () => {
           },
           {
             group: "video",
-            label: "Video",
+            title: "Video",
             id: "caas:product-categories/video",
             icon: "",
             items: [
@@ -701,7 +701,7 @@ describe('getConfig', () => {
           },
           {
             group: "illustration",
-            label: "Illustration",
+            title: "Illustration",
             id: "caas:product-categories/illustration",
             icon: "",
             items: [
@@ -736,18 +736,18 @@ describe('getConfig', () => {
             id: "caas:product-categories/ui-and-ux",
             icon: "",
             items: [],
-            label: "UI and UX",
+            title: "UI and UX",
           },
           {
             group: "acrobat-and-pdf",
             id: "caas:product-categories/acrobat-and-pdf",
             icon: "",
             items: [],
-            label: "Acrobat and PDF"
+            title: "Acrobat and PDF"
           },
           {
             group: "3d-and-ar",
-            label: "3D and AR",
+            title: "3D and AR",
             id: "caas:product-categories/3d-and-ar",
             icon: "",
             items: [
@@ -773,7 +773,7 @@ describe('getConfig', () => {
           },
           {
             group: "social-media",
-            label: "Social Media",
+            title: "Social Media",
             id: "caas:product-categories/social-media",
             icon: "",
             items: [
@@ -793,7 +793,7 @@ describe('getConfig', () => {
           },
           {
             group: "genai",
-            label: "Gen AI",
+            title: "Gen AI",
             id: "caas:product-categories/genai",
             icon: "",
             items: [
@@ -1039,7 +1039,7 @@ describe('getFloodgateCaasConfig', () => {
         cardHoverEffect: 'default',
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
-        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&debug=true&flatFile=false',
+        endpoint: 'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
@@ -1080,11 +1080,11 @@ describe('getFloodgateCaasConfig', () => {
             group: "All Topics",
             id: "",
             items: [],
-            label: "All Topics",
+            title: "All Topics",
           },
           {
             group: "photo",
-            label: "Photo",
+            title: "Photo",
             icon: "",
             id: "caas:product-categories/photo",
             items: [
@@ -1116,7 +1116,7 @@ describe('getFloodgateCaasConfig', () => {
           },
           {
             group: "graphic-design",
-            label: "Graphic Design",
+            title: "Graphic Design",
             id: "caas:product-categories/graphic-design",
             icon: "",
             items: [
@@ -1136,7 +1136,7 @@ describe('getFloodgateCaasConfig', () => {
           },
           {
             group: "video",
-            label: "Video",
+            title: "Video",
             id: "caas:product-categories/video",
             icon: "",
             items: [
@@ -1168,7 +1168,7 @@ describe('getFloodgateCaasConfig', () => {
           },
           {
             group: "illustration",
-            label: "Illustration",
+            title: "Illustration",
             id: "caas:product-categories/illustration",
             icon: "",
             items: [
@@ -1203,18 +1203,18 @@ describe('getFloodgateCaasConfig', () => {
             id: "caas:product-categories/ui-and-ux",
             icon: "",
             items: [],
-            label: "UI and UX",
+            title: "UI and UX",
           },
           {
             group: "acrobat-and-pdf",
             id: "caas:product-categories/acrobat-and-pdf",
             icon: "",
             items: [],
-            label: "Acrobat and PDF"
+            title: "Acrobat and PDF"
           },
           {
             group: "3d-and-ar",
-            label: "3D and AR",
+            title: "3D and AR",
             id: "caas:product-categories/3d-and-ar",
             icon: "",
             items: [
@@ -1240,7 +1240,7 @@ describe('getFloodgateCaasConfig', () => {
           },
           {
             group: "social-media",
-            label: "Social Media",
+            title: "Social Media",
             id: "caas:product-categories/social-media",
             icon: "",
             items: [
@@ -1260,7 +1260,7 @@ describe('getFloodgateCaasConfig', () => {
           },
           {
             group: "genai",
-            label: "Gen AI",
+            title: "Gen AI",
             id: "caas:product-categories/genai",
             icon: "",
             items: [

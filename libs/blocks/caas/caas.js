@@ -73,7 +73,6 @@ const loadCaas = async (a) => {
 };
 
 export default async function init(link) {
-  console.log('init():link', link)
   if (link.textContent.includes('no-lazy')) {
     loadCaas(link);
   } else {
