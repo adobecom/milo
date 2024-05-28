@@ -50,7 +50,6 @@ async function previewAction(url, item) {
 }
 
 export async function handleAction(e, item, isPrev = false) {
-  console.log(item.value);
   e.target.classList.add('locui-action-loading');
   const action = item.value[isPrev ? 'preview' : 'live'];
   const url = new URL(action.url);
