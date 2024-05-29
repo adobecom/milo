@@ -5,11 +5,22 @@ function toggleDesc(e) {
   e.target.closest('.locui-status-toast').classList.toggle('open');
 }
 
-function renderMessage(description) {
+export function renderLinks(str) {
+  const linkPattern = /\[(.*?)\]\((.*?)\)/g;
+  const link = linkPattern.exec(str);
+  if (link) {
+    const message = str.replace(linkPattern, '');
+    const [text, href] = link.slice(1);
+    return html`${message.slice(0, -1)} <a href="${href}" target="_blank">${text}</a>`;
+  }
+  return str;
+}
+
+function renderDescription(description) {
   let message = description;
   if (Array.isArray(description) && description.length > 1) {
-    message = html`<ol>${description.map((desc) => html`<li>${desc}</li>`)}</ol>`;
-  }
+    message = html`<ol>${description.map((desc) => html`<li>${renderLinks(desc)}</li>`)}</ol>`;
+  } else return renderLinks(message[0]);
   return message;
 }
 
@@ -23,7 +34,7 @@ function Toast({ status }) {
         ${status.description && html`<div class=locui-status-toast-expand>Expand</div>`}
       </div>
       ${status.description && html`
-        <p class=locui-status-toast-description>${renderMessage(status.description)}</p>`}
+        <p class=locui-status-toast-description>${renderDescription(status.description)}</p>`}
     </div>
   `;
 }
