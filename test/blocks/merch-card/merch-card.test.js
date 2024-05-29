@@ -30,7 +30,7 @@ describe('Merch Card', () => {
     expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
-  it.only('Supports Special Offers card', async () => {
+  it('Supports Special Offers card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
     const merchCard = await init(document.querySelector('.special-offers'));
     const category = merchCard.querySelector('h4[slot="detail-m"]');
