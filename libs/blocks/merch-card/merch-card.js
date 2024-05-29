@@ -26,6 +26,8 @@ const HEADING_MAP = {
 };
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
+const PLANS = 'plans';
+const SEGMENT = 'segment';
 
 const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
 
@@ -348,8 +350,10 @@ export default async function init(el) {
     }
   }
   let footerRows;
-  if (cardType === MINI_COMPARE_CHART) {
+  if ([MINI_COMPARE_CHART, PLANS, SEGMENT].includes(cardType)) {
     intersectionObserver.observe(merchCard);
+  }
+  if (cardType === MINI_COMPARE_CHART) {
     footerRows = getMiniCompareChartFooterRows(el);
   }
   const allPictures = el.querySelectorAll('picture');
