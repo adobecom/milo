@@ -1,4 +1,4 @@
-// branch: catalog-regressions-4 commit: 0f811bca9044b6fcca0fb6d45e1ad667833f4fb3 Wed, 29 May 2024 13:04:28 GMT
+// branch: catalog-regressions-4 commit: b6d6b25b1f34ce1385ad3792d8d9cd7c1820171b Wed, 29 May 2024 13:15:13 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as $,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?$`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:$` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -359,6 +359,7 @@ import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitEleme
     /* mini-compare card heights for the slots: heading-m, body-m, heading-m-price, price-commitment, offers, promo-text, footer */
     :host([variant='mini-compare-chart']) slot[name='heading-m'] {
         min-height: var(--consonant-merch-card-mini-compare-heading-m-height);
+        margin-top: var(--consonant-merch-spacing-xs);
     }
     :host([variant='mini-compare-chart']) slot[name='body-m'] {
         min-height: var(--consonant-merch-card-mini-compare-body-m-height);
@@ -378,10 +379,6 @@ import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitEleme
     }
     :host([variant='mini-compare-chart']) slot[name='promo-text'] {
         min-height: var(--consonant-merch-card-mini-compare-promo-text-height);
-    }
-
-    :host([variant='mini-compare-chart']) slot[name='heading-m'] {
-        margin-top: var(--consonant-merch-spacing-m);
     }
 
     :host([variant='plans']) ::slotted([slot='heading-xs']),
