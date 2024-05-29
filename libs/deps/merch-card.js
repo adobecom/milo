@@ -1,4 +1,4 @@
-// branch: catalog-regressions-4 commit: 8cd86b035af306f18b29699659637b5f94041252 Wed, 29 May 2024 14:13:38 GMT
+// branch: catalog-regressions-4 commit: 8cd86b035af306f18b29699659637b5f94041252 Wed, 29 May 2024 14:33:35 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as $,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?$`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:$` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -594,7 +594,7 @@ merch-card.dc-pricing [slot='heading-xs'] {
     margin-bottom: var(--consonant-merch-spacing-xxs);
 }
 
-merch-card [slot='heading-xs'] a {
+merch-card:not([variant='inline-heading']) [slot='heading-xs'] a {
     color: var(--merch-color-grey-80);
 }
 
