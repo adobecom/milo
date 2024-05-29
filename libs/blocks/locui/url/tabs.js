@@ -1,4 +1,5 @@
 import { html, signal, useEffect, useMemo } from '../../../deps/htm-preact.js';
+import { urls } from '../utils/state.js';
 import { setActions, openWord, handleAction } from './index.js';
 
 function useSignal(value) {
@@ -8,18 +9,20 @@ function useSignal(value) {
 function Actions({ item }) {
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
   const isDisabled = (status) => (!status || status !== 200 ? ' disabled' : '');
+  const itemUrl = urls.value.find((url) => url.pathname === item.value.path
+  || url.langstore.pathname === item.value.path);
   return html`
     <div class=locui-url-source-actions>
       <button
         disabled=${item.value.edit?.status === 404}
-        class="locui-url-action locui-url-action-edit${isExcel}"
-        onClick=${(e) => { openWord(e, item); }}>Edit</button>
+        class="locui-url-action locui-url-action-edit${isExcel}${!itemUrl?.valid ? ' disabled' : ''}"
+        onClick=${(e) => { if (itemUrl.valid) openWord(e, item); }}>Edit</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.preview?.status)}"
-        onClick=${(e) => { handleAction(e, item, true); }}>Preview</button>
+        onClick=${(e) => { if (itemUrl.valid) handleAction(e, item, true); }}>Preview</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.live?.status)}"
-        onClick=${(e) => { handleAction(e, item); }}>Live</button>
+        onClick=${(e) => { if (itemUrl.valid) handleAction(e, item); }}>Live</button>
     </div>
   `;
 }
