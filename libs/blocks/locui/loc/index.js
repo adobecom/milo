@@ -23,6 +23,23 @@ const urlParams = new URLSearchParams(window.location.search);
 let resourcePath;
 let previewPath;
 
+async function validatedUrls(projectUrls) {
+  const validateUrls = [...projectUrls];
+  while (validateUrls.length) {
+    try {
+      const reqs = await Promise.all(validateUrls.splice(0, 49).map((url) => fetch(url.href)));
+      setStatus('details', 'info', 'Validating Project URLs');
+      for (const res of reqs) {
+        const projectUrl = projectUrls.find((url) => url.href === res.url);
+        projectUrl.valid = res.ok;
+      }
+    } catch (error) {
+      setStatus('details', 'error', 'There was an error validating project URLs.', error);
+    }
+  }
+  return projectUrls;
+}
+
 export function getUrls(jsonUrls) {
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
@@ -84,9 +101,15 @@ async function loadDetails() {
       return rdx;
     }, []);
     languages.value = projectLangs;
-    urls.value = projectUrls;
+    setStatus('details', 'info', 'Validating Project Configuration');
+    urls.value = await validatedUrls(projectUrls);
     if (json.settings) loadProjectSettings(json.settings.data);
-    setStatus('details');
+    const errors = urls.value.filter((url) => !url.valid);
+    if (errors?.length > 0) {
+      setStatus('details', 'error', 'Invalid URLs.', errors.map((url) => (`${url.href} was not found.`)));
+    } else {
+      setStatus('details');
+    }
   } catch {
     setStatus('details', 'error', 'Error loading languages and URLs.');
   }
@@ -99,7 +122,6 @@ async function loadHeading() {
   resourcePath = json.resourcePath;
   previewPath = json.preview.url;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
-  setStatus('details');
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
   window.document.title = `${projectName} - LocUI`;
