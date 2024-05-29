@@ -9,9 +9,14 @@ export function renderLinks(str) {
   const linkPattern = /\[(.*?)\]\((.*?)\)/g;
   const link = linkPattern.exec(str);
   if (link) {
-    const message = str.replace(linkPattern, '');
+    const msg = str.replace(linkPattern, '');
     const [text, href] = link.slice(1);
-    return html`${message.slice(0, -1)} <a href="${href}" target="_blank">${text}</a>`;
+    return html`
+      <span>
+        ${msg.substring(0, link.index)}
+        <a href="${href}" target="_blank">${text}</a>
+        ${msg.substring(link.index, msg.length)} 
+      </span>`;
   }
   return str;
 }
