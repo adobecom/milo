@@ -76,7 +76,21 @@ function decorateLinkFarms(el) {
   });
 }
 
-export default function init(el) {
+export async function loadMnemonicList(foreground) {
+  try {
+    const { base } = getConfig();
+    const stylePromise = new Promise((resolve) => {
+      loadStyle(`${base}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
+    });
+    const loadModule = import('../mnemonic-list/mnemonic-list.js')
+      .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
+    await Promise.all([stylePromise, loadModule]);
+  } catch (err) {
+    window.lana?.log(`Failed to load mnemonic list module: ${err}`);
+  }
+}
+
+export default async function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
@@ -116,5 +130,14 @@ export default function init(el) {
     const div = createTag('div', { class: 'cta-container' });
     lastActionArea.insertAdjacentElement('afterend', div);
     div.append(lastActionArea);
+  }
+
+  const mnemonicList = el.querySelector('.mnemonic-list');
+  if (mnemonicList) {
+    const foreground = mnemonicList?.closest('.foreground');
+    if (foreground) {
+      mnemonicList.querySelectorAll('p').forEach((product) => product.removeAttribute('class'));
+      await loadMnemonicList(foreground);
+    }
   }
 }
