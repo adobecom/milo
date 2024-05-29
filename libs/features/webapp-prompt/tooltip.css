@@ -5,17 +5,22 @@
   z-index: 201;
   background-color: rgb(20, 115, 230);
   height: fit-content;
-  width: 5rem;
-  top: 125%; 
-  left: -100%;
+  width: 8.875rem;
+  top: 120%; 
+  right: -75%;
   word-break: break-word;
   border-radius: 0.4375rem;
-  padding: 0.1875rem 0.5625rem 0.3125rem 0.5625rem;
+
+  padding-inline-start: 0.5625rem;
+  padding-inline-end: 0.5625rem;
+  padding-block-start: 0.25rem;
+  padding-block-end: 0.3125rem;
   
   transition: opacity 0.5s;
 
   font-family: 'Adobe Clean';
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+  line-height: 0.9375rem;
   color: white;
   pointer-events: none;
 }
@@ -25,10 +30,10 @@
   position: absolute;
   z-index: 200;
   background-color: rgb(20, 115, 230);
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 0.1rem;
-  left: 33%;
+  width: 0.44rem;
+  height: 0.44rem;
+  border-radius: 0.05rem;
+  left: calc(50% - 0.22rem);
   top: 110%;
   pointer-events: none;
   
@@ -37,3 +42,9 @@
   transition: opacity 0.5s;
 }
 
+@media (min-width: 1520px) {
+  [data-pep-dismissal-tooltip]::after {
+    left: calc(50% - 5rem);
+    right: 0;
+  }
+}
