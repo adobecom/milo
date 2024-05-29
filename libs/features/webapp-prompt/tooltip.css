@@ -3,7 +3,7 @@
   position: absolute;
   display: inline-flex;
   z-index: 201;
-  background-color: rgb(20, 115, 230);
+  background-color: #3B63FB;
   height: fit-content;
   width: 8.875rem;
   top: 120%; 
@@ -29,7 +29,7 @@
   content: '';
   position: absolute;
   z-index: 200;
-  background-color: rgb(20, 115, 230);
+  background-color: #3B63FB;
   width: 0.44rem;
   height: 0.44rem;
   border-radius: 0.05rem;
