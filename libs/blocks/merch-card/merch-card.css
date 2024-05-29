@@ -42,3 +42,10 @@ merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
   display: none;
 }
 
+@media screen and (max-width: 1199px) {
+  merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
+    padding: 4px 18px 5px 21px;
+    font-size: var(--consonant-merch-card-mini-compare-mobile-cta-font-size);
+
+  }
+}

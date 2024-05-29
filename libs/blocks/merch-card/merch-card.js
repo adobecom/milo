@@ -424,7 +424,8 @@ export default async function init(el) {
     } else {
       decorateButtons(ctas);
     }
-    footer.append(ctas);
+    const links = ctas.querySelectorAll('a');
+    footer.append(...links);
   }
   merchCard.appendChild(footer);
 
