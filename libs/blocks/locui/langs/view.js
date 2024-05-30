@@ -2,7 +2,7 @@ import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
 import { rollout, showLangErrors, showUrls } from './index.js';
 
-function getPrettyStatus({ status, queued }) {
+function getPrettyStatus({ status, queued } = {}) {
   switch (status) {
     case 'translated':
       return 'Rollout ready';
