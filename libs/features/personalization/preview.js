@@ -254,9 +254,6 @@ function createPreviewPill(manifests) {
           </div>
         </div>
       </div>
-    </div>
-    <div class="dark">
-      <a class="con-button outline button-l" href="${simulateHref.href}" title="Preview above choices">Preview</a>
     </div>`;
   const darkDiv = document.createElement('div');
   const button = document.createElement('a');
