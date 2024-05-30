@@ -1,4 +1,4 @@
-// branch: catalog-regressions-4 commit: 427068daf7164edc1cdd083acf5bb993e3f1457c Thu, 30 May 2024 05:58:52 GMT
+// branch: catalog-regressions-4 commit: 427068daf7164edc1cdd083acf5bb993e3f1457c Thu, 30 May 2024 06:35:30 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -1273,7 +1273,6 @@ div[slot='bg-image'] img {
 .one-merch-card.mini-compare-chart {
     grid-template-columns: var(--consonant-merch-card-mini-compare-chart-wide-width);
     gap: var(--consonant-merch-spacing-xs);
-    padding: var(--consonant-merch-spacing-m);
 }
 
 .two-merch-cards.mini-compare-chart,
@@ -1281,7 +1280,6 @@ div[slot='bg-image'] img {
 .four-merch-cards.mini-compare-chart {
     grid-template-columns: repeat(2, var(--consonant-merch-card-mini-compare-chart-width));
     gap: var(--consonant-merch-spacing-xs);
-    padding: var(--consonant-merch-spacing-xs);
 }
 
 @media screen and ${f} {
