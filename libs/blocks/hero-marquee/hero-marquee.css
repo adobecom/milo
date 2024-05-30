@@ -72,7 +72,9 @@
   gap: var(--spacing-xs);
   margin: 0 0 var(--spacing-xxs); 
   font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
   text-transform: initial;
+  white-space: nowrap
 } 
 
 .hero-marquee .lockup-area picture { 
@@ -111,6 +113,7 @@
 .hero-marquee .l-icon .lockup-area,
 .hero-marquee.l-icon .lockup-area {
   font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
 }
 
 .hero-marquee .lockup-area picture img,
@@ -123,6 +126,7 @@
 .hero-marquee .m-icon .lockup-area,
 .hero-marquee.m-icon .lockup-area {
   font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
 }
 
 .hero-marquee .m-icon .lockup-area picture img, 
@@ -134,6 +138,7 @@
 .hero-marquee .xl-icon .lockup-area,
 .hero-marquee.xl-icon .lockup-area {
   font-size: var(--type-body-xl-size);
+  line-height: var(--type-body-xl-lh);
 }
 
 .hero-marquee .xl-icon .lockup-area picture img,
@@ -534,7 +539,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     top: 0;
   }
 
-  .hero-marquee.asset-left .foreground-media {
+  .hero-marquee.asset-left .foreground-media,
+  html[dir="rtl"] .hero-marquee .foreground-media {
     right: unset;
     left: 0;
   }
