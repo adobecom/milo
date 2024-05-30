@@ -126,8 +126,8 @@ describe('Merch Block', () => {
 
   before(async () => {
     window.lana = { log: () => { } };
-    document.head.innerHTML = await readMockText('head.html');
-    document.body.innerHTML = await readMockText('body.html');
+    document.head.innerHTML = await readMockText('/test/blocks/merch/mocks/head.html');
+    document.body.innerHTML = await readMockText('/test/blocks/merch/mocks/body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
     config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
@@ -309,7 +309,7 @@ describe('Merch Block', () => {
       const { nodeName, href } = await el.onceSettled();
       expect(nodeName).to.equal('A');
       expect(el.getAttribute('is')).to.equal('checkout-link');
-      expect(/0ADF92A6C8514F2800BE9E87DB641D2A/.test(href)).to.be.true;
+      expect(/B740D1F2F6369BD1C342E6E372A61B50/.test(href)).to.be.true;
     });
 
     it('renders merch link to cta with empty promo', async () => {
