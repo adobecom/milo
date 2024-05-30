@@ -402,32 +402,30 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
 };
 
 const getCategoryArray = (tags, state, country, lang) => {
-  // // Fetch tags
-  // // const { tags } = await getTags(state.tagsUrl);
-  // // console.log('STATE:', state);   // TODO: remove before takeoff
-  // // console.log('TAGS:', tags);   // TODO: remove before takeoff
+  // Fetch tags
+  // const { tags } = await getTags(state.tagsUrl);
+  // console.log('STATE:', state);   // TODO: remove before takeoff
+  // console.log('TAGS:', tags);   // TODO: remove before takeoff
 
-  // // Parse categories list from tags
-  // const categories = Object.values(tags)
-  //   .filter((tag) => tag.tagID === 'caas:product-categories')
-  //   .map((tag) => tag.tags);
+  // Parse categories list from tags
+  const categories = Object.values(tags)
+    .filter((tag) => tag.tagID === 'caas:product-categories')
+    .map((tag) => tag.tags);
 
-  // // Extract categories
-  // const categoryItems = Object.entries(categories[0])
-  //   .map(([key, value]) => ({
-  //     group: key,
-  //     id: value.tagID,
-  //     title: value.title,
-  //     icon: value.icon || '',
-  //     items: Object.entries(value.tags)
-  //       .map((tag) => getFilterObj({excludeTags:[], filterTag: [tag[1].tagID], icon:'', openedOnLoad: false}, tags, state, country, lang))
-  //       .filter((tag) => tag !== null),  
-  //   }));
+  // Extract categories
+  const categoryItems = Object.entries(categories[0])
+    .map(([key, value]) => ({
+      group: key,
+      id: value.tagID,
+      title: value.title,
+      icon: value.icon || '',
+      items: Object.entries(value.tags)
+        .map((tag) => getFilterObj({excludeTags:[], filterTag: [tag[1].tagID], icon:'', openedOnLoad: false}, tags, state, country, lang))
+        .filter((tag) => tag !== null),  
+    }));
 
-  // // console.log('CATEGORIES:', categoryItems);   // TODO: remove before takeoff
-  // return [{ group: 'All Topics',  title: 'All Topics', id: '', items: [] }, ...categoryItems];
-  console.log('CATEGORIES:', []);   // TODO: remove before takeoff
-  return [];
+  // console.log('CATEGORIES:', categoryItems);   // TODO: remove before takeoff
+  return [{ group: 'All Topics',  title: 'All Topics', id: '', items: [] }, ...categoryItems];
 };
 
 const getFilterArray = (tags, state, country, lang, strs) => {
