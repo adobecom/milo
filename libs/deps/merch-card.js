@@ -1,4 +1,4 @@
-// branch: catalog-regressions-4 commit: 66a3e224ced283f8b3af02444a8a268441c7d395 Wed, 29 May 2024 19:51:09 GMT
+// branch: catalog-regressions-4 commit: 427068daf7164edc1cdd083acf5bb993e3f1457c Thu, 30 May 2024 05:58:52 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -941,7 +941,6 @@ div[slot="footer"] {
 [slot="footer"] a {
     word-wrap: break-word;
     text-align: center;
-    min-width: 66px; /* same as merch links */
 }
 
 [slot="footer"] a:not([class]) {
