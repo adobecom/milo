@@ -2,7 +2,7 @@ import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
 import { rollout, showLangErrors, showUrls } from './index.js';
 
-function getPrettyStatus(status) {
+function getPrettyStatus({ status, queued }) {
   switch (status) {
     case 'translated':
       return 'Rollout ready';
@@ -10,13 +10,15 @@ function getPrettyStatus(status) {
       return 'In progress';
     case 'rolling-out':
       return 'Rolling out';
+    case 'error':
+      return `${queued ? 'In Retry Queue' : status}`;
     default:
       return status;
   }
 }
 
-function Badge({ status }) {
-  const prettyStatus = getPrettyStatus(status);
+function Badge(props) {
+  const prettyStatus = getPrettyStatus(props);
   if (!prettyStatus) return null;
   return html`<div class=locui-subproject-badge>${prettyStatus}</div>`;
 }
@@ -32,7 +34,7 @@ function Language({ item, idx }) {
   if (item.status === 'error') { rolloutType = 'Retry'; }
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
-      ${item.status && html`<${Badge} status=${item.status} />`}
+      ${item.status && html`<${Badge} status=${item.status} queued=${item.rolloutQueued} />`}
       <p class=locui-project-label>Language</p>
       <h3 class=locui-subproject-name>${item.Language}</h3>
       <p class=locui-project-label>Action</p>
@@ -64,9 +66,9 @@ function Language({ item, idx }) {
           `)}
         </div>
       `}
-      ${['translated', 'completed', 'error'].includes(item.status) && html`
+      ${['translated', 'completed', 'error'].includes(item.status) && !item.rolloutQueued && html`
         <div class=locui-subproject-action-area>
-          <button class=locui-urls-heading-action onClick=${(e) => onRollout(e)}>${rolloutType}</button>
+          <button class="locui-urls-heading-action ${item.status}" onClick=${(e) => onRollout(e)}>${rolloutType}</button>
         </div>
       `}
     </li>
