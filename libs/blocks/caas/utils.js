@@ -401,9 +401,10 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
   return filterObj;
 };
 
-const getCategoryArray = (tags, state, country, lang) => {
+const getCategoryArray = async (state, country, lang) => {
+  return [];
   // Fetch tags
-  // const { tags } = await getTags(state.tagsUrl);
+  const { tags } = await getTags(state.tagsUrl);
   // console.log('STATE:', state);   // TODO: remove before takeoff
   // console.log('TAGS:', tags);   // TODO: remove before takeoff
 
@@ -421,17 +422,18 @@ const getCategoryArray = (tags, state, country, lang) => {
       icon: value.icon || '',
       items: Object.entries(value.tags)
         .map((tag) => getFilterObj({excludeTags:[], filterTag: [tag[1].tagID], icon:'', openedOnLoad: false}, tags, state, country, lang))
-        .filter((tag) => tag !== null),  
+        .filter((tag) => tag !== null),
     }));
 
   // console.log('CATEGORIES:', categoryItems);   // TODO: remove before takeoff
   return [{ group: 'All Topics',  title: 'All Topics', id: '', items: [] }, ...categoryItems];
 };
 
-const getFilterArray = (tags, state, country, lang, strs) => {
+const getFilterArray = async (state, country, lang, strs) => {
   if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
+  const { tags } = await getTags(state.tagsUrl);
 
   const useCustomFilters = state.filterBuildPanel === 'custom';
 
@@ -565,8 +567,6 @@ export const getConfig = async (originalState, strs = {}) => {
 
   const caasRequestHeaders = addFloodgateHeader(state);
 
-  const { tags } = await getTags(state.tagsUrl);
-
   const config = {
     collection: {
       mode: state.theme,
@@ -634,8 +634,8 @@ export const getConfig = async (originalState, strs = {}) => {
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
-      filters: await getFilterArray(tags, state, country, language, strs),
-      categories: await getCategoryArray(tags, state, country, language), /* *** FAILING TEST *** */
+      filters: await getFilterArray(state, country, language, strs),
+      categories: await getCategoryArray(state, country, language), /* *** FAILING TEST *** */
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
