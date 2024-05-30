@@ -1,4 +1,4 @@
-// branch: catalog-regressions-4 commit: 4184ba93c489fe3e802ab7dc3131cd51795facf4 Thu, 30 May 2024 11:56:53 GMT
+// branch: develop commit: f499abc85176fc7d34f43457efeeb72adb1e6103 Thu, 30 May 2024 14:05:27 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -902,6 +902,10 @@ merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     merch-card[variant="mini-compare-chart"] [slot='heading-m-price'] {
         font-size: var(--consonant-merch-card-body-s-font-size);
         padding: 0 var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs);
+    }
+
+    merch-card[variant="mini-compare-chart"] [slot="heading-m-price"]:has(+ [slot="footer"]) {
+        padding-bottom: 0;
     }
 
     merch-card[variant="mini-compare-chart"] span.placeholder-resolved[data-template="strikethrough"] {
