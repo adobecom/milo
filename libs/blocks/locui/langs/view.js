@@ -1,6 +1,6 @@
 import { html, useState } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
-import { rollout, showLangErrors, showUrls } from './index.js';
+import { rollout, showLangErrors, showLangWarnings, showUrls } from './index.js';
 
 function getPrettyStatus({ status, queued } = {}) {
   switch (status) {
@@ -89,6 +89,10 @@ function Language({ item, idx }) {
           `)}
         </div>
       `}
+      ${item.warnings?.length > 0 && html`
+        <div class=locui-urls-heading-warnings onClick=${() => showLangWarnings(item)}>
+          <span class="warning-icon" /> Warning${item.warnings.length > 1 ? 's' : ''}
+        </div>`}
       ${showAction && html`
         <div class=locui-subproject-action-area>
           <button class="locui-urls-heading-action ${item.status}" onClick=${(e) => onRollout(e)}>

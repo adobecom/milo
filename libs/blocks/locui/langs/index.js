@@ -37,11 +37,24 @@ export async function rollout(item, idx) {
 
 export function showLangErrors(event, item) {
   if (!item.errors.length
-    || event.target.classList.contains('locui-subproject-locale')) return null;
+    || event.target.classList.contains('locui-subproject-locale')
+    || event.target.classList.contains('locui-urls-heading-warnings')) return null;
   const div = createTag('div');
-  const content = Modal(div, item, null, item);
+  const content = Modal(div, item, null, 'error');
   const modalOpts = {
     class: 'locui-modal-errors',
+    id: 'locui-modal',
+    content,
+    closeEvent: 'closeModal',
+  };
+  return getModal(null, modalOpts);
+}
+
+export function showLangWarnings(item) {
+  const div = createTag('div');
+  const content = Modal(div, item, null, 'warning');
+  const modalOpts = {
+    class: 'locui-modal-warnings',
     id: 'locui-modal',
     content,
     closeEvent: 'closeModal',

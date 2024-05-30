@@ -4,17 +4,26 @@ import Url from '../url/view.js';
 import { origin } from '../utils/franklin.js';
 import { renderLinks } from '../status/view.js';
 
-function Modal({ lang, prefix, error }) {
+function Modal({ lang, prefix, type }) {
   const localeUrls = urls.value.map(
     (url) => new URL(`${origin}/${prefix}${url.pathname}`),
   );
 
-  if (error) {
+  if (type === 'error') {
     const { statusText, errors } = lang;
     return html`
       <h2><span class="error-icon" /> ${statusText}</h2>
       <p>Errors reported for <i><strong>${lang.Language}</strong>:</i></p>
       <ol>${errors.map((err) => html`<li>${renderLinks(err)}</li>`)}</ol>
+    `;
+  }
+
+  if (type === 'warning') {
+    const { warnings } = lang;
+    return html`
+      <h2 class="warning-heading"><span class="warning-icon" /> Warnings</h2>
+      <p>Warnings reported for <i><strong>${lang.Language}</strong>:</i></p>
+      <ol>${warnings.map((err) => html`<li>${err}</li>`)}</ol>
     `;
   }
 
@@ -28,7 +37,7 @@ function Modal({ lang, prefix, error }) {
   `;
 }
 
-export default function renderModal(el, lang, prefix, error = false) {
-  render(html`<${Modal} lang=${lang} prefix=${prefix} error=${error} />`, el);
+export default function renderModal(el, lang, prefix, type = 'lang') {
+  render(html`<${Modal} lang=${lang} prefix=${prefix} type=${type} />`, el);
   return el;
 }
