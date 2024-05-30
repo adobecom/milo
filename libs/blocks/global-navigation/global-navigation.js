@@ -951,7 +951,6 @@ class Gnav {
 
   decorateBreadcrumbs = async () => {
     if (getMetadata('dynamic-nav') === 'on' && window.sessionStorage.getItem('gnavSource') !== null) {
-      document.querySelector('header').classList.remove('has-breadcrumbs');
       return null;
     }
     if (!this.block.classList.contains('has-breadcrumbs')) return null;
