@@ -401,12 +401,40 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
   return filterObj;
 };
 
-const getFilterArray = async (state, country, lang, strs) => {
+const getCategoryArray = (tags, state, country, lang) => {
+  // // Fetch tags
+  // // const { tags } = await getTags(state.tagsUrl);
+  // // console.log('STATE:', state);   // TODO: remove before takeoff
+  // // console.log('TAGS:', tags);   // TODO: remove before takeoff
+
+  // // Parse categories list from tags
+  // const categories = Object.values(tags)
+  //   .filter((tag) => tag.tagID === 'caas:product-categories')
+  //   .map((tag) => tag.tags);
+
+  // // Extract categories
+  // const categoryItems = Object.entries(categories[0])
+  //   .map(([key, value]) => ({
+  //     group: key,
+  //     id: value.tagID,
+  //     title: value.title,
+  //     icon: value.icon || '',
+  //     items: Object.entries(value.tags)
+  //       .map((tag) => getFilterObj({excludeTags:[], filterTag: [tag[1].tagID], icon:'', openedOnLoad: false}, tags, state, country, lang))
+  //       .filter((tag) => tag !== null),  
+  //   }));
+
+  // // console.log('CATEGORIES:', categoryItems);   // TODO: remove before takeoff
+  // return [{ group: 'All Topics',  title: 'All Topics', id: '', items: [] }, ...categoryItems];
+  console.log('CATEGORIES:', []);   // TODO: remove before takeoff
+  return [];
+};
+
+const getFilterArray = (tags, state, country, lang, strs) => {
   if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
 
-  const { tags } = await getTags(state.tagsUrl);
   const useCustomFilters = state.filterBuildPanel === 'custom';
 
   let filters = [];
@@ -539,6 +567,8 @@ export const getConfig = async (originalState, strs = {}) => {
 
   const caasRequestHeaders = addFloodgateHeader(state);
 
+  const { tags } = await getTags(state.tagsUrl);
+
   const config = {
     collection: {
       mode: state.theme,
@@ -595,6 +625,7 @@ export const getConfig = async (originalState, strs = {}) => {
         pool: state.sortReservoirPool,
       },
       ctaAction: state.ctaAction,
+      cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
@@ -605,7 +636,8 @@ export const getConfig = async (originalState, strs = {}) => {
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
-      filters: await getFilterArray(state, country, language, strs),
+      filters: await getFilterArray(tags, state, country, language, strs),
+      categories: await getCategoryArray(tags, state, country, language), /* *** FAILING TEST *** */
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
@@ -713,6 +745,8 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     headers: caasRequestHeaders,
   };
+
+  console.log('CAAS_CONFIG', config);  // TODO: remove before takeoff
   return config;
 };
 
