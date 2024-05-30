@@ -133,7 +133,10 @@ const getTargetPersonalization = async () => {
 
   let manifests = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
-  if (response.error) return [];
+  if (response.error) {
+    window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
+    return [];
+  }
   if (response.timeout) {
     waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
       .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
