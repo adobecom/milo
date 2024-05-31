@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CCD/CCH Merch integration POC</title>
+    <meta property="og:title" content="CCD/CCH Merch integration POC">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="header" content="off">
+    <meta name="footer" content="off">
+    <meta name="nofollow-links" content="on">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:," size="any">
+    <link rel="stylesheet" href="https://www.adobe.com/libs/styles/styles.css">
+    <script type="module">
+      import { init } from '/libs/deps/commerce.js';
+      import '/libs/deps/merch-card.js';
+      await init(() => ({
+        env: 'PRODUCTION',
+        locale: 'en_US',
+    }));
+    </script>
+  </head>
+  <body>
+    <main>
+      <h2>1. Milo Consonant CTA styles for the CTA</h2>
+      <div class="four-merch-cards plans">
+        <merch-card variant="plans">
+          <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg"
+            alt="Creative Cloud All Apps"></merch-icon>
+        <h4 slot="heading-xs">Creative Cloud All Apps</h4>
+        <h3 slot="heading-m">
+            <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
+                data-display-tax="false" data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"></span>
+        </h3>
+        <p slot="body-xxs" id="individuals1">Desktop</p>
+        <div slot="body-xs">
+            <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
+                Acrobat Pro. (Substance 3D apps are not included.)</p>
+            <p><a href="https://adobe.com">See plans & pricing details</a></p>
+        </div>
+        <div slot="footer">
+            <a is="checkout-link" href="#" class="con-button blue active" data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ">Save now</a>
+        </div>
+      </merch-card>
+    </div>
+
+    <h2>2. Spectrum Web Components Styles for the CTA</h2>
+    
+    <script type="module">
+      import '/libs/features/spectrum-web-components/dist/theme.js';
+      import '/libs/features/spectrum-web-components/dist/button.js';
+      document.addEventListener('click', e => {
+        if (e.target.classList.contains('checkout-link')) {
+          e.preventDefault();
+          e.target.previousElementSibling.click();
+        }
+
+      });
+    </script>
+    <sp-theme
+          theme="spectrum"
+          color="light"
+          scale="medium"
+          style="background-color: var(--spectrum-gray-100)"
+      >
+      <div class="four-merch-cards plans">
+        <merch-card variant="plans">
+          <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg"
+            alt="Creative Cloud All Apps"></merch-icon>
+        <h4 slot="heading-xs">Creative Cloud All Apps</h4>
+        <h3 slot="heading-m">
+            <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
+                data-display-tax="false" data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"></span>
+        </h3>
+        <p slot="body-xxs" id="individuals1">Desktop</p>
+        <div slot="body-xs">
+            <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
+                Acrobat Pro. (Substance 3D apps are not included.)</p>
+            <p><a href="https://adobe.com">See plans & pricing details</a></p>
+        </div>
+        <div slot="footer">
+            <a is="checkout-link" href="#" style="display: none;" data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ">Save now</a>
+            <sp-button class="checkout-link" variant="cta">Save now</sp-button>
+        </div>
+      </merch-card>
+      </sp-theme>
+    </div>
+    
+    <h2>3. Odin as Data Source (WIP)</h2>
+    <sp-theme
+          theme="spectrum"
+          color="light"
+          scale="medium"
+          style="background-color: var(--spectrum-gray-100)"
+      >
+      <div class="four-merch-cards plans">
+        <merch-card variant="plans">
+          <merch-datasource source="odin" path="/content/a/b/c"></merch-datasource>
+        </merch-card>
+      </sp-theme>
+    </div>
+    </main>
+  </body>
+</html>
