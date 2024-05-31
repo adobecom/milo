@@ -50,7 +50,7 @@ const showTooltip = (element, message, time = 5000) => {
   return () => {
     cleanup();
     clearTimeout(id);
-  }
+  };
 };
 
 const playFocusAnimation = (element, iterationCount = 2, animationDuration = 2500) => {
