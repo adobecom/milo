@@ -41,9 +41,16 @@ const getIcon = (content) => {
 
 const showTooltip = (element, message, time = 5000) => {
   element.setAttribute('data-pep-dismissal-tooltip', message);
-  setTimeout(() => {
+  const cleanup = () => {
     element.removeAttribute('data-pep-dismissal-tooltip');
+  };
+  const id = setTimeout(() => {
+    cleanup();
   }, time);
+  return () => {
+    cleanup();
+    clearTimeout(id);
+  }
 };
 
 const playFocusAnimation = (element, iterationCount = 2, animationDuration = 2500) => {
@@ -61,9 +68,14 @@ const playFocusAnimation = (element, iterationCount = 2, animationDuration = 250
   // the cleanup isn't high priority but it should be done
   // eventually. (Animation truly ends slightly after
   // animationDuration * iterationCount due to animation-delay)
-  setTimeout(() => {
+  const cleanup = () => {
     rings.forEach((ring) => ring.remove());
-  }, (iterationCount + 1) * animationDuration);
+  };
+  const id = setTimeout(cleanup, (iterationCount + 1) * animationDuration);
+  return () => {
+    cleanup();
+    clearTimeout(id);
+  };
 };
 
 class AppPrompt {
@@ -225,7 +237,7 @@ class AppPrompt {
   };
 
   addEventListeners = () => {
-    this.anchor?.addEventListener('click', this.close);
+    this.anchor?.addEventListener('click', () => this.close({ dismissalActions: false }));
     document.addEventListener('keydown', this.handleKeyDown);
 
     [this.elements.closeIcon, this.elements.cta]
@@ -258,19 +270,21 @@ class AppPrompt {
     this.anchor?.focus();
     this.anchor?.removeEventListener('click', this.close);
 
-    const appSwitcher = document.querySelector('#unav-app-switcher');
-
     if (dismissalActions) {
-      playFocusAnimation(
-        appSwitcher,
+      const clearAnimation = playFocusAnimation(
+        this.anchor,
         this.options['dismissal-animation-count'],
         this.options['dismissal-animation-duration'],
       );
-      showTooltip(
-        appSwitcher,
+      const clearTooltip = showTooltip(
+        this.anchor,
         this.options['dismissal-tooltip-message'],
         this.options['dismissal-tooltip-duration'],
       );
+      this.anchor.addEventListener('click', () => {
+        clearTooltip();
+        clearAnimation();
+      }, { once: true });
     }
   };
 
