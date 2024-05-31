@@ -414,11 +414,11 @@ const getCategoryArray = async (state, country, lang) => {
       title: value.title,
       icon: value.icon || '',
       items: Object.entries(value.tags)
-        .map((tag) => getFilterObj({excludeTags:[], filterTag: [tag[1].tagID], icon:'', openedOnLoad: false}, tags, state, country, lang))
-        .filter((tag) => tag !== null),  
+        .map((tag) => getFilterObj({ excludeTags: [], filterTag: [tag[1].tagID], icon: '', openedOnLoad: false }, tags, state, country, lang))
+        .filter((tag) => tag !== null),
     }));
 
-  return [{ group: 'All Topics',  title: 'All Topics', id: '', items: [] }, ...categoryItems];
+  return [{ group: 'All Topics', title: 'All Topics', id: '', items: [] }, ...categoryItems];
 };
 
 const getFilterArray = async (state, country, lang, strs) => {
