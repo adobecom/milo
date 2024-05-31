@@ -1,4 +1,4 @@
-import { html, useState } from '../../../deps/htm-preact.js';
+import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
 import { rollout, showLangErrors, showLangWarnings, showUrls } from './index.js';
 
@@ -37,14 +37,12 @@ function langActionProps(lang) {
 }
 
 function Language({ item, idx }) {
-  const [didRetry, setDidRetry] = useState(false);
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
 
   const onRollout = (e) => {
     if (item.status === 'error') {
       e.stopPropagation();
-      setDidRetry(true);
     }
     rollout(item, idx);
   };
@@ -53,7 +51,7 @@ function Language({ item, idx }) {
 
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
-      ${item.status && html`<${Badge} status=${item.status} queued=${didRetry ? item.rolloutQueued : false} />`}
+      ${item.status && html`<${Badge} status=${item.status} queued=${item.rolloutQueued} />`}
       <p class=locui-project-label>Language</p>
       <h3 class=locui-subproject-name>${item.Language}</h3>
       <p class=locui-project-label>Action</p>
