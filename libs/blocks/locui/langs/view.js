@@ -1,6 +1,6 @@
 import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
-import { rollout, showLangErrors, showLangWarnings, showUrls } from './index.js';
+import { getSkippedFileWarnings, rollout, showLangErrors, showSkippedFiles, showUrls } from './index.js';
 
 function getPrettyStatus({ status, queued } = {}) {
   switch (status) {
@@ -48,6 +48,7 @@ function Language({ item, idx }) {
   };
 
   const [showAction, actionType] = langActionProps(item);
+  const skipped = getSkippedFileWarnings(item);
 
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
@@ -87,9 +88,9 @@ function Language({ item, idx }) {
           `)}
         </div>
       `}
-      ${item.warnings?.length > 0 && html`
-        <div class=locui-urls-heading-warnings onClick=${() => showLangWarnings(item)}>
-          <span class="warning-icon" /> Warning${item.warnings.length > 1 ? 's' : ''}
+      ${skipped?.length > 0 && html`
+        <div class=locui-urls-heading-warnings onClick=${() => showSkippedFiles(item)}>
+          <span class="skipped-icon" /> Skipped
         </div>`}
       ${showAction && html`
         <div class=locui-subproject-action-area>

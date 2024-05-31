@@ -50,11 +50,17 @@ export function showLangErrors(event, item) {
   return getModal(null, modalOpts);
 }
 
-export function showLangWarnings(item) {
+export function getSkippedFileWarnings(item) {
+  if (!item.warnings) return null;
+  const skipped = item.warnings.filter((warning) => !warning.includes('skip'));
+  return skipped;
+}
+
+export function showSkippedFiles(item) {
   const div = createTag('div');
-  const content = Modal(div, item, null, 'warning');
+  const content = Modal(div, item, null, 'skipped');
   const modalOpts = {
-    class: 'locui-modal-warnings',
+    class: 'locui-modal-skipped',
     id: 'locui-modal',
     content,
     closeEvent: 'closeModal',
