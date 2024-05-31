@@ -103,19 +103,18 @@ function getGeoroutingOverride() {
 }
 
 function decorateForOnLinkClick(link, urlPrefix, localePrefix) {
+  let eventType = 'Switch';
+  if (localePrefix !== undefined) eventType = 'Stay';
+  const modCurrPrefix = localePrefix || 'us';
+  const modPrefix = urlPrefix || 'us';
+  const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
+  link.setAttribute('daa-ll', eventName);
   link.addEventListener('click', () => {
-    const modPrefix = urlPrefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
-    let eventName = 'Switch';
-    const modCurrPrefix = localePrefix || 'us';
-    if (localePrefix !== undefined) {
-      eventName = 'Stay';
-    }
-    sendAnalyticsFunc(new Event(`${eventName}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
   });
 }
 
