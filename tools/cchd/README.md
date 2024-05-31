@@ -6,7 +6,7 @@ In Milo pages, the `checkout-link` web component is styled as a CTA. However, ou
 
 The `tools/cchd/index.html` file contains the following examples. Over time, this page will be updated with new examples representing different use cases.
 
-## 1. Milo Consonant CTA styles for the CTA
+## 1. Milo Consonant Styles for the CTA
 
 The checkout link in the footer slot is styled by Milo:
 ```html
