@@ -380,8 +380,8 @@ button.locui-subproject-locale:hover {
   color: var(--link-color);
 }
 
-.warning-icon {
-  background: url('./img/warnings-icon.svg');
+.skipped-icon {
+  background: url('./img/skip-icon.svg');
   background-repeat: no-repeat;
   background-position: 50%;
   display: inline-flex;
@@ -389,12 +389,13 @@ button.locui-subproject-locale:hover {
   height: 20px;
 }
 
-h2.warning-heading {
+h2.skipped-heading {
   display: flex;
+  gap: 5px;
   align-items: center;
 }
 
-h2.warning-heading .warning-icon {
+h2.skipped-heading .skipped-icon {
   width: 32px;
   height: 32px;
 }

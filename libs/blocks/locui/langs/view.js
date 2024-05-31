@@ -1,6 +1,6 @@
 import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
-import { rollout, showLangErrors, showLangWarnings, showUrls } from './index.js';
+import { getSkippedFileWarnings, rollout, showLangErrors, showSkippedFiles, showUrls } from './index.js';
 
 function getPrettyStatus(status) {
   switch (status) {
@@ -30,6 +30,7 @@ function Language({ item, idx }) {
   };
   let rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
   if (item.status === 'error') { rolloutType = 'Retry'; }
+  const skipped = getSkippedFileWarnings(item);
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
       ${item.status && html`<${Badge} status=${item.status} />`}
@@ -64,9 +65,9 @@ function Language({ item, idx }) {
           `)}
         </div>
       `}
-      ${item.warnings?.length > 0 && html`
-        <div class=locui-urls-heading-warnings onClick=${() => showLangWarnings(item)}>
-          <span class="warning-icon" /> Warning${item.warnings.length > 1 ? 's' : ''}
+      ${skipped?.length > 0 && html`
+        <div class=locui-urls-heading-warnings onClick=${() => showSkippedFiles(item)}>
+          <span class="skipped-icon" /> Skipped
         </div>`}
       ${['translated', 'completed', 'error'].includes(item.status) && html`
         <div class=locui-subproject-action-area>
