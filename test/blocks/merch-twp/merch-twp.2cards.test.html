@@ -24,7 +24,7 @@
     import { initService } from "../../../libs/blocks/merch/merch.js";
     import { mockFetch, unmockFetch } from '../merch/mocks/fetch.js';
     import { mockIms, unmockIms } from '../merch/mocks/ims.js';
-    import { setConfig } from '../../../../libs/utils/utils.js';
+    import { createTag, setConfig } from '../../../../libs/utils/utils.js';
     import merchTwp from "../../../libs/blocks/merch-twp/merch-twp.js";
     import { getModal } from '../../../libs/blocks/modal/modal.js';
 
@@ -54,7 +54,13 @@
         });
         it('renders merch-twp with 3 tabs and 4 cards', async () => {
           const twp = await merchTwp(document.querySelector('.merch-twp'));
-          await getModal(null, { id: 'twp-modal', content: twp, class: 'twp' });
+          const spTheme = createTag('sp-theme', 
+            {
+            theme: "spectrum",
+             color: "light",
+            scale: "large"
+          }, twp);
+          return await getModal(null, { id: 'twp-modal', content: spTheme, class: 'twp' });
         });
       });
 
@@ -71,7 +77,7 @@
               <div class="section" style="display: contents;">
                 <merch-card class="merch-card twp add-stock" data-block="" variant="twp"
                   filters="all" types="">
-                  <merch-icon slot="icons" src="https://main--milo--adobecom.hlx.page/assets/img/illustrator.svg" alt="Illustrator"></merch-icon>
+                  <merch-icon slot="icons" src="/test/blocks/merch-twp/assets/illustrator.svg" alt="Illustrator"></merch-icon>
                   <p slot="heading-xs" class="heading-xs"><strong>Illustrator</strong></p>
                   <p slot="body-xs-top" class="body-xs-top">Create beautiful designs, icons, and more — then use them
                     anyplace at any size.</p>
@@ -129,7 +135,7 @@
                 <merch-card class="merch-card twp add-stock" data-block="" variant="twp"
                   badge-background-color="#2D9D78" badge-color="#FFFFFF" badge-text="Best value"
                   filters="all" types="">
-                  <merch-icon slot="icons" src="https://main--milo--adobecom.hlx.page/assets/img/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+                  <merch-icon slot="icons" src="/test/blocks/merch-twp/assets/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
                   <p slot="heading-xs" class="heading-xs"><strong>Creative Cloud All Apps</strong></p>
                   <p slot="body-xs-top" class="body-xs-top">The ultimate toolkit for unlimited creativity.</p>
                   <div slot="body-xs">
@@ -190,7 +196,7 @@
                 <merch-card class="merch-card twp" data-block="" variant="twp" badge-background-color="#2D9D78"
                   badge-color="#FFFFFF" badge-text="Includes business features"
                   filters="all" types="">
-                  <merch-icon slot="icons" src="https://main--milo--adobecom.hlx.page/assets/img/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+                  <merch-icon slot="icons" src="/test/blocks/merch-twp/assets/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
                   <merch-quantity-select title="Select a quantity:" min="1" max="10" step="1"
                     default-value="undefined" max-input="undefined"></merch-quantity-select>
                   <p slot="heading-xs" class="heading-xs"><strong>Creative Cloud All Apps</strong></p>
@@ -241,7 +247,7 @@
                 <merch-card class="merch-card twp add-stock" data-block="" variant="twp"
                   badge-background-color="#2D9D78" badge-color="#FFFFFF" badge-text="Save over 60%"
                   filters="all" types="">
-                  <merch-icon slot="icons" src="https://main--milo--adobecom.hlx.page/assets/img/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+                  <merch-icon slot="icons" src="/test/blocks/merch-twp/assets/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
                   <p slot="heading-xs" class="heading-xs"><strong>Creative Cloud All Apps</strong></p>
                   <p slot="body-xs-top" class="body-xs-top">The ultimate toolkit for unlimited creativity. Students and
                     teachers save over 60% on Creative Cloud All Apps for the first year. <a
