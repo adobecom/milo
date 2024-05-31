@@ -94,7 +94,7 @@ const defaultConfig = {
         id: 'caas:product-categories/acrobat-and-pdf',
         icon: '',
         items: [],
-        title: 'Acrobat and PDF'
+        title: 'Acrobat and PDF',
       },
       {
         group: '3d-and-ar',
