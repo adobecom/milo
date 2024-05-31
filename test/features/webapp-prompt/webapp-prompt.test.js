@@ -179,6 +179,26 @@ describe('PEP', () => {
     });
   });
 
+  describe('PEP dismissal tests', () => {
+    it('should add three rings to the app switcher and remove them after the alloted time', async () => {
+      await initPep({});
+      await clock.runAllAsync();
+      document.querySelector(allSelectors.closeIcon).click();
+      expect([...document.querySelectorAll(allSelectors.indicatorRing)].length).to.equal(3);
+      await clock.runAllAsync();
+      expect([...document.querySelectorAll(allSelectors.indicatorRing)].length).to.equal(0);
+    });
+
+    it('should add a data attribute to the app switcher with the correct data and remove it after the allotted time', async () => {
+      await initPep({});
+      await clock.runAllAsync();
+      document.querySelector(allSelectors.closeIcon).click();
+      expect(document.querySelector(allSelectors.tooltip)).to.exist;
+      await clock.runAllAsync();
+      expect(document.querySelector(allSelectors.tooltip)).to.not.exist;
+    });
+  });
+
   describe('PEP logging tests', () => {
     beforeEach(() => {
       window.lana.log = sinon.spy();

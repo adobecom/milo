@@ -17,6 +17,8 @@ export const allSelectors = {
   progressWrapper: '.appPrompt-progressWrapper',
   progress: '.appPrompt-progress',
   appSwitcher: '#unav-app-switcher',
+  indicatorRing: '.coach-indicator-ring',
+  tooltip: '[data-pep-dismissal-tooltip]',
 };
 
 export const defaultConfig = {
