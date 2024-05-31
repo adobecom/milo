@@ -237,7 +237,7 @@ class AppPrompt {
   };
 
   initRedirect = () => setTimeout(() => {
-    this.close({ saveDismissal: false });
+    this.close({ saveDismissal: false, dismissalActions: false });
     window.location.assign(this.options['redirect-url']);
   }, this.options['loader-duration']);
 
@@ -249,7 +249,7 @@ class AppPrompt {
     document.cookie = `dismissedAppPrompts=${JSON.stringify([...dismissedPrompts])};path=/`;
   };
 
-  close = ({ saveDismissal = true } = {}) => {
+  close = ({ saveDismissal = true, dismissalActions = true } = {}) => {
     const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
     appPromptElem?.remove();
     clearTimeout(this.redirectFn);
@@ -260,16 +260,18 @@ class AppPrompt {
 
     const appSwitcher = document.querySelector('#unav-app-switcher');
 
-    playFocusAnimation(
-      appSwitcher,
-      this.options['dismissal-animation-count'],
-      this.options['dismissal-animation-duration'],
-    );
-    showTooltip(
-      appSwitcher,
-      this.options['dismissal-tooltip-message'],
-      this.options['dismissal-tooltip-duration'],
-    );
+    if (dismissalActions) {
+      playFocusAnimation(
+        appSwitcher,
+        this.options['dismissal-animation-count'],
+        this.options['dismissal-animation-duration'],
+      );
+      showTooltip(
+        appSwitcher,
+        this.options['dismissal-tooltip-message'],
+        this.options['dismissal-tooltip-duration'],
+      );
+    }
   };
 
   static getDismissedPrompts = () => {
