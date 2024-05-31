@@ -243,7 +243,7 @@ export default async function init({
       { as: 'script', rel: 'modulepreload' },
     );
 
-    const { targetManifests, targetPropositionsInfo } = await getTargetPersonalization();
+    const {targetManifests, targetPropositionsInfo} = await getTargetPersonalization();
     if (targetManifests?.length || persManifests?.length) {
       const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
       const manifests = preloadManifests({ targetManifests, persManifests });
