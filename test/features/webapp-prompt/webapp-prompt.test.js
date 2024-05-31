@@ -114,8 +114,23 @@ describe('PEP', () => {
       });
       const pep = await initPep({});
       await clock.runAllAsync();
-      const { 'loader-color': pepColor, 'loader-duration': pepDuration } = pep.options;
-      expect(!!pepColor && !!pepDuration).to.equal(true);
+      const {
+        'loader-color': pepColor,
+        'loader-duration': pepDuration,
+        'dismissal-animation-count': animCount,
+        'dismissal-animation-duration': animDuration,
+        'dismissal-tooltip-message': tooltipMessage,
+        'dismissal-tooltip-duration': tooltipDuration,
+      } = pep.options;
+      const configPresent = [
+        pepColor,
+        pepDuration,
+        animCount,
+        animDuration,
+        tooltipMessage,
+        tooltipDuration,
+      ].reduce((acc, x) => acc && !!x, true);
+      expect(configPresent).to.equal(true);
     });
   });
 
