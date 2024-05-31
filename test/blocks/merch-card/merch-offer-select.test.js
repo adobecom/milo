@@ -1,8 +1,8 @@
 import { expect } from '@esm-bundle/chai';
 import { mockFetch, unmockFetch, readMockText } from '../merch/mocks/fetch.js';
 import { initService } from '../../../libs/blocks/merch/merch.js';
+import initCard from '../../../libs/blocks/merch-card/merch-card.js';
 
-const { default: initCard } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
 function validateMerchOffer(offer, selected, text, badgeText, osi, description) {
@@ -101,13 +101,19 @@ describe('Merch quantity select', () => {
   let quantitySelect;
   let items;
 
-  beforeEach(async () => {
+  before(async () => {
+    await mockFetch();
+    await initService(true);
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
     await initCard(document.querySelector('.quantity-select-with-offer-selection'));
     await delay();
     merchCard = document.querySelector('merch-card');
     quantitySelect = merchCard.querySelector('merch-quantity-select');
     items = quantitySelect.shadowRoot.querySelectorAll('.item');
+  });
+
+  after(() => {
+    unmockFetch();
   });
 
   it('Should render quantity select and initial card state', async () => {
