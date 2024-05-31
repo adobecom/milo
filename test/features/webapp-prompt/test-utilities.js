@@ -24,6 +24,10 @@ export const defaultConfig = {
   loaderDuration: 7500,
   redirectUrl: 'https://www.adobe.com/?pep=true',
   productName: 'photoshop',
+  animationCount: 5,
+  animationDuration: 2500,
+  tooltipMessage: 'Use the App Switcher to quickly find apps.',
+  tooltipDuration: 5000,
 };
 
 export const mockRes = importedMockRes;

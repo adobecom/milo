@@ -94,10 +94,22 @@ describe('PEP', () => {
   });
 
   describe('PEP configuration tests', () => {
-    it('should use config values when metadata loader color or duration are not provided', async () => {
+    it('should use config values when metadata loader color, duration, or dismissal options are not provided', async () => {
       sinon.restore();
       stub(window, 'fetch').callsFake(async (url) => {
-        if (url.includes('pep-prompt-content.plain.html')) return mockRes({ payload: pepPromptContent({ ...defaultConfig, color: false, loaderDuration: false }) });
+        if (url.includes('pep-prompt-content.plain.html')) {
+          return mockRes({
+            payload: pepPromptContent({
+              ...defaultConfig,
+              color: false,
+              loaderDuration: false,
+              animationCount: false,
+              animationDuration: false,
+              tooltipMessage: false,
+              tooltipDuration: false,
+            }),
+          });
+        }
         return null;
       });
       const pep = await initPep({});
