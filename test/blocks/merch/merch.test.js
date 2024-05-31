@@ -309,7 +309,7 @@ describe('Merch Block', () => {
       const { nodeName, href } = await el.onceSettled();
       expect(nodeName).to.equal('A');
       expect(el.getAttribute('is')).to.equal('checkout-link');
-      expect(/B740D1F2F6369BD1C342E6E372A61B50/.test(href)).to.be.true;
+      expect(/49133266E474B3E6EE5D1CB98B95B824/.test(href)).to.be.true;
     });
 
     it('renders merch link to cta with empty promo', async () => {

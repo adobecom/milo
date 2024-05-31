@@ -7,5 +7,3 @@ export { SlottableRequestEvent } from '@spectrum-web-components/overlay/src/slot
 // temporary workaround for dynamic imports
 // eslint-disable-next-line no-underscore-dangle
 window.__merch__spectrum_Overlay = Overlay;
-
-export { SlottableRequestEvent };

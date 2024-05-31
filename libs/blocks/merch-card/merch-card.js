@@ -7,31 +7,7 @@ import '../../deps/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
-const CARD_TYPES = [
-  'segment',
-  'special-offers',
-  'plans',
-  'catalog',
-  'product',
-  'inline-heading',
-  'image',
-  'mini-compare-chart',
-  'twp',
-];
-
-const TEXT_STYLES = {
-  H5: 'detail-m',
-  H4: 'body-xxs',
-  H3: 'heading-xs',
-  H2: 'heading-m',
-};
-
-const HEADING_MAP = {
-  'special-offers': {
-    H5: 'H4',
-    H3: 'H3',
-  },
-};
+const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart', 'twp'];
 
 const CARD_SIZES = ['wide', 'super-wide'];
 
@@ -73,7 +49,7 @@ const isParagraphTag = (tagName) => tagName === 'P';
 const appendSlot = (slotEls, slotName, merchCard) => {
   if (slotEls.length === 0 && merchCard.variant !== MINI_COMPARE_CHART) return;
   const newEl = createTag(
-    nodeName,
+    'p',
     { slot: slotName, class: slotName },
   );
   slotEls.forEach((e) => {
@@ -474,27 +450,8 @@ export default async function init(el) {
       if (merchCard.variant === MINI_COMPARE_CHART) {
         setMiniCompareOfferSlot(merchCard, quantitySelect);
       } else {
-        decorateButtons(ctas);
-      }
-      footer.append(ctas);
-    }
-    merchCard.appendChild(footer);
-
-    if (MULTI_OFFER_CARDS.includes(cardType)) {
-      const quantitySelect = extractQuantitySelect(el);
-      const offerSelection = el.querySelector('ul');
-      if (offerSelection) {
-        const { initOfferSelection } = await import('./merch-offer-select.js');
-        setMiniCompareOfferSlot(merchCard, undefined);
-        initOfferSelection(merchCard, offerSelection, quantitySelect);
-      }
-      if (quantitySelect) {
-        if (merchCard.variant === MINI_COMPARE_CHART) {
-          setMiniCompareOfferSlot(merchCard, quantitySelect);
-        } else {
-          const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
-          bodySlot.append(quantitySelect);
-        }
+        const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+        bodySlot.append(quantitySelect);
       }
     }
   }
@@ -503,6 +460,7 @@ export default async function init(el) {
   if (merchCard.classList.contains('has-divider')) {
     merchCard.setAttribute('custom-hr', true);
   }
+  decorateFooterRows(merchCard, footerRows);
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;

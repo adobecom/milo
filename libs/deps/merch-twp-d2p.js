@@ -1,5 +1,5 @@
-// branch: develop commit: 369516f3cda51fb1219ad0b3cf2c94c8f094c49b Tue, 21 May 2024 08:39:16 GMT
-import{LitElement as C,html as e}from"/libs/deps/lit-all.min.js";var o=class{constructor(t,s){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(s),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as E}from"/libs/deps/lit-all.min.js";var p=E`
+// branch: develop commit: f499abc85176fc7d34f43457efeeb72adb1e6103 Thu, 30 May 2024 14:05:27 GMT
+import{LitElement as T,html as s}from"/libs/deps/lit-all.min.js";var r=class{constructor(e,t){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(t),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as E}from"/libs/deps/lit-all.min.js";var b=E`
     :host {
         display: flex;
         box-sizing: border-box;
@@ -204,36 +204,36 @@ import{LitElement as C,html as e}from"/libs/deps/lit-all.min.js";var o=class{con
         left: 30px;
         bottom: 30px;
     }
-`;var u="(max-width: 1199px)";var r="merch-card:ready",l="merch-offer:selected";var d="merch-storage:change",m="merch-quantity-selector:change";var T="merch-twp-d2p",c="individuals",b="business",x="education",h=class extends C{static styles=[p];static properties={individualsText:{type:String,attribute:"individuals-text"},businessText:{type:String,attribute:"business-text"},educationText:{type:String,attribute:"education-text"},continueText:{type:String,attribute:"continue-text"},ready:{type:Boolean},step:{type:Number},singleCard:{state:!0},selectedTab:{type:String,attribute:"selected-tab",reflect:!0}};selectedTab=c;#t;#s;#e;#i=new o(this,u);individualsText="Individuals";businessText="Business";educationText="Students and teachers";continueText="Continue";ready=!1;constructor(){super(),this.step=1,this.#e=this.handleOfferSelected.bind(this)}get log(){return this.#t||(this.#t=document.head.querySelector("wcms-commerce")?.Log.module("twp")),this.#t}get individualsTab(){return this.cciCards.length===0?e``:e`
-            <sp-tab value="${c}" label=${this.individualsText}>
+`;var f="(max-width: 1199px)";var h="merch-card:ready",p="merch-offer:selected";var u="merch-storage:change",g="merch-quantity-selector:change";function x(d=window.location.hash){let e=[],t=d.replace(/^#/,"").split("&");for(let n of t){let[i,o=""]=n.split("=");i&&e.push([i,decodeURIComponent(o.replace(/\+/g," "))])}return Object.fromEntries(e)}var S="merch-twp-d2p",a="individuals",l="business",c="education",m=class extends T{static styles=[b];static properties={individualsText:{type:String,attribute:"individuals-text"},businessText:{type:String,attribute:"business-text"},educationText:{type:String,attribute:"education-text"},continueText:{type:String,attribute:"continue-text"},ready:{type:Boolean},step:{type:Number},singleCard:{state:!0},selectedTab:{type:String,attribute:"selected-tab",reflect:!0}};selectedTab=this.preselectedTab();#e;#s;#t;#i=new r(this,f);individualsText="Individuals";businessText="Business";educationText="Students and teachers";continueText="Continue";ready=!1;constructor(){super(),this.step=1,this.#t=this.handleOfferSelected.bind(this)}get log(){return this.#e||(this.#e=document.head.querySelector("wcms-commerce")?.Log.module("twp")),this.#e}get individualsTab(){return this.cciCards.length===0?s``:s`
+            <sp-tab value="${a}" label=${this.individualsText}>
                 <sp-icon-user slot="icon"></sp-icon-user>
             </sp-tab>
-            <sp-tab-panel value="${c}">
+            <sp-tab-panel value="${a}">
                 <div class="cards">
                     <slot name="individuals"></slot>
                     <slot name="cci-footer"></slot>
                 </div>
             </sp-tab-panel>
-        `}get businessTab(){return this.cctCards.length===0?e``:e`
-            <sp-tab value="${b}" label=${this.businessText}>
+        `}get businessTab(){return this.cctCards.length===0?s``:s`
+            <sp-tab value="${l}" label=${this.businessText}>
                 <sp-icon-user-group slot="icon"></sp-icon-user-group>
             </sp-tab>
-            <sp-tab-panel value="${b}">
+            <sp-tab-panel value="${l}">
                 <div class="cards">
                     <slot name="business"></slot>
                     <slot name="cct-footer"></slot>
                 </div>
             </sp-tab-panel>
-        `}get educationTab(){return this.cceCards.length===0?e``:e`
-            <sp-tab value="${x}" label=${this.educationText}>
+        `}get educationTab(){return this.cceCards.length===0?s``:s`
+            <sp-tab value="${c}" label=${this.educationText}>
                 <sp-icon-book slot="icon"></sp-icon-book>
             </sp-tab>
-            <sp-tab-panel value="${x}">
+            <sp-tab-panel value="${c}">
             <div class="cards">
                 <slot name="education"></slot>
                 <slot name="cce-footer"></slot>
             </sp-tab-panel>
-        `}get selectedTabPanel(){return this.shadowRoot.querySelector("sp-tab-panel[selected]")}get firstCardInSelectedTab(){return this.selectedTabPanel?.querySelector("slot").assignedElements()[0]}get tabs(){return this.cards.length===1?e``:this.singleCard&&this.step===1?e``:e`
+        `}preselectedTab(){let t=new URLSearchParams(window.location.search).get("plan");return t===a||t===l||t===c?t:a}get selectedTabPanel(){return this.shadowRoot.querySelector("sp-tab-panel[selected]")}get firstCardInSelectedTab(){return this.selectedTabPanel?.querySelector("slot").assignedElements()[0]}get tabs(){return this.cards.length===1?s``:this.singleCard&&this.step===1?s``:s`
             <sp-tabs
                 emphasized
                 selected="${this.selectedTab}"
@@ -241,11 +241,11 @@ import{LitElement as C,html as e}from"/libs/deps/lit-all.min.js";var o=class{con
             >
                 ${this.individualsTab} ${this.businessTab} ${this.educationTab}
             </sp-tabs>
-        `}async tabChanged(t){this.selectedTab=t.target.selected,await t.target.updateComplete,this.selectCard(this.firstCardInSelectedTab)}get singleCardFooter(){if(this.step===1)return e`
+        `}async tabChanged(e){this.selectedTab=e.target.selected,await e.target.updateComplete,this.selectCard(this.firstCardInSelectedTab)}get singleCardFooter(){if(this.step===1)return s`
             <slot name="cci-footer"></slot>
             <slot name="cct-footer"></slot>
             <slot name="cce-footer"></slot>
-        `}get desktopLayout(){return this.singleCard?e`<div class="desktop" data-step="${this.step}">
+        `}get desktopLayout(){return this.singleCard?s`<div class="desktop" data-step="${this.step}">
                 <div id="content">
                     <slot name="detail-xl"></slot>
                     ${this.tabs}
@@ -255,19 +255,19 @@ import{LitElement as C,html as e}from"/libs/deps/lit-all.min.js";var o=class{con
                 <aside>
                     <slot name="panel"></slot>
                 </aside>
-            </div>`:e`
+            </div>`:s`
             <div class="desktop" data-step="${this.step}">
                 <div id="content">
                     <slot name="detail-xl"></slot>
                     ${this.tabs}
                     <slot name="footer-link"></slot>
                 </div>
-                ${this.cciCards.length<3?e`<aside>
+                ${this.cciCards.length<3?s`<aside>
                           <slot name="panel"></slot>
                       </aside>`:""}
                 ${this.continueButton}
             </div>
-        `}get showSubscriptionPanelInStep1(){return this.#i.matches?!1:this.cciCards.length<3}get continueButton(){return this.showSubscriptionPanelInStep1?e``:e`
+        `}get showSubscriptionPanelInStep1(){return this.#i.matches?!1:this.cciCards.length<3}get continueButton(){return this.showSubscriptionPanelInStep1?s``:s`
             <div id="continueButton">
                 <sp-button
                     variant="cta"
@@ -277,13 +277,13 @@ import{LitElement as C,html as e}from"/libs/deps/lit-all.min.js";var o=class{con
                     ${this.continueText}
                 </sp-button>
             </div>
-        `}selectSingleCard(t){t.setAttribute("data-slot",t.getAttribute("slot")),t.setAttribute("slot","single-card"),this.singleCard=t}unSelectSingleCard(){this.singleCard&&(this.singleCard.setAttribute("slot",this.singleCard.getAttribute("data-slot")),this.singleCard.removeAttribute("data-slot"),this.step=1,this.singleCard=void 0)}handleContinue(){this.step=2,this.selectSingleCard(this.cardToSelect),this.#s=[...this.singleCard.querySelectorAll("merch-icon")].map(t=>t.cloneNode(!0))}handleBack(){this.unSelectSingleCard()}get cardToSelect(){return this.selectedTabPanel?.card??this.querySelector("merch-card[aria-selected]")}get selectedCard(){return this.singleCard??this.selectedTabPanel.card}get mobileStepTwo(){return this.singleCard?e`
+        `}selectSingleCard(e){e.setAttribute("data-slot",e.getAttribute("slot")),e.setAttribute("slot","single-card"),this.singleCard=e}unSelectSingleCard(){this.singleCard&&(this.singleCard.setAttribute("slot",this.singleCard.getAttribute("data-slot")),this.singleCard.removeAttribute("data-slot"),this.step=1,this.singleCard=void 0)}handleContinue(){this.step=2,this.selectSingleCard(this.cardToSelect),this.#s=[...this.singleCard.querySelectorAll("merch-icon")].map(e=>e.cloneNode(!0))}handleBack(){this.unSelectSingleCard()}get cardToSelect(){return this.selectedTabPanel?.card??this.querySelector("merch-card[aria-selected]")}get selectedCard(){return this.singleCard??this.selectedTabPanel.card}get mobileStepTwo(){return this.singleCard?s`
             ${this.backButton} ${this.stepTwoCardIconsAndTitle}
             <slot name="panel"></slot>
-        `:e``}get stepTwoCardIconsAndTitle(){if(this.selectedCard)return e`<div id="card-icons-title">
+        `:s``}get stepTwoCardIconsAndTitle(){if(this.selectedCard)return s`<div id="card-icons-title">
             ${this.#s}
             <h3>${this.selectedCard.title}</h3>
-        </div>`}get backButton(){return this.step!==2?e``:e`<sp-button
+        </div>`}get backButton(){return this.step!==2?s``:s`<sp-button
             id="backButton"
             treatment="outline"
             variant="secondary"
@@ -293,20 +293,20 @@ import{LitElement as C,html as e}from"/libs/deps/lit-all.min.js";var o=class{con
             <sp-icon-chevron-double-left
                 slot="icon"
             ></<sp-icon-chevron-double-left></sp-icon-chevron-double-left
-            > Back</sp-button>`}get mobileLayout(){return this.step===1?e`
+            > Back</sp-button>`}get mobileLayout(){return this.step===1?s`
                 <div class="mobile" data-step="${this.step}">
                     <slot name="detail-xl"></slot>
                     <slot name="single-card"></slot>
                     ${this.tabs} ${this.continueButton}
                 </div>
-            `:e`
+            `:s`
             <div class="mobile" data-step="${this.step}">
                 <slot name="detail-xl"></slot>
                 ${this.tabs}${this.mobileStepTwo}
             </div>
-        `}render(){return this.ready?e`
+        `}render(){return this.ready?s`
             <sp-theme theme="spectrum" color="light" scale="large">
                 ${this.#i.matches?this.mobileLayout:this.desktopLayout}
             </div>
-        `:e``}connectedCallback(){super.connectedCallback(),this.style.setProperty("--mod-tabs-font-weight",700),this.addEventListener(r,this.merchTwpReady),this.subscriptionPanel.addEventListener(l,this.#e),this.addEventListener(m,this.handleQuantityChange),this.addEventListener(d,this.handleStorageChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(r,this.merchTwpReady),this.subscriptionPanel.removeEventListener(l,this.#e),this.removeEventListener(d,this.handleStorageChange)}handleOfferSelected(t){this.log.debug("Selecting plan type",t.target.planType),this.selectedCard.selectMerchOffer(t.target.selectedOffer)}handleQuantityChange(t){this.selectedTabPanel&&(this.selectedCard.quantitySelect.defaultValue=t.detail.option,this.requestUpdate())}setOfferSelectOnPanel(t){t.setAttribute("variant","subscription-options"),this.subscriptionPanel.offerSelect?.remove(),this.subscriptionPanel.appendChild(t)}handleStorageChange(t){let s=t.detail.offerSelect;s&&this.setOfferSelectOnPanel(s)}selectCard(t,s=!1){let a=this.selectedTabPanel,i=a?.card;(s||!i)&&(i&&(i.selected=void 0),i=t,i.selected=!0,a?a.card=i:this.selectSingleCard(i)),i.focus(),this.subscriptionPanel.quantitySelect?.remove();let n=i.quantitySelect?.cloneNode(!0);n&&this.subscriptionPanel.appendChild(n);let f=i.offerSelect.cloneNode(!0);this.setOfferSelectOnPanel(f)}async processCards(){let t=[...this.querySelectorAll("merch-card")];t.forEach((s,a)=>{let{customerSegment:i,marketSegment:n}=s.offerSelect;i==="INDIVIDUAL"?n==="COM"?s.setAttribute("slot","individuals"):n==="EDU"&&s.setAttribute("slot","education"):i==="TEAM"&&s.setAttribute("slot","business"),s.addEventListener("click",()=>this.selectCard(s,!0))}),this.ready=!0,this.requestUpdate(),await this.updateComplete,await this.tabElement?.updateComplete,this.selectCard(t.length===1?t[0]:this.firstCardInSelectedTab,!0)}merchTwpReady(){this.querySelector("merch-card merch-offer-select:not([plan-type])")||this.processCards()}get cards(){return this.querySelectorAll("merch-card[slot]")}get cciCards(){return this.querySelectorAll('merch-card[slot="individuals"]')}get cctCards(){return this.querySelectorAll('merch-card[slot="business"]')}get cceCards(){return this.querySelectorAll('merch-card[slot="education"]')}get subscriptionPanel(){return this.querySelector("merch-subscription-panel")}get tabElement(){return this.shadowRoot.querySelector("sp-tabs")}};window.customElements.define(T,h);export{h as MerchTwpD2P};
+        `:s``}connectedCallback(){super.connectedCallback(),this.style.setProperty("--mod-tabs-font-weight",700),this.addEventListener(h,this.merchTwpReady),this.subscriptionPanel.addEventListener(p,this.#t),this.addEventListener(g,this.handleQuantityChange),this.addEventListener(u,this.handleStorageChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(h,this.merchTwpReady),this.subscriptionPanel.removeEventListener(p,this.#t),this.removeEventListener(u,this.handleStorageChange)}handleOfferSelected(e){this.log.debug("Selecting plan type",e.target.planType),this.selectedCard.selectMerchOffer(e.target.selectedOffer)}handleQuantityChange(e){this.selectedTabPanel&&(this.selectedCard.quantitySelect.defaultValue=e.detail.option,this.requestUpdate())}setOfferSelectOnPanel(e){e.setAttribute("variant","subscription-options"),this.subscriptionPanel.offerSelect?.remove(),this.subscriptionPanel.appendChild(e)}handleStorageChange(e){let t=e.detail.offerSelect;t&&this.setOfferSelectOnPanel(t)}get preselectedCardId(){let e=x()["select-cards"]?.split(",").reduce((t,n)=>{let i=decodeURIComponent(n.trim().toLowerCase());return i&&t.push(i),t},[])||[];if(e.length&&this.selectedTab===a)return e[0];if(e.length>1&&this.selectedTab===l)return e[1];if(e.length>2&&this.selectedTab===c)return e[2]}get cardToBePreselected(){return this.selectedTabPanel?.querySelector("slot").assignedElements().find(e=>{let t=e.querySelector(".heading-xs")?.textContent.trim().toLowerCase()||"";return this.preselectedCardId&&t.includes(this.preselectedCardId)})}selectCard(e,t=!1){let n=this.selectedTabPanel,i=n?.card;(t||!i)&&(i&&(i.selected=void 0),i=this.cardToBePreselected||e,i.selected=!0,n?n.card=i:this.selectSingleCard(i)),i.focus(),this.subscriptionPanel.quantitySelect?.remove();let o=i.quantitySelect?.cloneNode(!0);o&&this.subscriptionPanel.appendChild(o);let C=i.offerSelect.cloneNode(!0);this.setOfferSelectOnPanel(C)}async processCards(){let e=[...this.querySelectorAll("merch-card")];e.forEach((t,n)=>{let{customerSegment:i,marketSegment:o}=t.offerSelect;i==="INDIVIDUAL"?o==="COM"?t.setAttribute("slot","individuals"):o==="EDU"&&t.setAttribute("slot","education"):i==="TEAM"&&t.setAttribute("slot","business"),t.addEventListener("click",()=>this.selectCard(t,!0))}),this.ready=!0,this.requestUpdate(),await this.updateComplete,await this.tabElement?.updateComplete,this.selectCard(e.length===1?e[0]:this.firstCardInSelectedTab,!0)}merchTwpReady(){this.querySelector("merch-card merch-offer-select:not([plan-type])")||this.processCards()}get cards(){return this.querySelectorAll("merch-card[slot]")}get cciCards(){return this.querySelectorAll('merch-card[slot="individuals"]')}get cctCards(){return this.querySelectorAll('merch-card[slot="business"]')}get cceCards(){return this.querySelectorAll('merch-card[slot="education"]')}get subscriptionPanel(){return this.querySelector("merch-subscription-panel")}get tabElement(){return this.shadowRoot.querySelector("sp-tabs")}};window.customElements.define(S,m);export{m as MerchTwpD2P};
 //# sourceMappingURL=merch-twp-d2p.js.map

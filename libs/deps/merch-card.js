@@ -130,7 +130,7 @@ import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitEleme
 
     div[class$='-badge'] {
         position: absolute;
-        top: 20px;
+        top: 16px;
         right: 0;
         font-size: var(--type-heading-xxs-size);
         font-weight: 500;
@@ -561,10 +561,6 @@ merch-card-collection > div[slot] p {
     .four-merch-cards {
         padding: var(--spacing-m);
     }
-}
-
-merch-card a {
-    text-decoration: underline;
 }
 
 merch-card.background-opacity-70 {

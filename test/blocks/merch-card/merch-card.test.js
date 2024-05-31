@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { decorateLinks, loadStyle, setConfig } from '../../../libs/utils/utils.js';
+import { readMockText } from '../merch/mocks/fetch.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
@@ -142,7 +143,7 @@ describe('Plans Card', () => {
 
 describe('Catalog Card', () => {
   it('Decorates with mnemonic link', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const el = document.getElementById('mnemonic-link');
     await decorateLinks(document.body);
     const merchCard = await init(el);
@@ -359,7 +360,7 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 
   it('Supports Mini Compare Chart with offer select', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('#mini-compare-offer-select'));
     const offerSelect = merchCard.querySelector('merch-offer-select');
     const merchOffer = offerSelect.querySelector('merch-offer');
@@ -369,7 +370,7 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 
   it('Supports Mini Compare Chart intersection observer', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('#mini-compare-hidden-card'));
     merchCard.style.visibility = 'hidden';
     setTimeout(() => {
@@ -389,18 +390,6 @@ describe('Merch Card with Offer Selection', () => {
     expect(quantitySelect.getAttribute('min')).to.equal('1');
     expect(quantitySelect.getAttribute('max')).to.equal('3');
     expect(quantitySelect.getAttribute('step')).to.equal('1');
-  });
-
-  describe('TwP Merch Card', () => {
-    it('Displays expected slots ', async () => {
-      document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/twp.html');
-      await init(document.querySelector('.twp'));
-      const merchCard = document.querySelector('merch-card');
-      const topSection = merchCard.shadowRoot.querySelector('.top-section');
-      const body = merchCard.shadowRoot.querySelector('.body');
-      expect(topSection).to.exist;
-      expect(body).to.exist;
-    });
   });
 
   it('Change quantity select ', async () => {
