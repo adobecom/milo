@@ -554,7 +554,9 @@ export const getConfig = async (originalState, strs = {}) => {
   const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
+
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags, state.notLogicTags);
+
   const caasRequestHeaders = addFloodgateHeader(state);
 
   const config = {
@@ -733,7 +735,6 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     headers: caasRequestHeaders,
   };
-
   return config;
 };
 
