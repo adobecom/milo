@@ -47,10 +47,10 @@ const showTooltip = (element, message, time = 5000) => {
   const id = setTimeout(() => {
     cleanup();
   }, time);
-  return () => {
+  element.addEventListener('click', () => {
     cleanup();
     clearTimeout(id);
-  };
+  }, { once: true });
 };
 
 const playFocusAnimation = (element, iterationCount = 2, animationDuration = 2500) => {
@@ -72,10 +72,10 @@ const playFocusAnimation = (element, iterationCount = 2, animationDuration = 250
     rings.forEach((ring) => ring.remove());
   };
   const id = setTimeout(cleanup, (iterationCount + 1) * animationDuration);
-  return () => {
+  element.addEventListener('click', () => {
     cleanup();
     clearTimeout(id);
-  };
+  }, { once: true });
 };
 
 class AppPrompt {
@@ -271,20 +271,16 @@ class AppPrompt {
     this.anchor?.removeEventListener('click', this.close);
 
     if (dismissalActions) {
-      const clearAnimation = playFocusAnimation(
+      playFocusAnimation(
         this.anchor,
         this.options['dismissal-animation-count'],
         this.options['dismissal-animation-duration'],
       );
-      const clearTooltip = showTooltip(
+      showTooltip(
         this.anchor,
         this.options['dismissal-tooltip-message'],
         this.options['dismissal-tooltip-duration'],
       );
-      this.anchor.addEventListener('click', () => {
-        clearTooltip();
-        clearAnimation();
-      }, { once: true });
     }
   };
 
