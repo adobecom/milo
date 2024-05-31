@@ -17,6 +17,13 @@ The checkout link in the footer slot is styled by Milo:
 
 The checkout link in the footer slot is hidden, and instead, a Spectrum Web Components button is used to handle the click, which triggers the click on the hidden `checkout-link`.
 
+To place a single `merch-card`, the follow structure with `one-merch-card` class must be used.
+
+```html
+<div class="one-merch-card plans">
+  <merch-card>...</merch-card>
+</div>
+```
 ## 3. Odin as Data Source (WIP)
 
 In progress.
