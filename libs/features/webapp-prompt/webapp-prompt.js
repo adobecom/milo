@@ -12,9 +12,13 @@ const CONFIG = {
   selectors: { prompt: '.appPrompt' },
   delay: 7000,
   loaderColor: '#EB1000',
+  animationCount: 2,
+  animationDuration: 2500,
+  tooltipMessage: 'Use the App Switcher to quickly find apps.',
+  tooltipDuration: 5000,
 };
 
-const getElemText = (elem) => elem?.textContent?.trim().toLowerCase();
+const getElemText = (elem) => elem?.textContent?.trim();
 
 const getMetadata = (el) => [...el.childNodes].reduce((acc, row) => {
   if (row.children?.length === 2) {
@@ -35,7 +39,7 @@ const getIcon = (content) => {
   return icons.company;
 };
 
-const showTooltip = (element, message, time) => {
+const showTooltip = (element, message, time = 5000) => {
   element.setAttribute('data-pep-dismissal-tooltip', message);
   setTimeout(() => {
     element.removeAttribute('data-pep-dismissal-tooltip');
@@ -179,6 +183,10 @@ class AppPrompt {
     const metadata = getMetadata(content.querySelector('.section-metadata'));
     metadata['loader-duration'] = parseInt(metadata['loader-duration'] || CONFIG.delay, 10);
     metadata['loader-color'] = metadata['loader-color'] || CONFIG.loaderColor;
+    metadata['dismissal-animation-count'] = parseInt(metadata['dismissal-animation-count'] ?? CONFIG.animationCount, 10);
+    metadata['dismissal-animation-duration'] = parseInt(metadata['dismissal-animation-duration'] ?? CONFIG.animationDuration, 10);
+    metadata['dismissal-tooltip-message'] ??= CONFIG.tooltipMessage;
+    metadata['dismissal-tooltip-duration'] = parseInt(metadata['dismissal-tooltip-duration'] ?? CONFIG.tooltipDuration, 10);
     this.options = metadata;
   };
 
@@ -198,7 +206,7 @@ class AppPrompt {
       : '';
 
     return toFragment`<div
-      daa-state="true" daa-im="true" daa-lh="PEP Modal_${this.options['product-name']}"
+      daa-state="true" daa-im="true" daa-lh="PEP Modal_${this.options['product-name']?.toLowerCase()}"
       class="appPrompt" style="margin: 0 ${this.offset}px">
       ${this.elements.closeIcon}
       <div class="appPrompt-icon">
@@ -251,9 +259,17 @@ class AppPrompt {
     this.anchor?.removeEventListener('click', this.close);
 
     const appSwitcher = document.querySelector('#unav-app-switcher');
-    window.testAnimation = (n, t = 3000) => playFocusAnimation(appSwitcher, n, t);
-    playFocusAnimation(appSwitcher, 2, 2500);
-    showTooltip(appSwitcher, 'Use the App Switcher to quickly find apps.', 5000);
+
+    playFocusAnimation(
+      appSwitcher,
+      this.options['dismissal-animation-count'],
+      this.options['dismissal-animation-duration'],
+    );
+    showTooltip(
+      appSwitcher,
+      this.options['dismissal-tooltip-message'],
+      this.options['dismissal-tooltip-duration'],
+    );
   };
 
   static getDismissedPrompts = () => {
