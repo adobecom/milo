@@ -17,18 +17,19 @@
 /libs/blocks/article-feed/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
 /libs/blocks/article-header/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
 /libs/blocks/aside/ @Sartxi
+/libs/blocks/bulk-publish-v2 @Sartxi
 /libs/blocks/caas/ @chrischrischris
 /libs/blocks/caas-config/ @chrischrischris
 /libs/blocks/carousel/ @rgclayton
 /libs/blocks/chart/ @meganthecoder @Brandon32 @JasonHowellSlavin
-/libs/blocks/commerce/ @Axelcureno @VKniaz
+/libs/blocks/commerce/ @adobecom/tacocat
 /libs/blocks/faas/ @seanchoi-dev
 /libs/blocks/faas-config/ @seanchoi-dev
 /libs/blocks/featured-article/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
 /libs/blocks/form/ @elan-tbx @rgclayton
 /libs/blocks/fragment-personalization/ @chrischrischris
-/libs/blocks/global-footer/ @overmyheadandbody @mokimo @narcis-radu
-/libs/blocks/global-navigation/ @overmyheadandbody @mokimo @narcis-radu
+/libs/blocks/global-footer/ @salonijain3 @bandana147 @sharmrj @nishantka @Deva309 @sonawanesnehal3
+/libs/blocks/global-navigation/ @salonijain3 @bandana147 @sharmrj @nishantka @Deva309 @sonawanesnehal3
 /libs/blocks/how-to/ @fullcolorcoder @ryanmparrish
 /libs/blocks/icon-block/ @elan-tbx
 /libs/blocks/local-nav/ @seanchoi-dev
@@ -36,12 +37,12 @@
 /libs/blocks/marketo-config/ @Brandon32 @meganthecoder @JasonHowellSlavin
 /libs/blocks/marquee/ @ryanmparrish @Sartxi @auniverseaway
 /libs/blocks/media/ @ryanmparrish
-/libs/blocks/merch/ @3ch023 @honstar @VKniaz @npeltier @Axelcureno @yesil @vladen
-/libs/blocks/merch-card/ @VKniaz @Axelcureno @ryanmparrish @yesil @3ch023 @npeltier
-/libs/blocks/merch-cards/ @yesil @VKniaz @Axelcureno @ryanmparrish @3ch023 @vladen @npeltier
-/libs/blocks/merch-offers/ @yesil @VKniaz @Axelcureno @ryanmparrish @3ch023 @vladen @npeltier
-/libs/blocks/mnemonic-list/ @Axelcureno
-/libs/blocks/ost/ @Axelcureno @3ch023 @honstar @VKniaz @vladen @yesil @npeltier
+/libs/blocks/merch/ @adobecom/tacocat
+/libs/blocks/merch-card/ @adobecom/tacocat
+/libs/blocks/merch-card-collection/ @adobecom/tacocat
+/libs/blocks/merch-offers/ @adobecom/tacocat
+/libs/blocks/mnemonic-list/ @adobecom/tacocat
+/libs/blocks/ost/ @adobecom/tacocat
 /libs/blocks/pdf-vewer/ @meganthecoder @JasonHowellSlavin @Brandon32
 /libs/blocks/quiz/ @colloyd @sabyamon @fullcolorcoder @JackySun9 @elaineskpt @echampio-at-adobe
 /libs/blocks/quiz-marquee/ @ryanmparrish

@@ -30,7 +30,7 @@ export const OptionCard = ({
 
   const imageHtml = html`
     <div class="quiz-option-image" 
-      style="background-image: url('${image}')" loading="lazy">
+      style="background-image: url('${image}'); background-size: cover" loading="lazy">
     </div>`;
 
   const titleHtml = html`
@@ -42,7 +42,7 @@ export const OptionCard = ({
   `;
 
   return html`<button class="quiz-option ${getOptionClass()}" data-option-name="${options}" 
-        aria-pressed="${!!selected}" tabindex="${disabled ? '-1' : '0'}">
+        role="checkbox" aria-checked="${!!selected}" disabled="${disabled}">
         ${(icon || iconTablet || iconDesktop) && getIconHtml()}
         ${image && imageHtml}
         <div class="quiz-option-text-container">  
@@ -78,7 +78,7 @@ export const GetQuizOption = ({
   btnAnalyticsData, background,
 }) => html`
   <div class="quiz-question">
-      <div class="quiz-options-container">
+      <div class="quiz-options-container" role="group" aria-labelledby="question">
         <${CreateOptions} 
           options=${options} 
           selectedCards=${selectedCards}

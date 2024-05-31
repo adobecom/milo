@@ -1,7 +1,7 @@
-function getRichResultsForNewsArticle(getMetadata) {
+function getRichResultsForArticle(type, getMetadata) {
   return {
     '@context': 'https://schema.org',
-    '@type': 'NewsArticle',
+    '@type': type,
     headLine: getMetadata('og:title'),
     image: getMetadata('og:image'),
     datePublished: getMetadata('published'),
@@ -44,8 +44,9 @@ function getRichResultsForOrgLogo(getMetadata) {
 
 function getRichResults(type, getMetadata) {
   switch (type) {
+    case 'Article':
     case 'NewsArticle':
-      return getRichResultsForNewsArticle(getMetadata);
+      return getRichResultsForArticle(type, getMetadata);
     case 'SiteSearchBox':
       return getRichResultsForSiteSearchBox(getMetadata);
     case 'Organization':

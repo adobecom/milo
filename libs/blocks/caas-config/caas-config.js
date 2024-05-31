@@ -75,6 +75,7 @@ const defaultOptions = {
     'double-wide': 'Double Width Card',
     product: 'Product Card',
     'text-card': 'Text Card',
+    'icon-card': 'Icon Card',
     'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
@@ -349,6 +350,7 @@ const BasicsPanel = ({ tagsData }) => {
 
 const UiPanel = () => html`
   <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
+  <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
   <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
   <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
@@ -999,6 +1001,7 @@ const Configurator = ({ rootEl }) => {
   }, [state.placeholderUrl]);
 
   useEffect(async () => {
+    if (!state.tagsUrl) return;
     const { tags, errorMsg } = await loadCaasTags(state.tagsUrl);
     setPanels(getPanels(tags));
     setError(errorMsg || '');

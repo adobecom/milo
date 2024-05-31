@@ -8,7 +8,7 @@ describe('icon blocks', () => {
   const blocks = document.querySelectorAll('.icon-block');
   blocks.forEach((block) => {
     init(block);
-    const isColumn = block.classList.contains('vertical') || block.classList.contains('centered');
+    const isColumn = block.classList.contains('vertical') || block.classList.contains('center');
     describe(`icon block ${isColumn ? 'column' : 'full-width'}`, () => {
       const children = block.querySelectorAll('.text-content');
       if (children.length) {
@@ -41,6 +41,16 @@ describe('icon blocks', () => {
       const block = document.querySelector('#not-xx-up');
       const heading = block.querySelector('.heading-xs');
       expect(heading).to.not.exist;
+    });
+  });
+  describe('cta container', () => {
+    it('is added around the only action area', () => {
+      expect(document.querySelector('.cta-container #one-cta')).to.exist;
+    });
+    it('is added around adjacent action areas', () => {
+      const parent = document.querySelector('#adjacent-cta-1').parentElement;
+      expect(parent.className.includes('cta-container')).to.be.true;
+      expect(parent.querySelector('#adjacent-cta-2')).to.exist;
     });
   });
 });

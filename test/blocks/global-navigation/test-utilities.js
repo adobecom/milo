@@ -2,8 +2,8 @@
 /* eslint-disable import/prefer-default-export */
 import sinon, { stub } from 'sinon';
 import { setViewport } from '@web/test-runner-commands';
-import initGnav from '../../../libs/blocks/global-navigation/global-navigation.js';
-import { getLocale, setConfig, loadStyle } from '../../../libs/utils/utils.js';
+import initGnav, { LANGMAP } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import { setConfig, loadStyle } from '../../../libs/utils/utils.js';
 import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
@@ -51,6 +51,46 @@ export const viewports = {
   wide: { width: 1600, height: 1024 },
 };
 
+export const analyticsTestData = {
+  'app-switcher|click|app|acrobat': 'AppLauncher.appClick.Acrobat',
+  'app-switcher|click|app|acrobat-sign': 'AppLauncher.appClick.Acrobat Sign',
+  'app-switcher|click|app|adobe-express': 'AppLauncher.appClick.Adobe Express',
+  'app-switcher|click|app|adobe-firefly': 'AppLauncher.appClick.Adobe Firefly',
+  'app-switcher|click|app|experience-cloud': 'AppLauncher.appClick.Experience Cloud',
+  'app-switcher|click|app|fonts': 'AppLauncher.appClick.Fonts',
+  'app-switcher|click|app|lightroom': 'AppLauncher.appClick.Lightroom',
+  'app-switcher|click|app|photoshop': 'AppLauncher.appClick.Photoshop',
+  'app-switcher|click|app|stock': 'AppLauncher.appClick.Stock',
+  'app-switcher|click|footer|adobe-dot-com': 'AppLauncher.adobe.com',
+  'app-switcher|click|footer|adobe-home': 'AppLauncher.adobe.com',
+  'app-switcher|click|footer|all-apps': 'AppLauncher.allapps',
+  'app-switcher|click|footer|see-all-apps': 'AppLauncher.allapps',
+  'app-switcher|render|component': 'AppLauncher.appIconToggle',
+  'profile|click|account': 'View Account|gnav|milo|unav',
+  'profile|click|sign-in': 'Sign In|gnav|milo|unav',
+  'profile|click|sign-out': 'Sign Out|gnav|milo|unav',
+  'profile|render|component': 'Account|gnav|milo|unav',
+  'unc|click|dismiss': 'Dismiss Notifications',
+  'unc|click|icon': 'Open Notifications panel',
+  'unc|click|link': 'Open Notification',
+  'unc|click|markRead': 'Mark Notification as read',
+  'unc|click|markUnread': 'Mark Notification as unread',
+};
+
+export const unavLocalesTestData = Object.entries(LANGMAP).reduce((acc, curr) => {
+  const result = [];
+  const [locale, prefixes] = curr;
+  prefixes.forEach((prefix) => (result.push({
+    prefix,
+    expectedLocale: `${locale.toLowerCase()}_${prefix.toUpperCase()}`,
+  })));
+  return [...acc, ...result];
+}, [
+  { prefix: 'ab_CD', expectedLocale: 'cd_AB' },
+  { prefix: 'uk', expectedLocale: 'en_GB' },
+  { prefix: 'ab', expectedLocale: 'ab_AB' },
+]);
+
 export const loadStyles = (path) => new Promise((resolve) => loadStyle(path, resolve));
 
 export const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
@@ -83,7 +123,6 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 export const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
-  contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
   locales,
 };
 
@@ -120,12 +159,14 @@ export const createFullGlobalNavigation = async ({
   breadcrumbsEl = defaultBreadcrumbsEl(),
   globalNavigation,
   hasPromo,
+  hasBreadcrumbs = true,
+  unavContent = null,
 } = {}) => {
   const clock = sinon.useFakeTimers({
     // Intercept setTimeout and call the function immediately
     toFake: ['setTimeout'],
   });
-  setConfig(customConfig);
+  setConfig({ ...config, ...customConfig });
   await setViewport(viewports[viewport]);
   window.lana = { log: stub() };
   window.fetch = stub().callsFake((url) => {
@@ -135,9 +176,12 @@ export const createFullGlobalNavigation = async ({
     if (url.endsWith('large-menu-cross-cloud.plain.html')) { return mockRes({ payload: largeMenuCrossCloud }); }
     if (url.endsWith('large-menu-active.plain.html')) { return mockRes({ payload: largeMenuActiveMock }); }
     if (url.endsWith('large-menu-wide-column.plain.html')) { return mockRes({ payload: largeMenuWideColumnMock }); }
+    if (url.includes('https://www.stage.adobe.com')
+      && url.endsWith('feds-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }
     if (url.includes('wrong-promo-fragment')) { return mockRes({ payload: '<div>Non-promo content</div>' }); }
+    if (url.includes('UniversalNav')) { return mockRes({ payload: {} }); }
     return null;
   });
   window.adobeIMS = {
@@ -153,8 +197,11 @@ export const createFullGlobalNavigation = async ({
     ),
   };
 
+  const unavMeta = unavContent && toFragment`<meta name="universal-nav" content="${unavContent}">`;
+  if (unavContent) document.head.append(unavMeta);
+
   document.body.replaceChildren(toFragment`
-    <header class="global-navigation has-breadcrumbs${hasPromo ? ' has-promo' : ''}" daa-im="true" daa-lh="gnav|milo">
+    <header class="global-navigation ${hasBreadcrumbs ? 'has-breadcrumbs' : ''}${hasPromo ? ' has-promo' : ''}" daa-im="true" daa-lh="gnav|milo">
       ${breadcrumbsEl}
     </header>`);
 
@@ -188,12 +235,14 @@ export const createFullGlobalNavigation = async ({
     waitForElements.push(waitForElement(selectors.profileMenu, profile));
   }
 
-  waitForElements.push(waitForElement(selectors.breadcrumbsWrapper, document.body));
+  if (hasBreadcrumbs) {
+    waitForElements.push(waitForElement(selectors.breadcrumbsWrapper, document.body));
+  }
   await Promise.all(waitForElements);
 
   window.fetch = ogFetch;
   window.adobeIMS = undefined;
   window.adobeid = undefined;
-
+  if (document.head.contains(unavMeta)) document.head.removeChild(unavMeta);
   return instance;
 };

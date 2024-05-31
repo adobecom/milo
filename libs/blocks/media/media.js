@@ -6,6 +6,7 @@ import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
   medium: ['m', 's', 'm'],
+  'medium-compact': ['xl', 'm', 'l'],
   large: ['xl', 'm', 'l'],
   xlarge: ['xxl', 'm', 'l'],
 };
@@ -17,6 +18,19 @@ function decorateAvatar(el) {
   [...childElements].forEach((e, i) => {
     if (e.localName !== null && e.localName === 'picture') childElements[i].classList.add('avatar');
   });
+}
+
+function decorateQr(el) {
+  const text = el.querySelector('.text');
+  if (!text) return;
+  const appStore = text.children[(text.children.length - 1)];
+  const googlePlay = text.children[(text.children.length - 2)];
+  const qrImage = text.children[(text.children.length - 3)];
+  appStore.classList.add('app-store');
+  appStore.textContent = '';
+  googlePlay.classList.add('google-play');
+  googlePlay.textContent = '';
+  qrImage.classList.add('qr-code-img');
 }
 
 export default function init(el) {
@@ -33,9 +47,15 @@ export default function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
-  const blockType = el.classList.contains('merch') ? 'merch' : null;
+  let blockType = null;
+  const types = ['merch', 'qr-code'];
+  [...types].forEach((type) => {
+    if (!el.classList.contains(type)) return;
+    blockType = type;
+  });
   const size = getBlockSize(el);
   const container = createTag('div', { class: 'container foreground' });
+
   rows.forEach((row) => {
     row.classList.add('media-row');
     const header = row.querySelector('h1, h2, h3, h4, h5, h6');
@@ -68,25 +88,19 @@ export default function init(el) {
         link.className = 'body-xxs';
       });
     }
-
-    // qr code
-    if (row.closest('.qr-code')) {
-      const imgQRCode = row.querySelector('.text img');
-      if (imgQRCode) {
-        imgQRCode.classList.add('qr-code-img');
+    const lastActionArea = el.querySelector('.action-area:last-of-type');
+    if (lastActionArea) {
+      const div = createTag('div', { class: 'cta-container' });
+      lastActionArea.insertAdjacentElement('afterend', div);
+      if (lastActionArea.previousElementSibling.className.includes('icon-stack-area')) {
+        div.append(lastActionArea.previousElementSibling);
       }
-      const qrCodeLinks = row.querySelectorAll('a');
-      const googleBtn = qrCodeLinks[0];
-      const appleBtn = qrCodeLinks[1];
-      googleBtn.textContent = '';
-      googleBtn.classList.add('google-play');
-      googleBtn.parentNode.classList.add('qr-button-container');
-      appleBtn.textContent = '';
-      appleBtn.classList.add('app-store');
-      appleBtn.parentNode.classList.add('qr-button-container');
+      div.append(lastActionArea);
     }
     container.append(row);
   });
+
+  if (blockType === 'qr-code') decorateQr(container);
   el.append(container);
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');

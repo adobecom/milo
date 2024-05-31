@@ -1,6 +1,8 @@
 import { importMapsPlugin } from '@web/dev-server-import-maps';
 import { defaultReporter, summaryReporter } from '@web/test-runner';
 
+const GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
+
 function customReporter() {
   return {
     async reportTestFileResults({ logger, sessionsForTestFile }) {
@@ -33,9 +35,11 @@ export default {
       '**/blocks/library-config/**',
       '**/hooks/**',
       '**/special/tacocat/**',
+      '**/libs/martech/martech.js', // ticket to add unit test: https://jira.corp.adobe.com/browse/MWPW-145975
+      '**/blocks/bulk-publish/**', // this block is not in use
     ],
   },
-  testFramework: { config: { retries: 1 } },
+  testFramework: { config: { retries: GITHUB_ACTIONS ? 1 : 0 } },
   plugins: [importMapsPlugin({})],
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),

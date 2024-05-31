@@ -3,7 +3,7 @@
  */
 
 import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
@@ -33,9 +33,12 @@ function decorateText(el, size) {
 }
 
 function decorateMultipleIconArea(iconArea) {
-  iconArea.querySelectorAll(':scope > picture').forEach((picture) => {
+  let count = 0;
+  iconArea.querySelectorAll(':scope picture').forEach((picture) => {
+    count += 1;
     const src = picture.querySelector('img')?.getAttribute('src');
     const a = picture.nextElementSibling;
+    if (count > 1) iconArea.setAttribute('icon-count', count);
     if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
     if (!a.querySelector('img')) {
       a.innerHTML = '';
@@ -43,7 +46,6 @@ function decorateMultipleIconArea(iconArea) {
       a.appendChild(picture);
     }
   });
-  if (iconArea.childElementCount > 1) iconArea.classList.add('icon-area-multiple');
 }
 
 function extendButtonsClass(text) {
@@ -64,18 +66,40 @@ const decorateImage = (media) => {
   }
 };
 
-export async function dynamicImport(path) {
-  return import(path);
-}
-
 export async function loadMnemonicList(foreground) {
   try {
-    await dynamicImport('../mnemonic-list/mnemonic-list.js')
-      .then((module) => {
-        module.decorateMnemonicList(foreground);
-      });
+    const { base } = getConfig();
+    const stylePromise = new Promise((resolve) => {
+      loadStyle(`${base}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
+    });
+    const loadModule = import('../mnemonic-list/mnemonic-list.js')
+      .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
+    await Promise.all([stylePromise, loadModule]);
   } catch (err) {
     window.lana?.log(`Failed to load mnemonic list module: ${err}`);
+  }
+}
+
+function decorateSplit(el, foreground, media) {
+  if (foreground && media) {
+    media.classList.add('bleed');
+    foreground.insertAdjacentElement('beforebegin', media);
+  }
+
+  let mediaCreditInner;
+  const txtContent = media?.lastChild?.textContent?.trim();
+  if (txtContent?.match(/^http.*\.mp4/)) return;
+  if (txtContent) {
+    mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
+  } else if (media.lastElementChild?.tagName !== 'PICTURE') {
+    mediaCreditInner = media.lastElementChild;
+  }
+
+  if (mediaCreditInner) {
+    const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
+    el.appendChild(mediaCredit);
+    el.classList.add('has-credit');
+    media?.lastChild.remove();
   }
 }
 
@@ -95,12 +119,12 @@ export default async function init(el) {
   const media = foreground.querySelector(':scope > div:not([class])');
 
   if (media) {
-    media.classList.add('media');
+    media.classList.add('asset');
     if (!media.querySelector('video, a[href*=".mp4"]')) decorateImage(media);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
-  if (firstDivInForeground?.classList.contains('media')) el.classList.add('row-reversed');
+  if (firstDivInForeground?.classList.contains('asset')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
@@ -108,27 +132,7 @@ export default async function init(el) {
   const iconArea = text.querySelector('.icon-area');
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
   extendButtonsClass(text);
-  if (el.classList.contains('split')) {
-    if (foreground && media) {
-      media.classList.add('bleed');
-      foreground.insertAdjacentElement('beforebegin', media);
-    }
-
-    let mediaCreditInner;
-    const txtContent = media?.lastChild.textContent.trim();
-    if (txtContent) {
-      mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
-    } else if (media.lastElementChild?.tagName !== 'PICTURE') {
-      mediaCreditInner = media.lastElementChild;
-    }
-
-    if (mediaCreditInner) {
-      const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
-      el.appendChild(mediaCredit);
-      el.classList.add('has-credit');
-      media?.lastChild.remove();
-    }
-  }
+  if (el.classList.contains('split')) decorateSplit(el, foreground, media);
   if (el.classList.contains('mnemonic-list') && foreground) {
     await loadMnemonicList(foreground);
   }
