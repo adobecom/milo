@@ -462,9 +462,15 @@ class Gnav {
     const accessToken = window.adobeIMS.getAccessToken();
     const { env } = getConfig();
     const headers = new Headers({ Authorization: `Bearer ${accessToken.token}` });
-    const profileData = await fetch(`https://${env.adobeIO}/profile`, { headers });
+    const url = `https://${env.adobeIO}/profile`;
+    const profileData = await fetch( url, { headers });
 
     if (profileData.status !== 200) {
+      lanaLog({
+        message: 'GNAV: Error in decorateProfile',
+        e: `${profileData.statusText} url: ${url}`,
+        tags: 'errorType=error,module=gnav'
+      })
       return;
     }
 
@@ -512,9 +518,20 @@ class Gnav {
       return 'linux';
     };
 
+    const scriptUrl = `https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.js`;
+    const styleUrl = `https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.css`;
+
     await Promise.all([
-      loadScript(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.js`),
-      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.css`),
+      loadScript(scriptUrl),
+      loadStyle(styleUrl, (e) => {
+        if (e === 'error') {
+          lanaLog({
+            message: `Error fetching universalNav style`,
+            e: `${e} loading style: ${styleUrl}`,
+            tags: 'errorType=error,module=gnav',
+          });
+        }
+      }),
     ]);
 
     const getChildren = () => {

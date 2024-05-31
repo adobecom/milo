@@ -183,8 +183,15 @@ export function getExperienceName() {
 
 export function loadStyles(path) {
   const { miloLibs, codeRoot } = getConfig();
-  return new Promise((resolve) => {
-    loadStyle(`${miloLibs || codeRoot}/blocks/global-navigation/${path}`, resolve);
+  const url = `${miloLibs || codeRoot}/blocks/global-navigation/${path}`;
+  return new Promise((resolve, reject) => {
+    loadStyle(url, (e) => {
+      if (e === 'error') {
+        reject(`loadStyles ${e} url:${url}`);
+      } else {
+        resolve(e);
+      }
+    });
   });
 }
 
@@ -329,7 +336,15 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (mepFragment && mepFragment.action === 'replace') {
     path = mepFragment.target;
   }
-  const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
+  const replacedUrl = path.replace(/(\.html$|$)/, '.plain.html');
+  const res = await fetch(replacedUrl);
+  if (res.status !== 200) {
+    lanaLog({
+      message: `fetchAndProcessPlainHtml Error`,
+      e: `${res.statusText} url: ${replacedUrl}`,
+      tags: 'errorType=info,module=utilities',
+    });
+  }
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
@@ -357,8 +372,8 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
 
   const blocks = body.querySelectorAll('.martech-metadata');
   if (blocks.length) {
-    import('../../martech-metadata/martech-metadata.js')
-      .then(({ default: decorate }) => blocks.forEach((block) => decorate(block)));
+    const { default: decorate } = await import('../../martech-metadata/martech-metadata.js');
+    blocks.forEach((block) => decorate(block));
   }
 
   body.innerHTML = await replaceText(body.innerHTML, getFedsPlaceholderConfig());
