@@ -102,8 +102,8 @@ class AppPrompt {
       }));
     if (this.isAnchorExpanded) return;
 
-    // load animation css
     const { base } = getConfig();
+
     await loadStyle(`${base}/features/webapp-prompt/focus-animation.css`);
     await loadStyle(`${base}/features/webapp-prompt/tooltip.css`);
 
