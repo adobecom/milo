@@ -10,7 +10,7 @@ const defaultConfig = {
     fallbackEndpoint: '',
     totalCardsToShow: 10,
     cardStyle: 'half-height',
-    cardHoverEffect: "default",
+    cardHoverEffect: 'default',
     showTotalResults: false,
     i18n: {
       cardTitleAccessibilityLevel: 6,
