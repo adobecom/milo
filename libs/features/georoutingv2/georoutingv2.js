@@ -110,10 +110,12 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix) {
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
+    let eventName = 'Switch';
+    const modCurrPrefix = localePrefix || 'us';
     if (localePrefix !== undefined) {
-      const modCurrPrefix = localePrefix || 'us';
-      sendAnalyticsFunc(new Event(`Stay:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
+      eventName = 'Stay';
     }
+    sendAnalyticsFunc(new Event(`${eventName}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
   });
 }
 
@@ -320,12 +322,13 @@ export default async function loadGeoRouting(
 
   // Show modal when derived countries from url locale and akamai disagree
   try {
-    const akamaiCode = await getAkamaiCode();
+    let akamaiCode = await getAkamaiCode();
     if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
       const localeMatches = getMatches(json.georouting.data, akamaiCode);
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         await showModal(details);
+        if (akamaiCode === 'gb') akamaiCode = 'uk';
         sendAnalyticsFunc(
           new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
         );
