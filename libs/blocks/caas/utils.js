@@ -402,9 +402,7 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
 };
 
 const getCategoryArray = async (state, country, lang) => {
-  // Fetch tags
   const { tags } = await getTags(state.tagsUrl);
-
   const categories = Object.values(tags)
     .filter((tag) => tag.tagID === 'caas:product-categories')
     .map((tag) => tag.tags);
@@ -428,7 +426,6 @@ const getFilterArray = async (state, country, lang, strs) => {
     return [];
   }
 
-  // Fetch tags
   const { tags } = await getTags(state.tagsUrl);
   const useCustomFilters = state.filterBuildPanel === 'custom';
 
