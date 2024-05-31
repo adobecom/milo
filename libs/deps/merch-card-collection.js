@@ -1,5 +1,9 @@
-// branch: develop commit: f499abc85176fc7d34f43457efeeb72adb1e6103 Thu, 30 May 2024 14:05:27 GMT
-import{html as a,LitElement as N}from"/libs/deps/lit-all.min.js";var m=class{constructor(e,t){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(t),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};var E="hashchange";function S(r=window.location.hash){let e=[],t=r.replace(/^#/,"").split("&");for(let o of t){let[i,l=""]=o.split("=");i&&e.push([i,decodeURIComponent(l.replace(/\+/g," "))])}return Object.fromEntries(e)}function p(r){let e=new URLSearchParams(window.location.hash.slice(1));Object.entries(r).forEach(([i,l])=>{l?e.set(i,l):e.delete(i)}),e.sort();let t=e.toString(),o=window.scrollY||document.documentElement.scrollTop;window.location.hash=t,window.scrollTo(0,o)}function x(r){let e=()=>{let t=S(window.location.hash);r(t)};return e(),window.addEventListener(E,e),()=>{window.removeEventListener(E,e)}}var g=(r,e={})=>{r.querySelectorAll("span[data-placeholder]").forEach(t=>{let{placeholder:o}=t.dataset;t.innerText=e[o]??""})};var T="(max-width: 1199px)",y="(min-width: 768px)",C="(min-width: 1200px)";import{css as _,unsafeCSS as b}from"/libs/deps/lit-all.min.js";var w=_`
+// branch: develop commit: 369516f3cda51fb1219ad0b3cf2c94c8f094c49b Tue, 07 May 2024 11:55:00 GMT
+import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";import{unsafeHTML as S}from"/libs/deps/lit-all.min.js";var d=class{constructor(t,e){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(e),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};var f="hashchange";function w(r=window.location.hash){let t=[],e=r.replace(/^#/,"").split("&");for(let o of e){let[n,i=""]=o.split("=");n&&t.push([n,decodeURIComponent(i)])}return Object.fromEntries(t)}function p(r){let t=new URLSearchParams(window.location.hash.slice(1));Object.entries(r).forEach(([e,o])=>{o?t.set(e,o):t.delete(e)}),t.sort(),window.location.hash=decodeURIComponent(t.toString())}function E(r){let t=e=>{let o=w(window.location.hash);r(o)};return t(),window.addEventListener(f,t),()=>{window.removeEventListener(f,t)}}var g=(r,t={})=>{r.querySelectorAll("span[data-placeholder]").forEach(e=>{let{placeholder:o}=e.dataset;e.innerText=t[o]??""})};var x="(max-width: 1199px)",T="(min-width: 768px)",y="(min-width: 1200px)";import{css as _,unsafeCSS as b}from"/libs/deps/lit-all.min.js";var C=_`
+    :host {
+        --mod-button-border-radius: 5px;
+    }
+
     #header,
     #resultText,
     #footer {
@@ -45,11 +49,11 @@ import{html as a,LitElement as N}from"/libs/deps/lit-all.min.js";var m=class{con
         justify-self: end;
     }
 
-    sp-action-button {
+    sp-button {
         align-self: baseline;
     }
 
-    sp-menu sp-action-button {
+    sp-menu sp-button {
         min-width: 140px;
     }
 
@@ -62,7 +66,7 @@ import{html as a,LitElement as N}from"/libs/deps/lit-all.min.js";var m=class{con
     }
 
     /* tablets */
-    @media screen and ${b(y)} {
+    @media screen and ${b(T)} {
         #header {
             grid-template-columns: 1fr fit-content(100%) fit-content(100%);
         }
@@ -81,7 +85,7 @@ import{html as a,LitElement as N}from"/libs/deps/lit-all.min.js";var m=class{con
     }
 
     /* Laptop */
-    @media screen and ${b(C)} {
+    @media screen and ${b(y)} {
         #resultText {
             grid-column: span 2;
             order: -3;
@@ -93,9 +97,9 @@ import{html as a,LitElement as N}from"/libs/deps/lit-all.min.js";var m=class{con
             justify-content: end;
         }
     }
-`;var u=(r,e)=>r.querySelector(`[slot="${e}"]`).textContent.trim();var A="merch-card-collection",n={alphabetical:"alphabetical",authored:"authored"},R={filters:["noResultText","resultText","resultsText"],mobile:["noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"],desktop:["noSearchResultsText","searchResultText","searchResultsText"]},v=(r,{filter:e})=>r.filter(t=>t.filters.hasOwnProperty(e)),M=(r,{types:e})=>e?(e=e.split(","),r.filter(t=>e.some(o=>t.types.includes(o)))):r,L=r=>r.sort((e,t)=>(e.title??"").localeCompare(t.title??"","en",{sensitivity:"base"})),D=(r,{filter:e})=>r.sort((t,o)=>o.filters[e]?.order==null||isNaN(o.filters[e]?.order)?-1:t.filters[e]?.order==null||isNaN(t.filters[e]?.order)?1:t.filters[e].order-o.filters[e].order),k=(r,{search:e})=>e?.length?(e=e.toLowerCase(),r.filter(t=>(t.title??"").toLowerCase().includes(e))):r,f=class extends N{static properties={filter:{type:String,attribute:"filter",reflect:!0},filtered:{type:String,attribute:"filtered"},search:{type:String,attribute:"search",reflect:!0},sort:{type:String,attribute:"sort",default:n.authored,reflect:!0},types:{type:String,attribute:"types",reflect:!0},limit:{type:Number,attribute:"limit"},page:{type:Number,attribute:"page",reflect:!0},singleApp:{type:String,attribute:"single-app",reflect:!0},hasMore:{type:Boolean},displayResult:{type:Boolean,attribute:"display-result"},resultCount:{type:Number},sidenav:{type:Object}};mobileAndTablet=new m(this,T);constructor(){super(),this.filter="all",this.hasMore=!1,this.resultCount=void 0,this.displayResult=!1}render(){return a`${this.header}
+`;var u=(r,t)=>r.querySelector(`[slot="${t}"]`).textContent.trim();var v="merch-card-collection",l={alphabetical:"alphabetical",authored:"authored"},R={filters:["noResultText","resultText","resultsText"],mobile:["noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"],desktop:["noSearchResultsText","searchResultText","searchResultsText"]},N=(r,{filter:t})=>r.filter(e=>e.filters.hasOwnProperty(t)),M=(r,{types:t})=>t?(t=t.split(","),r.filter(e=>t.some(o=>e.types.includes(o)))):r,L=r=>r.sort((t,e)=>(t.title??"").localeCompare(e.title??"","en",{sensitivity:"base"})),$=(r,{filter:t})=>r.sort((e,o)=>o.filters[t]?.order==null||isNaN(o.filters[t]?.order)?-1:e.filters[t]?.order==null||isNaN(e.filters[t]?.order)?1:e.filters[t].order-o.filters[t].order),k=(r,{search:t})=>t?.length?(t=t.toLowerCase(),r.filter(e=>e.includes(t))):r,m=class extends A{static properties={filter:{type:String,attribute:"filter",reflect:!0},filtered:{type:String,attribute:"filtered"},search:{type:String,attribute:"search",reflect:!0},sort:{type:String,attribute:"sort",default:l.authored,reflect:!0},types:{type:String,attribute:"types",reflect:!0},limit:{type:Number,attribute:"limit"},page:{type:Number,attribute:"page",reflect:!0},singleApp:{type:String,attribute:"single-app",reflect:!0},hasMore:{type:Boolean},displayResult:{type:Boolean,attribute:"display-result"},resultCount:{type:Number},sidenav:{type:Object}};#e;#t;mobileAndTablet=new d(this,x);constructor(){super(),this.filter="all",this.hasMore=!1,this.resultCount=void 0,this.#t=0,this.displayResult=!1}render(){return a`${this.header}
             <slot></slot>
-            ${this.footer}`}updated(e){if(!this.querySelector("merch-card"))return;let t=window.scrollY||document.documentElement.scrollTop,o=[...this.children].filter(s=>s.tagName==="MERCH-CARD");if(o.length===0)return;e.has("singleApp")&&this.singleApp&&o.forEach(s=>{s.updateFilters(s.name===this.singleApp)});let i=this.sort===n.alphabetical?L:D,c=[v,M,k,i].reduce((s,h)=>h(s,this),o).map((s,h)=>[s,h]);if(this.resultCount=c.length,this.page&&this.limit){let s=this.page*this.limit;this.hasMore=c.length>s,c=c.filter(([,h])=>h<s)}let d=new Map(c);o.forEach(s=>{d.has(s)?(s.style.order=d.get(s),s.size=s.filters[this.filter]?.size,s.style.removeProperty("display"),s.requestUpdate()):(s.style.display="none",s.size=void 0,s.style.removeProperty("order"))}),window.scrollTo(0,t),this.updateComplete.then(()=>{let s=this.shadowRoot.getElementById("resultText")?.firstElementChild?.assignedElements?.()?.[0];s&&g(s,{resultCount:this.resultCount,searchTerm:this.search,filter:this.sidenav?.filters.selectedText})})}connectedCallback(){super.connectedCallback(),this.filtered?(this.filter=this.filtered,this.page=1):this.startDeeplink(),this.sidenav=document.querySelector("merch-sidenav")}disconnectedCallback(){super.disconnectedCallback(),this.stopDeeplink?.()}get header(){if(!this.filtered)return a`<div id="header">
+            ${this.footer}`}updated(t){if(!this.querySelector("merch-card"))return;let e=[...this.children].filter(s=>s.tagName==="MERCH-CARD");if(e.length===0)return;t.has("singleApp")&&this.singleApp&&e.forEach(s=>{s.updateFilters(s.name===this.singleApp)});let o=this.sort===l.alphabetical?L:$,i=[N,M,k,o].reduce((s,h)=>h(s,this),e).map((s,h)=>[s,h]);if(this.resultCount=i.length,this.page&&this.limit){let s=this.page*this.limit;this.hasMore=i.length>s,i=i.filter(([,h])=>h<s)}let c=new Map(i);this.#t=(this.limit*(this.page-1)+1).toString(),e.forEach(s=>{c.has(s)?(s.style.order=c.get(s),s.style.order===this.#t&&(this.#e=s),s.size=s.filters[this.filter]?.size,s.style.removeProperty("display"),s.requestUpdate()):(s.style.display="none",s.size=void 0,s.style.removeProperty("order"))}),this.updateComplete.then(()=>{let s=this.shadowRoot.getElementById("resultText")?.firstElementChild?.assignedElements?.()?.[0];s&&g(s,{resultCount:this.resultCount,searchTerm:this.search,filter:this.sidenav?.filters.selectedText})})}connectedCallback(){super.connectedCallback(),this.filtered?(this.filter=this.filtered,this.page=1):this.startDeeplink(),this.sidenav=document.querySelector("merch-sidenav")}disconnectedCallback(){super.disconnectedCallback(),this.stopDeeplink?.()}get header(){if(!this.filtered)return a`<div id="header">
                 <sp-theme theme="spectrum" color="light" scale="medium">
                     ${this.searchBar} ${this.filtersButton} ${this.sortButton}
                 </sp-theme>
@@ -113,35 +117,37 @@ import{html as a,LitElement as N}from"/libs/deps/lit-all.min.js";var m=class{con
             @click="${this.showMore}"
         >
             <slot name="showMoreText"></slot>
-        </sp-button>`}get filtersButton(){return this.mobileAndTablet.matches?a`<sp-action-button
+        </sp-button>`}get filtersButton(){return this.mobileAndTablet.matches?a`<sp-button
                   id="filtersButton"
                   variant="secondary"
                   treatment="outline"
                   @click="${this.openFilters}"
                   ><slot name="filtersText"></slot
-              ></sp-action-button>`:""}get searchBar(){let e=u(this,"searchText");return this.mobileAndTablet.matches?a`<merch-search deeplink="search">
+              ></sp-button>`:""}get searchBar(){let t=u(this,"searchText");return this.mobileAndTablet.matches?a`<merch-search deeplink="search">
                   <sp-search
                       id="searchBar"
-                      @submit="${this.searchSubmit}"
-                      placeholder="${e}"
+                      placeholder="${t}"
                   ></sp-search>
-              </merch-search>`:""}get sortButton(){let e=u(this,"sortText"),t=u(this,"popularityText"),o=u(this,"alphabeticallyText");if(!(e&&t&&o))return;let i=this.sort===n.alphabetical;return a`
-            <sp-action-menu
-                id="sortButton"
-                size="m"
-                @change="${this.sortChanged}"
-                selects="single"
-                value="${i?n.alphabetical:n.authored}"
-            >
-                <span slot="label-only"
-                    >${e}:
-                    ${i?o:t}</span
+              </merch-search>`:""}get sortButton(){let t=u(this,"sortText"),e=u(this,"popularityText"),o=u(this,"alphabeticallyText");if(!(t&&e&&o))return;let n=this.sort===l.alphabetical,i=n?"":"selected",c=n?"selected":"";return a`
+            <overlay-trigger id="sortButton" placement="bottom" type="hint">
+                <sp-button
+                    slot="trigger"
+                    variant="secondary"
+                    treatment="outline"
+                    >${t}:
+                    ${n?o:e}</sp-button
                 >
-                <sp-menu-item value="${n.authored}"
-                    >${t}</sp-menu-item
-                >
-                <sp-menu-item value="${n.alphabetical}"
-                    >${o}</sp-menu-item
-                >
-            </sp-action-menu>
-        `}sortChanged(e){e.target.value===n.authored?p({sort:void 0}):p({sort:e.target.value})}async showMore(){let e=this.page+1;p({page:e}),this.page=e,await this.updateComplete}startDeeplink(){this.stopDeeplink=x(({category:e,filter:t,types:o,sort:i,search:l,single_app:c,page:d})=>{t=t||e,!this.filtered&&t&&t!==this.filter&&setTimeout(()=>{p({page:void 0}),this.page=1},1),this.filtered||(this.filter=t??this.filter),this.types=o??"",this.search=l??"",this.singleApp=c,this.sort=i,this.page=Number(d)||1})}openFilters(e){this.sidenav?.showModal(e)}static styles=[w]};f.SortOrder=n;customElements.define(A,f);export{f as MerchCardCollection};
+                <sp-popover slot="click-content" tip>
+                    <sp-menu @click="${this.sortChanged}">
+                        ${S(`<sp-menu-item
+                                value="${l.authored}"
+                                ${i}
+                                >${e}</sp-menu-item>`)} ${S(`<sp-menu-item
+                                value="${l.alphabetical}"
+                                ${c}
+                                >${o}</sp-menu-item
+                            >`)}
+                    </sp-menu>
+                </sp-popover>
+            </overlay-trigger>
+        `}sortChanged(t){t.target.value===l.authored?p({sort:void 0}):p({sort:t.target.value})}async showMore(){let t=this.page+1;p({page:t}),this.page=t,await this.updateComplete,this.#e.scrollIntoView({behavior:"smooth"})}startDeeplink(){this.stopDeeplink=E(({category:t,filter:e,types:o,sort:n,search:i,single_app:c,page:s})=>{e=e||t,!this.filtered&&e&&e!==this.filter&&setTimeout(()=>{p({page:void 0}),this.page=1},1),this.filtered||(this.filter=e??this.filter),this.types=o??"",this.search=i??"",this.singleApp=c,this.sort=n,this.page=Number(s)||1})}openFilters({target:t}){this.sidenav?.showModal(t)}static styles=[C]};m.SortOrder=l;customElements.define(v,m);export{m as MerchCardCollection};

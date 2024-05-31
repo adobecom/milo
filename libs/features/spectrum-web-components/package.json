@@ -13,6 +13,7 @@
     "lit": "^2.8.0",
     "@spectrum-web-components/action-menu": "^0.42.0",
     "@spectrum-web-components/action-button": "^0.42.0",
+    "@spectrum-web-components/action-group": "^0.42.0",
     "@spectrum-web-components/alert-dialog": "^0.42.0",
     "@spectrum-web-components/base": "^0.42.0",
     "@spectrum-web-components/button-group": "^0.42.0",

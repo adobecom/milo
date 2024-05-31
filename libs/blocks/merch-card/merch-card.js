@@ -1,9 +1,11 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
-import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle, decorateLinks, loadBlock } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
+import '../../deps/merch-icon.js';
 import '../../deps/merch-card.js';
+import { loadFragment } from '../../features/odin/odin.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -26,10 +28,6 @@ const HEADING_MAP = {
 };
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
-const PLANS = 'plans';
-const SEGMENT = 'segment';
-
-const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
 
 const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
@@ -91,7 +89,7 @@ const parseContent = async (el, merchCard) => {
     await loadMnemonicList(mnemonicList);
   }
   const innerElements = [
-    ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
+    ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
   ];
   innerElements.forEach((element) => {
     let { tagName } = element;
@@ -99,10 +97,6 @@ const parseContent = async (el, merchCard) => {
       let slotName = TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
-          element.classList.add('card-heading');
-          if (merchCard.badgeText) {
-            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
-          }
           if (HEADING_MAP[merchCard.variant]?.[tagName]) {
             tagName = HEADING_MAP[merchCard.variant][tagName];
           } else {
@@ -286,8 +280,31 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
   merchCard.appendChild(miniCompareOffers);
 };
 
+export async function initJSON(el, a) {
+  const {
+    name, title, type = 'catalog', icon, description, prices, ctas,
+  } = await loadFragment(a, 'merch-card');
+  const merchCard = createTag(
+    'merch-card',
+    { variant: type, name },
+    `<merch-icon slot="icons" src="${icon}"></merch-icon>
+    <h3 slot="heading-xs">${title}</h3>
+    <h2 slot="heading-m">${(prices) ?? ''}</h2>
+    <div slot="body-xs">${(description) ?? ''}</div>
+    <div slot="footer">
+      <p class="action-area">${(ctas) ?? ''}</p>
+    </div>`,
+  );
+  await Promise.all(decorateLinks(merchCard).map(loadBlock));
+  el.replaceWith(merchCard);
+}
+
 export default async function init(el) {
-  if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
+  const cf = el.querySelector('.odin');
+  if (cf) {
+    await initJSON(el, cf);
+    return;
+  }
   const styles = [...el.classList];
   const cardType = getPodType(styles) || 'product';
   if (!styles.includes(cardType)) {
@@ -344,16 +361,12 @@ export default async function init(el) {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
-        if (document.querySelector('html').dir === 'rtl') merchCard.setAttribute('is-rtl', 'true');
-        merchCard.classList.add('badge-card');
       }
     }
   }
   let footerRows;
-  if ([MINI_COMPARE_CHART, PLANS, SEGMENT].includes(cardType)) {
-    intersectionObserver.observe(merchCard);
-  }
   if (cardType === MINI_COMPARE_CHART) {
+    intersectionObserver.observe(merchCard);
     footerRows = getMiniCompareChartFooterRows(el);
   }
   const allPictures = el.querySelectorAll('picture');
@@ -397,20 +410,18 @@ export default async function init(el) {
     imageSlot.appendChild(image);
     merchCard.appendChild(imageSlot);
   }
-  parseContent(el, merchCard);
   if (!icons || icons.length > 0) {
     const iconImgs = Array.from(icons).map((icon) => {
       const img = {
         src: icon.querySelector('img').src,
         alt: icon.querySelector('img').alt,
-        href: icon.closest('a')?.href ?? '',
       };
       return img;
     });
-    iconImgs.forEach((icon) => {
-      const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon.src, alt: icon.alt, href: icon.href, size: 'l' });
-      merchCard.appendChild(merchIcon);
-    });
+    merchCard.setAttribute(
+      'icons',
+      JSON.stringify(Array.from(iconImgs)),
+    );
     icons.forEach((icon) => icon.remove());
   }
 
@@ -420,7 +431,7 @@ export default async function init(el) {
   }
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
-
+  parseContent(el, merchCard);
   const footer = createTag('div', { slot: 'footer' });
   if (ctas) {
     if (merchCard.variant === 'mini-compare-chart') {
@@ -428,9 +439,7 @@ export default async function init(el) {
     } else {
       decorateButtons(ctas);
     }
-    const links = ctas.querySelectorAll('a');
-    ctas.remove();
-    footer.append(...links);
+    footer.append(ctas);
   }
   merchCard.appendChild(footer);
 

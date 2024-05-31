@@ -1,0 +1,1664 @@
+{
+  "data": {
+    "merchCardList": {
+      "items": [
+        {
+          "_path": "/content/dam/sandbox/ilyas/acrobat-export-pdf",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-pro.svg",
+          "title": "Acrobat Export PDF",
+          "name": "acrobat-export-pdf",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Convert PDFs to Microsoft Word or Excel.</p><p><a href=\"https://www.adobe.com/acrobat/export-pdf-online-pricing.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=ZlgW739XA4iS9coiSW2lZHMH9T7j8rvyj3gLii9kSxU&amp;type=checkoutUrl&amp;text=buy-now\" class=\"merch link-block con-button blue\">Buy now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/acrobat-pdf-pack",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-pro.svg",
+          "title": "Acrobat PDF Pack",
+          "name": "acrobat-pdf-pack",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Essential PDF tools for every day.</p><p><a href=\"https://www.adobe.com/acrobat/pdf-pack-pricing.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=nl-L0hJPEa3LsB8Y7mVngvPTuw8wC-kjL82TjjmvSII&amp;type=checkoutUrl&amp;text=buy-now\" class=\"merch link-block con-button blue\">Buy now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/acrobat-pro",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-pro.svg",
+          "title": "Acrobat Pro",
+          "name": "acrobat-pro",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Adobe Acrobat Pro</a>"
+          },
+          "description": {
+            "html": null
+          },
+          "ctas": {
+            "html": null
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/acrobat-pro-2020",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-pro.svg",
+          "title": "Acrobat Pro 2020",
+          "name": "acrobat-pro-2020",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Create, edit, sign, and protect all your PDFs with the industry-leading PDF desktop solution. For Windows and Mac.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=9jXckZsOZg2EwQi29v2WX2j1LjLB0YkSLDdkuxSe5Vo&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">Buy now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/acrobat-reader",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-pro.svg",
+          "title": "Acrobat Reader",
+          "name": "acrobat-reader",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>View, fill, sign, and comment on PDFs for free.<br><a href=\"https://www.adobe.com/acrobat/pdf-reader.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/acrobat/pdf-reader.html\" class=\"con-button blue\">Download</a><a href=\"https://apps.apple.com/app/adobe-reader/id469337564\">iOS</a><a href=\"https://play.google.com/store/apps/details?id=com.adobe.reader\">Android</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/acrobat-sign",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-sign.svg",
+          "title": "Acrobat Sign",
+          "name": "acrobat-sign",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Create end-to-end digital workflows with trusted, legal e-signatures.</p><p><a href=\"https://www.adobe.com/sign.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://commerce.adobe.com/business-trial/sign-up?items%5B0%5D%5Bid%5D=E233CF2CB8FE08A5A48334BB5B997B42&amp;cli=adobe_com_cct&amp;co=US&amp;lang=en\" class=\"con-button blue\">Free trial</a><a href=\"https://apps.apple.com/app/adobe-echosign/id481082197\">iOS</a><a href=\"https://play.google.com/store/apps/details?id=com.adobe.echosign\">Android</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/acrobat-standard",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-pro.svg",
+          "title": "Acrobat Standard",
+          "name": "acrobat-standard",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Reliably create, edit, and sign PDF documents.</p><p><a href=\"https://www.adobe.com/acrobat/acrobat-standard.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=QgYu51CVY2wKyFEqMuvec4N1tc1OaCypeKJjT5n2-Fc&amp;type=checkoutUrl&amp;text=buy-now\" class=\"merch link-block con-button blue\">Buy now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/acrobat-standard-2020",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-pro.svg",
+          "title": "Acrobat Standard 2020",
+          "name": "acrobat-standard-2020",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>The reliable desktop solution for working with PDF documents on Windows.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=RKVTZpzUthps2NnMnBNHJ_wiW1_lliqiGymn9LCvI9g&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">Buy now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/adobe-connect",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/adobe-connect.svg",
+          "title": "Adobe Connect",
+          "name": "adobe-connect",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p><a href=\"https://www.adobe.com/products/adobeconnect.html\"></a></p><p>Go beyond web conferencing.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/adobeconnect/trial.html\" class=\"con-button blue\">Free trial</a><a href=\"https://www.adobe.com/products/adobeconnect.html#mnemonic-link\" class=\"con-button outline\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/adobe-experience-manager-guides",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Adobe Experience Manager Guides",
+          "name": "adobe-experience-manager-guides",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Manage product documentation, help and support content from creation to delivery.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/xml-documentation-for-experience-manager.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/adobe-express",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/express.svg",
+          "title": "Adobe Express",
+          "name": "adobe-express",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Make flyers, TikToks, resumes, and Reels from thousands of templates with the all-in-one app for fast and easy content creation.</p><p><a href=\"https://www.adobe.com/express/\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://adobesparkpost.app.link/aMZ45GYjFrb\" class=\"con-button blue\">Get free app</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/adobe-firefly",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/firefly.svg",
+          "title": "Adobe Firefly",
+          "name": "adobe-firefly",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Use everyday language to create extraordinary results with generative AI.</p><p><a href=\"https://www.adobe.com/products/firefly.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/firefly.html\" class=\"con-button blue\">Get free app</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/adobe-learning-manager",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/captivate-prime.svg",
+          "title": "Adobe Learning Manager",
+          "name": "adobe-learning-manager",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Easily create on-brand learning experiences that make learning fun. Engage customers. Increase sales. Develop employee skills.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://captivateprime.adobe.com/loginpost?workflowId=1&amp;s_qp_request_origin=prime\" class=\"con-button blue\">Free trial</a><a href=\"https://business.adobe.com/products/learning-manager/get-demo.html\" class=\"con-button outline\">Request a demo</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/adobe-pdf-print-engine",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/pdf-print-engine.svg",
+          "title": "Adobe PDF Print Engine",
+          "name": "adobe-pdf-print-engine",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Rendering Platform for the Adobe PDF Print Experience.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/pdfprintengine.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/adobe-scan",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-scan.svg",
+          "title": "Adobe Scan",
+          "name": "adobe-scan",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Go from paper to digital fast. Scan notes, documents, receipts, and more to PDF.<br><a href=\"https://www.adobe.com/mobile/scanner-app.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<p><a href=\"https://apps.apple.com/app/adobe-scan-pdf-scanner-documents-receipts/id1199564834\">iOS</a> <a href=\"https://play.google.com/store/apps/details?id=com.adobe.scan.android\">Android</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/advertising-cloud",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Advertising Cloud",
+          "name": "advertising-cloud",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Bring together all your media strategies, search marketing, TV advertising, and creative management.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/advertising/adobe-advertising-cloud.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/aero",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/aero.svg",
+          "title": "Aero",
+          "name": "aero",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Design and share immersive augmented reality experiences, no coding required.</p><p><a href=\"https://www.adobe.com/products/aero.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<p><a href=\"https://apps.apple.com/app/adobe-aero/id1401748913?ls=1&amp;%7Etags=ios&amp;%7Etags=adotcom&amp;_branch_match_id=783507452052750191&amp;utm_source=Adobe-web&amp;utm_campaign=Try-2019-11-All&amp;utm_medium=web-app\">iOS</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/aftereffects",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/after-effects.svg",
+          "title": "After Effects",
+          "name": "aftereffects",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=nt2DKD5H3TYag-Annag-QdKb8Q1flZmdJaojt5JeU7Y&amp;type=price\" class=\"merch link-block\">PRICE - ABM - After Effects</a>"
+          },
+          "description": {
+            "html": "<p>Cinematic visual effects and motion graphics.</p><p><a href=\"https://www.adobe.com/products/aftereffects.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=nt2DKD5H3TYag-Annag-QdKb8Q1flZmdJaojt5JeU7Y&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=oQLpJG3rLZFBCV7rLqCJs9sXdhVC-fIx4GcUCPDHBnI&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/ai-assistant-acrobat",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/acrobat-pro.svg",
+          "title": "AI Assistant for Acrobat",
+          "name": "ai-assistant-acrobat",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=nIy-IPGnALw3KNncaqMjOJsMUrqElWi8sdGnBFBAgTw&amp;type=price\" class=\"merch link-block\">PRICE - ABM - AI Assistant for Acrobat</a>"
+          },
+          "description": {
+            "html": "<p>Ask your documents questions for quick answers and one-click summaries. Works with Acrobat Pro, Acrobat Standard, and Acrobat Reader.</p><p><a href=\"https://www.adobe.com/acrobat/generative-ai-pdf.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"#modal-crm-ai-assistant-acrobat\" data-modal-path=\"/cc-shared/fragments/modals/crm/ai-assistant-acrobat\" data-modal-hash=\"#modal-crm-ai-assistant-acrobat\" class=\"modal link-block con-button blue\">Buy now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/analytics",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Analytics",
+          "name": "analytics",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Analyze online and offline behavior to get a full picture of the customer journey.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/analytics/adobe-analytics.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/animate",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/animate.svg",
+          "title": "Animate",
+          "name": "animate",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=Hm9O9HGJwKY3Zgw5hcJnr7XuRfpGRUR2raMCds-Js1s&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Animate</a>"
+          },
+          "description": {
+            "html": "<p>A new age for animation. Any platform, device and style.</p><p><a href=\"https://www.adobe.com/products/animate.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=Hm9O9HGJwKY3Zgw5hcJnr7XuRfpGRUR2raMCds-Js1s&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=6HseYpSN4ji8-C4oFucu-pGk-l_xC8axeIfKAsfq4QM&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/audience-manager",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Audience Manager",
+          "name": "audience-manager",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Segment audiences and uncover insights to take action in real time with our data management platform.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/analytics/audience-manager.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/audition",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/audition.svg",
+          "title": "Audition",
+          "name": "audition",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=E6R2ZyNzavXJ7u7bVA109EvEWWBI76n9v6mYmmm5MJ4&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Audition</a>"
+          },
+          "description": {
+            "html": "<p>Bring stories to life with audio.</p><p><a href=\"https://www.adobe.com/products/audition.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=E6R2ZyNzavXJ7u7bVA109EvEWWBI76n9v6mYmmm5MJ4&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=3YgUedf3-kC6x2Lq271UL6g9yq1BRcaREVgJ1tGq7LY&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/behance",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/behance.svg",
+          "title": "Behance",
+          "name": "behance",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Showcase and discover creative work.</p>"
+          },
+          "ctas": {
+            "html": "<p><a href=\"https://www.behance.net/\">Learn more</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/bridge",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/bridge.svg",
+          "title": "Bridge",
+          "name": "bridge",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Centralize your creative assets.</p><p><a href=\"https://www.adobe.com/creativecloud/all-apps.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://creativecloud.adobe.com/apps/download/bridge\" class=\"con-button blue\">Download</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/campaign",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Campaign",
+          "name": "campaign",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Manage customer journeys and marketing across all channels.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/marketing/campaign.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/captivate",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/captivate.svg",
+          "title": "Captivate",
+          "name": "captivate",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Learning design revolutionized. Create stunning courses faster.</p><p><a href=\"https://www.adobe.com/products/captivate.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=hJTP0t6k6Nva6Q-R8f8W8cizh53Ial1natxMIKbYXrY&amp;type=checkoutUrl&amp;text=buy-now&amp;workflowStep=commitment\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/captivate/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/captivate-classic",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/captivate.svg",
+          "title": "Captivate Classic",
+          "name": "captivate-classic",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Legacy tool for everything eLearning.</p><p><a href=\"https://www.adobe.com/products/captivate/captivate-classic.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://helpx.adobe.com/captivate/help/captivate-downloads.html\" class=\"con-button blue\">Free trial</a><a href=\"https://www.adobe.com/products/captivate/captivate-classic.html\" class=\"con-button outline\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/capture",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/capture.svg",
+          "title": "Capture",
+          "name": "capture",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Turn any image on your phone into a color theme, graphic, brush, pattern, or texture.</p><p><a href=\"https://www.adobe.com/products/capture.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<p><a href=\"https://apps.apple.com/us/app/adobe-capture-cc/id1040200189?ls=1\">iOS</a> <a href=\"https://play.google.com/store/apps/details?id=com.adobe.creativeapps.gather&amp;referrer=utm_source%3DAdobe.com%26utm_campaign%3DAdobeWebsites\">Android</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/character-animator",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/character-animator.svg",
+          "title": "Character Animator",
+          "name": "character-animator",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Animate your 2D characters in real time.</p><p><a href=\"https://www.adobe.com/products/character-animator.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://creativecloud.adobe.com/apps/download/character-animator\" class=\"con-button blue\">Start now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/cloud-service",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Cloud Service",
+          "name": "cloud-service",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>A secure and scalable foundation for Adobe Experience Manager.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/marketing/experience-manager/cloud-service.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/coldfusion-aws",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/coldfusion.svg",
+          "title": "ColdFusion on AWS",
+          "name": "coldfusion-aws",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Build high-performing, enterprise-ready applications.<br><a href=\"https://www.adobe.com/products/coldfusion-amazon-web-services.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://aws.amazon.com/marketplace/seller-profile?id=74e2ef27-b175-4b5e-b14e-bca0f2f21a99&amp;ref=dtl_B07Z9QSFHP\" class=\"con-button blue\">Buy now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/coldfusion-builder",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/coldfusion-builder.svg",
+          "title": "ColdFusion Builder (2018)",
+          "name": "coldfusion-builder",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>A robust IDE for web and mobile application development.<br><a href=\"https://www.adobe.com/products/coldfusion-builder.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/coldfusion-builder/download-trial/try.html\" class=\"con-button blue\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/coldfusion-enterprise",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/coldfusion.svg",
+          "title": "ColdFusion Enterprise (2023)",
+          "name": "coldfusion-enterprise",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>A robust IDE for web and mobile application development.<br><a href=\"https://www.adobe.com/products/coldfusion-enterprise.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=kz0zcZZxkFeoTB7NSvp2nHeSSHg_G7LkFkgDJla_6pk&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/coldfusion/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/coldfusion-standard",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/coldfusion-builder.svg",
+          "title": "ColdFusion Standard (2023)",
+          "name": "coldfusion-standard",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Quickly build and deploy applications.<br><a href=\"https://www.adobe.com/products/coldfusion-standard.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=wKOnA2IP_a31pws7TpgEL9mTw6WdLFuGNAKw__AG0UY&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/coldfusion/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/color",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/color.svg",
+          "title": "Adobe Color",
+          "name": "color",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p><a href=\"/cc-shared/assets/img/product-icons/svg/express.svg\"></a></p><p>Explore, create, and share your favorite color themes.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://color.adobe.com/#mnemonic-link\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/commerce-cloud",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Commerce Cloud",
+          "name": "commerce-cloud",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Boost your digital commerce performance using eCommerce products available through Magento Commerce.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/commerce/magento/enterprise.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/content-server",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Content Server",
+          "name": "content-server",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Securely distribute and monetize your eBooks and PDF content.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/solutions/ebook/content-server.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/creative-cloud",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/creative-cloud.svg",
+          "title": "Creative Cloud All Apps",
+          "name": "creative-cloud",
+          "prices": {
+            "html": "<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=price\">PRICE - ABM - Creative Cloud All Apps</a></p>"
+          },
+          "description": {
+            "html": "<p>Get 20 apps plus fonts, storage, templates, and tutorials for less than the price of Acrobat Pro, Photoshop, and Premiere Pro sold separately. (Substance 3D apps not included.)</p>\n<p><a class=\"modal link-block \" href=\"#modal-see-whats-included\" data-modal-path=\"/cc-shared/fragments/modals/see-whats-included/cc-all-apps-see-whats-included-buy\" data-modal-hash=\"#modal-see-whats-included\">See what's included</a> | <a href=\"https://www.adobe.com/creativecloud/all-apps.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<p><a class=\"merch link-block con-button blue\" href=\"https://milo.adobe.com/tools/ost?osi=r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\"><strong>CTA Buy now</strong> </a><a class=\"merch link-block con-button outline\" href=\"https://milo.adobe.com/tools/ost?osi=JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\">Free trial</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/customer-journey-analytics",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Customer Journey Analytics",
+          "name": "customer-journey-analytics",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Visualize cross-channel customer interactions in one real-time interface.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/experience-platform/customer-journey-analytics.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/design-to-print",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/design-to-print.svg",
+          "title": "Design to Print",
+          "name": "design-to-print",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Make art, make money with Adobe Design to Print.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://exchange.adobe.com/creativecloud.details.103122.adobe-design-to-print.html\" class=\"con-button blue\">start now</a><a href=\"https://www.adobe.com/products/designtoprint.html\" class=\"con-button outline\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/digital-editions",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/digital-editions.svg",
+          "title": "Digital Editions",
+          "name": "digital-editions",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Optimize your eBook reading experience across desktop and mobile, now with EPUB 3 support.</p>\n<p><a href=\"https://www.adobe.com/solutions/ebook/digital-editions.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<p><a href=\"https://apps.apple.com/us/app/adobe-digital-editions/id952977781\">iOS</a> <a href=\"https://play.google.com/store/apps/details?id=com.adobe.digitaleditions\">Android</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/dreamweaver",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/dreamweaver.svg",
+          "title": "Dreamweaver",
+          "name": "dreamweaver",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=1Vu_Zgq_ymipOLtGMsJpG3kkNrwEHqmCevEa6w9IKWI&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Dreamweaver</a>"
+          },
+          "description": {
+            "html": "<p>Design and develop modern, responsive web sites.</p><p><a href=\"https://www.adobe.com/products/dreamweaver.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=1Vu_Zgq_ymipOLtGMsJpG3kkNrwEHqmCevEa6w9IKWI&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=7aKFAjM-DC5k4TDAGYTVSNjcDcF4ZfNKs6pD3jk1oN8&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/embedded-print-engine",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Adobe Embedded Print Engine",
+          "name": "embedded-print-engine",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Reimagining print with Adobe Embedded Print Engine.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/EmbeddedPrintEngine.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/experience-manager-assets",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Experience Manager Assets",
+          "name": "experience-manager-assets",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Save time with editing, optimizing, and delivering digital assets all from one platform.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/marketing/experience-manager-assets.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/experience-manager-forms",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Experience Manager Forms",
+          "name": "experience-manager-forms",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Transform your paper-based interactions into simple and effective digital interactions.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/marketing/experience-manager-forms.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/experience-manager-sites",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Experience Manager Sites",
+          "name": "experience-manager-sites",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Accelerate time to market with a high-level overview of the content management capabilities.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/marketing/experience-manager-sites.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/experience-platform",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/experience-platform.svg",
+          "title": "Experience Platform",
+          "name": "experience-platform",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>The open foundation of Experience Cloud that transforms all your data into real-time profiles and robust AI.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/experience-platform.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/fill-sign",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/fill-and-sign.svg",
+          "title": "Fill &amp; Sign",
+          "name": "fill-sign",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Fill and sign any form. Even snap a picture of a paper form to fill out.</p><p><a href=\"https://www.adobe.com/acrobat/how-to/fill-sign-pdf-forms-electronically.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<p><a href=\"https://apps.apple.com/us/app/id950099951\">iOS</a> <a href=\"https://play.google.com/store/apps/details?id=com.adobe.fas\">Android</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/fonts",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/fonts.svg",
+          "title": "Adobe Fonts",
+          "name": "fonts",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Thousands of fonts at your fingertips.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://fonts.adobe.com/fonts\" class=\"con-button blue\">Browse fonts</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/frame",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/frame-io.svg",
+          "title": "Frame.io",
+          "name": "frame",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Send video projects for review, receive frame accurate comments, and share media from anywhere.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/creativecloud/video/review-and-collaboration.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/framemaker",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/framemaker.svg",
+          "title": "FrameMaker",
+          "name": "framemaker",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Market-leading software for authoring and publishing technical content. Intelligent. Modern. Superfast.</p><p><a href=\"https://www.adobe.com/products/framemaker.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=ej51HFI_LdWFcJjGlTHV7OESxqSuEghRLJA8IYJFk3s&amp;type=checkoutUrl&amp;text=buy-now&amp;workflowStep=commitment\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/framemaker/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/framemaker-server",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/framemaker-server.svg",
+          "title": "FrameMaker Publishing Server (2019)",
+          "name": "framemaker-server",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Automated publishing. Exceptionally fast.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/framemakerpublishingserver/download-trial/try.html\" class=\"con-button blue\">Free trial</a><a href=\"https://www.adobe.com/products/framemakerpublishingserver.html\" class=\"con-button outline\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/fresco",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/express.svg",
+          "title": "Adobe Fresco",
+          "name": "fresco",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Rediscover the joy of drawing and painting anywhere.</p><p><a href=\"https://www.adobe.com/products/fresco.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<p><a href=\"https://apps.apple.com/app/id1458660369?_branch_match_id=853459677597952111\">iOS</a> <a href=\"https://creativecloud.adobe.com/apps/download/fresco-desktop\">Windows</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/http-dynamic-streaming",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/http-dynamic-streaming.svg",
+          "title": "HTTP Dynamic Streaming",
+          "name": "http-dynamic-streaming",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>High-quality network-efficient HTTP streaming.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/hds-dynamic-streaming.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/illustrator",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/illustrator.svg",
+          "title": "Illustrator",
+          "name": "illustrator",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=1KfaN_o5h4Gvmvh_QwfK7KB7xGPpNpsTXsdhqpJUT5Y&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Illustrator</a>"
+          },
+          "description": {
+            "html": "<p>Create beautiful vector art and illustrations on desktop and iPad.</p><p><a href=\"https://www.adobe.com/products/illustrator.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=1KfaN_o5h4Gvmvh_QwfK7KB7xGPpNpsTXsdhqpJUT5Y&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=nlYSyCqrsegoFuLBJfEe-QqgnptUzduO5I-jA06CNFI&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/incopy",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/incopy.svg",
+          "title": "InCopy",
+          "name": "incopy",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=ejtlGD-tMpc8y12UDCc78rmlr_Xk6l_pByErOlCkWc4&amp;type=price\" class=\"merch link-block\">PRICE - ABM - InCopy</a>"
+          },
+          "description": {
+            "html": "<p>Collaborate with copywriters and editors.</p><p><a href=\"https://www.adobe.com/products/incopy.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=ejtlGD-tMpc8y12UDCc78rmlr_Xk6l_pByErOlCkWc4&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=jPeffsz7c2XuXxJleHSzfXp4oUxewD5IGnaXQT4tUM0&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/indesign",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/indesign.svg",
+          "title": "InDesign",
+          "name": "indesign",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=tYj-xoywYA5lbIV6eiXNoBaxQMVu4XjD2jxF_goFeYs&amp;type=price\" class=\"merch link-block\">PRICE - ABM - InDesign</a>"
+          },
+          "description": {
+            "html": "<p>Design and publish elegant layouts for print and digital.</p><p><a href=\"https://www.adobe.com/products/indesign.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=tYj-xoywYA5lbIV6eiXNoBaxQMVu4XjD2jxF_goFeYs&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=cQuLNB1FrSHktK_ByF1oIRSwR-9MU2tIsvKT7ZlctMA&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/indesign-server",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/indesign-server.svg",
+          "title": "InDesign Server",
+          "name": "indesign-server",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Customized automation using sophisticated InDesign tools.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/indesignserver.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/intelligent-services",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Intelligent Services",
+          "name": "intelligent-services",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Predict customer behavior and measure campaign impact at scale to ensure higher ROI.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/experience-platform/intelligent-services.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/journey-orchestration",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Journey Orchestration",
+          "name": "journey-orchestration",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Create individual experiences that adapt to customer behavior at scale.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/experience-platform/journey-orchestration.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/lightroom",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/lightroom.svg",
+          "title": "Lightroom (1TB)",
+          "name": "lightroom",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=YbmrrnDXjKp75tHcS_wDjwLhuZl3uldCu00qBXGJFMc&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Lightroom 1TB</a>"
+          },
+          "description": {
+            "html": "<p>Photo editing optimized for desktop.</p><p><a href=\"https://www.adobe.com/products/photoshop-lightroom.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=YbmrrnDXjKp75tHcS_wDjwLhuZl3uldCu00qBXGJFMc&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=Fz6T5PHsegbhJA2Uyzm_EweshED45stvTIVGPS3SqQo&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/lightroom-classic",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/lightroom-classic.svg",
+          "title": "Lightroom Classic",
+          "name": "lightroom-classic",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Lightrooom Classic</a>"
+          },
+          "description": {
+            "html": "<p>Photo editing optimized for desktop.</p><p><a href=\"https://www.adobe.com/products/photoshop-lightroom-classic.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=OInILOo_tvV3OiYdJTxo1NhsVX4GxbHnM8JWexA9N8w&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/magento-commerce",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Magento Commerce",
+          "name": "magento-commerce",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Unify the commerce experience across all channels.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/commerce/magento.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/marketo-engage",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Marketo Engage",
+          "name": "marketo-engage",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Keep customers engaged with marketing automation, lead nurturing, account-based marketing, and more.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.marketo.com/\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/media-encoder",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/media-encoder.svg",
+          "title": "Media Encoder",
+          "name": "media-encoder",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Quickly output video files for virtually any screen.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://creativecloud.adobe.com/apps/download/media-encoder\" class=\"con-button blue\">Free trial</a><a href=\"https://www.adobe.com/products/media-encoder.html\" class=\"con-button outline\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/media-server-aws",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/media-server.svg",
+          "title": "Media Server on Amazon Web Services",
+          "name": "media-server-aws",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Stream your videos to multiple platforms without breaking your budget.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/amazon-web-services.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/media-server-extended",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/media-server.svg",
+          "title": "Media Server Extended",
+          "name": "media-server-extended",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Build the widest possible audience with high-capacity streaming video.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/adobe-media-server-extended.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/media-server-professional",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/media-server.svg",
+          "title": "Media Server 5 Professional",
+          "name": "media-server-professional",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Flexible media delivery and real-time communication capabilities.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/adobe-media-server-professional.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/media-server-standard",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/media-server.svg",
+          "title": "Media Server 5 Standard",
+          "name": "media-server-standard",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Enable secure online delivery of live and on-demand streaming media.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/adobe-media-server-professional.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/mixamo",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Mixamo",
+          "name": "mixamo",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Rapidly create, rig and animate unique characters for design projects.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.mixamo.com/\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/photoshop",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop.svg",
+          "title": "Photoshop",
+          "name": "photoshop",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Photoshop</a>"
+          },
+          "description": {
+            "html": "<p>Edit, composite, and create beautiful images, graphics, and art on desktop and iPad.</p><p><a href=\"https://www.adobe.com/products/photoshop.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=ZQwlmahh5YRWh8mRGxo-cr3eu91ShbpRv6vkbcsi3eQ&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/photoshop-elements",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-elements.svg",
+          "title": "Photoshop Elements 2024",
+          "name": "photoshop-elements",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Organize, edit, create, and share your photos.<br><a href=\"https://www.adobe.com/products/photoshop-elements.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=lJONM8HQs6lfv4cRRGXSouUr6iBScsczJKHz7Un3uow&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/photoshop-elements/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/photoshop-elements-premiere-elements",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-elements.svg",
+          "title": "Photoshop Elements 2024 &amp; Premiere Elements 2024",
+          "name": "photoshop-elements-premiere-elements",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p> </p><p>Organize, edit, create, and share your photos and videos.<br><a href=\"https://www.adobe.com/products/photoshop-premiere-elements.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=dTv_VejD1QwlBhDLCy6wbJRifhllDnI0PBTvCFA37TU&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/photoshop-express",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop-express.svg",
+          "title": "Photoshop Express",
+          "name": "photoshop-express",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Edit and transform your photos on the go.</p><p><a href=\"https://www.adobe.com/products/photoshop-express.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<p><a href=\"https://apps.apple.com/us/app/adobe-photoshop-express/id331975235?ls=1\">iOS</a> <a href=\"https://play.google.com/store/apps/details?id=com.adobe.psmobile\">Android</a> <a href=\"https://www.microsoft.com/en-us/p/adobe-photoshop-express-image-editor-adjustments-filters-effects-borders/9wzdncrfj27n?rtc=1&amp;activetab=pivot%3Aoverviewtab\">Windows</a></p>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/portfolio",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/portfolio.svg",
+          "title": "Portfolio",
+          "name": "portfolio",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Create your own personalized website.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://portfolio.adobe.com/\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/postscript",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/postscript.svg",
+          "title": "Adobe PostScript",
+          "name": "postscript",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Enterprise software platform for accurately printing documents from any application.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/postscript.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/premiere-elements",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/premiere-elements.svg",
+          "title": "Premiere Elements 2024",
+          "name": "premiere-elements",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Organize, edit, create, and share your videos.<br><a href=\"https://www.adobe.com/products/premiere-elements.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/milo.adobe.com/tools/ost?osi=3HXmgnscBeuNcFz2shSWS5wq5TgtpoKUeKUWavj6UnE&amp;type=checkoutUrl&amp;perp=true&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/premiere-elements/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/premierepro",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/premiere-pro.svg",
+          "title": "Premiere Pro",
+          "name": "premierepro",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=e3DsJJwP_VUnBRzRMBEulATNukeKiNwKfdMNsxJWncU&amp;type=price\" class=\"merch link-block\"><u>PRICE - ABM - Premiere Pro</u></a>"
+          },
+          "description": {
+            "html": "<p>Industry-standard pro video and film editing.</p><p><a href=\"https://www.adobe.com/products/premiere.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=e3DsJJwP_VUnBRzRMBEulATNukeKiNwKfdMNsxJWncU&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=nxoCqokhUYskPBG6p9_U4nfRhpMBdLmAidNSUWKHG_c&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/presenter-video-express",
+          "_variation": "master",
+          "icon": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/presenter-video-express.svg",
+          "title": "Adobe Presenter Video Express",
+          "name": "presenter-video-express",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Personal video studio right on your desktop.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/presenter/download-trial/try.html\" class=\"con-button blue\">Free trial</a><a href=\"https://www.adobe.com/products/presenter.html\" class=\"con-button outline\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/real-time-customer-data-platform",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Real-time Customer Data Platform",
+          "name": "real-time-customer-data-platform",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Activate real-time customer profiles for instant personalization.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/experience-platform/real-time-customer-data-platform.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/robohelp",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/robohelp.svg",
+          "title": "RoboHelp",
+          "name": "robohelp",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Next-generation software for authoring and publishing Help, policy, and knowledgebase content. For Windows and Mac.<br><a href=\"https://www.adobe.com/products/robohelp.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=JEDViROAAeZLcid1J7BxLsYkEQ5xh78fWkBlbOrjOZs&amp;type=checkoutUrl&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/robohelp/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/robohelp-server",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/robohelp.svg",
+          "title": "RoboHelp Server",
+          "name": "robohelp-server",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Easily host and track your online Help, policy, and knowledge base content.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/robohelp-server/download-trial/try.html\" class=\"con-button blue\">Free trial</a><a href=\"https://www.adobe.com/products/robohelp-server.html\" class=\"con-button outline\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/stock",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/stock.svg",
+          "title": "Adobe Stock",
+          "name": "stock",
+          "prices": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE&amp;type=price\" class=\"merch link-block\">PRICE - ABM - Stock</a>"
+          },
+          "description": {
+            "html": "<p>Choose from millions of high-quality images, graphics, videos, and more.</p><p><a href=\"https://stock.adobe.com/\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/substance-3d-designer",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/substance-3d-designer.svg",
+          "title": "Adobe Substance 3D Designer",
+          "name": "substance-3d-designer",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Design parametric 3D assets with full control and infinite possibilities. (Not included in Creative Cloud All Apps.)</p><p><a href=\"https://www.adobe.com/products/substance3d-designer.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=39y2LKj90f79Fo7YiqluNIFhzFgZkpERMZwbe-9Q-XA&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=ed6iDsHNk4oQweh_KKsr7ylLO0Ke9Gi3tTy05f_qAGs&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/substance-3d-modeler",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/substance-3d-modeler.svg",
+          "title": "Adobe Substance 3D Modeler",
+          "name": "substance-3d-modeler",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Intuitively create 3D models on desktop and in VR. (Not included in Creative Cloud All Apps.)</p><p><a href=\"https://www.adobe.com/products/substance3d-modeler.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=39y2LKj90f79Fo7YiqluNIFhzFgZkpERMZwbe-9Q-XA&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=ed6iDsHNk4oQweh_KKsr7ylLO0Ke9Gi3tTy05f_qAGs&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/substance-3d-painter",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/substance-3d-painter.svg",
+          "title": "Adobe Substance 3D Painter",
+          "name": "substance-3d-painter",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Texture 3D models in real time with this industry standard app. (Not included in Creative Cloud All Apps.)</p><p><a href=\"https://www.adobe.com/products/substance3d-painter.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=39y2LKj90f79Fo7YiqluNIFhzFgZkpERMZwbe-9Q-XA&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=ed6iDsHNk4oQweh_KKsr7ylLO0Ke9Gi3tTy05f_qAGs&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/substance-3d-sampler",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/substance-3d-sampler.svg",
+          "title": "Adobe Substance 3D Sampler",
+          "name": "substance-3d-sampler",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Create 3D materials and lights in a flash from real-life images. (Not included in Creative Cloud All Apps.)</p><p><a href=\"https://www.adobe.com/products/substance3d-sampler.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=39y2LKj90f79Fo7YiqluNIFhzFgZkpERMZwbe-9Q-XA&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=ed6iDsHNk4oQweh_KKsr7ylLO0Ke9Gi3tTy05f_qAGs&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/substance-3d-stager",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/substance-3d-stager.svg",
+          "title": "Adobe Substance 3D Stager",
+          "name": "substance-3d-stager",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Compose and render state-of-the-art 3D scenes in your own virtual studio. (Not included in Creative Cloud All Apps.)</p><p><a href=\"https://www.adobe.com/products/substance3d-stager.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=39y2LKj90f79Fo7YiqluNIFhzFgZkpERMZwbe-9Q-XA&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button blue\">Buy now</a><a href=\"https://milo.adobe.com/tools/ost?osi=ed6iDsHNk4oQweh_KKsr7ylLO0Ke9Gi3tTy05f_qAGs&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\" class=\"merch link-block con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/target",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/default-app-icon.svg",
+          "title": "Target",
+          "name": "target",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Analyze online and offline behavior to get a full picture of the customer journey.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/marketing/target.html\" class=\"con-button blue\">Learn more</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/technical-communication-suite",
+          "_variation": "master",
+          "icon": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/technical-communication-suite.svg",
+          "title": "Technical Communication Suite",
+          "name": "technical-communication-suite",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>Five market-leading tools for your technical, eLearning and business content. One value-for-money suite.</p><p><a href=\"https://www.adobe.com/products/technicalcommunicationsuite.html\">Learn more</a></p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://milo.adobe.com/tools/ost?osi=ncKdcYm1OKqazjS_qhf9US5xuQBrL_wHdAScdcJWd0A&amp;type=checkoutUrl&amp;text=buy-now\" class=\"merch link-block con-button blue\">CTA Buy now</a><a href=\"https://www.adobe.com/products/technicalcommunicationsuite/download-trial/try.html\" class=\"con-button outline\">Free trial</a>"
+          },
+          "secure": true,
+          "stock": true
+        },
+        {
+          "_path": "/content/dam/sandbox/ilyas/type",
+          "_variation": "master",
+          "icon": "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/fonts.svg",
+          "title": "Type",
+          "name": "type",
+          "prices": {
+            "html": null
+          },
+          "description": {
+            "html": "<p>The complete collection of Adobe fonts.</p>"
+          },
+          "ctas": {
+            "html": "<a href=\"https://www.adobe.com/products/type/fonts-by-adobe.html\" class=\"con-button blue\">Get fonts</a>"
+          },
+          "secure": true,
+          "stock": true
+        }
+      ]
+    }
+  }
+}

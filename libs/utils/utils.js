@@ -102,6 +102,7 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { odin: '/tools/odin/' },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -600,6 +601,14 @@ export function decorateAutoBlock(a) {
     // slack uploaded mp4s
     if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
       return false;
+    }
+
+    if (key === 'odin') {
+      const { parentElement } = a;
+      const [blockName] = a.innerText.split(':');
+      const div = createTag('div', null, a);
+      div.className = blockName;
+      parentElement.replaceWith(div);
     }
 
     a.className = `${key} link-block`;

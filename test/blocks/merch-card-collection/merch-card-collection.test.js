@@ -9,7 +9,7 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales, miloLibs: '/libs' };
 setConfig(conf);
 
-const getVisibleCards = (merchCards) => [...merchCards.querySelectorAll('merch-card')]
+const getVisibleCards = (merchCardCollection) => [...merchCardCollection.querySelectorAll('merch-card')]
   .filter((merchCard) => merchCard.style.display !== 'none')
   .sort((a, b) => Number(a.style.order) - Number(b.style.order));
 
@@ -25,7 +25,7 @@ describe('Merch Cards', async () => {
   before(async () => {
     window.lana = { log: sinon.stub() };
     const originalFetch = window.fetch;
-    window.fetch = sinon.stub(window, 'fetch').callsFake((url) => {
+    window.fetch = sinon.stub(window, 'fetch').callsFake((url, ...args) => {
       let data;
       const overrideUrl = /override-(.*).plain.html/;
       const overrideMatch = overrideUrl.exec(url);
@@ -61,13 +61,15 @@ describe('Merch Cards', async () => {
           limit: 0,
           data: cards,
         };
+
+        return Promise.resolve({
+          status: 200,
+          statusText: '',
+          ok: true,
+          json: () => Promise.resolve(data),
+        });
       }
-      return Promise.resolve({
-        status: 200,
-        statusText: '',
-        ok: true,
-        json: () => Promise.resolve(data),
-      });
+      return originalFetch(url, ...args);
     });
     ({ default: init } = await import('../../../libs/blocks/merch-card-collection/merch-card-collection.js'));
     // this allows to run the test in the normal browser.
@@ -85,31 +87,38 @@ describe('Merch Cards', async () => {
     setConfig(conf);
   });
 
+  it.only('should support Odin', async () => {
+    const el = document.getElementById('odin');
+    const merchCardCollection = await init(el);
+    const merchCards = merchCardCollection.querySelectorAll('merch-card');
+    expect(merchCards.length).to.equal(92);
+  });
+
   it('should require a type', async () => {
     const el = document.getElementById('default');
-    const merchCards = await init(el);
-    expect(merchCards.tagName).to.equal('DIV');
+    const merchCardCollection = await init(el);
+    expect(merchCardCollection.tagName).to.equal('DIV');
   });
 
   it('should set "all" as default filter', async () => {
     const el = document.getElementById('defaultFilter');
-    const merchCards = await init(el);
-    expect(merchCards.tagName).to.equal('MERCH-CARD-COLLECTION');
-    expect(merchCards.getAttribute('filter')).to.equal('all');
+    const merchCardCollection = await init(el);
+    expect(merchCardCollection.tagName).to.equal('MERCH-CARD-COLLECTION');
+    expect(merchCardCollection.getAttribute('filter')).to.equal('all');
   });
 
   it('should parse "filter", "show more text" and default "limit"', async () => {
     const el = document.getElementById('filterShowMoreText');
-    const merchCards = await init(el);
-    expect(merchCards.getAttribute('filter')).to.equal('all');
-    expect(merchCards.getAttribute('limit')).to.equal('24');
+    const merchCardCollection = await init(el);
+    expect(merchCardCollection.getAttribute('filter')).to.equal('all');
+    expect(merchCardCollection.getAttribute('limit')).to.equal('24');
   });
 
   it('should parse the "limit"', async () => {
     const el = document.getElementById('filterShowMoreTextLimit');
-    const merchCards = await init(el);
-    expect(merchCards.getAttribute('filter')).to.equal('all');
-    expect(merchCards.getAttribute('limit')).to.equal('9');
+    const merchCardCollection = await init(el);
+    expect(merchCardCollection.getAttribute('filter')).to.equal('all');
+    expect(merchCardCollection.getAttribute('limit')).to.equal('9');
   });
 
   it('should freeze the filter', async () => {
@@ -117,15 +126,15 @@ describe('Merch Cards', async () => {
     cards = [...document.querySelectorAll('#cards .merch-card')]
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
 
-    const merchCards = await init(el);
-    expect(merchCards.getAttribute('filtered')).to.equal('photo');
+    const merchCardCollection = await init(el);
+    expect(merchCardCollection.getAttribute('filtered')).to.equal('photo');
 
     document.location.hash = '#filter=video';
     await delay();
-    expect(merchCards.filter).to.equal('photo');
-    expect(merchCards.filtered).to.equal('photo');
+    expect(merchCardCollection.filter).to.equal('photo');
+    expect(merchCardCollection.filtered).to.equal('photo');
 
-    const [photoshop, cc, express] = getVisibleCards(merchCards);
+    const [photoshop, cc, express] = getVisibleCards(merchCardCollection);
     expect(photoshop.name).to.be.equal('photoshop');
     expect(cc.name).to.be.equal('all-apps');
     expect(express.name).to.be.equal('express');
@@ -136,17 +145,17 @@ describe('Merch Cards', async () => {
     cards = [...document.querySelectorAll('#cards .merch-card')]
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
 
-    const merchCards = await init(el);
-    expect(merchCards.filter).to.equal('all');
+    const merchCardCollection = await init(el);
+    expect(merchCardCollection.filter).to.equal('all');
     await delay(500);
-    let [cc, photoshop, express] = getVisibleCards(merchCards);
+    let [cc, photoshop, express] = getVisibleCards(merchCardCollection);
     expect(cc.size).to.be.equal('super-wide');
     expect(photoshop.name).to.be.equal('photoshop');
     expect(cc.name).to.be.equal('all-apps');
     expect(express.name).to.be.equal('express');
     document.location.hash = '#filter=photo';
     await delay(500);
-    ([photoshop, cc, express] = getVisibleCards(merchCards));
+    ([photoshop, cc, express] = getVisibleCards(merchCardCollection));
     expect(photoshop.name).to.be.equal('photoshop');
     expect(cc.name).to.be.equal('all-apps');
     expect(cc.size).to.undefined;
@@ -154,9 +163,9 @@ describe('Merch Cards', async () => {
   });
 
   it('should parse literals', async () => {
-    const merchCards = await init(document.getElementById('literals'));
+    const merchCardCollection = await init(document.getElementById('literals'));
     await delay(500);
-    expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
+    expect(merchCardCollection.outerHTML).to.equal(merchCardCollection.nextElementSibling.outerHTML);
   });
 
   it('should override cards when asked to', async () => {
@@ -185,14 +194,14 @@ describe('Merch Cards', async () => {
     });
     cards = [...document.querySelectorAll('#cards .merch-card')]
       .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
-    const merchCards = await init(el);
-    expect(merchCards.filter).to.equal('all');
+    const merchCardCollection = await init(el);
+    expect(merchCardCollection.filter).to.equal('all');
     await delay(500);
-    const photoshop = merchCards.querySelector('merch-card[name="photoshop"]');
-    const express = merchCards.querySelector('merch-card[name="express"]');
+    const photoshop = merchCardCollection.querySelector('merch-card[name="photoshop"]');
+    const express = merchCardCollection.querySelector('merch-card[name="express"]');
     expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.true;
     expect(express.title.indexOf('PROMOTION') > 0).to.be.true;
-    expect(merchCards.dataset.overrides).to.equal('promo1.json:/override-photoshop,promo2.json:/override-express');
+    expect(merchCardCollection.dataset.overrides).to.equal('promo1.json:/override-photoshop,promo2.json:/override-express');
   });
 
   it('should localize the query-index url', async () => {
@@ -232,8 +241,8 @@ describe('Merch Cards', async () => {
 
       const el = document.getElementById('handleFetchError1');
       el.dataset.overrides = '/override-photoshop';
-      const merchCards = await init(el);
-      const photoshop = merchCards.querySelector('merch-card[name="photoshop"]');
+      const merchCardCollection = await init(el);
+      const photoshop = merchCardCollection.querySelector('merch-card[name="photoshop"]');
       expect(photoshop.title).to.equal('Photoshop');
       expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.false;
     });
@@ -245,8 +254,8 @@ describe('Merch Cards', async () => {
 
       const el = document.getElementById('handleFetchError2');
       el.dataset.overrides = '/override-photoshop';
-      const merchCards = await init(el);
-      const photoshop = merchCards.querySelector('merch-card[name="photoshop"]');
+      const merchCardCollection = await init(el);
+      const photoshop = merchCardCollection.querySelector('merch-card[name="photoshop"]');
       expect(photoshop.title).to.equal('Photoshop');
       expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.false;
     });

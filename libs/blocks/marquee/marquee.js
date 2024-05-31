@@ -2,8 +2,9 @@
  * Marquee - v6.0
  */
 
+import { loadFragment } from '../../features/odin/odin.js';
 import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag, decorateLinks, getConfig, loadBlock, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
@@ -103,7 +104,36 @@ function decorateSplit(el, foreground, media) {
   }
 }
 
+export async function initJSON(el, a) {
+  const { content, background, mobileBackground, theme, variant } = await loadFragment(a, 'marquee');
+  const marquee = createTag(
+    'div',
+    { class: `marquee ${theme} ${variant} static-links` },
+    `<div class="background">
+    <div data-valign="middle">
+      <picture>
+        <source type="image/jpeg" srcset="${background}" media="(min-width: 600px)">
+        <img loading="lazy" src="${mobileBackground}}" width="720" height="800">
+      </picture>
+    </div>
+  </div>
+  <div class="foreground container">
+    <div data-valign="middle" class="text">
+      ${content}
+    </div>
+  </div>
+</div>`,
+  );
+  await Promise.all(decorateLinks(marquee).map(loadBlock));
+  el.replaceWith(marquee);
+}
+
 export default async function init(el) {
+  const cf = el.querySelector('.odin');
+  if (cf) {
+    await initJSON(el, cf);
+    return;
+  }
   const excDark = ['light', 'quiet'];
   if (!excDark.some((s) => el.classList.contains(s))) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
