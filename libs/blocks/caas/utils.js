@@ -547,7 +547,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
   const hideCtaTags = state.hideCtaTags ? state.hideCtaTags : [];
-  const targetActivity = state.targetEnabled 
+  const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const localesQueryParam = locales ? `&locales=${locales}` : '';
@@ -625,7 +625,7 @@ export const getConfig = async (originalState, strs = {}) => {
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
       filters: await getFilterArray(state, country, language, strs),
-      categories: await getCategoryArray(state, country, language) || [], /* *** FAILING TEST *** */
+      categories: await getCategoryArray(state, country, language),
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
