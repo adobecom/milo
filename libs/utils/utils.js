@@ -829,7 +829,11 @@ export async function loadIms() {
   return imsLoaded;
 }
 
-export async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
+export async function loadMartech({
+  persEnabled = false,
+  persManifests = [],
+  postLCP = false,
+} = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
     return true;
@@ -844,7 +848,7 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({ persEnabled, persManifests });
+  await initMartech({ persEnabled, persManifests, postLCP });
 
   return true;
 }
