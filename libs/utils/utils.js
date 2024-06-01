@@ -967,7 +967,7 @@ async function loadPostLCP(config) {
 }
 
 export function scrollToHashedElement(hash) {
-  if (!hash) return;
+  if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
   try {
