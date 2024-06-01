@@ -6,7 +6,7 @@ const ENTITLEMENT_MAP = {
   '8d3c8ac2-2937-486b-b6ff-37f02271b09b': 'illustrator-any',
   'fd30e9c7-9ae9-44db-8e70-5c652a5bb1d2': 'cc-all-apps-any',
   '4e2f2a6e-48c4-49eb-9dd5-c44070abb3f0': 'after-effects-any',
-  'e7650448-268b-4a0d-9795-05f604d7e42f': 'lightroom-any', 
+  'e7650448-268b-4a0d-9795-05f604d7e42f': 'lightroom-any',
   '619130fc-c7b5-4b39-a687-b32061326869': 'premiere-pro-any',
   'cec4d899-4b41-469e-9f2d-4658689abf29': 'phsp-ltr-bundle',
   '8da44606-9841-43d0-af72-86d5a9d3bba0': 'cc-photo',
