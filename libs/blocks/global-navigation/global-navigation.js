@@ -462,16 +462,10 @@ class Gnav {
     const accessToken = window.adobeIMS.getAccessToken();
     const { env } = getConfig();
     const headers = new Headers({ Authorization: `Bearer ${accessToken.token}` });
-    const url = `https://${env.adobeIO}/profile`;
-    const profileData = await fetch( url, { headers });
+    const profileData = await fetch(`https://${env.adobeIO}/profile`, { headers });
 
     if (profileData.status !== 200) {
-      lanaLog({
-        message: 'GNAV: Error in decorateProfile',
-        e: `${profileData.statusText} url: ${url}`,
-        tags: 'errorType=error,module=gnav'
-      })
-      return;
+      throw new Error(`${profileData.statusText} url: ${profileData.url}`);
     }
 
     const { sections, user: { avatar } } = await profileData.json();
@@ -526,8 +520,8 @@ class Gnav {
       loadStyle(styleUrl, (e) => {
         if (e === 'error') {
           lanaLog({
-            message: `Error fetching universalNav style`,
-            e: `${e} loading style: ${styleUrl}`,
+            message: `GNAV: issues within decorateUniversalNav`,
+            e: `error loading style: ${styleUrl}`,
             tags: 'errorType=error,module=gnav',
           });
         }

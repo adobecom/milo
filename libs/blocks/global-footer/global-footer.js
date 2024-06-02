@@ -152,19 +152,13 @@ class Footer {
   };
 
   loadIcons = async () => {
-    const url = `${base}/blocks/global-footer/icons.svg`;
-    const file = await fetch(url);
-    if (file.ok) {
-      const content = await file.text();
-      const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
-      this.block.append(elem);
-    } else {
-      lanaLog({
-        message: `loadIcons method error url: ${url}`,
-        e: file.statusText,
-        tags: "errorType=error,module=global-footer",
-      });
+    const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
+    if (!file.ok) {
+      throw new Error(`${file.statusText} url: ${file.url}`);
     }
+    const content = await file.text();
+    const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
+    this.block.append(elem);
   };
 
   decorateProducts = async () => {
