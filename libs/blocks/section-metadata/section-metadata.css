@@ -185,6 +185,14 @@
   grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
 }
 
+.section.auto-up {
+  align-items: center;
+  display: flex;
+  flex-flow: column wrap;
+  gap: var(--spacing-xxl);
+  justify-content: center;
+}
+
 .section.sticky-top {
   position: sticky;
   top: 57px;
@@ -243,6 +251,13 @@ main > .section[class*='-up'] > .content {
 
   .section.two-up.reverse-mobile > div:nth-child(2) {
     order: 1;
+  }
+}
+
+/* tablet up */
+@media screen and (min-width: 600px) {
+  .section.auto-up {
+    flex-direction: row;
   }
 }
 

@@ -49,6 +49,10 @@
   margin: 0 auto;
 }
 
+.auto-up .action-item.center {
+  margin: unset;
+}
+
 .action-item.center img {
   margin: 0 auto;
 }
