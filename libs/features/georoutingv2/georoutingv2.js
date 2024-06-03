@@ -102,9 +102,7 @@ function getGeoroutingOverride() {
   return georouting === 'off';
 }
 
-function decorateForOnLinkClick(link, urlPrefix, localePrefix) {
-  let eventType = 'Switch';
-  if (localePrefix !== undefined) eventType = 'Stay';
+function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch') {
   const modCurrPrefix = localePrefix || 'us';
   const modPrefix = urlPrefix || 'us';
   const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
@@ -150,7 +148,7 @@ function removeOnClickOutsideElement(element, event, button) {
   document.addEventListener('click', func);
 }
 
-function openPicker(button, locales, country, event, dir) {
+function openPicker(button, locales, country, event, dir, currentPage) {
   if (document.querySelector('.locale-modal-v2 .picker')) {
     return;
   }
@@ -158,7 +156,7 @@ function openPicker(button, locales, country, event, dir) {
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
-    decorateForOnLinkClick(a, l.prefix);
+    decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
   });
@@ -209,15 +207,15 @@ function buildContent(currentPage, locale, geoData, locales) {
     span.appendChild(downArrow);
     mainAction.addEventListener('click', (e) => {
       e.preventDefault();
-      openPicker(mainAction, locales, locale.button, e, dir);
+      openPicker(mainAction, locales, locale.button, e, dir, currentPage);
     });
   } else {
     mainAction.href = locale.url;
-    decorateForOnLinkClick(mainAction, locale.prefix);
+    decorateForOnLinkClick(mainAction, locale.prefix, currentPage.prefix);
   }
 
   const altAction = createTag('a', { lang, href: currentPage.url }, currentPage.button);
-  decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix);
+  decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix, 'Stay');
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
   fragment.append(title, text, linkWrapper);
