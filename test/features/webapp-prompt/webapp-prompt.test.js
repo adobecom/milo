@@ -1,7 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import pepPromptContent from './mocks/pep-prompt-content.js';
-import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 
 describe('PEP', () => {
   let clock;
