@@ -1,3 +1,4 @@
+import './polyfills/array.prototype.at.js';
 export * from '@spectrum-web-components/base/src/condition-attribute-with-id.js';
 export * from '@spectrum-web-components/base/src/define-element.js';
 export * from '@spectrum-web-components/base/src/sizedMixin.js';

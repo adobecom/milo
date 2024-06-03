@@ -1,6 +1,7 @@
 const {
   slackNotification,
   getLocalConfigs,
+  isWithinRCP,
   pulls: { addLabels, addFiles, getChecks, getReviews },
 } = require('./helpers.js');
 
@@ -14,7 +15,6 @@ const LABELS = {
   highPriority: 'high priority',
   readyForStage: 'Ready for Stage',
   SOTPrefix: 'SOT',
-  highImpact: 'high-impact',
 };
 const TEAM_MENTIONS = [
   '@adobecom/miq-sot',
@@ -24,8 +24,8 @@ const TEAM_MENTIONS = [
   '@adobecom/document-cloud-sot',
 ];
 const SLACK = {
-  merge: ({ html_url, number, title, highImpact }) =>
-    `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
+  merge: ({ html_url, number, title }) =>
+    `:merged: PR merged to stage: <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) =>
     `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
@@ -44,45 +44,6 @@ let body = `
 - Before: https://main--milo--adobecom.hlx.live/?martech=off
 - After: https://stage--milo--adobecom.hlx.live/?martech=off
 `;
-
-const RCPDates = [
-  {
-    start: new Date('2024-05-26T00:00:00-07:00'),
-    end: new Date('2024-06-01T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-06-13T11:00:00-07:00'),
-    end: new Date('2024-06-13T14:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-06-30T00:00:00-07:00'),
-    end: new Date('2024-07-06T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-08-25T00:00:00-07:00'),
-    end: new Date('2024-08-31T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-09-12T11:00:00-07:00'),
-    end: new Date('2024-09-12T14:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-10-14T00:00:00-07:00'),
-    end: new Date('2024-11-18T17:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-11-17T00:00:00-08:00'),
-    end: new Date('2024-11-30T00:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-12-12T11:00:00-08:00'),
-    end: new Date('2024-12-12T14:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-12-15T00:00:00-08:00'),
-    end: new Date('2025-01-02T00:00:00-08:00'),
-  },
-];
 
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);
 
@@ -124,7 +85,8 @@ const getPRs = async () => {
 
 const merge = async ({ prs }) => {
   console.log(`Merging ${prs.length || 0} PRs that are ready... `);
-  for await (const { number, files, html_url, title, labels } of prs) {
+
+  for await (const { number, files, html_url, title } of prs) {
     try {
       if (files.some((file) => SEEN[file])) {
         console.log(`Skipping ${number}: ${title} due to overlap in files.`);
@@ -140,24 +102,11 @@ const merge = async ({ prs }) => {
         });
       }
       body = `- ${html_url}\n${body}`;
-      const isHighImpact = labels.includes(LABELS.highImpact);
-      if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
-        await slackNotification(
-          SLACK.merge({
-            html_url,
-            number,
-            title,
-            highImpact: ' :alert: High impact',
-          }),
-          process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK
-        );
-      }
       await slackNotification(
         SLACK.merge({
           html_url,
           number,
           title,
-          highImpact: isHighImpact ? ' :alert: High impact' : '',
         })
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -230,18 +179,8 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
+  if (isWithinRCP()) return console.log('Stopped, within RCP period.');
 
-  const now = new Date();
-  // We need to revisit this every year
-  if (now.getFullYear() !== 2024) {
-    throw new Error('ADD NEW RCPs');
-  }
-  for (const { start, end } of RCPDates) {
-    if (start <= now && now <= end) {
-      console.log('Current date is within a RCP. Stopping execution.');
-      return;
-    }
-  }
   try {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);

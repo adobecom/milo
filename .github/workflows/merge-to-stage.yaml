@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 */4 * * *' # Run every 4 hours
   workflow_dispatch: # Allow manual trigger
+  repository_dispatch:
+    types: [merge-to-stage]
 
 env:
   MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
@@ -12,6 +14,7 @@ env:
 
 jobs:
   merge-to-stage:
+    if: github.repository_owner == 'adobecom'
     runs-on: ubuntu-latest
     environment: milo_pr_merge
 
