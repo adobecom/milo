@@ -61,7 +61,9 @@ const playFocusAnimation = (element, iterationCount = 2, animationDuration = 250
     <div class="coach-indicator-ring" style="animation-iteration-count: ${iterationCount};">
     </div>`;
   for (let i = 0; i < 3; i += 1) {
-    rings.push(createRing());
+    const ring = createRing();
+    element.insertAdjacentElement('afterbegin', ring);
+    rings.push(ring);
   }
   // The cleanup function is added to the event queue
   // some time after the end of the animation because
