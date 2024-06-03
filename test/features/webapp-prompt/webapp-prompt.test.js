@@ -95,7 +95,7 @@ describe('PEP', () => {
 
     it('should not render PEP when the GRM is open', async () => {
       const config = getConfig();
-      config.grmActive = true;
+      config.geoRoutingActive = true;
       document.body.insertAdjacentHTML('afterbegin', '<div class="locale-modal-v2"></div>');
       document.body.insertAdjacentHTML('afterbegin', '<div class="locale-modal"></div>');
       await initPep({});

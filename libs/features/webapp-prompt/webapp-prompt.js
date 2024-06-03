@@ -53,7 +53,7 @@ class AppPrompt {
     this.getAnchorState = getAnchorState;
     this.id = this.promptPath.split('/').pop();
     this.elements = {};
-    if (getConfig().grmActive) waitForClosedGRMThen(this.init);
+    if (getConfig().geoRoutingActive) waitForClosedGRMThen(this.init);
     else this.init();
   }
 

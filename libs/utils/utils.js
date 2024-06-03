@@ -940,7 +940,13 @@ async function loadPostLCP(config) {
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    config.grmActive = await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    config.geoRoutingActive = await loadGeoRouting(
+      config,
+      createTag,
+      getMetadata,
+      loadBlock,
+      loadStyle,
+    );
   }
   if (config.mep?.targetEnabled === 'gnav') {
     await loadMartech({ persEnabled: true, postLCP: true });
