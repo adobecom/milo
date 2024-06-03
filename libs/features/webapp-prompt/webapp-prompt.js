@@ -72,7 +72,7 @@ const playFocusAnimation = (element, iterationCount = 2, animationDuration = 250
   // animationDuration * iterationCount due to animation-delay)
   const cleanup = () => {
     rings.forEach((ring) => ring.remove());
-    element.classList.remove('.coach-indicator');
+    element.classList.remove('coach-indicator');
   };
   const id = setTimeout(cleanup, (iterationCount + 1) * animationDuration);
   element.addEventListener('click', () => {
