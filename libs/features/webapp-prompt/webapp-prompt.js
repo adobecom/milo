@@ -58,7 +58,9 @@ const playFocusAnimation = (element, iterationCount = 2, animationDuration = 250
   element.style.setProperty('--animation-duration', `${animationDuration}ms`);
   const rings = [];
   const createRing = () => toFragment`
-    <div class="coach-indicator-ring" style="animation-iteration-count: ${iterationCount};">
+    <div
+      class="coach-indicator-ring"
+      style="animation-iteration-count: ${iterationCount};">
     </div>`;
   for (let i = 0; i < 3; i += 1) {
     const ring = createRing();
