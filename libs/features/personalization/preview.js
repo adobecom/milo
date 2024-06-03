@@ -255,7 +255,7 @@ function createPreviewPill(manifests) {
         </div>
       </div>
     </div>`;
-  const darkDiv = createTag('div', { class: 'dark'});
+  const darkDiv = createTag('div', { class: 'dark' });
   const button = createTag('a', {
     class: 'con-button outline button-l',
     text: 'Preview',
