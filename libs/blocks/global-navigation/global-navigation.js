@@ -520,7 +520,7 @@ class Gnav {
       loadStyle(styleUrl, (e) => {
         if (e === 'error') {
           lanaLog({
-            message: `GNAV: issues within decorateUniversalNav`,
+            message: 'GNAV: issues within decorateUniversalNav',
             e: `error loading style: ${styleUrl}`,
             tags: 'errorType=error,module=gnav',
           });

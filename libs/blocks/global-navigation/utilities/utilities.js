@@ -187,7 +187,7 @@ export function loadStyles(path) {
   loadStyle(url, (e) => {
     if (e === 'error') {
       lanaLog({
-        message: `GNAV: Error in loadStyles`,
+        message: 'GNAV: Error in loadStyles',
         e: `error loading style: ${url}`,
         tags: 'errorType=error,module=utilities',
       });
