@@ -11,12 +11,13 @@ function Actions({ item }) {
   const isDisabled = (status) => (!status || status !== 200 ? ' disabled' : '');
   const itemUrl = urls.value.find((url) => url.pathname === item.value.path
   || url.langstore.pathname === item.value.path);
+  const disableExcel = itemUrl?.valid !== undefined && !itemUrl.valid;
   return html`
     <div class=locui-url-source-actions>
       <button
         disabled=${item.value.edit?.status === 404}
-        class="locui-url-action locui-url-action-edit${isExcel}${!itemUrl?.valid ? ' disabled' : ''}"
-        onClick=${(e) => { if (itemUrl.valid) openWord(e, item); }}>Edit</button>
+        class="locui-url-action locui-url-action-edit${isExcel}${disableExcel ? ' disabled' : ''}"
+        onClick=${(e) => { if (!disableExcel) openWord(e, item); }}>Edit</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.preview?.status)}"
         onClick=${(e) => { if (itemUrl.valid) handleAction(e, item, true); }}>Preview</button>
