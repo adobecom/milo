@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { decorateLinks, loadStyle, setConfig } from '../../../libs/utils/utils.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
@@ -8,6 +8,8 @@ const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve,
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
+
+loadStyle('/libs/blocks/merch-card/merch-card.css');
 
 describe('Merch Card', () => {
   it('Shows segment card', async () => {
@@ -31,15 +33,15 @@ describe('Merch Card', () => {
   it('Supports Special Offers card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
     const merchCard = await init(document.querySelector('.special-offers'));
-    const heading = merchCard.querySelector('h3[slot="detail-m"]');
-    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
+    const category = merchCard.querySelector('h4[slot="detail-m"]');
+    const title = merchCard.querySelector('h3[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
     const footer = merchCard.querySelector('div[slot="footer"]');
     const buttons = footer.querySelectorAll('.con-button');
 
     expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
+    expect(category).to.exist;
+    expect(title).to.exist;
     expect(body).to.exist;
     expect(merchCard.getAttribute('variant')).to.be.equal('special-offers');
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
@@ -72,7 +74,6 @@ describe('Plans Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
@@ -100,7 +101,6 @@ describe('Plans Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
@@ -126,7 +126,6 @@ describe('Plans Card', () => {
     expect(detail).to.exist;
     expect(merchCard.getAttribute('variant')).to.be.equal('plans');
     expect(merchCard.getAttribute('badge')).to.not.exist;
-    expect(JSON.parse(merchCard.getAttribute('icons'))).to.have.lengthOf(2);
     expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum');
     expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
     expect(buttons.length).to.be.equal(2);
@@ -143,6 +142,17 @@ describe('Plans Card', () => {
 });
 
 describe('Catalog Card', () => {
+  it('Decorates with mnemonic link', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+    const el = document.getElementById('mnemonic-link');
+    await decorateLinks(document.body);
+    const merchCard = await init(el);
+    const [icon1, icon2] = merchCard.querySelectorAll('merch-icon');
+    expect(icon1.outerHTML).to.equal('<merch-icon slot="icons" src="http://localhost:2000/test/blocks/merch-card/mocks/photoshop.svg" alt="Photoshop" href="https://www.adobe.com/photoshop.html?source=icon1" size="l"></merch-icon>');
+    expect(icon2.outerHTML).to.equal('<merch-icon slot="icons" src="http://localhost:2000/test/blocks/merch-card/mocks/photoshop.svg" alt="Photoshop" href="https://www.adobe.com/photoshop.html?source=icon2" size="l"></merch-icon>');
+    expect(merchCard.titleElement.outerHTML).to.equal('<h3 class="card-heading" slot="heading-xs"><a href="https://www.adobe.com/photoshop.html" daa-ll="Photoshop-1--Photoshop">Photoshop</a></h3>');
+  });
+
   it('Supports Catalog card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
     const merchCard = await init(document.querySelector('.merch-card.ribbon'));
@@ -331,11 +341,13 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
     expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
     expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+    expect(merchCard.classList.contains('badge-card')).to.be.true;
     expect(body.textContent).to.be.equal('Get Illustrator on desktop and iPad as part of Creative Cloud. This is promo text');
     expect(buttons.length).to.be.equal(2);
     expect(buttons[0].textContent).to.be.equal('Buy now');
     expect(buttons[1].textContent).to.be.equal('free trial');
   });
+
   it('Supports Mini Compare Chart with quantity select', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
@@ -345,6 +357,25 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(quantitySelect.getAttribute('min')).to.equal('1');
     expect(quantitySelect.getAttribute('max')).to.equal('10');
     expect(quantitySelect.getAttribute('step')).to.equal('1');
+  });
+
+  it('Supports Mini Compare Chart with offer select', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('#mini-compare-offer-select'));
+    const offerSelect = merchCard.querySelector('merch-offer-select');
+    const merchOffer = offerSelect.querySelector('merch-offer');
+    expect(offerSelect).to.exist;
+    expect(merchOffer).to.exist;
+    expect(merchOffer.getAttribute('text')).to.equal('20GB');
+  });
+
+  it('Supports Mini Compare Chart intersection observer', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    const merchCard = await init(document.querySelector('#mini-compare-hidden-card'));
+    merchCard.style.visibility = 'hidden';
+    setTimeout(() => {
+      merchCard.style.visibility = 'visible';
+    }, 500);
   });
 });
 
@@ -367,8 +398,12 @@ describe('Merch Card with Offer Selection', () => {
     await delay();
     const merchCard = document.querySelector('merch-card');
     const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    const picker = quantitySelect.shadowRoot.querySelector('button');
+    picker.click();
+    await delay();
     const items = quantitySelect.shadowRoot.querySelectorAll('.item');
     items[2].click();
+    await delay();
     const button = merchCard.querySelector('.con-button');
     expect(button.getAttribute('data-quantity')).to.equal('3');
   });

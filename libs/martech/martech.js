@@ -1,7 +1,8 @@
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
-const TARGET_TIMEOUT_MS = 3500;
+const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
+const TARGET_TIMEOUT_MS = 4000;
 const ENTITLEMENT_TIMEOUT = 3000;
 
 const setDeep = (obj, path, value) => {
@@ -18,19 +19,31 @@ const setDeep = (obj, path, value) => {
   currentObj[pathArr[pathArr.length - 1]] = value;
 };
 
-const waitForEventOrTimeout = (eventName, timeout, timeoutVal) => new Promise((resolve, reject) => {
+// eslint-disable-next-line max-len
+const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Promise((resolve) => {
+  const listener = (event) => {
+    // eslint-disable-next-line no-use-before-define
+    clearTimeout(timer);
+    resolve(event.detail);
+  };
+
+  const errorListener = () => {
+    // eslint-disable-next-line no-use-before-define
+    clearTimeout(timer);
+    resolve({ error: true });
+  };
+
   const timer = setTimeout(() => {
-    if (timeoutVal !== undefined) {
-      resolve(timeoutVal);
+    window.removeEventListener(eventName, listener);
+    if (returnValIfTimeout !== undefined) {
+      resolve(returnValIfTimeout);
     } else {
-      reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
+      resolve({ timeout: true });
     }
   }, timeout);
 
-  window.addEventListener(eventName, (event) => {
-    clearTimeout(timer);
-    resolve(event.detail);
-  }, { once: true });
+  window.addEventListener(eventName, listener, { once: true });
+  window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
 });
 
 const getExpFromParam = (expParam) => {
@@ -71,15 +84,21 @@ const handleAlloyResponse = (response) => {
     .filter(Boolean);
 };
 
-function calculateResponseTime(responseStart) {
-  const responseTime = performance.now() - responseStart;
-  return Math.ceil(responseTime / 250) / 4;
+function roundToQuarter(num) {
+  return Math.ceil(num / 250) / 4;
 }
 
-function sendTargetResponseAnalytics(failure, responseStart) {
+function calculateResponseTime(responseStart) {
+  const responseTime = Date.now() - responseStart;
+  return roundToQuarter(responseTime);
+}
+
+function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   // temporary solution until we can decide on a better timeout value
   const responseTime = calculateResponseTime(responseStart);
-  const val = `target response time ${responseTime}:timed out ${failure}`;
+  const timeoutTime = roundToQuarter(timeout);
+  let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
+  if (message) val += `:${message}`;
   window.alloy('sendEvent', {
     documentUnloading: true,
     xdm: {
@@ -106,25 +125,23 @@ const getTargetPersonalization = async () => {
     || parseInt(getMetadata('target-timeout'), 10)
     || TARGET_TIMEOUT_MS;
 
-  let response;
-
-  const responseStart = performance.now();
+  const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
-    window.lana.log('target response time', responseTime);
+    window.lana.log(`target response time: ${responseTime}`, { tags: 'errorType=info,module=martech' });
   }, { once: true });
 
-  try {
-    response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
-    sendTargetResponseAnalytics(false, responseStart);
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log(e);
-    sendTargetResponseAnalytics(true, responseStart);
-  }
-
   let manifests = [];
-  if (response) {
+  const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
+  if (response.error) {
+    window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
+    return [];
+  }
+  if (response.timeout) {
+    waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
+      .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
+  } else {
+    sendTargetResponseAnalytics(false, responseStart, timeout);
     manifests = handleAlloyResponse(response.result);
   }
 
@@ -206,7 +223,11 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   return filesLoadedPromise;
 };
 
-export default async function init({ persEnabled = false, persManifests = [] }) {
+export default async function init({
+  persEnabled = false,
+  persManifests = [],
+  postLCP = false,
+}) {
   const config = getConfig();
 
   const { url, edgeConfigId } = getDtmLib(config.env);
@@ -224,7 +245,7 @@ export default async function init({ persEnabled = false, persManifests = [] }) 
     if (targetManifests?.length || persManifests?.length) {
       const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
       const manifests = preloadManifests({ targetManifests, persManifests });
-      await applyPers(manifests);
+      await applyPers(manifests, postLCP);
     }
   }
 

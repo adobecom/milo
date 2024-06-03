@@ -62,11 +62,20 @@ describe('text block', () => {
       });
     });
   });
-
   describe('two content rows', () => {
     it('has viewport classes', () => {
       const mobileEl = document.querySelector('.text-block .mobile-up');
       expect(mobileEl).to.exist;
+    });
+  });
+  describe('cta container', () => {
+    it('is added around the last action area', () => {
+      const actionArea = document.querySelector('#has-container');
+      expect(actionArea.parentElement.className.includes('cta-container')).to.be.true;
+    });
+    it('is not added around action areas that are not last', () => {
+      const actionArea = document.querySelector('#no-container');
+      expect(actionArea.parentElement.className.includes('cta-container')).to.be.false;
     });
   });
 });

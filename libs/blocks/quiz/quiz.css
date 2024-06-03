@@ -165,9 +165,12 @@ html[dir="rtl"] .quiz-option-icon {
 }
 
 .quiz-option.disabled .quiz-option-icon,
-.quiz-option.disabled .quiz-option-image,
-.quiz-option.disabled .quiz-option-text-container{
+.quiz-option.disabled .quiz-option-image {
   opacity: 0.5;
+}
+
+.quiz-option.disabled .quiz-option-text{
+  color: var(--color-gray-600);
 }
 
 .quiz-button-container {

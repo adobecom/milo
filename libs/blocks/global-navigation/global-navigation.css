@@ -370,6 +370,7 @@ header.global-navigation {
 }
 
 .feds-utilities {
+  position: relative;
   display: flex;
   align-items: center;
   padding: 0 var(--feds-gutter);
@@ -642,10 +643,6 @@ header.global-navigation {
 
   .feds-search-trigger:hover svg path {
     fill: var(--feds-color-link--hover--light);
-  }
-
-  .feds-utilities {
-    padding: 0;
   }
 
   /* Breadcrumbs */

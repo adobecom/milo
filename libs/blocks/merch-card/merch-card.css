@@ -8,6 +8,14 @@ div[class*="-merch-card"] > div,
    grid-column: 1 / -1;
  }
 
+ merch-card .action-area, merch-card div[slot="footer"] > p {
+  display: contents;
+ }
+
+ merch-card .action-area br {
+  display: none;
+ }
+
  .merch-card-price {
   margin-top: 8px;
   margin-bottom: 16px;
@@ -26,4 +34,19 @@ merch-card.special-offers del span[is="inline-price"] {
   color: var(--color-white);
   background-color: var(--color-black);
   text-decoration: none;
+}
+
+/* hide download/upgrade links except the first one */
+merch-card a[is="checkout-link"].download:not(:first-of-type),
+merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
+  display: none;
+}
+
+@media screen and (max-width: 1199px) {
+  merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
+    min-width: 66px; /* same as merch links */
+    padding: 4px 18px 5px 21px;
+    font-size: var(--consonant-merch-card-mini-compare-mobile-cta-font-size);
+
+  }
 }

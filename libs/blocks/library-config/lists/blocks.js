@@ -283,12 +283,14 @@ export default async function loadBlocks(blocks, list, query) {
       const name = document.createElement('p');
       name.textContent = getContainerName(container);
       const copy = document.createElement('button');
+      copy.id = `${getContainerName(container)}-block-copy`;
       copy.addEventListener('click', (e) => {
         const containerHtml = getHtml(container, block.path);
         e.target.classList.add('copied');
         setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
         const blob = new Blob([`${BLOCK_SPACING}${containerHtml}${BLOCK_SPACING}`], { type: 'text/html' });
         createCopy(blob);
+        window.hlx?.rum.sampleRUM('click', { source: e.target });
       });
       item.append(name, copy);
 

@@ -24,6 +24,7 @@ import globalNavigationMock from './mocks/global-navigation.plain.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
 import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
 import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
+import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 const ogFetch = window.fetch;
 
@@ -34,7 +35,7 @@ describe('global navigation', () => {
   before(() => {
     document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
     <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/1.0/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://stage.adobeccstatic.com/unav/1.1/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
   });
 
@@ -71,12 +72,15 @@ describe('global navigation', () => {
     });
 
     it("should log when there's issues within onReady", async () => {
+      const ogIms = window.adobeIMS;
       const gnav = await createFullGlobalNavigation({});
       sinon.stub(gnav, 'decorateProfile').callsFake(() => {
         throw new Error('error');
       });
+      window.adobeIMS = { isSignedInUser: () => true };
       await gnav.imsReady();
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('issues within onReady'))).to.exist;
+      window.adobeIMS = ogIms;
     });
 
     it('should log when IMS signIn method is not available', async () => {
@@ -522,6 +526,9 @@ describe('global navigation', () => {
         templateActiveElem.setAttribute('href', window.location.href);
         await createFullGlobalNavigation({ globalNavigation: template.innerHTML });
         const markupActiveElem = document.querySelector(targetSelector);
+        expect(markupActiveElem.getAttribute('role')).to.equal('link');
+        expect(markupActiveElem.getAttribute('aria-disabled')).to.equal('true');
+        expect(markupActiveElem.getAttribute('aria-current')).to.equal('page');
         expect(markupActiveElem.closest(selectors.activeNavItem) instanceof HTMLElement).to.be.true;
       });
 
@@ -1270,6 +1277,7 @@ describe('global navigation', () => {
       it('should reload unav on viewport change', async () => {
         await createFullGlobalNavigation({ unavContent: 'on' });
         await setViewport(viewports.mobile);
+        isDesktop.dispatchEvent(new Event('change'));
         await clock.runAllAsync();
         expect(window.UniversalNav.reload.getCall(0)).to.exist;
       });
@@ -1401,6 +1409,31 @@ describe('global navigation', () => {
       await initGnav(document.body.querySelector('header'));
       expect(
         fetchStub.calledOnceWith('https://www.stage.adobe.com/federal/path/to/gnav.plain.html'),
+      ).to.be.true;
+    });
+
+    it('fetches navigation saved in sessionStorage', async () => {
+      const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
+      const conf = getConfig();
+      setConfig({ dynamicNavKey: 'milo', ...conf });
+      document.head.append(dynamicNavOn);
+      window.sessionStorage.setItem('dynamicNavKey', 'milo');
+      window.sessionStorage.setItem('gnavSource', '/some-path');
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('/some-path.plain.html'),
+      ).to.be.true;
+    });
+
+    it('does not fetch from sessionStorage url when dyanmicNavKey is not present', async () => {
+      const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
+      document.head.append(dynamicNavOn);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      window.sessionStorage.setItem('dynamicNavKey', 'milo');
+      window.sessionStorage.setItem('gnavSource', '/some-path');
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html'),
       ).to.be.true;
     });
   });
