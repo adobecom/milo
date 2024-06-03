@@ -829,7 +829,11 @@ export async function loadIms() {
   return imsLoaded;
 }
 
-export async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
+export async function loadMartech({
+  persEnabled = false,
+  persManifests = [],
+  postLCP = false,
+} = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
     return true;
@@ -844,7 +848,7 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({ persEnabled, persManifests });
+  await initMartech({ persEnabled, persManifests, postLCP });
 
   return true;
 }
@@ -901,7 +905,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
-async function checkForPageMods() {
+async function checkForMep() {
   const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const persEnabled = getMepEnablement('personalization');
@@ -938,16 +942,14 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   const georouting = getMetadata('georouting') || config.geoRouting;
-  if (config.mep?.targetEnabled === 'gnav') {
-    await loadMartech({ persEnabled: true, postLCP: true });
-  } else if (georouting === 'on') {
-    await loadMartech();
-  } else {
-    loadMartech();
-  }
   if (georouting === 'on') {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+  }
+  if (config.mep?.targetEnabled === 'gnav') {
+    await loadMartech({ persEnabled: true, postLCP: true });
+  } else {
+    loadMartech();
   }
   const header = document.querySelector('header');
   if (header) {
@@ -1135,7 +1137,7 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
 
   if (isDoc) {
-    await checkForPageMods();
+    await checkForMep();
     appendHtmlToCanonicalUrl();
   }
   const config = getConfig();
