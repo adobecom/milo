@@ -66,7 +66,7 @@ export const initOfferSelection = (merchCard, offerSelection, quantitySelector) 
       merchOfferSlot = merchCard.querySelector('div[slot="body-m"]');
       break;
     case 'twp':
-      merchOfferSlot = merchCard.querySelector('div[slot="footer"]');
+      merchOfferSlot = merchCard.querySelector('[slot="footer"]');
       break;
     default:
       merchOfferSlot = merchCard.querySelector('div[slot="body-xs"]');
