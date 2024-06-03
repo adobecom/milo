@@ -54,14 +54,14 @@ const showTooltip = (element, message, time = 5000) => {
 };
 
 const playFocusAnimation = (element, iterationCount = 2, animationDuration = 2500) => {
-  document.documentElement.style.setProperty('--animation-duration', `${animationDuration}ms`);
+  element.classList.add('coach-indicator');
+  element.style.setProperty('--animation-duration', `${animationDuration}ms`);
   const rings = [];
+  const createRing = () => toFragment`
+    <div class="coach-indicator-ring" style="animation-iteration-count: ${iterationCount};">
+    </div>`;
   for (let i = 0; i < 3; i += 1) {
-    const ring = document.createElement('div');
-    ring.classList.add('coach-indicator-ring');
-    element.insertAdjacentElement('afterbegin', ring);
-    ring.style.animationIterationCount = `${iterationCount}`;
-    rings.push(ring);
+    rings.push(createRing());
   }
   // The cleanup function is added to the event queue
   // some time after the end of the animation because
@@ -70,6 +70,7 @@ const playFocusAnimation = (element, iterationCount = 2, animationDuration = 250
   // animationDuration * iterationCount due to animation-delay)
   const cleanup = () => {
     rings.forEach((ring) => ring.remove());
+    element.classList.remove('.coach-indicator');
   };
   const id = setTimeout(cleanup, (iterationCount + 1) * animationDuration);
   element.addEventListener('click', () => {
@@ -271,6 +272,7 @@ class AppPrompt {
     this.anchor?.removeEventListener('click', this.close);
 
     if (dismissalActions) {
+      window.testAnimation = (x,y) => playFocusAnimation(this.anchor, x, y);
       playFocusAnimation(
         this.anchor,
         this.options['dismissal-animation-count'],

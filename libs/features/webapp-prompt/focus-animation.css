@@ -1,8 +1,7 @@
-:root {
-  --blue-700: rgba(56,146,243);
-  --coach-indicator-ring-default-color:var(--blue-700);
-  --coach-indicator-ring-diameter:1.25rem;
-  --coach-indicator-ring-default-color:var(--blue-700);
+.coach-indicator {
+  --ring-color: ;
+  --coach-indicator-ring-default-color: rgba(56,146,243);
+  --coach-indicator-ring-diameter: 1.25rem;
 	--coach-indicator-ring-border-size: 2px;
 	--coach-indicator-ring-inline-size: var(--coach-indicator-ring-diameter);
 	--coach-indicator-ring-block-size: var(--coach-indicator-ring-diameter);
@@ -26,7 +25,7 @@
 	}
 }
 
-.coach-indicator-ring {
+.coach-indicator .coach-indicator-ring {
 	display: block;
 	position: absolute;
   top: 14%;
@@ -41,23 +40,23 @@
 	animation: pulse var(--animation-duration) linear;
   animation-fill-mode: both;
 
-  border-radius: 0.313rem;
+  border-radius: 5px;
 }
 
-.coach-indicator-ring:nth-child(1) {
+.coach-indicator .coach-indicator-ring:nth-child(1) {
   animation-delay: calc(var(--animation-duration)*(0));
 }
 
-.coach-indicator-ring:nth-child(2) {
+.coach-indicator .coach-indicator-ring:nth-child(2) {
   animation-delay: calc(var(--animation-duration)*(0.33));
 }
 
-.coach-indicator-ring:nth-child(3) {
+.coach-indicator .coach-indicator-ring:nth-child(3) {
   animation-delay: calc(var(--animation-duration)*(0.66));
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.coach-indicator-ring {
+	.coach-indicator .coach-indicator-ring {
 		animation: none;
 	}
 }

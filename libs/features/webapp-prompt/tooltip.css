@@ -2,14 +2,14 @@
   content: attr(data-pep-dismissal-tooltip);
   position: absolute;
   display: inline-flex;
-  z-index: 201;
+  z-index: 3;
   background-color: #3B63FB;
   height: fit-content;
   width: 8.875rem;
   top: 120%; 
   right: -75%;
   word-break: break-word;
-  border-radius: 0.4375rem;
+  border-radius: 7px;
 
   padding-inline-start: 0.5625rem;
   padding-inline-end: 0.5625rem;
@@ -28,7 +28,7 @@
 [data-pep-dismissal-tooltip]::before { 
   content: '';
   position: absolute;
-  z-index: 200;
+  z-index: 2;
   background-color: #3B63FB;
   width: 0.44rem;
   height: 0.44rem;
