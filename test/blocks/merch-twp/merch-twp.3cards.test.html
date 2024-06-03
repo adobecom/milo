@@ -53,6 +53,11 @@
           unmockFetch();
         });
         it('renders merch-twp with 3 tabs and 4 cards', async () => {
+          const main = document.querySelector('main');
+          main.innerHTML = '';
+          const template = document.getElementById('merch-twp');
+          const clone = document.importNode(template.content, true);
+          main.append(clone);
           const twp = await merchTwp(document.querySelector('.merch-twp'));
           await getModal(null, { id: 'twp-modal', content: twp, class: 'twp' });
           expect(twp).to.exist;
@@ -62,6 +67,8 @@
     });
   </script>
   <main>
+  </main>
+  <template id="merch-twp">
     <div class="merch-twp">
       <div>
         <div>
@@ -470,7 +477,7 @@
         </div>
       </div>
     </div>
-  </main>
+  </template>
 </body>
 
 </html>
