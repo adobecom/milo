@@ -381,7 +381,7 @@ button.locui-subproject-locale:hover {
 }
 
 .skipped-icon {
-  background: url('./img/skip-icon.svg');
+  background: url('./img/warnings-icon.svg');
   background-repeat: no-repeat;
   background-position: 50%;
   display: inline-flex;
