@@ -941,15 +941,15 @@ async function checkForMep() {
 }
 
 async function loadPostLCP(config) {
-  const georouting = getMetadata('georouting') || config.geoRouting;
-  if (georouting === 'on') {
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
-  }
   if (config.mep?.targetEnabled === 'gnav') {
     await loadMartech({ persEnabled: true, postLCP: true });
   } else {
     loadMartech();
+  }
+  const georouting = getMetadata('georouting') || config.geoRouting;
+  if (georouting === 'on') {
+    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
   const header = document.querySelector('header');
   if (header) {
