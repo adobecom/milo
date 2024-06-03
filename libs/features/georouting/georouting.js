@@ -137,20 +137,23 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const resp = await fetch(`${config.contentRoot ?? ''}/georouting.json`);
-  if (!resp.ok) return;
+  if (!resp.ok) return false;
   const json = await resp.json();
 
   const urlGeoData = json.data.find((d) => d.prefix === urlLocale);
-  if (!urlGeoData) return;
+  if (!urlGeoData) return false;
 
   if (storedLocale || storedLocale === '') {
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
       const localeMatches = json.data.filter((d) => d.prefix === storedLocale);
       const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
-      if (details) { await showModal(details); }
+      if (details) {
+        await showModal(details);
+        return true;
+      }
     }
-    return;
+    return false;
   }
 
   // Show modal when derived countries from url locale and akamai disagree
@@ -158,6 +161,10 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
   if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
     const localeMatches = getMatches(json.data, akamaiCode);
     const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
-    if (details) { await showModal(details); }
+    if (details) {
+      await showModal(details);
+      return true;
+    }
   }
+  return false;
 }

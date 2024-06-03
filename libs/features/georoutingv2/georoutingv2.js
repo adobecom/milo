@@ -274,7 +274,7 @@ export default async function loadGeoRouting(
   loadBlockFunc,
   loadStyleFunc,
 ) {
-  if (getGeoroutingOverride()) return;
+  if (getGeoroutingOverride()) return false;
   config = conf;
   createTag = createTagFunc;
   getMetadata = getMetadataFunc;
@@ -285,8 +285,7 @@ export default async function loadGeoRouting(
   if (!resp.ok) {
     // eslint-disable-next-line import/no-cycle
     const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
-    loadGeoRoutingOld(config, createTag, getMetadata);
-    return;
+    return loadGeoRoutingOld(config, createTag, getMetadata);
   }
   const json = await resp.json();
 
@@ -297,7 +296,7 @@ export default async function loadGeoRouting(
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const urlGeoData = json.georouting.data.find((d) => d.prefix === urlLocale);
-  if (!urlGeoData) return;
+  if (!urlGeoData) return false;
 
   if (storedLocale || storedLocale === '') {
     const urlLocaleGeo = urlLocale.split('_')[0];
@@ -313,9 +312,10 @@ export default async function loadGeoRouting(
         sendAnalyticsFunc(
           new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
         );
+        return true;
       }
     }
-    return;
+    return false;
   }
 
   // Show modal when derived countries from url locale and akamai disagree
@@ -333,5 +333,7 @@ export default async function loadGeoRouting(
     }
   } catch (e) {
     window.lana?.log(e.message);
+    return false;
   }
+  return true;
 }
