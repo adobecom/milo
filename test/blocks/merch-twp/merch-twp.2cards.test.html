@@ -44,13 +44,13 @@
       describe('Merch TWP', async () => {
         before(async () => {
           mockIms();
-          mockFetch();
+          await mockFetch();
           await initService(true);
         });
 
         after(async () => {
           unmockIms();
-          unmockFetch();
+          await unmockFetch();
         });
         it('renders merch-twp with 3 tabs and 4 cards', async () => {
           const main = document.querySelector('main');
@@ -59,7 +59,8 @@
           const clone = document.importNode(template.content, true);
           main.append(clone);
           const twp = await merchTwp(document.querySelector('.merch-twp'));
-          return await getModal(null, { id: 'twp-modal', content: twp, class: 'twp' });
+          await getModal(null, { id: 'twp-modal', content: twp, class: 'twp' });
+          expect(document.querySelector('merch-twp-d2p').shadowRoot).to.exist;
         });
       });
 
