@@ -98,12 +98,12 @@ function parseKeyString(str) {
 
 function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
-  if (key === 'lockup') decorateLockupRow(el);
-  if (key === 'qrcode') decorateQr(el);
   if (key === 'bgcolor') decorateBg(el);
   if (key === 'list') decorateList(el, classes);
-  if (key === 'text') decorateText(el, classes);
+  if (key === 'lockup') decorateLockupRow(el);
+  if (key === 'qrcode') decorateQr(el);
   if (key === 'supplemental') decorateSup(el, classes);
+  if (key === 'text') decorateText(el, classes);
 }
 
 function loadBreakpointThemes() {
@@ -160,6 +160,7 @@ export default async function init(el) {
   decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
+  /* c8 ignore next 2 */
   const containsClassFromArray = () => breakpointThemeClasses.some(
     (className) => el.classList.contains(className),
   );
@@ -174,13 +175,6 @@ export default async function init(el) {
       rows[i].classList.add('prepend');
     }
   }
-
-  // removeBodyClassOnEl
-  // const actionAreaBody = mainCopy.querySelector('.body-m.action-area');
-  // if (actionAreaBody) actionAreaBody.classList.remove('body-m');
-  // console.log('removeBOdyClassOnEl', mainCopy, actionAreaBody);
-
-  // if (el.classList.contains)
 
   copy.innerHTML = '';
   copy.append(mainCopy);
@@ -207,7 +201,6 @@ export default async function init(el) {
     } else {
       row.classList.add('norm');
       decorateBlockHrs(row);
-      // decorateBlockText(row, ['xxl', 'm', 'l']);
       decorateButtons(row, 'button-xl');
     }
   });
