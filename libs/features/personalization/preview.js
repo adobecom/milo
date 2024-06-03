@@ -256,10 +256,10 @@ function createPreviewPill(manifests) {
       </div>
     </div>`;
   const darkDiv = createTag('div', { class: 'dark'});
-  const button = createTag('a', { 
-    class: 'con-button outline button-l', 
-    text: 'Preview', 
-    href: simulateHref.href, 
+  const button = createTag('a', {
+    class: 'con-button outline button-l',
+    text: 'Preview',
+    href: simulateHref.href,
     title: 'Preview above choices'
   });
   darkDiv.append(button);
