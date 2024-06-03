@@ -905,7 +905,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
-async function checkForMep() {
+async function checkForPageMods() {
   const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const persEnabled = getMepEnablement('personalization');
@@ -1137,7 +1137,7 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
 
   if (isDoc) {
-    await checkForMep();
+    await checkForPageMods();
     appendHtmlToCanonicalUrl();
   }
   const config = getConfig();
