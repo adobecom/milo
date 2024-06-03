@@ -19,7 +19,7 @@ import {
 } from './index.js';
 
 export default function Actions() {
-  const hasErrors = urls.value.filter((url) => !url.valid)?.length > 0;
+  const hasErrors = urls.value.filter((url) => url.valid !== undefined && !url.valid)?.length > 0;
   const canAct = allowSyncToLangstore.value
               || allowSendForLoc.value
               || allowRollout.value

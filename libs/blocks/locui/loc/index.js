@@ -106,7 +106,7 @@ async function loadDetails() {
     setStatus('details', 'info', 'Validating Project Configuration');
     urls.value = await validatedUrls(projectUrls);
     if (json.settings) loadProjectSettings(json.settings.data);
-    const errors = urls.value.filter((url) => !url.valid);
+    const errors = urls.value.filter((url) => url.valid !== undefined && !url.valid);
     if (errors?.length > 0) {
       setStatus('details', 'error', 'Invalid URLs.', errors.map((url) => (`${url.href} was not found.`)));
     } else {

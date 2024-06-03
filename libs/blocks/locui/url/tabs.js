@@ -11,19 +11,19 @@ function Actions({ item }) {
   const isDisabled = (status) => (!status || status !== 200 ? ' disabled' : '');
   const itemUrl = urls.value.find((url) => url.pathname === item.value.path
   || url.langstore.pathname === item.value.path);
-  const disableActions = itemUrl?.valid !== undefined && !itemUrl.valid;
+  const disabled = itemUrl?.valid !== undefined && !itemUrl.valid;
   return html`
     <div class=locui-url-source-actions>
       <button
         disabled=${item.value.edit?.status === 404}
-        class="locui-url-action locui-url-action-edit${isExcel}${disableActions ? ' disabled' : ''}"
-        onClick=${(e) => { if (!disableActions) openWord(e, item); }}>Edit</button>
+        class="locui-url-action locui-url-action-edit${isExcel}${disabled ? ' disabled' : ''}"
+        onClick=${(e) => { if (!disabled) openWord(e, item); }}>Edit</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.preview?.status)}"
-        onClick=${(e) => { if (!disableActions) handleAction(e, item, true); }}>Preview</button>
+        onClick=${(e) => { if (!disabled) handleAction(e, item, true); }}>Preview</button>
       <button
         class="locui-url-action locui-url-action-view${isDisabled(item.value.live?.status)}"
-        onClick=${(e) => { if (!disableActions) handleAction(e, item); }}>Live</button>
+        onClick=${(e) => { if (!disabled) handleAction(e, item); }}>Live</button>
     </div>
   `;
 }
