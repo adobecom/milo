@@ -9,7 +9,13 @@ const {
   getModal,
   getHashParams,
   delayedModal,
+  sendAnalytics,
 } = await import('../../../libs/blocks/modal/modal.js');
+
+const trackingEvent = {
+  isTrusted: false,
+  __WTR_CONSTRUCTOR_NAME__: 'Event',
+};
 
 describe('Modals', () => {
   beforeEach(() => {
@@ -227,5 +233,27 @@ describe('Modals', () => {
     expect(modal).to.not.exist;
     window.sessionStorage.removeItem('shown:#dm');
     el.remove();
+  });
+});
+
+describe('sendAnalytics', () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('satellite event not set, so must use event listener', async () => {
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite = {};
+    sendAnalytics(trackingEvent);
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite = { track: sinon.spy() };
+    const martechEvent = new Event('alloy_sendEvent');
+    dispatchEvent(martechEvent);
+  });
+
+  it('satellite event set, so can fire load event immediately', async () => {
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite = { track: sinon.spy() };
+    sendAnalytics(trackingEvent);
   });
 });
