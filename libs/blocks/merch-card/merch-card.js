@@ -446,7 +446,6 @@ export default async function init(el) {
     imageSlot.appendChild(image);
     merchCard.appendChild(imageSlot);
   }
-  parseContent(el, merchCard);
   if (!icons || icons.length > 0) {
     const iconImgs = Array.from(icons).map((icon) => {
       const img = {
