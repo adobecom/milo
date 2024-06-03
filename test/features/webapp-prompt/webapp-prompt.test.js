@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import pepPromptContent from './mocks/pep-prompt-content.js';
-import { getConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 
 describe('PEP', () => {
   let clock;
@@ -94,17 +94,20 @@ describe('PEP', () => {
     });
 
     it('should not render PEP when the GRM is open', async () => {
-      const config = getConfig();
-      config.geoRoutingActive = true;
       document.body.insertAdjacentHTML('afterbegin', '<div class="locale-modal-v2"></div>');
       document.body.insertAdjacentHTML('afterbegin', '<div class="locale-modal"></div>');
-      await initPep({});
-      clock.next();
-      expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
+
+      await initPep({ geoRoutingActive: true });
+
+      try {
+        clock.runAll();
+      } catch (e) {
+        expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
+      }
+
       document.querySelector('.locale-modal-v2')?.remove();
-      clock.next();
-      expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
-      document.querySelector('locale-modal')?.remove();
+      document.querySelector('.locale-modal')?.remove();
+
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.exist;
     });

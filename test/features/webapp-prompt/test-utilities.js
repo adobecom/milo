@@ -28,13 +28,13 @@ export const defaultConfig = {
 
 export const mockRes = importedMockRes;
 
-export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = false, getAnchorStateMock = false }) => {
+export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = false, getAnchorStateMock = false, geoRoutingActive = false }) => {
   setConfig({
     imsClientId: 'milo',
     codeRoot: '/libs',
     locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
   });
-  updateConfig({ ...getConfig(), entitlements: () => ['firefly-web-usage'] });
+  updateConfig({ ...getConfig(), entitlements: () => ['firefly-web-usage'], geoRoutingActive });
   await setViewport(viewports.desktop);
   await loadStyle('../../../libs/features/webapp-prompt/webapp-prompt.css');
 
