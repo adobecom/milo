@@ -7,7 +7,7 @@ const BANNER = `/* eslint-disable */
 `;
 
 const ICONS = [
-  'asterisk', 'chevron', 'checkmark', 'dash', 'cross',
+  'asterisk', 'chevron', 'checkmark', 'dash', 'cross', 'corner-triangle',
 ];
 
 /**
@@ -89,6 +89,7 @@ build({
 
 mods.forEach((mod) => {
   if (mod === 'lit.js') return;
+  if (mod === 'polyfills') return;
   build({
     define: DEFINE,
     bundle: true,
