@@ -272,7 +272,6 @@ class AppPrompt {
     this.anchor?.removeEventListener('click', this.close);
 
     if (dismissalActions) {
-      window.testAnimation = (x,y) => playFocusAnimation(this.anchor, x, y);
       playFocusAnimation(
         this.anchor,
         this.options['dismissal-animation-count'],
