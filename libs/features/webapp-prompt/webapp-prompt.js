@@ -39,10 +39,7 @@ const geoRoutingActive = () => !!document.querySelector('.locale-modal-v2')
           || !!document.querySelector('.locale-modal');
 
 const waitForClosedGRMThen = (loadPEP) => {
-  if (geoRoutingActive()) {
-    setTimeout(() => waitForClosedGRMThen(loadPEP), 200);
-    return;
-  }
+  document.addEventListener('milo:modal:closed', loadPEP);
   loadPEP();
 };
 
