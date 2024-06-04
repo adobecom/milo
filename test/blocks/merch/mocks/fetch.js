@@ -3,15 +3,15 @@ import sinon from 'sinon';
 import { PRICE_LITERALS_URL } from '../../../../libs/blocks/merch/merch.js';
 import { applyPlanType } from '../../../../libs/deps/commerce.js';
 
-const { fetch } = window;
+const { fetch: originalFetch } = window;
 
 export const readMockJSON = async (path) => {
-  const json = await fetch(path).then((res) => res.json());
+  const json = await originalFetch(path).then((res) => res.json());
   return json;
 };
 
 export const readMockText = async (path) => {
-  const text = await fetch(path).then((res) => res.text());
+  const text = await originalFetch(path).then((res) => res.text());
   return text;
 };
 
@@ -112,6 +112,14 @@ export async function mockFetch() {
         ok: true,
         status: 200,
         json: () => Promise.resolve({ data: [] }),
+      });
+    }
+    if (/gql.json/.test(pathname)) {
+      const name = pathname.split('/').pop();
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => readMockJSON(`/test/blocks/merch-card/mocks/odin/${name}`), // TODO refactor.
       });
     }
     return fetch.apply(window, args);

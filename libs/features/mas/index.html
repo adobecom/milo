@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>CCD Merch integration POC</title>
+  <meta property="og:title" content="CCD Merch integration POC">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="header" content="off">
+  <meta name="footer" content="off">
+  <meta name="nofollow-links" content="on">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:," size="any">
+  <link rel="stylesheet" href="https://www.adobe.com/libs/styles/styles.css">
+  <meta name="wcs-locale" content="CA_fr">
+  <script src="mas.js" type="module"></script>
+</head>
+
+<body>
+  <main>
+    <sp-theme theme="spectrum" color="light" scale="medium">
+      <div class="two-merch-cards catalog">
+        <merch-card variant="catalog">
+          <merch-datasource source="odin" path="/content/dam/sandbox/ilyas/creative-cloud" mep></merch-datasource>
+        </merch-card>
+        <merch-card variant="catalog">
+          <merch-datasource source="odin" path="/content/dam/sandbox/ilyas/photoshop"></merch-datasource>
+        </merch-card>
+      </div>
+    </sp-theme>
+  </main>
+</body>
+
+</html>

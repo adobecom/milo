@@ -1,0 +1,137 @@
+{
+  "data": {
+    "merchCardByPath": {
+      "item": {
+        "_path": "/content/dam/sandbox/ilyas/photoshop",
+        "_variation": "master",
+        "type": "catalog",
+        "icon": [
+          "https://main--cc--adobecom.hlx.page/cc-shared/assets/img/product-icons/svg/photoshop.svg"
+        ],
+        "name": "photoshop",
+        "title": "Photoshop Ultra",
+        "link": null,
+        "prices": {
+          "html": "<p><a class=\"merch link-block\" href=\"https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&amp;type=price\">PRICE - ABM - Photoshop&nbsp;</a></p>",
+          "markdown": "[PRICE - ABM - Photoshop](https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&type=price)\n",
+          "plaintext": "PRICE - ABM - Photoshop ",
+          "json": [
+            {
+              "nodeType": "paragraph",
+              "content": [
+                {
+                  "nodeType": "link",
+                  "data": {
+                    "href": "https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&type=price",
+                    "class": "merch link-block"
+                  },
+                  "value": "PRICE - ABM - Photoshop "
+                }
+              ]
+            }
+          ]
+        },
+        "description": {
+          "html": "<p>Edit, composite, and create beautiful images, graphics, and art on desktop and iPad.</p>\n<p><a href=\"https://www.adobe.com/products/photoshop.html\">Learn more</a></p>",
+          "markdown": "Edit, composite, and create beautiful images, graphics, and art on desktop and iPad.\n\n[Learn more](https://www.adobe.com/products/photoshop.html)\n",
+          "plaintext": "Edit, composite, and create beautiful images, graphics, and art on desktop and iPad.\n\nLearn more",
+          "json": [
+            {
+              "nodeType": "paragraph",
+              "content": [
+                {
+                  "nodeType": "text",
+                  "value": "Edit, composite, and create beautiful images, graphics, and art on desktop and iPad."
+                }
+              ]
+            },
+            {
+              "nodeType": "paragraph",
+              "content": [
+                {
+                  "nodeType": "link",
+                  "data": {
+                    "href": "https://www.adobe.com/products/photoshop.html"
+                  },
+                  "value": "Learn more"
+                }
+              ]
+            }
+          ]
+        },
+        "secure": true,
+        "stock": true,
+        "ctas": {
+          "html": "<p><a class=\"merch link-block con-button blue\" href=\"https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&amp;type=checkoutUrl&amp;text=buy-now&amp;entitlement=true&amp;modal=true\">Buy now</a><a class=\"merch link-block con-button outline\" href=\"https://milo.adobe.com/tools/ost?osi=ZQwlmahh5YRWh8mRGxo-cr3eu91ShbpRv6vkbcsi3eQ&amp;type=checkoutUrl&amp;text=free-trial&amp;entitlement=true&amp;modal=true\">Free trial</a></p>",
+          "markdown": "[Buy now](https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&type=checkoutUrl&text=buy-now&entitlement=true&modal=true)[Free trial](https://milo.adobe.com/tools/ost?osi=ZQwlmahh5YRWh8mRGxo-cr3eu91ShbpRv6vkbcsi3eQ&type=checkoutUrl&text=free-trial&entitlement=true&modal=true)\n",
+          "plaintext": "Buy nowFree trial",
+          "json": [
+            {
+              "nodeType": "paragraph",
+              "content": [
+                {
+                  "nodeType": "link",
+                  "data": {
+                    "href": "https://milo.adobe.com/tools/ost?osi=A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&type=checkoutUrl&text=buy-now&entitlement=true&modal=true",
+                    "class": "merch link-block con-button blue"
+                  },
+                  "value": "Buy now"
+                },
+                {
+                  "nodeType": "link",
+                  "data": {
+                    "href": "https://milo.adobe.com/tools/ost?osi=ZQwlmahh5YRWh8mRGxo-cr3eu91ShbpRv6vkbcsi3eQ&type=checkoutUrl&text=free-trial&entitlement=true&modal=true",
+                    "class": "merch link-block con-button outline"
+                  },
+                  "value": "Free trial"
+                }
+              ]
+            }
+          ]
+        },
+        "_metadata": {
+          "stringMetadata": [
+            {
+              "name": "title",
+              "value": "Photoshop"
+            },
+            {
+              "name": "description",
+              "value": ""
+            }
+          ],
+          "stringArrayMetadata": [],
+          "intMetadata": [],
+          "intArrayMetadata": [],
+          "floatMetadata": [],
+          "floatArrayMetadata": [],
+          "booleanMetadata": [],
+          "booleanArrayMetadata": [],
+          "calendarMetadata": [
+            {
+              "name": "jcr:created",
+              "value": "2024-06-04T13:26:39.935Z"
+            },
+            {
+              "name": "cq:lastModified",
+              "value": "2024-05-17T17:15:16.966Z"
+            }
+          ],
+          "calendarArrayMetadata": []
+        },
+        "_variations": [],
+        "_model": {
+          "_path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+          "title": "Merch Card"
+        },
+        "_tags": [],
+        "_extendedInfo": {
+          "type": {
+            "key": "catalog",
+            "label": "Catalog Card"
+          }
+        }
+      }
+    }
+  }
+}
