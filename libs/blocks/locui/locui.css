@@ -107,6 +107,7 @@ span.locui-sync-badge-mono {
   background-color: #0f7c41;
   height: 26px;
   border-radius: 2px;
+  cursor: pointer;
 }
 
 .locui-status-toast-section {
@@ -121,6 +122,10 @@ span.locui-sync-badge-mono {
   border-radius: 4px;
   margin-bottom: 20px;
   width: 420px;
+}
+
+.locui-status-toast.has-description {
+  cursor: pointer;
 }
 
 .locui-status-toast-type-info {
@@ -151,6 +156,18 @@ p.locui-status-toast-description {
   margin: 0;
   padding: 12px 16px;
   background: rgba(255 255 255 / 10%);
+  cursor: default;
+  overflow: auto;
+  max-height: 85vh;
+}
+
+p.locui-status-toast-description ol {
+  padding-left: 25px;
+  margin: 0 0 8px;
+}
+
+p.locui-status-toast-description ol li:not(:last-child) {
+  margin-bottom: 10px;
 }
 
 div.locui-status-toast-expand {
@@ -277,7 +294,8 @@ li.locui-subproject.locui-subproject-translated .locui-subproject-badge {
 }
 
 li.locui-subproject.locui-subproject-rolling-out .locui-subproject-badge,
-li.locui-subproject.locui-subproject-completed .locui-subproject-badge {
+li.locui-subproject.locui-subproject-completed .locui-subproject-badge,
+li.locui-subproject.locui-subproject-retrying .locui-subproject-badge {
   background: rgb(246 97 182);
 }
 
@@ -290,16 +308,19 @@ li.locui-subproject.locui-subproject-in-progress .locui-subproject-badge {
   background: #80B3E7;
 }
 
+li.locui-subproject.locui-subproject-retrying,
 li.locui-subproject.locui-subproject-error {
   border-color: #e40909;
   background: rgb(249 148 148 / 20%);
   cursor: pointer;
 }
 
+li.locui-subproject.locui-subproject-retrying:hover,
 li.locui-subproject.locui-subproject-error:hover {
   background: rgb(249 148 148 / 40%);
 }
 
+li.locui-subproject.locui-subproject-retrying .locui-subproject-badge,
 li.locui-subproject.locui-subproject-error .locui-subproject-badge {
   background: #e40909;
 }
@@ -389,6 +410,14 @@ button.locui-urls-heading-action.cancel:hover {
   background: #666;
 }
 
+button.locui-urls-heading-action.error {
+  background: red;
+}
+
+button.locui-urls-heading-action.error:hover {
+  background: #cd0505;
+}
+
 ul.locui-urls {
   margin: 0;
   list-style: none;
@@ -402,6 +431,21 @@ ul.locui-urls {
 li.locui-url {
   padding: 18px 0;
   border-bottom: 1px solid #ccc;
+}
+
+li.locui-url.error .locui-url-path {
+  color: red;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+li.locui-url.error .locui-url-path span {
+  color: white;
+  background-color: red;
+  border-radius: 5px;
+  padding: 0 5px;
+  font-size: 12px;
 }
 
 li.locui-url:last-child {

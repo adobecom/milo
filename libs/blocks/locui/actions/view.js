@@ -7,6 +7,7 @@ import {
   allowRollout,
   allowCancelProject,
   projectCancelled,
+  heading,
 } from '../utils/state.js';
 import {
   sendForLoc,
@@ -18,6 +19,7 @@ import {
 } from './index.js';
 
 export default function Actions() {
+  const hasErrors = urls.value.filter((url) => url.valid !== undefined && !url.valid)?.length > 0;
   const canAct = allowSyncToLangstore.value
               || allowSendForLoc.value
               || allowRollout.value
@@ -26,6 +28,19 @@ export default function Actions() {
   const canReRollAll = languages.value.some((lang) => lang.status === 'completed');
   const canRollAll = languages.value.some((lang) => lang.status === 'translated');
 
+  if (hasErrors) {
+    return html`
+      <div class=locui-section>
+        <div class=locui-section-heading>
+            <div>
+              <h2 class="locui-section-label cancelled">Project has errors</h2>
+              <i>Please fix errors in project to proceed.</i>
+            </div>
+        </div>
+      </div>
+    `;
+  }
+
   if (projectCancelled.value) {
     return html`
       <div class=locui-section>
@@ -33,6 +48,20 @@ export default function Actions() {
             <div>
               <h2 class="locui-section-label cancelled">Project Cancelled</h2>
               <i>Note: All processes have been stopped but documents were not deleted from SharePoint.</i>
+            </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (!languages?.value?.length) {
+    return html`
+      <div class=locui-section>
+        <div class=locui-section-heading>
+            <div>
+              <h2 class="locui-section-label">No Languages Configured</h2>
+              <i>To start a localization project languages need to be configured. Please select language preferences in the ${heading.value.editUrl ? html`
+                  <a href="${heading.value.editUrl}" target="_blank">excel file</a>` : 'excel file'} to proceed.</i>
             </div>
         </div>
       </div>

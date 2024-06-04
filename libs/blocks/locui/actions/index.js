@@ -9,10 +9,11 @@ import {
   allowRollout,
   syncFragments,
   allowCancelProject,
+  polling,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
-import { createTag, decorateSections } from '../../../utils/utils.js';
+import { createTag, decorateSections, decorateFooterPromo } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
@@ -46,20 +47,40 @@ async function updateExcelJson() {
   });
 }
 
+async function fetchDocument(hlxPath) {
+  const path = `${origin}${hlxPath}`;
+  try {
+    const resp = await fetch(path);
+    if (!resp.ok) return null;
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    return doc;
+  } catch (error) {
+    setStatus('service', 'error', `${error.message} Fragment`, `There was an issue fetching ${path}`, 10000);
+    return null;
+  }
+}
+
 async function findPageFragments(path) {
   const isIndex = path.lastIndexOf('index');
   const hlxPath = isIndex > 0 ? path.substring(0, isIndex) : path;
-  const resp = await fetch(`${origin}${hlxPath}`);
-  if (!resp.ok) return [];
-  const html = await resp.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+  const doc = await fetchDocument(hlxPath);
+  if (!doc) return [];
   // Decorate the doc, but don't load any blocks (i.e. do not use loadArea)
   decorateSections(doc, true);
+  await decorateFooterPromo(doc);
   const fragments = [...doc.querySelectorAll('.fragment, .modal.link-block')];
   const fragmentUrls = fragments.reduce((acc, fragment) => {
     // Normalize the fragment path to support production urls.
-    const pathname = fragment.dataset.modalPath || new URL(fragment.href).pathname.replace('.html', '');
+    const originalUrl = fragment.dataset.modalPath || fragment.dataset.path || fragment.href;
+    let pathname;
+    try {
+      pathname = new URL(originalUrl, origin).pathname.replace('.html', '');
+    } catch (error) {
+      setStatus('service', 'error', 'Invalid Fragment Path in files', originalUrl);
+      return acc;
+    }
 
     // Find dupes across current iterator as well as original url list
     const accDupe = acc.some((url) => url.pathname === pathname);
@@ -136,6 +157,9 @@ export async function findAllFragments() {
 }
 
 export async function syncToLangstore() {
+  // stop polling for updates until request is made
+  polling.value = false;
+
   // Disable all langstore syncing, the project is being sent.
   allowSyncToLangstore.value = false;
 
@@ -159,6 +183,7 @@ export async function syncToLangstore() {
     }, 3000);
   } else {
     await startSync();
+    getServiceUpdates();
   }
 }
 
@@ -187,6 +212,9 @@ export async function syncFragsLangstore() {
 }
 
 export async function sendForLoc() {
+  // stop polling for updates until request is made
+  polling.value = false;
+
   // Disable all langstore syncing, the project is being sent.
   allowSyncToLangstore.value = false;
 
@@ -221,9 +249,11 @@ export function showRollout() {
 }
 
 export async function rolloutAll(e, reroll) {
+  polling.value = false;
   showRolloutOptions.value = false;
   allowRollout.value = false;
   await rolloutLang('all', reroll);
+  polling.value = true;
 }
 
 export async function cancelLocProject() {
