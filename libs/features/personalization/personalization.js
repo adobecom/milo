@@ -87,28 +87,6 @@ export const normalizePath = (p, localize = true) => {
   return path;
 };
 
-export const preloadManifests = ({ targetManifests = [], persManifests = [] }) => {
-  let manifests = targetManifests;
-
-  manifests = manifests.concat(
-    persManifests.map((manifest) => ({
-      ...manifest,
-      manifestPath: normalizePath(appendJsonExt(manifest.manifestPath)),
-      manifestUrl: manifest.manifestPath,
-    })),
-  );
-
-  for (const manifest of manifests) {
-    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
-      loadLink(
-        manifest.manifestPath,
-        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
-      );
-    }
-  }
-  return manifests;
-};
-
 export const getFileName = (path) => path?.split('/').pop();
 
 const createFrag = (el, url, manifestId) => {
@@ -819,26 +797,8 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
-export async function applyPers(manifests, postLCP = false) {
+export async function applyPers(manifests, config, postLCP = false) {
   try {
-    const config = getConfig();
-    if (!postLCP) {
-      const {
-        mep: mepParam,
-        mepHighlight,
-        mepButton,
-      } = Object.fromEntries(PAGE_URL.searchParams);
-      config.mep = {
-        handleFragmentCommand,
-        preview: (mepButton !== 'off'
-          && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
-        override: mepParam ? decodeURIComponent(mepParam) : '',
-        highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
-        mepParam,
-        targetEnabled: config.mep?.targetEnabled,
-      };
-    }
-
     if (!manifests?.length) return;
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
@@ -857,8 +817,7 @@ export async function applyPers(manifests, postLCP = false) {
     }
     results = results.filter(Boolean);
 
-    config.mep.experiments ??= [];
-    config.mep.experiments = experiments;
+    config.mep.experiments = [...config.mep.experiments, ...experiments];
     config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
     config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
     config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
@@ -882,4 +841,84 @@ export async function applyPers(manifests, postLCP = false) {
     console.warn(e);
     window.lana?.log(`MEP Error: ${e.toString()}`);
   }
+}
+
+const combineNonTargetSources = async (persEnabled, promoEnabled, mepParam) => {
+  let manifests = [];
+
+  if (persEnabled) {
+    manifests = persEnabled.toLowerCase()
+      .split(/,|(\s+)|(\\n)/g)
+      .filter((path) => path?.trim())
+      .map((manifestPath) => ({ manifestPath }));
+  }
+
+  if (promoEnabled) {
+    const { default: getPromoManifests } = await import('./promo-utils.js');
+    manifests = manifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
+  }
+
+  if (mepParam && mepParam !== 'off') {
+    const getManifestPaths = manifests.map((manifest) => {
+      const { manifestPath } = manifest;
+      if (manifestPath.startsWith('/')) return manifestPath;
+      try {
+        const url = new URL(manifestPath);
+        return url.pathname;
+      } catch (e) {
+        return manifestPath;
+      }
+    });
+
+    mepParam.split('---').forEach((manifestPair) => {
+      const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!getManifestPaths.includes(manifestPath)) {
+        manifests.push({ manifestPath });
+      }
+    });
+  }
+
+  const mappedManifests = manifests.map((manifest) => ({
+    ...manifest,
+    manifestPath: normalizePath(appendJsonExt(manifest.manifestPath)),
+    manifestUrl: manifest.manifestPath,
+  }));
+
+  for (const manifest of mappedManifests) {
+    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
+      loadLink(
+        manifest.manifestPath,
+        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
+      );
+    }
+  }
+  return mappedManifests;
+};
+
+export async function init(enablements = {}) {
+  const manifests = [];
+  const config = getConfig();
+  const {
+    target, personalization, promo, mepParam, mepHighlight, mepButton, postLCP,
+  } = enablements;
+  if (postLCP) {
+    config.mep = {
+      handleFragmentCommand,
+      preview: (mepButton !== 'off'
+        && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+      override: mepParam ? decodeURIComponent(mepParam) : '',
+      highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+      targetEnabled: target,
+      experiments: [],
+    };
+
+    manifests.concat(await combineNonTargetSources(personalization, promo, mepParam));
+  }
+
+  if (target) {
+    const { getTargetPersonalization } = await import('../../martech/martech.js');
+    manifests.concat(await getTargetPersonalization());
+  }
+
+  await applyPers(manifests, config, postLCP);
 }

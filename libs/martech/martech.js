@@ -115,7 +115,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   });
 }
 
-const getTargetPersonalization = async () => {
+export const getTargetPersonalization = async () => {
   const params = new URL(window.location.href).searchParams;
 
   const experimentParam = params.get('experiment');
@@ -223,31 +223,13 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   return filesLoadedPromise;
 };
 
-export default async function init({
-  persEnabled = false,
-  persManifests = [],
-  postLCP = false,
-}) {
+export default async function init() {
   const config = getConfig();
 
   const { url, edgeConfigId } = getDtmLib(config.env);
   loadLink(url, { as: 'script', rel: 'preload' });
 
   const martechPromise = loadMartechFiles(config, url, edgeConfigId);
-
-  if (persEnabled) {
-    loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-
-    const targetManifests = await getTargetPersonalization();
-    if (targetManifests?.length || persManifests?.length) {
-      const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-      const manifests = preloadManifests({ targetManifests, persManifests });
-      await applyPers(manifests, postLCP);
-    }
-  }
 
   return martechPromise;
 }
