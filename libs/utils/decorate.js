@@ -6,8 +6,7 @@ export function decorateButtons(el, size) {
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    let buttonType = buttonTypeMap[parent.nodeName] || 'outline';
-    if (parent.nodeName === 'EM' && parent.parentElement.nodeName === 'STRONG') buttonType = 'fill';
+    const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
       parent.classList.add('con-button', buttonType);
       if (size) parent.classList.add(size); /* button-l, button-xl */
