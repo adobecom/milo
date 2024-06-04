@@ -798,49 +798,44 @@ export function handleFragmentCommand(command, a) {
 }
 
 export async function applyPers(manifests, config, postLCP = false) {
-  try {
-    if (!manifests?.length) return;
-    let experiments = manifests;
-    for (let i = 0; i < experiments.length; i += 1) {
-      experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
-    }
-
-    experiments = cleanAndSortManifestList(experiments);
-
-    let results = [];
-
-    for (const experiment of experiments) {
-      const result = await categorizeActions(experiment);
-      if (result) {
-        results.push(result);
-      }
-    }
-    results = results.filter(Boolean);
-
-    config.mep.experiments = [...config.mep.experiments, ...experiments];
-    config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
-    config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
-    config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
-
-    if (!postLCP) handleCommands(config.mep.commands);
-    deleteMarkedEls();
-
-    const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
-    if (!pznList.length) return;
-
-    const pznVariants = pznList.map((r) => {
-      const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-      return val === 'default' ? 'nopzn' : val;
-    });
-    const pznManifests = pznList.map((r) => {
-      const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-      return getFileName(val).replace('.json', '').trim().slice(0, 15);
-    });
-    config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-  } catch (e) {
-    console.warn(e);
-    window.lana?.log(`MEP Error: ${e.toString()}`);
+  if (!manifests?.length) return;
+  let experiments = manifests;
+  for (let i = 0; i < experiments.length; i += 1) {
+    experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
   }
+
+  experiments = cleanAndSortManifestList(experiments);
+
+  let results = [];
+
+  for (const experiment of experiments) {
+    const result = await categorizeActions(experiment);
+    if (result) {
+      results.push(result);
+    }
+  }
+  results = results.filter(Boolean);
+
+  config.mep.experiments = [...config.mep.experiments, ...experiments];
+  config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
+  config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
+  config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+  if (!postLCP) handleCommands(config.mep.commands);
+  deleteMarkedEls();
+
+  const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
+  if (!pznList.length) return;
+
+  const pznVariants = pznList.map((r) => {
+    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
+    return val === 'default' ? 'nopzn' : val;
+  });
+  const pznManifests = pznList.map((r) => {
+    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
+    return getFileName(val).replace('.json', '').trim().slice(0, 15);
+  });
+  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
 const combineNonTargetSources = async (persEnabled, promoEnabled, mepParam) => {
@@ -920,5 +915,10 @@ export async function init(enablements = {}) {
     manifests.concat(await getTargetPersonalization());
   }
 
-  await applyPers(manifests, config, postLCP);
+  try {
+    await applyPers(manifests, config, postLCP);
+  } catch (e) {
+    console.warn(e);
+    window.lana?.log(`MEP Error: ${e.toString()}`);
+  }
 }
