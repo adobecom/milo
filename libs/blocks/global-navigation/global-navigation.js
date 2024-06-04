@@ -512,8 +512,9 @@ class Gnav {
       return 'linux';
     };
 
-    const scriptUrl = `https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.js`;
-    const styleUrl = `https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.css`;
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.1';
+    const scriptUrl = `https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`;
+    const styleUrl = `https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`;
 
     await Promise.all([
       loadScript(scriptUrl),
