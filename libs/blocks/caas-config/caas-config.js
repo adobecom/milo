@@ -82,6 +82,7 @@ const defaultOptions = {
     primary: 'Primary',
     'call-to-action': 'Call To Action',
     link: 'Link',
+    dark: 'Dark',
     hidden: 'Hide CTAs',
   },
   container: {
@@ -90,6 +91,7 @@ const defaultOptions = {
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
     carousel: 'Carousel',
+    categories: 'Product Categories',
   },
   ctaActions: {
     _blank: 'New Tab',
@@ -183,6 +185,7 @@ const defaultOptions = {
   source: {
     bacom: 'Bacom',
     doccloud: 'DocCloud',
+    events: 'Events',
     experienceleague: 'Experience League',
     hawks: 'Hawks',
     magento: 'Magento',
@@ -191,6 +194,7 @@ const defaultOptions = {
     northstar: 'Northstar',
     workfront: 'Workfront',
     'bacom-blog': 'Bacom Blog',
+    news: 'Newsroom',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
   titleHeadingLevel: {
@@ -209,6 +213,10 @@ const defaultOptions = {
   detailsTextOption: {
     default: 'Default',
     modifiedDate: 'Modified Date',
+  },
+  cardHoverEffect: {
+    default: 'Default',
+    grow: 'Grow',
   },
 };
 
@@ -362,6 +370,11 @@ const UiPanel = () => html`
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
   <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
+  <${Select}
+    label="Card Hover Effect"
+    prop="cardHoverEffect"
+    options=${defaultOptions.cardHoverEffect}
+  />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"

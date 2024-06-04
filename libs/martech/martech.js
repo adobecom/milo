@@ -1,6 +1,7 @@
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
+const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
 const TARGET_TIMEOUT_MS = 4000;
 const ENTITLEMENT_TIMEOUT = 3000;
 
@@ -26,6 +27,12 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
     resolve(event.detail);
   };
 
+  const errorListener = () => {
+    // eslint-disable-next-line no-use-before-define
+    clearTimeout(timer);
+    resolve({ error: true });
+  };
+
   const timer = setTimeout(() => {
     window.removeEventListener(eventName, listener);
     if (returnValIfTimeout !== undefined) {
@@ -36,6 +43,7 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
   }, timeout);
 
   window.addEventListener(eventName, listener, { once: true });
+  window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
 });
 
 const getExpFromParam = (expParam) => {
@@ -125,6 +133,10 @@ const getTargetPersonalization = async () => {
 
   let manifests = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
+  if (response.error) {
+    window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
+    return [];
+  }
   if (response.timeout) {
     waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
       .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
