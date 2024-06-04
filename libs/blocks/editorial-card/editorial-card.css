@@ -1,0 +1,5 @@
+.editorial-card {
+  background-color: #fafafa;
+  border: 1px solid #eaeaea;
+  padding: var(--xs-spacing);
+}
