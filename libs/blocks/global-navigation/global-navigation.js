@@ -468,7 +468,7 @@ class Gnav {
       lanaLog({
         message: 'GNAV: decorateProfile has failed to fetch profile data',
         e: `${profileData.statusText} url: ${profileData.url}`,
-        tags: 'errorType=warn,module=gnav'
+        tags: 'errorType=warn,module=gnav',
       });
       return;
     }
