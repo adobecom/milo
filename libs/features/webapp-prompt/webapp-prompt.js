@@ -35,10 +35,11 @@ const getIcon = (content) => {
   return icons.company;
 };
 
-const waitForClosedGRMThen = (loadPEP) => {
-  const grExists = !!document.querySelector('.locale-modal-v2')
+const geoRoutingActive = () => !!document.querySelector('.locale-modal-v2')
           || !!document.querySelector('.locale-modal');
-  if (grExists) {
+
+const waitForClosedGRMThen = (loadPEP) => {
+  if (geoRoutingActive()) {
     setTimeout(() => waitForClosedGRMThen(loadPEP), 200);
     return;
   }
@@ -53,7 +54,7 @@ class AppPrompt {
     this.getAnchorState = getAnchorState;
     this.id = this.promptPath.split('/').pop();
     this.elements = {};
-    if (getConfig().geoRoutingActive) waitForClosedGRMThen(this.init);
+    if (geoRoutingActive()) waitForClosedGRMThen(this.init);
     else this.init();
   }
 

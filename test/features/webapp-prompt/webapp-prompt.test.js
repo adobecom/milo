@@ -96,7 +96,7 @@ describe('PEP', () => {
       document.body.insertAdjacentHTML('afterbegin', '<div class="locale-modal-v2"></div>');
       document.body.insertAdjacentHTML('afterbegin', '<div class="locale-modal"></div>');
 
-      await initPep({ geoRoutingActive: true });
+      await initPep({});
 
       try {
         clock.runAll();
