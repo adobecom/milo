@@ -72,12 +72,7 @@ class Footer {
     this.body = await fetchAndProcessPlainHtml({
       url,
       shouldDecorateLinks: false,
-    })
-      .catch((e) => lanaLog({
-        message: `Error fetching footer content ${url}`,
-        e,
-        tags: 'errorType=error,module=global-footer',
-      }));
+    });
 
     if (!this.body) return;
 
@@ -154,7 +149,11 @@ class Footer {
   loadIcons = async () => {
     const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
     if (!file.ok) {
-      throw new Error(`${file.statusText} url: ${file.url}`);
+      lanaLog({
+        message: 'Issue with loadIcons',
+        e: `${file.statusText} url: ${file.url}`,
+        tags: 'errorType=warn,module=global-footer',
+      });
     }
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;

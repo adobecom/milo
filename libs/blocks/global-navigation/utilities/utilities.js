@@ -181,9 +181,13 @@ export function getExperienceName() {
   return '';
 }
 
-export function loadStyles(path) {
+export function rootPath(path) {
   const { miloLibs, codeRoot } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/${path}`;
+  return url;
+}
+
+export function loadStyles(url) {
   loadStyle(url, (e) => {
     if (e === 'error') {
       lanaLog({
@@ -199,7 +203,8 @@ export function loadStyles(path) {
 // since they can be independent of each other.
 // CSS imports were not used due to duplication of file include
 export async function loadBaseStyles() {
-  await loadStyles('base.css');
+  const url = rootPath('base.css');
+  await loadStyles(url);
 }
 
 export function loadBlock(path) {
@@ -217,7 +222,7 @@ export async function loadDecorateMenu() {
 
   const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
     loadBlock('./menu/menu.js'),
-    loadStyles('utilities/menu/menu.css'),
+    loadStyles(rootPath('utilities/menu/menu.css')),
   ]);
 
   resolve({
@@ -338,7 +343,11 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   }
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   if (res.status !== 200) {
-    throw new Error(`${res.statusText} url: ${res.url}`);
+    lanaLog({
+      message: 'Error in fetchAndProcessPlainHtml',
+      e: `${res.statusText} url: ${res.url}`,
+      tags: 'errorType=error,module=utilities',
+    });
   }
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
