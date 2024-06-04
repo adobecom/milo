@@ -375,8 +375,8 @@ button.locui-subproject-locale:hover {
   gap: 2px;
   font-size: 15px;
   position: absolute;
-  bottom: 16px;
-  left: 16px;
+  bottom: 20px;
+  left: 20px;
 }
 
 .locui-urls-heading-warnings:hover {
