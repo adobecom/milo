@@ -1,0 +1,21 @@
+{
+  "name": "spectrum-designs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@spectrum-css/tokens": "14.0.0-next.7",
+    "postcss": "^8.4.38",
+    "postcss-cli": "^11.0.0",
+    "postcss-custom-properties": "^13.3.10",
+    "postcss-prettify": "^0.3.4",
+    "postcss-selector-parser": "^6.0.16"
+  }
+}
