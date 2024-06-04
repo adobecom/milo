@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'carousel',
   'chart',
   'columns',
+  'editorial-card',
   'faas',
   'featured-article',
   'figure',
