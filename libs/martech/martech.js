@@ -46,16 +46,6 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
   window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
 });
 
-const getExpFromParam = (expParam) => {
-  const lastSlash = expParam.lastIndexOf('/');
-  return {
-    experiments: [{
-      experimentPath: expParam.substring(0, lastSlash),
-      variantLabel: expParam.substring(lastSlash + 1),
-    }],
-  };
-};
-
 const handleAlloyResponse = (response) => {
   const items = (
     (response.propositions?.length && response.propositions)
@@ -117,9 +107,6 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
 
 export const getTargetPersonalization = async () => {
   const params = new URL(window.location.href).searchParams;
-
-  const experimentParam = params.get('experiment');
-  if (experimentParam) return getExpFromParam(experimentParam);
 
   const timeout = parseInt(params.get('target-timeout'), 10)
     || parseInt(getMetadata('target-timeout'), 10)
