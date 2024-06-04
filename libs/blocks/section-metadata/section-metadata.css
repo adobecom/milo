@@ -189,7 +189,7 @@
   align-items: center;
   display: flex;
   flex-flow: column wrap;
-  gap: var(--spacing-xxl-static);
+  gap: var(--spacing-xs);
   justify-content: center;
 }
 
