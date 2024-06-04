@@ -39,7 +39,7 @@ const geoRoutingActive = () => !!document.querySelector('.locale-modal-v2')
           || !!document.querySelector('.locale-modal');
 
 const waitForClosedGRMThen = (loadPEP) => {
-  document.addEventListener('milo:modal:closed', loadPEP);
+  window.addEventListener('milo:modal:closed', loadPEP);
 };
 
 class AppPrompt {

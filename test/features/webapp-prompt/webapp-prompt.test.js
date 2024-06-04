@@ -106,6 +106,8 @@ describe('PEP', () => {
 
       document.querySelector('.locale-modal-v2')?.remove();
       document.querySelector('.locale-modal')?.remove();
+      const ev = new CustomEvent('milo:modal:closed');
+      window.dispatchEvent(ev);
 
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.exist;
