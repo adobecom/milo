@@ -52,6 +52,10 @@ export async function getProjectStatus() {
       setStatus('service-error');
     }
 
+    if (json.projectStatus === 'not-found') {
+      setStatus('service-error', 'error', json.projectStatusText);
+    }
+
     if (json.projectStatus === 'sync') {
       allowSyncToLangstore.value = false;
     }

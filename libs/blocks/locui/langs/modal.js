@@ -3,6 +3,7 @@ import { urls } from '../utils/state.js';
 import Url from '../url/view.js';
 import { origin } from '../utils/franklin.js';
 import { getSkippedFileWarnings } from './index.js';
+import { renderLinks } from '../status/view.js';
 
 function Modal({ lang, prefix, type }) {
   const localeUrls = urls.value.map(
@@ -14,7 +15,7 @@ function Modal({ lang, prefix, type }) {
     return html`
       <h2><span class="error-icon" /> ${statusText}</h2>
       <p>Errors reported for <i><strong>${lang.Language}</strong>:</i></p>
-      <ol>${errors.map((err) => html`<li>${err}</li>`)}</ol>
+      <ol>${errors.map((err) => html`<li>${renderLinks(err)}</li>`)}</ol>
     `;
   }
 

@@ -308,16 +308,19 @@ li.locui-subproject.locui-subproject-in-progress .locui-subproject-badge {
   background: #80B3E7;
 }
 
+li.locui-subproject.locui-subproject-retrying,
 li.locui-subproject.locui-subproject-error {
   border-color: #e40909;
   background: rgb(249 148 148 / 20%);
   cursor: pointer;
 }
 
+li.locui-subproject.locui-subproject-retrying:hover,
 li.locui-subproject.locui-subproject-error:hover {
   background: rgb(249 148 148 / 40%);
 }
 
+li.locui-subproject.locui-subproject-retrying .locui-subproject-badge,
 li.locui-subproject.locui-subproject-error .locui-subproject-badge {
   background: #e40909;
 }
@@ -442,6 +445,14 @@ button.locui-urls-heading-action.cancel {
 
 button.locui-urls-heading-action.cancel:hover {
   background: #666;
+}
+
+button.locui-urls-heading-action.error {
+  background: red;
+}
+
+button.locui-urls-heading-action.error:hover {
+  background: #cd0505;
 }
 
 ul.locui-urls {

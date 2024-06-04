@@ -2,7 +2,7 @@ import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
 import { getSkippedFileWarnings, rollout, showLangErrors, showSkippedFiles, showUrls } from './index.js';
 
-function getPrettyStatus(status) {
+function getPrettyStatus({ status, queued } = {}) {
   switch (status) {
     case 'translated':
       return 'Rollout ready';
@@ -10,30 +10,49 @@ function getPrettyStatus(status) {
       return 'In progress';
     case 'rolling-out':
       return 'Rolling out';
+    case 'error':
+      return `${queued ? 'In Rollout Queue' : status}`;
     default:
       return status;
   }
 }
 
-function Badge({ status }) {
-  const prettyStatus = getPrettyStatus(status);
+function Badge(props) {
+  const prettyStatus = getPrettyStatus(props);
   if (!prettyStatus) return null;
   return html`<div class=locui-subproject-badge>${prettyStatus}</div>`;
+}
+
+function langActionProps(lang) {
+  let showAction = ['translated', 'completed', 'error'].includes(lang.status);
+  let actionType = lang.status === 'completed' ? 'Re-rollout' : 'Rollout';
+  const hasError = lang.status === 'error';
+  if (showAction && lang.rolloutQueued) {
+    showAction = !hasError;
+  }
+  if (hasError) {
+    actionType = 'Retry';
+  }
+  return [showAction, actionType];
 }
 
 function Language({ item, idx }) {
   const hasLocales = item.locales?.length > 0;
   const cssStatus = `locui-subproject-${item.status || 'not-started'}`;
+
   const onRollout = (e) => {
-    if (item.status === 'error') e.stopPropagation();
+    if (item.status === 'error') {
+      e.stopPropagation();
+    }
     rollout(item, idx);
   };
-  let rolloutType = item.status === 'completed' ? 'Re-rollout' : 'Rollout';
-  if (item.status === 'error') { rolloutType = 'Retry'; }
+
+  const [showAction, actionType] = langActionProps(item);
   const skipped = getSkippedFileWarnings(item);
+
   return html`
     <li class="locui-subproject ${cssStatus}" onClick=${(e) => showLangErrors(e, item)}>
-      ${item.status && html`<${Badge} status=${item.status} />`}
+      ${item.status && html`<${Badge} status=${item.status} queued=${item.rolloutQueued} />`}
       <p class=locui-project-label>Language</p>
       <h3 class=locui-subproject-name>${item.Language}</h3>
       <p class=locui-project-label>Action</p>
@@ -59,9 +78,13 @@ function Language({ item, idx }) {
       ${hasLocales && html`
         <p class=locui-project-label>Locales</p>
         <div class=locui-subproject-locales>
-          <button class=locui-subproject-locale onClick=${() => showUrls(item, `langstore/${item.code}`)}>Langstore</button>
+          <button class=locui-subproject-locale onClick=${() => showUrls(item, `langstore/${item.code}`)}>
+            Langstore
+          </button>
           ${item.locales.map((locale) => html`
-            <button class=locui-subproject-locale onClick=${() => showUrls(item, locale)}>${locale}</button>
+            <button class=locui-subproject-locale onClick=${() => showUrls(item, locale)}>
+              ${locale}
+            </button>
           `)}
         </div>
       `}
@@ -69,9 +92,11 @@ function Language({ item, idx }) {
         <div class=locui-urls-heading-warnings onClick=${() => showSkippedFiles(item)}>
           <span class="skipped-icon" /> Skipped
         </div>`}
-      ${['translated', 'completed', 'error'].includes(item.status) && html`
+      ${showAction && html`
         <div class=locui-subproject-action-area>
-          <button class=locui-urls-heading-action onClick=${(e) => onRollout(e)}>${rolloutType}</button>
+          <button class="locui-urls-heading-action ${item.status}" onClick=${(e) => onRollout(e)}>
+            ${actionType}
+          </button>
         </div>
       `}
     </li>
