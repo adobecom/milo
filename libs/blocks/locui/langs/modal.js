@@ -4,6 +4,7 @@ import Url from '../url/view.js';
 import { origin } from '../utils/franklin.js';
 import { renderLinks } from '../status/view.js';
 import { getSkippedFileWarnings } from './index.js';
+import { renderLinks } from '../status/view.js';
 
 function Modal({ lang, prefix, type }) {
   const localeUrls = urls.value.map(
