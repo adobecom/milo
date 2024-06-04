@@ -20,7 +20,7 @@
   min-height: 600px;
 }
 
-.brick.prioritized-placement.image-top .foreground {
+.brick.prioritized-placement.text-top .foreground {
   flex-direction: column-reverse;
 }
 
@@ -269,14 +269,6 @@
   color: var(--color-white);
 }
 
-.detail-xl, 
-.detail-l, 
-.detail-m, 
-.detail-s {
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
 @media screen and (max-width: 600px) {
   .brick .mobile-only {
     display: block;
@@ -503,4 +495,31 @@
     border-top-right-radius: inherit;
     border-bottom-right-radius: inherit;
   }
+}
+
+/* Solid black button temp fix */
+
+.brick.prioritized-placement.static-buttons .con-button {
+  background: var(--text-color);
+  border-color: var(--text-color);
+  color: var(--color-white);
+}
+
+.brick.prioritized-placement.static-buttons .con-button:hover,
+.brick.prioritized-placement.static-buttons .con-button:active {
+  background: var(--color-black);
+  border-color: var(--color-black);
+}
+
+.brick.prioritized-placement.static-buttons.dark .con-button {
+  background: var(--color-white);
+  border-color: var(--color-white);
+  color: var(--text-color);
+}
+
+.brick.prioritized-placement.static-buttons.dark .con-button:hover,
+.brick.prioritized-placement.static-buttons.dark .con-button:active {
+  background: var(--color-white);
+  border-color: var(--color-white);
+  color: var(--color-black);
 }
