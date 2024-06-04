@@ -106,7 +106,7 @@ const locales = {
   si: { ietf: 'sl-SI', tk: 'qxw8hzm.css' },
   sk: { ietf: 'sk-SK', tk: 'qxw8hzm.css' },
   th_en: { ietf: 'en', tk: 'hah7vzn.css' },
-  th_th: { ietf: 'th', tk: 'qxw8hzm.css' },
+  th_th: { ietf: 'th', tk: 'lqo2bst.css' },
   tr: { ietf: 'tr-TR', tk: 'qxw8hzm.css' },
   tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
   ua: { ietf: 'uk-UA', tk: 'qxw8hzm.css' },
