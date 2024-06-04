@@ -226,7 +226,7 @@ export async function getUpgradeAction(
   imsSignedInPromise,
   [{ productArrangement: { productFamily: offerFamily } = {} }],
 ) {
-  if (options.entitlement === false) return undefined;
+  if (!options.upgrade) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -384,6 +384,7 @@ export async function getCheckoutContext(el, params) {
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
+  const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
 
   const extraOptions = {};
@@ -400,6 +401,7 @@ export async function getCheckoutContext(el, params) {
     checkoutWorkflowStep,
     checkoutMarketSegment,
     entitlement,
+    upgrade,
     modal,
     extraOptions: JSON.stringify(extraOptions),
   };

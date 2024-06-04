@@ -53,6 +53,7 @@ const main = async ({ github, context }) => {
       owner: context.repo.owner,
       repo: context.repo.repo,
       state: 'open',
+      base: 'stage',
     });
 
     for await (const pr of openPRs) {
