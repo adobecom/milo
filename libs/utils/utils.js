@@ -626,6 +626,15 @@ export function decorateLinks(el) {
         rdx.push(a);
       }
     }
+    // Custom action links
+    const loginEvent = '#_evt-login';
+    if (a.href.includes(loginEvent)) {
+      a.href = a.href.replace(loginEvent, '');
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.adobeIMS?.signIn();
+      });
+    }
     return rdx;
   }, []);
 }
