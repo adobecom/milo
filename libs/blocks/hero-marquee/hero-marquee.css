@@ -261,7 +261,7 @@ html[dir="rtl"] .hero-marquee .row-list {
   width: 135px;
   height: 40px;
   display: inline-flex;
-  text-indent:-999em;
+  text-indent: -999em;
 }
 
 .hero-marquee .row-qrcode .google-play a {
@@ -320,9 +320,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 .hero-marquee.asset-left > .foreground.cols-2 > .asset {
   order: 2;
 }
-
-
-/* CLS */
 
 /* mobile ONLY */
 @media (max-width: 600px) {
@@ -388,7 +385,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset, 
   .hero-marquee.fg-media-hidden-mobile .foreground-media,
   .hero-marquee.fg-media-hidden-mobile-tablet .foreground-media { display: none; }
-
 }
 
 /* Tablet ONLY */
@@ -577,5 +573,4 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee .order-1-desktop { order: 1; }
   .hero-marquee .order-2-desktop { order: 2; }
   .hero-marquee .order-3-desktop { order: 3; }
-
 }

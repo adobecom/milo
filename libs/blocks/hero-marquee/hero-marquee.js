@@ -1,6 +1,10 @@
 import {
-  // eslint-disable-next-line max-len
-  decorateBlockBg, decorateBlockHrs, decorateBlockText, decorateTextOverrides, decorateButtons, handleObjectFit,
+  decorateBlockBg,
+  decorateBlockHrs,
+  decorateBlockText,
+  decorateTextOverrides,
+  decorateButtons,
+  handleObjectFit,
 } from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
