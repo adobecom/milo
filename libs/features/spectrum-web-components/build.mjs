@@ -7,8 +7,16 @@ const BANNER = `/* eslint-disable */
 `;
 
 const ICONS = [
-  'asterisk', 'chevron', 'checkmark', 'dash',
+  'asterisk', 'chevron', 'checkmark', 'dash', 'cross', 'corner-triangle',
 ];
+
+/**
+ * Mapping of modules that contain multiple components (e.g: sp-clear-button is included in button.js)
+ */
+const MODULE_MAPPING = {
+  'clear-button': 'button',
+  'close-button': 'button',
+}
 
 const LIT_PATH_PATTERN = /^lit(\/.*)?$/;
 const ICON_PATH_PATTERN = /^@spectrum-web-components\/icon\/src\/spectrum-icon-(.*).css.js/;
@@ -48,10 +56,11 @@ function rewriteImports() {
             external: true,
           };
         }
-
         if (/@spectrum-web-components/.test(args.path) && args.path.indexOf(`@spectrum-web-components/${entry}`) < 0 && !IGNORE_PATHS.includes(args.path)) {
           // get the first folder after @spectrum-web-components
-          const [, module] = args.path.split('/');
+          let [, module] = args.path.split('/');
+          module = MODULE_MAPPING[module] || module;
+          if (module === entry) return undefined;
           return {
             path: `${SWC_BASE_PATH}/dist/${module}.js`,
             external: true,
@@ -80,6 +89,7 @@ build({
 
 mods.forEach((mod) => {
   if (mod === 'lit.js') return;
+  if (mod === 'polyfills') return;
   build({
     define: DEFINE,
     bundle: true,
@@ -108,6 +118,7 @@ ICONS.forEach((icon) => {
     legalComments: 'none',
     target: TARGET,
     minify: true,
+    plugins: [rewriteImports()],
     outfile: `./dist/icons/${icon}.js`,
   });
 });

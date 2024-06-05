@@ -1,0 +1,47 @@
+{
+  "total": 1,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replace",
+      "selector": "in-block:my-block",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/fragmentreplaced",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replace",
+      "selector": "in-block:my-block .large-menu",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/new-large-menu",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replace",
+      "selector": "in-block:my-block /fragments/sub-menu",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/new-sub-menu",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },    {
+      "action": "replace",
+      "selector": "in-block:my-block /fragments/new-sub-menu",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/even-more-new-sub-menu",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

@@ -25,6 +25,48 @@
   z-index: 103;
 }
 
+.dialog-modal.delayed-modal {
+  width: 300px;
+  max-width: none;
+  border-radius: var(--l-rounded-corners);
+}
+
+@media (min-width: 430px) and (orientation: portrait) {
+  .dialog-modal.delayed-modal {
+    width: 370px;
+  }
+}
+
+@media (min-width: 430px) and (orientation: landscape) {
+  .dialog-modal.delayed-modal {
+    width: 600px;
+  }
+}
+
+@media (min-width: 576px) and (orientation: portrait) {
+  .dialog-modal.delayed-modal {
+    width: 516px;
+  }
+}
+
+@media (min-width: 768px) {
+  .dialog-modal.delayed-modal {
+    width: 600px;
+  }
+}
+
+@media (min-width: 829px) {
+  .dialog-modal.delayed-modal {
+    width: 800px;
+  }
+}
+
+@media (min-width: 1366px) {
+  .dialog-modal.delayed-modal {
+    width: 900px;
+  }
+}
+
 .dialog-modal.upgrade-flow-modal {
   height: 100%;
   width: 100%;
@@ -93,7 +135,7 @@
   margin: 12px;
 }
 
-.locale-modal{
+.locale-modal {
   text-align: center;
   padding: 48px 32px 30px;
 }
@@ -204,9 +246,24 @@
   .dialog-modal.commerce-frame > .fragment > .section {
     height: 100vh;
   }
+
+  .dialog-modal.xl-size,
+  .dialog-modal.xl-size > .fragment,
+  .dialog-modal.xl-size > .fragment > .section {
+    height: 100%;
+  }
+
+  .dialog-modal.xl-size .milo-iframe {
+    height: 100%;
+    padding-bottom: 0;
+  }
 }
 
 @media (min-width: 1200px) {
+  .dialog-modal.s-size {
+    max-width: 650px;
+  }
+
   .region-selector .content {
     column-count: 5;
   }

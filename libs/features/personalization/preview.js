@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
 function updatePreviewButton() {
@@ -127,7 +127,7 @@ function addPillEventListeners(div) {
 }
 
 function createPreviewPill(manifests) {
-  const overlay = createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
+  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   document.body.append(overlay);
   const div = document.createElement('div');
   div.classList.add('mep-hidden');
@@ -177,7 +177,7 @@ function createPreviewPill(manifests) {
     const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
     const scheduled = manifest.event
       ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
-        <p>On: ${manifest.event.start?.toLocaleString()}</p>
+         <p>On: ${manifest.event.start?.toLocaleString()} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
          <p>Off: ${manifest.event.end?.toLocaleString()}</p>` : '';
     let analyticsTitle = '';
     if (manifestType === TRACKED_MANIFEST_TYPE) {
@@ -199,13 +199,14 @@ function createPreviewPill(manifests) {
       <div class="mep-manifest-variants">${radio}</div>
     </div>`;
   });
-  const targetOnText = getMetadata('target') === 'on' ? 'on' : 'off';
+  const config = getConfig();
+  let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
+  if (config.mep.targetEnabled === 'gnav') targetOnText = 'on for gnav only';
   const personalizationOn = getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('manifest', manifestParameter.join('---'));
+  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 
-  const config = getConfig();
   let mepHighlightChecked = '';
   if (config.mep?.highlight) {
     mepHighlightChecked = 'checked="checked"';
@@ -287,10 +288,8 @@ function addHighlightData(manifests) {
 }
 
 export default async function decoratePreviewMode() {
-  const { miloLibs, codeRoot, experiments } = getConfig();
+  const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
-    createPreviewPill(experiments);
-    if (experiments) addHighlightData(experiments);
-  }, { once: true });
+  createPreviewPill(mep?.experiments);
+  if (mep?.experiments) addHighlightData(mep.experiments);
 }
