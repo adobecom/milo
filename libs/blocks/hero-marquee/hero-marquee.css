@@ -261,7 +261,7 @@ html[dir="rtl"] .hero-marquee .row-list {
   width: 135px;
   height: 40px;
   display: inline-flex;
-  text-indent: -999em;
+  color: transparent;
 }
 
 .hero-marquee .row-qrcode .google-play a {
@@ -305,7 +305,7 @@ html[dir="rtl"] .hero-marquee .row-list {
 
 html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   left: unset;
-  right: -38px;
+  right: -28px;
 }
 
 /* row-supplemental */

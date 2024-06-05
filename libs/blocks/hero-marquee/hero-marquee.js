@@ -25,7 +25,7 @@ function distillClasses(el, classes) {
 
 function decorateList(el, classes) {
   el.classList.add('body-l');
-  const listItems = el.querySelectorAll('ul li', 'ol li');
+  const listItems = el.querySelectorAll('li');
   if (listItems.length) {
     const firstDiv = el.querySelector(':scope > div');
     firstDiv.classList.add('foreground');
@@ -102,6 +102,27 @@ function parseKeyString(str) {
 
 function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
+  switch (key) {
+    case 'bgcolor':
+      decorateBg(el);
+      break;
+    case 'lockup':
+      decorateLockupRow(el);
+      break;
+    case 'qrcode':
+      decorateQr(el);
+      break;
+    case 'list':
+      decorateList(el, classes);
+      break;
+    case 'supplemental':
+      decorateSup(el, classes);
+      break;
+    case 'text':
+      decorateText(el, classes);
+      break;
+    default:
+  }
   if (key === 'bgcolor') decorateBg(el);
   if (key === 'list') decorateList(el, classes);
   if (key === 'lockup') decorateLockupRow(el);
