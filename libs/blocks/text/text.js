@@ -1,5 +1,5 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig, loadBlock } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -76,20 +76,6 @@ function decorateLinkFarms(el) {
   });
 }
 
-export async function loadMnemonicList(foreground) {
-  try {
-    const { base } = getConfig();
-    const stylePromise = new Promise((resolve) => {
-      loadStyle(`${base}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
-    });
-    const loadModule = import('../mnemonic-list/mnemonic-list.js')
-      .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
-    await Promise.all([stylePromise, loadModule]);
-  } catch (err) {
-    window.lana?.log(`Failed to load mnemonic list module: ${err}`);
-  }
-}
-
 export default async function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -133,11 +119,9 @@ export default async function init(el) {
   }
 
   const mnemonicList = el.querySelector('.mnemonic-list');
-  if (mnemonicList) {
-    const foreground = mnemonicList?.closest('.foreground');
-    if (foreground) {
-      mnemonicList.querySelectorAll('p').forEach((product) => product.removeAttribute('class'));
-      await loadMnemonicList(foreground);
-    }
+  const foreground = mnemonicList?.closest('.foreground');
+  if (foreground) {
+    mnemonicList.querySelectorAll('p').forEach((product) => product.removeAttribute('class'));
+    await loadBlock(mnemonicList);
   }
 }
