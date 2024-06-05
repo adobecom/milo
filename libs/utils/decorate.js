@@ -6,8 +6,7 @@ export function decorateButtons(el, size) {
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    let buttonType = buttonTypeMap[parent.nodeName] || 'outline';
-    if (parent.nodeName === 'EM' && parent.parentElement.nodeName === 'STRONG') buttonType = 'fill';
+    const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
       parent.classList.add('con-button', buttonType);
       if (size) parent.classList.add(size); /* button-l, button-xl */
@@ -122,7 +121,7 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
 }
 
 export function getBlockSize(el, defaultSize = 1) {
-  const sizes = ['small', 'medium', 'large', 'xlarge'];
+  const sizes = ['small', 'medium', 'large', 'xlarge', 'medium-compact'];
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }

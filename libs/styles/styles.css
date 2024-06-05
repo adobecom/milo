@@ -126,6 +126,9 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
+
+  /* z-index */
+  --above-all: 9000; /* Used for page tools that overlay page content */
 }
 
 :root:lang(ar) {
@@ -551,6 +554,8 @@ span.icon.margin-right { margin-right: 8px; }
 span.icon.margin-left { margin-left: 8px; }
 
 span.icon.margin-inline-end { margin-inline-end: 8px; }
+
+span.icon.margin-inline-start { margin-inline-start: 8px; }
 
 .button-l .con-button span.icon.margin-left,
 .con-button.button-l span.icon.margin-left { margin-left: 12px; }

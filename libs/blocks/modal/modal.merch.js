@@ -3,9 +3,18 @@ import { debounce } from '../../utils/action.js';
 export const MOBILE_MAX = 599;
 export const TABLET_MAX = 1199;
 
+window.addEventListener('pageshow', (event) => {
+  // if there is a commerce modal with an iframe open, reload the page to avoid bfcache issues.
+  if (event.persisted && document.querySelector('.dialog-modal.commerce-frame iframe')) {
+    window.location.reload();
+  }
+});
+
 export function adjustModalHeight(contentHeight) {
-  if (!window.location.hash) return;
-  const dialog = document.querySelector(`div.dialog-modal.commerce-frame${window.location.hash}`);
+  if (!(window.location.hash || document.getElementById('checkout-link-modal'))) return;
+  let selector = '#checkout-link-modal';
+  if (!/=/.test(window.location.hash)) selector = `${selector},div.dialog-modal.commerce-frame${window.location.hash}`;
+  const dialog = document.querySelector(selector);
   const iframe = dialog?.querySelector('iframe');
   const iframeWrapper = dialog?.querySelector('.milo-iframe');
   if (!contentHeight || !iframe || !iframeWrapper) return;
@@ -59,6 +68,13 @@ export function adjustStyles({ dialog, iframe }) {
   const isAutoHeightAdjustment = /\/mini-plans\/.*mid=ft.*web=1/.test(iframe.src); // matches e.g. https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1
   if (isAutoHeightAdjustment) {
     dialog.classList.add('height-fit-content');
+    // fail safe.
+    setTimeout(() => {
+      const { height } = window.getComputedStyle(iframe);
+      if (height === '0px') {
+        iframe.style.height = '100%';
+      }
+    }, 2000);
   } else {
     iframe.style.height = '100%';
   }

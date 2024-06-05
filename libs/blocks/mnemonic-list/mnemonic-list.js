@@ -1,6 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 
-export const decorateMnemonicList = (container) => {
+export const decorateMnemonicList = async (container) => {
   const mnemonicListElement = container.querySelector('.mnemonic-list');
   const targetElement = mnemonicListElement || container;
   const rows = targetElement.querySelectorAll(':scope p:not([class])');

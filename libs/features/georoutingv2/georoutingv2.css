@@ -4,12 +4,13 @@
 }
 
 .dialog-modal.locale-modal-v2 {
-  overflow: hidden;
+  overflow: visible;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
 .dialog-modal.locale-modal-v2 .georouting-bg {
   position: absolute;
+  overflow: hidden;
   top: 0;
   bottom: 0;
   left: 0;

@@ -7,7 +7,7 @@ const MINI_COMPARE_CHART = 'mini-compare-chart';
 function createDynamicSlots(el, bodySlot) {
   const pricePlaceholder = el.querySelector("span[is='inline-price']");
   if (pricePlaceholder) {
-    pricePlaceholder.parentNode.replaceChild(createTag('span', { slot: 'price', is: 'inline-price' }), pricePlaceholder);
+    pricePlaceholder.setAttribute('slot', 'price');
   } else {
     const priceSlot = createTag('h5', { class: 'merch-card-price' });
     createTag('span', { slot: 'price', is: 'inline-price' }, null, { parent: priceSlot });
