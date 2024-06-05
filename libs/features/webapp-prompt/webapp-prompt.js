@@ -5,7 +5,7 @@ import {
   lanaLog,
   toFragment,
 } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getConfig, decorateSVG, loadStyle } from '../../utils/utils.js';
+import { getConfig, decorateSVG } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
 
 const CONFIG = {
