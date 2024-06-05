@@ -48,12 +48,12 @@ const showTooltip = (
   const cleanup = () => {
     element.removeAttribute('data-pep-dismissal-tooltip');
   };
-  const id = setTimeout(() => {
+  const timeoutID = setTimeout(() => {
     cleanup();
   }, time);
   element.addEventListener('click', () => {
     cleanup();
-    clearTimeout(id);
+    clearTimeout(timeoutID);
   }, { once: true });
 };
 
@@ -84,10 +84,10 @@ const playFocusAnimation = (
     rings.forEach((ring) => ring.remove());
     element.classList.remove('coach-indicator');
   };
-  const id = setTimeout(cleanup, (iterationCount + 1) * animationDuration);
+  const timeoutID = setTimeout(cleanup, (iterationCount + 1) * animationDuration);
   element.addEventListener('click', () => {
     cleanup();
-    clearTimeout(id);
+    clearTimeout(timeoutID);
   }, { once: true });
 };
 
