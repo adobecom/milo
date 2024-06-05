@@ -14,20 +14,14 @@
 
 /* mobile ONLY */
 @media (max-width: 600px) {
-  /* mobile-only theme */
   .con-block.light-mobile-only { color: var(--text-color); }
   .con-block.dark-mobile-only { color: var(--color-white); }
 
   .con-block.light-mobile-only a:not(.con-button) { color: var(--link-color); }
   .con-block.dark-mobile-only a:not(.con-button) { color: var(--link-color-dark); }
 
-  .con-block.light-mobile-only a:not(.con-button):hover,
-  .con-block.light-mobile-only a:not(.con-button):focus,
-  .con-block.light-mobile-only a:not(.con-button):active { color: var(--link-hover-color); }
-  
-  .con-block.dark-mobile-only a:not(.con-button):hover,
-  .con-block.dark-mobile-only a:not(.con-button):focus,
-  .con-block.dark-mobile-only a:not(.con-button):active { color: var(--link-hover-color-dark); }
+  .con-block.light-mobile-only a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
+  .con-block.dark-mobile-only a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
 
   .con-block.light-mobile-only a.con-button.outline {
     border-color: var(--text-color);
@@ -39,17 +33,13 @@
     color: var(--color-white);
   }
 
-  .con-block.light-mobile-only a.con-button.outline:hover,
-  .con-block.light-mobile-only a.con-button.outline:focus,
-  .con-block.light-mobile-only a.con-button.outline:active {
+  .con-block.light-mobile-only a.con-button.outline:is(:hover, :focus, :active) {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .con-block.dark-mobile-only a.con-button.outline:hover,
-  .con-block.dark-mobile-only a.con-button.outline:focus,
-  .con-block.dark-mobile-only a.con-button.outline:active {
+  .con-block.dark-mobile-only a.con-button.outline:is(:hover, :focus, :active) {
     background-color: var(--color-white);
     border-color: var(--color-white);
     color: var(--color-black);
@@ -66,13 +56,8 @@
   .con-block.light-tablet-only a:not(.con-button) { color: var(--link-color); }
   .con-block.dark-tablet-only a:not(.con-button) { color: var(--link-color-dark); }
 
-  .con-block.light-tablet-only a:not(.con-button):hover,
-  .con-block.light-tablet-only a:not(.con-button):focus,
-  .con-block.light-tablet-only a:not(.con-button):active { color: var(--link-hover-color); }
-  
-  .con-block.dark-tablet-only a:not(.con-button):hover,
-  .con-block.dark-tablet-only a:not(.con-button):focus,
-  .con-block.dark-tablet-only a:not(.con-button):active { color: var(--link-hover-color-dark); }
+  .con-block.light-tablet-only a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
+  .con-block.dark-tablet-only a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
 
   .con-block.light-tablet-only a.con-button.outline {
     border-color: var(--text-color);
@@ -84,17 +69,13 @@
     color: var(--color-white);
   }
 
-  .con-block.light-tablet-only a.con-button.outline:hover,
-  .con-block.light-tablet-only a.con-button.outline:focus,
-  .con-block.light-tablet-only a.con-button.outline:active {
+  .con-block.light-tablet-only a.con-button.outline:is(:hover, :focus, :active) {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .con-block.dark-tablet-only a.con-button.outline:hover,
-  .con-block.dark-tablet-only a.con-button.outline:focus,
-  .con-block.dark-tablet-only a.con-button.outline:active {
+  .con-block.dark-tablet-only a.con-button.outline:is(:hover, :focus, :active) {
     background-color: var(--color-white);
     border-color: var(--color-white);
     color: var(--color-black);
@@ -111,13 +92,8 @@
   .con-block.light-tablet a:not(.con-button) { color: var(--link-color); }
   .con-block.dark-tablet a:not(.con-button) { color: var(--link-color-dark); }
 
-  .con-block.light-tablet a:not(.con-button):hover,
-  .con-block.light-tablet a:not(.con-button):focus,
-  .con-block.light-tablet a:not(.con-button):active { color: var(--link-hover-color); }
-  
-  .con-block.dark-tablet a:not(.con-button):hover,
-  .con-block.dark-tablet a:not(.con-button):focus,
-  .con-block.dark-tablet a:not(.con-button):active { color: var(--link-hover-color-dark); }
+  .con-block.light-tablet a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
+  .con-block.dark-tablet a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
 
   .con-block.light-tablet a.con-button.outline {
     border-color: var(--text-color);
@@ -129,17 +105,13 @@
     color: var(--color-white);
   }
 
-  .con-block.light-tablet a.con-button.outline:hover,
-  .con-block.light-tablet a.con-button.outline:focus,
-  .con-block.light-tablet a.con-button.outline:active {
+  .con-block.light-tablet a.con-button.outline:is(:hover, :focus, :active) {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .con-block.dark-tablet a.con-button.outline:hover,
-  .con-block.dark-tablet a.con-button.outline:focus,
-  .con-block.dark-tablet a.con-button.outline:active {
+  .con-block.dark-tablet a.con-button.outline:is(:hover, :focus, :active) {
     background-color: var(--color-white);
     border-color: var(--color-white);
     color: var(--color-black);
@@ -156,13 +128,9 @@
   .con-block.light-desktop a:not(.con-button) { color: var(--link-color); }
   .con-block.dark-desktop a:not(.con-button) { color: var(--link-color-dark); }
 
-  .con-block.light-desktop a:not(.con-button):hover,
-  .con-block.light-desktop a:not(.con-button):focus,
-  .con-block.light-desktop a:not(.con-button):active { color: var(--link-hover-color); }
+  .con-block.light-desktop a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
   
-  .con-block.dark-desktop a:not(.con-button):hover,
-  .con-block.dark-desktop a:not(.con-button):focus,
-  .con-block.dark-desktop a:not(.con-button):active { color: var(--link-hover-color-dark); }
+  .con-block.dark-desktop a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
 
   .con-block.light-desktop a.con-button.outline {
     border-color: var(--text-color);
@@ -174,17 +142,13 @@
     color: var(--color-white);
   }
 
-  .con-block.light-desktop a.con-button.outline:hover,
-  .con-block.light-desktop a.con-button.outline:focus,
-  .con-block.light-desktop a.con-button.outline:active {
+  .con-block.light-desktop a.con-button.outline:is(:hover, :focus, :active) {
     background-color: var(--color-black);
     border-color: var(--color-black);
     color: var(--color-white);
   }
 
-  .con-block.dark-desktop a.con-button.outline:hover,
-  .con-block.dark-desktop a.con-button.outline:focus,
-  .con-block.dark-desktop a.con-button.outline:active {
+  .con-block.dark-desktop a.con-button.outline:is(:hover, :focus, :active) {
     background-color: var(--color-white);
     border-color: var(--color-white);
     color: var(--color-black);
