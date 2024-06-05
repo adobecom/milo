@@ -501,14 +501,6 @@ export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));
 
 export const getLocalizedURL = (originalURL) => {
   const { locale } = getConfig();
-  const prefix = locale?.prefix;
-  const localCode = locale?.ietf ?? 'en-US';
-
-  let localizedURL = originalURL;
-
-  if (localCode !== 'en-US' && !originalURL.startsWith(`${prefix}/`)) {
-    localizedURL = `${prefix}${originalURL}`;
-  }
-
-  return localizedURL;
+  const { prefix, ietf = 'en-US' } = locale || {};
+  return ietf !== 'en-US' && !originalURL.startsWith(`${prefix}/`) ? `${prefix}${originalURL}` : originalURL;
 };

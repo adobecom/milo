@@ -13,7 +13,7 @@ const {
 } = await import('../../../libs/blocks/quiz/utils.js');
 
 let locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-let conf = { locales };
+const conf = { locales };
 const QUIZ_BASE_PATH = 'https://mockdata/path/to/quiz';
 
 setConfig(conf);
@@ -247,43 +247,24 @@ describe('Quiz', () => {
 
   it('Testing getLocalizedURL with country code or without country code', async () => {
     locales = { '': { ietf: 'de-DE', tk: 'hah7vzn.css' } };
-    conf = { locales };
-    conf.pathname = '/de';
-    setConfig(conf);
+    setConfig({ locales, pathname: '/de' });
 
     // Import getLocalizedURL function
     const { getLocalizedURL } = await import('../../../libs/blocks/quiz/utils.js');
 
-    // Setup the URL and test the function
-    const fragmentURL = '/path/to/quiz/uar-results';
-    const modifiedURL = getLocalizedURL(fragmentURL);
-
-    // Assert the result
-    expect(modifiedURL).to.equal('/de/path/to/quiz/uar-results');
-
-    // Setup the URL and test the function
-    const fragmentURL2 = '/de/path/to/quiz/uar-results';
-    const modifiedURL2 = getLocalizedURL(fragmentURL2);
-
-    // Assert the result
-    expect(modifiedURL2).to.equal('/de/path/to/quiz/uar-results');
+    expect(getLocalizedURL('/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
+    expect(getLocalizedURL('/de/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
   });
 
   it('Testing getLocalizedURL without locale define', async () => {
     locales = { '': { } };
-    conf = { locales };
-    conf.pathname = '/de';
-    setConfig(conf);
+    setConfig({ locales, pathname: '/de' });
 
     // Import getLocalizedURL function
     const { getLocalizedURL } = await import('../../../libs/blocks/quiz/utils.js');
 
-    // Setup the URL and test the function
-    const fragmentURL = '/path/to/quiz/uar-results';
-    const modifiedURL = getLocalizedURL(fragmentURL);
-
-    // Assert the result
-    expect(modifiedURL).to.equal('/path/to/quiz/uar-results');
+    expect(getLocalizedURL('/path/to/quiz/uar-results')).to.equal('/path/to/quiz/uar-results');
+    expect(getLocalizedURL('/de/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
   });
 
   describe('Testing storeResultInLocalStorage with empty results as input', async () => {

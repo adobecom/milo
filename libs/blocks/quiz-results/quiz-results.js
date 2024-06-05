@@ -19,7 +19,7 @@ async function loadFragments(el, experiences) {
 }
 
 function redirectPage(quizUrl, debug, message) {
-  const url = (quizUrl) ? getLocalizedURL(quizUrl.text) : 'https://adobe.com';
+  const url = quizUrl ? getLocalizedURL(quizUrl.text) : 'https://adobe.com';
   window.lana.log(message, { tags: 'errorType=error,module=quiz-results' });
 
   if (debug === 'quiz-results') {
