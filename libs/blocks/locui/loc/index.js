@@ -25,11 +25,20 @@ const urlParams = new URLSearchParams(window.location.search);
 let resourcePath;
 let previewPath;
 
+async function validateUrl(url) {
+  try {
+    const request = await fetch(url.href);
+    return request;
+  } catch (error) {
+    return { ok: false, url: url.href };
+  }
+}
+
 async function validatedUrls(projectUrls) {
   const validateUrls = [...projectUrls];
   while (validateUrls.length) {
     try {
-      const reqs = await Promise.all(validateUrls.splice(0, 49).map((url) => fetch(url.href)));
+      const reqs = await Promise.all(validateUrls.splice(0, 49).map(validateUrl));
       setStatus('details', 'info', 'Validating Project URLs');
       for (const res of reqs) {
         const projectUrl = projectUrls.find((url) => url.href === res.url);
