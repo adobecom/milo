@@ -444,7 +444,6 @@ export async function getPriceContext(el, params) {
 
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
-  const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
   if (el.closest('.merch-offers.upgrade')) {
     params.append('entitlement', 'false');
   }
@@ -458,6 +457,7 @@ export async function buildCta(el, params) {
   } else {
     cta.classList.add('con-button');
     cta.classList.toggle('button-l', large);
+    const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
     cta.classList.toggle('blue', strong);
   }
   if (context.entitlement !== 'false') {
