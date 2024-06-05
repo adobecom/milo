@@ -694,6 +694,7 @@ const AdvancedPanel = () => {
     <${Input} label="Preview Floodgate Cards" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Input} label="Do not lazyload" prop="doNotLazyLoad" type="checkbox" />
+    <${Input} label="Root Margin for Lazy Loading" prop="rootMargin" type="text" />
     <${Input} label="Collection Size (Defaults: Total Cards)" prop="collectionSize" type="text" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
     <${Input}
@@ -839,7 +840,8 @@ const CopyBtn = () => {
       hour12: false,
     });
     const collectionName = state.collectionName ? `- ${state.collectionName} ` : '';
-    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
+    const rootMarginLabel = `(root-margin:${rootMargin})`;
+    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}${rootMarginLabel}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];

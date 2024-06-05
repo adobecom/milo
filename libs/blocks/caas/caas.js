@@ -13,10 +13,9 @@ import {
   parseEncodedConfig,
 } from '../../utils/utils.js';
 
-const ROOT_MARGIN = 1000;
 const P_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 const S_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1zdGFnZS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
-
+let rootMargin = 1000;
 const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
   if (placeholderUrl) {
     resolve(loadStrings(placeholderUrl));
@@ -76,9 +75,12 @@ export default async function init(link) {
   if (link.textContent.includes('no-lazy')) {
     loadCaas(link);
   } else {
+    if(link.textContent.includes('root-margin')){
+      rootMargin = '';
+    }
     createIntersectionObserver({
       el: link,
-      options: { rootMargin: `${ROOT_MARGIN}px` },
+      options: { rootMargin: `${rootMargin}px` },
       callback: loadCaas,
     });
   }
