@@ -213,7 +213,7 @@ class OdinSearch extends LitElement {
   async doSearch() {
     const query = encodeURIComponent(this.search.value);
     const modelId = encodeURIComponent(this.picker.value);
-    const params = { filter: { path: '/content/dam/sandbox/ilyas', fullText: { text: query, queryMode: 'EXACT_WORDS' } } };
+    const params = { filter: { path: '/content/dam/sandbox/mas', fullText: { text: query, queryMode: 'EXACT_WORDS' } } };
     if (modelId && modelId !== 'all') {
       params.filter.modelIds = [
         modelId,
