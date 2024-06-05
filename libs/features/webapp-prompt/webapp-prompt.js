@@ -39,7 +39,11 @@ const getIcon = (content) => {
   return icons.company;
 };
 
-const showTooltip = (element, message, time = 5000) => {
+const showTooltip = (
+  element,
+  message = CONFIG.tooltipMessage,
+  time = CONFIG.tooltipDuration,
+) => {
   element.setAttribute('data-pep-dismissal-tooltip', message);
   const cleanup = () => {
     element.removeAttribute('data-pep-dismissal-tooltip');
@@ -53,7 +57,11 @@ const showTooltip = (element, message, time = 5000) => {
   }, { once: true });
 };
 
-const playFocusAnimation = (element, iterationCount = 2, animationDuration = 2500) => {
+const playFocusAnimation = (
+  element,
+  iterationCount = CONFIG.animationCount,
+  animationDuration = CONFIG.animationDuration,
+) => {
   element.classList.add('coach-indicator');
   element.style.setProperty('--animation-duration', `${animationDuration}ms`);
   const rings = [];
