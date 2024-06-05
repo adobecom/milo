@@ -10,7 +10,7 @@ describe('MEP Utils', () => {
     });
     it('combines promos and personalization', async () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
-      const manifests = await combineMepSources('/pers/manifest.json', 'pre-black-friday-global,black-friday-global', undefined);
+      const manifests = await combineMepSources('/pers/manifest.json', { manifestnames: 'pre-black-friday-global,black-friday-global' }, undefined);
       expect(manifests.length).to.equal(3);
       expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
       expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
@@ -20,7 +20,7 @@ describe('MEP Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
       const manifests = await combineMepSources(
         '/pers/manifest.json',
-        'pre-black-friday-global,black-friday-global',
+        { manifestnames: 'pre-black-friday-global,black-friday-global' },
         '/pers/manifest.json--var1---/mep-param/manifest1.json--all---/mep-param/manifest2.json--all',
       );
       expect(manifests.length).to.equal(5);
@@ -52,7 +52,11 @@ describe('MEP Utils', () => {
       const persEnabled = getMepEnablement('personalization');
       const promoEnabled = getMepEnablement('manifestnames', 'promo');
       const targetEnabled = getMepEnablement('target');
-      expect(promoEnabled).to.equal('pre-black-friday-global,black-friday-global');
+      expect(promoEnabled).to.deep.equal({
+        'apac_manifestnames': 'kr-special-promo',
+        'americas_manifestnames': 'us-special-promo',
+        manifestnames: 'pre-black-friday-global,black-friday-global',
+      });
       expect(persEnabled).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
       expect(targetEnabled).to.equal(false);
     });
