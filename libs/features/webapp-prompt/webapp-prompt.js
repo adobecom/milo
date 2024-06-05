@@ -127,11 +127,6 @@ class AppPrompt {
       }));
     if (this.isAnchorExpanded) return;
 
-    const { base } = getConfig();
-
-    await loadStyle(`${base}/features/webapp-prompt/focus-animation.css`);
-    await loadStyle(`${base}/features/webapp-prompt/tooltip.css`);
-
     if (this.anchorId) this.anchor = document.querySelector(`#${this.anchorId}`);
     this.offset = this.anchor
       ? this.parent.offsetWidth - (this.anchor.offsetWidth + this.anchor.offsetLeft) : 0;
