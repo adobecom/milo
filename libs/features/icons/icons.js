@@ -63,12 +63,12 @@ export default async function loadIcons(icons, config) {
     const parent = icon.parentElement;
     if (parent.childNodes.length > 1) {
       if (parent.lastChild === icon) {
-        icon.classList.add('margin-left');
+        icon.classList.add('margin-inline-start');
       } else if (parent.firstChild === icon) {
-        icon.classList.add('margin-right');
+        icon.classList.add('margin-inline-end');
         if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
       } else {
-        icon.classList.add('margin-left', 'margin-right');
+        icon.classList.add('margin-inline-start', 'margin-inline-end');
       }
     }
     icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
