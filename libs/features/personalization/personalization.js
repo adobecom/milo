@@ -794,7 +794,6 @@ export function handleFragmentCommand(command, a) {
 
 export async function applyPers(manifests, config, postLCP = false) {
   if (!manifests?.length) return;
-  config.mep.variantOverride = parseMepParam(config);
   let experiments = manifests;
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
@@ -902,6 +901,7 @@ export async function init(enablements = {}) {
       targetEnabled: target,
       experiments: [],
     };
+    config.mep.variantOverride = parseMepParam(config);
 
     manifests = manifests.concat(await combineNonTargetSources(personalization, promo, mepParam));
   }
