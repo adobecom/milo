@@ -23,11 +23,20 @@ const urlParams = new URLSearchParams(window.location.search);
 let resourcePath;
 let previewPath;
 
+async function validate(url) {
+  try {
+    const req = await fetch(url.href);
+    return req;
+  } catch (error) {
+    return { ok: false, url: url.href };
+  }
+}
+
 async function validatedUrls(projectUrls) {
   const validateUrls = [...projectUrls];
   while (validateUrls.length) {
     try {
-      const reqs = await Promise.all(validateUrls.splice(0, 49).map((url) => fetch(url.href)));
+      const reqs = await Promise.all(validateUrls.splice(0, 49).map(validate));
       setStatus('details', 'info', 'Validating Project URLs');
       for (const res of reqs) {
         const projectUrl = projectUrls.find((url) => url.href === res.url);
@@ -86,12 +95,20 @@ async function loadProjectSettings(projSettings) {
   }
 }
 
+function sanitize(url) {
+  const hlxUrl = /^https?:\/\/[^/?#]+/g;
+  const [hostname] = url.match(hlxUrl);
+  const sanitized = hostname.replaceAll('–', '--');
+  const newURL = url.replace(hlxUrl, sanitized);
+  return new URL(newURL);
+}
+
 async function loadDetails() {
   setStatus('details', 'info', 'Loading languages and URLs.');
   try {
     const resp = await fetch(previewPath);
     const json = await resp.json();
-    const jsonUrls = json.urls.data.map((item) => new URL(item.URL));
+    const jsonUrls = json.urls.data.map((item) => sanitize(item.URL));
     const projectUrls = getUrls(jsonUrls);
     const projectLangs = json.languages.data.reduce((rdx, lang) => {
       if (LANG_ACTIONS.includes(lang.Action)) {
