@@ -14,7 +14,7 @@ const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'l
 
 function distillClasses(el, classes) {
   const taps = ['-heading', '-body', '-detail'];
-  classes.forEach((elClass) => {
+  classes?.forEach((elClass) => {
     const elTaps = taps.filter((tap) => elClass.endsWith(tap));
     if (!elTaps.length) return;
     const parts = elClass.split('-');
@@ -123,12 +123,6 @@ function loadContentType(el, key, classes) {
       break;
     default:
   }
-  if (key === 'bgcolor') decorateBg(el);
-  if (key === 'list') decorateList(el, classes);
-  if (key === 'lockup') decorateLockupRow(el);
-  if (key === 'qrcode') decorateQr(el);
-  if (key === 'supplemental') decorateSup(el, classes);
-  if (key === 'text') decorateText(el, classes);
 }
 
 function loadBreakpointThemes() {
