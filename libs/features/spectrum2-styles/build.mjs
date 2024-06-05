@@ -8,7 +8,7 @@ const miloCSSPath = path.resolve('s2-styles.css');
 const spectrumCSS = fs.readFileSync(spectrumCSSPath, 'utf8');
 const miloCSS = fs.readFileSync(miloCSSPath, 'utf8');
 
-// Function to transform Spectrum CSS RGB and opacity properties into one value
+// Formats and transforms Spectrum CSS Rgb and opacity properties into one value
 const transformRgbProperties = (rule) => {
   const propertiesToUpdate = {};
 
@@ -17,17 +17,14 @@ const transformRgbProperties = (rule) => {
   rule.walkDecls((decl) => {
     const { prop, value } = decl;
 
-    // Replaces 0px with 0
     decl.value = replaceZeroPx(value);
 
-    // If the property ends with -rgb, prepare it for transformation
     if (prop.endsWith('-rgb')) {
       const baseName = prop.replace('-rgb', '');
       propertiesToUpdate[baseName] = `rgb(${value.replace(/,\s*/g, ' ')})`;
       decl.remove();
     }
 
-    // If the property ends with -opacity, combine it with the corresponding -rgb property
     if (prop.endsWith('-opacity')) {
       const baseName = prop.replace('-opacity', '');
       if (propertiesToUpdate[baseName]) {
@@ -45,7 +42,6 @@ const transformRgbProperties = (rule) => {
   });
 };
 
-// Extract and transform custom properties from CSS
 const extractAndTransformCustomProperties = (css) => {
   const customProperties = {};
   postcss.parse(css).walkRules((rule) => {
@@ -67,7 +63,7 @@ const spectrumCustomProperties = extractAndTransformCustomProperties(spectrumCSS
 const miloCustomProperties = extractAndTransformCustomProperties(miloCSS);
 
 const mergedCustomProperties = {};
-// Combine selectors from miloCustomProperties
+
 const allSelectors = Object.keys(miloCustomProperties);
 
 allSelectors.forEach((selector) => {
@@ -82,7 +78,6 @@ allSelectors.forEach((selector) => {
   }
 });
 
-// Function to update custom properties in the original CSS
 const updateCustomPropertiesInMiloCSS = (css) => {
   const root = postcss.parse(css);
 
@@ -103,6 +98,5 @@ const updateCustomPropertiesInMiloCSS = (css) => {
 
 const updatedCustomCSS = updateCustomPropertiesInMiloCSS(miloCSS);
 
-// Writes the updated custom properties back to the Milo CSS file
 fs.writeFileSync(miloCSSPath, updatedCustomCSS, 'utf8');
 console.log(`Updated custom properties written to ${miloCSSPath}`);

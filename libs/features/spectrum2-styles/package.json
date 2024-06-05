@@ -1,13 +1,11 @@
 {
-  "name": "spectrum-designs",
+  "name": "spectrum2-styles",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A script that updates the Milo Spectrum 2 styles with the latest values from Spectrum CSS Tokens",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
