@@ -537,8 +537,8 @@ const checkForParamMatch = (paramStr) => {
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
-  if (config.mep?.variantOverride && config.mep?.variantOverride[manifestPath]) {
-    return config.mep?.variantOverride[manifestPath];
+  if (config.mep?.variantOverride?.[manifestPath]) {
+    return config.mep.variantOverride[manifestPath];
   }
   const variantInfo = variantNames.reduce((acc, name) => {
     let nameArr = [name];
