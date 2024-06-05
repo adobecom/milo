@@ -4,7 +4,7 @@ This script automatically updates the Milo S2 CSS custom properties with the lat
 
 ## How it Works
 
-The script extracts Spectrum CSS Tokens from an npm package and overrides corresponding custom properties in the Milo CSS file. It formats and transforms RGB and opacity properties to ensure maintain performance and compatibility.
+The script extracts Spectrum CSS Tokens from an npm package and overrides corresponding custom properties in the Milo CSS file. It formats and transforms RGB and opacity properties to maintain performance and compatibility.
 
 ## Usage
 
@@ -15,14 +15,12 @@ Before running the script, ensure that you have the desired version of `@spectru
 - Open the `package.json` file.
 - Locate the `"@spectrum-css/tokens"` dependency.
 - Update the version number to the latest or desired version.
-- Save the `package.json` file.
 - run an `npm install` to install it.
 
 ### 2. Run the build script
 
-Navigate to the directory and execute the script to update your Milo CSS file.
+Run the following script to update the Milo S2 CSS file with latest Spectrum 2 CSS Tokens.
 
 ```
-node build.mjs
+npm run build:spectrum2-styles
 ```
-This will update the `s2-styles.css` file with the latest Spectrum 2 custom properties.

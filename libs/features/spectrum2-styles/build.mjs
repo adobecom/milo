@@ -3,7 +3,7 @@ import path from 'path';
 import postcss from 'postcss';
 
 const spectrumCSSPath = path.resolve('node_modules/@spectrum-css/tokens/dist/index.css');
-const miloCSSPath = path.resolve('s2-styles.css');
+const miloCSSPath = path.resolve('../../deps/spectrum2-styles.css');
 
 const spectrumCSS = fs.readFileSync(spectrumCSSPath, 'utf8');
 const miloCSS = fs.readFileSync(miloCSSPath, 'utf8');
