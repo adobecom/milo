@@ -1,12 +1,10 @@
-:root {
+.hero-marquee {
   --s-min-height: 248px; /* 360px */
   --m-min-height: 448px; /* 560px */
   --l-min-height: 588px; /* 700px */
   
   /* 112 = 56px default padding */
-}
 
-.hero-marquee {
   padding: var(--spacing-xl) 0;
   position: relative;
   display: flex;
@@ -19,8 +17,8 @@
   align-items: center;
 }
 
-.hero-marquee.s-min-height { min-height: var(--s-min-height);}
-.hero-marquee.l-min-height { min-height: var(--l-min-height);}
+.hero-marquee.s-min-height { min-height: var(--s-min-height); }
+.hero-marquee.l-min-height { min-height: var(--l-min-height); }
 
 .dark .hero-marquee,
 .hero-marquee.dark {
@@ -74,17 +72,13 @@
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
   text-transform: initial;
-  white-space: nowrap
+  white-space: nowrap;
 } 
 
 .hero-marquee .lockup-area picture { 
   line-height: 0;
   display: block;
 }
-
-.hero-marquee .lockup-area picture img {
-  width: auto;
-} 
 
 .hero-marquee .lockup-area a,
 .hero-marquee .lockup-area a:hover {
@@ -119,7 +113,7 @@
 .hero-marquee .lockup-area picture img,
 .hero-marquee .l-icon .lockup-area picture img,
 .hero-marquee.l-icon .lockup-area picture img {
-  min-width:var(--icon-size-l);
+  min-width: var(--icon-size-l);
   height: var(--icon-size-l);
 }
 
@@ -131,7 +125,7 @@
 
 .hero-marquee .m-icon .lockup-area picture img, 
 .hero-marquee.m-icon .lockup-area picture img {
-  min-width:var(--icon-size-m);
+  min-width: var(--icon-size-m);
   height: var(--icon-size-m);
 }
 
@@ -143,7 +137,7 @@
 
 .hero-marquee .xl-icon .lockup-area picture img,
 .hero-marquee.xl-icon .lockup-area picture img {
-  min-width:var(--icon-size-xl);
+  min-width: var(--icon-size-xl);
   height: var(--icon-size-xl);
 }
 
@@ -158,11 +152,10 @@
 }
 
 .hero-marquee .norm p { margin: var(--spacing-xs) 0; }
-.hero-marquee .main-copy p { margin: 0; }
-.hero-marquee .main-copy p:only-child { margin: 0; }
-.hero-marquee .main-copy [class^="heading"] { margin: 0; }
 
-/* Static type */
+.hero-marquee .main-copy p,
+.hero-marquee .main-copy p:only-child,
+.hero-marquee .main-copy [class^="heading"],
 .hero-marquee .norm p:only-child { margin: 0; }
 .hero-marquee .norm :is(h1, h2, h3, h4, h5, h6) { margin: 0 0 var(--spacing-xs) 0; }
 .hero-marquee .norm .action-area { margin-top: var(--spacing-s); }
@@ -199,19 +192,6 @@ html[dir="rtl"] .hero-marquee .foreground {
 
 .hero-marquee .has-divider {
   margin: var(--spacing-xxs) 0;
-}
-
-.hero-marquee .badge {
-  font-size: var(--type-body-xs-size);
-  line-height: 1em;
-  font-weight: 400;
-  vertical-align: middle;
-  padding: 4px 8px;
-  margin-inline-start: var(--spacing-xs);
-  border-radius: 4px;
-  background-color: #FFEB00;
-  color: var(--text-color);
-  white-space: no-wrap;
 }
 
 /* content hidden */
