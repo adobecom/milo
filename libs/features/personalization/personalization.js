@@ -612,7 +612,7 @@ const createDefaultExperiment = (manifest) => ({
   variants: {},
 });
 
-export async function getPersConfig(info, override = false) {
+export async function getPersConfig(info, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -624,7 +624,7 @@ export async function getPersConfig(info, override = false) {
     disabled,
     event,
   } = info;
-  if (disabled && !override) {
+  if (disabled && !variantOverride) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;
@@ -746,12 +746,12 @@ export async function categorizeActions(experiment) {
     commands: selectedVariant.commands,
   };
 }
-function parseMepParam(config) {
+
+function parseMepParam(mepParam) {
+  if (!mepParam) return false;
   const mepObject = Object.create(null);
-
-  if (!config.mep?.override) return mepObject;
-
-  config.mep.override.split('---').forEach((item) => {
+  const decodedParam = decodeURIComponent(mepParam);
+  decodedParam.split('---').forEach((item) => {
     const pair = item.trim().split('--');
     if (pair.length > 1) {
       const [manifestPath, selectedVariant] = pair;
@@ -828,19 +828,17 @@ export async function applyPers(manifests, postLCP = false) {
         handleFragmentCommand,
         preview: (mepButton !== 'off'
           && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
-        override: mepParam ? decodeURIComponent(mepParam) : '',
+        variantOverride: parseMepParam(mepParam),
         highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
         mepParam,
         targetEnabled: config.mep?.targetEnabled,
       };
     }
 
-    config.mep.variantOverride = parseMepParam(config);
-
     if (!manifests?.length) return;
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
-      experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
+      experiments[i] = await getPersConfig(experiments[i], config.mep?.variantOverride);
     }
 
     experiments = cleanAndSortManifestList(experiments);
