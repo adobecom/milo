@@ -21,7 +21,7 @@ e.g:
 <meta name="wcs-locale" content="fr">
 
 <!-- Canada french -->
-<meta name="wcs-locale" content="/ca_fr">
+<meta name="wcs-locale" content="ca_fr">
 
 <!-- Canada english -->
 <meta name="wcs-locale" content="ca">

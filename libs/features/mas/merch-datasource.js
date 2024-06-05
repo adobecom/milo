@@ -70,6 +70,7 @@ class MerchDatasource extends HTMLElement {
 
   connectedCallback() {
     this.fetchData();
+    this.parentElement.style.opacity = 0;
   }
 
   async fetchData() {
@@ -88,7 +89,10 @@ class MerchDatasource extends HTMLElement {
   render() {
     if (!this.isConnected) return;
     if (this.parentElement.tagName !== 'MERCH-CARD') return;
-    parseMerchCard(this.data, this.parentElement);
+    parseMerchCard(this.data, this.parentElement).then(async () => {
+      await Promise.all([...this.parentElement.querySelectorAll('[is="inline-price"],[is="checkout-link"]')].map((el) => el.onceSettled()));
+      this.parentElement.style.opacity = 1;
+    });
   }
 }
 
