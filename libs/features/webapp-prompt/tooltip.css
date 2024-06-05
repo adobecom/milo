@@ -1,6 +1,5 @@
 [data-pep-dismissal-tooltip]::after {
   content: attr(data-pep-dismissal-tooltip);
-  position: absolute;
   display: inline-flex;
   z-index: 3;
   background-color: #3B63FB;
@@ -16,18 +15,15 @@
   padding-block-start: 0.25rem;
   padding-block-end: 0.3125rem;
   
-  transition: opacity 0.5s;
 
   font-family: 'Adobe Clean';
   font-size: 0.75rem;
   line-height: 0.9375rem;
   color: white;
-  pointer-events: none;
 }
 
 [data-pep-dismissal-tooltip]::before { 
   content: '';
-  position: absolute;
   z-index: 2;
   background-color: #3B63FB;
   width: 0.44rem;
@@ -35,10 +31,15 @@
   border-radius: 0.05rem;
   left: calc(50% - 0.22rem);
   top: 110%;
-  pointer-events: none;
   
   transform: rotate(45deg);
+}
 
+[data-pep-dismissal-tooltip]::before,
+[data-pep-dismissal-tooltip]::after {
+  background-color: #3B63FB;
+  position: absolute;
+  pointer-events: none;
   transition: opacity 0.5s;
 }
 
