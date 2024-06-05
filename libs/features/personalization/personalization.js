@@ -891,12 +891,12 @@ const combineNonTargetSources = async (persEnabled, promoEnabled, mepParam) => {
 };
 
 export async function init(enablements = {}) {
-  const manifests = [];
+  let manifests = [];
   const config = getConfig();
   const {
     target, personalization, promo, mepParam, mepHighlight, mepButton, postLCP,
   } = enablements;
-  if (postLCP) {
+  if (!postLCP) {
     config.mep = {
       handleFragmentCommand,
       preview: (mepButton !== 'off'
@@ -907,12 +907,12 @@ export async function init(enablements = {}) {
       experiments: [],
     };
 
-    manifests.concat(await combineNonTargetSources(personalization, promo, mepParam));
+    manifests = manifests.concat(await combineNonTargetSources(personalization, promo, mepParam));
   }
 
-  if (target) {
+  if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
-    manifests.concat(await getTargetPersonalization());
+    manifests = manifests.concat(await getTargetPersonalization());
   }
 
   try {
