@@ -7,7 +7,7 @@
   height: fit-content;
   width: 8.875rem;
   top: 120%; 
-  right: -75%;
+  left: -300%;
   word-break: break-word;
   border-radius: 7px;
 
@@ -45,6 +45,5 @@
 @media (min-width: 1520px) {
   [data-pep-dismissal-tooltip]::after {
     left: calc(50% - 5rem);
-    right: 0;
   }
 }
