@@ -53,8 +53,13 @@ class AppPrompt {
     this.getAnchorState = getAnchorState;
     this.id = this.promptPath.split('/').pop();
     this.elements = {};
-    if (modalsActive()) waitForClosedModalsThen(this.init);
-    else this.init();
+    if (modalsActive()) {
+      window.addEventListener(
+        'milo:modal:closed',
+        () => waitForClosedModalsThen(this.init),
+        { once: true },
+      );
+    } else this.init();
   }
 
   init = async () => {
