@@ -1,7 +1,6 @@
 /* eslint-disable import/no-relative-packages */
 import '../../deps/merch-card.js';
-import '../../blocks/merch-card/merch-datasource.js';
-import { init } from '../../deps/commerce.js';
+import { loadStyle, setConfig } from '../../utils/utils.js';
 
 if (!customElements.get('sp-button')) {
   await Promise.all([
@@ -10,11 +9,14 @@ if (!customElements.get('sp-button')) {
   ]);
 }
 const [localeElement] = document.getElementsByName('wcs-locale');
-const locale = localeElement ? localeElement.content : 'en_US';
+const locale = localeElement ? localeElement.getAttribute('content') : '/';
 
-// TODO handle
+window.lana = { log: () => {} };
+const config = setConfig({ codeRoot: '/libs' });
+config.locale.prefix = locale;
 
-await init(() => ({
-  env: 'PRODUCTION',
-  locale,
-}));
+const { hostname } = new URL(import.meta.url);
+
+loadStyle(`//${hostname}/libs/blocks/merch/merch.css`);
+
+await import('./merch-datasource.js');

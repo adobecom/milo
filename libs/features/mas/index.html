@@ -10,22 +10,34 @@
   <meta name="nofollow-links" content="on">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:," size="any">
-  <link rel="stylesheet" href="https://www.adobe.com/libs/styles/styles.css">
-  <meta name="wcs-locale" content="CA_fr">
+  <meta name="wcs-locale" content="">
   <script src="mas.js" type="module"></script>
+  <style>
+    div.catalog {
+      margin: 20px;
+    }
+  </style>
 </head>
 
 <body>
   <main>
     <sp-theme theme="spectrum" color="light" scale="medium">
-      <div class="two-merch-cards catalog">
+
+      <div class="one-merch-card catalog">
         <merch-card variant="catalog">
-          <merch-datasource source="odin" path="/content/dam/sandbox/ilyas/creative-cloud" mep></merch-datasource>
-        </merch-card>
-        <merch-card variant="catalog">
-          <merch-datasource source="odin" path="/content/dam/sandbox/ilyas/photoshop"></merch-datasource>
+          <merch-datasource source="odin" path="/content/dam/sandbox/mas/creative-cloud" mep></merch-datasource>
         </merch-card>
       </div>
+
+      <div class="two-merch-cards catalog">
+        <merch-card variant="catalog">
+          <merch-datasource source="odin" path="/content/dam/sandbox/mas/creative-cloud" mep></merch-datasource>
+        </merch-card>
+        <merch-card variant="catalog">
+          <merch-datasource source="odin" path="/content/dam/sandbox/mas/photoshop"></merch-datasource>
+        </merch-card>
+      </div>
+
     </sp-theme>
   </main>
 </body>

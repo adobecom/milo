@@ -335,9 +335,9 @@ export async function initService(force = false) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
-  const { env, commerce = {}, locale } = getConfig();
-  commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
+    const { env, commerce = {}, locale } = getConfig();
+    commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
     const commerceLib = await import('../../deps/commerce.js');
     const service = await commerceLib.init(() => ({
       env,
