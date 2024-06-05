@@ -92,7 +92,7 @@ describe('Utils', () => {
         await waitForElement('.login-action');
         const login = document.querySelector('.login-action');
         utils.decorateLinks(login);
-        expect(login.href).to.equal('https://www.adobe.com/');
+        expect(login.href).to.equal('https://www.stage.adobe.com/');
       });
     });
 
