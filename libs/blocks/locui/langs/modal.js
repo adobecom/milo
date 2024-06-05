@@ -14,7 +14,7 @@ function Modal({ lang, prefix, error }) {
     return html`
       <h2><span class="error-icon" /> ${statusText}</h2>
       <p>Errors reported for <i><strong>${lang.Language}</strong>:</i></p>
-      <ol>${errors.map((err) => html`<li>${renderLinks(err)}</li>`)}</ol>
+      <ol>${errors.map((err) => html`<li>${renderLinks(err, 'error')}</li>`)}</ol>
     `;
   }
 
