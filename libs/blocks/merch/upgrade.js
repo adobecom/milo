@@ -39,6 +39,9 @@ function buildUrl(upgradeOffer, upgradable, env) {
   url.searchParams.append('surface', 'ADOBE_COM');
   url.searchParams.append('ctx', 'if');
   url.searchParams.append('ctxRtUrl', encodeURIComponent(window.location.href));
+  if (upgradeOffer.dataset?.promotionCode) {
+    url.searchParams.append('promoCode', upgradeOffer.dataset.promotionCode);
+  }
   return url.toString();
 }
 
