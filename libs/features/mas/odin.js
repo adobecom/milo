@@ -7,25 +7,24 @@ import '../spectrum-web-components/dist/theme.js';
 import '../spectrum-web-components/dist/dialog.js';
 import '../spectrum-web-components/dist/search.js';
 import '../spectrum-web-components/dist/action-button.js';
-import '../../libs/features/spectrum-web-components/dist/action-group.js';
 import '../spectrum-web-components/dist/button-group.js';
 import '../spectrum-web-components/dist/overlay.js';
 import '../spectrum-web-components/dist/button.js';
 import '../spectrum-web-components/dist/picker.js';
-import '../../libs/deps/merch-icon.js';
-import { createTag, getConfig, loadBlock, loadScript, loadStyle } from '../../utils/utils.js';
+import { createTag, loadScript } from '../../utils/utils.js';
+import './mas.js';
 
-const { base } = getConfig();
-loadStyle(`${base}/blocks/merch-card/merch-card.css`);
+const bucket = 'author-p22655-e59341';
 
 const meta = createTag('meta', {
   name: 'urn:adobe:aue:system:aemconnection',
-  content: 'aem:https://author-p22655-e59341.adobeaemcloud.com',
+  content: `aem:https://${bucket}.adobeaemcloud.com`,
 });
 
-const bucket = 'author-p22655-e59341';
+const masAccessToken = localStorage.getItem('masAccessToken');
+
 const headers = {
-  Authorization: `Bearer ${localStorage.getItem('bearerToken')}`,
+  Authorization: `Bearer ${masAccessToken}`,
   pragma: 'no-cache',
   'cache-control': 'no-cache',
 };
@@ -70,15 +69,15 @@ class OdinSearch extends LitElement {
 
   onContentPatch(e) {
     e.stopPropagation();
-    const { miloBlock, odinPath } = e.target.dataset;
-    e.target.innerHTML = `<div class="${miloBlock}"><a class="odin" href="?fragment=${odinPath}"></a></div>`;
-    setTimeout(() => {
-      loadBlock(e.target.firstElementChild);
-    }, 500);
+    if (e.detail.patch.name === 'title') {
+      e.target.dataset.aueLabel = e.detail.patch.value;
+    }
+    const dataSource = e.target.querySelector('merch-datasource');
+    dataSource.refresh();
   }
 
   async prepareItems(items) {
-    const wrap = async (block, { cfTitle, title, path }, classes = '') => `
+    const wrap = async ({ cfTitle, title, path }, content, merchType) => `
     <li>
     <p class="path">${path}</p>
     <sp-action-group>
@@ -98,12 +97,11 @@ class OdinSearch extends LitElement {
     </overlay-trigger>
   </sp-action-group>
     <div
-    data-milo-block="${block}"
+    data-merch-type="${merchType}"
     data-odin-path="${path}"
     data-aue-label="${title ?? cfTitle}"
     data-aue-resource="urn:aemconnection:${path}/jcr:content/data/master"
-    data-aue-type="reference"
-    class="block ${classes}"><div class="${block}"><a class="odin" href="?fragment=${path}"></a></div></li>`;
+    data-aue-type="reference">${content}</li>`;
 
     const list = await Promise.all(items.map(
       ({ path, title, fields, model: { path: modelPath } }) => {
@@ -115,10 +113,16 @@ class OdinSearch extends LitElement {
           ),
         };
         switch (modelPath) {
-          case '/conf/sandbox/settings/dam/cfm/models/merch-card':
-            return wrap('merch-card', item, `merch-card-collection ${item.type ?? 'catalog'} one-merch-card`);
-          case '/conf/sandbox/settings/dam/cfm/models/marquee':
-            return wrap('marquee', item, 'marquee');
+          case '/conf/sandbox/settings/dam/cfm/models/merch-card': {
+            const content = `
+            <div class="one-merch-card ${item.type}">
+            <merch-card variant="${item.type}">
+              <merch-datasource source="odin-author" path="${path}"></merch-datasource>
+            </merch-card>
+          </div>
+            `;
+            return wrap(item, content, 'merch-card');
+          }
           default:
             return '';
         }
@@ -129,8 +133,6 @@ class OdinSearch extends LitElement {
     const ul = document.createElement('ul');
     ul.innerHTML = list.join('');
     this.appendChild(ul);
-
-    ul.querySelectorAll('[data-odin-path] > *').forEach(loadBlock);
   }
 
   async confirm() {
@@ -165,8 +167,8 @@ class OdinSearch extends LitElement {
 
   onClick(e) {
     if (e.target?.id === 'copy') {
-      const { dataset: { miloBlock, odinPath, aueLabel } } = e.target.closest('li').querySelector('.block');
-      window.top.postMessage({ type: 'odin:copy', data: { miloBlock, odinPath, aueLabel } }, '*');
+      const { dataset: { merchType, odinPath, aueLabel } } = e.target.closest('li').querySelector('[data-odin-path]');
+      window.top.postMessage({ type: 'odin:copy', data: { merchType, odinPath, aueLabel } }, '*');
     }
     if (e.target?.id === 'duplicate') {
       const { dataset: { odinPath, aueLabel } } = e.target.closest('li').querySelector('.block');
@@ -191,7 +193,6 @@ class OdinSearch extends LitElement {
         <sp-picker label="Fragment model" size="m">
           <sp-menu-item value="all">All</sp-menu-item>
           <sp-menu-item value="L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk">Merch Card</sp-menu-item>
-          <sp-menu-item value="L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tYXJxdWVl">Marquee</sp-menu-item>
         </sp-picker>
         <sp-button @click=${this.doSearch}>Search</sp-button>
       </div>
@@ -218,8 +219,7 @@ class OdinSearch extends LitElement {
       ];
     }
     const queryString = escape(JSON.stringify(params));
-    const url = `https://author-p22655-e59341.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`;
-    // url = '/tools/odin/search.json';
+    const url = `https://${bucket}.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`;
     const res = await fetch(
       url,
       { headers },

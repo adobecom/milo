@@ -42,8 +42,8 @@ odin-search > ul {
   width: 80%;
 }
 
-.block.marquee, .block.marquee > div {
-  width: 100%;
+div[data-odin-path] {
+  margin: 60px 0 10px;
 }
 
 sp-action-button#confirm {

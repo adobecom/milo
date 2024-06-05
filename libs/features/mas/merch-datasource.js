@@ -1,6 +1,9 @@
 import { createTag } from '../../utils/utils.js';
 
 const ODIN = 'odin';
+const ODIN_AUTHOR = 'odin-author';
+
+const masAccessToken = localStorage.getItem('masAccessToken');
 
 async function parseMerchLinks(merchLinkHTML) {
   await parseMerchLinks.init;
@@ -17,10 +20,10 @@ async function parseMerchLinks(merchLinkHTML) {
 async function parseMerchCard(cardJson, merchCard) {
   const { type = 'catalog' } = cardJson;
   merchCard.setAttribute('variant', type);
-  if (cardJson.icon?.length > 0) {
-    const merchIcon = createTag('merch-icon', { slot: 'icons', src: cardJson.icon[0], alt: '', href: '', size: 'l' });
+  cardJson.icon?.forEach((icon) => {
+    const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon, alt: '', href: '', size: 'l' });
     merchCard.append(merchIcon);
-  }
+  });
 
   if (cardJson.title) {
     merchCard.append(createTag('h4', { slot: 'heading-xs' }, cardJson.title));
@@ -73,17 +76,30 @@ class MerchDatasource extends HTMLElement {
     this.parentElement.style.opacity = 0;
   }
 
+  refresh() {
+    this.parentElement.querySelectorAll('[slot]').forEach((el) => el.remove());
+    this.fetchData();
+  }
+
   async fetchData() {
     const source = this.getAttribute('source') ?? ODIN;
     const path = this.getAttribute('path');
     if (!path) return;
 
-    if (source === ODIN) {
-      const response = await fetch(`https://dev-odin.adobe.com${path}.cfm.gql.json`);
-      const { data: { merchCardByPath: { item } } } = await response.json();
-      this.data = item;
-      this.render();
+    if (![ODIN, ODIN_AUTHOR].includes(source)) return;
+
+    let baseUrl = 'https://dev-odin.adobe.com';
+    let headers = {};
+    let cb = '';
+    if (source === ODIN_AUTHOR) {
+      baseUrl = 'https://author-p22655-e59341.adobeaemcloud.com';
+      cb = `?cb=${Math.round(Math.random() * 1000000)}`;
+      headers = { Authorization: `Bearer ${masAccessToken}` };
     }
+    const response = await fetch(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
+    const { data: { merchCardByPath: { item } } } = await response.json();
+    this.data = item;
+    this.render();
   }
 
   render() {
