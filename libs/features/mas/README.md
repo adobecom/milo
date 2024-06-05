@@ -9,13 +9,22 @@ If the custom elements `sp-button` and `sp-theme` are not already defined, they 
 
 
 ## 1. declare wcs locale ##
-a meta element must be added to document head to define the wcs locale in the format as expected by AOS.
+a meta element must be added to document head to define locale in the adobe.com format.
 
-The format is: `language_COUNTRY` in short codes.
 e.g:
 
 ```html
-  <meta name="wcs-locale" content="fr_CA">
+<!-- US English -->
+<meta name="wcs-locale" content="">
+
+<!-- France -->
+<meta name="wcs-locale" content="fr">
+
+<!-- Canada french -->
+<meta name="wcs-locale" content="/ca_fr">
+
+<!-- Canada english -->
+<meta name="wcs-locale" content="ca">
 ```
 
 ## 2. Import mas.js ##
