@@ -878,7 +878,7 @@ async function checkForPageMods() {
   if (target) loadMartech();
 
   const { init } = await import('../features/personalization/personalization.js');
-  init({
+  await init({
     mepParam, mepHighlight, mepButton, personalization, promo, target,
   });
 }
