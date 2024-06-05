@@ -1146,7 +1146,6 @@ async function processSection(section, config, isDoc) {
   return section.blocks;
 }
 export async function loadArea(area = document) {  const bannerData = getMetadata('app-banner-source');
-  console.log('drashti metadata', bannerData);
   if (bannerData) {
     // console.log('gnav', area.body.querySelector('header'));
     const body = area.body;
