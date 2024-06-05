@@ -1,0 +1,3 @@
+* Add ccd card variant
+* Handle offline with service workers
+* Display merch-card once fully initialized
