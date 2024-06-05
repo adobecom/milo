@@ -536,6 +536,10 @@ const checkForParamMatch = (paramStr) => {
 };
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
+  const config = getConfig();
+  if (config.mep?.variantOverride && config.mep?.variantOverride[manifestPath]) {
+    return config.mep?.variantOverride[manifestPath];
+  }
   const variantInfo = variantNames.reduce((acc, name) => {
     let nameArr = [name];
     if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
@@ -721,26 +725,18 @@ export async function categorizeActions(experiment) {
   };
 }
 
-function overridePersonalizationVariant(manifest, config) {
-  const { manifestPath, variantNames } = manifest;
-  if (!config.mep?.override) return;
-  let selectedVariant;
-  config.mep?.override?.split('---').some((item) => {
+function parseMepParam(config) {
+  const mepObject = Object.create(null);
+  if (!config.mep?.override) return mepObject;
+  config.mep.override.split('---').forEach((item) => {
     const pair = item.trim().split('--');
-    if (pair[0] === manifestPath && pair.length > 1) {
-      [, selectedVariant] = pair;
-      return true;
+    if (pair.length > 1) {
+      const [manifestPath, selectedVariant] = pair;
+      mepObject[manifestPath] = selectedVariant;
     }
-    return false;
   });
-  if (!selectedVariant) return;
-  if (variantNames.includes(selectedVariant)) {
-    manifest.selectedVariantName = selectedVariant;
-    manifest.selectedVariant = manifest.variants[selectedVariant];
-    return;
-  }
-  manifest.selectedVariantName = selectedVariant;
-  manifest.selectedVariant = manifest.variants[selectedVariant];
+
+  return mepObject;
 }
 
 function compareExecutionOrder(a, b) {
@@ -771,7 +767,6 @@ export function cleanAndSortManifestList(manifests) {
       } else {
         manifestObj[manifest.manifestPath] = manifest;
       }
-      if (config.mep?.override) overridePersonalizationVariant(manifest, config);
     } catch (e) {
       console.warn(e);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
@@ -799,6 +794,7 @@ export function handleFragmentCommand(command, a) {
 
 export async function applyPers(manifests, config, postLCP = false) {
   if (!manifests?.length) return;
+  config.mep.variantOverride = parseMepParam(config);
   let experiments = manifests;
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
