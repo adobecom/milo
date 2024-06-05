@@ -7,6 +7,7 @@ import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
   PRICE_TEMPLATE_STRIKETHROUGH,
+  PRICE_TEMPLATE_ANNUAL,
   CHECKOUT_ALLOWED_KEYS,
   buildCta,
   getCheckoutContext,
@@ -185,6 +186,10 @@ describe('Merch Block', () => {
 
     it('renders merch link to discount price', async () => {
       await validatePriceSpan('.merch.price.discount', { template: PRICE_TEMPLATE_DISCOUNT });
+    });
+
+    it('renders merch link to annual price', async () => {
+      await validatePriceSpan('.merch.price.annual', { template: PRICE_TEMPLATE_ANNUAL });
     });
 
     it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {

@@ -10,6 +10,13 @@ export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
+export const PRICE_TEMPLATE_ANNUAL = 'annual';
+const PRICE_TEMPLATE_MAPPING = new Map([
+  ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
+  ['priceOptical', PRICE_TEMPLATE_OPTICAL],
+  ['priceStrikethrough', PRICE_TEMPLATE_STRIKETHROUGH],
+  ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
+]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
 
@@ -415,24 +422,25 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
-  let template = PRICE_TEMPLATE_REGULAR;
   // This mapping also supports legacy OST links
-  switch (params.get('type')) {
-    case PRICE_TEMPLATE_DISCOUNT:
-    case 'priceDiscount':
-      template = PRICE_TEMPLATE_DISCOUNT;
-      break;
-    case PRICE_TEMPLATE_OPTICAL:
-    case 'priceOptical':
-      template = PRICE_TEMPLATE_OPTICAL;
-      break;
-    case PRICE_TEMPLATE_STRIKETHROUGH:
-    case 'priceStrikethrough':
-      template = PRICE_TEMPLATE_STRIKETHROUGH;
-      break;
-    default:
-      break;
-  }
+  const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? params.get('type');
+
+  // switch (params.get('type')) {
+  //   case PRICE_TEMPLATE_DISCOUNT:
+  //   case 'priceDiscount':
+  //     template = PRICE_TEMPLATE_DISCOUNT;
+  //     break;
+  //   case PRICE_TEMPLATE_OPTICAL:
+  //   case 'priceOptical':
+  //     template = PRICE_TEMPLATE_OPTICAL;
+  //     break;
+  //   case PRICE_TEMPLATE_STRIKETHROUGH:
+  //   case 'priceStrikethrough':
+  //     template = PRICE_TEMPLATE_STRIKETHROUGH;
+  //     break;
+  //   default:
+  //     break;
+  // }
   return {
     ...context,
     displayOldPrice,
