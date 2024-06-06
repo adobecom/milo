@@ -25,8 +25,8 @@ const TEAM_MENTIONS = [
   '@adobecom/document-cloud-sot',
 ];
 const SLACK = {
-  merge: ({ html_url, number, title }) =>
-    `:merged: PR merged to stage: <${html_url}|${number}: ${title}>.`,
+  merge: ({ html_url, number, title, prefix = '' }) =>
+    `:merged: PR merged to stage: ${prefix} <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) =>
     `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
@@ -118,12 +118,14 @@ const merge = async ({ prs, type }) => {
           merge_method: 'squash',
         });
       }
-      body = `- ${html_url}\n${body}`;
+      const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
+      body = `-${prefix} ${html_url}\n${body}`;
       await slackNotification(
         SLACK.merge({
           html_url,
           number,
           title,
+          prefix,
         })
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
