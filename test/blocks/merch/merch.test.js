@@ -20,6 +20,7 @@ import merch, {
   getModalAction,
   getCheckoutAction,
   PRICE_LITERALS_URL,
+  PRICE_TEMPLATE_REGULAR,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -190,6 +191,10 @@ describe('Merch Block', () => {
 
     it('renders merch link to annual price', async () => {
       await validatePriceSpan('.merch.price.annual', { template: PRICE_TEMPLATE_ANNUAL });
+    });
+
+    it('renders merch link to the regular price if template is invalid', async () => {
+      await validatePriceSpan('.merch.price.invalid', { template: PRICE_TEMPLATE_REGULAR });
     });
 
     it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {

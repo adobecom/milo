@@ -13,9 +13,13 @@ export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
+  [PRICE_TEMPLATE_DISCOUNT, PRICE_TEMPLATE_DISCOUNT],
   ['priceOptical', PRICE_TEMPLATE_OPTICAL],
+  [PRICE_TEMPLATE_OPTICAL, PRICE_TEMPLATE_OPTICAL],
   ['priceStrikethrough', PRICE_TEMPLATE_STRIKETHROUGH],
+  [PRICE_TEMPLATE_STRIKETHROUGH, PRICE_TEMPLATE_STRIKETHROUGH],
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
+  [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
@@ -423,7 +427,7 @@ export async function getPriceContext(el, params) {
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
-  const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? params.get('type');
+  const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
     ...context,
     displayOldPrice,
