@@ -18,6 +18,11 @@ if (window.self === window.top) {
   document.getElementById('openAUE').style.display = 'block';
 }
 
+document.getElementById('bookmarklet').addEventListener('click', (e) => {
+  e.stopImmediatePropagation();
+  e.preventDefault();
+});
+
 const bucket = 'author-p22655-e59341';
 
 const meta = createTag('meta', {

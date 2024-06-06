@@ -9,16 +9,16 @@
     <meta name="footer" content="off">
     <meta name="nofollow-links" content="on">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="./odin.js" type="module" crossorigin="use-credentials"></script>
-    <link rel="stylesheet" href="./odin.css">
+    <script src="./studio.js" type="module" crossorigin="use-credentials"></script>
+    <link rel="stylesheet" href="./studio.css">
     <link rel="icon" href="data:," size="any">
   <body>
     <main>
         <odin-search></odin-search>
-        <footer>
-          <p><a href="javascript:(function()%7Blet%20accessToken%3B%0AObject.keys(sessionStorage).forEach((key)%20%3D%3E%20%7B%0A%20%20if%20(%2Fadobeid_ims_access_token%5C%2Fexc_app%2F.test(key))%20%7B%0A%20%20%20%20const%20data%20%3D%20JSON.parse(sessionStorage.getItem(key))%3B%0A%20%20%20%20accessToken%20%3D%20data.tokenValue%3B%0A%20%20%7D%0A%7D)%3B%0Aconst%20iframeMain%20%3D%20document.querySelector('iframe%5Bname%3D%22Main%20Content%22%5D')%3B%0Aconst%20iframe%20%3D%20iframeMain.contentDocument.querySelector('iframe%5Bsrc*%3D%22%2Fmas%2Fstudio%22%5D')%3B%0Aconsole.log('sending%20accessToken'%2C%20accessToken)%3B%0Aiframe.contentWindow.postMessage(%7B%20type%3A%20'mas%3AupdateAccessToken'%2C%20accessToken%20%7D%2C%20'*')%3B%7D)()%3B">Update MAS Access Token</a> (Drag and drop this link to your bookmarks)</p>
-          <a id="openAUE" href="https://experience.adobe.com/#/@odin02/aem/editor/canvas/mas--milo--adobecom.hlx.live/libs/features/mas/studio.html" style="display: none;">Open in Universal Editor</a>
-        </footer>
-    </main>
+      </main>
+      <footer>
+        <p><a id="bookmarklet" href="javascript:(function()%7Blet%20accessToken%3B%0AObject.keys(sessionStorage).forEach((key)%20%3D%3E%20%7B%0A%20%20if%20(%2Fadobeid_ims_access_token%5C%2Fexc_app%2F.test(key))%20%7B%0A%20%20%20%20const%20data%20%3D%20JSON.parse(sessionStorage.getItem(key))%3B%0A%20%20%20%20accessToken%20%3D%20data.tokenValue%3B%0A%20%20%7D%0A%7D)%3B%0Aconst%20iframeMain%20%3D%20document.querySelector('iframe%5Bname%3D%22Main%20Content%22%5D')%3B%0Aconst%20iframe%20%3D%20iframeMain.contentDocument.querySelector('iframe%5Bsrc*%3D%22%2Fmas%2Fstudio%22%5D')%3B%0Aconsole.log('sending%20accessToken'%2C%20accessToken)%3B%0Aiframe.contentWindow.postMessage(%7B%20type%3A%20'mas%3AupdateAccessToken'%2C%20accessToken%20%7D%2C%20'*')%3B%7D)()%3B">Update MAS Access Token</a> (Drag and drop this link to your bookmarks)</p>
+        <a id="openAUE" href="https://experience.adobe.com/#/@odin02/aem/editor/canvas/mas--milo--adobecom.hlx.live/libs/features/mas/studio.html" style="display: none;">Open in Universal Editor</a>
+      </footer>
   </body>
 </html>
