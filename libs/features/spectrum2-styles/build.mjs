@@ -5,8 +5,16 @@ import postcss from 'postcss';
 const spectrumCSSPath = path.resolve('node_modules/@spectrum-css/tokens/dist/index.css');
 const miloCSSPath = path.resolve('../../deps/spectrum2-styles.css');
 
+const logFileSize = (filePath, status) => {
+  const fileSizeInBytes = fs.statSync(filePath).size;
+  const fileSizeInKilobytes = fileSizeInBytes / 1024;
+  console.log(`The size of the ${status} CSS file is ${fileSizeInKilobytes.toFixed(2)} kB`);
+};
+
 const spectrumCSS = fs.readFileSync(spectrumCSSPath, 'utf8');
 const miloCSS = fs.readFileSync(miloCSSPath, 'utf8');
+
+logFileSize(miloCSSPath, 'original');
 
 // Formats and transforms Spectrum CSS Rgb and opacity properties for performance
 const transformRgbProperties = (rule) => {
@@ -82,3 +90,5 @@ const updatedCustomCSS = updateCustomPropertiesInMiloCSS(miloCSS);
 
 fs.writeFileSync(miloCSSPath, updatedCustomCSS, 'utf8');
 console.log(`Updated custom properties written to ${miloCSSPath}`);
+
+logFileSize(miloCSSPath, 'updated');
