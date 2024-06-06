@@ -19,8 +19,8 @@ if (window.self === window.top) {
 }
 
 document.getElementById('bookmarklet').addEventListener('click', (e) => {
-  e.stopImmediatePropagation();
   e.preventDefault();
+  e.stopImmediatePropagation();
 });
 
 const bucket = 'author-p22655-e59341';
