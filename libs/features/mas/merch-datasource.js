@@ -11,6 +11,9 @@ window.addEventListener('message', (e) => {
   }
 });
 
+const mep = fetch('https://main--milo--adobecom.hlx.live/drafts/ilyas/manifests/ccd.json')
+  .then((res) => res.json()).then(({ experiences: { data } }) => data);
+
 async function parseMerchLinks(merchLinkHTML) {
   await parseMerchLinks.init;
   const { default: initMerchLink } = await import('../../blocks/merch/merch.js');
@@ -107,7 +110,8 @@ class MerchDatasource extends HTMLElement {
 
   async fetchData() {
     const source = this.getAttribute('source') ?? ODIN;
-    const path = this.getAttribute('path');
+    let path = this.getAttribute('path');
+    const originalPath = path;
     if (!path) return;
 
     if (![ODIN, ODIN_AUTHOR].includes(source)) return;
@@ -115,11 +119,19 @@ class MerchDatasource extends HTMLElement {
     let baseUrl = 'https://dev-odin.adobe.com';
     let headers = {};
     const cb = `?cb=${Math.round(Math.random() * 1000000)}`;
-    if (source === ODIN_AUTHOR) {
+    if (source === ODIN && this.getAttribute('mep') === '') {
+      const mepRules = await mep;
+      path = mepRules.filter(({ action }) => action === 'replaceFragment').find(({ selector }) => selector === path)?.all ?? path;
+    } else if (source === ODIN_AUTHOR) {
       baseUrl = 'https://author-p22655-e59341.adobeaemcloud.com';
       headers = { Authorization: `Bearer ${accessToken}` };
     }
-    const response = await fetch(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
+    let response;
+    response = await fetch(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
+    if (response.status === 404) {
+      response = await fetch(`${baseUrl}${originalPath}.cfm.gql.json${cb}`, { headers });
+    }
+
     const { data: { merchCardByPath: { item } } } = await response.json();
     this.data = item;
     this.render();
