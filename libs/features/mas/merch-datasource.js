@@ -3,7 +3,13 @@ import { createTag } from '../../utils/utils.js';
 const ODIN = 'odin';
 const ODIN_AUTHOR = 'odin-author';
 
-const masAccessToken = localStorage.getItem('masAccessToken');
+let accessToken;
+
+window.addEventListener('message', (e) => {
+  if (e.data.type === 'mas:updateAccessToken') {
+    accessToken = e.data.accessToken;
+  }
+});
 
 async function parseMerchLinks(merchLinkHTML) {
   await parseMerchLinks.init;
@@ -94,7 +100,7 @@ class MerchDatasource extends HTMLElement {
     if (source === ODIN_AUTHOR) {
       baseUrl = 'https://author-p22655-e59341.adobeaemcloud.com';
       cb = `?cb=${Math.round(Math.random() * 1000000)}`;
-      headers = { Authorization: `Bearer ${masAccessToken}` };
+      headers = { Authorization: `Bearer ${accessToken}` };
     }
     const response = await fetch(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
     const { data: { merchCardByPath: { item } } } = await response.json();

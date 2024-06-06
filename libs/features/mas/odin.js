@@ -14,6 +14,10 @@ import '../spectrum-web-components/dist/picker.js';
 import { createTag, loadScript } from '../../utils/utils.js';
 import './mas.js';
 
+if (window.self === window.top) {
+  document.getElementById('openAUE').style.display = 'block';
+}
+
 const bucket = 'author-p22655-e59341';
 
 const meta = createTag('meta', {
@@ -21,13 +25,19 @@ const meta = createTag('meta', {
   content: `aem:https://${bucket}.adobeaemcloud.com`,
 });
 
-const masAccessToken = localStorage.getItem('masAccessToken');
+let accessToken;
 
-const headers = {
-  Authorization: `Bearer ${masAccessToken}`,
+window.addEventListener('message', (e) => {
+  if (e.data.type === 'mas:updateAccessToken') {
+    accessToken = e.data.accessToken;
+  }
+});
+
+const headers = () => ({
+  Authorization: `Bearer ${accessToken}`,
   pragma: 'no-cache',
   'cache-control': 'no-cache',
-};
+});
 
 document.head.appendChild(meta);
 
@@ -148,7 +158,7 @@ class OdinSearch extends LitElement {
       {
         method: 'POST',
         headers: {
-          ...headers,
+          ...headers(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -222,7 +232,7 @@ class OdinSearch extends LitElement {
     const url = `https://${bucket}.adobeaemcloud.com/adobe/sites/cf/fragments/search?query=${queryString}`;
     const res = await fetch(
       url,
-      { headers },
+      { headers: headers() },
     );
     const { items } = await res.json();
     this.items = items;
