@@ -56,7 +56,10 @@ async function parseMerchCard(cardJson, merchCard) {
       const treatment = variant === 'primary' ? 'outline' : '';
       const spButton = createTag('sp-button', { variant, treatment });
       spButton.innerHTML = cta.innerHTML;
-      spButton.addEventListener('click', () => cta.click());
+      spButton.addEventListener('click', (e) => {
+        e.stopImmediatePropagation();
+        cta.click();
+      });
       return [cta, spButton];
     });
     const footer = createTag('div', { slot: 'footer' }, ctas);
