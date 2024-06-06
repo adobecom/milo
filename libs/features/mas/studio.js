@@ -21,6 +21,7 @@ if (window.self === window.top) {
 document.getElementById('bookmarklet').addEventListener('click', (e) => {
   e.preventDefault();
   e.stopImmediatePropagation();
+  return false;
 });
 
 const bucket = 'author-p22655-e59341';
