@@ -104,8 +104,10 @@ class MerchDatasource extends HTMLElement {
   }
 
   refresh() {
-    this.parentElement.querySelectorAll('[slot]').forEach((el) => el.remove());
-    this.fetchData();
+    setTimeout(() => {
+      this.parentElement.querySelectorAll('[slot]').forEach((el) => el.remove());
+      this.fetchData();
+    }, 500);
   }
 
   async fetchData() {
