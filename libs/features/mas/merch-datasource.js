@@ -58,11 +58,24 @@ async function parseMerchCard(cardJson, merchCard) {
       spButton.innerHTML = cta.innerHTML;
       spButton.addEventListener('click', (e) => {
         e.stopImmediatePropagation();
-        cta.click();
+        const inApp = merchCard.getAttribute('in-app') === '';
+        if (inApp) {
+          const [{ productArrangementCode }] = cta.value;
+          const checkoutUrl = escape(cta.href);
+          const actionData = {
+            type: 'deep-link',
+            target: `inapp://ccd?workflow=routeToPath&routePath=%2FeditPlan%3Fpa%3D${productArrangementCode}%26cli%3Dcc_desktop%26co%3DUS%26landing_page%3D${checkoutUrl}`,
+          };
+          cta.dispatchEvent(new CustomEvent('deep-link', { detail: actionData, bubbles: true }));
+        } else {
+          cta.click();
+        }
       });
+
       return [cta, spButton];
     });
-    const theme = createTag('sp-theme', { theme: 'spectrum', color: 'light', scale: 'medium' }, ctas);
+    const color = merchCard.getAttribute('color') ?? 'light';
+    const theme = createTag('sp-theme', { theme: 'spectrum', color, scale: 'medium' }, ctas);
     theme.style.display = 'contents';
     const footer = createTag('div', { slot: 'footer' }, theme);
     merchCard.append(footer);
@@ -101,10 +114,9 @@ class MerchDatasource extends HTMLElement {
 
     let baseUrl = 'https://dev-odin.adobe.com';
     let headers = {};
-    let cb = '';
+    const cb = `?cb=${Math.round(Math.random() * 1000000)}`;
     if (source === ODIN_AUTHOR) {
       baseUrl = 'https://author-p22655-e59341.adobeaemcloud.com';
-      cb = `?cb=${Math.round(Math.random() * 1000000)}`;
       headers = { Authorization: `Bearer ${accessToken}` };
     }
     const response = await fetch(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
