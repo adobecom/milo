@@ -13,7 +13,6 @@ const CLASS = {
   NO_BORDER: 'gb-no-border',
   NO_CHANGE: 'gb-no-change',
   NO_CLICK: 'gb-no-click',
-  OVERLAY: 'gb-overlay',
   PAGE_OVERLAY: 'gb-page-overlay',
   PHONE_PREVIEW: 'gb-phone-preview',
   TABLET_PREVIEW: 'gb-tablet-preview',
@@ -76,7 +75,7 @@ const decorateFooter = (footer, options) => {
   if (footerOptions?.includes(OPTION.CHANGED)) {
     footer.classList.add(CLASS.CHANGED);
   } else {
-    footer.classList.add(CLASS.OVERLAY);
+    footer.classList.add(CLASS.NO_CHANGE);
   }
   if (footerOptions?.includes(OPTION.NO_CLICK) || footerOptions?.includes(CLASS.NO_CLICK)) {
     footer.classList.add(CLASS.NO_CLICK);
@@ -108,10 +107,10 @@ const checkFooter = (options) => {
 const checkGnav = (options, globalNoClick) => {
   const gnav = document.querySelector('.global-navigation');
   if (gnav) {
-    gnav.style.zIndex = '1002';
+    gnav.style.zIndex = '9000';
     const gnavOptions = getOptions(options.gnav?.text, METADATA.GNAV);
     if (!(gnavOptions?.includes(OPTION.CHANGED))) {
-      gnav.classList.add(CLASS.OVERLAY);
+      gnav.classList.add(CLASS.NO_CHANGE);
       if (globalNoClick) {
         gnav.classList.add(CLASS.NO_CLICK);
       }
@@ -128,7 +127,7 @@ const checkNoClick = (grayboxEl, noClickOnGray) => {
     return;
   }
   /* c8 ignore next 6 */
-  if (document.body.classList.contains(CLASS.OVERLAY)) {
+  if (document.body.classList.contains(CLASS.NO_CHANGE)) {
     document.body.classList.add(CLASS.NO_CLICK);
   } else {
     document.querySelectorAll(`.${CLASS.NO_CHANGE}`)

@@ -39,13 +39,15 @@
   position: fixed;
 }
 
-.gb-no-click::before {
+.gb-no-click::after {
   content: "";
   height: 100%;
   pointer-events: all;
   position: absolute;
   width: 100%;
   z-index: var(--above-all);
+  left: 0;
+  top: 0;
 }
 
 .gb-no-change {
