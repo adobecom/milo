@@ -12,6 +12,12 @@ const [localeElement] = document.getElementsByName('wcs-locale');
 const locale = localeElement ? localeElement.getAttribute('content') : '/';
 
 window.lana = { log: () => {} };
+if (!window.adobeIMS) {
+  window.adobeIMS = {
+    initialized: true,
+    isSignedInUser: () => false,
+  };
+}
 const config = setConfig({ codeRoot: '/libs' });
 config.locale.prefix = locale;
 
