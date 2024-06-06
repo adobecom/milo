@@ -2,12 +2,6 @@
 import '../../deps/merch-card.js';
 import { loadStyle, setConfig } from '../../utils/utils.js';
 
-if (!customElements.get('sp-button')) {
-  await Promise.all([
-    import('../spectrum-web-components/dist/theme.js'),
-    import('../spectrum-web-components/dist/button.js'),
-  ]);
-}
 const [localeElement] = document.getElementsByName('wcs-locale');
 const locale = localeElement ? localeElement.getAttribute('content') : '';
 
