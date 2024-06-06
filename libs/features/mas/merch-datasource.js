@@ -5,14 +5,27 @@ const ODIN_AUTHOR = 'odin-author';
 
 let accessToken;
 
+let cb = `?cb=${Math.round(Math.random() * 1000000)}`;
+
+const fetchCache = new Map();
+
+const fetchSmart = async (url, options) => {
+  if (fetchCache.has(url)) {
+    const res = fetchCache.get(url);
+    await res;
+    return res;
+  }
+  const res = fetch(url, options).then((res) => res.json());
+  fetchCache.set(url, res);
+  await res;
+  return res;
+};
+
 window.addEventListener('message', (e) => {
   if (e.data.type === 'mas:updateAccessToken') {
     accessToken = e.data.accessToken;
   }
 });
-
-const mep = fetch('https://main--milo--adobecom.hlx.live/drafts/ilyas/manifests/ccd.json')
-  .then((res) => res.json()).then(({ experiences: { data } }) => data);
 
 async function parseMerchLinks(merchLinkHTML) {
   await parseMerchLinks.init;
@@ -104,6 +117,7 @@ class MerchDatasource extends HTMLElement {
   }
 
   refresh() {
+    cb = `?cb=${Math.round(Math.random() * 1000000)}`;
     setTimeout(() => {
       this.parentElement.querySelectorAll('[slot]').forEach((el) => el.remove());
       this.fetchData();
@@ -120,21 +134,24 @@ class MerchDatasource extends HTMLElement {
 
     let baseUrl = 'https://dev-odin.adobe.com';
     let headers = {};
-    const cb = `?cb=${Math.round(Math.random() * 1000000)}`;
-    if (source === ODIN && this.getAttribute('mep') === '') {
-      const mepRules = await mep;
+    const mepSource = this.getAttribute('mep');
+    let mepRules;
+    if (mepSource) {
+      mepRules = await (fetchSmart(mepSource).then(({ experiences: { data } }) => data));
+    }
+    if (source === ODIN && mepRules) {
       path = mepRules.filter(({ action }) => action === 'replaceFragment').find(({ selector }) => selector === path)?.all ?? path;
     } else if (source === ODIN_AUTHOR) {
       baseUrl = 'https://author-p22655-e59341.adobeaemcloud.com';
       headers = { Authorization: `Bearer ${accessToken}` };
     }
     let response;
-    response = await fetch(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
+    response = await fetchSmart(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
     if (response.status === 404) {
-      response = await fetch(`${baseUrl}${originalPath}.cfm.gql.json${cb}`, { headers });
+      response = await fetchSmart(`${baseUrl}${originalPath}.cfm.gql.json${cb}`, { headers });
     }
 
-    const { data: { merchCardByPath: { item } } } = await response.json();
+    const { data: { merchCardByPath: { item } } } = await response;
     this.data = item;
     this.render();
   }
