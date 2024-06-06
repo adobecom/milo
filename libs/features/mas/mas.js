@@ -23,6 +23,6 @@ config.locale.prefix = locale;
 
 const { hostname } = new URL(import.meta.url);
 
-loadStyle(`//${hostname}/libs/blocks/merch/merch.css`);
+loadStyle(`https://${hostname}/libs/blocks/merch/merch.css`);
 
 await import('./merch-datasource.js');
