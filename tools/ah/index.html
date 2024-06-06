@@ -13,15 +13,18 @@
     <script src="../../libs/features/mas/mas.js" type="module"></script>
   </head>
   <body>
-    <main>
+  <main>
     <h2>Odin as Data Source</h2>
     <sp-theme theme="spectrum" color="light" scale="medium">
-      <div class="one-merch-card ah">
+      <div class="two-merch-cards ah">
         <merch-card variant="ah">
           <merch-datasource source="odin" path="/content/dam/sandbox/mas/creative-cloud-all-apps-ah" mep></merch-datasource>
         </merch-card>
-      </sp-theme>
-    </div>
-    </main>
+        <merch-card variant="ah" color="dark">
+          <merch-datasource source="odin" path="/content/dam/sandbox/mas/creative-cloud-all-apps-ah" mep></merch-datasource>
+        </merch-card>
+      </div>
+    </sp-theme>
+  </main>
   </body>
 </html>
