@@ -55,10 +55,12 @@ function SyncFragments() {
   const selectAllButton = () => {
     if (!fragments?.length) return '';
     const validFragments = fragments?.filter((url) => !errors.includes(url[0].href));
-    const selected = syncFragments.value?.length === validFragments?.length;
+    const selected = syncFragments.value?.length
+      && syncFragments.value?.length === validFragments?.length;
     const toggle = () => {
       syncFragments.value = selected ? [] : validFragments.map((fragment) => [fragment[0].href]);
     };
+    if (!validFragments?.length) return '';
     return html`
       <div 
         class="select-all${selected ? ' selected' : ''}" 
