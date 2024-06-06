@@ -193,8 +193,9 @@ const getOrigin = (fgColor) => {
     cc: 'hawks',
     dc: 'doccloud',
   };
-  if (mappings[origin.toLowerCase()] || origin) {
-    return mappings[origin.toLowerCase()] || origin;
+  const originLC = mappings[origin.toLowerCase()] || origin;
+  if (originLC) {
+    return originLC;
   }
 
   if (window.location.hostname.endsWith('.hlx.page')) {
