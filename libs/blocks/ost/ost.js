@@ -8,8 +8,10 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'depsost.js';
-const OST_STYLE_URL = 'depsost.css';
+const OST_VERSION = '1.18.2';
+const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
+const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
+const OST_STYLE_URL = `${OST_BASE}/index.css`;
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
@@ -236,14 +238,13 @@ export async function loadOstEnv() {
 
 export default async function init(el) {
   el.innerHTML = '<div />';
-  const config = getConfig();
-  const base = config.miloLibs || config.codeRoot;
-  loadStyle(`${base}/deps/${OST_STYLE_URL}`);
+
+  loadStyle(OST_STYLE_URL);
   loadStyle('https://use.typekit.net/pps7abe.css');
 
   const [ostEnv] = await Promise.all([
     loadOstEnv(),
-    loadScript(`${base}/deps/${OST_SCRIPT_URL}`),
+    loadScript(OST_SCRIPT_URL),
   ]);
 
   function openOst() {

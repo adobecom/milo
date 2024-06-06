@@ -422,25 +422,8 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
-  // This mapping also supports legacy OST links
+  // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? params.get('type');
-
-  // switch (params.get('type')) {
-  //   case PRICE_TEMPLATE_DISCOUNT:
-  //   case 'priceDiscount':
-  //     template = PRICE_TEMPLATE_DISCOUNT;
-  //     break;
-  //   case PRICE_TEMPLATE_OPTICAL:
-  //   case 'priceOptical':
-  //     template = PRICE_TEMPLATE_OPTICAL;
-  //     break;
-  //   case PRICE_TEMPLATE_STRIKETHROUGH:
-  //   case 'priceStrikethrough':
-  //     template = PRICE_TEMPLATE_STRIKETHROUGH;
-  //     break;
-  //   default:
-  //     break;
-  // }
   return {
     ...context,
     displayOldPrice,
