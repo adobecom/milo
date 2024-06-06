@@ -111,7 +111,7 @@ async function parseMerchCard(cardJson, merchCard) {
       cta.style.display = 'none';
       const variant = cta.classList.contains('blue') ? 'accent' : 'primary';
       const treatment = variant === 'primary' ? 'outline' : '';
-      const spButton = createTag('sp-button', { variant, treatment, cardContent[type].ctas.size });
+      const spButton = createTag('sp-button', { variant, treatment, size: cardContent[cardType].ctas.size });
       spButton.innerHTML = cta.innerHTML;
       spButton.addEventListener('click', (e) => {
         e.stopImmediatePropagation();
