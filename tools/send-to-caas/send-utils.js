@@ -185,7 +185,7 @@ const processRepoForFloodgate = (repo, fgColor) => {
   return repo;
 };
 
-const getOrigin = (fgColor) => {
+export const getOrigin = (fgColor) => {
   const { project, repo } = getConfig();
   const origin = project || processRepoForFloodgate(repo, fgColor);
 

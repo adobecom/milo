@@ -1,8 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-import { checkUrl, getOrigin } from '../../../tools/send-to-caas/send-utils.js';
-import { setConfig } from '../../../tools/send-to-caas/send-utils.js';
+import { checkUrl, getOrigin, setConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
