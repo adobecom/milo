@@ -11,13 +11,15 @@ if (!customElements.get('sp-button')) {
 }
 
 const [localeElement] = document.getElementsByName('wcs-locale');
-const locale = localeElement ? localeElement.getAttribute('content') : '';
+const locale = localeElement ? localeElement.getAttribute('content') : '/';
 
 window.lana = { log: () => {} };
-window.adobeIMS = {
-  initialized: true,
-  isSignedInUser: () => false,
-};
+if (!window.adobeIMS) {
+  window.adobeIMS = {
+    initialized: true,
+    isSignedInUser: () => false,
+  };
+}
 const config = setConfig({ codeRoot: '/libs' });
 config.locale.prefix = locale;
 

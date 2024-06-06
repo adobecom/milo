@@ -5,6 +5,41 @@ const ODIN_AUTHOR = 'odin-author';
 
 let accessToken;
 
+const cardContent = {
+  catalog: {
+    name: 'catalog',
+    title: {
+      tag: 'h3',
+      slot: 'heading-xs',
+    },
+    prices: {
+      tag: 'h3',
+      slot: 'heading-xs',
+    },
+    description: {
+      tag: 'div',
+      slot: 'body-xs',
+    },
+    ctas: { size: 'l' },
+  },
+  ah: {
+    name: 'ah',
+    title: {
+      tag: 'h3',
+      slot: 'heading-xxs',
+    },
+    prices: {
+      tag: 'h3',
+      slot: 'heading-xs',
+    },
+    description: {
+      tag: 'div',
+      slot: 'body-xxs',
+    },
+    ctas: { size: 's' },
+  },
+};
+
 let cb = `?cb=${Math.round(Math.random() * 1000000)}`;
 
 const fetchCache = new Map();
@@ -41,6 +76,8 @@ async function parseMerchLinks(merchLinkHTML) {
 
 async function parseMerchCard(cardJson, merchCard) {
   const { type = 'catalog' } = cardJson;
+  const cardType = cardContent[type] || cardContent.catalog;
+
   merchCard.setAttribute('variant', type);
   cardJson.icon?.forEach((icon) => {
     const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon, alt: '', href: '', size: 'l' });
@@ -48,20 +85,24 @@ async function parseMerchCard(cardJson, merchCard) {
   });
 
   if (cardJson.title) {
-    merchCard.append(createTag('h4', { slot: 'heading-xs' }, cardJson.title));
+    merchCard.append(createTag(cardType.title.tag, { slot: cardType.title.slot }, cardJson.title));
   }
 
   if (cardJson.prices?.html) {
     const prices = await parseMerchLinks(cardJson.prices.html);
-    const headingM = createTag('h3', { slot: 'heading-m' }, prices);
+    const headingM = createTag(cardType.prices.tag, { slot: cardType.prices.slot }, prices);
     merchCard.append(headingM);
   }
 
   merchCard.append(createTag('p', { slot: 'body-xxs', id: 'individuals1' }, 'Desktop'));
 
   if (cardJson.description?.html) {
-    const bodyXS = createTag('div', { slot: 'body-xs' }, cardJson.description.html);
-    merchCard.append(bodyXS);
+    const body = createTag(
+      cardType.description.tag,
+      { slot: cardType.description.slot },
+      cardJson.description.html,
+    );
+    merchCard.append(body);
   }
 
   if (cardJson.ctas?.html) {
@@ -70,7 +111,7 @@ async function parseMerchCard(cardJson, merchCard) {
       cta.style.display = 'none';
       const variant = cta.classList.contains('blue') ? 'accent' : 'primary';
       const treatment = variant === 'primary' ? 'outline' : '';
-      const spButton = createTag('sp-button', { variant, treatment });
+      const spButton = createTag('sp-button', { variant, treatment, size: cardType.ctas.size });
       spButton.innerHTML = cta.innerHTML;
       spButton.addEventListener('click', (e) => {
         e.stopImmediatePropagation();
