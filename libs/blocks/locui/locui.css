@@ -686,6 +686,25 @@ button.locui-url-action-view {
   overflow-y: auto;
 }
 
+.locui-fragment-errors {
+  color: red;
+  font-size: 16px;
+  font-style: italic;
+}
+
+.error-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.error-label label {
+  color: red;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
 .locui-fragment {
   cursor: pointer;
   display: flex;
