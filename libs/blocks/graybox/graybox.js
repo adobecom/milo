@@ -2,7 +2,10 @@ import { createTag, getMetadata, MILO_EVENTS } from '../../utils/utils.js';
 import { getModal, closeModal } from '../modal/modal.js';
 import { iphoneFrame, ipadFrame } from './mobileFrames.js';
 
-const OPTION = { CHANGED: 'changed' };
+const OPTION = {
+  CHANGED: 'changed',
+  NO_CLICK: 'no-click',
+};
 
 const CLASS = {
   CHANGED: 'gb-changed',
@@ -75,7 +78,7 @@ const decorateFooter = (footer, options) => {
   } else {
     footer.classList.add(CLASS.OVERLAY);
   }
-  if (footerOptions?.includes(OPTION.NO_CLICK)) {
+  if (footerOptions?.includes(OPTION.NO_CLICK) || footerOptions?.includes(CLASS.NO_CLICK)) {
     footer.classList.add(CLASS.NO_CLICK);
   }
 };
@@ -113,7 +116,7 @@ const checkGnav = (options, globalNoClick) => {
         gnav.classList.add(CLASS.NO_CLICK);
       }
     }
-    if (gnavOptions?.includes(OPTION.NO_CLICK)) {
+    if (gnavOptions?.includes(OPTION.NO_CLICK) || gnavOptions?.includes(CLASS.NO_CLICK)) {
       gnav.classList.add(CLASS.NO_CLICK);
     }
   }
@@ -262,7 +265,8 @@ const setupChangedEls = (globalNoClick) => {
 
 const grayboxThePage = (grayboxEl, grayboxMenuOff) => () => {
   document.body.classList.add(CLASS.GRAYBOX_BODY);
-  const globalNoClick = grayboxEl.classList.contains(CLASS.NO_CLICK);
+  const globalNoClick = grayboxEl.classList.contains(CLASS.NO_CLICK)
+  || grayboxEl.classList.contains(OPTION.NO_CLICK);
 
   const hasGrayboxChangedEl = !!document.querySelector(`.${CLASS.CHANGED}`);
   if (hasGrayboxChangedEl) {
