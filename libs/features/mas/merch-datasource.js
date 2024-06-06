@@ -62,7 +62,9 @@ async function parseMerchCard(cardJson, merchCard) {
       });
       return [cta, spButton];
     });
-    const footer = createTag('div', { slot: 'footer' }, ctas);
+    const theme = createTag('sp-theme', { theme: 'spectrum', color: 'light', scale: 'medium' }, ctas);
+    theme.style.display = 'contents';
+    const footer = createTag('div', { slot: 'footer' }, theme);
     merchCard.append(footer);
   }
 }

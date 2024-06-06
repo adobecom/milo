@@ -2,6 +2,14 @@
 import '../../deps/merch-card.js';
 import { loadStyle, setConfig } from '../../utils/utils.js';
 
+if (!customElements.get('sp-theme')) {
+  await import('../spectrum-web-components/dist/theme.js');
+}
+
+if (!customElements.get('sp-button')) {
+  await import('../spectrum-web-components/dist/button.js');
+}
+
 const [localeElement] = document.getElementsByName('wcs-locale');
 const locale = localeElement ? localeElement.getAttribute('content') : '';
 
