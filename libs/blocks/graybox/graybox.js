@@ -2,10 +2,7 @@ import { createTag, getMetadata, MILO_EVENTS } from '../../utils/utils.js';
 import { getModal, closeModal } from '../modal/modal.js';
 import { iphoneFrame, ipadFrame } from './mobileFrames.js';
 
-const OPTION = {
-  CHANGED: 'changed',
-  NO_CLICK: 'no-click',
-};
+const OPTION = { CHANGED: 'changed' };
 
 const CLASS = {
   CHANGED: 'gb-changed',
@@ -13,8 +10,8 @@ const CLASS = {
   NO_BORDER: 'gb-no-border',
   NO_CHANGE: 'gb-no-change',
   NO_CLICK: 'gb-no-click',
-  NO_OVERLAY: 'gb-no-overlay',
   OVERLAY: 'gb-overlay',
+  PAGE_OVERLAY: 'gb-page-overlay',
   PHONE_PREVIEW: 'gb-phone-preview',
   TABLET_PREVIEW: 'gb-tablet-preview',
 };
@@ -153,9 +150,13 @@ function setUserAgent(window, userAgent) {
   }
 }
 
+// eslint-disable-next-line no-promise-executor-return
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+
 const openDeviceModal = async (e) => {
   if (deviceModal) {
     closeModal(deviceModal);
+    await sleep(300);
     deviceModal = null;
   }
 
@@ -239,6 +240,54 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
   }
 };
 
+const addPageOverlayDiv = () => {
+  const overlayDiv = createTag('div', { class: CLASS.PAGE_OVERLAY });
+  document.body.insertBefore(overlayDiv, document.body.firstChild);
+};
+
+const setupChangedEls = (globalNoClick) => {
+  const gbChangedEls = [...document.querySelectorAll(`.${CLASS.CHANGED}`)];
+  gbChangedEls.forEach((el) => {
+    if (!el.style.backgroundColor) el.style.backgroundColor = 'white';
+  });
+  if (globalNoClick) {
+    const blockEls = document.querySelectorAll('main > div > div');
+    blockEls.forEach((el) => {
+      if (!gbChangedEls.includes(el)) {
+        el.classList.add(CLASS.NO_CLICK);
+      }
+    });
+  }
+};
+
+const grayboxThePage = (grayboxEl, grayboxMenuOff) => () => {
+  document.body.classList.add(CLASS.GRAYBOX_BODY);
+  const globalNoClick = grayboxEl.classList.contains(CLASS.NO_CLICK);
+
+  const hasGrayboxChangedEl = !!document.querySelector(`.${CLASS.CHANGED}`);
+  if (hasGrayboxChangedEl) {
+    // If there is at least one element with the 'gb-changed' class
+    // a whole page overlay is set on all elements without the 'gb-changed' class
+    addPageOverlayDiv();
+    setupChangedEls(globalNoClick);
+  } else if (globalNoClick) {
+    document.querySelectorAll(`.${CLASS.NO_CHANGE}`)
+      .forEach((el) => el.classList.add(CLASS.NO_CLICK));
+  }
+
+  const options = getTableValues(grayboxEl);
+  checkGnav(options, globalNoClick);
+  checkFooter(options);
+  checkNoClick(grayboxEl, globalNoClick);
+
+  /* c8 ignore next 3 */
+  if (grayboxMenuOff) {
+    document.body.classList.add(CLASS.NO_BORDER);
+  } else {
+    createGrayboxMenu(options, { isOpen: true });
+  }
+};
+
 export default function init(grayboxEl) {
   const url = new URL(window.location.href);
 
@@ -256,30 +305,11 @@ export default function init(grayboxEl) {
   }
 
   setMetadata({ selector: 'georouting', val: 'off' });
+  const grayboxMenuOff = url.searchParams.get('graybox') === 'menu-off';
 
-  const options = getTableValues(grayboxEl);
-  const grayboxThePage = () => {
-    document.body.classList.add(CLASS.GRAYBOX_BODY);
-    const hasGrayboxChanged = !!document.querySelector(`.${CLASS.CHANGED}`);
-    if (hasGrayboxChanged) {
-      document.body.classList.add(CLASS.OVERLAY);
-
-      document.querySelectorAll(`.${CLASS.CHANGED}`).forEach((el) => {
-        el.classList.add(CLASS.NO_OVERLAY);
-        if (!el.style.backgroundColor) el.style.backgroundColor = 'white';
-      });
-    }
-    const globalNoClick = grayboxEl.classList.contains(OPTION.NO_CLICK);
-    checkGnav(options, globalNoClick);
-    checkFooter(options);
-    checkNoClick(grayboxEl, globalNoClick);
-    /* c8 ignore next 3 */
-    if (url.searchParams.get('graybox') === 'menu-off') {
-      document.body.classList.add(CLASS.NO_BORDER);
-    } else {
-      createGrayboxMenu(options, { isOpen: true });
-    }
-  };
-
-  document.addEventListener(MILO_EVENTS.DEFERRED, grayboxThePage, { once: true });
+  document.addEventListener(
+    MILO_EVENTS.DEFERRED,
+    grayboxThePage(grayboxEl, grayboxMenuOff),
+    { once: true },
+  );
 }

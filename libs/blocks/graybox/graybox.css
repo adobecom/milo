@@ -26,7 +26,7 @@
   width: calc(100% - 15.5px);
   height: 100%;
   border: var(--gb-page-outline-border);
-  z-index: var(--above-all);
+  z-index: calc(var(--above-all) + 1);
   pointer-events: none;
 }
 
@@ -39,7 +39,7 @@
   position: fixed;
 }
 
-.gb-graybox-body .gb-no-click::before {
+.gb-no-click::before {
   content: "";
   height: 100%;
   pointer-events: all;
@@ -52,12 +52,20 @@
   position: relative;
 }
 
-.gb-overlay {
-  position: relative;
+.gb-page-overlay {
+  background-color: var(--gb-overlay-color);
+  content: "";
+  display: block;
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: calc(var(--above-all) - 1);
 }
 
-.gb-graybox-body .gb-no-change::before,
-.gb-graybox-body.gb-overlay::before {
+.gb-no-change::before {
   background-color: var(--gb-overlay-color);
   content: "";
   display: block;
@@ -70,14 +78,10 @@
   z-index: calc(var(--above-all) - 1);
 }
 
-body.gb-overlay::before {
-  position: fixed;
-}
-
 /* The elements that should appear above the overlay */
 .gb-graybox-body .gb-changed {
   position: relative;
-  z-index: var(--above-all);
+  z-index: calc(var(--above-all) - 1);
 }
 
 .graybox-container {
@@ -253,9 +257,9 @@ body.gb-overlay::before {
   z-index: calc(var(--above-all) - 1);
 }
 
-@media (max-height: 910px) {
+@media (max-height: 910px), (max-width: 420px) {
   body.gb-phone-preview::after {
-    content: "Expand window height to see full preview";
+    content: "Expand window to see full preview";
     position: fixed;
     right: 10px;
     bottom: 2px;
@@ -268,9 +272,9 @@ body.gb-overlay::before {
   }
 }
 
-@media (max-height: 1255px) {
+@media (max-height: 1255px), (max-width: 870px) {
   body.gb-tablet-preview::after {
-    content: "Expand window height to see full preview";
+    content: "Expand window to see full preview";
     position: fixed;
     right: 10px;
     bottom: 2px;
