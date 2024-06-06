@@ -43,7 +43,7 @@ const transformRgbProperties = (rule) => {
   Object.keys(properties).forEach((prop) => rule.append({ prop, value: properties[prop] }));
 };
 
-const extractAndTransformCustomProperties = (css, prefix) => {
+const extractAndTransform = (css, prefix) => {
   const customProperties = {};
   postcss.parse(css).walkRules((rule) => {
     const { selector } = rule;
@@ -62,21 +62,21 @@ const extractAndTransformCustomProperties = (css, prefix) => {
   return customProperties;
 };
 
-const spectrumCustomProperties = extractAndTransformCustomProperties(spectrumCSS, '--spectrum');
-const miloCustomProperties = extractAndTransformCustomProperties(miloCSS, '--s2');
+const spectrumProperties = extractAndTransform(spectrumCSS, '--spectrum');
+const miloProperties = extractAndTransform(miloCSS, '--s2');
 
-const updateCustomPropertiesInMiloCSS = (css) => {
+const updateMiloCSS = (css) => {
   const root = postcss.parse(css);
 
   root.walkRules((rule) => {
     const { selector } = rule;
-    if (miloCustomProperties[selector]) {
+    if (miloProperties[selector]) {
       rule.walkDecls((decl) => {
         const { prop } = decl;
         if (prop.startsWith('--s2')) {
           const spectrumProp = `--spectrum${prop.slice(4)}`;
-          if (spectrumCustomProperties[selector][spectrumProp] !== undefined) {
-            decl.value = spectrumCustomProperties[selector][spectrumProp];
+          if (spectrumProperties[selector][spectrumProp] !== undefined) {
+            decl.value = spectrumProperties[selector][spectrumProp];
           }
         }
       });
@@ -86,9 +86,9 @@ const updateCustomPropertiesInMiloCSS = (css) => {
   return root.toString();
 };
 
-const updatedCustomCSS = updateCustomPropertiesInMiloCSS(miloCSS);
+const updatedMiloCSS = updateMiloCSS(miloCSS);
 
-fs.writeFileSync(miloCSSPath, updatedCustomCSS, 'utf8');
+fs.writeFileSync(miloCSSPath, updatedMiloCSS, 'utf8');
 console.log(`Updated custom properties written to ${miloCSSPath}`);
 
 logFileSize(miloCSSPath, 'updated');
