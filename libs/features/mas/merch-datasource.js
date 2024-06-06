@@ -20,12 +20,13 @@ const cardContent = {
       tag: 'div',
       slot: 'body-xs',
     },
+    ctas: { size: 'l' },
   },
   ah: {
     name: 'ah',
     title: {
       tag: 'h3',
-      slot: 'heading-xs',
+      slot: 'heading-xxs',
     },
     prices: {
       tag: 'h3',
@@ -33,8 +34,9 @@ const cardContent = {
     },
     description: {
       tag: 'div',
-      slot: 'body-xs',
+      slot: 'body-xxs',
     },
+    ctas: { size: 's' },
   },
 };
 
@@ -95,12 +97,12 @@ async function parseMerchCard(cardJson, merchCard) {
   merchCard.append(createTag('p', { slot: 'body-xxs', id: 'individuals1' }, 'Desktop'));
 
   if (cardJson.description?.html) {
-    const bodyXS = createTag(
+    const body = createTag(
       cardType.description.tag,
       { slot: cardType.description.slot },
       cardJson.description.html,
     );
-    merchCard.append(bodyXS);
+    merchCard.append(body);
   }
 
   if (cardJson.ctas?.html) {
@@ -109,7 +111,7 @@ async function parseMerchCard(cardJson, merchCard) {
       cta.style.display = 'none';
       const variant = cta.classList.contains('blue') ? 'accent' : 'primary';
       const treatment = variant === 'primary' ? 'outline' : '';
-      const spButton = createTag('sp-button', { variant, treatment });
+      const spButton = createTag('sp-button', { variant, treatment, cardContent[type].ctas.size });
       spButton.innerHTML = cta.innerHTML;
       spButton.addEventListener('click', (e) => {
         e.stopImmediatePropagation();
