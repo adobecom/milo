@@ -1,7 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink,
 } from '../../utils/utils.js';
-import { replaceKey } from '../../features/placeholders.js';
 
 export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
@@ -214,6 +213,7 @@ export async function getDownloadAction(
   });
   if (!offer) return undefined;
   const config = getConfig();
+  const { replaceKey } = await import('../../features/placeholders.js');
   const text = await replaceKey(checkoutLinkConfig.DOWNLOAD_TEXT
       || PLACEHOLDER_KEY_DOWNLOAD, config);
   const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
