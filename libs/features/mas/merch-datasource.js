@@ -1,9 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 
 const ODIN = 'odin';
-const ODIN_AUTHOR = 'odin-author';
-
-const masAccessToken = localStorage.getItem('masAccessToken');
 
 async function parseMerchLinks(merchLinkHTML) {
   await parseMerchLinks.init;
@@ -18,28 +15,26 @@ async function parseMerchLinks(merchLinkHTML) {
 }
 
 async function parseMerchCard(cardJson, merchCard) {
-  const { type = 'catalog' } = cardJson;
+  const { type = 'ah' } = cardJson;
   merchCard.setAttribute('variant', type);
-  cardJson.icon?.forEach((icon) => {
-    const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon, alt: '', href: '', size: 'l' });
+  if (cardJson.icon?.length > 0) {
+    const merchIcon = createTag('merch-icon', { slot: 'icons', src: cardJson.icon[0], alt: '', href: '', size: 's' });
     merchCard.append(merchIcon);
-  });
+  }
 
   if (cardJson.title) {
-    merchCard.append(createTag('h4', { slot: 'heading-xs' }, cardJson.title));
+    merchCard.append(createTag('h4', { slot: 'heading-xxs' }, cardJson.title));
   }
 
   if (cardJson.prices?.html) {
     const prices = await parseMerchLinks(cardJson.prices.html);
-    const headingM = createTag('h3', { slot: 'heading-m' }, prices);
+    const headingM = createTag('h3', { slot: 'heading-xs' }, prices);
     merchCard.append(headingM);
   }
 
-  merchCard.append(createTag('p', { slot: 'body-xxs', id: 'individuals1' }, 'Desktop'));
-
   if (cardJson.description?.html) {
-    const bodyXS = createTag('div', { slot: 'body-xs' }, cardJson.description.html);
-    merchCard.append(bodyXS);
+    const description = createTag('div', { slot: 'body-xxs' }, cardJson.description.html);
+    merchCard.append(description);
   }
 
   if (cardJson.ctas?.html) {
@@ -48,7 +43,8 @@ async function parseMerchCard(cardJson, merchCard) {
       cta.style.display = 'none';
       const variant = cta.classList.contains('blue') ? 'accent' : 'primary';
       const treatment = variant === 'primary' ? 'outline' : '';
-      const spButton = createTag('sp-button', { variant, treatment });
+      const size = 's';
+      const spButton = createTag('sp-button', { variant, size, treatment });
       spButton.innerHTML = cta.innerHTML;
       spButton.addEventListener('click', () => cta.click());
       return [cta, spButton];
@@ -76,30 +72,17 @@ class MerchDatasource extends HTMLElement {
     this.parentElement.style.opacity = 0;
   }
 
-  refresh() {
-    this.parentElement.querySelectorAll('[slot]').forEach((el) => el.remove());
-    this.fetchData();
-  }
-
   async fetchData() {
     const source = this.getAttribute('source') ?? ODIN;
     const path = this.getAttribute('path');
     if (!path) return;
 
-    if (![ODIN, ODIN_AUTHOR].includes(source)) return;
-
-    let baseUrl = 'https://dev-odin.adobe.com';
-    let headers = {};
-    let cb = '';
-    if (source === ODIN_AUTHOR) {
-      baseUrl = 'https://author-p22655-e59341.adobeaemcloud.com';
-      cb = `?cb=${Math.round(Math.random() * 1000000)}`;
-      headers = { Authorization: `Bearer ${masAccessToken}` };
+    if (source === ODIN) {
+      const response = await fetch(`https://dev-odin.adobe.com${path}.cfm.gql.json`);
+      const { data: { merchCardByPath: { item } } } = await response.json();
+      this.data = item;
+      this.render();
     }
-    const response = await fetch(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
-    const { data: { merchCardByPath: { item } } } = await response.json();
-    this.data = item;
-    this.render();
   }
 
   render() {
