@@ -2,10 +2,11 @@ import { expect } from '@esm-bundle/chai';
 import { getConfig } from '../../../libs/utils/utils.js';
 import getEntitlements from '../../../libs/features/personalization/entitlements.js';
 
+const config = getConfig();
+config.base = 'http://localhost:6456/libs';
+
 describe('entitlements', () => {
   it('Should return any entitlements that match the id', async () => {
-    const config = getConfig();
-    config.base = 'http://localhost:6456/libs';
     config.env = { name: 'prod' };
 
     const destinations = [
@@ -33,7 +34,6 @@ describe('entitlements', () => {
   });
 
   it('Should return any stage entitlements that match the id', async () => {
-    const config = getConfig();
     config.env = { name: 'stage' };
 
     const destinations = [
@@ -61,7 +61,6 @@ describe('entitlements', () => {
   });
 
   it('Should not return any entitlements if there is no match', async () => {
-    const config = getConfig();
     config.env = { name: 'prod' };
 
     const destinations = [
@@ -85,7 +84,6 @@ describe('entitlements', () => {
   });
 
   it('Should be able to use consumer defined entitlements in the config', async () => {
-    const config = getConfig();
     config.consumerEntitlements = { 'consumer-defined-entitlement': 'consumer-defined' };
     config.env = { name: 'prod' };
 

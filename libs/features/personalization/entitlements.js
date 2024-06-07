@@ -5,7 +5,7 @@ export const getEntitlementMap = async () => {
   const { env, consumerEntitlements, base } = getConfig();
   const dataFile = `${base.replace('libs', 'docs')}/library/entitlement-tags.json`;
   const fetchedData = await fetchData(dataFile, DATA_TYPE.JSON);
-  if (!fetchedData) return {};
+  if (!fetchedData) return consumerEntitlements;
   const entitlements = {};
   const { data } = fetchedData;
   data.forEach((ent) => {
