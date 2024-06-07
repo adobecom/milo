@@ -23,9 +23,11 @@ export function renderLinks(str) {
 
 function renderDescription(description) {
   let message = description;
-  if (Array.isArray(description) && description.length > 1) {
-    message = html`<ol>${description.map((desc) => html`<li>${renderLinks(desc)}</li>`)}</ol>`;
-  } else return renderLinks(message[0]);
+  if (Array.isArray(description)) {
+    if (description.length > 1) {
+      message = html`<ol>${description.map((desc) => html`<li>${renderLinks(desc)}</li>`)}</ol>`;
+    } else return renderLinks(message[0]);
+  }
   return message;
 }
 
