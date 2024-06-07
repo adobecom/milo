@@ -34,7 +34,7 @@ export default function Actions() {
         <div class=locui-section-heading>
             <div>
               <h2 class="locui-section-label cancelled">Project has errors</h2>
-              <i>Please fix errors in project to proceed.</i>
+              <i>Some URLs returned errors during validation. To create this project, please fix errors and try again.</i>
             </div>
         </div>
       </div>
