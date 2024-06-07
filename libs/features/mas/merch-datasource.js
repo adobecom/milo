@@ -40,8 +40,6 @@ const cardContent = {
   },
 };
 
-let cb = `?cb=${Math.round(Math.random() * 1000000)}`;
-
 const fetchCache = new Map();
 
 const fetchSmart = async (url, options) => {
@@ -159,7 +157,6 @@ class MerchDatasource extends HTMLElement {
   }
 
   refresh() {
-    cb = `?cb=${Math.round(Math.random() * 1000000)}`;
     setTimeout(() => {
       this.parentElement.querySelectorAll('[slot]').forEach((el) => el.remove());
       this.fetchData();
@@ -188,6 +185,7 @@ class MerchDatasource extends HTMLElement {
       headers = { Authorization: `Bearer ${accessToken}` };
     }
     let response;
+    const cb = `?cb=${Math.round(Math.random() * 1000000)}`;
     response = await fetchSmart(`${baseUrl}${path}.cfm.gql.json${cb}`, { headers });
     if (response.status === 404) {
       response = await fetchSmart(`${baseUrl}${originalPath}.cfm.gql.json${cb}`, { headers });
