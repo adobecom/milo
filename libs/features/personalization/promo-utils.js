@@ -60,11 +60,11 @@ const getRegionalPromoManifests = (manifestNames, region, searchParams) => {
 };
 
 export default function getPromoManifests(manifestNames, searchParams) {
-  const promoManifests = getRegionalPromoManifests(
+  const promoManifests = regionCode != null ? getRegionalPromoManifests(
     manifestNames[`${regionCode}_manifestnames`],
     regionCode,
     searchParams,
-  );
+  ) : [];
   const globalPromoManifests = getRegionalPromoManifests(
     manifestNames.manifestnames,
     null,

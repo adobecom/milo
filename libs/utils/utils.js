@@ -894,11 +894,11 @@ const getPromoMepEnablement = () => {
   const mdObject = mds.reduce((obj, key) => {
     const val = getMdValue(key);
     if (val) {
-      obj[key] = getMdValue(key);
+      obj[key] = val;
     }
     return obj;
   }, {});
-  if (Object.keys(mdObject).length > 0) {
+  if (Object.keys(mdObject).length) {
     return mdObject;
   }
   return false;
@@ -907,9 +907,7 @@ const getPromoMepEnablement = () => {
 export const getMepEnablement = (mdKey, paramKey = false) => {
   const paramValue = PAGE_URL.searchParams.get(paramKey || mdKey);
   if (paramValue) return getMepValue(paramValue);
-  if (PROMO_PARAM === paramKey) {
-    return getPromoMepEnablement();
-  }
+  if (PROMO_PARAM === paramKey) return getPromoMepEnablement();
   return getMdValue(mdKey);
 };
 
