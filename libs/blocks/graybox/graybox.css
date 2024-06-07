@@ -214,40 +214,44 @@
   position: absolute;
   pointer-events: none;
   width: 859px;
-  height: 1205px;
+  min-height: 1189px;
 }
 
 .dialog-modal.graybox-modal.mobile {
+  min-width: 417px;
   width: 417px;
+  min-height: 863px;
   border-radius: 66px;
   background: var(--gb-modal-bg);
   overflow-y: hidden;
 }
 
 .dialog-modal.graybox-modal.tablet {
-  width: 858px;
+  min-width: 858px;
   border-radius: 66px;
   background: var(--gb-modal-bg);
   border-top-right-radius: 60px 78px;
   border-bottom-right-radius: 51px 69px;
   border-bottom-left-radius: 55px 84px;
   overflow-y: hidden;
+  zoom: 0.8;
+  min-height: 1187px;
 }
 
 .dialog-modal.graybox-modal.mobile iframe {
   width: 391px;
-  height: 852px;
+  min-height: 852px;
   padding-left: 16px;
   margin-left: 4px;
 }
 
 .dialog-modal.graybox-modal.tablet iframe {
-  width: 808px;
-  height: 1194px;
+  width: 814px;
+  height: 1067px;
   padding-left: 26px;
-  margin-left: 6px;
-  margin-top: 62px;
-  margin-bottom: -62px;
+  padding-top: 57px;
+  margin-left: 5px;
+  margin-top: 8px;
 }
 
 .dialog-modal.graybox-modal button.dialog-close {
@@ -274,7 +278,7 @@
   }
 }
 
-@media (max-height: 1255px), (max-width: 870px) {
+@media (max-height: 1040px), (max-width: 710px) {
   body.gb-tablet-preview::after {
     content: "Expand window to see full preview";
     position: fixed;
