@@ -3,11 +3,19 @@ import { createTag } from '../../utils/utils.js';
 const ODIN = 'odin';
 const ODIN_AUTHOR = 'odin-author';
 
+const intersectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.querySelector('merch-datasource')?.refresh();
+    }
+  });
+});
+
 let accessToken;
 
 const cardContent = {
-  'ccd-action': {
-    name: 'ccd-action',
+  catalog: {
+    name: 'catalog',
     title: {
       tag: 'h3',
       slot: 'heading-xs',
@@ -37,6 +45,22 @@ const cardContent = {
       slot: 'body-xxs',
     },
     ctas: { size: 's' },
+  },
+  'ccd-action': {
+    name: 'ccd-action',
+    title: {
+      tag: 'h3',
+      slot: 'heading-xs',
+    },
+    prices: {
+      tag: 'h3',
+      slot: 'heading-xs',
+    },
+    description: {
+      tag: 'div',
+      slot: 'body-xs',
+    },
+    ctas: { size: 'l' },
   },
 };
 
@@ -73,6 +97,7 @@ async function parseMerchLinks(merchLinkHTML) {
 }
 
 async function parseMerchCard(cardJson, merchCard) {
+  intersectionObserver.observe(merchCard);
   const { type = 'catalog' } = cardJson;
   const cardType = cardContent[type] || cardContent.catalog;
 
@@ -154,12 +179,10 @@ class MerchDatasource extends HTMLElement {
   }
 
   connectedCallback() {
-    this.fetchData();
-    this.parentElement.style.opacity = 0;
   }
 
   refresh() {
-    setTimeout(() => {
+    setTimeout(async () => {
       this.parentElement.querySelectorAll('[slot]').forEach((el) => el.remove());
       this.fetchData();
     }, 500);
