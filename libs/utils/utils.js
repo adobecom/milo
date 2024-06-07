@@ -919,7 +919,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 };
 
 async function checkForPageMods() {
-  const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
+  const { mep: mepParam, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const persEnabled = getMepEnablement('personalization');
   const promoEnabled = getMepEnablement('manifestnames', 'promo');
@@ -928,7 +928,11 @@ async function checkForPageMods() {
   if (!mepEnabled) return;
 
   const config = getConfig();
-  config.mep = { targetEnabled };
+  config.mep = {
+    targetEnabled,
+    preview: (mepButton !== 'off'
+      && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+  };
   loadLink(
     `${config.base}/features/personalization/personalization.js`,
     { as: 'script', rel: 'modulepreload' },
