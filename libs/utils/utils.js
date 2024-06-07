@@ -608,12 +608,16 @@ export function decorateAutoBlock(a) {
 }
 
 export function decorateLinks(el) {
+  const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
+    if (config.env?.name === 'stage' && config.stageDomainsMap?.[a.hostname]) {
+      a.href = a.href.replace(a.hostname, config.stageDomainsMap[a.hostname]);
+    }
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
@@ -625,6 +629,15 @@ export function decorateLinks(el) {
       if (autoBlock) {
         rdx.push(a);
       }
+    }
+    // Custom action links
+    const loginEvent = '#_evt-login';
+    if (a.href.includes(loginEvent)) {
+      a.href = a.href.replace(loginEvent, '');
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.adobeIMS?.signIn();
+      });
     }
     return rdx;
   }, []);
@@ -829,7 +842,11 @@ export async function loadIms() {
   return imsLoaded;
 }
 
-export async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
+export async function loadMartech({
+  persEnabled = false,
+  persManifests = [],
+  postLCP = false,
+} = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
     return true;
@@ -844,7 +861,7 @@ export async function loadMartech({ persEnabled = false, persManifests = [] } = 
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({ persEnabled, persManifests });
+  await initMartech({ persEnabled, persManifests, postLCP });
 
   return true;
 }
@@ -937,15 +954,15 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  const georouting = getMetadata('georouting') || config.geoRouting;
-  if (georouting === 'on') {
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
-  }
   if (config.mep?.targetEnabled === 'gnav') {
     await loadMartech({ persEnabled: true, postLCP: true });
   } else {
     loadMartech();
+  }
+  const georouting = getMetadata('georouting') || config.geoRouting;
+  if (georouting === 'on') {
+    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
   const header = document.querySelector('header');
   if (header) {

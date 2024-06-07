@@ -1,6 +1,7 @@
 const {
   slackNotification,
   getLocalConfigs,
+  isWithinRCP,
   pulls: { addLabels, addFiles, getChecks, getReviews },
 } = require('./helpers.js');
 
@@ -43,45 +44,6 @@ let body = `
 - Before: https://main--milo--adobecom.hlx.live/?martech=off
 - After: https://stage--milo--adobecom.hlx.live/?martech=off
 `;
-
-const RCPDates = [
-  {
-    start: new Date('2024-05-26T00:00:00-07:00'),
-    end: new Date('2024-06-01T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-06-13T11:00:00-07:00'),
-    end: new Date('2024-06-13T14:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-06-30T00:00:00-07:00'),
-    end: new Date('2024-07-06T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-08-25T00:00:00-07:00'),
-    end: new Date('2024-08-31T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-09-12T11:00:00-07:00'),
-    end: new Date('2024-09-12T14:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-10-14T00:00:00-07:00'),
-    end: new Date('2024-11-18T17:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-11-17T00:00:00-08:00'),
-    end: new Date('2024-11-30T00:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-12-12T11:00:00-08:00'),
-    end: new Date('2024-12-12T14:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-12-15T00:00:00-08:00'),
-    end: new Date('2025-01-02T00:00:00-08:00'),
-  },
-];
 
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);
 
@@ -217,18 +179,8 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
+  if (isWithinRCP(2)) return console.log('Stopped, within RCP period.');
 
-  const now = new Date();
-  // We need to revisit this every year
-  if (now.getFullYear() !== 2024) {
-    throw new Error('ADD NEW RCPs');
-  }
-  for (const { start, end } of RCPDates) {
-    if (start <= now && now <= end) {
-      console.log('Current date is within a RCP. Stopping execution.');
-      return;
-    }
-  }
   try {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);

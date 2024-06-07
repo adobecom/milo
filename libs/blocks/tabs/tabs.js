@@ -37,13 +37,14 @@ function changeTabs(e) {
   const { target } = e;
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
+  const blockId = target.closest('.tabs').id;
   parent
-    .querySelectorAll('[aria-selected="true"]')
+    .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
     .forEach((t) => t.setAttribute('aria-selected', false));
   target.setAttribute('aria-selected', true);
   scrollTabIntoView(target);
   content
-    .querySelectorAll('[role="tabpanel"]')
+    .querySelectorAll(`[role="tabpanel"][data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
   content
     .querySelector(`#${target.getAttribute('aria-controls')}`)
@@ -238,6 +239,7 @@ const init = (block) => {
         tabindex: '0',
         'aria-selected': (i === 0) ? 'true' : 'false',
         'aria-controls': `tab-panel-${tabId}-${tabName}`,
+        'data-block-id': `tabs-${tabId}`,
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
@@ -249,6 +251,7 @@ const init = (block) => {
         class: 'tabpanel',
         tabindex: '0',
         'aria-labelledby': `tab-${tabId}-${tabName}`,
+        'data-block-id': `tabs-${tabId}`,
       };
       const tabListContent = createTag('div', tabContentAttributes);
       tabListContent.setAttribute('aria-labelledby', `tab-${tabId}-${tabName}`);
@@ -256,6 +259,7 @@ const init = (block) => {
       tabContentContainer.append(tabListContent);
     });
     tabListItems[0].parentElement.remove();
+    tabListContainer.dataset.pretext = config.pretext;
   }
 
   // Tab Paddles

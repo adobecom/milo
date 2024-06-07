@@ -57,7 +57,7 @@ const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
 const appendSlot = (slotEls, slotName, merchCard, nodeName = 'p') => {
-  if (slotEls.length === 0) return;
+  if (slotEls.length === 0 || merchCard.variant !== MINI_COMPARE_CHART) return;
   const newEl = createTag(
     nodeName,
     { slot: slotName, class: slotName },
