@@ -47,7 +47,7 @@ const MANIFEST_KEYS = [
   'page filter optional',
 ];
 
-const DATA_TYPE = {
+export const DATA_TYPE = {
   JSON: 'json',
   TEXT: 'text',
 };
@@ -164,7 +164,7 @@ function checkSelectorType(selector) {
   return selector?.startsWith('/') || selector?.startsWith('http') ? 'fragment' : 'css';
 }
 
-const fetchData = async (url, type = DATA_TYPE.JSON) => {
+export const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(url);
     if (!resp.ok) {

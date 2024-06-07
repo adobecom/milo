@@ -5,6 +5,7 @@ import getEntitlements from '../../../libs/features/personalization/entitlements
 describe('entitlements', () => {
   it('Should return any entitlements that match the id', async () => {
     const config = getConfig();
+    config.base = 'http://localhost:6456/libs';
     config.env = { name: 'prod' };
 
     const destinations = [
