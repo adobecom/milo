@@ -360,10 +360,47 @@ button.locui-subproject-locale:hover {
 
 .locui-subproject-action-area {
   display: flex;
-  justify-content: end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   position: absolute;
   right: 18px;
   bottom: 18px;
+}
+
+.locui-urls-heading-warnings {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 15px;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
+
+.locui-urls-heading-warnings:hover {
+  color: var(--link-color);
+}
+
+.skipped-icon {
+  background: url('./img/warnings-icon.svg');
+  background-repeat: no-repeat;
+  background-position: 50%;
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+
+h2.skipped-heading {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+h2.skipped-heading .skipped-icon {
+  width: 32px;
+  height: 32px;
 }
 
 div.locui-url-heading-actions,

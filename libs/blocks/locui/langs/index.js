@@ -37,11 +37,30 @@ export async function rollout(item, idx) {
 
 export function showLangErrors(event, item) {
   if (!item.errors.length
-    || event.target.classList.contains('locui-subproject-locale')) return null;
+    || event.target.classList.contains('locui-subproject-locale')
+    || event.target.classList.contains('locui-urls-heading-warnings')) return null;
   const div = createTag('div');
-  const content = Modal(div, item, null, item);
+  const content = Modal(div, item, null, 'error');
   const modalOpts = {
     class: 'locui-modal-errors',
+    id: 'locui-modal',
+    content,
+    closeEvent: 'closeModal',
+  };
+  return getModal(null, modalOpts);
+}
+
+export function getSkippedFileWarnings(item) {
+  if (!item.warnings) return null;
+  const skipped = item.warnings.filter((warning) => !warning.includes('skip'));
+  return skipped;
+}
+
+export function showSkippedFiles(item) {
+  const div = createTag('div');
+  const content = Modal(div, item, null, 'skipped');
+  const modalOpts = {
+    class: 'locui-modal-skipped',
     id: 'locui-modal',
     content,
     closeEvent: 'closeModal',
