@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg } from '../../utils/decorate.js';
+import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg, decorateTextOverrides } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -182,7 +182,12 @@ function decorateLayout(el) {
   }
   const picture = text?.querySelector('p picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
-  iconArea?.classList.add('icon-area');
+  if (iconArea) {
+    let iconClass = 'icon-area';
+    if (el.className.includes('-avatar')) iconClass = 'avatar-area';
+    if (el.className.includes('-lockup')) iconClass = 'lockup-area';
+    iconArea.classList.add(iconClass);
+  }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
   const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video, :scope > div:not(.text) a[href*=".mp4"]')?.closest('div');
@@ -216,4 +221,7 @@ export default function init(el) {
   decorateBlockText(blockText, blockData);
   decorateStaticLinks(el);
   formatPromoButton(el);
+  decorateTextOverrides(el);
+  // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
+  if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
 }

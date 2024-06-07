@@ -1,116 +1,136 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/aside/aside.js');
-
-const types = ['simple', 'split', 'inline', 'notification', 'promobar'];
+const standardBody = await readFile({ path: './mocks/standard.html' });
+const splitBody = await readFile({ path: './mocks/split.html' });
 
 describe('aside', () => {
-  const asides = document.querySelectorAll('.aside');
-  asides.forEach((aside) => {
-    init(aside);
+  describe('standard', () => {
+    before(() => {
+      document.body.innerHTML = standardBody;
+      const blocks = document.querySelectorAll('.aside');
+      blocks.forEach((el) => init(el));
+    });
 
-    const typeIndex = types.findIndex((v) => aside.classList.contains(v));
-    const type = typeIndex >= 0 ? types[typeIndex] : 'default';
+    it('allows a background color', () => {
+      const el = document.querySelector('#test-default');
+      expect(window.getComputedStyle(el)?.backgroundColor).to.equal('rgb(238, 238, 238)');
+    });
 
-    describe(`aside ${type}`, () => {
-      const isInline = type === 'inline';
+    it('allows a background image', () => {
+      expect(document.querySelector('#test-default-2 .background img')).to.exist;
+    });
 
-      if (type !== 'notification') {
-        it('has a heading', () => {
-          const heading = aside.querySelector('[class^=heading-]');
-          expect(heading).to.exist;
-        });
+    it('allows an icon image', () => {
+      expect(document.querySelector('#test-default .icon-area img')).to.exist;
+    });
 
-        it('icon has a wrapper', () => {
-          const icon = aside.querySelector('.text picture, .promo-text picture');
-          if (icon) {
-            expect(icon.closest('.icon-area')).to.exist;
-          }
-        });
+    it('has Detail M by default', () => {
+      expect(document.querySelector('#test-default .detail-m')).to.exist;
+    });
 
-        it('has a body', () => {
-          const body = aside.querySelector('[class^=body-]');
-          expect(body).to.exist;
-        });
+    it('has Heading XL by default', () => {
+      expect(document.querySelector('#test-default .heading-xl')).to.exist;
+    });
 
-        it('button has a wrapper', () => {
-          const button = aside.querySelector('.text .con-button, .promo-text .con-button');
-          if (button) {
-            expect(button.closest('p')).to.exist;
-          }
-        });
+    it('has Body S by default', () => {
+      expect(document.querySelector('#test-default p.body-s')).to.exist;
+    });
 
-        if (aside.classList.contains('icon-stack')) {
-          it('Has icon stack area', () => {
-            const iconStack = aside.querySelector('ul.icon-stack-area');
-            expect(iconStack).to.exist;
-          });
-        }
+    it('allows a cta', () => {
+      expect(document.querySelector('#test-default .action-area .con-button')).to.exist;
+    });
 
-        if (aside.classList.contains('aspect-ratio')) {
-          it('Has aspect ratio set', () => {
-            let aspectRatios = '';
-            if (aside.classList.contains('aspect-ratio-three')) {
-              aspectRatios = aside.querySelector('.mobile-square.tablet-standard.desktop-wide');
-              expect(aspectRatios).to.exist;
-            } else if (aside.classList.contains('aspect-ratio-two')) {
-              aspectRatios = aside.querySelector('.mobile-standard.tablet-wide');
-              expect(aspectRatios).to.exist;
-            } else if (aside.classList.contains('aspect-ratio-one')) {
-              aspectRatios = aside.querySelector('.mobile-standard');
-              expect(aspectRatios).to.exist;
-            }
-          });
-        }
-      }
+    it('allows supplemental text', () => {
+      expect(document.querySelector('#test-default .supplemental-text')).to.exist;
+    });
 
-      if (type === 'default' || type === isInline) {
-        it('has an image', () => {
-          const image = aside.querySelector('.image');
-          expect(image).to.exist;
-        });
-      }
+    it('allows a foreground image', () => {
+      expect(document.querySelector('#test-default .foreground .image img')).to.exist;
+    });
 
-      if (type === types[1]) {
-        it('has a background image or video', () => {
-          const body = aside.querySelector('.split-image');
-          expect(body).to.exist;
-        });
-      }
+    it('allows text overrides', () => {
+      const el = document.querySelector('#test-text-overrides');
+      expect(el.querySelector('.detail-l')).to.exist;
+      expect(el.querySelector('.heading-l')).to.exist;
+      expect(el.querySelector('p.body-m')).to.exist;
+    });
 
-      if (type === 'promobar') {
-        it('has viewport content', () => {
-          const viewportContent = aside.querySelectorAll('.promo-text');
-          expect(viewportContent.length).to.equal(3);
-        });
+    it('allows Title L to override Detail', () => {
+      expect(document.querySelector('#test-title .detail-m.title-l')).to.exist;
+    });
 
-        if (aside.classList.contains('popup')) {
-          it('has promo close button', () => {
-            const closeBtn = aside.querySelector('.promo-close');
-            expect(closeBtn).to.exist;
-          });
+    it('allows an avatar', () => {
+      expect(document.querySelector('#test-avatar .avatar-area img')).to.exist;
+    });
 
-          if (aside.classList.contains('mobile-promo-only')) {
-            it('has empty tablet block hidden', () => {
-              const tabletBlock = aside.querySelector('.tablet-up.hide-block');
-              expect(tabletBlock).to.exist;
-            });
+    it('allows a product lockup', () => {
+      expect(document.querySelector('#test-lockup .lockup-area img')).to.exist;
+    });
+  });
 
-            it('has empty desktop block hidden', () => {
-              const desktopBlock = aside.querySelector('.tablet-up.hide-block');
-              expect(desktopBlock).to.exist;
-            });
-          }
+  describe('split', () => {
+    before(() => {
+      document.body.innerHTML = splitBody;
+      const blocks = document.querySelectorAll('.aside');
+      blocks.forEach((el) => init(el));
+    });
 
-          it('close button click closes the popup', () => {
-            const closeBtn = aside.querySelector('.promo-close');
-            closeBtn.click();
-            expect(aside.closest('.section').classList.contains('close-sticky-section')).to.be.true;
-          });
-        }
-      }
+    it('allows a background color', () => {
+      const el = document.querySelector('#test-default');
+      expect(window.getComputedStyle(el)?.backgroundColor).to.equal('rgb(30, 30, 30)');
+    });
+
+    it('allows an icon image', () => {
+      expect(document.querySelector('#test-default .icon-area img')).to.exist;
+    });
+
+    it('has Detail M by default', () => {
+      expect(document.querySelector('#test-default .detail-m')).to.exist;
+    });
+
+    it('has Heading XL by default', () => {
+      expect(document.querySelector('#test-default .heading-xl')).to.exist;
+    });
+
+    it('has Body S by default', () => {
+      expect(document.querySelector('#test-default p.body-s')).to.exist;
+    });
+
+    it('allows icon stack', () => {
+      expect(document.querySelector('#test-default .icon-stack-area')).to.exist;
+    });
+
+    it('allows a cta', () => {
+      expect(document.querySelector('#test-default .action-area .con-button')).to.exist;
+    });
+
+    it('allows supplemental text', () => {
+      expect(document.querySelector('#test-default .supplemental-text')).to.exist;
+    });
+
+    it('allows a split image', () => {
+      expect(document.querySelector('#test-default .split-image img')).to.exist;
+    });
+
+    it('allows text overrides', () => {
+      const el = document.querySelector('#test-text-overrides');
+      expect(el.querySelector('.detail-l')).to.exist;
+      expect(el.querySelector('.heading-l')).to.exist;
+      expect(el.querySelector('p.body-m')).to.exist;
+    });
+
+    it('allows Title L to override Detail', () => {
+      expect(document.querySelector('#test-title .detail-m.title-l')).to.exist;
+    });
+
+    it('allows an avatar', () => {
+      expect(document.querySelector('#test-avatar .avatar-area img')).to.exist;
+    });
+
+    it('allows a product lockup', () => {
+      expect(document.querySelector('#test-lockup .lockup-area img')).to.exist;
     });
   });
 });
