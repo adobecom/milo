@@ -376,10 +376,8 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
 
   const blocks = body.querySelectorAll('.martech-metadata');
   if (blocks.length) {
-    import('../../martech-metadata/martech-metadata.jss')
-      .then(({ default: decorate }) =>
-        blocks.forEach((block) => decorate(block))
-      )
+    import('../../martech-metadata/martech-metadata.js')
+      .then(({ default: decorate }) => blocks.forEach((block) => decorate(block)))
       .catch((e) => {
         lanaLog({
           message: 'Error in fetchAndProcessPlainHtml',
