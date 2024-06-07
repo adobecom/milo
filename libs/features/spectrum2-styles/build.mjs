@@ -27,15 +27,21 @@ const transformRgbProperties = (rule) => {
 
     decl.value = replaceZeroPx(value);
 
-    if (prop.endsWith('-rgb')) {
-      const baseName = prop.replace('-rgb', '');
-      properties[baseName] = `rgb(${value.replace(/,\s*/g, ' ')})`;
-      decl.remove();
-    }
+    let baseName;
+    const isRgb = prop.endsWith('-rgb');
+    const isOpacity = prop.endsWith('-opacity');
 
-    if (prop.endsWith('-opacity')) {
-      const baseName = prop.replace('-opacity', '');
-      properties[baseName] = properties[baseName] ? properties[baseName].replace(')', ` / ${parseFloat(value) * 100}%)`) : `rgb(0 0 0 / ${value})`;
+    if (isRgb || isOpacity) {
+      baseName = prop.replace(isRgb ? '-rgb' : '-opacity', '');
+      if (isRgb) {
+        properties[baseName] = `rgb(${value.replace(/,\s*/g, ' ')})`;
+      } else if (isOpacity) {
+        if (properties[baseName]) {
+          properties[baseName] = properties[baseName].replace(')', ` / ${parseFloat(value) * 100}%)`);
+        } else {
+          properties[baseName] = `rgb(0 0 0 / ${value})`;
+        }
+      }
       decl.remove();
     }
   });
