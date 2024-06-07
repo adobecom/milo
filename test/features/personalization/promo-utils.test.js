@@ -105,7 +105,14 @@ describe('getPromoManifests', () => {
     const manifestnames = 'pre-black-friday-global,black-friday-global,cyber-monday';
     const emea = 'bf-de';
     const americas = 'bf-us';
-    expect(getPromoManifests({ manifestnames, emea_manifestnames: emea, americas_manifestnames: americas }, new URLSearchParams()))
+    expect(getPromoManifests(
+      {
+        manifestnames,
+        emea_manifestnames: emea,
+        americas_manifestnames: americas,
+      },
+      new URLSearchParams(),
+    ))
       .to.deep.eq(expectedManifests);
   });
 

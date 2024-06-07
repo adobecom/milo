@@ -53,8 +53,8 @@ describe('MEP Utils', () => {
       const promoEnabled = getMepEnablement('manifestnames', 'promo');
       const targetEnabled = getMepEnablement('target');
       expect(promoEnabled).to.deep.equal({
-        'apac_manifestnames': 'kr-special-promo',
-        'americas_manifestnames': 'us-special-promo',
+        apac_manifestnames: 'kr-special-promo',
+        americas_manifestnames: 'us-special-promo',
         manifestnames: 'pre-black-friday-global,black-friday-global',
       });
       expect(persEnabled).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');

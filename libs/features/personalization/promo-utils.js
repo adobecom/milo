@@ -19,7 +19,7 @@ const regionCode = Object.keys(REGIONS)
 
 export const isDisabled = (event, searchParams) => {
   if (!event) return false;
-  if (!event?.locales?.includes(localeCode)) return true;
+  if (event.locales && !event.locales.includes(localeCode)) return true;
   const currentDate = searchParams?.get('instant') ? new Date(searchParams.get('instant')) : new Date();
   if ((!event.start && event.end) || (!event.end && event.start)) return true;
   return Boolean(event.start && event.end

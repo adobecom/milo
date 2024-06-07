@@ -884,7 +884,13 @@ const getMdValue = (key) => {
 };
 
 const getPromoMepEnablement = () => {
-  const mds = ['apac_manifestnames', 'emea_manifestnames', 'americas_manifestnames', 'jp_manifestnames', 'manifestnames'];
+  const mds = [
+    'apac_manifestnames',
+    'emea_manifestnames',
+    'americas_manifestnames',
+    'jp_manifestnames',
+    'manifestnames',
+  ];
   const mdObject = mds.reduce((obj, key) => {
     const val = getMdValue(key);
     if (val) {
