@@ -499,14 +499,14 @@
 
 /* Solid black button temp fix */
 
-.prioritized-placement.black-buttons .con-button {
+.brick.prioritized-placement.black-buttons .con-button {
   background: var(--text-color);
   border-color: var(--text-color);
   color: var(--color-white);
 }
 
-.prioritized-placement.black-buttons .con-button:hover,
-.prioritized-placement.black-buttons .con-button:active {
+.brick.prioritized-placement.black-buttons .con-button:hover,
+.brick.prioritized-placement.black-buttons .con-button:active {
   background: var(--color-black);
   border-color: var(--color-black);
 }
