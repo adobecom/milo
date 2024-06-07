@@ -121,7 +121,7 @@ async function parseMerchCard(cardJson, merchCard) {
           const checkoutUrl = escape(cta.href);
           const actionData = {
             type: 'deep-link',
-            target: `inapp://ccd?workflow=routeToPath&routePath=%2FeditPlan%3Fpa%3D${productArrangementCode}%26cli%3Dcc_desktop%26co%3DUS%26landing_page%3D${checkoutUrl}`,
+            target: `inapp://ccd?workflow=routeToPath&routePath=%2FeditPlan%3Fpa%${productArrangementCode}%26cli%3Dcc_desktop%26co%3DUS%26landing_page%3D${checkoutUrl}`,
           };
           cta.dispatchEvent(new CustomEvent('deep-link', { detail: actionData, bubbles: true }));
         } else {
