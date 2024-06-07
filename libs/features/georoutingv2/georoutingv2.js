@@ -1,4 +1,4 @@
-import { getFederatedContentRoot } from '../../blocks/global-navigation/utilities/utilities.js';
+import { getFederatedContentRoot } from '../../utils/utils.js';
 
 let config;
 let createTag;
