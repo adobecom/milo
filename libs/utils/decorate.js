@@ -69,7 +69,8 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
         .forEach((text) => text.classList.add(`body-${config[1]}`));
     }
   }
-  decorateButtons(el);
+  const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
+  decorateButtons(el, buttonSize);
   if (type === 'merch') decorateIconStack(el);
 }
 
