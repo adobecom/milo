@@ -6,8 +6,8 @@ const ODIN_AUTHOR = 'odin-author';
 let accessToken;
 
 const cardContent = {
-  catalog: {
-    name: 'catalog',
+  'ccd-action': {
+    name: 'ccd-action',
     title: {
       tag: 'h3',
       slot: 'heading-xs',
@@ -76,6 +76,8 @@ async function parseMerchCard(cardJson, merchCard) {
   const { type = 'catalog' } = cardJson;
   const cardType = cardContent[type] || cardContent.catalog;
 
+  merchCard.variant = type;
+
   merchCard.setAttribute('variant', type);
   cardJson.icon?.forEach((icon) => {
     const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon, alt: '', href: '', size: 'l' });
@@ -119,7 +121,7 @@ async function parseMerchCard(cardJson, merchCard) {
           const checkoutUrl = escape(cta.href);
           const actionData = {
             type: 'deep-link',
-            //target: `inapp://ccd?workflow=routeToPath&routePath=%2FeditPlan%3Fpa%3D${productArrangementCode}%26cli%3Dcc_desktop%26co%3DUS%26landing_page%3D${checkoutUrl}`,
+            // target: `inapp://ccd?workflow=routeToPath&routePath=%2FeditPlan%3Fpa%3D${productArrangementCode}%26cli%3Dcc_desktop%26co%3DUS%26landing_page%3D${checkoutUrl}`,
             target: `inapp://ccd?workflow=routeToPath&routePath=%2FeditPlan%3Fpa%3D${productArrangementCode}%26cli%3Dcc_desktop%26co%3DUS%26landing_page%3Dhttps%3A%2F%2Fcommerce-stg.adobe.com%2Fstore%2Fsegmentation%26ctx%3Da`,
           };
           cta.dispatchEvent(new CustomEvent('deep-link', { detail: actionData, bubbles: true }));
