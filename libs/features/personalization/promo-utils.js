@@ -30,8 +30,8 @@ const isManifestWithinLocale = (locales) => {
   if (locales) {
     return locales.split(';').map((locale) => locale.trim()).includes(localeCode);
   }
-  return true
-}
+  return true;
+};
 
 const getRegionalPromoManifests = (manifestNames, region, searchParams) => {
   const attachedManifests = manifestNames
