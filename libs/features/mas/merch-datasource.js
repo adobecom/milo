@@ -3,14 +3,6 @@ import { createTag } from '../../utils/utils.js';
 const ODIN = 'odin';
 const ODIN_AUTHOR = 'odin-author';
 
-const intersectionObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.querySelector('merch-datasource')?.refresh();
-    }
-  });
-});
-
 let accessToken;
 
 const cardContent = {
@@ -97,7 +89,6 @@ async function parseMerchLinks(merchLinkHTML) {
 }
 
 async function parseMerchCard(cardJson, merchCard) {
-  intersectionObserver.observe(merchCard);
   const { type = 'catalog' } = cardJson;
   const cardType = cardContent[type] || cardContent.catalog;
 
@@ -143,7 +134,6 @@ async function parseMerchCard(cardJson, merchCard) {
         const inApp = merchCard.getAttribute('in-app') === '';
         if (inApp) {
           const [{ productArrangementCode }] = cta.value;
-          const checkoutUrl = escape(cta.href);
           const actionData = {
             type: 'deep-link',
             // target: `inapp://ccd?workflow=routeToPath&routePath=%2FeditPlan%3Fpa%3D${productArrangementCode}%26cli%3Dcc_desktop%26co%3DUS%26landing_page%3D${checkoutUrl}`,
@@ -179,6 +169,8 @@ class MerchDatasource extends HTMLElement {
   }
 
   connectedCallback() {
+    this.fetchData();
+    this.parentElement.style.opacity = 0;
   }
 
   refresh() {
