@@ -76,10 +76,6 @@ describe('getPromoManifests', () => {
           name: 'bf-us',
           start: new Date('2000-11-01T00:00:00.000Z'),
           end: new Date('2300-12-15T00:00:00.000Z'),
-          locales: [
-            'ca',
-            'us',
-          ],
         },
       },
       {
