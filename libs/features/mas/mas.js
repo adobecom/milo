@@ -20,7 +20,7 @@ if (!window.location.href.includes('adobe.com/home')) {
     isSignedInUser: () => false,
   };
 }
-const config = setConfig({ codeRoot: '/libs' });
+const config = setConfig({ codeRoot: '/libs', env: { name: 'stage' }, commerce: { 'commerce.env': 'STAGE' } });
 config.locale.prefix = locale;
 
 const { hostname } = new URL(import.meta.url);
