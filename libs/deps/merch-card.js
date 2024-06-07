@@ -1,4 +1,4 @@
-// branch: mas commit: f006e1d11d0a1c0a8c2cfbdbee2a3816f419682d Fri, 07 Jun 2024 10:47:52 GMT
+// branch: mas commit: 84636c1fddc7131def74089a5cd5aae323fa8556 Fri, 07 Jun 2024 11:33:50 GMT
 import{html as n,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var h=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -55,6 +55,7 @@ import{html as n,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitEleme
         min-width: var(--consonant-merch-card-ccd-action-width);
         min-height: var(--consonant-merch-card-ccd-action-min-height);
         border-radius: 4px;
+        border-color: rgb(225, 225, 225);
     }
 
     :host([variant='plans']) {
