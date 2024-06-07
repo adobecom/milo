@@ -7,16 +7,23 @@ import '../../deps/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
+const SEGMENT = 'segment';
+const SPECIAL_OFFERS = 'special-offers';
+const PLANS = 'plans';
+const CATALOG = 'catalog';
+const PRODUCT = 'product';
+const MINI_COMPARE_CHART = 'mini-compare-chart';
+const TWP = 'twp';
 const CARD_TYPES = [
-  'segment',
-  'special-offers',
-  'plans',
-  'catalog',
-  'product',
+  SEGMENT,
+  SPECIAL_OFFERS,
+  PLANS,
+  CATALOG,
+  PRODUCT,
   'inline-heading',
   'image',
-  'mini-compare-chart',
-  'twp',
+  MINI_COMPARE_CHART,
+  TWP,
 ];
 
 const CARD_SIZES = ['wide', 'super-wide'];
@@ -29,19 +36,15 @@ const TEXT_STYLES = {
 };
 
 const HEADING_MAP = {
-  'special-offers': {
+  SPECIAL_OFFERS: {
     H5: 'H4',
     H3: 'H3',
   },
 };
 
-const MINI_COMPARE_CHART = 'mini-compare-chart';
-const PLANS = 'plans';
-const SEGMENT = 'segment';
-
 const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
 
-const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART, 'twp'];
+const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
 const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -84,7 +87,7 @@ export async function loadMnemonicList(foreground) {
 
 function extractQuantitySelect(el) {
   const quantitySelectConfig = [...el.querySelectorAll('ul')]
-    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+    .find((ul) => ul.querySelector('li')?.innerText?.toLowerCase()?.includes('Quantity'));
   const configMarkup = quantitySelectConfig?.querySelector('ul');
   if (!configMarkup) return null;
   const config = configMarkup.children;
@@ -108,7 +111,9 @@ const parseTwpContent = async (el, merchCard) => {
   if (quantitySelect) {
     merchCard.append(quantitySelect);
   }
-  const allElements = Array.from(el.children[0].children[0].children);
+  let allElements = el?.children[0]?.children[0]?.children;
+  if (!allElements?.length) return;
+  allElements = [...allElements];
   const contentGroups = allElements.reduce((acc, curr) => {
     if (curr.tagName.toLowerCase() === 'p' && curr.textContent.trim() === '--') {
       acc.push([]);
@@ -271,7 +276,7 @@ const decorateMerchCardLinkAnalytics = (el) => {
 };
 
 const addStock = (merchCard, styles) => {
-  if (styles.includes('add-stock') && merchCard.variant !== 'twp') {
+  if (styles.includes('add-stock') && merchCard.variant !== TWP) {
     let stock;
     const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
     const [label, ...rest] = [...document.querySelectorAll(selector)];
@@ -338,7 +343,7 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
-  const cardType = getPodType(styles) || 'product';
+  const cardType = getPodType(styles) || PRODUCT;
   if (!styles.includes(cardType)) {
     styles.push(cardType);
   }
@@ -420,7 +425,7 @@ export default async function init(el) {
       }
     }
   });
-  const actionMenuContent = cardType === 'catalog'
+  const actionMenuContent = cardType === CATALOG
     ? getActionMenuContent(el)
     : null;
   if (actionMenuContent) {
@@ -468,16 +473,12 @@ export default async function init(el) {
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
 
-  if (merchCard.variant !== 'twp') {
+  if (merchCard.variant !== TWP) {
     parseContent(el, merchCard);
 
     const footer = createTag('div', { slot: 'footer' });
     if (ctas) {
-      if (merchCard.variant === 'mini-compare-chart') {
-        decorateButtons(ctas, 'button-l');
-      } else {
-        decorateButtons(ctas);
-      }
+      decorateButtons(ctas, (merchCard.variant === MINI_COMPARE_CHART) ? 'button-l' : undefined);
       footer.append(ctas);
     }
     merchCard.appendChild(footer);
@@ -506,9 +507,7 @@ export default async function init(el) {
 
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
-    if (merchCard.classList.contains('has-divider')) {
-      merchCard.setAttribute('custom-hr', true);
-    }
+    if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);
     decorateFooterRows(merchCard, footerRows);
   } else {
     parseTwpContent(el, merchCard);

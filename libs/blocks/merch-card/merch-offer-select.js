@@ -2,33 +2,33 @@ import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import '../../deps/merch-offer-select.js';
 
+const TWP = 'twp';
 const MINI_COMPARE_CHART = 'mini-compare-chart';
 
 function createDynamicSlots(el, bodySlot) {
+  const isTWP = el.variant === TWP;
   const pricePlaceholder = el.querySelector("span[is='inline-price']");
   if (pricePlaceholder) {
     pricePlaceholder.setAttribute('slot', 'price');
   } else {
-    const tagName = el.variant === 'twp' ? 'p' : 'h5';
+    const tagName = isTWP ? 'p' : 'h5';
     const priceSlot = createTag(tagName, { class: 'merch-card-price' });
     createTag('span', { slot: 'price', is: 'inline-price' }, null, { parent: priceSlot });
     bodySlot.append(priceSlot);
   }
-  if (el.variant !== 'twp') {
-    const p = createTag('p', { class: 'action-area' });
-    createTag('a', { slot: 'secondary-cta', is: 'checkout-link' }, null, { parent: p });
-    createTag('a', { slot: 'cta', is: 'checkout-link' }, null, { parent: p });
-    const footer = el.querySelector('div[slot="footer"]');
-    footer.append(p);
-    bodySlot.querySelector('p')?.setAttribute('slot', 'description');
-    if (el.variant === MINI_COMPARE_CHART) {
-      const description = el.querySelector('div[slot="body-m"] p:last-child');
-      if (description) {
-        const descriptionSlot = el.querySelector('p[slot="description"]');
-        if (descriptionSlot) {
-          descriptionSlot.innerHTML += description.innerHTML;
-        }
-      }
+  if (isTWP) return; // twp card do not display cta's
+  const p = createTag('p', { class: 'action-area' });
+  createTag('a', { slot: 'secondary-cta', is: 'checkout-link' }, null, { parent: p });
+  createTag('a', { slot: 'cta', is: 'checkout-link' }, null, { parent: p });
+  const footer = el.querySelector('div[slot="footer"]');
+  footer.append(p);
+  const descriptionSlot = bodySlot.querySelector('p');
+  if (!descriptionSlot) return;
+  descriptionSlot.setAttribute('slot', 'description');
+  if (el.variant === MINI_COMPARE_CHART) {
+    const description = el.querySelector('div[slot="body-m"] p:last-child');
+    if (description) {
+      descriptionSlot.innerHTML += description.innerHTML;
     }
   }
 }
