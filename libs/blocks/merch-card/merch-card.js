@@ -36,7 +36,7 @@ const TEXT_STYLES = {
 };
 
 const HEADING_MAP = {
-  SPECIAL_OFFERS: {
+  'special-offers': {
     H5: 'H4',
     H3: 'H3',
   },
@@ -87,7 +87,7 @@ export async function loadMnemonicList(foreground) {
 
 function extractQuantitySelect(el) {
   const quantitySelectConfig = [...el.querySelectorAll('ul')]
-    .find((ul) => ul.querySelector('li')?.innerText?.toLowerCase()?.includes('Quantity'));
+    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
   const configMarkup = quantitySelectConfig?.querySelector('ul');
   if (!configMarkup) return null;
   const config = configMarkup.children;
