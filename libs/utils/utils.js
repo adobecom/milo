@@ -1146,7 +1146,9 @@ async function processSection(section, config, isDoc) {
   return section.blocks;
 }
 export async function loadArea(area = document) {  const bannerData = getMetadata('app-banner-source');
-  if (bannerData) {
+  const isMobile = window.matchMedia("only screen and (max-width: 768px)").matches;
+  console.log(isMobile);
+  if (bannerData && isMobile) {
     // console.log('gnav', area.body.querySelector('header'));
     const body = area.body;
     // const header = area.body.querySelector('header');
