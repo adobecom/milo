@@ -47,6 +47,7 @@ const setJsonLd = (heading, description, mainImage, stepsLd) => {
 };
 
 const getImage = (el) => el.querySelector('picture') || el.querySelector('a[href$=".svg"');
+const getVideo = (el) => el.querySelector('a[href*=".mp4"]');
 
 const getHowToInfo = (el) => {
   const infoDiv = el.querySelector(':scope > div > div');
@@ -59,6 +60,7 @@ const getHowToInfo = (el) => {
   }
 
   const image = getImage(infoDiv.lastElementChild);
+  const video = getVideo(infoDiv.lastElementChild);
 
   const desc = infoDiv.childElementCount > 2 || (infoDiv.childElementCount === 2 && !image)
     ? infoDiv.children[1]
@@ -73,6 +75,7 @@ const getHowToInfo = (el) => {
     heading,
     desc,
     mainImage: image,
+    mainVideo: video,
   };
 };
 
@@ -116,17 +119,22 @@ const getHowToSteps = (el) => {
 export default function init(el) {
   el.classList.add('con-block');
   const isSeo = el.classList.contains('seo');
-  const isLargeImage = el.classList.contains('large-image');
+  const isLargeMedia = el.classList.contains('large-image') || el.classList.contains('large-media');
 
-  const { desc, heading, mainImage } = getHowToInfo(el);
+  const { desc, heading, mainImage, mainVideo } = getHowToInfo(el);
   const { steps, images } = getHowToSteps(el);
 
   const orderedList = document.createElement('ol');
   if (steps) orderedList.append(...steps);
 
   if (mainImage) {
-    const imageClass = `how-to-image${isLargeImage ? ' how-to-image-large' : ''}`;
+    const imageClass = `how-to-media${isLargeMedia ? ' how-to-media-large' : ''}`;
     el.append(createTag('div', { class: imageClass }, mainImage));
+  }
+
+  if (mainVideo) {
+    const videoClass = `how-to-media${isLargeMedia ? ' how-to-media-large' : ''}`;
+    el.append(createTag('div', { class: videoClass }, mainVideo));
   }
 
   if (isSeo) {
@@ -137,6 +145,7 @@ export default function init(el) {
   const rows = el.querySelectorAll(':scope > div');
   const foreground = createTag('div', { class: 'foreground' });
   if (mainImage) foreground.classList.add('has-image');
+  if (mainVideo) foreground.classList.add('has-video');
   rows.forEach((row) => { foreground.appendChild(row); });
   foreground.appendChild(orderedList);
   el.appendChild(foreground);
