@@ -78,3 +78,16 @@
 .editorial-card.media-standard .media-area video {
   aspect-ratio: var(--aspect-ratio-standard);
 }
+
+/* Align */
+.editorial-card.center { 
+  text-align: center; 
+  justify-items: center; 
+}
+
+.editorial-card.right { 
+  text-align: right; 
+  justify-items: right; 
+}
+.editorial-card.footer-align-left .action-area { justify-content: left; }
+.editorial-card.footer-align-center .action-area { justify-content: center; }
