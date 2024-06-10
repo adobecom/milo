@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { readFile, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
@@ -9,12 +10,14 @@ const {
   getModal,
   getHashParams,
   delayedModal,
+  sendAnalytics,
 } = await import('../../../libs/blocks/modal/modal.js');
+const satellite = { track: sinon.spy() };
 
 describe('Modals', () => {
   beforeEach(() => {
-    // eslint-disable-next-line no-underscore-dangle
-    window._satellite = { track: sinon.spy() };
+    window._satellite = satellite;
+    window._satellite.track.called = false;
   });
 
   afterEach(() => {
@@ -208,7 +211,6 @@ describe('Modals', () => {
     expect(modal).to.be.not.null;
     expect(document.querySelector('#delayed-modal').classList.contains('delayed-modal'));
     expect(window.sessionStorage.getItem('shown:#delayed-modal').includes(window.location.pathname)).to.be.true;
-    // eslint-disable-next-line no-underscore-dangle
     expect(window._satellite.track.called).to.be.true;
     window.sessionStorage.removeItem('shown:#delayed-modal');
     modal.remove();
@@ -221,11 +223,33 @@ describe('Modals', () => {
     window.sessionStorage.setItem('shown:#dm', window.location.pathname);
     expect(delayedModal(el)).to.be.true;
     await delay(1000);
-    // eslint-disable-next-line no-underscore-dangle
     expect(window._satellite.track.called).to.be.false;
     const modal = document.querySelector('#dm');
     expect(modal).to.not.exist;
     window.sessionStorage.removeItem('shown:#dm');
     el.remove();
+  });
+});
+
+describe('sendAnalytics', () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('satellite event not set, so must use event listener', async () => {
+    window._satellite = false;
+    sendAnalytics({});
+    window._satellite = satellite;
+    window._satellite.track.called = false;
+    const martechEvent = new Event('alloy_sendEvent');
+    dispatchEvent(martechEvent);
+    expect(window._satellite.track.called).to.be.true;
+  });
+
+  it('satellite event set, so can fire load event immediately', async () => {
+    window._satellite = satellite;
+    window._satellite.track.called = false;
+    sendAnalytics({});
+    expect(window._satellite.track.called).to.be.true;
   });
 });
