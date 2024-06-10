@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { handleStyle } from '../section-metadata/section-metadata.js';
-import { getNormalizedMetadata } from '../quiz/utils.js';
+import { getNormalizedMetadata, getLocalizedURL } from '../quiz/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
 export const LOADING_ERROR = 'Could not load quiz results:';
@@ -19,7 +19,7 @@ async function loadFragments(el, experiences) {
 }
 
 function redirectPage(quizUrl, debug, message) {
-  const url = (quizUrl) ? quizUrl.text : 'https://adobe.com';
+  const url = quizUrl ? getLocalizedURL(quizUrl.text) : 'https://adobe.com';
   window.lana.log(message, { tags: 'errorType=error,module=quiz-results' });
 
   if (debug === 'quiz-results') {
