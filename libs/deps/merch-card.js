@@ -221,6 +221,8 @@ import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitEleme
         gap: var(--consonant-merch-spacing-xxs);
         align-items: center;
         flex: 1;
+        height: 100%;
+        line-height: normal;
     }
 
     .secure-transaction-label::before {
