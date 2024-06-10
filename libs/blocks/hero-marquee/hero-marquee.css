@@ -308,13 +308,11 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     text-align: center;
   }
   
-  .hero-marquee.media-top-mobile,
-  .hero-marquee.media-top-mobile-tablet {
+  .hero-marquee.media-top-mobile {
     flex-direction: column-reverse;
   }
 
-  .hero-marquee.media-top-mobile .foreground .copy,
-  .hero-marquee.media-top-mobile-tablet .foreground .copy {
+  .hero-marquee.media-top-mobile .foreground .copy {
     order: 2;
   } 
   
@@ -324,10 +322,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* con-vars support */
-  .hero-marquee:is(
-    .bg-top-mobile, .bg-top-mobile, .bg-bottom-mobile,
-    .bg-top-mobile-tablet, .bg-top-mobile-tablet, .bg-bottom-mobile-tablet
-    ) .background {
+  .hero-marquee:is(.bg-top-mobile, .bg-top-mobile, .bg-bottom-mobile) .background {
       position: relative;
   }
 
@@ -340,17 +335,13 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
   
   .hero-marquee.media-cover.media-top-mobile,
-  .hero-marquee.media-cover.media-top-mobile-tablet,
-  .hero-marquee.media-cover.media-hidden-mobile:not(.bg-bottom-mobile),
-  .hero-marquee.media-cover.media-hidden-mobile-tablet:not(.bg-bottom-mobile) {
+  .hero-marquee.media-cover.media-hidden-mobile:not(.bg-bottom-mobile) {
     padding-top: 0;
     padding-bottom: var(--spacing-xl);
   }
 
   .hero-marquee.bg-top-mobile:not(.bg-bottom-mobile),
-  .hero-marquee.bg-top-mobile-tablet:not(.bg-bottom-mobile),
-  .hero-marquee.bg-top-mobile.media-top-mobile, 
-  .hero-marquee.bg-top-mobile-tablet.media-top-mobile {
+  .hero-marquee.bg-top-mobile.media-top-mobile {
     padding-top: 0;
   }
 
@@ -359,9 +350,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
   
   .hero-marquee.media-hidden-mobile .foreground .asset,
-  .hero-marquee.media-hidden-mobile-tablet .foreground .asset, 
-  .hero-marquee.media-hidden-mobile .foreground-media,
-  .hero-marquee.media-hidden-mobile-tablet .foreground-media { display: none; }
+  .hero-marquee.media-hidden-mobile .foreground-media { display: none; }
 }
 
 /* Tablet ONLY */
@@ -371,48 +360,36 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
   
   .hero-marquee.media-top-tablet,
-  .hero-marquee.media-top-mobile-tablet,
-  .hero-marquee.media-cover.media-top-tablet,
-  .hero-marquee.media-cover.media-top-mobile-tablet {
+  .hero-marquee.media-cover.media-top-tablet {
     flex-direction: column-reverse;
   }
 
-  .hero-marquee.media-top-tablet > .foreground .copy,
-  .hero-marquee.media-top-mobile-tablet > .foreground .copy {
+  .hero-marquee.media-top-tablet > .foreground .copy {
     order: 2;
   } 
   
   .hero-marquee.media-cover.media-top-tablet,
-  .hero-marquee.media-cover.media-top-mobile-tablet,
-  .hero-marquee.media-cover.media-hidden-tablet,
-  .hero-marquee.media-cover.media-hidden-mobile-tablet   {
+  .hero-marquee.media-cover.media-hidden-tablet {
     padding-top: 0;
     padding-bottom: var(--spacing-xl);
   }
 
   /* con-vars support */
   .hero-marquee.bg-top-tablet .background,
-  .hero-marquee.bg-bottom-tablet .background,
-  .hero-marquee.bg-top-mobile-tablet .background,
-  .hero-marquee.bg-bottom-mobile-tablet .background  {
+  .hero-marquee.bg-bottom-tablet .background {
     position: relative;
   }
 
-  .hero-marquee.bg-top-tablet,
-  .hero-marquee.bg-top-mobile-tablet,
-  .hero-marquee.bg-top-tablet.media-top-mobile-tablet,
-  .hero-marquee.bg-top-mobile-tablet.media-top-mobile-tablet {
+  .hero-marquee.bg-top-tablet {
     padding-top: 0;
   }
 
-  .hero-marquee.bg-bottom-tablet .background,
-  .hero-marquee.bg-bottom-mobile-tablet .background {
+  .hero-marquee.bg-bottom-tablet .background {
     order: 2;
   }
   
   /* helper classes */
   .hero-marquee.media-hidden-tablet .foreground .asset,
-  .hero-marquee.media-hidden-mobile-tablet .foreground .asset,
   .hero-marquee.media-hidden-tablet .foreground-media,
   .hero-marquee.media-hidden-tablet-tablet .foreground-media { display: none; }
 }
@@ -436,8 +413,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     justify-content: center;
   }
 
-  .hero-marquee.bg-top-tablet,
-  .hero-marquee.bg-top-mobile-tablet {
+  .hero-marquee.bg-top-tablet {
     flex-direction: column;
   }
 
@@ -473,17 +449,9 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.media-cover picture {
     display: unset;
   }
-
-  .hero-marquee.media-cover.media-top-mobile-tablet {
-    flex-direction: row;
-  }
   
   .hero-marquee.media-cover.has-bg .asset {
     display: initial;
-  }
-
-  .hero-marquee.media-top-mobile-tablet > .foreground .copy {
-      order: unset;
   }
 
   .hero-marquee > .foreground.cols-2 {
