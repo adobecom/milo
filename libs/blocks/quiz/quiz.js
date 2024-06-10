@@ -7,6 +7,7 @@ import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontaine
 import {
   initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData,
   getAnalyticsDataForBtn, getUrlParams, isValidUrl,
+  getLocalizedURL,
 } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
@@ -265,7 +266,7 @@ const App = ({
     };
     const fragmentURL = getStringValue('footerFragment');
     if (fragmentURL) {
-      loadFragments(fragmentURL);
+      loadFragments(getLocalizedURL(fragmentURL));
     }
     const iconBg = getStringValue('icon-background-color');
     if (iconBg) {
