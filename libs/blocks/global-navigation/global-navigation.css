@@ -135,6 +135,7 @@ header.global-navigation {
   outline-offset: 2px;
   padding: 0 var(--feds-gutter);
   column-gap: 10px;
+  text-decoration: none;
 }
 
 .feds-brand {
@@ -880,7 +881,7 @@ header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
   color: var(--feds-color-white-v2);
 }
 
-/* 
+/*
 
 /* Mega Menu */
 

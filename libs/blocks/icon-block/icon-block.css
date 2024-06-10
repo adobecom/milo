@@ -6,11 +6,21 @@
 
 .dark .icon-block,
 .icon-block.dark {
-  color: #fff;
+  color: var(--color-white);
+  background-color: var(--color-black);
+  width: 90%;
+  margin: 0 auto var(--spacing-xl);
+  border-radius: var(--s2-corner-radius-900);
+  padding: var(--spacing-xxxl) var(--spacing-m);
+}
+
+.dark .icon-block,
+.icon-block.dark .heading-xl {
+  color: var(--color-white);
 }
 
 .icon-block p {
-  margin: 0;
+  margin: 0 0 var(--spacing-l);
 }
 
 .icon-block .background {
@@ -46,6 +56,10 @@
   width: 100%;
 }
 
+.icon-block.full-width .foreground .action-area a, strong {
+  width: 100%;
+}
+
 .five-up .icon-block .foreground .text-content {
   padding-bottom: var(--spacing-xs);
 }
@@ -78,12 +92,12 @@
 }
 
 .icon-block .foreground .icon-area img {
-  max-height: var(--icon-size-xxl);
+  max-height: var(--icon-size-xl);
   width: auto;
 }
 
 .icon-block .foreground .text-content [class*="heading"] {
-  margin: 0 0 var(--spacing-xs);
+  margin: 0 0 var(--spacing-m);
 }
 
 .icon-block.inline .foreground {
@@ -107,6 +121,12 @@
 
 .icon-block.inline .body-s.action-area {
   padding-top: 24px;
+}
+
+.icon-block.m-icon .icon-area,
+.icon-block.m-icon .icon-area picture img {
+  min-width: var(--icon-size-xs);
+  height: var(--icon-size-xs);
 }
 
 .icon-block.inline .icon-area,
@@ -271,6 +291,7 @@
 
 .icon-block.full-width .foreground .text-content .action-area {
   justify-content: center;
+  flex-direction: column-reverse;
 }
 
 .icon-block.center .foreground .text-content .action-area {
@@ -371,7 +392,7 @@
   width: 100%;
 }
 
-@media screen and (min-width: 600px) and (max-width: 1200px) {
+@media screen and (min-width: 768px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
   }
@@ -403,10 +424,24 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@media screen and (min-width: 768px) {
+  .icon-block.full-width .foreground .text-content .action-area {
+    flex-direction: row;
+  }
+
+  .icon-block.full-width .foreground .action-area a, strong {
+    width: unset;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  .dark .icon-block, .icon-block.dark {
+    width: 95%;
+  }
+  
   .icon-block.full-width .foreground,
   .icon-block.bio .foreground {
-    max-width: 800px;
+    max-width: 1260px;
     margin: 0 auto;
   }
 
