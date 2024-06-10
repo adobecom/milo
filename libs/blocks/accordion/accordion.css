@@ -1,5 +1,5 @@
 .accordion-container {
-  padding: var(--spacing-m) 0;
+  padding: var(--spacing-l) var(--grid-margins-width) 0;
 }
 
 div.accordion:not(.descr-list) {
@@ -9,7 +9,6 @@ div.accordion:not(.descr-list) {
 .descr-list.accordion {
   margin: 0 auto;
   max-width: var(--grid-container-width);
-  border-bottom: 1px solid var(--color-gray-500);
 }
 
 .accordion-container.no-borders .descr-list.accordion {
@@ -18,7 +17,7 @@ div.accordion:not(.descr-list) {
 
 .accordion .descr-details {
   margin: 0;
-  padding: var(--spacing-xs);
+  padding: var(--spacing-xl);
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
 }
@@ -62,16 +61,17 @@ div.accordion:not(.descr-list) {
 
 .accordion .descr-term button {
   align-items: center;
-  background: none;
-  border: 1px solid var(--color-gray-500);
-  border-width: 1px 0 0;
+  border: none;
+  border-radius: var(--sn-corner-radius-800);
+  background: var(--s2-gray-50);
+  margin-bottom: var(--spacing-xs);
   color: var(--text-color);
   display: flex;
   font-family: var(--body-font-family);
-  font-size: var(--type-heading-xs-size);
+  font-size: var(--type-detail-l-size);
   font-weight: 700;
-  line-height: var(--type-heading-s-lh);
-  padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
+  line-height: var(--type-title-lh);
+  padding: var(--s2-spacing-600) var(--spacing-xxxl) var(--s2-spacing-600) var(--s2-spacing-600);
   position: relative;
   text-align: start;
   width: 100%;
@@ -93,7 +93,7 @@ div.accordion:not(.descr-list) {
 
 .accordion-icon {
   position: absolute;
-  right: var(--spacing-xs);
+  right: var(--spacing-xxl);
   top: 50%;
   margin-top: -6px;
   width: 12px;
@@ -139,6 +139,11 @@ html[dir="rtl"] .accordion-icon {
   background-color: transparent;
 }
 
+.accordion .descr-term button[aria-expanded="true"] {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
 .accordion .descr-term button[aria-expanded="true"]::before {
   background-color: var(--link-color-dark);
 }
@@ -150,6 +155,7 @@ html[dir="rtl"] .accordion-icon {
 .accordion .descr-term button[aria-expanded="true"] .accordion-icon::before,
 .accordion .descr-term button[aria-expanded="true"] .accordion-icon::after {
   transform: rotate(90deg);
+  background: var(--color-white);
 }
 
 .accordion .descr-term button[aria-expanded="true"] .accordion-icon::after {
@@ -158,13 +164,14 @@ html[dir="rtl"] .accordion-icon {
 
 .accordion .descr-term button:hover .accordion-icon::before,
 .accordion .descr-term button:hover .accordion-icon::after {
-  background: var(--color-black);
+  background: var(--color-white);
 }
 
 .accordion .descr-term button:focus,
 .accordion .descr-term button:hover,
 .accordion .descr-term button[aria-expanded="true"] {
-  background: #00000005;
+  background: var(--color-black);
+  color: var(--color-white);
 }
 
 .accordion .descr-details p:first-child {
@@ -256,7 +263,11 @@ div.media-p {
   }
 }
 
-@media screen and (min-width: 1200px) {
+@media screen and (min-width: 1280px) {
+  .accordion.foreground {
+    max-width: 1200px;
+  }
+
   .editorial {
     display: flex;
     gap: 54px;
@@ -297,5 +308,11 @@ div.media-p {
   .editorial.expand-all-button .accordion-expand-all {
     grid-column: span 2;
     max-width: 100%;
+  }
+}
+
+@media screen and (min-width: 1680px) {
+  .accordion-container {
+    padding: var(--spacing-l) 0 0;
   }
 }
