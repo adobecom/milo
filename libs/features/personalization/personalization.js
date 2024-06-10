@@ -708,7 +708,6 @@ export async function getManifestConfig(info, variantOverride = false) {
   manifestConfig.manifestUrl = manifestUrl;
   manifestConfig.disabled = disabled;
   manifestConfig.event = event;
-  // manifestConfig.variants = {};
   return manifestConfig;
 }
 
