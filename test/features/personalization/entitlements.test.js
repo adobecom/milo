@@ -1,13 +1,31 @@
 import { expect } from '@esm-bundle/chai';
-import { getConfig } from '../../../libs/utils/utils.js';
+import { readFile } from '@web/test-runner-commands';
+import { assert, stub } from 'sinon';
 import getEntitlements from '../../../libs/features/personalization/entitlements.js';
 
 const config = getConfig();
-config.base = 'http://localhost:6456/libs';
+
+const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
+  resolve({
+    ok: true,
+    [type]: () => data,
+  });
+});
+
+const setFetchResponse = (data, type = 'json') => {
+  window.fetch = stub().returns(getFetchPromise(data, type));
+};
+
+async function loadManifestAndSetResponse(manifestPath) {
+  let manifestJson = await readFile({ path: manifestPath });
+  manifestJson = JSON.parse(manifestJson);
+  setFetchResponse(manifestJson);
+}
 
 describe('entitlements', () => {
   it('Should return any entitlements that match the id', async () => {
     config.env = { name: 'prod' };
+    await loadManifestAndSetResponse();
 
     const destinations = [
       {
