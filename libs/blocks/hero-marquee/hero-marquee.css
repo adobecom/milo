@@ -325,8 +325,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
   /* con-vars support */
   .hero-marquee:is(
-    .bg-mobile, .bg-top-mobile, .bg-bottom-mobile,
-    .bg-mobile-tablet, .bg-top-mobile-tablet, .bg-bottom-mobile-tablet
+    .bg-top-mobile, .bg-top-mobile, .bg-bottom-mobile,
+    .bg-top-mobile-tablet, .bg-top-mobile-tablet, .bg-bottom-mobile-tablet
     ) .background {
       position: relative;
   }
@@ -335,7 +335,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     padding-bottom: unset;
   }
 
-  .hero-marquee.bg-mobile,
+  .hero-marquee.bg-top-mobile,
   .hero-marquee.bg-top-mobile  {
     padding-top: unset;
   }
@@ -348,10 +348,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     padding-bottom: var(--spacing-xl);
   }
 
-  .hero-marquee.bg-mobile:not(.bg-bottom-mobile),
-  .hero-marquee.bg-mobile-tablet:not(.bg-bottom-mobile),
-  .hero-marquee.bg-mobile.media-top-mobile, 
-  .hero-marquee.bg-mobile-tablet.media-top-mobile {
+  .hero-marquee.bg-top-mobile:not(.bg-bottom-mobile),
+  .hero-marquee.bg-top-mobile-tablet:not(.bg-bottom-mobile),
+  .hero-marquee.bg-top-mobile.media-top-mobile, 
+  .hero-marquee.bg-top-mobile-tablet.media-top-mobile {
     padding-top: 0;
   }
 
@@ -395,16 +395,16 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.bg-tablet .background,
   .hero-marquee.bg-top-tablet .background,
   .hero-marquee.bg-bottom-tablet .background,
-  .hero-marquee.bg-mobile-tablet .background,
+  .hero-marquee.bg-top-mobile-tablet .background,
   .hero-marquee.bg-top-mobile-tablet .background,
   .hero-marquee.bg-bottom-mobile-tablet .background  {
     position: relative;
   }
 
   .hero-marquee.bg-tablet,
-  .hero-marquee.bg-mobile-tablet,
+  .hero-marquee.bg-top-mobile-tablet,
   .hero-marquee.bg-tablet.media-top-mobile-tablet,
-  .hero-marquee.bg-mobile-tablet.media-top-mobile-tablet {
+  .hero-marquee.bg-top-mobile-tablet.media-top-mobile-tablet {
     padding-top: 0;
   }
 
@@ -440,7 +440,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   .hero-marquee.bg-tablet,
-  .hero-marquee.bg-mobile-tablet {
+  .hero-marquee.bg-top-mobile-tablet {
     flex-direction: column;
   }
 
