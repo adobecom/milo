@@ -15,6 +15,7 @@ const allowedOrigins = [
   'https://business.adobe.com',
   'https://blog.adobe.com',
   'https://milo.adobe.com',
+  'https://news.adobe.com',
 ];
 
 export const selectors = {
