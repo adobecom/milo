@@ -331,13 +331,12 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
       position: relative;
   }
 
-  .hero-marquee.bg-bottom-mobile {
-    padding-bottom: unset;
-  }
-
-  .hero-marquee.bg-top-mobile,
   .hero-marquee.bg-top-mobile  {
     padding-top: unset;
+  }
+
+  .hero-marquee.bg-bottom-mobile {
+    padding-bottom: unset;
   }
   
   .hero-marquee.media-cover.media-top-mobile,
@@ -392,18 +391,16 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* con-vars support */
-  .hero-marquee.bg-tablet .background,
   .hero-marquee.bg-top-tablet .background,
   .hero-marquee.bg-bottom-tablet .background,
-  .hero-marquee.bg-top-mobile-tablet .background,
   .hero-marquee.bg-top-mobile-tablet .background,
   .hero-marquee.bg-bottom-mobile-tablet .background  {
     position: relative;
   }
 
-  .hero-marquee.bg-tablet,
+  .hero-marquee.bg-top-tablet,
   .hero-marquee.bg-top-mobile-tablet,
-  .hero-marquee.bg-tablet.media-top-mobile-tablet,
+  .hero-marquee.bg-top-tablet.media-top-mobile-tablet,
   .hero-marquee.bg-top-mobile-tablet.media-top-mobile-tablet {
     padding-top: 0;
   }
@@ -439,7 +436,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     justify-content: center;
   }
 
-  .hero-marquee.bg-tablet,
+  .hero-marquee.bg-top-tablet,
   .hero-marquee.bg-top-mobile-tablet {
     flex-direction: column;
   }
