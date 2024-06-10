@@ -158,7 +158,7 @@ export default async function init(el) {
 
   if (asset) {
     asset.parentElement.classList.add('asset');
-    if (el.classList.contains('fg-media-cover')) {
+    if (el.classList.contains('media-cover')) {
       el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     }
   } else {

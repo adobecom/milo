@@ -50,7 +50,7 @@
   width: 100%;
 }
 
-.hero-marquee.fg-media-cover picture {
+.hero-marquee.media-cover picture {
   line-height: 0em;
   display: block;
 }
@@ -293,7 +293,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   font-weight: 700;
 }
 
-.hero-marquee.fg-media-cover.has-bg .asset {
+.hero-marquee.media-cover.has-bg .asset {
   display: none;
 }
 
@@ -308,116 +308,116 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     text-align: center;
   }
   
-  .hero-marquee.fg-media-stack-top-mobile,
-  .hero-marquee.fg-media-stack-top-mobile-tablet {
+  .hero-marquee.media-top-mobile,
+  .hero-marquee.media-top-mobile-tablet {
     flex-direction: column-reverse;
   }
 
-  .hero-marquee.fg-media-stack-top-mobile .foreground .copy,
-  .hero-marquee.fg-media-stack-top-mobile-tablet .foreground .copy {
+  .hero-marquee.media-top-mobile .foreground .copy,
+  .hero-marquee.media-top-mobile-tablet .foreground .copy {
     order: 2;
   } 
   
-  .hero-marquee.fg-media-cover:not(.bg-stack-bottom-mobile),
-  .hero-marquee.fg-media-cover:not(.fg-media-hidden-mobile) {
+  .hero-marquee.media-cover:not(.bg-bottom-mobile),
+  .hero-marquee.media-cover:not(.media-hidden-mobile) {
     padding-bottom: 0;
   }
 
   /* con-vars support */
   .hero-marquee:is(
-    .bg-stack-mobile, .bg-stack-top-mobile, .bg-stack-bottom-mobile,
-    .bg-stack-mobile-tablet, .bg-stack-top-mobile-tablet, .bg-stack-bottom-mobile-tablet
+    .bg-mobile, .bg-top-mobile, .bg-bottom-mobile,
+    .bg-mobile-tablet, .bg-top-mobile-tablet, .bg-bottom-mobile-tablet
     ) .background {
       position: relative;
   }
 
-  .hero-marquee.bg-stack-bottom-mobile {
+  .hero-marquee.bg-bottom-mobile {
     padding-bottom: unset;
   }
 
-  .hero-marquee.bg-stack-mobile,
-  .hero-marquee.bg-stack-top-mobile  {
+  .hero-marquee.bg-mobile,
+  .hero-marquee.bg-top-mobile  {
     padding-top: unset;
   }
   
-  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile,
-  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet,
-  .hero-marquee.fg-media-cover.fg-media-hidden-mobile:not(.bg-stack-bottom-mobile),
-  .hero-marquee.fg-media-cover.fg-media-hidden-mobile-tablet:not(.bg-stack-bottom-mobile) {
+  .hero-marquee.media-cover.media-top-mobile,
+  .hero-marquee.media-cover.media-top-mobile-tablet,
+  .hero-marquee.media-cover.media-hidden-mobile:not(.bg-bottom-mobile),
+  .hero-marquee.media-cover.media-hidden-mobile-tablet:not(.bg-bottom-mobile) {
     padding-top: 0;
     padding-bottom: var(--spacing-xl);
   }
 
-  .hero-marquee.bg-stack-mobile:not(.bg-stack-bottom-mobile),
-  .hero-marquee.bg-stack-mobile-tablet:not(.bg-stack-bottom-mobile),
-  .hero-marquee.bg-stack-mobile.fg-media-stack-top-mobile, 
-  .hero-marquee.bg-stack-mobile-tablet.fg-media-stack-top-mobile {
+  .hero-marquee.bg-mobile:not(.bg-bottom-mobile),
+  .hero-marquee.bg-mobile-tablet:not(.bg-bottom-mobile),
+  .hero-marquee.bg-mobile.media-top-mobile, 
+  .hero-marquee.bg-mobile-tablet.media-top-mobile {
     padding-top: 0;
   }
 
-  .hero-marquee.bg-stack-bottom-mobile .background {
+  .hero-marquee.bg-bottom-mobile .background {
     order: 2;
   }
   
-  .hero-marquee.fg-media-hidden-mobile .foreground .asset,
-  .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset, 
-  .hero-marquee.fg-media-hidden-mobile .foreground-media,
-  .hero-marquee.fg-media-hidden-mobile-tablet .foreground-media { display: none; }
+  .hero-marquee.media-hidden-mobile .foreground .asset,
+  .hero-marquee.media-hidden-mobile-tablet .foreground .asset, 
+  .hero-marquee.media-hidden-mobile .foreground-media,
+  .hero-marquee.media-hidden-mobile-tablet .foreground-media { display: none; }
 }
 
 /* Tablet ONLY */
 @media screen and (min-width: 600px) and (max-width: 1199px) {
-  .hero-marquee.fg-media-cover:not(.bg-stack-bottom-mobile) {
+  .hero-marquee.media-cover:not(.bg-bottom-mobile) {
     padding-bottom: 0;
   }
   
-  .hero-marquee.fg-media-stack-top-tablet,
-  .hero-marquee.fg-media-stack-top-mobile-tablet,
-  .hero-marquee.fg-media-cover.fg-media-stack-top-tablet,
-  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet {
+  .hero-marquee.media-top-tablet,
+  .hero-marquee.media-top-mobile-tablet,
+  .hero-marquee.media-cover.media-top-tablet,
+  .hero-marquee.media-cover.media-top-mobile-tablet {
     flex-direction: column-reverse;
   }
 
-  .hero-marquee.fg-media-stack-top-tablet > .foreground .copy,
-  .hero-marquee.fg-media-stack-top-mobile-tablet > .foreground .copy {
+  .hero-marquee.media-top-tablet > .foreground .copy,
+  .hero-marquee.media-top-mobile-tablet > .foreground .copy {
     order: 2;
   } 
   
-  .hero-marquee.fg-media-cover.fg-media-stack-top-tablet,
-  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet,
-  .hero-marquee.fg-media-cover.fg-media-hidden-tablet,
-  .hero-marquee.fg-media-cover.fg-media-hidden-mobile-tablet   {
+  .hero-marquee.media-cover.media-top-tablet,
+  .hero-marquee.media-cover.media-top-mobile-tablet,
+  .hero-marquee.media-cover.media-hidden-tablet,
+  .hero-marquee.media-cover.media-hidden-mobile-tablet   {
     padding-top: 0;
     padding-bottom: var(--spacing-xl);
   }
 
   /* con-vars support */
-  .hero-marquee.bg-stack-tablet .background,
-  .hero-marquee.bg-stack-top-tablet .background,
-  .hero-marquee.bg-stack-bottom-tablet .background,
-  .hero-marquee.bg-stack-mobile-tablet .background,
-  .hero-marquee.bg-stack-top-mobile-tablet .background,
-  .hero-marquee.bg-stack-bottom-mobile-tablet .background  {
+  .hero-marquee.bg-tablet .background,
+  .hero-marquee.bg-top-tablet .background,
+  .hero-marquee.bg-bottom-tablet .background,
+  .hero-marquee.bg-mobile-tablet .background,
+  .hero-marquee.bg-top-mobile-tablet .background,
+  .hero-marquee.bg-bottom-mobile-tablet .background  {
     position: relative;
   }
 
-  .hero-marquee.bg-stack-tablet,
-  .hero-marquee.bg-stack-mobile-tablet,
-  .hero-marquee.bg-stack-tablet.fg-media-stack-top-mobile-tablet,
-  .hero-marquee.bg-stack-mobile-tablet.fg-media-stack-top-mobile-tablet {
+  .hero-marquee.bg-tablet,
+  .hero-marquee.bg-mobile-tablet,
+  .hero-marquee.bg-tablet.media-top-mobile-tablet,
+  .hero-marquee.bg-mobile-tablet.media-top-mobile-tablet {
     padding-top: 0;
   }
 
-  .hero-marquee.bg-stack-bottom-tablet .background,
-  .hero-marquee.bg-stack-bottom-mobile-tablet .background {
+  .hero-marquee.bg-bottom-tablet .background,
+  .hero-marquee.bg-bottom-mobile-tablet .background {
     order: 2;
   }
   
   /* helper classes */
-  .hero-marquee.fg-media-hidden-tablet .foreground .asset,
-  .hero-marquee.fg-media-hidden-mobile-tablet .foreground .asset,
-  .hero-marquee.fg-media-hidden-tablet .foreground-media,
-  .hero-marquee.fg-media-hidden-tablet-tablet .foreground-media { display: none; }
+  .hero-marquee.media-hidden-tablet .foreground .asset,
+  .hero-marquee.media-hidden-mobile-tablet .foreground .asset,
+  .hero-marquee.media-hidden-tablet .foreground-media,
+  .hero-marquee.media-hidden-tablet-tablet .foreground-media { display: none; }
 }
 
 /* Tablet UP */
@@ -431,7 +431,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     align-items: center;
   }
   
-  .hero-marquee.fg-media-cover { 
+  .hero-marquee.media-cover { 
     flex-direction: column;
   }
 
@@ -439,8 +439,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     justify-content: center;
   }
 
-  .hero-marquee.bg-stack-tablet,
-  .hero-marquee.bg-stack-mobile-tablet {
+  .hero-marquee.bg-tablet,
+  .hero-marquee.bg-mobile-tablet {
     flex-direction: column;
   }
 
@@ -469,23 +469,23 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     flex-direction: row;
   }
   
-  .hero-marquee.fg-media-cover { 
+  .hero-marquee.media-cover { 
     flex-direction: row;
   }
 
-  .hero-marquee.fg-media-cover picture {
+  .hero-marquee.media-cover picture {
     display: unset;
   }
 
-  .hero-marquee.fg-media-cover.fg-media-stack-top-mobile-tablet {
+  .hero-marquee.media-cover.media-top-mobile-tablet {
     flex-direction: row;
   }
   
-  .hero-marquee.fg-media-cover.has-bg .asset {
+  .hero-marquee.media-cover.has-bg .asset {
     display: initial;
   }
 
-  .hero-marquee.fg-media-stack-top-mobile-tablet > .foreground .copy {
+  .hero-marquee.media-top-mobile-tablet > .foreground .copy {
       order: unset;
   }
 
