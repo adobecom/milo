@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.1.1
+      uses: actions/checkout@v4
 
     - name: Remind PR initiators
-      uses: actions/github-script@v7.0.1
+      uses: actions/github-script@v7
       with:
         script: |
           const main = require('./.github/workflows/pr-reminders.js')
