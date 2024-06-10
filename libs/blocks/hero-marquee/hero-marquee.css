@@ -484,6 +484,11 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     left: 0;
   }
 
+  html[dir="rtl"] .hero-marquee.asset-left .foreground-media {
+    right: 0;
+    left: unset;
+  }
+  
   .hero-marquee.asset-left > .foreground.cols-2 > .asset {
     order: unset;
   }
