@@ -1,8 +1,8 @@
 :root {
   /* border-radius sizes */
-  --s-rounded-corners: 4px;
-  --m-rounded-corners: 8px;
-  --l-rounded-corners: 16px;
+  --s-rounded-corners: var(--s2-corner-radius-100);
+  --m-rounded-corners: var(--s2-corner-radius-500);
+  --l-rounded-corners: var(--s2-corner-radius-900);
   --full-rounded-corners: 50%;
 }
 
