@@ -46,7 +46,6 @@ export function sampleRUM(checkpoint, data = {}) {
       // eslint-disable-next-line object-curly-newline, max-len
       window.hlx.rum = { weight, id, random, isSelected, firstReadTime, sampleRUM, sanitizeURL: urlSanitizers[window.hlx.RUM_MASK_URL || 'path'], rumSessionStorage };
     }
-    if (!window.hlx?.rum) return;
     const { id, firstReadTime } = window.hlx.rum;
     const weight404 = 10;
     const isSelected404 = checkpoint === '404' && (Math.random() * weight404 < 1);
