@@ -8,14 +8,22 @@ const DOT_MILO = '/.milo/config.json';
 
 let config;
 
+function getSiteOrigin() {
+  const search = new URLSearchParams(window.location.search);
+  const repo = search.get('repo');
+  const owner = search.get('owner');
+  return repo && owner ? `https://main--${repo}--${owner}.hlx.live` : window.location.origin;
+}
+
 /**
  * Get Service Config
  * @param {*} origin The origin of the site to pull the config from.
  * @param {*} envName The name of the environment to pull configs for.
  * @returns the config
  */
-export default async function getServiceConfig(origin, envName) {
+export default async function getServiceConfig(suppliedOrigin, envName) {
   if (config) return config;
+  const origin = suppliedOrigin || getSiteOrigin();
   const utilsConfig = getConfig();
   const queryEnv = new URLSearchParams(window.location.search).get('env');
   const env = queryEnv || envName || utilsConfig.env.name;

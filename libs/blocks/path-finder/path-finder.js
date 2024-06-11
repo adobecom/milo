@@ -5,7 +5,7 @@ import { getReqOptions } from '../../tools/sharepoint/msal.js';
 import { createTag } from '../../utils/utils.js';
 
 const SCOPES = ['files.readwrite', 'sites.readwrite.all'];
-const TELEMETRY = { application: { appName: 'Milo - Where am I' } };
+const TELEMETRY = { application: { appName: 'Milo - Path Finder' } };
 
 const getSharePointDetails = (() => {
   let site;
@@ -16,7 +16,7 @@ const getSharePointDetails = (() => {
     if (site && driveId && reqOpts) return { site, driveId, reqOpts };
 
     // Fetching SharePoint details
-    const { sharepoint } = await getServiceConfig(origin);
+    const { sharepoint } = await getServiceConfig();
     ({ site } = sharepoint);
     driveId = sharepoint.driveId ? `drives/${sharepoint.driveId}` : 'drive';
     reqOpts = getReqOptions();
