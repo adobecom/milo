@@ -137,14 +137,17 @@ async function loginToSharePoint() {
 
 async function connectSidekick() {
   return new Promise((resolve) => {
-    const onConnect = ({ detail }) => {
-      if (detail?.data?.profile) {
-        user.value = detail.data.profile;
+    const onStatus = ({ detail }) => {
+      const userInfo = detail?.data?.profile ?? null;
+      user.value = userInfo;
+      if (user.value) {
+        setStatus('details');
         resolve();
+      } else {
+        setStatus('details', 'info', 'Please sign-in to AEM sidekick.');
       }
-      setStatus('details', 'info', 'Please sign-in to AEM sidekick.');
     };
-    connectSK(onConnect, () => {
+    connectSK(onStatus, () => {
       setStatus('details', 'info', 'Please open AEM sidekick to continue.');
     });
   });
