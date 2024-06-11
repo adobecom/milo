@@ -558,6 +558,11 @@ const checkForParamMatch = (paramStr) => {
 };
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
+  const config = getConfig();
+  if (config.mep?.variantOverride?.[manifestPath]) {
+    return config.mep.variantOverride[manifestPath];
+  }
+
   const variantInfo = variantNames.reduce((acc, name) => {
     let nameArr = [name];
     if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
@@ -572,7 +577,6 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
-    const config = getConfig();
     userEntitlements = await config.entitlements();
   }
 
@@ -608,7 +612,7 @@ const createDefaultExperiment = (manifest) => ({
   variants: {},
 });
 
-export async function getPersConfig(info, override = false) {
+export async function getPersConfig(info, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -620,7 +624,7 @@ export async function getPersConfig(info, override = false) {
     disabled,
     event,
   } = info;
-  if (disabled && !override) {
+  if (disabled && !variantOverride) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;
@@ -743,26 +747,19 @@ export async function categorizeActions(experiment) {
   };
 }
 
-function overridePersonalizationVariant(manifest, config) {
-  const { manifestPath, variantNames } = manifest;
-  if (!config.mep?.override) return;
-  let selectedVariant;
-  config.mep?.override?.split('---').some((item) => {
+function parseMepParam(mepParam) {
+  if (!mepParam) return false;
+  const mepObject = Object.create(null);
+  const decodedParam = decodeURIComponent(mepParam);
+  decodedParam.split('---').forEach((item) => {
     const pair = item.trim().split('--');
-    if (pair[0] === manifestPath && pair.length > 1) {
-      [, selectedVariant] = pair;
-      return true;
+    if (pair.length > 1) {
+      const [manifestPath, selectedVariant] = pair;
+      mepObject[manifestPath] = selectedVariant;
     }
-    return false;
   });
-  if (!selectedVariant) return;
-  if (variantNames.includes(selectedVariant)) {
-    manifest.selectedVariantName = selectedVariant;
-    manifest.selectedVariant = manifest.variants[selectedVariant];
-    return;
-  }
-  manifest.selectedVariantName = selectedVariant;
-  manifest.selectedVariant = manifest.variants[selectedVariant];
+
+  return mepObject;
 }
 
 function compareExecutionOrder(a, b) {
@@ -793,7 +790,6 @@ export function cleanAndSortManifestList(manifests) {
       } else {
         manifestObj[manifest.manifestPath] = manifest;
       }
-      if (config.mep?.override) overridePersonalizationVariant(manifest, config);
     } catch (e) {
       console.warn(e);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
@@ -830,7 +826,7 @@ export async function applyPers(manifests, postLCP = false) {
       config.mep = {
         handleFragmentCommand,
         preview: config.mep?.preview,
-        override: mepParam ? decodeURIComponent(mepParam) : '',
+        variantOverride: parseMepParam(mepParam),
         highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
         mepParam,
         targetEnabled: config.mep?.targetEnabled,
@@ -840,7 +836,7 @@ export async function applyPers(manifests, postLCP = false) {
     if (!manifests?.length) return;
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
-      experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
+      experiments[i] = await getPersConfig(experiments[i], config.mep?.variantOverride);
     }
 
     experiments = cleanAndSortManifestList(experiments);
