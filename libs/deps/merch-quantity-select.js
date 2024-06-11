@@ -1,4 +1,4 @@
-// branch: develop commit: 70eec73024148e3b3e8682872a90a9c0a0e68b8e Fri, 07 Jun 2024 14:50:35 GMT
+// branch: develop commit: f499abc85176fc7d34f43457efeeb72adb1e6103 Thu, 30 May 2024 14:05:27 GMT
 import{html as o,LitElement as p}from"/libs/deps/lit-all.min.js";import{css as l}from"/libs/deps/lit-all.min.js";var r=l`
     :host {
         box-sizing: border-box;
@@ -46,12 +46,12 @@ import{html as o,LitElement as p}from"/libs/deps/lit-all.min.js";import{css as l
         border-right: none;
         padding-inline-start: 12px;
         box-sizing: border-box;
-        -moz-appearance: textfield;
     }
 
     .text-field-input::-webkit-inner-spin-button,
     .text-field-input::-webkit-outer-spin-button {
         margin: 0;
+        -moz-appearance: textfield;
         -webkit-appearance: none;
     }
 
