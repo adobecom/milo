@@ -5,12 +5,17 @@ import { closeActionModal, findFragments, syncFragsLangstore } from './index.js'
 
 function SyncFragments() {
   const [fragments, setFragments] = useState(undefined);
+  const [errors, setErrors] = useState(undefined);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const find = await findFragments();
-      if (!cancelled) setFragments(find);
+      const found = await findFragments();
+      if (!cancelled) {
+        setFragments(found);
+        const invalid = found.filter((frag) => frag[0].valid !== undefined && !frag[0].valid);
+        setErrors(invalid.flat(1).map((err) => err.href));
+      }
     })();
     return () => { cancelled = true; };
   }, []);
@@ -26,9 +31,16 @@ function SyncFragments() {
   };
 
   const locFragment = (fragment) => {
-    const disabled = !!urls.value.find((url) => url.href === fragment[0]);
-    const checked = syncFragments.value?.find((url) => url[0] === fragment[0]);
-    const url = new URL(fragment[0]);
+    const disabled = !!urls.value.find((url) => url.href === fragment[0].href);
+    const checked = syncFragments.value?.find((url) => url[0] === fragment[0].href);
+    const url = fragment[0];
+    if (errors.includes(url.href)) {
+      return html`
+        <div class=error-label>
+          <label>not found</label> ${url.pathname}
+        </div>
+      `;
+    }
     return html`
       <div
         frag-url=${url.href}
@@ -42,23 +54,28 @@ function SyncFragments() {
 
   const selectAllButton = () => {
     if (!fragments?.length) return '';
-    const selected = syncFragments.value?.length === fragments?.length;
-    const toggle = () => { syncFragments.value = selected ? [] : fragments; };
+    const validFragments = fragments?.filter((url) => !errors.includes(url[0].href));
+    const selected = syncFragments.value?.length
+      && syncFragments.value?.length === validFragments?.length;
+    const toggle = () => {
+      syncFragments.value = selected ? [] : validFragments.map((fragment) => [fragment[0].href]);
+    };
+    if (!validFragments?.length) return '';
     return html`
       <div 
         class="select-all${selected ? ' selected' : ''}" 
-        title="Select All"
+        title="Select All Valid"
         onClick=${toggle}>✓</div>
     `;
   };
 
   const syncing = html`<div class=inline-loading>Scanning project for un-synced fragments</div>`;
-  const allFound = html`<div>✓ All Fragments have been added to this project.</div>`;
+  const allFound = html`<div>✓ All valid fragments have been added to this project.</div>`;
   const fragmentStatus = fragments === undefined ? syncing : allFound;
 
   return html`
     <div class=locui-fragments-container>
-    <div class=locui-fragments-list>
+      <div class=locui-fragments-list>
         <span class="un-synced-label${fragments?.length ? ' show' : ''}">
           Un-synced fragments found in docs:
         </div>
@@ -68,6 +85,9 @@ function SyncFragments() {
         ${selectAllButton()}
       </div>
     </div>
+    ${errors?.length ? html`<div class=locui-fragment-errors>
+      Some fragments returned errors during validation. To sync these fragments, please fix errors and try again.
+    </div>` : ''}
   `;
 }
 

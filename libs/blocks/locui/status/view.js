@@ -28,11 +28,14 @@ export function renderLinks(desc, type) {
 function renderDescription(status) {
   const { description, type } = status;
   let message = description;
-  if (Array.isArray(description) && description.length > 1) {
-    message = html`<ol>
-      ${description.map((desc) => html`<li>${renderLinks(desc, type)}</li>`)}
-    </ol>`;
-  } else return renderLinks(message[0], type);
+  if (Array.isArray(description)) {
+    if (description.length > 1) {
+      message = html`<ol>${description.map((desc) => html`
+        <li>${renderLinks(desc, type)}</li>`)}</ol>`;
+    } else {
+      return renderLinks(message[0], type);
+    }
+  }
   return message;
 }
 
