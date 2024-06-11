@@ -496,30 +496,3 @@
     border-bottom-right-radius: inherit;
   }
 }
-
-/* Solid black button temp fix */
-
-.brick.prioritized-placement.black-buttons .con-button {
-  background: var(--text-color);
-  border-color: var(--text-color);
-  color: var(--color-white);
-}
-
-.brick.prioritized-placement.black-buttons .con-button:hover,
-.brick.prioritized-placement.black-buttons .con-button:active {
-  background: var(--color-black);
-  border-color: var(--color-black);
-}
-
-/* .brick.prioritized-placement.black-buttons.dark .con-button {
-  background: var(--color-white);
-  border-color: var(--color-white);
-  color: var(--text-color);
-}
-
-.brick.prioritized-placement.black-buttons.dark .con-button:hover,
-.brick.prioritized-placement.black-buttons.dark .con-button:active {
-  background: var(--color-white);
-  border-color: var(--color-white);
-  color: var(--color-black);
-} */
