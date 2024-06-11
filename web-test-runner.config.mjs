@@ -17,6 +17,7 @@ function customReporter() {
   };
 }
 export default {
+  concurrency: 1,
   coverageConfig: {
     include: [
       '**/libs/**',
@@ -97,5 +98,7 @@ export default {
     </html>`,
   // Comment in the files for selectively running test suites
   // npm run test:file:watch allows to you to run single test file & view the result in a browser.
-  // files: ['**/utils.test.js'],
+  // files: ['**/table.test.js', '**/utils.test.js'],
+  files: ['**/table.test.js', '**/tabs.test.js'],
 };
+// };
