@@ -148,8 +148,8 @@ const getTargetPersonalization = async () => {
   }
 
   return {
-    targetManifests : manifests,
-    targetPropositions : propositions
+    targetManifests: manifests,
+    targetPropositions: propositions,
   };
 
 };
@@ -252,8 +252,8 @@ export default async function init({
       const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
       const manifests = preloadManifests({ targetManifests, persManifests });
       await applyPers(manifests, postLCP);
-      if(targetPropositions?.length) {
-        _satellite.track('propositionDisplay', targetPropositions);
+      if (targetPropositions?.length && window._satellite) {
+        window._satellite.track('propositionDisplay', targetPropositions);
       }
     }
   }
