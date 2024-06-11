@@ -21,7 +21,7 @@ export function renderLinks(desc, type) {
       </span>`;
   }
   return type === 'error'
-    ? html`${desc} <a href="${errorMatrix}" target="_blank">Troubleshoot</a>`
+    ? html`${desc} <a href="${errorMatrix}" target="_blank">See Errors</a>`
     : desc;
 }
 
