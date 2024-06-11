@@ -20,7 +20,7 @@ function decorateNextPreviousBtns() {
   const previousBtn = createTag(
     'button',
     {
-      class: 'carousel-button carousel-previous is-delayed',
+      class: 'carousel-button carousel-previous',
       'aria-label': 'Previous',
       'data-toggle': 'previous',
     },
@@ -30,7 +30,7 @@ function decorateNextPreviousBtns() {
   const nextBtn = createTag(
     'button',
     {
-      class: 'carousel-button carousel-next is-delayed',
+      class: 'carousel-button carousel-next',
       'aria-label': 'Next',
       'data-toggle': 'next',
     },
@@ -43,7 +43,7 @@ function decorateLightboxButtons() {
   const expandBtn = createTag(
     'button',
     {
-      class: 'lightbox-button carousel-expand is-delayed',
+      class: 'lightbox-button carousel-expand',
       'aria-label': 'Open in full screen',
     },
     LIGHTBOX_ICON,
@@ -51,7 +51,7 @@ function decorateLightboxButtons() {
   const closeBtn = createTag(
     'button',
     {
-      class: 'lightbox-button carousel-close is-delayed',
+      class: 'lightbox-button carousel-close',
       'aria-label': 'Close full screen carousel',
     },
     CLOSE_ICON,
@@ -342,7 +342,7 @@ export default function init(el) {
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
   const slideIndicators = decorateSlideIndicators(slides);
-  const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
+  const controlsContainer = createTag('div', { class: 'carousel-controls' });
 
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
@@ -395,11 +395,4 @@ export default function init(el) {
   }
   slides.slice(NoOfVisibleSlides).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
   handleChangingSlides(carouselElements);
-
-  function handleLateLoadingNavigation() {
-    [...el.querySelectorAll('.is-delayed')].forEach((item) => item.classList.remove('is-delayed'));
-    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
-  }
-
-  parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
 }

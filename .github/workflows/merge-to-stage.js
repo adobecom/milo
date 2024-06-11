@@ -15,7 +15,6 @@ const LABELS = {
   highPriority: 'high priority',
   readyForStage: 'Ready for Stage',
   SOTPrefix: 'SOT',
-  zeroImpact: 'zero-impact',
 };
 const TEAM_MENTIONS = [
   '@adobecom/miq-sot',
@@ -25,8 +24,8 @@ const TEAM_MENTIONS = [
   '@adobecom/document-cloud-sot',
 ];
 const SLACK = {
-  merge: ({ html_url, number, title, prefix = '' }) =>
-    `:merged: PR merged to stage: ${prefix} <${html_url}|${number}: ${title}>.`,
+  merge: ({ html_url, number, title }) =>
+    `:merged: PR merged to stage: <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) =>
     `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
@@ -47,7 +46,6 @@ let body = `
 `;
 
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);
-const isZeroImpact = (labels) => labels.includes(LABELS.zeroImpact);
 
 const hasFailingChecks = (checks) =>
   checks.some(
@@ -82,23 +80,11 @@ const getPRs = async () => {
     return true;
   });
 
-  return prs.reverse().reduce(
-    (categorizedPRs, pr) => {
-      if (isZeroImpact(pr.labels)) {
-        categorizedPRs.zeroImpactPRs.push(pr);
-      } else if (isHighPrio(pr.labels)) {
-        categorizedPRs.highImpactPRs.push(pr);
-      } else {
-        categorizedPRs.normalPRs.push(pr);
-      }
-      return categorizedPRs;
-    },
-    { zeroImpactPRs: [], highImpactPRs: [], normalPRs: [] }
-  );
+  return prs.reverse(); // OLD PRs first
 };
 
-const merge = async ({ prs, type }) => {
-  console.log(`Merging ${prs.length || 0} ${type} PRs that are ready... `);
+const merge = async ({ prs }) => {
+  console.log(`Merging ${prs.length || 0} PRs that are ready... `);
 
   for await (const { number, files, html_url, title } of prs) {
     try {
@@ -106,10 +92,7 @@ const merge = async ({ prs, type }) => {
         console.log(`Skipping ${number}: ${title} due to overlap in files.`);
         continue;
       }
-      if (type !== LABELS.zeroImpact) {
-        files.forEach((file) => (SEEN[file] = true));
-      }
-
+      files.forEach((file) => (SEEN[file] = true));
       if (!process.env.LOCAL_RUN) {
         await github.rest.pulls.merge({
           owner,
@@ -118,14 +101,12 @@ const merge = async ({ prs, type }) => {
           merge_method: 'squash',
         });
       }
-      const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
-      body = `-${prefix} ${html_url}\n${body}`;
+      body = `- ${html_url}\n${body}`;
       await slackNotification(
         SLACK.merge({
           html_url,
           number,
           title,
-          prefix,
         })
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -204,12 +185,11 @@ const main = async (params) => {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
     if (stageToMainPR) body = stageToMainPR.body;
-    const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
-    await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
     if (stageToMainPR?.labels.some((label) => label.includes(LABELS.SOTPrefix)))
       return console.log('PR exists & testing started. Stopping execution.');
-    await merge({ prs: highImpactPRs, type: LABELS.highPriority });
-    await merge({ prs: normalPRs, type: 'normal' });
+    const prs = await getPRs();
+    await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });
+    await merge({ prs: prs.filter(({ labels }) => !isHighPrio(labels)) });
     if (!stageToMainPR) await openStageToMainPR();
     if (stageToMainPR && body !== stageToMainPR.body) {
       console.log("Updating PR's body...");
