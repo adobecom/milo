@@ -151,7 +151,6 @@ const getTargetPersonalization = async () => {
     targetManifests: manifests,
     targetPropositions: propositions,
   };
-
 };
 
 const getDtmLib = (env) => ({
