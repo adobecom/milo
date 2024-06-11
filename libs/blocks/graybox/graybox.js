@@ -50,11 +50,11 @@ const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod/i.test(navigator.us
 const getTableValues = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (!row.children) return rdx;
 
-  const key = row.children[0].textContent?.trim().toLowerCase();
+  const key = row.children[0]?.textContent?.trim().toLowerCase();
   const content = row.children[1];
   let text = content?.textContent.trim();
   /* c8 ignore next 3 */
-  if (key !== 'title' && key !== 'desc') {
+  if (key !== 'title' && key !== 'desc' && text) {
     text = text.toLowerCase();
   }
   if (key && content) {
@@ -248,8 +248,10 @@ const addPageOverlayDiv = () => {
 };
 
 const setupChangedEls = (globalNoClick) => {
-  const gbChangedEls = [...document.querySelectorAll(`.${CLASS.CHANGED}`)];
-  gbChangedEls.forEach((el) => {
+  const changedElSel = `.${CLASS.CHANGED}:not(main > div), main > div.${CLASS.CHANGED} > div:not(.${CLASS.NO_CHANGE})`;
+  const changedSectionSel = `main > div.${CLASS.CHANGED}`;
+  const gbChangedEls = [...document.querySelectorAll(changedElSel)];
+  [...gbChangedEls, ...document.querySelectorAll(changedSectionSel)].forEach((el) => {
     if (!el.style.backgroundColor) el.style.backgroundColor = 'white';
   });
   if (globalNoClick) {

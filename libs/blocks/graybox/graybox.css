@@ -42,7 +42,7 @@
 .gb-no-click::after {
   content: "";
   height: 100%;
-  pointer-events: all;
+  pointer-events: none;
   position: absolute;
   width: 100%;
   z-index: var(--above-all);
