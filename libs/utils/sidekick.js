@@ -96,7 +96,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   stylePublish(sk);
 }
 
-function onSidekickAvailable(callback) {
+function onSkLoaded(callback) {
   // sidekick nextGen
   const observer = new MutationObserver(() => {
     const sidekick = document.querySelector('aem-sidekick');
@@ -113,15 +113,15 @@ function onSidekickAvailable(callback) {
   }, { once: true });
 }
 
-export function connectAemSK(setStatus, notLoaded = null) {
-  const isOpen = document.querySelector('helix-sidekick')
+export function connectSK(status, standby = null) {
+  const sidekick = document.querySelector('helix-sidekick')
     || document.querySelector('aem-sidekick');
-  if (isOpen) {
-    isOpen.addEventListener('statusfetched', setStatus);
+  if (sidekick) {
+    sidekick.addEventListener('statusfetched', status);
   } else {
-    notLoaded?.();
-    onSidekickAvailable((sidekick) => {
-      sidekick?.addEventListener('statusfetched', setStatus);
+    standby?.();
+    onSkLoaded((sk) => {
+      sk?.addEventListener('statusfetched', status);
     });
   }
 }
