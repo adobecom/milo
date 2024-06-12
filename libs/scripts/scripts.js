@@ -19,6 +19,14 @@ import {
 // Production Domain
 const prodDomains = ['milo.adobe.com'];
 
+const stageDomainsMap = {
+  'www.adobe.com': 'www.stage.adobe.com',
+  'blog.adobe.com': 'blog.stage.adobe.com',
+  'business.adobe.com': 'business.stage.adobe.com',
+  'helpx.adobe.com': 'helpx.stage.adobe.com',
+  'news.adobe.com': 'news.stage.adobe.com',
+};
+
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
   ae_ar: { ietf: 'ar-AE', tk: 'lpk1hwn.css', dir: 'rtl' },
@@ -106,7 +114,7 @@ const locales = {
   si: { ietf: 'sl-SI', tk: 'qxw8hzm.css' },
   sk: { ietf: 'sk-SK', tk: 'qxw8hzm.css' },
   th_en: { ietf: 'en', tk: 'hah7vzn.css' },
-  th_th: { ietf: 'th', tk: 'qxw8hzm.css' },
+  th_th: { ietf: 'th', tk: 'lqo2bst.css' },
   tr: { ietf: 'tr-TR', tk: 'qxw8hzm.css' },
   tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
   ua: { ietf: 'uk-UA', tk: 'qxw8hzm.css' },
@@ -127,6 +135,7 @@ const config = {
   codeRoot: '/libs',
   locales,
   prodDomains,
+  stageDomainsMap,
   jarvis: {
     id: 'milo',
     version: '1.0',

@@ -15,6 +15,7 @@ const allowedOrigins = [
   'https://business.adobe.com',
   'https://blog.adobe.com',
   'https://milo.adobe.com',
+  'https://news.adobe.com',
 ];
 
 export const selectors = {
@@ -147,7 +148,7 @@ let fedsPlaceholderConfig;
 export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
 
-  const { locale } = getConfig();
+  const { locale, placeholders } = getConfig();
   const libOrigin = getFederatedContentRoot();
 
   fedsPlaceholderConfig = {
@@ -155,6 +156,7 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
       ...locale,
       contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
     },
+    placeholders,
   };
 
   return fedsPlaceholderConfig;

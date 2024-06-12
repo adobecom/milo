@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-import { checkUrl } from '../../../tools/send-to-caas/send-utils.js';
+import { checkUrl, getOrigin, setConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -17,5 +17,11 @@ describe('checkUrl function', () => {
     const inputUrl = 'https://milo.adobe.com/index.html';
     const result = checkUrl(inputUrl, 'Error message');
     expect(result).to.equal(inputUrl);
+  });
+
+  it('should return consumer mapping when set', () => {
+    setConfig({ project: 'dc' });
+    const result = getOrigin('someFloodgateColor');
+    expect(result).to.equal('doccloud');
   });
 });
