@@ -478,6 +478,7 @@ main > .section,
 .fragment > .section {
   display: block;
   position: relative;
+  overflow-x: hidden;
 }
 
 main > .section > .content,
@@ -485,7 +486,6 @@ main > .section > .content,
   display: block;
   max-width: var(--grid-container-width);
   margin: 0 auto;
-  overflow-x: hidden;
 }
 
 div[data-failed="true"] {
