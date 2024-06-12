@@ -1437,4 +1437,19 @@ describe('global navigation', () => {
       ).to.be.true;
     });
   });
+
+  describe('Dynamic nav', () => {
+    describe('Breadcrumbs', () => {
+      it('should not decorate breadcrumbs when dynamic nav is active', async () => {
+        const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
+        document.head.append(dynamicNavOn);
+        document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+        window.sessionStorage.setItem('dynamicNavKey', 'milo');
+        window.sessionStorage.setItem('gnavSource', '/some-path');
+        await initGnav(document.body.querySelector('header'));
+        const breadcrumbs = document.querySelector('.feds-breadcrumbs');
+        expect(breadcrumbs).to.be.null;
+      });
+    });
+  });
 });
