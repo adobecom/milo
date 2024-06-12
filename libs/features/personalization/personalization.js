@@ -786,7 +786,6 @@ export function cleanAndSortManifestList(manifests) {
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
-        delete freshManifest.variants;
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
         manifestObj[manifest.manifestPath] = manifest;
