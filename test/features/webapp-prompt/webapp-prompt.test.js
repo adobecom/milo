@@ -180,7 +180,7 @@ describe('PEP', () => {
   });
 
   describe('PEP dismissal tests', () => {
-    it('should add three rings to the app switcher and remove them after the alloted time', async () => {
+    it('adds three rings to the app switcher and removes them after the required amount of time', async () => {
       await initPep({});
       await clock.runAllAsync();
       document.querySelector(allSelectors.closeIcon).click();
@@ -189,12 +189,21 @@ describe('PEP', () => {
       expect([...document.querySelectorAll(allSelectors.indicatorRing)].length).to.equal(0);
     });
 
-    it('should add a data attribute to the app switcher with the correct data and remove it after the allotted time', async () => {
+    it('adds a data attribute to the app switcher with the correct data and removes it after the allotted time', async () => {
       await initPep({});
       await clock.runAllAsync();
       document.querySelector(allSelectors.closeIcon).click();
       expect(document.querySelector(allSelectors.tooltip)).to.exist;
       await clock.runAllAsync();
+      expect(document.querySelector(allSelectors.tooltip)).to.not.exist;
+    });
+
+    it('removes the dismissal animation and the tooltip upon clicking the anchor element', async () => {
+      await initPep({});
+      await clock.runAllAsync();
+      document.querySelector(allSelectors.closeIcon).click();
+      expect(document.querySelector(allSelectors.tooltip)).to.exist;
+      document.querySelector(allSelectors.appSwitcher).click();
       expect(document.querySelector(allSelectors.tooltip)).to.not.exist;
     });
   });
