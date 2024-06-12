@@ -34,20 +34,12 @@ export function formatExcelDate(date) {
   let newDate;
 
   if (!Number.isNaN(+date)) {
-    const hours = Math.floor((+date % 1) * 24);
-    const minutes = Math.floor((((+date % 1) * 24) - hours) * 60);
-    const offsetUTC = 24 - (new Date().getTimezoneOffset() / 60);
-
-    newDate = new Date(Date.UTC(0, 0, +date, hours - offsetUTC, minutes));
+    newDate = +date > 99999
+      ? new Date(+date * 1000)
+      : new Date(Math.round((+date - (1 + 25567 + 1)) * 86400 * 1000));
   } else {
     newDate = new Date(date);
   }
 
-  const localDateFormat = new Date(
-    newDate.getFullYear(),
-    newDate.getMonth(),
-    newDate.getDate(),
-  );
-
-  return localDateFormat.toLocaleString([], { dateStyle: 'short' });
+  return newDate.toLocaleString([], { dateStyle: 'short', timeZone: 'GMT' });
 }
