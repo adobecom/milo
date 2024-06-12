@@ -87,10 +87,15 @@ export async function getServiceConfigFg(origin) {
   if (!resp.ok) return { error: 'Could not fetch .milo/config.' };
   const json = await resp.json();
   const configs = {};
-  const rowIndex = json.configs.data.findIndex((row) => row.key === 'prod.sharepoint.driveId');
+  const driveIdRowIndex = json.configs.data.findIndex((row) => row.key === 'prod.sharepoint.driveId');
+  const siteRowIndex = json.configs.data.findIndex((row) => row.key === 'prod.sharepoint.site');
   let configDriveId;
-  if (rowIndex !== -1) {
-    configDriveId = json.configs.data[rowIndex].value;
+  let configSite;
+  if (driveIdRowIndex !== -1) {
+    configDriveId = json.configs.data[driveIdRowIndex].value;
+  }
+  if (siteRowIndex !== -1) {
+    configSite = json.configs.data[siteRowIndex].value;
   }
   const enablePromoteIndex = json.floodgate.data.findIndex((row) => row.key === 'sharepoint.site.enablePromote');
   if (enablePromoteIndex !== -1) {
@@ -113,8 +118,11 @@ export async function getServiceConfigFg(origin) {
       configs[confEnv][confService][confType] = conf.value;
     }
   });
-  if (rowIndex !== -1) {
+  if (driveIdRowIndex !== -1) {
     configs.driveId = configDriveId;
+  }
+  if (siteRowIndex !== -1) {
+    configs.spSite = configSite;
   }
   configs.promoteIgnorePaths = new Map();
   json.promoteignorepaths.data.forEach((color) => {
