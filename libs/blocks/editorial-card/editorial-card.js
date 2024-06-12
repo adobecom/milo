@@ -16,16 +16,34 @@ function decorateLockupFromContent(el) {
   }
 }
 
+const extendDeviceContent = (el) => {
+  const detail = el.querySelector('[class^="detail-"]');
+  const prevElem = detail?.previousElementSibling;
+  if (prevElem) {
+    const prevIsBody = Array.from(prevElem.classList).some((c) => c.startsWith('body-'));
+    if (!prevIsBody) return;
+    prevElem.classList.remove('body-m');
+    prevElem.classList.add('body-xxs', 'device');
+    console.log('prevElem', prevElem, prevIsBody);
+  }
+};
+
 const decorateForeground = (rows, media = 0) => {
   if (media) {
     media.classList.add('media-area');
     const mediaVideo = media.querySelector('video');
     if (mediaVideo) applyHoverPlay(mediaVideo);
   }
-  rows.forEach((row) => {
-    row.classList.add('foreground');
-    decorateLockupFromContent(row);
-    decorateBlockText(row, ['xxl', 'xs', 'xl']);
+  rows.forEach((row, i) => {
+    if (i === 0) {
+      row.classList.add('foreground');
+      decorateLockupFromContent(row);
+    } else if (i === 1) {
+      row.classList.add('footer');
+    } else {
+      row.classList.add('static');
+    }
+    decorateBlockText(row, ['m', 'm', 'm']); // heading, body, detail
     decorateBlockHrs(row);
   });
 };
@@ -41,7 +59,9 @@ const init = (el) => {
   const [head, middle, ...tail] = rows;
   if (rows.length > 1) {
     switch (rows.length) {
+      case 4:
       case 3:
+        // 4 rows (0:bg, 1:media, 2:copy, 3:footer)
         // 3 rows (0:bg, 1:media, 2:copy)
         if (rows[0].textContent.trim() !== '') el.classList.add('has-bg-row');
         decorateBlockBg(el, head);
@@ -63,6 +83,7 @@ const init = (el) => {
       default:
     }
   }
+  extendDeviceContent(el);
   decorateTextOverrides(el);
 };
 
