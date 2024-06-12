@@ -152,7 +152,7 @@ class Footer {
       lanaLog({
         message: 'Issue with loadIcons',
         e: `${file.statusText} url: ${file.url}`,
-        tags: 'errorType=warn,module=global-footer',
+        tags: 'errorType=info,module=global-footer',
       });
     }
     const content = await file.text();

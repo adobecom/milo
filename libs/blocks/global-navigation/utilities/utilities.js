@@ -195,7 +195,7 @@ export function loadStyles(url) {
       lanaLog({
         message: 'GNAV: Error in loadStyles',
         e: `error loading style: ${url}`,
-        tags: 'errorType=error,module=utilities',
+        tags: 'errorType=info,module=utilities',
       });
     }
   });
@@ -348,7 +348,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
     lanaLog({
       message: 'Error in fetchAndProcessPlainHtml',
       e: `${res.statusText} url: ${res.url}`,
-      tags: 'errorType=error,module=utilities',
+      tags: 'errorType=info,module=utilities',
     });
   }
   const text = await res.text();
@@ -384,7 +384,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
         lanaLog({
           message: 'Error in fetchAndProcessPlainHtml',
           e,
-          tags: 'errorType=warn,module=utilities',
+          tags: 'errorType=info,module=utilities',
         });
       });
   }
