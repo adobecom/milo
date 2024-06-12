@@ -7,7 +7,6 @@ function decorateLockupFromContent(el) {
   if (firstRowImg) {
     rows[0].classList.add('lockup-area');
     rows[0].childNodes.forEach((node) => {
-      // console.log(node.nodeType === 3, node.nodeValue !== ' ');
       if (node.nodeType === 3 && node.nodeValue !== ' ') {
         const newSpan = createTag('span', { class: 'lockup-label' }, node.nodeValue);
         node.parentElement.replaceChild(newSpan, node);
@@ -17,6 +16,7 @@ function decorateLockupFromContent(el) {
 }
 
 const extendDeviceContent = (el) => {
+  // check if there is a .body- above the .detail-
   const detail = el.querySelector('[class^="detail-"]');
   const prevElem = detail?.previousElementSibling;
   if (prevElem) {
@@ -24,7 +24,6 @@ const extendDeviceContent = (el) => {
     if (!prevIsBody) return;
     prevElem.classList.remove('body-m');
     prevElem.classList.add('body-xxs', 'device');
-    console.log('prevElem', prevElem, prevIsBody);
   }
 };
 
@@ -66,7 +65,7 @@ const init = (el) => {
   }
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
-  if (rows.length > 1) {
+  if (rows.length >= 1) {
     switch (rows.length) {
       case 4:
       case 3:
@@ -84,9 +83,9 @@ const init = (el) => {
         break;
       case 1:
         // 1 row  (0:copy)
-        rows = head.querySelectorAll(':scope > div');
+        rows = head;
         decorateForeground([rows]);
-        el.classList.add('no-bg');
+        el.classList.add('no-bg', 'no-media');
         break;
       default:
     }

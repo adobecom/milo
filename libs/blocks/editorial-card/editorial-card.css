@@ -63,6 +63,10 @@
   padding-right: 0;
 }
 
+.editorial-card.no-bg.no-media > .foreground {
+  padding-top: 0;
+}
+
 .editorial-card .foreground > div {
   display: flex;
   flex-direction: column;
