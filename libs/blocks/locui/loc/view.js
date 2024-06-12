@@ -1,6 +1,13 @@
 import { html, useEffect } from '../../../deps/htm-preact.js';
 import { autoSetup, setup } from './index.js';
-import { showLogin, heading, languages, urls, serviceStatus } from '../utils/state.js';
+import {
+  showLogin,
+  heading,
+  languages,
+  urls,
+  serviceStatus,
+  user,
+} from '../utils/state.js';
 import { account } from '../../../tools/sharepoint/state.js';
 
 import Heading from '../heading/view.js';
@@ -12,6 +19,14 @@ import Sync from '../sync/view.js';
 
 export default function Localization() {
   useEffect(() => { autoSetup(); }, []);
+
+  if (!user.value) {
+    return html`
+      <h1>Milo Localization</h1>
+      <div><${Status} /></div>
+    `;
+  }
+
   if (!account.value.username) {
     return html`
       <h1>Milo Localization</h1>
