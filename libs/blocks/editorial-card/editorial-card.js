@@ -48,6 +48,15 @@ const decorateForeground = (rows, media = 0) => {
   });
 };
 
+const decorateBgRow = (el, row, node) => {
+  const bgEmpty = row.textContent.trim() === '';
+  if (bgEmpty) {
+    el.classList.add('no-bg');
+  } else {
+    decorateBlockBg(el, node);
+  }
+};
+
 const init = (el) => {
   el.classList.add('con-block');
   if (el.className.includes('rounded-corners')) {
@@ -62,9 +71,8 @@ const init = (el) => {
       case 4:
       case 3:
         // 4 rows (0:bg, 1:media, 2:copy, 3:footer)
-        // 3 rows (0:bg, 1:media, 2:copy)
-        if (rows[0].textContent.trim() !== '') el.classList.add('has-bg-row');
-        decorateBlockBg(el, head);
+        // 3 rows (0:bg, 1:media, 2:copy,)
+        decorateBgRow(el, rows[0], head);
         rows = tail;
         decorateForeground(rows, middle);
         break;
