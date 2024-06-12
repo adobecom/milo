@@ -1,44 +1,26 @@
 import { html } from '../../../deps/htm-preact.js';
 import { statuses } from '../utils/state.js';
-
-const errorMatrix = 'https://milo.adobe.com/docs/authoring/localization#:~:text=at%20render%20time.-,Troubleshooting,-Error%20matrix';
+import errorLinks from './index.js';
 
 function toggleDesc(e) {
   e.target.closest('.locui-status-toast').classList.toggle('open');
 }
 
-export function renderLinks(desc, type) {
-  const linkPattern = /\[(.*?)\]\((.*?)\)/g;
-  const link = linkPattern.exec(desc);
-  if (link) {
-    const msg = desc.replace(linkPattern, '');
-    const [text, href] = link.slice(1);
-    return html`
-      <span>
-        ${msg.substring(0, link.index)}
-        <a href="${href}" target="_blank">${text}</a>
-        ${msg.substring(link.index, msg.length)} 
-      </span>`;
-  }
-  return type === 'error'
-    ? html`${desc} <a href="${errorMatrix}" target="_blank">See Errors</a>`
-    : desc;
-}
-
-function renderDescription(status) {
+function Description({ status }) {
   const { description, type } = status;
+  if (!description) return '';
   let message;
   if (Array.isArray(description)) {
     if (description.length > 1) {
       message = html`<ol>${description.map((desc) => html`
-        <li>${renderLinks(desc, type)}</li>`)}</ol>`;
+        <li>${errorLinks(desc, type)}</li>`)}</ol>`;
     } else {
-      message = renderLinks(message[0], type);
+      message = errorLinks(message[0], type);
     }
   } else {
-    message = renderLinks(description, type);
+    message = errorLinks(description, type);
   }
-  return message;
+  return html`<p class=locui-status-toast-description>${message}</p>`;
 }
 
 function Toast({ status }) {
@@ -50,8 +32,7 @@ function Toast({ status }) {
         <span class=locui-status-toast-text>${status.text}</span>
         ${status.description && html`<div class=locui-status-toast-expand>Expand</div>`}
       </div>
-      ${status.description && html`
-        <p class=locui-status-toast-description>${renderDescription(status)}</p>`}
+      <${Description} status=${status} />
     </div>
   `;
 }
