@@ -15,11 +15,7 @@ import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
 import { getServiceUpdates } from '../utils/miloc.js';
-<<<<<<< HEAD
-import { connectAemSK } from '../../../utils/sidekick.js';
-=======
 import { connectSK } from '../../../utils/sidekick.js';
->>>>>>> c9fc808a56ce10dd43bf0f0857b01151c0bba47f
 
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
