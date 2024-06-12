@@ -235,6 +235,8 @@ main > .section[class*='-up'] > .content {
   display: grid;
 }
 
+.section.align-items-stretch { align-items: stretch; }
+
 /* mobile only */
 @media (max-width: 600px) {
   .section.two-up.reverse-mobile > div:nth-child(1) {

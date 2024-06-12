@@ -1,5 +1,5 @@
-import { createTag } from '../../utils/utils.js';
-import { decorateBlockBg, decorateBlockText, decorateBlockHrs } from '../../utils/decorate.js';
+import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
+import { decorateBlockBg, decorateBlockText, decorateBlockHrs, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
 
 function decorateLockupFromContent(el) {
   const rows = el.querySelectorAll(':scope > div > p');
@@ -7,7 +7,7 @@ function decorateLockupFromContent(el) {
   if (firstRowImg) {
     rows[0].classList.add('lockup-area');
     rows[0].childNodes.forEach((node) => {
-      console.log(node.nodeType === 3, node.nodeValue !== ' ');
+      // console.log(node.nodeType === 3, node.nodeValue !== ' ');
       if (node.nodeType === 3 && node.nodeValue !== ' ') {
         const newSpan = createTag('span', { class: 'lockup-label' }, node.nodeValue);
         node.parentElement.replaceChild(newSpan, node);
@@ -16,22 +16,54 @@ function decorateLockupFromContent(el) {
   }
 }
 
+const decorateForeground = (rows, media = 0) => {
+  if (media) {
+    media.classList.add('media-area');
+    const mediaVideo = media.querySelector('video');
+    if (mediaVideo) applyHoverPlay(mediaVideo);
+  }
+  rows.forEach((row) => {
+    row.classList.add('foreground');
+    decorateLockupFromContent(row);
+    decorateBlockText(row, ['xxl', 'xs', 'xl']);
+    decorateBlockHrs(row);
+  });
+};
+
 const init = (el) => {
   el.classList.add('con-block');
-  let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1) {
-    if (rows[0].textContent !== '') el.classList.add('has-bg');
-    const [head, middle, ...tail] = rows;
-    decorateBlockBg(el, head);
-    middle?.classList.add('media-area');
-    rows = tail;
-    rows.forEach((row) => {
-      row.classList.add('foreground');
-      decorateBlockText(row, ['xxl', 'xs', 'xl']);
-    });
+  if (el.className.includes('rounded-corners')) {
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
+    loadStyle(`${base}/styles/rounded-corners.css`);
   }
-  decorateBlockHrs(rows[0]);
-  decorateLockupFromContent(rows[0]);
+  let rows = el.querySelectorAll(':scope > div');
+  const [head, middle, ...tail] = rows;
+  if (rows.length > 1) {
+    switch (rows.length) {
+      case 3:
+        // 3 rows (0:bg, 1:media, 2:copy)
+        if (rows[0].textContent.trim() !== '') el.classList.add('has-bg-row');
+        decorateBlockBg(el, head);
+        rows = tail;
+        decorateForeground(rows, middle);
+        break;
+      case 2:
+        // 2 rows (0:media, 1:copy)
+        rows = middle;
+        decorateForeground([rows], head);
+        el.classList.add('no-bg');
+        break;
+      case 1:
+        // 1 row  (0:copy)
+        rows = head.querySelectorAll(':scope > div');
+        decorateForeground([rows]);
+        el.classList.add('no-bg');
+        break;
+      default:
+    }
+  }
+  decorateTextOverrides(el);
 };
 
 export default init;

@@ -8,24 +8,28 @@
 
 .rounded-corners,
 .rounded-corners > .background img,
+.rounded-corners-image .media-area picture img,
 .rounded-corners-image .foreground .image picture img {
   border-radius: var(--m-rounded-corners);
 }
 
 .s-rounded-corners,
 .s-rounded-corners > .background img,
+.s-rounded-corners-image .media-area picture img,
 .s-rounded-corners-image .foreground .image picture img {
   border-radius: var(--s-rounded-corners);
 }
 
 .m-rounded-corners,
 .m-rounded-corners > .background img,
+.m-rounded-corners-image .media-area picture img,
 .m-rounded-corners-image .foreground .image picture img {
   border-radius: var(--m-rounded-corners);
 }
 
 .l-rounded-corners,
 .l-rounded-corners > .background img,
+.l-rounded-corners-image .media-area picture img,
 .l-rounded-corners-image .foreground .image picture img {
   border-radius: var(--l-rounded-corners);
 }

@@ -1,10 +1,26 @@
 .editorial-card {
-  background-color: #fafafa;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-gray-300);
   max-width: 360px;
   margin: 0 auto;
-  border-radius: 16px;
   overflow: hidden;
+}
+
+.dark .editorial-card,
+.editorial-card.dark {
+  color: #fff;
+  border-color: var(--color-gray-600);
+}
+
+.editorial-card.no-bg { background: unset;}
+.editorial-card.no-border { border: unset;}
+
+.editorial-card.grow { transition: all .2s ease-in-out; }
+.editorial-card.grow:hover { transform: scale(1.02); }
+
+[class*=-up] .editorial-card {
+  max-width: none;
+  margin: 0;
+  width: 100%;
 }
 
 .editorial-card .media-area picture,
@@ -15,8 +31,8 @@
 
 .editorial-card .media-area img,
 .editorial-card .media-area video {
-  object-fit: contain;
-  object-position: bottom center;
+  object-fit: cover;
+  object-position: center center;
   width: 100%;
   height: 100%;
   max-height: 213px;
@@ -24,6 +40,11 @@
 
 .editorial-card .foreground {
   padding: var(--spacing-xs);
+}
+
+.editorial-card.no-bg .foreground {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .editorial-card .foreground > div {
@@ -39,6 +60,23 @@
   font-weight: bold;
 }
 
+.editorial-card .action-area {
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: var(--spacing-xxs);
+}
+
+.editorial-card.center .lockup-area,
+.editorial-card.center .action-area {
+  justify-content: center;
+}
+
+.editorial-card.right .lockup-area,
+.editorial-card.right .action-area {
+  justify-content: right;
+}
+
 .editorial-card .lockup-area .lockup-label {
   margin: 0 var(--spacing-xxs);
 }
@@ -48,11 +86,14 @@
   height: auto;
 }
 
-.editorial-card .action-area {
-  display: flex;
-  align-items: center;
-  justify-content: right;
-  gap: var(--spacing-xxs);
+.editorial-card.l-lockup .lockup-area img { 
+  min-width: var(--icon-size-l); 
+  max-width: var(--icon-size-l); 
+}
+
+.editorial-card.xl-lockup .lockup-area img { 
+  min-width: var(--icon-size-xl); 
+  max-width: var(--icon-size-xl); 
 }
 
 .editorial-card hr {
@@ -61,6 +102,26 @@
   height: 1px;
   width: 100%;
   margin: var(--spacing-xs) 0;
+}
+
+.editorial-card .background {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.editorial-card .background > div {
+  height: 100%;
+}
+
+.editorial-card .background img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
 
 /* Aspect Ratio */
