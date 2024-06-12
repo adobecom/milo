@@ -50,6 +50,13 @@
   margin-top: auto;
 }
 
+.editorial-card .footer > div {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  row-gap: var(--spacing-xxs);
+}
+
 .editorial-card.no-bg .foreground,
 .editorial-card.no-bg .footer {
   padding-left: 0;
@@ -170,5 +177,8 @@
   text-align: right; 
   justify-items: right; 
 }
+
+.editorial-card.footer-align-left .footer > div { text-align: left; }
 .editorial-card.footer-align-left .action-area { justify-content: left; }
+.editorial-card.footer-align-center .footer > div { text-align: center; }
 .editorial-card.footer-align-center .action-area { justify-content: center; }
