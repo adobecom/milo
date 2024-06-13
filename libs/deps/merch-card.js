@@ -1,4 +1,4 @@
-// branch: MWPW-146856 commit: 13821071c9e3570fa80f5f13f28f3498b7e917bb Thu, 06 Jun 2024 01:19:04 GMT
+// branch: MWPW-146856 commit: 6d41d59aaee5da4d4c69bdc0b074ca4a6db514ec Thu, 13 Jun 2024 10:32:39 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -552,15 +552,7 @@ merch-card-collection > div[slot] p {
     justify-content: center;
     justify-items: stretch;
     gap: var(--consonant-merch-spacing-m);
-}
-
-@media screen and ${c} {
-    .one-merch-card,
-    .two-merch-cards,
-    .three-merch-cards,
-    .four-merch-cards {
-        padding: var(--spacing-m);
-    }
+    padding: var(--spacing-m);
 }
 
 merch-card.background-opacity-70 {
