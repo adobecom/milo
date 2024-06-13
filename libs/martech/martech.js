@@ -252,6 +252,7 @@ export default async function init({
       const manifests = preloadManifests({ targetManifests, persManifests });
       await applyPers(manifests, postLCP);
       if (targetPropositions?.length && window._satellite) {
+        // eslint-disable-next-line no-underscore-dangle
         window._satellite.track('propositionDisplay', targetPropositions);
       }
     }
