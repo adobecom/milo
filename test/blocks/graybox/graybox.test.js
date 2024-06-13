@@ -56,22 +56,21 @@ describe('Graybox', () => {
   });
 
   it('Puts an overlay on the entire page', async () => {
-    expect(document.body.classList.contains('gb-overlay')).to.be.true;
-    const beforeStyle = window.getComputedStyle(document.body, '::before');
+    const overlayDiv = document.querySelector('body > .gb-page-overlay');
+    expect(overlayDiv).to.exist;
+    const beforeStyle = window.getComputedStyle(overlayDiv);
     expect(beforeStyle.backgroundColor).to.equal('rgba(0, 0, 0, 0.45)');
   });
 
   it('Does not put an overlay on gb-changed blocks', async () => {
     const gbChangedEl = document.querySelector('.gb-changed');
     const gbChangedElStyle = window.getComputedStyle(gbChangedEl);
-    expect(gbChangedEl?.classList.contains('gb-no-overlay')).to.be.true;
     expect(gbChangedElStyle.backgroundColor).to.equal('rgb(255, 255, 255)');
   });
 
   it('Does not put an overlay on gb-no-change sections', async () => {
-    const gbChangedSection = document.querySelector('.section.gb-changed');
+    const gbChangedSection = document.querySelector('main > div.gb-changed');
     const gbChangedSectionStyle = window.getComputedStyle(gbChangedSection);
-    expect(gbChangedSection?.classList.contains('gb-no-overlay')).to.be.true;
     expect(gbChangedSectionStyle.backgroundColor).to.equal('rgb(255, 255, 255)');
   });
 
@@ -83,7 +82,7 @@ describe('Graybox', () => {
 
   it('Can use gb-no-click to disable clicks', async () => {
     const noClickEl = document.querySelector('.gb-no-click');
-    const noClickElStyle = window.getComputedStyle(noClickEl, '::before');
-    expect(noClickElStyle.pointerEvents).to.equal('all');
+    const noClickElStyle = window.getComputedStyle(noClickEl, '::after');
+    expect(noClickElStyle.pointerEvents).to.equal('none');
   });
 });

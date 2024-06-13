@@ -18,7 +18,7 @@ const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
-  return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
+  return (filepath) => `${stringsPath || getLocalizedURL(quizConfigPath)}${filepath}`;
 };
 
 async function fetchContentOfFile(path) {
@@ -84,7 +84,8 @@ export const findAndStoreResultData = async (answers = []) => {
   let umbrellaProduct = '';
 
   if (resultData.matchedResults.length > 0) {
-    destinationPage = resultData.matchedResults[0].url;
+    destinationPage = getLocalizedURL(resultData.matchedResults[0].url);
+
     primaryProductCodes = resultData.primary;
     secondaryProductCodes = resultData.secondary;
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result'];
@@ -168,11 +169,11 @@ export const structuredFragments = (
     resultResources?.data?.forEach((row) => {
       if (umbrellaProduct) {
         if (umbrellaProduct && row.product === umbrellaProduct) {
-          structureFragments.push(row[fragment]);
+          structureFragments.push(getLocalizedURL(row[fragment]));
         }
       } else if (primaryProducts?.length > 0 && primaryProducts.includes(row.product)
       && row[fragment]) {
-        structureFragments.push(row[fragment]);
+        structureFragments.push(getLocalizedURL(row[fragment]));
       }
     });
   });
@@ -233,7 +234,7 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
 
       function insertFragment() {
         row[fragKey]?.split(',').forEach((val) => {
-          fragArray.push(val.trim());
+          fragArray.push(getLocalizedURL(val.trim()));
         });
       }
     });
@@ -497,3 +498,9 @@ export const getAnalyticsDataForLocalStorage = (config) => {
 export const isValidUrl = (url) => VALID_URL_RE.test(url);
 
 export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));
+
+export const getLocalizedURL = (originalURL) => {
+  const { locale } = getConfig();
+  const { prefix, ietf = 'en-US' } = locale || {};
+  return ietf !== 'en-US' && !originalURL.startsWith(`${prefix}/`) ? `${prefix}${originalURL}` : originalURL;
+};
