@@ -49,10 +49,7 @@
 }
 
 .editorial-card .footer > div {
-  display: flex;
-  flex-direction: row;
   text-align: right;
-  row-gap: var(--spacing-xxs);
 }
 
 
