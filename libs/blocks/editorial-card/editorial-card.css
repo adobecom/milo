@@ -51,10 +51,7 @@
 }
 
 .editorial-card .footer > div {
-  display: flex;
-  flex-direction: column;
   text-align: right;
-  row-gap: var(--spacing-xxs);
 }
 
 .editorial-card.no-bg .foreground,
