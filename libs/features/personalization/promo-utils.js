@@ -7,13 +7,7 @@ const EMEA = ['ae_en', 'ae_ar', 'africa', 'at', 'be_en', 'be_fr', 'be_nl', 'bg',
 const AMERICAS = ['us', 'ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'cr', 'ec', 'gt', 'la', 'mx', 'pe', 'pr'];
 const JP = ['jp'];
 const REGIONS = { APAC, EMEA, AMERICAS, JP };
-
-const getLocaleCode = () => {
-  const getLocale = () => getConfig()?.locale?.prefix?.substring(1) || 'us';
-  return (getLocale()?.split('-')?.pop() || 'us').toLowerCase();
-};
-
-const localeCode = getLocaleCode();
+const localeCode = getConfig()?.locale?.prefix?.substring(1) || 'us';
 const regionCode = Object.keys(REGIONS)
   .find((r) => REGIONS[r]?.includes(localeCode))?.toLowerCase() || null;
 
@@ -27,10 +21,8 @@ export const isDisabled = (event, searchParams) => {
 };
 
 const isManifestWithinLocale = (locales) => {
-  if (locales) {
-    return locales.split(';').map((locale) => locale.trim()).includes(localeCode);
-  }
-  return true;
+  if (!locales) return true;
+  return locales.split(';').map((locale) => locale.trim()).includes(localeCode);
 };
 
 const getRegionalPromoManifests = (manifestNames, region, searchParams) => {
