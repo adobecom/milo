@@ -28,8 +28,10 @@ export function sampleRUM(checkpoint, data = {}) {
   try {
     window.hlx = window.hlx || {};
     if (!window.hlx.rum) {
-      const usp = new URLSearchParams(window.location.search);
-      const weight = (usp.get('rum') === 'on') ? 1 : 100; // with parameter, weight is 1. Defaults to 100.
+      const weight = (window.SAMPLE_PAGEVIEWS_AT_RATE === 'high' && 10)
+        || (window.SAMPLE_PAGEVIEWS_AT_RATE === 'low' && 1000)
+        || (new URLSearchParams(window.location.search).get('rum') === 'on' && 1)
+        || 100;
       const id = Array.from({ length: 75 }, (_, i) => String.fromCharCode(48 + i)).filter((a) => /\d|[A-Z]/i.test(a)).filter(() => Math.random() * 75 > 70).join('');
       const random = Math.random();
       const isSelected = (random * weight < 1);
@@ -46,11 +48,9 @@ export function sampleRUM(checkpoint, data = {}) {
       // eslint-disable-next-line object-curly-newline, max-len
       window.hlx.rum = { weight, id, random, isSelected, firstReadTime, sampleRUM, sanitizeURL: urlSanitizers[window.hlx.RUM_MASK_URL || 'path'], rumSessionStorage };
     }
-    const { id, firstReadTime } = window.hlx.rum;
-    const weight404 = 10;
-    const isSelected404 = checkpoint === '404' && (Math.random() * weight404 < 1);
-    const weight = isSelected404 ? weight404 : window.hlx.rum.weight;
-    if (window.hlx.rum.isSelected || isSelected404) {
+
+    const { weight, id, firstReadTime } = window.hlx.rum;
+    if (window.hlx && window.hlx.rum && window.hlx.rum.isSelected) {
       const knownProperties = ['weight', 'id', 'referer', 'checkpoint', 't', 'source', 'target', 'cwv', 'CLS', 'FID', 'LCP', 'INP', 'TTFB'];
       const sendPing = (pdata = data) => {
         // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define
