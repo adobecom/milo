@@ -49,7 +49,11 @@
 }
 
 .editorial-card .footer > div {
+  display: flex;
+  flex-direction: column;
   text-align: right;
+  justify-content: end;
+  row-gap: var(--spacing-xxs);
 }
 
 
@@ -94,12 +98,14 @@
   margin: 0;
 }
 
-.editorial-card .action-area {
+.editorial-card .action-area, 
+.editorial-card .footer > .action-area {
   display: flex;
   align-items: center;
   justify-content: right;
   gap: var(--spacing-xxs);
   flex-flow: wrap;
+  flex-direction: row;
 }
 
 .editorial-card .action-area .con-button { 
