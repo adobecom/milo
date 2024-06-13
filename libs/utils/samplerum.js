@@ -29,9 +29,9 @@ export function sampleRUM(checkpoint, data = {}) {
     window.hlx = window.hlx || {};
     if (!window.hlx.rum) {
       const weight = (window.SAMPLE_PAGEVIEWS_AT_RATE === 'high' && 10)
-        || (window.SAMPLE_PAGEVIEWS_AT_RATE === 'low' && 1000)
-        || (new URLSearchParams(window.location.search).get('rum') === 'on' && 1)
-        || 100;
+      || (window.SAMPLE_PAGEVIEWS_AT_RATE === 'low' && 1000)
+      || (new URLSearchParams(window.location.search).get('rum') === 'on' && 1)
+      || 100;
       const id = Array.from({ length: 75 }, (_, i) => String.fromCharCode(48 + i)).filter((a) => /\d|[A-Z]/i.test(a)).filter(() => Math.random() * 75 > 70).join('');
       const random = Math.random();
       const isSelected = (random * weight < 1);

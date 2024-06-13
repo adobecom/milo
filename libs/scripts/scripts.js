@@ -161,6 +161,9 @@ const eagerLoad = (img) => {
 }());
 
 (async function loadPage() {
+  if (document.head.querySelector('meta[name="template"]')?.content === '404') {
+    window.SAMPLE_PAGEVIEWS_AT_RATE = 'high';
+  }
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
