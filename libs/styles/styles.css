@@ -872,6 +872,9 @@ a.static:hover {
   .con-block.xl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xl-static); }
   .con-block.xxl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xxl-static); }
   .con-block.xxxl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xxxl-static); }
+  
+  /* margin */
+  .con-block.margin-top-tablet { margin-top: var(--spacing-s); }
 }
 
 /* tablet large up */
@@ -944,6 +947,9 @@ a.static:hover {
   .con-block.xl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xl-static); }
   .con-block.xxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxl-static); }
   .con-block.xxxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxxl-static); }
+
+  /* margin */
+  .con-block.margin-top-desktop { margin-top: var(--spacing-s); }
 }
 
 /* desktop large < 1440 */

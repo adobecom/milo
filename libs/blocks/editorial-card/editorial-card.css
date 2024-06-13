@@ -1,7 +1,6 @@
 .editorial-card {
   border: 1px solid var(--color-gray-300);
   max-width: 360px;
-  margin: 0 auto;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -21,7 +20,6 @@
 
 [class*=-up] .editorial-card {
   max-width: none;
-  margin: 0;
   width: 100%;
 }
 
@@ -51,8 +49,12 @@
 }
 
 .editorial-card .footer > div {
+  display: flex;
+  flex-direction: row;
   text-align: right;
+  row-gap: var(--spacing-xxs);
 }
+
 
 .editorial-card.no-bg .foreground,
 .editorial-card.no-bg .footer {
@@ -68,6 +70,13 @@
   display: flex;
   flex-direction: column;
   row-gap: var(--spacing-xxs);
+}
+
+/* TODO: this shouldn't be tied to .no-bg :shrug: 
+.xs-copy-row-gap 
+*/
+.editorial-card.no-bg .foreground > div { 
+  row-gap: var(--spacing-xs);
 }
 
 .editorial-card .background img {
