@@ -150,6 +150,18 @@
     },
     {
       "containerId": "tools",
+      "id": "graybox-promote",
+      "title": "Graybox Promote",
+      "environments": [ "preview" ],
+      "url": "/tools/graybox-promote",
+      "isPalette": true,
+      "passReferrer": true,
+      "passConfig": true,
+      "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 498px; width: 460px;",
+      "includePaths": [ "*.json" ]
+    },
+    {
+      "containerId": "tools",
       "id": "caas-configurator",
       "title": "CaaS Configurator",
       "environments": [ "edit", "preview", "dev" ],
