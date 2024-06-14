@@ -1,7 +1,6 @@
 import { html, render, useContext, useState, useEffect } from '../../deps/htm-preact.js';
-import { utf8ToB64, loadBlock, createTag } from '../../utils/utils.js';
-import { setPreferences } from '../marketo/marketo.js';
-import { ConfiguratorContext, ConfiguratorProvider, saveStateToLocalStorage } from './context.js';
+import { loadBlock, createTag } from '../../utils/utils.js';
+import { ConfiguratorContext, ConfiguratorProvider, saveStateToLocalStorage, loadStateFromLocalStorage } from './context.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import CopyBtn from '../../ui/controls/CopyBtn.js';
 import { Input, Select } from '../../ui/controls/formControls.js';
@@ -64,12 +63,13 @@ const Fields = ({ fieldsData }) => {
 
   return fieldsData.map((field) => {
     const { prop } = field;
+    const id = prop.replaceAll(' ', '-');
     const value = state?.[prop];
     const required = field.required === 'yes';
 
     if (!field.options) {
       return html`
-        <${Input} label=${field.label} name=${prop} tooltip=${field.description} type="text" value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
+        <${Input} label=${field.label} name=${id} tooltip=${field.description} type="text" value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
       `;
     }
 
@@ -85,7 +85,7 @@ const Fields = ({ fieldsData }) => {
     }
 
     return html`
-      <${Select} label=${field.label} name=${prop} options=${options} tooltip=${field.description} value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
+      <${Select} label=${field.label} name=${id} options=${options} tooltip=${field.description} value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
     `;
   });
 };
@@ -97,7 +97,7 @@ const validateState = (state, panelsData) => {
     panelConfig.forEach((field) => {
       if (field?.prop) {
         const key = field.prop;
-        if (key in state) {
+        if (key in state && state[key]) {
           validatedState[key] = state[key];
         }
       }
@@ -136,15 +136,9 @@ const getPanels = (panelsData, lsKey) => {
   return panels;
 };
 
-const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
+const Configurator = ({ title, panelsData, lsKey }) => {
   const { state } = useContext(ConfiguratorContext);
   const panels = getPanels(panelsData);
-
-  const getUrl = () => {
-    const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
-  };
-
   const configFormValidation = () => {
     const invalidInputs = document.querySelectorAll('.input-invalid');
     const hasInputsValid = invalidInputs.length === 0;
@@ -162,39 +156,43 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
     return hasInputsValid;
   };
 
-  const getContent = () => {
-    const url = getUrl();
-    const dateStr = new Date().toLocaleString('us-EN', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: false,
+  function createBlockTable(blockClass, validatedState) {
+    const colspan = 2;
+    const th = createTag('th', { colspan }, blockClass);
+    const headersRow = createTag('tr', null, th);
+    const thead = createTag('thead', null, headersRow);
+
+    const tbody = Object.entries(validatedState).map(([key, value]) => {
+      const tdKey = createTag('td', { style: 'width: 50%' }, key);
+      const tdValue = createTag('td', { style: 'width: 50%' }, value);
+      return createTag('tr', null, [tdKey, tdValue]);
     });
 
+    const table = createTag('table', { border: '1', width: '100%' }, [thead, ...tbody]);
+
+    return table;
+  }
+
+  const getContent = () => {
+    const validatedState = validateState(state, panelsData);
+    const marketoBlk = createBlockTable('marketo', validatedState);
+
     return {
-      content: url,
-      contentHtml: `<a href=${url}>${title} Configurator ${dateStr}</a>`,
+      content: marketoBlk.outerHTML,
+      contentHtml: marketoBlk.outerHTML,
     };
   };
 
   useEffect(() => {
-    const validatedState = validateState(state, panelsData);
-    setPreferences(validatedState);
-    saveStateToLocalStorage(validatedState, lsKey);
-  }, [state]);
-
-  useEffect(() => {
-    const url = getUrl();
-    const blockLink = createTag('a', { href: url }, url);
-    const blockContent = createTag('div', {}, blockLink);
-    const newBlockEl = createTag('div', { class: blockClass }, blockContent);
     const contentEl = document.querySelector('.content-panel');
-    contentEl.append(newBlockEl);
-    loadBlock(newBlockEl);
-  }, []);
+    const validatedState = validateState(state, panelsData);
+    saveStateToLocalStorage(validatedState, lsKey);
+
+    const iframe = createTag('iframe', { src: window.location.href });
+    const table = createBlockTable('marketo', validatedState);
+
+    contentEl.replaceChildren(iframe, table);
+  }, [state]);
 
   return html`
     <div class="tool-header">
@@ -213,15 +211,14 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
   `;
 };
 
-const ConfiguratorWrapper = ({ title, link }) => {
-  const blockClass = 'marketo';
+const ConfiguratorWrapper = ({ title, options }) => {
   const lsKey = `${title.toLowerCase().replace(' ', '-')}-ConfiguratorState`;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
-    fetchData(link)
+    fetchData(options)
       .then((json) => {
         const config = getConfigOptions(json);
         Object.values(config).forEach((panelData) => {
@@ -235,7 +232,7 @@ const ConfiguratorWrapper = ({ title, link }) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [link]);
+  }, [options]);
 
   if (loading) {
     return html`
@@ -267,19 +264,46 @@ const ConfiguratorWrapper = ({ title, link }) => {
 
   return html`
   <${ConfiguratorProvider} defaultState=${defaults} lsKey=${lsKey}>
-    <${Configurator} title=${title} blockClass=${blockClass} panelsData=${data} lsKey=${lsKey} />
+    <${Configurator} title=${title} panelsData=${data} lsKey=${lsKey} />
   </${ConfiguratorProvider}>
   `;
 };
 
+function createBlockDiv(blockClass, data) {
+  const block = createTag('div', { class: blockClass });
+
+  if (!data) return block;
+
+  Object.entries(data).forEach(([key, value]) => {
+    const divKey = createTag('div', null, key);
+    const divValue = createTag('div', null, value);
+    const div = createTag('div', null, [divKey, divValue]);
+    block.appendChild(div);
+  });
+
+  return block;
+}
+
 export default async function init(el) {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const title = children[0].textContent.trim();
-  const linkElement = children[1].querySelector('a[href$="json"]');
-  const link = linkElement?.href;
+  // If the block is loaded in an iframe, replace it with the block itself
+  if (window.self !== window.top) {
+    console.log('loading from iframe');
+
+    const lsKey = `${title.toLowerCase().replace(' ', '-')}-ConfiguratorState`;
+    // const state = JSON.parse(localStorage.getItem('marketo-ConfiguratorState'));
+    const state = loadStateFromLocalStorage(lsKey);
+    const marketoBlock = createBlockDiv('marketo', state);
+    el.replaceWith(marketoBlock);
+    await loadBlock(marketoBlock);
+    return;
+  }
+  const optionsUrl = children[1].querySelector('a[href$="json"]')?.href;
+  el.innerHTML = '';
 
   const app = html`
-    <${ConfiguratorWrapper} title=${title} link=${link} />
+    <${ConfiguratorWrapper} title=${title} options=${optionsUrl} />
   `;
 
   render(app, el);

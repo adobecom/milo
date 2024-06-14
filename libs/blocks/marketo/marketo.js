@@ -19,6 +19,8 @@ import {
   loadLink,
   localizeLink,
   createTag,
+  getMetadata,
+  getConfig,
   createIntersectionObserver,
 } from '../../utils/utils.js';
 
@@ -30,6 +32,9 @@ const SUCCESS_TYPE = 'form.success.type';
 const SUCCESS_CONTENT = 'form.success.content';
 const SUCCESS_SECTION = 'form.success.section';
 const FORM_MAP = {
+  'marketo-host': BASE_URL,
+  'marketo-munckin': MUNCHKIN_ID,
+  'form-id': FORM_ID,
   'success-type': SUCCESS_TYPE,
   'destination-type': SUCCESS_TYPE,
   'success-content': SUCCESS_CONTENT,
@@ -38,13 +43,14 @@ const FORM_MAP = {
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
+const TEMPLATE_URL = '/drafts/bmarshal/marketo-nobu/marketo-templates.json';
 
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
 };
 
-export const decorateURL = (destination, baseURL = window.location) => {
+export const decorateURL = (destination = '', baseURL = window.location) => {
   if (!(destination.startsWith('http') || destination.startsWith('/'))) return null;
 
   try {
@@ -150,8 +156,28 @@ export const loadMarketo = (el, formData) => {
   const munchkinID = formData[MUNCHKIN_ID];
   const formID = formData[FORM_ID];
 
-  loadScript(`https://${baseURL}/js/forms2/js/forms2.min.js`)
-    .then(() => {
+  const templates = fetch(TEMPLATE_URL)
+    .then((response) => {
+      if (!response.ok) {
+        return {};
+      }
+      return response.json();
+    });
+  const forms2 = loadScript(`https://${baseURL}/js/forms2/js/forms2.min.js`);
+
+  Promise.all([templates, forms2])
+    .then(([templatesData]) => {
+      const template = formData['form.template'].toLowerCase().replaceAll('_', '-');
+      const templateData = templatesData[template]?.data;
+
+      if (templateData) {
+        templateData.forEach((data) => {
+          formData[data.Field.toLowerCase()] = data.Value;
+        });
+      }
+
+      setPreferences(formData);
+      console.log('Data Layer', JSON.stringify(window.mcz_marketoForm_pref, null, 2));
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
@@ -165,29 +191,43 @@ export const loadMarketo = (el, formData) => {
     });
 };
 
-export default function init(el) {
-  const children = Array.from(el.querySelectorAll(':scope > div'));
-  const encodedConfigDiv = children.shift();
-  const link = encodedConfigDiv.querySelector('a');
-
-  if (!link?.href) {
-    el.style.display = 'none';
-    return;
-  }
-
-  const encodedConfig = link.href.split('#')[1];
-  const formData = parseEncodedConfig(encodedConfig);
-
-  children.forEach((element) => {
+function parseChildren(children) {
+  return children.reduce((data, element) => {
     const key = element.children[0]?.textContent.trim().toLowerCase().replaceAll(' ', '-');
     const value = element.children[1]?.href ?? element.children[1]?.textContent;
-    if (!key || !value) return;
+    if (!key || !value) return data;
     if (key in FORM_MAP) {
-      formData[FORM_MAP[key]] = value;
+      data[FORM_MAP[key]] = value;
     } else {
-      formData[key] = value;
+      data[key] = value;
     }
-  });
+    return data;
+  }, {});
+}
+
+export default function init(el) {
+  const { marketo } = getConfig('marketo');
+  const children = Array.from(el.querySelectorAll(':scope > div'));
+  const link = children[0].querySelector('a');
+  let linkData = {};
+
+  if (link?.href) {
+    children.shift();
+    const encodedConfig = link.href.split('#')[1];
+    linkData = parseEncodedConfig(encodedConfig);
+  }
+
+  const blockData = parseChildren(children);
+  const formData = {
+    [FORM_ID]: getMetadata('form-id') ?? marketo?.formId,
+    [BASE_URL]: marketo?.host,
+    [MUNCHKIN_ID]: marketo?.munckin,
+    'form type': 'marketo_form',
+    ...linkData,
+    ...blockData,
+  };
+
+  console.log('Form Data', JSON.stringify(formData, null, 2));
 
   const formID = formData[FORM_ID];
   const baseURL = formData[BASE_URL];
@@ -205,8 +245,6 @@ export default function init(el) {
 
     if (destinationUrl) formData[SUCCESS_CONTENT] = destinationUrl;
   }
-
-  setPreferences(formData);
 
   const fragment = new DocumentFragment();
   const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
