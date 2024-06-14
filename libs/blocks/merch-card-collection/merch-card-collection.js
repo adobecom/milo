@@ -36,7 +36,7 @@ const fail = (el, err = '') => {
   return el;
 };
 
-/** Parse andd prepare cards */
+/** Parse and prepare cards */
 async function getCardsRoot(config, html) {
   const cards = `<div>${html}</div>`;
   const fragment = document.createRange().createContextualFragment(

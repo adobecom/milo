@@ -11,6 +11,7 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
 </svg>`;
 
 let isDelayedModal = false;
+let prevHash = '';
 
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
@@ -67,6 +68,10 @@ export function closeModal(modal) {
   const hashId = window.location.hash.replace('#', '');
   if (hashId === modal.id) window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
   isDelayedModal = false;
+  if (prevHash) {
+    window.location.hash = prevHash;
+    prevHash = '';
+  }
 }
 
 function isElementInView(element) {
@@ -256,5 +261,8 @@ window.addEventListener('hashchange', (e) => {
   } else {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
+    if (e.oldURL?.includes('#')) {
+      prevHash = new URL(e.oldURL).hash;
+    }
   }
 });
