@@ -1,4 +1,4 @@
-// branch: MWPW-146856 commit: 6d41d59aaee5da4d4c69bdc0b074ca4a6db514ec Thu, 13 Jun 2024 10:32:39 GMT
+// branch: develop commit: 074fea3f15242a36834be88bb51eaec58799ee75 Fri, 14 Jun 2024 14:18:48 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -221,6 +221,8 @@ import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitEleme
         gap: var(--consonant-merch-spacing-xxs);
         align-items: center;
         flex: 1;
+        height: 100%;
+        line-height: normal;
     }
 
     .secure-transaction-label::before {
