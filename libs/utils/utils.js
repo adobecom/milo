@@ -41,6 +41,7 @@ const MILO_BLOCKS = [
   'icon-block',
   'iframe',
   'instagram',
+  'locui',
   'marketo',
   'marquee',
   'marquee-anchors',
@@ -693,7 +694,9 @@ function decorateHeader() {
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
   const breadcrumbs = document.querySelector('.breadcrumbs');
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
-  if (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
+  const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
+    && window.sessionStorage.getItem('gnavSource') !== null;
+  if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
   const promo = getMetadata('gnav-promo-source');
   if (promo?.length) header.classList.add('has-promo');
