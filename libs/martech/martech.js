@@ -132,6 +132,7 @@ const getTargetPersonalization = async () => {
   }, { once: true });
 
   let manifests = [];
+  let propositions = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   if (response.error) {
     window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
@@ -143,9 +144,13 @@ const getTargetPersonalization = async () => {
   } else {
     sendTargetResponseAnalytics(false, responseStart, timeout);
     manifests = handleAlloyResponse(response.result);
+    propositions = response.result && response.result.propositions;
   }
 
-  return manifests;
+  return {
+    targetManifests: manifests,
+    targetPropositions: propositions,
+  };
 };
 
 const getDtmLib = (env) => ({
@@ -241,11 +246,15 @@ export default async function init({
       { as: 'script', rel: 'modulepreload' },
     );
 
-    const targetManifests = await getTargetPersonalization();
+    const { targetManifests, targetPropositions } = await getTargetPersonalization();
     if (targetManifests?.length || persManifests?.length) {
       const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
       const manifests = preloadManifests({ targetManifests, persManifests });
       await applyPers(manifests, postLCP);
+      if (targetPropositions?.length && window._satellite) {
+        // eslint-disable-next-line no-underscore-dangle
+        window._satellite.track('propositionDisplay', targetPropositions);
+      }
     }
   }
 
