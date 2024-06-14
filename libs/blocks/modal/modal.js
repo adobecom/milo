@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
@@ -20,18 +21,15 @@ export function findDetails(hash, el) {
 }
 
 function fireAnalyticsEvent(event) {
-  // eslint-disable-next-line no-underscore-dangle
-  window._satellite?.track('event', {
+  const data = {
     xdm: {},
-    data: {
-      web: { webInteraction: { name: event?.type } },
-      _adobe_corpnew: { digitalData: event?.data },
-    },
-  });
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew.digitalData = event.data;
+  window._satellite?.track('event', data);
 }
 
 export function sendAnalytics(event) {
-  // eslint-disable-next-line no-underscore-dangle
   if (window._satellite?.track) {
     fireAnalyticsEvent(event);
   } else {
