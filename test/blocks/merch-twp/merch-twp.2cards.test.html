@@ -58,6 +58,8 @@
           const template = document.getElementById('merch-twp');
           const clone = document.importNode(template.content, true);
           main.append(clone);
+          const twpMarkup = document.querySelector('.merch-twp');
+          twpMarkup.querySelectorAll('merch-offer-select')[1].ready = true;
           const twp = await merchTwp(document.querySelector('.merch-twp'));
           await getModal(null, { id: 'twp-modal', content: twp, class: 'twp' });
           expect(document.querySelector('merch-twp-d2p').shadowRoot).to.exist;

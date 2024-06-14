@@ -25,12 +25,6 @@ function createDynamicSlots(el, bodySlot) {
   const descriptionSlot = bodySlot.querySelector('p');
   if (!descriptionSlot) return;
   descriptionSlot.setAttribute('slot', 'description');
-  if (el.variant === MINI_COMPARE_CHART) {
-    const description = el.querySelector('div[slot="body-m"] p:last-child');
-    if (description) {
-      descriptionSlot.innerHTML += description.innerHTML;
-    }
-  }
 }
 
 function createMerchOffer(option, quantitySelector, variant) {
