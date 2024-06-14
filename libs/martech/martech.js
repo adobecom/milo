@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
@@ -220,7 +221,6 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
     const env = ['stage', 'local'].includes(config.env.name) ? '.qa' : '';
     const martechPath = `martech.main.standard${env}.min.js`;
     await loadScript(`${config.miloLibs || config.codeRoot}/deps/${martechPath}`);
-    // eslint-disable-next-line no-underscore-dangle
     window._satellite.track('pageload');
   };
 
@@ -252,7 +252,6 @@ export default async function init({
       const manifests = preloadManifests({ targetManifests, persManifests });
       await applyPers(manifests, postLCP);
       if (targetPropositions?.length && window._satellite) {
-        // eslint-disable-next-line no-underscore-dangle
         window._satellite.track('propositionDisplay', targetPropositions);
       }
     }
