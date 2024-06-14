@@ -551,7 +551,8 @@ header.global-navigation {
   }
 
   .feds-menu-container {
-    min-width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 0 12px 40px;
   }
 
@@ -568,6 +569,8 @@ header.global-navigation {
     right: 0;
     justify-content: center;
     padding: 40px 0 0;
+    max-height: calc(100vh - 100%);
+    overflow: auto;
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
