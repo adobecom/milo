@@ -875,6 +875,7 @@ a.static:hover {
   
   /* margin */
   .con-block.margin-top-tablet { margin-top: var(--spacing-s); }
+  .con-block.margin-bottom-tablet { margin-bottom: var(--spacing-s); }
 }
 
 /* tablet large up */
@@ -950,6 +951,7 @@ a.static:hover {
 
   /* margin */
   .con-block.margin-top-desktop { margin-top: var(--spacing-s); }
+  .con-block.margin-bottom-desktop { margin-bottom: var(--spacing-s); }
 }
 
 /* desktop large < 1440 */
