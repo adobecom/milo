@@ -136,7 +136,7 @@ const getPanels = (panelsData, lsKey) => {
   return panels;
 };
 
-const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
+const Configurator = ({ title, panelsData, lsKey }) => {
   const { state } = useContext(ConfiguratorContext);
   const panels = getPanels(panelsData);
 
@@ -188,13 +188,10 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
 
   useEffect(() => {
     const url = getUrl();
-    const blockLink = createTag('a', { href: url }, url);
-    const blockContent = createTag('div', {}, blockLink);
-    const newBlockEl = createTag('div', { class: blockClass }, blockContent);
+    const iframe = createTag('iframe', { src: url, width: '100%', height: '100%', style: 'border: none; min-height: 1200px' });
     const contentEl = document.querySelector('.content-panel');
-    contentEl.append(newBlockEl);
-    loadBlock(newBlockEl);
-  }, []);
+    contentEl.replaceChildren(iframe);
+  }, [state]);
 
   return html`
     <div class="tool-header">
@@ -214,7 +211,6 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
 };
 
 const ConfiguratorWrapper = ({ title, link }) => {
-  const blockClass = 'marketo';
   const lsKey = `${title.toLowerCase().replace(' ', '-')}-ConfiguratorState`;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -267,12 +263,26 @@ const ConfiguratorWrapper = ({ title, link }) => {
 
   return html`
   <${ConfiguratorProvider} defaultState=${defaults} lsKey=${lsKey}>
-    <${Configurator} title=${title} blockClass=${blockClass} panelsData=${data} lsKey=${lsKey} />
+    <${Configurator} title=${title} panelsData=${data} lsKey=${lsKey} />
   </${ConfiguratorProvider}>
   `;
 };
 
+function createBlock(blockClass, url) {
+  const blockLink = createTag('a', { href: url }, url);
+  const blockContent = createTag('div', {}, blockLink);
+  const block = createTag('div', { class: blockClass }, blockContent);
+
+  return block;
+}
+
 export default async function init(el) {
+  if (window.location !== window.parent.location) {
+    const marketo = createBlock('marketo', window.location.href);
+    el.replaceWith(marketo);
+    await loadBlock(marketo);
+    return;
+  }
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const title = children[0].textContent.trim();
   const linkElement = children[1].querySelector('a[href$="json"]');
