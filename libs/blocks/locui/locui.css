@@ -1,0 +1,8 @@
+.locui.container {
+  margin: 0 auto;
+  margin-top: 10vh;
+  max-width: 700px;
+  border-radius: 10px;
+  border: 10px solid #eee;
+  padding: 10px 30px 30px;
+}
