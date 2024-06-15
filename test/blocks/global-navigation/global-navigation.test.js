@@ -95,10 +95,14 @@ describe('global navigation', () => {
     it('should send LANA log when profile call in decorateProfile fails', async () => {
       const gnav = await createFullGlobalNavigation();
       sinon.restore();
-      sinon.stub(window, 'fetch').callsFake((url, {headers: {}}) => {
+      sinon.stub(window, 'fetch').callsFake((url) => {
         if (url.includes('/profile')) return mockRes({ payload: null, ok: false, status: 400 });
+        return null;
       });
-      window.adobeIMS = { isSignedInUser: () => true, getAccessToken: () => 'accessToken' };
+      window.adobeIMS = {
+        isSignedInUser: () => true,
+        getAccessToken: () => 'accessToken',
+      };
       await gnav.decorateProfile();
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('decorateProfile has failed to fetch profile data'))).to.exist;
     });
@@ -1476,7 +1480,7 @@ describe('global navigation', () => {
       const weAppPrompt = document.head.querySelector('link[href$="/webapp-prompt.css"]');
       expect(!!weAppPrompt).to.be.false;
     });
-    
+
     it('should load webapp prompt resources', async () => {
       document.head.innerHTML = `<meta name="app-prompt" content="on" />
       <meta name="app-prompt-entitlement" content="firefly-web-usage" />
