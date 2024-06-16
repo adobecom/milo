@@ -87,6 +87,15 @@ describe('Utils', () => {
       });
     });
 
+    describe('Custom Link Actions', () => {
+      it('Implements a login action', async () => {
+        await waitForElement('.login-action');
+        const login = document.querySelector('.login-action');
+        utils.decorateLinks(login);
+        expect(login.href).to.equal('https://www.stage.adobe.com/');
+      });
+    });
+
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
@@ -414,6 +423,24 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
+
+    it('should convert prod links to stage links on stage env', async () => {
+      const stageDomainsMap = {
+        'www.adobe.com': 'www.stage.adobe.com',
+        'blog.adobe.com': 'blog.stage.adobe.com',
+        'business.adobe.com': 'business.stage.adobe.com',
+        'helpx.adobe.com': 'helpx.stage.adobe.com',
+        'news.adobe.com': 'news.stage.adobe.com',
+      };
+      utils.setConfig({
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+      });
+      const links = Object.keys(stageDomainsMap).map((prodDom) => document.body.appendChild(createTag('a', { href: `https://${prodDom}`, 'data-prod-dom': prodDom })));
+      await utils.decorateLinks(document.body);
+      links.forEach((l) => expect(l.hostname === stageDomainsMap[l.dataset.prodDom]).to.be.true);
+    });
   });
 
   describe('title-append', async () => {
@@ -604,10 +631,32 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
       await utils.loadArea();
       const resultConfig = utils.getConfig();
-      const resultExperiment = resultConfig.experiments[2];
+      const resultExperiment = resultConfig.mep.experiments[2];
       expect(resultConfig.mep.preview).to.be.true;
-      expect(resultConfig.experiments.length).to.equal(3);
+      expect(resultConfig.mep.experiments.length).to.equal(3);
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
+    });
+  });
+
+  describe('target set to gnav', async () => {
+    const MANIFEST_JSON = {
+      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
+    };
+    function htmlResponse() {
+      return new Promise((resolve) => {
+        resolve({
+          ok: true,
+          json: () => MANIFEST_JSON,
+        });
+      });
+    }
+
+    it('have target be set to gnav and save in config', async () => {
+      window.fetch = sinon.stub().returns(htmlResponse());
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-target-gnav.html' });
+      await utils.loadArea();
+      const resultConfig = utils.getConfig();
+      expect(resultConfig.mep.targetEnabled).to.equal('gnav');
     });
   });
 

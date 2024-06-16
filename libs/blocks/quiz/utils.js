@@ -18,7 +18,7 @@ const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
-  return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
+  return (filepath) => `${stringsPath || getLocalizedURL(quizConfigPath)}${filepath}`;
 };
 
 async function fetchContentOfFile(path) {
@@ -61,7 +61,10 @@ export const defaultRedirect = (url) => {
   window.location.href = url;
 };
 
-export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect) => {
+export const handleResultFlow = async (
+  answers = [],
+  redirectFunc = defaultRedirect,
+) => {
   const { destinationPage } = await findAndStoreResultData(answers);
   const redirectUrl = getRedirectUrl(destinationPage);
   redirectFunc(redirectUrl);
@@ -81,7 +84,8 @@ export const findAndStoreResultData = async (answers = []) => {
   let umbrellaProduct = '';
 
   if (resultData.matchedResults.length > 0) {
-    destinationPage = resultData.matchedResults[0].url;
+    destinationPage = getLocalizedURL(resultData.matchedResults[0].url);
+
     primaryProductCodes = resultData.primary;
     secondaryProductCodes = resultData.secondary;
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result'];
@@ -165,11 +169,11 @@ export const structuredFragments = (
     resultResources?.data?.forEach((row) => {
       if (umbrellaProduct) {
         if (umbrellaProduct && row.product === umbrellaProduct) {
-          structureFragments.push(row[fragment]);
+          structureFragments.push(getLocalizedURL(row[fragment]));
         }
       } else if (primaryProducts?.length > 0 && primaryProducts.includes(row.product)
       && row[fragment]) {
-        structureFragments.push(row[fragment]);
+        structureFragments.push(getLocalizedURL(row[fragment]));
       }
     });
   });
@@ -230,7 +234,7 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
 
       function insertFragment() {
         row[fragKey]?.split(',').forEach((val) => {
-          fragArray.push(val.trim());
+          fragArray.push(getLocalizedURL(val.trim()));
         });
       }
     });
@@ -441,6 +445,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
 export const transformToFlowData = (userSelection) => {
   const flowData = userSelection.map(({ selectedCards, selectedQuestion }) => [
     selectedQuestion.questions, Object.keys(selectedCards)]);
+  if (userSelection[0].isML) { flowData.push('isML'); }
   return flowData;
 };
 
@@ -473,10 +478,19 @@ export const getAnalyticsDataForLocalStorage = (config) => {
       formattedResultString = formattedResultString ? `${formattedResultString}|${product}` : product;
     });
   }
-  answers?.forEach((answer) => {
-    const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
+
+  for (let i = 0; i < answers.length - 1; i += 1) {
+    const answer = answers[i];
+    const eachAnswer = i === 0 && answers[answers.length - 1] === 'isML' ? `${answer[0]}/interest-${answer[1].join('-')}` : `${answer[0]}/${answer[1].join('/')}`;
     formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${eachAnswer}` : eachAnswer;
-  });
+  }
+
+  if (answers[answers.length - 1] !== 'isML') {
+    const answer = answers[answers.length - 1];
+    const lastFormattedAnswer = `${answer[0]}/${answer[1].join('/')}`;
+    formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${lastFormattedAnswer}` : `${lastFormattedAnswer}`;
+  }
+
   const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&result=${formattedResultString}&selectedOptions=${formattedAnswerString}`;
   return analyticsHash;
 };
@@ -484,3 +498,9 @@ export const getAnalyticsDataForLocalStorage = (config) => {
 export const isValidUrl = (url) => VALID_URL_RE.test(url);
 
 export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));
+
+export const getLocalizedURL = (originalURL) => {
+  const { locale } = getConfig();
+  const { prefix, ietf = 'en-US' } = locale || {};
+  return ietf !== 'en-US' && !originalURL.startsWith(`${prefix}/`) ? `${prefix}${originalURL}` : originalURL;
+};

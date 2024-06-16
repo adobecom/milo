@@ -512,9 +512,10 @@ class Gnav {
       return 'linux';
     };
 
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.1';
     await Promise.all([
-      loadScript(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.js`),
-      loadStyle(`https://${environment}.adobeccstatic.com/unav/1.1/UniversalNav.css`),
+      loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
+      loadStyle(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`),
     ]);
 
     const getChildren = () => {
@@ -648,7 +649,7 @@ class Gnav {
 
     return this.loadDelayed().then(() => {
       this.blocks.search.instance = new this.Search(this.blocks.search.config);
-    });
+    }).catch(() => {});
   };
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
@@ -991,10 +992,20 @@ class Gnav {
   };
 }
 
+const getSource = async () => {
+  const { locale, dynamicNavKey } = getConfig();
+  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  if (dynamicNavKey) {
+    const { default: dynamicNav } = await import('../../features/dynamic-navigation.js');
+    url = dynamicNav(url, dynamicNavKey);
+  }
+  return url;
+};
+
 export default async function init(block) {
   try {
-    const { locale, mep } = getConfig();
-    const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+    const { mep } = getConfig();
+    const url = await getSource();
     const content = await fetchAndProcessPlainHtml({ url })
       .catch((e) => lanaLog({
         message: `Error fetching gnav content url: ${url}`,

@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
 function updatePreviewButton() {
@@ -199,18 +199,21 @@ function createPreviewPill(manifests) {
       <div class="mep-manifest-variants">${radio}</div>
     </div>`;
   });
-  const targetOnText = getMetadata('target') === 'on' ? 'on' : 'off';
+  const config = getConfig();
+  let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
+  if (config.mep.targetEnabled === 'gnav') targetOnText = 'on for gnav only';
   const personalizationOn = getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 
-  const config = getConfig();
   let mepHighlightChecked = '';
   if (config.mep?.highlight) {
     mepHighlightChecked = 'checked="checked"';
     document.body.dataset.mepHighlight = true;
   }
+
+  const PREVIEW_BUTTON_ID = 'preview-button';
 
   div.innerHTML = `
     <div class="mep-manifest mep-badge">
@@ -218,45 +221,51 @@ function createPreviewPill(manifests) {
       <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>
     </div>
     <div class="mep-popup">
-    <div class="mep-popup-header">
-      <div>
-        <h4>${manifests?.length || 0} Manifest(s) served</h4>
-        <span class="mep-close"></span>
-        <div class="mep-manifest-page-info-title">Page Info:</div>
-        <div>Target integration feature is ${targetOnText}</div>
-        <div>Personalization feature is ${personalizationOnText}</div>
-        <div>Page's Locale is ${config.locale.ietf}</div>
-      </div>
-    </div>
-    <div class="mep-manifest-list">
-      <div class="mep-manifest-info">
-        <div class="mep-manifest-variants">
-          <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
+      <div class="mep-popup-header">
+        <div>
+          <h4>${manifests?.length || 0} Manifest(s) served</h4>
+          <span class="mep-close"></span>
+          <div class="mep-manifest-page-info-title">Page Info:</div>
+          <div>Target integration feature is ${targetOnText}</div>
+          <div>Personalization feature is ${personalizationOnText}</div>
+          <div>Page's Locale is ${config.locale.ietf}</div>
         </div>
       </div>
-      ${manifestList}
-      <div class="mep-advanced-container">
-        <div class="mep-toggle-advanced">Advanced options</div>
-        <div class="mep-manifest-info mep-advanced-options">
-          <div>
-            Optional: new manifest location or path
-          </div>
+      <div class="mep-manifest-list">
+        <div class="mep-manifest-info">
           <div class="mep-manifest-variants">
+            <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
+          </div>
+        </div>
+        ${manifestList}
+        <div class="mep-advanced-container">
+          <div class="mep-toggle-advanced">Advanced options</div>
+          <div class="mep-manifest-info mep-advanced-options">
             <div>
-              <input type="text" name="new-manifest" id="new-manifest">
+              Optional: new manifest location or path
+            </div>
+            <div class="mep-manifest-variants">
+              <div>
+                <input type="text" name="new-manifest" id="new-manifest">
+              </div>
+            </div>
+          </div>
+          <div class="mep-manifest-info">
+            <div class="mep-manifest-variants mep-advanced-options">
+              <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
             </div>
           </div>
         </div>
-        <div class="mep-manifest-info">
-          <div class="mep-manifest-variants mep-advanced-options">
-            <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
-          </div>
-        </div>
       </div>
-    </div>
-    <div class="dark">
-      <a class="con-button outline button-l" href="${simulateHref.href}" title="Preview above choices">Preview</a>
+      <div class="dark">
+        <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices">Preview</a>
+      </div>
     </div>`;
+
+  const previewButton = div.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
+
+  if (previewButton) previewButton.href = simulateHref.href;
+
   overlay.append(div);
   addPillEventListeners(div);
 }
@@ -287,10 +296,8 @@ function addHighlightData(manifests) {
 }
 
 export default async function decoratePreviewMode() {
-  const { miloLibs, codeRoot, experiments } = getConfig();
+  const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
-    createPreviewPill(experiments);
-    if (experiments) addHighlightData(experiments);
-  }, { once: true });
+  createPreviewPill(mep?.experiments);
+  if (mep?.experiments) addHighlightData(mep.experiments);
 }

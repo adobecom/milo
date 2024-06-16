@@ -1,0 +1,37 @@
+name: Merge to main
+
+on:
+  pull_request:
+    types: [labeled]
+  schedule:
+    - cron: '0 9 * * *' # Run every day at 9am UTC
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
+
+jobs:
+  merge-to-main:
+    runs-on: ubuntu-latest
+    environment: milo_pr_merge
+    # Run this when manually triggered or on a schedule
+    # Otherwise run this only on PRs that are merged from stage to main
+    if: github.repository_owner == 'adobecom' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage'))
+
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: milo-pr-merge-token
+        with:
+          app-id: ${{ secrets.MILO_PR_MERGE_APP_ID }}
+          private-key: ${{ secrets.MILO_PR_MERGE_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Merge to main
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.milo-pr-merge-token.outputs.token }}
+          script: |
+            const main = require('./.github/workflows/merge-to-main.js')
+            main({ github, context })

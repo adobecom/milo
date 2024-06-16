@@ -1,6 +1,7 @@
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
+const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
 const TARGET_TIMEOUT_MS = 4000;
 const ENTITLEMENT_TIMEOUT = 3000;
 
@@ -26,6 +27,12 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
     resolve(event.detail);
   };
 
+  const errorListener = () => {
+    // eslint-disable-next-line no-use-before-define
+    clearTimeout(timer);
+    resolve({ error: true });
+  };
+
   const timer = setTimeout(() => {
     window.removeEventListener(eventName, listener);
     if (returnValIfTimeout !== undefined) {
@@ -36,6 +43,7 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
   }, timeout);
 
   window.addEventListener(eventName, listener, { once: true });
+  window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
 });
 
 const getExpFromParam = (expParam) => {
@@ -120,11 +128,15 @@ const getTargetPersonalization = async () => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
-    window.lana.log('target response time', responseTime);
+    window.lana.log(`target response time: ${responseTime}`, { tags: 'errorType=info,module=martech' });
   }, { once: true });
 
   let manifests = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
+  if (response.error) {
+    window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
+    return [];
+  }
   if (response.timeout) {
     waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
       .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
@@ -211,7 +223,11 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   return filesLoadedPromise;
 };
 
-export default async function init({ persEnabled = false, persManifests = [] }) {
+export default async function init({
+  persEnabled = false,
+  persManifests = [],
+  postLCP = false,
+}) {
   const config = getConfig();
 
   const { url, edgeConfigId } = getDtmLib(config.env);
@@ -229,7 +245,7 @@ export default async function init({ persEnabled = false, persManifests = [] }) 
     if (targetManifests?.length || persManifests?.length) {
       const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
       const manifests = preloadManifests({ targetManifests, persManifests });
-      await applyPers(manifests);
+      await applyPers(manifests, postLCP);
     }
   }
 

@@ -26,6 +26,10 @@ const HEADING_MAP = {
 };
 
 const MINI_COMPARE_CHART = 'mini-compare-chart';
+const PLANS = 'plans';
+const SEGMENT = 'segment';
+
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
 
 const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
@@ -43,7 +47,7 @@ const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
 const appendSlot = (slotEls, slotName, merchCard) => {
-  if (slotEls.length === 0 && merchCard.variant !== MINI_COMPARE_CHART) return;
+  if (slotEls.length === 0 || merchCard.variant !== MINI_COMPARE_CHART) return;
   const newEl = createTag(
     'p',
     { slot: slotName, class: slotName },
@@ -87,7 +91,7 @@ const parseContent = async (el, merchCard) => {
     await loadMnemonicList(mnemonicList);
   }
   const innerElements = [
-    ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
+    ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
   ];
   innerElements.forEach((element) => {
     let { tagName } = element;
@@ -95,6 +99,10 @@ const parseContent = async (el, merchCard) => {
       let slotName = TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+          element.classList.add('card-heading');
+          if (merchCard.badgeText) {
+            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
+          }
           if (HEADING_MAP[merchCard.variant]?.[tagName]) {
             tagName = HEADING_MAP[merchCard.variant][tagName];
           } else {
@@ -278,7 +286,8 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
   merchCard.appendChild(miniCompareOffers);
 };
 
-const init = async (el) => {
+export default async function init(el) {
+  if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
   const cardType = getPodType(styles) || 'product';
   if (!styles.includes(cardType)) {
@@ -335,12 +344,16 @@ const init = async (el) => {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
+        if (document.querySelector('html').dir === 'rtl') merchCard.setAttribute('is-rtl', 'true');
+        merchCard.classList.add('badge-card');
       }
     }
   }
   let footerRows;
-  if (cardType === MINI_COMPARE_CHART) {
+  if ([MINI_COMPARE_CHART, PLANS, SEGMENT].includes(cardType)) {
     intersectionObserver.observe(merchCard);
+  }
+  if (cardType === MINI_COMPARE_CHART) {
     footerRows = getMiniCompareChartFooterRows(el);
   }
   const allPictures = el.querySelectorAll('picture');
@@ -384,18 +397,20 @@ const init = async (el) => {
     imageSlot.appendChild(image);
     merchCard.appendChild(imageSlot);
   }
+  parseContent(el, merchCard);
   if (!icons || icons.length > 0) {
     const iconImgs = Array.from(icons).map((icon) => {
       const img = {
         src: icon.querySelector('img').src,
         alt: icon.querySelector('img').alt,
+        href: icon.closest('a')?.href ?? '',
       };
       return img;
     });
-    merchCard.setAttribute(
-      'icons',
-      JSON.stringify(Array.from(iconImgs)),
-    );
+    iconImgs.forEach((icon) => {
+      const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon.src, alt: icon.alt, href: icon.href, size: 'l' });
+      merchCard.appendChild(merchIcon);
+    });
     icons.forEach((icon) => icon.remove());
   }
 
@@ -405,7 +420,7 @@ const init = async (el) => {
   }
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
-  parseContent(el, merchCard);
+
   const footer = createTag('div', { slot: 'footer' });
   if (ctas) {
     if (merchCard.variant === 'mini-compare-chart') {
@@ -413,7 +428,9 @@ const init = async (el) => {
     } else {
       decorateButtons(ctas);
     }
-    footer.append(ctas);
+    const links = ctas.querySelectorAll('a');
+    ctas.remove();
+    footer.append(...links);
   }
   merchCard.appendChild(footer);
 
@@ -447,6 +464,4 @@ const init = async (el) => {
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
-};
-
-export default init;
+}

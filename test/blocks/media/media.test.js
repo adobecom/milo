@@ -119,4 +119,18 @@ describe('media', () => {
       expect(cta.querySelector('.action-area')).to.exist;
     });
   });
+  describe('medium compact', () => {
+    it('has a heading-xl', () => {
+      const heading = medias[8].querySelector('.heading-xl');
+      expect(heading).to.exist;
+    });
+    it('has a body-m', () => {
+      const body = medias[8].querySelector('.body-m');
+      expect(body).to.exist;
+    });
+    it('has a detail-l', () => {
+      const detail = medias[8].querySelector('.detail-l');
+      expect(detail).to.exist;
+    });
+  });
 });

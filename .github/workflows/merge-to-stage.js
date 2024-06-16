@@ -1,6 +1,7 @@
 const {
   slackNotification,
   getLocalConfigs,
+  isWithinRCP,
   pulls: { addLabels, addFiles, getChecks, getReviews },
 } = require('./helpers.js');
 
@@ -14,12 +15,18 @@ const LABELS = {
   highPriority: 'high priority',
   readyForStage: 'Ready for Stage',
   SOTPrefix: 'SOT',
-  highImpact: 'high-impact',
+  zeroImpact: 'zero-impact',
 };
-
+const TEAM_MENTIONS = [
+  '@adobecom/miq-sot',
+  '@adobecom/bacom-sot',
+  '@adobecom/homepage-sot',
+  '@adobecom/creative-cloud-sot',
+  '@adobecom/document-cloud-sot',
+];
 const SLACK = {
-  merge: ({ html_url, number, title, highImpact }) =>
-    `:merged:${highImpact} PR merged to stage: <${html_url}|${number}: ${title}>.`,
+  merge: ({ html_url, number, title, prefix = '' }) =>
+    `:merged: PR merged to stage: ${prefix} <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) =>
     `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
@@ -39,46 +46,8 @@ let body = `
 - After: https://stage--milo--adobecom.hlx.live/?martech=off
 `;
 
-const RCPDates = [
-  {
-    start: new Date('2024-05-26T00:00:00-07:00'),
-    end: new Date('2024-06-01T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-06-13T11:00:00-07:00'),
-    end: new Date('2024-06-13T14:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-06-30T00:00:00-07:00'),
-    end: new Date('2024-07-06T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-08-25T00:00:00-07:00'),
-    end: new Date('2024-08-31T00:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-09-12T11:00:00-07:00'),
-    end: new Date('2024-09-12T14:00:00-07:00'),
-  },
-  {
-    start: new Date('2024-10-14T00:00:00-07:00'),
-    end: new Date('2024-11-18T17:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-11-17T00:00:00-08:00'),
-    end: new Date('2024-11-30T00:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-12-12T11:00:00-08:00'),
-    end: new Date('2024-12-12T14:00:00-08:00'),
-  },
-  {
-    start: new Date('2024-12-15T00:00:00-08:00'),
-    end: new Date('2025-01-02T00:00:00-08:00'),
-  },
-];
-
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);
+const isZeroImpact = (labels) => labels.includes(LABELS.zeroImpact);
 
 const hasFailingChecks = (checks) =>
   checks.some(
@@ -113,46 +82,56 @@ const getPRs = async () => {
     return true;
   });
 
-  return prs.reverse(); // OLD PRs first
+  return prs.reverse().reduce(
+    (categorizedPRs, pr) => {
+      if (isZeroImpact(pr.labels)) {
+        categorizedPRs.zeroImpactPRs.push(pr);
+      } else if (isHighPrio(pr.labels)) {
+        categorizedPRs.highImpactPRs.push(pr);
+      } else {
+        categorizedPRs.normalPRs.push(pr);
+      }
+      return categorizedPRs;
+    },
+    { zeroImpactPRs: [], highImpactPRs: [], normalPRs: [] }
+  );
 };
 
-const merge = async ({ prs }) => {
-  console.log(`Merging ${prs.length || 0} PRs that are ready... `);
-  for await (const { number, files, html_url, title, labels } of prs) {
-    if (files.some((file) => SEEN[file])) {
-      console.log(`Skipping ${number}: ${title} due to overlap in files.`);
-      continue;
-    }
-    files.forEach((file) => (SEEN[file] = true));
-    if (!process.env.LOCAL_RUN) {
-      await github.rest.pulls.merge({
-        owner,
-        repo,
-        pull_number: number,
-        merge_method: 'squash',
-      });
-    }
-    body = `- [${title}](${html_url})\n${body}`;
-    const isHighImpact = labels.includes(LABELS.highImpact);
-    if (isHighImpact && process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK) {
+const merge = async ({ prs, type }) => {
+  console.log(`Merging ${prs.length || 0} ${type} PRs that are ready... `);
+
+  for await (const { number, files, html_url, title } of prs) {
+    try {
+      if (files.some((file) => SEEN[file])) {
+        console.log(`Skipping ${number}: ${title} due to overlap in files.`);
+        continue;
+      }
+      if (type !== LABELS.zeroImpact) {
+        files.forEach((file) => (SEEN[file] = true));
+      }
+
+      if (!process.env.LOCAL_RUN) {
+        await github.rest.pulls.merge({
+          owner,
+          repo,
+          pull_number: number,
+          merge_method: 'squash',
+        });
+      }
+      const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
+      body = `-${prefix} ${html_url}\n${body}`;
       await slackNotification(
         SLACK.merge({
           html_url,
           number,
           title,
-          highImpact: ' :alert: High impact',
-        }),
-        process.env.SLACK_HIGH_IMPACT_PR_WEBHOOK
+          prefix,
+        })
       );
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    } catch (error) {
+      console.log(`Error merging ${number}: ${title}`, error.message);
     }
-    await slackNotification(
-      SLACK.merge({
-        html_url,
-        number,
-        title,
-        highImpact: isHighImpact ? ' :alert: High impact' : '',
-      })
-    );
   }
 };
 
@@ -184,8 +163,7 @@ const openStageToMainPR = async () => {
       });
 
     for (const pr of pullRequestData) {
-      if (!body.includes(pr.html_url))
-        body = `- [${pr.title}](${pr.html_url})\n${body}`;
+      if (!body.includes(pr.html_url)) body = `- ${pr.html_url}\n${body}`;
     }
   }
 
@@ -200,6 +178,14 @@ const openStageToMainPR = async () => {
       base: PROD,
       body,
     });
+
+    await github.rest.issues.createComment({
+      owner,
+      repo,
+      issue_number: number,
+      body: `Testing can start ${TEAM_MENTIONS.join(' ')}`,
+    });
+
     await slackNotification(SLACK.openedSyncPr({ html_url, number }));
   } catch (error) {
     if (error.message.includes('No commits between main and stage'))
@@ -212,27 +198,28 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
+  if (isWithinRCP(2)) return console.log('Stopped, within RCP period.');
 
-  const now = new Date();
-  // We need to revisit this every year
-  if (now.getFullYear() !== 2024) {
-    throw new Error('ADD NEW RCPs');
-  }
-  for (const { start, end } of RCPDates) {
-    if (start <= now && now <= end) {
-      console.log('Current date is within a RCP. Stopping execution.');
-      return;
-    }
-  }
   try {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
+    if (stageToMainPR) body = stageToMainPR.body;
+    const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
+    await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
     if (stageToMainPR?.labels.some((label) => label.includes(LABELS.SOTPrefix)))
       return console.log('PR exists & testing started. Stopping execution.');
-    const prs = await getPRs();
-    await merge({ prs: prs.filter(({ labels }) => isHighPrio(labels)) });
-    await merge({ prs: prs.filter(({ labels }) => !isHighPrio(labels)) });
+    await merge({ prs: highImpactPRs, type: LABELS.highPriority });
+    await merge({ prs: normalPRs, type: 'normal' });
     if (!stageToMainPR) await openStageToMainPR();
+    if (stageToMainPR && body !== stageToMainPR.body) {
+      console.log("Updating PR's body...");
+      await github.rest.pulls.update({
+        owner,
+        repo,
+        pull_number: stageToMainPR.number,
+        body: body,
+      });
+    }
     console.log('Process successfully executed.');
   } catch (error) {
     console.error(error);

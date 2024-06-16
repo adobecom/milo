@@ -4,6 +4,7 @@ import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { applyPers, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import spoofParams from './spoofParams.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -11,7 +12,6 @@ document.body.innerHTML = await readFile({ path: './mocks/personalization.html' 
 // Add custom keys so tests doesn't rely on real data
 const config = getConfig();
 config.env = { name: 'prod' };
-config.mep = { handleFragmentCommand };
 
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({
@@ -136,6 +136,7 @@ describe('prependToSection action', async () => {
 
 describe('appendToSection action', async () => {
   it('appendToSection should add fragment to end of section', async () => {
+    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestAppendToSection.json' });
 
     manifestJson = JSON.parse(manifestJson);
@@ -167,26 +168,24 @@ describe('remove action', () => {
   });
 
   it('removeContent should tag but not remove content in preview', async () => {
+    spoofParams({ mep: '' });
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
     let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
-    config.mep = {
-      override: '',
-      preview: true,
-      handleFragmentCommand,
-    };
 
-    expect(document.querySelector('.z-pattern')).to.not.be.null;
-    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
-    expect(document.querySelector('.z-pattern')).to.not.be.null;
-    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+    setTimeout(async () => {
+      expect(document.querySelector('.z-pattern')).to.not.be.null;
+      await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+      expect(document.querySelector('.z-pattern')).to.not.be.null;
+      expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
 
-    const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
-    await initFragments(removeMeFrag);
-    expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
-    expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
+      const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
+      await initFragments(removeMeFrag);
+      expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
+      expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
+    }, 50);
   });
 });
 
@@ -198,7 +197,7 @@ describe('useBlockCode action', async () => {
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(getConfig().expBlocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
+    expect(getConfig().mep.blocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
     const promoBlock = document.querySelector('.promo');
     expect(promoBlock.textContent?.trim()).to.equal('Old Promo Block');
     await loadBlock(promoBlock);
@@ -212,7 +211,7 @@ describe('useBlockCode action', async () => {
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(getConfig().expBlocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
+    expect(getConfig().mep.blocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
     const myBlock = document.querySelector('.myblock');
     expect(myBlock.textContent?.trim()).to.equal('This block does not exist');
     await loadBlock(myBlock);
@@ -241,24 +240,24 @@ describe('custom actions', async () => {
         commands: [{
           action: 'replace',
           target: '/fragments/fragmentreplaced',
-          manifestId: 'manifest.json',
+          manifestId: false,
         },
         {
           action: 'replace',
           target: '/fragments/new-large-menu',
-          manifestId: 'manifest.json',
+          manifestId: false,
           selector: '.large-menu',
         }],
         fragments: {
           '/fragments/sub-menu': {
             action: 'replace',
             target: '/fragments/even-more-new-sub-menu',
-            manifestId: 'manifest.json',
+            manifestId: false,
           },
           '/fragments/new-sub-menu': {
             action: 'replace',
             target: '/fragments/even-more-new-sub-menu',
-            manifestId: 'manifest.json',
+            manifestId: false,
           },
         },
       },

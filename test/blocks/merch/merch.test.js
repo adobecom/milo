@@ -7,6 +7,7 @@ import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
   PRICE_TEMPLATE_STRIKETHROUGH,
+  PRICE_TEMPLATE_ANNUAL,
   CHECKOUT_ALLOWED_KEYS,
   buildCta,
   getCheckoutContext,
@@ -19,6 +20,7 @@ import merch, {
   getModalAction,
   getCheckoutAction,
   PRICE_LITERALS_URL,
+  PRICE_TEMPLATE_REGULAR,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -126,8 +128,8 @@ describe('Merch Block', () => {
 
   before(async () => {
     window.lana = { log: () => { } };
-    document.head.innerHTML = await readMockText('head.html');
-    document.body.innerHTML = await readMockText('body.html');
+    document.head.innerHTML = await readMockText('/test/blocks/merch/mocks/head.html');
+    document.body.innerHTML = await readMockText('/test/blocks/merch/mocks/body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
     config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
@@ -185,6 +187,14 @@ describe('Merch Block', () => {
 
     it('renders merch link to discount price', async () => {
       await validatePriceSpan('.merch.price.discount', { template: PRICE_TEMPLATE_DISCOUNT });
+    });
+
+    it('renders merch link to annual price', async () => {
+      await validatePriceSpan('.merch.price.annual', { template: PRICE_TEMPLATE_ANNUAL });
+    });
+
+    it('renders merch link to the regular price if template is invalid', async () => {
+      await validatePriceSpan('.merch.price.invalid', { template: PRICE_TEMPLATE_REGULAR });
     });
 
     it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {
@@ -309,7 +319,7 @@ describe('Merch Block', () => {
       const { nodeName, href } = await el.onceSettled();
       expect(nodeName).to.equal('A');
       expect(el.getAttribute('is')).to.equal('checkout-link');
-      expect(/0ADF92A6C8514F2800BE9E87DB641D2A/.test(href)).to.be.true;
+      expect(/B740D1F2F6369BD1C342E6E372A61B50/.test(href)).to.be.true;
     });
 
     it('renders merch link to cta with empty promo', async () => {

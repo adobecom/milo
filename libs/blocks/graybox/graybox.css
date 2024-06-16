@@ -1,0 +1,294 @@
+:root {
+  --gb-container-bg: white;
+  --gb-outline-color: #1473E6;
+  --gb-container-btn-bg: #505050;
+  --gb-overlay-color: rgba(0 0 0 / 45%);
+  --gb-modal-bg: #323232;
+  --gb-container-border: 4px solid var(--gb-outline-color);
+  --gb-page-outline-border: 8px solid var(--gb-outline-color);
+  --gb-toggle-arrow: 3px solid white;
+}
+
+.graybox {
+  display: none;
+}
+
+.gb-graybox-body {
+  position: relative;
+}
+
+.gb-graybox-body:not(.gb-no-border)::before {
+  content: '';
+  position: absolute;
+  top: calc(50% + 8px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 15.5px);
+  height: 100%;
+  border: var(--gb-page-outline-border);
+  z-index: calc(var(--above-all) + 1);
+  pointer-events: none;
+}
+
+.gb-graybox-body.gb-tablet-preview:not(.gb-no-border)::before,
+.gb-graybox-body.gb-phone-preview:not(.gb-no-border)::before {
+  top: auto;
+  left: auto;
+  transform: none;
+  height: calc(100% - 15.5px);
+  position: fixed;
+}
+
+.gb-no-click::after {
+  content: "";
+  height: 100%;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: var(--above-all);
+  left: 0;
+  top: 0;
+}
+
+.gb-no-change {
+  position: relative;
+}
+
+.gb-page-overlay {
+  background-color: var(--gb-overlay-color);
+  content: "";
+  display: block;
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: calc(var(--above-all) - 1);
+}
+
+.gb-no-change::before {
+  background-color: var(--gb-overlay-color);
+  content: "";
+  display: block;
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: calc(var(--above-all) - 1);
+}
+
+/* The elements that should appear above the overlay */
+.gb-graybox-body .gb-changed {
+  position: relative;
+  z-index: calc(var(--above-all) - 1);
+}
+
+.graybox-container {
+  position: fixed;
+  right: 0;
+  top: 15%;
+  z-index: calc(var(--above-all) + 1);
+}
+
+.graybox-container .gb-toggle {
+  background-color: var(--gb-outline-color);
+  border: var(--gb-container-border);
+  cursor: pointer;
+  height: 64px;
+  left: -40px;
+  position: absolute;
+  width: 40px;
+}
+
+.graybox-container .gb-toggle::before {
+  border-bottom: var(--gb-toggle-arrow);
+  border-left: var(--gb-toggle-arrow);
+  border-radius: 2px;
+  content: " ";
+  cursor: pointer;
+  display: block;
+  height: 8px;
+  margin-left: 8px;
+  scale: 85%;
+  transform: rotate(140deg) scaleX(-1);
+  transition: transform 0.2s ease-in-out, margin-left 0.2s ease-in-out;
+  width: 8px;
+}
+
+.graybox-container.open .gb-toggle::before {
+  margin-left: 3px;
+  transform: rotate(225deg) scaleX(1);
+}
+
+.graybox-container .graybox-menu {
+  background-color: var(--gb-container-bg);
+  border-radius: 3px;
+  border-top-right-radius: 0;
+  border: 0;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 1fr 66px;
+  overflow: hidden;
+  position: absolute;
+  right: 39px;
+  width: 0;
+}
+
+.graybox-container .graybox-menu.hide-devices {
+  border-bottom-right-radius: 0;
+  grid-template-rows: 1fr 0;
+}
+
+.graybox-container.open .graybox-menu {
+  border: var(--gb-container-border);
+  min-height: 60px;
+  min-width: 320px;
+}
+
+.graybox-text {
+  color: #000;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 24px;
+  padding: 16px;
+}
+
+.graybox-text > p:first-child {
+  font-weight: bold;
+  font-size: 24px;
+  margin: 0;
+}
+
+.graybox-devices {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-content: center;
+  align-content: center;
+  justify-items: center;
+  padding: 16px;
+  column-gap: 10px;
+  height: 34px;
+  border-top: var(--gb-container-border);
+  box-sizing: content-box;
+}
+
+.graybox-devices > a {
+  box-sizing: border-box;
+  width: 85px;
+  text-align: center;
+  color: var(--gb-container-btn-bg);
+  border-color: var(--gb-container-btn-bg);
+  cursor: default;
+}
+
+.graybox-devices > a:hover {
+  background-color: var(--gb-container-btn-bg);
+  text-decoration: none;
+}
+
+.dialog-modal.graybox-modal {
+  z-index: var(--above-all);
+}
+
+.dialog-modal.graybox-modal.mobile > div {
+  overflow-x: hidden;
+  border-radius: 88px;
+}
+
+.dialog-modal.graybox-modal.tablet > div {
+  overflow-x: hidden;
+  border-radius: 88px;
+}
+
+.dialog-modal.graybox-modal.mobile .graybox-device-border {
+  position: absolute;
+  pointer-events: none;
+  width: 418px;
+  height: 863px;
+}
+
+.dialog-modal.graybox-modal.tablet .graybox-device-border {
+  position: absolute;
+  pointer-events: none;
+  width: 859px;
+  min-height: 1189px;
+}
+
+.dialog-modal.graybox-modal.mobile {
+  min-width: 417px;
+  width: 417px;
+  min-height: 863px;
+  border-radius: 66px;
+  background: var(--gb-modal-bg);
+  overflow-y: hidden;
+}
+
+.dialog-modal.graybox-modal.tablet {
+  min-width: 858px;
+  border-radius: 66px;
+  background: var(--gb-modal-bg);
+  border-top-right-radius: 60px 78px;
+  border-bottom-right-radius: 51px 69px;
+  border-bottom-left-radius: 55px 84px;
+  overflow-y: hidden;
+  zoom: 0.8;
+  min-height: 1187px;
+}
+
+.dialog-modal.graybox-modal.mobile iframe {
+  width: 391px;
+  min-height: 852px;
+  padding-left: 16px;
+  margin-left: 4px;
+}
+
+.dialog-modal.graybox-modal.tablet iframe {
+  width: 814px;
+  height: 1067px;
+  padding-left: 26px;
+  padding-top: 57px;
+  margin-left: 5px;
+  margin-top: 8px;
+}
+
+.dialog-modal.graybox-modal button.dialog-close {
+  display: none;
+}
+
+.modal-curtain.graybox-curtain.is-open {
+  background: var(--gb-modal-bg);
+  z-index: calc(var(--above-all) - 1);
+}
+
+@media (max-height: 910px), (max-width: 420px) {
+  body.gb-phone-preview::after {
+    content: "Expand window to see full preview";
+    position: fixed;
+    right: 10px;
+    bottom: 2px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    color: #000;
+    font-size: 16px;
+    z-index: var(--above-all);
+    border-radius: 5px;
+  }
+}
+
+@media (max-height: 1040px), (max-width: 710px) {
+  body.gb-tablet-preview::after {
+    content: "Expand window to see full preview";
+    position: fixed;
+    right: 10px;
+    bottom: 2px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    color: #000;
+    font-size: 16px;
+    z-index: var(--above-all);
+    border-radius: 5px;
+  }
+}
