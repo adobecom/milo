@@ -1,9 +1,12 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import { assert, stub } from 'sinon';
-import getEntitlements from '../../../libs/features/personalization/entitlements.js';
+import { stub } from 'sinon';
+import init, { getEntitlementUrl } from '../../../libs/features/personalization/entitlements.js';
+import { getConfig } from '../../../libs/utils/utils.js';
 
+// Add custom keys so tests doesn't rely on real data
 const config = getConfig();
+config.env = { name: 'prod' };
 
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({
@@ -16,16 +19,13 @@ const setFetchResponse = (data, type = 'json') => {
   window.fetch = stub().returns(getFetchPromise(data, type));
 };
 
-async function loadManifestAndSetResponse(manifestPath) {
-  let manifestJson = await readFile({ path: manifestPath });
-  manifestJson = JSON.parse(manifestJson);
-  setFetchResponse(manifestJson);
-}
-
+// Note that the manifestPath doesn't matter as we stub the fetch
 describe('entitlements', () => {
   it('Should return any entitlements that match the id', async () => {
     config.env = { name: 'prod' };
-    await loadManifestAndSetResponse();
+    let manifestJson = await readFile({ path: './mocks/entitlements.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
 
     const destinations = [
       {
@@ -47,34 +47,7 @@ describe('entitlements', () => {
     ];
 
     const expectedEntitlements = ['lightroom-any', 'cc-photo'];
-    const entitlements = await getEntitlements(destinations);
-    expect(entitlements).to.deep.equal(expectedEntitlements);
-  });
-
-  it('Should return any stage entitlements that match the id', async () => {
-    config.env = { name: 'stage' };
-
-    const destinations = [
-      {
-        segments: [
-          {
-            id: '09bc4ba3-ebed-4d05-812d-a1fb1a7e82ae',
-            namespace: 'ups',
-          },
-          {
-            id: '11111111-aaaa-bbbb-6666-cccccccccccc',
-            namespace: 'ups',
-          },
-          {
-            id: '73c3406b-32a2-4465-abf3-2d415b9b1f4f',
-            namespace: 'ups',
-          },
-        ],
-      },
-    ];
-
-    const expectedEntitlements = ['indesign-any', 'after-effects-any'];
-    const entitlements = await getEntitlements(destinations);
+    const entitlements = await init(destinations);
     expect(entitlements).to.deep.equal(expectedEntitlements);
   });
 
@@ -97,7 +70,7 @@ describe('entitlements', () => {
     ];
 
     const expectedEntitlements = [];
-    const entitlements = await getEntitlements(destinations);
+    const entitlements = await init(destinations);
     expect(entitlements).to.deep.equal(expectedEntitlements);
   });
 
@@ -125,7 +98,16 @@ describe('entitlements', () => {
     ];
 
     const expectedEntitlements = ['lightroom-any', 'consumer-defined'];
-    const entitlements = await getEntitlements(destinations);
+    const entitlements = await init(destinations);
     expect(entitlements).to.deep.equal(expectedEntitlements);
+  });
+
+  it('Should return a different location based on environment', async () => {
+    config.env = { name: 'prod' };
+    let url = getEntitlementUrl();
+    expect(url).to.equal('https://www.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=prod');
+    config.env = { name: 'stage' };
+    url = getEntitlementUrl();
+    expect(url).to.equal('https://www.stage.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=stage');
   });
 });

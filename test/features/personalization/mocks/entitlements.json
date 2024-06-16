@@ -1,0 +1,104 @@
+{
+  "total": 24,
+  "offset": 0,
+  "limit": 24,
+  "data": [
+    {
+      "tagname": "3d-substance-collection",
+      "id": "42e06851-64cd-4684-a54a-13777403487a"
+    },
+    {
+      "tagname": "3d-substance-texturing",
+      "id": "eda8c774-420b-44c2-9006-f9a8d0fb5168"
+    },
+    {
+      "tagname": "acrobat-web-usage",
+      "id": "3df0b0b0-d06e-4fcc-986e-cc97f54d04d8"
+    },
+    {
+      "tagname": "after-effects-any",
+      "id": "4e2f2a6e-48c4-49eb-9dd5-c44070abb3f0"
+    },
+    {
+      "tagname": "always-on-promo",
+      "id": "6dfcb769-324f-42e0-9e12-1fc4dc0ee85b"
+    },
+    {
+      "tagname": "any-cc-product-with-stock",
+      "id": "b0f65e1c-7737-4788-b3ae-0011c80bcbe1"
+    },
+    {
+      "tagname": "any-cc-product-no-stock",
+      "id": "ab713720-91a2-4e8e-b6d7-6f613e049566"
+    },
+    {
+      "tagname": "any-dc-product",
+      "id": "934fdc1d-7ba6-4644-908b-53e01e550086"
+    },
+    {
+      "tagname": "cc-free",
+      "id": "76e408f6-ab08-49f0-adb6-f9b4efcc205d"
+    },
+    {
+      "tagname": "cc-all-apps-any",
+      "id": "fd30e9c7-9ae9-44db-8e70-5c652a5bb1d2"
+    },
+    {
+      "tagname": "cc-photo",
+      "id": "8da44606-9841-43d0-af72-86d5a9d3bba0"
+    },
+    {
+      "tagname": "dc-free",
+      "id": "08216aa4-4a0f-4136-8b27-182212764a7c"
+    },
+    {
+      "tagname": "firefly-signup-source",
+      "id": "5c6a4bb8-a2f3-4202-8cca-f5e918b969dc"
+    },
+    {
+      "tagname": "firefly-web-usage",
+      "id": "20106303-e88c-4b15-93e5-f6a1c3215a12"
+    },
+    {
+      "tagname": "illustrator-any",
+      "id": "8d3c8ac2-2937-486b-b6ff-37f02271b09b"
+    },
+    {
+      "tagname": "indesign-any",
+      "id": "8ba78b22-90fb-4b97-a1c4-f8c03a45cbc2"
+    },
+    {
+      "tagname": "lightroom-any",
+      "id": "e7650448-268b-4a0d-9795-05f604d7e42f"
+    },
+    {
+      "tagname": "lightroom-web-usage",
+      "id": "6cb0d58c-3a65-47e2-b459-c52bb158d5b6"
+    },
+    {
+      "tagname": "not-q-always-on-promo",
+      "id": "015c52cb-30b0-4ac9-b02e-f8716b39bfb6"
+    },
+    {
+      "tagname": "photoshop-any",
+      "id": "51b1f617-2e43-4e91-a98a-3b7716ecba8f"
+    },
+    {
+      "tagname": "phsp-ltr-bundle",
+      "id": "cec4d899-4b41-469e-9f2d-4658689abf29"
+    },
+    {
+      "tagname": "photoshop-signup-source",
+      "id": "caa3de84-6336-4fa8-8db2-240fc88106cc"
+    },
+    {
+      "tagname": "photoshop-web-usage",
+      "id": "ef82408e-1bab-4518-b655-a88981515d6b"
+    },
+    {
+      "tagname": "premiere-pro-any",
+      "id": "619130fc-c7b5-4b39-a687-b32061326869"
+    }
+  ],
+  ":type": "sheet"
+}
