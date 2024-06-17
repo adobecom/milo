@@ -29,7 +29,7 @@ const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
-const COLUMN_NOT_OPERATOR = 'not';
+const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
 const PAGE_URL = new URL(window.location.href);
@@ -495,10 +495,10 @@ const getVariantInfo = (line, variantNames, variants, manifestId) => {
   });
 };
 
-export function parseConfig(data, manifestId) {
+export function parseManifestVariants(data, manifestId) {
   if (!data?.length) return null;
 
-  const config = {};
+  const manifestConfig = {};
   const experiences = data.map((d) => normalizeKeys(d));
 
   try {
@@ -512,12 +512,12 @@ export function parseConfig(data, manifestId) {
 
     experiences.forEach((line) => getVariantInfo(line, variantNames, variants, manifestId));
 
-    config.variants = variants;
-    config.variantNames = variantNames;
-    return config;
+    manifestConfig.variants = variants;
+    manifestConfig.variantNames = variantNames;
+    return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log('error parsing personalization config:', e, experiences);
+    console.log('error parsing personalization manifestConfig:', e, experiences);
   }
   return null;
 }
@@ -612,7 +612,7 @@ const createDefaultExperiment = (manifest) => ({
   variants: {},
 });
 
-export async function getPersConfig(info, variantOverride = false) {
+export async function getManifestConfig(info, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -637,17 +637,17 @@ export async function getPersConfig(info, variantOverride = false) {
   if (!persData) return null;
 
   let manifestId = getFileName(manifestPath);
-  const globalConfig = getConfig();
-  if (!globalConfig.mep?.preview) {
+  const config = getConfig();
+  if (!config.mep?.preview) {
     manifestId = false;
   } else if (name) {
     manifestId = `${name}: ${manifestId}`;
   }
-  const config = parseConfig(persData, manifestId);
+  const manifestConfig = parseManifestVariants(persData, manifestId);
 
-  if (!config) {
+  if (!manifestConfig) {
     /* c8 ignore next 3 */
-    console.log('Error loading personalization config: ', name || manifestPath);
+    console.log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
 
@@ -661,8 +661,8 @@ export async function getPersConfig(info, variantOverride = false) {
       acc[item.key] = item.value;
       return acc;
     }, {});
-    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
-    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    manifestConfig.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
+    manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     const executionOrder = {
       'manifest-type': 1,
       'manifest-execution-order': 1,
@@ -672,43 +672,43 @@ export async function getPersConfig(info, variantOverride = false) {
       const index = infoKeyMap[key].indexOf(infoObj[key]);
       executionOrder[key] = index > -1 ? index : 1;
     });
-    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+    manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
   } else {
     // eslint-disable-next-line prefer-destructuring
-    config.manifestType = infoKeyMap['manifest-type'][1];
-    config.executionOrder = '1-1';
+    manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
+    manifestConfig.executionOrder = '1-1';
   }
 
-  config.manifestPath = normalizePath(manifestPath);
+  manifestConfig.manifestPath = normalizePath(manifestPath);
   const selectedVariantName = await getPersonalizationVariant(
-    config.manifestPath,
-    config.variantNames,
+    manifestConfig.manifestPath,
+    manifestConfig.variantNames,
     variantLabel,
   );
 
-  if (selectedVariantName && config.variantNames.includes(selectedVariantName)) {
-    config.run = true;
-    config.selectedVariantName = selectedVariantName;
-    config.selectedVariant = config.variants[selectedVariantName];
+  if (selectedVariantName && manifestConfig.variantNames.includes(selectedVariantName)) {
+    manifestConfig.run = true;
+    manifestConfig.selectedVariantName = selectedVariantName;
+    manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
   } else {
     /* c8 ignore next 2 */
-    config.selectedVariantName = 'default';
-    config.selectedVariant = 'default';
+    manifestConfig.selectedVariantName = 'default';
+    manifestConfig.selectedVariant = 'default';
   }
 
   const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
-      parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
+      parsePlaceholders(placeholders, getConfig(), manifestConfig.selectedVariantName),
     );
   }
 
-  config.name = name;
-  config.manifest = manifestPath;
-  config.manifestUrl = manifestUrl;
-  config.disabled = disabled;
-  config.event = event;
-  return config;
+  manifestConfig.name = name;
+  manifestConfig.manifest = manifestPath;
+  manifestConfig.manifestUrl = manifestUrl;
+  manifestConfig.disabled = disabled;
+  manifestConfig.event = event;
+  return manifestConfig;
 }
 
 export const deleteMarkedEls = (rootEl = document) => {
@@ -838,7 +838,7 @@ export async function applyPers(manifests, postLCP = false) {
     if (!manifests?.length) return;
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
-      experiments[i] = await getPersConfig(experiments[i], config.mep?.variantOverride);
+      experiments[i] = await getManifestConfig(experiments[i], config.mep?.variantOverride);
     }
 
     experiments = cleanAndSortManifestList(experiments);
