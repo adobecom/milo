@@ -12,7 +12,7 @@ const {
   findAndStoreResultData,
 } = await import('../../../libs/blocks/quiz/utils.js');
 
-const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+let locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 const QUIZ_BASE_PATH = 'https://mockdata/path/to/quiz';
 
@@ -243,6 +243,28 @@ describe('Quiz', () => {
   it('Testing transformToFlowData', async () => {
     const flowData = transformToFlowData(userSelection);
     expect(flowData).to.be.an('array').of.length(5);
+  });
+
+  it('Testing getLocalizedURL with country code or without country code', async () => {
+    locales = { '': { ietf: 'de-DE', tk: 'hah7vzn.css' } };
+    setConfig({ locales, pathname: '/de' });
+
+    // Import getLocalizedURL function
+    const { getLocalizedURL } = await import('../../../libs/blocks/quiz/utils.js');
+
+    expect(getLocalizedURL('/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
+    expect(getLocalizedURL('/de/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
+  });
+
+  it('Testing getLocalizedURL without locale define', async () => {
+    locales = { '': { } };
+    setConfig({ locales, pathname: '/de' });
+
+    // Import getLocalizedURL function
+    const { getLocalizedURL } = await import('../../../libs/blocks/quiz/utils.js');
+
+    expect(getLocalizedURL('/path/to/quiz/uar-results')).to.equal('/path/to/quiz/uar-results');
+    expect(getLocalizedURL('/de/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
   });
 
   describe('Testing storeResultInLocalStorage with empty results as input', async () => {
