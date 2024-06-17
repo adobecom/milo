@@ -14,8 +14,7 @@ export const getEntitlementMap = async () => {
   const fetchedData = await fetchData(getEntitlementUrl(), DATA_TYPE.JSON);
   if (!fetchedData) return consumerEntitlements;
   const entitlements = {};
-  const { data } = fetchedData;
-  data.forEach((ent) => {
+  fetchedData?.data?.forEach((ent) => {
     const { id, tagname } = ent;
     entitlements[id] = tagname;
   });
