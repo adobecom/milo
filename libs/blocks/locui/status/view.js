@@ -1,32 +1,26 @@
 import { html } from '../../../deps/htm-preact.js';
 import { statuses } from '../utils/state.js';
+import errorLinks from './index.js';
 
 function toggleDesc(e) {
   e.target.closest('.locui-status-toast').classList.toggle('open');
 }
 
-export function renderLinks(str) {
-  const linkPattern = /\[(.*?)\]\((.*?)\)/g;
-  const link = linkPattern.exec(str);
-  if (link) {
-    const msg = str.replace(linkPattern, '');
-    const [text, href] = link.slice(1);
-    return html`
-      <span>
-        ${msg.substring(0, link.index)}
-        <a href="${href}" target="_blank">${text}</a>
-        ${msg.substring(link.index, msg.length)} 
-      </span>`;
+function Description({ status }) {
+  const { description, type } = status;
+  if (!description) return '';
+  let message;
+  if (Array.isArray(description)) {
+    if (description.length > 1) {
+      message = html`<ol>${description.map((desc) => html`
+        <li>${errorLinks(desc, type)}</li>`)}</ol>`;
+    } else {
+      message = errorLinks(message[0], type);
+    }
+  } else {
+    message = errorLinks(description, type);
   }
-  return str;
-}
-
-function renderDescription(description) {
-  let message = description;
-  if (Array.isArray(description) && description.length > 1) {
-    message = html`<ol>${description.map((desc) => html`<li>${renderLinks(desc)}</li>`)}</ol>`;
-  } else return renderLinks(message[0]);
-  return message;
+  return html`<p class=locui-status-toast-description>${message}</p>`;
 }
 
 function Toast({ status }) {
@@ -38,8 +32,7 @@ function Toast({ status }) {
         <span class=locui-status-toast-text>${status.text}</span>
         ${status.description && html`<div class=locui-status-toast-expand>Expand</div>`}
       </div>
-      ${status.description && html`
-        <p class=locui-status-toast-description>${renderDescription(status.description)}</p>`}
+      <${Description} status=${status} />
     </div>
   `;
 }

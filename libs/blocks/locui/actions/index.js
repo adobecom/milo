@@ -66,7 +66,7 @@ async function findPageFragments(path) {
   const isIndex = path.lastIndexOf('index');
   const hlxPath = isIndex > 0 ? path.substring(0, isIndex) : path;
   const doc = await fetchDocument(hlxPath);
-  if (!doc) return [];
+  if (!doc) return undefined;
   // Decorate the doc, but don't load any blocks (i.e. do not use loadArea)
   decorateSections(doc, true);
   await decorateFooterPromo(doc);
@@ -103,6 +103,11 @@ async function findDeepFragments(path) {
     const needsSearch = fragments.filter((fragment) => !searched.includes(fragment.pathname));
     for (const search of needsSearch) {
       const nestedFragments = await findPageFragments(search.pathname);
+      if (nestedFragments === undefined) {
+        search.valid = false;
+        searched.push(search.pathname);
+        break;
+      }
       const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
         && !fragments.find((fragment) => fragment.pathname === nested.pathname));
       if (newFragments?.length) fragments.push(...newFragments);
@@ -121,7 +126,7 @@ export async function findFragments() {
       fragments.forEach((fragment) => {
         // De-dupe across pages that share fragments
         const dupe = acc.some((url) => url[0] === fragment.href);
-        if (!dupe) acc.push([fragment.href]);
+        if (!dupe) acc.push([fragment]);
       });
     }
     return acc;
