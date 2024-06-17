@@ -117,6 +117,7 @@
   --aspect-ratio-square: 1/1;
   --aspect-ratio-standard: 4/3;
   --aspect-ratio-wide: 16/9;
+  --aspect-ratio-tall: 9/16;
 
   /* icon sizes */
   --icon-size-xxl: 80px;
@@ -622,6 +623,7 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   top: 0;
   bottom: 0;
 }
+
 
 .con-block .background>div { height: 100%; }
 

@@ -27,11 +27,12 @@ const extendDeviceContent = (el) => {
   }
 };
 
-const decorateForeground = (rows, media = 0) => {
+const decorateForeground = (el, rows, media = 0) => {
   if (media) {
     media.classList.add('media-area');
     const mediaVideo = media.querySelector('video');
     if (mediaVideo) applyHoverPlay(mediaVideo);
+    if (media.children.length > 1) decorateBlockBg(el, media);
   }
   rows.forEach((row, i) => {
     if (i === 0) {
@@ -51,6 +52,7 @@ const decorateBgRow = (el, row, node) => {
   const bgEmpty = row.textContent.trim() === '';
   if (bgEmpty) {
     el.classList.add('no-bg');
+    row.remove();
   } else {
     decorateBlockBg(el, node);
   }
@@ -73,18 +75,18 @@ const init = (el) => {
         // 3 rows (0:bg, 1:media, 2:copy,)
         decorateBgRow(el, rows[0], head);
         rows = tail;
-        decorateForeground(rows, middle);
+        decorateForeground(el, rows, middle);
         break;
       case 2:
         // 2 rows (0:media, 1:copy)
         rows = middle;
-        decorateForeground([rows], head);
+        decorateForeground(el, [rows], head);
         el.classList.add('no-bg');
         break;
       case 1:
         // 1 row  (0:copy)
         rows = head;
-        decorateForeground([rows]);
+        decorateForeground(el, [rows]);
         el.classList.add('no-bg', 'no-media');
         break;
       default:
