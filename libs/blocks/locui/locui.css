@@ -203,6 +203,14 @@ div.locui-status-toast.open p.locui-status-toast-description {
   display: block;
 }
 
+.locui-status-toast-description a {
+  color: #5c0707;
+  text-decoration: underline;
+}
+
+.locui-status-toast-description a:hover {
+  color: black;
+}
 
 .locui-section {
   margin-bottom: 36px;
