@@ -35,6 +35,16 @@ const getIcon = (content) => {
   return icons.company;
 };
 
+const modalsActive = () => !!document.querySelector('.dialog-modal');
+
+const waitForClosedModalsThen = (loadPEP) => {
+  if (modalsActive()) {
+    setTimeout(() => waitForClosedModalsThen(loadPEP), 200);
+    return;
+  }
+  loadPEP();
+};
+
 class AppPrompt {
   constructor({ promptPath, entName, parent, getAnchorState } = {}) {
     this.promptPath = promptPath;
@@ -43,8 +53,13 @@ class AppPrompt {
     this.getAnchorState = getAnchorState;
     this.id = this.promptPath.split('/').pop();
     this.elements = {};
-
-    this.init();
+    if (modalsActive()) {
+      window.addEventListener(
+        'milo:modal:closed',
+        () => waitForClosedModalsThen(this.init),
+        { once: true },
+      );
+    } else this.init();
   }
 
   init = async () => {

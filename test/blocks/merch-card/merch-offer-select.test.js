@@ -1,7 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import { mockFetch, unmockFetch, readMockText } from '../merch/mocks/fetch.js';
+import { mockIms, unmockIms } from '../merch/mocks/ims.js';
 import { initService } from '../../../libs/blocks/merch/merch.js';
 import initCard from '../../../libs/blocks/merch-card/merch-card.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
@@ -34,8 +36,17 @@ function validateMerchCard(card, badge, description, osi) {
   expect(card.querySelector('div[slot="body-xs"] span[is="inline-price"]').dataset.wcsOsi).to.equal(osi);
 }
 
+const config = {
+  codeRoot: '/libs',
+  env: { name: 'prod' },
+  imsClientId: 'test_client_id',
+};
+
+setConfig(config);
+
 describe('Merch Offer Select', () => {
   before(async () => {
+    mockIms();
     await mockFetch();
     await initService(true);
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
@@ -44,6 +55,7 @@ describe('Merch Offer Select', () => {
   });
 
   after(() => {
+    unmockIms();
     unmockFetch();
   });
 
@@ -102,6 +114,7 @@ describe('Merch quantity select', () => {
   let items;
 
   before(async () => {
+    mockIms();
     await mockFetch();
     await initService(true);
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
@@ -113,6 +126,7 @@ describe('Merch quantity select', () => {
   });
 
   after(() => {
+    unmockIms();
     unmockFetch();
   });
 
@@ -138,5 +152,29 @@ describe('Merch quantity select', () => {
 
     validateMerchCard(merchCard, null, 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
     expect(merchCard.querySelector('div[slot="footer"] a[slot="cta"]').dataset.quantity).to.equal('2');
+  });
+});
+
+describe('Merch quantity select: twp', () => {
+  before(async () => {
+    mockIms();
+    await mockFetch();
+    await initService(true);
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
+  });
+
+  after(() => {
+    unmockIms();
+    unmockFetch();
+  });
+
+  it('Should initialize twp card with stock', async () => {
+    const twpCard = await initCard(document.querySelector('.twp'));
+    await delay(200);
+    const [merchOfferSelect, merchOffer1, merchOffer2, merchOffer3] = twpCard.querySelectorAll('merch-offer-select, merch-offer');
+    expect(merchOfferSelect.getAttribute('stock')).to.exist;
+    expect(merchOffer1.getAttribute('text')).to.equal('Annual, monthly payment');
+    expect(merchOffer2.getAttribute('text')).to.equal('Annual, one-time payment');
+    expect(merchOffer3.getAttribute('text')).to.equal('Monthly, without commitment');
   });
 });
