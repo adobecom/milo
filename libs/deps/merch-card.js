@@ -1,4 +1,4 @@
-// branch: develop commit: f499abc85176fc7d34f43457efeeb72adb1e6103 Thu, 30 May 2024 14:05:27 GMT
+// branch: develop commit: 074fea3f15242a36834be88bb51eaec58799ee75 Fri, 14 Jun 2024 14:18:48 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -221,6 +221,8 @@ import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitEleme
         gap: var(--consonant-merch-spacing-xxs);
         align-items: center;
         flex: 1;
+        height: 100%;
+        line-height: normal;
     }
 
     .secure-transaction-label::before {
@@ -552,15 +554,7 @@ merch-card-collection > div[slot] p {
     justify-content: center;
     justify-items: stretch;
     gap: var(--consonant-merch-spacing-m);
-}
-
-@media screen and ${c} {
-    .one-merch-card,
-    .two-merch-cards,
-    .three-merch-cards,
-    .four-merch-cards {
-        padding: var(--spacing-m);
-    }
+    padding: var(--spacing-m);
 }
 
 merch-card.background-opacity-70 {
@@ -966,6 +960,7 @@ div[slot='bg-image'] img {
 @media screen and ${f} {
     :root {
         --consonant-merch-card-mini-compare-chart-width: 142px;
+        --consonant-merch-card-segment-width: 276px;
         --consonant-merch-card-mini-compare-chart-wide-width: 302px;
         --consonant-merch-card-special-offers-width: 302px;
         --consonant-merch-card-twp-width: 300px;
@@ -978,6 +973,7 @@ div[slot='bg-image'] img {
     :root {
         --consonant-merch-card-catalog-width: 302px;
         --consonant-merch-card-plans-width: 302px;
+        --consonant-merch-card-segment-width: 276px;
         --consonant-merch-card-mini-compare-chart-width: 178px;
         --consonant-merch-card-mini-compare-chart-wide-width: 302px;
         --consonant-merch-card-special-offers-width: 302px;
@@ -990,6 +986,7 @@ div[slot='bg-image'] img {
     :root {
         --consonant-merch-card-catalog-width: 276px;
         --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-segment-width: 302px;
         --consonant-merch-card-inline-heading-width: 378px;
         --consonant-merch-card-product-width: 378px;
         --consonant-merch-card-image-width: 378px;

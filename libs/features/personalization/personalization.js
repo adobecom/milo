@@ -29,7 +29,7 @@ const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
-const COLUMN_NOT_OPERATOR = 'not';
+const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
 const PAGE_URL = new URL(window.location.href);
