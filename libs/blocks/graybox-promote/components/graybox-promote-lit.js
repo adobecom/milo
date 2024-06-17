@@ -51,7 +51,7 @@ function getAemInfo() {
 async function getProjectInfo(referrer) {
   const url = new URL(referrer);
   const sheet = await getJson(
-    `${url.origin}${url.pathname}?graybox=on&sheet=settings`,
+    `${url.origin}${url.pathname}?sheet=settings`,
     'Failed to fetch project info',
   );
   return {
