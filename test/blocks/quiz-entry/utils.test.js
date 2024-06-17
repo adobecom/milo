@@ -15,6 +15,7 @@ const quizConfig = {
   analyticsType: 'cc:app-reco',
   questionData: undefined,
   stringsData: undefined,
+  resultsData: undefined,
 };
 const selectedQuestion = {
   questions: 'q-category',

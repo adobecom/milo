@@ -63,9 +63,10 @@ export const defaultRedirect = (url) => {
 
 export const handleResultFlow = async (
   answers = [],
+  quizEntryResults = {},
   redirectFunc = defaultRedirect,
 ) => {
-  const { destinationPage } = await findAndStoreResultData(answers);
+  const { destinationPage } = await findAndStoreResultData(answers, quizEntryResults);
   const redirectUrl = getRedirectUrl(destinationPage);
   redirectFunc(redirectUrl);
 };
@@ -74,8 +75,8 @@ export const handleResultFlow = async (
  * Handling the result flow from here. Will need to make sure we capture all
  * the data so that we can come back.
  */
-export const findAndStoreResultData = async (answers = []) => {
-  const entireResultData = await parseResultData(answers);
+export const findAndStoreResultData = async (answers = [], quizEntryResults = {}) => {
+  const entireResultData = await parseResultData(answers, quizEntryResults);
   const resultData = entireResultData.filteredResults;
   const { resultResources } = entireResultData;
   let destinationPage = '';
@@ -265,8 +266,28 @@ export const getRedirectUrl = (destinationPage) => {
   return `${destinationPage}${separator}quizkey=${quizKey}`;
 };
 
-export const parseResultData = async (answers) => {
-  const results = await fetchContentOfFile(RESULTS_EP_NAME);
+export const parseResultData = async (answers, quizEntryResults) => {
+  // Initialize an empty object for the results
+  const results = {};
+
+  // Fetch the content of the file asynchronously
+  const quizResultsData = await fetchContentOfFile(RESULTS_EP_NAME);
+
+  // Destructure data from fetched content and the existing quizResultsData
+  const { result: { data: quizResultsDataArray } } = quizResultsData;
+  const { 'result-fragments': { data: quizFragmentsDataArray } } = quizResultsData;
+  const { 'result-destination': { data: quizDestinationDataArray } } = quizResultsData;
+
+  // Check if quizEntryResults is defined and extract data, otherwise use empty arrays
+  const quizEntryResultsDataArray = quizEntryResults?.result?.data || [];
+  const quizEntryFragmentsDataArray = quizEntryResults?.['result-fragments']?.data || [];
+  const quizEntryDestinationDataArray = quizEntryResults?.['result-destination']?.data || [];
+
+  // Merge the data arrays from both sources
+  results.result = { data: [...quizResultsDataArray, ...quizEntryResultsDataArray] };
+  results['result-fragments'] = { data: [...quizFragmentsDataArray, ...quizEntryFragmentsDataArray] };
+  results['result-destination'] = { data: [...quizDestinationDataArray, ...quizEntryDestinationDataArray] };
+
   const filteredResults = results.result.data.reduce(
     (resultObj, resultMap) => {
       let hasMatch = false;

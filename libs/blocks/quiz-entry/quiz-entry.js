@@ -16,10 +16,11 @@ const App = ({
   analyticsType = null,
   questionData = { questions: { data: [] } },
   stringsData = { questions: { data: [] } },
+  resultsData = {},
   debug = false,
 }) => {
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [quizState, setQuizState] = useState({ userFlow: [], userSelection: [] });
+  const [quizState, setQuizState] = useState({ userFlow: [], userSelection: [], results: {} });
   const [quizLists, setQuizLists] = useState({});
   const [quizData, setQuizData] = useState({});
   const [hasMLData, setHasMLData] = useState(false);
@@ -117,6 +118,7 @@ const App = ({
         setQuizState({
           userFlow: [questionDataArray[0].questions],
           userSelection: quizState.userSelection,
+          results: resultsData,
         });
         setSelectedQuestion(qLists.questions[questionDataArray[0].questions]);
       }
@@ -260,6 +262,7 @@ const App = ({
       const currentQuizState = {
         userFlow: nextFlow,
         userSelection: nextSelections,
+        results: resultsData,
       };
       localStorage.setItem('stored-quiz-state', JSON.stringify(currentQuizState));
       setQuizState(currentQuizState);
@@ -390,6 +393,7 @@ export default async function init(
     analyticsType: null,
     questionData: null,
     stringsData: null,
+    resultsData: null,
     debug: false,
   },
 ) {
@@ -408,6 +412,7 @@ export default async function init(
         analyticsType: '',
         questionData: { questions: { data: [] } },
         stringsData: { questions: { data: [] } },
+        resultsData: {},
         debug: false,
       };
     }
@@ -424,6 +429,7 @@ export default async function init(
     analyticsType=${quizEntry.analyticsType || ''}
     questionData=${quizEntry.questionData}
     stringsData=${quizEntry.stringsData}
+    resultsData=${quizEntry.resultsData}
     debug=${quizEntry.debug || false}
   />`, el);
 }
