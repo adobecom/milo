@@ -21,11 +21,12 @@ function Modal({ lang, prefix, type }) {
 
   if (type === 'skipped') {
     const skipped = getSkippedFileWarnings(lang);
+    const regions = lang.locales.map(String).join(', ');
     return html`
       <h2 class="skipped-heading">
         <span class="skipped-icon" /> Skipped Items during rollout <i>- ${lang.Language}</i>
       </h2>
-      <p>Files that already exist in the langstore are skipped because of the project configuration.
+      <p>Files that already exist in <strong>${regions}</strong> are skipped because of the project configuration.
         If you would like file updates to be merged on rollout you will need to <i>start a new project</i> with the correct regional edit behavior (merge). <a href="https://milo.adobe.com/docs/authoring/localization#:~:text=2.Regional.edit.behavior%3A" target="_blank">Learn more</a></p>
       <ol>${skipped.map((err) => html`<li>${err}</li>`)}</ol>
     `;
