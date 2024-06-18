@@ -4,7 +4,7 @@ import path from 'path';
 import postcss from 'postcss';
 
 const spectrumCSSPath = path.resolve('node_modules/@spectrum-css/tokens/dist/index.css');
-const miloCSSPath = path.resolve('../../styles/styles2-slim.css');
+const miloCSSPath = path.resolve('../../styles/styles.css');
 
 const logFileSize = (filePath, status) => {
   const fileSizeInBytes = fs.statSync(filePath).size;
