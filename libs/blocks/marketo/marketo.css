@@ -533,7 +533,7 @@
   background-color: #123456
 }
 
-.resource-form .marketo {
+.resource-form.section.two-up .marketo {
   margin-left: calc(var(--grid-margins-width) * -1 / 2);
   margin-right: calc(var(--grid-margins-width) * -1 / 2);
 }
