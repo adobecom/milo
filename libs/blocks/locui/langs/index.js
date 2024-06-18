@@ -36,7 +36,7 @@ export async function rollout(item, idx) {
 }
 
 export function showLangErrors(event, item) {
-  if (!item.errors.length
+  if (!item.errors?.length
     || event.target.classList.contains('locui-subproject-locale')
     || event.target.classList.contains('locui-urls-heading-warnings')) return null;
   const div = createTag('div');
