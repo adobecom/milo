@@ -1,4 +1,4 @@
-import { createTag } from './utils.js';
+import { createTag, getVideoIntersectionObserver } from './utils.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -173,12 +173,14 @@ export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
+  const playInViewport = hash?.includes('viewportplay');
   const poster = dataset?.videoPoster ? `poster='${dataset.videoPoster}'` : '';
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = 'autoplay muted';
+  const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
   if (isAutoplay && !isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs} loop`;
+    return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
   }
   if (playOnHover && isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
@@ -187,7 +189,7 @@ export function getVideoAttrs(hash, dataset) {
     return `${globalAttrs} muted data-hoverplay`;
   }
   if (isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs}`;
+    return `${globalAttrs} ${autoPlayAttrs} ${playInViewportAttrs}`;
   }
   return `${globalAttrs} controls`;
 }
@@ -198,5 +200,15 @@ export function applyHoverPlay(video) {
     video.addEventListener('mouseenter', () => { video.play(); });
     video.addEventListener('mouseleave', () => { video.pause(); });
     video.setAttribute('data-mouseevent', true);
+  }
+}
+export function applyInViewPortPlay(video) {
+  if (!video) return;
+  if (video.hasAttribute('data-play-viewport')) {
+    const observer = getVideoIntersectionObserver();
+    video.addEventListener('ended', () => {
+      video.dataset.playedOnce = true;
+    });
+    observer.observe(video);
   }
 }

@@ -1231,3 +1231,26 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+export function getVideoIntersectionObserver() {
+  if (!window?.videoIntersectionObs) {
+    window.videoIntersectionObs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const { intersectionRatio, target: video } = entry;
+        const attr = video.getAttributeNames();
+        const videoPlayedOnce = video.dataset?.playedOnce ?? false;
+
+        if (intersectionRatio >= 0.8) {
+          if (attr.includes('loop') || !videoPlayedOnce) video.play();
+          video.classList.add('in-viewport');
+          video.classList.remove('out-viewport');
+        } else {
+          video.pause();
+          video.classList.add('out-viewport');
+          video.classList.remove('in-viewport');
+        }
+      });
+    }, { threshold: [0.8] });
+  }
+  return window.videoIntersectionObs;
+}

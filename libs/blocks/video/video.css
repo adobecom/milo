@@ -5,4 +5,13 @@ a[href*='.mp4'].hide-video {
 video {
   max-width: 100%;
   height: auto;
+  transition: opacity 400ms ease-in-out;
+}
+
+video.in-viewport {
+  opacity: 1;
+}
+
+video.out-viewport {
+  opacity: 0.4;
 }
