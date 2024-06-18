@@ -165,7 +165,7 @@ describe('Quiz Entry Utils', () => {
     // Check that lana.log was called with the error message
     sinon.assert.calledWith(
       window.lana.log,
-      'ERROR: Fetching data for quiz entry: Error: Internal server error'
+      'ERROR: Fetching data for quiz entry: Error: Internal server error',
     );
   });
 
@@ -191,7 +191,7 @@ describe('Quiz Entry Utils', () => {
     // Check that lana.log was called with the info message
     sinon.assert.calledWith(
       window.lana.log,
-      "INFO: results.json not found or couldn't be fetched: Error: File not found"
+      "INFO: results.json not found or couldn't be fetched: Error: File not found",
     );
   });
 });
