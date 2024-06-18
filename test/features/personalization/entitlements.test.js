@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
-import init, { getEntitlementUrl } from '../../../libs/features/personalization/entitlements.js';
+import init, { getEntitlementDataUrl } from '../../../libs/features/personalization/entitlements.js';
 import { getConfig } from '../../../libs/utils/utils.js';
 
 // Add custom keys so tests doesn't rely on real data
@@ -102,12 +102,14 @@ describe('entitlements', () => {
     expect(entitlements).to.deep.equal(expectedEntitlements);
   });
 
-  it('Should return a different location based on environment', async () => {
+  it('Should return a different entitlementDataUrl based on environment', async () => {
     config.env = { name: 'prod' };
-    let url = getEntitlementUrl();
-    expect(url).to.equal('https://www.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=prod');
+    config.mep = { entitlementDataUrl: 'somesavedvalue' };
+    let url = getEntitlementDataUrl(config, 'https://busines.adobe.com');
+    expect(url).to.equal('somesavedvalue');
+
     config.env = { name: 'stage' };
-    url = getEntitlementUrl();
+    url = getEntitlementDataUrl();
     expect(url).to.equal('https://www.stage.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=stage');
   });
 });
