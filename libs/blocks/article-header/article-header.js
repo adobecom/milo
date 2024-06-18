@@ -3,7 +3,6 @@ import { copyToClipboard } from '../../utils/tools.js';
 import { loadTaxonomy, getLinkForTopic, getTaxonomyModule } from '../article-feed/article-helpers.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons/icons.js';
-import { buildFigure } from '../figure/figure.js';
 
 async function validateAuthorUrl(url) {
   if (!url) return null;
@@ -173,8 +172,19 @@ export default async function init(blockEl) {
 
   const featureImgContainer = childrenEls[3];
   featureImgContainer.classList.add('article-feature-image');
-  const featureFigEl = buildFigure(featureImgContainer.firstElementChild);
-  featureFigEl.classList.add('figure-feature');
-  featureImgContainer.prepend(featureFigEl);
+  const picture = featureImgContainer.querySelector('picture');
+  const caption = featureImgContainer.querySelector('em');
+  const figure = document.createElement('figure');
+
+  if (caption) {
+    caption.classList.add('caption');
+    const figcaption = document.createElement('figcaption');
+    figcaption.append(caption);
+    figure.append(figcaption);
+  }
+
+  figure.classList.add('figure-feature');
+  figure.prepend(picture);
+  featureImgContainer.prepend(figure);
   featureImgContainer.lastElementChild.remove();
 }
