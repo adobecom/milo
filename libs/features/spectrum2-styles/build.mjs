@@ -68,7 +68,28 @@ const extractAndTransform = (css, prefix) => {
   return customProperties;
 };
 
+const mergeProperties = (baseProps, additionalProps) => {
+  Object.keys(additionalProps).forEach((prop) => {
+    if (!baseProps[prop]) {
+      baseProps[prop] = additionalProps[prop];
+    }
+  });
+};
+
 const spectrumProperties = extractAndTransform(spectrumCSS, '--spectrum');
+
+const getSpectrumPropertiesForSelector = (selector) => {
+  const properties = {};
+  if (selector === '.spectrum') {
+    mergeProperties(properties, spectrumProperties['.spectrum'] || {});
+    mergeProperties(properties, spectrumProperties['.spectrum--light'] || {});
+    mergeProperties(properties, spectrumProperties['.spectrum--medium'] || {});
+  } else {
+    mergeProperties(properties, spectrumProperties[selector] || {});
+  }
+  return properties;
+};
+
 const miloProperties = extractAndTransform(miloCSS, '--s2');
 
 const updateMiloCSS = (css) => {
@@ -81,9 +102,14 @@ const updateMiloCSS = (css) => {
         const { prop } = decl;
         if (prop.startsWith('--s2')) {
           const spectrumProp = `--spectrum${prop.slice(4)}`;
-          if (spectrumProperties[selector][spectrumProp] !== undefined) {
-            decl.value = spectrumProperties[selector][spectrumProp];
+          const spectrumSelector = selector.startsWith('.spectrum') ? selector : '.spectrum';
+          const spectrumProps = getSpectrumPropertiesForSelector(spectrumSelector);
+          if (spectrumProps[spectrumProp] !== undefined) {
+            decl.value = spectrumProps[spectrumProp];
           }
+        }
+        if (decl.value.includes('--spectrum')) {
+          decl.value = decl.value.replace(/--spectrum/g, '--s2');
         }
       });
     }
