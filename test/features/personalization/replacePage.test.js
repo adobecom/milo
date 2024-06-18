@@ -12,6 +12,7 @@ it('replacePage should replace all of the main block', async () => {
 
   let manifestJson = await readFile({ path: './mocks/actions/manifestReplacePage.json' });
   manifestJson = JSON.parse(manifestJson);
+  const entitlementJSON = await readFile({ path: './mocks/entitlements.json' });
   const replacePageHtml = await readFile({ path: './mocks/fragments/replacePage.plain.html' });
 
   window.fetch = stub();
@@ -24,6 +25,14 @@ it('replacePage should replace all of the main block', async () => {
     }),
   );
   window.fetch.onCall(1).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: true,
+        json: () => JSON.parse(entitlementJSON),
+      });
+    }),
+  );
+  window.fetch.onCall(2).returns(
     new Promise((resolve) => {
       resolve({
         ok: true,

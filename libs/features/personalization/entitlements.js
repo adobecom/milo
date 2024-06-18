@@ -12,7 +12,7 @@ export const getEntitlementUrl = () => {
 export const getEntitlementMap = async () => {
   const { consumerEntitlements } = getConfig();
   const fetchedData = await fetchData(getEntitlementUrl(), DATA_TYPE.JSON);
-  if (!fetchedData) return consumerEntitlements;
+  if (!fetchedData) return consumerEntitlements || {};
   const entitlements = {};
   fetchedData?.data?.forEach((ent) => {
     const { id, tagname } = ent;

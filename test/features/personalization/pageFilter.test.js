@@ -31,7 +31,6 @@ it('pageFilter should exclude page if it is not a match', async () => {
       });
     }),
   );
-
   expect(document.querySelector('.marquee')).to.not.be.null;
   expect(document.querySelector('.newpage')).to.be.null;
 
@@ -48,6 +47,7 @@ it('pageFilter should include page if it is a match', async () => {
 
   let manifestJson = await readFile({ path: './mocks/manifestPageFilterInclude.json' });
   manifestJson = JSON.parse(manifestJson);
+  const entitlementJSON = await readFile({ path: './mocks/entitlements.json' });
   const replacePageHtml = await readFile({ path: './mocks/fragments/replacePage.plain.html' });
 
   window.fetch = stub();
@@ -60,6 +60,14 @@ it('pageFilter should include page if it is a match', async () => {
     }),
   );
   window.fetch.onCall(1).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: true,
+        json: () => JSON.parse(entitlementJSON),
+      });
+    }),
+  );
+  window.fetch.onCall(2).returns(
     new Promise((resolve) => {
       resolve({
         ok: true,
