@@ -62,14 +62,14 @@
   --link-hover-color-dark: #0d66d0;
   --link-secondary-color: var(--color-gray-800); /* new */
   --link-hover-secondary-color: var(--color-gray-900); /* new */
-  --background-color: #fff;
+  --background-color: var(--color-white);
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;
-  --text-color: #2c2c2c;
-  --heading-color: #2c2c2c;
-  --title-color: #2c2c2c;
-  --detail-color: #2c2c2c;
-  --color-brand-title: #000B1D;
+  --text-color: var(--s2-body-color);
+  --heading-color: var(--s2-heading-color);
+  --title-color: var(--s2-title-color);
+  --detail-color: var(--s2-detail-color);
+  --color-brand-title: var(--s2-title-color);
   --color-accent: var(--s2-accent-content-color-default, --link-color-dark);
   --color-accent-hover: var(--s2-accent-content-color-hover, --link-hover-color-dark);
   --color-accent-down: var(--s2-accent-content-color-down, #095aba);
