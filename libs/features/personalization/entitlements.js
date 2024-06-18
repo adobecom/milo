@@ -28,6 +28,7 @@ export const getEntitlementDataUrl = (config, origin) => {
   if (mep?.entitlementDataUrl) return mep.entitlementDataUrl;
   const sheet = env.name === 'prod' ? 'prod' : 'stage';
   const federatedContentRoot = getFederatedContentRoot(origin);
+
   return `${federatedContentRoot}/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
 };
 
