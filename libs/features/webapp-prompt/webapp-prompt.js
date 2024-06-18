@@ -89,7 +89,7 @@ const playFocusAnimation = (
     cleanup();
     clearTimeout(timeoutID);
   }, { once: true });
-}
+};
 
 const modalsActive = () => !!document.querySelector('.dialog-modal');
 
