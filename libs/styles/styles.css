@@ -18,11 +18,11 @@
   --color-white: var(--s2-white); 
   --color-black: var(--s2-black); 
   --color-gray-100: var(--s2-gray-100,#F8F8F8);
-  --color-gray-200: var(#E8E8E8); /* milo only */
+  --color-gray-200: #E8E8E8; /* milo only */
   --color-gray-300: var(--s2-gray-300,#D4D4D4);
   --color-gray-400: var(--s2-gray-400, #B6B6B6);
   --color-gray-500: var(--s2-gray-500, #909090);
-  --color-gray-600: var(#686868); /* milo only */
+  --color-gray-600: #686868; /* milo only */
   --color-gray-700: var(--s2-gray-700, #444);
   --color-gray-800: var(--s2-gray-800, #242424);
   /*** S2 Color Specs ***/ 
@@ -159,10 +159,7 @@
   --s2-static-black-focus-indicator-color: var(--s2-black);
 
   /*** S2 Elevation (Drop Shadow) ***/
-  --s2-drop-shadow-x-100: 0;
-  --s2-drop-shadow-x-200: 0;
-  --sn-drop-shadow-x-300: 0; /* NARRATIVE */
-  --sn-drop-shadow-x-400: 0; /* NARRATIVE */
+  --sn-drop-shadow-x: 0; /* NARRATIVE */
   --s2-drop-shadow-y-100: 1px;
   --s2-drop-shadow-y-200: 2px;
   --sn-drop-shadow-y-300: 4px; /* NARRATIVE */
@@ -173,22 +170,22 @@
   --sn-drop-shadow-blur-400: 16px; /* NARRATIVE */
 
   /* Elevation L1 (emphasized) */
-  --s2-drop-shadow-emphasized-default-x: var(--s2-drop-shadow-x-100);
+  --s2-drop-shadow-emphasized-default-x: var(--sn-drop-shadow-x);
   --s2-drop-shadow-emphasized-default-y: var(--s2-drop-shadow-y-100);
   --s2-drop-shadow-emphasized-default-blur: var(--s2-drop-shadow-blur-100);
   --s2-drop-shadow-emphasized-default-color: var(--s2-drop-shadow-color-100);
   /* Elevation L2 (elevated) */
-  --s2-drop-shadow-elevated-default-x: var(--s2-drop-shadow-x-100);
+  --s2-drop-shadow-elevated-default-x: var(--sn-drop-shadow-x);
   --s2-drop-shadow-elevated-default-y: var(--s2-drop-shadow-y-100);
   --s2-drop-shadow-elevated-default-blur: var(--s2-drop-shadow-blur-100);
   --s2-drop-shadow-elevated-default-color: var(--s2-drop-shadow-color-100);
   /* Elevation L3 */
-  --sn-drop-shadow-level3-default-x: var(--s2-drop-shadow-x-300);/* NARRATIVE */  
+  --sn-drop-shadow-level3-default-x: var(--sn-drop-shadow-x);/* NARRATIVE */  
   --sn-drop-shadow-level3-default-y: var(--s2-drop-shadow-y-300); /* NARRATIVE */
   --sn-drop-shadow-level3-default-blur: var(--s2-drop-shadow-blur-300); /* NARRATIVE */
   --sn-drop-shadow-level3-default-color: var(--s2-drop-shadow-color-300); /* NARRATIVE */
   /* Elevation L4 */
-  --sn-drop-shadow-level4-default-x: var(--s2-drop-shadow-x-400); /* NARRATIVE */
+  --sn-drop-shadow-level4-default-x: var(--sn-drop-shadow-x); /* NARRATIVE */
   --sn-drop-shadow-level4-default-y: var(--s2-drop-shadow-y-400); /* NARRATIVE */
   --sn-drop-shadow-level4-default-blur: var(--s2-drop-shadow-blur-400); /* NARRATIVE */
   --sn-drop-shadow-level4-default-color: var(--s2-drop-shadow-color-400); /* NARRATIVE */

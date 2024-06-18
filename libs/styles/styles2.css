@@ -18,11 +18,11 @@
   --color-white: var(--s2-white); 
   --color-black: var(--s2-black); 
   --color-gray-100: var(--s2-gray-100,#F8F8F8);
-  --color-gray-200: var(#E8E8E8); /* milo only */
+  --color-gray-200: #E8E8E8; /* milo only */
   --color-gray-300: var(--s2-gray-300,#D4D4D4);
   --color-gray-400: var(--s2-gray-400, #B6B6B6);
   --color-gray-500: var(--s2-gray-500, #909090);
-  --color-gray-600: var(#686868); /* milo only */
+  --color-gray-600: #686868; /* milo only */
   --color-gray-700: var(--s2-gray-700, #444);
   --color-gray-800: var(--s2-gray-800, #242424);
   /*** S2 Color Specs ***/ 
@@ -229,10 +229,7 @@
   --s2-static-black-focus-indicator-color: var(--s2-black);
 
   /*** S2 Elevation (Drop Shadow) ***/
-  --s2-drop-shadow-x-100: 0;
-  --s2-drop-shadow-x-200: 0;
-  --sn-drop-shadow-x-300: 0; /* NARRATIVE */
-  --sn-drop-shadow-x-400: 0; /* NARRATIVE */
+  --sn-drop-shadow-x: 0; 
   --s2-drop-shadow-y-100: 1px;
   --s2-drop-shadow-y-200: 2px;
   --sn-drop-shadow-y-300: 4px; /* NARRATIVE */
@@ -243,22 +240,22 @@
   --sn-drop-shadow-blur-400: 16px; /* NARRATIVE */
 
   /* Elevation L1 (emphasized) */
-  --s2-drop-shadow-emphasized-default-x: var(--s2-drop-shadow-x-100);
+  --s2-drop-shadow-emphasized-default-x: var(--sn-drop-shadow-x);
   --s2-drop-shadow-emphasized-default-y: var(--s2-drop-shadow-y-100);
   --s2-drop-shadow-emphasized-default-blur: var(--s2-drop-shadow-blur-100);
   --s2-drop-shadow-emphasized-default-color: var(--s2-drop-shadow-color-100);
   /* Elevation L2 (elevated) */
-  --s2-drop-shadow-elevated-default-x: var(--s2-drop-shadow-x-100);
+  --s2-drop-shadow-elevated-default-x: var(--sn-drop-shadow-x);
   --s2-drop-shadow-elevated-default-y: var(--s2-drop-shadow-y-100);
   --s2-drop-shadow-elevated-default-blur: var(--s2-drop-shadow-blur-100);
   --s2-drop-shadow-elevated-default-color: var(--s2-drop-shadow-color-100);
   /* Elevation L3 */
-  --sn-drop-shadow-level3-default-x: var(--s2-drop-shadow-x-300);/* NARRATIVE */  
+  --sn-drop-shadow-level3-default-x: var(--sn-drop-shadow-x);/* NARRATIVE */  
   --sn-drop-shadow-level3-default-y: var(--s2-drop-shadow-y-300); /* NARRATIVE */
   --sn-drop-shadow-level3-default-blur: var(--s2-drop-shadow-blur-300); /* NARRATIVE */
   --sn-drop-shadow-level3-default-color: var(--s2-drop-shadow-color-300); /* NARRATIVE */
   /* Elevation L4 */
-  --sn-drop-shadow-level4-default-x: var(--s2-drop-shadow-x-400); /* NARRATIVE */
+  --sn-drop-shadow-level4-default-x: var(--sn-drop-shadow-x); /* NARRATIVE */
   --sn-drop-shadow-level4-default-y: var(--s2-drop-shadow-y-400); /* NARRATIVE */
   --sn-drop-shadow-level4-default-blur: var(--s2-drop-shadow-blur-400); /* NARRATIVE */
   --sn-drop-shadow-level4-default-color: var(--s2-drop-shadow-color-400); /* NARRATIVE */
@@ -392,21 +389,21 @@
   --type-heading-all-weight: var(--s2-extra-bold-font-weight);
   --type-heading-lh: 1.25; 
   --type-heading-xxxl-size: calc(var(--font-size-multiplier, 1) * 44px); /* original not in S2 */
-  --type-heading-xxxl-lh: 55px;
-  --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-1200, 36)); 
-  --type-heading-xxl-lh: var(--type-heading-lh, 45);
-  --type-heading-xl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-900, 28)); 
-  --type-heading-xl-lh: var(--type-heading-lh, 35);
-  --type-heading-l-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-800, 24)); 
-  --type-heading-l-lh: var(--type-heading-lh, 30);
-  --type-heading-m-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-700, 20)); 
-  --type-heading-m-lh: var(--type-heading-lh, 25);
-  --type-heading-s-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-600, 18)); 
-  --type-heading-s-lh: var(--type-heading-lh, 22.5);
+  --type-heading-xxxl-lh: 3.4;
+  --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-1200, 36px)); 
+  --type-heading-xxl-lh: var(--type-heading-lh, 45px);
+  --type-heading-xl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-900, 28px)); 
+  --type-heading-xl-lh: var(--type-heading-lh, 35px);
+  --type-heading-l-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-800, 24px)); 
+  --type-heading-l-lh: var(--type-heading-lh, 30px);
+  --type-heading-m-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-700, 20px)); 
+  --type-heading-m-lh: var(--type-heading-lh, 25px);
+  --type-heading-s-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-600, 18px)); 
+  --type-heading-s-lh: var(--type-heading-lh, 22.5px);
   --type-heading-xs-size: calc(var(--font-size-multiplier, 1) * 16); /* original not in S2 */
-  --type-heading-xs-lh: 20px;
+  --type-heading-xs-lh: 1.25;
   --type-heading-xxs-size: calc(var(--font-size-multiplier, 1) * 14); /* original not in S2 */
-  --type-heading-xxs-lh: 18px;
+  --type-heading-xxs-lh: 1.125;
 
   @media (min-width: 768px) { /* Tablet */
     --type-heading-xxl-size: var(--s2-font-size-1300);

@@ -17,7 +17,6 @@ const miloCSS = fs.readFileSync(miloCSSPath, 'utf8');
 
 logFileSize(miloCSSPath, 'original');
 
-// Transform function to format Spectrum CSS properties for performance
 const transformRgbProperties = (rule) => {
   const properties = {};
 
@@ -49,7 +48,6 @@ const transformRgbProperties = (rule) => {
   Object.keys(properties).forEach((prop) => rule.append({ prop, value: properties[prop] }));
 };
 
-// Extract and transform CSS properties
 const extractAndTransform = (css, prefix) => {
   const customProperties = {};
   postcss.parse(css).walkRules((rule) => {
@@ -76,7 +74,6 @@ const mergeProperties = (baseProps, additionalProps) => {
   });
 };
 
-// Extract properties from CSS
 const spectrumProperties = extractAndTransform(spectrumCSS, '--spectrum');
 
 // Get Spectrum properties for a given selector
@@ -98,7 +95,6 @@ const getSpectrumPropertiesForSelector = (selector) => {
 
 const miloProperties = extractAndTransform(miloCSS, '--s2');
 
-// Update Milo CSS with transformed properties
 const updateMiloCSS = (css) => {
   const root = postcss.parse(css);
 
@@ -125,11 +121,9 @@ const updateMiloCSS = (css) => {
   return root.toString();
 };
 
-// Generate updated Milo CSS and write to file
 const updatedMiloCSS = updateMiloCSS(miloCSS);
 
 fs.writeFileSync(miloCSSPath, updatedMiloCSS, 'utf8');
 console.log(`Updated custom properties written to ${miloCSSPath}`);
 
-// Log updated file size
 logFileSize(miloCSSPath, 'updated');
