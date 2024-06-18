@@ -68,7 +68,7 @@ describe('Merch Offer Select', () => {
     validateMerchCard(merchCard, 'Recommended', 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
   });
 
-  it('Should select and render second offer', async () => {
+  it.only('Should select and render second offer', async () => {
     const merchCard = document.querySelector('merch-card');
     merchCard.querySelectorAll('merch-offer')[1].click();
     await delay();

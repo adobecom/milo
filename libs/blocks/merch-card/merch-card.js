@@ -29,7 +29,7 @@ const CARD_TYPES = [
 const CARD_SIZES = ['wide', 'super-wide'];
 
 const TEXT_STYLES = {
-  H5: 'detail-m',
+  H5: 'promo-text',
   H4: 'body-xxs',
   H3: 'heading-xs',
   H2: 'heading-m',
@@ -153,9 +153,7 @@ const parseContent = async (el, merchCard) => {
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
-    const promoText = el.querySelectorAll('h5');
     const priceSmallType = el.querySelectorAll('h6');
-    appendSlot(promoText, 'promo-text', merchCard);
     appendSlot(priceSmallType, 'price-commitment', merchCard);
   }
 

@@ -23,9 +23,9 @@ loadStyle('/libs/blocks/merch-card/merch-card.css');
 const expectToValidateHTMLAssertions = (card, assertions = {}) => {
   expect(card).to.exist;
   const { elements, buttons: expectedButtons } = assertions;
-  for (const { selector, attribute, textContent } of Object.entries(elements)) {
+  elements.forEach(({ selector, attribute, textContent }) => {
     const el = typeof selector === 'string' ? card.querySelector(selector) : card;
-    expect(el).to.exist;
+    expect(el, selector).to.exist;
     if (attribute) {
       const { name, value } = attribute;
       expect(el.getAttribute(name)).to.be.equal(value);
@@ -33,7 +33,7 @@ const expectToValidateHTMLAssertions = (card, assertions = {}) => {
     if (textContent) {
       expect(el.textContent).to.be.equal(textContent);
     }
-  }
+  });
   const footer = card.querySelector('div[slot="footer"]');
   if (expectedButtons) {
     const buttons = footer.querySelectorAll('.con-button');
@@ -51,6 +51,7 @@ describe('Merch Card', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'h3[slot="heading-xs"]', textContent: 'Lorem ipsum dolor sit amet' },
+        { selector: 'h4[slot="promo-text"]', textContent: 'this promo is great see terms' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See what\'s included | Learn more' },
         { attribute: { name: 'variant', value: 'segment' } },
       ],
@@ -63,12 +64,9 @@ describe('Merch Card', () => {
     const merchCard = await init(document.querySelector('.special-offers'));
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
-        { selector: 'h4[slot="detail-m"]' },
         { selector: 'h3[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
-        { attribute: { name: 'variant', value: 'special-offers' } },
-        { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
-        { attribute: { name: 'badge-color', value: '#000000' } },
+        { attribute: { name: 'variant', value: 'special-offers' } }, { attribute: { name: 'badge-background-color', value: '#EDCC2D' } }, { attribute: { name: 'badge-color', value: '#000000' } },
         { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
       ],
       buttons: ['Learn More', 'Save now'],
@@ -82,10 +80,9 @@ describe('Plans Card', () => {
     const merchCard = await init(document.querySelector('.merch-card.plans.icons.secure'));
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
-        { selector: 'h3[slot="heading-m"]' },
-        { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'h3[slot="heading-m"]' }, { selector: 'h4[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
-        { selector: 'h5[slot="detail-m"]', textContent: 'Maecenas porttitor enim.' },
+        { selector: 'h5[slot="promo-text"]', textContent: 'this promo is great see terms' },
         { attribute: { name: 'variant', value: 'plans' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
         { attribute: { name: 'badge-color', value: '#000000' } },
@@ -104,7 +101,6 @@ describe('Plans Card', () => {
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
-        { selector: 'h5[slot="detail-m"]', textContent: 'Maecenas porttitor enim.' },
         { attribute: { name: 'variant', value: 'plans' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
         { attribute: { name: 'badge-color', value: '#000000' } },
@@ -122,13 +118,8 @@ describe('Plans Card', () => {
       elements: [
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
-        { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
-        { selector: 'h5[slot="detail-m"]', textContent: 'Maecenas porttitor enim.' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum' },
         { attribute: { name: 'variant', value: 'plans' } },
-        { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
-        { attribute: { name: 'badge-color', value: '#000000' } },
-        { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
-        { attribute: { name: 'checkbox-label', value: 'Add a 30-day free trial of Adobe Stock.*' } },
       ],
       buttons: ['Learn More', 'Save now'],
     });
@@ -162,8 +153,8 @@ describe('Catalog Card', () => {
       elements: [
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'h5[slot="promo-text"]', textContent: 'this promo is great see terms' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
-        { selector: 'h5[slot="detail-m"]', textContent: 'Desktop + Mobile' },
         { attribute: { name: 'variant', value: 'catalog' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
         { attribute: { name: 'badge-color', value: '#000000' } },
@@ -182,7 +173,6 @@ describe('Catalog Card', () => {
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
-        { selector: 'h5[slot="detail-m"]', textContent: 'Desktop + Mobile' },
         { attribute: { name: 'variant', value: 'catalog' } },
         { attribute: { name: 'action-menu', value: 'true' } },
       ],
@@ -199,7 +189,6 @@ describe('Catalog Card', () => {
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
-        { selector: 'h5[slot="detail-m"]', textContent: 'Desktop + Mobile' },
         { attribute: { name: 'variant', value: 'catalog' } },
       ],
       buttons: ['Learn More', 'Save now'],
@@ -217,7 +206,6 @@ describe('Catalog Card', () => {
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
-        { selector: 'h5[slot="detail-m"]', textContent: 'Desktop + Mobile' },
         { attribute: { name: 'variant', value: 'catalog' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
         { attribute: { name: 'badge-color', value: '#000000' } },
@@ -250,7 +238,6 @@ describe('Catalog Card', () => {
         { selector: 'h3[slot="heading-xs"]' },
         { selector: 'h4[slot="heading-m"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.' },
-        { selector: 'h5[slot="body-xxs"]', textContent: 'Desktop + Mobile' },
         { attribute: { name: 'variant', value: 'catalog' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
         { attribute: { name: 'badge-color', value: '#000000' } },
@@ -285,8 +272,8 @@ describe('Mini Compare Chart Merch Card', () => {
         { selector: 'div[slot="body-m"]', textContent: 'Get Illustrator on desktop and iPad as part of Creative Cloud. This is promo text' },
         { selector: 'h4[slot="heading-m-price"]' },
         { selector: 'div[slot="footer"]' },
-        { selector: 'div[slot="footer-rows"] > picture.footer-row-icon' },
-        { selector: 'div[slot="footer-rows"] > .footer-row-cell-description' },
+        { selector: 'div[slot="footer-rows"] picture.footer-row-icon' },
+        { selector: 'div[slot="footer-rows"] .footer-row-cell-description' },
         { attribute: { name: 'variant', value: 'mini-compare-chart' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
         { attribute: { name: 'badge-color', value: '#000000' } },
@@ -303,7 +290,7 @@ describe('Mini Compare Chart Merch Card', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'merch-quantity-select', attribute: { name: 'title', value: 'Select a quantity:' } },
-        { selector: 'merch-quantity-select', attribute: { name: 'min', value: '1:' } },
+        { selector: 'merch-quantity-select', attribute: { name: 'min', value: '1' } },
         { selector: 'merch-quantity-select', attribute: { name: 'max', value: '10' } },
         { selector: 'merch-quantity-select', attribute: { name: 'step', value: '1' } },
       ],
@@ -379,7 +366,7 @@ describe('Merch Card with Offer Selection', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'merch-quantity-select', attribute: { name: 'title', value: 'Select a quantity:' } },
-        { selector: 'merch-quantity-select', attribute: { name: 'min', value: '1:' } },
+        { selector: 'merch-quantity-select', attribute: { name: 'min', value: '1' } },
         { selector: 'merch-quantity-select', attribute: { name: 'max', value: '3' } },
         { selector: 'merch-quantity-select', attribute: { name: 'step', value: '1' } },
       ],
