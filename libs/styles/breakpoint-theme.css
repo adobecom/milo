@@ -1,0 +1,157 @@
+
+  
+/* Static Links */
+.con-block.static-links[class*="dark-"] a:not(.con-button),
+.static-links .con-block[class*="dark-"] a:not(.con-button),
+.con-block.static-links[class*="light-"] a:not(.con-button),
+.static-links .con-block[class*="light-"] a:not(.con-button),
+.con-block.static-links[class*="dark-"] a:not(.con-button):hover,
+.static-links .con-block[class*="dark-"] a:not(.con-button):hover,
+.con-block.static-links[class*="light-"] a:not(.con-button):hover,
+.static-links .con-block[class*="light-"] a:not(.con-button):hover {
+  color: inherit;
+}
+
+/* mobile ONLY */
+@media (max-width: 600px) {
+  .con-block.light-mobile-only { color: var(--text-color); }
+  .con-block.dark-mobile-only { color: var(--color-white); }
+
+  .con-block.light-mobile-only a:not(.con-button) { color: var(--link-color); }
+  .con-block.dark-mobile-only a:not(.con-button) { color: var(--link-color-dark); }
+
+  .con-block.light-mobile-only a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
+  .con-block.dark-mobile-only a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
+
+  .con-block.light-mobile-only a.con-button.outline {
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  .con-block.dark-mobile-only a.con-button.outline {
+    border-color: var(--color-white);
+    color: var(--color-white);
+  }
+
+  .con-block.light-mobile-only a.con-button.outline:is(:hover, :focus, :active) {
+    background-color: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .con-block.dark-mobile-only a.con-button.outline:is(:hover, :focus, :active) {
+    background-color: var(--color-white);
+    border-color: var(--color-white);
+    color: var(--color-black);
+    text-decoration: none;
+  }
+}
+
+/* Tablet ONLY */
+@media screen and (min-width: 600px) and (max-width: 1199px) {
+  /* tablet theme */
+  .con-block.light-tablet-only { color: var(--text-color); }
+  .con-block.dark-tablet-only { color: var(--color-white); }
+
+  .con-block.light-tablet-only a:not(.con-button) { color: var(--link-color); }
+  .con-block.dark-tablet-only a:not(.con-button) { color: var(--link-color-dark); }
+
+  .con-block.light-tablet-only a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
+  .con-block.dark-tablet-only a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
+
+  .con-block.light-tablet-only a.con-button.outline {
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  .con-block.dark-tablet-only a.con-button.outline {
+    border-color: var(--color-white);
+    color: var(--color-white);
+  }
+
+  .con-block.light-tablet-only a.con-button.outline:is(:hover, :focus, :active) {
+    background-color: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .con-block.dark-tablet-only a.con-button.outline:is(:hover, :focus, :active) {
+    background-color: var(--color-white);
+    border-color: var(--color-white);
+    color: var(--color-black);
+    text-decoration: none;
+  }
+}
+
+/* Tablet UP */
+@media screen and (min-width: 600px) {
+  /* tablet theme */
+  .con-block.light-tablet { color: var(--text-color); }
+  .con-block.dark-tablet { color: var(--color-white); }
+
+  .con-block.light-tablet a:not(.con-button) { color: var(--link-color); }
+  .con-block.dark-tablet a:not(.con-button) { color: var(--link-color-dark); }
+
+  .con-block.light-tablet a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
+  .con-block.dark-tablet a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
+
+  .con-block.light-tablet a.con-button.outline {
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  .con-block.dark-tablet a.con-button.outline {
+    border-color: var(--color-white);
+    color: var(--color-white);
+  }
+
+  .con-block.light-tablet a.con-button.outline:is(:hover, :focus, :active) {
+    background-color: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .con-block.dark-tablet a.con-button.outline:is(:hover, :focus, :active) {
+    background-color: var(--color-white);
+    border-color: var(--color-white);
+    color: var(--color-black);
+    text-decoration: none;
+  }
+}
+
+/* desktop up */
+@media screen and (min-width: 1200px) {
+  /* desktop theme */
+  .con-block.light-desktop { color: var(--text-color); }
+  .con-block.dark-desktop { color: var(--color-white); }
+
+  .con-block.light-desktop a:not(.con-button) { color: var(--link-color); }
+  .con-block.dark-desktop a:not(.con-button) { color: var(--link-color-dark); }
+
+  .con-block.light-desktop a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
+  
+  .con-block.dark-desktop a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
+
+  .con-block.light-desktop a.con-button.outline {
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  .con-block.dark-desktop a.con-button.outline {
+    border-color: var(--color-white);
+    color: var(--color-white);
+  }
+
+  .con-block.light-desktop a.con-button.outline:is(:hover, :focus, :active) {
+    background-color: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .con-block.dark-desktop a.con-button.outline:is(:hover, :focus, :active) {
+    background-color: var(--color-white);
+    border-color: var(--color-white);
+    color: var(--color-black);
+    text-decoration: none;
+  }
+}
