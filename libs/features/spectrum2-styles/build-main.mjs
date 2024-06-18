@@ -3,29 +3,24 @@ import fs from 'fs';
 import path from 'path';
 import postcss from 'postcss';
 
-// Paths to CSS files
 const spectrumCSSPath = path.resolve('node_modules/@spectrum-css/tokens/dist/index.css');
 const miloCSSPath = path.resolve('../../styles/styles2-slim.css');
 
-// Log file size utility
 const logFileSize = (filePath, status) => {
   const fileSizeInBytes = fs.statSync(filePath).size;
   const fileSizeInKilobytes = fileSizeInBytes / 1024;
   console.log(`The size of the ${status} CSS file is ${fileSizeInKilobytes.toFixed(2)} kB`);
 };
 
-// Read CSS files
 const spectrumCSS = fs.readFileSync(spectrumCSSPath, 'utf8');
 const miloCSS = fs.readFileSync(miloCSSPath, 'utf8');
 
-// Log original file size
 logFileSize(miloCSSPath, 'original');
 
 // Transform function to format Spectrum CSS properties for performance
 const transformRgbProperties = (rule) => {
   const properties = {};
 
-  // Replace 0px with 0
   const replaceZeroPx = (value) => value.replace(/\b0px\b/g, '0');
 
   rule.walkDecls((decl) => {

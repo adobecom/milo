@@ -74,10 +74,9 @@
   --color-accent-hover: var(--s2-accent-content-color-hover, --link-hover-color-dark);
   --color-accent-down: var(--s2-accent-content-color-down, #095aba);
   --color-accent-focus-ring: var(--s2-accent-content-color-key-focus, #378ef0);
-  --color-info-accent: #5C5CE0;
-  --color-info-accent-hover: #4646C6;
-  --color-info-accent-down: #3D3DB4;
-  --color-info-accent-light: #DEDEF9;
+  --color-info-accent: var(--s2-informative-background-color-default);
+  --color-info-accent-hover: var(--s2-informative-background-color-hover);
+  --color-info-accent-down: var(--s2-informative-background-color-down);
 
   /*** S2 Color Aliases ***/
   /* Content Neutral */
@@ -93,13 +92,13 @@
   --s2-neutral-subdued-content-color-down: var(--s2-gray-800);
   --s2-neutral-subdued-content-color-key-focus: var(--s2-gray-800);
   --s2-neutral-subdued-content-color-selected: var(--s2-neutral-subdued-content-color-down);
-  /* Content Semantic Accent */
+  /* Content Accent */
   --s2-accent-content-color-default: var(--s2-accent-color-900);
   --s2-accent-content-color-hover: var(--s2-accent-color-1000);
   --s2-accent-content-color-down: var(--s2-accent-color-1000);
   --s2-accent-content-color-key-focus: var(--s2-accent-color-1000);
   --s2-accent-content-color-selected: var(--s2-accent-content-color-down);
-  /* Content Semantic Negative */
+  /* Content Negative */
   --s2-negative-content-color-default: var(--s2-negative-color-900);
   --s2-negative-content-color-hover: var(--s2-negative-color-1000);
   --s2-negative-content-color-down: var(--s2-negative-color-1000);
@@ -162,29 +161,29 @@
   --s2-neutral-subdued-background-color-hover: var(--s2-gray-800);
   --s2-neutral-subdued-background-color-down: var(--s2-gray-800);
   --s2-neutral-subdued-background-color-key-focus: var(--s2-gray-800);
-  /* Background Semantic Accent */ 
+  /* Background Accent */ 
   --s2-accent-background-color-default: var(--s2-accent-color-900);
   --s2-accent-background-color-hover: var(--s2-accent-color-1000);
   --s2-accent-background-color-down: var(--s2-accent-color-1000);
   --s2-accent-background-color-key-focus: var(--s2-accent-color-1000);
-  /* Background Semantic Informative */ 
+  /* Background Informative */ 
   --s2-informative-background-color-default: var(--s2-informative-color-900);
   --s2-informative-background-color-hover: var(--s2-informative-color-1000);
   --s2-informative-background-color-down: var(--s2-informative-color-1000);
   --s2-informative-background-color-key-focus: var(--s2-informative-color-1000);
-  /* Background Semantic Positive */ 
+  /* Background Positive */ 
   --s2-positive-background-color-default: var(--s2-positive-color-900);
   --s2-positive-background-color-hover: var(--s2-positive-color-1000);
   --s2-positive-background-color-down: var(--s2-positive-color-1000);
   --s2-positive-background-color-key-focus: var(--s2-positive-color-1000);
-  /* Background Semantic Notice */ 
+  /* Background Notice */ 
   --s2-notice-background-color-default: var(--s2-notice-color-600);
-  /* Background Semantic Negative */ 
+  /* Background Negative */ 
   --s2-negative-background-color-default: var(--s2-negative-color-900);
   --s2-negative-background-color-hover: var(--s2-negative-color-1000);
   --s2-negative-background-color-down: var(--s2-negative-color-1000);
   --s2-negative-background-color-key-focus: var(--s2-negative-color-1000);
-  /* Background Semantic Negative Subdued */ 
+  /* Background Negative Subdued */ 
   --s2-negative-subdued-background-color-default: var(--s2-negative-color-200);
   --s2-negative-subdued-background-color-hover: var(--s2-negative-color-300);
   --s2-negative-subdued-background-color-down: var(--s2-negative-color-300);
