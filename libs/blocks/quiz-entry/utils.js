@@ -18,12 +18,12 @@ export async function getQuizJson(path) {
     try {
       results = await fetchJson(`${path}results.json`);
     } catch (ex) {
-      window.lana?.log(`INFO: results.json not found or couldn't be fetched: ${ex}`);
+      window.lana?.log(`INFO: results.json not found or couldn't be fetched: ${ex}`, { tags: 'errorType=info,module=quiz-entry' });
     }
 
     return [questions, strings, results];
   } catch (ex) {
-    window.lana?.log(`ERROR: Fetching data for quiz entry: ${ex}`);
+    window.lana?.log(`ERROR: Fetching data for quiz entry: ${ex}`, { tags: 'errorType=error,module=quiz-entry' });
     return [];
   }
 }
