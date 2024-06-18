@@ -4,6 +4,13 @@
   display: flex;
 }
 
+.marquee:first-of-type {
+  height: 100vh;
+  width: 100%;
+  position:relative;
+  overflow:hidden;
+}
+
 .marquee.large.standard {
   min-height: 560px;
 }
