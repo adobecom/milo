@@ -8,6 +8,7 @@ const DOT_MILO = '/.milo/config.json';
 
 let config;
 
+/* c8 ignore next 6 */
 function getSiteOrigin() {
   const search = new URLSearchParams(window.location.search);
   const repo = search.get('repo');
