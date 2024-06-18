@@ -186,5 +186,5 @@ export default async function init(blockEl) {
   figure.classList.add('figure-feature');
   figure.prepend(picture);
   featureImgContainer.prepend(figure);
-  featureImgContainer.lastElementChild.remove();
+  // featureImgContainer.lastElementChild.remove();
 }
