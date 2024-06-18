@@ -11,6 +11,24 @@ describe('isDisabled', () => {
     expect(isDisabled(event, new URLSearchParams())).to.be.false;
   });
 
+  it('should be enabled if current time is within range, and current locale corresponds to event locale', () => {
+    const event = {
+      start: new Date('2000-11-01T00:00:00'),
+      end: new Date('2300-11-01T00:00:00'),
+      locales: ['us'],
+    };
+    expect(isDisabled(event, new URLSearchParams())).to.be.false;
+  });
+
+  it('should be disabled if current time is within range, but current locale does not correspond to event locale', () => {
+    const event = {
+      start: new Date('2000-11-01T00:00:00'),
+      end: new Date('2300-11-01T00:00:00'),
+      locales: ['de'],
+    };
+    expect(isDisabled(event, new URLSearchParams())).to.be.true;
+  });
+
   it('should be enabled if no event exist', () => {
     expect(isDisabled(null, new URLSearchParams())).to.be.false;
   });
@@ -49,31 +67,49 @@ describe('isDisabled', () => {
 });
 
 describe('getPromoManifests', () => {
-  const expectedManifests = [
-    {
-      manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/pre-black-friday/manifest-global.json',
-      disabled: false,
-      event: {
-        name: 'pre-black-friday-global',
-        start: new Date('2000-11-01T00:00:00.000Z'),
-        end: new Date('2300-12-15T00:00:00.000Z'),
-      },
-    },
-    {
-      manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/black-friday/manifest-global.json',
-      disabled: true,
-      event: {
-        name: 'black-friday-global',
-        start: new Date('2000-12-15T00:00:00.000Z'),
-        end: new Date('2000-12-31T00:00:00.000Z'),
-      },
-    },
-  ];
-
   it('should return an array of promo manifests', async () => {
+    const expectedManifests = [
+      {
+        manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/bf-us.json',
+        disabled: false,
+        event: {
+          name: 'bf-us',
+          start: new Date('2000-11-01T00:00:00.000Z'),
+          end: new Date('2300-12-15T00:00:00.000Z'),
+        },
+      },
+      {
+        manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/pre-black-friday/manifest-global.json',
+        disabled: false,
+        event: {
+          name: 'pre-black-friday-global',
+          start: new Date('2000-11-01T00:00:00.000Z'),
+          end: new Date('2300-12-15T00:00:00.000Z'),
+        },
+      },
+      {
+        manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/black-friday/manifest-global.json',
+        disabled: true,
+        event: {
+          name: 'black-friday-global',
+          start: new Date('2000-12-15T00:00:00.000Z'),
+          end: new Date('2000-12-31T00:00:00.000Z'),
+        },
+      },
+    ];
     document.head.innerHTML = await readFile({ path: './mocks/head-schedule.html' });
-    const manifestNames = 'pre-black-friday-global,black-friday-global,cyber-monday';
-    expect(getPromoManifests(manifestNames, new URLSearchParams())).to.deep.eq(expectedManifests);
+    const manifestnames = 'pre-black-friday-global,black-friday-global,cyber-monday';
+    const emea = 'bf-de';
+    const americas = 'bf-us';
+    expect(getPromoManifests(
+      {
+        manifestnames,
+        emea_manifestnames: emea,
+        americas_manifestnames: americas,
+      },
+      new URLSearchParams(),
+    ))
+      .to.deep.eq(expectedManifests);
   });
 
   it('should return an empty array if no schedule', async () => {
