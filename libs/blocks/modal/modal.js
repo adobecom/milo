@@ -25,7 +25,7 @@ function fireAnalyticsEvent(event) {
     xdm: {},
     data: { web: { webInteraction: { name: event?.type } } },
   };
-  if (event?.data) data.data._adobe_corpnew.digitalData = event.data;
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
   window._satellite?.track('event', data);
 }
 
