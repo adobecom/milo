@@ -5,7 +5,8 @@
 
 .feds-navLink--hoverCaret[aria-expanded = "true"] + .feds-popup,
 .feds-menu-headline[aria-expanded = "true"] + .feds-menu-items {
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 .feds-navLink--hoverCaret[aria-expanded = "true"]:after,
