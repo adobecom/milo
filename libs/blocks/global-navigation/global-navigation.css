@@ -551,7 +551,7 @@ header.global-navigation {
   }
 
   .feds-menu-container {
-    max-width: 1200px;
+    max-width: var(--feds-minWidth-menu);
     margin: 0 auto;
     padding: 0 12px 40px;
   }
