@@ -189,6 +189,18 @@ describe('Quiz Entry Component', () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(options[1].classList.contains('selected')).to.be.false;
   });
+  it('should handle error and return default data if fetching quiz data fails', async () => {
+    // Stubbing console.error to suppress error logs in tests
+    const consoleErrorStub = sinon.stub(console, 'error');
+
+    fetchStub.rejects(new Error('Failed to load quiz data'));
+
+    await init(quizEntryElement, {});
+
+    expect(fetchStub.calledOnceWith(quizEntryElement)).to.be.false;
+    expect(consoleErrorStub.calledOnce).to.be.true;
+    expect(consoleErrorStub.args[0][0]).to.equal('Failed to load quiz data:');
+  });
 });
 
 describe('RTL Quiz Entry', () => {
