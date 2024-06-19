@@ -354,7 +354,6 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => {
       link.href = getFederatedUrl(localizeLink(link.href));
-      console.log('link', link);
       return loadInlineFrags(link);
     });
     await Promise.all(fragPromises);
