@@ -152,7 +152,7 @@
       "containerId": "tools",
       "id": "graybox-promote",
       "title": "Graybox Promote",
-      "environments": [ "preview" ],
+      "environments": [ "edit" ],
       "url": "/tools/graybox-promote",
       "isPalette": true,
       "passReferrer": true,
