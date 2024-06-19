@@ -68,7 +68,7 @@ async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
   const grayboxData = sheet.graybox?.data;
   return {
     promoteDraftsOnly: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_DRAFTS_ONLY)?.toLowerCase() === 'true',
-    enablePromote: getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
+    enablePromote: true, // TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
     promoteUrl: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]),
   };
 }
