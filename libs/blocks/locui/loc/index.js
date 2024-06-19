@@ -17,7 +17,7 @@ import login from '../../../tools/sharepoint/login.js';
 import { getServiceUpdates } from '../utils/miloc.js';
 import { connectSK } from '../../../utils/sidekick.js';
 
-const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
+const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout', 'Transcreate'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
 
 const urlParams = new URLSearchParams(window.location.search);
