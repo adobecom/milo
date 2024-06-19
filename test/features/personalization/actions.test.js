@@ -241,23 +241,27 @@ describe('custom actions', async () => {
           action: 'replace',
           target: '/fragments/fragmentreplaced',
           manifestId: false,
+          targetManifestId: 'manifest.json',
         },
         {
           action: 'replace',
           target: '/fragments/new-large-menu',
           manifestId: false,
           selector: '.large-menu',
+          targetManifestId: 'manifest.json',
         }],
         fragments: {
           '/fragments/sub-menu': {
             action: 'replace',
             target: '/fragments/even-more-new-sub-menu',
             manifestId: false,
+            targetManifestId: 'manifest.json',
           },
           '/fragments/new-sub-menu': {
             action: 'replace',
             target: '/fragments/even-more-new-sub-menu',
             manifestId: false,
+            targetManifestId: 'manifest.json',
           },
         },
       },
