@@ -2,6 +2,7 @@ import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { Task } from '../../../deps/lit-task.min.js';
 import login from '../../../tools/sharepoint/login.js';
 import sharepointLogin from '../../../tools/sharepoint/login.js';
+import { account } from '../../../tools/sharepoint/state.js';
 
 const KEYS = {
   PROJECT_INFO: {
@@ -114,6 +115,10 @@ class GrayboxPromote extends LitElement {
         throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
       }
       const driveId = await getSharepointDriveId(ref, repo, owner);
+      if (!account.value.username) {
+        return `<p>The login popup was blocked.<br/>Please use the button below.</p>
+        <button>Open login</button>`;
+      }
       const sharepointToken = await getSharepointToken();
 
       console.log(experienceName, grayboxIoEnv);
@@ -130,7 +135,7 @@ class GrayboxPromote extends LitElement {
   render() {
     return this.getValuesTask.render({
       pending: () => html`<p>Loading...</p>`,
-      complete: (args) => html`<p>Done</p>`,
+      complete: (args) => (args ? html`${args}` : html`<p>Done</p>`),
       error: (err) => html`<p>${err.message}</p>`,
     });
   }
