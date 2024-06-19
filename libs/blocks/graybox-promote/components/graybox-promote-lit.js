@@ -118,7 +118,7 @@ class GrayboxPromote extends LitElement {
       const driveId = await getSharepointDriveId(ref, repo, owner);
       if (!account.value.username) {
         return html`<p>The login popup was blocked.<br/>Please use the button below.</p>
-        <button class=version-action onClick="${setup}">Open login</button>`;
+        <button class=version-action @click="${() => setup()}">Open login</button>`;
       }
       const sharepointToken = await getSharepointToken();
       
