@@ -37,6 +37,7 @@ const MILO_BLOCKS = [
   'graybox',
   'footer',
   'gnav',
+  'hero-marquee',
   'how-to',
   'icon-block',
   'iframe',
