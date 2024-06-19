@@ -1,5 +1,5 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig, loadBlock } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -76,7 +76,7 @@ function decorateLinkFarms(el) {
   });
 }
 
-export default function init(el) {
+export default async function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
@@ -116,5 +116,12 @@ export default function init(el) {
     const div = createTag('div', { class: 'cta-container' });
     lastActionArea.insertAdjacentElement('afterend', div);
     div.append(lastActionArea);
+  }
+
+  const mnemonicList = el.querySelector('.mnemonic-list');
+  const foreground = mnemonicList?.closest('.foreground');
+  if (foreground) {
+    mnemonicList.querySelectorAll('p').forEach((product) => product.removeAttribute('class'));
+    await loadBlock(mnemonicList);
   }
 }
