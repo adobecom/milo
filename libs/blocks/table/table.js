@@ -19,16 +19,9 @@ function defineDeviceByScreenSize() {
 
 function handleHeading(table, headingCols) {
   const isPriceBottom = table.classList.contains('pricing-bottom');
-  headingCols.forEach((col, i) => {
+  headingCols.forEach((col) => {
     col.classList.add('col-heading');
-    if (!col.innerHTML) {
-      col.classList.add('hidden');
-      return;
-    }
-
-    if (!col.classList.contains('no-rounded') && headingCols[i - 1] && !headingCols[i - 1].innerText) {
-      col.classList.add('top-left-rounded');
-    }
+    if (!col.innerHTML) return;
 
     const elements = col.children;
     if (!elements.length) {
@@ -102,7 +95,6 @@ function handleHighlight(table) {
         headingCols[i]?.classList.add('no-rounded');
       } else if (!headingCols[i]?.innerText) {
         col.classList.add('hidden');
-        headingCols[i]?.classList.add('hidden');
       } else {
         col.classList.add('hidden');
         if (!headingCols[i - 1]?.innerText) {
@@ -316,16 +308,16 @@ function handleScrollEffect(table) {
   } else {
     headingRow.classList.add('top-border-transparent');
   }
-  headingRow.style.top = `${gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0)}px`;
+  const topOffset = gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0);
+  headingRow.style.top = `${topOffset}px`;
 
   const intercept = table.querySelector('.intercept') || createTag('div', { class: 'intercept' });
   intercept.setAttribute('data-observer-intercept', '');
-  table.append(intercept);
   headingRow.insertAdjacentElement('beforebegin', intercept);
 
   const observer = new IntersectionObserver(([entry]) => {
     headingRow.classList.toggle('active', !entry.isIntersecting);
-  });
+  }, { rootMargin: `-${topOffset}px` });
   observer.observe(intercept);
 }
 
