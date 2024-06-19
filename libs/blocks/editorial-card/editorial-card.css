@@ -160,6 +160,10 @@
   overflow: hidden;
 }
 
+.editorial-card .media-area {
+  overflow: hidden;
+}
+
 .editorial-card .media-area.background {
   position: relative;
   z-index: initial;

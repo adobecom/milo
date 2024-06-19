@@ -60,6 +60,9 @@ const decorateBgRow = (el, row, node) => {
 
 const init = (el) => {
   el.classList.add('con-block');
+  if (el.className.includes('open')) {
+    el.classList.add('no-border', 'l-rounded-corners-image');
+  }
   if (el.className.includes('rounded-corners')) {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
