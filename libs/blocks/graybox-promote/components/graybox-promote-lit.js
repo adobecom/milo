@@ -1,5 +1,6 @@
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { Task } from '../../../deps/lit-task.min.js';
+import login from '../../../tools/sharepoint/login.js';
 import sharepointLogin from '../../../tools/sharepoint/login.js';
 
 const KEYS = {
@@ -95,6 +96,8 @@ async function getSharePointDetails(hlxOrigin) {
 async function getSharepointToken(ref, repo, owner) {
   const scopes = ['files.readwrite', 'sites.readwrite.all'];
   const extraScopes = [`${origin}/.default`];
+  const token = await login({ scopes, extraScopes, telemetry: TELEMETRY });
+  return token;
 }
 
 class GrayboxPromote extends LitElement {
