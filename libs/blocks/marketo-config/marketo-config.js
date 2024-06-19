@@ -1,6 +1,5 @@
 import { html, render, useContext, useState, useEffect } from '../../deps/htm-preact.js';
 import { utf8ToB64, loadBlock, createTag } from '../../utils/utils.js';
-import { setPreferences } from '../marketo/marketo.js';
 import { ConfiguratorContext, ConfiguratorProvider, saveStateToLocalStorage } from './context.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import CopyBtn from '../../ui/controls/CopyBtn.js';
@@ -64,12 +63,13 @@ const Fields = ({ fieldsData }) => {
 
   return fieldsData.map((field) => {
     const { prop } = field;
+    const id = prop.replace(/ /g, '-');
     const value = state?.[prop];
     const required = field.required === 'yes';
 
     if (!field.options) {
       return html`
-        <${Input} label=${field.label} name=${prop} tooltip=${field.description} type="text" value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
+        <${Input} label=${field.label} name=${id} tooltip=${field.description} type="text" value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
       `;
     }
 
@@ -85,7 +85,7 @@ const Fields = ({ fieldsData }) => {
     }
 
     return html`
-      <${Select} label=${field.label} name=${prop} options=${options} tooltip=${field.description} value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
+      <${Select} label=${field.label} name=${id} options=${options} tooltip=${field.description} value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
     `;
   });
 };
@@ -140,9 +140,9 @@ const Configurator = ({ title, panelsData, lsKey }) => {
   const { state } = useContext(ConfiguratorContext);
   const panels = getPanels(panelsData);
 
-  const getUrl = () => {
+  const getUrl = (configurationState) => {
     const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
+    return `${url}#${utf8ToB64(JSON.stringify(configurationState))}`;
   };
 
   const configFormValidation = () => {
@@ -163,7 +163,8 @@ const Configurator = ({ title, panelsData, lsKey }) => {
   };
 
   const getContent = () => {
-    const url = getUrl();
+    const validatedState = validateState(state, panelsData);
+    const url = getUrl(validatedState);
     const dateStr = new Date().toLocaleString('us-EN', {
       weekday: 'long',
       year: 'numeric',
@@ -182,15 +183,18 @@ const Configurator = ({ title, panelsData, lsKey }) => {
 
   useEffect(() => {
     const validatedState = validateState(state, panelsData);
-    setPreferences(validatedState);
     saveStateToLocalStorage(validatedState, lsKey);
-  }, [state]);
 
-  useEffect(() => {
-    const url = getUrl();
-    const iframe = createTag('iframe', { src: url, width: '100%', height: '100%', style: 'border: none; min-height: 1200px' });
+    const formUrl = getUrl(validatedState);
+    const iframe = createTag('iframe', { src: formUrl, width: '100%', height: '100%', style: 'border: none; min-height: 1200px; display: none' });
     const contentEl = document.querySelector('.content-panel');
-    contentEl.replaceChildren(iframe);
+    const oldIframe = contentEl.querySelector('iframe');
+
+    iframe.onload = () => {
+      oldIframe?.remove();
+      iframe.style.display = '';
+    };
+    contentEl.appendChild(iframe);
   }, [state]);
 
   return html`
@@ -210,14 +214,14 @@ const Configurator = ({ title, panelsData, lsKey }) => {
   `;
 };
 
-const ConfiguratorWrapper = ({ title, link }) => {
+const ConfiguratorWrapper = ({ title, options }) => {
   const lsKey = `${title.toLowerCase().replace(' ', '-')}-ConfiguratorState`;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
-    fetchData(link)
+    fetchData(options)
       .then((json) => {
         const config = getConfigOptions(json);
         Object.values(config).forEach((panelData) => {
@@ -231,7 +235,7 @@ const ConfiguratorWrapper = ({ title, link }) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [link]);
+  }, [options]);
 
   if (loading) {
     return html`
@@ -285,11 +289,11 @@ export default async function init(el) {
   }
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const title = children[0].textContent.trim();
-  const linkElement = children[1].querySelector('a[href$="json"]');
-  const link = linkElement?.href;
+  const optionsUrl = children[1].querySelector('a[href$="json"]')?.href;
+  el.innerHTML = '';
 
   const app = html`
-    <${ConfiguratorWrapper} title=${title} link=${link} />
+    <${ConfiguratorWrapper} title=${title} options=${optionsUrl} />
   `;
 
   render(app, el);
