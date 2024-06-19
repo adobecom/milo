@@ -79,7 +79,7 @@ const Fields = ({ fieldsData }) => {
     } catch {
       const keyValuePairs = field.options.split(',').map((item) => {
         const [key, val] = item.trim().split(':');
-        return key.trim() ? [key.trim(), `${(val || key).trim()} (${key.trim()})`] : ['', 'Choose an option...'];
+        return key.trim() ? [key.trim(), `${(val || key).trim()}`] : ['', 'Choose an option...'];
       });
       options = Object.fromEntries(keyValuePairs);
     }

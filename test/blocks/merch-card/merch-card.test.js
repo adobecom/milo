@@ -1,6 +1,6 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { decorateLinks, loadStyle, setConfig } from '../../../libs/utils/utils.js';
+import { readMockText } from '../merch/mocks/fetch.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
@@ -13,7 +13,7 @@ loadStyle('/libs/blocks/merch-card/merch-card.css');
 
 describe('Merch Card', () => {
   it('Shows segment card', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/segment-card.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/segment-card.html');
     const merchCard = await init(document.querySelector('.segment'));
     const heading = merchCard.querySelector('h3[slot="heading-xs"]');
     const body = merchCard.querySelector('div[slot="body-xs"]');
@@ -31,7 +31,7 @@ describe('Merch Card', () => {
   });
 
   it('Supports Special Offers card', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/special-offers.html');
     const merchCard = await init(document.querySelector('.special-offers'));
     const category = merchCard.querySelector('h4[slot="detail-m"]');
     const title = merchCard.querySelector('h3[slot="heading-xs"]');
@@ -56,7 +56,7 @@ describe('Merch Card', () => {
 
 describe('Plans Card', () => {
   it('Supports COM Plans card', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
     const merchCard = await init(document.querySelector('.merch-card.plans.icons.secure'));
     const heading = merchCard.querySelector('h3[slot="heading-m"]');
     const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
@@ -83,7 +83,7 @@ describe('Plans Card', () => {
   });
 
   it('Supports EDU Plans card with stock', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
     const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
     const heading = merchCard.querySelector('h3[slot="heading-m"]');
     const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
@@ -110,7 +110,7 @@ describe('Plans Card', () => {
   });
 
   it('should skip ribbon and altCta creation', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
     const merchCard = await init(document.querySelector('.plans.icons.skip-ribbon.skip-altCta'));
     const heading = merchCard.querySelector('h3[slot=heading-m]');
     const headingXs = merchCard.querySelector('h4[slot=heading-xs]');
@@ -134,7 +134,7 @@ describe('Plans Card', () => {
   });
 
   it('does not display undefined if no content', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
     const el = document.querySelector('.merch-card.empty');
     await init(el);
     expect(el.outerHTML.includes('undefined')).to.be.false;
@@ -143,7 +143,7 @@ describe('Plans Card', () => {
 
 describe('Catalog Card', () => {
   it('Decorates with mnemonic link', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const el = document.getElementById('mnemonic-link');
     await decorateLinks(document.body);
     const merchCard = await init(el);
@@ -154,7 +154,7 @@ describe('Catalog Card', () => {
   });
 
   it('Supports Catalog card', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.ribbon'));
     const heading = merchCard.querySelector('h3[slot="heading-m"]');
     const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
@@ -183,7 +183,7 @@ describe('Catalog Card', () => {
   });
 
   it('Supports Catalog card without badge', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-badge'));
     const heading = merchCard.querySelector('h3[slot="heading-m"]');
     const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
@@ -210,7 +210,7 @@ describe('Catalog Card', () => {
   });
 
   it('Supports Catalog card without badge and action-menu', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-action-menu'));
     const heading = merchCard.querySelector('h3[slot="heading-m"]');
     const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
@@ -237,7 +237,7 @@ describe('Catalog Card', () => {
   });
 
   it('Supports Catalog card with badge without action-menu', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-badge.action-menu-exist'));
     const heading = merchCard.querySelector('h3[slot="heading-m"]');
     const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
@@ -266,7 +266,7 @@ describe('Catalog Card', () => {
   });
 
   it('Parses the filters and types', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/catalog.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.catalog.tags'));
     expect(merchCard.name).equal('photoshop');
     expect(merchCard.filters).to.be.deep.equal({
@@ -279,7 +279,7 @@ describe('Catalog Card', () => {
   });
 
   it('Supports intro-pricing card', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/intro-pricing.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/intro-pricing.html');
     const merchCard = await init(document.querySelector('.merch-card'));
     const heading = merchCard.querySelector('h3[slot="heading-xs"]');
     const headingXs = merchCard.querySelector('h4[slot="heading-m"]');
@@ -307,7 +307,7 @@ describe('Catalog Card', () => {
 
 describe('UAR Card', () => {
   it('handles decorated <hr>', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/uar-card.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/uar-card.html');
     const cards = document.querySelectorAll('.merch-card');
     for (const card of cards) {
       await init(card);
@@ -318,7 +318,7 @@ describe('UAR Card', () => {
 });
 describe('Mini Compare Chart Merch Card', () => {
   it('Supports Mini Compare Chart with footer rows', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
     document.querySelector('.section').removeAttribute('data-status');
     const heading = merchCard.querySelector('h3[slot="heading-m"]');
@@ -349,7 +349,7 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 
   it('Supports Mini Compare Chart with quantity select', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
     const quantitySelect = merchCard.querySelector('merch-quantity-select');
     expect(quantitySelect).to.exist;
@@ -360,7 +360,7 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 
   it('Supports Mini Compare Chart with offer select', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('#mini-compare-offer-select'));
     const offerSelect = merchCard.querySelector('merch-offer-select');
     const merchOffer = offerSelect.querySelector('merch-offer');
@@ -370,7 +370,7 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 
   it('Supports Mini Compare Chart intersection observer', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mini-compare-chart.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('#mini-compare-hidden-card'));
     merchCard.style.visibility = 'hidden';
     setTimeout(() => {
@@ -379,9 +379,50 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 });
 
+describe('TWP Merch Card', () => {
+  it('Supports TWP Merch card with Stock Option', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/twp.html');
+    const merchCard = await init(document.querySelector('#stock'));
+    await delay();
+
+    const body = merchCard.querySelector('div[slot="body-xs"]');
+    const footer = merchCard.querySelector('div[slot="footer"]');
+    const offerSelect = footer.querySelector('merch-offer-select');
+    const price = footer.querySelector('.merch-card-price [is="inline-price"]');
+
+    expect(merchCard.classList.contains('add-stock')).to.be.true;
+    expect(merchCard.getAttribute('variant')).to.equal('twp');
+    expect(body.textContent).to.contains('What you get:');
+    expect(price).to.exist;
+    expect(offerSelect).to.exist;
+    expect(offerSelect.getAttribute('stock')).to.exist;
+    expect(offerSelect.querySelectorAll('merch-offer').length).to.equal(3);
+  });
+
+  it('Supports TWP Merch card with Quantity Select & no Stock', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/twp.html');
+    const merchCard = await init(document.querySelector('#quantity-selector'));
+    await delay();
+
+    const body = merchCard.querySelector('div[slot="body-xs"]');
+    const footer = merchCard.querySelector('div[slot="footer"]');
+    const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    const price = footer.querySelector('.merch-card-price [is="inline-price"]');
+
+    expect(merchCard.classList.contains('add-stock')).to.be.false;
+    expect(merchCard.getAttribute('variant')).to.equal('twp');
+    expect(body.textContent).to.contains('What you get:');
+    expect(price).to.exist;
+    expect(quantitySelect).to.exist;
+    expect(quantitySelect.getAttribute('min')).to.equal('1');
+    expect(quantitySelect.getAttribute('max')).to.equal('10');
+    expect(quantitySelect.getAttribute('min')).to.equal('1');
+  });
+});
+
 describe('Merch Card with Offer Selection', () => {
   it('Supports quantity select ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
     await init(document.querySelector('.quantity-select'));
     const merchCard = document.querySelector('merch-card');
     const quantitySelect = merchCard.querySelector('merch-quantity-select');
@@ -393,7 +434,7 @@ describe('Merch Card with Offer Selection', () => {
   });
 
   it('Change quantity select ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
     await init(document.querySelector('.quantity-select'));
     await delay();
     const merchCard = document.querySelector('merch-card');
@@ -409,7 +450,7 @@ describe('Merch Card with Offer Selection', () => {
   });
 
   it('Skip Change quantity select render ', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
     await init(document.querySelector('.skip-quantity-select-render'));
     await delay();
     expect(document.querySelector('merch-quantity-select')).to.not.exist;
@@ -418,7 +459,7 @@ describe('Merch Card with Offer Selection', () => {
 
 describe('Section metadata rules', async () => {
   before(async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/card-section-metadata.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/card-section-metadata.html');
   });
 
   it('should not add default merch-card grid styles', async () => {
@@ -439,7 +480,7 @@ describe('Section metadata rules', async () => {
     expect(merchCard.parentElement.className).to.match(/section three-merch-cards product/);
   });
   it('Retains removed-manifest-id', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/mep.html' });
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mep.html');
     const merchCard = await init(document.querySelector('.merch-card'));
     expect(merchCard.dataset.removedManifestId).to.exist;
   });

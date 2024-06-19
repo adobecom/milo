@@ -14,6 +14,7 @@ import {
   loadArea,
   loadLana,
   setConfig,
+  getMetadata,
 } from '../utils/utils.js';
 
 // Production Domain
@@ -161,6 +162,7 @@ const eagerLoad = (img) => {
 }());
 
 (async function loadPage() {
+  if (getMetadata('template') === '404') window.SAMPLE_PAGEVIEWS_AT_RATE = 'high';
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
