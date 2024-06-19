@@ -117,7 +117,7 @@ class GrayboxPromote extends LitElement {
       }
       const driveId = await getSharepointDriveId(ref, repo, owner);
       if (!account.value.username) {
-        return `<p>The login popup was blocked.<br/>Please use the button below.</p>
+        return html`<p>The login popup was blocked.<br/>Please use the button below.</p>
         <button class=version-action onClick="${setup}">Open login</button>`;
       }
       const sharepointToken = await getSharepointToken();
@@ -136,7 +136,7 @@ class GrayboxPromote extends LitElement {
   render() {
     return this.getValuesTask.render({
       pending: () => html`<p>Loading...</p>`,
-      complete: (args) => (args ? html`${args}` : html`<p>Done</p>`),
+      complete: (args) => (args || html`<p>Done</p>`),
       error: (err) => html`<p>${err.message}</p>`,
     });
   }
