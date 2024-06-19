@@ -105,10 +105,6 @@ async function getSharepointToken(ref, repo, owner) {
 class GrayboxPromote extends LitElement {
   getValuesTask = new Task(this, {
     task: async () => {
-       if (!account.value.username) {
-        return html`<p>The login popup was blocked.<br/>Please use the button below.</p>
-        <button class=version-action @click="${() => setup()}">Open login</button>`;
-      }
       const { ref, repo, owner, referrer } = getAemInfo();
       const { experienceName, grayboxIoEnv } = await getProjectInfo(referrer);
       const {
@@ -120,10 +116,10 @@ class GrayboxPromote extends LitElement {
         throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
       }
       const driveId = await getSharepointDriveId(ref, repo, owner);
-      // if (!account.value.username) {
-      //   return html`<p>The login popup was blocked.<br/>Please use the button below.</p>
-      //   <button class=version-action @click="${() => setup()}">Open login</button>`;
-      // }
+      if (!account.value.username) {
+        return html`<p>The login popup was blocked.<br/>Please use the button below.</p>
+        <button class=version-action @click="${() => setup()}">Open login</button>`;
+      }
       const sharepointToken = await getSharepointToken();
       
       console.log(experienceName, grayboxIoEnv);
