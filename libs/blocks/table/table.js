@@ -140,10 +140,20 @@ function handleTitleText(cell) {
   if (cell.querySelector('.table-title-text')) return;
   const textSpan = createTag('span', { class: 'table-title-text' });
   while (cell.firstChild) textSpan.append(cell.firstChild);
-  cell.append(textSpan);
+
   const iconTooltip = textSpan.querySelector('.icon-info, .icon-tooltip, .milo-tooltip');
-  if (!iconTooltip) return;
-  cell.append(iconTooltip.closest('em') || iconTooltip);
+  if (iconTooltip) cell.append(iconTooltip.closest('em') || iconTooltip);
+
+  const firstIcon = textSpan.querySelector('.icon:first-child');
+  let nodeToInsert = textSpan;
+
+  if (firstIcon) {
+    const titleRowSpan = createTag('span', { class: 'table-title-row' });
+    titleRowSpan.append(firstIcon, textSpan);
+    nodeToInsert = titleRowSpan;
+  }
+
+  cell.insertBefore(nodeToInsert, cell.firstChild);
 }
 
 /**

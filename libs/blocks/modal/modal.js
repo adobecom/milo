@@ -19,7 +19,7 @@ export function findDetails(hash, el) {
   return { id, path, isHash: hash === window.location.hash };
 }
 
-export function sendAnalytics(event) {
+function fireAnalyticsEvent(event) {
   // eslint-disable-next-line no-underscore-dangle
   window._satellite?.track('event', {
     xdm: {},
@@ -28,6 +28,17 @@ export function sendAnalytics(event) {
       _adobe_corpnew: { digitalData: event?.data },
     },
   });
+}
+
+export function sendAnalytics(event) {
+  // eslint-disable-next-line no-underscore-dangle
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(event);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(event);
+    }, { once: true });
+  }
 }
 
 export function closeModal(modal) {

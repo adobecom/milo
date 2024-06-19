@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 */4 * * *' # Run every 4 hours
   workflow_dispatch: # Allow manual trigger
+  repository_dispatch:
+    types: [merge-to-stage]
 
 env:
   MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
@@ -17,17 +19,17 @@ jobs:
     environment: milo_pr_merge
 
     steps:
-      - uses: actions/create-github-app-token@v1.10.0
+      - uses: actions/create-github-app-token@v1
         id: milo-pr-merge-token
         with:
           app-id: ${{ secrets.MILO_PR_MERGE_APP_ID }}
           private-key: ${{ secrets.MILO_PR_MERGE_PRIVATE_KEY }}
 
       - name: Checkout repository
-        uses: actions/checkout@v4.1.4
+        uses: actions/checkout@v4
 
       - name: Merge to stage or queue to merge
-        uses: actions/github-script@v7.0.1
+        uses: actions/github-script@v7
         with:
           github-token: ${{ steps.milo-pr-merge-token.outputs.token }}
           script: |

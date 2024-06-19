@@ -24,7 +24,7 @@ export const OptionCard = ({
     <picture>
       ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${iconDesktop}" />`}
       ${iconTablet && html`<source media="(min-width: 600px)" srcset="${iconTablet}" />`}
-      <img src="${icon}" alt="${`Icon - ${title || text}`}" loading="lazy" />
+      <img src="${icon}" alt="" loading="lazy" />
     </picture>
   </div>`;
 
@@ -34,7 +34,7 @@ export const OptionCard = ({
     </div>`;
 
   const titleHtml = html`
-    <h2 class="quiz-option-title">${title}</h2>
+    <p class="quiz-option-title">${title}</p>
   `;
 
   const textHtml = html`

@@ -243,6 +243,7 @@
 
 .table .section-head .section-head-title,
 .table .section-row .section-row-title,
+.table .section-row .section-row-title .table-title-row,
 .table.merch .section-head .col-merch,
 .table.merch .section-row .col-merch {
   display: flex;
@@ -599,7 +600,7 @@ header.global-navigation {
   .table,
   .table.merch {
     margin: 0 2px;
-    min-width: 395px;
+    min-width: 100%;
   }
 
   .table.merch .col-merch .col-merch-content {

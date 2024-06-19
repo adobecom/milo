@@ -10,6 +10,17 @@ export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
+export const PRICE_TEMPLATE_ANNUAL = 'annual';
+const PRICE_TEMPLATE_MAPPING = new Map([
+  ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
+  [PRICE_TEMPLATE_DISCOUNT, PRICE_TEMPLATE_DISCOUNT],
+  ['priceOptical', PRICE_TEMPLATE_OPTICAL],
+  [PRICE_TEMPLATE_OPTICAL, PRICE_TEMPLATE_OPTICAL],
+  ['priceStrikethrough', PRICE_TEMPLATE_STRIKETHROUGH],
+  [PRICE_TEMPLATE_STRIKETHROUGH, PRICE_TEMPLATE_STRIKETHROUGH],
+  ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
+  [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
+]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
 
@@ -226,7 +237,7 @@ export async function getUpgradeAction(
   imsSignedInPromise,
   [{ productArrangement: { productFamily: offerFamily } = {} }],
 ) {
-  if (options.entitlement === false) return undefined;
+  if (!options.upgrade) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -384,6 +395,7 @@ export async function getCheckoutContext(el, params) {
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
+  const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
 
   const extraOptions = {};
@@ -400,6 +412,7 @@ export async function getCheckoutContext(el, params) {
     checkoutWorkflowStep,
     checkoutMarketSegment,
     entitlement,
+    upgrade,
     modal,
     extraOptions: JSON.stringify(extraOptions),
   };
@@ -413,24 +426,8 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
-  let template = PRICE_TEMPLATE_REGULAR;
-  // This mapping also supports legacy OST links
-  switch (params.get('type')) {
-    case PRICE_TEMPLATE_DISCOUNT:
-    case 'priceDiscount':
-      template = PRICE_TEMPLATE_DISCOUNT;
-      break;
-    case PRICE_TEMPLATE_OPTICAL:
-    case 'priceOptical':
-      template = PRICE_TEMPLATE_OPTICAL;
-      break;
-    case PRICE_TEMPLATE_STRIKETHROUGH:
-    case 'priceStrikethrough':
-      template = PRICE_TEMPLATE_STRIKETHROUGH;
-      break;
-    default:
-      break;
-  }
+  // The PRICE_TEMPLATE_MAPPING supports legacy OST links
+  const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
     ...context,
     displayOldPrice,

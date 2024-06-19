@@ -1,7 +1,7 @@
 name: High Impact Alert
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - labeled
 
@@ -14,10 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.4
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Send Slack message for high impact PRs
-        uses: actions/github-script@v7.0.1
+        uses: actions/github-script@v7
         with:
           script: |
             const main = require('./.github/workflows/high-impact-alert.js')

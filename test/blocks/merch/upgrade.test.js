@@ -21,7 +21,7 @@ const config = {
   placeholders: { 'upgrade-now': 'Upgrade Now' },
 };
 const EXPECTED_UPGRADE_URL_PROD = 'https://plan.adobe.com/?intent=switch&toOfferId=632B3ADD940A7FBB7864AA5AD19B8D28&fromOffer=5F2E4A8FD58D70C8860F51A4DE042E0C&language=en&surface=ADOBE_COM&ctx=if';
-const EXPECTED_UPGRADE_URL_STAGE = 'https://stage.plan.adobe.com/?intent=switch&toOfferId=632B3ADD940A7FBB7864AA5AD19B8D28&fromOffer=5F2E4A8FD58D70C8860F51A4DE042E0C&language=en&surface=ADOBE_COM&ctx=if';
+const EXPECTED_UPGRADE_URL_STAGE = 'https://stage.plan.adobe.com/?intent=switch&toOfferId=632B3ADD940A7FBB7864AA5AD19B8D28&fromOffer=5F2E4A8FD58D70C8860F51A4DE042E0C&language=en&surface=ADOBE_COM&ctx=if&promoCode=nicopromo';
 
 const verifyUrl = (url, expectedUrl) => {
   const parsedUrl = new URL(url);
@@ -68,13 +68,14 @@ describe('Switch Modal (Upgrade Flow)', () => {
       expect(handler).to.be.a('function');
     });
 
-    it('should return an upgrade action for STAGE', async () => {
+    it('should return an upgrade action for STAGE and set promocode', async () => {
       setConfig(
         {
           ...config,
           env: { name: 'stage' },
         },
       );
+      UPGRADE_OFFER.dataset = { promotionCode: 'nicopromo' };
       const result = await handleUpgradeOffer(
         CTA_PRODUCT_FAMILY,
         UPGRADE_OFFER,

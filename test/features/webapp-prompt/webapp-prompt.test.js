@@ -91,6 +91,28 @@ describe('PEP', () => {
       await clock.runAllAsync();
       expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
     });
+
+    it('should not render PEP when the GRM is open', async () => {
+      document.body.insertAdjacentHTML('afterbegin', '<div class="locale-modal-v2 dialog-modal"></div>');
+      document.body.insertAdjacentHTML('afterbegin', '<div class="dialog-modal"></div>');
+
+      await initPep({});
+
+      try {
+        clock.runAll();
+      } catch (e) {
+        expect(document.querySelector(allSelectors.pepWrapper)).to.not.exist;
+      }
+
+      const event = new CustomEvent('milo:modal:closed');
+      window.dispatchEvent(event);
+
+      document.querySelector('.locale-modal-v2')?.remove();
+      document.querySelector('.dialog-modal')?.remove();
+
+      await clock.runAllAsync();
+      expect(document.querySelector(allSelectors.pepWrapper)).to.exist;
+    });
   });
 
   describe('PEP configuration tests', () => {

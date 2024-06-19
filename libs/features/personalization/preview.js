@@ -213,51 +213,59 @@ function createPreviewPill(manifests) {
     document.body.dataset.mepHighlight = true;
   }
 
+  const PREVIEW_BUTTON_ID = 'preview-button';
+
   div.innerHTML = `
     <div class="mep-manifest mep-badge">
       <span class="mep-open"></span>
       <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>
     </div>
     <div class="mep-popup">
-    <div class="mep-popup-header">
-      <div>
-        <h4>${manifests?.length || 0} Manifest(s) served</h4>
-        <span class="mep-close"></span>
-        <div class="mep-manifest-page-info-title">Page Info:</div>
-        <div>Target integration feature is ${targetOnText}</div>
-        <div>Personalization feature is ${personalizationOnText}</div>
-        <div>Page's Locale is ${config.locale.ietf}</div>
-      </div>
-    </div>
-    <div class="mep-manifest-list">
-      <div class="mep-manifest-info">
-        <div class="mep-manifest-variants">
-          <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
+      <div class="mep-popup-header">
+        <div>
+          <h4>${manifests?.length || 0} Manifest(s) served</h4>
+          <span class="mep-close"></span>
+          <div class="mep-manifest-page-info-title">Page Info:</div>
+          <div>Target integration feature is ${targetOnText}</div>
+          <div>Personalization feature is ${personalizationOnText}</div>
+          <div>Page's Locale is ${config.locale.ietf}</div>
         </div>
       </div>
-      ${manifestList}
-      <div class="mep-advanced-container">
-        <div class="mep-toggle-advanced">Advanced options</div>
-        <div class="mep-manifest-info mep-advanced-options">
-          <div>
-            Optional: new manifest location or path
-          </div>
+      <div class="mep-manifest-list">
+        <div class="mep-manifest-info">
           <div class="mep-manifest-variants">
+            <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
+          </div>
+        </div>
+        ${manifestList}
+        <div class="mep-advanced-container">
+          <div class="mep-toggle-advanced">Advanced options</div>
+          <div class="mep-manifest-info mep-advanced-options">
             <div>
-              <input type="text" name="new-manifest" id="new-manifest">
+              Optional: new manifest location or path
+            </div>
+            <div class="mep-manifest-variants">
+              <div>
+                <input type="text" name="new-manifest" id="new-manifest">
+              </div>
+            </div>
+          </div>
+          <div class="mep-manifest-info">
+            <div class="mep-manifest-variants mep-advanced-options">
+              <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
             </div>
           </div>
         </div>
-        <div class="mep-manifest-info">
-          <div class="mep-manifest-variants mep-advanced-options">
-            <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
-          </div>
-        </div>
       </div>
-    </div>
-    <div class="dark">
-      <a class="con-button outline button-l" href="${simulateHref.href}" title="Preview above choices">Preview</a>
+      <div class="dark">
+        <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices">Preview</a>
+      </div>
     </div>`;
+
+  const previewButton = div.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
+
+  if (previewButton) previewButton.href = simulateHref.href;
+
   overlay.append(div);
   addPillEventListeners(div);
 }
