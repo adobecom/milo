@@ -111,7 +111,7 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }) =
 
 export const getFileName = (path) => path?.split('/').pop();
 
-const createFrag = (el, url, manifestId) => {
+const createFrag = (el, url, manifestId, targetManifestId) => {
   let href = url;
   try {
     const { pathname, search, hash } = new URL(url);
@@ -121,6 +121,7 @@ const createFrag = (el, url, manifestId) => {
   }
   const a = createTag('a', { href }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
+  if (targetManifestId) a.dataset.targetManifestId = targetManifestId;
   let frag = createTag('p', undefined, a);
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
@@ -153,9 +154,9 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  replace: (el, target, manifestId) => {
+  replace: (el, target, manifestId, targetManifestId) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
+    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
@@ -218,6 +219,7 @@ const consolidateObjects = (arr, prop, existing = {}) => arr.reduce((propMap, it
       selector,
       manifestPath: item.manifestPath,
       manifestId: i.manifestId,
+      targetManifestId: i.targetManifestId,
     };
     // eslint-disable-next-line no-restricted-syntax
     for (const key in propMap) {
@@ -301,9 +303,9 @@ function getSection(rootEl, idx) {
     : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
 }
 
-function registerInBlockActions(cmd, manifestId) {
+function registerInBlockActions(cmd, manifestId, targetManifestId) {
   const { action, target, selector } = cmd;
-  const command = { action, target, manifestId };
+  const command = { action, target, manifestId, targetManifestId };
 
   const blockAndSelector = selector.substring(IN_BLOCK_SELECTOR_PREFIX.length).trim().split(/\s+/);
   const [blockName] = blockAndSelector;
@@ -415,24 +417,57 @@ const addHash = (url, newHash) => {
   }
 };
 
+const setDataIdOnChildren = (sections, id, value) => {
+  [...sections[0].children].forEach(
+    (child) => (child.dataset[id] = value),
+  );
+};
+
+const insertInlineFrag = (sections, a, relHref) => {
+  // Inline fragments only support one section, other sections are ignored
+  const fragChildren = [...sections[0].children];
+  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
+  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
+    a.parentElement.replaceWith(...fragChildren);
+  } else {
+    a.replaceWith(...fragChildren);
+  }
+};
+
+export const updateFragDataPropsAndInsertInlineFrags = (
+  a,
+  inline,
+  sections,
+  fragment,
+  relHref,
+) => {
+  if (inline) {
+    if (a.dataset.manifestId) setDataIdOnChildren(sections, 'manifestId', a.dataset.manifestId);
+    if (a.dataset.targetManifestId) setDataIdOnChildren(sections, 'targetManifestId', a.dataset.targetManifestId);
+    insertInlineFrag(sections, a, relHref);
+  } else {
+    if (a.dataset.manifestId) fragment.dataset.manifestId = a.dataset.manifestId;
+    if (a.dataset.targetManifestId) fragment.dataset.targetManifestId = a.dataset.targetManifestId;
+    a.parentElement.replaceChild(fragment, a);
+  }
+};
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
-    const { manifestId } = cmd;
-    const { action, selector, target: trgt } = cmd;
+    const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
     const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
-      registerInBlockActions(cmd, manifestId);
+      registerInBlockActions(cmd, manifestId, targetManifestId);
       return;
     }
 
     if (action in COMMANDS) {
       const el = getSelectedElement(selector, action, rootEl);
-      COMMANDS[action](el, target, manifestId);
+      COMMANDS[action](el, target, manifestId, targetManifestId);
     } else if (action in CREATE_CMDS) {
       const el = getSelectedElement(selector, action, rootEl);
       el?.insertAdjacentElement(
         CREATE_CMDS[action],
-        createFrag(el, target, manifestId),
+        createFrag(el, target, manifestId, targetManifestId),
       );
     } else {
       /* c8 ignore next 2 */
@@ -441,7 +476,7 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
   });
 }
 
-const getVariantInfo = (line, variantNames, variants, manifestId) => {
+const getVariantInfo = (line, variantNames, variants, manifestId, targetManifestId) => {
   const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
   const { selector } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
@@ -458,6 +493,7 @@ const getVariantInfo = (line, variantNames, variants, manifestId) => {
       target: line[vn],
       selectorType: checkSelectorType(selector),
       manifestId,
+      targetManifestId,
     };
 
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
@@ -466,6 +502,7 @@ const getVariantInfo = (line, variantNames, variants, manifestId) => {
         val: normalizePath(line[vn]),
         action,
         manifestId,
+        targetManifestId,
       });
     } else if (GLOBAL_CMDS.includes(action)) {
       variants[vn][action] = variants[vn][action] || [];
@@ -477,6 +514,7 @@ const getVariantInfo = (line, variantNames, variants, manifestId) => {
           val: blockTarget,
           pageFilter,
           manifestId,
+          targetManifestId,
         });
       } else {
         variants[vn][action].push({
@@ -484,6 +522,7 @@ const getVariantInfo = (line, variantNames, variants, manifestId) => {
           val: normalizePath(line[vn]),
           pageFilter,
           manifestId,
+          targetManifestId,
         });
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
@@ -495,7 +534,7 @@ const getVariantInfo = (line, variantNames, variants, manifestId) => {
   });
 };
 
-export function parseManifestVariants(data, manifestId) {
+export function parseManifestVariants(data, manifestId, targetManinfestId) {
   if (!data?.length) return null;
 
   const manifestConfig = {};
@@ -510,10 +549,13 @@ export function parseManifestVariants(data, manifestId) {
       variants[vn] = { commands: [], fragments: [] };
     });
 
-    experiences.forEach((line) => getVariantInfo(line, variantNames, variants, manifestId));
+    experiences.forEach((line) => {
+      getVariantInfo(line, variantNames, variants, manifestId, targetManinfestId);
+    });
 
     manifestConfig.variants = variants;
     manifestConfig.variantNames = variantNames;
+    if (targetManinfestId) manifestConfig.targetManifestId = targetManinfestId;
     return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
@@ -637,13 +679,14 @@ export async function getManifestConfig(info, variantOverride = false) {
   if (!persData) return null;
 
   let manifestId = getFileName(manifestPath);
+  const targetManifestId = manifestId;
   const config = getConfig();
   if (!config.mep?.preview) {
     manifestId = false;
   } else if (name) {
     manifestId = `${name}: ${manifestId}`;
   }
-  const manifestConfig = parseManifestVariants(persData, manifestId);
+  const manifestConfig = parseManifestVariants(persData, manifestId, targetManifestId);
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
@@ -690,6 +733,7 @@ export async function getManifestConfig(info, variantOverride = false) {
     manifestConfig.run = true;
     manifestConfig.selectedVariantName = selectedVariantName;
     manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
+    if (targetManifestId && selectedVariantName?.includes('target-')) manifestConfig.targetManifestId = targetManifestId;
   } else {
     /* c8 ignore next 2 */
     manifestConfig.selectedVariantName = 'default';
@@ -724,13 +768,15 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
 
 export async function categorizeActions(experiment) {
   if (!experiment) return null;
-  const { manifestPath, selectedVariant } = experiment;
+  const { manifestPath, selectedVariant, targetManifestId } = experiment;
   if (!selectedVariant || selectedVariant === 'default') return { experiment };
 
   if (selectedVariant.replacepage) {
     // only one replacepage can be defined
     await replaceInner(selectedVariant.replacepage[0]?.val, document.querySelector('main'));
-    document.querySelector('main').dataset.manifestId = manifestPath;
+    const main = document.querySelector('main');
+    main.dataset.manifestId = manifestPath;
+    if (targetManifestId) main.dataset.targetManifestId = targetManifestId;
   }
 
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
@@ -786,7 +832,6 @@ export function cleanAndSortManifestList(manifests) {
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
-        delete freshManifest.variants;
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
         manifestObj[manifest.manifestPath] = manifest;
@@ -800,10 +845,11 @@ export function cleanAndSortManifestList(manifests) {
 }
 
 export function handleFragmentCommand(command, a) {
-  const { action, fragment, manifestId } = command;
+  const { action, fragment, manifestId, targetManifestId } = command;
   if (action === 'replace') {
     a.href = fragment;
     if (manifestId) a.dataset.manifestId = manifestId;
+    if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
     return fragment;
   }
   if (action === 'remove') {

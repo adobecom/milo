@@ -12,7 +12,7 @@ import {
   toFragment,
   trigger,
   yieldToMain,
-  addMepHighlight,
+  addMepHighlightAndTargetManifestIdGnav,
 } from '../utilities.js';
 
 const decorateHeadline = (elem, index) => {
@@ -322,7 +322,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
           ${menuContent}
         </div>
       </div>`;
-    addMepHighlight(menuTemplate, content);
+    addMepHighlightAndTargetManifestIdGnav(menuTemplate, content);
 
     decorateCrossCloudMenu(menuTemplate);
 

@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
+import { updateFragDataPropsAndInsertInlineFrags } from '../../features/personalization/personalization.js';
 
 const fragMap = {};
 
@@ -29,23 +30,6 @@ const updateFragMap = (fragment, a, href) => {
         fragLinks.forEach((link) => tree.insert(href, localizeLink(removeHash(link.href))));
       }
     });
-  }
-};
-
-const setManifestIdOnChildren = (sections, manifestId) => {
-  [...sections[0].children].forEach(
-    (child) => (child.dataset.manifestId = manifestId),
-  );
-};
-
-const insertInlineFrag = (sections, a, relHref) => {
-  // Inline fragments only support one section, other sections are ignored
-  const fragChildren = [...sections[0].children];
-  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
-  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
-    a.parentElement.replaceWith(...fragChildren);
-  } else {
-    a.replaceWith(...fragChildren);
   }
 };
 
@@ -79,7 +63,7 @@ export default async function init(a) {
   }
 
   const path = new URL(a.href).pathname;
-  if (mep?.fragments?.[path] && mep) {
+  if (mep?.fragments?.[path]) {
     relHref = mep.handleFragmentCommand(mep?.fragments[path], a);
     if (!relHref) return;
   }
@@ -117,21 +101,8 @@ export default async function init(a) {
   }
 
   updateFragMap(fragment, a, relHref);
-
-  if (a.dataset.manifestId) {
-    if (inline) {
-      setManifestIdOnChildren(sections, a.dataset.manifestId);
-    } else {
-      fragment.dataset.manifestId = a.dataset.manifestId;
-    }
-  }
-
-  if (inline) {
-    insertInlineFrag(sections, a, relHref);
-  } else {
-    a.parentElement.replaceChild(fragment, a);
-    await loadArea(fragment);
-  }
+  updateFragDataPropsAndInsertInlineFrags(a, inline, sections, fragment, relHref);
+  if (!inline) await loadArea(fragment);
 }
 
 class Node {
