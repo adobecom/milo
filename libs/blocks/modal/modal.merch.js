@@ -68,6 +68,13 @@ export function adjustStyles({ dialog, iframe }) {
   const isAutoHeightAdjustment = /\/mini-plans\/.*mid=ft.*web=1/.test(iframe.src); // matches e.g. https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1
   if (isAutoHeightAdjustment) {
     dialog.classList.add('height-fit-content');
+    // fail safe.
+    setTimeout(() => {
+      const { height } = window.getComputedStyle(iframe);
+      if (height === '0px') {
+        iframe.style.height = '100%';
+      }
+    }, 2000);
   } else {
     iframe.style.height = '100%';
   }

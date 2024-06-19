@@ -160,6 +160,10 @@
   --body-font-family: adobe-clean-han-traditional, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
+:root:lang(th) {
+  --body-font-family: adobe-clean-thai, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
 @media (min-width: 1200px) {
   :root {
     --spacing-xl: 56px;
@@ -554,6 +558,8 @@ span.icon.margin-right { margin-right: 8px; }
 span.icon.margin-left { margin-left: 8px; }
 
 span.icon.margin-inline-end { margin-inline-end: 8px; }
+
+span.icon.margin-inline-start { margin-inline-start: 8px; }
 
 .button-l .con-button span.icon.margin-left,
 .con-button.button-l span.icon.margin-left { margin-left: 12px; }

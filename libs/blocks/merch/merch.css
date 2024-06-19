@@ -18,6 +18,7 @@ span.placeholder-resolved[data-template="strikethrough"], span.price.price-strik
 a[is='checkout-link'] > span {
   display: inline-block;
   text-align: center;
+  width: 100%;
   min-width: 66px;
 }
 

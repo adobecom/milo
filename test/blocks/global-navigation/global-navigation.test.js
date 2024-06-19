@@ -24,6 +24,7 @@ import globalNavigationMock from './mocks/global-navigation.plain.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
 import globalNavigationWideColumnMock from './mocks/global-navigation-wide-column.plain.js';
 import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
+import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 const ogFetch = window.fetch;
 
@@ -1409,6 +1410,46 @@ describe('global navigation', () => {
       expect(
         fetchStub.calledOnceWith('https://www.stage.adobe.com/federal/path/to/gnav.plain.html'),
       ).to.be.true;
+    });
+
+    it('fetches navigation saved in sessionStorage', async () => {
+      const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
+      const conf = getConfig();
+      setConfig({ dynamicNavKey: 'milo', ...conf });
+      document.head.append(dynamicNavOn);
+      window.sessionStorage.setItem('dynamicNavKey', 'milo');
+      window.sessionStorage.setItem('gnavSource', '/some-path');
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('/some-path.plain.html'),
+      ).to.be.true;
+    });
+
+    it('does not fetch from sessionStorage url when dyanmicNavKey is not present', async () => {
+      const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
+      document.head.append(dynamicNavOn);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      window.sessionStorage.setItem('dynamicNavKey', 'milo');
+      window.sessionStorage.setItem('gnavSource', '/some-path');
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html'),
+      ).to.be.true;
+    });
+  });
+
+  describe('Dynamic nav', () => {
+    describe('Breadcrumbs', () => {
+      it('should not decorate breadcrumbs when dynamic nav is active', async () => {
+        const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
+        document.head.append(dynamicNavOn);
+        document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+        window.sessionStorage.setItem('dynamicNavKey', 'milo');
+        window.sessionStorage.setItem('gnavSource', '/some-path');
+        await initGnav(document.body.querySelector('header'));
+        const breadcrumbs = document.querySelector('.feds-breadcrumbs');
+        expect(breadcrumbs).to.be.null;
+      });
     });
   });
 });

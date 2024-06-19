@@ -1,0 +1,92 @@
+:root {
+  /* Colors */
+  --hlx-sk-bg: rgb(48 48 48);
+  --hlx-sk-color: #FFF;
+  --hlx-notch-size: 12px;
+  --hlx-path-height: 49px;
+}
+
+body {
+  background: var(--hlx-sk-bg);
+  color: var(--hlx-sk-color);
+}
+
+.path-finder form {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 90px 50px;
+  align-items: center;
+  gap: 8px;
+  height: var(--hlx-path-height);
+  box-sizing: border-box;
+}
+
+.path-finder button,
+.path-finder input {
+  color: #FFF;
+  display: block;
+  font-family: var(--body-font-family);
+  box-sizing: border-box;
+  background: none;
+}
+
+.path-finder input {
+  height: var(--hlx-path-height);
+  font-size: 18px;
+  padding: 4px 12px;
+  border: none;
+  outline: none !important;
+}
+
+.path-finder span {
+  height: var(--hlx-path-height);
+  font-size: 18px;
+  padding: 11px 12px 4px;
+  display: inline-block;
+}
+
+.path-finder form.error {
+  background: rgb(94 11 11);
+}
+
+.path-finder button {
+  display: inline-block;
+  font-style: normal;
+  cursor: pointer;
+  padding: 5px 14px;
+  line-height: 18px;
+  font-size: 15px;
+  border-radius: 44px 0 0 44px;
+  outline-offset: 0;
+  transition: outline-offset .2s;
+  text-decoration: none;
+  font-weight: 700;
+  text-align: center;
+  background: var(--color-accent);
+  border: 2px solid var(--color-accent);
+  outline-color: var(--color-accent);
+  color: #FFF;
+}
+
+.path-finder button.new-tab {
+  border-radius: 0 44px 44px 0;
+  margin-right: 6px;
+  padding: 14px 0;
+  display: block;
+  background: var(--color-accent) url('./img/link-out.svg') center 5px / 18px no-repeat;
+}
+
+.path-finder button.login {
+  cursor: pointer;
+  background: #FF1593;
+  border-radius: 0;
+  font-weight: 700;
+  outline: transparent solid 0;
+  transition: outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: var(--body-font-family);
+  padding: 0 18px;
+  margin-left: 6px;
+  clip-path: polygon(0% 0%, var(--hlx-notch-size) 0%, calc(100% - var(--hlx-notch-size)) 0%, 100% var(--hlx-notch-size), 100% calc(100% - var(--hlx-notch-size)), 100% 100%, 0% 100%, 0% 100%);
+}

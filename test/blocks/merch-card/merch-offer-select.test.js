@@ -1,12 +1,14 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { mockFetch, unmockFetch, readMockText } from '../merch/mocks/fetch.js';
+import { mockIms, unmockIms } from '../merch/mocks/ims.js';
+import { initService } from '../../../libs/blocks/merch/merch.js';
+import initCard from '../../../libs/blocks/merch-card/merch-card.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
-const { default: initCard } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
 function validateMerchOffer(offer, selected, text, badgeText, osi, description) {
-  expect(offer.hasAttribute('selected')).to.equal(selected === 'true');
-  expect(offer.getAttribute('aria-checked')).to.equal(selected);
+  expect(offer.selected).to.equal(selected);
   expect(offer.getAttribute('text')).to.equal(text);
   expect(offer.getAttribute('badge-text')).to.equal(badgeText);
   expect(offer.getAttribute('tabindex')).to.equal('0');
@@ -34,19 +36,35 @@ function validateMerchCard(card, badge, description, osi) {
   expect(card.querySelector('div[slot="body-xs"] span[is="inline-price"]').dataset.wcsOsi).to.equal(osi);
 }
 
+const config = {
+  codeRoot: '/libs',
+  env: { name: 'prod' },
+  imsClientId: 'test_client_id',
+};
+
+setConfig(config);
+
 describe('Merch Offer Select', () => {
   before(async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
+    mockIms();
+    await mockFetch();
+    await initService(true);
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
     await initCard(document.querySelector('.acrobat'));
     await delay();
+  });
+
+  after(() => {
+    unmockIms();
+    unmockFetch();
   });
 
   it('Should render offer select and inital card state', async () => {
     const merchCard = document.querySelector('merch-card');
     const merchOffers = merchCard.querySelector('merch-offer-select').querySelectorAll('merch-offer');
     expect(merchOffers.length).to.equal(3);
-    validateMerchOffer(merchOffers[0], 'true', 'Annual, monthly payment', 'Recommended', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
-    validateMerchOffer(merchOffers[1], 'false', 'Annual, one-time payment', 'Best Offer', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', 'New Description');
+    validateMerchOffer(merchOffers[0], true, 'Annual, monthly payment', 'Recommended', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
+    validateMerchOffer(merchOffers[1], false, 'Annual, one-time payment', 'Best Offer', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', 'New Description');
     validateMerchCard(merchCard, 'Recommended', 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
   });
 
@@ -56,8 +74,8 @@ describe('Merch Offer Select', () => {
     await delay();
 
     const merchOffers = merchCard.querySelector('merch-offer-select').querySelectorAll('merch-offer');
-    validateMerchOffer(merchOffers[0], 'false', 'Annual, monthly payment', 'Recommended', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
-    validateMerchOffer(merchOffers[1], 'true', 'Annual, one-time payment', 'Best Offer', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', 'New Description');
+    validateMerchOffer(merchOffers[0], false, 'Annual, monthly payment', 'Recommended', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
+    validateMerchOffer(merchOffers[1], true, 'Annual, one-time payment', 'Best Offer', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', 'New Description');
     validateMerchCard(merchCard, 'Best Offer', 'New Description', 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA');
   });
 
@@ -95,8 +113,11 @@ describe('Merch quantity select', () => {
   let quantitySelect;
   let items;
 
-  beforeEach(async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/selection-cards.html' });
+  before(async () => {
+    mockIms();
+    await mockFetch();
+    await initService(true);
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
     await initCard(document.querySelector('.quantity-select-with-offer-selection'));
     await delay();
     merchCard = document.querySelector('merch-card');
@@ -104,10 +125,16 @@ describe('Merch quantity select', () => {
     items = quantitySelect.shadowRoot.querySelectorAll('.item');
   });
 
+  after(() => {
+    unmockIms();
+    unmockFetch();
+  });
+
   it('Should render quantity select and initial card state', async () => {
     const merchOffers = merchCard.querySelector('merch-quantity-select').querySelectorAll('merch-offer');
-    validateMerchOffer(merchOffers[0], 'false', null, null, '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
-    validateMerchOffer(merchOffers[1], 'false', null, null, 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', null);
+    await delay(50);
+    validateMerchOffer(merchOffers[0], true, null, null, '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE', null);
+    validateMerchOffer(merchOffers[1], false, null, null, 'gr3e95wowwDvLJyphdXmBf9-vTub0fhbdxQfGJ7tdhA', null);
     validateMerchCard(merchCard, null, 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
   });
 
@@ -125,5 +152,29 @@ describe('Merch quantity select', () => {
 
     validateMerchCard(merchCard, null, 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
     expect(merchCard.querySelector('div[slot="footer"] a[slot="cta"]').dataset.quantity).to.equal('2');
+  });
+});
+
+describe('Merch quantity select: twp', () => {
+  before(async () => {
+    mockIms();
+    await mockFetch();
+    await initService(true);
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
+  });
+
+  after(() => {
+    unmockIms();
+    unmockFetch();
+  });
+
+  it('Should initialize twp card with stock', async () => {
+    const twpCard = await initCard(document.querySelector('.twp'));
+    await delay(200);
+    const [merchOfferSelect, merchOffer1, merchOffer2, merchOffer3] = twpCard.querySelectorAll('merch-offer-select, merch-offer');
+    expect(merchOfferSelect.getAttribute('stock')).to.exist;
+    expect(merchOffer1.getAttribute('text')).to.equal('Annual, monthly payment');
+    expect(merchOffer2.getAttribute('text')).to.equal('Annual, one-time payment');
+    expect(merchOffer3.getAttribute('text')).to.equal('Monthly, without commitment');
   });
 });

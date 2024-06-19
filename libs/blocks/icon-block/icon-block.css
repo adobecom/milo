@@ -177,6 +177,11 @@
   margin-top: var(--spacing-s);
 }
 
+.icon-block .foreground .second-column .title-row {
+  display: flex;
+  align-items: center;
+}
+
 .icon-block.full-width.small .foreground .icon-area,
 .icon-block.vertical.small .foreground .icon-area {
   margin-bottom: var(--spacing-s);

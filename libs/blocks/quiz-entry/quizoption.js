@@ -1,4 +1,5 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
+import { getSwipeDistance, getSwipeDirection } from '../carousel/carousel.js';
 
 export const OptionCard = ({
   text, title, image, icon, iconTablet, iconDesktop, options,
@@ -18,12 +19,12 @@ export const OptionCard = ({
     <picture>
       ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${iconDesktop}" />`}
       ${iconTablet && html`<source media="(min-width: 600px)" srcset="${iconTablet}" />`}
-      <img src="${icon}" alt="${`Icon - ${title || text}`}" loading="lazy" />
+      <img src="${icon}" alt="" loading="lazy" />
     </picture>
   </div>`;
 
   const imageHtml = image ? html`<div class="quiz-option-image" style="background-image: url('${image}'); background-size: cover" loading="lazy"></div>` : null;
-  const titleHtml = title ? html`<h2 class="quiz-option-title">${title}</h2>` : null;
+  const titleHtml = title ? html`<p class="quiz-option-title">${title}</p>` : null;
   const textHtml = text ? html`<p class="quiz-option-text">${text}</p>` : null;
 
   return html`<button class="quiz-option ${getOptionClass()}" data-option-name="${options}" 
@@ -44,17 +45,13 @@ export const GetQuizOption = ({
 }) => {
   const [index, setIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(6);
+  const [slideWidth, setSlideWidth] = useState(0);
+
   setVisibleCount(window.innerWidth >= 600 ? 6 : 3);
 
   const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
 
-  useEffect(() => {
-    const handleResize = () => setVisibleCount(window.innerWidth >= 600 ? 6 : 3);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const next = () => {
+  const next = async () => {
     if (index + visibleCount < options.data.length) {
       setIndex(index + 1);
     }
@@ -65,6 +62,62 @@ export const GetQuizOption = ({
       setIndex(index - 1);
     }
   };
+
+  useEffect(() => {
+    const slide = document.querySelector('.quiz-option');
+    if (slide) {
+      setSlideWidth(slide.offsetWidth);
+    }
+  }, [options, slideWidth, setSlideWidth]);
+
+  useEffect(() => {
+    const handleResize = () => setVisibleCount(window.innerWidth >= 600 ? 6 : 3);
+    const el = document.querySelector('.quiz-options-container');
+
+    window.addEventListener('resize', handleResize);
+
+    const swipe = { xMin: 50 };
+
+    const handleTouchStart = (event) => {
+      const touch = event.touches[0];
+      swipe.xStart = touch.screenX;
+    };
+
+    const handleTouchMove = (event) => {
+      const touch = event.touches[0];
+      swipe.xEnd = touch.screenX;
+    };
+
+    const handleTouchEnd = () => {
+      const swipeDistance = {};
+      swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
+      const direction = getSwipeDirection(swipe, swipeDistance);
+
+      swipe.xStart = 0;
+      swipe.xEnd = 0;
+
+      if (swipeDistance.xDistance > swipe.xMin) {
+        if (direction === 'left') {
+          next();
+        } else if (direction === 'right') {
+          prev();
+        }
+      }
+    };
+
+    el.addEventListener('touchstart', handleTouchStart);
+    el.addEventListener('touchmove', handleTouchMove);
+    el.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, visibleCount, options.data.length]);
 
   const handleKey = (e) => {
     if (e.key === 'ArrowRight') {

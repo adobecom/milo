@@ -56,7 +56,7 @@ export default async function decorate(block) {
   const platforms = getPlatforms(block);
   const rows = block.querySelectorAll(':scope > div');
   const childDiv = rows[0]?.querySelector(':scope > div');
-  const emptyRow = rows.lengh && childDiv?.innerText.trim() === '';
+  const emptyRow = rows.length && childDiv?.innerText.trim() === '';
   const toSentenceCase = (str) => {
     if (!str || typeof str !== 'string') return '';
     /* eslint-disable-next-line no-useless-escape */

@@ -102,18 +102,17 @@ function getGeoroutingOverride() {
   return georouting === 'off';
 }
 
-function decorateForOnLinkClick(link, urlPrefix, localePrefix) {
+function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch') {
+  const modCurrPrefix = localePrefix || 'us';
+  const modPrefix = urlPrefix || 'us';
+  const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
+  link.setAttribute('daa-ll', eventName);
   link.addEventListener('click', () => {
-    const modPrefix = urlPrefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
-    if (localePrefix !== undefined) {
-      const modCurrPrefix = localePrefix || 'us';
-      sendAnalyticsFunc(new Event(`Stay:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
-    }
   });
 }
 
@@ -149,7 +148,7 @@ function removeOnClickOutsideElement(element, event, button) {
   document.addEventListener('click', func);
 }
 
-function openPicker(button, locales, country, event, dir) {
+function openPicker(button, locales, country, event, dir, currentPage) {
   if (document.querySelector('.locale-modal-v2 .picker')) {
     return;
   }
@@ -157,7 +156,7 @@ function openPicker(button, locales, country, event, dir) {
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
-    decorateForOnLinkClick(a, l.prefix);
+    decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
   });
@@ -208,15 +207,15 @@ function buildContent(currentPage, locale, geoData, locales) {
     span.appendChild(downArrow);
     mainAction.addEventListener('click', (e) => {
       e.preventDefault();
-      openPicker(mainAction, locales, locale.button, e, dir);
+      openPicker(mainAction, locales, locale.button, e, dir, currentPage);
     });
   } else {
     mainAction.href = locale.url;
-    decorateForOnLinkClick(mainAction, locale.prefix);
+    decorateForOnLinkClick(mainAction, locale.prefix, currentPage.prefix);
   }
 
   const altAction = createTag('a', { lang, href: currentPage.url }, currentPage.button);
-  decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix);
+  decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix, 'Stay');
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
   fragment.append(title, text, linkWrapper);
@@ -320,12 +319,13 @@ export default async function loadGeoRouting(
 
   // Show modal when derived countries from url locale and akamai disagree
   try {
-    const akamaiCode = await getAkamaiCode();
+    let akamaiCode = await getAkamaiCode();
     if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
       const localeMatches = getMatches(json.georouting.data, akamaiCode);
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         await showModal(details);
+        if (akamaiCode === 'gb') akamaiCode = 'uk';
         sendAnalyticsFunc(
           new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
         );

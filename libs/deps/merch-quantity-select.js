@@ -1,12 +1,7 @@
-// Fri, 08 Mar 2024 20:47:23 GMT
-
-// src/merch-quantity-select.js
-import { html, LitElement } from "/libs/deps/lit-all.min.js";
-
-// src/merch-quantity-select.css.js
-import { css } from "/libs/deps/lit-all.min.js";
-var styles = css`
+// branch: develop commit: 70eec73024148e3b3e8682872a90a9c0a0e68b8e Fri, 07 Jun 2024 14:50:35 GMT
+import{html as o,LitElement as p}from"/libs/deps/lit-all.min.js";import{css as l}from"/libs/deps/lit-all.min.js";var r=l`
     :host {
+        box-sizing: border-box;
         --background-color: var(--qs-background-color, #f6f6f6);
         --text-color: #000;
         --radius: 5px;
@@ -51,12 +46,12 @@ var styles = css`
         border-right: none;
         padding-inline-start: 12px;
         box-sizing: border-box;
+        -moz-appearance: textfield;
     }
 
     .text-field-input::-webkit-inner-spin-button,
     .text-field-input::-webkit-outer-spin-button {
         margin: 0;
-        -moz-appearance: textfield;
         -webkit-appearance: none;
     }
 
@@ -134,173 +129,17 @@ var styles = css`
     .item.highlighted {
         background-color: var(--background-color);
     }
-`;
-
-// src/focus.js
-var [ARROW_LEFT, ARROW_RIGHT, ARROW_UP, ARROW_DOWN, ENTER, TAB] = [
-  "ArrowLeft",
-  "ArrowRight",
-  "ArrowUp",
-  "ArrowDown",
-  "Enter",
-  "Tab"
-];
-
-// src/merch-quantity-select.js
-var MerchQuantitySelect = class extends LitElement {
-  static get properties() {
-    return {
-      closed: { type: Boolean, reflect: true },
-      selected: { type: Number },
-      min: { type: Number },
-      max: { type: Number },
-      step: { type: Number },
-      maxInput: { type: Number, attribute: "max-input" },
-      defaultValue: { type: Number, attribute: "default-value" },
-      title: { type: String }
-    };
-  }
-  static get styles() {
-    return styles;
-  }
-  constructor() {
-    super();
-    this.options = [];
-    this.title = "";
-    this.closed = true;
-    this.min = 0;
-    this.max = 0;
-    this.step = 0;
-    this.maxInput = void 0;
-    this.defaultValue = void 0;
-    this.selectedValue = 0;
-    this.highlightedIndex = 0;
-    this.toggleMenu = this.toggleMenu.bind(this);
-    this.handleClickOutside = this.handleClickOutside.bind(this);
-    this.boundKeydownListener = this.handleKeydown.bind(this);
-    this.addEventListener("keydown", this.boundKeydownListener);
-    window.addEventListener("mousedown", this.handleClickOutside);
-  }
-  handleKeyup() {
-    this.handleInput();
-    this.sendEvent();
-  }
-  handleKeydown(e) {
-    switch (e.key) {
-      case ARROW_DOWN:
-        if (!this.closed) {
-          e.preventDefault();
-          this.highlightedIndex = (this.highlightedIndex + 1) % this.options.length;
-          this.requestUpdate();
-        }
-        break;
-      case ARROW_UP:
-        if (!this.closed) {
-          e.preventDefault();
-          this.highlightedIndex = (this.highlightedIndex - 1 + this.options.length) % this.options.length;
-          this.requestUpdate();
-        }
-        break;
-      case ENTER:
-        if (!this.closed) {
-          const option = this.options[this.highlightedIndex];
-          if (!option)
-            break;
-          this.selectedValue = option;
-          this.handleMenuOption(this.selectedValue);
-          this.toggleMenu();
-        } else {
-          this.closePopover();
-          this.blur();
-        }
-        break;
-    }
-    if (e.composedPath().includes(this))
-      e.stopPropagation();
-  }
-  handleInput() {
-    const inputField = this.shadowRoot.querySelector(".text-field-input");
-    const inputValue = parseInt(inputField.value);
-    if (!isNaN(inputValue) && inputValue > 0 && inputValue !== this.selectedValue) {
-      const adjustedInputValue = this.maxInput && inputValue > this.maxInput ? this.maxInput : inputValue;
-      this.selectedValue = adjustedInputValue;
-      inputField.value = adjustedInputValue;
-      this.highlightedIndex = this.options.indexOf(adjustedInputValue);
-    }
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    window.removeEventListener("mousedown", this.handleClickOutside);
-    this.removeEventListener("keydown", this.boundKeydownListener);
-  }
-  generateOptionsArray() {
-    const options = [];
-    if (this.step > 0) {
-      for (let value = this.min; value <= this.max; value += this.step) {
-        options.push(value);
-      }
-    }
-    return options;
-  }
-  updated(changedProperties) {
-    if (changedProperties.has("min") || changedProperties.has("max") || changedProperties.has("step") || changedProperties.has("defaultValue")) {
-      this.options = this.generateOptionsArray();
-      this.highlightedIndex = this.defaultValue ? this.options.indexOf(this.defaultValue) : 0;
-      this.handleMenuOption(
-        this.defaultValue ? this.defaultValue : this.options[0]
-      );
-      this.requestUpdate();
-    }
-  }
-  handleClickOutside(event) {
-    const path = event.composedPath();
-    if (!path.includes(this)) {
-      this.closePopover();
-    }
-  }
-  toggleMenu() {
-    this.closed = !this.closed;
-  }
-  handleMouseEnter(index) {
-    this.highlightedIndex = index;
-    this.requestUpdate();
-  }
-  handleMenuOption(option) {
-    if (option === this.max)
-      this.shadowRoot.querySelector(".text-field-input")?.focus();
-    this.selectedValue = option;
-    this.sendEvent();
-    this.closePopover();
-  }
-  sendEvent() {
-    const customEvent = new CustomEvent("change", {
-      detail: { option: this.selectedValue },
-      bubbles: true
-    });
-    this.dispatchEvent(customEvent);
-  }
-  closePopover() {
-    if (!this.closed) {
-      this.toggleMenu();
-    }
-  }
-  get popover() {
-    return html` <div class="popover ${this.closed ? "closed" : "open"}">
-            ${this.options.map(
-      (option, index) => html`
+`;var[b,f,n,a,d,v]=["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Enter","Tab"];var h="merch-quantity-selector:change";var s=class extends p{static get properties(){return{closed:{type:Boolean,reflect:!0},selected:{type:Number},min:{type:Number},max:{type:Number},step:{type:Number},maxInput:{type:Number,attribute:"max-input"},defaultValue:{type:Number,attribute:"default-value",reflect:!0},title:{type:String}}}static get styles(){return r}constructor(){super(),this.options=[],this.title="",this.closed=!0,this.min=0,this.max=0,this.step=0,this.maxInput=void 0,this.defaultValue=void 0,this.selectedValue=0,this.highlightedIndex=0,this.toggleMenu=this.toggleMenu.bind(this),this.handleClickOutside=this.handleClickOutside.bind(this),this.boundKeydownListener=this.handleKeydown.bind(this),this.addEventListener("keydown",this.boundKeydownListener),window.addEventListener("mousedown",this.handleClickOutside)}handleKeyup(){this.handleInput(),this.sendEvent()}handleKeydown(e){switch(e.key){case a:this.closed||(e.preventDefault(),this.highlightedIndex=(this.highlightedIndex+1)%this.options.length,this.requestUpdate());break;case n:this.closed||(e.preventDefault(),this.highlightedIndex=(this.highlightedIndex-1+this.options.length)%this.options.length,this.requestUpdate());break;case d:if(this.closed)this.closePopover(),this.blur();else{let t=this.options[this.highlightedIndex];if(!t)break;this.selectedValue=t,this.handleMenuOption(this.selectedValue),this.toggleMenu()}break}e.composedPath().includes(this)&&e.stopPropagation()}handleInput(){let e=this.shadowRoot.querySelector(".text-field-input"),t=parseInt(e.value);if(!isNaN(t)&&t>0&&t!==this.selectedValue){let i=this.maxInput&&t>this.maxInput?this.maxInput:t;this.selectedValue=i,e.value=i,this.highlightedIndex=this.options.indexOf(i)}}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("mousedown",this.handleClickOutside),this.removeEventListener("keydown",this.boundKeydownListener)}generateOptionsArray(){let e=[];if(this.step>0)for(let t=this.min;t<=this.max;t+=this.step)e.push(t);return e}updated(e){(e.has("min")||e.has("max")||e.has("step")||e.has("defaultValue"))&&(this.options=this.generateOptionsArray(),this.highlightedIndex=this.defaultValue?this.options.indexOf(this.defaultValue):0,this.handleMenuOption(this.defaultValue?this.defaultValue:this.options[0]),this.requestUpdate())}handleClickOutside(e){e.composedPath().includes(this)||this.closePopover()}toggleMenu(){this.closed=!this.closed}handleMouseEnter(e){this.highlightedIndex=e,this.requestUpdate()}handleMenuOption(e){e===this.max&&this.shadowRoot.querySelector(".text-field-input")?.focus(),this.selectedValue=e,this.sendEvent(),this.closePopover()}sendEvent(){let e=new CustomEvent(h,{detail:{option:this.selectedValue},bubbles:!0});this.dispatchEvent(e)}closePopover(){this.closed||this.toggleMenu()}get offerSelect(){return this.querySelector("merch-offer-select")}get popover(){return o` <div class="popover ${this.closed?"closed":"open"}">
+            ${this.options.map((e,t)=>o`
                     <div
-                        class="item ${index === this.highlightedIndex ? "highlighted" : ""}"
-                        @click="${() => this.handleMenuOption(option)}"
-                        @mouseenter="${() => this.handleMouseEnter(index)}"
+                        class="item ${t===this.highlightedIndex?"highlighted":""}"
+                        @click="${()=>this.handleMenuOption(e)}"
+                        @mouseenter="${()=>this.handleMouseEnter(t)}"
                     >
-                        ${option === this.max ? `${option}+` : option}
+                        ${e===this.max?`${e}+`:e}
                     </div>
-                `
-    )}
-        </div>`;
-  }
-  render() {
-    return html`
+                `)}
+        </div>`}render(){return o`
             <div class="label">${this.title}</div>
             <div class="text-field">
                 <input
@@ -313,15 +152,10 @@ var MerchQuantitySelect = class extends LitElement {
                 />
                 <button class="picker-button" @click="${this.toggleMenu}">
                     <div
-                        class="picker-button-fill ${this.closed ? "open" : "closed"}"
+                        class="picker-button-fill ${this.closed?"open":"closed"}"
                     ></div>
                 </button>
                 ${this.popover}
             </div>
-        `;
-  }
-};
-customElements.define("merch-quantity-select", MerchQuantitySelect);
-export {
-  MerchQuantitySelect
-};
+        `}};customElements.define("merch-quantity-select",s);export{s as MerchQuantitySelect};
+//# sourceMappingURL=merch-quantity-select.js.map

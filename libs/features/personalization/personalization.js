@@ -29,7 +29,7 @@ const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
-const COLUMN_NOT_OPERATOR = 'not';
+const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
 const PAGE_URL = new URL(window.location.href);
@@ -200,7 +200,10 @@ const getBlockProps = (fVal) => {
   return { blockSelector, blockTarget: val };
 };
 
-const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
+const consolidateArray = (arr, prop, existing = []) => arr
+  .reduce((results, i) => [...results, ...i[prop] || []], existing);
+
+const consolidateObjects = (arr, prop, existing = {}) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
     const { selector, val } = i;
     if (prop === 'blocks') {
@@ -210,9 +213,11 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
 
     if (selector in propMap) return;
     const action = {
-      fragment: val,
-      manifestPath: item.manifestPath,
       action: i.action,
+      fragment: val,
+      selector,
+      manifestPath: item.manifestPath,
+      manifestId: i.manifestId,
     };
     // eslint-disable-next-line no-restricted-syntax
     for (const key in propMap) {
@@ -220,7 +225,7 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
     }
     propMap[selector] = action;
   });
-  return propMap;
+  return { ...existing, ...propMap };
 }, {});
 
 export const matchGlob = (searchStr, inputStr) => {
@@ -410,8 +415,9 @@ const addHash = (url, newHash) => {
   }
 };
 
-export function handleCommands(commands, manifestId, rootEl = document, forceInline = false) {
+export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
+    const { manifestId } = cmd;
     const { action, selector, target: trgt } = cmd;
     const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
@@ -435,7 +441,7 @@ export function handleCommands(commands, manifestId, rootEl = document, forceInl
   });
 }
 
-const getVariantInfo = (line, variantNames, variants) => {
+const getVariantInfo = (line, variantNames, variants, manifestId) => {
   const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
   const { selector } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
@@ -451,6 +457,7 @@ const getVariantInfo = (line, variantNames, variants) => {
       pageFilter,
       target: line[vn],
       selectorType: checkSelectorType(selector),
+      manifestId,
     };
 
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
@@ -458,6 +465,7 @@ const getVariantInfo = (line, variantNames, variants) => {
         selector: normalizePath(variantInfo.selector),
         val: normalizePath(line[vn]),
         action,
+        manifestId,
       });
     } else if (GLOBAL_CMDS.includes(action)) {
       variants[vn][action] = variants[vn][action] || [];
@@ -468,12 +476,14 @@ const getVariantInfo = (line, variantNames, variants) => {
           selector: blockSelector,
           val: blockTarget,
           pageFilter,
+          manifestId,
         });
       } else {
         variants[vn][action].push({
           selector: normalizePath(selector),
           val: normalizePath(line[vn]),
           pageFilter,
+          manifestId,
         });
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
@@ -485,10 +495,10 @@ const getVariantInfo = (line, variantNames, variants) => {
   });
 };
 
-export function parseConfig(data) {
+export function parseManifestVariants(data, manifestId) {
   if (!data?.length) return null;
 
-  const config = {};
+  const manifestConfig = {};
   const experiences = data.map((d) => normalizeKeys(d));
 
   try {
@@ -500,14 +510,14 @@ export function parseConfig(data) {
       variants[vn] = { commands: [], fragments: [] };
     });
 
-    experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
+    experiences.forEach((line) => getVariantInfo(line, variantNames, variants, manifestId));
 
-    config.variants = variants;
-    config.variantNames = variantNames;
-    return config;
+    manifestConfig.variants = variants;
+    manifestConfig.variantNames = variantNames;
+    return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log('error parsing personalization config:', e, experiences);
+    console.log('error parsing personalization manifestConfig:', e, experiences);
   }
   return null;
 }
@@ -548,6 +558,11 @@ const checkForParamMatch = (paramStr) => {
 };
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
+  const config = getConfig();
+  if (config.mep?.variantOverride?.[manifestPath]) {
+    return config.mep.variantOverride[manifestPath];
+  }
+
   const variantInfo = variantNames.reduce((acc, name) => {
     let nameArr = [name];
     if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
@@ -562,7 +577,6 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
-    const config = getConfig();
     userEntitlements = await config.entitlements();
   }
 
@@ -598,7 +612,7 @@ const createDefaultExperiment = (manifest) => ({
   variants: {},
 });
 
-export async function getPersConfig(info, override = false) {
+export async function getManifestConfig(info, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -610,7 +624,7 @@ export async function getPersConfig(info, override = false) {
     disabled,
     event,
   } = info;
-  if (disabled && !override) {
+  if (disabled && !variantOverride) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;
@@ -621,11 +635,19 @@ export async function getPersConfig(info, override = false) {
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
-  const config = parseConfig(persData);
 
-  if (!config) {
+  let manifestId = getFileName(manifestPath);
+  const config = getConfig();
+  if (!config.mep?.preview) {
+    manifestId = false;
+  } else if (name) {
+    manifestId = `${name}: ${manifestId}`;
+  }
+  const manifestConfig = parseManifestVariants(persData, manifestId);
+
+  if (!manifestConfig) {
     /* c8 ignore next 3 */
-    console.log('Error loading personalization config: ', name || manifestPath);
+    console.log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
 
@@ -639,8 +661,8 @@ export async function getPersConfig(info, override = false) {
       acc[item.key] = item.value;
       return acc;
     }, {});
-    config.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
-    config.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    manifestConfig.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
+    manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     const executionOrder = {
       'manifest-type': 1,
       'manifest-execution-order': 1,
@@ -650,43 +672,43 @@ export async function getPersConfig(info, override = false) {
       const index = infoKeyMap[key].indexOf(infoObj[key]);
       executionOrder[key] = index > -1 ? index : 1;
     });
-    config.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+    manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
   } else {
     // eslint-disable-next-line prefer-destructuring
-    config.manifestType = infoKeyMap['manifest-type'][1];
-    config.executionOrder = '1-1';
+    manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
+    manifestConfig.executionOrder = '1-1';
   }
 
-  config.manifestPath = normalizePath(manifestPath);
+  manifestConfig.manifestPath = normalizePath(manifestPath);
   const selectedVariantName = await getPersonalizationVariant(
-    config.manifestPath,
-    config.variantNames,
+    manifestConfig.manifestPath,
+    manifestConfig.variantNames,
     variantLabel,
   );
 
-  if (selectedVariantName && config.variantNames.includes(selectedVariantName)) {
-    config.run = true;
-    config.selectedVariantName = selectedVariantName;
-    config.selectedVariant = config.variants[selectedVariantName];
+  if (selectedVariantName && manifestConfig.variantNames.includes(selectedVariantName)) {
+    manifestConfig.run = true;
+    manifestConfig.selectedVariantName = selectedVariantName;
+    manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
   } else {
     /* c8 ignore next 2 */
-    config.selectedVariantName = 'default';
-    config.selectedVariant = 'default';
+    manifestConfig.selectedVariantName = 'default';
+    manifestConfig.selectedVariant = 'default';
   }
 
   const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
-      parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
+      parsePlaceholders(placeholders, getConfig(), manifestConfig.selectedVariantName),
     );
   }
 
-  config.name = name;
-  config.manifest = manifestPath;
-  config.manifestUrl = manifestUrl;
-  config.disabled = disabled;
-  config.event = event;
-  return config;
+  manifestConfig.name = name;
+  manifestConfig.manifest = manifestPath;
+  manifestConfig.manifestUrl = manifestUrl;
+  manifestConfig.disabled = disabled;
+  manifestConfig.event = event;
+  return manifestConfig;
 }
 
 export const deleteMarkedEls = (rootEl = document) => {
@@ -700,7 +722,7 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
   action,
 });
 
-export async function runPersonalization(experiment, config) {
+export async function categorizeActions(experiment) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
   if (!selectedVariant || selectedVariant === 'default') return { experiment };
@@ -714,14 +736,6 @@ export async function runPersonalization(experiment, config) {
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  let manifestId = getFileName(experiment.manifest);
-  if (!config.mep?.preview) {
-    manifestId = false;
-  } else if (experiment.name) {
-    manifestId = `${experiment.name}: ${manifestId}`;
-  }
-  handleCommands(selectedVariant.commands, manifestId);
-
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
   return {
@@ -729,29 +743,23 @@ export async function runPersonalization(experiment, config) {
     experiment,
     blocks: selectedVariant.useblockcode,
     fragments: selectedVariant.fragments,
+    commands: selectedVariant.commands,
   };
 }
 
-function overridePersonalizationVariant(manifest, config) {
-  const { manifestPath, variantNames } = manifest;
-  if (!config.mep?.override) return;
-  let selectedVariant;
-  config.mep?.override?.split('---').some((item) => {
+function parseMepParam(mepParam) {
+  if (!mepParam) return false;
+  const mepObject = Object.create(null);
+  const decodedParam = decodeURIComponent(mepParam);
+  decodedParam.split('---').forEach((item) => {
     const pair = item.trim().split('--');
-    if (pair[0] === manifestPath && pair.length > 1) {
-      [, selectedVariant] = pair;
-      return true;
+    if (pair.length > 1) {
+      const [manifestPath, selectedVariant] = pair;
+      mepObject[manifestPath] = selectedVariant;
     }
-    return false;
   });
-  if (!selectedVariant) return;
-  if (variantNames.includes(selectedVariant)) {
-    manifest.selectedVariantName = selectedVariant;
-    manifest.selectedVariant = manifest.variants[selectedVariant];
-    return;
-  }
-  manifest.selectedVariantName = selectedVariant;
-  manifest.selectedVariant = manifest.variants[selectedVariant];
+
+  return mepObject;
 }
 
 function compareExecutionOrder(a, b) {
@@ -760,9 +768,11 @@ function compareExecutionOrder(a, b) {
 }
 
 export function cleanAndSortManifestList(manifests) {
-  const manifestObj = {};
   const config = getConfig();
-  manifests.forEach((manifest) => {
+  const manifestObj = {};
+  let allManifests = manifests;
+  if (config.mep?.experiments) allManifests = [...manifests, ...config.mep.experiments];
+  allManifests.forEach((manifest) => {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
@@ -780,7 +790,6 @@ export function cleanAndSortManifestList(manifests) {
       } else {
         manifestObj[manifest.manifestPath] = manifest;
       }
-      if (config.mep?.override) overridePersonalizationVariant(manifest, config);
     } catch (e) {
       console.warn(e);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
@@ -790,16 +799,15 @@ export function cleanAndSortManifestList(manifests) {
 }
 
 export function handleFragmentCommand(command, a) {
-  const config = getConfig();
-  const { action, fragment, manifestPath } = command;
+  const { action, fragment, manifestId } = command;
   if (action === 'replace') {
     a.href = fragment;
-    if (config.mep.preview) a.dataset.manifestId = manifestPath;
+    if (manifestId) a.dataset.manifestId = manifestId;
     return fragment;
   }
   if (action === 'remove') {
-    if (config.mep.preview) {
-      a.parentElement.dataset.removedManifestId = manifestPath;
+    if (manifestId) {
+      a.parentElement.dataset.removedManifestId = manifestId;
     } else {
       a.parentElement.remove();
     }
@@ -807,16 +815,30 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
-export async function applyPers(manifests) {
+export async function applyPers(manifests, postLCP = false) {
   try {
     const config = getConfig();
+    if (!postLCP) {
+      const {
+        mep: mepParam,
+        mepHighlight,
+        mepButton,
+      } = Object.fromEntries(PAGE_URL.searchParams);
+      config.mep = {
+        handleFragmentCommand,
+        preview: (mepButton !== 'off'
+          && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+        variantOverride: parseMepParam(mepParam),
+        highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+        mepParam,
+        targetEnabled: config.mep?.targetEnabled,
+      };
+    }
 
     if (!manifests?.length) return;
-    config.mep ??= {};
-    config.mep.handleFragmentCommand = handleFragmentCommand;
     let experiments = manifests;
     for (let i = 0; i < experiments.length; i += 1) {
-      experiments[i] = await getPersConfig(experiments[i], config.mep?.override);
+      experiments[i] = await getManifestConfig(experiments[i], config.mep?.variantOverride);
     }
 
     experiments = cleanAndSortManifestList(experiments);
@@ -824,17 +846,21 @@ export async function applyPers(manifests) {
     let results = [];
 
     for (const experiment of experiments) {
-      const result = await runPersonalization(experiment, config);
+      const result = await categorizeActions(experiment);
       if (result) {
         results.push(result);
       }
     }
     results = results.filter(Boolean);
-    deleteMarkedEls();
 
-    config.experiments = experiments;
-    config.expBlocks = consolidateObjects(results, 'blocks');
-    config.expFragments = consolidateObjects(results, 'fragments');
+    config.mep.experiments ??= [];
+    config.mep.experiments = experiments;
+    config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
+    config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
+    config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+    if (!postLCP) handleCommands(config.mep.commands);
+    deleteMarkedEls();
 
     const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
     if (!pznList.length) return;

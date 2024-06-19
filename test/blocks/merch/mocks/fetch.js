@@ -1,26 +1,44 @@
 import sinon from 'sinon';
 
 import { PRICE_LITERALS_URL } from '../../../../libs/blocks/merch/merch.js';
-
-const MOCKS_PATH = '/test/blocks/merch/mocks';
+import { applyPlanType } from '../../../../libs/deps/commerce.js';
 
 const { fetch } = window;
 
-export const readMockJSON = async (fileName) => {
-  const json = await fetch(`${MOCKS_PATH}/${fileName}`).then((res) => res.json());
+export const readMockJSON = async (path) => {
+  const json = await fetch(path).then((res) => res.json());
   return json;
 };
 
-export const readMockText = async (fileName) => {
-  const text = await fetch(`${MOCKS_PATH}/${fileName}`).then((res) => res.text());
+export const readMockText = async (path) => {
+  const text = await fetch(path).then((res) => res.text());
   return text;
 };
 
 export async function mockFetch() {
   // this path allows to import this mock from tests for other blocks (e.g. commerce)
-  const literals = await readMockJSON('literals.json');
-  const offers = await readMockJSON('offers.json');
-  const namedOffers = await readMockJSON('named-offers.json');
+  const basePath = '/test/blocks/merch/mocks/';
+  const literals = await readMockJSON(`${basePath}literals.json`);
+  const offers = await readMockJSON(`${basePath}offers.json`);
+  const namedOffers = await readMockJSON(`${basePath}named-offers.json`);
+
+  namedOffers.forEach(({ resolvedOffers: [offer] }) => {
+    const {
+      offerSelectorIds,
+      productArrangement: { productFamily },
+      offerType,
+      customerSegment,
+      marketSegments: [
+        marketSegment,
+      ],
+      language,
+    } = offer;
+    // eslint-disable-next-line no-nested-ternary
+    const segment = customerSegment === 'TEAM' ? 'cct' : marketSegment === 'COM' ? 'cci' : 'cce';
+    const { planType } = applyPlanType(offer);
+    const osi = `${productFamily}-${offerType}-${planType}-${language}-${segment}`.toLowerCase();
+    offerSelectorIds.unshift(osi);
+  });
 
   let checkoutLinkConfigs;
   const setCheckoutLinkConfigs = (data) => {
@@ -45,12 +63,14 @@ export async function mockFetch() {
     if (pathname.endsWith('/web_commerce_artifact')) {
       const osis = searchParams.get('offer_selector_ids').split(',');
       const firstOsi = osis[0];
+      const namedOffer = namedOffers
+        .find(({ resolvedOffers: [offer] }) => offer.offerSelectorIds.includes(firstOsi));
       return Promise.resolve({
         status: 200,
         statusText: '',
         ok: true,
         json: () => Promise.resolve(
-          (/^[A-Za-z]/.test(firstOsi)) ? namedOffers[firstOsi] : {
+          namedOffer ?? {
             resolvedOffers: osis.map((osi) => {
               let index = Number.parseInt(osi, 10);
               if (Number.isNaN(index) || !Number.isFinite(index) || index < 0) index = 0;

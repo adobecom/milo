@@ -1,0 +1,398 @@
+<html>
+
+<head>
+  <title>Merch TWP test page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/libs/styles/styles.css">
+  <link rel="stylesheet" href="/libs/blocks/merch-card/merch-card.css">
+  <link rel="stylesheet" href="/libs/blocks/merch/merch.css">
+  <link rel="stylesheet" href="/libs/blocks/merch-twp/merch-twp.css">
+  <style>
+    main {
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import sinon from 'sinon';
+    import "../../../libs/deps/commerce.js";
+    import { initService } from "../../../libs/blocks/merch/merch.js";
+    import { mockFetch, unmockFetch } from '../merch/mocks/fetch.js';
+    import { mockIms, unmockIms } from '../merch/mocks/ims.js';
+    import { createTag, setConfig } from '../../../../libs/utils/utils.js';
+    import merchTwp from "../../../libs/blocks/merch-twp/merch-twp.js";
+    import { getModal } from '../../../libs/blocks/modal/modal.js';
+
+    const config = {
+      codeRoot: '/libs',
+      imsClientId: 'test_client_id',
+      placeholders: { 
+        'individuals': 'Individuals',
+        'business': 'Business',
+        'students-and-teachers': 'Students and teachers',
+        'continue': 'Continue',
+      },
+    };
+    setConfig(config);
+
+    runTests(async () => {
+      describe('Merch TWP', async () => {
+        before(async () => {
+          mockIms();
+          await mockFetch();
+          await initService(true);
+        });
+
+        after(async () => {
+          unmockIms();
+          await unmockFetch();
+        });
+        it('renders merch-twp with 3 tabs and 4 cards', async () => {
+          const main = document.querySelector('main');
+          main.innerHTML = '';
+          const template = document.getElementById('merch-twp');
+          const clone = document.importNode(template.content, true);
+          main.append(clone);
+          const twpMarkup = document.querySelector('.merch-twp');
+          twpMarkup.querySelectorAll('merch-offer-select')[1].ready = true;
+          const twp = await merchTwp(document.querySelector('.merch-twp'));
+          await getModal(null, { id: 'twp-modal', content: twp, class: 'twp' });
+          expect(document.querySelector('merch-twp-d2p').shadowRoot).to.exist;
+        });
+      });
+
+    });
+  </script>
+  <main>
+  </main>
+  <template id="merch-twp">
+    <div class="merch-twp">
+      <div>
+        <div>
+          <h4 id="try-the-full-version-of-adobe-apps-with-a-7-day-free-trial">Try the full version of Adobe apps with a
+            7-day free trial.</h4>
+          <div style="display: contents;">
+            <div class="fragment" data-path="/drafts/ilyas/fragments/twp/cards/illustrator" style="display: contents;">
+              <div class="section" style="display: contents;">
+                <merch-card class="merch-card twp add-stock" data-block="" variant="twp"
+                  filters="all" types="">
+                  <merch-icon slot="icons" src="/test/blocks/merch-twp/assets/illustrator.svg" alt="Illustrator"></merch-icon>
+                  <p slot="heading-xs" class="heading-xs"><strong>Illustrator</strong></p>
+                  <p slot="body-xs-top" class="body-xs-top">Create beautiful designs, icons, and more — then use them
+                    anyplace at any size.</p>
+                  <div slot="body-xs">
+                    <p><strong>What you get:</strong></p>
+                    <ul>
+                      <li>Illustrator on desktop and iPad</li>
+                      <li>Adobe Express and Adobe Firefly</li>
+                      <li>Tutorials, fonts, templates, and more</li>
+                      <li>100GB of cloud storage</li>
+                      <li>X,XXX monthly <a href="https://firefly.adobe.com/" daa-ll="generative credits-1">generative
+                          credits</a></li>
+                    </ul>
+                    <p><a href="https://adobe.com/" daa-ll="See all included apps-2">See all included apps.</a></p>
+                  </div>
+                  <div slot="footer">
+                    <p><strong>7-day free trial, then</strong></p>
+                    <p class="merch-card-price"><span slot="price" is="inline-price"></span></p>
+                    <merch-offer-select container="merch-card" stock="">
+                      <merch-offer text="Annual, monthly payment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="false"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="nlYSyCqrsegoFuLBJfEe-QqgnptUzduO5I-jA06CNFI" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="nlYSyCqrsegoFuLBJfEe-QqgnptUzduO5I-jA06CNFI"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer>
+                      <merch-offer text="Annual, one-time payment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="false"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="TvnoJYwMsiSd-S7hS9FK-orjWmkhi4ufgfRJ1iaIvEM" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="TvnoJYwMsiSd-S7hS9FK-orjWmkhi4ufgfRJ1iaIvEM"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer>
+                      <merch-offer text="Monthly, without commitment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="false"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="pZrSvg9dNEHfddeT-TKYDWfAISNGyZcxJ_bwtFZRzAc" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="pZrSvg9dNEHfddeT-TKYDWfAISNGyZcxJ_bwtFZRzAc"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer></merch-offer-select>
+                  </div>
+                </merch-card>
+              </div>
+            </div>
+          </div>
+          <div style="display: contents;">
+            <div class="fragment" data-path="/drafts/ilyas/fragments/twp/cards/all-apps" style="display: contents;">
+              <div class="section" style="display: contents;">
+                <merch-card class="merch-card twp add-stock" data-block="" variant="twp"
+                  badge-background-color="#2D9D78" badge-color="#FFFFFF" badge-text="Best value"
+                  filters="all" types="">
+                  <merch-icon slot="icons" src="/test/blocks/merch-twp/assets/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+                  <p slot="heading-xs" class="heading-xs"><strong>Creative Cloud All Apps</strong></p>
+                  <p slot="body-xs-top" class="body-xs-top">The ultimate toolkit for unlimited creativity.</p>
+                  <div slot="body-xs">
+                    <p><strong>What you get:</strong></p>
+                    <ul>
+                      <li>20+ apps – Photoshop, Illustrator, Adobe Express, Firefly, Acrobat Pro, and more</li>
+                      <li>Tutorials, fonts , templates, and more</li>
+                      <li>100GB of cloud storage</li>
+                      <li>X,XXX monthly <a href="https://firefly.adobe.com/" daa-ll="generative credits-1">generative
+                          credits</a></li>
+                    </ul>
+                    <p><a href="https://adobe.com/" daa-ll="See all included apps-2">See all included apps.</a></p>
+                  </div>
+                  <div slot="footer">
+                    <p><strong>7-day free trial, then</strong></p>
+                    <p class="merch-card-price"><span slot="price" is="inline-price"></span></p>
+                    <merch-offer-select container="merch-card" stock="">
+                      <merch-offer text="Annual, monthly payment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="true"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer>
+                      <merch-offer text="Annual, one-time payment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="true"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="7QWcHXX6VIH_2BeNYI1GizMNGHJ3ZFz9-IMoC0gC-4c" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="7QWcHXX6VIH_2BeNYI1GizMNGHJ3ZFz9-IMoC0gC-4c"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer>
+                      <merch-offer text="Monthly, without commitment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="true"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="MasJgjrlDjj72m_B1q1_4VhTDtxldl6yG4C16DkznhI" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="MasJgjrlDjj72m_B1q1_4VhTDtxldl6yG4C16DkznhI"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer></merch-offer-select>
+                  </div>
+                </merch-card>
+              </div>
+            </div>
+          </div>
+          <p><a
+              href="https://www.adobe.com/creativecloud/plans.html?filter=illustration&amp;plan=individual&amp;filter=illustration">See
+              all plans and pricing</a></p>
+          <hr>
+          <div style="display: contents;">
+            <div class="fragment" data-path="/drafts/ilyas/fragments/twp/cards/all-apps-teams"
+              style="display: contents;">
+              <div class="section" style="display: contents;">
+                <merch-card class="merch-card twp" data-block="" variant="twp" badge-background-color="#2D9D78"
+                  badge-color="#FFFFFF" badge-text="Includes business features"
+                  filters="all" types="">
+                  <merch-icon slot="icons" src="/test/blocks/merch-twp/assets/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+                  <merch-quantity-select title="Select a quantity:" min="1" max="10" step="1"
+                    default-value="undefined" max-input="undefined"></merch-quantity-select>
+                  <p slot="heading-xs" class="heading-xs"><strong>Creative Cloud All Apps</strong></p>
+                  <p slot="body-xs-top" class="body-xs-top">The ultimate toolkit for unlimited creativity plus business
+                    features to boost collaboration and simplify administration.</p>
+                  <div slot="body-xs">
+                    <p><strong>What you get:</strong></p>
+                    <ul>
+                      <li>20+ apps including Photoshop, Illustrator, Adobe Firefly, Premiere Pro, and Acrobat Pro</li>
+                      <li>Admin Console for license management</li>
+                      <li>Creative Cloud Libraries for sharing assets</li>
+                      <li>X,XXX monthly <a href="https://firefly.adobe.com/" daa-ll="generative credits-1">generative
+                          credits</a></li>
+                    </ul>
+                    <p><a href="https://adobe.com/" daa-ll="See all included apps-2">See all included apps.</a></p>
+                  </div>
+                  <div slot="footer">
+                    <p><strong>7-day free trial, then</strong></p>
+                    <p class="merch-card-price"><span slot="price" is="inline-price"></span></p>
+                    <merch-offer-select container="merch-card">
+                      <merch-offer text="Annual, one-time payment"><span is="inline-price" data-display-old-price="true"
+                          data-display-per-unit="true" data-display-recurrence="true" data-display-tax="false"
+                          data-force-tax-exclusive="false" data-quantity="1" data-template="price"
+                          data-wcs-osi="frr4PaPpP1IkTTLP1G6TbdQPle_7mE2P1tVg74Nsgr8" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="frr4PaPpP1IkTTLP1G6TbdQPle_7mE2P1tVg74Nsgr8"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer>
+                      <merch-offer text="Annual, monthly payment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="true"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="6QMorJyNNAuQLg35h64xQtcyXz6Gw7QE8tihSs-zciU" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="6QMorJyNNAuQLg35h64xQtcyXz6Gw7QE8tihSs-zciU"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer></merch-offer-select>
+                  </div>
+                </merch-card>
+              </div>
+            </div>
+          </div>
+          <p><a href="https://www.adobe.com/creativecloud/plans.html?plan=team">See all plans and pricing</a></p>
+          <hr>
+          <div style="display: contents;">
+            <div class="fragment" data-path="/drafts/ilyas/fragments/twp/cards/all-apps-edu" style="display: contents;">
+              <div class="section" style="display: contents;">
+                <merch-card class="merch-card twp add-stock" data-block="" variant="twp"
+                  badge-background-color="#2D9D78" badge-color="#FFFFFF" badge-text="Save over 60%"
+                  filters="all" types="">
+                  <merch-icon slot="icons" src="/test/blocks/merch-twp/assets/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+                  <p slot="heading-xs" class="heading-xs"><strong>Creative Cloud All Apps</strong></p>
+                  <p slot="body-xs-top" class="body-xs-top">The ultimate toolkit for unlimited creativity. Students and
+                    teachers save over 60% on Creative Cloud All Apps for the first year. <a
+                      href="https://www.adobe.com/offer-terms/ccm_ste_introductory.html" daa-ll="See terms-1">See
+                      terms.</a></p>
+                  <div slot="body-xs">
+                    <p><strong>What you get:</strong></p>
+                    <ul>
+                      <li>20+ apps including Photoshop, Illustrator, Adobe Firefly, Premiere Pro, and Acrobat Pro</li>
+                      <li>Tutorials, fonts, templates, and more</li>
+                      <li>100GB of cloud storage</li>
+                      <li>X,XXX monthly <a href="https://firefly.adobe.com/" daa-ll="generative credits-2">generative
+                          credits</a></li>
+                    </ul>
+                    <p><a href="https://adobe.com/" daa-ll="See all included apps-3">See all included apps.</a></p>
+                  </div>
+                  <div slot="footer">
+                    <p><strong>7-day free trial, then</strong></p>
+                    <p class="merch-card-price"><span slot="price" is="inline-price"></span></p>
+                    <merch-offer-select container="merch-card" stock="">
+                      <merch-offer text="Annual, monthly payment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="false"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="xxgyCsZk7zx3WAfpZMqiE6IMtvvu0CP4JJeIey_UtYo" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="xxgyCsZk7zx3WAfpZMqiE6IMtvvu0CP4JJeIey_UtYo"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer>
+                      <merch-offer text="Annual, one-time payment">
+                        <span is="inline-price" data-display-old-price="true" data-display-per-unit="false"
+                          data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
+                          data-quantity="1" data-template="price"
+                          data-wcs-osi="6jAp4YpZosSe5N5bCVbDcomwBmDLgN3RqZwXmn5ZR1s" slot="price"></span><a
+                          is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email"
+                          data-quantity="1" data-wcs-osi="6jAp4YpZosSe5N5bCVbDcomwBmDLgN3RqZwXmn5ZR1s"
+                          data-extra-options="{}" class="con-button loading-entitlements" slot="cta"><span>Buy
+                            now</span></a></merch-offer></merch-offer-select>
+                  </div>
+                </merch-card>
+              </div>
+            </div>
+          </div>
+          <p><a href="https://www.adobe.com/creativecloud/plans.html?plan=edu">See all plans and pricing</a></p>
+          <p>Available for qualified students and teachers only. <a
+              href="https://www.adobe.com/offer-terms/student_teacher_eligibility.html">Check eligibility.</a></p>
+        </div>
+      </div>
+      <div>
+        <div>
+          <h4 id="pick-a-subscription">Pick a subscription:</h4>
+          <h5 id="you-wont-be-charged-until-after-your-free-trial-ends">You won't be charged until after your free trial
+            ends.</h5>
+          <div>
+            <div class="fragment" data-path="/drafts/ilyas/fragments/twp/literals/stock">
+              <div class="section">
+                <merch-stock>
+                  <div>Add a 7-day free trial of Adobe Stock and get up to 10 standard assets. Cancel risk-free before
+                    your trial ends, and you won’t be charged. Pay <span is="inline-price" data-display-old-price="true"
+                      data-display-per-unit="false" data-display-recurrence="true" data-display-tax="false"
+                      data-force-tax-exclusive="false" data-quantity="1" data-template="price"
+                      data-wcs-osi="An5oaimikvfougEJNQBSz_f3VEgmd6acfeTQGGaPCoE"></span> after your trial ends.</div>
+                  <div>Add a 7-day free trial of Adobe Stock and get up to 10 standard assets. Cancel risk-free before
+                    your trial ends, and you won’t be charged. Pay <span is="inline-price" data-display-old-price="true"
+                      data-display-per-unit="false" data-display-recurrence="true" data-display-tax="false"
+                      data-force-tax-exclusive="false" data-quantity="1" data-template="price"
+                      data-wcs-osi="UvwrHnX9p1fBz2LoI0UvEdQ8JnZ-KGQKDamDKfwtygk"></span> after your trial ends.</div>
+                  <div>Add a 7-day free trial of Adobe Stock and get up to 10 standard assets. Cancel risk-free before
+                    your trial ends, and you won’t be charged. Pay <span is="inline-price" data-display-old-price="true"
+                      data-display-per-unit="false" data-display-recurrence="true" data-display-tax="false"
+                      data-force-tax-exclusive="false" data-quantity="1" data-template="price"
+                      data-wcs-osi="BJWO8GmMhLAjgxfL55oSz-7c7KSyLQdY9jotgROXSqM"></span> after your trial ends.</div>
+                </merch-stock>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="fragment" data-path="/drafts/ilyas/fragments/twp/literals/secure-transaction">
+              <div class="section">
+                <merch-secure-transaction icon="true" label="Secure transaction"
+                  tooltip="At Adobe, we’re serious about protecting your personal information. To ensure your account details are safe, we use Secure Sockets Layer (SSL), an industry standard for encrypting private data over the internet."></merch-secure-transaction>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="fragment" data-path="/drafts/ilyas/fragments/twp/literals/offer-literals">
+              <div class="section">
+                <div class="merch-offers twp offer-literals" data-block=""><template name="cci">
+                    <div plan-type="ABM">
+                      <h5 id="annual-paid-monthly" slot="commitment">Annual, paid monthly</h5>
+                      <p slot="condition">Fee applies if you cancel after 14 days.</p>
+                      <p slot="condition-tooltip">If you cancel after 14 days, your payment is non-refundable, and your
+                        service will continue until the end of that month’s billing period.</p>
+                    </div>
+                    <div plan-type="PUF">
+                      <h5 id="annual-prepaid" slot="commitment">Annual, prepaid</h5>
+                      <p slot="condition">No refund if you cancel after 14 days.</p>
+                      <p slot="condition-tooltip">If you cancel after 14 days, your payment is non-refundable, and your
+                        service will continue until the end of your contracted term.</p>
+                    </div>
+                    <div plan-type="M2M">
+                      <h5 id="monthly" slot="commitment">Monthly</h5>
+                      <p slot="condition">Cancel anytime, no fee.</p>
+                      <p slot="condition-tooltip">If you cancel after 14 days, your payment is non-refundable, and your
+                        service will continue until the end of that month’s billing period.</p>
+                    </div>
+                  </template><template name="cct">
+                    <div plan-type="ABM">
+                      <h5 id="annual-paid-monthly-1" slot="commitment">Annual, paid monthly</h5>
+                      <p slot="condition">Fee applies if you cancel after 14 days.</p>
+                      <p slot="condition-tooltip">If you cancel after 14 days, your service will continue until the end
+                        of that month’s billing period, and you will be charged an early termination fee.</p>
+                    </div>
+                    <div plan-type="PUF">
+                      <p slot="teaser">Save with the annual prepaid plan.</p>
+                      <h5 id="annual-prepaid-1" slot="commitment">Annual, prepaid</h5>
+                      <p slot="condition">No refund if you cancel after 14 days.</p>
+                      <p slot="condition-tooltip">If you cancel after 14 days, your payment is non-refundable, and your
+                        service will continue until the end of your contracted term.</p>
+                    </div>
+                  </template><template name="cce">
+                    <div plan-type="ABM">
+                      <h5 id="annual-paid-monthly-2" slot="commitment">Annual, paid monthly</h5>
+                      <p slot="condition">Fee applies if you cancel after 14 days.</p>
+                      <p slot="condition-tooltip">If you cancel after 14 days, your service will continue until the end
+                        of that month’s billing period, and you will be charged an early termination fee.</p>
+                    </div>
+                    <div plan-type="PUF">
+                      <h5 id="annual-prepaid-2" slot="commitment">Annual, prepaid</h5>
+                      <p slot="condition">No refund if you cancel after 14 days.</p>
+                      <p slot="condition-tooltip">If you cancel after 14 days, your payment is non-refundable, and your
+                        service will continue until the end of your contracted term.</p>
+                    </div>
+                  </template></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </template>
+</body>
+
+</html>

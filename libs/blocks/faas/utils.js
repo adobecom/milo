@@ -248,7 +248,7 @@ const beforeSubmitCallback = () => {
       }),
     })
       .catch((error) => {
-        window.lana.log('AA Sandbox Error:', error);
+        window.lana.log(`AA Sandbox Error: ${error.reason || error.error || error.message || error}`, { tags: 'errorType=info,module=faas' });
       });
   }
 };

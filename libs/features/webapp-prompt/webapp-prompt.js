@@ -35,6 +35,16 @@ const getIcon = (content) => {
   return icons.company;
 };
 
+const modalsActive = () => !!document.querySelector('.dialog-modal');
+
+const waitForClosedModalsThen = (loadPEP) => {
+  if (modalsActive()) {
+    setTimeout(() => waitForClosedModalsThen(loadPEP), 200);
+    return;
+  }
+  loadPEP();
+};
+
 class AppPrompt {
   constructor({ promptPath, entName, parent, getAnchorState } = {}) {
     this.promptPath = promptPath;
@@ -43,14 +53,20 @@ class AppPrompt {
     this.getAnchorState = getAnchorState;
     this.id = this.promptPath.split('/').pop();
     this.elements = {};
-
-    this.init();
+    if (modalsActive()) {
+      window.addEventListener(
+        'milo:modal:closed',
+        () => waitForClosedModalsThen(this.init),
+        { once: true },
+      );
+    } else this.init();
   }
 
   init = async () => {
     if (this.isDismissedPrompt() || !this.parent) return;
 
-    const entMatch = await this.doesEntitlementMatch();
+    const skipEntitlements = new URLSearchParams(window.location.search).get('skipPepEntitlements');
+    const entMatch = skipEntitlements || await this.doesEntitlementMatch();
     if (!entMatch) return;
 
     const content = await this.fetchContent();
@@ -84,7 +100,10 @@ class AppPrompt {
   };
 
   doesEntitlementMatch = async () => {
-    const entitlements = await getConfig().entitlements();
+    const config = getConfig();
+    const entitlements = await config.entitlements();
+    const extraEnts = new URLSearchParams(window.location.search).get('mockPepEnts');
+    extraEnts?.split(',').forEach((ent) => entitlements.push(ent.trim()));
     return entitlements?.length && entitlements.includes(this.entName);
   };
 
