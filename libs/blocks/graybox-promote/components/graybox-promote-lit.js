@@ -70,7 +70,7 @@ async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
   const grayboxData = sheet.graybox?.data;
   return {
     promoteDraftsOnly: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_DRAFTS_ONLY)?.toLowerCase() === 'true',
-    enablePromote: true, // TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
+    enablePromote: true, /// TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
     promoteUrl: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]),
   };
 }
@@ -120,7 +120,7 @@ class GrayboxPromote extends LitElement {
         <button>Open login</button>`;
       }
       const sharepointToken = await getSharepointToken();
-
+      
       console.log(experienceName, grayboxIoEnv);
       return [experienceName, grayboxIoEnv];
     },
