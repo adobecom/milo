@@ -3,6 +3,7 @@ import { Task } from '../../../deps/lit-task.min.js';
 import login from '../../../tools/sharepoint/login.js';
 import sharepointLogin from '../../../tools/sharepoint/login.js';
 import { account } from '../../../tools/sharepoint/state.js';
+import { setup } from '../../version-history/index.js';
 
 const KEYS = {
   PROJECT_INFO: {
@@ -117,7 +118,7 @@ class GrayboxPromote extends LitElement {
       const driveId = await getSharepointDriveId(ref, repo, owner);
       if (!account.value.username) {
         return `<p>The login popup was blocked.<br/>Please use the button below.</p>
-        <button>Open login</button>`;
+        <button class=version-action onClick="${setup}">Open login</button>`;
       }
       const sharepointToken = await getSharepointToken();
       
