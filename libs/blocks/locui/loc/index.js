@@ -98,10 +98,13 @@ async function loadProjectSettings(projSettings) {
 }
 
 function sanitize(url) {
-  const hlxUrl = /^https?:\/\/[^/?#]+/g;
-  const [hostname] = url.match(hlxUrl);
-  const enDash = hostname.replaceAll('–', '--');
-  const newURL = url.replace(hlxUrl, enDash);
+  let newURL = url;
+  const matchHost = /^https?:\/\/[^/?#]+/g;
+  const [hostname] = url.match(matchHost);
+  if (hostname) {
+    const enDash = hostname.replaceAll('–', '--');
+    newURL = url.replace(matchHost, enDash);
+  }
   return new URL(newURL);
 }
 
@@ -110,7 +113,7 @@ async function loadDetails() {
   try {
     const resp = await fetch(previewPath);
     const json = await resp.json();
-    const jsonUrls = json.urls.data.map(({ URL }) => sanitize(URL));
+    const jsonUrls = json.urls.data.map((item) => sanitize(item.URL));
     const projectUrls = getUrls(jsonUrls);
     const projectLangs = json.languages.data.reduce((rdx, lang) => {
       if (LANG_ACTIONS.includes(lang.Action)) {
