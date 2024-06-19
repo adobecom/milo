@@ -825,15 +825,15 @@ export async function applyPers(manifests, postLCP = false) {
         mepHighlight,
         mepButton,
       } = Object.fromEntries(PAGE_URL.searchParams);
-      config.mep = {
+      const newMepConfig = {
         handleFragmentCommand,
         preview: (mepButton !== 'off'
           && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
         variantOverride: parseMepParam(mepParam),
         highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
         mepParam,
-        targetEnabled: config.mep?.targetEnabled,
       };
+      config.mep = { ...newMepConfig, ...config.mep };
     }
 
     if (!manifests?.length) return;

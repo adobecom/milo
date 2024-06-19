@@ -969,6 +969,10 @@ async function checkForPageMods() {
   );
 
   const persManifests = await combineMepSources(persEnabled, promoEnabled, mepParam);
+  if (persManifests.length) {
+    import('../features/personalization/entitlements.js')
+      .then(({ getEntitlementMap }) => getEntitlementMap());
+  }
   if (targetEnabled === true) {
     await loadMartech({ persEnabled: true, persManifests, targetEnabled });
     return;
