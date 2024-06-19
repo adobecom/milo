@@ -716,10 +716,11 @@ export const deleteMarkedEls = (rootEl = document) => {
     .forEach((el) => el.remove());
 };
 
-const normalizeFragPaths = ({ selector, val, action }) => ({
+const normalizeFragPaths = ({ selector, val, action, manifestId }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
   action,
+  manifestId,
 });
 
 export async function categorizeActions(experiment) {

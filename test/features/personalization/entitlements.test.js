@@ -4,10 +4,10 @@ import { stub } from 'sinon';
 import init, { getEntitlementDataUrl } from '../../../libs/features/personalization/entitlements.js';
 import { getConfig } from '../../../libs/utils/utils.js';
 
-// Add custom keys so tests doesn't rely on real data
 const config = getConfig();
 config.env = { name: 'prod' };
 
+// Add custom keys so tests doesn't rely on real data
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({
     ok: true,
@@ -19,14 +19,22 @@ const setFetchResponse = (data, type = 'json') => {
   window.fetch = stub().returns(getFetchPromise(data, type));
 };
 
+let manifestJson = await readFile({ path: './mocks/entitlements.json' });
+manifestJson = JSON.parse(manifestJson);
+setFetchResponse(manifestJson);
+const expectedEntitlementMap = {
+  '8da44606-9841-43d0-af72-86d5a9d3bba0': 'cc-photo',
+  'e7650448-268b-4a0d-9795-05f604d7e42f': 'lightroom-any',
+  '6cb0d58c-3a65-47e2-b459-c52bb158d5b6': 'lightroom-web-usage',
+};
+
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('entitlements', () => {
-  it('Should return any entitlements that match the id', async () => {
-    config.env = { name: 'prod' };
-    let manifestJson = await readFile({ path: './mocks/entitlements.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
+  beforeEach(() => {
+    config.mep = {};
+  });
 
+  it('Should return any entitlements that match the id', async () => {
     const destinations = [
       {
         segments: [
@@ -49,11 +57,10 @@ describe('entitlements', () => {
     const expectedEntitlements = ['lightroom-any', 'cc-photo'];
     const entitlements = await init(destinations);
     expect(entitlements).to.deep.equal(expectedEntitlements);
+    expect(config.mep.entitlementMap).to.deep.equal(expectedEntitlementMap);
   });
 
   it('Should not return any entitlements if there is no match', async () => {
-    config.env = { name: 'prod' };
-
     const destinations = [
       {
         segments: [
@@ -76,8 +83,6 @@ describe('entitlements', () => {
 
   it('Should be able to use consumer defined entitlements in the config', async () => {
     config.consumerEntitlements = { 'consumer-defined-entitlement': 'consumer-defined' };
-    config.env = { name: 'prod' };
-
     const destinations = [
       {
         segments: [
@@ -102,15 +107,11 @@ describe('entitlements', () => {
     expect(entitlements).to.deep.equal(expectedEntitlements);
   });
 
-  it('Should return a different entitlementDataUrl based on environment', async () => {
-    config.env = { name: 'prod' };
-    config.mep = { entitlementDataUrl: 'somesavedvalue' };
-    let url = getEntitlementDataUrl(config, 'https://busines.adobe.com');
-    expect(url).to.equal('somesavedvalue');
+  it('Should return a different entitlementDataUrl based on environment and origin', async () => {
+    let url = getEntitlementDataUrl('prod', 'https://business.adobe.com');
+    expect(url).to.equal('https://business.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=prod');
 
-    
-    config.env = { name: 'stage' };
-    url = getEntitlementDataUrl();
+    url = getEntitlementDataUrl('stage', 'https://www.stage.adobe.com');
     expect(url).to.equal('https://www.stage.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=stage');
   });
 });

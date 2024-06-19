@@ -1,7 +1,7 @@
 import { getConfig } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from './personalization.js';
 
-const getFederatedContentRoot = (config, origin) => {
+const getFederatedContentRoot = (origin) => {
   const allowedOrigins = [
     'https://www.adobe.com',
     'https://business.adobe.com',
@@ -23,19 +23,16 @@ const getFederatedContentRoot = (config, origin) => {
   return federatedContentRoot;
 };
 
-export const getEntitlementDataUrl = (config, origin) => {
-  const { env, mep } = config;
-  if (mep?.entitlementDataUrl) return mep.entitlementDataUrl;
-  const sheet = env.name === 'prod' ? 'prod' : 'stage';
-  const federatedContentRoot = getFederatedContentRoot(origin);
-
+export const getEntitlementDataUrl = (envName, origin) => {
+  const sheet = envName === 'prod' ? 'prod' : 'stage';
+  const federatedContentRoot = getFederatedContentRoot(origin || window.location.origin);
   return `${federatedContentRoot}/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
 };
 
 export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
-  const entitlementUrl = getEntitlementDataUrl(config, window.location.origin);
+  const entitlementUrl = getEntitlementDataUrl(config.env?.name, window.location.origin);
   const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
