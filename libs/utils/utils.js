@@ -712,6 +712,7 @@ async function decorateIcons(area, config) {
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/features/icons/icons.css`);
   loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+  loadLink(`${base}/utils/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
 }
