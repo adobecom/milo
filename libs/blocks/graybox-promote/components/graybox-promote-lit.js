@@ -122,7 +122,7 @@ class GrayboxPromote extends LitElement {
           // TODO - uncomment below after getting Azure permissions
           // return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
         } else {
-          return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
+          return html`<button @click="${() => this.promoteTask.run({experienceName, grayboxIoEnv, promoteUrl})}">Promote</button>`;
         }
       },
       args: () => [],
@@ -144,9 +144,7 @@ class GrayboxPromote extends LitElement {
     });
   
     this.promoteTask = new Task(this, {
-      task: async (experienceName, grayboxIoEnv) => {
-        const promoteUrl = '';
-        const token = this.spToken;
+      task: async ({experienceName, grayboxIoEnv, promoteUrl}) => {
         const projectExelPath = '';
         const rootFolder = '';
         const gbRootFolder = '';
@@ -157,6 +155,7 @@ class GrayboxPromote extends LitElement {
         await fetch(`${promoteUrl}?spToken=${this.spToken}&
         projectExcelPath=${projectExelPath}
         &rootFolder=${rootFolder}
+        &gbRootFolder=${gbRootFolder}
         &experienceName=${experienceName}
         &adminPageUri=${adminPageUri}
         &draftsOnly=${draftsOnly}
