@@ -146,17 +146,7 @@ class GrayboxPromote extends LitElement {
         }
         const driveId = await getSharepointDriveId(ref, repo, owner);
         if (!this.spToken) {
-          //TODO - delete below after getting Azure permissions
-          return html`<button
-            @click="${() => {
-              this.spToken = 'abc';
-              this.getValuesTask.run();
-            }}"
-          >
-            Login
-          </button>`;
-          // TODO - uncomment below after getting Azure permissions
-          // return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
+          return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
         } else {
           return html`<button
             @click="${() =>
@@ -233,13 +223,17 @@ class GrayboxPromote extends LitElement {
     this.spLogin = () => {
       const scopes = ['files.readwrite', 'sites.readwrite.all'];
       const extraScopes = [`${origin}/.default`];
-      return login({ scopes, extraScopes, telemetry: TELEMETRY })
-        .then(() => {
-          this.spToken = accessToken.value || accessTokenExtra.value;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      //TODO - delete below
+      this.spToken = 'abc';
+      return null
+      //TODO - uncomment below
+      // return login({ scopes, extraScopes, telemetry: TELEMETRY })
+      //   .then(() => {
+      //     this.spToken = accessToken.value || accessTokenExtra.value;
+      //   })
+      //   .catch((error) => {
+      //     throw error
+      //   });
     };
   }
 
