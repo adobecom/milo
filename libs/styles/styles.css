@@ -240,15 +240,15 @@
   --sn-drop-shadow-blur-400: 16px; /* NARRATIVE */
 
   /* Elevation L1 (emphasized) */
-  --s2-drop-shadow-emphasized-default-x: var(--sn-drop-shadow-x);
+  --sn-drop-shadow-emphasized-default-x: var(--sn-drop-shadow-x);
   --s2-drop-shadow-emphasized-default-y: var(--s2-drop-shadow-y-100);
   --s2-drop-shadow-emphasized-default-blur: var(--s2-drop-shadow-blur-100);
   --s2-drop-shadow-emphasized-default-color: var(--s2-drop-shadow-color-100);
   /* Elevation L2 (elevated) */
-  --s2-drop-shadow-elevated-default-x: var(--sn-drop-shadow-x);
-  --s2-drop-shadow-elevated-default-y: var(--s2-drop-shadow-y-100);
-  --s2-drop-shadow-elevated-default-blur: var(--s2-drop-shadow-blur-100);
-  --s2-drop-shadow-elevated-default-color: var(--s2-drop-shadow-color-100);
+  --sn-drop-shadow-elevated-x: var(--sn-drop-shadow-x);
+  --s2-drop-shadow-elevated-y: var(--s2-drop-shadow-y-200);
+  --s2-drop-shadow-elevated-blur: var(--s2-drop-shadow-blur-200);
+  --s2-drop-shadow-elevated-color: var(--s2-drop-shadow-color-200);
   /* Elevation L3 */
   --sn-drop-shadow-level3-default-x: var(--sn-drop-shadow-x);/* NARRATIVE */  
   --sn-drop-shadow-level3-default-y: var(--s2-drop-shadow-y-300); /* NARRATIVE */
@@ -370,13 +370,13 @@
   --spacing-xl: var(--s2-spacing-600, 48px); /* 40px */
   --spacing-xxl: var(--s2-spacing-700, 56px); /* 48px */
   --spacing-xxxl: var(--s2-spacing-800, 80px); /* 64px */
-  --spacing-xxxxl: var(--s2-spacing-900); /* 80px new */ 
+  --spacing-xxxxl: var(--s2-spacing-900);
 
   @media (min-width: 1280px) { /* Desktop */
-    --spacing-xl: var(--s2-spacing-700, 48px);  /* 48px */
+    --spacing-xl: var(--s2-spacing-700, 48px);
     --spacing-xxl: var(--s2-spacing-800, 56px); /* 64px */
-    --spacing-xxxl: var(--s2-spacing-900, 80px); /* 80px */
-    --spacing-xxxxl: var(--s2-spacing-1100, 104px); /* 104px */
+    --spacing-xxxl: var(--s2-spacing-900, 80px);
+    --spacing-xxxxl: var(--sn-spacing-1100, 104px);
   }
 
   /* Static Spacing (milo original) */
@@ -400,9 +400,9 @@
   --type-heading-m-lh: var(--type-heading-lh, 25px);
   --type-heading-s-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-600, 18px)); 
   --type-heading-s-lh: var(--type-heading-lh, 22.5px);
-  --type-heading-xs-size: calc(var(--font-size-multiplier, 1) * 16); /* original not in S2 */
+  --type-heading-xs-size: calc(var(--font-size-multiplier, 1) * 16px); /* original not in S2 */
   --type-heading-xs-lh: 1.25;
-  --type-heading-xxs-size: calc(var(--font-size-multiplier, 1) * 14); /* original not in S2 */
+  --type-heading-xxs-size: calc(var(--font-size-multiplier, 1) * 14px); /* original not in S2 */
   --type-heading-xxs-lh: 1.125;
 
   @media (min-width: 768px) { /* Tablet */
@@ -826,7 +826,7 @@ svg.icon-milo, img.icon-milo {
 
 .xxl-button .con-button, 
 .con-button.button-xxl { 
-  --xxl-button-height: 56;
+  --xxl-button-height: 56px;
 
   font-size: var(--s2-font-size-400);
   height: var(--xxl-button-height);
@@ -836,12 +836,12 @@ svg.icon-milo, img.icon-milo {
 
 .xxl-button-mobile .con-button, /* S2 only */
 .con-button.button-xxl { 
-  --xxl-button-height: 56;
+  --xxl-button-height: 64px;
 
   font-size: var(--s2-font-size-400);
   height: var(--xxl-button-height);
   padding: calc((var(--xxl-button-height) - var(--s2-font-size-400)) / 2) 20px;
-  min-width: 126px;
+  min-width: 135px;
 }
 
 /** Button Types **/
@@ -926,7 +926,7 @@ svg.icon-milo, img.icon-milo {
 .con-button.secondary-black-button {
   background-color: transparent;
   border: 2px solid var(--s2-gray-800);
-  color: var(--s2-transparent-black-400)
+  color: var(--s2-transparent-black-400);
 }
 
 .con-button.secondary-black-button:hover, 
@@ -1007,12 +1007,12 @@ svg.icon-milo, img.icon-milo {
   cursor: default;
 }
 
-span.icon.margin-right { margin-right: 8px; }
-span.icon.margin-left { margin-left: 8px; }
-span.icon.margin-inline-end { margin-inline-end: 8px; }
+span.icon.margin-right { margin-right: var(--s2-spacing-100); }
+span.icon.margin-left { margin-left: var(--s2-spacing-100); }
+span.icon.margin-inline-end { margin-inline-end: var(--s2-spacing-100); }
 
 .button-l .con-button span.icon.margin-left,
-.con-button.button-l span.icon.margin-left { margin-left: 12px; }
+.con-button.button-l span.icon.margin-left { margin-left: var(--s2-spacing-200); }
 
 .button-xl .con-button span.icon.margin-left,
 .con-button.button-xl span.icon.margin-left { margin-left: 14px; }
