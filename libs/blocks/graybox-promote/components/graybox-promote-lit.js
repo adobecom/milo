@@ -56,10 +56,6 @@ const getAemInfo = () => {
 
 const getProjectInfo = async (referrer) => {
   const url = new URL(referrer);
-  //TODO - delete line below
-  await getSharePointDetails(url.origin)
-  //
-
   const sheet = await getJson(
     `${url.origin}${url.pathname}?sheet=settings`,
     'Failed to fetch project info'
@@ -110,30 +106,41 @@ const getSharepointDriveId = async (ref, repo, owner) => {
   return getSheetValue(sheet.data, 'prod.sharepoint.driveId');
 }
 
-const getSharePointDetails = async (hlxOrigin) => {
-  const { sharepoint } = await getServiceConfig(hlxOrigin);
-  const spSiteHostname = sharepoint.site.split(',')[0].split('/').pop();
+const getRootFolders = async (url) => {
+  const { sharepoint } = await getServiceConfig(url.origin);
   return {
-    origin: `https://${spSiteHostname}`,
-    siteId: sharepoint.siteId,
-    site: sharepoint.site,
-    driveId: sharepoint.driveId ? `drives/${sharepoint.driveId}` : 'drive',
-  };
+    root: `/${sharepoint.rootMapping}`,
+    gbRoot: `/${sharepoint.rootMapping}-graybox`,
+  }
 }
 
-const getProjectExcelPath = (referrer) => {
-  const url = new URL(referrer);
-  return url.pathname.replace('.json', '.xlsx');
-};
+const getProjectExcelPath = (url) => url.pathname.replace('.json', '.xlsx');
 
 class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value;
   constructor() {
     super();
 
+    this.spLogin = async () => {
+      const scopes = ['files.readwrite', 'sites.readwrite.all'];
+      const extraScopes = [`${origin}/.default`];
+      //TODO - delete below
+      // this.spToken = 'abc';
+      // return null
+      //TODO - uncomment below
+      return login({ scopes, extraScopes, telemetry: TELEMETRY })
+        .then(() => {
+          this.spToken = accessToken.value || accessTokenExtra.value;
+        })
+        .catch((error) => {
+          throw error
+        });
+    };
+
     this.getValuesTask = new Task(this, {
       task: async () => {
         const { ref, repo, owner, referrer } = getAemInfo();
+        const url = new URL(referrer);
         const { experienceName, grayboxIoEnv } = await getProjectInfo(referrer);
         const {
           promoteDraftsOnly,
@@ -141,6 +148,7 @@ class GrayboxPromote extends LitElement {
           promoteUrl,
           promoteIgnorePaths,
         } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
+        const rootFolders = await getRootFolders(url)
         if (!enablePromote) {
           throw new Error(
             'sharepoint.site.enablePromote is not enabled in graybox config'
@@ -161,7 +169,8 @@ class GrayboxPromote extends LitElement {
                 repo,
                 ref,
                 owner,
-                referrer,
+                rootFolders,
+                url
               })}"
           >
             Promote
@@ -196,13 +205,14 @@ class GrayboxPromote extends LitElement {
         repo,
         ref,
         owner,
-        referrer,
+        rootFolders,
+        url
       }) => {
         try {
           const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&
-            projectExcelPath=${getProjectExcelPath(referrer)}
-            &rootFolder=/${repo}
-            &gbRootFolder=/${repo}-graybox
+            projectExcelPath=${getProjectExcelPath(url)}
+            &rootFolder=${rootFolders.root}
+            &gbRootFolder=${rootFolders.gbRoot}
             &experienceName=${experienceName}
             &adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${repo}&owner=${owner}`}
             &draftsOnly=${promoteDraftsOnly}
@@ -221,22 +231,6 @@ class GrayboxPromote extends LitElement {
       },
       autoRun: false,
     });
-
-    this.spLogin = async () => {
-      const scopes = ['files.readwrite', 'sites.readwrite.all'];
-      const extraScopes = [`${origin}/.default`];
-      //TODO - delete below
-      // this.spToken = 'abc';
-      // return null
-      //TODO - uncomment below
-      return login({ scopes, extraScopes, telemetry: TELEMETRY })
-        .then(() => {
-          this.spToken = accessToken.value || accessTokenExtra.value;
-        })
-        .catch((error) => {
-          throw error
-        });
-    };
   }
 
   render() {
