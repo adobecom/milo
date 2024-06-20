@@ -217,7 +217,6 @@
 [data-pep-dismissal-tooltip]::before {
   content: '';
   z-index: 2;
-  background-color: #3B63FB;
   width: 0.44rem;
   height: 0.44rem;
   border-radius: 0.05rem;
