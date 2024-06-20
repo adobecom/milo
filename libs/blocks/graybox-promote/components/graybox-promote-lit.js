@@ -2,7 +2,11 @@ import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { Task } from '../../../deps/lit-task.min.js';
 import login from '../../../tools/sharepoint/login.js';
 import sharepointLogin from '../../../tools/sharepoint/login.js';
-import { accessToken, accessTokenExtra, account } from '../../../tools/sharepoint/state.js';
+import {
+  accessToken,
+  accessTokenExtra,
+  account,
+} from '../../../tools/sharepoint/state.js';
 import { setup } from '../../version-history/index.js';
 
 const KEYS = {
@@ -18,7 +22,7 @@ const KEYS = {
       STAGE: 'stage.graybox.promote.url',
       PROD: 'prod.graybox.promote.url',
     },
-    PROMOTE_IGNORE_PATHS: 'PromoteIgnorePaths'
+    PROMOTE_IGNORE_PATHS: 'PromoteIgnorePaths',
   },
 };
 
@@ -39,8 +43,8 @@ async function getJson(url, errMsg = `Failed to fetch ${url}`) {
   return sheet;
 }
 
-const getSheetValue = (data, key) => data
-  ?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
+const getSheetValue = (data, key) =>
+  data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
 
 function getAemInfo() {
   const search = new URLSearchParams(window.location.search);
@@ -56,10 +60,13 @@ async function getProjectInfo(referrer) {
   const url = new URL(referrer);
   const sheet = await getJson(
     `${url.origin}${url.pathname}?sheet=settings`,
-    'Failed to fetch project info',
+    'Failed to fetch project info'
   );
   return {
-    experienceName: getSheetValue(sheet.data, KEYS.PROJECT_INFO.EXPERIENCE_NAME),
+    experienceName: getSheetValue(
+      sheet.data,
+      KEYS.PROJECT_INFO.EXPERIENCE_NAME
+    ),
     grayboxIoEnv: getSheetValue(sheet.data, KEYS.PROJECT_INFO.GRAYBOX_IO_ENV),
   };
 }
@@ -67,27 +74,36 @@ async function getProjectInfo(referrer) {
 async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
   const sheet = await getJson(
     `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json`,
-    'Failed to fetch graybox config',
+    'Failed to fetch graybox config'
   );
 
   const ignorePathsSheet = await getJson(
     `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json?sheet=promoteignorepaths`,
-    'Failed to fetch graybox config',
+    'Failed to fetch graybox config'
   );
-  const grayboxData = sheet.graybox?.data
+  const grayboxData = sheet.graybox?.data;
 
   return {
-    promoteDraftsOnly: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_DRAFTS_ONLY)?.toLowerCase() === 'true',
+    promoteDraftsOnly:
+      getSheetValue(
+        grayboxData,
+        KEYS.CONFIG.PROMOTE_DRAFTS_ONLY
+      )?.toLowerCase() === 'true',
     enablePromote: true, /// TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
-    promoteUrl: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]),
-    promoteIgnorePaths: ignorePathsSheet?.data?.map(item => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS]).join(',')
+    promoteUrl: getSheetValue(
+      grayboxData,
+      KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]
+    ),
+    promoteIgnorePaths: ignorePathsSheet?.data
+      ?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
+      .join(','),
   };
 }
 
 async function getSharepointDriveId(ref, repo, owner) {
   const sheet = await getJson(
     `https://${ref}--${repo}--${owner}.hlx.page/.milo/config.json?sheet=configs`,
-    'Failed to fetch milo config',
+    'Failed to fetch milo config'
   );
   return getSheetValue(sheet.data, 'prod.sharepoint.driveId');
 }
@@ -103,13 +119,13 @@ async function getSharePointDetails(hlxOrigin) {
   };
 }
 
-const getProjectExcelPath = (referrer) =>{
+const getProjectExcelPath = (referrer) => {
   const url = new URL(referrer);
   return url.pathname.replace('.json', '.xlsx');
-}
+};
 
 class GrayboxPromote extends LitElement {
-  spToken = accessToken.value || accessTokenExtra.value
+  spToken = accessToken.value || accessTokenExtra.value;
   constructor() {
     super();
 
@@ -121,66 +137,77 @@ class GrayboxPromote extends LitElement {
           promoteDraftsOnly,
           enablePromote,
           promoteUrl,
-          promoteIgnorePaths
+          promoteIgnorePaths,
         } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
         if (!enablePromote) {
-          throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
+          throw new Error(
+            'sharepoint.site.enablePromote is not enabled in graybox config'
+          );
         }
         const driveId = await getSharepointDriveId(ref, repo, owner);
         if (!this.spToken) {
-           //TODO - delete below after getting Azure permissions
-          return html`<button @click="${() => {
-            this.spToken = 'abc'
-            this.getValuesTask.run();
-          }}">Login</button>`;
+          //TODO - delete below after getting Azure permissions
+          return html`<button
+            @click="${() => {
+              this.spToken = 'abc';
+              this.getValuesTask.run();
+            }}"
+          >
+            Login
+          </button>`;
           // TODO - uncomment below after getting Azure permissions
           // return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
         } else {
-          return html`<button @click="${() => this.promoteTask.run({
-            experienceName, 
-            promoteUrl, 
-            promoteDraftsOnly,
-            promoteIgnorePaths,
-            driveId,
-            repo,
-            ref, 
-            owner,
-            referrer
-          })}">Promote</button>`;
+          return html`<button
+            @click="${() =>
+              this.promoteTask.run({
+                experienceName,
+                promoteUrl,
+                promoteDraftsOnly,
+                promoteIgnorePaths,
+                driveId,
+                repo,
+                ref,
+                owner,
+                referrer,
+              })}"
+          >
+            Promote
+          </button>`;
         }
       },
       args: () => [],
     });
-  
+
     this.getSpTokenTask = new Task(this, {
       task: async () => {
         const { ref, repo, owner } = getAemInfo();
-          return new Promise((resolve, reject) => {
-            this.spLogin(ref, repo, owner)
-              .then(() => {
-                this.getValuesTask.run();
-                resolve();
-              })
-              .catch(reject);
-          });
+        return new Promise((resolve, reject) => {
+          this.spLogin(ref, repo, owner)
+            .then(() => {
+              this.getValuesTask.run();
+              resolve();
+            })
+            .catch(reject);
+        });
       },
       args: () => [],
     });
-  
+
     this.promoteTask = new Task(this, {
       task: async ({
-        experienceName, 
-        promoteUrl, 
-        promoteDraftsOnly, 
+        experienceName,
+        promoteUrl,
+        promoteDraftsOnly,
         promoteIgnorePaths,
         driveId,
         repo,
-        ref, 
+        ref,
         owner,
-        referrer
-        }) => {
-          try{
-            const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&
+        referrer,
+      }) => {
+        try {
+          const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&
             projectExcelPath=${getProjectExcelPath(referrer)}
             &rootFolder=/${repo}
             &gbRootFolder=/${repo}-graybox
@@ -189,17 +216,20 @@ class GrayboxPromote extends LitElement {
             &draftsOnly=${promoteDraftsOnly}
             &promoteIgnorePaths=${promoteIgnorePaths}
             &driveId=${driveId}
-            &ignoreUserCheck=true`) //this should be set to false when finished developing
-    
-            return promote
-          }catch(e){
-            console.log(e)
+            &ignoreUserCheck=true`); //this should be set to false when finished developing
+
+          if (promote.status === 200) {
+            throw new Error('Could not promote. Please try again.');
+          } else {
+            return 'Successfully promoted';
           }
-     
+        } catch (e) {
+          console.log(e);
+        }
       },
       args: () => [],
     });
-  
+
     this.spLogin = () => {
       const scopes = ['files.readwrite', 'sites.readwrite.all'];
       const extraScopes = [`${origin}/.default`];
@@ -210,8 +240,7 @@ class GrayboxPromote extends LitElement {
         .catch((error) => {
           console.error(error);
         });
-    }
-
+    };
   }
 
   async connectedCallback() {
@@ -220,11 +249,23 @@ class GrayboxPromote extends LitElement {
   }
 
   render() {
-    return this.getValuesTask.render({
-        pending: () => html`<p>Loading...</p>`,
-        complete: i => i,
-        error: (err) => html`<p>${err.message}</p>`,
-      })
+    return html`
+      ${this.getValuesTask.render({
+        pending: () => `<p>Loading...</p>`,
+        complete: (i) => i,
+        error: (err) => `<p>${err.message}</p>`,
+      })}
+      ${this.getSpTokenTask.render({
+        pending: () => `<p>Loading sharepoint token...</p>`,
+        complete: () => `<p>Complete sharepoint token</p>`,
+        error: (err) => `<p>Error getting sharepoint token: ${err.message}</p>`,
+      })}
+      ${this.promoteTask.render({
+        pending: () => `<p>Loading promote...</p>`,
+        complete: (i) => i,
+        error: (err) => `<p>${err}</p>`,
+      })}
+    `;
   }
 }
 
