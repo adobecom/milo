@@ -11,7 +11,9 @@ import { getConfig } from '../../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
-const styleSheet = await getSheet(`${base}/blocks/graybox-promote/graybox-promote.css`);
+const styleSheet = await getSheet(
+  `${base}/blocks/graybox-promote/graybox-promote.css`
+);
 
 const KEYS = {
   PROJECT_INFO: {
@@ -45,7 +47,7 @@ const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
   }
   const sheet = await res.json();
   return sheet;
-}
+};
 
 const getSheetValue = (data, key) =>
   data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
@@ -58,7 +60,7 @@ const getAemInfo = () => {
     owner: search.get('owner'),
     referrer: search.get('referrer'),
   };
-}
+};
 
 const getProjectInfo = async (referrer) => {
   const url = new URL(referrer);
@@ -73,7 +75,7 @@ const getProjectInfo = async (referrer) => {
     ),
     grayboxIoEnv: getSheetValue(sheet.data, KEYS.PROJECT_INFO.GRAYBOX_IO_ENV),
   };
-}
+};
 
 const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
   const sheet = await getJson(
@@ -102,7 +104,7 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
       ?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
       .join(','),
   };
-}
+};
 
 const getSharepointDriveId = async (ref, repo, owner) => {
   const sheet = await getJson(
@@ -110,15 +112,15 @@ const getSharepointDriveId = async (ref, repo, owner) => {
     'Failed to fetch milo config'
   );
   return getSheetValue(sheet.data, 'prod.sharepoint.driveId');
-}
+};
 
 const getRootFolders = async (url) => {
   const { sharepoint } = await getServiceConfig(url.origin);
   return {
     root: `/${sharepoint.rootMapping}`,
     gbRoot: `/${sharepoint.rootMapping}-graybox`,
-  }
-}
+  };
+};
 
 const getProjectExcelPath = (url) => url.pathname.replace('.json', '.xlsx');
 
@@ -145,7 +147,7 @@ class GrayboxPromote extends LitElement {
           this.spToken = accessToken.value || accessTokenExtra.value;
         })
         .catch((error) => {
-          throw error
+          throw error;
         });
     };
 
@@ -160,7 +162,7 @@ class GrayboxPromote extends LitElement {
           promoteUrl,
           promoteIgnorePaths,
         } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
-        const rootFolders = await getRootFolders(url)
+        const rootFolders = await getRootFolders(url);
         if (!enablePromote) {
           throw new Error(
             'sharepoint.site.enablePromote is not enabled in graybox config'
@@ -169,27 +171,30 @@ class GrayboxPromote extends LitElement {
         const driveId = await getSharepointDriveId(ref, repo, owner);
         if (!this.spToken) {
           return html`
-          <p>The login popup was blocked.<br/>Please use the button below.</p>
-          <button @click="${() => this.getSpTokenTask.run()}">Login</button>
+            <p>
+              The login popup was blocked.<br />Please use the button below.
+            </p>
+            <button @click="${() => this.getSpTokenTask.run()}">Login</button>
           `;
         } else {
-          return html`<button
-            @click="${() =>
-              this.promoteTask.run({
-                experienceName,
-                promoteUrl,
-                promoteDraftsOnly,
-                promoteIgnorePaths,
-                driveId,
-                repo,
-                ref,
-                owner,
-                rootFolders,
-                url
-              })}"
-          >
-            Promote
-          </button>`;
+          return html` <p>Are you sure you want to promote?</p>
+            <button
+              @click="${() =>
+                this.promoteTask.run({
+                  experienceName,
+                  promoteUrl,
+                  promoteDraftsOnly,
+                  promoteIgnorePaths,
+                  driveId,
+                  repo,
+                  ref,
+                  owner,
+                  rootFolders,
+                  url,
+                })}"
+            >
+              Promote
+            </button>`;
         }
       },
       args: () => [],
@@ -207,7 +212,7 @@ class GrayboxPromote extends LitElement {
             .catch(reject);
         });
       },
-      autoRun: false
+      autoRun: false,
     });
 
     this.promoteTask = new Task(this, {
@@ -221,7 +226,7 @@ class GrayboxPromote extends LitElement {
         ref,
         owner,
         rootFolders,
-        url
+        url,
       }) => {
         try {
           const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&
@@ -250,22 +255,23 @@ class GrayboxPromote extends LitElement {
 
   render() {
     return html`
-    <div class="wrapper">
-      ${this.getValuesTask.render({
-        pending: () => html`<p>Loading...</p>`,
-        complete: (i) => i,
-        error: (err) => html`<p>${err.message}</p>`,
-      })}
-      ${this.getSpTokenTask.render({
-        pending: () => html`<p>Loading sharepoint token...</p>`,
-        complete: () => {},
-        error: (err) => html`<p>Error getting sharepoint token: ${err.message}</p>`,
-      })}
-      ${this.promoteTask.render({
-        pending: () => html`<p>Loading promote...</p>`,
-        complete: (i) => i,
-        error: (err) => html`<p>${err}</p>`,
-      })}
+      <div class="wrapper">
+        ${this.getSpTokenTask.render({
+          pending: () => html`<p>Logging in to sharepoint...</p>`,
+          complete: () => {},
+          error: (err) =>
+            html`<p>Error getting sharepoint token: ${err.message}</p>`,
+        })}
+        ${this.promoteTask.render({
+          pending: () => html`<p>Promoting...</p>`,
+          complete: (i) => i,
+          error: (err) => html`<p>${err}</p>`,
+        })}
+        ${this.getValuesTask.render({
+          pending: () => html`<p>Loading...</p>`,
+          complete: (i) => i,
+          error: (err) => html`<p>${err.message}</p>`,
+        })}
       </div>
     `;
   }
