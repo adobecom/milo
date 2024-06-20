@@ -245,19 +245,19 @@ class GrayboxPromote extends LitElement {
   render() {
     return html`
       ${this.getValuesTask.render({
-        pending: () => `<p>Loading...</p>`,
+        pending: () => html`<p>Loading...</p>`,
         complete: (i) => i,
-        error: (err) => `<p>${err.message}</p>`,
+        error: (err) => html`<p>${err.message}</p>`,
       })}
       ${this.getSpTokenTask.render({
-        pending: () => `<p>Loading sharepoint token...</p>`,
+        pending: () => html`<p>Loading sharepoint token...</p>`,
         complete: () => {},
-        error: (err) => `<p>Error getting sharepoint token: ${err.message}</p>`,
+        error: (err) => html`<p>Error getting sharepoint token: ${err.message}</p>`,
       })}
       ${this.promoteTask.render({
-        pending: () => `<p>Loading promote...</p>`,
+        pending: () => html`<p>Loading promote...</p>`,
         complete: (i) => i,
-        error: (err) => `<p>${err}</p>`,
+        error: (err) => html`<p>${err}</p>`,
       })}
     `;
   }
