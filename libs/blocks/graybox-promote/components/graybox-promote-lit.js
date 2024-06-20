@@ -220,7 +220,7 @@ class GrayboxPromote extends LitElement {
       autoRun: false,
     });
 
-    this.spLogin = () => {
+    this.spLogin = async () => {
       const scopes = ['files.readwrite', 'sites.readwrite.all'];
       const extraScopes = [`${origin}/.default`];
       //TODO - delete below
