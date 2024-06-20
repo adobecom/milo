@@ -1,9 +1,10 @@
 .editorial-card {
   border: 1px solid var(--color-gray-300);
-  max-width: 360px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 300px;
+  max-width: 379px;
 }
 
 .dark .editorial-card,
@@ -18,10 +19,17 @@
 .editorial-card.grow { transition: all .2s ease-in-out; }
 .editorial-card.grow:hover { transform: scale(1.02); }
 
+.editorial-card.static-links-copy .foreground a:not([class*="button"]) {
+  color: inherit;
+  text-decoration: underline;
+}
+
 [class*=-up] .editorial-card {
   max-width: none;
   width: 100%;
 }
+
+.flex-grid .editorial-card {  width: 100%; }
 
 .editorial-card .media-area picture,
 .editorial-card .foreground picture {
@@ -56,12 +64,21 @@
   row-gap: var(--spacing-xxs);
 }
 
+.editorial-card.underline-links-footer .footer a:not([class*="button"]) {
+  text-decoration: underline;
+}
+
 .editorial-card.no-bg .foreground {
   padding: var(--spacing-s) 0;
 }
 
 .editorial-card.no-bg.no-media > .foreground {
   padding-top: 0;
+}
+
+.editorial-card.no-bg .footer {
+  padding-right: 0;
+  padding-left: 0;
 }
 
 .editorial-card .foreground > div {
