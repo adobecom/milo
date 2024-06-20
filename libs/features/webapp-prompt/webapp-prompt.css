@@ -203,10 +203,8 @@
   word-break: break-word;
   border-radius: 7px;
 
-  padding-inline-start: 0.5625rem;
-  padding-inline-end: 0.5625rem;
-  padding-block-start: 0.25rem;
-  padding-block-end: 0.3125rem;
+  padding-inline: 0.5625rem;
+  padding-block: 0.25rem 0.3125rem;
 
   font-family: 'Adobe Clean';
   font-size: 0.75rem;
