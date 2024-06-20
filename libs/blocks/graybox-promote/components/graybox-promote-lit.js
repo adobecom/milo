@@ -57,7 +57,7 @@ const getAemInfo = () => {
 const getProjectInfo = async (referrer) => {
   const url = new URL(referrer);
   //TODO - delete line below
-  await getSharePointDetails(url)
+  await getSharePointDetails(url.origin)
   //
 
   const sheet = await getJson(
