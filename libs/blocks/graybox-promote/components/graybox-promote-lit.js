@@ -124,17 +124,12 @@ class GrayboxPromote extends LitElement {
     task: async () => {
       const { ref, repo, owner } = getAemInfo();
         return new Promise((resolve, reject) => {
-          //TODO - delete below after getting Azure permissions
-          const j = () => {this.spToken = 'abc'};
-          j()
-          resolve();
-          // TODO - uncomment below after getting Azure permissions
-          // this.spLogin(ref, repo, owner)
-          //   .then(() => {
-          //     this.getValuesTask.run();
-          //     resolve();
-          //   })
-          //   .catch(reject);
+          this.spLogin(ref, repo, owner)
+            .then(() => {
+              this.getValuesTask.run();
+              resolve();
+            })
+            .catch(reject);
         });
     },
     args: () => [],
