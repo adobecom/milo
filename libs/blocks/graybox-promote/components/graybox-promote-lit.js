@@ -74,7 +74,7 @@ async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
     `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json?sheet=promoteignorepaths`,
     'Failed to fetch graybox config',
   );
-  const grayboxData = {...sheet.graybox?.data, ...ignorePathsSheet.graybox.data};
+  const grayboxData = {...sheet.graybox?.data, ...ignorePathsSheet.graybox?.data};
 
   return {
     promoteDraftsOnly: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_DRAFTS_ONLY)?.toLowerCase() === 'true',
