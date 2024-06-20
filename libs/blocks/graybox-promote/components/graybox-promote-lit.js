@@ -176,7 +176,7 @@ class GrayboxPromote extends LitElement {
           </button>`;
         }
       },
-      args: () => [],
+      // args: () => [],
     });
 
     this.getSpTokenTask = new Task(this, {
@@ -191,7 +191,7 @@ class GrayboxPromote extends LitElement {
             .catch(reject);
         });
       },
-      args: () => [],
+      // args: () => [],
     });
 
     this.promoteTask = new Task(this, {
@@ -227,7 +227,7 @@ class GrayboxPromote extends LitElement {
           console.log(e);
         }
       },
-      args: () => [],
+      // args: () => [],
     });
 
     this.spLogin = () => {
