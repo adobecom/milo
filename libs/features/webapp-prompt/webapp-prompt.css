@@ -195,7 +195,6 @@
   content: attr(data-pep-dismissal-tooltip);
   display: inline-flex;
   z-index: 3;
-  background-color: #3B63FB;
   height: fit-content;
   width: 8.875rem;
   top: 125%;
