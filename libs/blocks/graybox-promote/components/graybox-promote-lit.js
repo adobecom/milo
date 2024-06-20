@@ -101,25 +101,6 @@ class GrayboxPromote extends LitElement {
     this.spToken = accessToken.value || accessTokenExtra.value
   }
 
-  getSpTokenTask = new Task(this, {
-    task: async () => {
-      const { ref, repo, owner } = getAemInfo();
-        return new Promise((resolve, reject) => {
-          //TODO - delete below after getting Azure permissions
-          this.spToken = 'abc';
-          resolve();
-          // TODO - uncomment below after getting Azure permissions
-          // this.spLogin(ref, repo, owner)
-          //   .then(() => {
-          //     this.getValuesTask.run();
-          //     resolve();
-          //   })
-          //   .catch(reject);
-        });
-    },
-    args: () => [],
-  });
-
   getValuesTask = new Task(this, {
     task: async () => {
       const { ref, repo, owner, referrer } = getAemInfo();
@@ -138,6 +119,25 @@ class GrayboxPromote extends LitElement {
       } else {
         return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
       }
+    },
+    args: () => [],
+  });
+
+  getSpTokenTask = new Task(this, {
+    task: async () => {
+      const { ref, repo, owner } = getAemInfo();
+        return new Promise((resolve, reject) => {
+          //TODO - delete below after getting Azure permissions
+          this.spToken = 'abc';
+          resolve();
+          // TODO - uncomment below after getting Azure permissions
+          // this.spLogin(ref, repo, owner)
+          //   .then(() => {
+          //     this.getValuesTask.run();
+          //     resolve();
+          //   })
+          //   .catch(reject);
+        });
     },
     args: () => [],
   });
