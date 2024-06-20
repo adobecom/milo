@@ -18,6 +18,7 @@ const KEYS = {
       STAGE: 'stage.graybox.promote.url',
       PROD: 'prod.graybox.promote.url',
     },
+    PROMOTE_IGNORE_PATHS: 'promoteIgnorePaths'
   },
 };
 
@@ -68,11 +69,18 @@ async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
     `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json`,
     'Failed to fetch graybox config',
   );
-  const grayboxData = sheet.graybox?.data;
+
+  const ignorePathsSheet = await getJson(
+    `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json?sheet=promoteignorepaths`,
+    'Failed to fetch graybox config',
+  );
+  const grayboxData = {...sheet.graybox?.data, ...ignorePathsSheet.graybox.data};
+
   return {
     promoteDraftsOnly: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_DRAFTS_ONLY)?.toLowerCase() === 'true',
     enablePromote: true, /// TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
     promoteUrl: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]),
+    promoteIgnorePaths: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_IGNORE_PATHS)?.toLowerCase() === 'true',
   };
 }
 
@@ -95,6 +103,8 @@ async function getSharePointDetails(hlxOrigin) {
   };
 }
 
+const getProjectExcelPath = () => url.pathname.replace('.json', '.xlsx');
+
 class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value
   constructor() {
@@ -108,6 +118,7 @@ class GrayboxPromote extends LitElement {
           promoteDraftsOnly,
           enablePromote,
           promoteUrl,
+          promoteIgnorePaths
         } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
         if (!enablePromote) {
           throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
@@ -122,7 +133,14 @@ class GrayboxPromote extends LitElement {
           // TODO - uncomment below after getting Azure permissions
           // return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
         } else {
-          return html`<button @click="${() => this.promoteTask.run({experienceName, grayboxIoEnv, promoteUrl})}">Promote</button>`;
+          return html`<button @click="${() => this.promoteTask.run({
+            experienceName, 
+            promoteUrl, 
+            promoteDraftsOnly,
+            promoteIgnorePaths,
+            driveId,
+            repo
+          })}">Promote</button>`;
         }
       },
       args: () => [],
@@ -144,24 +162,27 @@ class GrayboxPromote extends LitElement {
     });
   
     this.promoteTask = new Task(this, {
-      task: async ({experienceName, grayboxIoEnv, promoteUrl}) => {
-        const projectExelPath = '';
-        const rootFolder = '';
-        const gbRootFolder = '';
+      task: async ({
+        experienceName, 
+        promoteUrl, 
+        promoteDraftsOnly, 
+        promoteIgnorePaths,
+        driveId,
+        repo}) => {
         const adminPageUri = '';
-        const draftsOnly = '';
-        const promoteIgnorePaths = '';
-        const driveId = '';
-        await fetch(`${promoteUrl}?spToken=${this.spToken}&
-        projectExcelPath=${projectExelPath}
-        &rootFolder=${rootFolder}
-        &gbRootFolder=${gbRootFolder}
+
+       const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&
+        projectExcelPath=${getProjectExcelPath()}
+        &rootFolder=/${repo}
+        &gbRootFolder=/${repo}-graybox
         &experienceName=${experienceName}
         &adminPageUri=${adminPageUri}
-        &draftsOnly=${draftsOnly}
+        &draftsOnly=${promoteDraftsOnly}
         &promoteIgnorePaths=${promoteIgnorePaths}
         &driveId=${driveId}
-        &ignoreUserCheck=true`)
+        &ignoreUserCheck=true`) //this should be set to false when finished developing
+
+        return promote
       },
       args: () => [],
     });
