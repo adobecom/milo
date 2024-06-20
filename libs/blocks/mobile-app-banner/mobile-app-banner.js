@@ -14,7 +14,7 @@ async function getKey(product) {
 }
 
 /* eslint-disable */
-function branchInit(key) {
+function branchInit(key, ecid) {
   let initValue = false;
   function initBranch() {
     if (initValue) {
@@ -49,6 +49,9 @@ function branchInit(key) {
     );
     const privacyConsent = window.adobePrivacy?.hasUserProvidedConsent();
     branch.init(key, { tracking_disabled: !privacyConsent });
+    branch.setIdentity(ecid, function (err, data) {
+      console.log('identity set: ', data.Fa);
+    });
   }
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
     .forEach((event) => {
@@ -60,8 +63,18 @@ function branchInit(key) {
 export default async function init(el) {
   const header = document.querySelector('.global-navigation');
   if (!header) return;
-  const classListArray = Array.from(el.classList);
-  const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
-  const key = await getKey(product);
-  if (key) branchInit(key);
+  if (typeof alloy !== 'undefined') {
+    alloy("getIdentity").then(async function(result) {
+        const ecid = result.identity.ECID;
+        const classListArray = Array.from(el.classList);
+        const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
+        const key = await getKey(product);
+        // const key = 'key_test_eaNdoH8nTxeZXfOsgkELrjgpFrhm4q2m';
+        console.log("ECID: ", ecid);
+        if (key) branchInit(key, ecid);
+    });
+  }
 }
+
+/*1. what to do in case ecid is not there?
+2. if alloy is not there --  handle case */

@@ -55,11 +55,14 @@ export default function init(el) {
     if (typeof alloy !== 'undefined') {
       alloy("getIdentity").then(function(result) {
           const ecidVal = result.identity.ECID;
+          console.log(ecidVal);
           getQuickLink(ecidVal).then(response => {
             const url = JSON.parse(response).url;
             console.log('quick link generated: ', url);
             button.href = url;
           });
+          // method 2
+          // button.href = `https://lightroom.test-app.link/U26PImxk8Jb?ecid=${ecidVal}`
       });
     }
   }
