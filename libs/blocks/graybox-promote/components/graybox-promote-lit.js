@@ -251,7 +251,7 @@ class GrayboxPromote extends LitElement {
       })}
       ${this.getSpTokenTask.render({
         pending: () => `<p>Loading sharepoint token...</p>`,
-        complete: () => `<p>Complete sharepoint token</p>`,
+        complete: () => {},
         error: (err) => `<p>Error getting sharepoint token: ${err.message}</p>`,
       })}
       ${this.promoteTask.render({
