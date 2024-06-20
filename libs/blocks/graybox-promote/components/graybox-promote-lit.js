@@ -129,7 +129,7 @@ class GrayboxPromote extends LitElement {
         throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
       }
       const driveId = await getSharepointDriveId(ref, repo, owner);
-      if (!this.spToken) {
+      if (!account.value.username) {
         return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
       } else {
         return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
