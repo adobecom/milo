@@ -49,12 +49,8 @@ const showTooltip = (
   time = CONFIG.tooltipDuration,
 ) => {
   element.setAttribute('data-pep-dismissal-tooltip', message);
-  const cleanup = () => {
-    element.removeAttribute('data-pep-dismissal-tooltip');
-  };
-  const timeoutID = setTimeout(() => {
-    cleanup();
-  }, time);
+  const cleanup = () => element.removeAttribute('data-pep-dismissal-tooltip');
+  const timeoutID = setTimeout(cleanup, time);
   element.addEventListener('click', () => {
     cleanup();
     clearTimeout(timeoutID);
