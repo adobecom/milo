@@ -139,7 +139,9 @@ class GrayboxPromote extends LitElement {
             promoteDraftsOnly,
             promoteIgnorePaths,
             driveId,
-            repo
+            repo,
+            ref, 
+            owner
           })}">Promote</button>`;
         }
       },
@@ -168,21 +170,27 @@ class GrayboxPromote extends LitElement {
         promoteDraftsOnly, 
         promoteIgnorePaths,
         driveId,
-        repo}) => {
-        const adminPageUri = '';
-
-       const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&
-        projectExcelPath=${getProjectExcelPath()}
-        &rootFolder=/${repo}
-        &gbRootFolder=/${repo}-graybox
-        &experienceName=${experienceName}
-        &adminPageUri=${adminPageUri}
-        &draftsOnly=${promoteDraftsOnly}
-        &promoteIgnorePaths=${promoteIgnorePaths}
-        &driveId=${driveId}
-        &ignoreUserCheck=true`) //this should be set to false when finished developing
-
-        return promote
+        repo,
+        ref, 
+        owner
+        }) => {
+          try{
+            const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&
+            projectExcelPath=${getProjectExcelPath()}
+            &rootFolder=/${repo}
+            &gbRootFolder=/${repo}-graybox
+            &experienceName=${experienceName}
+            &adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${repo}&owner=${owner}`}
+            &draftsOnly=${promoteDraftsOnly}
+            &promoteIgnorePaths=${promoteIgnorePaths}
+            &driveId=${driveId}
+            &ignoreUserCheck=true`) //this should be set to false when finished developing
+    
+            return promote
+          }catch(e){
+            console.log(e)
+          }
+     
       },
       args: () => [],
     });
