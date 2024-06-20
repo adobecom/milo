@@ -206,7 +206,7 @@
   padding-inline: 0.5625rem;
   padding-block: 0.25rem 0.3125rem;
 
-  font-family: 'Adobe Clean';
+  font-family: var(--body-font-family);
   font-size: 0.75rem;
   line-height: 0.9375rem;
   color: white;
