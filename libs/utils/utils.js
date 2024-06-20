@@ -35,6 +35,7 @@ const MILO_BLOCKS = [
   'global-footer',
   'global-navigation',
   'graybox',
+  'graybox-promote',
   'footer',
   'gnav',
   'hero-marquee',
