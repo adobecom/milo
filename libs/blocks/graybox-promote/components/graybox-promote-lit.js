@@ -143,7 +143,25 @@ class GrayboxPromote extends LitElement {
 
   promoteTask = new Task(this, {
     task: async (experienceName, grayboxIoEnv) => {
-      // Call the promote API
+      const promoteUrl = '';
+      const token = this.spToken;
+      const projectExelPath = '';
+      const rootFolder = '';
+      const gbRootFolder = '';
+      const experienceName = '';
+      const adminPageUri = '';
+      const draftsOnly = '';
+      const promoteIgnorePaths = '';
+      const driveId = '';
+      await fetch(`${promoteUrl}?spToken=${this.spToken}&
+      projectExcelPath=${projectExelPath}
+      &rootFolder=${rootFolder}
+      &experienceName=${experienceName}
+      &adminPageUri=${adminPageUri}
+      &draftsOnly=${draftsOnly}
+      &promoteIgnorePaths=${promoteIgnorePaths}
+      &driveId=${driveId}
+      &ignoreUserCheck=true`)
     },
     args: () => [],
   });
