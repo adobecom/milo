@@ -1,3 +1,4 @@
+import { getSheet } from '../../../../tools/utils/utils.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { Task } from '../../../deps/lit-task.min.js';
 import login from '../../../tools/sharepoint/login.js';
@@ -6,6 +7,11 @@ import {
   accessTokenExtra,
 } from '../../../tools/sharepoint/state.js';
 import getServiceConfig from '../../../utils/service-config.js';
+import { getConfig } from '../../../utils/utils.js';
+
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
+const styleSheet = await getSheet(`${base}/blocks/graybox-promote/graybox-promote.css`);
 
 const KEYS = {
   PROJECT_INFO: {
@@ -118,6 +124,12 @@ const getProjectExcelPath = (url) => url.pathname.replace('.json', '.xlsx');
 
 class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value;
+
+  async connectedCallback() {
+    super.connectedCallback();
+    this.renderRoot.adoptedStyleSheets = [styleSheet];
+  }
+  
   constructor() {
     super();
 
