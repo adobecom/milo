@@ -100,8 +100,7 @@ class GrayboxPromote extends LitElement {
   constructor() {
     super();
 
-    this.getValuesTask = new Task(this, {
-      task: async () => {
+    this.getValuesTask = new Task(this, async () => {
         const { ref, repo, owner, referrer } = getAemInfo();
         const { experienceName, grayboxIoEnv } = await getProjectInfo(referrer);
         const {
@@ -124,12 +123,9 @@ class GrayboxPromote extends LitElement {
         } else {
           return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
         }
-      },
-      args: () => [],
     });
   
-    this.getSpTokenTask = new Task(this, {
-      task: async () => {
+    this.getSpTokenTask = new Task(this, async () => {
         const { ref, repo, owner } = getAemInfo();
           return new Promise((resolve, reject) => {
             this.spLogin(ref, repo, owner)
@@ -139,12 +135,9 @@ class GrayboxPromote extends LitElement {
               })
               .catch(reject);
           });
-      },
-      args: () => [],
     });
   
-    this.promoteTask = new Task(this, {
-      task: async () => {
+    this.promoteTask = new Task(this,  async () => {
         const promoteUrl = '';
         const token = this.spToken;
         const projectExelPath = '';
@@ -164,8 +157,6 @@ class GrayboxPromote extends LitElement {
         &promoteIgnorePaths=${promoteIgnorePaths}
         &driveId=${driveId}
         &ignoreUserCheck=true`)
-      },
-      args: () => [],
     });
   
     this.spLogin = () => {
@@ -181,9 +172,6 @@ class GrayboxPromote extends LitElement {
     }
 
   }
-
-  
-
 
   // async connectedCallback() {
   //   super.connectedCallback();
