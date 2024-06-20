@@ -129,7 +129,7 @@ class GrayboxPromote extends LitElement {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styleSheet];
   }
-  
+
   constructor() {
     super();
 
@@ -168,7 +168,10 @@ class GrayboxPromote extends LitElement {
         }
         const driveId = await getSharepointDriveId(ref, repo, owner);
         if (!this.spToken) {
-          return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
+          return html`
+          <p>The login popup was blocked.<br/>Please use the button below.</p>
+          <button @click="${() => this.getSpTokenTask.run()}">Login</button>
+          `;
         } else {
           return html`<button
             @click="${() =>
