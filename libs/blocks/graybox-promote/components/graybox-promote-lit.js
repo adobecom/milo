@@ -98,19 +98,23 @@ async function getSharePointDetails(hlxOrigin) {
 class GrayboxPromote extends LitElement {
   constructor() {
     super();
-    this.spToken = accessToken || accessTokenExtra;
+    this.spToken = accessToken.value || accessTokenExtra.value
   }
 
   getSpTokenTask = new Task(this, {
     task: async () => {
       const { ref, repo, owner } = getAemInfo();
         return new Promise((resolve, reject) => {
-          this.spLogin(ref, repo, owner)
-            .then(() => {
-              this.getValuesTask.run();
-              resolve();
-            })
-            .catch(reject);
+          //TODO - delete below after getting Azure permissions
+          this.spToken = 'abc';
+          resolve();
+          // TODO - uncomment below after getting Azure permissions
+          // this.spLogin(ref, repo, owner)
+          //   .then(() => {
+          //     this.getValuesTask.run();
+          //     resolve();
+          //   })
+          //   .catch(reject);
         });
     },
     args: () => [],
@@ -129,7 +133,7 @@ class GrayboxPromote extends LitElement {
         throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
       }
       const driveId = await getSharepointDriveId(ref, repo, owner);
-      if (!account.value.username) {
+      if (spToken) {
         return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
       } else {
         return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
@@ -150,7 +154,7 @@ class GrayboxPromote extends LitElement {
     const extraScopes = [`${origin}/.default`];
     return login({ scopes, extraScopes, telemetry: TELEMETRY })
       .then(() => {
-        this.spToken = accessToken || accessTokenExtra;
+        this.spToken = accessToken.value || accessTokenExtra.value;
       })
       .catch((error) => {
         console.error(error);
