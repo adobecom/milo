@@ -103,7 +103,10 @@ async function getSharePointDetails(hlxOrigin) {
   };
 }
 
-const getProjectExcelPath = () => url.pathname.replace('.json', '.xlsx');
+const getProjectExcelPath = () =>{
+  const url = new URL(referrer);
+  return url.pathname.replace('.json', '.xlsx');
+}
 
 class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value
