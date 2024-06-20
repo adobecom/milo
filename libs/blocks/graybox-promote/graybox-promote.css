@@ -26,7 +26,7 @@ button {
   clip-path: polygon(0% 0%, 12px 0%, calc(100% - 12px) 0%, 100% 12px, 100% calc(100% - 12px), 100% 100%, 0% 100%, 0% 100%);
 }
 
-.graybox-promote{
+graybox-promote {
   display: flex;
   justify-content: center;
   align-items: center;
