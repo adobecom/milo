@@ -125,7 +125,8 @@ class GrayboxPromote extends LitElement {
       const { ref, repo, owner } = getAemInfo();
         return new Promise((resolve, reject) => {
           //TODO - delete below after getting Azure permissions
-          this.spToken = 'abc';
+          const j = () => {this.spToken = 'abc'};
+          j()
           resolve();
           // TODO - uncomment below after getting Azure permissions
           // this.spLogin(ref, repo, owner)
