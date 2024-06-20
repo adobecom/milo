@@ -33,7 +33,7 @@ import {
   toFragment,
   trigger,
   yieldToMain,
-  addMepHighlightAndTargetManifestIdGnav,
+  addMepHighlightAndTargetManifestId,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -915,14 +915,14 @@ class Gnav {
         observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
 
         delayDropdownDecoration({ template: triggerTemplate });
-        return addMepHighlightAndTargetManifestIdGnav(triggerTemplate, item);
+        return addMepHighlightAndTargetManifestId(triggerTemplate, item);
       }
       case 'primaryCta':
       case 'secondaryCta':
         // Remove its 'em' or 'strong' wrapper
         item.parentElement.replaceWith(item);
 
-        return addMepHighlightAndTargetManifestIdGnav(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetManifestId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`, item);
       case 'link': {
@@ -941,15 +941,15 @@ class Gnav {
           <div class="feds-navItem${activeModifier}">
             ${linkElem}
           </div>`;
-        return addMepHighlightAndTargetManifestIdGnav(linkTemplate, item);
+        return addMepHighlightAndTargetManifestId(linkTemplate, item);
       }
       case 'text':
-        return addMepHighlightAndTargetManifestIdGnav(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetManifestId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item.textContent}
           </div>`, item);
       default:
         /* c8 ignore next 3 */
-        return addMepHighlightAndTargetManifestIdGnav(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetManifestId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item}
           </div>`, item);
     }

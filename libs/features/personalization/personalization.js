@@ -686,6 +686,7 @@ export async function getManifestConfig(info, variantOverride = false) {
   } else if (name) {
     manifestId = `${name}: ${manifestId}`;
   }
+  console.log('config', config);
   const manifestConfig = parseManifestVariants(persData, manifestId, targetManifestId);
 
   if (!manifestConfig) {

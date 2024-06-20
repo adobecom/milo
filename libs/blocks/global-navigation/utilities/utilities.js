@@ -56,7 +56,7 @@ export const logErrorFor = async (fn, message, tags) => {
   }
 };
 
-export function addMepHighlightAndTargetManifestIdGnav(el, source) {
+export function addMepHighlightAndTargetManifestId(el, source) {
   let { manifestId, targetManifestId } = source.dataset;
   manifestId = manifestId ?? source?.closest('[data-manifest-id]')?.dataset?.manifestId;
   targetManifestId = targetManifestId ?? source?.closest('[data-target-manifest-id]')?.dataset?.targetManifestId;
