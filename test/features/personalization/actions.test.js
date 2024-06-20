@@ -234,7 +234,6 @@ describe('custom actions', async () => {
     setFetchResponse(manifestJson);
 
     await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
-    console.log(getConfig().mep.inBlock);
     expect(getConfig().mep.inBlock).to.deep.equal({
       'my-block': {
         commands: [{
