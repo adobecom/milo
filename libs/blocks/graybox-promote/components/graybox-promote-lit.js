@@ -80,7 +80,7 @@ async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
     promoteDraftsOnly: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_DRAFTS_ONLY)?.toLowerCase() === 'true',
     enablePromote: true, /// TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
     promoteUrl: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]),
-    promoteIgnorePaths: ignorePathsSheet?.data?.map(item => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS]).join(',');
+    promoteIgnorePaths: ignorePathsSheet?.data?.map(item => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS]).join(',')
   };
 }
 
