@@ -2,7 +2,7 @@ import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { Task } from '../../../deps/lit-task.min.js';
 import login from '../../../tools/sharepoint/login.js';
 import sharepointLogin from '../../../tools/sharepoint/login.js';
-import { account } from '../../../tools/sharepoint/state.js';
+import { accessToken, accessTokenExtra, account } from '../../../tools/sharepoint/state.js';
 import { setup } from '../../version-history/index.js';
 
 const KEYS = {
@@ -95,13 +95,27 @@ async function getSharePointDetails(hlxOrigin) {
   };
 }
 
-async function getSharepointToken(ref, repo, owner) {
-  const scopes = ['files.readwrite', 'sites.readwrite.all'];
-  const extraScopes = [`${origin}/.default`];
-  await login({ scopes, extraScopes, telemetry: TELEMETRY });
-}
-
 class GrayboxPromote extends LitElement {
+  constructor() {
+    super();
+    this.spToken = accessToken || accessTokenExtra;
+  }
+
+  getSpTokenTask = new Task(this, {
+    task: async () => {
+      const { ref, repo, owner } = getAemInfo();
+        return new Promise((resolve, reject) => {
+          this.spLogin(ref, repo, owner)
+            .then(() => {
+              this.getValuesTask.run();
+              resolve();
+            })
+            .catch(reject);
+        });
+    },
+    args: () => [],
+  });
+
   getValuesTask = new Task(this, {
     task: async () => {
       const { ref, repo, owner, referrer } = getAemInfo();
@@ -115,20 +129,33 @@ class GrayboxPromote extends LitElement {
         throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
       }
       const driveId = await getSharepointDriveId(ref, repo, owner);
-      if (!account.value.username) {
-       const getToken = async () => {await getSharepointToken(ref, repo, owner)}
-        return html`<p>The login popup was blocked.<br/>Please use the button below.</p>
-        <button class=version-action @click="${() => getToken()}">Open login</button>`;
-
-        // return html`<p>The login popup was blocked.<br/>Please use the button below.</p>
-        // <button class=version-action @click="${() => setup()}">Open login</button>`;
+      if (!this.spToken) {
+        return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
+      } else {
+        return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
       }
-      
-      console.log(experienceName, grayboxIoEnv);
-      return [experienceName, grayboxIoEnv];
     },
     args: () => [],
   });
+
+  promoteTask = new Task(this, {
+    task: async (experienceName, grayboxIoEnv) => {
+      // Call the promote API
+    },
+    args: () => [],
+  });
+
+  spLogin(ref, repo, owner) {
+    const scopes = ['files.readwrite', 'sites.readwrite.all'];
+    const extraScopes = [`${origin}/.default`];
+    return login({ scopes, extraScopes, telemetry: TELEMETRY })
+      .then(() => {
+        this.spToken = accessToken || accessTokenExtra;
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
 
   async connectedCallback() {
     super.connectedCallback();
@@ -137,10 +164,10 @@ class GrayboxPromote extends LitElement {
 
   render() {
     return this.getValuesTask.render({
-      pending: () => html`<p>Loading...</p>`,
-      complete: (args) => (args || html`<p>Done</p>`),
-      error: (err) => html`<p>${err.message}</p>`,
-    });
+        pending: () => html`<p>Loading...</p>`,
+        complete: i => i,
+        error: (err) => html`<p>${err.message}</p>`,
+      })
   }
 }
 
