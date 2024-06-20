@@ -250,6 +250,7 @@ class GrayboxPromote extends LitElement {
 
   render() {
     return html`
+    <div class="wrapper">
       ${this.getValuesTask.render({
         pending: () => html`<p>Loading...</p>`,
         complete: (i) => i,
@@ -265,6 +266,7 @@ class GrayboxPromote extends LitElement {
         complete: (i) => i,
         error: (err) => html`<p>${err}</p>`,
       })}
+      </div>
     `;
   }
 }
