@@ -26,8 +26,6 @@ button {
   transition: outline 300ms;
   border: none;
   height: 36px;
-  font-family: var(--body-font-family);
   padding: 0 18px;
   clip-path: polygon(0% 0%, var(--notch-size) 0%, calc(100% - var(--notch-size)) 0%, 100% var(--notch-size), 100% calc(100% - var(--notch-size)), 100% 100%, 0% 100%, 0% 100%);
-
 }
