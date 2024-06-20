@@ -8,14 +8,18 @@ import {
 import { getConfig, decorateSVG } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
 
-const CONFIG = {
-  selectors: { prompt: '.appPrompt' },
-  delay: 7000,
-  loaderColor: '#EB1000',
+export const DISMISSAL_CONFIG = {
   animationCount: 2,
   animationDuration: 2500,
   tooltipMessage: 'Use the App Switcher to quickly find apps.',
   tooltipDuration: 5000,
+};
+
+const CONFIG = {
+  selectors: { prompt: '.appPrompt' },
+  delay: 7000,
+  loaderColor: '#EB1000',
+  ...DISMISSAL_CONFIG,
 };
 
 const getElemText = (elem) => elem?.textContent?.trim();

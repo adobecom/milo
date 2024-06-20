@@ -1,6 +1,6 @@
 import { setViewport } from '@web/test-runner-commands';
 import sinon from 'sinon';
-import init from '../../../libs/features/webapp-prompt/webapp-prompt.js';
+import init, { DISMISSAL_CONFIG } from '../../../libs/features/webapp-prompt/webapp-prompt.js';
 import { viewports, mockRes as importedMockRes } from '../../blocks/global-navigation/test-utilities.js';
 import { getConfig, loadStyle, setConfig, updateConfig } from '../../../libs/utils/utils.js';
 
@@ -26,10 +26,7 @@ export const defaultConfig = {
   loaderDuration: 7500,
   redirectUrl: 'https://www.adobe.com/?pep=true',
   productName: 'photoshop',
-  animationCount: 5,
-  animationDuration: 2500,
-  tooltipMessage: 'Use the App Switcher to quickly find apps.',
-  tooltipDuration: 5000,
+  ...DISMISSAL_CONFIG,
 };
 
 export const mockRes = importedMockRes;
