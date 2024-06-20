@@ -125,9 +125,9 @@ class GrayboxPromote extends LitElement {
       const scopes = ['files.readwrite', 'sites.readwrite.all'];
       const extraScopes = [`${origin}/.default`];
       //TODO - delete below
-      // this.spToken = 'abc';
-      // return null
-      //TODO - uncomment below
+      this.spToken = 'abc';
+      return null;
+      //TODO - delete above
       return login({ scopes, extraScopes, telemetry: TELEMETRY })
         .then(() => {
           this.spToken = accessToken.value || accessTokenExtra.value;
