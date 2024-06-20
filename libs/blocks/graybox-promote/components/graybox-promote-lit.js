@@ -219,9 +219,9 @@ class GrayboxPromote extends LitElement {
             &ignoreUserCheck=true`); //this should be set to false when finished developing
 
           if (promote.status === 200) {
-            throw new Error('Could not promote. Please try again.');
-          } else {
             return 'Successfully promoted';
+          } else {
+            throw new Error('Could not promote. Please try again.');
           }
         } catch (e) {
           console.log(e);
