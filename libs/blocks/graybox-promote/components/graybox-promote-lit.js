@@ -1,13 +1,10 @@
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { Task } from '../../../deps/lit-task.min.js';
 import login from '../../../tools/sharepoint/login.js';
-import sharepointLogin from '../../../tools/sharepoint/login.js';
 import {
   accessToken,
   accessTokenExtra,
-  account,
 } from '../../../tools/sharepoint/state.js';
-import { setup } from '../../version-history/index.js';
 
 const KEYS = {
   PROJECT_INFO: {
@@ -235,11 +232,6 @@ class GrayboxPromote extends LitElement {
           throw error
         });
     };
-  }
-
-  async connectedCallback() {
-    super.connectedCallback();
-    this.task = new Task(this, this.run);
   }
 
   render() {
