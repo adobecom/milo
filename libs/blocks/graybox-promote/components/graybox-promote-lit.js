@@ -96,11 +96,8 @@ async function getSharePointDetails(hlxOrigin) {
 }
 
 class GrayboxPromote extends LitElement {
-  constructor() {
-    super();
-    this.spToken = accessToken.value || accessTokenExtra.value
-  }
-
+  spToken = accessToken.value || accessTokenExtra.value
+  
   getValuesTask = new Task(this, {
     task: async () => {
       const { ref, repo, owner, referrer } = getAemInfo();
