@@ -97,6 +97,17 @@ async function getSharePointDetails(hlxOrigin) {
 
 class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value
+  constructor() {
+    super();
+    this.testTask = new Task(
+      this,
+      async () => {
+        const response = 'abc';
+        return null
+      }
+    );
+  }
+
   
   getValuesTask = new Task(this, {
     task: async () => {
@@ -178,10 +189,10 @@ class GrayboxPromote extends LitElement {
       });
   }
 
-  // async connectedCallback() {
-  //   super.connectedCallback();
-  //   this.task = new Task(this, this.run);
-  // }
+  async connectedCallback() {
+    super.connectedCallback();
+    this.task = new Task(this, this.run);
+  }
 
   render() {
     return this.getValuesTask.render({
