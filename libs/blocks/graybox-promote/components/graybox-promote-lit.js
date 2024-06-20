@@ -236,6 +236,7 @@ class GrayboxPromote extends LitElement {
   render() {
     return html`
       ${this.getValuesTask.render({
+        initial: () => html`<p>Initial loading...</p>`,
         pending: () => html`<p>Loading...</p>`,
         complete: (i) => i,
         error: (err) => html`<p>${err.message}</p>`,
