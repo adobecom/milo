@@ -113,7 +113,10 @@ class GrayboxPromote extends LitElement {
       const driveId = await getSharepointDriveId(ref, repo, owner);
       if (!this.spToken) {
          //TODO - delete below after getting Azure permissions
-        return html`<button @click="${() => this.spToken = 'abc'}">Login</button>`;
+        return html`<button @click="${() => {
+          this.spToken = 'abc'
+          this.getValuesTask.run();
+        }}">Login</button>`;
         // TODO - uncomment below after getting Azure permissions
         // return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
       } else {
