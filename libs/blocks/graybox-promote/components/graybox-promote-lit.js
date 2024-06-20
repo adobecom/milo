@@ -98,8 +98,7 @@ async function getSharePointDetails(hlxOrigin) {
 async function getSharepointToken(ref, repo, owner) {
   const scopes = ['files.readwrite', 'sites.readwrite.all'];
   const extraScopes = [`${origin}/.default`];
-  const token = await login({ scopes, extraScopes, telemetry: TELEMETRY });
-  return token;
+  await login({ scopes, extraScopes, telemetry: TELEMETRY });
 }
 
 class GrayboxPromote extends LitElement {
@@ -117,10 +116,10 @@ class GrayboxPromote extends LitElement {
       }
       const driveId = await getSharepointDriveId(ref, repo, owner);
       if (!account.value.username) {
+        await getSharepointToken(ref, repo, owner)
         return html`<p>The login popup was blocked.<br/>Please use the button below.</p>
         <button class=version-action @click="${() => setup()}">Open login</button>`;
       }
-      const sharepointToken = await getSharepointToken();
       
       console.log(experienceName, grayboxIoEnv);
       return [experienceName, grayboxIoEnv];
