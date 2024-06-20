@@ -178,10 +178,10 @@ class GrayboxPromote extends LitElement {
       });
   }
 
-  async connectedCallback() {
-    super.connectedCallback();
-    this.task = new Task(this, this.run);
-  }
+  // async connectedCallback() {
+  //   super.connectedCallback();
+  //   this.task = new Task(this, this.run);
+  // }
 
   render() {
     return this.getValuesTask.render({
