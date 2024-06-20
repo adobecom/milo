@@ -5,6 +5,7 @@ import {
   accessToken,
   accessTokenExtra,
 } from '../../../tools/sharepoint/state.js';
+import getServiceConfig from '../../../utils/service-config.js';
 
 const KEYS = {
   PROJECT_INFO: {
