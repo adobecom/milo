@@ -18,7 +18,7 @@ const KEYS = {
       STAGE: 'stage.graybox.promote.url',
       PROD: 'prod.graybox.promote.url',
     },
-    PROMOTE_IGNORE_PATHS: 'promoteIgnorePaths'
+    PROMOTE_IGNORE_PATHS: 'PromoteIgnorePaths'
   },
 };
 
@@ -74,13 +74,13 @@ async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
     `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json?sheet=promoteignorepaths`,
     'Failed to fetch graybox config',
   );
-  const grayboxData = {...sheet.graybox?.data, ...ignorePathsSheet.graybox?.data};
+  const grayboxData = sheet.graybox?.data
 
   return {
     promoteDraftsOnly: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_DRAFTS_ONLY)?.toLowerCase() === 'true',
     enablePromote: true, /// TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
     promoteUrl: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]),
-    promoteIgnorePaths: getSheetValue(grayboxData, KEYS.CONFIG.PROMOTE_IGNORE_PATHS)?.toLowerCase() === 'true',
+    promoteIgnorePaths: ignorePathsSheet?.data?.map(item => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS]).join(',');
   };
 }
 
