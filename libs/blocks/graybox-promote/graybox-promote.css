@@ -1,0 +1,13 @@
+:root {
+  --hlx-sk-bg: rgb(48 48 48);
+  --hlx-sk-color: #FFF;
+  --notch-size: 12px;
+}
+
+body {
+  background-color: var(--hlx-sk-bg);
+  color: var(--hlx-sk-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
