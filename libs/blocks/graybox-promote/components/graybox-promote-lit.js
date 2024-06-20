@@ -138,6 +138,10 @@ class GrayboxPromote extends LitElement {
     this.spLogin = async () => {
       const scopes = ['files.readwrite', 'sites.readwrite.all'];
       const extraScopes = [`${origin}/.default`];
+          //TODO - delete below
+          this.spToken = 'abc';
+          return null;
+          //TODO - delete above
       return login({ scopes, extraScopes, telemetry: TELEMETRY })
         .then(() => {
           this.spToken = accessToken.value || accessTokenExtra.value;
@@ -234,7 +238,7 @@ class GrayboxPromote extends LitElement {
             &draftsOnly=${promoteDraftsOnly}
             &promoteIgnorePaths=${promoteIgnorePaths}
             &driveId=${driveId}
-            &ignoreUserCheck=false`);
+            &ignoreUserCheck=true`);
 
           if (promote.status === 200) {
             return 'Successfully promoted';
