@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { sendKeys, setViewport } from '@web/test-runner-commands';
+import { sendKeys, setViewport, readFile } from '@web/test-runner-commands';
 import {
   createFullGlobalNavigation,
   selectors,
@@ -27,6 +27,13 @@ import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.pl
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 const ogFetch = window.fetch;
+let configData;
+
+const loadConfig = async () => {
+  configData = await readFile({ path: '../../../test/utils/mocks/.milo/config.json' });
+};
+
+loadConfig();
 
 // TODO
 // - test localization
@@ -363,10 +370,11 @@ describe('global navigation', () => {
       });
 
       it('should clear search results when closed', async () => {
-        await createFullGlobalNavigation({ viewport: 'mobile' });
+        const nav = await createFullGlobalNavigation({ viewport: 'mobile' });
         const toggle = document.querySelector(selectors.mainNavToggle);
         // Clicking the toggle will load the search logic
         toggle.click();
+        await nav.loadSearch();
         await clock.runAllAsync();
         // Expect the search input to be visible; focus on it and type
         const searchField = document.querySelector(selectors.searchField);
@@ -807,11 +815,19 @@ describe('global navigation', () => {
 
         const searchResults = document.querySelector(selectors.searchResults);
         const searchInput = document.querySelector(selectors.searchField);
-        window.fetch = sinon.stub().callsFake(() => mockRes({
-          payload:
-          { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
-        }));
-
+        window.fetch = sinon.stub().callsFake((url) => {
+          if (url.includes('/config.json')) {
+            const res = new window.Response(configData, { status: 200 });
+            return Promise.resolve(res);
+          }
+          if (url.includes('/autocomplete')) {
+            return mockRes({
+              payload:
+              { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
+            });
+          }
+          return null;
+        });
         expect(document.querySelectorAll(selectors.searchResult).length).to.equal(0);
         expect(isElementVisible(searchResults)).to.equal(false);
         expect(searchInput.value).to.equal('');
@@ -842,7 +858,19 @@ describe('global navigation', () => {
 
         const searchResults = document.querySelector(selectors.searchResults);
         const searchInput = document.querySelector(selectors.searchField);
-        window.fetch = sinon.stub().callsFake(() => mockRes({ payload: { query_prefix: 'qwe12', locale: 'en-US', suggested_completions: [], elastic_search_time: 406.624478 } }));
+        window.fetch = sinon.stub().callsFake((url) => {
+          if (url.includes('/config.json')) {
+            const res = new window.Response(configData, { status: 200 });
+            return Promise.resolve(res);
+          }
+          if (url.includes('/autocomplete')) {
+            return mockRes({
+              payload:
+              { query_prefix: 'qwe12', locale: 'en-US', suggested_completions: [], elastic_search_time: 406.624478 },
+            });
+          }
+          return null;
+        });
 
         expect(document.querySelectorAll(selectors.searchResult).length).to.equal(0);
         expect(isElementVisible(searchResults)).to.equal(false);
@@ -898,10 +926,19 @@ describe('global navigation', () => {
 
         const searchResults = document.querySelector(selectors.searchResults);
         const searchInput = document.querySelector(selectors.searchField);
-        window.fetch = sinon.stub().callsFake(() => mockRes({
-          payload:
-          { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
-        }));
+        window.fetch = sinon.stub().callsFake((url) => {
+          if (url.includes('/config.json')) {
+            const res = new window.Response(configData, { status: 200 });
+            return Promise.resolve(res);
+          }
+          if (url.includes('/autocomplete')) {
+            return mockRes({
+              payload:
+              { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
+            });
+          }
+          return null;
+        });
 
         expect(document.querySelectorAll(selectors.searchResult).length).to.equal(0);
         expect(isElementVisible(searchResults)).to.equal(false);
@@ -939,14 +976,24 @@ describe('global navigation', () => {
 
       it('fetches results from the search and clears them', async () => {
         document.querySelector(selectors.mainNavToggle).click();
+        await nav.loadSearch();
         await clock.runAllAsync();
 
         const searchResults = document.querySelector(selectors.searchResults);
         const searchInput = document.querySelector(selectors.searchField);
-        window.fetch = sinon.stub().callsFake(() => mockRes({
-          payload:
-          { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
-        }));
+        window.fetch = sinon.stub().callsFake((url) => {
+          if (url.includes('/config.json')) {
+            const res = new window.Response(configData, { status: 200 });
+            return Promise.resolve(res);
+          }
+          if (url.includes('/autocomplete')) {
+            return mockRes({
+              payload:
+              { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
+            });
+          }
+          return null;
+        });
 
         expect(document.querySelectorAll(selectors.searchResult).length).to.equal(0);
         expect(isElementVisible(searchResults)).to.equal(false);

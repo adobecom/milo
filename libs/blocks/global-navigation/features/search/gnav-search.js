@@ -10,12 +10,9 @@ import {
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 import { getConfig } from '../../../../utils/utils.js';
 import { debounce } from '../../../../utils/action.js';
+import getServiceConfig from '../../../../utils/service-config.js';
 
 const CONFIG = {
-  suggestions: {
-    scope: 'adobecom',
-    apiKey: 'adobedotcom2',
-  },
   selectors: {
     hasResults: 'has-results',
     inputIsPopulated: 'feds-search-input--isPopulated',
@@ -122,12 +119,13 @@ class Search {
     });
   }
 
-  getSuggestions(query = this.query) {
+  async getSuggestions(query = this.query) {
     const { env } = getConfig();
+    const { search } = await getServiceConfig(window.location.origin);
     const subdomain = env === 'prod' ? 'adobesearch' : 'adobesearch-stage';
-    const api = `https://${subdomain}.adobe.io/autocomplete/completions?q[locale]=${locale.ietf}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
+    const api = `https://${subdomain}.adobe.io/autocomplete/completions?q[locale]=${locale.ietf}&scope=${search.scope}&q[text]=${encodeURIComponent(query)}`;
 
-    return fetch(api, { headers: { 'x-api-key': CONFIG.suggestions.apiKey } })
+    return fetch(api, { headers: { 'x-api-key': search.apiKey } })
       .then((data) => data.json())
       .catch(() => {
         // do nothing

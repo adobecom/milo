@@ -1,15 +1,14 @@
 import { createTag } from '../../utils/utils.js';
-
-const SCOPE = 'adobecom';
-const API_KEY = 'adobedotcom2';
+import getServiceConfig from '../../utils/service-config.js';
 
 const getHelpxLink = (searchStr, prefix = '', country = 'US') => `https://helpx.adobe.com${prefix}/globalsearch.html?q=${encodeURIComponent(searchStr)}&start_index=0&country=${country}`;
-const getSearchLink = (searchStr, locale = 'en_US') => `https://adobesearch.adobe.io/autocomplete/completions?q[locale]=${locale}&scope=${SCOPE}&q[text]=${encodeURIComponent(searchStr)}`;
 
 const fetchResults = async (searchStr, locale = 'en_US') => {
-  const res = await fetch(getSearchLink(searchStr, locale), {
+  const { search } = await getServiceConfig(window.location.origin);
+  const searchUrl = `https://adobesearch.adobe.io/autocomplete/completions?q[locale]=${locale}&scope=${search.scope}&q[text]=${encodeURIComponent(searchStr)}`;
+  const res = await fetch(searchUrl, {
     method: 'GET',
-    headers: { 'x-api-key': API_KEY },
+    headers: { 'x-api-key': search.apiKey },
   });
   if (res.ok) {
     const results = await res.json();

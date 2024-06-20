@@ -18,21 +18,20 @@ const conf = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
 setConfig(conf);
 const config = getConfig();
 
-async function mockAutoComplete(value) {
-  sinon.stub(window, 'fetch');
-  const fetchText = await readFile({ path: `./mocks/autocomplete.${value}.json` });
-  const res = new window.Response(fetchText, { status: 200 });
-  window.fetch.returns(Promise.resolve(res));
-}
-
 describe('contextual search', () => {
+  let fetchStub;
   before(async () => {
     gnav = await gnavMod.default(document.querySelector('header'));
     window.adobeid = { locale: 'en_US' };
   });
 
+  beforeEach(() => {
+    fetchStub = sinon.stub(window, 'fetch');
+  });
+
   afterEach(() => {
     sinon.restore();
+    fetchStub.restore();
   });
 
   it('tests gnav search', async () => {
@@ -42,15 +41,26 @@ describe('contextual search', () => {
   });
 
   it('populates search results ', async () => {
+    const value = 'photoshop';
+    fetchStub.callsFake(async (url) => {
+      if (url.includes('/config.json')) {
+        const miloConfigData = await readFile({ path: '../../../test/utils/mocks/.milo/config.json' });
+        const res = new window.Response(miloConfigData, { status: 200 });
+        return Promise.resolve(res);
+      }
+      if (url.includes('/autocomplete')) {
+        const autocompleteData = await readFile({ path: `./mocks/autocomplete.${value}.json` });
+        const res = new window.Response(autocompleteData, { status: 200 });
+        return Promise.resolve(res);
+      }
+      return null;
+    });
     config.locale.contentRoot = '/test/blocks/gnav/mocks';
 
     const searchInputEl = gnav.el.querySelector('.gnav-search-input');
     const resultsEl = gnav.el.querySelector('.gnav-search-results > ul');
     const advancedSearchEl = null;
-    const value = 'photoshop';
     const locale = { prefix: '/fr' };
-
-    await mockAutoComplete(value);
 
     await searchMod.onSearchInput({
       value,
@@ -68,15 +78,26 @@ describe('contextual search', () => {
   });
 
   it('no results is shown when the input is empty', async () => {
+    const value = '';
+    fetchStub.callsFake(async (url) => {
+      if (url.includes('/config.json')) {
+        const miloConfigData = await readFile({ path: '../../../test/utils/mocks/.milo/config.json' });
+        const res = new window.Response(miloConfigData, { status: 200 });
+        return Promise.resolve(res);
+      }
+      if (url.includes('/autocomplete')) {
+        const autocompleteData = await readFile({ path: `./mocks/autocomplete.${value}.json` });
+        const res = new window.Response(autocompleteData, { status: 200 });
+        return Promise.resolve(res);
+      }
+      return null;
+    });
     config.locale.contentRoot = '/test/blocks/gnav/mocks';
 
     const searchInputEl = gnav.el.querySelector('.gnav-search-input');
     const resultsEl = gnav.el.querySelector('.gnav-search-results > ul');
     const advancedSearchEl = null;
-    const value = '';
     const locale = { prefix: '' };
-
-    await mockAutoComplete(value);
 
     await searchMod.onSearchInput({
       value,
@@ -90,15 +111,26 @@ describe('contextual search', () => {
   });
 
   it('shows advanced link when no results are found', async () => {
+    const value = 'photoshopx';
+    fetchStub.callsFake(async (url) => {
+      if (url.includes('/config.json')) {
+        const miloConfigData = await readFile({ path: '../../../test/utils/mocks/.milo/config.json' });
+        const res = new window.Response(miloConfigData, { status: 200 });
+        return Promise.resolve(res);
+      }
+      if (url.includes('/autocomplete')) {
+        const autocompleteData = await readFile({ path: `./mocks/autocomplete.${value}.json` });
+        const res = new window.Response(autocompleteData, { status: 200 });
+        return Promise.resolve(res);
+      }
+      return null;
+    });
     config.locale.contentRoot = '/test/blocks/gnav/mocks';
 
     const searchInputEl = gnav.el.querySelector('.gnav-search-input');
     const resultsEl = gnav.el.querySelector('.gnav-search-results > ul');
     const advancedSearchEl = null;
-    const value = 'photoshopx';
     const locale = { prefix: '/fr' };
-
-    await mockAutoComplete(value);
 
     await searchMod.onSearchInput({
       value,

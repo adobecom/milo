@@ -28,6 +28,26 @@
         "key": "local.glaas.clientId",
         "value": "local-not-super-secret-client-id",
         "Comments": ""
+      },
+      {
+        "key": "prod.search.scope",
+        "value": "prod-search-scope",
+        "Comments": ""
+      },
+      {
+        "key": "prod.search.apiKey",
+        "value": "prod-search-api-key",
+        "Comments": ""
+      },
+      {
+        "key": "stage.search.scope",
+        "value": "stage-search-scope",
+        "Comments": ""
+      },
+      {
+        "key": "stage.search.apiKey",
+        "value": "stage-search-api-key",
+        "Comments": ""
       }
     ]
   },
