@@ -25,7 +25,7 @@ const KEYS = {
 
 const TELEMETRY = { application: { appName: 'Adobe Graybox Promote' } };
 
-async function getJson(url, errMsg = `Failed to fetch ${url}`) {
+const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
   let res;
   try {
     res = await fetch(url);
@@ -43,7 +43,7 @@ async function getJson(url, errMsg = `Failed to fetch ${url}`) {
 const getSheetValue = (data, key) =>
   data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
 
-function getAemInfo() {
+const getAemInfo = () => {
   const search = new URLSearchParams(window.location.search);
   return {
     ref: search.get('ref'),
@@ -53,8 +53,12 @@ function getAemInfo() {
   };
 }
 
-async function getProjectInfo(referrer) {
+const getProjectInfo = async (referrer) => {
   const url = new URL(referrer);
+  //TODO - delete line below
+  await getSharePointDetails(url)
+  //
+
   const sheet = await getJson(
     `${url.origin}${url.pathname}?sheet=settings`,
     'Failed to fetch project info'
@@ -68,7 +72,7 @@ async function getProjectInfo(referrer) {
   };
 }
 
-async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
+const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
   const sheet = await getJson(
     `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json`,
     'Failed to fetch graybox config'
@@ -97,7 +101,7 @@ async function getGrayboxConfig(ref, repo, owner, grayboxIoEnv) {
   };
 }
 
-async function getSharepointDriveId(ref, repo, owner) {
+const getSharepointDriveId = async (ref, repo, owner) => {
   const sheet = await getJson(
     `https://${ref}--${repo}--${owner}.hlx.page/.milo/config.json?sheet=configs`,
     'Failed to fetch milo config'
@@ -105,7 +109,7 @@ async function getSharepointDriveId(ref, repo, owner) {
   return getSheetValue(sheet.data, 'prod.sharepoint.driveId');
 }
 
-async function getSharePointDetails(hlxOrigin) {
+const getSharePointDetails = async (hlxOrigin) => {
   const { sharepoint } = await getServiceConfig(hlxOrigin);
   const spSiteHostname = sharepoint.site.split(',')[0].split('/').pop();
   return {
