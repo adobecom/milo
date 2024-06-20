@@ -177,7 +177,7 @@ class GrayboxPromote extends LitElement {
             <button @click="${() => this.getSpTokenTask.run()}">Login</button>
           `;
         } else {
-          return html` <p>Are you sure you want to promote?</p>
+          return html` <p>Are you sure you want to promote the content for ${experienceName}?</p>
             <button
               @click="${() =>
                 this.promoteTask.run({
