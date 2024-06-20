@@ -95,8 +95,8 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
         grayboxData,
         KEYS.CONFIG.PROMOTE_DRAFTS_ONLY
       )?.toLowerCase() === 'true',
-    enablePromote: true, /// TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
-    promoteUrl: getSheetValue(
+      enablePromote: true, /// TODO -> uncomment this //getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
+      promoteUrl: getSheetValue(
       grayboxData,
       KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]
     ),
@@ -234,7 +234,7 @@ class GrayboxPromote extends LitElement {
             &draftsOnly=${promoteDraftsOnly}
             &promoteIgnorePaths=${promoteIgnorePaths}
             &driveId=${driveId}
-            &ignoreUserCheck=true`); //this should be set to false when finished developing
+            &ignoreUserCheck=false`);
 
           if (promote.status === 200) {
             return 'Successfully promoted';
