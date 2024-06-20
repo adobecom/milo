@@ -142,7 +142,7 @@ class GrayboxPromote extends LitElement {
   });
 
   promoteTask = new Task(this, {
-    task: async (experienceName, grayboxIoEnv) => {
+    task: async () => {
       const promoteUrl = '';
       const token = this.spToken;
       const projectExelPath = '';
