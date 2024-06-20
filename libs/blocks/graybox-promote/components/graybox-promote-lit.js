@@ -112,7 +112,10 @@ class GrayboxPromote extends LitElement {
       }
       const driveId = await getSharepointDriveId(ref, repo, owner);
       if (!this.spToken) {
-        return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
+         //TODO - delete below after getting Azure permissions
+        return html`<button @click="${() => this.spToken = 'abc'}">Login</button>`;
+        // TODO - uncomment below after getting Azure permissions
+        // return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
       } else {
         return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
       }
@@ -142,7 +145,7 @@ class GrayboxPromote extends LitElement {
     args: () => [],
   });
 
-  spLogin(ref, repo, owner) {
+  spLogin() {
     const scopes = ['files.readwrite', 'sites.readwrite.all'];
     const extraScopes = [`${origin}/.default`];
     return login({ scopes, extraScopes, telemetry: TELEMETRY })
