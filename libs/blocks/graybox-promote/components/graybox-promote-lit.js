@@ -99,100 +99,96 @@ class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value
   constructor() {
     super();
-    this.testTask = new Task(
-      this,
-      async () => {
-        const response = 'abc';
-        return null
-      }
-    );
+
+    this.getValuesTask = new Task(this, {
+      task: async () => {
+        const { ref, repo, owner, referrer } = getAemInfo();
+        const { experienceName, grayboxIoEnv } = await getProjectInfo(referrer);
+        const {
+          promoteDraftsOnly,
+          enablePromote,
+          promoteUrl,
+        } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
+        if (!enablePromote) {
+          throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
+        }
+        const driveId = await getSharepointDriveId(ref, repo, owner);
+        if (!this.spToken) {
+           //TODO - delete below after getting Azure permissions
+          return html`<button @click="${() => {
+            this.spToken = 'abc'
+            this.getValuesTask.run();
+          }}">Login</button>`;
+          // TODO - uncomment below after getting Azure permissions
+          // return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
+        } else {
+          return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
+        }
+      },
+      args: () => [],
+    });
+  
+    this.getSpTokenTask = new Task(this, {
+      task: async () => {
+        const { ref, repo, owner } = getAemInfo();
+          return new Promise((resolve, reject) => {
+            this.spLogin(ref, repo, owner)
+              .then(() => {
+                this.getValuesTask.run();
+                resolve();
+              })
+              .catch(reject);
+          });
+      },
+      args: () => [],
+    });
+  
+    this.promoteTask = new Task(this, {
+      task: async () => {
+        const promoteUrl = '';
+        const token = this.spToken;
+        const projectExelPath = '';
+        const rootFolder = '';
+        const gbRootFolder = '';
+        const experienceName = '';
+        const adminPageUri = '';
+        const draftsOnly = '';
+        const promoteIgnorePaths = '';
+        const driveId = '';
+        await fetch(`${promoteUrl}?spToken=${this.spToken}&
+        projectExcelPath=${projectExelPath}
+        &rootFolder=${rootFolder}
+        &experienceName=${experienceName}
+        &adminPageUri=${adminPageUri}
+        &draftsOnly=${draftsOnly}
+        &promoteIgnorePaths=${promoteIgnorePaths}
+        &driveId=${driveId}
+        &ignoreUserCheck=true`)
+      },
+      args: () => [],
+    });
+  
+    this.spLogin = () => {
+      const scopes = ['files.readwrite', 'sites.readwrite.all'];
+      const extraScopes = [`${origin}/.default`];
+      return login({ scopes, extraScopes, telemetry: TELEMETRY })
+        .then(() => {
+          this.spToken = accessToken.value || accessTokenExtra.value;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+
   }
 
   
-  getValuesTask = new Task(this, {
-    task: async () => {
-      const { ref, repo, owner, referrer } = getAemInfo();
-      const { experienceName, grayboxIoEnv } = await getProjectInfo(referrer);
-      const {
-        promoteDraftsOnly,
-        enablePromote,
-        promoteUrl,
-      } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
-      if (!enablePromote) {
-        throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
-      }
-      const driveId = await getSharepointDriveId(ref, repo, owner);
-      if (!this.spToken) {
-         //TODO - delete below after getting Azure permissions
-        return html`<button @click="${() => {
-          this.spToken = 'abc'
-          this.getValuesTask.run();
-        }}">Login</button>`;
-        // TODO - uncomment below after getting Azure permissions
-        // return html`<button @click="${() => this.getSpTokenTask.run()}">Login</button>`;
-      } else {
-        return html`<button @click="${() => this.promoteTask.run(experienceName, grayboxIoEnv)}">Promote</button>`;
-      }
-    },
-    args: () => [],
-  });
 
-  getSpTokenTask = new Task(this, {
-    task: async () => {
-      const { ref, repo, owner } = getAemInfo();
-        return new Promise((resolve, reject) => {
-          this.spLogin(ref, repo, owner)
-            .then(() => {
-              this.getValuesTask.run();
-              resolve();
-            })
-            .catch(reject);
-        });
-    },
-    args: () => [],
-  });
 
-  promoteTask = new Task(this, {
-    task: async () => {
-      const promoteUrl = '';
-      const token = this.spToken;
-      const projectExelPath = '';
-      const rootFolder = '';
-      const gbRootFolder = '';
-      const experienceName = '';
-      const adminPageUri = '';
-      const draftsOnly = '';
-      const promoteIgnorePaths = '';
-      const driveId = '';
-      await fetch(`${promoteUrl}?spToken=${this.spToken}&
-      projectExcelPath=${projectExelPath}
-      &rootFolder=${rootFolder}
-      &experienceName=${experienceName}
-      &adminPageUri=${adminPageUri}
-      &draftsOnly=${draftsOnly}
-      &promoteIgnorePaths=${promoteIgnorePaths}
-      &driveId=${driveId}
-      &ignoreUserCheck=true`)
-    },
-    args: () => [],
-  });
-
-  spLogin() {
-    const scopes = ['files.readwrite', 'sites.readwrite.all'];
-    const extraScopes = [`${origin}/.default`];
-    return login({ scopes, extraScopes, telemetry: TELEMETRY })
-      .then(() => {
-        this.spToken = accessToken.value || accessTokenExtra.value;
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
-  async connectedCallback() {
-    super.connectedCallback();
-    this.task = new Task(this, this.run);
-  }
+  // async connectedCallback() {
+  //   super.connectedCallback();
+  //   this.task = new Task(this, this.run);
+  // }
 
   render() {
     return this.getValuesTask.render({
