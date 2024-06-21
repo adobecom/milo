@@ -64,8 +64,9 @@ const getAemInfo = () => {
 
 const getProjectInfo = async (referrer) => {
   const url = new URL(referrer);
+  const liveOrigin = url.origin.replace('.hlx.page', '.hlx.live');
   const sheet = await getJson(
-    `${url.origin}${url.pathname}?sheet=settings`,
+    `${liveOrigin}${url.pathname}?sheet=settings`,
     'Failed to fetch project info'
   );
   return {
@@ -79,12 +80,12 @@ const getProjectInfo = async (referrer) => {
 
 const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
   const sheet = await getJson(
-    `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json`,
+    `https://${ref}--${repo}--${owner}.hlx.live/.milo/graybox-config.json`,
     'Failed to fetch graybox config'
   );
 
   const ignorePathsSheet = await getJson(
-    `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json?sheet=promoteignorepaths`,
+    `https://${ref}--${repo}--${owner}.hlx.live/.milo/graybox-config.json?sheet=promoteignorepaths`,
     'Failed to fetch graybox config'
   );
   const grayboxData = sheet.graybox?.data;
@@ -106,19 +107,13 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
   };
 };
 
-const getSharepointDriveId = async (ref, repo, owner) => {
-  const sheet = await getJson(
-    `https://${ref}--${repo}--${owner}.hlx.page/.milo/config.json?sheet=configs`,
-    'Failed to fetch milo config'
-  );
-  return getSheetValue(sheet.data, 'prod.sharepoint.driveId');
-};
-
-const getRootFolders = async (url) => {
-  const { sharepoint } = await getServiceConfig(url.origin);
+const getSharepointData = async (url) => {
+  const liveOrigin = url.origin.replace('-graybox', '').replace('.hlx.page', '.hlx.live');
+  const { sharepoint } = await getServiceConfig(liveOrigin);
   return {
     root: `/${sharepoint.rootMapping}`,
     gbRoot: `/${sharepoint.rootMapping}-graybox`,
+    driveId: sharepoint.driveId,
   };
 };
 
@@ -162,13 +157,13 @@ class GrayboxPromote extends LitElement {
           promoteUrl,
           promoteIgnorePaths,
         } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
-        const rootFolders = await getRootFolders(url);
+        const spData = await getSharepointData(url);
         if (!enablePromote) {
           throw new Error(
             'sharepoint.site.enablePromote is not enabled in graybox config'
           );
         }
-        const driveId = await getSharepointDriveId(ref, repo, owner);
+
         if (!this.spToken) {
           return html`
             <p>
@@ -185,11 +180,10 @@ class GrayboxPromote extends LitElement {
                   promoteUrl,
                   promoteDraftsOnly,
                   promoteIgnorePaths,
-                  driveId,
+                  spData,
                   repo,
                   ref,
                   owner,
-                  rootFolders,
                   url,
                 })}"
             >
@@ -221,14 +215,14 @@ class GrayboxPromote extends LitElement {
         promoteUrl,
         promoteDraftsOnly,
         promoteIgnorePaths,
-        driveId,
         repo,
         ref,
         owner,
-        rootFolders,
         url,
+        spData
       }) => {
         try {
+          const {rootFolders, driveId} = spData;
           const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${rootFolders.root}&gbRootFolder=${rootFolders.gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${repo}&owner=${owner}`}&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
           const promoteRes = await promote.json();
           if (promoteRes?.code === 200) {
