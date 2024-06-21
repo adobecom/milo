@@ -42,6 +42,12 @@ const HEADING_MAP = {
   },
 };
 
+const SLOT_MAP = {
+  'special-offers': {
+    H5: 'detail-m',
+  },
+};
+
 const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
 
 const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
@@ -169,7 +175,7 @@ const parseContent = async (el, merchCard) => {
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
-      let slotName = TEXT_STYLES[tagName];
+      let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || TEXT_STYLES[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
           element.classList.add('card-heading');
