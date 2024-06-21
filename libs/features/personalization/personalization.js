@@ -495,6 +495,7 @@ const getVariantInfo = (line, variantNames, variants, manifestId, targetManifest
       manifestId,
       targetManifestId,
     };
+    if (targetManifestId) variantInfo.targetManifestId = targetManifestId;
 
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
       variants[vn].fragments.push({
@@ -677,16 +678,21 @@ export async function getManifestConfig(info, variantOverride = false) {
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
-
+  const infoTab = manifestInfo || data?.info?.data;
+  const infoObj = infoTab?.reduce((acc, item) => {
+    acc[item.key] = item.value;
+    return acc;
+  }, {});
+  const manifestOverrideName = name || infoObj?.['manifest-override-name']?.toLowerCase();
   let manifestId = getFileName(manifestPath);
+  if (manifestOverrideName) {
+    manifestId = `${manifestOverrideName}: ${manifestId}`;
+  }
   const targetManifestId = manifestId;
   const config = getConfig();
   if (!config.mep?.preview) {
     manifestId = false;
-  } else if (name) {
-    manifestId = `${name}: ${manifestId}`;
   }
-  console.log('config', config);
   const manifestConfig = parseManifestVariants(persData, manifestId, targetManifestId);
 
   if (!manifestConfig) {
@@ -694,18 +700,12 @@ export async function getManifestConfig(info, variantOverride = false) {
     console.log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
-
-  const infoTab = manifestInfo || data?.info?.data;
   const infoKeyMap = {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
   if (infoTab) {
-    const infoObj = infoTab?.reduce((acc, item) => {
-      acc[item.key] = item.value;
-      return acc;
-    }, {});
-    manifestConfig.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
+    manifestConfig.manifestOverrideName = manifestOverrideName;
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     const executionOrder = {
       'manifest-type': 1,
@@ -734,13 +734,11 @@ export async function getManifestConfig(info, variantOverride = false) {
     manifestConfig.run = true;
     manifestConfig.selectedVariantName = selectedVariantName;
     manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
-    if (targetManifestId && selectedVariantName?.includes('target-')) manifestConfig.targetManifestId = targetManifestId;
   } else {
     /* c8 ignore next 2 */
     manifestConfig.selectedVariantName = 'default';
     manifestConfig.selectedVariant = 'default';
   }
-
   const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
@@ -753,6 +751,11 @@ export async function getManifestConfig(info, variantOverride = false) {
   manifestConfig.manifestUrl = manifestUrl;
   manifestConfig.disabled = disabled;
   manifestConfig.event = event;
+  if (!selectedVariantName?.includes(TARGET_EXP_PREFIX)) {
+    manifestConfig.selectedVariant.commands.forEach((cmd) => {
+      delete cmd.targetManifestId;
+    });
+  }
   return manifestConfig;
 }
 
