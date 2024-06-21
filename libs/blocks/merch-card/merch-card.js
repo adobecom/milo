@@ -28,12 +28,14 @@ const CARD_TYPES = [
 
 const CARD_SIZES = ['wide', 'super-wide'];
 
-const TEXT_STYLES = {
+const SLOT_MAP_DEFAULT = {
   H5: 'promo-text',
   H4: 'body-xxs',
   H3: 'heading-xs',
   H2: 'heading-m',
 };
+
+const SLOT_MAP = { 'special-offers': { H5: 'detail-m' } };
 
 const HEADING_MAP = {
   'special-offers': {
@@ -41,8 +43,6 @@ const HEADING_MAP = {
     H3: 'H3',
   },
 };
-
-const SLOT_MAP = { 'special-offers': { H5: 'detail-m' } };
 
 const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
 
@@ -171,7 +171,7 @@ const parseContent = async (el, merchCard) => {
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
-      let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || TEXT_STYLES[tagName];
+      let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
           element.classList.add('card-heading');
