@@ -145,7 +145,7 @@ const getTargetPersonalization = async () => {
   } else {
     sendTargetResponseAnalytics(false, responseStart, timeout);
     manifests = handleAlloyResponse(response.result);
-    propositions = response.result && response.result.propositions;
+    propositions = response.result?.propositions || [];
   }
 
   return {
