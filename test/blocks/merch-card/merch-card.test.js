@@ -28,10 +28,10 @@ const expectToValidateHTMLAssertions = (card, assertions = {}) => {
     expect(el, selector).to.exist;
     if (attribute) {
       const { name, value } = attribute;
-      expect(el.getAttribute(name)).to.be.equal(value);
+      expect(el.getAttribute(name), `attribute ${name}`).to.be.equal(value);
     }
     if (textContent) {
-      expect(el.textContent).to.be.equal(textContent);
+      expect(el.textContent, `text content ${textContent}`).to.be.equal(textContent);
     }
   });
   const footer = card.querySelector('div[slot="footer"]');
