@@ -42,11 +42,7 @@ const HEADING_MAP = {
   },
 };
 
-const SLOT_MAP = {
-  'special-offers': {
-    H5: 'detail-m',
-  },
-};
+const SLOT_MAP = { 'special-offers': { H5: 'detail-m' } };
 
 const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
 
