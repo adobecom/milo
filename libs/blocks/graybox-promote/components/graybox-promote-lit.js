@@ -222,8 +222,8 @@ class GrayboxPromote extends LitElement {
         spData
       }) => {
         try {
-          const {rootFolders, driveId} = spData;
-          const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${rootFolders.root}&gbRootFolder=${rootFolders.gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${repo}&owner=${owner}`}&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
+          const {root, gbRoot, driveId} = spData;
+          const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${root}&gbRootFolder=${gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${repo}&owner=${owner}`}&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
           const promoteRes = await promote.json();
           if (promoteRes?.code === 200) {
             return 'Successfully promoted';
