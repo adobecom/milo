@@ -15,7 +15,7 @@ function Description({ status }) {
       message = html`<ol>${description.map((desc) => html`
         <li>${errorLinks(desc, type)}</li>`)}</ol>`;
     } else {
-      message = errorLinks(message[0], type);
+      message = errorLinks(description[0], type);
     }
   } else {
     message = errorLinks(description, type);
