@@ -249,7 +249,7 @@ class GrayboxPromote extends LitElement {
           error: (err) => html`<p>${err}</p>`,
         })}
         ${
-          this.promoteTask.status !== 1 &&
+          [1,2].includes(this.promoteTask.status) ? '' :
           this.getValuesTask.render({
           pending: () => html`<p>Loading...</p>`,
           complete: (i) => i,
