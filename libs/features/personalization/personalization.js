@@ -753,7 +753,7 @@ export async function getManifestConfig(info, variantOverride = false) {
   manifestConfig.event = event;
   if (!selectedVariantName?.includes(TARGET_EXP_PREFIX)) {
     manifestConfig.selectedVariant.commands.forEach((cmd) => {
-      delete cmd.targetManifestId;
+      cmd.targetManifestId = false;
     });
   }
   return manifestConfig;
