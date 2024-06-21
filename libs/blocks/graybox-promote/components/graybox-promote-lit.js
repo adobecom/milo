@@ -84,10 +84,6 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
     'Failed to fetch graybox config'
   );
 
-  const ignorePathsSheet = await getJson(
-    `https://${ref}--${repo}--${owner}.hlx.live/.milo/graybox-config.json?sheet=promoteignorepaths`,
-    'Failed to fetch graybox config'
-  );
   const grayboxData = sheet.graybox?.data;
 
   return {
@@ -101,8 +97,7 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
       grayboxData,
       KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]
     ),
-    promoteIgnorePaths: ignorePathsSheet?.data
-      ?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
+    promoteIgnorePaths: sheet.promoteignorepaths?.data?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
       .join(','),
   };
 };
@@ -223,7 +218,8 @@ class GrayboxPromote extends LitElement {
       }) => {
         try {
           const {root, gbRoot, driveId} = spData;
-          const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${root}&gbRootFolder=${gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${repo}&owner=${owner}`}&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
+          const mainRepo = repo.replace('-graybox', '');
+          const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${root}&gbRootFolder=${gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${mainRepo}&owner=${owner}`}&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
           const promoteRes = await promote.json();
           if (promoteRes?.code === 200) {
             return 'Successfully promoted';
@@ -252,7 +248,9 @@ class GrayboxPromote extends LitElement {
           complete: (i) => i,
           error: (err) => html`<p>${err}</p>`,
         })}
-        ${this.getValuesTask.render({
+        ${
+          this.promoteTask.status !== 1 &&
+          this.getValuesTask.render({
           pending: () => html`<p>Loading...</p>`,
           complete: (i) => i,
           error: (err) => html`<p>${err.message}</p>`,
