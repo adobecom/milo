@@ -1,4 +1,4 @@
-import { createTag, getVideoIntersectionObserver } from './utils.js';
+import { createTag } from './utils.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -202,6 +202,26 @@ export function applyHoverPlay(video) {
     video.setAttribute('data-mouseevent', true);
   }
 }
+
+export function getVideoIntersectionObserver() {
+  if (!window?.videoIntersectionObs) {
+    window.videoIntersectionObs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const { intersectionRatio, target: video } = entry;
+        const isHaveLoopAttr = video.getAttributeNames().includes('loop');
+        const { playedOnce = false } = video.dataset;
+
+        if (intersectionRatio <= 0.8) {
+          video.pause();
+        } else if (isHaveLoopAttr || !playedOnce) {
+          video.play();
+        }
+      });
+    }, { threshold: [0.8] });
+  }
+  return window.videoIntersectionObs;
+}
+
 export function applyInViewPortPlay(video) {
   if (!video) return;
   if (video.hasAttribute('data-play-viewport')) {
