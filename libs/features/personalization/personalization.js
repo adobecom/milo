@@ -751,7 +751,7 @@ export async function getManifestConfig(info, variantOverride = false) {
   manifestConfig.manifestUrl = manifestUrl;
   manifestConfig.disabled = disabled;
   manifestConfig.event = event;
-  if (!selectedVariantName?.includes(TARGET_EXP_PREFIX)) {
+  if (manifestConfig.selectedVariant !== 'default' && !selectedVariantName?.includes(TARGET_EXP_PREFIX)) {
     manifestConfig.selectedVariant.commands.forEach((cmd) => {
       cmd.targetManifestId = false;
     });
