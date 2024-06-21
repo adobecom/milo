@@ -129,7 +129,7 @@ class GrayboxPromote extends LitElement {
       const scopes = ['files.readwrite', 'sites.readwrite.all'];
       const extraScopes = [`${origin}/.default`];
           //TODO - delete below
-          this.spToken = 'abc';
+          this.spToken = '1234';
           return null;
           //TODO - delete above
       return login({ scopes, extraScopes, telemetry: TELEMETRY })
@@ -220,7 +220,7 @@ class GrayboxPromote extends LitElement {
           const {root, gbRoot, driveId} = spData;
           const mainRepo = repo.replace('-graybox', '');
           //TODO - remove the .replace('stage', 'armohamm') in the promoteUrl after the demo
-          const promote = await fetch(`${promoteUrl.replace('stage', 'armohamm')}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${root}&gbRootFolder=${gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}%26repo=${mainRepo}%26owner=${owner}`}%26host=business.adobe.com%26project=${mainRepo}%26referrer=MOCK_REF&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
+          const promote = await fetch(`${promoteUrl.replace('stage', 'armohamm')}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${root}&gbRootFolder=${gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}%26repo=${mainRepo}%26owner=${owner}`}%26host=business.adobe.com%26project=${mainRepo.toUpperCase()}%26referrer=MOCK_REF&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
           const promoteRes = await promote.json();
           if (promoteRes?.code === 200) {
             return 'Successfully promoted';
