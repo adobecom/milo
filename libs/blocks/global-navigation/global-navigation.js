@@ -621,6 +621,7 @@ class Gnav {
       children: getChildren(),
     });
 
+    CONFIG.universalNav.universalNavConfig = getConfiguration();
     window.UniversalNav(getConfiguration());
 
     isDesktop.addEventListener('change', () => {
