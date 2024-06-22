@@ -621,7 +621,7 @@ class Gnav {
       children: getChildren(),
     });
 
-    // exposing unav config for consumers to modify certain values/functions and reload UNAV if they need to
+    // Exposing UNAV config for consumers to modify certain values/functions and reload UNAV if needed
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     window.UniversalNav(getConfiguration());
 
