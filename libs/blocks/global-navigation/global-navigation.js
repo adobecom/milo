@@ -621,12 +621,12 @@ class Gnav {
       children: getChildren(),
     });
 
-    // Exposing UNAV config for consumers to modify certain values/functions and reload UNAV if needed
+    // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
-    window.UniversalNav(getConfiguration());
+    window.UniversalNav(CONFIG.universalNav.universalNavConfig);
 
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(getConfiguration());
+      window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
     });
   };
 
