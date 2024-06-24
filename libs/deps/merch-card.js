@@ -1,4 +1,4 @@
-// branch: MWPW-151429 commit: 2d4d01676430758ee340af5043392be2c4694942 Thu, 20 Jun 2024 14:03:56 GMT
+// branch: MWPW-151429 commit: 30652ba5c685917efa256afa73fceafb7c6432ca Mon, 24 Jun 2024 19:12:07 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -797,7 +797,6 @@ merch-card[variant="mini-compare-chart"] [is="inline-price"] {
     display: inline-block;
     min-height: 30px;
     min-width: 1px;
-    word-break: break-all;
 }
 
 merch-card[variant="mini-compare-chart"] span.placeholder-resolved[data-template="strikethrough"] {
@@ -906,6 +905,11 @@ merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     merch-card[variant="mini-compare-chart"] span.placeholder-resolved[data-template="strikethrough"] {
         font-size: var(--consonant-merch-card-body-xs-font-size);
     }
+
+    html[lang="he"] merch-card[variant="mini-compare-chart"] [is="inline-price"] .price-recurrence::before {
+        content: "\\200B";
+    }
+
 
     merch-card[variant="mini-compare-chart"] [slot="price-commitment"] {
         padding: 0 var(--consonant-merch-spacing-xs);
