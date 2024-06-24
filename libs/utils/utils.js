@@ -1150,7 +1150,7 @@ async function documentPostSectionLoading(config) {
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
 }
 
-function partition(arr, fn) {
+export function partition(arr, fn) {
   return arr.reduce(
     (acc, val, i, ar) => {
       acc[fn(val, i, ar) ? 0 : 1].push(val);
