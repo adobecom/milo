@@ -154,7 +154,8 @@ function getEnv(conf) {
   if (host.includes(`${SLD}.page`)
     || host.includes(`${SLD}.live`)
     || host.includes('stage.adobe')
-    || host.includes('corp.adobe')) {
+    || host.includes('corp.adobe')
+    || host.includes('graybox.adobe')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
   return { ...ENVS.prod, consumer: conf.prod };
