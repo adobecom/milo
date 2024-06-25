@@ -63,7 +63,8 @@ async function fetchDocument(hlxPath) {
 }
 
 async function findPageFragments(path) {
-  const isIndex = path.lastIndexOf('index');
+  const page = path.split('/').pop();
+  const isIndex = page === 'index' ? path.lastIndexOf('index') : 0;
   const hlxPath = isIndex > 0 ? path.substring(0, isIndex) : path;
   const doc = await fetchDocument(hlxPath);
   if (!doc) return undefined;
