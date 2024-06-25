@@ -206,7 +206,6 @@ export function loadStyles(url) {
 // CSS imports were not used due to duplication of file include
 export async function loadBaseStyles() {
   const url = rootPath('base.css');
-
   await loadStyles(url);
 }
 
