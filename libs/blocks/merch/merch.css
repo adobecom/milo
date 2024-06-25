@@ -8,6 +8,8 @@ span[data-wcs-osi] {
 }
 
 span.placeholder-resolved[data-template="strikethrough"], span.price.price-strikethrough {
+  font-size: var(--type-body-xs-size);
+  font-weight: normal;
   text-decoration: line-through;
 }
 

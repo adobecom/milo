@@ -26,7 +26,7 @@
   width: calc(100% - 15.5px);
   height: 100%;
   border: var(--gb-page-outline-border);
-  z-index: var(--above-all);
+  z-index: calc(var(--above-all) + 1);
   pointer-events: none;
 }
 
@@ -39,25 +39,35 @@
   position: fixed;
 }
 
-.gb-graybox-body .gb-no-click::before {
+.gb-no-click::after {
   content: "";
   height: 100%;
-  pointer-events: all;
+  pointer-events: none;
   position: absolute;
   width: 100%;
   z-index: var(--above-all);
+  left: 0;
+  top: 0;
 }
 
 .gb-no-change {
   position: relative;
 }
 
-.gb-overlay {
-  position: relative;
+.gb-page-overlay {
+  background-color: var(--gb-overlay-color);
+  content: "";
+  display: block;
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: calc(var(--above-all) - 1);
 }
 
-.gb-graybox-body .gb-no-change::before,
-.gb-graybox-body.gb-overlay::before {
+.gb-no-change::before {
   background-color: var(--gb-overlay-color);
   content: "";
   display: block;
@@ -70,14 +80,10 @@
   z-index: calc(var(--above-all) - 1);
 }
 
-body.gb-overlay::before {
-  position: fixed;
-}
-
 /* The elements that should appear above the overlay */
 .gb-graybox-body .gb-changed {
   position: relative;
-  z-index: var(--above-all);
+  z-index: calc(var(--above-all) - 1);
 }
 
 .graybox-container {
@@ -208,40 +214,44 @@ body.gb-overlay::before {
   position: absolute;
   pointer-events: none;
   width: 859px;
-  height: 1205px;
+  min-height: 1189px;
 }
 
 .dialog-modal.graybox-modal.mobile {
+  min-width: 417px;
   width: 417px;
+  min-height: 863px;
   border-radius: 66px;
   background: var(--gb-modal-bg);
   overflow-y: hidden;
 }
 
 .dialog-modal.graybox-modal.tablet {
-  width: 858px;
+  min-width: 858px;
   border-radius: 66px;
   background: var(--gb-modal-bg);
   border-top-right-radius: 60px 78px;
   border-bottom-right-radius: 51px 69px;
   border-bottom-left-radius: 55px 84px;
   overflow-y: hidden;
+  zoom: 0.8;
+  min-height: 1187px;
 }
 
 .dialog-modal.graybox-modal.mobile iframe {
   width: 391px;
-  height: 852px;
+  min-height: 852px;
   padding-left: 16px;
   margin-left: 4px;
 }
 
 .dialog-modal.graybox-modal.tablet iframe {
-  width: 808px;
-  height: 1194px;
+  width: 814px;
+  height: 1067px;
   padding-left: 26px;
-  margin-left: 6px;
-  margin-top: 62px;
-  margin-bottom: -62px;
+  padding-top: 57px;
+  margin-left: 5px;
+  margin-top: 8px;
 }
 
 .dialog-modal.graybox-modal button.dialog-close {
@@ -253,9 +263,9 @@ body.gb-overlay::before {
   z-index: calc(var(--above-all) - 1);
 }
 
-@media (max-height: 910px) {
+@media (max-height: 910px), (max-width: 420px) {
   body.gb-phone-preview::after {
-    content: "Expand window height to see full preview";
+    content: "Expand window to see full preview";
     position: fixed;
     right: 10px;
     bottom: 2px;
@@ -268,9 +278,9 @@ body.gb-overlay::before {
   }
 }
 
-@media (max-height: 1255px) {
+@media (max-height: 1040px), (max-width: 710px) {
   body.gb-tablet-preview::after {
-    content: "Expand window height to see full preview";
+    content: "Expand window to see full preview";
     position: fixed;
     right: 10px;
     bottom: 2px;

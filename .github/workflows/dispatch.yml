@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3    
-      - uses: dorny/paths-filter@v2
+        uses: actions/checkout@v4    
+      - uses: dorny/paths-filter@v3
         id: changes
         with:
           base: ${{ github.ref }}
@@ -23,7 +23,7 @@ jobs:
               - 'libs/**'    
       - if: steps.changes.outputs.src == 'true'
         name: Trigger DC Workflow
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.DC_PAT }}
           script: |
