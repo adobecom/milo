@@ -510,14 +510,32 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 .con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
 div[class*='-up'] .con-block.full-width { grid-column: 1 /-1; }
+
+.advanced .con-block.has-bg,
 div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
+
+.advanced .con-block.has-bg.xs-spacing,
 div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
+
+.advanced .con-block.has-bg.s-spacing,
 div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
+
+.advanced .con-block.has-bg.m-spacing,
 div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
+
+.advanced .con-block.has-bg.l-spacing,
 div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
+
+.advanced .con-block.has-bg.xl-spacing,
 div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
+
+.advanced .con-block.has-bg.xxl-spacing,
 div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+
+.advanced .con-block.has-bg.xxxl-spacing,
 div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
+
+.advanced .con-block.has-bg.no-spacing,
 div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 
 .con-block .foreground { position: relative; }
