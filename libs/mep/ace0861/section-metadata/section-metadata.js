@@ -1,21 +1,6 @@
 import { handleFocalpoint } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
-// function handleBackground(div, section) { //why div? ... meh
-//   const pic = div.background.content?.querySelector('picture');
-//   if (pic) {
-//     section.classList.add('has-background');
-//     pic.classList.add('section-background');
-//     handleFocalpoint(pic, div.background.content);
-//     section.insertAdjacentElement('afterbegin', pic);
-//   } else {
-//     const color = div.background.content?.textContent;
-//     if (color) {
-//       section.style.background = color;
-//     }
-//   }
-// }
-
 function handleBackground(background, section, breakpoints) {
   const pic = background.content?.querySelector('picture');
   if (pic) {
@@ -112,10 +97,6 @@ export default async function init(el) {
   if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background || metadata['background-mobile'] || metadata['background-tablet'] || metadata['background-desktop']) {
     const backgrounds = [];
-    //  moving forward, set background, or background-mobile first if necessary.
-    //  if no tablet needed, set mobile and desktop only
-    //  if only background, or mobile is set, then bg gets 'viewports-all' class instead of onlys
-    //  if only 2 backgrounds are found, first is mobile, second is desktop regardless of naming
     if (metadata.background) {
       backgrounds.push(metadata.background);
     } else if (metadata['background-mobile']) {
