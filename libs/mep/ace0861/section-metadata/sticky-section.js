@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag } from '../../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
 
 function handleTopHeight(section) {
@@ -46,7 +46,7 @@ export default async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
   switch (sticky) {
     case 'sticky-top': {
-      const { debounce } = await import('../../utils/action.js');
+      const { debounce } = await import('../../../utils/action.js');
       window.addEventListener('resize', debounce(() => handleTopHeight(section)));
       main.prepend(section);
       break;
