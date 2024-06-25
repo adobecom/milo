@@ -39,6 +39,58 @@
   --s2-transparent-black-400: rgb(0 0 0 / 22%);
   --s2-transparent-black-800: rgb(0 0 0 / 84%);
   --s2-transparent-black-900: rgb(0 0 0 / 93%);
+  --s2-gray-25: rgb(255 255 255);
+  --s2-gray-50: rgb(248 248 248);
+  --s2-gray-100: rgb(233 233 233);
+  --s2-gray-300: rgb(218 218 218);
+  --s2-gray-400: rgb(198 198 198);
+  --s2-gray-500: rgb(143 143 143);
+  --s2-gray-700: rgb(80 80 80);
+  --s2-gray-800: rgb(41 41 41);
+  --s2-gray-900: rgb(19 19 19);
+  --s2-blue-800: rgb(75 117 255);
+  --s2-blue-900: rgb(59 99 251);
+  --s2-blue-1000: rgb(39 77 234);
+  --s2-red-200: rgb(255 235 232);
+  --s2-red-300: rgb(255 214 209);
+  --s2-red-600: rgb(255 118 101);
+  --s2-red-800: rgb(240 56 35);
+  --s2-red-900: rgb(215 50 32);
+  --s2-red-1000: rgb(183 40 24);
+  --s2-red-1100: rgb(156 33 19);
+  --s2-orange-600: rgb(252 125 0);
+  --s2-orange-700: rgb(232 106 0);
+  --s2-yellow-400: rgb(245 199 0);
+  --s2-yellow-600: rgb(210 149 0);
+  --s2-celery-600: rgb(93 180 31);
+  --s2-celery-700: rgb(82 161 25);
+  --s2-green-700: rgb(11 164 93);
+  --s2-green-900: rgb(5 131 78);
+  --s2-green-1000: rgb(3 110 69);
+  --s2-seafoam-700: rgb(11 162 134);
+  --s2-seafoam-900: rgb(7 129 109);
+  --s2-cyan-600: rgb(48 167 254);
+  --s2-cyan-900: rgb(11 120 179);
+  --s2-indigo-800: rgb(122 106 253);
+  --s2-indigo-900: rgb(113 85 250);
+  --s2-purple-800: rgb(166 92 231);
+  --s2-purple-900: rgb(154 71 226);
+  --s2-fuchsia-800: rgb(200 68 220);
+  --s2-fuchsia-900: rgb(181 57 200);
+  --s2-magenta-800: rgb(240 45 110);
+  --s2-magenta-900: rgb(217 35 97);
+  --s2-pink-800: rgb(228 52 163);
+  --s2-pink-900: rgb(206 42 146);
+  --s2-turquoise-800: rgb(10 141 153);
+  --s2-turquoise-900: rgb(8 126 137);
+  --s2-brown-800: rgb(154 123 77);
+  --s2-brown-900: rgb(139 109 66);
+  --s2-silver-800: rgb(128 128 128);
+  --s2-silver-900: rgb(114 114 114);
+  --s2-cinnamon-800: rgb(184 109 70);
+  --s2-cinnamon-900: rgb(170 94 56);
+  --s2-drop-shadow-color-100: rgb(0 0 0 / 12%);
+  --s2-drop-shadow-color-200: rgb(0 0 0 / 16%);
   /* S2 Color Spec (semantic) */
   --s2-informative-color-800: var(--s2-blue-800);
   --s2-negative-color-200: var(--s2-red-200);
@@ -268,7 +320,7 @@
   --s2-corner-radius-900: 16px; /* S2 missing */
   --sn-corner-radius-1000: 20px; /* NARRATIVE */
   --sn-corner-radius-1100: 24px; /* NARRATIVE */
-  --s2-corner-radius-2000: 50% ; /* S2 missing */
+  --s2-corner-radius-2000: 32px ; /* S2 missing */
 
   /*** S2 Spacing Spec ***/
   --s2-spacing-75: 4px;
@@ -767,7 +819,10 @@ svg.icon-milo, img.icon-milo {
   --m-button-height: 32px;
 
   height: var(--m-button-height);
+  line-height: var(--m-button-height);
   box-sizing: border-box; 
+  text-align: center;
+  vertical-align: middle;
   display: inline-block;
   font-style: normal;
   text-decoration: none;
@@ -776,7 +831,7 @@ svg.icon-milo, img.icon-milo {
   border: 2px solid var(--s2-gray-800);
   color: var(--s2-transparent-black-800);
   font-size: var(--s2-font-size-100);
-  padding: calc((var(--m-button-height) - var(--s2-font-size-100)) / 2) 14px;
+  padding: 0 14px;
   font-weight: var(--s2-bold-font-weight);
   min-width: 72px;
 }
@@ -809,8 +864,9 @@ svg.icon-milo, img.icon-milo {
   --l-button-height: 40px;
 
   height: var(--l-button-height);
+  line-height: var(--l-button-height);
   font-size: var(--s2-font-size-200);
-  padding: calc((var(--l-button-height) - var(--s2-font-size-200)) / 2) 16px;
+  padding: 0 16px;
   min-width: 90px;
 }
 
@@ -818,9 +874,10 @@ svg.icon-milo, img.icon-milo {
 .con-button.button-xl {
   --xl-button-height: 48px;
 
-  font-size: var(--s2-font-size-300);
   height: var(--xl-button-height);
-  padding: calc((var(--xl-button-height) - var(--s2-font-size-300)) / 2) 18px;
+  line-height: var(--xl-button-height);
+  font-size: var(--s2-font-size-300);
+  padding: 0 18px;
   min-width: 108px;
 }
 
@@ -828,19 +885,21 @@ svg.icon-milo, img.icon-milo {
 .con-button.button-xxl { 
   --xxl-button-height: 56px;
 
-  font-size: var(--s2-font-size-400);
   height: var(--xxl-button-height);
-  padding: calc((var(--xxl-button-height) - var(--s2-font-size-400)) / 2) 20px;
+  line-height: var(--xxl-button-height);
+  font-size: var(--s2-font-size-400);
+  padding: 0 20px;
   min-width: 126px;
 }
 
 .xxl-button-mobile .con-button, /* S2 only */
-.con-button.button-xxl { 
+.con-button.button-mobile-xxl { 
   --xxl-button-height: 64px;
 
-  font-size: var(--s2-font-size-400);
   height: var(--xxl-button-height);
-  padding: calc((var(--xxl-button-height) - var(--s2-font-size-400)) / 2) 20px;
+  line-height: var(--xxl-button-height);
+  font-size: var(--s2-font-size-400);
+  padding: 0 20px;
   min-width: 135px;
 }
 
@@ -872,7 +931,6 @@ svg.icon-milo, img.icon-milo {
   background-color: var(--color-gray-100);
   color: var(--color-gray-400)
 }
-
 
 /* Primary Buttons Black */
 .con-button.fill, .con-button.primary-black-button {
@@ -1488,62 +1546,6 @@ a.static:hover, a.secondary-link:hover, a.secondary-link:active, a.secondary-lin
 /* desktop large up */
 @media screen and (min-width: 1680px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
-}
-
-.light {
-  /* Color Spec */
-  --s2-gray-25: rgb(255 255 255);
-  --s2-gray-50: rgb(248 248 248);
-  --s2-gray-100: rgb(233 233 233);
-  --s2-gray-300: rgb(218 218 218);
-  --s2-gray-400: rgb(198 198 198);
-  --s2-gray-500: rgb(143 143 143);
-  --s2-gray-700: rgb(80 80 80);
-  --s2-gray-800: rgb(41 41 41);
-  --s2-gray-900: rgb(19 19 19);
-  --s2-blue-800: rgb(75 117 255);
-  --s2-blue-900: rgb(59 99 251);
-  --s2-blue-1000: rgb(39 77 234);
-  --s2-red-200: rgb(255 235 232);
-  --s2-red-300: rgb(255 214 209);
-  --s2-red-600: rgb(255 118 101);
-  --s2-red-800: rgb(240 56 35);
-  --s2-red-900: rgb(215 50 32);
-  --s2-red-1000: rgb(183 40 24);
-  --s2-red-1100: rgb(156 33 19);
-  --s2-orange-600: rgb(252 125 0);
-  --s2-orange-700: rgb(232 106 0);
-  --s2-yellow-400: rgb(245 199 0);
-  --s2-yellow-600: rgb(210 149 0);
-  --s2-celery-600: rgb(93 180 31);
-  --s2-celery-700: rgb(82 161 25);
-  --s2-green-700: rgb(11 164 93);
-  --s2-green-900: rgb(5 131 78);
-  --s2-green-1000: rgb(3 110 69);
-  --s2-seafoam-700: rgb(11 162 134);
-  --s2-seafoam-900: rgb(7 129 109);
-  --s2-cyan-600: rgb(48 167 254);
-  --s2-cyan-900: rgb(11 120 179);
-  --s2-indigo-800: rgb(122 106 253);
-  --s2-indigo-900: rgb(113 85 250);
-  --s2-purple-800: rgb(166 92 231);
-  --s2-purple-900: rgb(154 71 226);
-  --s2-fuchsia-800: rgb(200 68 220);
-  --s2-fuchsia-900: rgb(181 57 200);
-  --s2-magenta-800: rgb(240 45 110);
-  --s2-magenta-900: rgb(217 35 97);
-  --s2-pink-800: rgb(228 52 163);
-  --s2-pink-900: rgb(206 42 146);
-  --s2-turquoise-800: rgb(10 141 153);
-  --s2-turquoise-900: rgb(8 126 137);
-  --s2-brown-800: rgb(154 123 77);
-  --s2-brown-900: rgb(139 109 66);
-  --s2-silver-800: rgb(128 128 128);
-  --s2-silver-900: rgb(114 114 114);
-  --s2-cinnamon-800: rgb(184 109 70);
-  --s2-cinnamon-900: rgb(170 94 56);
-  --s2-drop-shadow-color-100: rgb(0 0 0 / 12%);
-  --s2-drop-shadow-color-200: rgb(0 0 0 / 16%);
 }
 
 .dark {
