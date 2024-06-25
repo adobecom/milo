@@ -70,6 +70,38 @@
   padding: var(--spacing-xxs) 0;
 }
 
+.section.xxxl-padding {
+  padding: var(--spacing-xxxl);
+}
+
+.section.xxl-padding {
+  padding: var(--spacing-xxl);
+}
+
+.section.xl-padding {
+  padding: var(--spacing-xl);
+}
+
+.section.l-padding {
+  padding: var(--spacing-l);
+}
+
+.section.m-padding {
+  padding: var(--spacing-m);
+}
+
+.section.s-padding {
+  padding: var(--spacing-s);
+}
+
+.section.xs-padding {
+  padding: var(--spacing-xs);
+}
+
+.section.xxs-padding {
+  padding: var(--spacing-xxs);
+}
+
 .section div.section-background {
   display: block;
   position: absolute;
@@ -237,6 +269,15 @@ main > .section[class*='-up'] > .content {
   }
 }
 
+@media screen and (max-width: 900px) {
+  .section.two-up.one-up-tablet,
+  .section.three-up.one-up-tablet,
+  .section.four-up.one-up-tablet,
+  .section.five-up.one-up-tablet {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media screen and (min-width: 720px) {
   .section.grid-width-6 {
     padding-left: calc((100vw - 600px) / 2);
@@ -266,19 +307,19 @@ main > .section[class*='-up'] > .content {
 
 @media screen and (min-width: 1200px) {
   .section.two-up {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .section.three-up {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .section.four-up {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .section.five-up {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .section.grid-template-columns-1-2 {
