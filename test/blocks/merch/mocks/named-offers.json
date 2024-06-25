@@ -969,5 +969,121 @@
         "merchant": "ADOBE"
       }
     ]
-  }
+  },
+  {"resolvedOffers":[{"offerSelectorIds":["6jAp4YpZosSe5N5bCVbDcomwBmDLgN3RqZwXmn5ZR1s"],"offerId":"13F9169A5EA8997CDB23379393AC0649","startDate":"2020-09-26T14:46:00.000Z","priceDetails":{"price":239.88,"priceWithoutTax":0.0,"priceWithoutDiscountAndTax":239.88,"usePrecision":true,"formatString":"'US$'#,##0.00","taxDisplay":"TAX_EXCLUSIVE","taxTerm":"TAX"},"analytics":"{\"offerId\":\"13F9169A5EA8997CDB23379393AC0649\",\"label\":\"ccsn_direct_individual\",\"price\":\"239.88\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"ANNUAL\",\"currencyCode\":\"USD\"}","productArrangementCode":"ccsn_direct_individual","productArrangement":{"productFamily":"CC_ALL_APPS"},"buyingProgram":"RETAIL","commitment":"YEAR","term":"ANNUAL","customerSegment":"INDIVIDUAL","marketSegments":["EDU"],"salesChannel":"DIRECT","offerType":"TRIAL","pricePoint":"TRIAL_TRIAL_STE_FIRST_YEAR_ABM_US_ONLY","language":"MULT","merchant":"ADOBE"}]},
+  {
+    "resolvedOffers": [
+        {
+            "offerSelectorIds": [
+                "mDRZh8l0NL1Eh0loB2nfURJ9Cy031JbEHo3GloTOZLY"
+            ],
+            "offerId": "977D4D822396D2F19CF2C9C1F9E2398F",
+            "startDate": "2021-12-08T08:01:00.000Z",
+            "endDate": "2050-01-31T19:59:00.000Z",
+            "priceDetails": {
+                "price": 263.88,
+                "priceWithoutTax": 0.0,
+                "priceWithoutDiscountAndTax": 263.88,
+                "usePrecision": true,
+                "formatString": "'US$'#,##0.00",
+                "taxDisplay": "TAX_EXCLUSIVE",
+                "taxTerm": "TAX"
+            },
+            "analytics": "{\"offerId\":\"977D4D822396D2F19CF2C9C1F9E2398F\",\"label\":\"ppro_direct_individual\",\"price\":\"263.88\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"ANNUAL\",\"currencyCode\":\"USD\"}",
+            "productArrangementCode": "ppro_direct_individual",
+            "productArrangement": {
+                "productFamily": "PREMIERE"
+            },
+            "buyingProgram": "RETAIL",
+            "commitment": "YEAR",
+            "term": "ANNUAL",
+            "customerSegment": "INDIVIDUAL",
+            "marketSegments": [
+                "COM"
+            ],
+            "salesChannel": "DIRECT",
+            "offerType": "TRIAL",
+            "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
+            "language": "MULT",
+            "merchant": "ADOBE"
+        }
+    ]
+},
+{
+  "resolvedOffers": [
+      {
+          "offerSelectorIds": [
+              "nxoCqokhUYskPBG6p9_U4nfRhpMBdLmAidNSUWKHG_c"
+          ],
+          "offerId": "0D55F09EEA2E00977BCC3171A5B86333",
+          "startDate": "2021-12-08T08:01:00.000Z",
+          "endDate": "2050-01-31T19:59:00.000Z",
+          "priceDetails": {
+              "price": 22.99,
+              "priceWithoutTax": 0.0,
+              "priceWithoutDiscountAndTax": 22.99,
+              "usePrecision": true,
+              "formatString": "'US$'#,##0.00",
+              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxTerm": "TAX"
+          },
+          "analytics": "{\"offerId\":\"0D55F09EEA2E00977BCC3171A5B86333\",\"label\":\"ppro_direct_individual\",\"price\":\"22.99\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+          "productArrangementCode": "ppro_direct_individual",
+          "productArrangement": {
+              "productFamily": "PREMIERE"
+          },
+          "buyingProgram": "RETAIL",
+          "commitment": "YEAR",
+          "term": "MONTHLY",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": [
+              "COM"
+          ],
+          "salesChannel": "DIRECT",
+          "offerType": "TRIAL",
+          "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
+          "language": "MULT",
+          "merchant": "ADOBE"
+      }
+  ]
+},
+{
+  "resolvedOffers": [
+      {
+          "offerSelectorIds": [
+              "y98h276r1i7FXamJzbTF2PnMUHZ8fuLxYPAe49Jj2sg"
+          ],
+          "offerId": "6542F986418521B61724E9E6E8FF9F77",
+          "startDate": "2021-12-08T08:01:00.000Z",
+          "endDate": "2050-01-31T19:59:00.000Z",
+          "priceDetails": {
+              "price": 34.49,
+              "priceWithoutTax": 0.0,
+              "priceWithoutDiscountAndTax": 34.49,
+              "usePrecision": true,
+              "formatString": "'US$'#,##0.00",
+              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxTerm": "TAX"
+          },
+          "analytics": "{\"offerId\":\"6542F986418521B61724E9E6E8FF9F77\",\"label\":\"ppro_direct_individual\",\"price\":\"34.49\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"MONTH\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+          "productArrangementCode": "ppro_direct_individual",
+          "productArrangement": {
+              "productFamily": "PREMIERE"
+          },
+          "buyingProgram": "RETAIL",
+          "commitment": "MONTH",
+          "term": "MONTHLY",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": [
+              "COM"
+          ],
+          "salesChannel": "DIRECT",
+          "offerType": "TRIAL",
+          "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
+          "language": "MULT",
+          "merchant": "ADOBE"
+      }
+  ]
+}
+
 ]

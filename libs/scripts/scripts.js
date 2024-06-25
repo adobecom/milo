@@ -14,10 +14,19 @@ import {
   loadArea,
   loadLana,
   setConfig,
+  getMetadata,
 } from '../utils/utils.js';
 
 // Production Domain
 const prodDomains = ['milo.adobe.com'];
+
+const stageDomainsMap = {
+  'www.adobe.com': 'www.stage.adobe.com',
+  'blog.adobe.com': 'blog.stage.adobe.com',
+  'business.adobe.com': 'business.stage.adobe.com',
+  'helpx.adobe.com': 'helpx.stage.adobe.com',
+  'news.adobe.com': 'news.stage.adobe.com',
+};
 
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
@@ -127,6 +136,7 @@ const config = {
   codeRoot: '/libs',
   locales,
   prodDomains,
+  stageDomainsMap,
   jarvis: {
     id: 'milo',
     version: '1.0',
@@ -152,6 +162,7 @@ const eagerLoad = (img) => {
 }());
 
 (async function loadPage() {
+  if (getMetadata('template') === '404') window.SAMPLE_PAGEVIEWS_AT_RATE = 'high';
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });

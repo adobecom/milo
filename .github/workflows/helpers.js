@@ -43,15 +43,21 @@ const RCPDates = [
   },
 ];
 
-const isWithinRCP = () => {
+const isWithinRCP = (offset = 0) => {
   const now = new Date();
   if (now.getFullYear() !== CURRENT_YEAR) {
     console.log(`ADD NEW RCPs for ${CURRENT_YEAR + 1}`);
     return true;
   }
 
-  if (RCPDates.some(({ start, end }) => start <= now && now <= end)) {
-    console.log('Current date is within a RCP. Stopping execution.');
+  if (RCPDates.some(({ start, end }) => {
+    const adjustedStart = new Date(start);
+    adjustedStart.setDate(adjustedStart.getDate() - offset);
+    return start <= now && now <= end
+  })) {
+    console.log(
+      'Current date is within a RCP (2 days earlier for stage, to keep stage clean & make CSO contributions during an RCP easier). Stopping execution.'
+    );
     return true;
   }
 

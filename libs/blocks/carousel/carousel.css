@@ -20,6 +20,11 @@
   margin-bottom: 1.8rem;
 }
 
+/* Late loading controls */
+.carousel .is-delayed {
+  visibility: hidden;
+}
+
 .carousel .carousel-wrapper {
   position: relative;
   overflow: hidden;

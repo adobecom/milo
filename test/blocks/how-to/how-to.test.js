@@ -98,4 +98,11 @@ describe('How To', () => {
     const howToList = document.querySelector('#test4 ol');
     expect(howToList).to.exist;
   });
+
+  it('Renders a video', async () => {
+    const howTo = document.querySelector('#test5');
+    init(howTo);
+    const howToList = document.querySelector('#test5 a');
+    expect(howToList).to.exist;
+  });
 });
