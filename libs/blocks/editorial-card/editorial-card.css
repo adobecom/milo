@@ -1,10 +1,15 @@
+
+.editorial-card,
+.editorial-card::after,
+.editorial-card::before {
+    box-sizing: border-box;
+}
+
 .editorial-card {
   border: 1px solid var(--color-gray-300);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-width: 300px;
-  max-width: 379px;
 }
 
 .dark .editorial-card,
@@ -27,9 +32,12 @@
 [class*=-up] .editorial-card {
   max-width: none;
   width: 100%;
+  min-width: initial;
 }
 
-.flex-grid .editorial-card {  width: 100%; }
+.flex-grid .editorial-card {  
+  min-width: 100%; 
+}
 
 .editorial-card .media-area picture,
 .editorial-card .foreground picture {
@@ -236,3 +244,12 @@
 .editorial-card.footer-align-left .action-area { justify-content: left; }
 .editorial-card.footer-align-center .footer > div { text-align: center; }
 .editorial-card.footer-align-center .action-area { justify-content: center; }
+
+
+/* Tablet up */
+@media screen and (min-width: 600px) {
+  .flex-grid .editorial-card {
+    min-width: unset;
+    max-width: unset;
+  }
+}
