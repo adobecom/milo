@@ -1279,7 +1279,7 @@ const defaultAllowedOrigins = [
 
 let federatedContentRoot;
 export const getFederatedContentRoot = () => {
-  const { allowedOrigins } = getConfig();
+  const { allowedOrigins = [] } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
 
   const { origin } = window.location;
