@@ -1,7 +1,7 @@
 import { getSheet } from '../../../../tools/utils/utils.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { Task } from '../../../deps/lit-task.min.js';
-import login from '../../../tools/sharepoint/login.js';
+// import login from '../../../tools/sharepoint/login.js';
 import {
   accessToken,
   accessTokenExtra,
@@ -32,7 +32,7 @@ const KEYS = {
   },
 };
 
-const TELEMETRY = { application: { appName: 'Adobe Graybox Promote' } };
+// const TELEMETRY = { application: { appName: 'Adobe Graybox Promote' } };
 
 const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
   let res;
@@ -97,7 +97,8 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
       grayboxData,
       KEYS.CONFIG.PROMOTE_URL[(grayboxIoEnv || 'prod').toUpperCase()],
     ),
-    promoteIgnorePaths: sheet.promoteignorepaths?.data?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
+    promoteIgnorePaths: sheet.promoteignorepaths?.data
+      ?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
       .join(','),
   };
 };
@@ -126,19 +127,19 @@ class GrayboxPromote extends LitElement {
     super();
 
     this.spLogin = async () => {
-      const scopes = ['files.readwrite', 'sites.readwrite.all'];
-      const extraScopes = [`${origin}/.default`];
       // TODO - delete below
       this.spToken = '1234';
       return null;
-      // TODO - delete above
-      return login({ scopes, extraScopes, telemetry: TELEMETRY })
-        .then(() => {
-          this.spToken = accessToken.value || accessTokenExtra.value;
-        })
-        .catch((error) => {
-          throw error;
-        });
+      // TODO - uncomment below
+      // const scopes = ['files.readwrite', 'sites.readwrite.all'];
+      // const extraScopes = [`${origin}/.default`];
+      // return login({ scopes, extraScopes, telemetry: TELEMETRY })
+      //   .then(() => {
+      //     this.spToken = accessToken.value || accessTokenExtra.value;
+      //   })
+      //   .catch((error) => {
+      //     throw error;
+      //   });
     };
 
     this.getValuesTask = new Task(this, {
@@ -166,25 +167,23 @@ class GrayboxPromote extends LitElement {
             </p>
             <button @click="${() => this.getSpTokenTask.run()}">Login</button>
           `;
-        } else {
-          return html` <p>Are you sure you want to promote the content for ${experienceName}?</p>
+        }
+        return html` <p>Are you sure you want to promote the content for ${experienceName}?</p>
             <button
-              @click="${() =>
-                this.promoteTask.run({
-                  experienceName,
-                  promoteUrl,
-                  promoteDraftsOnly,
-                  promoteIgnorePaths,
-                  spData,
-                  repo,
-                  ref,
-                  owner,
-                  url,
-                })}"
+              @click="${() => this.promoteTask.run({
+    experienceName,
+    promoteUrl,
+    promoteDraftsOnly,
+    promoteIgnorePaths,
+    spData,
+    repo,
+    ref,
+    owner,
+    url,
+  })}"
             >
               Promote
             </button>`;
-        }
       },
       args: () => [],
     });
@@ -214,20 +213,21 @@ class GrayboxPromote extends LitElement {
         ref,
         owner,
         url,
-        spData
+        spData,
       }) => {
         try {
-          const {root, gbRoot, driveId} = spData;
+          const { root, gbRoot, driveId } = spData;
           const mainRepo = repo.replace('-graybox', '');
           const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${root}&gbRootFolder=${gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}%26repo=${mainRepo}%26owner=${owner}`}%26host=business.adobe.com%26project=${mainRepo.toUpperCase()}%26referrer=MOCK_REF&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
           const promoteRes = await promote.json();
           if (promoteRes?.code === 200) {
             return 'Successfully promoted';
-          } else {
-            throw new Error('Could not promote. Please try again.');
           }
+          throw new Error('Could not promote. Please try again.');
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.log(e);
+          return 'Failed to promote.';
         }
       },
       autoRun: false,
@@ -238,23 +238,22 @@ class GrayboxPromote extends LitElement {
     return html`
       <div class="wrapper">
         ${this.getSpTokenTask.render({
-          pending: () => html`<p>Logging in to sharepoint...</p>`,
-          complete: () => {},
-          error: (err) =>
-            html`<p>Error getting sharepoint token: ${err.message}</p>`,
-        })}
+    pending: () => html`<p>Logging in to sharepoint...</p>`,
+    complete: () => {},
+    error: (err) => html`<p>Error getting sharepoint token: ${err.message}</p>`,
+  })}
         ${this.promoteTask.render({
-          pending: () => html`<p>Promoting...</p>`,
-          complete: (i) => i,
-          error: (err) => html`<p>${err}</p>`,
-        })}
+    pending: () => html`<p>Promoting...</p>`,
+    complete: (i) => i,
+    error: (err) => html`<p>${err}</p>`,
+  })}
         ${
-          [1,2].includes(this.promoteTask.status) ? '' :
-          this.getValuesTask.render({
-          pending: () => html`<p>Loading...</p>`,
-          complete: (i) => i,
-          error: (err) => html`<p>${err.message}</p>`,
-        })}
+  [1, 2].includes(this.promoteTask.status) ? ''
+    : this.getValuesTask.render({
+      pending: () => html`<p>Loading...</p>`,
+      complete: (i) => i,
+      error: (err) => html`<p>${err.message}</p>`,
+    })}
       </div>
     `;
   }
