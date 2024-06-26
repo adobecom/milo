@@ -49,8 +49,9 @@ const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
   return sheet;
 };
 
-// eslint-disable-next-line
-const getSheetValue = (data, key) => data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
+const getSheetValue = (data, key) => data?.find(
+  (obj) => obj.key?.toLowerCase() === key?.toLowerCase(),
+)?.value;
 
 const getAemInfo = () => {
   const search = new URLSearchParams(window.location.search);
