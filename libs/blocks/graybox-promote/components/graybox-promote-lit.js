@@ -49,9 +49,8 @@ const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
   return sheet;
 };
 
-const getSheetValue = (data, key) => {
-  return data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
-}
+// eslint-disable-next-line
+const getSheetValue = (data, key) => data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
 
 const getAemInfo = () => {
   const search = new URLSearchParams(window.location.search);
@@ -98,9 +97,7 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
       grayboxData,
       KEYS.CONFIG.PROMOTE_URL[(grayboxIoEnv || 'prod').toUpperCase()],
     ),
-    promoteIgnorePaths: sheet.promoteignorepaths?.data?.map((item) => {
-      return item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS]
-    })
+    promoteIgnorePaths: sheet.promoteignorepaths?.data?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
       .join(','),
   };
 };
@@ -158,7 +155,7 @@ class GrayboxPromote extends LitElement {
         const spData = await getSharepointData(url);
         if (!enablePromote) {
           throw new Error(
-            'sharepoint.site.enablePromote is not enabled in graybox config'
+            'sharepoint.site.enablePromote is not enabled in graybox config',
           );
         }
 
@@ -230,7 +227,7 @@ class GrayboxPromote extends LitElement {
             throw new Error('Could not promote. Please try again.');
           }
         } catch (e) {
-          console.error(e);
+          console.log(e);
         }
       },
       autoRun: false,
