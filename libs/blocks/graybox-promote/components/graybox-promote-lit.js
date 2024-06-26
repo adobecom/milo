@@ -49,7 +49,9 @@ const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
   return sheet;
 };
 
-const getSheetValue = (data, key) => data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
+const getSheetValue = (data, key) => {
+  return data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
+}
 
 const getAemInfo = () => {
   const search = new URLSearchParams(window.location.search);
@@ -94,9 +96,11 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
     enablePromote: getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
     promoteUrl: getSheetValue(
       grayboxData,
-      KEYS.CONFIG.PROMOTE_URL[(grayboxIoEnv || 'prod').toUpperCase()]
+      KEYS.CONFIG.PROMOTE_URL[(grayboxIoEnv || 'prod').toUpperCase()],
     ),
-    promoteIgnorePaths: sheet.promoteignorepaths?.data?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
+    promoteIgnorePaths: sheet.promoteignorepaths?.data?.map((item) => {
+      return item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS]
+    })
       .join(','),
   };
 };
@@ -127,10 +131,10 @@ class GrayboxPromote extends LitElement {
     this.spLogin = async () => {
       const scopes = ['files.readwrite', 'sites.readwrite.all'];
       const extraScopes = [`${origin}/.default`];
-          //TODO - delete below
-          this.spToken = '1234';
-          return null;
-          //TODO - delete above
+      // TODO - delete below
+      this.spToken = '1234';
+      return null;
+      // TODO - delete above
       return login({ scopes, extraScopes, telemetry: TELEMETRY })
         .then(() => {
           this.spToken = accessToken.value || accessTokenExtra.value;
@@ -226,7 +230,7 @@ class GrayboxPromote extends LitElement {
             throw new Error('Could not promote. Please try again.');
           }
         } catch (e) {
-          console.log(e);
+          console.error(e);
         }
       },
       autoRun: false,
