@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
 import {
@@ -963,7 +964,11 @@ export async function init(enablements = {}) {
   }
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
-    manifests = manifests.concat(await getTargetPersonalization());
+    const { targetManifests, targetPropositions } = await getTargetPersonalization();
+    manifests = manifests.concat(targetManifests);
+    if (targetPropositions?.length && window._satellite) {
+      window._satellite.track('propositionDisplay', targetPropositions);
+    }
   }
   try {
     await applyPers(manifests, postLCP);
