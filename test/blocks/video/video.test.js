@@ -93,71 +93,69 @@ describe('video uploaded using franklin bot', () => {
     expect(video.hasAttribute('data-hoverplay')).to.be.true;
   });
 
-  // Tests for play video in ViewPort
   it('decorate video with viewportplay only with autoplay', async () => {
     const block = document.querySelector('.video.autoplay.viewportplay');
     const a = block.querySelector('a');
-    const { href } = a;
-    a.textContent = href;
+    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.autoplay.viewportplay video');
+    const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
+
   it('decorate video with viewportplay only with autoplay1', async () => {
     const block = document.querySelector('.video.autoplay1.viewportplay');
     const a = block.querySelector('a');
-    const { href } = a;
-    a.textContent = href;
+    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.autoplay1.viewportplay video');
+    const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
+
   it('decorate video with no viewportplay with autoplay1 hoverplay', async () => {
     const block = document.querySelector('.video.autoplay1.hoverplay.no-viewportplay');
     const a = block.querySelector('a');
-    const { href } = a;
-    a.textContent = href;
+    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.autoplay1.hoverplay.no-viewportplay video');
+    const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
   });
+
   it('decorate video with no viewportplay with hoverplay', async () => {
     const block = document.querySelector('.video.hoverplay.no-viewportplay');
     const a = block.querySelector('a');
-    const { href } = a;
-    a.textContent = href;
+    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.hoverplay.no-viewportplay video');
+    const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
   });
+
   it('decorate video with no viewportplay no autoplay', async () => {
     const block = document.querySelector('.video.no-autoplay.no-viewportplay');
     const a = block.querySelector('a');
-    const { href } = a;
-    a.textContent = href;
+    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.no-autoplay.no-viewportplay video');
+    const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
   });
+
   it('decorate video with no viewportplay no autoplay1', async () => {
     const block = document.querySelector('.video.no-autoplay1.no-viewportplay');
     const a = block.querySelector('a');
-    const { href } = a;
-    a.textContent = href;
+    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
-    const video = await waitForElement('.video.no-autoplay1.no-viewportplay video');
+    const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
   });
 });
