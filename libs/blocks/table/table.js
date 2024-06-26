@@ -35,17 +35,10 @@ function handleHeading(table, headingCols) {
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
-      let bodyElem = elements[textStartIndex + 2];
+      const bodyElem = elements[textStartIndex + 2];
 
       if (pricingElem) {
         pricingElem.classList.add('pricing');
-        if (isPriceBottom) {
-          pricingElem.parentNode.insertBefore(
-            elements[textStartIndex + 2],
-            elements[textStartIndex + 1],
-          );
-          bodyElem = elements[textStartIndex + 1];
-        }
       }
       if (bodyElem) {
         bodyElem.classList.add('body');
@@ -61,15 +54,16 @@ function handleHeading(table, headingCols) {
         buttonsWrapper.append(btnWrapper);
       });
 
-      const row1 = createTag('div', { class: 'table-heading-content' });
-      const row2 = createTag('div', { class: 'table-heading-button' });
-      const row1LastIdx = isPriceBottom ? 3 : 4;
-      [...elements].forEach((e, idx) => {
-        if (idx < row1LastIdx) row1.appendChild(e);
-        else row2.appendChild(e);
+      const headingContent = createTag('div', { class: 'heading-content' });
+      const headingButton = createTag('div', { class: 'heading-button' });
+
+      [...elements].forEach((e) => {
+        if (e.classList.contains('pricing') && isPriceBottom) headingButton.appendChild(e);
+        else headingContent.appendChild(e);
       });
-      col.innerHTML = '';
-      col.append(row1, row2);
+
+      headingButton.appendChild(buttonsWrapper);
+      col.append(headingContent, headingButton);
     }
   });
 }
