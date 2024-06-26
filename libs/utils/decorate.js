@@ -230,7 +230,7 @@ export function handleObjectFit(bgRow) {
 
 export function getVideoIntersectionObserver() {
   if (!window?.videoIntersectionObs) {
-    window.videoIntersectionObs = new IntersectionObserver((entries) => {
+    window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const { intersectionRatio, target: video } = entry;
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
