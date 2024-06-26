@@ -634,7 +634,7 @@ describe('Utils', () => {
       const resultExperiment = resultConfig.mep.experiments[2];
       expect(resultConfig.mep.preview).to.be.true;
       expect(resultConfig.mep.experiments.length).to.equal(3);
-      expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
+      expect(resultExperiment.manifest).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
     });
   });
 

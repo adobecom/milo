@@ -917,81 +917,42 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
   return getMdValue(mdKey);
 };
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
-  let persManifests = [];
-
-  if (persEnabled) {
-    persManifests = persEnabled.toLowerCase()
-      .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath }));
-  }
-
-  if (promoEnabled) {
-    const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
-  }
-
-  if (mepParam && mepParam !== 'off') {
-    const persManifestPaths = persManifests.map((manifest) => {
-      const { manifestPath } = manifest;
-      if (manifestPath.startsWith('/')) return manifestPath;
-      try {
-        const url = new URL(manifestPath);
-        return url.pathname;
-      } catch (e) {
-        return manifestPath;
-      }
-    });
-
-    mepParam.split('---').forEach((manifestPair) => {
-      const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
-      if (!persManifestPaths.includes(manifestPath)) {
-        persManifests.push({ manifestPath });
-      }
-    });
-  }
-  return persManifests;
-};
-
 async function checkForPageMods() {
-  const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
+  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
-  const persEnabled = getMepEnablement('personalization');
-  const promoEnabled = getMepEnablement('manifestnames', PROMO_PARAM);
-  const targetEnabled = getMepEnablement('target');
-  const mepEnabled = persEnabled || targetEnabled || promoEnabled || mepParam;
-  if (!mepEnabled) return;
+  const pzn = getMepEnablement('personalization');
+  const promo = getMepEnablement('manifestnames', PROMO_PARAM);
+  const target = getMepEnablement('target');
+  if (!pzn && !target && !promo && !mepParam && !mepHighlight && !mepButton) return;
 
-  const config = getConfig();
-  config.mep = { targetEnabled };
-  loadLink(
-    `${config.base}/features/personalization/personalization.js`,
-    { as: 'script', rel: 'modulepreload' },
-  );
+  // const config = getConfig();
+  // config.mep = { target };
+  // loadLink(
+  //   `${config.base}/features/personalization/personalization.js`,
+  //   { as: 'script', rel: 'modulepreload' },
+  // );
 
-  const persManifests = await combineMepSources(persEnabled, promoEnabled, mepParam);
-  if (targetEnabled === true) {
-    await loadMartech({ persEnabled: true, persManifests, targetEnabled });
-    return;
+  // const persManifests = await combineMepSources(pzn, promo, mepParam);
+  if (target) {
+    loadMartech();
+  } else if (pzn) {
+    loadIms()
+      .then(() => {
+        if (window.adobeIMS.isSignedInUser()) loadMartech();
+      })
+      .catch((e) => { console.log('Unable to load IMS:', e); });
   }
-  if (!persManifests.length) return;
 
-  loadIms()
-    .then(() => {
-      if (window.adobeIMS.isSignedInUser()) loadMartech();
-    })
-    .catch((e) => { console.log('Unable to load IMS:', e); });
-
-  const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-  const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
-
-  await applyPers(manifests);
+  const { init } = await import('../features/personalization/personalization.js');
+  await init({
+    mepParam, mepHighlight, mepButton, pzn, promo, target,
+  });
 }
 
 async function loadPostLCP(config) {
   if (config.mep?.targetEnabled === 'gnav') {
-    await loadMartech({ persEnabled: true, postLCP: true });
+    const { init } = await import('../features/personalization/personalization.js');
+    init({ postLCP: true });
   } else {
     loadMartech();
   }

@@ -2,8 +2,9 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
-import { applyPers, matchGlob } from '../../../libs/features/personalization/personalization.js';
+import { applyPers, init, matchGlob, combineMepSources } from '../../../libs/features/personalization/personalization.js';
 import spoofParams from './spoofParams.js';
+import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -42,7 +43,7 @@ describe('Functional Test', () => {
 
     expect(document.querySelector('.marquee')).to.not.be.null;
     expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter2"]')).to.be.null;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
     const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter2"]');
     expect(fragment).to.not.be.null;
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
@@ -58,7 +59,7 @@ describe('Functional Test', () => {
     const secondMarquee = document.getElementsByClassName('marquee')[1];
     expect(secondMarquee).to.not.be.null;
 
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
 
     const fragment = document.querySelector('a[href="/fragments/replace/marquee/r2c1"]');
     expect(fragment).to.not.be.null;
@@ -76,7 +77,7 @@ describe('Functional Test', () => {
     expect(document.querySelector('.custom-block-2')).to.not.be.null;
     expect(document.querySelector('.custom-block-3')).to.not.be.null;
 
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
 
     expect(document.querySelector('.special-block')).to.be.null;
     expect(document.querySelector('.custom-block-2')).to.be.null;
@@ -112,20 +113,20 @@ describe('Functional Test', () => {
     config.mep = {};
     await loadManifestAndSetResponse('./mocks/manifestTestOrPromo.json');
     config = getConfig();
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
     expect(config.mep?.martech).to.be.undefined;
   });
 
   it('should choose chrome & logged out', async () => {
     await loadManifestAndSetResponse('./mocks/manifestWithAmpersand.json');
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
     const config = getConfig();
     expect(config.mep?.martech).to.equal('|chrome & logged|ampersand');
   });
 
   it('should choose not firefox', async () => {
     await loadManifestAndSetResponse('./mocks/manifestWithNot.json');
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
     const config = getConfig();
     expect(config.mep?.martech).to.equal('|not firefox|not');
   });
@@ -137,7 +138,7 @@ describe('Functional Test', () => {
     config.entitlements = () => Promise.resolve(['indesign-any', 'fireflies', 'after-effects-any']);
 
     await loadManifestAndSetResponse('./mocks/manifestUseEntitlements.json');
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
     expect(getConfig().mep?.martech).to.equal('|fireflies|manifest');
   });
 
@@ -146,7 +147,7 @@ describe('Functional Test', () => {
 
     await loadManifestAndSetResponse('./mocks/manifestInvalidSelector.json');
 
-    await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+    await init(mepSettings);
 
     assert.calledWith(window.console.log, 'Invalid selector: ', '.bad...selector');
     window.console.log.reset();
@@ -164,7 +165,7 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('milo');
     expect(document.querySelector('meta[property="og:image"]')).to.be.null;
 
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
 
     expect(geoMetadata.content).to.equal('on');
     expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
@@ -177,7 +178,7 @@ describe('Functional Test', () => {
     const config = getConfig();
     await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
     setTimeout(async () => {
-      await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+      await init(mepSettings);
       expect(config.mep.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
     }, 100);
   });
@@ -224,5 +225,36 @@ describe('matchGlob function', () => {
   it('should match child page', async () => {
     const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
     expect(result).to.be.true;
+  });
+});
+
+describe('MEP Utils', () => {
+  describe('combineMepSources', async () => {
+    it('yields an empty list when everything is undefined', async () => {
+      const manifests = await combineMepSources(undefined, undefined, undefined);
+      expect(manifests.length).to.equal(0);
+    });
+    it('combines promos and personalization', async () => {
+      document.head.innerHTML = await readFile({ path: '../../utils/mocks/mep/head-promo.html' });
+      const manifests = await combineMepSources('/pers/manifest.json', 'pre-black-friday-global,black-friday-global', undefined);
+      expect(manifests.length).to.equal(3);
+      expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
+      expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
+      expect(manifests[2].manifestPath).to.equal('/black-friday.json');
+    });
+    it('combines promos and personalization and mep param', async () => {
+      document.head.innerHTML = await readFile({ path: '../../utils/mocks/mep/head-promo.html' });
+      const manifests = await combineMepSources(
+        '/pers/manifest.json',
+        'pre-black-friday-global,black-friday-global',
+        '/pers/manifest.json--var1---/mep-param/manifest1.json--all---/mep-param/manifest2.json--all',
+      );
+      expect(manifests.length).to.equal(5);
+      expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
+      expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
+      expect(manifests[2].manifestPath).to.equal('/black-friday.json');
+      expect(manifests[3].manifestPath).to.equal('/mep-param/manifest1.json');
+      expect(manifests[4].manifestPath).to.equal('/mep-param/manifest2.json');
+    });
   });
 });

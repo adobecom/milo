@@ -867,64 +867,106 @@ export function handleFragmentCommand(command, a) {
 }
 
 export async function applyPers(manifests, postLCP = false) {
-  try {
-    const config = getConfig();
-    if (!postLCP) {
-      const {
-        mep: mepParam,
-        mepHighlight,
-        mepButton,
-      } = Object.fromEntries(PAGE_URL.searchParams);
-      config.mep = {
-        handleFragmentCommand,
-        preview: (mepButton !== 'off'
-          && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
-        variantOverride: parseMepParam(mepParam),
-        highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
-        mepParam,
-        targetEnabled: config.mep?.targetEnabled,
-      };
-    }
+  if (!manifests?.length) return;
+  let experiments = manifests;
+  const config = getConfig();
+  for (let i = 0; i < experiments.length; i += 1) {
+    experiments[i] = await getManifestConfig(experiments[i], config.mep?.variantOverride);
+  }
 
-    if (!manifests?.length) return;
-    let experiments = manifests;
-    for (let i = 0; i < experiments.length; i += 1) {
-      experiments[i] = await getManifestConfig(experiments[i], config.mep?.variantOverride);
-    }
+  experiments = cleanAndSortManifestList(experiments);
 
-    experiments = cleanAndSortManifestList(experiments);
+  let results = [];
 
-    let results = [];
+  for (const experiment of experiments) {
+    const result = await categorizeActions(experiment);
+    if (result) results.push(result);
+  }
+  results = results.filter(Boolean);
 
-    for (const experiment of experiments) {
-      const result = await categorizeActions(experiment);
-      if (result) {
-        results.push(result);
+  config.mep.experiments = [...config.mep.experiments, ...experiments];
+  config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
+  config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
+  config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+  if (!postLCP) handleCommands(config.mep.commands);
+  deleteMarkedEls();
+
+  const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
+  if (!pznList.length) return;
+
+  const pznVariants = pznList.map((r) => {
+    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
+    return val === 'default' ? 'nopzn' : val;
+  });
+  const pznManifests = pznList.map((r) => {
+    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
+    return getFileName(val).replace('.json', '').trim().slice(0, 15);
+  });
+  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+}
+
+export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
+  let persManifests = [];
+
+  if (persEnabled) {
+    persManifests = persEnabled.toLowerCase()
+      .split(/,|(\s+)|(\\n)/g)
+      .filter((path) => path?.trim())
+      .map((manifestPath) => ({ manifestPath }));
+  }
+
+  if (promoEnabled) {
+    const { default: getPromoManifests } = await import('./promo-utils.js');
+    persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
+  }
+
+  if (mepParam && mepParam !== 'off') {
+    const persManifestPaths = persManifests.map((manifest) => {
+      const { manifestPath } = manifest;
+      if (manifestPath.startsWith('/')) return manifestPath;
+      try {
+        const url = new URL(manifestPath);
+        return url.pathname;
+      } catch (e) {
+        return manifestPath;
       }
-    }
-    results = results.filter(Boolean);
-
-    config.mep.experiments ??= [];
-    config.mep.experiments = experiments;
-    config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
-    config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
-    config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
-
-    if (!postLCP) handleCommands(config.mep.commands);
-    deleteMarkedEls();
-
-    const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
-    if (!pznList.length) return;
-
-    const pznVariants = pznList.map((r) => {
-      const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-      return val === 'default' ? 'nopzn' : val;
     });
-    const pznManifests = pznList.map((r) => {
-      const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-      return getFileName(val).replace('.json', '').trim().slice(0, 15);
+
+    mepParam.split('---').forEach((manifestPair) => {
+      const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!persManifestPaths.includes(manifestPath)) {
+        persManifests.push({ manifestPath });
+      }
     });
-    config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  }
+  return persManifests;
+};
+
+export async function init(enablements = {}) {
+  let manifests = [];
+  const {
+    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
+  } = enablements;
+  const config = getConfig();
+  if (!postLCP) {
+    config.mep = {
+      handleFragmentCommand,
+      preview: (mepButton !== 'off'
+        && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+      variantOverride: parseMepParam(mepParam),
+      highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+      targetEnabled: target,
+      experiments: [],
+    };
+    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
+  }
+  if (target === true || (target === 'gnav' && postLCP)) {
+    const { getTargetPersonalization } = await import('../../martech/martech.js');
+    manifests = manifests.concat(await getTargetPersonalization());
+  }
+  try {
+    await applyPers(manifests, postLCP);
   } catch (e) {
     console.warn(e);
     window.lana?.log(`MEP Error: ${e.toString()}`);
