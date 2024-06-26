@@ -4,6 +4,7 @@ function getRichResultsForArticle(type, getMetadata) {
     '@type': type,
     headLine: getMetadata('og:title'),
     image: getMetadata('og:image'),
+    description: getMetadata('description'),
     datePublished: getMetadata('published'),
     dateModified: getMetadata('modified'),
     author: {
