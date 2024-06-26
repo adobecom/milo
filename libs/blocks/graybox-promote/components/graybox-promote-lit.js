@@ -86,7 +86,7 @@ const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
 
   const grayboxData = sheet.graybox?.data;
 
-  if (!grayboxIoEnv) grayboxIoEnv = 'stage';
+  if (!grayboxIoEnv) grayboxIoEnv = 'prod';
 
   return {
     promoteDraftsOnly:
