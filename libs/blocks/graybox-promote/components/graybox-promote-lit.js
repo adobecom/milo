@@ -12,7 +12,7 @@ import { getConfig } from '../../../utils/utils.js';
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 const styleSheet = await getSheet(
-  `${base}/blocks/graybox-promote/graybox-promote.css`
+  `${base}/blocks/graybox-promote/graybox-promote.css`,
 );
 
 const KEYS = {
@@ -49,8 +49,7 @@ const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
   return sheet;
 };
 
-const getSheetValue = (data, key) =>
-  data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
+const getSheetValue = (data, key) => data?.find((obj) => obj.key?.toLowerCase() === key?.toLowerCase())?.value;
 
 const getAemInfo = () => {
   const search = new URLSearchParams(window.location.search);
@@ -67,12 +66,12 @@ const getProjectInfo = async (referrer) => {
   const liveOrigin = url.origin.replace('.hlx.page', '.hlx.live');
   const sheet = await getJson(
     `${liveOrigin}${url.pathname}?sheet=settings`,
-    'Failed to fetch project info'
+    'Failed to fetch project info',
   );
   return {
     experienceName: getSheetValue(
       sheet.data,
-      KEYS.PROJECT_INFO.EXPERIENCE_NAME
+      KEYS.PROJECT_INFO.EXPERIENCE_NAME,
     ),
     grayboxIoEnv: getSheetValue(sheet.data, KEYS.PROJECT_INFO.GRAYBOX_IO_ENV),
   };
@@ -81,23 +80,21 @@ const getProjectInfo = async (referrer) => {
 const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
   const sheet = await getJson(
     `https://${ref}--${repo}--${owner}.hlx.live/.milo/graybox-config.json`,
-    'Failed to fetch graybox config'
+    'Failed to fetch graybox config',
   );
 
   const grayboxData = sheet.graybox?.data;
-
-  if (!grayboxIoEnv) grayboxIoEnv = 'prod';
 
   return {
     promoteDraftsOnly:
       getSheetValue(
         grayboxData,
-        KEYS.CONFIG.PROMOTE_DRAFTS_ONLY
+        KEYS.CONFIG.PROMOTE_DRAFTS_ONLY,
       )?.toLowerCase() === 'true',
-      enablePromote: getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
-      promoteUrl: getSheetValue(
+    enablePromote: getSheetValue(grayboxData, KEYS.CONFIG.ENABLE_PROMOTE)?.toLowerCase() === 'true',
+    promoteUrl: getSheetValue(
       grayboxData,
-      KEYS.CONFIG.PROMOTE_URL[grayboxIoEnv.toUpperCase()]
+      KEYS.CONFIG.PROMOTE_URL[(grayboxIoEnv || 'prod').toUpperCase()]
     ),
     promoteIgnorePaths: sheet.promoteignorepaths?.data?.map((item) => item?.[KEYS.CONFIG.PROMOTE_IGNORE_PATHS])
       .join(','),
