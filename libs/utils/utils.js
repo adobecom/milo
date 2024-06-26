@@ -92,16 +92,16 @@ const AUTO_BLOCKS = [
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
-  { fragment: '/fragments/' },
+  { fragment: '/fragments/', voidStyles: true },
   { instagram: 'https://www.instagram.com' },
-  { slideshare: 'https://www.slideshare.net' },
-  { tiktok: 'https://www.tiktok.com' },
+  { slideshare: 'https://www.slideshare.net', voidStyles: true },
+  { tiktok: 'https://www.tiktok.com', voidStyles: true },
   { twitter: 'https://twitter.com' },
   { vimeo: 'https://vimeo.com' },
   { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
-  { 'pdf-viewer': '.pdf' },
+  { 'pdf-viewer': '.pdf', voidStyles: true },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
 ];
@@ -448,6 +448,7 @@ export async function loadBlock(block) {
   }
 
   const name = block.classList[0];
+  const voidStyles = block.classList.contains('void-styles');
   const { miloLibs, codeRoot, mep } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
@@ -457,9 +458,9 @@ export async function loadBlock(block) {
 
   const blockPath = `${path}/${name}`;
 
-  const styleLoaded = new Promise((resolve) => {
+  const styleLoaded = !voidStyles ? new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
-  });
+  }) : '';
 
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
@@ -477,6 +478,7 @@ export async function loadBlock(block) {
       resolve();
     })();
   });
+
   await Promise.all([styleLoaded, scriptLoaded]);
   return block;
 }
@@ -560,8 +562,8 @@ export function decorateAutoBlock(a) {
     : a.href;
 
   return config.autoBlocks.find((candidate) => {
-    const key = Object.keys(candidate)[0];
-    const match = href.includes(candidate[key]);
+    const [[key, pattern], [, voidStyles] = []] = Object.entries(candidate);
+    const match = href.includes(pattern);
     if (!match) return false;
 
     if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
@@ -608,7 +610,7 @@ export function decorateAutoBlock(a) {
       return false;
     }
 
-    a.className = `${key} link-block`;
+    a.className = `${key} link-block${voidStyles ? ' void-styles' : ''}`;
     return true;
   });
 }
