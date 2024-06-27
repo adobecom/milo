@@ -1,8 +1,3 @@
-:root {
-  --flex-gap: 32px; 
-}
-
-
 .section-metadata {
   display: none;
 }
@@ -240,63 +235,6 @@ main > .section[class*='-up'] > .content {
   display: grid;
 }
 
-.section.flex {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--flex-gap);
-  padding-left: var(--grid-margins-width);
-  padding-right: var(--grid-margins-width);
-}
-
-.section.flex .con-block {
-  --flex-items: 1;
-
-  width: calc((100% / var(--flex-items)) - (((var(--flex-items) - 1) / var(--flex-items)) * var(--flex-gap)));
-}
-
-/* Tablet up */
-@media (min-width: 600px) {
-  .section.flex .con-block,
-  .section.flex-2-tablet .con-block {
-    --flex-items: 2;
-  }
-
-  .section.flex-3-tablet .con-block {
-    --flex-items: 3;
-  }
-
-  .section.flex-4-tablet .con-block {
-    --flex-items: 4;
-  }
-
-  .section.flex-5-tablet .con-block {
-    --flex-items: 5;
-  }
-}
-
-/* Desktop up */
-@media (min-width: 1200px) {
-  .section.flex-2-desktop .con-block {
-    --flex-items: 2;
-  }
-
-  .section.flex .con-block,
-  .section.flex-3-desktop .con-block {
-    --flex-items: 3;
-  }
-  
-  .section.flex-4-desktop .con-block {
-    --flex-items: 4;
-  }
-
-  .section.flex-5-desktop .con-block {
-    --flex-items: 5;
-  }
-}
-
-.section.justify-content-center { justify-content: center; }
-.section.align-items-stretch { align-items: stretch; }
-
 /* mobile only */
 @media (max-width: 600px) {
   .section.two-up.reverse-mobile > div:nth-child(1) {
@@ -360,19 +298,19 @@ main > .section[class*='-up'] > .content {
 
 @media screen and (min-width: 1200px) {
   .section.two-up {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .section.three-up {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .section.four-up {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .section.five-up {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .section.grid-template-columns-1-2 {
@@ -423,6 +361,4 @@ main > .section[class*='-up'] > .content {
   .section.masonry-layout .grid-span-9 {grid-column: span 9; }
   .section.masonry-layout .grid-span-10 {grid-column: span 10; }
   .section.masonry-layout .grid-span-11 {grid-column: span 11; }
-
-  /* todo: adaptive flex-grid https://codepen.io/bradleytaunt/pen/rQdLxv/ */
 }
