@@ -231,16 +231,17 @@ export function handleObjectFit(bgRow) {
 export function getVideoIntersectionObserver() {
   if (!window?.videoIntersectionObs) {
     window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
-      entries.forEach(async (entry) => {
+      entries.forEach((entry) => {
         const { intersectionRatio, target: video } = entry;
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
         && video.readyState > video.HAVE_CURRENT_DATA;
+
         if (intersectionRatio <= 0.8) {
           video.pause();
-        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying && !video.paused) {
-          await video.play();
+        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying && video.paused) {
+          video.play();
         }
       });
     }, { threshold: [0.8] });
