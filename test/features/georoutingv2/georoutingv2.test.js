@@ -632,9 +632,9 @@ describe('GeoRouting', () => {
   it('Will load georouting even if georoutingv2 and georouting file is not found', async () => {
     stubFetchForGeorouting(false);
     stubFetchForGeoroutingOld(false);
-    stubFetchForFederalGeorouting()
+    stubFetchForFederalGeorouting();
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     expect(modal).to.not.be.null;
-  })
+  });
 });
