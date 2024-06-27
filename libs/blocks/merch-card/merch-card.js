@@ -158,7 +158,7 @@ const parseContent = async (el, merchCard) => {
 
     appendSlot(promoText, 'promo-text', merchCard);
     h6Type.forEach((element) => {
-      element.querySelector('em') ? appendSlot([element], 'callout-text', merchCard) : appendSlot([element], 'price-commitment', merchCard);
+      element.querySelector('i') ? appendSlot([element], 'callout-text', merchCard) : appendSlot([element], 'price-commitment', merchCard);
     });
   } else {
     const h6Type = el.querySelectorAll('h6');
