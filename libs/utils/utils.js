@@ -1284,7 +1284,7 @@ export const getFederatedContentRoot = () => {
 
   const { origin } = window.location;
 
-  federatedContentRoot = [ ...allowedOrigins, ...defaultAllowedOrigins ].some((o) => origin.replace('.stage', '') === o)
+  federatedContentRoot = [...allowedOrigins, ...defaultAllowedOrigins].some((o) => origin.replace('.stage', '') === o)
     ? origin
     : 'https://www.adobe.com';
 
