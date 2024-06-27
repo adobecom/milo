@@ -4,7 +4,7 @@ a[href^="/tools/ost"] {
 }
 
 span[data-wcs-osi] {
-  display: inline-block;
+  display: inline;
 }
 
 span.placeholder-resolved[data-template="strikethrough"], span.price.price-strikethrough {
