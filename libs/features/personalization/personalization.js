@@ -668,7 +668,7 @@ export async function getManifestConfig(info, variantOverride = false) {
     disabled,
     event,
   } = info;
-  if (disabled && !variantOverride) {
+  if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;

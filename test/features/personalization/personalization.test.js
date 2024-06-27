@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
-import { applyPers, init, matchGlob, combineMepSources } from '../../../libs/features/personalization/personalization.js';
+import { handleFragmentCommand, applyPers, init, matchGlob, combineMepSources } from '../../../libs/features/personalization/personalization.js';
 import spoofParams from './spoofParams.js';
 import mepSettings from './mepSettings.js';
 
@@ -85,12 +85,27 @@ describe('Functional Test', () => {
   });
 
   it('scheduled manifest should apply changes if active (bts)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+    };
+    const promoMepSettings = [
+      {
+        manifestPath: '/promos/bts/manifest.json',
+        disabled: false,
+        event: { name: 'bts', start: new Date('2023-11-24T13:00:00+00:00'), end: new Date('2222-11-24T13:00:00+00:00') },
+      },
+    ];
     let manifestJson = await readFile({ path: './mocks/manifestScheduledActive.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter3"]')).to.be.null;
-    const event = { name: 'bts', start: new Date('2023-11-24T13:00:00+00:00'), end: new Date('2222-11-24T13:00:00+00:00') };
-    await applyPers([{ manifestPath: '/promos/bts/manifest.json', disabled: false, event }]);
+    await applyPers(promoMepSettings);
 
     const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter3"]');
     expect(fragment).to.not.be.null;
@@ -99,10 +114,25 @@ describe('Functional Test', () => {
   });
 
   it('scheduled manifest should not apply changes if not active (blackfriday)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+    };
+    const promoMepSettings = [
+      {
+        manifestPath: '/promos/blackfriday/manifest.json',
+        disabled: true,
+        event: { name: 'blackfriday', start: new Date('2022-11-24T13:00:00+00:00'), end: new Date('2022-11-24T13:00:00+00:00') },
+      },
+    ];
     await loadManifestAndSetResponse('./mocks/manifestScheduledInactive.json');
     expect(document.querySelector('a[href="/fragments/insertafter4"]')).to.be.null;
-    const event = { name: 'blackfriday', start: new Date('2022-11-24T13:00:00+00:00'), end: new Date('2022-11-24T13:00:00+00:00') };
-    await applyPers([{ manifestPath: '/promos/blackfriday/manifest.json', disabled: true, event }]);
+    await applyPers(promoMepSettings);
 
     const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
     expect(fragment).to.be.null;
@@ -236,7 +266,8 @@ describe('MEP Utils', () => {
     });
     it('combines promos and personalization', async () => {
       document.head.innerHTML = await readFile({ path: '../../utils/mocks/mep/head-promo.html' });
-      const manifests = await combineMepSources('/pers/manifest.json', 'pre-black-friday-global,black-friday-global', undefined);
+      const promos = { manifestnames: 'pre-black-friday-global,black-friday-global' };
+      const manifests = await combineMepSources('/pers/manifest.json', promos, undefined);
       expect(manifests.length).to.equal(3);
       expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
       expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
@@ -244,9 +275,10 @@ describe('MEP Utils', () => {
     });
     it('combines promos and personalization and mep param', async () => {
       document.head.innerHTML = await readFile({ path: '../../utils/mocks/mep/head-promo.html' });
+      const promos = { manifestnames: 'pre-black-friday-global,black-friday-global' };
       const manifests = await combineMepSources(
         '/pers/manifest.json',
-        'pre-black-friday-global,black-friday-global',
+        promos,
         '/pers/manifest.json--var1---/mep-param/manifest1.json--all---/mep-param/manifest2.json--all',
       );
       expect(manifests.length).to.equal(5);
