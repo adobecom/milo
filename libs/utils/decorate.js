@@ -240,7 +240,7 @@ export function getVideoIntersectionObserver() {
 
         if (intersectionRatio <= 0.8) {
           video.pause();
-        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying && video.paused) {
+        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
         }
       });
