@@ -18,6 +18,7 @@ describe('Rich Results', () => {
       '@type': 'Article',
       headLine: 'The war is over',
       image: 'https://example.com/photos/1x1/photo.jpg',
+      description: 'Jane Doe Description',
       datePublished: '2022-12-24',
       dateModified: '2022-12-25',
       author: {
@@ -39,6 +40,7 @@ describe('Rich Results', () => {
       '@type': 'NewsArticle',
       headLine: 'The war is over',
       image: 'https://example.com/photos/1x1/photo.jpg',
+      description: 'Jane Doe Description',
       datePublished: '2022-12-24',
       dateModified: '2022-12-25',
       author: {
