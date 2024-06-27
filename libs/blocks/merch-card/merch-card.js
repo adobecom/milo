@@ -154,15 +154,9 @@ const parseContent = async (el, merchCard) => {
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
     const promoText = el.querySelectorAll('h5');
-    const h6Type = el.querySelectorAll('h6');
-
+    const priceSmallType = el.querySelectorAll('h6');
     appendSlot(promoText, 'promo-text', merchCard);
-    h6Type.forEach((element) => {
-      element.querySelector('i') ? appendSlot([element], 'callout-text', merchCard) : appendSlot([element], 'price-commitment', merchCard);
-    });
-  } else {
-    const h6Type = el.querySelectorAll('h6');
-    appendSlot(h6Type, 'callout-text', merchCard);
+    appendSlot(priceSmallType, 'price-commitment', merchCard);
   }
 
   let headingSize = 3;
