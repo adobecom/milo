@@ -42,7 +42,7 @@ const HEADING_MAP = {
   },
 };
 
-const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, h6, p, ul, em';
 
 const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
@@ -199,6 +199,28 @@ const parseContent = async (el, merchCard) => {
         newElement.innerHTML = element.innerHTML;
         merchCard.append(newElement);
       }
+      return;
+    } else if (tagName ==='H6' && element.firstElementChild?.tagName === 'EM') {
+      const calloutSlot = createTag('div', { slot: 'callout-text' });
+      const emElement = element.firstElementChild;
+      let divElement = createTag('div');
+      let aElement = null;
+      const children = Array.from(emElement.children);
+      for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          if (child.tagName === 'A') {
+              aElement = child;
+              emElement.removeChild(child);
+          } else {
+              divElement.append(child);
+          }
+      }
+      divElement.innerHTML = emElement.innerHTML;
+      calloutSlot.append(divElement);
+      if (aElement) {
+          calloutSlot.append(aElement);
+      }
+      merchCard.append(calloutSlot);
       return;
     }
     if (isParagraphTag(tagName)) {
