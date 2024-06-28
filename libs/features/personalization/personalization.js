@@ -658,6 +658,16 @@ const createDefaultExperiment = (manifest) => ({
   variants: {},
 });
 
+const addAnalyticsForUseBlockCode = (config) => {
+  config.mep.experiments.forEach((experiment) => {
+    experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
+      if (selector && targetManifestId) {
+        document.querySelectorAll(`.${selector}`)
+          .forEach((el) => (el.dataset.targetManifestId = targetManifestId));
+      }
+    });
+  });
+};
 export async function getManifestConfig(info, variantOverride = false) {
   const {
     name,
@@ -759,7 +769,7 @@ export async function getManifestConfig(info, variantOverride = false) {
       cmd.targetManifestId = false;
     });
   } else if (selectedVariantName?.includes(TARGET_EXP_PREFIX)) {
-    config.mep.hasTargetSelectedVariant = true;
+    config.mep.addAnalyticsForUseBlockCode = addAnalyticsForUseBlockCode;
   }
   return manifestConfig;
 }
@@ -774,16 +784,6 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
   val: normalizePath(val),
   action,
 });
-export async function addAnalyticsForUseBlockCode(config) {
-  config.mep.experiments.forEach((experiment) => {
-    experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
-      if (selector && targetManifestId) {
-        document.querySelectorAll(`.${selector}`)
-          .forEach((el) => (el.dataset.targetManifestId = targetManifestId));
-      }
-    });
-  });
-}
 export async function categorizeActions(experiment) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant, targetManifestId } = experiment;
