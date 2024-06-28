@@ -406,6 +406,7 @@ describe('Merch Block', () => {
       expect(el.classList.contains('con-button')).to.be.false;
       expect(el.classList.contains('button-l')).to.be.false;
       expect(el.classList.contains('blue')).to.be.false;
+      expect(el.classList.contains('text-link')).to.be.true;
     });
 
     it('renders large CTA inside a marquee', async () => {
