@@ -16,7 +16,6 @@ setConfig(config);
 
 describe('editorial-card', () => {
   const editorialCards = document.querySelectorAll('.editorial-card');
-  console.log('ed cards test', editorialCards);
   editorialCards.forEach((card) => {
     init(card);
   });
@@ -29,10 +28,8 @@ describe('editorial-card', () => {
     const footer = editorialCards[3].querySelector('.footer');
     expect(footer).to.exist;
   });
-
   it('w/ lockup gets decorated', () => {
     const label = editorialCards[4].querySelector('.lockup-label');
-    console.log('ed cards test', editorialCards);
     expect(label).to.exist;
   });
 });
