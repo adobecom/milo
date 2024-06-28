@@ -452,7 +452,7 @@ export async function buildCta(el, params) {
   const cta = service.createCheckoutLink(context, text);
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
-    cta.removeAttribute('is');
+    cta.classList.add('text-link');
   } else {
     cta.classList.add('con-button');
     cta.classList.toggle('button-l', large);

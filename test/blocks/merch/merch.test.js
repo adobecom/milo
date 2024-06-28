@@ -402,7 +402,7 @@ describe('Merch Block', () => {
       const { href, textContent } = await el.onceSettled();
       expect(href.includes('#_tcl')).to.be.false;
       expect(textContent).to.equal('40% off');
-      expect(el.getAttribute('is')).to.be.null;
+      expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(el.classList.contains('con-button')).to.be.false;
       expect(el.classList.contains('button-l')).to.be.false;
       expect(el.classList.contains('blue')).to.be.false;
