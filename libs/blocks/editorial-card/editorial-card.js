@@ -77,7 +77,7 @@ const init = (el) => {
     const count = rows.length >= 3 ? 'three-plus' : rows.length;
     switch (count) {
       case 'three-plus':
-        // 5+ rows (0:bg, 1:media, 2:copy, ...3:static, last:footer)
+        // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:footer)
         decorateBgRow(el, rows[0], head);
         rows = tail;
         decorateForeground(el, rows, middle);
