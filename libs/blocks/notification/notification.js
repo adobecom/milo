@@ -79,13 +79,13 @@ function decorateBorder(el, { borderBottom }) {
   el.appendChild(border);
 }
 
-function decorateRibbon(foreground) {
+function wrapCopy(foreground) {
   const text = foreground.querySelector('.text');
   if (!text) return;
   const heading = text?.querySelector('h1, h2, h3, h4, h5, h6');
   const icon = heading.previousElementSibling;
   const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading.nextElementSibling;
-  const copy = createTag('div', { class: 'ribbon-copy' }, [heading, body]);
+  const copy = createTag('div', { class: 'copy-wrap' }, [heading, body]);
   text?.insertBefore(copy, icon?.nextSibling || text.children[0]);
 }
 
@@ -134,5 +134,5 @@ export default function init(el) {
   if (options.borderBottom) decorateBorder(el, options);
   decorateTextOverrides(el);
   decorateStaticLinks(el);
-  if (el.classList.contains(ribbon)) decorateRibbon(blockText);
+  if (el.matches(`:is(.${ribbon}, .${pill})`)) wrapCopy(blockText);
 }

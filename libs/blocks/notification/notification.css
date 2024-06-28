@@ -132,6 +132,10 @@
   flex-wrap: nowrap;
 }
 
+.notification.ribbon.space-between .foreground.container .copy-wrap {
+  margin-inline-end: var(--spacing-s);
+}
+
 .notification .foreground.container .image {
   position: relative;
   display: flex;
@@ -206,7 +210,7 @@
 .notification.ribbon.space-between .foreground.container .icon-area {
   align-items: center;
   inline-size: auto;
-  margin-inline-end: var(--spacing-xs);
+  margin-inline-end: var(--spacing-s);
 }
 
 .notification .foreground.container .image :is(picture, video),
@@ -246,6 +250,11 @@
 
 .notification.pill .foreground.container .action-area {
   justify-content: flex-end;
+}
+
+.notification.ribbon.space-between .foreground.container .action-area {
+  flex-wrap: wrap;
+  align-self: center;
 }
 
 .notification .flexible-inner {
@@ -322,19 +331,19 @@
     inline-size: auto;
   }
 
-  .notification .ribbon-copy {
+  .notification.ribbon .copy-wrap {
     margin-inline-end: var(--spacing-s);
   }
 
-  .notification.space-between .ribbon-copy {
+  .notification.space-between .copy-wrap {
     flex-basis: 100%;
   }
 
-  .notification .ribbon-copy :last-child {
+  .notification.ribbon .copy-wrap :last-child {
     margin-block-end: 0;
   }
 
-  .notification.center .ribbon-copy {
+  .notification.center .copy-wrap {
     text-align: start;
   }
 
@@ -353,6 +362,10 @@
 
   .notification.pill .foreground.container .action-area {
     justify-content: center;
+  }
+
+  .notification.ribbon.space-between .foreground.container .action-area {
+    flex-wrap: unset;
   }
 
   .notification.pill.flexible {
@@ -418,12 +431,12 @@
     inline-size: 20%;
   }
 
-  .notification.col-10 .foreground.container .image {
+  .notification.max-width-10-desktop .foreground.container .image {
     inline-size: 30%;
     max-inline-size: 300px;
   }
 
-  .notification.col-12 .foreground.container .image {
+  .notification.full-width .foreground.container .image {
     inline-size: 33.333%;
     max-inline-size: 400px;
   }
@@ -488,5 +501,11 @@
 
   .notification.pill.flexible .flexible-inner {
     border-radius: 36px;
+  }
+
+  .notification.pill .copy-wrap {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
   }
 }
