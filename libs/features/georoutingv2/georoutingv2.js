@@ -286,6 +286,7 @@ export default async function loadGeoRouting(
   let resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
   if (!resp.ok) {
     resp = await fetch(`${config.contentRoot ?? ''}/georouting.json`);
+    console.log(resp, 'dedede')
     if (!resp.ok) {
       resp = await fetch(`${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`);
       if (!resp.ok) return;
