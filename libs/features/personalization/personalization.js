@@ -484,6 +484,9 @@ const getVariantInfo = (line, variantNames, variants, manifestId, targetManifest
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
+  const getTargetManifestId = (variantName) => (
+    variantName.includes(TARGET_EXP_PREFIX) ? targetManifestId : false
+  );
   variantNames.forEach((vn) => {
     if (!line[vn] || line[vn].toLowerCase() === 'false') return;
 
@@ -496,7 +499,6 @@ const getVariantInfo = (line, variantNames, variants, manifestId, targetManifest
       manifestId,
       targetManifestId,
     };
-    if (targetManifestId) variantInfo.targetManifestId = targetManifestId;
 
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
       variants[vn].fragments.push({
@@ -516,7 +518,7 @@ const getVariantInfo = (line, variantNames, variants, manifestId, targetManifest
           val: blockTarget,
           pageFilter,
           manifestId,
-          targetManifestId,
+          targetManifestId: getTargetManifestId(vn),
         });
       } else {
         variants[vn][action].push({
@@ -756,6 +758,8 @@ export async function getManifestConfig(info, variantOverride = false) {
     manifestConfig.selectedVariant.commands.forEach((cmd) => {
       cmd.targetManifestId = false;
     });
+  } else if (selectedVariantName?.includes(TARGET_EXP_PREFIX)) {
+    config.mep.hasTargetSelectedVariant = true;
   }
   return manifestConfig;
 }
@@ -770,7 +774,16 @@ const normalizeFragPaths = ({ selector, val, action }) => ({
   val: normalizePath(val),
   action,
 });
-
+export async function addAnalyticsForUseBlockCode(config) {
+  config.mep.experiments.forEach((experiment) => {
+    experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
+      if (selector && targetManifestId) {
+        document.querySelectorAll(`.${selector}`)
+          .forEach((el) => (el.dataset.targetManifestId = targetManifestId));
+      }
+    });
+  });
+}
 export async function categorizeActions(experiment) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant, targetManifestId } = experiment;

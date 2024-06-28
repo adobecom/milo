@@ -970,6 +970,10 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
+  if (config.mep?.hasTargetSelectedVariant) {
+    const { addAnalyticsForUseBlockCode } = await import('../features/personalization/personalization.js');
+    addAnalyticsForUseBlockCode(config);
+  }
   if (config.mep?.preview) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
