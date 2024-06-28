@@ -1,3 +1,5 @@
+import { getFederatedContentRoot } from '../../utils/utils.js';
+
 let config;
 let createTag;
 let getMetadata;
@@ -281,12 +283,19 @@ export default async function loadGeoRouting(
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
 
-  const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
+  let resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
   if (!resp.ok) {
-    // eslint-disable-next-line import/no-cycle
-    const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
-    loadGeoRoutingOld(config, createTag, getMetadata);
-    return;
+    resp = await fetch(`${config.contentRoot ?? ''}/georouting.json`);
+    if (!resp.ok) {
+      resp = await fetch(`${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`);
+      if (!resp.ok) return;
+    } else {
+      const json = await resp.json();
+      // eslint-disable-next-line import/no-cycle
+      const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
+      loadGeoRoutingOld(config, createTag, getMetadata, json);
+      return;
+    }
   }
   const json = await resp.json();
 
