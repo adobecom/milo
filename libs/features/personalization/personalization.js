@@ -55,8 +55,6 @@ const DATA_TYPE = {
 
 const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
-export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
-
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
@@ -86,28 +84,6 @@ export const normalizePath = (p, localize = true) => {
     path = `/${path}`;
   }
   return path;
-};
-
-export const preloadManifests = ({ targetManifests = [], persManifests = [] }) => {
-  let manifests = targetManifests;
-
-  manifests = manifests.concat(
-    persManifests.map((manifest) => ({
-      ...manifest,
-      manifestPath: normalizePath(appendJsonExt(manifest.manifestPath)),
-      manifestUrl: manifest.manifestPath,
-    })),
-  );
-
-  for (const manifest of manifests) {
-    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
-      loadLink(
-        manifest.manifestPath,
-        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
-      );
-    }
-  }
-  return manifests;
 };
 
 export const getFileName = (path) => path?.split('/').pop();
