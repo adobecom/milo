@@ -202,24 +202,33 @@ const parseContent = async (el, merchCard) => {
       return;
     } else if (tagName ==='H6' && element.firstElementChild?.tagName === 'EM') {
       const calloutSlot = createTag('div', { slot: 'callout-text' });
+      const calloutContentWrapper = createTag('div', { class: 'callout-content-wrapper' });
+      const calloutContent = createTag('div', { class: 'callout-content' });
       const emElement = element.firstElementChild;
-      let divElement = createTag('div');
-      let aElement = null;
-      const children = Array.from(emElement.children);
+      let imgElement = null;
+      const children = Array.from(emElement.childNodes);
       for (let i = 0; i < children.length; i++) {
           const child = children[i];
-          if (child.tagName === 'A') {
-              aElement = child;
-              emElement.removeChild(child);
+          if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim() === '#ICON'){
+              const hrefParts = child.getAttribute('href').split('#');
+              const tooltipText = hrefParts[1];
+              const imgSrc = hrefParts[0];
+              imgElement = document.createElement('img');
+              imgElement.src = imgSrc;
+              imgElement.title = tooltipText;
+              imgElement.className = 'callout-icon';
+              imgElement.style.width = '16px';
+              imgElement.style.height = '16px';
+              child.parentNode.removeChild(child);
           } else {
-              divElement.append(child);
+              calloutContent.append(child.cloneNode(true));
           }
       }
-      divElement.innerHTML = emElement.innerHTML;
-      calloutSlot.append(divElement);
-      if (aElement) {
-          calloutSlot.append(aElement);
+      calloutContentWrapper.append(calloutContent);
+      if (imgElement) {
+          calloutContentWrapper.append(imgElement);
       }
+      calloutSlot.append(calloutContentWrapper);
       merchCard.append(calloutSlot);
       return;
     }
