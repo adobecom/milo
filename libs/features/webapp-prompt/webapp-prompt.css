@@ -242,9 +242,9 @@
 .coach-indicator {
   --coach-indicator-ring-default-color: rgba(56,146,243);
   --coach-indicator-ring-diameter: 1.25rem;
-	--coach-indicator-ring-border-size: 2px;
-	--coach-indicator-ring-inline-size: var(--coach-indicator-ring-diameter);
-	--coach-indicator-ring-block-size: var(--coach-indicator-ring-diameter);
+  --coach-indicator-ring-border-size: 2px;
+  --coach-indicator-ring-inline-size: var(--coach-indicator-ring-diameter);
+  --coach-indicator-ring-block-size: var(--coach-indicator-ring-diameter);
   --coach-indicator-first-ring-delay-fraction: 0;
   --coach-indicator-second-ring-delay-fraction: 0.33;
   --coach-indicator-third-ring-delay-fraction: 0.66;
@@ -252,35 +252,35 @@
 }
 
 @keyframes pulse {
-	0% {
-		transform: scale(0.8);
-		opacity: 0;
-	}
+  0% {
+  	transform: scale(0.8);
+  	opacity: 0;
+  }
 
-	50% {
-		transform: scale(1.5);
-		opacity: 1;
-	}
+  50% {
+  	transform: scale(1.5);
+  	opacity: 1;
+  }
 
-	100% {
-		transform: scale(2);
-		opacity: 0;
-	}
+  100% {
+  	transform: scale(2);
+  	opacity: 0;
+  }
 }
 
 .coach-indicator .coach-indicator-ring {
-	display: block;
-	position: absolute;
+  display: block;
+  position: absolute;
   top: 14%;
   left: 13%;
 
-	border-style: solid;
-	border-width: var(--coach-indicator-ring-border-size);
-	border-color: var(--coach-indicator-ring-default-color);
+  border-style: solid;
+  border-width: var(--coach-indicator-ring-border-size);
+  border-color: var(--coach-indicator-ring-default-color);
 
-	inline-size: var(--coach-indicator-ring-inline-size);
-	block-size: var(--coach-indicator-ring-block-size);
-	animation: pulse var(--animation-duration) linear;
+  inline-size: var(--coach-indicator-ring-inline-size);
+  block-size: var(--coach-indicator-ring-block-size);
+  animation: pulse var(--animation-duration) linear;
   animation-fill-mode: both;
 
   border-radius: 5px;
@@ -299,7 +299,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.coach-indicator .coach-indicator-ring {
-		animation: none;
-	}
+  .coach-indicator .coach-indicator-ring {
+  	animation: none;
+  }
 }
