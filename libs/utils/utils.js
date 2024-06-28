@@ -925,14 +925,6 @@ async function checkForPageMods() {
   const target = getMepEnablement('target');
   if (!pzn && !target && !promo && !mepParam && !mepHighlight && !mepButton) return;
 
-  // const config = getConfig();
-  // config.mep = { target };
-  // loadLink(
-  //   `${config.base}/features/personalization/personalization.js`,
-  //   { as: 'script', rel: 'modulepreload' },
-  // );
-
-  // const persManifests = await combineMepSources(pzn, promo, mepParam);
   if (target) {
     loadMartech();
   } else if (pzn) {
