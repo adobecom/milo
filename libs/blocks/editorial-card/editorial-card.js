@@ -21,7 +21,6 @@ const extendDeviceContent = (el) => {
   const prevElem = detail?.previousElementSibling;
   if (prevElem) {
     const prevIsBody = Array.from(prevElem.classList).some((c) => c.startsWith('body-'));
-    /* c8 ingnore next */
     if (!prevIsBody) return;
     prevElem.classList.remove('body-m');
     prevElem.classList.add('body-xxs', 'device');
@@ -32,10 +31,7 @@ const decorateForeground = (el, rows, media = 0) => {
   if (media) {
     media.classList.add('media-area');
     const mediaVideo = media.querySelector('video');
-    if (mediaVideo) {
-      /* c8 ingnore next */
-      applyHoverPlay(mediaVideo);
-    }
+    if (mediaVideo) { applyHoverPlay(mediaVideo); }
     if (media.children.length > 1) decorateBlockBg(el, media);
   }
   rows.forEach((row, i) => {
@@ -96,7 +92,6 @@ const init = (el) => {
         decorateForeground(el, [rows]);
         el.classList.add('no-bg', 'no-media');
         break;
-      /* c8 ingnore next */
       default:
     }
   }

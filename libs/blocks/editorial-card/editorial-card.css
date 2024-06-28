@@ -111,9 +111,6 @@
   height: 100%;
 }
 
-/* TODO: this shouldn't be tied to .no-bg :shrug: 
-.xs-copy-row-gap 
-*/
 .editorial-card.no-bg .foreground > div { 
   row-gap: var(--spacing-xs);
 }
