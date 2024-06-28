@@ -21,8 +21,15 @@
 .editorial-card.no-bg { background: unset;}
 .editorial-card.no-border { border: unset;}
 
-.editorial-card.grow { transition: all .2s ease-in-out; }
-.editorial-card.grow:hover { transform: scale(1.02); }
+.editorial-card.grow { 
+  transition: all .2s ease-in-out; 
+  box-shadow: 0 0 3px -1px rgba(0 0 0 / 0%);
+}
+
+.editorial-card.grow:hover { 
+  transform: scale(1.02);
+  box-shadow: 0 0 3px -1px  rgba(0 0 0 / 35%);
+}
 
 .editorial-card.static-links-copy .foreground a:not([class*="button"]) {
   color: inherit;
@@ -35,8 +42,8 @@
   min-width: initial;
 }
 
-.flex-grid .editorial-card {  
-  min-width: 100%; 
+.editorial-card.has-footer {
+  height: 100%;
 }
 
 .editorial-card .media-area picture,
@@ -57,6 +64,10 @@
 .editorial-card .foreground,
 .editorial-card .footer {
   padding: var(--spacing-xs);
+}
+
+.editorial-card .static {
+  padding: 0 var(--spacing-xs);
 }
 
 .editorial-card .footer {
@@ -84,6 +95,7 @@
   padding-top: 0;
 }
 
+.editorial-card.no-bg .static,
 .editorial-card.no-bg .footer {
   padding-right: 0;
   padding-left: 0;
@@ -244,12 +256,3 @@
 .editorial-card.footer-align-left .action-area { justify-content: left; }
 .editorial-card.footer-align-center .footer > div { text-align: center; }
 .editorial-card.footer-align-center .action-area { justify-content: center; }
-
-
-/* Tablet up */
-@media screen and (min-width: 600px) {
-  .flex-grid .editorial-card {
-    min-width: unset;
-    max-width: unset;
-  }
-}

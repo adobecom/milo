@@ -31,14 +31,14 @@ const decorateForeground = (el, rows, media = 0) => {
   if (media) {
     media.classList.add('media-area');
     const mediaVideo = media.querySelector('video');
-    if (mediaVideo) applyHoverPlay(mediaVideo);
+    if (mediaVideo) { applyHoverPlay(mediaVideo); }
     if (media.children.length > 1) decorateBlockBg(el, media);
   }
   rows.forEach((row, i) => {
     if (i === 0) {
       row.classList.add('foreground');
       decorateLockupFromContent(row);
-    } else if (i === 1) {
+    } else if (i === (rows.length - 1)) {
       row.classList.add('footer');
     } else {
       row.classList.add('static');
@@ -70,12 +70,12 @@ const init = (el) => {
   }
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
+  if (rows.length === 4) el.classList.add('has-footer');
   if (rows.length >= 1) {
-    switch (rows.length) {
-      case 4:
-      case 3:
-        // 4 rows (0:bg, 1:media, 2:copy, 3:footer)
-        // 3 rows (0:bg, 1:media, 2:copy,)
+    const count = rows.length >= 3 ? 'three-plus' : rows.length;
+    switch (count) {
+      case 'three-plus':
+        // 5+ rows (0:bg, 1:media, 2:copy, ...3:static, last:footer)
         decorateBgRow(el, rows[0], head);
         rows = tail;
         decorateForeground(el, rows, middle);
