@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
-import { createTag } from '../../libs/utils/utils.js';
+import { createTag, getFederatedContentRoot } from '../../libs/utils/utils.js';
 
 const utils = {};
 
@@ -44,6 +44,16 @@ describe('Utils', () => {
       window.fetch = ogFetch;
       // eslint-disable-next-line no-console
       console.log.restore();
+    });
+
+    // No tests for using the the live url and .hlx. urls
+    // as mocking window.location.origin is not possible
+    describe('getFedsContentRoot', () => {
+      const baseHost = 'https://www.stage.adobe.com';
+      it('should return content source for localhost', () => {
+        const contentSource = getFederatedContentRoot();
+        expect(contentSource).to.equal(baseHost);
+      });
     });
 
     describe('Template', () => {

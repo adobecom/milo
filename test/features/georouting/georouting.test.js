@@ -2,7 +2,8 @@ import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
 
 const { default: init, getCookie } = await import('../../../libs/features/georouting/georouting.js');
-let { createTag, getMetadata } = await import('../../../libs/utils/utils.js');
+let { getMetadata } = await import('../../../libs/utils/utils.js');
+const { createTag } = await import('../../../libs/utils/utils.js');
 
 const mockConfig = {
   locales: {
@@ -136,7 +137,7 @@ describe('GeoRouting', () => {
 
   it('Does create a modal if detected country from IP is CH and url prefix is US', async () => {
     // prepare
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
@@ -146,7 +147,7 @@ describe('GeoRouting', () => {
     // prepare
     setUserCountryFromIP('US');
     sessionStorage.setItem('international', 'us');
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
@@ -157,7 +158,7 @@ describe('GeoRouting', () => {
   it('If aiming for CH page and IP in Switzerland no modal is shown', async () => {
     // prepare
     mockConfig.locale.prefix = 'ch_de';
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
@@ -167,7 +168,7 @@ describe('GeoRouting', () => {
 
   it('If aiming for US page but IP in Switzerland shows CH links and US continue', async () => {
     // prepare
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
@@ -192,7 +193,7 @@ describe('GeoRouting', () => {
     mockConfig.locale.prefix = 'ch_fr';
     setUserCountryFromIP('US');
     sessionStorage.setItem('international', 'de');
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
@@ -215,7 +216,7 @@ describe('GeoRouting', () => {
     // prepare
     mockConfig.locale.prefix = 'mena_en';
     setUserCountryFromIP('BW');
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
@@ -239,7 +240,7 @@ describe('GeoRouting', () => {
     mockConfig.locale.prefix = 'mena_en';
     setUserCountryFromIP('BW');
     document.cookie = 'international=ch_de;path=/';
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
@@ -262,7 +263,7 @@ describe('GeoRouting', () => {
     // prepare
     mockConfig.locale.prefix = 'ch_de';
     sessionStorage.setItem('international', 'ch_fr');
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     mockConfig.locale.prefix = '';
@@ -272,7 +273,7 @@ describe('GeoRouting', () => {
   it('If IP is from an unknown country no modal is show', async () => {
     // prepare
     setUserCountryFromIP('NOEXIST');
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
@@ -284,7 +285,7 @@ describe('GeoRouting', () => {
     // prepare
     stubFallbackMetadata('off');
     stubHeadRequestToReturnVal('/ch_it', false);
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
@@ -308,7 +309,7 @@ describe('GeoRouting', () => {
   it('Will show fallback links if fallbackrouting is on and page exist request fails', async () => {
     // prepare
     stubHeadRequestToReturnVal('/ch_it', false);
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
@@ -328,7 +329,7 @@ describe('GeoRouting', () => {
     stubHeadRequestToReturnVal('/ch_de', false);
     stubHeadRequestToReturnVal('/ch_it', false);
     stubHeadRequestToReturnVal('/ch_fr', false);
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
@@ -341,7 +342,7 @@ describe('GeoRouting', () => {
 
   it('Sets international and georouting_presented cookies on link click in modal', async () => {
     // prepare
-    await init(mockConfig, createTag, getMetadata);
+    await init(mockConfig, createTag, getMetadata, mockGeoroutingJson);
     const modal = document.querySelector('.dialog-modal');
     const cookie = getCookie('international');
     const storage = sessionStorage.getItem('international');

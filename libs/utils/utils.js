@@ -1270,4 +1270,32 @@ export function loadLana(options = {}) {
   window.addEventListener('unhandledrejection', lanaError);
 }
 
+const defaultAllowedOrigins = [
+  'https://www.adobe.com',
+  'https://business.adobe.com',
+  'https://blog.adobe.com',
+  'https://milo.adobe.com',
+];
+
+let federatedContentRoot;
+export const getFederatedContentRoot = () => {
+  const { allowedOrigins = [] } = getConfig();
+  if (federatedContentRoot) return federatedContentRoot;
+
+  const { origin } = window.location;
+
+  federatedContentRoot = [...allowedOrigins, ...defaultAllowedOrigins].some((o) => origin.replace('.stage', '') === o)
+    ? origin
+    : 'https://www.adobe.com';
+
+  if (origin.includes('localhost') || origin.includes('.hlx.')) {
+    // Akamai as proxy to avoid 401s, given AEM-EDS MS auth cross project limitations
+    federatedContentRoot = origin.includes('.hlx.live')
+      ? 'https://main--federal--adobecom.hlx.live'
+      : 'https://www.stage.adobe.com';
+  }
+
+  return federatedContentRoot;
+};
+
 export const reloadPage = () => window.location.reload();
