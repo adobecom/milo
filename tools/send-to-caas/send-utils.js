@@ -185,7 +185,7 @@ const processRepoForFloodgate = (repo, fgColor) => {
   return repo;
 };
 
-const getOrigin = (fgColor) => {
+export const getOrigin = (fgColor) => {
   const { project, repo } = getConfig();
   const origin = project || processRepoForFloodgate(repo, fgColor);
 
@@ -193,7 +193,7 @@ const getOrigin = (fgColor) => {
     cc: 'hawks',
     dc: 'doccloud',
   };
-  const originLC = (mappings[origin] || origin).toLowerCase();
+  const originLC = mappings[origin.toLowerCase()] || origin;
   if (originLC) {
     return originLC;
   }

@@ -7,6 +7,7 @@ import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontaine
 import {
   initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData,
   getAnalyticsDataForBtn, getUrlParams, isValidUrl,
+  getLocalizedURL,
 } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
@@ -41,6 +42,7 @@ const App = ({
   const [userFlow, setUserFlow] = useState([]);
   const validQuestions = useMemo(() => [], []);
   const [debugBuild, setDebugBuild] = useState(null);
+  const [quizEntryData, setQuizEntryData] = useState({});
 
   useEffect(() => {
     (async () => {
@@ -61,6 +63,7 @@ const App = ({
         && !!storedQuizState?.userSelection.length) {
         setUserFlow(storedQuizState.userFlow);
         updateUserSelection(storedQuizState.userSelection);
+        setQuizEntryData(storedQuizState.results);
       } else {
         setUserFlow([questions.questions.data[0].questions]);
       }
@@ -148,7 +151,7 @@ const App = ({
           console.log(`Error copying URL: ${err} URL: ${debugURL}`);
         });
       }
-      handleResultFlow(transformToFlowData(userSelection));
+      handleResultFlow(transformToFlowData(userSelection), quizEntryData);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSelection, nextQuizViewsExist]);
@@ -265,7 +268,7 @@ const App = ({
     };
     const fragmentURL = getStringValue('footerFragment');
     if (fragmentURL) {
-      loadFragments(fragmentURL);
+      loadFragments(getLocalizedURL(fragmentURL));
     }
     const iconBg = getStringValue('icon-background-color');
     if (iconBg) {
