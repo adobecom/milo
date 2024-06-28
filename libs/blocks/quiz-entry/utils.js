@@ -7,14 +7,25 @@ export async function fetchJson(path) {
 
 export async function getQuizJson(path) {
   try {
-    const [questions, strings] = await Promise.all(
-      [fetchJson(`${path}questions.json`), fetchJson(`${path}strings.json`)],
-    );
-    return [questions, strings];
+    // Fetch required files
+    const [questions, strings] = await Promise.all([
+      fetchJson(`${path}questions.json`),
+      fetchJson(`${path}strings.json`),
+    ]);
+
+    // Try to fetch optional file, results.json
+    let results = [];
+    try {
+      results = await fetchJson(`${path}results.json`);
+    } catch (ex) {
+      window.lana?.log(`INFO: results.json not found or couldn't be fetched: ${ex}`, { tags: 'errorType=info,module=quiz-entry' });
+    }
+
+    return [questions, strings, results];
   } catch (ex) {
-    window.lana?.log(`ERROR: Fetching data for quiz entry ${ex}`);
+    window.lana?.log(`ERROR: Fetching data for quiz entry: ${ex}`, { tags: 'errorType=error,module=quiz-entry' });
+    return [];
   }
-  return [];
 }
 
 export const handleNext = (questionsData, selectedQuestion, userInputSelections, userFlow) => {
@@ -98,7 +109,7 @@ export async function getQuizEntryData(el) {
   const maxQuestions = Number(blockData.maxquestions?.text) || 10;
   const analyticsType = blockData.analyticstype?.text;
   const analyticsQuiz = blockData.analyticsquiz?.text;
-  const [questionData, stringsData] = await getQuizJson(dataPath);
+  const [questionData, stringsData, resultsData] = await getQuizJson(dataPath);
   return {
     quizPath,
     maxQuestions,
@@ -106,5 +117,6 @@ export async function getQuizEntryData(el) {
     analyticsType,
     questionData,
     stringsData,
+    resultsData,
   };
 }

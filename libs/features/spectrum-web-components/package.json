@@ -43,6 +43,7 @@
     "@spectrum-web-components/textfield": "^0.42.5",
     "@spectrum-web-components/theme": "^0.42.5",
     "@spectrum-web-components/tooltip": "^0.42.5",
+    "@spectrum-web-components/toast": "^0.42.5",
     "@spectrum-web-components/tray": "^0.42.5",
     "@spectrum-web-components/underlay": "^0.42.5"
   },
