@@ -68,6 +68,8 @@ const init = (el) => {
     const base = miloLibs || codeRoot;
     loadStyle(`${base}/styles/rounded-corners.css`);
   }
+  const hasLockupBool = Array.from(el.classList).some((c) => c.endsWith('-lockup'));
+  if (!hasLockupBool) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
   if (rows.length === 4) el.classList.add('has-footer');
