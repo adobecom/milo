@@ -219,7 +219,23 @@ class GrayboxPromote extends LitElement {
         try {
           const { root, gbRoot, driveId } = spData;
           const mainRepo = repo.replace('-graybox', '');
-          const promote = await fetch(`${promoteUrl}?spToken=${this.spToken}&projectExcelPath=${getProjectExcelPath(url)}&rootFolder=${root}&gbRootFolder=${gbRoot}&experienceName=${experienceName}&adminPageUri=${`https://milo.adobe.com/tools/graybox?ref=${ref}%26repo=${mainRepo}%26owner=${owner}`}%26host=business.adobe.com%26project=${mainRepo.toUpperCase()}%26referrer=MOCK_REF&draftsOnly=${promoteDraftsOnly}&promoteIgnorePaths=${promoteIgnorePaths}&driveId=${driveId}&ignoreUserCheck=true`);
+          const params = {
+            adminPageUri: `https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${mainRepo}&owner=${owner}&host=business.adobe.com&project=${mainRepo.toUpperCase()}&referrer=MOCK_REF`,
+            projectExcelPath: getProjectExcelPath(url),
+            rootFolder: root,
+            gbRootFolder: gbRoot,
+            experienceName,
+            draftsOnly: promoteDraftsOnly,
+            promoteIgnorePaths,
+            driveId,
+            ignoreUserCheck: true,
+            spToken: this.spToken,
+          };
+          const promote = await fetch(promoteUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(params).toString(),
+          });
           const promoteRes = await promote.json();
           if (promoteRes?.code === 200) {
             return 'Successfully promoted';
