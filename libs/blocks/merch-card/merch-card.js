@@ -44,7 +44,7 @@ const HEADING_MAP = {
   },
 };
 
-const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, h6, p, ul, em';
 
 const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
@@ -199,6 +199,37 @@ const parseContent = async (el, merchCard) => {
         newElement.innerHTML = element.innerHTML;
         merchCard.append(newElement);
       }
+      return;
+    } else if (tagName ==='H6' && element.firstElementChild?.tagName === 'EM') {
+      const calloutSlot = createTag('div', { slot: 'callout-text' });
+      const calloutContentWrapper = createTag('div', { class: 'callout-content-wrapper' });
+      const calloutContent = createTag('div', { class: 'callout-content' });
+      const emElement = element.firstElementChild;
+      let imgElement = null;
+      const children = Array.from(emElement.childNodes);
+      for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim() === '#ICON'){
+              const hrefParts = child.getAttribute('href').split('#');
+              const tooltipText = hrefParts[1];
+              const imgSrc = hrefParts[0];
+              imgElement = document.createElement('img');
+              imgElement.src = imgSrc;
+              imgElement.title = tooltipText;
+              imgElement.className = 'callout-icon';
+              imgElement.style.width = '16px';
+              imgElement.style.height = '16px';
+              child.parentNode.removeChild(child);
+          } else {
+              calloutContent.append(child.cloneNode(true));
+          }
+      }
+      calloutContentWrapper.append(calloutContent);
+      if (imgElement) {
+          calloutContentWrapper.append(imgElement);
+      }
+      calloutSlot.append(calloutContentWrapper);
+      merchCard.append(calloutSlot);
       return;
     }
     if (isParagraphTag(tagName)) {
