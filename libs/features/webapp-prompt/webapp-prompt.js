@@ -115,7 +115,10 @@ class AppPrompt {
         () => waitForClosedModalsThen(this.init),
         { once: true },
       );
-    } else this.init();
+      this.initializationQueued = true;
+      return;
+    }
+    this.initializationQueued = false;
   }
 
   init = async () => {
@@ -271,9 +274,11 @@ class AppPrompt {
     if (event.key === 'Escape') this.close();
   };
 
+  redirectTo = window.location.assign;
+
   initRedirect = () => setTimeout(() => {
     this.close({ saveDismissal: false, dismissalActions: false });
-    window.location.assign(this.options['redirect-url']);
+    this.redirectTo(this.options['redirect-url']);
   }, this.options['loader-duration']);
 
   isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
@@ -319,7 +324,8 @@ class AppPrompt {
 
 export default async function init(config) {
   try {
-    const appPrompt = await new AppPrompt(config);
+    const appPrompt = new AppPrompt(config);
+    if (!appPrompt.initializationQueued) await appPrompt.init();
     return appPrompt;
   } catch (e) {
     lanaLog({ message: 'Could not initialize PEP', e, tags: 'errorType=error,module=pep' });

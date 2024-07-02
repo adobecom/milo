@@ -2,6 +2,7 @@ import { setViewport } from '@web/test-runner-commands';
 import sinon from 'sinon';
 import init, { DISMISSAL_CONFIG } from '../../../libs/features/webapp-prompt/webapp-prompt.js';
 import { viewports, mockRes as importedMockRes } from '../../blocks/global-navigation/test-utilities.js';
+import { setUserProfile } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { getConfig, loadStyle, setConfig, updateConfig } from '../../../libs/utils/utils.js';
 
 export const allSelectors = {
@@ -41,6 +42,7 @@ export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = fa
   await setViewport(viewports.desktop);
   await loadStyle('../../../libs/features/webapp-prompt/webapp-prompt.css');
 
+  setUserProfile({});
   const pep = await init({
     promptPath: 'https://pep-mocks.test/pep-prompt-content.plain.html',
     getAnchorState: getAnchorStateMock || (async () => ({ id: 'unav-app-switcher', isOpen: isAnchorOpen })),
@@ -48,6 +50,7 @@ export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = fa
     parent: document.querySelector('div.feds-utilities'),
   });
 
-  sinon.stub(pep, 'initRedirect').callsFake(() => null);
+  sinon.stub(pep, 'redirectTo').callsFake(() => null);
+
   return pep;
 };
