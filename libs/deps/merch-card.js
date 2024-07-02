@@ -1,4 +1,4 @@
-// branch: rosahu/MWPW-147172 commit: 486c230da19358555986aea38a167dc952c30efe Fri, 28 Jun 2024 15:37:10 GMT
+// branch: rosahu/MWPW-147172 commit: 9a187c62466b757074fb79bf342cfdaa54212316 Tue, 02 Jul 2024 14:56:12 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
@@ -1488,8 +1488,8 @@ body.merch-modal {
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
                 <slot name="promo-text"></slot>
-                <slot name="body-xs"></slot>
                 <slot name="callout-text"></slot>
+                <slot name="body-xs"></slot>
             </div>
             <hr />
             ${this.secureLabelFooter}`}renderPlans(){return a` ${this.badge}
@@ -1499,8 +1499,8 @@ body.merch-modal {
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
                 <slot name="promo-text"></slot>
-                <slot name="body-xs"></slot>    
                 <slot name="callout-text"></slot>            
+                <slot name="body-xs"></slot>    
                 ${this.stockCheckbox}
             </div>
             <slot name="quantity-select"></slot>
@@ -1523,10 +1523,9 @@ body.merch-modal {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":a`<slot name="promo-text"></slot>`}
+                ${this.promoBottom?"":a`<slot name="promo-text"></slot><slot name="callout-text"></slot>`}
                 <slot name="body-xs"></slot>
-                <slot name="callout-text"></slot>
-                ${this.promoBottom?a`<slot name="promo-text"></slot>`:""}
+                ${this.promoBottom?a`<slot name="promo-text"></slot><slot name="callout-text"></slot>`:""}
             </div>
             ${this.secureLabelFooter}`}renderImage(){return a`${this.cardImage}
             <div class="body">
@@ -1560,8 +1559,8 @@ body.merch-modal {
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
                 <slot name="promo-text"></slot>
-                <slot name="body-xs"></slot>
                 <slot name="callout-text"></slot>
+                <slot name="body-xs"></slot>
             </div>
             ${this.secureLabelFooter}`}renderMiniCompareChart(){let{badge:e}=this;return a` <div class="top-section${e?" badge":""}">
                 <slot name="icons"></slot> ${e}
@@ -1571,9 +1570,9 @@ body.merch-modal {
             <slot name="heading-m-price"></slot>
             <slot name="body-xxs"></slot>
             <slot name="price-commitment"></slot>
-            <slot name="callout-text"></slot>
             <slot name="offers"></slot>
             <slot name="promo-text"></slot>
+            <slot name="callout-text"></slot>
             ${this.miniCompareFooter}
             <slot name="footer-rows"><slot name="body-s"></slot></slot>`}renderTwp(){return a`${this.badge}
             <div class="top-section">
