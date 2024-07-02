@@ -98,6 +98,7 @@ describe('PEP', () => {
       await clock.tickAsync(300);
 
       expect(document.querySelector(allSelectors.pepWrapper)).to.exist;
+      clock.uninstall();
     });
   });
 
@@ -173,6 +174,7 @@ describe('PEP', () => {
       clock.tick(10000);
       // redirectTo is mocked in test-utilities inside the initPep procedure
       expect(pep.redirectTo.calledOnce).to.equal(true);
+      clock.uninstall();
     });
   });
 
@@ -198,6 +200,7 @@ describe('PEP', () => {
       expect([...document.querySelectorAll(allSelectors.indicatorRing)].length).to.equal(3);
       clock.tick(7500);
       expect([...document.querySelectorAll(allSelectors.indicatorRing)].length).to.equal(0);
+      clock.uninstall();
     });
 
     it('adds a data attribute to the app switcher with the correct data and removes it after the allotted time', async () => {
@@ -209,6 +212,7 @@ describe('PEP', () => {
 
       clock.tick(5000);
       expect(document.querySelector(allSelectors.tooltip)).to.not.exist;
+      clock.uninstall();
     });
 
     it('removes the dismissal animation and the tooltip upon clicking the anchor element', async () => {
