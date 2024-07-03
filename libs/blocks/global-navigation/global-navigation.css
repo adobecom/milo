@@ -84,7 +84,6 @@ header.global-navigation {
 
 /* Promo */
 .global-navigation .aside.promobar {
-  display: none; /* For when someone switches from desktop to mobile */
   z-index: 1;
 }
 

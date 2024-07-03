@@ -705,7 +705,6 @@ header:not(.global-navigation) ~ main {
   all of the ':not(.global-navigation)' rules can be entirely removed.
  */
 header.global-navigation {
-  height: var(--global-height-nav);
   visibility: hidden;
 }
 

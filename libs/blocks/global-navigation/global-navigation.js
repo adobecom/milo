@@ -770,10 +770,12 @@ class Gnav {
     return decoratedElem;
   };
 
+
+
   decorateAside = async () => {
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');
-    if (!isDesktop.matches || !promoPath) {
+    if (!promoPath) {
       this.block.classList.remove('has-promo');
       return this.elements.aside;
     }
