@@ -220,7 +220,7 @@ class GrayboxPromote extends LitElement {
           const { root, gbRoot, driveId } = spData;
           const mainRepo = repo.replace('-graybox', '');
           const params = {
-            adminPageUri: `https://milo.adobe.com/tools/graybox?ref=${ref}&repo=${mainRepo}&owner=${owner}&host=business.adobe.com&project=${mainRepo.toUpperCase()}&referrer=MOCK_REF`,
+            adminPageUri: `https://milo.adobe.com/tools/graybox-promote?ref=${ref}&repo=${mainRepo}&owner=${owner}&host=business.adobe.com&project=${mainRepo.toUpperCase()}&referrer=MOCK_REF`,
             projectExcelPath: getProjectExcelPath(url),
             rootFolder: root,
             gbRootFolder: gbRoot,
