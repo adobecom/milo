@@ -84,16 +84,10 @@ function handleHighlight(table) {
 
     firstRowCols.forEach((col, i) => {
       col.classList.add('col-highlight');
-      const hasText = col.innerText;
-      if (hasText) {
+      if (col.innerText) {
         headingCols[i]?.classList.add('no-rounded');
-      } else if (!headingCols[i]?.innerText) {
-        col.classList.add('hidden');
       } else {
         col.classList.add('hidden');
-        if (!headingCols[i - 1]?.innerText) {
-          headingCols[i]?.classList.add('top-left-rounded');
-        }
       }
     });
   } else {
