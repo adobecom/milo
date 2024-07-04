@@ -770,8 +770,6 @@ class Gnav {
     return decoratedElem;
   };
 
-
-
   decorateAside = async () => {
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');

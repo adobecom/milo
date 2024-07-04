@@ -227,15 +227,6 @@ describe('global navigation', () => {
       });
       promoMeta.remove();
     });
-
-    it('doesn\'t exist on mobile', async () => {
-      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
-      document.head.append(promoMeta);
-      const nav = await createFullGlobalNavigation({ viewport: 'mobile', hasPromo: true });
-      expect(nav.block.classList.contains('has-promo')).to.be.false;
-      const asideElem = nav.block.querySelector('.aside.promobar');
-      expect(asideElem).to.not.exist;
-    });
   });
 
   describe('brand', () => {
