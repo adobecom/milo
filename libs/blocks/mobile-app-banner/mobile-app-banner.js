@@ -13,9 +13,10 @@ async function getKey(product) {
   return keyMatch[0]?.key;
 }
 
-function getECID() {
+async function getECID() {
   let ecid = null;
   const cookiesArr = document.cookie.split(';');
+  console.log(cookiesArr);
   const regex = /^AMCV_[A-F0-9]+%40AdobeOrg=MCMID\|\d+$/;
   const ecidFromCookie = cookiesArr.some(el => {
     if (regex.test(el)) ecid = el.split('MCMID|')[1];
@@ -96,7 +97,7 @@ export default async function init(el) {
   const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
   const key = await getKey(product);
   if (!key) return;
-  const ecid = getECID();
+  const ecid = await getECID();
   branchInit(key, ecid);
   console.log(ecid);
 }
