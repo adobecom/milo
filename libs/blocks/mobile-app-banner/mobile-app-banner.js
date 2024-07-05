@@ -13,10 +13,27 @@ async function getKey(product) {
   return keyMatch[0]?.key;
 }
 
+function getECID() {
+  let ecid = null;
+  const cookiesArr = document.cookie.split(';');
+  const regex = /^AMCV_[A-F0-9]+%40AdobeOrg=MCMID\|\d+$/;
+  const ecidFromCookie = cookiesArr.some(el => {
+    if (regex.test(el)) ecid = el.split('MCMID|')[1];
+  });
+  if(!ecidFromCookie && typeof alloy !== 'undefined') {
+	  alloy("getIdentity").then(function(result) {
+	      if (result.identity) ecid = result.identity?.ECID;
+	  });
+  }
+  return ecid;
+}
+
 /* eslint-disable */
-function branchInit(key) {
+function branchInit(key, ecidVal) {
   let initValue = false;
+  console.log("in outer init", ecidVal);
   function initBranch() {
+    console.log("in init", ecidVal);
     if (initValue) {
       return;
     }
@@ -48,11 +65,26 @@ function branchInit(key) {
       0
     );
     const privacyConsent = window.adobePrivacy?.hasUserProvidedConsent();
+    const isAndroid = navigator.userAgent.includes('Android');
+    
+    const cookieGrp = window.adobePrivacy?.activeCookieGroups();
+    const performanceCookieConsent = cookieGrp.includes('C0002');
+    const advertisingCookieConsent = cookieGrp.includes('C0004');
+
+    if ( performanceCookieConsent && advertisingCookieConsent && isAndroid ) {
+    branch.setBranchViewData({ data: { ecid: ecidVal }}, function(err) {
+      if (err) console.log(err);
+    });
+  }
     branch.init(key, { tracking_disabled: !privacyConsent });
   }
+
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
     .forEach((event) => {
-      window.addEventListener(event, initBranch);
+      window.addEventListener(event, () => {
+        console.log('event triggered, now branch init will be called');
+        initBranch();
+      });
     });
 }
 
@@ -63,5 +95,8 @@ export default async function init(el) {
   const classListArray = Array.from(el.classList);
   const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
   const key = await getKey(product);
-  if (key) branchInit(key);
+  if (!key) return;
+  const ecid = getECID();
+  branchInit(key, ecid);
+  console.log(ecid);
 }
