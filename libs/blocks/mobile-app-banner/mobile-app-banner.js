@@ -19,7 +19,7 @@ async function getECID() {
   console.log(cookiesArr);
   const regex = /^AMCV_[A-F0-9]+%40AdobeOrg=MCMID\|\d+$/;
   const ecidFromCookie = cookiesArr.some(el => {
-    if (regex.test(el)) ecid = el.split('MCMID|')[1];
+    if (regex.test(el.trim())) ecid = el.split('MCMID|')[1];
   });
   if(!ecidFromCookie && typeof alloy !== 'undefined') {
 	  alloy("getIdentity").then(function(result) {
