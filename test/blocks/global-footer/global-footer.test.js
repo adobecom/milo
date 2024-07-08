@@ -403,5 +403,23 @@ describe('global footer', () => {
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Footer could not be instantiated')));
       expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
     });
+
+    it('should send LANA log when icons.svg has some network issue', async () => {
+      window.fetch.restore();
+      stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('/footer')) {
+          return mockRes({
+            payload: fetchedFooter(
+              { regionPickerHash: '' },
+            ),
+          });
+        }
+        if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+        if (url.includes('icons.svg')) return mockRes({ payload: null, ok: false, status: 400 });
+        return null;
+      });
+      await createFullGlobalFooter({ waitForDecoration: true });
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Issue with loadIcons')));
+    });
   });
 });

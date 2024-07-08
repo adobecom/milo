@@ -55,6 +55,28 @@ const hasFailingChecks = (checks) =>
       name !== 'merge-to-stage' && conclusion === 'failure'
   );
 
+const commentOnPR = async (comment, prNumber) => {
+  console.log(comment); // Logs for debugging the action.
+  const { data: comments } = await github.rest.issues.listComments({
+    owner,
+    repo,
+    issue_number: prNumber,
+  });
+
+  const dayAgo = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
+  const hasRecentComment = comments
+    .filter(({ created_at }) => new Date(created_at) > dayAgo)
+    .some(({ body }) => body === comment);
+  if (hasRecentComment) return console.log('Comment exists for', prNumber);
+
+  await github.rest.issues.createComment({
+    owner,
+    repo,
+    issue_number: prNumber,
+    body: comment,
+  });
+};
+
 const getPRs = async () => {
   let prs = await github.rest.pulls
     .list({ owner, repo, state: 'open', per_page: 100, base: STAGE })
@@ -69,13 +91,19 @@ const getPRs = async () => {
 
   prs = prs.filter(({ checks, reviews, number, title }) => {
     if (hasFailingChecks(checks)) {
-      console.log(`Skipping ${number}: ${title} due to failing checks`);
+      commentOnPR(
+        `Skipped merging ${number}: ${title} due to failing checks`,
+        number
+      );
       return false;
     }
 
     const approvals = reviews.filter(({ state }) => state === 'APPROVED');
     if (approvals.length < REQUIRED_APPROVALS) {
-      console.log(`Skipping ${number}: ${title} due to insufficient approvals`);
+      commentOnPR(
+        `Skipped merging ${number}: ${title} due to insufficient approvals. Required: ${REQUIRED_APPROVALS} approvals`,
+        number
+      );
       return false;
     }
 
@@ -103,7 +131,10 @@ const merge = async ({ prs, type }) => {
   for await (const { number, files, html_url, title } of prs) {
     try {
       if (files.some((file) => SEEN[file])) {
-        console.log(`Skipping ${number}: ${title} due to overlap in files.`);
+        commentOnPR(
+          `Skipped ${number}: ${title} due to file overlap. Merging will be attempted in the next batch`,
+          number
+        );
         continue;
       }
       if (type !== LABELS.zeroImpact) {
@@ -130,7 +161,7 @@ const merge = async ({ prs, type }) => {
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
     } catch (error) {
-      console.log(`Error merging ${number}: ${title}`, error.message);
+      commentOnPR(`Error merging ${number}: ${title} ` + error.message, number);
     }
   }
 };
@@ -187,6 +218,10 @@ const openStageToMainPR = async () => {
     });
 
     await slackNotification(SLACK.openedSyncPr({ html_url, number }));
+    await slackNotification(
+      SLACK.openedSyncPr({ html_url, number }),
+      process.env.MILO_STAGE_SLACK_WH
+    );
   } catch (error) {
     if (error.message.includes('No commits between main and stage'))
       return console.log('No new commits, no stage->main PR opened');

@@ -5,9 +5,11 @@ import sinon from 'sinon';
 import { handleNext, getQuizJson, handleSelections, getQuizEntryData } from '../../../libs/blocks/quiz-entry/utils.js'; // Correct the path as needed
 
 let fetchStub;
+const path = './mocks/';
 const { default: mockData } = await import('./mocks/mock-data.js');
 const mockQuestionsData = mockData.questions;
 const mockStringsData = mockData.strings;
+const mockResultsData = mockData.results;
 const quizConfig = {
   quizPath: '/drafts/quiz/',
   maxQuestions: 1,
@@ -15,6 +17,7 @@ const quizConfig = {
   analyticsType: 'cc:app-reco',
   questionData: undefined,
   stringsData: undefined,
+  resultsData: undefined,
 };
 const selectedQuestion = {
   questions: 'q-category',
@@ -50,9 +53,24 @@ describe('Quiz Entry Utils', () => {
   beforeEach(async () => {
     window.lana = { log: sinon.stub() };
     fetchStub = sinon.stub(window, 'fetch');
-    fetchStub.resolves({
+    fetchStub.withArgs(`${path}questions.json`).resolves({
       ok: true,
-      json: () => Promise.resolve(mockData),
+      json: () => Promise.resolve(mockQuestionsData),
+    });
+    fetchStub.withArgs(`${path}strings.json`).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockStringsData),
+    });
+    fetchStub.withArgs(`${path}results.json`).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockResultsData),
+    });
+
+    // Handling non-existent results.json
+    fetchStub.withArgs(`${path}non-existent.json`).resolves({
+      ok: false,
+      status: 404,
+      json: () => Promise.reject(new Error('File not found')),
     });
   });
 
@@ -91,9 +109,90 @@ describe('Quiz Entry Utils', () => {
   });
 
   it('should fetch quiz data', async () => {
-    const [questions, strings] = await getQuizJson('./mocks/');
-    expect(questions.questions).to.deep.equal(mockQuestionsData);
-    expect(strings.strings).to.deep.equal(mockStringsData);
+    const [questions, strings, results] = await getQuizJson(path);
+
+    // Check if fetch was called with the correct paths
+    sinon.assert.calledWith(fetchStub, `${path}questions.json`);
+    sinon.assert.calledWith(fetchStub, `${path}strings.json`);
+    sinon.assert.calledWith(fetchStub, `${path}results.json`);
+
+    // Check that each fetch was called once
+    sinon.assert.calledOnce(fetchStub.withArgs(`${path}questions.json`));
+    sinon.assert.calledOnce(fetchStub.withArgs(`${path}strings.json`));
+    sinon.assert.calledOnce(fetchStub.withArgs(`${path}results.json`));
+
+    // Assertions for the returned data
+    expect(questions).to.deep.equal(mockQuestionsData);
+    expect(strings).to.deep.equal(mockStringsData);
+    expect(results).to.deep.equal(mockResultsData);
+  });
+
+  it('should handle missing results.json gracefully', async () => {
+    fetchStub.withArgs(`${path}results.json`).resolves({
+      ok: false,
+      status: 404,
+      json: () => Promise.reject(new Error('File not found')),
+    });
+
+    const [questions, strings, results] = await getQuizJson(path);
+
+    // Check fetch calls
+    sinon.assert.calledWith(fetchStub, `${path}questions.json`);
+    sinon.assert.calledWith(fetchStub, `${path}strings.json`);
+    sinon.assert.calledWith(fetchStub, `${path}results.json`);
+
+    // Assertions for the returned data, results should be empty
+    expect(questions).to.deep.equal(mockQuestionsData);
+    expect(strings).to.deep.equal(mockStringsData);
+    expect(results).to.deep.equal([]);
+  });
+
+  it('should log an error when fetching fails', async () => {
+    fetchStub.withArgs(`${path}questions.json`).resolves({
+      ok: false,
+      status: 500,
+      json: () => Promise.reject(new Error('Internal server error')),
+    });
+
+    const result = await getQuizJson(path);
+
+    // Ensure fetch was called with the correct path
+    sinon.assert.calledWith(fetchStub, `${path}questions.json`);
+
+    // Result should be empty due to the error
+    expect(result).to.deep.equal([]);
+
+    // Check that lana.log was called with the error message
+    sinon.assert.calledWith(
+      window.lana.log,
+      'ERROR: Fetching data for quiz entry: Error: Internal server error',
+    );
+  });
+
+  it('should log an info message when results.json is missing', async () => {
+    fetchStub.withArgs(`${path}results.json`).resolves({
+      ok: false,
+      status: 404,
+      json: () => Promise.reject(new Error('File not found')),
+    });
+
+    const [questions, strings, results] = await getQuizJson(path);
+
+    // Check fetch calls
+    sinon.assert.calledWith(fetchStub, `${path}questions.json`);
+    sinon.assert.calledWith(fetchStub, `${path}strings.json`);
+    sinon.assert.calledWith(fetchStub, `${path}results.json`);
+
+    // Assertions for the returned data
+    expect(questions).to.deep.equal(mockQuestionsData);
+    expect(strings).to.deep.equal(mockStringsData);
+    expect(results).to.deep.equal([]);
+
+    // Check that lana.log was called with the info message
+    sinon.assert.calledWith(
+      window.lana.log,
+      "INFO: results.json not found or couldn't be fetched: Error: File not found",
+    );
   });
 });
 

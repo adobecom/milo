@@ -201,6 +201,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     const downArrow = createTag('img', {
       class: 'icon-milo down-arrow',
       src: `${config.miloLibs || config.codeRoot}/ui/img/chevron.svg`,
+      role: 'presentation',
       width: 15,
       height: 15,
     });
@@ -257,7 +258,7 @@ async function showModal(details) {
   const promises = [
     tabs ? loadBlock(tabs) : null,
     tabs ? loadStyle(`${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`) : null,
-    loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`),
+    new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`, resolve); }),
   ];
   await Promise.all(promises);
   // eslint-disable-next-line import/no-cycle

@@ -37,6 +37,7 @@ const MILO_BLOCKS = [
   'graybox',
   'footer',
   'gnav',
+  'hero-marquee',
   'how-to',
   'icon-block',
   'iframe',
@@ -141,6 +142,8 @@ const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
 const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
+const PROMO_PARAM = 'promo';
+
 function getEnv(conf) {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
@@ -151,7 +154,8 @@ function getEnv(conf) {
   if (host.includes(`${SLD}.page`)
     || host.includes(`${SLD}.live`)
     || host.includes('stage.adobe')
-    || host.includes('corp.adobe')) {
+    || host.includes('corp.adobe')
+    || host.includes('graybox.adobe')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
   return { ...ENVS.prod, consumer: conf.prod };
@@ -877,12 +881,40 @@ const getMepValue = (val) => {
   return finalVal;
 };
 
+const getMdValue = (key) => {
+  const value = getMetadata(key);
+  if (value) {
+    return getMepValue(value);
+  }
+  return false;
+};
+
+const getPromoMepEnablement = () => {
+  const mds = [
+    'apac_manifestnames',
+    'emea_manifestnames',
+    'americas_manifestnames',
+    'jp_manifestnames',
+    'manifestnames',
+  ];
+  const mdObject = mds.reduce((obj, key) => {
+    const val = getMdValue(key);
+    if (val) {
+      obj[key] = val;
+    }
+    return obj;
+  }, {});
+  if (Object.keys(mdObject).length) {
+    return mdObject;
+  }
+  return false;
+};
+
 export const getMepEnablement = (mdKey, paramKey = false) => {
   const paramValue = PAGE_URL.searchParams.get(paramKey || mdKey);
   if (paramValue) return getMepValue(paramValue);
-  const mdValue = getMetadata(mdKey);
-  if (!mdValue) return false;
-  return getMepValue(mdValue);
+  if (PROMO_PARAM === paramKey) return getPromoMepEnablement();
+  return getMdValue(mdKey);
 };
 
 export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
@@ -926,7 +958,7 @@ async function checkForPageMods() {
   const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const persEnabled = getMepEnablement('personalization');
-  const promoEnabled = getMepEnablement('manifestnames', 'promo');
+  const promoEnabled = getMepEnablement('manifestnames', PROMO_PARAM);
   const targetEnabled = getMepEnablement('target');
   const mepEnabled = persEnabled || targetEnabled || promoEnabled || mepParam;
   if (!mepEnabled) return;
