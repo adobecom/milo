@@ -670,7 +670,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe.only('M@S consumption', () => {
+  describe('M@S consumption', () => {
     describe('maslibs parameter', () => {
       beforeEach(() => {
         getMasBase.baseUrl = undefined;
