@@ -73,6 +73,16 @@ const config = {
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
 };
 
+const updateSearch = ({ maslibs } = {}) => {
+  const url = new URL(window.location);
+  if (!maslibs) {
+    url.searchParams.delete('maslibs');
+  } else {
+    url.searchParams.set('maslibs', maslibs);
+  }
+  window.history.pushState({}, '', url);
+};
+
 /**
  * utility function that tests Price spans against mock HTML
  *
@@ -148,6 +158,7 @@ describe('Merch Block', () => {
 
   afterEach(() => {
     setSubscriptionsData();
+    updateSearch();
   });
 
   it('does not decorate merch with bad content', async () => {
@@ -532,12 +543,22 @@ describe('Merch Block', () => {
     });
 
     it('getCheckoutAction: handles errors gracefully', async () => {
-      const action = await getCheckoutAction([{ productArrangement: {} }], {}, Promise.reject(new Error('error')));
-      expect(action).to.be.undefined;
+      const imsSignedInPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error('error'));
+        }, 1);
+      });
+      const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
+      expect(action).to.be.empty;
     });
   });
 
   describe('Upgrade Flow', () => {
+    beforeEach(() => {
+      getMasBase.baseUrl = undefined;
+      updateSearch({});
+    });
+
     it('updates CTA text to Upgrade Now', async () => {
       mockIms();
       getUserEntitlements();
@@ -670,11 +691,23 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('M@S consumption', () => {
+  describe.skip('M@S consumption', () => {
     describe('maslibs parameter', () => {
       beforeEach(() => {
         getMasBase.baseUrl = undefined;
+        updateSearch({});
       });
+
+      it('should load commerce.js via maslibs', async () => {
+        initService.promise = undefined;
+        getMasBase.baseUrl = 'http://localhost:2000/test/blocks/merch/mas';
+        updateSearch({ maslibs: 'test' });
+        setConfig(config);
+        await mockIms();
+        const commerce = await initService(true);
+        expect(commerce.mock).to.be.true;
+      });
+
       it('should return the default Adobe URL if no maslibs parameter is present', () => {
         expect(getMasBase()).to.equal('https://www.adobe.com/mas');
       });

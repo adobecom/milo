@@ -354,15 +354,18 @@ export async function getModalAction(offers, options) {
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise) {
-  const [downloadAction, upgradeAction, modalAction] = await Promise.all([
-    getDownloadAction(options, imsSignedInPromise, offers),
-    getUpgradeAction(options, imsSignedInPromise, offers),
-    getModalAction(offers, options),
-  ]).catch((e) => {
+  try {
+    await imsSignedInPromise;
+    const [downloadAction, upgradeAction, modalAction] = await Promise.all([
+      getDownloadAction(options, imsSignedInPromise, offers),
+      getUpgradeAction(options, imsSignedInPromise, offers),
+      getModalAction(offers, options),
+    ]);
+    return downloadAction || upgradeAction || modalAction;
+  } catch (e) {
     log?.error('Failed to resolve checkout action', e);
     return [];
-  });
-  return downloadAction || upgradeAction || modalAction;
+  }
 }
 
 /**
