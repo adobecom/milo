@@ -400,32 +400,13 @@ const setDataIdOnChildren = (sections, id, value) => {
   );
 };
 
-const insertInlineFrag = (sections, a, relHref) => {
-  // Inline fragments only support one section, other sections are ignored
-  const fragChildren = [...sections[0].children];
-  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
-  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
-    a.parentElement.replaceWith(...fragChildren);
-  } else {
-    a.replaceWith(...fragChildren);
-  }
-};
-
-export const updateFragDataPropsAndInsertInlineFrags = (
-  a,
-  inline,
-  sections,
-  fragment,
-  relHref,
-) => {
+const updateFragDataProps = (a, inline, sections, fragment) => {
   if (inline) {
     if (a.dataset.manifestId) setDataIdOnChildren(sections, 'manifestId', a.dataset.manifestId);
     if (a.dataset.targetManifestId) setDataIdOnChildren(sections, 'targetManifestId', a.dataset.targetManifestId);
-    insertInlineFrag(sections, a, relHref);
   } else {
     if (a.dataset.manifestId) fragment.dataset.manifestId = a.dataset.manifestId;
     if (a.dataset.targetManifestId) fragment.dataset.targetManifestId = a.dataset.targetManifestId;
-    a.parentElement.replaceChild(fragment, a);
   }
 };
 export function handleCommands(commands, rootEl = document, forceInline = false) {
@@ -942,6 +923,7 @@ export async function init(enablements = {}) {
   if (!postLCP) {
     config.mep = {
       handleFragmentCommand,
+      updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
       variantOverride: parseMepParam(mepParam),

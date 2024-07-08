@@ -1,6 +1,5 @@
 /* eslint-disable max-classes-per-file */
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
-import { updateFragDataPropsAndInsertInlineFrags } from '../../features/personalization/personalization.js';
 
 const fragMap = {};
 
@@ -30,6 +29,17 @@ const updateFragMap = (fragment, a, href) => {
         fragLinks.forEach((link) => tree.insert(href, localizeLink(removeHash(link.href))));
       }
     });
+  }
+};
+
+const insertInlineFrag = (sections, a, relHref) => {
+  // Inline fragments only support one section, other sections are ignored
+  const fragChildren = [...sections[0].children];
+  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
+  if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
+    a.parentElement.replaceWith(...fragChildren);
+  } else {
+    a.replaceWith(...fragChildren);
   }
 };
 
@@ -63,9 +73,11 @@ export default async function init(a) {
   }
 
   const path = new URL(a.href).pathname;
+  let updatedByMEP = false;
   if (mep?.fragments?.[path]) {
     relHref = mep.handleFragmentCommand(mep?.fragments[path], a);
     if (!relHref) return;
+    updatedByMEP = true;
   }
 
   if (isCircularRef(relHref)) {
@@ -101,8 +113,13 @@ export default async function init(a) {
   }
 
   updateFragMap(fragment, a, relHref);
-  updateFragDataPropsAndInsertInlineFrags(a, inline, sections, fragment, relHref);
-  if (!inline) await loadArea(fragment);
+  if (updatedByMEP) mep.updateFragDataProps(a, inline, sections, fragment);
+  if (inline) {
+    insertInlineFrag(sections, a, relHref);
+  } else {
+    a.parentElement.replaceChild(fragment, a);
+    await loadArea(fragment);
+  }
 }
 
 class Node {
