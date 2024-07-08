@@ -21,6 +21,7 @@ import merch, {
   getCheckoutAction,
   PRICE_LITERALS_URL,
   PRICE_TEMPLATE_REGULAR,
+  getMasBase,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -665,6 +666,41 @@ describe('Merch Block', () => {
         await el.onceSettled();
         expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
         el.remove();
+      });
+    });
+  });
+
+  describe.only('M@S consumption', () => {
+    describe('maslibs parameter', () => {
+      beforeEach(() => {
+        getMasBase.baseUrl = undefined;
+      });
+      it('should return the default Adobe URL if no maslibs parameter is present', () => {
+        expect(getMasBase()).to.equal('https://www.adobe.com/mas');
+      });
+
+      it('should return the stage Adobe URL if maslibs=stage', () => {
+        expect(getMasBase('https://www.adobe.com', 'stage')).to.equal('https://www.stage.adobe.com/mas');
+      });
+
+      it('should return the local URL if maslibs=local', () => {
+        expect(getMasBase('https://www.adobe.com', 'local')).to.equal('http://localhost:8000');
+      });
+
+      it('should return the adobecom hlx live URL if maslibs is branch name', () => {
+        expect(getMasBase('https://main--milo--adobecom-hlx.live', 'test')).to.equal('https://test--mas--adobecom.hlx.live');
+      });
+
+      it('should return the hlx live URL from the fork if maslibs contains double dashes', () => {
+        expect(getMasBase('https://main--milo--adobecom-hlx.live', 'test--mas--user')).to.equal('https://test--mas--user.hlx.live');
+      });
+
+      it('should return the adobecom hlx page URL if maslibs is branch name', () => {
+        expect(getMasBase('https://main--milo--adobecom-hlx.page', 'test')).to.equal('https://test--mas--adobecom.hlx.page');
+      });
+
+      it('should return the hlx page URL from the fork if maslibs contains double dashes', () => {
+        expect(getMasBase('https://main--milo--adobecom-hlx.page', 'test--mas--user')).to.equal('https://test--mas--user.hlx.page');
       });
     });
   });

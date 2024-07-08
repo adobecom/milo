@@ -122,6 +122,34 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 let log;
 let upgradeOffer = null;
 
+/**
+ * Given a url, calculates the hostname of MAS platform.
+ * Supports, www prod, stage, local and feature branches.
+ * @param {string} hostname
+ * @param {string} maslibs
+ * @returns base hostname for mas platform
+ */
+export function getMasBase(hostname, maslibs) {
+  let { baseUrl } = getMasBase;
+  if (baseUrl) return baseUrl;
+  baseUrl = 'https://www.adobe.com/mas';
+  if (!maslibs) return baseUrl;
+  if (maslibs === 'stage') {
+    baseUrl = 'https://www.stage.adobe.com/mas';
+  } else if (maslibs === 'local') {
+    baseUrl = 'http://localhost:8000';
+  } else {
+    const extension = /.live$/.test(hostname) ? 'live' : 'page';
+    if (/--/.test(maslibs)) {
+      baseUrl = `https://${maslibs}.hlx.${extension}`;
+    } else {
+      baseUrl = `https://${maslibs}--mas--adobecom.hlx.${extension}`;
+    }
+  }
+  getMasBase.baseUrl = baseUrl;
+  return baseUrl;
+}
+
 export async function polyfills() {
   if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
@@ -349,7 +377,13 @@ export async function initService(force = false) {
   const { env, commerce = {}, locale } = getConfig();
   commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    const commerceLib = await import('../../deps/commerce.js');
+    const { hostname, searchParams } = new URL(window.location.href);
+    const maslibs = searchParams.get('maslibs');
+    let commerceLibPath = '../../deps/commerce.js';
+    if (maslibs) {
+      commerceLibPath = `${getMasBase(hostname, maslibs)}/lib/commerce.js`;
+    }
+    const commerceLib = await import(commerceLibPath);
     const service = await commerceLib.init(() => ({
       env,
       commerce,
@@ -376,8 +410,9 @@ export async function getCommerceContext(el, params) {
 }
 
 /**
- * Checkout parameter can be set Merch link, code config (scripts.js) or be a default from tacocat.
- * To get the default, 'undefinded' should be passed, empty string will trigger an error!
+ * Checkout parameter can be set on the merch link,
+ * code config (scripts.js) or be a default from tacocat.
+ * To get the default, 'undefined' should be passed, empty string will trigger an error!
  *
  * clientId - code config -> default (adobe_com)
  * workflow - merch link -> metadata -> default (UCv3)
