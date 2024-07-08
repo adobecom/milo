@@ -50,7 +50,10 @@ export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = fa
     parent: document.querySelector('div.feds-utilities'),
   });
 
-  sinon.stub(pep, 'redirectTo').callsFake(() => null);
+  Object.setPrototypeOf(pep, {
+    ...Object.getPrototypeOf(pep),
+    redirectTo: sinon.stub().returns({}),
+  });
 
   return pep;
 };
