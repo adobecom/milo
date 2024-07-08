@@ -25,14 +25,17 @@
 .editorial-card.no-bg { background: unset;}
 .editorial-card.no-border { border: unset;}
 
+.editorial-card.click {
+  cursor: pointer;
+}
+
 .editorial-card.grow { 
-  transition: all .2s ease-in-out; 
-  box-shadow: 0 0 3px -1px rgba(0 0 0 / 0%);
+  transition: all .2s ease-in-out;
 }
 
 .editorial-card.grow:hover { 
-  transform: scale(1.02);
-  box-shadow: 0 0 3px -1px  rgba(0 0 0 / 35%);
+  transform: scale(1.03);
+  box-shadow: 0 3px 6px 0  rgba(0 0 0 / 16%);
 }
 
 .editorial-card.static-links-copy .foreground a:not([class*="button"]) {
@@ -132,6 +135,14 @@
 .editorial-card .lockup-area,
 .editorial-card .device {
   margin: 0;
+}
+
+.editorial-card .lockup-area {
+  row-gap: var(--spacing-xxs);
+}
+
+.editorial-card .lockup-label {
+  line-height: initial;
 }
 
 .editorial-card .action-area, 

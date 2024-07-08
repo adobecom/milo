@@ -27,11 +27,22 @@ const extendDeviceContent = (el) => {
   }
 };
 
+function broadcastHover(el, mediaVideo) {
+  if (mediaVideo) {
+    el.addEventListener('mouseenter', () => { mediaVideo.play(); });
+    el.addEventListener('mouseleave', () => { mediaVideo.pause(); });
+    mediaVideo.setAttribute('data-mouseevent', true);
+  }
+}
+
 const decorateForeground = (el, rows, media = 0) => {
   if (media) {
     media.classList.add('media-area');
     const mediaVideo = media.querySelector('video');
-    if (mediaVideo) { applyHoverPlay(mediaVideo); }
+    if (mediaVideo) {
+      applyHoverPlay(mediaVideo);
+      broadcastHover(el, mediaVideo);
+    }
     if (media.children.length > 1) decorateBlockBg(el, media);
   }
   rows.forEach((row, i) => {
@@ -57,6 +68,19 @@ const decorateBgRow = (el, row, node) => {
     decorateBlockBg(el, node);
   }
 };
+
+function handleClickableCard(el) {
+  if (!el.classList.contains('click')) {
+    el.classList.remove('click');
+    return;
+  }
+  const links = el.querySelectorAll('a');
+  if (!links.length) return;
+  const link = links[0];
+  el.addEventListener('click', () => {
+    if (link.target === '_blank') { window.open(link.href); } else { window.location = link.href; }
+  });
+}
 
 const init = (el) => {
   el.classList.add('con-block');
@@ -99,6 +123,7 @@ const init = (el) => {
   }
   extendDeviceContent(el);
   decorateTextOverrides(el);
+  handleClickableCard(el);
 };
 
 export default init;
