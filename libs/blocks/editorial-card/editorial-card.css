@@ -65,6 +65,10 @@
   max-height: 213px;
 }
 
+.editorial-card .media-area .modal-img-link {
+  display: block;
+}
+
 .editorial-card .foreground,
 .editorial-card .footer {
   padding: var(--spacing-xs);
