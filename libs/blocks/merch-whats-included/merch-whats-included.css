@@ -6,8 +6,11 @@
 .merch-whats-included-container .fragment .container {
   display: grid;
   grid-auto-flow: column;
-  align-items: start;
-  height: auto;
-  width: inherit;
-  padding: 0;
+  width: auto;
+}
+
+@media screen and (max-width: 767px) {
+  .merch-whats-included-container .fragment .container {
+    grid-auto-flow: row;
+  }
 }
