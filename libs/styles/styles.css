@@ -1,7 +1,6 @@
 /* stylelint-disable comment-empty-line-before */
 /* stylelint-disable custom-property-empty-line-before */
 
-/*** Variables ***/
 :root {
   --global-height-nav: 64px;
   --global-height-breadcrumbs: 33px;
@@ -11,7 +10,7 @@
 
   /* Fonts */
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-  --headline-font-family: 'Adobe Headline', adobe-headline, 'Trebuchet MS', sans-serif; /* new */
+  --headline-font-family: 'Adobe Headline', adobe-headline, 'Adobe Clean', sans-serif; /* new */
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
   /* Milo Color Specs */
@@ -441,21 +440,21 @@
   --type-heading-all-weight: var(--s2-extra-bold-font-weight);
   --type-heading-lh: 125%; 
   --type-heading-xxxl-size: calc(var(--font-size-multiplier, 1) * 44px); /* original not in S2 */
-  --type-heading-xxxl-lh: 55px;
+  --type-heading-xxxl-lh: 125%;
   --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-1200, 36px)); 
-  --type-heading-xxl-lh: var(--type-heading-lh, 45px);
+  --type-heading-xxl-lh: var(--type-heading-lh);
   --type-heading-xl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-900, 28px)); 
-  --type-heading-xl-lh: var(--type-heading-lh, 35px);
+  --type-heading-xl-lh: var(--type-heading-lh);
   --type-heading-l-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-800, 24px)); 
-  --type-heading-l-lh: var(--type-heading-lh, 30px);
+  --type-heading-l-lh: var(--type-heading-lh);
   --type-heading-m-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-700, 20px)); 
-  --type-heading-m-lh: var(--type-heading-lh, 25px);
+  --type-heading-m-lh: var(--type-heading-lh);
   --type-heading-s-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-600, 18px)); 
-  --type-heading-s-lh: var(--type-heading-lh, 22.5px);
+  --type-heading-s-lh: var(--type-heading-lh);
   --type-heading-xs-size: calc(var(--font-size-multiplier, 1) * 16px); /* original not in S2 */
-  --type-heading-xs-lh: 20px;
+  --type-heading-xs-lh: var(--type-heading-lh);
   --type-heading-xxs-size: calc(var(--font-size-multiplier, 1) * 14px); /* original not in S2 */
-  --type-heading-xxs-lh: 18px;
+  --type-heading-xxs-lh: var(--type-heading-lh);
 
   @media (min-width: 768px) { /* Tablet */
     --type-heading-xxl-size: var(--s2-font-size-1300);
@@ -482,7 +481,7 @@
   }
 
   /* Headings (General) */
-  --type-heading-base-lh: 1.2;
+  --type-heading-base-lh: 120%;
 
   /* S2 Titles (new) */
   --type-title-xl-weight: var(--s2-extra-bold-font-weight);
@@ -496,7 +495,7 @@
   --type-title-s-size: var(--s2-font-size-200);
   --type-title-xs-size: var(--s2-font-size-100);
 
-  @media (min-width: 600px) { /* Tablet */
+  @media (min-width: 768px) { /* Tablet */
     --type-title-xxxl-size: var(--s2-font-size-700);
     --type-title-xxl-size: var(--s2-font-size-600);
     --type-title-xl-size: var(--s2-font-size-500);
@@ -506,7 +505,7 @@
     --type-title-xs-size: var(--s2-font-size-100);
   }
   
-  @media (min-width: 768px) { /* Small desktop */
+  @media (min-width: 1280px) { /* Small desktop */
     --type-title-xxxl-size: var(--s2-font-size-800);
     --type-title-xxl-size: var(--s2-font-size-700);
     --type-title-xl-size: var(--s2-font-size-600);
@@ -516,7 +515,7 @@
     --type-title-xs-size: var(--s2-font-size-200);
   }
   
-  @media (min-width: 1024px) { /* Large desktop */
+  @media (min-width: 1680px) { /* Large desktop */
     --type-title-xxxl-size: var(--s2-font-size-800);
     --type-title-xxl-size: var(--s2-font-size-700);
     --type-title-xl-size: var(--s2-font-size-600);
@@ -540,19 +539,19 @@
   --type-detail-s-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-75, 10px));
   --type-detail-s-lh: var(--type-detail-lh);
 
-  @media (min-width: 600px) { /* Tablet */
+  @media (min-width: 768px) { /* Tablet */
     --sn-type-detail-l-size: var(--s2-font-size-400);
     --sn-type-detail-m-size: var(--s2-font-size-200);
     --sn-type-detail-s-size: var(--s2-font-size-75);
   }
 
-  @media (min-width: 768px) { /* Small desktop */
+  @media (min-width: 1280px) { /* Small desktop */
     --sn-type-detail-l-size: var(--s2-font-size-500);
     --sn-type-detail-m-size: var(--s2-font-size-300);
     --sn-type-detail-s-size: var(--s2-font-size-100);
   }
 
-  @media (min-width: 1024px) { /* Large desktop */
+  @media (min-width: 1680px) { /* Large desktop */
     --sn-type-detail-l-size: var(--s2-font-size-500);
     --sn-type-detail-m-size: var(--s2-font-size-300);
     --sn-type-detail-s-size: var(--s2-font-size-100);
@@ -575,7 +574,7 @@
   --type-body-xxs-size: calc(var(--font-size-multiplier, 1) * 12px); /* original not in S2 */
   --type-body-xxs-lh: var(--type-body-lh);
 
-  @media (min-width: 1024px) { /* Large desktop */
+  @media (min-width: 1680px) { /* Large desktop */
     --sn-type-body-xl-size: var(--s2-font-size-600);
     --sn-type-body-l-size: var(--s2-font-size-500);
     --sn-type-body-m-size: var(--s2-font-size-400);
