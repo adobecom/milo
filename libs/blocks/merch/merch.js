@@ -127,7 +127,7 @@ let upgradeOffer = null;
  * Supports, www prod, stage, local and feature branches.
  * @param {string} hostname
  * @param {string} maslibs
- * @returns base hostname for mas platform
+ * @returns base url for mas platform
  */
 export function getMasBase(hostname, maslibs) {
   let { baseUrl } = getMasBase;
