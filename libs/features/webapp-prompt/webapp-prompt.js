@@ -274,7 +274,7 @@ class AppPrompt {
     if (event.key === 'Escape') this.close();
   };
 
-  redirectTo = window.location.assign;
+  redirectTo = () => window.location.assign;
 
   initRedirect = () => setTimeout(() => {
     this.close({ saveDismissal: false, dismissalActions: false });
