@@ -72,6 +72,26 @@ export default async function init(el) {
   content.querySelector('h4').setAttribute('slot', 'detail-xl');
   twp.append(...[...content.querySelectorAll(':scope > h4, merch-card')]);
 
+  const whatsIncludedFragment = el.querySelector('.fragment[data-path*="merch-whats-included"]');
+  if (whatsIncludedFragment) {
+    const whatsIncludedSlot = createTag(
+      'div',
+      {
+        slot: 'merch-whats-included',
+        class: 'hidden merch-whats-included-container',
+      },
+      whatsIncludedFragment,
+    );
+    twp.append(whatsIncludedSlot);
+    window.addEventListener('milo:modal:closed', (event) => {
+    // Check if whatsIncludedSlot has the 'hidden' class
+      if (!whatsIncludedSlot.classList.contains('hidden')) {
+        event.preventDefault(); // Prevent the default behavior of the event
+        whatsIncludedSlot.classList.toggle('hidden'); // Toggle the 'hidden' class on whatsIncludedSlot
+      }
+    });
+  }
+
   const cciFooter = createTag('div', { slot: 'cci-footer' });
   cciFooter.append(...[...content.querySelectorAll('p:not(hr ~ p)')]);
   const cctFooter = createTag('div', { slot: 'cct-footer' });
