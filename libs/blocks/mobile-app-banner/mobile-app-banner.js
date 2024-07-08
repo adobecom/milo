@@ -59,7 +59,7 @@ function branchInit(key) {
 /* eslint-enable */
 export default async function init(el) {
   const header = document.querySelector('.global-navigation');
-  if (!header) return;
+  if (!header || header.classList.contains('has-promo')) return;
   const classListArray = Array.from(el.classList);
   const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
   const key = await getKey(product);
