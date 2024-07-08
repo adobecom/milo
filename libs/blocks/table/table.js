@@ -425,6 +425,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
     }
+
+    filterChangeEvent();
   };
 
   // For Mobile (else: tablet / desktop)
