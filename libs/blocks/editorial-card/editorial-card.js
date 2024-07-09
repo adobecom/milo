@@ -78,6 +78,7 @@ function handleClickableCard(el) {
   if (!links.length) return;
   const link = links[0];
   el.addEventListener('click', () => {
+    /* c8 ignore next */
     if (link.target === '_blank') { window.open(link.href); } else { window.location = link.href; }
   });
 }
