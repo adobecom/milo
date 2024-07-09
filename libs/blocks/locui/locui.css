@@ -636,6 +636,10 @@ button.locui-url-action-view {
   background: url('../../ui/img/aec-icon.svg') center 14px / 26px no-repeat;
 }
 
+button.disabled.locui-url-action {
+  filter: grayscale(1) contrast(100) brightness(1);
+}
+
 .locui-url-source-details {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
