@@ -17,7 +17,7 @@
   --color-white: var(--s2-white); 
   --color-black: var(--s2-black); 
   --color-gray-100: var(--s2-gray-100);
-  --color-gray-200: #E8E8E8; /* milo only */
+  --color-gray-200: #e8e8e8; /* milo only */
   --color-gray-300: var(--s2-gray-300);
   --color-gray-400: var(--s2-gray-400);
   --color-gray-500: var(--s2-gray-500);
@@ -109,7 +109,7 @@
   /*** Milo Semantic Colors ***/
   --link-color: var(--color-blue-900);
   --link-hover-color: var(--color-blue-1000);
-  --link-color-dark: #1473E6;
+  --link-color-dark: #1473e6;
   --link-hover-color-dark: #0d66d0;
   --link-secondary-color: var(--color-gray-800); /* new */
   --link-hover-secondary-color: var(--color-gray-900); /* new */
@@ -1023,8 +1023,8 @@ svg.icon-milo, img.icon-milo {
 
 /* Premium Buttons  */
 .con-button.premium-button {
-  --sn-primary-button-gradient: linear-gradient(#D92361 0%, #6338EE 50%, #3B63FB 100%);
-  --sn-secondary-button-gradient: linear-gradient(#F37 0%, #8B8DFE 50%, #5681FF 100%);
+  --sn-primary-button-gradient: linear-gradient(#d92361 0%, #6338ee 50%, #3B63fb 100%);
+  --sn-secondary-button-gradient: linear-gradient(#f37 0%, #8b8dfe 50%, #5681ff 100%);
 
   font-weight: var(--s2-bold-font-weight);
   background-color: var(--sn-primary-button-gradient);
@@ -1273,7 +1273,7 @@ header:not(.global-navigation) {
   right: 0;
   z-index: 100;
   overflow: hidden;
-  background: #FFF;
+  background: #fff;
   box-sizing: border-box;
 }
 
@@ -1490,7 +1490,7 @@ a.static:hover, a.secondary-link:hover, a.secondary-link:active, a.secondary-lin
 @media (min-width: 900px) {
   header:not(.global-navigation) {
     min-height: var(--global-height-nav);
-    border-bottom: 1px solid #EAEAEA;
+    border-bottom: 1px solid #eaeaea;
     overflow: unset;
   }
 
