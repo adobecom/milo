@@ -717,7 +717,7 @@ describe('Merch Block', () => {
       });
 
       it('should return the local URL if maslibs=local', () => {
-        expect(getMasBase('https://www.adobe.com', 'local')).to.equal('http://localhost:8000');
+        expect(getMasBase('https://www.adobe.com', 'local')).to.equal('http://localhost:9001');
       });
 
       it('should return the adobecom hlx live URL if maslibs is branch name', () => {
