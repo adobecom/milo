@@ -129,20 +129,20 @@ async function showModal(details) {
   return getModal(null, { class: 'locale-modal', id: 'locale-modal', content: details, closeEvent: 'closeModal' });
 }
 
-export default async function loadGeoRouting(config, createTag, getMetadata, geoDetails) {
+export default async function loadGeoRouting(config, createTag, getMetadata, geoDetails = {}) {
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
   const storedInter = sessionStorage.getItem('international') || getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
-  const urlGeoData = geoDetails.data.find((d) => d.prefix === urlLocale);
+  const urlGeoData = geoDetails.data?.find((d) => d.prefix === urlLocale);
   if (!urlGeoData) return;
 
   if (storedLocale || storedLocale === '') {
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
-      const localeMatches = geoDetails.data.filter((d) => d.prefix === storedLocale);
+      const localeMatches = geoDetails.data?.filter((d) => d.prefix === storedLocale);
       const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
       if (details) { await showModal(details); }
     }

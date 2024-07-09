@@ -1,6 +1,7 @@
 import {
-  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink, getFederatedContentRoot,
+  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
+import { getFederatedContentRoot } from '../../../utils/fedsHelpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
