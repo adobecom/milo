@@ -220,6 +220,7 @@ const parseContent = async (el, merchCard) => {
               imgElement.style.width = '16px';
               imgElement.style.height = '16px';
               child.parentNode.removeChild(child);
+              calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
           } else {
               calloutContent.append(child.cloneNode(true));
           }

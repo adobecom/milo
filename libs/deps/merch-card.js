@@ -662,7 +662,11 @@ merch-card [slot='callout-text'] {
     display: inline-grid;
     background: rgba(203 203 203 / 50%);
     border-radius: var(--consonant-merch-spacing-xxxs);
-    padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-card-callout-icon-padding) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
+    padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
+}
+
+.callout-content-wrapper-with-icon {
+    padding-right: var(--consonant-merch-card-callout-icon-padding);
 }
 
 .callout-content {
