@@ -182,6 +182,10 @@
     transform: scaleX(0) translateZ(0);
   }
 
+  [dir = "rtl"] .appPrompt-progress {
+    transform-origin: top right;
+  }
+
   @keyframes appPrompt-animate {
     100% {
       transform: scaleX(1);
