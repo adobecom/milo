@@ -283,17 +283,21 @@ export default async function loadGeoRouting(
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
 
-  let resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-  if (!resp.ok) {
-    resp = await fetch(`${config.contentRoot ?? ''}/georouting.json`);
-    if (!resp.ok) {
-      resp = await fetch(`${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`);
-      if (!resp.ok) return;
-    } else {
-      const json = await resp.json();
-      // eslint-disable-next-line import/no-cycle
-      const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
-      loadGeoRoutingOld(config, createTag, getMetadata, json);
+  const urls = [
+    `${config.contentRoot ?? ''}/georoutingv2.json`,
+    `${config.contentRoot ?? ''}/georouting.json`,
+    `${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`
+  ];
+  
+  for (const url of urls) {
+    let resp = await fetch(url);
+    if (resp.ok) {
+      if (url.includes('georouting.json')) {
+        const json = await resp.json();
+        // eslint-disable-next-line import/no-cycle
+        const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
+        loadGeoRoutingOld(config, createTag, getMetadata, json);
+      }
       return;
     }
   }

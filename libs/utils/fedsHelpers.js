@@ -3,9 +3,10 @@ import { getConfig } from './utils.js';
 let federatedContentRoot;
 /* eslint-disable import/prefer-default-export */
 export const getFederatedContentRoot = () => {
-  const defaultAllowedOrigins = [
+  const cdnWhitelistedOrigins = [
     'https://www.adobe.com',
     'https://business.adobe.com',
+    'https://blog.adobe.com',
     'https://milo.adobe.com',
     'https://news.adobe.com',
   ];
@@ -14,7 +15,7 @@ export const getFederatedContentRoot = () => {
 
   const { origin } = window.location;
 
-  federatedContentRoot = [...allowedOrigins, ...defaultAllowedOrigins].some((o) => origin.replace('.stage', '') === o)
+  federatedContentRoot = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => origin.replace('.stage', '') === o)
     ? origin
     : 'https://www.adobe.com';
 
