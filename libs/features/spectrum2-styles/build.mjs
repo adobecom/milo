@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import fs from 'fs';
 import path from 'path';
 import postcss from 'postcss';
