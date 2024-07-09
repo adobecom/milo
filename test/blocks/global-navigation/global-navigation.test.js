@@ -251,7 +251,6 @@ describe('global navigation', () => {
       expect(prmobarNotOnMobile).to.be.false;
       promoMeta.remove();
     });
-
   });
 
   describe('brand', () => {
