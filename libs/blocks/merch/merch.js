@@ -382,7 +382,7 @@ export async function initService(force = false) {
     if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
       const maslibs = searchParams.get('maslibs');
       if (maslibs) {
-        commerceLibPath = `${getMasBase(hostname, maslibs)}/lib/commerce.js`;
+        commerceLibPath = `${getMasBase(hostname, maslibs)}/libs/commerce.js`;
       }
     }
     const commerceLib = await import(commerceLibPath);
