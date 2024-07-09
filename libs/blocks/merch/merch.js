@@ -131,22 +131,19 @@ let upgradeOffer = null;
  */
 export function getMasBase(hostname, maslibs) {
   let { baseUrl } = getMasBase;
-  if (baseUrl) return baseUrl;
-  baseUrl = 'https://www.adobe.com/mas';
-  if (!maslibs) return baseUrl;
-  if (maslibs === 'stage') {
-    baseUrl = 'https://www.stage.adobe.com/mas';
-  } else if (maslibs === 'local') {
-    baseUrl = 'http://localhost:9001';
-  } else {
-    const extension = /.live$/.test(hostname) ? 'live' : 'page';
-    if (/--/.test(maslibs)) {
+  if (!baseUrl) {
+    if (maslibs === 'stage') {
+      baseUrl = 'https://www.stage.adobe.com/mas';
+    } else if (maslibs === 'local') {
+      baseUrl = 'http://localhost:9001';
+    } else if (maslibs) {
+      const extension = /.page$/.test(hostname) ? 'page' : 'live';
       baseUrl = `https://${maslibs}.hlx.${extension}`;
     } else {
-      baseUrl = `https://${maslibs}--mas--adobecom.hlx.${extension}`;
+      baseUrl = 'https://www.adobe.com/mas';
     }
+    getMasBase.baseUrl = baseUrl;
   }
-  getMasBase.baseUrl = baseUrl;
   return baseUrl;
 }
 

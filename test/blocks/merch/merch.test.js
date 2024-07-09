@@ -720,16 +720,8 @@ describe('Merch Block', () => {
         expect(getMasBase('https://main--milo--adobecom.hlx.live', 'local')).to.equal('http://localhost:9001');
       });
 
-      it('should return the adobecom hlx live URL if maslibs is branch name', () => {
-        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'test')).to.equal('https://test--mas--adobecom.hlx.live');
-      });
-
       it('should return the hlx live URL from the fork if maslibs contains double dashes', () => {
         expect(getMasBase('https://main--milo--adobecom.hlx.live', 'test--mas--user')).to.equal('https://test--mas--user.hlx.live');
-      });
-
-      it('should return the adobecom hlx page URL if maslibs is branch name', () => {
-        expect(getMasBase('https://main--milo--adobecom.hlx.page', 'test')).to.equal('https://test--mas--adobecom.hlx.page');
       });
 
       it('should return the hlx page URL from the fork if maslibs contains double dashes', () => {
