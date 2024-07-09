@@ -10,6 +10,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-transform: translateZ(0);
 }
 
 .section.masonry-layout > .editorial-card[class*='grid-span-'] {
