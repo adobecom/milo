@@ -10,6 +10,11 @@
 }
 
 @media screen and (max-width: 767px) {
+  .merch-whats-included-container {
+    position: fixed;
+    overflow: hidden scroll;
+  }
+  
   .merch-whats-included-container .fragment .container {
     grid-auto-flow: row;
   }
