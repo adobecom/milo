@@ -227,6 +227,31 @@ describe('global navigation', () => {
       });
       promoMeta.remove();
     });
+
+    it('doesn\'t exist on mobile', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/hide-promobar-on-mobile">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ viewport: 'mobile', hasPromo: true });
+      expect(nav.block.classList.contains('has-promo')).to.be.true;
+      const asideElem = nav.block.querySelector('.aside.promobar');
+      expect(asideElem).to.be.exist;
+      const prmobarNotOnMobile = asideElem.querySelector('.mobile-up').classList.contains('hide-block');
+      expect(prmobarNotOnMobile).to.be.true;
+      promoMeta.remove();
+    });
+
+    it('Exist on mobile', async () => {
+      const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/show-promobar-on-mobile">`;
+      document.head.append(promoMeta);
+      const nav = await createFullGlobalNavigation({ viewport: 'mobile', hasPromo: true });
+      expect(nav.block.classList.contains('has-promo')).to.be.true;
+      const asideElem = nav.block.querySelector('.aside.promobar');
+      expect(asideElem).to.be.exist;
+      const prmobarNotOnMobile = asideElem.querySelector('.mobile-up').classList.contains('hide-block');
+      expect(prmobarNotOnMobile).to.be.false;
+      promoMeta.remove();
+    });
+
   });
 
   describe('brand', () => {

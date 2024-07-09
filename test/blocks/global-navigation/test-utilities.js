@@ -12,6 +12,8 @@ import largeMenuWideColumnMock from './mocks/large-menu-wide-column.plain.js';
 import largeMenuCrossCloud from './mocks/large-menu-cross-cloud.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import correctPromoFragmentMock from './mocks/correctPromoFragment.plain.js';
+import hidePromoOnMobile from './mocks/hidePromobarOnMobile.plain.js';
+import showPromoOnMobile from './mocks/showPromobarOnMobile.plain.js';
 import { isElementVisible, selectors as keyboardSelectors } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
 import { selectors as baseSelectors, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 
@@ -180,6 +182,8 @@ export const createFullGlobalNavigation = async ({
       && url.endsWith('feds-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }
+    if (url.includes('hide-promobar-on-mobile')) { return mockRes({ payload: hidePromoOnMobile }); }
+    if (url.includes('show-promobar-on-mobile')) { return mockRes({ payload: showPromoOnMobile }); }
     if (url.includes('wrong-promo-fragment')) { return mockRes({ payload: '<div>Non-promo content</div>' }); }
     if (url.includes('UniversalNav')) { return mockRes({ payload: {} }); }
     return null;
