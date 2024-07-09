@@ -65,31 +65,18 @@ const extractAndTransform = (css, prefix) => {
   return customProperties;
 };
 
-// Merge additional properties into base properties
-const mergeProperties = (baseProps, additionalProps) => {
-  Object.keys(additionalProps).forEach((prop) => {
-    if (!baseProps[prop]) {
-      baseProps[prop] = additionalProps[prop];
-    }
-  });
-};
-
 const spectrumProperties = extractAndTransform(spectrumCSS, '--spectrum');
 
-// Get Spectrum properties for a given selector
 const getSpectrumPropertiesForSelector = (selector) => {
+  const map = {
+    ':root': ['.spectrum', '.spectrum--light', '.spectrum--medium', '.spectrum--lightest'],
+    '.dark': ['.spectrum--dark'],
+  };
   const properties = {};
-  if (selector === ':root') {
-    mergeProperties(properties, spectrumProperties['.spectrum'] || {});
-    mergeProperties(properties, spectrumProperties['.spectrum--light'] || {});
-    mergeProperties(properties, spectrumProperties['.spectrum--medium'] || {});
-  } else if (selector === '.light') {
-    mergeProperties(properties, spectrumProperties['.spectrum--light'] || {});
-  } else if (selector === '.dark') {
-    mergeProperties(properties, spectrumProperties['.spectrum--dark'] || {});
-  } else {
-    mergeProperties(properties, spectrumProperties[selector] || {});
-  }
+  const propertiesToMerge = map[selector] || [selector];
+  propertiesToMerge.forEach((property) => {
+    Object.assign(properties, spectrumProperties[property] || {});
+  });
   return properties;
 };
 
@@ -105,8 +92,7 @@ const updateMiloCSS = (css) => {
         const { prop } = decl;
         if (prop.startsWith('--s2')) {
           const spectrumProp = `--spectrum${prop.slice(4)}`;
-          const spectrumSelector = selector === ':root' ? '.spectrum' : selector === '.light' ? '.spectrum--light' : selector === '.dark' ? '.spectrum--dark' : null;
-          const spectrumProps = getSpectrumPropertiesForSelector(spectrumSelector);
+          const spectrumProps = getSpectrumPropertiesForSelector(selector);
           if (spectrumProps[spectrumProp] !== undefined) {
             decl.value = spectrumProps[spectrumProp];
           }
