@@ -10,20 +10,20 @@
 
   /* Fonts */
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-  --headline-font-family: 'Adobe Headline', adobe-headline, 'Adobe Clean', sans-serif; /* new */
+  --headline-font-family: 'Adobe Headline', adobe-headline, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif; /* new */
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
   /* Milo Color Specs */
   --color-white: var(--s2-white); 
   --color-black: var(--s2-black); 
-  --color-gray-100: var(--s2-gray-100,#F8F8F8);
+  --color-gray-100: var(--s2-gray-100);
   --color-gray-200: #E8E8E8; /* milo only */
-  --color-gray-300: var(--s2-gray-300,#D4D4D4);
-  --color-gray-400: var(--s2-gray-400, #B6B6B6);
-  --color-gray-500: var(--s2-gray-500, #909090);
+  --color-gray-300: var(--s2-gray-300);
+  --color-gray-400: var(--s2-gray-400);
+  --color-gray-500: var(--s2-gray-500);
   --color-gray-600: #686868; /* milo only */
-  --color-gray-700: var(--s2-gray-700, #444);
-  --color-gray-800: var(--s2-gray-800, #242424);
+  --color-gray-700: var(--s2-gray-700);
+  --color-gray-800: var(--s2-gray-800);
   /*** S2 Color Specs ***/ 
   --s2-white: rgb(255 255 255);
   --s2-black: rgb(0 0 0);
@@ -107,8 +107,8 @@
   --s2-accent-color-1000: var(--s2-blue-1000);
 
   /*** Milo Semantic Colors ***/
-  --link-color: var(--color-blue-900, #035fe6);
-  --link-hover-color: var(--color-blue-1000, #136ff6);
+  --link-color: var(--color-blue-900);
+  --link-hover-color: var(--color-blue-1000);
   --link-color-dark: #1473E6;
   --link-hover-color-dark: #0d66d0;
   --link-secondary-color: var(--color-gray-800); /* new */
@@ -121,10 +121,10 @@
   --title-color: var(--s2-title-color);
   --detail-color: var(--s2-detail-color);
   --color-brand-title: var(--s2-title-color);
-  --color-accent: var(--s2-accent-content-color-default, --link-color-dark);
-  --color-accent-hover: var(--s2-accent-content-color-hover, --link-hover-color-dark);
-  --color-accent-down: var(--s2-accent-content-color-down, #095aba);
-  --color-accent-focus-ring: var(--s2-accent-content-color-key-focus, #378ef0);
+  --color-accent: var(--s2-accent-content-color-default);
+  --color-accent-hover: var(--s2-accent-content-color-hover);
+  --color-accent-down: var(--s2-accent-content-color-down);
+  --color-accent-focus-ring: var(--s2-accent-content-color-key-focus);
   --color-info-accent: var(--s2-informative-background-color-default);
   --color-info-accent-hover: var(--s2-informative-background-color-hover);
   --color-info-accent-down: var(--s2-informative-background-color-down);
@@ -413,21 +413,20 @@
   /**** Style Specs ****/
 
   /* S2 Spacing */
-  --spacing-xxs: var(--s2-spacing-75, 8px); /* 4px */
-  --spacing-xs: var(--s2-spacing-100, 16px); /* 8px */
-  --spacing-s: var(--s2-spacing-200, 24px); /* 12px */
-  --spacing-m: var(--s2-spacing-300, 32px); /* 16px */
-  --spacing-l: var(--s2-spacing-500, 40px); /* 32px */
-  --spacing-xl: var(--s2-spacing-600, 48px); /* 40px */
-  --spacing-xxl: var(--s2-spacing-700, 56px); /* 48px */
-  --spacing-xxxl: var(--s2-spacing-800, 80px); /* 64px */
+  --spacing-xxs: var(--s2-spacing-75);
+  --spacing-xs: var(--s2-spacing-100);
+  --spacing-s: var(--s2-spacing-200);
+  --spacing-m: var(--s2-spacing-300);
+  --spacing-l: var(--s2-spacing-500);
+  --spacing-xl: var(--s2-spacing-600);
+  --spacing-xxl: var(--s2-spacing-700);
+  --spacing-xxxl: var(--s2-spacing-800);
   --spacing-xxxxl: var(--s2-spacing-900);
 
   @media (min-width: 1280px) { /* Desktop */
-    --spacing-xl: var(--s2-spacing-700, 48px);
-    --spacing-xxl: var(--s2-spacing-800, 56px); /* 64px */
-    --spacing-xxxl: var(--s2-spacing-900, 80px);
-    --spacing-xxxxl: var(--sn-spacing-1100, 104px);
+    --spacing-xl: var(--s2-spacing-700);
+    --spacing-xxxl: var(--s2-spacing-900);
+    --spacing-xxxxl: var(--sn-spacing-1100);
   }
 
   /* Static Spacing (milo original) */
@@ -438,18 +437,18 @@
   /* S2 Headings */
   --type-heading-xl-weight: var(--s2-black-font-weight); 
   --type-heading-all-weight: var(--s2-extra-bold-font-weight);
-  --type-heading-lh: 125%; 
+  --type-heading-lh: 1.25; 
   --type-heading-xxxl-size: calc(var(--font-size-multiplier, 1) * 44px); /* original not in S2 */
-  --type-heading-xxxl-lh: 125%;
-  --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-1200, 36px)); 
+  --type-heading-xxxl-lh: var(--type-heading-lh);
+  --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-1200)); 
   --type-heading-xxl-lh: var(--type-heading-lh);
-  --type-heading-xl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-900, 28px)); 
+  --type-heading-xl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-900)); 
   --type-heading-xl-lh: var(--type-heading-lh);
-  --type-heading-l-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-800, 24px)); 
+  --type-heading-l-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-800)); 
   --type-heading-l-lh: var(--type-heading-lh);
-  --type-heading-m-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-700, 20px)); 
+  --type-heading-m-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-700)); 
   --type-heading-m-lh: var(--type-heading-lh);
-  --type-heading-s-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-600, 18px)); 
+  --type-heading-s-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-600)); 
   --type-heading-s-lh: var(--type-heading-lh);
   --type-heading-xs-size: calc(var(--font-size-multiplier, 1) * 16px); /* original not in S2 */
   --type-heading-xs-lh: var(--type-heading-lh);
@@ -481,12 +480,12 @@
   }
 
   /* Headings (General) */
-  --type-heading-base-lh: 120%;
+  --type-heading-base-lh: 1.2;
 
   /* S2 Titles (new) */
   --type-title-xl-weight: var(--s2-extra-bold-font-weight);
   --type-title-all-weight: var(--s2-bold-font-weight);
-  --type-title-lh: 130%;
+  --type-title-lh: 1.3;
   --type-title-xxxl-size: var(--s2-font-size-700);
   --type-title-xxl-size: var(--s2-font-size-600);
   --type-title-xl-size: var(--s2-font-size-500);
@@ -528,7 +527,7 @@
   /* S2 Detail */
   --sn-type-detail-xl-weight: var(--s2-bold-font-weight);
   --type-detail-all-weight: var(--s2-bold-font-weight);
-  --type-detail-lh: 125%;
+  --type-detail-lh: 1.2;
   --type-detail-all-transform: uppercase;
   --type-detail-xl-size: calc(var(--font-size-multiplier, 1) * 20px); /* original not in S2 */
   --type-detail-xl-lh: var(--type-detail-lh);
@@ -558,7 +557,7 @@
   }
 
   /* S2 Body */
-  --type-body-lh: 150%;
+  --type-body-lh: 1.5;
   --type-body-xxl-size: calc(var(--font-size-multiplier, 1) * 28px); /* original not in S2 */
   --type-body-xxl-lh: var(--type-body-lh);
   --type-body-xl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-500, 22px));
@@ -755,7 +754,7 @@
 .detail-xs {
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
-  font-weight: 700;
+  font-weight: var(--s2-bold-font-weight);
 }
 
 .body-xxl {
@@ -925,7 +924,7 @@ svg.icon-milo, img.icon-milo {
 .con-button.blue[aria-disabled="true"], 
 .con-button.accent-button[aria-disabled="true"] {
   background-color: var(--color-gray-100);
-  color: var(--color-gray-400)
+  color: var(--color-gray-400);
 }
 
 /* Primary Buttons Black */
@@ -948,7 +947,6 @@ svg.icon-milo, img.icon-milo {
 .con-button.primary-black-button:focus {
   outline: 2px solid var(--s2-static-black-focus-indicator-color);
 }
-
 
 .con-button.fill[aria-disabled="true"], 
 .con-button.primary-black-button[aria-disabled="true"] {
@@ -997,14 +995,14 @@ svg.icon-milo, img.icon-milo {
 .con-button.secondary-black-button[aria-disabled="true"] {
   background-color: transparent;
   outline: 2px solid var(--s2-gray-300);
-  color: var(--s2-transparent-black-400)
+  color: var(--s2-transparent-black-400);
 }
 
 /* Secondary Buttons White */
 .con-button.secondary-white-button {
   background-color: var(--s2-transparent-white-25);
   border: 2px solid var(--s2-gray-800);
-  color: var(--s2-transparent-white-800)
+  color: var(--s2-transparent-white-800);
 }
 
 .con-button.secondary-white-button:hover, 
@@ -1050,14 +1048,7 @@ svg.icon-milo, img.icon-milo {
 }
 
 /* Disabled Button */
-.con-button[aria-disabled="true"]:hover,
-.con-button.blue[aria-disabled="true"]:hover,
-.con-button.accent-button[aria-disabled="true"]:hover,
-.con-button.fill[aria-disabled="true"]:hover,
-.con-button.primary-black-button[aria-disabled="true"]:hover,
-.con-button.primary-white-button[aria-disabled="true"]:hover,
-.con-button.secondary-black-button[aria-disabled="true"]:hover,
-.con-button.secondary-white-button[aria-disabled="true"]:hover {
+.con-button[aria-disabled="true"]:hover {
   cursor: default;
 }
 
@@ -1403,7 +1394,7 @@ a.primary-link:hover, a.primary-link:active, a.primary-link:focus  {
 }
 
 /* Links (Secondary) */
-a.static,a.secondary-link {
+a.static, a.secondary-link {
   color: var(--s2-gray-800);
   text-decoration: underline;
 }
