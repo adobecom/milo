@@ -1,6 +1,5 @@
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
-import { AppPrompt } from '../../../libs/features/webapp-prompt/webapp-prompt.js';
 import pepPromptContent from './mocks/pep-prompt-content.js';
 
 describe('PEP', () => {
@@ -172,9 +171,12 @@ describe('PEP', () => {
       const clock = sinon.useFakeTimers();
       await initPep({});
 
+      expect(window.location.hash).to.not.equal('soup');
+
       clock.tick(10000);
-      // redirectTo is mocked in test-utilities inside the initPep procedure
-      expect(AppPrompt.redirectTo.calledOnce).to.equal(true);
+
+      expect(window.location.hash).to.equal('#soup');
+
       clock.uninstall();
     });
   });
