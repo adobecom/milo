@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
+import { AppPrompt } from '../../../libs/features/webapp-prompt/webapp-prompt.js';
 import pepPromptContent from './mocks/pep-prompt-content.js';
 
 describe('PEP', () => {
@@ -169,11 +170,11 @@ describe('PEP', () => {
 
     it('redirects when the PEP timer runs out', async () => {
       const clock = sinon.useFakeTimers();
-      const pep = await initPep({});
+      await initPep({});
 
       clock.tick(10000);
       // redirectTo is mocked in test-utilities inside the initPep procedure
-      expect(pep.redirectTo.calledOnce).to.equal(true);
+      expect(AppPrompt.redirectTo.calledOnce).to.equal(true);
       clock.uninstall();
     });
   });
