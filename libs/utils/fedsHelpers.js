@@ -6,8 +6,8 @@ export const getFederatedContentRoot = () => {
   const defaultAllowedOrigins = [
     'https://www.adobe.com',
     'https://business.adobe.com',
-    'https://blog.adobe.com',
     'https://milo.adobe.com',
+    'https://news.adobe.com',
   ];
   const { allowedOrigins = [] } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
