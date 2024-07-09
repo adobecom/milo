@@ -172,7 +172,7 @@ export async function createProject() {
     await preview(`${heading.value.path}.json`);
   } else if (resp.status === 500) {
     const json = await resp.json();
-    setStatus('service', 'error', 'Creating project', json.error);
+    setStatus('service', 'error', 'Creating project', json.errors && json.errors?.length > 0 ? json.errors : json.error);
   }
   return resp.status;
 }
