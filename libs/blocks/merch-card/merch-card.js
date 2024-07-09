@@ -215,7 +215,7 @@ const parseContent = async (el, merchCard) => {
               const imgSrc = hrefParts[0];
               imgElement = document.createElement('img');
               imgElement.src = imgSrc;
-              imgElement.title = tooltipText;
+              imgElement.title = decodeURIComponent(tooltipText);
               imgElement.className = 'callout-icon';
               imgElement.style.width = '16px';
               imgElement.style.height = '16px';
