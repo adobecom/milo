@@ -395,6 +395,30 @@ describe('Merch Card with Offer Selection', () => {
     await delay();
     expect(document.querySelector('merch-quantity-select')).to.not.exist;
   });
+
+  it('should handle callout-text with h6 and em tags', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/callout.html');
+    const merchCard = document.querySelector('.merch-card');
+
+    // Act
+    await parseContent(merchCard, merchCard);
+
+    // Assert
+    const calloutSlot = merchCard.querySelector('[slot="callout-text"]');
+    expect(calloutSlot).not.toBeNull();
+
+    const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper');
+    expect(calloutContentWrapper).not.toBeNull();
+    expect(calloutContentWrapper.classList.contains('callout-content-wrapper-with-icon')).toBe(true);
+
+    const imgElement = calloutContentWrapper.querySelector('img.callout-icon');
+    expect(imgElement).not.toBeNull();
+    expect(imgElement.title).toBe('this is a dummy tooltip text');
+
+    const calloutContent = calloutContentWrapper.querySelector('.callout-content');
+    expect(calloutContent).not.toBeNull();
+    expect(calloutContent.textContent.trim()).toBe('AI Assistant add-on available');
+  });
 });
 
 describe('Section metadata rules', async () => {

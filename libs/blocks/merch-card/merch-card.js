@@ -217,8 +217,6 @@ const parseContent = async (el, merchCard) => {
               imgElement.src = imgSrc;
               imgElement.title = decodeURIComponent(tooltipText);
               imgElement.className = 'callout-icon';
-              imgElement.style.width = '16px';
-              imgElement.style.height = '16px';
               child.parentNode.removeChild(child);
               calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
           } else {
