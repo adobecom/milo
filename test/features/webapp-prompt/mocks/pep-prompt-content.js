@@ -1,13 +1,4 @@
-export default ({
-  color,
-  loaderDuration,
-  redirectUrl,
-  productName,
-  animationCount,
-  animationDuration,
-  tooltipMessage,
-  tooltipDuration,
-}) => `<div>
+export default ({ color, loaderDuration, redirectUrl, productName }) => `<div>
   <p>
     <picture>
       <source type="image/webp" srcset="http://localhost:2000/test/features/webapp-prompt/mocks/media-icon.png" media="(min-width: 600px)">
@@ -35,22 +26,6 @@ export default ({
     ${productName && `<div>
       <div>product-name</div>
       <div>${productName}</div>
-    </div>`}
-    ${animationCount && `<div>
-      <div>dismissal-animation-count</div>
-      <div>${animationCount}</div>
-    </div>`}
-    ${animationDuration && `<div>
-      <div>dismissal-animation-duration</div>
-      <div>${animationDuration}</div>
-    </div>`}
-    ${tooltipMessage && `<div>
-      <div>dismissal-tooltip-message</div>
-      <div>${tooltipMessage}</div>
-    </div>`}
-    ${tooltipDuration && `<div>
-      <div>dismissal-tooltip-duration</div>
-      <div>${tooltipDuration}</div>
     </div>`}
   </div>
 </div>`;

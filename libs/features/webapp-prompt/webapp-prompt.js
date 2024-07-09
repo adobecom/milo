@@ -8,21 +8,13 @@ import {
 import { getConfig, decorateSVG } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
 
-export const DISMISSAL_CONFIG = {
-  animationCount: 2,
-  animationDuration: 2500,
-  tooltipMessage: 'Use the App Switcher to quickly find apps.',
-  tooltipDuration: 5000,
-};
-
 const CONFIG = {
   selectors: { prompt: '.appPrompt' },
   delay: 7000,
   loaderColor: '#EB1000',
-  ...DISMISSAL_CONFIG,
 };
 
-const getElemText = (elem) => elem?.textContent?.trim();
+const getElemText = (elem) => elem?.textContent?.trim().toLowerCase();
 
 const getMetadata = (el) => [...el.childNodes].reduce((acc, row) => {
   if (row.children?.length === 2) {
@@ -41,54 +33,6 @@ const getIcon = (content) => {
   if (svg) return decorateSVG(svg);
 
   return icons.company;
-};
-
-const showTooltip = (
-  element,
-  message = CONFIG.tooltipMessage,
-  time = CONFIG.tooltipDuration,
-) => {
-  element.setAttribute('data-pep-dismissal-tooltip', message);
-  const cleanup = () => element.removeAttribute('data-pep-dismissal-tooltip');
-  const timeoutID = setTimeout(cleanup, time);
-  element.addEventListener('click', () => {
-    cleanup();
-    clearTimeout(timeoutID);
-  }, { once: true });
-};
-
-const playFocusAnimation = (
-  element,
-  iterationCount = CONFIG.animationCount,
-  animationDuration = CONFIG.animationDuration,
-) => {
-  element.classList.add('coach-indicator');
-  element.style.setProperty('--animation-duration', `${animationDuration}ms`);
-  const rings = [];
-  const createRing = () => toFragment`
-    <div
-      class="coach-indicator-ring"
-      style="animation-iteration-count: ${iterationCount};">
-    </div>`;
-  for (let i = 0; i < 3; i += 1) {
-    const ring = createRing();
-    element.insertAdjacentElement('afterbegin', ring);
-    rings.push(ring);
-  }
-  // The cleanup function is added to the event queue
-  // some time after the end of the animation because
-  // the cleanup isn't high priority but it should be done
-  // eventually. (Animation truly ends slightly after
-  // animationDuration * iterationCount due to animation-delay)
-  const cleanup = () => {
-    rings.forEach((ring) => ring.remove());
-    element.classList.remove('coach-indicator');
-  };
-  const timeoutID = setTimeout(cleanup, (iterationCount + 1) * animationDuration);
-  element.addEventListener('click', () => {
-    cleanup();
-    clearTimeout(timeoutID);
-  }, { once: true });
 };
 
 const modalsActive = () => !!document.querySelector('.dialog-modal');
@@ -115,10 +59,7 @@ class AppPrompt {
         () => waitForClosedModalsThen(this.init),
         { once: true },
       );
-      this.initializationQueued = true;
-      return;
-    }
-    this.initializationQueued = false;
+    } else this.init();
   }
 
   init = async () => {
@@ -221,10 +162,6 @@ class AppPrompt {
     const metadata = getMetadata(content.querySelector('.section-metadata'));
     metadata['loader-duration'] = parseInt(metadata['loader-duration'] || CONFIG.delay, 10);
     metadata['loader-color'] = metadata['loader-color'] || CONFIG.loaderColor;
-    metadata['dismissal-animation-count'] = parseInt(metadata['dismissal-animation-count'] ?? CONFIG.animationCount, 10);
-    metadata['dismissal-animation-duration'] = parseInt(metadata['dismissal-animation-duration'] ?? CONFIG.animationDuration, 10);
-    metadata['dismissal-tooltip-message'] ??= CONFIG.tooltipMessage;
-    metadata['dismissal-tooltip-duration'] = parseInt(metadata['dismissal-tooltip-duration'] ?? CONFIG.tooltipDuration, 10);
     this.options = metadata;
   };
 
@@ -244,7 +181,7 @@ class AppPrompt {
       : '';
 
     return toFragment`<div
-      daa-state="true" daa-im="true" daa-lh="PEP Modal_${this.options['product-name']?.toLowerCase()}"
+      daa-state="true" daa-im="true" daa-lh="PEP Modal_${this.options['product-name']}"
       class="appPrompt" style="margin: 0 ${this.offset}px">
       ${this.elements.closeIcon}
       <div class="appPrompt-icon">
@@ -263,7 +200,7 @@ class AppPrompt {
   };
 
   addEventListeners = () => {
-    this.anchor?.addEventListener('click', () => this.close({ dismissalActions: false }));
+    this.anchor?.addEventListener('click', this.close);
     document.addEventListener('keydown', this.handleKeyDown);
 
     [this.elements.closeIcon, this.elements.cta]
@@ -274,11 +211,9 @@ class AppPrompt {
     if (event.key === 'Escape') this.close();
   };
 
-  static redirectTo = (url) => window.location.assign(url);
-
   initRedirect = () => setTimeout(() => {
-    this.close({ saveDismissal: false, dismissalActions: false });
-    this.redirectTo(this.options['redirect-url']);
+    this.close({ saveDismissal: false });
+    window.location.assign(this.options['redirect-url']);
   }, this.options['loader-duration']);
 
   isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
@@ -289,7 +224,7 @@ class AppPrompt {
     document.cookie = `dismissedAppPrompts=${JSON.stringify([...dismissedPrompts])};path=/`;
   };
 
-  close = ({ saveDismissal = true, dismissalActions = true } = {}) => {
+  close = ({ saveDismissal = true } = {}) => {
     const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
     appPromptElem?.remove();
     clearTimeout(this.redirectFn);
@@ -297,19 +232,6 @@ class AppPrompt {
     document.removeEventListener('keydown', this.handleKeyDown);
     this.anchor?.focus();
     this.anchor?.removeEventListener('click', this.close);
-
-    if (dismissalActions) {
-      playFocusAnimation(
-        this.anchor,
-        this.options['dismissal-animation-count'],
-        this.options['dismissal-animation-duration'],
-      );
-      showTooltip(
-        this.anchor,
-        this.options['dismissal-tooltip-message'],
-        this.options['dismissal-tooltip-duration'],
-      );
-    }
   };
 
   static getDismissedPrompts = () => {
@@ -324,8 +246,7 @@ class AppPrompt {
 
 export default async function init(config) {
   try {
-    const appPrompt = new AppPrompt(config);
-    if (!appPrompt.initializationQueued) await appPrompt.init();
+    const appPrompt = await new AppPrompt(config);
     return appPrompt;
   } catch (e) {
     lanaLog({ message: 'Could not initialize PEP', e, tags: 'errorType=error,module=pep' });
