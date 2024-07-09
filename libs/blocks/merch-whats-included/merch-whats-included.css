@@ -14,7 +14,7 @@
     position: fixed;
     overflow: hidden scroll;
   }
-  
+
   .merch-whats-included-container .fragment .container {
     grid-auto-flow: row;
   }
