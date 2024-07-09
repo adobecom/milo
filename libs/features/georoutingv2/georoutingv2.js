@@ -286,11 +286,11 @@ export default async function loadGeoRouting(
   const urls = [
     `${config.contentRoot ?? ''}/georoutingv2.json`,
     `${config.contentRoot ?? ''}/georouting.json`,
-    `${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`
+    `${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`,
   ];
-  
+  let resp;
   for (const url of urls) {
-    let resp = await fetch(url);
+    resp = await fetch(url);
     if (resp.ok) {
       if (url.includes('georouting.json')) {
         const json = await resp.json();
@@ -302,7 +302,6 @@ export default async function loadGeoRouting(
     }
   }
   const json = await resp.json();
-
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
