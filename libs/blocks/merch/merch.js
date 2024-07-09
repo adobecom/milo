@@ -137,7 +137,7 @@ export function getMasBase(hostname, maslibs) {
   if (maslibs === 'stage') {
     baseUrl = 'https://www.stage.adobe.com/mas';
   } else if (maslibs === 'local') {
-    baseUrl = 'http://localhost:8000';
+    baseUrl = 'http://localhost:9001';
   } else {
     const extension = /.live$/.test(hostname) ? 'live' : 'page';
     if (/--/.test(maslibs)) {
