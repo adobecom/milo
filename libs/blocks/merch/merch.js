@@ -125,8 +125,9 @@ let upgradeOffer = null;
 /**
  * Given a url, calculates the hostname of MAS platform.
  * Supports, www prod, stage, local and feature branches.
- * @param {string} hostname
- * @param {string} maslibs
+ * if params are missing, it will return the latest calculated or default value.
+ * @param {string} hostname optional
+ * @param {string} maslibs optional
  * @returns base url for mas platform
  */
 export function getMasBase(hostname, maslibs) {
