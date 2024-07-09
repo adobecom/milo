@@ -638,11 +638,11 @@ describe('GeoRouting', () => {
     expect(modal).to.not.be.null;
   });
 
-  it('Will not load new georouting modal if georoutingv2 is not found', async () => {
+  it('Will load old georouting modal if georoutingv2 is not found', async () => {
     stubFetchForGeorouting(false);
     stubFetchForGeoroutingOld(true);
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
-    const tabs = document.querySelector('.tabs');
-    expect(tabs).to.be.null;
+    const modal = document.querySelector('.dialog-modal');
+    expect(modal).to.not.be.null;
   });
 });

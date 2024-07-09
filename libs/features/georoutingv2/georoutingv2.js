@@ -298,7 +298,7 @@ export default async function loadGeoRouting(
         const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
         loadGeoRoutingOld(config, createTag, getMetadata, json);
       }
-      return;
+      break;
     }
   }
   const json = await resp.json();
