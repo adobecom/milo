@@ -401,7 +401,8 @@ describe('Merch Card with Offer Selection', () => {
     const merchCard = document.querySelector('.merch-card');
 
     // Act
-    await parseContent(merchCard, merchCard);
+    await init(merchCard);
+    await delay();
 
     // Assert
     const calloutSlot = merchCard.querySelector('[slot="callout-text"]');
