@@ -100,6 +100,7 @@ describe('Plans Card', () => {
       elements: [
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'strong span' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
         { attribute: { name: 'variant', value: 'plans' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
