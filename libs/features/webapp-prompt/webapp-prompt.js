@@ -101,7 +101,7 @@ const waitForClosedModalsThen = (loadPEP) => {
   loadPEP();
 };
 
-class AppPrompt {
+export class AppPrompt {
   constructor({ promptPath, entName, parent, getAnchorState } = {}) {
     this.promptPath = promptPath;
     this.entName = entName;
@@ -274,11 +274,13 @@ class AppPrompt {
     if (event.key === 'Escape') this.close();
   };
 
-  static redirectTo = (url) => window.location.assign(url);
+  static redirectTo(url) {
+    window.location.assign(url);
+  }
 
   initRedirect = () => setTimeout(() => {
     this.close({ saveDismissal: false, dismissalActions: false });
-    this.redirectTo(this.options['redirect-url']);
+    AppPrompt.redirectTo(this.options['redirect-url']);
   }, this.options['loader-duration']);
 
   isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
