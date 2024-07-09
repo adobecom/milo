@@ -31,12 +31,15 @@
   cursor: pointer;
 }
 
-.editorial-card.grow { 
+.editorial-card.click.grow { 
   transition: all .2s ease-in-out;
 }
 
-.editorial-card.grow:hover { 
+.editorial-card.click.grow:hover { 
   transform: scale(1.03);
+}
+
+.editorial-card.has-bg.click.grow:hover { 
   box-shadow: 0 3px 6px 0  rgba(0 0 0 / 16%);
 }
 
