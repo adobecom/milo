@@ -114,17 +114,24 @@ const getSharepointData = async (url) => {
 };
 
 const getFilePath = async ({ ref, repo, owner, excelRef } = {}) => {
-  const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${excelRef}`);
-  const statusJson = await status.json();
-  return (new URL(statusJson?.preview?.url)).pathname;
+  try {
+    const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${excelRef}`);
+    if (!status.ok) throw new Error('Failed to fetch file path');
+    return (new URL((await status.json())?.preview?.url)).pathname;
+  } catch (e) {
+    throw new Error(`Error getting file path: ${e.message}`);
+  }
 };
 
-const getPreviewUrl = ({ owner, repo, ref, filePath } = {}) => fetch(
-  `${ADMIN}/preview/${owner}/${repo}/${ref}${filePath}`,
-  { method: 'POST' },
-)
-  .then((res) => res.json())
-  .then((res) => new URL(res.preview.url));
+const getPreviewUrl = async ({ owner, repo, ref, filePath } = {}) => {
+  try {
+    const res = await fetch(`${ADMIN}/preview/${owner}/${repo}/${ref}${filePath}`, { method: 'POST' });
+    if (!res.ok) throw new Error('Failed to fetch preview URL');
+    return new URL((await res.json())?.preview?.url);
+  } catch (e) {
+    throw new Error(`Error getting preview URL: ${e.message}`);
+  }
+};
 
 class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value;
@@ -137,7 +144,7 @@ class GrayboxPromote extends LitElement {
   constructor() {
     super();
 
-    this.loginToSharePoint = async () => {
+    this.loginToSharepoint = async () => {
       // TODO - delete below
       this.spToken = '1234';
       return null;
@@ -204,7 +211,7 @@ class GrayboxPromote extends LitElement {
       task: async () => {
         const { ref, repo, owner } = getAemInfo();
         return new Promise((resolve, reject) => {
-          this.loginToSharePoint(ref, repo, owner)
+          this.loginToSharepoint(ref, repo, owner)
             .then(() => {
               this.setupTask.run();
               resolve();
