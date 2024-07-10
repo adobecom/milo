@@ -174,12 +174,14 @@ export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
+  const playInViewport = hash?.includes('viewportplay');
   const poster = dataset?.videoPoster ? `poster='${dataset.videoPoster}'` : '';
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = 'autoplay muted';
+  const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
   if (isAutoplay && !isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs} loop`;
+    return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
   }
   if (playOnHover && isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
@@ -188,7 +190,7 @@ export function getVideoAttrs(hash, dataset) {
     return `${globalAttrs} muted data-hoverplay`;
   }
   if (isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs}`;
+    return `${globalAttrs} ${autoPlayAttrs} ${playInViewportAttrs}`;
   }
   return `${globalAttrs} controls`;
 }
@@ -224,4 +226,36 @@ export function handleObjectFit(bgRow) {
     if (!text) return;
     setObjectFitAndPos(text, pic, r, ['fill', 'contain', 'cover', 'none', 'scale-down']);
   });
+}
+
+export function getVideoIntersectionObserver() {
+  if (!window?.videoIntersectionObs) {
+    window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const { intersectionRatio, target: video } = entry;
+        const isHaveLoopAttr = video.getAttributeNames().includes('loop');
+        const { playedOnce = false } = video.dataset;
+        const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
+        && video.readyState > video.HAVE_CURRENT_DATA;
+
+        if (intersectionRatio <= 0.8) {
+          video.pause();
+        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
+          video.play();
+        }
+      });
+    }, { threshold: [0.8] });
+  }
+  return window.videoIntersectionObs;
+}
+
+export function applyInViewPortPlay(video) {
+  if (!video) return;
+  if (video.hasAttribute('data-play-viewport')) {
+    const observer = getVideoIntersectionObserver();
+    video.addEventListener('ended', () => {
+      video.dataset.playedOnce = true;
+    });
+    observer.observe(video);
+  }
 }
