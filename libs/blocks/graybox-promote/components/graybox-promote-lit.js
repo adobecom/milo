@@ -78,7 +78,7 @@ const getProjectInfo = async (url) => {
   };
 };
 
-const getGrayboxConfig = async (ref, repo, owner, grayboxIoEnv) => {
+const getGrayboxConfig = async ({ ref, repo, owner, grayboxIoEnv } = {}) => {
   const sheet = await getJson(
     `https://${ref}--${repo}--${owner}.hlx.live/.milo/graybox-config.json`,
     'Failed to fetch graybox config',
@@ -113,19 +113,18 @@ const getSharepointData = async (url) => {
   };
 };
 
-const getFilePath = async (ref, repo, owner, excelRef) => {
+const getFilePath = async ({ ref, repo, owner, excelRef } = {}) => {
   const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${excelRef}`);
   const statusJson = await status.json();
   return (new URL(statusJson?.preview?.url)).pathname;
 };
 
-const preview = async (owner, repo, ref, path) => {
-  const previewResp = await fetch(
-    `${ADMIN}/preview/${owner}/${repo}/${ref}${path}`,
-    { method: 'POST' },
-  );
-  return previewResp.json();
-};
+const getPreviewUrl = ({ owner, repo, ref, filePath } = {}) => fetch(
+  `${ADMIN}/preview/${owner}/${repo}/${ref}${filePath}`,
+  { method: 'POST' },
+)
+  .then((res) => res.json())
+  .then((res) => new URL(res.preview.url));
 
 class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value;
@@ -157,15 +156,15 @@ class GrayboxPromote extends LitElement {
     this.setupTask = new Task(this, {
       task: async () => {
         const { ref, repo, owner, excelRef } = getAemInfo();
-        const filePath = await getFilePath(ref, repo, owner, excelRef);
-        const previewUrl = new URL((await preview(owner, repo, ref, filePath)).preview.url);
+        const filePath = await getFilePath({ ref, repo, owner, excelRef });
+        const previewUrl = await getPreviewUrl({ owner, repo, ref, filePath });
         const { experienceName, grayboxIoEnv } = await getProjectInfo(previewUrl);
         const {
           promoteDraftsOnly,
           enablePromote,
           promoteUrl,
           promoteIgnorePaths,
-        } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
+        } = await getGrayboxConfig({ ref, repo, owner, grayboxIoEnv });
         const spData = await getSharepointData(previewUrl);
         if (!enablePromote) {
           throw new Error(
