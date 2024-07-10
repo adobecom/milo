@@ -685,6 +685,10 @@ merch-card [slot='callout-text'] img {
     height: var(--consonant-merch-card-callout-icon-size);
 }
 
+merch-card[variant="mini-compare-chart"] [slot="callout-text"] {
+    padding: 0px var(--consonant-merch-spacing-s);
+}
+
 merch-card [slot='detail-m'] {
     font-size: var(--consonant-merch-card-detail-m-font-size);
     letter-spacing: var(--consonant-merch-card-detail-m-letter-spacing);
