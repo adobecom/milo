@@ -14,7 +14,7 @@ const base = miloLibs || codeRoot;
 const styleSheet = await getSheet(
   `${base}/blocks/graybox-promote/graybox-promote.css`,
 );
-
+const ADMIN = 'https://admin.hlx.page';
 const KEYS = {
   PROJECT_INFO: {
     EXPERIENCE_NAME: 'experienceName',
@@ -59,12 +59,11 @@ const getAemInfo = () => {
     ref: search.get('ref'),
     repo: search.get('repo'),
     owner: search.get('owner'),
-    referrer: search.get('referrer'),
+    excelRef: search.get('referrer'),
   };
 };
 
-const getProjectInfo = async (referrer) => {
-  const url = new URL(referrer);
+const getProjectInfo = async (url) => {
   const liveOrigin = url.origin.replace('.hlx.page', '.hlx.live');
   const sheet = await getJson(
     `${liveOrigin}${url.pathname}?sheet=settings`,
@@ -114,7 +113,19 @@ const getSharepointData = async (url) => {
   };
 };
 
-const getProjectExcelPath = (url) => url.pathname.replace('.json', '.xlsx');
+const getFilePath = async (ref, repo, owner, excelRef) => {
+  const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${excelRef}`);
+  const statusJson = await status.json();
+  return (new URL(statusJson?.preview?.url)).pathname;
+};
+
+const preview = async (owner, repo, ref, path) => {
+  const previewResp = await fetch(
+    `${ADMIN}/preview/${owner}/${repo}/${ref}${path}`,
+    { method: 'POST' },
+  );
+  return previewResp.json();
+};
 
 class GrayboxPromote extends LitElement {
   spToken = accessToken.value || accessTokenExtra.value;
@@ -127,7 +138,7 @@ class GrayboxPromote extends LitElement {
   constructor() {
     super();
 
-    this.spLogin = async () => {
+    this.loginToSharePoint = async () => {
       // TODO - delete below
       this.spToken = '1234';
       return null;
@@ -143,18 +154,19 @@ class GrayboxPromote extends LitElement {
       //   });
     };
 
-    this.getValuesTask = new Task(this, {
+    this.setupTask = new Task(this, {
       task: async () => {
-        const { ref, repo, owner, referrer } = getAemInfo();
-        const url = new URL(referrer);
-        const { experienceName, grayboxIoEnv } = await getProjectInfo(referrer);
+        const { ref, repo, owner, excelRef } = getAemInfo();
+        const filePath = await getFilePath(ref, repo, owner, excelRef);
+        const previewUrl = new URL((await preview(owner, repo, ref, filePath)).preview.url);
+        const { experienceName, grayboxIoEnv } = await getProjectInfo(previewUrl);
         const {
           promoteDraftsOnly,
           enablePromote,
           promoteUrl,
           promoteIgnorePaths,
         } = await getGrayboxConfig(ref, repo, owner, grayboxIoEnv);
-        const spData = await getSharepointData(url);
+        const spData = await getSharepointData(previewUrl);
         if (!enablePromote) {
           throw new Error(
             'sharepoint.site.enablePromote is not enabled in graybox config',
@@ -180,7 +192,7 @@ class GrayboxPromote extends LitElement {
     repo,
     ref,
     owner,
-    url,
+    filePath,
   })}"
             >
               Promote
@@ -193,9 +205,9 @@ class GrayboxPromote extends LitElement {
       task: async () => {
         const { ref, repo, owner } = getAemInfo();
         return new Promise((resolve, reject) => {
-          this.spLogin(ref, repo, owner)
+          this.loginToSharePoint(ref, repo, owner)
             .then(() => {
-              this.getValuesTask.run();
+              this.setupTask.run();
               resolve();
             })
             .catch(reject);
@@ -213,15 +225,15 @@ class GrayboxPromote extends LitElement {
         repo,
         ref,
         owner,
-        url,
         spData,
+        filePath,
       }) => {
         try {
           const { root, gbRoot, driveId } = spData;
           const mainRepo = repo.replace('-graybox', '');
           const params = {
             adminPageUri: `https://milo.adobe.com/tools/graybox-promote?ref=${ref}&repo=${mainRepo}&owner=${owner}&host=business.adobe.com&project=${mainRepo.toUpperCase()}&referrer=MOCK_REF`,
-            projectExcelPath: getProjectExcelPath(url),
+            projectExcelPath: filePath.replace('.json', '.xlsx'),
             rootFolder: root,
             gbRootFolder: gbRoot,
             experienceName,
@@ -266,7 +278,7 @@ class GrayboxPromote extends LitElement {
   })}
         ${
   [1, 2].includes(this.promoteTask.status) ? ''
-    : this.getValuesTask.render({
+    : this.setupTask.render({
       pending: () => html`<p>Loading...</p>`,
       complete: (i) => i,
       error: (err) => html`<p>${err.message}</p>`,
