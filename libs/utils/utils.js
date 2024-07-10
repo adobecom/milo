@@ -92,16 +92,16 @@ const AUTO_BLOCKS = [
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
-  { fragment: '/fragments/' },
+  { fragment: '/fragments/', styles: false },
   { instagram: 'https://www.instagram.com' },
-  { slideshare: 'https://www.slideshare.net' },
-  { tiktok: 'https://www.tiktok.com' },
+  { slideshare: 'https://www.slideshare.net', styles: false },
+  { tiktok: 'https://www.tiktok.com', styles: false },
   { twitter: 'https://twitter.com' },
   { vimeo: 'https://vimeo.com' },
   { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
-  { 'pdf-viewer': '.pdf' },
+  { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
 ];
@@ -448,6 +448,7 @@ export async function loadBlock(block) {
   }
 
   const name = block.classList[0];
+  const hasStyles = AUTO_BLOCKS.find((ab) => Object.keys(ab).includes(name))?.styles ?? true;
   const { miloLibs, codeRoot, mep } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
@@ -457,7 +458,7 @@ export async function loadBlock(block) {
 
   const blockPath = `${path}/${name}`;
 
-  const styleLoaded = new Promise((resolve) => {
+  const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
 
@@ -477,6 +478,7 @@ export async function loadBlock(block) {
       resolve();
     })();
   });
+
   await Promise.all([styleLoaded, scriptLoaded]);
   return block;
 }
