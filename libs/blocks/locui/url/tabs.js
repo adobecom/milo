@@ -7,28 +7,28 @@ function useSignal(value) {
 }
 
 function useActionState(actions) {
+  const actionState = {};
   const action = actions.value;
   const url = urls.value.find((item) => item.pathname === action.path
     || item.langstore.pathname === action.path);
   const valid = url?.valid !== undefined && url.valid;
-  const getActionState = (btn) => ({ valid, exists: btn?.status === 200 });
+  const getAction = (btn) => ({ valid, exists: btn?.status === 200 });
   const buttons = Object.keys(action).filter((key) => key !== 'path');
-  const actionState = {};
-  buttons.forEach((btn) => { actionState[btn] = getActionState(action[btn]); });
+  buttons.forEach((btn) => { actionState[btn] = getAction(action[btn]); });
   return actionState;
 }
 
 function Actions({ item }) {
+  const { preview, live } = useActionState(item);
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
-  const { edit, preview, live } = useActionState(item);
+  const invalidDoc = item.value.edit?.status === 404;
   return html`
     <div class=locui-url-source-actions>
       <button
-        disabled=${item.value.edit?.status === 404}
-        class="locui-url-action locui-url-action-edit${isExcel}${edit.valid ? '' : ' disabled'}"
+        disabled=${invalidDoc}
+        class="locui-url-action locui-url-action-edit${isExcel}${invalidDoc ? ' disabled' : ''}"
         onClick=${(e) => openWord(e, item)}>Edit</button>
       <button
-        disabled=${!preview.valid}
         class="locui-url-action locui-url-action-view${!preview.exists ? ' disabled' : ''}"
         onClick=${(e) => handleAction(e, item, true)}>Preview</button>
       <button
