@@ -1,4 +1,4 @@
-import { getFederatedContentRoot } from '../../utils/fedsHelpers.js';
+import { getFederatedContentRoot } from '../../utils/federated.js';
 
 let config;
 let createTag;
