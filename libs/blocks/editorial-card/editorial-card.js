@@ -27,21 +27,12 @@ const extendDeviceContent = (el) => {
   }
 };
 
-function broadcastHover(el, mediaVideo) {
-  if (mediaVideo) {
-    el.addEventListener('mouseenter', () => { mediaVideo.play(); });
-    el.addEventListener('mouseleave', () => { mediaVideo.pause(); });
-    mediaVideo.setAttribute('data-mouseevent', true);
-  }
-}
-
 const decorateForeground = (el, rows, media = 0) => {
   if (media) {
     media.classList.add('media-area');
     const mediaVideo = media.querySelector('video');
     if (mediaVideo) {
       applyHoverPlay(mediaVideo);
-      broadcastHover(el, mediaVideo);
     }
     if (media.children.length > 1) decorateBlockBg(el, media);
   }

@@ -39,7 +39,7 @@
   transform: scale(1.03);
 }
 
-.editorial-card.has-bg.click.grow:hover { 
+.editorial-card:not(.no-bg).click.grow:hover { 
   box-shadow: 0 3px 6px 0  rgba(0 0 0 / 16%);
 }
 
