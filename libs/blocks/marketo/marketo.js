@@ -19,14 +19,20 @@ const ROOT_MARGIN = 1000;
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
+const SUCCESS_TYPE = 'form.success.type';
+const SUCCESS_CONTENT = 'form.success.content';
+const SUCCESS_SECTION = 'form.success.section';
 const FORM_MAP = {
-  'destination-url': 'form.success.content',
+  'success-type': SUCCESS_TYPE,
+  'destination-type': SUCCESS_TYPE,
+  'success-content': SUCCESS_CONTENT,
+  'destination-url': SUCCESS_CONTENT,
+  'success-section': SUCCESS_SECTION,
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
 
-export const formValidate = (form) => {
-  const formEl = form.getFormElem().get(0);
+export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
 };
@@ -59,44 +65,6 @@ export const decorateURL = (destination, baseURL = window.location) => {
   return null;
 };
 
-export const formSuccess = (form) => {
-  const formEl = form.getFormElem().get(0);
-  const parentModal = formEl.closest('.dialog-modal');
-  const mktoSubmit = new Event('mktoSubmit');
-
-  window.dispatchEvent(mktoSubmit);
-  window.mktoSubmitted = true;
-
-  /* c8 ignore next 5 */
-  if (parentModal) {
-    const closeButton = parentModal.querySelector('.dialog-close');
-    closeButton.click();
-    return false;
-  }
-
-  return true;
-};
-
-const readyForm = (form) => {
-  const formEl = form.getFormElem().get(0);
-  const isDesktop = matchMedia('(min-width: 900px)');
-
-  formEl.addEventListener('focus', ({ target }) => {
-    /* c8 ignore next 9 */
-    const hasError = formEl.classList.contains('show-warnings');
-    const firstInvalidField = formEl.querySelector('.mktoRequired[aria-invalid=true]');
-    if (!['text', 'email', 'tel', 'textarea'].includes(target.type)
-      || (isDesktop.matches && !(hasError && target === firstInvalidField))) return;
-
-    const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
-    const targetPosition = target?.getBoundingClientRect().top ?? 0;
-    const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight / 2;
-    window.scrollTo(0, offsetPosition);
-  }, true);
-  form.onValidate(() => formValidate(form));
-  form.onSuccess(() => formSuccess(form));
-};
-
 const setPreference = (key, value) => {
   if (value && key?.includes('.')) {
     const keyParts = key.split('.');
@@ -114,20 +82,73 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
+export const formSuccess = (formEl, formData) => {
+  const parentModal = formEl.closest('.dialog-modal');
+  const mktoSubmit = new Event('mktoSubmit');
+
+  window.dispatchEvent(mktoSubmit);
+  window.mktoSubmitted = true;
+
+  /* c8 ignore next 5 */
+  if (parentModal) {
+    const closeButton = parentModal.querySelector('.dialog-close');
+    closeButton.click();
+    return false;
+  }
+
+  if (formData[SUCCESS_TYPE] === 'section') {
+    try {
+      const section = formData[SUCCESS_SECTION].toLowerCase().replaceAll(' ', '-');
+      const success = document.querySelector(`.section.${section}`);
+      success.classList.remove('hide-block');
+      success.scrollIntoView({ behavior: 'smooth' });
+      setPreference(SUCCESS_TYPE, 'message');
+    } catch (e) {
+      window.lana?.log('Error showing Marketo success section');
+    }
+    return false;
+  }
+
+  return true;
+};
+
+const readyForm = (form, formData) => {
+  const formEl = form.getFormElem().get(0);
+  const isDesktop = matchMedia('(min-width: 900px)');
+
+  formEl.addEventListener('focus', ({ target }) => {
+    /* c8 ignore next 9 */
+    const hasError = formEl.classList.contains('show-warnings');
+    const firstInvalidField = formEl.querySelector('.mktoRequired[aria-invalid=true]');
+    if (!['text', 'email', 'tel', 'textarea'].includes(target.type)
+      || (isDesktop.matches && !(hasError && target === firstInvalidField))) return;
+
+    const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
+    const targetPosition = target?.getBoundingClientRect().top ?? 0;
+    const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight / 2;
+    window.scrollTo(0, offsetPosition);
+  }, true);
+  form.onValidate(() => formValidate(formEl));
+  form.onSuccess(() => formSuccess(formEl, formData));
+};
+
 export const loadMarketo = (el, formData) => {
   const baseURL = formData[BASE_URL];
+  const munchkinID = formData[MUNCHKIN_ID];
+  const formID = formData[FORM_ID];
 
   loadScript(`https://${baseURL}/js/forms2/js/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
-      MktoForms2.loadForm(`//${baseURL}`, formData[MUNCHKIN_ID], formData[FORM_ID]);
+      MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
     })
     .catch(() => {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       el.style.display = 'none';
+      window.lana?.log(`Error loading Marketo form for ${baseURL} ${formID}`);
     });
 };
 
@@ -135,7 +156,6 @@ export default function init(el) {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
   const link = encodedConfigDiv.querySelector('a');
-  let formData = {};
 
   if (!link?.href) {
     el.style.display = 'none';
@@ -143,8 +163,7 @@ export default function init(el) {
   }
 
   const encodedConfig = link.href.split('#')[1];
-
-  formData = parseEncodedConfig(encodedConfig);
+  const formData = parseEncodedConfig(encodedConfig);
 
   children.forEach((element) => {
     const key = element.children[0]?.textContent.trim().toLowerCase().replaceAll(' ', '-');
@@ -166,13 +185,8 @@ export default function init(el) {
     return;
   }
 
-  if (formData['form.success.content']) {
-    const destinationUrl = decorateURL(formData['form.success.content']);
-
-    if (destinationUrl) {
-      formData['form.success.type'] = 'redirect';
-      formData['form.success.content'] = destinationUrl;
-    }
+  if (formData[SUCCESS_TYPE] === 'redirect') {
+    formData[SUCCESS_CONTENT] = decorateURL(formData[SUCCESS_CONTENT]);
   }
 
   setPreferences(formData);
