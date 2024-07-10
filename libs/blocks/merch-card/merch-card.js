@@ -342,12 +342,16 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
 
 const updateBigPrices = (merchCard) => {
   const prices = merchCard.querySelectorAll('strong > em > span[is="inline-price"]');
-
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
   prices.forEach((span) => {
     const strongTag = span.parentNode.parentNode;
     const emTag = span.parentNode;
     strongTag.replaceChild(span, emTag);
-    span.classList.add('l-price');
+    if (!isMobile) {
+      span.style.cssText = 'font-size: 24px; line-height: 22.5px;';
+    } else {
+      span.style.cssText = 'font-size: 16px; line-height: 24px;';
+    }
   });
 };
 

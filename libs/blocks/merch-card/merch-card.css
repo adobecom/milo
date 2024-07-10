@@ -35,11 +35,6 @@ merch-card.special-offers del span[is="inline-price"] {
   text-decoration: line-through;
 }
 
-merch-card span[is="inline-price"].l-price {
-  font-size: var(--consonant-merch-card-heading-m-font-size);
-  line-height: var(--consonant-merch-card-heading-xs-line-height);
-}
-
 .dark .merch-card .con-button.outline:hover {
   color: var(--color-white);
   background-color: var(--color-black);
@@ -57,10 +52,5 @@ merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
     min-width: 66px; /* same as merch links */
     padding: 4px 18px 5px 21px;
     font-size: var(--consonant-merch-card-mini-compare-mobile-cta-font-size);
-  }
-
-  merch-card span[is="inline-price"].l-price {
-    font-size: var(--consonant-merch-card-body-s-font-size);
-    line-height: var(--consonant-merch-card-body-s-line-height);
   }
 }
