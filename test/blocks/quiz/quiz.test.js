@@ -232,7 +232,7 @@ describe('Quiz URL Parameter Tests', () => {
 
   it('should redirect to results page with quizkey parameter', async () => {
     const redirectStub = sinon.stub();
-    await handleResultFlow(test, redirectStub);
+    await handleResultFlow(test, {}, redirectStub);
     const expectedUrl = '/path/to/result?quizkey=cc-quiz';
     sinon.assert.calledWith(redirectStub, expectedUrl);
   });

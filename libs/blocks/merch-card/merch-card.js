@@ -28,12 +28,14 @@ const CARD_TYPES = [
 
 const CARD_SIZES = ['wide', 'super-wide'];
 
-const TEXT_STYLES = {
-  H5: 'detail-m',
+const SLOT_MAP_DEFAULT = {
+  H5: 'promo-text',
   H4: 'body-xxs',
   H3: 'heading-xs',
   H2: 'heading-m',
 };
+
+const SLOT_MAP = { 'special-offers': { H5: 'detail-m' } };
 
 const HEADING_MAP = {
   'special-offers': {
@@ -153,9 +155,7 @@ const parseContent = async (el, merchCard) => {
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
-    const promoText = el.querySelectorAll('h5');
     const priceSmallType = el.querySelectorAll('h6');
-    appendSlot(promoText, 'promo-text', merchCard);
     appendSlot(priceSmallType, 'price-commitment', merchCard);
   }
 
@@ -171,7 +171,7 @@ const parseContent = async (el, merchCard) => {
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
-      let slotName = TEXT_STYLES[tagName];
+      let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
           element.classList.add('card-heading');

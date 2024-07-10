@@ -11,46 +11,66 @@ setConfig(conf);
 
 loadStyle('/libs/blocks/merch-card/merch-card.css');
 
+/**
+ * runs list of assertions on the card to make card test smaller and more readable
+ * @param {*} card already initiated card
+ * @param {*} assertions 1. elements is an array of object that can contains selector
+ * (if not assertion is run against the card), attribute (object with name and value
+ * to be validated against selected element) and textContent (to be validated against
+ * selected element's text content)
+ * buttons is list of expected buttons in that order
+ */
+const expectToValidateHTMLAssertions = (card, assertions = {}) => {
+  expect(card).to.exist;
+  const { elements, buttons: expectedButtons } = assertions;
+  elements.forEach(({ selector, attribute, textContent }) => {
+    const el = typeof selector === 'string' ? card.querySelector(selector) : card;
+    expect(el, selector).to.exist;
+    if (attribute) {
+      const { name, value } = attribute;
+      expect(el.getAttribute(name), `attribute ${name}`).to.be.equal(value);
+    }
+    if (textContent) {
+      expect(el.textContent, `text content ${textContent}`).to.be.equal(textContent);
+    }
+  });
+  const footer = card.querySelector('div[slot="footer"]');
+  if (expectedButtons) {
+    const buttons = footer.querySelectorAll('.con-button');
+    expect(buttons.length).to.be.equal(expectedButtons.length);
+    expectedButtons.forEach((expectedButton, index) => {
+      expect(buttons[index].textContent).to.be.equal(expectedButton);
+    });
+  }
+};
+
 describe('Merch Card', () => {
   it('Shows segment card', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/segment-card.html');
     const merchCard = await init(document.querySelector('.segment'));
-    const heading = merchCard.querySelector('h3[slot="heading-xs"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-    expect(merchCard).to.exist;
-    expect(body).to.exist;
-    expect(heading).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('segment');
-    expect(heading.textContent).to.be.equal('Lorem ipsum dolor sit amet');
-    expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See what\'s included | Learn more');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-xs"]', textContent: 'Lorem ipsum dolor sit amet' },
+        { selector: 'h4[slot="promo-text"]', textContent: 'this promo is great see terms' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See what\'s included | Learn more' },
+        { attribute: { name: 'variant', value: 'segment' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
   });
 
   it('Supports Special Offers card', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/special-offers.html');
     const merchCard = await init(document.querySelector('.special-offers'));
-    const category = merchCard.querySelector('h4[slot="detail-m"]');
-    const title = merchCard.querySelector('h3[slot="heading-xs"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(category).to.exist;
-    expect(title).to.exist;
-    expect(body).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('special-offers');
-    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
-    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
-    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-xs"]' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
+        { attribute: { name: 'variant', value: 'special-offers' } }, { attribute: { name: 'badge-background-color', value: '#EDCC2D' } }, { attribute: { name: 'badge-color', value: '#000000' } },
+        { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
   });
 });
 
@@ -58,79 +78,52 @@ describe('Plans Card', () => {
   it('Supports COM Plans card', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
     const merchCard = await init(document.querySelector('.merch-card.plans.icons.secure'));
-    const heading = merchCard.querySelector('h3[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const detail = merchCard.querySelector('h5[slot="detail-m"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
-    expect(body).to.exist;
-    expect(detail).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('plans');
-    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
-    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
-    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
-    expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
-    expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-m"]' }, { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
+        { selector: 'h5[slot="promo-text"]', textContent: 'this promo is great see terms' },
+        { attribute: { name: 'variant', value: 'plans' } },
+        { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
+        { attribute: { name: 'badge-color', value: '#000000' } },
+        { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
+        { attribute: { name: 'checkbox-label', value: 'Add a 30-day free trial of Adobe Stock.*' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
   });
 
   it('Supports EDU Plans card with stock', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
     const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
-    const heading = merchCard.querySelector('h3[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const detail = merchCard.querySelector('h5[slot="detail-m"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
-    expect(body).to.exist;
-    expect(detail).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('plans');
-    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
-    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
-    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(merchCard.getAttribute('checkbox-label')).to.be.equal('Add a 30-day free trial of Adobe Stock.*');
-    expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum');
-    expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-m"]' },
+        { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
+        { attribute: { name: 'variant', value: 'plans' } },
+        { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
+        { attribute: { name: 'badge-color', value: '#000000' } },
+        { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
+        { attribute: { name: 'checkbox-label', value: 'Add a 30-day free trial of Adobe Stock.*' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
   });
 
   it('should skip ribbon and altCta creation', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
     const merchCard = await init(document.querySelector('.plans.icons.skip-ribbon.skip-altCta'));
-    const heading = merchCard.querySelector('h3[slot=heading-m]');
-    const headingXs = merchCard.querySelector('h4[slot=heading-xs]');
-    const body = merchCard.querySelector('div[slot=body-xs]');
-    const detail = merchCard.querySelector('h5[slot=detail-m]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingXs).to.exist;
-    expect(body).to.exist;
-    expect(detail).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('plans');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-m"]' },
+        { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum' },
+        { attribute: { name: 'variant', value: 'plans' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
     expect(merchCard.getAttribute('badge')).to.not.exist;
-    expect(body.textContent).to.be.equal('Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum');
-    expect(detail.textContent).to.be.equal('Maecenas porttitor enim.');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
   it('does not display undefined if no content', async () => {
@@ -156,113 +149,72 @@ describe('Catalog Card', () => {
   it('Supports Catalog card', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.ribbon'));
-    const heading = merchCard.querySelector('h3[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const actionMenu = merchCard.querySelector('div[slot="action-menu-content"]');
-    const detail = merchCard.querySelector('h5[slot="detail-m"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
-    expect(body).to.exist;
-    expect(detail).to.exist;
-    expect(actionMenu).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
-    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
-    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
-    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
-    expect(merchCard.getAttribute('action-menu')).to.be.equal('true');
-    expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
-    expect(detail.textContent).to.be.equal('Desktop + Mobile');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-m"]' },
+        { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'h5[slot="promo-text"]', textContent: 'this promo is great see terms' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
+        { attribute: { name: 'variant', value: 'catalog' } },
+        { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
+        { attribute: { name: 'badge-color', value: '#000000' } },
+        { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
+        { attribute: { name: 'action-menu', value: 'true' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
   });
 
   it('Supports Catalog card without badge', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-badge'));
-    const heading = merchCard.querySelector('h3[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const actionMenu = merchCard.querySelector('div[slot="action-menu-content"]');
-    const detail = merchCard.querySelector('h5[slot="detail-m"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
-    expect(body).to.exist;
-    expect(detail).to.exist;
-    expect(actionMenu).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-m"]' },
+        { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
+        { attribute: { name: 'variant', value: 'catalog' } },
+        { attribute: { name: 'action-menu', value: 'true' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
     expect(merchCard.getAttribute('badge')).to.not.exist;
-    expect(merchCard.getAttribute('action-menu')).to.be.equal('true');
-    expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
-    expect(detail.textContent).to.be.equal('Desktop + Mobile');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
   it('Supports Catalog card without badge and action-menu', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-action-menu'));
-    const heading = merchCard.querySelector('h3[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const actionMenu = merchCard.querySelector('div[slot="actionMenuContent"]');
-    const detail = merchCard.querySelector('h5[slot="detail-m"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
-    expect(body).to.exist;
-    expect(detail).to.exist;
-    expect(actionMenu).to.not.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-m"]' },
+        { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
+        { attribute: { name: 'variant', value: 'catalog' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
+    expect(merchCard.querySelector('div[slot="actionMenuContent"]')).to.not.exist;
     expect(merchCard.getAttribute('badge')).to.not.exist;
     expect(merchCard.getAttribute('action-menu')).to.not.exist;
-    expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
-    expect(detail.textContent).to.be.equal('Desktop + Mobile');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
   it('Supports Catalog card with badge without action-menu', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.catalog.empty-badge.action-menu-exist'));
-    const heading = merchCard.querySelector('h3[slot="heading-m"]');
-    const headingOne = merchCard.querySelector('h4[slot="heading-xs"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const actionMenu = merchCard.querySelector('div[slot="actionMenuContent"]');
-    const detail = merchCard.querySelector('h5[slot="detail-m"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingOne).to.exist;
-    expect(body).to.exist;
-    expect(detail).to.exist;
-    expect(actionMenu).to.not.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
-    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
-    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
-    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-m"]' },
+        { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
+        { attribute: { name: 'variant', value: 'catalog' } },
+        { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
+        { attribute: { name: 'badge-color', value: '#000000' } },
+        { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
     expect(merchCard.getAttribute('action-menu')).to.not.exist;
-    expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms');
-    expect(detail.textContent).to.be.equal('Desktop + Mobile');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
+    expect(merchCard.querySelector('div[slot="actionMenuContent"]')).to.not.exist;
   });
 
   it('Parses the filters and types', async () => {
@@ -281,27 +233,19 @@ describe('Catalog Card', () => {
   it('Supports intro-pricing card', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/intro-pricing.html');
     const merchCard = await init(document.querySelector('.merch-card'));
-    const heading = merchCard.querySelector('h3[slot="heading-xs"]');
-    const headingXs = merchCard.querySelector('h4[slot="heading-m"]');
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const detailBg = merchCard.querySelector('h5[slot="body-xxs"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(headingXs).to.exist;
-    expect(body).to.exist;
-    expect(detailBg).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('catalog');
-    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
-    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
-    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-xs"]' },
+        { selector: 'h4[slot="heading-m"]' },
+        { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.' },
+        { attribute: { name: 'variant', value: 'catalog' } },
+        { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
+        { attribute: { name: 'badge-color', value: '#000000' } },
+        { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
+      ],
+      buttons: ['Learn More', 'Save now'],
+    });
     expect(merchCard.classList.contains('intro-pricing')).to.be.true;
-    expect(body.textContent).to.be.equal('Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Learn More');
-    expect(buttons[1].textContent).to.be.equal('Save now');
   });
 });
 
@@ -316,47 +260,41 @@ describe('UAR Card', () => {
     expect(merchCard.classList.contains('has-divider')).to.be.true;
   });
 });
+
 describe('Mini Compare Chart Merch Card', () => {
   it('Supports Mini Compare Chart with footer rows', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
     document.querySelector('.section').removeAttribute('data-status');
-    const heading = merchCard.querySelector('h3[slot="heading-m"]');
-    const body = merchCard.querySelector('div[slot="body-m"]');
-    const priceHeading = merchCard.querySelector('h4[slot="heading-m-price"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const buttons = footer.querySelectorAll('.con-button');
-    const footerRows = merchCard.querySelector('div[slot="footer-rows"]');
-    const footerRowsIcon = footerRows.querySelector('picture.footer-row-icon');
-    const footerRowsText = footerRows.querySelector('.footer-row-cell-description');
-
-    expect(merchCard).to.exist;
-    expect(heading).to.exist;
-    expect(body).to.exist;
-    expect(priceHeading).to.exist;
-    expect(footerRows).to.exist;
-    expect(footerRowsIcon).to.exist;
-    expect(footerRowsText).to.exist;
-    expect(merchCard.getAttribute('variant')).to.be.equal('mini-compare-chart');
-    expect(merchCard.getAttribute('badge-background-color')).to.be.equal('#EDCC2D');
-    expect(merchCard.getAttribute('badge-color')).to.be.equal('#000000');
-    expect(merchCard.getAttribute('badge-text')).to.be.equal('LOREM IPSUM DOLOR');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'h3[slot="heading-m"]', textContent: 'Illustrator' },
+        { selector: 'div[slot="body-m"]', textContent: 'Get Illustrator on desktop and iPad as part of Creative Cloud. This is promo text' },
+        { selector: 'h4[slot="heading-m-price"]' },
+        { selector: 'div[slot="footer"]' },
+        { selector: 'div[slot="footer-rows"] picture.footer-row-icon' },
+        { selector: 'div[slot="footer-rows"] .footer-row-cell-description' },
+        { attribute: { name: 'variant', value: 'mini-compare-chart' } },
+        { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
+        { attribute: { name: 'badge-color', value: '#000000' } },
+        { attribute: { name: 'badge-text', value: 'LOREM IPSUM DOLOR' } },
+      ],
+      buttons: ['Buy now', 'free trial'],
+    });
     expect(merchCard.classList.contains('badge-card')).to.be.true;
-    expect(body.textContent).to.be.equal('Get Illustrator on desktop and iPad as part of Creative Cloud. This is promo text');
-    expect(buttons.length).to.be.equal(2);
-    expect(buttons[0].textContent).to.be.equal('Buy now');
-    expect(buttons[1].textContent).to.be.equal('free trial');
   });
 
   it('Supports Mini Compare Chart with quantity select', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart.html');
     const merchCard = await init(document.querySelector('.merch-card.mini-compare-chart'));
-    const quantitySelect = merchCard.querySelector('merch-quantity-select');
-    expect(quantitySelect).to.exist;
-    expect(quantitySelect.getAttribute('title')).to.equal('Select a quantity:');
-    expect(quantitySelect.getAttribute('min')).to.equal('1');
-    expect(quantitySelect.getAttribute('max')).to.equal('10');
-    expect(quantitySelect.getAttribute('step')).to.equal('1');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'merch-quantity-select', attribute: { name: 'title', value: 'Select a quantity:' } },
+        { selector: 'merch-quantity-select', attribute: { name: 'min', value: '1' } },
+        { selector: 'merch-quantity-select', attribute: { name: 'max', value: '10' } },
+        { selector: 'merch-quantity-select', attribute: { name: 'step', value: '1' } },
+      ],
+    });
   });
 
   it('Supports Mini Compare Chart with offer select', async () => {
@@ -425,12 +363,14 @@ describe('Merch Card with Offer Selection', () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
     await init(document.querySelector('.quantity-select'));
     const merchCard = document.querySelector('merch-card');
-    const quantitySelect = merchCard.querySelector('merch-quantity-select');
-    expect(quantitySelect).to.exist;
-    expect(quantitySelect.getAttribute('title')).to.equal('Select a quantity:');
-    expect(quantitySelect.getAttribute('min')).to.equal('1');
-    expect(quantitySelect.getAttribute('max')).to.equal('3');
-    expect(quantitySelect.getAttribute('step')).to.equal('1');
+    expectToValidateHTMLAssertions(merchCard, {
+      elements: [
+        { selector: 'merch-quantity-select', attribute: { name: 'title', value: 'Select a quantity:' } },
+        { selector: 'merch-quantity-select', attribute: { name: 'min', value: '1' } },
+        { selector: 'merch-quantity-select', attribute: { name: 'max', value: '3' } },
+        { selector: 'merch-quantity-select', attribute: { name: 'step', value: '1' } },
+      ],
+    });
   });
 
   it('Change quantity select ', async () => {
