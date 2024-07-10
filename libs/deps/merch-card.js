@@ -1,4 +1,4 @@
-// branch: rosahu/MWPW-147172 commit: 9a187c62466b757074fb79bf342cfdaa54212316 Tue, 02 Jul 2024 14:56:12 GMT
+// branch: main commit: 258ad3d851cc4945eae2aab2dcc80a8d0c14d861 Fri, 28 Jun 2024 14:19:21 GMT
 import{html as a,LitElement as j}from"/libs/deps/lit-all.min.js";import{LitElement as q,html as T,css as F}from"/libs/deps/lit-all.min.js";var s=class extends q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?T`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:T` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=F`
