@@ -1,6 +1,6 @@
 /* eslint-disable compat/compat */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* global ClipboardItem */
+
 import {
   createContext,
   html,
