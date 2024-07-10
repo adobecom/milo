@@ -4,29 +4,31 @@
   "libraries": [
     {
       "text": "Blocks",
-      "paths": ["https://main--milo--adobecom.hlx.page/docs/library/blocks.json"]
+      "paths": [
+        "https://main--milo--adobecom.hlx.page/docs/library/blocks.json"
+      ]
     }
   ],
   "plugins": [
     {
       "id": "path",
       "title": "Path",
-      "environments": [ "edit" ],
+      "environments": ["edit"],
       "url": "/tools/path-finder",
       "isPalette": true,
       "passReferrer": true,
       "passConfig": true,
       "paletteRect": "top: 50%; left: 50%; transform: translate(-50%,-50%); height: 84px; width: 900px; overflow: hidden; border-radius: 6px; box-shadow: 0 20px 35px 0px rgba(0, 0, 0, 0.5);",
-      "includePaths": [ "**.docx**", "**.xlsx**" ]
+      "includePaths": ["**.docx**", "**.xlsx**"]
     },
     {
       "id": "library",
       "title": "Library",
-      "environments": [ "edit" ],
+      "environments": ["edit"],
       "isPalette": true,
       "paletteRect": "top: auto; bottom: 25px; left: 25px; height: 388px; width: 360px;",
       "url": "/tools/library?skipConsent=true",
-      "includePaths": [ "**.docx**" ]
+      "includePaths": ["**.docx**"]
     },
     {
       "id": "tools",
@@ -37,32 +39,32 @@
       "containerId": "tools",
       "id": "localize",
       "title": "Localize",
-      "environments": [ "edit" ],
+      "environments": ["edit"],
       "url": "/tools/loc/index.html?project=milo--adobecom",
       "passReferrer": true,
-      "excludePaths": [ "/**" ],
-      "includePaths": [ "**/:x**" ]
+      "excludePaths": ["/**"],
+      "includePaths": ["**/:x**"]
     },
     {
       "containerId": "tools",
       "id": "localize-v2",
       "title": "Localize project (V2)",
-      "environments": [ "edit" ],
+      "environments": ["edit"],
       "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
       "passReferrer": true,
       "passConfig": true,
-      "excludePaths": [ "/**" ],
-      "includePaths": [ "**/:x**" ]
+      "excludePaths": ["/**"],
+      "includePaths": ["**/:x**"]
     },
     {
       "containerId": "tools",
       "id": "floodgate",
       "title": "Floodgate",
-      "environments": [ "edit" ],
+      "environments": ["edit"],
       "url": "/tools/floodgate/index.html?project=milo--adobecom",
       "passReferrer": true,
-      "excludePaths": [ "/**" ],
-      "includePaths": [ "**/:x**" ]
+      "excludePaths": ["/**"],
+      "includePaths": ["**/:x**"]
     },
     {
       "containerId": "tools",
@@ -91,31 +93,31 @@
       "containerId": "tools",
       "id": "offerpreview",
       "title": "Offer preview",
-      "environments": [ "edit" ],
+      "environments": ["edit"],
       "isPalette": true,
       "paletteRect": "top: auto; bottom: 25px; left: 75px; height: 388px; width: 360px;",
       "url": "/tools/commerce",
-      "includePaths": [ "**.docx**" ]
+      "includePaths": ["**.docx**"]
     },
     {
       "containerId": "tools",
       "id": "locales",
       "title": "Locales",
-      "environments": [ "edit", "dev", "preview", "live" ],
+      "environments": ["edit", "dev", "preview", "live"],
       "isPalette": true,
       "passConfig": true,
       "passReferrer": true,
       "paletteRect": "top: auto; bottom: 25px; left: 75px; height: 388px; width: 360px;",
       "url": "/tools/locale-nav",
-      "includePaths": [ "**.docx**" ]
+      "includePaths": ["**.docx**"]
     },
     {
       "containerId": "tools",
       "id": "ost",
       "title": "Use offer",
-      "environments": [ "edit", "dev", "preview" ],
+      "environments": ["edit", "dev", "preview"],
       "url": "https://milo.adobe.com/tools/ost",
-      "includePaths": [ "**.docx**" ],
+      "includePaths": ["**.docx**"],
       "passConfig": true,
       "passReferrer": true
     },
@@ -140,43 +142,43 @@
       "containerId": "tools",
       "id": "version-history",
       "title": "Version History",
-      "environments": [ "edit" ],
+      "environments": ["edit"],
       "url": "/tools/version-history",
       "isPalette": true,
       "passReferrer": true,
       "passConfig": true,
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 498px; width: 460px;",
-      "includePaths": [ "**.docx**", "**.xlsx**" ]
+      "includePaths": ["**.docx**", "**.xlsx**"]
     },
     {
       "containerId": "tools",
       "id": "graybox-promote",
       "title": "Graybox Promote",
-      "environments": [ "preview" ],
+      "environments": ["edit"],
       "url": "/tools/graybox-promote",
       "isPalette": true,
       "passReferrer": true,
       "passConfig": true,
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 498px; width: 460px;",
-      "includePaths": [ "*.json" ]
+      "includePaths": ["*.json"]
     },
     {
       "containerId": "tools",
       "id": "caas-configurator",
       "title": "CaaS Configurator",
-      "environments": [ "edit", "preview", "dev" ],
+      "environments": ["edit", "preview", "dev"],
       "url": "https://milo.adobe.com/tools/caas",
       "isPalette": false,
-      "includePaths": [ "**.docx**"]
+      "includePaths": ["**.docx**"]
     },
     {
       "containerId": "tools",
       "id": "faas-configurator",
       "title": "FaaS Configurator",
-      "environments": [ "edit", "preview", "dev" ],
+      "environments": ["edit", "preview", "dev"],
       "url": "https://milo.adobe.com/tools/faas",
       "isPalette": false,
-      "includePaths": [ "**.docx**"]
+      "includePaths": ["**.docx**"]
     }
   ]
 }
