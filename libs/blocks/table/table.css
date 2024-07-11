@@ -629,8 +629,8 @@ header.global-navigation {
 @media (max-width: 480px) {
   .table,
   .table.merch {
-    margin: 0 2px;
     min-width: 100%;
+    margin: 0;
   }
 
   .table.merch .col-merch .col-merch-content {

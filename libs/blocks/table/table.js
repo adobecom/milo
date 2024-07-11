@@ -371,13 +371,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
       if (filters[0] > filters[1]) {
         if (isMerch) {
-          rows.forEach((row) => {
-            row.querySelector('.col:not(.section-row-title)').classList.add('force-last');
-          });
+          rows.forEach((row) => row.querySelector('.col:not(.section-row-title)')
+            .classList.add('force-last'));
         } else {
-          rows.forEach((row) => {
-            row.querySelector('.col:not(.section-row-title, .col-1)').classList.add('force-last');
-          });
+          rows.forEach((row) => row.querySelector('.col:not(.section-row-title, .col-1)')
+            .classList.add('force-last'));
         }
       } else if (filters[0] === filters[1]) {
         rows.forEach((row) => {
