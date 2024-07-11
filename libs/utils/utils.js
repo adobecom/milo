@@ -139,6 +139,7 @@ ENVS.local = {
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
+const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
 const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
@@ -168,13 +169,11 @@ export function getLocale(locales, pathname = window.location.pathname) {
   }
   const split = pathname.split('/');
   const localeString = split[1];
-  const locale = locales[localeString] || locales[''];
-  if (localeString === LANGSTORE) {
+  let locale = locales[localeString] || locales[''];
+  if ([LANGSTORE, PREVIEW].includes(localeString)) {
+    const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
+    if (ietf) locale = locales[ietf];
     locale.prefix = `/${localeString}/${split[2]}`;
-    if (
-      Object.values(locales)
-        .find((loc) => loc.ietf?.startsWith(split[2]))?.dir === 'rtl'
-    ) locale.dir = 'rtl';
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
