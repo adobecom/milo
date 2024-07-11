@@ -3,7 +3,7 @@ export default async function bootstrapBlock(miloConfigs, blockConfig) {
   const { name, targetEl } = blockConfig;
   const { setConfig, createTag, loadLink } = await import(`${miloLibs}/utils/utils.js`);
   setConfig({ ...miloConfigs });
-  const styles = [`${miloLibs}/blocks/${name}/${name}.css`, `${miloLibs}/navigation/styles.css`];
+  const styles = [`${miloLibs}/blocks/${name}/${name}.css`, `${miloLibs}/navigation/navigation.css`];
   styles.forEach((url) => loadLink(url, { rel: 'stylesheet' }));
   const { default: initBlock } = await import(`${miloLibs}/blocks/${name}/${name}.js`);
 
