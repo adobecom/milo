@@ -242,7 +242,7 @@ const loadMartechFiles = async (config) => {
     await loadScript((
       isProxied()
         ? ''
-        : 'https://www.adobe.com/'
+        : 'https://www.adobe.com'
     ) + (
       config.env.name === 'prod'
         ? '/marketingtech/main.standard.min.js'
