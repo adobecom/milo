@@ -271,6 +271,10 @@
 }
 
 @media screen and (min-width: 600px) {
+  .notification:not(.pill, .ribbon) .foreground.container {
+    max-inline-size: 800px;
+  }
+
   .notification .foreground.container {
     align-items: center;
     flex-direction: row;
@@ -475,8 +479,12 @@
 
   .notification.pill .foreground.container {
     padding-block: var(--spacing-xs);
-    padding-inline: 0;
+    padding-inline: var(--spacing-m);
     margin: 0;
+  }
+
+  .notification.pill.flexible .foreground.container {
+    padding-inline: 0;
   }
 
   .notification.pill .foreground.container .icon-area {
@@ -504,8 +512,9 @@
 
   .notification.pill .copy-wrap {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: baseline;
+    text-align: start;
   }
 
   .notification.ribbon.space-between .foreground.container .icon-area {
