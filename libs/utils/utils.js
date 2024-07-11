@@ -298,8 +298,10 @@ export function localizeLink(
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
-    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
-      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
+      || path.startsWith(`/${PREVIEW}`)
+      || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+      || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
