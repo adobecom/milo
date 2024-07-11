@@ -6,35 +6,35 @@ function useSignal(value) {
   return useMemo(() => signal(value), []);
 }
 
-function useActionState(actions) {
-  const actionState = {};
-  const action = actions.value;
-  const url = urls.value.find((item) => item.pathname === action.path
-    || item.langstore.pathname === action.path);
-  const valid = url?.valid !== undefined && url.valid;
-  const getAction = (btn) => ({ valid, exists: btn?.status === 200 });
-  const buttons = Object.keys(action).filter((key) => key !== 'path');
-  buttons.forEach((btn) => { actionState[btn] = getAction(action[btn]); });
-  return actionState;
+function useActionState(item) {
+  const actions = item.value;
+  const validated = urls.value.find((url) => url.pathname === actions.path
+    || url.langstore.pathname === actions.path);
+  const state = { isValid: validated?.valid };
+  Object.keys(actions).forEach((btn) => {
+    if (actions[btn]?.status) state[btn] = actions[btn].status === 200;
+  });
+  return state;
 }
 
 function Actions({ item }) {
-  const { preview, live } = useActionState(item);
+  const { isValid, preview, live } = useActionState(item);
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
-  const invalidDoc = item.value.edit?.status === 404;
+  const disabled = isValid !== undefined ? !isValid : item.value.edit?.status === 404;
   return html`
     <div class=locui-url-source-actions>
       <button
-        disabled=${invalidDoc}
-        class="locui-url-action locui-url-action-edit${isExcel}${invalidDoc ? ' disabled' : ''}"
+        disabled=${disabled}
+        class="locui-url-action locui-url-action-edit${isExcel}${disabled ? ' disabled' : ''}"
         onClick=${(e) => openWord(e, item)}>Edit</button>
       <button
-        class="locui-url-action locui-url-action-view${!preview.exists ? ' disabled' : ''}"
+        disabled=${!isValid}
+        class="locui-url-action locui-url-action-view${!isValid || !preview ? ' disabled' : ''}"
         onClick=${(e) => handleAction(e, item, true)}>Preview</button>
       <button
-        disabled=${!live.exists || !live.valid}
-        class="locui-url-action locui-url-action-view${!live.exists ? ' disabled' : ''}"
-        onClick=${(e) => handleAction(e, item)}>${!live.exists ? 'Not ' : ''}Live</button>
+        disabled=${!isValid || !live}
+        class="locui-url-action locui-url-action-view${!isValid || !live ? ' disabled' : ''}"
+        onClick=${(e) => handleAction(e, item)}>${!live ? 'Not ' : ''}Live</button>
     </div>
   `;
 }
