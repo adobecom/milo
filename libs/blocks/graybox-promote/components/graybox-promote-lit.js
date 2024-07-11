@@ -35,12 +35,7 @@ const KEYS = {
 // const TELEMETRY = { application: { appName: 'Adobe Graybox Promote' } };
 
 const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
-  let res;
-  try {
-    res = await fetch(url);
-  } catch (err) {
-    throw new Error(errMsg, err.message);
-  }
+  const res = await fetch(url);
 
   if (!res.ok) {
     throw new Error(errMsg, res.status, res.statusText);
@@ -114,23 +109,15 @@ const getSharepointData = async (url) => {
 };
 
 const getFilePath = async ({ ref, repo, owner, excelRef } = {}) => {
-  try {
-    const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${excelRef}`);
-    if (!status.ok) throw new Error('Failed to fetch file path');
-    return (new URL((await status.json())?.preview?.url)).pathname;
-  } catch (e) {
-    throw new Error(`Error getting file path: ${e.message}`);
-  }
+  const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${excelRef}`);
+  if (!status.ok) throw new Error('Failed to fetch file path');
+  return (new URL((await status.json())?.preview?.url))?.pathname;
 };
 
 const getPreviewUrl = async ({ owner, repo, ref, filePath } = {}) => {
-  try {
-    const res = await fetch(`${ADMIN}/preview/${owner}/${repo}/${ref}${filePath}`, { method: 'POST' });
-    if (!res.ok) throw new Error('Failed to fetch preview URL');
-    return new URL((await res.json())?.preview?.url);
-  } catch (e) {
-    throw new Error(`Error getting preview URL: ${e.message}`);
-  }
+  const res = await fetch(`${ADMIN}/preview/${owner}/${repo}/${ref}${filePath}`, { method: 'POST' });
+  if (!res.ok) throw new Error('Failed to fetch preview URL');
+  return new URL((await res.json())?.preview?.url);
 };
 
 class GrayboxPromote extends LitElement {
