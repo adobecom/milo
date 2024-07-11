@@ -13,7 +13,7 @@ const rowTypeKeyword = 'con-block-row-';
 const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
 
 function distillClasses(el, classes) {
-  const taps = ['-heading', '-body', '-detail'];
+  const taps = ['-heading', '-body', '-detail', '-button'];
   classes?.forEach((elClass) => {
     const elTaps = taps.filter((tap) => elClass.endsWith(tap));
     if (!elTaps.length) return;
@@ -66,11 +66,10 @@ function decorateText(el, classes) {
   if (btnClass) {
     const [theme, size] = btnClass.split('-').reverse();
     el.classList.remove(btnClass);
-    decorateButtons(el, `${size}-${theme}`);
+    decorateButtons(el, `${theme}-${size}`);
   } else {
     decorateButtons(el, 'button-xl');
   }
-  distillClasses(el, classes);
 }
 
 function decorateLockupRow(el) {
