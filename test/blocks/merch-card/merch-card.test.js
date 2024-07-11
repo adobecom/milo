@@ -426,3 +426,45 @@ describe('Section metadata rules', async () => {
     expect(merchCard.dataset.removedManifestId).to.exist;
   });
 });
+
+describe('Viewport Responsiveness without Sinon', () => {
+  let originalMatchMedia;
+
+  beforeEach(() => {
+    // Store the original window.matchMedia
+    originalMatchMedia = window.matchMedia;
+  });
+
+  afterEach(() => {
+    // Restore the original window.matchMedia after each test
+    window.matchMedia = originalMatchMedia;
+  });
+
+  it('Adjusts layout for desktop viewports', async () => {
+    window.matchMedia = (query) => ({
+      matches: query.includes('(max-width: 600px)'),
+      addListener: () => {},
+      removeListener: () => {},
+    });
+
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
+    const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
+    const bigPrice = merchCard.querySelector('strong span[is="inline-price"]');
+    expect(bigPrice).to.exist;
+    expect(bigPrice.style.fontSize).to.equal('24px');
+  });
+
+  it('Maintains layout for mobile viewports', async () => {
+    window.matchMedia = (query) => ({
+      matches: !query.includes('(max-width: 600px)'),
+      addListener: () => {},
+      removeListener: () => {},
+    });
+
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
+    const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
+    const bigPrice = merchCard.querySelector('strong span[is="inline-price"]');
+    expect(bigPrice).to.exist;
+    expect(bigPrice.style.fontSize).to.equal('16px');
+  });
+});
