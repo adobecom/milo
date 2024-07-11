@@ -361,7 +361,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       table.innerHTML = originTable.innerHTML;
       reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
-      const highlights = table.querySelectorAll('.row-highlight .col');
       const rows = table.querySelectorAll('.row');
 
       if (isMerch) {
@@ -372,13 +371,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
       if (filters[0] > filters[1]) {
         if (isMerch) {
-          rows.forEach((row) => {
-            row.querySelector('.col:not(.section-row-title)').style.order = 1;
-          });
+          rows.forEach((row) => row.querySelector('.col:not(.section-row-title)')
+            .classList.add('force-last'));
         } else {
-          rows.forEach((row) => {
-            row.querySelector('.col:not(.section-row-title, .col-1)').style.order = 1;
-          });
+          rows.forEach((row) => row.querySelector('.col:not(.section-row-title, .col-1)')
+            .classList.add('force-last'));
         }
       } else if (filters[0] === filters[1]) {
         rows.forEach((row) => {
@@ -386,14 +383,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
         });
       }
 
-      highlights.forEach((highlight, index) => {
-        if (!highlight.innerHTML && !headings[index + 1]?.classList.contains('hidden')) {
-          table.querySelector('.row-heading').querySelectorAll(`.col-${index + 1}`).forEach((heading) => {
-            heading.classList.add('top-left-rounded', 'top-right-rounded');
-          });
-        }
-      });
       setRowStyle();
+
+      if (table.matches('.sticky')) handleScrollEffect(table);
     };
 
     // Remove filter if table there are only 2 columns
