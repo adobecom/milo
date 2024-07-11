@@ -275,6 +275,7 @@
   border: 2px solid var(--color-accent);
   border-radius: 24px;
   color: var(--color-white);
+  font-family: var(--body-font-family);
   font-weight: 700;
   padding: 0 24px;
   font-size: 16px;
