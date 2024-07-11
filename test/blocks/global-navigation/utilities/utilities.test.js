@@ -14,8 +14,8 @@ import {
   trigger,
   getExperienceName,
   logErrorFor,
-  getFederatedUrl,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { getFederatedUrl } from '../../../../libs/utils/federated.js';
 import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config } from '../test-utilities.js';
 import mepInBlock from '../mocks/mep-config.js';

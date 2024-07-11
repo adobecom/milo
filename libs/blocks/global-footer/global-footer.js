@@ -18,9 +18,10 @@ import {
   lanaLog,
   logErrorFor,
   toFragment,
-  getFederatedUrl,
   federatePictureSources,
 } from '../global-navigation/utilities/utilities.js';
+
+import { getFederatedUrl } from '../../utils/federated.js';
 
 import { replaceKey } from '../../features/placeholders.js';
 
