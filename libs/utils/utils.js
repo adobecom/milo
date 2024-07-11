@@ -163,7 +163,7 @@ export function getLocale(locales, pathname = window.location.pathname) {
   const split = pathname.split('/');
   const localeString = split[1];
   let locale = locales[localeString] || locales[''];
-  if (localeString === LANGSTORE || localeString === PREVIEW) {
+  if ([LANGSTORE, PREVIEW].includes(localeString)) {
     const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
     if (ietf) locale = locales[ietf];
     locale.prefix = `/${localeString}/${split[2]}`;
