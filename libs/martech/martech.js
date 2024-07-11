@@ -232,7 +232,19 @@ const loadMartechFiles = async (config) => {
           url: launchUrl,
           controlPageLoad: true,
         },
-        alloy: { edgeConfigId: config.env.consumer?.edgeConfigId || config.env.edgeConfigId },
+        alloy: {
+          edgeConfigId: config.env.consumer?.edgeConfigId || config.env.edgeConfigId,
+          edgeDomain: (
+            isProxied()
+              ? window.location.hostname
+              : 'sstats.adobe.com'
+          ),
+          edgeBasePath: (
+            isProxied()
+              ? 'experienceedge'
+              : 'ee'
+          ),
+        },
         target: false,
       },
       milo: true,
