@@ -1,9 +1,4 @@
-// branch: MWPW-142267 commit: db56fa6d1f49aa580f3da94842ffb9e73516ee18 Mon, 08 Jul 2024 21:06:50 GMT
-
-// src/merch-mnemonic-list.js
-import { html, css, LitElement } from "/libs/deps/lit-all.min.js";
-var MerchMnemonicList = class extends LitElement {
-  static styles = css`
+import{html as e,css as i,LitElement as s}from"/libs/deps/lit-all.min.js";var t=class extends s{static styles=i`
         :host {
             display: flex;
             flex-direction: row;
@@ -28,21 +23,8 @@ var MerchMnemonicList = class extends LitElement {
         :host .hidden {
             display: none;
         }
-    `;
-  static properties = {
-    description: { type: String, attribute: true }
-  };
-  constructor() {
-    super();
-  }
-  render() {
-    return html`
+    `;static properties={description:{type:String,attribute:!0}};constructor(){super()}render(){return e`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `;
-  }
-};
-customElements.define("merch-mnemonic-list", MerchMnemonicList);
-export {
-  MerchMnemonicList
-};
+        `}};customElements.define("merch-mnemonic-list",t);export{t as MerchMnemonicList};
+//# sourceMappingURL=merch-mnemonic-list.js.map
