@@ -81,8 +81,8 @@ export default async function init(el) {
         class: 'hidden merch-whats-included-container',
       },
       whatsIncludedFragment,
+      { parent: twp },
     );
-    twp.append(whatsIncludedSlot);
     window.addEventListener('milo:modal:closed', (event) => {
     // Check if whatsIncludedSlot has the 'hidden' class
       if (!whatsIncludedSlot.classList.contains('hidden')) {
