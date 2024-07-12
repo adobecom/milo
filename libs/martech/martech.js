@@ -183,18 +183,7 @@ const setupEntitlementCallback = () => {
 };
 
 function isProxied() {
-  // return window.location.hostname.endsWith('adobe.com');
-  const { hostname } = window.location;
-  return /^(www|milo|business|blog)(\.stage)?\.adobe.com$/.test(hostname)
-    hostname === 'www.adobe.com'
-    || hostname === 'www.stage.adobe.com'
-    || hostname === 'milo.adobe.com'
-    || hostname === 'milo.stage.adobe.com'
-    || hostname === 'business.adobe.com'
-    || hostname === 'business.stage.adobe.com'
-    || hostname === 'blog.adobe.com'
-    || hostname === 'blog.stage.adobe.com'
-  );
+  return /^(www|milo|business|blog)(\.stage)?\.adobe\.com$/.test(window.location.hostname);
 }
 
 let filesLoadedPromise = false;
