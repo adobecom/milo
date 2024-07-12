@@ -1,10 +1,25 @@
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 import { decorateBlockBg, decorateBlockText, decorateBlockHrs, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
 
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
+
+async function loadIconography() {
+  try {
+    const stylePromise = new Promise((resolve) => {
+      loadStyle(`${base}/styles/iconography.css`, resolve);
+    });
+    await Promise.all([stylePromise]);
+  } catch (err) {
+    window.lana?.log(`Failed to load iconography module: ${err}`);
+  }
+}
+
 function decorateLockupFromContent(el) {
   const rows = el.querySelectorAll(':scope > div > p');
   const firstRowImg = rows[0]?.querySelector('img');
   if (!firstRowImg) return;
+  loadIconography();
   rows[0].classList.add('lockup-area');
   rows[0].childNodes.forEach((node) => {
     if (node.nodeType === 3 && node.nodeValue !== ' ') {
@@ -60,8 +75,8 @@ function handleClickableCard(el) {
   const links = el.querySelectorAll('a');
   if (el.classList.contains('click') && links) {
     el.addEventListener('click', (e) => {
+      /* c8 ignore next 2 */
       if (e.target.tagName === 'A') return;
-      /* c8 ignore next */
       (() => (links[0].target === '_blank' ? window.open(links[0].href) : window.location.assign(links[0].href)))();
     });
   }
@@ -73,12 +88,9 @@ const init = (el) => {
     el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
   }
   if (el.className.includes('rounded-corners')) {
-    const { miloLibs, codeRoot } = getConfig();
-    const base = miloLibs || codeRoot;
     loadStyle(`${base}/styles/rounded-corners.css`);
   }
-  const hasLockupBool = Array.from(el.classList).some((c) => c.endsWith('-lockup'));
-  if (!hasLockupBool) el.classList.add('m-lockup');
+  if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
   if (rows.length === 4) el.classList.add('has-footer');
