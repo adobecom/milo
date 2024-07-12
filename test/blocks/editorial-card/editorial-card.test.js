@@ -10,14 +10,14 @@ const config = {
   locales,
 };
 
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/editorial-card/editorial-card.js');
 setConfig(config);
 
 describe('editorial-card', () => {
   let editorialCards;
 
   beforeEach(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    const { default: init } = await import('../../../libs/blocks/editorial-card/editorial-card.js');
     editorialCards = document.querySelectorAll('.editorial-card');
     editorialCards.forEach((card) => {
       init(card);
@@ -29,7 +29,7 @@ describe('editorial-card', () => {
   });
 
   it('w/ 1 row has a foreground', () => {
-    const foreground = editorialCards[3].querySelector('.foreground');
+    const foreground = editorialCards[0].querySelector('.foreground');
     expect(foreground).to.exist;
   });
 
