@@ -1,4 +1,3 @@
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
@@ -10,12 +9,8 @@ const config = {
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 
-describe('Utils', () => {
-  let head;
-  let body;
+describe('Utils - MEP GNav', () => {
   before(async () => {
-    head = await readFile({ path: './mocks/head.html' });
-    body = await readFile({ path: './mocks/body.html' });
     const module = await import('../../libs/utils/utils.js');
     module.setConfig(config);
     Object.keys(module).forEach((func) => {
