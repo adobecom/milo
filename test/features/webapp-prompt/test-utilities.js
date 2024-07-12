@@ -1,5 +1,4 @@
 import { setViewport } from '@web/test-runner-commands';
-import sinon from 'sinon';
 import init, { DISMISSAL_CONFIG } from '../../../libs/features/webapp-prompt/webapp-prompt.js';
 import { viewports, mockRes as importedMockRes } from '../../blocks/global-navigation/test-utilities.js';
 import { setUserProfile } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
@@ -25,7 +24,7 @@ export const allSelectors = {
 export const defaultConfig = {
   color: '#b30b00',
   loaderDuration: 7500,
-  redirectUrl: 'https://www.adobe.com/?pep=true',
+  redirectUrl: '#soup',
   productName: 'photoshop',
   ...DISMISSAL_CONFIG,
 };
@@ -50,10 +49,7 @@ export const initPep = async ({ entName = 'firefly-web-usage', isAnchorOpen = fa
     parent: document.querySelector('div.feds-utilities'),
   });
 
-  Object.setPrototypeOf(pep, {
-    ...Object.getPrototypeOf(pep),
-    redirectTo: sinon.stub().returns({}),
-  });
+  // sinon.stub(window.location, 'assign').returns(null);
 
   return pep;
 };

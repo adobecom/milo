@@ -169,11 +169,14 @@ describe('PEP', () => {
 
     it('redirects when the PEP timer runs out', async () => {
       const clock = sinon.useFakeTimers();
-      const pep = await initPep({});
+      await initPep({});
+
+      expect(window.location.hash).to.not.equal('soup');
 
       clock.tick(10000);
-      // redirectTo is mocked in test-utilities inside the initPep procedure
-      expect(pep.redirectTo.calledOnce).to.equal(true);
+
+      expect(window.location.hash).to.equal('#soup');
+
       clock.uninstall();
     });
   });
