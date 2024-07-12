@@ -98,10 +98,6 @@
   row-gap: var(--spacing-xxs);
 }
 
-.editorial-card.underline-links-footer .footer a:not([class*="button"]) {
-  text-decoration: underline;
-}
-
 .editorial-card.no-bg.no-border .foreground {
   padding: var(--spacing-s) 0;
 }

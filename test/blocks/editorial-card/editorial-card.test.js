@@ -16,10 +16,11 @@ setConfig(config);
 
 describe('editorial-card', () => {
   const editorialCards = document.querySelectorAll('.editorial-card');
-  editorialCards.forEach((card) => {
-    init(card);
+  beforeEach(async () => {
+    editorialCards.forEach((card) => {
+      init(card);
+    });
   });
-
   it('w/ 1 row has a foreground', () => {
     const foreground = editorialCards[3].querySelector('.foreground');
     expect(foreground).to.exist;

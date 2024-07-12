@@ -4,38 +4,35 @@ import { decorateBlockBg, decorateBlockText, decorateBlockHrs, decorateTextOverr
 function decorateLockupFromContent(el) {
   const rows = el.querySelectorAll(':scope > div > p');
   const firstRowImg = rows[0]?.querySelector('img');
-  if (firstRowImg) {
-    rows[0].classList.add('lockup-area');
-    rows[0].childNodes.forEach((node) => {
-      if (node.nodeType === 3 && node.nodeValue !== ' ') {
-        const newSpan = createTag('span', { class: 'lockup-label' }, node.nodeValue);
-        node.parentElement.replaceChild(newSpan, node);
-      }
-    });
-  }
+  if (!firstRowImg) return;
+  rows[0].classList.add('lockup-area');
+  rows[0].childNodes.forEach((node) => {
+    if (node.nodeType === 3 && node.nodeValue !== ' ') {
+      const newSpan = createTag('span', { class: 'lockup-label' }, node.nodeValue);
+      node.parentElement.replaceChild(newSpan, node);
+    }
+  });
 }
 
 const extendDeviceContent = (el) => {
-  // check if there is a .body- above the .detail-
   const detail = el.querySelector('[class^="detail-"]');
   const prevElem = detail?.previousElementSibling;
-  if (prevElem) {
-    const prevIsBody = Array.from(prevElem.classList).some((c) => c.startsWith('body-'));
-    if (!prevIsBody) return;
-    prevElem.classList.remove('body-m');
-    prevElem.classList.add('body-xxs', 'device');
-  }
+  if (!prevElem || ![...prevElem.classList].some((c) => c.startsWith('body-'))) return;
+  prevElem.classList.remove('body-m');
+  prevElem.classList.add('body-xxs', 'device');
 };
 
-const decorateForeground = (el, rows, media = 0) => {
-  if (media) {
-    media.classList.add('media-area');
-    const mediaVideo = media.querySelector('video');
-    if (mediaVideo) {
-      applyHoverPlay(mediaVideo);
-    }
-    if (media.children.length > 1) decorateBlockBg(el, media);
+const decorateMedia = (el, media) => {
+  if (!media) return;
+  media.classList.add('media-area');
+  const mediaVideo = media.querySelector('video');
+  if (mediaVideo) {
+    applyHoverPlay(mediaVideo);
   }
+  if (media.children.length > 1) decorateBlockBg(el, media);
+};
+
+const decorateForeground = (el, rows) => {
   rows.forEach((row, i) => {
     if (i === 0) {
       row.classList.add('foreground');
@@ -50,34 +47,30 @@ const decorateForeground = (el, rows, media = 0) => {
   });
 };
 
-const decorateBgRow = (el, row, node) => {
-  const bgEmpty = row.textContent.trim() === '';
-  if (bgEmpty) {
+const decorateBgRow = (el, background) => {
+  if (background.textContent.trim() === '') {
     el.classList.add('no-bg');
-    row.remove();
-  } else {
-    decorateBlockBg(el, node);
+    background.remove();
+    return;
   }
+  decorateBlockBg(el, background);
 };
 
 function handleClickableCard(el) {
-  if (!el.classList.contains('click')) {
-    el.classList.remove('click');
-    return;
-  }
   const links = el.querySelectorAll('a');
-  if (!links.length) return;
-  const link = links[0];
-  el.addEventListener('click', () => {
-    /* c8 ignore next */
-    if (link.target === '_blank') { window.open(link.href); } else { window.location = link.href; }
-  });
+  if (el.classList.contains('click') && links) {
+    el.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') return;
+      /* c8 ignore next */
+      (() => (links[0].target === '_blank' ? window.open(links[0].href) : window.location.assign(links[0].href)))();
+    });
+  }
 }
 
 const init = (el) => {
   el.classList.add('con-block');
   if (el.className.includes('open')) {
-    el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy', 'underline-links-footer');
+    el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
   }
   if (el.className.includes('rounded-corners')) {
     const { miloLibs, codeRoot } = getConfig();
@@ -94,14 +87,16 @@ const init = (el) => {
     switch (count) {
       case 'three-plus':
         // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:footer)
-        decorateBgRow(el, rows[0], head);
+        decorateBgRow(el, head);
         rows = tail;
-        decorateForeground(el, rows, middle);
+        decorateForeground(el, rows);
+        decorateMedia(el, middle);
         break;
       case 2:
         // 2 rows (0:media, 1:copy)
         rows = middle;
-        decorateForeground(el, [rows], head);
+        decorateForeground(el, [rows]);
+        decorateMedia(el, head);
         el.classList.add('no-bg');
         break;
       case 1:
