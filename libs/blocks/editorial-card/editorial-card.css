@@ -125,6 +125,10 @@
   height: 100%;
 }
 
+.editorial-card .media-area > div {
+  line-height: 0;
+}
+
 .editorial-card.footer-align-left .footer > div { text-align: left; }
 .editorial-card.footer-align-center .footer > div { text-align: center; }
 
