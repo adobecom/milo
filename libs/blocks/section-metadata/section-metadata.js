@@ -38,6 +38,13 @@ function handleMasonry(text, section) {
   });
 }
 
+function handleDisplay(key, text, section) {
+  if (!(text || section)) return;
+  const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
+  styles.unshift(key);
+  section.classList.add(...styles);
+}
+
 function handleLayout(text, section) {
   if (!(text || section)) return;
   const layoutClass = `grid-template-columns-${text.replaceAll(' | ', '-')}`;
@@ -72,5 +79,6 @@ export default async function init(el) {
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
+  if (metadata['display-flex']) handleDisplay('flex', metadata['display-flex'].text, section);
   if (metadata.delay) handleDelay(metadata.delay.text, section);
 }

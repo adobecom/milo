@@ -58,6 +58,14 @@
   height: 100%;
 }
 
+.section[class*='flex'] .editorial-card {
+  height: fit-content;
+}
+
+.section[class*='flex'] .editorial-card.has-footer {
+  height: auto;
+}
+
 .editorial-card .media-area picture,
 .editorial-card .foreground picture {
   line-height: 0em;
