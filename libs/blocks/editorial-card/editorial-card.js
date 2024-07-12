@@ -40,7 +40,7 @@ const decorateForeground = (el, rows) => {
     } else if (i === (rows.length - 1)) {
       row.classList.add('footer');
     } else {
-      row.classList.add('static');
+      row.classList.add('extra-row');
     }
     decorateBlockText(row, ['m', 'm', 'm']); // heading, body, detail
     decorateBlockHrs(row);
