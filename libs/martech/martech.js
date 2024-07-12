@@ -185,7 +185,7 @@ const setupEntitlementCallback = () => {
 function isProxied() {
   // return window.location.hostname.endsWith('adobe.com');
   const { hostname } = window.location;
-  return (
+  return /^(www|milo|business|blog)(\.stage)?\.adobe.com$/.test(hostname)
     hostname === 'www.adobe.com'
     || hostname === 'www.stage.adobe.com'
     || hostname === 'milo.adobe.com'
