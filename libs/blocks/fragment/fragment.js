@@ -73,11 +73,9 @@ export default async function init(a) {
   }
 
   const path = new URL(a.href).pathname;
-  let updatedByMEP = false;
   if (mep?.fragments?.[path]) {
     relHref = mep.handleFragmentCommand(mep?.fragments[path], a);
     if (!relHref) return;
-    updatedByMEP = true;
   }
 
   if (isCircularRef(relHref)) {
@@ -113,7 +111,9 @@ export default async function init(a) {
   }
 
   updateFragMap(fragment, a, relHref);
-  if (updatedByMEP) mep.updateFragDataProps(a, inline, sections, fragment);
+  if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
+    mep.updateFragDataProps(a, inline, sections, fragment);
+  }
   if (inline) {
     insertInlineFrag(sections, a, relHref);
   } else {

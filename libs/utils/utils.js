@@ -944,7 +944,7 @@ async function checkForPageMods() {
 async function loadPostLCP(config) {
   if (config.mep?.targetEnabled === 'gnav') {
     const { init } = await import('../features/personalization/personalization.js');
-    init({ postLCP: true });
+    await init({ postLCP: true });
   } else {
     loadMartech();
   }
@@ -962,8 +962,10 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
-  if (config.mep?.addAnalyticsForUseBlockCode) {
-    config.mep.addAnalyticsForUseBlockCode(config);
+
+  if (config.mep?.blocks) {
+    import('../features/personalization/personalization.js')
+      .then(({ addAnalyticsForUseBlockCode }) => addAnalyticsForUseBlockCode(config));
   }
   if (config.mep?.preview) {
     import('../features/personalization/preview.js')

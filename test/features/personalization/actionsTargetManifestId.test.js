@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
-import { init, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import { init, handleFragmentCommand, addAnalyticsForUseBlockCode } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepTargetSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -30,7 +30,9 @@ describe('replace action', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
+    const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2"]');
+    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
 
   it('with a fragment selector, it should replace a fragment in the document', async () => {
@@ -41,7 +43,9 @@ describe('replace action', () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
+    const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2"]');
+    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
 });
 
@@ -52,7 +56,9 @@ describe('insertAfter action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
+    const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter"]');
+    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
 });
 
@@ -64,7 +70,9 @@ describe('insertBefore action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
+    const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertbefore"]');
+    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
 });
 
@@ -77,7 +85,9 @@ describe('prependToSection action', async () => {
 
     expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/prependToSection"]')).to.be.null;
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
+    const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/prependToSection"]');
+    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
 });
 
@@ -90,7 +100,9 @@ describe('appendToSection action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
+    const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/appendToSection"]');
+    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
 });
 
@@ -101,7 +113,10 @@ describe('useBlockCode action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal('manifest');
+    await addAnalyticsForUseBlockCode(config);
+    const el = document.querySelector('.promo');
+    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
 
   it('useBlockCode should be able to use a new type of block', async () => {
@@ -110,28 +125,23 @@ describe('useBlockCode action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal('manifest');
+    await addAnalyticsForUseBlockCode(config);
+    const el = document.querySelector('.myblock');
+    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
 });
 
 describe('custom actions', async () => {
-  it('should not add custom configuration if not needed', async () => {
-    let manifestJson = await readFile({ path: './mocks/actions/manifestReplace.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
-    await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest.json');
-  });
-
   it('should add a custom action configuration', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestCustomAction.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.inBlock['my-block'].commands[0].targetManifestId).to.equal('manifest.json');
-    expect(getConfig().mep.inBlock['my-block'].commands[1].targetManifestId).to.equal('manifest.json');
-    expect(getConfig().mep.inBlock['my-block'].fragments['/fragments/sub-menu'].targetManifestId).to.equal('manifest.json');
-    expect(getConfig().mep.inBlock['my-block'].fragments['/fragments/new-sub-menu'].targetManifestId).to.equal('manifest.json');
+    expect(getConfig().mep.inBlock['my-block'].commands[0].targetManifestId).to.equal('manifest');
+    expect(getConfig().mep.inBlock['my-block'].commands[1].targetManifestId).to.equal('manifest');
+    expect(getConfig().mep.inBlock['my-block'].fragments['/fragments/sub-menu'].targetManifestId).to.equal('manifest');
+    expect(getConfig().mep.inBlock['my-block'].fragments['/fragments/new-sub-menu'].targetManifestId).to.equal('manifest');
   });
 });
