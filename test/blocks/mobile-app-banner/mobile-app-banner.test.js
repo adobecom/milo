@@ -51,7 +51,10 @@ describe('mobile-app-banner', () => {
   });
 
   it('should init by adding branchio script', async () => {
-    window.adobePrivacy = { hasUserProvidedConsent: () => true };
+    window.adobePrivacy = {
+      hasUserProvidedConsent: () => true,
+      activeCookieGroups: () => ['C0002', 'C0004'],
+    };
     const module = await import('../../../libs/blocks/mobile-app-banner/mobile-app-banner.js');
     const banner = document.body.querySelector('.mobile-app-banner.product-test');
     await module.default(banner);
@@ -62,6 +65,25 @@ describe('mobile-app-banner', () => {
     scriptTags.forEach((scriptTag) => {
       if (scriptTag.getAttribute('src') !== null) scriptSrcs.push(scriptTag.getAttribute('src'));
     });
+    expect(scriptSrcs).to.include('https://cdn.branch.io/branch-latest.min.js');
+  });
+
+  it('should test return when init is called twice', async () => {
+    window.adobePrivacy = {
+      hasUserProvidedConsent: () => true,
+      activeCookieGroups: () => ['C0002', 'C0004'],
+    };
+    const module = await import('../../../libs/blocks/mobile-app-banner/mobile-app-banner.js');
+    const banner = document.body.querySelector('.mobile-app-banner.product-test');
+    await module.default(banner);
+    window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
+    await delay(0);
+    const scriptTags = document.querySelectorAll('head > script');
+    const scriptSrcs = [];
+    scriptTags.forEach((scriptTag) => {
+      if (scriptTag.getAttribute('src') !== null) scriptSrcs.push(scriptTag.getAttribute('src'));
+    });
+    window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
     expect(scriptSrcs).to.include('https://cdn.branch.io/branch-latest.min.js');
   });
 });

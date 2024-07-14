@@ -16,25 +16,18 @@ async function getKey(product) {
 async function getECID() {
   let ecid = null;
   const cookiesArr = document.cookie.split(';');
-  console.log(cookiesArr);
   const regex = /^AMCV_[A-F0-9]+%40AdobeOrg=MCMID\|\d+$/;
-  const ecidFromCookie = cookiesArr.some(el => {
-    if (regex.test(el.trim())) ecid = el.split('MCMID|')[1];
+  cookiesArr.some((el) => {
+    if (regex.test(el.trim())) [, ecid] = el.split('MCMID|');
+    return ecid;
   });
-  if(!ecidFromCookie && typeof alloy !== 'undefined') {
-	  alloy("getIdentity").then(function(result) {
-	      if (result.identity) ecid = result.identity?.ECID;
-	  });
-  }
   return ecid;
 }
 
 /* eslint-disable */
 function branchInit(key, ecidVal) {
   let initValue = false;
-  console.log("in outer init", ecidVal);
   function initBranch() {
-    console.log("in init", ecidVal);
     if (initValue) {
       return;
     }
@@ -83,7 +76,6 @@ function branchInit(key, ecidVal) {
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
     .forEach((event) => {
       window.addEventListener(event, () => {
-        console.log('event triggered, now branch init will be called');
         initBranch();
       });
     });
@@ -99,5 +91,4 @@ export default async function init(el) {
   if (!key) return;
   const ecid = await getECID();
   branchInit(key, ecid);
-  console.log(ecid);
 }
