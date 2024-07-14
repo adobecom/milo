@@ -229,6 +229,20 @@ describe('Modals', () => {
     window.sessionStorage.removeItem('shown:#dm');
     el.remove();
   });
+
+  it('restores the hash when the modal gets closed', async () => {
+    window.location.hash = '#category=pdf-esignatures&search=acro&types=desktop%2Cmobile';
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    init(document.getElementById('milo-modal-link'));
+    const modal = document.getElementById('milo');
+    expect(modal).to.exist;
+    expect(window.location.hash).to.equal('#milo');
+    const close = document.querySelector('.dialog-close');
+    close.click();
+    expect(window.location.hash).to.equal('#category=pdf-esignatures&search=acro&types=desktop%2Cmobile');
+    window.location.hash = '';
+  });
 });
 
 describe('sendAnalytics', () => {
