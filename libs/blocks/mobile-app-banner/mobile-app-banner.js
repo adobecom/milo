@@ -75,9 +75,7 @@ function branchInit(key, ecidVal) {
 
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
     .forEach((event) => {
-      window.addEventListener(event, () => {
-        initBranch();
-      });
+      window.addEventListener(event, initBranch);
     });
 }
 
