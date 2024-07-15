@@ -18,7 +18,7 @@ async function getECID() {
   if (window.alloy) {
     await window.alloy('getIdentity').then((data) => {
       ecid = data?.identity?.ECID;
-    });
+    }).catch((err) => window.lana.log(err));
   }
   return ecid;
 }
