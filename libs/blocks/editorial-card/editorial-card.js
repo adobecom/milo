@@ -5,21 +5,14 @@ const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
 async function loadIconography() {
-  try {
-    const stylePromise = new Promise((resolve) => {
-      loadStyle(`${base}/styles/iconography.css`, resolve);
-    });
-    await Promise.all([stylePromise]);
-  } catch (err) {
-    window.lana?.log(`Failed to load iconography module: ${err}`);
-  }
+  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
 }
 
-function decorateLockupFromContent(el) {
+async function decorateLockupFromContent(el) {
   const rows = el.querySelectorAll(':scope > div > p');
   const firstRowImg = rows[0]?.querySelector('img');
   if (!firstRowImg) return;
-  loadIconography();
+  await loadIconography();
   rows[0].classList.add('lockup-area');
   rows[0].childNodes.forEach((node) => {
     if (node.nodeType === 3 && node.nodeValue !== ' ') {
@@ -47,11 +40,11 @@ const decorateMedia = (el, media) => {
   if (media.children.length > 1) decorateBlockBg(el, media);
 };
 
-const decorateForeground = (el, rows) => {
-  rows.forEach((row, i) => {
+const decorateForeground = async (el, rows) => {
+  rows.forEach(async (row, i) => {
     if (i === 0) {
       row.classList.add('foreground');
-      decorateLockupFromContent(row);
+      await decorateLockupFromContent(row);
     } else if (i === (rows.length - 1)) {
       row.classList.add('footer');
     } else {
@@ -82,7 +75,7 @@ function handleClickableCard(el) {
   }
 }
 
-const init = (el) => {
+const init = async (el) => {
   el.classList.add('con-block');
   if (el.className.includes('open')) {
     el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
@@ -101,20 +94,20 @@ const init = (el) => {
         // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:footer)
         decorateBgRow(el, head);
         rows = tail;
-        decorateForeground(el, rows);
+        await decorateForeground(el, rows);
         decorateMedia(el, middle);
         break;
       case 2:
         // 2 rows (0:media, 1:copy)
         rows = middle;
-        decorateForeground(el, [rows]);
+        await decorateForeground(el, [rows]);
         decorateMedia(el, head);
         el.classList.add('no-bg');
         break;
       case 1:
         // 1 row  (0:copy)
         rows = head;
-        decorateForeground(el, [rows]);
+        await decorateForeground(el, [rows]);
         el.classList.add('no-bg', 'no-media');
         break;
       default:
