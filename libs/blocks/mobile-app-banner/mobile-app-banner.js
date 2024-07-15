@@ -63,5 +63,8 @@ export default async function init(el) {
   const classListArray = Array.from(el.classList);
   const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
   const key = await getKey(product);
+  console.log(window.alloy);
+  const ecid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
+  console.log(ecid);
   if (key) branchInit(key);
 }
