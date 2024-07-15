@@ -200,7 +200,7 @@ const parseContent = async (el, merchCard) => {
         merchCard.append(newElement);
       }
       return;
-    } 
+    }
     if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
       const calloutSlot = createTag('div', { slot: 'callout-text' });
       const calloutContentWrapper = createTag('div');
