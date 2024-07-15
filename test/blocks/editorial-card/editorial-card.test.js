@@ -38,8 +38,8 @@ describe('editorial-card', () => {
     expect(footer).to.exist;
   });
 
-  it('w/ lockup gets decorated', () => {
-    const label = editorialCards[4].querySelector('.lockup-label');
-    expect(label).to.exist;
+  it('w/ lockup gets decorated', async () => {
+    const lockup = editorialCards[4].classList.contains('m-lockup');
+    expect(lockup).to.exist;
   });
 });
