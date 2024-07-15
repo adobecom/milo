@@ -491,6 +491,11 @@ li.locui-url.error .locui-url-path span {
   border-radius: 5px;
   padding: 0 5px;
   font-size: 12px;
+  text-transform: uppercase;
+}
+
+li.locui-url.error .locui-url-action {
+  cursor: not-allowed;
 }
 
 li.locui-url:last-child {

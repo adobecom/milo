@@ -1,5 +1,4 @@
 import { html, signal, useEffect, useMemo } from '../../../deps/htm-preact.js';
-import { urls } from '../utils/state.js';
 import { setActions, openWord, handleAction } from './index.js';
 
 function useSignal(value) {
@@ -8,9 +7,7 @@ function useSignal(value) {
 
 function useActionState(item) {
   const actions = item.value;
-  const validated = urls.value.find((url) => url.pathname === actions.path
-    || url.langstore.pathname === actions.path);
-  const state = { isValid: validated?.valid };
+  const state = { isValid: typeof actions.hasError !== 'string' };
   Object.keys(actions).forEach((btn) => {
     if (actions[btn]?.status) state[btn] = actions[btn].status === 200;
   });
@@ -20,12 +17,12 @@ function useActionState(item) {
 function Actions({ item }) {
   const { isValid, preview, live } = useActionState(item);
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
-  const disabled = isValid !== undefined ? !isValid : item.value.edit?.status === 404;
+  const editable = isValid ?? item.value.edit?.status !== 404;
   return html`
     <div class=locui-url-source-actions>
       <button
-        disabled=${disabled}
-        class="locui-url-action locui-url-action-edit${isExcel}${disabled ? ' disabled' : ''}"
+        disabled=${!editable}
+        class="locui-url-action locui-url-action-edit${isExcel}${!editable ? ' disabled' : ''}"
         onClick=${(e) => openWord(e, item)}>Edit</button>
       <button
         disabled=${!isValid}
@@ -114,12 +111,12 @@ function TabPanel({ tab, idx, item }) {
     </div>`;
 }
 
-export default function Tabs({ suffix, path }) {
+export default function Tabs({ suffix, path, hasError }) {
   const tabs = useSignal([
     { title: 'Actions', selected: true },
     { title: 'Details' },
   ]);
-  const item = useSignal({ path });
+  const item = useSignal({ path, hasError });
   useEffect(() => { setActions(item); }, [item]);
   return html`
     <div class=locui-tabs>

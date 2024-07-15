@@ -13,7 +13,7 @@ function SyncFragments() {
       const found = await findFragments();
       if (!cancelled) {
         setFragments(found);
-        const invalid = found.filter((frag) => frag[0].valid !== undefined && !frag[0].valid);
+        const invalid = found.filter((frag) => typeof frag[0]?.valid === 'string');
         setErrors(invalid.flat(1).map((err) => err.href));
       }
     })();
@@ -37,7 +37,7 @@ function SyncFragments() {
     if (errors.includes(url.href)) {
       return html`
         <div class=error-label>
-          <label>not found</label> ${url.pathname}
+          <label>${url.valid}</label> ${url.pathname}
         </div>
       `;
     }
