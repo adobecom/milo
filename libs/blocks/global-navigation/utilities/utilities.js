@@ -50,9 +50,9 @@ export const logErrorFor = async (fn, message, tags) => {
 export function addMepHighlightAndTargetId(el, source) {
   let { manifestId, targetManifestId } = source.dataset;
   manifestId = manifestId ?? source?.closest('[data-manifest-id]')?.dataset?.manifestId;
-  targetManifestId = targetManifestId ?? source?.closest('[data-target-manifest-id]')?.dataset?.targetManifestId;
+  targetManifestId = targetManifestId ?? source?.closest('[data-adobe-target-testid]')?.dataset?.adobeTargetTestid;
   if (manifestId) el.dataset.manifestId = manifestId;
-  if (targetManifestId) el.dataset.targetManifestId = targetManifestId;
+  if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   return el;
 }
 
@@ -323,7 +323,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
-  if (mepFragment?.targetManifestId) body.dataset.targetManifestId = mepFragment.targetManifestId;
+  if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
     const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');

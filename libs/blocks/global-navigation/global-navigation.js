@@ -1021,6 +1021,13 @@ export default async function init(block) {
     });
     gnav.init();
     block.setAttribute('daa-im', 'true');
+    mep?.experiments.forEach((experiment) => {
+      if (experiment?.selectedVariant?.updatemetadata.forEach((updateMetaData) => {
+        if (updateMetaData?.selector === 'gnav-source' && updateMetaData.targetManifestId) {
+          block.dataset.adobeTargetTestid = updateMetaData.targetManifestId;
+        }
+      }));
+    });
     const mepMartech = mep?.martech || '';
     block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
     return gnav;
