@@ -6,7 +6,7 @@
 }
 
 .merch-whats-included-container .fragment .container {
-  display: inline-grid;
+  display: contents;
 }
 
 .merch-whats-included-container .fragment .content {
