@@ -200,28 +200,29 @@ const parseContent = async (el, merchCard) => {
         merchCard.append(newElement);
       }
       return;
-    } else if (tagName ==='H6' && element.firstElementChild?.tagName === 'EM') {
+    } 
+    if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
       const calloutSlot = createTag('div', { slot: 'callout-text' });
       const calloutContentWrapper = createTag('div');
       const calloutContent = createTag('div', { class: 'callout-content' });
       const emElement = element.firstElementChild;
       let imgElement = null;
       const children = Array.from(emElement.childNodes);
-      for (let i = 0; i < children.length; i++) {
-          const child = children[i];
-          if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim() === '#ICON'){
-              const hrefParts = child.getAttribute('href').split('#');
-              const tooltipText = hrefParts[1];
-              const imgSrc = hrefParts[0];
-              imgElement = document.createElement('img');
-              imgElement.src = imgSrc;
-              imgElement.title = decodeURIComponent(tooltipText);
-              imgElement.className = 'callout-icon';
-              child.parentNode.removeChild(child);
-              calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
-          } else {
-              calloutContent.append(child.cloneNode(true));
-          }
+      for (let i = 0; i < children.length; i += 1) {
+        const child = children[i];
+        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim() === '#ICON') {
+          const hrefParts = child.getAttribute('href').split('#');
+          const tooltipText = hrefParts[1];
+          const imgSrc = hrefParts[0];
+          imgElement = document.createElement('img');
+          imgElement.src = imgSrc;
+          imgElement.title = decodeURIComponent(tooltipText);
+          imgElement.className = 'callout-icon';
+          child.parentNode.removeChild(child);
+          calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
+        } else {
+          calloutContent.append(child.cloneNode(true));
+        }
       }
       calloutContentWrapper.append(calloutContent);
       if (imgElement) {
