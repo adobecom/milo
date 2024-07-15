@@ -5,6 +5,10 @@
   display: block;
 }
 
+.merch-whats-included-container h3 {
+  margin: 0;
+}
+
 .merch-whats-included-container .fragment .container {
   display: contents;
 }
