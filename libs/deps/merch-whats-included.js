@@ -1,4 +1,4 @@
-// branch: MWPW-142267 commit: 77b7e5b35a2706362b75f387151b077615df049b Mon, 15 Jul 2024 21:03:03 GMT
+// branch: MWPW-142267 commit: 25320da3fd942c99cfcd7ec563122d0a7e755d9f Mon, 15 Jul 2024 22:23:34 GMT
 import{html as e,css as o,LitElement as l}from"/libs/deps/lit-all.min.js";var t=class extends l{static styles=o`
         :host {
             display: inline-grid;
@@ -9,7 +9,6 @@ import{html as e,css as o,LitElement as l}from"/libs/deps/lit-all.min.js";var t=
             place-content: stretch start;
             box-sizing: border-box;
             align-self: baseline;
-            margin-top: 16px;
             margin-bottom: 16px;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             grid-auto-rows: unset;
