@@ -1,6 +1,6 @@
 /* eslint-disable compat/compat */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* global ClipboardItem */
+
 import {
   createContext,
   html,
@@ -363,6 +363,7 @@ const UiPanel = () => html`
   <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
   <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
+  <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
   <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
   <${Select} options=${defaultOptions.accessibilityLevel} prop="accessibilityLevel" label="Card Accessibility Title Level" />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
