@@ -6,12 +6,21 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
 
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const mockBody = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/notification/notification.js');
 
 describe('notification', () => {
-  const notifs = document.querySelectorAll('.notification');
-  notifs.forEach((notif) => init(notif));
+  let notifs;
+  beforeEach(() => {
+    document.body.innerHTML = mockBody;
+    notifs = document.querySelectorAll('.notification');
+    notifs.forEach((notif) => init(notif));
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+    notifs = [];
+  });
 
   describe('banner notifications (default)', () => {
     it('has a heading-m', () => {
@@ -37,7 +46,10 @@ describe('notification', () => {
   });
 
   describe('ribbon notifications', () => {
-    const ribbons = [...notifs].filter((e) => e.classList.contains('ribbon'));
+    let ribbons;
+    beforeEach(() => {
+      ribbons = [...notifs].filter((e) => e.classList.contains('ribbon'));
+    });
     it('supports multiple icons', () => {
       const icons = ribbons[0].querySelectorAll('.icon-area picture');
       expect(icons.length).to.be.greaterThan(1);
@@ -54,7 +66,10 @@ describe('notification', () => {
   });
 
   describe('pill notifications', () => {
-    const pills = [...notifs].filter((e) => e.classList.contains('pill'));
+    let pills;
+    beforeEach(() => {
+      pills = [...notifs].filter((e) => e.classList.contains('pill'));
+    });
     it('supports variant without a close button', () => {
       const close = pills[2].querySelector('button.close');
       expect(close).to.not.exist;

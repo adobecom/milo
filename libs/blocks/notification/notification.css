@@ -1,4 +1,20 @@
 .notification {
+  --min-block-size: 160px;
+  --min-block-size-ribbon: 50px;
+  --min-block-size-pill: 72px;
+  --margin-inline-ribbon: 30px;
+  --max-inline-size-image: 75px;
+  --max-inline-size-icon: 231px;
+  --inline-size-image: auto;
+  --inline-size-pill: 85%;
+  --border-block-size: 10px;
+  --close-size: 20px;
+  --icon-size: 56px;
+  --icon-size-s: 40px;
+  --icon-size-xs: 24px;
+  --icon-size-l: 64px;
+  --pill-radius: 16px;
+
   display: flex;
   inline-size: 100%;
   position: relative;
@@ -6,11 +22,11 @@
   justify-content: center;
   flex-wrap: wrap;
   overflow: hidden;
-  min-block-size: 160px;
+  min-block-size: var(--min-block-size);
 }
 
 .notification.ribbon {
-  min-block-size: 50px;
+  min-block-size: var(--min-block-size-ribbon);
 }
 
 .dark .notification,
@@ -52,7 +68,7 @@
 
 .notification.ribbon .foreground.container {
   inline-size: 100%;
-  margin-inline: 30px;
+  margin-inline: var(--margin-inline-ribbon);
   margin-block: 0;
   padding-block: var(--spacing-s);
 }
@@ -83,8 +99,8 @@
   position: absolute;
   inset-inline: auto var(--spacing-xxs);
   inset-block: var(--spacing-xxs) auto;
-  block-size: 20px;
-  inline-size: 20px;
+  block-size: var(--close-size);
+  inline-size: var(--close-size);
   cursor: pointer;
   margin: auto;
   appearance: none;
@@ -104,7 +120,7 @@
 
 .notification .border {
   display: block;
-  block-size: 10px;
+  block-size: var(--border-block-size);
   inline-size: 100%;
 }
 
@@ -145,7 +161,8 @@
 .notification .foreground.container .image {
   position: relative;
   display: flex;
-  max-inline-size: 75px;
+  inline-size: var(--inline-size-image);
+  max-inline-size: var(--max-inline-size-image);
   margin: 0;
   order: -1;
 }
@@ -167,19 +184,19 @@
 }
 
 .notification.ribbon .icon-area img {
-  max-block-size: 56px;
+  max-block-size: var(--icon-size);
 }
 
 .notification:is(.ribbon.s-icon, .pill) .icon-area img {
-  max-block-size: 40px;
+  max-block-size: var(--icon-size-s);
 }
 
 .notification.xs-icon:is(.ribbon, .pill) .icon-area img {
-  max-block-size: 24px;
+  max-block-size: var(--icon-size-xs);
 }
 
 .notification.ribbon.l-icon .icon-area img {
-  max-block-size: 64px;
+  max-block-size: var(--icon-size-l);
 }
 
 .notification .text [class*="heading-"] + .action-area {
@@ -246,13 +263,14 @@
 }
 
 .notification.pill {
-  border-radius: 16px;
+  border-radius: var(--pill-radius);
   inline-size: calc(100% - var(--spacing-m));
   margin-inline: auto;
 }
 
 .notification.pill .foreground.container .action-area {
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .notification.ribbon.space-between .foreground.container .action-area {
@@ -271,8 +289,17 @@
 }
 
 @media screen and (min-width: 600px) {
+  .notification {
+    --max-inline-size-image: 188px;
+    --max-inline-size-banner: 800px;
+    --min-inline-size-flexible: 300px;
+    --inline-size-image: 35%;
+    --full-width: 1200px;
+    --padding-inline-flexible: 80px;
+  }
+
   .notification:not(.pill, .ribbon) .foreground.container {
-    max-inline-size: 800px;
+    max-inline-size: var(--max-inline-size-banner);
   }
 
   .notification .foreground.container {
@@ -286,14 +313,12 @@
   }
 
   .notification:is(.full-width, .ribbon) .foreground.container {
-    max-inline-size: 1200px;
+    max-inline-size: var(--full-width);
     margin-inline: var(--grid-margins-width);
   }
 
   .notification .foreground.container .image {
     margin: 0;
-    inline-size: 35%;
-    max-inline-size: 188px;
     padding: 0;
     order: unset;
   }
@@ -335,6 +360,10 @@
 
   .notification.ribbon .action-area {
     inline-size: auto;
+  }
+
+  .notification.ribbon .foreground.container .icon-area {
+    flex-shrink: 1;
   }
 
   .notification.ribbon .copy-wrap {
@@ -383,10 +412,10 @@
     margin: auto;
     pointer-events: auto;
     inline-size: auto;
-    padding-inline: 80px;
+    padding-inline: var(--padding-inline-flexible);
     overflow: hidden;
-    min-inline-size: 300px;
-    border-radius: 16px;
+    min-inline-size: var(--min-inline-size-flexible);
+    border-radius: var(--pill-radius);
   }
 
   .notification.pill .foreground.container .text > :not(.action-area) {
@@ -396,6 +425,15 @@
 }
 
 @media screen and (min-width: 1200px) {
+  .notification {
+    --inline-size-image: 20%;
+    --inline-size-image-10: 30%;
+    --max-inline-size-image-10: 300px;
+    --inline-size-image-full: 33.333%;
+    --max-inline-size-image-full: 400px;
+    --pill-radius: 36px;
+  }
+
   .notification:not(.pill, .ribbon) .foreground.container {
     inline-size: calc(var(--grid-container-width) * (8 / 12));
     margin-inline: var(--grid-margins-width-8);
@@ -425,22 +463,26 @@
   }
 
   .notification .foreground.container .icon-area {
-    max-inline-size: 231px;
+    max-inline-size: var(--max-inline-size-icon);
     margin-inline-end: var(--spacing-s);
   }
 
+  .notification.ribbon .foreground.container .icon-area {
+    flex-shrink: 0;
+  }
+
   .notification .foreground.container .image {
-    inline-size: 20%;
+    inline-size: var(--inline-size-image);
   }
 
   .notification.max-width-10-desktop .foreground.container .image {
-    inline-size: 30%;
-    max-inline-size: 300px;
+    inline-size: var(--inline-size-image);
+    max-inline-size: var(--max-inline-size-image-10);
   }
 
   .notification.full-width .foreground.container .image {
-    inline-size: 33.333%;
-    max-inline-size: 400px;
+    inline-size: var(--inline-size-image-full);
+    max-inline-size: var(--max-inline-size-image-full);
   }
 
   .notification .foreground.container .text + .image {
@@ -448,13 +490,9 @@
   }
 
   .notification.pill {
-    min-block-size: 72px;
-    inline-size: 85%;
+    min-block-size: var(--min-block-size-pill);
+    inline-size: var(--inline-size-pill);
     margin-inline: auto;
-  }
-
-  .notification.pill:not(.flexible) {
-    border-radius: 36px;
   }
 
   .notification.pill [class*="heading-"],
@@ -493,7 +531,7 @@
   }
 
   .notification.pill .icon-area img {
-    max-block-size: 40px;
+    max-block-size: var(--icon-size-s);
   }
 
   .notification.pill .foreground.container .action-area {
@@ -507,7 +545,7 @@
   }
 
   .notification.pill.flexible .flexible-inner {
-    border-radius: 36px;
+    border-radius: var(--pill-radius);
   }
 
   .notification.pill .copy-wrap {

@@ -69,16 +69,6 @@ function getBlockData(el) {
   return { fontSizes, options: { ...getOpts(el) } };
 }
 
-function decorateStaticLinks(el) {
-  const textLinks = el.querySelectorAll('a:not([class])');
-  textLinks.forEach((link) => { link.classList.add('static'); });
-}
-
-function decorateBorder(el, { borderBottom }) {
-  const border = createTag('div', { style: `background: ${borderBottom};`, class: 'border' });
-  el.appendChild(border);
-}
-
 function wrapCopy(foreground) {
   const text = foreground.querySelector('.text');
   if (!text) return;
@@ -106,21 +96,21 @@ function decorateFlexible(el) {
 }
 
 function decorateLayout(el) {
-  const elems = el.querySelectorAll(':scope > div');
-  if (elems.length > 1) decorateBlockBg(el, elems[0]);
-  const foreground = elems[elems.length - 1];
+  const [background, ...rest] = el.querySelectorAll(':scope > div');
+  const foreground = rest.pop();
+  if (background) decorateBlockBg(el, background);
   foreground?.classList.add('foreground', 'container');
-  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  const text = foreground?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   const picture = text?.querySelector('p picture');
-  const iconArea = picture ? picture.closest('p') : null;
+  const iconArea = picture?.closest('p');
   iconArea?.classList.add('icon-area');
-  const fgMedia = foreground.querySelector(':scope > div:not(.text) :is(img, video, a[href*=".mp4"])')?.closest('div');
+  const fgMedia = foreground?.querySelector(':scope > div:not(.text) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const bgMedia = el.querySelector(':scope > div:not(.foreground) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const media = fgMedia ?? bgMedia;
   el.classList.toggle('no-media', !media);
-  media?.classList.toggle('image', (media && !media.classList.contains('text')));
-  foreground?.classList.toggle('no-image', (!media && !iconArea));
+  media?.classList.toggle('image', media && !media.classList.contains('text'));
+  foreground?.classList.toggle('no-image', !media && !iconArea);
   if (el.matches(`:is(.${pill}, .${ribbon}):not(.no-closure)`)) decorateClose(el);
   if (el.matches(`.${pill}.flexible`)) decorateFlexible(el);
   return foreground;
@@ -131,8 +121,10 @@ export default function init(el) {
   const { fontSizes, options } = getBlockData(el);
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
-  if (options.borderBottom) decorateBorder(el, options);
+  if (options.borderBottom) {
+    el.append(createTag('div', { style: `background: ${options.borderBottom};`, class: 'border' }));
+  }
   decorateTextOverrides(el);
-  decorateStaticLinks(el);
+  el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
   if (el.matches(`:is(.${ribbon}, .${pill})`)) wrapCopy(blockText);
 }
