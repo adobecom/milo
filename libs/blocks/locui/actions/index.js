@@ -14,7 +14,7 @@ import {
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { createTag, decorateSections, decorateFooterPromo } from '../../../utils/utils.js';
-import { getUrls } from '../loc/index.js';
+import { getUrls, validateUrlsOrigin } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import {
@@ -89,6 +89,7 @@ async function findPageFragments(path) {
 
     if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
+    fragmentUrl.alt = fragment.textContent;
     acc.push(fragmentUrl);
     return acc;
   }, []);
@@ -105,7 +106,7 @@ async function findDeepFragments(path) {
     for (const search of needsSearch) {
       const nestedFragments = await findPageFragments(search.pathname);
       if (nestedFragments === undefined) {
-        search.valid = false;
+        search.valid = 'not found';
         searched.push(search.pathname);
         break;
       }
@@ -132,7 +133,7 @@ export async function findFragments() {
     }
     return acc;
   }, []);
-  return foundFragments;
+  return validateUrlsOrigin(foundFragments);
 }
 
 export async function syncToExcel(paths) {
