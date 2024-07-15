@@ -3,11 +3,14 @@
   height: inherit;
   max-height: 100%;
   display: block;
-  overflow: hidden;
 }
 
 .merch-whats-included-container .fragment .container {
-  display: contents;
+  display: inline-grid;
+}
+
+.merch-whats-included-container .fragment .content {
+  float: right;
 }
 
 @media screen and (max-width: 767px) {
