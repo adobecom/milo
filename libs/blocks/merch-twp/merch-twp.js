@@ -81,15 +81,8 @@ export default async function init(el) {
         class: 'hidden merch-whats-included-container',
       },
       whatsIncludedFragment,
-      { parent: twp },
     );
-    window.addEventListener('milo:modal:closed', (event) => {
-    // Check if whatsIncludedSlot has the 'hidden' class
-      if (!whatsIncludedSlot.classList.contains('hidden')) {
-        event.preventDefault(); // Prevent the default behavior of the event
-        whatsIncludedSlot.classList.toggle('hidden'); // Toggle the 'hidden' class on whatsIncludedSlot
-      }
-    });
+    twp.append(whatsIncludedSlot);
   }
 
   const cciFooter = createTag('div', { slot: 'cci-footer' });
