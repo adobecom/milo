@@ -398,27 +398,26 @@ describe('Merch Card with Offer Selection', () => {
 
   it('should handle callout-text with h6 and em tags', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/callout.html');
-    const merchCard = document.querySelector('.merch-card');
+    //const merchCard = document.querySelector('.merch-card');
 
-    // Act
-    await init(merchCard);
+    const merchCard = await init(document.querySelector('.merch-card'));
     await delay();
 
     // Assert
     const calloutSlot = merchCard.querySelector('[slot="callout-text"]');
     expect(calloutSlot).to.exist;
 
-    const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper');
+    const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper-with-icon');
     expect(calloutContentWrapper).to.exist;
     expect(calloutContentWrapper.classList.contains('callout-content-wrapper-with-icon')).to.be.true;
 
     const imgElement = calloutContentWrapper.querySelector('img.callout-icon');
     expect(imgElement).to.exist;
-    expect(imgElement.title).to.be.equals('this is a dummy tooltip text');
+    expect(imgElement.title).to.equal('this is a dummy tooltip text');
 
     const calloutContent = calloutContentWrapper.querySelector('.callout-content');
     expect(calloutContent).to.exist;
-    expect(calloutContent.textContent.trim()).to.equals('AI Assistant add-on available');
+    expect(calloutContent.textContent.trim()).to.equal('AI Assistant add-on available');
   });
 });
 
