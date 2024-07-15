@@ -398,7 +398,6 @@ describe('Merch Card with Offer Selection', () => {
 
   it('should handle callout-text with h6 and em tags', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/callout.html');
-    //const merchCard = document.querySelector('.merch-card');
 
     const merchCard = await init(document.querySelector('.merch-card'));
     await delay();
