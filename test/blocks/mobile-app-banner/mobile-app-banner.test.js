@@ -70,11 +70,18 @@ describe('mobile-app-banner', () => {
     userAgentStub.restore();
   });
 
-  it('should test return when init is called twice', async () => {
+  it('should fetch ecid from alloy and return if event is dispatched twice', async () => {
     window.adobePrivacy = {
       hasUserProvidedConsent: () => true,
       activeCookieGroups: () => ['C0002', 'C0004'],
     };
+    window.alloy = () => {};
+    const alloyStub = sinon.stub(window, 'alloy').callsFake((command) => {
+      if (command === 'getIdentity') {
+        return Promise.resolve({ identity: { ECID: 'test-ecid' } });
+      }
+      return 'test-ecid';
+    });
     const module = await import('../../../libs/blocks/mobile-app-banner/mobile-app-banner.js');
     const banner = document.body.querySelector('.mobile-app-banner.product-test');
     await module.default(banner);
@@ -87,5 +94,6 @@ describe('mobile-app-banner', () => {
     });
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
     expect(scriptSrcs).to.include('https://cdn.branch.io/branch-latest.min.js');
+    alloyStub.restore();
   });
 });
