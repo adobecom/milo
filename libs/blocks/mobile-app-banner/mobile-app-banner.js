@@ -66,9 +66,7 @@ function branchInit(key, ecidVal) {
     const advertisingCookieConsent = cookieGrp.includes('C0004');
 
     if ( performanceCookieConsent && advertisingCookieConsent && isAndroid ) {
-    branch.setBranchViewData({ data: { ecid: ecidVal }}, function(err) {
-      if (err) console.log(err);
-    });
+    branch.setBranchViewData({ data: { ecid: ecidVal }});
   }
     branch.init(key, { tracking_disabled: !privacyConsent });
   }

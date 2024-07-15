@@ -55,6 +55,7 @@ describe('mobile-app-banner', () => {
       hasUserProvidedConsent: () => true,
       activeCookieGroups: () => ['C0002', 'C0004'],
     };
+    const userAgentStub = sinon.stub(navigator, 'userAgent').get(() => 'Android');
     const module = await import('../../../libs/blocks/mobile-app-banner/mobile-app-banner.js');
     const banner = document.body.querySelector('.mobile-app-banner.product-test');
     await module.default(banner);
@@ -66,6 +67,7 @@ describe('mobile-app-banner', () => {
       if (scriptTag.getAttribute('src') !== null) scriptSrcs.push(scriptTag.getAttribute('src'));
     });
     expect(scriptSrcs).to.include('https://cdn.branch.io/branch-latest.min.js');
+    userAgentStub.restore();
   });
 
   it('should test return when init is called twice', async () => {
