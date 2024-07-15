@@ -226,7 +226,7 @@ const parseContent = async (el, merchCard) => {
       }
       calloutContentWrapper.append(calloutContent);
       if (imgElement) {
-          calloutContentWrapper.append(imgElement);
+        calloutContentWrapper.append(imgElement);
       }
       calloutSlot.append(calloutContentWrapper);
       merchCard.append(calloutSlot);
