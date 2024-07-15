@@ -15,12 +15,11 @@ async function getKey(product) {
 
 async function getECID() {
   let ecid = null;
-  const cookiesArr = document.cookie.split(';');
-  const regex = /^AMCV_[A-F0-9]+%40AdobeOrg=MCMID\|\d+$/;
-  cookiesArr.some((el) => {
-    if (regex.test(el.trim())) [, ecid] = el.split('MCMID|');
-    return ecid;
-  });
+  if (window.alloy) {
+    await window.alloy('getIdentity').then((data) => {
+      ecid = data?.identity?.ECID;
+    });
+  }
   return ecid;
 }
 
@@ -65,9 +64,7 @@ function branchInit(key, ecidVal) {
     const performanceCookieConsent = cookieGrp.includes('C0002');
     const advertisingCookieConsent = cookieGrp.includes('C0004');
 
-    if ( performanceCookieConsent && advertisingCookieConsent && isAndroid ) {
-    branch.setBranchViewData({ data: { ecid: ecidVal }});
-  }
+    if (performanceCookieConsent && advertisingCookieConsent && isAndroid) branch.setBranchViewData({ data: { ecid: ecidVal }});
     branch.init(key, { tracking_disabled: !privacyConsent });
   }
 
