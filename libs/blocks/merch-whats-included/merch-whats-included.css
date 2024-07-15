@@ -1,12 +1,13 @@
 .merch-whats-included-container > .fragment {
   width: inherit;
   height: inherit;
+  max-height: 100%;
+  display: block;
+  overflow: hidden;
 }
 
 .merch-whats-included-container .fragment .container {
-  display: grid;
-  grid-auto-flow: column;
-  width: auto;
+  display: contents;
 }
 
 @media screen and (max-width: 767px) {
