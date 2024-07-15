@@ -6,7 +6,7 @@ const blockConfig = {
 
 async function loadBlock() {
   const { fedsGlobalConfig = {} } = window;
-  const miloLibs = fedsGlobalConfig.miloLibs || 'https://stage--milo--adobecom.hlx.page';
+  const miloLibs = fedsGlobalConfig.miloLibs || 'https://www.adobe.com';
 
   // Relative path can't be used, as the script will run on consumer's app
   const { default: bootstrapBlock } = await import(`${miloLibs}/libs/navigation/bootstrapper.js`);
