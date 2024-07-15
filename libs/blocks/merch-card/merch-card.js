@@ -211,6 +211,7 @@ const parseContent = async (el, merchCard) => {
         const child = children[i];
         if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim() === '#ICON') {
           const hrefParts = child.getAttribute('href').split('#');
+          let imgSrc, tooltipText;
           [ imgSrc, tooltipText ] = child.getAttribute('href')?.split('#');
           imgElement = document.createElement('img');
           imgElement.src = imgSrc;

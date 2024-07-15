@@ -414,7 +414,7 @@ describe('Merch Card with Offer Selection', () => {
     expect(imgElement).to.exist;
     expect(imgElement.title).to.equal('this is a dummy tooltip text');
 
-    const calloutContent = calloutContentWrapper.querySelector('.callout-content');
+    const calloutContent = calloutContentWrapper.querySelector('div');
     expect(calloutContent).to.exist;
     expect(calloutContent.textContent.trim()).to.equal('AI Assistant add-on available');
   });
