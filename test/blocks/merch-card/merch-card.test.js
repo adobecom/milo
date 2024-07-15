@@ -406,19 +406,19 @@ describe('Merch Card with Offer Selection', () => {
 
     // Assert
     const calloutSlot = merchCard.querySelector('[slot="callout-text"]');
-    expect(calloutSlot).not.toBeNull();
+    expect(calloutSlot).to.exist;
 
     const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper');
-    expect(calloutContentWrapper).not.toBeNull();
-    expect(calloutContentWrapper.classList.contains('callout-content-wrapper-with-icon')).toBe(true);
+    expect(calloutContentWrapper).to.exist;
+    expect(calloutContentWrapper.classList.contains('callout-content-wrapper-with-icon')).to.be.true;
 
     const imgElement = calloutContentWrapper.querySelector('img.callout-icon');
-    expect(imgElement).not.toBeNull();
-    expect(imgElement.title).toBe('this is a dummy tooltip text');
+    expect(imgElement).to.exist;
+    expect(imgElement.title).to.be.equals('this is a dummy tooltip text');
 
     const calloutContent = calloutContentWrapper.querySelector('.callout-content');
-    expect(calloutContent).not.toBeNull();
-    expect(calloutContent.textContent.trim()).toBe('AI Assistant add-on available');
+    expect(calloutContent).to.exist;
+    expect(calloutContent.textContent.trim()).to.equals('AI Assistant add-on available');
   });
 });
 
