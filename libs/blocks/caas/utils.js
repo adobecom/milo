@@ -559,6 +559,7 @@ export const getConfig = async (originalState, strs = {}) => {
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
+      rootMargin: state.rootMargin,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
       showTotalResults: state.showTotalResults,
@@ -764,6 +765,7 @@ export const defaultState = {
   excludedCards: [],
   excludeTags: [],
   fallbackEndpoint: '',
+  rootMargin: '',
   featuredCards: [],
   filterEvent: '',
   filterBuildPanel: 'automatic',

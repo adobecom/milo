@@ -15,7 +15,7 @@ import {
 
 const P_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 const S_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1zdGFnZS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
-let rootMargin = 1000;
+const ROOT_MARGIN = 1000;
 const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
   if (placeholderUrl) {
     resolve(loadStrings(placeholderUrl));
@@ -24,13 +24,7 @@ const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
   resolve({});
 });
 
-const loadCaas = async (a) => {
-  const encodedConfig = a.href.split('#')[1];
-  // ~~ indicates the new compressed string format
-  const state = encodedConfig.startsWith('~~')
-    ? await decodeCompressedString(encodedConfig.substring(2))
-    : parseEncodedConfig(encodedConfig);
-
+const loadCaas = async (a, state) => {
   const [caasStrs] = await Promise.all([
     getCaasStrings(state.placeholderUrl),
     loadCaasFiles(),
@@ -71,16 +65,27 @@ const loadCaas = async (a) => {
   initCaas(state, caasStrs, block);
 };
 
+function extractRootMargin(str) {
+  const regex = /\(root-margin:(\d+)\)/;
+  const match = regex.exec(str);
+
+  if (match) {
+    return parseInt(match[1], 10);
+  }
+  return ROOT_MARGIN; // default root margin used in Milo
+}
+
 export default async function init(link) {
+  const encodedConfig = link.href.split('#')[1];
+  const state = encodedConfig.startsWith('~~')
+    ? await decodeCompressedString(encodedConfig.substring(2))
+    : parseEncodedConfig(encodedConfig);
   if (link.textContent.includes('no-lazy')) {
-    loadCaas(link);
+    loadCaas(link, state);
   } else {
-    if(link.textContent.includes('root-margin')){
-      rootMargin = '';
-    }
     createIntersectionObserver({
       el: link,
-      options: { rootMargin: `${rootMargin}px` },
+      options: { rootMargin: `${state.rootMargin || ROOT_MARGIN}px` },
       callback: loadCaas,
     });
   }

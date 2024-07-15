@@ -840,8 +840,8 @@ const CopyBtn = () => {
       hour12: false,
     });
     const collectionName = state.collectionName ? `- ${state.collectionName} ` : '';
-    const rootMarginLabel = `(root-margin:${rootMargin})`;
-    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}${rootMarginLabel}`;
+    const rootMarginLabel = state.rootMargin ? `(root-margin:${state.rootMargin})` : '';
+    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ` ${rootMarginLabel}`}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
