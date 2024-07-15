@@ -202,9 +202,8 @@ const parseContent = async (el, merchCard) => {
       return;
     }
     if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
-      const calloutSlot = createTag('div', { slot: 'callout-text' });
       const calloutContentWrapper = createTag('div');
-      const calloutContent = createTag('div', { class: 'callout-content' });
+      const calloutContent = createTag('div');
       const emElement = element.firstElementChild;
       let imgElement = null;
       const children = Array.from(emElement.childNodes);
@@ -212,8 +211,7 @@ const parseContent = async (el, merchCard) => {
         const child = children[i];
         if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim() === '#ICON') {
           const hrefParts = child.getAttribute('href').split('#');
-          const tooltipText = hrefParts[1];
-          const imgSrc = hrefParts[0];
+          [ imgSrc, tooltipText ] = child.getAttribute('href')?.split('#');
           imgElement = document.createElement('img');
           imgElement.src = imgSrc;
           imgElement.title = decodeURIComponent(tooltipText);
@@ -228,6 +226,7 @@ const parseContent = async (el, merchCard) => {
       if (imgElement) {
         calloutContentWrapper.append(imgElement);
       }
+      const calloutSlot = createTag('div', { slot: 'callout-text' });
       calloutSlot.append(calloutContentWrapper);
       merchCard.append(calloutSlot);
       return;
