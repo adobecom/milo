@@ -8,9 +8,9 @@ export default async function loadBlock(configs = {}) {
   let miloLibs = configs.miloLibs || 'https://www.adobe.com';
   const branch = new URLSearchParams(window.location.search).get('branch');
   if (branch) {
-    miloLibs = `https://${branch}--milo--adobecom.hlx.page`
+    miloLibs = `https://${branch}--milo--adobecom.hlx.page`;
   }
-  const { locale,  contentRoot} = configs;
+  const { locale, contentRoot } = configs;
 
   // Relative path can't be used, as the script will run on consumer's app
   const { default: bootstrapBlock } = await import(`${miloLibs}/libs/navigation/bootstrapper.js`);
@@ -25,4 +25,3 @@ export default async function loadBlock(configs = {}) {
 
   bootstrapBlock(clientConfig, blockConfig);
 }
-
