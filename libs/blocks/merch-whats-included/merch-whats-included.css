@@ -27,6 +27,10 @@
     overflow: hidden scroll;
   }
 
+  .merch-mnemonic-list {
+    width: auto;
+  }
+
   .merch-whats-included-container .fragment .container {
     grid-auto-flow: row;
   }
