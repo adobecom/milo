@@ -6,11 +6,7 @@
 }
 
 .merch-whats-included-container .fragment .container {
-  display: block;
-  margin: 0;
-  height: inherit;
-  padding: 0;
-  width: 100%;
+  display: contents;
 }
 
 .merch-whats-included-container .fragment .content {
