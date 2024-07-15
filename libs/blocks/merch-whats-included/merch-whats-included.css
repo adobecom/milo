@@ -6,11 +6,19 @@
 }
 
 .merch-whats-included-container .fragment .container {
-  display: contents;
+  display: block;
+  margin: 0;
+  height: inherit;
+  padding: 0;
+  width: 100%;
 }
 
 .merch-whats-included-container .fragment .content {
   float: right;
+}
+
+.merch-whats-included-container .fragment .content a[is="checkout-link"] {
+  margin-inline-start: var(--spacing-xxs);
 }
 
 @media screen and (max-width: 767px) {
