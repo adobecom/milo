@@ -13,6 +13,12 @@ async function getKey(product) {
   return keyMatch[0]?.key;
 }
 
+async function getECID() {
+  if (window.alloy) {
+    await window.alloy('getIdentity').then((data) => data?.identity?.ECID);
+  }
+}
+
 /* eslint-disable */
 function branchInit(key) {
   let initValue = false;
@@ -64,7 +70,7 @@ export default async function init(el) {
   const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
   const key = await getKey(product);
   console.log(window.alloy);
-  const ecid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
-  console.log(ecid);
+  // const ecid = window.alloy ? await window.alloy('getIdentity').then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
+  console.log(await getECID());
   if (key) branchInit(key);
 }
