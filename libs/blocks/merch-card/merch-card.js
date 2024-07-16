@@ -162,9 +162,9 @@ const parseContent = async (el, merchCard) => {
     bodySlotName = 'body-m';
     const priceSmallType = el.querySelectorAll('h6');
     // Filter out any h6 elements that contain an <em> tag
-    const filteredPriceSmallType = Array.from(priceSmallType).filter(h6 => !h6.querySelector('em'));
+    const filteredPriceSmallType = Array.from(priceSmallType).filter((h6) => !h6.querySelector('em'));
     if (filteredPriceSmallType.length > 0) {
-        appendSlot(filteredPriceSmallType, 'price-commitment', merchCard);
+      appendSlot(filteredPriceSmallType, 'price-commitment', merchCard);
     }
   }
 

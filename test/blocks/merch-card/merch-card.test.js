@@ -399,11 +399,12 @@ describe('Merch Card with Offer Selection', () => {
   it('should handle callout-text with h6 and em tags', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/callout.html');
 
-    const merchCard = await init(document.querySelector('.merch-card'));
+    const merchCards = document.querySelectorAll('.merch-card');
+    const segmentCard = await init(merchCards[0]);
     await delay();
 
     // Assert
-    const calloutSlot = merchCard.querySelector('[slot="callout-text"]');
+    const calloutSlot = segmentCard.querySelector('[slot="callout-text"]');
     expect(calloutSlot).to.exist;
 
     const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper-with-icon');
@@ -417,6 +418,12 @@ describe('Merch Card with Offer Selection', () => {
     const calloutContent = calloutContentWrapper.querySelector('div');
     expect(calloutContent).to.exist;
     expect(calloutContent.textContent.trim()).to.equal('AI Assistant add-on available');
+
+    // Assert that price-commitment slot is appended
+    const miniCompareChart = await init(merchCards[1]);
+    await delay();
+    const priceCommitmentSlot = miniCompareChart.querySelector('[slot="price-commitment"]');
+    expect(priceCommitmentSlot).to.exist;
   });
 });
 
