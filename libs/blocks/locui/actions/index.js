@@ -62,6 +62,17 @@ async function fetchDocument(hlxPath) {
   }
 }
 
+function findMetaFragments(doc) {
+  let fragments = [];
+  const metas = doc.getElementsByTagName('meta');
+  if (metas.length) {
+    fragments = [...metas]
+      .filter((meta) => meta.getAttribute('content')?.includes('/fragments/'))
+      .map((meta) => new URL(meta.getAttribute('content')));
+  }
+  return fragments;
+}
+
 async function findPageFragments(path) {
   const page = path.split('/').pop();
   const isIndex = page === 'index' ? path.lastIndexOf('index') : 0;
@@ -72,7 +83,7 @@ async function findPageFragments(path) {
   decorateSections(doc, true);
   await decorateFooterPromo(doc);
   const fragments = [...doc.querySelectorAll('.fragment, .modal.link-block')];
-  const fragmentUrls = fragments.reduce((acc, fragment) => {
+  let fragmentUrls = fragments.reduce((acc, fragment) => {
     // Normalize the fragment path to support production urls.
     const originalUrl = fragment.dataset.modalPath || fragment.dataset.path || fragment.href;
     let pathname;
@@ -82,17 +93,16 @@ async function findPageFragments(path) {
       setStatus('service', 'error', 'Invalid Fragment Path in files', originalUrl);
       return acc;
     }
-
     // Find dupes across current iterator as well as original url list
     const accDupe = acc.some((url) => url.pathname === pathname);
     const dupe = urls.value.some((url) => url.pathname === pathname);
-
     if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
     fragmentUrl.alt = fragment.textContent;
     acc.push(fragmentUrl);
     return acc;
   }, []);
+  fragmentUrls = [...fragmentUrls, ...findMetaFragments(doc)];
   if (fragmentUrls.length === 0) return [];
   return fragmentUrls;
 }
