@@ -621,10 +621,12 @@ class Gnav {
       children: getChildren(),
     });
 
-    window.UniversalNav(getConfiguration());
+    // Exposing UNAV config for consumers
+    CONFIG.universalNav.universalNavConfig = getConfiguration();
+    window.UniversalNav(CONFIG.universalNav.universalNavConfig);
 
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(getConfiguration());
+      window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
     });
   };
 
