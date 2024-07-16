@@ -209,20 +209,21 @@ const parseContent = async (el, merchCard) => {
       const children = Array.from(emElement.childNodes);
       for (let i = 0; i < children.length; i += 1) {
         const child = children[i];
-        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim() === '#ICON') {
+        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
           const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
-          imgElement = document.createElement('img');
-          imgElement.src = imgSrc;
-          imgElement.title = decodeURIComponent(tooltipText);
-          imgElement.className = 'callout-icon';
+          imgElement = createTag('img', {
+            src: imgSrc,
+            title: decodeURIComponent(tooltipText),
+            class: 'callout-icon',
+          });
           child.parentNode.removeChild(child);
-          calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
         } else {
           calloutContent.append(child.cloneNode(true));
         }
       }
       calloutContentWrapper.append(calloutContent);
       if (imgElement) {
+        calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
         calloutContentWrapper.append(imgElement);
       }
       const calloutSlot = createTag('div', { slot: 'callout-text' });
