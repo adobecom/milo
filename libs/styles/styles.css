@@ -706,16 +706,14 @@ header:not(.global-navigation) ~ main {
  */
 header.global-navigation {
   height: var(--global-height-nav);
-  visibility: hidden;
+}
+
+header.global-navigation.has-promo {
+  height: auto;
+  min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
 }
 
 @media (min-width: 900px) {
-  header.global-navigation.has-promo {
-    height: auto;
-    /* stylelint-disable-next-line custom-property-pattern */
-    min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
-  }
-
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
   }
