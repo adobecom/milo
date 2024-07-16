@@ -275,6 +275,7 @@
   border: 2px solid var(--color-accent);
   border-radius: 24px;
   color: var(--color-white);
+  font-family: var(--body-font-family);
   font-weight: 700;
   padding: 0 24px;
   font-size: 16px;
@@ -533,7 +534,7 @@
   background-color: #123456
 }
 
-.resource-form .marketo {
+.resource-form.section.two-up .marketo {
   margin-left: calc(var(--grid-margins-width) * -1 / 2);
   margin-right: calc(var(--grid-margins-width) * -1 / 2);
 }

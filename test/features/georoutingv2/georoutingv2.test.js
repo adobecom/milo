@@ -4,6 +4,7 @@ import { setViewport } from '@web/test-runner-commands';
 
 const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
+const { getFederatedContentRoot } = await import('../../../libs/utils/federated.js');
 const { createTag, loadStyle, loadBlock, setConfig } = await import('../../../libs/utils/utils.js');
 
 const mockConfig = {
@@ -212,8 +213,38 @@ function stubHeadRequestToReturnVal(prefix, val) {
   );
 }
 
-const stubFetchForGeorouting = () => {
+const stubFetchForGeorouting = (val) => {
   window.fetch.withArgs('/georoutingv2.json').returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: val,
+        json: () => mockGeoroutingJson,
+      });
+    }),
+  );
+  mockGeoroutingJson.georouting.data.forEach((d) => {
+    const prefix = d.prefix ? `/${d.prefix}` : '';
+    stubHeadRequestToReturnVal(prefix, true);
+  });
+};
+
+const stubFetchForGeoroutingOld = (val) => {
+  window.fetch.withArgs('/georouting.json').returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: val,
+        json: () => mockGeoroutingJson,
+      });
+    }),
+  );
+  mockGeoroutingJson.georouting.data.forEach((d) => {
+    const prefix = d.prefix ? `/${d.prefix}` : '';
+    stubHeadRequestToReturnVal(prefix, true);
+  });
+};
+
+const stubFetchForFederalGeorouting = () => {
+  window.fetch.withArgs(`${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`).returns(
     new Promise((resolve) => {
       resolve({
         ok: true,
@@ -240,7 +271,7 @@ const closeModal = () => {
 describe('GeoRouting', () => {
   before(() => {
     setUserCountryFromIP();
-    stubFetchForGeorouting();
+    stubFetchForGeorouting(true);
     setGeorouting();
   });
   after(() => {
@@ -596,5 +627,22 @@ describe('GeoRouting', () => {
     expect(modal).to.be.null;
     // cleanup
     setGeorouting('on');
+  });
+
+  it('Will load georouting even if georoutingv2 and georouting file is not found', async () => {
+    stubFetchForGeorouting(false);
+    stubFetchForGeoroutingOld(false);
+    stubFetchForFederalGeorouting();
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    expect(modal).to.not.be.null;
+  });
+
+  it('Will load old georouting modal if georoutingv2 is not found', async () => {
+    stubFetchForGeorouting(false);
+    stubFetchForGeoroutingOld(true);
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    expect(modal).to.not.be.null;
   });
 });

@@ -5,7 +5,6 @@ import {
   toFragment,
   getFedsPlaceholderConfig,
   federatePictureSources,
-  getFederatedContentRoot,
   getAnalyticsValue,
   decorateCta,
   hasActiveLink,
@@ -47,15 +46,6 @@ describe('global navigation utilities', () => {
     const fragment2 = toFragment`<span>${fragment}</span>`;
     expect(fragment2.innerHTML).to.equal('<div>test</div>');
     expect(fragment2.tagName).to.equal('SPAN');
-  });
-
-  // No tests for using the the live url and .hlx. urls
-  // as mocking window.location.origin is not possible
-  describe('getFedsContentRoot', () => {
-    it('should return content source for localhost', () => {
-      const contentSource = getFederatedContentRoot();
-      expect(contentSource).to.equal(baseHost);
-    });
   });
 
   describe('federatePictureSources', () => {
