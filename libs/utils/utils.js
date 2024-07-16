@@ -139,6 +139,7 @@ ENVS.local = {
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
+const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
 const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
@@ -168,13 +169,11 @@ export function getLocale(locales, pathname = window.location.pathname) {
   }
   const split = pathname.split('/');
   const localeString = split[1];
-  const locale = locales[localeString] || locales[''];
-  if (localeString === LANGSTORE) {
+  let locale = locales[localeString] || locales[''];
+  if ([LANGSTORE, PREVIEW].includes(localeString)) {
+    const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
+    if (ietf) locale = locales[ietf];
     locale.prefix = `/${localeString}/${split[2]}`;
-    if (
-      Object.values(locales)
-        .find((loc) => loc.ietf?.startsWith(split[2]))?.dir === 'rtl'
-    ) locale.dir = 'rtl';
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
@@ -299,8 +298,10 @@ export function localizeLink(
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
-    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
-      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
+      || path.startsWith(`/${PREVIEW}`)
+      || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+      || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
@@ -711,9 +712,9 @@ function decorateHeader() {
 async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
-  const { miloLibs, codeRoot } = config;
-  const base = miloLibs || codeRoot;
-  await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
+  const { base } = config;
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
 }
