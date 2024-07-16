@@ -1,4 +1,4 @@
-// branch: main commit: 81db12424b4bc930fea30ced8f6657d738ef6297 Wed, 10 Jul 2024 14:08:44 GMT
+// branch: main commit: 6912c83356744bd0c794c11c70bc1bf0dc95bfdf Tue, 16 Jul 2024 10:10:30 GMT
 import{html as o,LitElement as te,nothing as re}from"/libs/deps/lit-all.min.js";import{LitElement as Y,html as M,css as Q}from"/libs/deps/lit-all.min.js";var h=class extends Y{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?M`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:M` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=Q`

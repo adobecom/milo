@@ -72,6 +72,19 @@ export default async function init(el) {
   content.querySelector('h4').setAttribute('slot', 'detail-xl');
   twp.append(...[...content.querySelectorAll(':scope > h4, merch-card')]);
 
+  const whatsIncludedFragment = el.querySelector('.fragment[data-path*="merch-whats-included"]');
+  if (whatsIncludedFragment) {
+    const whatsIncludedSlot = createTag(
+      'div',
+      {
+        slot: 'merch-whats-included',
+        class: 'hidden merch-whats-included-container',
+      },
+      whatsIncludedFragment,
+    );
+    twp.append(whatsIncludedSlot);
+  }
+
   const cciFooter = createTag('div', { slot: 'cci-footer' });
   cciFooter.append(...[...content.querySelectorAll('p:not(hr ~ p)')]);
   const cctFooter = createTag('div', { slot: 'cct-footer' });
