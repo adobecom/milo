@@ -26,6 +26,7 @@ import {
 } from '../utils/miloc.js';
 import { signal } from '../../../deps/htm-preact.js';
 import Modal from './modal.js';
+import isUrl from '../utils/url.js';
 
 export const showRolloutOptions = signal(false);
 
@@ -67,7 +68,10 @@ function findMetaFragments(doc) {
   const metas = doc.getElementsByTagName('meta');
   if (metas.length) {
     fragments = [...metas]
-      .filter((meta) => meta.getAttribute('content')?.includes('/fragments/'))
+      .filter((meta) => {
+        const content = meta.getAttribute('content');
+        return content?.includes('/fragments/') && isUrl(content);
+      })
       .map((meta) => new URL(meta.getAttribute('content')));
   }
   return fragments;
