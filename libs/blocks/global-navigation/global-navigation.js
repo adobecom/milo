@@ -1021,8 +1021,8 @@ export default async function init(block) {
     });
     gnav.init();
     block.setAttribute('daa-im', 'true');
-    mep?.experiments.forEach((experiment) => {
-      if (experiment?.selectedVariant?.updatemetadata.forEach((updateMetaData) => {
+    mep?.experiments?.forEach((experiment) => {
+      if (experiment?.selectedVariant?.updatemetadata?.forEach((updateMetaData) => {
         if (updateMetaData?.selector === 'gnav-source' && updateMetaData.targetManifestId) {
           block.dataset.adobeTargetTestid = updateMetaData.targetManifestId;
         }
