@@ -88,6 +88,11 @@ export const normalizePath = (p, localize = true) => {
 
 export const getFileName = (path) => path?.split('/').pop();
 
+const isInLcpSection = (el) => {
+  const lcpSection = document.querySelector('body > main > div');
+  return lcpSection === el || lcpSection?.contains(el);
+};
+
 const createFrag = (el, url, manifestId, targetManifestId) => {
   let href = url;
   try {
@@ -104,7 +109,9 @@ const createFrag = (el, url, manifestId, targetManifestId) => {
   if (isSection) {
     frag = createTag('div', undefined, frag);
   }
-  loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  if (isInLcpSection(el)) {
+    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  }
   return frag;
 };
 

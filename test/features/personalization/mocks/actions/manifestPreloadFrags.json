@@ -1,0 +1,28 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replace",
+      "selector": ".custom-block",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/fragmentReplaced",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replace",
+      "selector": ".how-to",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/inlineFragReplaced",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}
