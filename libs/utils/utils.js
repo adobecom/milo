@@ -965,9 +965,9 @@ async function loadPostLCP(config) {
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
 
-  if (config?.mep?.blocks && Object.keys(config.mep.blocks).length) {
+  if (config?.mep) {
     import('../features/personalization/personalization.js')
-      .then(({ addAnalyticsForUseBlockCode }) => addAnalyticsForUseBlockCode(config));
+      .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (config.mep?.preview) {
     import('../features/personalization/preview.js')

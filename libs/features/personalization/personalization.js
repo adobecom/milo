@@ -622,7 +622,7 @@ const createDefaultExperiment = (manifest) => ({
   variants: {},
 });
 
-export const addAnalyticsForUseBlockCode = (config) => {
+export const addMepAnalytics = (config, header) => {
   config.mep.experiments.forEach((experiment) => {
     experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
       if (selector && targetManifestId) {
@@ -630,6 +630,13 @@ export const addAnalyticsForUseBlockCode = (config) => {
           .forEach((el) => (el.dataset.adobeTargetTestid = targetManifestId));
       }
     });
+    if (header) {
+      experiment?.selectedVariant?.updatemetadata?.forEach((updateMetaData) => {
+        if (updateMetaData?.selector === 'gnav-source' && updateMetaData.targetManifestId) {
+          header.dataset.adobeTargetTestid = updateMetaData.targetManifestId;
+        }
+      });
+    }
   });
 };
 export async function getManifestConfig(info, variantOverride = false) {
