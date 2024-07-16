@@ -157,7 +157,7 @@ const merge = async ({ prs, type }) => {
           number,
           title,
           prefix,
-        })
+        }).catch(console.error)
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
     } catch (error) {
