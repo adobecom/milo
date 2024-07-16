@@ -37,7 +37,15 @@ async function validateUrl(url) {
 export function validateUrlsOrigin(projectUrls) {
   projectUrls.forEach((projectUrl) => {
     const url = Array.isArray(projectUrl) ? projectUrl[0] : projectUrl;
-    const urlOrigin = url?.alt ? new URL(url.alt)?.origin : url.origin;
+    let urlOrigin = url.origin;
+    if (url?.alt) {
+      try {
+        const altUrl = new URL(url.alt);
+        urlOrigin = altUrl.origin;
+      } catch (error) {
+        url.alt = null;
+      }
+    }
     if (urlOrigin !== origin) {
       url.valid = 'not same domain';
     }
