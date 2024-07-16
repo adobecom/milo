@@ -7,8 +7,8 @@ const blockConfig = {
 const envMap = {
   prod: 'https://www.adobe.com',
   stage: 'https://www.stage.adobe.com/',
-  qa: 'https://feds--milo--adobecom.hlx.page'
-}
+  qa: 'https://feds--milo--adobecom.hlx.page',
+};
 
 export default async function loadBlock(configs = {}) {
   const { locale, contentRoot, env = 'prod' } = configs;
