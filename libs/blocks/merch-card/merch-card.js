@@ -215,9 +215,9 @@ const parseContent = async (el, merchCard) => {
       const calloutContent = createTag('div');
       const emElement = element.firstElementChild;
       let imgElement = null;
-      const children = Array.from(emElement.childNodes);
-      for (let i = 0; i < children.length; i += 1) {
-        const child = children[i];
+      const fragment = document.createDocumentFragment();
+
+      emElement.childNodes.forEach((child) => {
         if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
           const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
           imgElement = createTag('img', {
@@ -225,19 +225,23 @@ const parseContent = async (el, merchCard) => {
             title: decodeURIComponent(tooltipText),
             class: 'callout-icon',
           });
-          child.parentNode.removeChild(child);
         } else {
-          calloutContent.append(child.cloneNode(true));
+          const clone = child.cloneNode(true);
+          fragment.appendChild(clone);
         }
-      }
-      calloutContentWrapper.append(calloutContent);
+      });
+
+      calloutContent.appendChild(fragment);
+      calloutContentWrapper.appendChild(calloutContent);
+
       if (imgElement) {
         calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
-        calloutContentWrapper.append(imgElement);
+        calloutContentWrapper.appendChild(imgElement);
       }
+
       const calloutSlot = createTag('div', { slot: 'callout-text' });
-      calloutSlot.append(calloutContentWrapper);
-      merchCard.append(calloutSlot);
+      calloutSlot.appendChild(calloutContentWrapper);
+      merchCard.appendChild(calloutSlot);
       return;
     }
     if (isParagraphTag(tagName)) {
