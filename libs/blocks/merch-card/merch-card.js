@@ -156,7 +156,11 @@ const parseContent = async (el, merchCard) => {
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
     const priceSmallType = el.querySelectorAll('h6');
-    appendSlot(priceSmallType, 'price-commitment', merchCard);
+    // Filter out any h6 elements that contain an <em> tag
+    const filteredPriceSmallType = Array.from(priceSmallType).filter(h6 => !h6.querySelector('em'));
+    if (filteredPriceSmallType.length > 0) {
+        appendSlot(filteredPriceSmallType, 'price-commitment', merchCard);
+    }
   }
 
   let headingSize = 3;
