@@ -66,6 +66,7 @@ class ProfileDropdown {
     if (this.openOnInit) trigger({ element: this.buttonElem });
 
     this.decoratedElem.append(this.dropdown);
+    window.dispatchEvent(new CustomEvent('feds:profileDropdown:decorated'));
   }
 
   async getData() {

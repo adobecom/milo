@@ -350,6 +350,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 
   config.template?.append(menuTemplate);
+  window.dispatchEvent(new CustomEvent('feds:menu:decorated'));
 }, 'Decorate menu failed', 'errorType=info,module=gnav-menu');
 
 export default { decorateMenu, decorateLinkGroup };

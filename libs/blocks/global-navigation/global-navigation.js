@@ -354,6 +354,7 @@ class Gnav {
       </div>`;
 
     this.block.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
+    window.dispatchEvent(new CustomEvent('feds:navWrapper:decorated'));
   };
 
   addChangeEventListeners = () => {
