@@ -12,7 +12,7 @@ function getPrettyDate(string) {
 }
 
 async function getDetails(path) {
-  const json = await getStatus(path, false);
+  const json = await getStatus(path);
   return {
     preview: {
       url: json.preview.url,

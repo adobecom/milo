@@ -7,7 +7,8 @@ function useSignal(value) {
 
 function useActionState(item) {
   const actions = item.value;
-  const state = { isValid: typeof actions.hasError !== 'string' };
+  const canEdit = actions.edit.status !== 404;
+  const state = { isValid: typeof actions.hasError !== 'string' && canEdit };
   Object.keys(actions).forEach((btn) => {
     if (actions[btn]?.status) state[btn] = actions[btn].status === 200;
   });
@@ -17,7 +18,7 @@ function useActionState(item) {
 function Actions({ item }) {
   const { isValid, preview, live } = useActionState(item);
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
-  const editable = isValid ?? item.value.edit?.status !== 404;
+  const editable = item.value.edit?.status !== 404;
   return html`
     <div class=locui-url-source-actions>
       <button
@@ -26,7 +27,8 @@ function Actions({ item }) {
         onClick=${(e) => openWord(e, item)}>Edit</button>
       <button
         disabled=${!isValid}
-        class="locui-url-action locui-url-action-view${!isValid || !preview ? ' disabled' : ''}"
+        class="locui-url-action locui-url-action-view
+          ${!isValid ? ' disabled' : ''}${!preview ? ' clear' : ''}"
         onClick=${(e) => handleAction(e, item, true)}>Preview</button>
       <button
         disabled=${!isValid || !live}
