@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { init, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import { init, handleFragmentCommand, applyPers } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -207,7 +207,8 @@ describe('useBlockCode action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal(false);
+    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0]
+      .targetManifestId).to.equal(false);
 
     expect(getConfig().mep.blocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
     const promoBlock = document.querySelector('.promo');
@@ -222,7 +223,8 @@ describe('useBlockCode action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal(false);
+    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0]
+      .targetManifestId).to.equal(false);
 
     expect(getConfig().mep.blocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
     const myBlock = document.querySelector('.myblock');
