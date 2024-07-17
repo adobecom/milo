@@ -102,13 +102,11 @@ function decorateLayout(el) {
   foreground?.classList.add('foreground', 'container');
   const text = foreground?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
-  const picture = text?.querySelector('p picture');
-  const iconArea = picture?.closest('p');
+  const iconArea = text?.querySelector('p picture')?.closest('p');
   iconArea?.classList.add('icon-area');
   const fgMedia = foreground?.querySelector(':scope > div:not(.text) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const bgMedia = el.querySelector(':scope > div:not(.foreground) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const media = fgMedia ?? bgMedia;
-  el.classList.toggle('no-media', !media);
   media?.classList.toggle('image', media && !media.classList.contains('text'));
   foreground?.classList.toggle('no-image', !media && !iconArea);
   if (el.matches(`:is(.${pill}, .${ribbon}):not(.no-closure)`)) decorateClose(el);
