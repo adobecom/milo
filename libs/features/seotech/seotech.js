@@ -4,7 +4,7 @@ export const SEOTECH_CDN_URL_PROD = 'https://seotech.adobe.com'; // fixme
 export const SEOTECH_CDN_URL_STAGE = 'https://seotech.adobe.com'; // fixme
 
 export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx\.(page|live)/;
-export const ADOBECOM_MATCHER = /([\w-]+)(.stage)?\.adobe\.com/;
+export const ADOBECOM_MATCHER = /([\w-]+)(\.stage)?\.adobe\.com/;
 export const PATHNAME_MATCHER = /^(?:\/(?<geo>(?<country>[a-z]{2}|africa|mena)(?:_(?<lang>[a-z]{2,3}))?))?(?<geopath>(?:\/(?<cloudfolder>acrobat|creativecloud|express))?\/.*)$/;
 
 export function logError(msg) {
