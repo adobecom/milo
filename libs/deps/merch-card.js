@@ -1,4 +1,4 @@
-// branch: MWPW-154026-cta-long-text commit: ebc682f0d32fd088a5737bb3bf1f93d3d308e43a Tue, 16 Jul 2024 11:25:15 GMT
+// branch: MWPW-154026-cta-long-text commit: 63c160dab2c0ddfb506b815ef34e7f11c4b97038 Wed, 17 Jul 2024 11:29:09 GMT
 import{html as o,LitElement as te,nothing as re}from"/libs/deps/lit-all.min.js";import{LitElement as Y,html as M,css as Q}from"/libs/deps/lit-all.min.js";var h=class extends Y{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?M`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:M` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=Q`
