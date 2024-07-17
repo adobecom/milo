@@ -114,11 +114,11 @@
         enableAdvancedTags.checked = true;
         enableAdvancedTags.dispatchEvent(new Event('change'));
         await delay(50);
-    
+
         await tagSelectorDropdownChoose('Secondary Source', 'Bacom');
         await tagSelectorDropdownChoose('Secondary Content Type Tags', 'Customer Story');
 
-        expectedConfig.collection.endpoint = 
+        expectedConfig.collection.endpoint =
           'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=bacom&secondaryTags=caas:content-type/customer-story&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
         expect(config).to.eql(expectedConfig);
       });
@@ -318,9 +318,11 @@
 
         const windowsHash = '~~H4sIAAAAAAAACnVVTY/bNhD9Lzw7Wafb9qDb2ruLGPBm3diLHoqgGJMjiTDFUcmhvUrR/16Q+nacm/TecL74ZvivAKU0a7JgvuI/AT3vwEHlRfbXt4UAC6ZhLf2ajEEZ7b5AhSITYkIeHMjTpqodeq/JiiwH4zEaqC0VWh6g6P0FpjUFy67Zgi0GyyPRqQJ32kiye4yR2hBT/M36CSPBqT03JuZSgsk/lKiLkjvmoNngg5QxoaM2mpstntGI7PeFkEMpK7a9i9rpClwjpvRY6Yglx9fgXn8fMMugLTqRiU+/LJcv8P6nVlx2FFo+NDWO/ZBtL0QmJIDPut+74OOB4JmqNTjV+WZ4SOFEJv72aHKxEIq+EG/he7MlUEM3lfZwNLgCa9H5EXaQ8+Nx+EeratI2NvRyuXwERUf8KKm6k6Wu0MEHqPXdWKWIJ87aka3QdreA79IEhSpm2ZXUQWONORhzBHl6GsOJhcgROLjZyVwbRvd0Hry3wCpoo3Zg4/UlAVXAWg70liR0XTGY8wQvtBSZIDdAszh+nfo7g/YlXZ6qmpuhR0VgTrf567tYiBJBDW5KrXDNsFHz/7HwCDwC48YyujOYwam2Vy0yYIsABfY66P/vMHbdQEMhCSfmEeoIEagXcnhTwZb4auzImibWturGaWh7lxC5qwM1FNqmtj5YXaWPIQ4UqMTU5MlGtY3yG5k/AljWnGLbG3xXUwekmxrJN4+HEiu8Hw8akFiSUejenGk14tAHw36Hbpca+NtCeAQny2eNpr8aj5KsAteMFQ7QnoKT2IMcG7Mip6aD40u6PBMxukd91irqYcL0TfXPSUS3uVc773hy2Ytygm2ubPaplhl0II67OpU9EuQ4au3Byx+wR7wBvpDSuZ7cWiIwh2Di9Kn+XEu0V7yjOtSzAy3+Fayiag9VbfRkqSeDOM17cjxDn7vhn4F9Rtcl9PgPZbRh5xB6dGfSbkdkRPZpuVxeESlLFNl9i7cPxZXjBF6F60QiSricvPi2EAyFb1X48+UZbUQ0dQVyXN5nHXeLGLDr0eEo+LjJ4luGPm4zhQza+AO+82vdLTrV3dNCcEz1M4LStuieOFHeRyKqJGnuQHH8YjMWInjcRtfR2xA0eHw9ozPQbLU9jZqaPJSBmW5smuDRbWxOcXr++x/O+0/8SwgAAA==';
         const osxHash = '~~H4sIAAAAAAAAA3VVTY/bNhD9Lzw7Wafb9qDb2ruLGPBm3diLHoqgGJMjiTDFUcmhvUrR/16Q+nacm/TecL74ZvivAKU0a7JgvuI/AT3vwEHlRfbXt4UAC6ZhLf2ajEEZ7b5AhSITYkIeHMjTpqodeq/JiiwH4zEaqC0VWh6g6P0FpjUFy67Zgi0GyyPRqQJ32kiye4yR2hBT/M36CSPBqT03JuZSgsk/lKiLkjvmoNngg5QxoaM2mpstntGI7PeFkEMpK7a9i9rpClwjpvRY6Yglx9fgXn8fMMugLTqRiU+/LJcv8P6nVlx2FFo+NDWO/ZBtL0QmJIDPut+74OOB4JmqNTjV+WZ4SOFEJv72aHKxEIq+EG/he7MlUEM3lfZwNLgCa9H5EXaQ8+Nx+EeratI2NvRyuXwERUf8KKm6k6Wu0MEHqPXdWKWIJ87aka3QdreA79IEhSpm2ZXUQWONORhzBHl6GsOJhcgROLjZyVwbRvd0Hry3wCpoo3Zg4/UlAVXAWg70liR0XTGY8wQvtBSZIDdAszh+nfo7g/YlXZ6qmpuhR0VgTrf567tYiBJBDW5KrXDNsFHz/7HwCDwC48YyujOYwam2Vy0yYIsABfY66P/vMHbdQEMhCSfmEeoIEagXcnhTwZb4auzImibWturGaWh7lxC5qwM1FNqmtj5YXaWPIQ4UqMTU5MlGtY3yG5k/AljWnGLbG3xXUwekmxrJN4+HEiu8Hw8akFiSUejenGk14tAHw36Hbpca+NtCeAQny2eNpr8aj5KsAteMFQ7QnoKT2IMcG7Mip6aD40u6PBMxukd91irqYcL0TfXPSUS3uVc773hy2Ytygm2ubPaplhl0II67OpU9EuQ4au3Byx+wR7wBvpDSuZ7cWiIwh2Di9Kn+XEu0V7yjOtSzAy3+Fayiag9VbfRkqSeDOM17cjxDn7vhn4F9Rtcl9PgPZbRh5xB6dGfSbkdkRPZpuVxeESlLFNl9i7cPxZXjBF6F60QiSricvPi2EAyFb1X48+UZbUQ0dQVyXN5nHXeLGLDr0eEo+LjJ4luGPm4zhQza+AO+82vdLTrV3dNCcEz1M4LStuieOFHeRyKqJGnuQHH8YjMWInjcRtfR2xA0eHw9ozPQbLU9jZqaPJSBmW5smuDRbWxOcXr++x/O+0/8SwgAAA==';
-        const hash = copyTextArea.value.split('#')[1].trim();        
+        const hash = copyTextArea.value.split('#')[1].trim();
         let isCorrectHash = false;
         let osHash = navigator.platform.startsWith('Win') ? windowsHash : osxHash;
+        console.log('navigator.platform', navigator.platform);
+        console.log('actual hash', hash);
         expect(hash).to.equal(osHash);
       });
 
