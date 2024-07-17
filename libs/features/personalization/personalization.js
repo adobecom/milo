@@ -116,7 +116,7 @@ const isInLcpSection = (el) => {
   return lcpSection === el || lcpSection?.contains(el);
 };
 
-const createFrag = (el, url, manifestId) => {
+export const createFrag = (el, url, manifestId) => {
   let href = url;
   try {
     const { pathname, search, hash } = new URL(url);
