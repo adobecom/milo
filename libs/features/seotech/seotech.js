@@ -7,6 +7,25 @@ export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx\.(page|live)/;
 export const ADOBECOM_MATCHER = /([\w-]+)(\.stage)?\.adobe\.com/;
 export const PATHNAME_MATCHER = /^(?:\/(?<geo>(?<country>[a-z]{2}|africa|mena)(?:_(?<lang>[a-z]{2,3}))?))?(?<geopath>(?:\/(?<cloudfolder>acrobat|creativecloud|express))?\/.*)$/;
 
+export const CLOUD_BY_FOLDER = {
+  acrobat: 'dc',
+  creativecloud: 'cc',
+  express: 'express',
+  default: 'homepage',
+};
+
+export const CLOUD_BY_SUBDOMAIN = {
+  business: 'bacom',
+  milo: 'milo',
+};
+
+export const CLOUD_BY_IMSORG = {
+  'adobedotcom-cc': 'cc',
+  acrobatmilo: 'dc',
+  bacom: 'bacom',
+  milo: 'milo',
+};
+
 export function logError(msg) {
   window.lana?.log(`SEOTECH: ${msg}`, {
     debug: false,
@@ -48,22 +67,25 @@ export function parseAdobeUrl(rawUrl) {
 
   const adobe = url.hostname.match(ADOBECOM_MATCHER);
   if (adobe) {
-    const cloud = {
-      business: 'bacom',
-      milo: 'milo',
-    }[adobe[1]] || {
-      acrobat: 'dc',
-      creativecloud: 'cc',
-      express: 'express',
-      default: 'homepage',
-    }[path.cloudfolder || 'default'];
-
+    const cloud = CLOUD_BY_SUBDOMAIN[adobe[1]] || CLOUD_BY_FOLDER[path.cloudfolder || 'default'];
     return {
       ...path,
       domain: url.hostname,
       pathname: url.pathname,
       cloud,
       env: adobe[2] ? 'stage' : 'prod',
+    };
+  }
+
+  const local = url.hostname.match(/localhost/);
+  if (local) {
+    const cloud = CLOUD_BY_FOLDER[path.cloudfolder];
+    return {
+      ...path,
+      domain: url.hostname,
+      pathname: url.pathname,
+      cloud,
+      env: 'stage',
     };
   }
 
@@ -78,9 +100,9 @@ export async function sha256(message) {
   return hashHex;
 }
 
-export async function calcAdobeUrlHash(url) {
+export async function calcAdobeUrlHash(url, options = {}) {
   const adobeUrl = parseAdobeUrl(url);
-  const cloud = adobeUrl.cloud || '';
+  const cloud = adobeUrl.cloud || options.cloud || '';
   const pathname = adobeUrl.pathname.replace('.html', '');
   const key = `${cloud}${pathname}`;
   const hash = await sha256(key);
@@ -90,7 +112,7 @@ export async function calcAdobeUrlHash(url) {
 export async function getStructuredData(url, options = {}) {
   const { env } = options;
   const cdnBaseUrl = env === 'prod' ? SEOTECH_CDN_URL_PROD : SEOTECH_CDN_URL_STAGE;
-  const hash = await calcAdobeUrlHash(url);
+  const hash = await calcAdobeUrlHash(url, options);
   const jsonUrl = `${cdnBaseUrl}/public/seotech-structured-data/${hash}.json`; // FIXME
   const resp = await fetch(jsonUrl);
   if (!resp || !resp.ok) return null;
@@ -100,6 +122,7 @@ export async function getStructuredData(url, options = {}) {
 
 export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
   const env = getConfig()?.env?.name;
+  const cloud = CLOUD_BY_IMSORG[getConfig()?.imsClientId];
   const seotechAPIUrl = env === 'prod'
     ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
 
@@ -111,7 +134,7 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
 
   const promises = [];
   if (getMetadata('seotech-structured-data') === 'on') {
-    promises.push(getStructuredData(locationUrl, { env })
+    promises.push(getStructuredData(locationUrl, { env, cloud })
       .then((obj) => append(obj))
       .catch((e) => logError(e.message)));
   }

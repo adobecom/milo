@@ -113,6 +113,20 @@ describe('PATHNAME_MATCHER ', () => {
 describe('parseAdobeUrl', () => {
   const tests = [
     {
+      url: 'https://localhost:3000/drafts',
+      expected: {
+        domain: 'localhost',
+        pathname: '/drafts',
+        cloud: undefined,
+        cloudfolder: undefined,
+        env: 'stage',
+        country: undefined,
+        geo: undefined,
+        geopath: '/drafts',
+        lang: undefined,
+      },
+    },
+    {
       url: 'https://main--milo--adobecom.hlx.live/drafts',
       expected: {
         domain: 'main--milo--adobecom.hlx.live',
@@ -189,6 +203,11 @@ describe('calcAdobeUrlHash', () => {
   const tests = [
     // set 1
     {
+      url: 'http://localhost:3000/drafts/example?foo=bar',
+      options: { cloud: 'milo' },
+      expected: '17d0d0712b603227422e78ab8113271c6ace1b7bf034804fa773b370e99de691',
+    },
+    {
       url: 'https://MWPW-123456--milo--hparra.hlx.page/drafts/example?foo=bar',
       expected: '17d0d0712b603227422e78ab8113271c6ace1b7bf034804fa773b370e99de691',
     },
@@ -206,6 +225,10 @@ describe('calcAdobeUrlHash', () => {
     },
     // set 2
     {
+      url: 'http://localhost:3000/in/creativecloud/example?foo=bar',
+      expected: '2c17ad64467b6c0b6a960279a0dbe7d8b2792d8d066907c990e2f62933895584',
+    },
+    {
       url: 'https://main--cc--adobecom.hlx.page/in/creativecloud/example?foo=bar',
       expected: '2c17ad64467b6c0b6a960279a0dbe7d8b2792d8d066907c990e2f62933895584',
     },
@@ -222,9 +245,9 @@ describe('calcAdobeUrlHash', () => {
       expected: '2c17ad64467b6c0b6a960279a0dbe7d8b2792d8d066907c990e2f62933895584',
     },
   ];
-  tests.forEach(({ url, expected }) => {
+  tests.forEach(({ url, options, expected }) => {
     it(`should hash ${url}`, async () => {
-      const hash = await calcAdobeUrlHash(url);
+      const hash = await calcAdobeUrlHash(url, options);
       expect(hash).to.equal(expected);
     });
   });
