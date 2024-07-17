@@ -18,12 +18,11 @@ function useActionState(item) {
 function Actions({ item }) {
   const { isValid, preview, live } = useActionState(item);
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
-  const editable = item.value.edit?.status !== 404;
   return html`
     <div class=locui-url-source-actions>
       <button
-        disabled=${!editable}
-        class="locui-url-action locui-url-action-edit${isExcel}${!editable ? ' disabled' : ''}"
+        disabled=${!isValid}
+        class="locui-url-action locui-url-action-edit${isExcel}${!isValid ? ' disabled' : ''}"
         onClick=${(e) => openWord(e, item)}>Edit</button>
       <button
         disabled=${!isValid}
