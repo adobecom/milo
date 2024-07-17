@@ -3,6 +3,10 @@ export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime
 export const SEOTECH_CDN_URL_PROD = 'https://seotech.adobe.com'; // fixme
 export const SEOTECH_CDN_URL_STAGE = 'https://seotech.adobe.com'; // fixme
 
+export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx\.(page|live)/;
+export const ADOBECOM_MATCHER = /([\w-]+)(.stage)?\.adobe\.com/;
+export const PATHNAME_MATCHER = /^(?:\/(?<geo>(?<country>[a-z]{2}|africa|mena)(?:_(?<lang>[a-z]{2,3}))?))?(?<geopath>(?:\/(?<cloudfolder>acrobat|creativecloud|express))?\/.*)$/;
+
 export function logError(msg) {
   window.lana?.log(`SEOTECH: ${msg}`, {
     debug: false,
@@ -22,43 +26,6 @@ export async function getVideoObject(url, seotechAPIUrl) {
   }
   return body.videoObject;
 }
-
-export async function getStructuredData(url) {
-  const hash = await calcAdobeUrlHash(url);
-  const jsonUrl = `${SEOTECH_CDN_URL_PROD}/structured-data/${hash}.json`; // fixme
-  const resp = await fetch(jsonUrl);
-  if (!resp || !resp.ok) return null;
-  const body = await resp.json();
-  return body;
-}
-
-export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
-  const seotechAPIUrl = getConfig()?.env?.name === 'prod'
-    ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
-
-  const append = (obj) => {
-    if (!obj) return;
-    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
-    document.head.append(script);
-  };
-
-  const promises = [];
-  if (getMetadata('seotech-structured-data') === 'on') {
-    promises.push(getStructuredData(locationUrl)
-      .then((obj) => append(obj))
-      .catch((e) => logError(e.message)));
-  }
-  if (getMetadata('seotech-video-url')) {
-    promises.push(getVideoObject(getMetadata('seotech-video-url'), seotechAPIUrl)
-      .then((videoObject) => append(videoObject))
-      .catch((e) => logError(e.message)));
-  }
-  return Promise.all(promises);
-}
-
-export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx\.(page|live)/;
-export const ADOBECOM_MATCHER = /([\w-]+)(.stage)?\.adobe\.com/;
-export const PATHNAME_MATCHER = /^(?:\/(?<geo>(?<country>[a-z]{2}|africa|mena)(?:_(?<lang>[a-z]{2,3}))?))?(?<geopath>(?:\/(?<cloudfolder>acrobat|creativecloud|express))?\/.*)$/;
 
 export function parseAdobeUrl(rawUrl) {
   const url = new URL(rawUrl);
@@ -118,6 +85,39 @@ export async function calcAdobeUrlHash(url) {
   const key = `${cloud}${pathname}`;
   const hash = await sha256(key);
   return hash;
+}
+
+export async function getStructuredData(url) {
+  const hash = await calcAdobeUrlHash(url);
+  const jsonUrl = `${SEOTECH_CDN_URL_PROD}/structured-data/${hash}.json`; // fixme
+  const resp = await fetch(jsonUrl);
+  if (!resp || !resp.ok) return null;
+  const body = await resp.json();
+  return body;
+}
+
+export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
+  const seotechAPIUrl = getConfig()?.env?.name === 'prod'
+    ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
+
+  const append = (obj) => {
+    if (!obj) return;
+    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
+    document.head.append(script);
+  };
+
+  const promises = [];
+  if (getMetadata('seotech-structured-data') === 'on') {
+    promises.push(getStructuredData(locationUrl)
+      .then((obj) => append(obj))
+      .catch((e) => logError(e.message)));
+  }
+  if (getMetadata('seotech-video-url')) {
+    promises.push(getVideoObject(getMetadata('seotech-video-url'), seotechAPIUrl)
+      .then((videoObject) => append(videoObject))
+      .catch((e) => logError(e.message)));
+  }
+  return Promise.all(promises);
 }
 
 export default appendScriptTag;
