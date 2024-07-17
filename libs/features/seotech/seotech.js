@@ -1,7 +1,7 @@
 export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net';
 export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net';
-export const SEOTECH_CDN_URL_PROD = 'https://seotech.adobe.com'; // fixme
-export const SEOTECH_CDN_URL_STAGE = 'https://seotech.adobe.com'; // fixme
+export const SEOTECH_CDN_URL_PROD = 'https://firefly.azureedge.net/1cdd3f3be067c8b58843503529aeb3c8-public';
+export const SEOTECH_CDN_URL_STAGE = 'https://firefly.azureedge.net/1cdd3f3be067c8b58843503529aeb3c8-public'; // FIXME
 
 export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx\.(page|live)/;
 export const ADOBECOM_MATCHER = /([\w-]+)(\.stage)?\.adobe\.com/;
@@ -87,9 +87,11 @@ export async function calcAdobeUrlHash(url) {
   return hash;
 }
 
-export async function getStructuredData(url) {
+export async function getStructuredData(url, options = {}) {
+  const { env } = options;
+  const cdnBaseUrl = env === 'prod' ? SEOTECH_CDN_URL_PROD : SEOTECH_CDN_URL_STAGE;
   const hash = await calcAdobeUrlHash(url);
-  const jsonUrl = `${SEOTECH_CDN_URL_PROD}/structured-data/${hash}.json`; // fixme
+  const jsonUrl = `${cdnBaseUrl}/public/seotech-structured-data/${hash}.json`; // FIXME
   const resp = await fetch(jsonUrl);
   if (!resp || !resp.ok) return null;
   const body = await resp.json();
@@ -97,7 +99,8 @@ export async function getStructuredData(url) {
 }
 
 export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
-  const seotechAPIUrl = getConfig()?.env?.name === 'prod'
+  const env = getConfig()?.env?.name;
+  const seotechAPIUrl = env === 'prod'
     ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
 
   const append = (obj) => {
@@ -108,7 +111,7 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
 
   const promises = [];
   if (getMetadata('seotech-structured-data') === 'on') {
-    promises.push(getStructuredData(locationUrl)
+    promises.push(getStructuredData(locationUrl, { env })
       .then((obj) => append(obj))
       .catch((e) => logError(e.message)));
   }
