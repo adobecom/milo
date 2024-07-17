@@ -44,7 +44,7 @@ const HEADING_MAP = {
   },
 };
 
-const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, h6, p, ul, em';
 
 const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
@@ -161,7 +161,9 @@ const parseContent = async (el, merchCard) => {
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
     const priceSmallType = el.querySelectorAll('h6');
-    appendSlot(priceSmallType, 'price-commitment', merchCard);
+    // Filter out any h6 elements that contain an <em> tag
+    const filteredPriceSmallType = Array.from(priceSmallType).filter((h6) => !h6.querySelector('em'));
+    if (filteredPriceSmallType.length > 0) appendSlot(filteredPriceSmallType, 'price-commitment', merchCard);
   }
 
   let headingSize = 3;
@@ -204,6 +206,40 @@ const parseContent = async (el, merchCard) => {
         newElement.innerHTML = element.innerHTML;
         merchCard.append(newElement);
       }
+      return;
+    }
+    if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
+      const calloutContentWrapper = createTag('div');
+      const calloutContent = createTag('div');
+      const emElement = element.firstElementChild;
+      let imgElement = null;
+      const fragment = document.createDocumentFragment();
+
+      emElement.childNodes.forEach((child) => {
+        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
+          const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
+          imgElement = createTag('img', {
+            src: imgSrc,
+            title: decodeURIComponent(tooltipText),
+            class: 'callout-icon',
+          });
+        } else {
+          const clone = child.cloneNode(true);
+          fragment.appendChild(clone);
+        }
+      });
+
+      calloutContent.appendChild(fragment);
+      calloutContentWrapper.appendChild(calloutContent);
+
+      if (imgElement) {
+        calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
+        calloutContentWrapper.appendChild(imgElement);
+      }
+
+      const calloutSlot = createTag('div', { slot: 'callout-text' });
+      calloutSlot.appendChild(calloutContentWrapper);
+      merchCard.appendChild(calloutSlot);
       return;
     }
     if (isParagraphTag(tagName)) {
