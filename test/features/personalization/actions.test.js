@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { init, handleFragmentCommand, applyPers } from '../../../libs/features/personalization/personalization.js';
+import { init, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -299,7 +299,7 @@ describe('custom actions', async () => {
     expect(document.querySelector(lcpLink)).not.to.exist;
     expect(document.querySelector(notLcpLink)).not.to.exist;
 
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
 
     expect(document.querySelector(lcpLink)).to.exist;
     expect(document.querySelector(notLcpLink)).not.to.exist;
