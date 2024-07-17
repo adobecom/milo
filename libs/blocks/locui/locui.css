@@ -494,7 +494,8 @@ li.locui-url.error .locui-url-path span {
   text-transform: uppercase;
 }
 
-li.locui-url.error .locui-url-action {
+li.locui-url.error .locui-url-action,
+li.locui-url .locui-url-action.disabled {
   cursor: not-allowed;
 }
 
@@ -618,7 +619,8 @@ button.locui-url-action {
   }
 }
 
-button.locui-url-action.disabled {
+button.locui-url-action.disabled,
+button.locui-url-action.no-preview {
   opacity: 0.25;
 }
 
