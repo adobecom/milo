@@ -10,10 +10,11 @@ export const getFederatedContentRoot = () => {
     'https://milo.adobe.com',
     'https://news.adobe.com',
   ];
-  const { allowedOrigins = [] } = getConfig();
+  const { allowedOrigins = [], origin: configOrigin } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
-
-  const { origin } = window.location;
+  //Non milo consumers will have its origin from congig
+  const origin = configOrigin || window.location;
+  
   federatedContentRoot = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => origin.replace('.stage', '') === o)
     ? origin
     : 'https://www.adobe.com';

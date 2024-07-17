@@ -6,7 +6,7 @@ const blockConfig = {
 
 const envMap = {
   prod: 'https://www.adobe.com',
-  stage: 'https://www.stage.adobe.com/',
+  stage: 'https://www.stage.adobe.com',
   qa: 'https://feds--milo--adobecom.hlx.page',
 };
 
