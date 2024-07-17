@@ -1,7 +1,7 @@
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
-import { getFederatedContentRoot } from '../../../utils/federated.js';
+import { getFederatedContentRoot, getFederatedUrl } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
@@ -73,20 +73,6 @@ export function toFragment(htmlStrings, ...values) {
 
   return fragment;
 }
-
-// TODO we should match the akamai patterns /locale/federal/ at the start of the url
-// and make the check more strict.
-export const getFederatedUrl = (url = '') => {
-  if (typeof url !== 'string' || !url.includes('/federal/')) return url;
-  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
-  try {
-    const { pathname, search, hash } = new URL(url);
-    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
-  } catch (e) {
-    lanaLog({ message: `getFederatedUrl errored parsing the URL: ${url}`, e, tags: 'errorType=warn,module=utilities' });
-  }
-  return url;
-};
 
 const getPath = (urlOrPath = '') => {
   try {
