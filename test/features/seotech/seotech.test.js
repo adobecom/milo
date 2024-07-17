@@ -3,7 +3,7 @@ import { stub } from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
 
 import { getConfig, createTag } from '../../../libs/utils/utils.js';
-import { 
+import {
   appendScriptTag,
   ADOBECOM_MATCHER,
   HLX_MATCHER,
