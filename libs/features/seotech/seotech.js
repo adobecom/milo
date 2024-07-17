@@ -23,39 +23,29 @@ export async function getVideoObject(url, seotechAPIUrl) {
   return body.videoObject;
 }
 
-// todo: getStructuredData(url, cloud)
-// Use url to determine hash of JSON file to fetch from seotech CDN
-export async function getStructuredData(url, sheetUrl, seotechAPIUrl) {
-  const apiUrl = new URL(seotechAPIUrl);
-  apiUrl.pathname = '/api/v1/web/seotech/getStructuredData';
-  apiUrl.searchParams.set('url', url);
-  if (sheetUrl) {
-    apiUrl.searchParams.set('sheetUrl', sheetUrl);
-  }
-  const resp = await fetch(apiUrl.href, { headers: { 'Content-Type': 'application/json' } });
-  const body = await resp?.json();
-  if (!resp.ok) {
-    throw new Error(`Failed to fetch structured data: ${body?.error}`);
-  }
-  return body.objects;
+export async function getStructuredData(url) {
+  const hash = await calcAdobeUrlHash(url);
+  const jsonUrl = `${SEOTECH_CDN_URL_PROD}/structured-data/${hash}.json`; // fixme
+  const resp = await fetch(jsonUrl);
+  if (!resp || !resp.ok) return null;
+  const body = await resp.json();
+  return body;
 }
 
 export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
-  const windowUrl = new URL(locationUrl);
   const seotechAPIUrl = getConfig()?.env?.name === 'prod'
     ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
 
   const append = (obj) => {
+    if (!obj) return;
     const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
     document.head.append(script);
   };
 
   const promises = [];
   if (getMetadata('seotech-structured-data') === 'on') {
-    const pageUrl = `${windowUrl.origin}${windowUrl.pathname}`;
-    const sheetUrl = (new URLSearchParams(windowUrl.search)).get('seotech-sheet-url') || getMetadata('seotech-sheet-url');
-    promises.push(getStructuredData(pageUrl, sheetUrl, seotechAPIUrl)
-      .then((objects) => objects.forEach((obj) => append(obj)))
+    promises.push(getStructuredData(locationUrl)
+      .then((obj) => append(obj))
       .catch((e) => logError(e.message)));
   }
   if (getMetadata('seotech-video-url')) {
@@ -66,8 +56,8 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
   return Promise.all(promises);
 }
 
-export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx.(page|live)/;
-export const ADOBECOM_MATCHER = /([\w-]+)(.stage)?\.adobe.com/;
+export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx\.(page|live)/;
+export const ADOBECOM_MATCHER = /([\w-]+)(.stage)?\.adobe\.com/;
 export const PATHNAME_MATCHER = /^(?:\/(?<geo>(?<country>[a-z]{2}|africa|mena)(?:_(?<lang>[a-z]{2,3}))?))?(?<geopath>(?:\/(?<cloudfolder>acrobat|creativecloud|express))?\/.*)$/;
 
 export function parseAdobeUrl(rawUrl) {
@@ -128,21 +118,6 @@ export async function calcAdobeUrlHash(url) {
   const key = `${cloud}${pathname}`;
   const hash = await sha256(key);
   return hash;
-}
-
-// todo: replace getStructuredData
-export async function fetchStructuredData(url) {
-  const hash = await calcAdobeUrlHash(url);
-  const jsonUrl = `${SEOTECH_CDN_URL_PROD}/structured-data/${hash}.json`; // fixme
-  try {
-    const resp = await fetch(jsonUrl);
-    if (!resp || !resp.ok) return null;
-    const body = await resp.json();
-    return body;
-  } catch (e) {
-    logError(e.message);
-  }
-  return null;
 }
 
 export default appendScriptTag;

@@ -241,7 +241,8 @@ describe('seotech', () => {
     });
 
     it('should not append JSON-LD', async () => {
-      const lanaStub = stub(window.lana, 'log');
+      const locationUrl = 'https://main--cc--adobecom.hlx.page/in/creativecloud/example2?foo=bar';
+      stub(window.lana, 'log');
       const getMetadata = stub().returns(null);
       getMetadata.withArgs('seotech-structured-data').returns('on');
       const fetchStub = stub(window, 'fetch');
@@ -250,15 +251,14 @@ describe('seotech', () => {
         { status: 400 },
       )));
       await appendScriptTag(
-        { locationUrl: window.location.href, getMetadata, getConfig, createTag },
+        { locationUrl, getMetadata, getConfig, createTag },
       );
-      const expectedApiCall = 'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getStructuredData?url=http%3A%2F%2Flocalhost%3A2000%2F';
-      expect(fetchStub.getCall(0).firstArg).to.equal(expectedApiCall);
-      expect(lanaStub.getCall(0).firstArg).to.equal('SEOTECH: Failed to fetch structured data: ERROR!');
+      const expectedApiCall = 'https://seotech.adobe.com/structured-data/d0fff97ff9cbfbb63614b986ca47562288450c6c6d64f3f5f5a7b95afb518e83.json';
+      expect(fetchStub.getCall(0)?.firstArg).to.equal(expectedApiCall);
     });
 
     it('should append JSON-LD', async () => {
-      const locationUrl = 'http://localhost:2000/?seotech-sheet-url=http://foo';
+      const locationUrl = 'https://main--cc--adobecom.hlx.page/in/creativecloud/example?foo=bar';
       const lanaStub = stub(window.lana, 'log');
       const fetchStub = stub(window, 'fetch');
       const getConfigStub = stub().returns({ env: { name: 'prod' } });
@@ -270,14 +270,14 @@ describe('seotech', () => {
         name: 'fake',
       };
       fetchStub.returns(Promise.resolve(Response.json(
-        { objects: [expectedObject] },
+        { ...expectedObject },
         { status: 200 },
       )));
       await appendScriptTag(
         { locationUrl, getMetadata, getConfig: getConfigStub, createTag },
       );
-      const expectedApiCall = 'https://14257-seotech.adobeioruntime.net/api/v1/web/seotech/getStructuredData?url=http%3A%2F%2Flocalhost%3A2000%2F&sheetUrl=http%3A%2F%2Ffoo';
-      expect(fetchStub.getCall(0).firstArg).to.equal(expectedApiCall);
+      const expectedApiCall = 'https://seotech.adobe.com/structured-data/2c17ad64467b6c0b6a960279a0dbe7d8b2792d8d066907c990e2f62933895584.json';
+      expect(fetchStub.getCall(0)?.firstArg).to.equal(expectedApiCall);
       const el = await waitForElement('script[type="application/ld+json"]');
       const obj = JSON.parse(el.text);
       expect(obj).to.deep.equal(expectedObject);
