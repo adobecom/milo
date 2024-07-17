@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
-import { init, handleFragmentCommand, addAnalyticsForUseBlockCode } from '../../../libs/features/personalization/personalization.js';
+import { init, handleFragmentCommand, addMepAnalytics } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepTargetSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -114,7 +114,7 @@ describe('useBlockCode action', async () => {
 
     await init(mepSettings);
     expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal('manifest');
-    await addAnalyticsForUseBlockCode(config);
+    await addMepAnalytics(config);
     const el = document.querySelector('.promo');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
@@ -126,7 +126,7 @@ describe('useBlockCode action', async () => {
 
     await init(mepSettings);
     expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal('manifest');
-    await addAnalyticsForUseBlockCode(config);
+    await addMepAnalytics(config);
     const el = document.querySelector('.myblock');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
