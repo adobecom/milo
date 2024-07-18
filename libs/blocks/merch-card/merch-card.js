@@ -208,38 +208,45 @@ const parseContent = async (el, merchCard) => {
       }
       return;
     }
-    if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
-      const calloutContentWrapper = createTag('div');
-      const calloutContent = createTag('div');
-      const emElement = element.firstElementChild;
-      let imgElement = null;
-      const fragment = document.createDocumentFragment();
+    if (tagName === 'H6') {
+      if (element.firstChild.nodeType === Node.TEXT_NODE) {
+        const paymentDetails = createTag('div', { slot: 'payment-details' });
+        paymentDetails.innerHTML = element.innerHTML;
+        const headingM = merchCard.querySelector('h4[slot="heading-m"]');
+        headingM?.append(paymentDetails);
+      } else if (element.firstElementChild?.tagName === 'EM') {
+        const calloutContentWrapper = createTag('div');
+        const calloutContent = createTag('div');
+        const emElement = element.firstElementChild;
+        let imgElement = null;
+        const fragment = document.createDocumentFragment();
 
-      emElement.childNodes.forEach((child) => {
-        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
-          const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
-          imgElement = createTag('img', {
-            src: imgSrc,
-            title: decodeURIComponent(tooltipText),
-            class: 'callout-icon',
-          });
-        } else {
-          const clone = child.cloneNode(true);
-          fragment.appendChild(clone);
+        emElement.childNodes.forEach((child) => {
+          if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
+            const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
+            imgElement = createTag('img', {
+              src: imgSrc,
+              title: decodeURIComponent(tooltipText),
+              class: 'callout-icon',
+            });
+          } else {
+            const clone = child.cloneNode(true);
+            fragment.appendChild(clone);
+          }
+        });
+
+        calloutContent.appendChild(fragment);
+        calloutContentWrapper.appendChild(calloutContent);
+
+        if (imgElement) {
+          calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
+          calloutContentWrapper.appendChild(imgElement);
         }
-      });
 
-      calloutContent.appendChild(fragment);
-      calloutContentWrapper.appendChild(calloutContent);
-
-      if (imgElement) {
-        calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
-        calloutContentWrapper.appendChild(imgElement);
+        const calloutSlot = createTag('div', { slot: 'callout-text' });
+        calloutSlot.appendChild(calloutContentWrapper);
+        merchCard.appendChild(calloutSlot);
       }
-
-      const calloutSlot = createTag('div', { slot: 'callout-text' });
-      calloutSlot.appendChild(calloutContentWrapper);
-      merchCard.appendChild(calloutSlot);
       return;
     }
     if (isParagraphTag(tagName)) {

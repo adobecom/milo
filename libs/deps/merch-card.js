@@ -1,4 +1,4 @@
-// branch: main commit: 6912c83356744bd0c794c11c70bc1bf0dc95bfdf Tue, 16 Jul 2024 10:10:30 GMT
+// branch: MWPW-152792-catalog-badge-vat commit: 906bb2729832b6bf900de31c833bed56e7c9ef31 Thu, 18 Jul 2024 12:46:42 GMT
 import{html as o,LitElement as te,nothing as re}from"/libs/deps/lit-all.min.js";import{LitElement as Y,html as M,css as Q}from"/libs/deps/lit-all.min.js";var h=class extends Y{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?M`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:M` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=Q`
@@ -157,6 +157,7 @@ import{html as o,LitElement as te,nothing as re}from"/libs/deps/lit-all.min.js";
         height: fit-content;
         flex-direction: column;
         width: fit-content;
+        max-width: 140px;
         border-radius: 5px;
         position: relative;
         top: 0;
@@ -782,6 +783,13 @@ merch-card[variant="catalog"] [slot="action-menu-content"] p {
 merch-card[variant="catalog"] [slot="action-menu-content"] a {
     color: var(--consonant-merch-card-background-color);
     text-decoration: underline;
+}
+
+merch-card[variant="catalog"] [slot="payment-details"] {
+    font-size: var(--consonant-merch-card-body-font-size);
+    font-style: italic;
+    font-weight: 400;
+    line-height: var(--consonant-merch-card-body-line-height);
 }
 
 merch-card[variant="ccd-action"] .price-strikethrough {
@@ -1570,7 +1578,9 @@ body.merch-modal {
                     >${this.actionMenuContent}</slot
                 >
                 <slot name="heading-xs"></slot>
-                <slot name="heading-m"></slot>
+                <slot name="heading-m">
+                    <slot name="payment-details"></slot>
+                </slot>
                 <slot name="body-xxs"></slot>
                 ${this.promoBottom?"":o`<slot name="promo-text"></slot><slot name="callout-text"></slot>`}
                 <slot name="body-xs"></slot>
