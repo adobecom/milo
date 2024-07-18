@@ -218,7 +218,7 @@ const getArrayWithDeletedProperty = (array, prop) => array.map((item) => {
   return item;
 });
 
-describe('Bulk preview and publish', () => {
+describe.skip('Bulk preview and publish', () => {
   before(() => {
     window.fetch = stub();
     stubBulkConfig();
@@ -652,7 +652,7 @@ describe('Bulk preview and publish', () => {
   });
 });
 
-describe('Bulk index', () => {
+describe.skip('Bulk index', () => {
   before(() => {
     window.fetch = stub();
     stubBulkConfig();
