@@ -395,6 +395,36 @@ describe('Merch Card with Offer Selection', () => {
     await delay();
     expect(document.querySelector('merch-quantity-select')).to.not.exist;
   });
+
+  it('should handle callout-text with h6 and em tags', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/callout.html');
+
+    const merchCards = document.querySelectorAll('.merch-card');
+    const segmentCard = await init(merchCards[0]);
+    await delay();
+
+    // Assert
+    const calloutSlot = segmentCard.querySelector('[slot="callout-text"]');
+    expect(calloutSlot).to.exist;
+
+    const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper-with-icon');
+    expect(calloutContentWrapper).to.exist;
+    expect(calloutContentWrapper.classList.contains('callout-content-wrapper-with-icon')).to.be.true;
+
+    const imgElement = calloutContentWrapper.querySelector('img.callout-icon');
+    expect(imgElement).to.exist;
+    expect(imgElement.title).to.equal('this is a dummy tooltip text');
+
+    const calloutContent = calloutContentWrapper.querySelector('div');
+    expect(calloutContent).to.exist;
+    expect(calloutContent.textContent.trim()).to.equal('AI Assistant add-on available');
+
+    // Assert that price-commitment slot is appended
+    const miniCompareChart = await init(merchCards[1]);
+    await delay();
+    const priceCommitmentSlot = miniCompareChart.querySelector('[slot="price-commitment"]');
+    expect(priceCommitmentSlot).to.exist;
+  });
 });
 
 describe('Section metadata rules', async () => {

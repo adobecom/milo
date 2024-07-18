@@ -1,7 +1,7 @@
 import {
   render, html, useEffect, useMemo, useState, useLayoutEffect,
 } from '../../deps/htm-preact.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
 import {
@@ -292,7 +292,9 @@ const App = ({
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
-  return html`<div class="quiz-container">
+  const { locale } = getConfig();
+
+  return html`<div class="quiz-container${locale?.ietf === 'ja-JP' ? ' jpwordwrap-disabled' : ''}">
                   ${selectedQuestion.questions && html`<${StepIndicator}
                     currentStep=${currentStep} 
                     totalSteps=${totalSteps} 

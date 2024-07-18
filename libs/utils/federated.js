@@ -14,7 +14,6 @@ export const getFederatedContentRoot = () => {
   if (federatedContentRoot) return federatedContentRoot;
 
   const { origin } = window.location;
-
   federatedContentRoot = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => origin.replace('.stage', '') === o)
     ? origin
     : 'https://www.adobe.com';
@@ -27,4 +26,18 @@ export const getFederatedContentRoot = () => {
   }
 
   return federatedContentRoot;
+};
+
+// TODO we should match the akamai patterns /locale/federal/ at the start of the url
+// and make the check more strict.
+export const getFederatedUrl = (url = '') => {
+  if (typeof url !== 'string' || !url.includes('/federal/')) return url;
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
+  try {
+    const { pathname, search, hash } = new URL(url);
+    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
+  } catch (e) {
+    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`);
+  }
+  return url;
 };
