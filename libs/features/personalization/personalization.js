@@ -128,9 +128,7 @@ export const createFrag = (el, url, manifestId) => {
   if (manifestId) a.dataset.manifestId = manifestId;
   let frag = createTag('p', undefined, a);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
-  if (isDelayedModalAnchor) {
-    frag.classList.add('hide-block');
-  }
+  if (isDelayedModalAnchor) frag.classList.add('hide-block');
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
     frag = createTag('div', undefined, frag);
