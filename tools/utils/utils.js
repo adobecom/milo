@@ -7,6 +7,11 @@ const getImsToken = async (loadScript) => {
     client_id: IMS_CLIENT_ID,
     environment: 'prod',
     scope: 'AdobeID,openid',
+    api_parameters: {
+      check_token: {
+        guest_allowed: true
+      }
+    }
   };
 
   if (!window.adobeIMS) {
