@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
@@ -246,23 +247,5 @@ const loadMartechFiles = async (config) => {
 export default async function init() {
   const config = getConfig();
   const martechPromise = loadMartechFiles(config);
-
-  if (persEnabled) {
-    loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    if (targetManifests?.length || persManifests?.length) {
-      const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-      const manifests = preloadManifests({ targetManifests, persManifests });
-      await applyPers(manifests, postLCP);
-      if (targetPropositions?.length && window._satellite) {
-        window._satellite.track('propositionDisplay', targetPropositions);
-      }
-    }
-  }
-
   return martechPromise;
 }
