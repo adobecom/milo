@@ -1,7 +1,7 @@
 export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net';
 export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net';
 export const SEOTECH_CDN_URL_PROD = 'https://firefly.azureedge.net/1cdd3f3be067c8b58843503529aeb3c8-public';
-export const SEOTECH_CDN_URL_STAGE = 'https://firefly.azureedge.net/1cdd3f3be067c8b58843503529aeb3c8-public'; // FIXME
+export const SEOTECH_CDN_URL_STAGE = 'https://firefly.azureedge.net/c4dbffdc97a2c4f65073a222e967ea7c-public';
 
 export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx\.(page|live)/;
 export const ADOBECOM_MATCHER = /([\w-]+)(\.stage)?\.adobe\.com/;
@@ -113,7 +113,7 @@ export async function getStructuredData(url, options = {}) {
   const { env } = options;
   const cdnBaseUrl = env === 'prod' ? SEOTECH_CDN_URL_PROD : SEOTECH_CDN_URL_STAGE;
   const hash = await calcAdobeUrlHash(url, options);
-  const jsonUrl = `${cdnBaseUrl}/public/seotech-structured-data/${hash}.json`; // FIXME
+  const jsonUrl = `${cdnBaseUrl}/public/structured-data/${hash}.json`;
   const resp = await fetch(jsonUrl);
   if (!resp || !resp.ok) return null;
   const body = await resp.json();
