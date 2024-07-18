@@ -93,7 +93,7 @@ const isInLcpSection = (el) => {
   return lcpSection === el || lcpSection?.contains(el);
 };
 
-const createFrag = (el, url, manifestId, targetManifestId) => {
+export const createFrag = (el, url, manifestId, targetManifestId) => {
   let href = url;
   try {
     const { pathname, search, hash } = new URL(url);
@@ -105,6 +105,8 @@ const createFrag = (el, url, manifestId, targetManifestId) => {
   if (manifestId) a.dataset.manifestId = manifestId;
   if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
   let frag = createTag('p', undefined, a);
+  const isDelayedModalAnchor = /#.*delay=/.test(href);
+  if (isDelayedModalAnchor) frag.classList.add('hide-block');
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
     frag = createTag('div', undefined, frag);
