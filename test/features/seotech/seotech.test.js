@@ -276,7 +276,7 @@ describe('seotech', () => {
       await appendScriptTag(
         { locationUrl, getMetadata, getConfig, createTag },
       );
-      const expectedApiCall = 'https://firefly.azureedge.net/1cdd3f3be067c8b58843503529aeb3c8-public/public/seotech-structured-data/d0fff97ff9cbfbb63614b986ca47562288450c6c6d64f3f5f5a7b95afb518e83.json';
+      const expectedApiCall = 'https://firefly.azureedge.net/c4dbffdc97a2c4f65073a222e967ea7c-public/public/structured-data/d0fff97ff9cbfbb63614b986ca47562288450c6c6d64f3f5f5a7b95afb518e83.json';
       expect(fetchStub.getCall(0)?.firstArg).to.equal(expectedApiCall);
     });
 
@@ -299,7 +299,7 @@ describe('seotech', () => {
       await appendScriptTag(
         { locationUrl, getMetadata, getConfig: getConfigStub, createTag },
       );
-      const expectedApiCall = 'https://firefly.azureedge.net/1cdd3f3be067c8b58843503529aeb3c8-public/public/seotech-structured-data/2c17ad64467b6c0b6a960279a0dbe7d8b2792d8d066907c990e2f62933895584.json';
+      const expectedApiCall = 'https://firefly.azureedge.net/1cdd3f3be067c8b58843503529aeb3c8-public/public/structured-data/2c17ad64467b6c0b6a960279a0dbe7d8b2792d8d066907c990e2f62933895584.json';
       expect(fetchStub.getCall(0)?.firstArg).to.equal(expectedApiCall);
       const el = await waitForElement('script[type="application/ld+json"]');
       const obj = JSON.parse(el.text);
