@@ -407,7 +407,7 @@ const setDataIdOnChildren = (sections, id, value) => {
   );
 };
 
-const updateFragDataProps = (a, inline, sections, fragment) => {
+export const updateFragDataProps = (a, inline, sections, fragment) => {
   const { manifestId, adobeTargetTestid } = a.dataset;
   if (inline) {
     if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
@@ -741,10 +741,12 @@ export const deleteMarkedEls = (rootEl = document) => {
     .forEach((el) => el.remove());
 };
 
-const normalizeFragPaths = ({ selector, val, action }) => ({
+const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
   action,
+  manifestId,
+  targetManifestId,
 });
 export async function categorizeActions(experiment, config) {
   if (!experiment) return null;

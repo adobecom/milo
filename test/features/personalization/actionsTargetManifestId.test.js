@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
+import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { init, handleFragmentCommand, addMepAnalytics } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepTargetSettings.js';
 
@@ -43,9 +44,25 @@ describe('replace action', () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
+    expect(getConfig().mep.fragments['/fragments/replaceme'].targetManifestId).to.equal('manifest');
     const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2"]');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
+    const fragmentResp = await readFile({ path: './mocks/fragments/fragmentReplaced.plain.html' });
+    const inlineFragmentResp = await readFile({ path: './mocks/fragments/inlineFragReplaced.plain.html' });
+    window.fetch = stub();
+    window.fetch.withArgs('http://localhost:2000/test/features/personalization/mocks/fragments/fragmentReplaced.plain.html')
+      .returns(getFetchPromise(fragmentResp, 'text'));
+    window.fetch.withArgs('http://localhost:2000/test/features/personalization/mocks/fragments/inlineFragReplaced.plain.html')
+      .returns(getFetchPromise(inlineFragmentResp, 'text'));
+    const replacemeFrag = document.querySelector('a[href="/fragments/replaceme"]');
+    await initFragments(replacemeFrag);
+    expect(document.querySelector('a[href="/fragments/replaceme"]')).to.be.null;
+    expect(document.querySelector('div[data-path="/test/features/personalization/mocks/fragments/fragmentReplaced"]')).to.exist;
+
+    const inlineReplacemeFrag = document.querySelector('a[href="/fragments/inline-replaceme#_inline"]');
+    await initFragments(inlineReplacemeFrag);
+    expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.be.null;
+    expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
   });
 });
 

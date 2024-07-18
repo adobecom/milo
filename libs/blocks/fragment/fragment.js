@@ -1,6 +1,8 @@
 /* eslint-disable max-classes-per-file */
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
 
+import { updateFragDataProps } from '../../features/personalization/personalization.js';
+
 const fragMap = {};
 
 const removeHash = (url) => {
@@ -112,7 +114,7 @@ export default async function init(a) {
 
   updateFragMap(fragment, a, relHref);
   if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
-    mep.updateFragDataProps(a, inline, sections, fragment);
+    updateFragDataProps(a, inline, sections, fragment);
   }
   if (inline) {
     insertInlineFrag(sections, a, relHref);

@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
@@ -236,7 +235,7 @@ const loadMartechFiles = async (config) => {
         ? '/marketingtech/main.standard.min.js'
         : '/marketingtech/main.standard.qa.min.js'
     ));
-
+    // eslint-disable-next-line no-underscore-dangle
     window._satellite.track('pageload');
   };
 
