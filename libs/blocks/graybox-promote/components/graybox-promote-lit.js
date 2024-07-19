@@ -49,10 +49,9 @@ const getSheetValue = (data, key) => data?.find(
 
 const getAemInfo = (context) => {
   const search = new URLSearchParams(window.location.search);
-  context.ref = search.get('ref');
-  context.repo = search.get('repo');
-  context.owner = search.get('owner');
-  context.excelRef = search.get('referrer');
+  ['ref', 'repo', 'owner', 'referrer'].forEach((key) => {
+    context[key] = search.get(key) || '';
+  });
 };
 
 const getProjectInfo = async (context) => {
@@ -98,8 +97,8 @@ const getSharepointData = async (context) => {
 };
 
 const getFilePath = async (context) => {
-  const { ref, repo, owner, excelRef } = context;
-  const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${excelRef}`);
+  const { ref, repo, owner, referrer } = context;
+  const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${referrer}`);
   if (!status.ok) throw new Error('Failed to fetch file path');
   const statusResp = await status.json();
   context.previewUrl = statusResp.preview.status === 200 && new URL(statusResp.preview.url);
