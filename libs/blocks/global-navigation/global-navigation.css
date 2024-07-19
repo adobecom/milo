@@ -568,11 +568,11 @@ header.global-navigation {
     padding: 40px 0 0;
     max-height: calc(100vh - 100%);
     overflow: auto;
+    box-sizing: border-box;
   }
 
   .global-navigation.has-promo .feds-navItem--megaMenu .feds-popup {
     max-height: calc(100vh - 100% - var(--global-height-navPromo));
-    box-sizing: border-box;
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
