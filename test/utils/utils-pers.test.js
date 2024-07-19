@@ -18,14 +18,11 @@ describe('Utils - Personalization', () => {
   });
 
   it('Load Martech - with persEnabled', async () => {
-    await utils.loadMartech({
-      persEnabled: true,
-    });
+    await utils.loadMartech({ persEnabled: true });
     const el = await waitForElement(
       'link[href*="/features/personalization/personalization.js"]',
       { rootEl: document.head },
     );
     expect(el).to.exist;
   });
-
 });

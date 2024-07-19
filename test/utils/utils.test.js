@@ -675,7 +675,7 @@ describe('Utils', () => {
     expect(launchScript).to.exist;
     expect(window.alloy_all).to.exist;
     expect(window.alloy).to.exist;
+    // eslint-disable-next-line no-underscore-dangle
     expect(window._satellite).to.exist;
   });
-  
 });
