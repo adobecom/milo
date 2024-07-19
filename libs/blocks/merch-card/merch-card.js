@@ -381,6 +381,21 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
   merchCard.appendChild(miniCompareOffers);
 };
 
+const updateBigPrices = (merchCard) => {
+  const prices = merchCard.querySelectorAll('strong > em > span[is="inline-price"]');
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+  prices.forEach((span) => {
+    const strongTag = span.parentNode.parentNode;
+    const emTag = span.parentNode;
+    strongTag.replaceChild(span, emTag);
+    if (!isMobile) {
+      span.style.cssText = 'font-size: 24px; line-height: 22.5px;';
+    } else {
+      span.style.cssText = 'font-size: 16px; line-height: 24px;';
+    }
+  });
+};
+
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
@@ -545,7 +560,7 @@ export default async function init(el) {
         }
       }
     }
-
+    updateBigPrices(merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);
