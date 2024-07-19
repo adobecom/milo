@@ -660,4 +660,22 @@ describe('Utils', () => {
       expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
     });
   });
+
+  it('Load Martech', async () => {
+    await utils.loadMartech();
+    const bootstrapScript = await waitForElement(
+      'script[src*="main.standard.qa.min.js"]',
+      { rootEl: document.head },
+    );
+    expect(bootstrapScript).to.exist;
+    const launchScript = await waitForElement(
+      'script[src*="/launch-"]',
+      { rootEl: document.head },
+    );
+    expect(launchScript).to.exist;
+    expect(window.alloy_all).to.exist;
+    expect(window.alloy).to.exist;
+    expect(window._satellite).to.exist;
+  });
+  
 });
