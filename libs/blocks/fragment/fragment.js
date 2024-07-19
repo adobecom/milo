@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
+import { getFederatedUrl } from '../../utils/federated.js';
 
 const fragMap = {};
 
@@ -90,11 +91,11 @@ export default async function init(a) {
   }
 
   const { customFetch } = await import('../../utils/helpers.js');
-  const resp = await customFetch({ resource: `${a.href}.plain.html`, withCacheRules: true })
+  const resp = await customFetch({ resource: `${getFederatedUrl(a.href)}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
   if (!resp?.ok) {
-    window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
+    window.lana?.log(`Could not get fragment: ${getFederatedUrl(a.href)}.plain.html`);
     return;
   }
 
@@ -106,7 +107,7 @@ export default async function init(a) {
   const sections = doc.querySelectorAll('body > div');
 
   if (!sections.length) {
-    window.lana?.log(`Could not make fragment: ${a.href}.plain.html`);
+    window.lana?.log(`Could not make fragment: ${getFederatedUrl(a.href)}.plain.html`);
     return;
   }
 
