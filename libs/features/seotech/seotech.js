@@ -1,30 +1,5 @@
 export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net';
 export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net';
-export const SEOTECH_CDN_URL_PROD = 'https://firefly.azureedge.net/1cdd3f3be067c8b58843503529aeb3c8-public';
-export const SEOTECH_CDN_URL_STAGE = 'https://firefly.azureedge.net/c4dbffdc97a2c4f65073a222e967ea7c-public';
-
-export const HLX_MATCHER = /([\w-]+)--([\w-]+)--([\w-]+)\.hlx\.(page|live)/;
-export const ADOBECOM_MATCHER = /([\w-]+)(\.stage)?\.adobe\.com/;
-export const PATHNAME_MATCHER = /^(?:\/(?<geo>(?<country>[a-z]{2}|africa|mena)(?:_(?<lang>[a-z]{2,3}))?))?(?<geopath>(?:\/(?<cloudfolder>acrobat|creativecloud|express))?\/.*)$/;
-
-export const CLOUD_BY_FOLDER = {
-  acrobat: 'dc',
-  creativecloud: 'cc',
-  express: 'express',
-  default: 'homepage',
-};
-
-export const CLOUD_BY_SUBDOMAIN = {
-  business: 'bacom',
-  milo: 'milo',
-};
-
-export const CLOUD_BY_IMSORG = {
-  'adobedotcom-cc': 'cc',
-  acrobatmilo: 'dc',
-  bacom: 'bacom',
-  milo: 'milo',
-};
 
 export function logError(msg) {
   window.lana?.log(`SEOTECH: ${msg}`, {
@@ -46,50 +21,13 @@ export async function getVideoObject(url, seotechAPIUrl) {
   return body.videoObject;
 }
 
-export function parseAdobeUrl(rawUrl) {
-  const url = new URL(rawUrl);
-
-  const path = url.pathname.match(PATHNAME_MATCHER).groups;
-
-  const hlx = url.hostname.match(HLX_MATCHER);
-  if (hlx) {
-    return {
-      ...path,
-      domain: url.hostname,
-      pathname: url.pathname,
-      cloud: hlx[2],
-      env: {
-        page: 'stage',
-        live: 'prod',
-      }[hlx[4]],
-    };
-  }
-
-  const adobe = url.hostname.match(ADOBECOM_MATCHER);
-  if (adobe) {
-    const cloud = CLOUD_BY_SUBDOMAIN[adobe[1]] || CLOUD_BY_FOLDER[path.cloudfolder || 'default'];
-    return {
-      ...path,
-      domain: url.hostname,
-      pathname: url.pathname,
-      cloud,
-      env: adobe[2] ? 'stage' : 'prod',
-    };
-  }
-
-  const local = url.hostname.match(/localhost/);
-  if (local) {
-    const cloud = CLOUD_BY_FOLDER[path.cloudfolder];
-    return {
-      ...path,
-      domain: url.hostname,
-      pathname: url.pathname,
-      cloud,
-      env: 'stage',
-    };
-  }
-
-  return null;
+export function getRepoByImsClientId(imsClientId) {
+  return {
+    'adobedotcom-cc': 'cc',
+    acrobatmilo: 'dc',
+    bacom: 'bacom',
+    milo: 'milo',
+  }[imsClientId];
 }
 
 export async function sha256(message) {
@@ -100,21 +38,12 @@ export async function sha256(message) {
   return hashHex;
 }
 
-export async function calcAdobeUrlHash(url, options = {}) {
-  const adobeUrl = parseAdobeUrl(url);
-  const cloud = adobeUrl.cloud || options.cloud || '';
-  const pathname = adobeUrl.pathname.replace('.html', '');
-  const key = `${cloud}${pathname}`;
-  const hash = await sha256(key);
-  return hash;
-}
-
-export async function getStructuredData(url, options = {}) {
+export async function getStructuredData(bucket, id, options) {
+  if (!bucket || !id) throw new Error('bucket and id are required');
   const { env } = options;
-  const cdnBaseUrl = env === 'prod' ? SEOTECH_CDN_URL_PROD : SEOTECH_CDN_URL_STAGE;
-  const hash = await calcAdobeUrlHash(url, options);
-  const jsonUrl = `${cdnBaseUrl}/public/structured-data/${hash}.json`;
-  const resp = await fetch(jsonUrl);
+  const baseUrl = env === 'prod' ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
+  const url = `${baseUrl}/apis/v1/seotech/structured-data/${bucket}/${id}`;
+  const resp = await fetch(url);
   if (!resp || !resp.ok) return null;
   const body = await resp.json();
   return body;
@@ -122,7 +51,6 @@ export async function getStructuredData(url, options = {}) {
 
 export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
   const env = getConfig()?.env?.name;
-  const cloud = CLOUD_BY_IMSORG[getConfig()?.imsClientId];
   const seotechAPIUrl = env === 'prod'
     ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
 
@@ -134,7 +62,9 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
 
   const promises = [];
   if (getMetadata('seotech-structured-data') === 'on') {
-    promises.push(getStructuredData(locationUrl, { env, cloud })
+    const bucket = getRepoByImsClientId(getConfig()?.imsClientId);
+    const id = await sha256(new URL(locationUrl).pathname?.replace('.html', ''));
+    promises.push(getStructuredData(bucket, id, { env })
       .then((obj) => append(obj))
       .catch((e) => logError(e.message)));
   }
