@@ -935,7 +935,7 @@ async function checkForPageMods() {
     loadIms()
       .then(() => {
         /* c8 ignore next */
-        if (window.adobeIMS.isSignedInUser()) loadMartech();
+        if (window.adobeIMS?.isSignedInUser()) loadMartech();
       })
       .catch((e) => { console.log('Unable to load IMS:', e); });
   }
