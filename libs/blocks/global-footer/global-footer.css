@@ -142,12 +142,13 @@
   left: 0;
   display: none;
   padding: 20px;
-  min-width: 130px;
-  max-height: 300px;
+  min-width: 165px;
+  max-height: none;
   overflow-y: auto;
   background: var(--feds-background-nav--light);
-  border: 1px solid var(--feds-color-border--light);
+  border: 1px solid #D4D4D4;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 [dir = "rtl"] .feds-regionPicker-wrapper > .fragment {
