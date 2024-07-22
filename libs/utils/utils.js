@@ -934,6 +934,7 @@ async function checkForPageMods() {
   } else if (pzn) {
     loadIms()
       .then(() => {
+        /* c8 ignore next */
         if (window.adobeIMS.isSignedInUser()) loadMartech();
       })
       .catch((e) => { console.log('Unable to load IMS:', e); });
@@ -947,6 +948,7 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   if (config.mep?.targetEnabled === 'gnav') {
+    /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
   } else {
