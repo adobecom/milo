@@ -228,7 +228,6 @@ export function delayedModal(el) {
   const { hash, delay } = getHashParams(el?.dataset.modalHash);
   if (!delay || !hash) return false;
   isDelayedModal = true;
-  el.classList.add('hide-block');
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
   el.dataset.modalHash = hash;

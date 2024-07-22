@@ -206,7 +206,6 @@ describe('Modals', () => {
     document.body.appendChild(anchor);
     expect(delayedModal(anchor)).to.be.true;
     await delay(1000);
-    expect(anchor.classList.contains('hide-block')).to.be.true;
     const modal = await waitForElement('#delayed-modal');
     expect(modal).to.be.not.null;
     expect(document.querySelector('#delayed-modal').classList.contains('delayed-modal'));

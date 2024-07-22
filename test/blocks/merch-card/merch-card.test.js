@@ -100,6 +100,7 @@ describe('Plans Card', () => {
       elements: [
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'strong span' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
         { attribute: { name: 'variant', value: 'plans' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
@@ -453,5 +454,47 @@ describe('Section metadata rules', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mep.html');
     const merchCard = await init(document.querySelector('.merch-card'));
     expect(merchCard.dataset.removedManifestId).to.exist;
+  });
+});
+
+describe('Viewport Responsiveness without Sinon', () => {
+  let originalMatchMedia;
+
+  beforeEach(() => {
+    // Store the original window.matchMedia
+    originalMatchMedia = window.matchMedia;
+  });
+
+  afterEach(() => {
+    // Restore the original window.matchMedia after each test
+    window.matchMedia = originalMatchMedia;
+  });
+
+  it('Adjusts layout for desktop viewports', async () => {
+    window.matchMedia = (query) => ({
+      matches: query.includes('(max-width: 600px)'),
+      addListener: () => {},
+      removeListener: () => {},
+    });
+
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
+    const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
+    const bigPrice = merchCard.querySelector('strong span[is="inline-price"]');
+    expect(bigPrice).to.exist;
+    expect(bigPrice.style.fontSize).to.equal('24px');
+  });
+
+  it('Maintains layout for mobile viewports', async () => {
+    window.matchMedia = (query) => ({
+      matches: !query.includes('(max-width: 600px)'),
+      addListener: () => {},
+      removeListener: () => {},
+    });
+
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
+    const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
+    const bigPrice = merchCard.querySelector('strong span[is="inline-price"]');
+    expect(bigPrice).to.exist;
+    expect(bigPrice.style.fontSize).to.equal('16px');
   });
 });
