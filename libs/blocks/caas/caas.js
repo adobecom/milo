@@ -73,6 +73,10 @@ const loadCaas = async (a) => {
     chimeraEndpoint = P_CAAS_AIO;
   }
 
+  if (host.includes('hlx.page') || env?.name === 'local') {
+    state.draftDb = true;
+  }
+
   state.endpoint = chimeraEndpoint;
 
   initCaas(state, caasStrs, block);
