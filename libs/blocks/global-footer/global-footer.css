@@ -191,7 +191,8 @@
 }
 
 .feds-regionPicker-wrapper > .fragment a:hover {
-  background: var(--feds-background-link--hover--light);
+  color: var(--color-gray-500);
+  background: none;
 }
 
 /* Social */
