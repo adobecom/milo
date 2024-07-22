@@ -111,6 +111,16 @@
   align-items: center;
 }
 
+header.global-navigation {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--feds-background-nav--light);
+  visibility: visible;
+  box-sizing: content-box;
+  overflow-x: clip;
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
   .feds-navLink,
