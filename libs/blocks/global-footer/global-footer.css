@@ -143,10 +143,10 @@
   display: none;
   padding: 20px;
   min-width: 165px;
-  max-height: none;
+  max-height: 300px;
   overflow-y: auto;
   background: var(--feds-background-nav--light);
-  border: 1px solid #D4D4D4;
+  border: 1px solid var(--color-gray-300);
   border-radius: 4px;
   box-sizing: border-box;
 }
