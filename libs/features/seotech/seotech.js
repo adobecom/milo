@@ -13,7 +13,7 @@ export function logError(msg) {
 export async function getVideoObject(url, options) {
   const videoUrl = new URL(url)?.href;
   const { subdomain } = options;
-  const videoObjectUrl = `http://${subdomain}.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=${videoUrl}`;
+  const videoObjectUrl = `https://${subdomain}.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=${videoUrl}`;
   const resp = await fetch(videoObjectUrl, { headers: { 'Content-Type': 'application/json' } });
   const body = await resp?.json();
   if (!resp.ok) {

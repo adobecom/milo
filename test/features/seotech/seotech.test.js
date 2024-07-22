@@ -104,7 +104,7 @@ describe('seotech', () => {
         { locationUrl: window.location.href, getMetadata, getConfig, createTag },
       );
       expect(fetchStub.calledOnceWith(
-        'http://14257-seotech.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
+        'https://14257-seotech.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
       )).to.be.true;
       expect(lanaStub.calledOnceWith('SEOTECH: Failed to fetch video: ERROR!')).to.be.true;
     });
@@ -127,7 +127,7 @@ describe('seotech', () => {
         { locationUrl: window.location.href, getMetadata, getConfig, createTag },
       );
       expect(fetchStub.calledOnceWith(
-        'http://14257-seotech.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
+        'https://14257-seotech.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
       )).to.be.true;
       const el = await waitForElement('script[type="application/ld+json"]');
       const obj = JSON.parse(el.text);
