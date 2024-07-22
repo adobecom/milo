@@ -28,6 +28,15 @@
 }
 
 /* General */
+header.global-navigation {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--feds-background-nav--light);
+  box-sizing: content-box;
+  overflow-x: clip;
+}
+
 .feds-topnav-wrapper {
   position: relative;
   z-index: 2;
