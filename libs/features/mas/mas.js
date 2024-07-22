@@ -14,7 +14,7 @@ const [localeElement] = document.getElementsByName('wcs-locale');
 const locale = localeElement ? localeElement.getAttribute('content') : '';
 
 window.lana = { log: () => {} };
-if (!window.location.href.includes('adobe.com/home') || !window.location.href.includes('.corp.adobe.com')) {
+if (!window.location.href.includes('adobe.com')) {
   window.adobeIMS = {
     initialized: true,
     isSignedInUser: () => false,
