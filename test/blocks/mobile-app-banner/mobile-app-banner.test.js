@@ -51,7 +51,11 @@ describe('mobile-app-banner', () => {
   });
 
   it('should init by adding branchio script', async () => {
-    window.adobePrivacy = { hasUserProvidedConsent: () => true };
+    window.adobePrivacy = {
+      hasUserProvidedConsent: () => true,
+      activeCookieGroups: () => ['C0002', 'C0004'],
+    };
+    const userAgentStub = sinon.stub(navigator, 'userAgent').get(() => 'Android');
     const module = await import('../../../libs/blocks/mobile-app-banner/mobile-app-banner.js');
     const banner = document.body.querySelector('.mobile-app-banner.product-test');
     await module.default(banner);
@@ -63,5 +67,33 @@ describe('mobile-app-banner', () => {
       if (scriptTag.getAttribute('src') !== null) scriptSrcs.push(scriptTag.getAttribute('src'));
     });
     expect(scriptSrcs).to.include('https://cdn.branch.io/branch-latest.min.js');
+    userAgentStub.restore();
+  });
+
+  it('should fetch ecid from alloy and return if event is dispatched twice', async () => {
+    window.adobePrivacy = {
+      hasUserProvidedConsent: () => true,
+      activeCookieGroups: () => ['C0002', 'C0004'],
+    };
+    window.alloy = () => {};
+    const alloyStub = sinon.stub(window, 'alloy').callsFake((command) => {
+      if (command === 'getIdentity') {
+        return Promise.resolve({ identity: { ECID: 'test-ecid' } });
+      }
+      return 'test-ecid';
+    });
+    const module = await import('../../../libs/blocks/mobile-app-banner/mobile-app-banner.js');
+    const banner = document.body.querySelector('.mobile-app-banner.product-test');
+    await module.default(banner);
+    window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
+    await delay(0);
+    const scriptTags = document.querySelectorAll('head > script');
+    const scriptSrcs = [];
+    scriptTags.forEach((scriptTag) => {
+      if (scriptTag.getAttribute('src') !== null) scriptSrcs.push(scriptTag.getAttribute('src'));
+    });
+    window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
+    expect(scriptSrcs).to.include('https://cdn.branch.io/branch-latest.min.js');
+    alloyStub.restore();
   });
 });
