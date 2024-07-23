@@ -107,12 +107,11 @@ async function findDeepFragments(path) {
       const nestedFragments = await findPageFragments(search.pathname);
       if (nestedFragments === undefined) {
         search.valid = 'not found';
-        searched.push(search.pathname);
-        break;
+      } else {
+        const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
+          && !fragments.find((fragment) => fragment.pathname === nested.pathname));
+        if (newFragments?.length) fragments.push(...newFragments);
       }
-      const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
-        && !fragments.find((fragment) => fragment.pathname === nested.pathname));
-      if (newFragments?.length) fragments.push(...newFragments);
       searched.push(search.pathname);
     }
   }
