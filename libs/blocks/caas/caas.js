@@ -54,13 +54,21 @@ const loadCaas = async (a) => {
   }
 
   const { env } = getConfig();
-  const { host } = window.location;
+  const { host, href } = window.location;
   let chimeraEndpoint = 'www.adobe.com/chimera-api/collection';
 
-  if (host.includes('stage.adobe') || env?.name === 'local') {
+  if (href.includes('/events/hub')) {
+    if (host.includes('dev')) {
+      state.environment = 'dev';
+    } else if (host.includes('stage')) {
+      state.environment = 'stage';
+    } else {
+      state.environment = '';
+    }
+  }
+
+  if (host.includes('stage.adobe') || env?.name === 'local' || host.includes('stage--') || host.includes('dev--')) {
     chimeraEndpoint = S_CAAS_AIO;
-  } else if (host.includes('--events-milo--')) {
-    chimeraEndpoint = D_CAAS_AIO;
   } else if (host.includes('.hlx.')) {
     // If invoking URL is not an Acom URL, then switch to AIO
     chimeraEndpoint = P_CAAS_AIO;
