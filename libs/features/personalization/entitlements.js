@@ -19,6 +19,7 @@ const ENTITLEMENT_MAP = {
   'eda8c774-420b-44c2-9006-f9a8d0fb5168': '3d-substance-texturing',
   '76e408f6-ab08-49f0-adb6-f9b4efcc205d': 'cc-free',
   '08216aa4-4a0f-4136-8b27-182212764a7c': 'dc-free',
+  'fc2d5b34-fa75-4e80-9f23-7d4b40bcfc9b': 'cc-paid',
   // PEP segments
   '6cb0d58c-3a65-47e2-b459-c52bb158d5b6': 'lightroom-web-usage',
   'caa3de84-6336-4fa8-8db2-240fc88106cc': 'photoshop-signup-source',

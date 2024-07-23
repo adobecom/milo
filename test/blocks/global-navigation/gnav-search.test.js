@@ -201,6 +201,7 @@ describe('search', () => {
 
     it('fetches results from the search and clears them', async () => {
       document.querySelector(selectors.mainNavToggle).click();
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
       await clock.runAllAsync();
 
       const searchResults = document.querySelector(selectors.searchResults);
