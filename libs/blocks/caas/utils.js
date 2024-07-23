@@ -575,7 +575,7 @@ export const getConfig = async (originalState, strs = {}) => {
         ',',
       )}&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
         ',',
-      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
+      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=environment=${state.environment}&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
