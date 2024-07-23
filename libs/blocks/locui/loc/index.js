@@ -12,7 +12,7 @@ import {
   user,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
-import { getStatus, preview } from '../utils/franklin.js';
+import { getStatus, origin, preview } from '../utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
 import { getServiceUpdates } from '../utils/miloc.js';
 import { connectSK } from '../../../utils/sidekick.js';
@@ -34,6 +34,25 @@ async function validateUrl(url) {
   }
 }
 
+export function validateUrlsOrigin(projectUrls) {
+  projectUrls.forEach((projectUrl) => {
+    const url = Array.isArray(projectUrl) ? projectUrl[0] : projectUrl;
+    let urlOrigin = url.origin;
+    if (url?.alt) {
+      try {
+        const altUrl = new URL(url.alt);
+        urlOrigin = altUrl.origin;
+      } catch (error) {
+        url.alt = null;
+      }
+    }
+    if (urlOrigin !== origin) {
+      url.valid = 'not same domain';
+    }
+  });
+  return projectUrls;
+}
+
 async function validatedUrls(projectUrls) {
   const validateUrls = [...projectUrls];
   while (validateUrls.length) {
@@ -42,13 +61,13 @@ async function validatedUrls(projectUrls) {
       setStatus('details', 'info', 'Validating Project URLs');
       for (const res of reqs) {
         const projectUrl = projectUrls.find((url) => url.href === res.url);
-        projectUrl.valid = res.ok;
+        projectUrl.valid = res.ok || 'not found';
       }
     } catch (error) {
       setStatus('details', 'error', 'There was an error validating project URLs.', error);
     }
   }
-  return projectUrls;
+  return validateUrlsOrigin(projectUrls);
 }
 
 export function getUrls(jsonUrls) {
@@ -115,9 +134,9 @@ async function loadDetails() {
     setStatus('details', 'info', 'Validating Project Configuration');
     urls.value = await validatedUrls(projectUrls);
     if (json.settings) loadProjectSettings(json.settings.data);
-    const errors = urls.value.filter((url) => url.valid !== undefined && !url.valid);
+    const errors = urls.value.filter((url) => typeof url.valid === 'string');
     if (errors?.length > 0) {
-      setStatus('details', 'error', 'Invalid URLs.', errors.map((url) => (`${url.href} was not found.`)));
+      setStatus('details', 'error', 'Invalid URLs.', errors.map((url) => (`${url.href} was ${url.valid}.`)));
     } else {
       setStatus('details');
     }

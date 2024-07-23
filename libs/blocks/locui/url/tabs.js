@@ -1,29 +1,38 @@
 import { html, signal, useEffect, useMemo } from '../../../deps/htm-preact.js';
-import { urls } from '../utils/state.js';
 import { setActions, openWord, handleAction } from './index.js';
 
 function useSignal(value) {
   return useMemo(() => signal(value), []);
 }
 
+function useActionState(item) {
+  const actions = item.value;
+  const canEdit = actions.edit.status !== 404;
+  const state = { isValid: typeof actions.hasError !== 'string' && canEdit };
+  Object.keys(actions).forEach((btn) => {
+    if (actions[btn]?.status) state[btn] = actions[btn].status === 200;
+  });
+  return state;
+}
+
 function Actions({ item }) {
+  const { isValid, preview, live } = useActionState(item);
   const isExcel = item.value.path.endsWith('.json') ? ' locui-url-action-edit-excel' : ' locui-url-action-edit-word';
-  const isDisabled = (status) => (!status || status !== 200 ? ' disabled' : '');
-  const itemUrl = urls.value.find((url) => url.pathname === item.value.path
-  || url.langstore.pathname === item.value.path);
-  const disabled = itemUrl?.valid !== undefined && !itemUrl.valid;
   return html`
     <div class=locui-url-source-actions>
       <button
-        disabled=${item.value.edit?.status === 404}
-        class="locui-url-action locui-url-action-edit${isExcel}${disabled ? ' disabled' : ''}"
-        onClick=${(e) => { if (!disabled) openWord(e, item); }}>Edit</button>
+        disabled=${!isValid}
+        class="locui-url-action locui-url-action-edit${isExcel}${!isValid ? ' disabled' : ''}"
+        onClick=${(e) => openWord(e, item)}>Edit</button>
       <button
-        class="locui-url-action locui-url-action-view${isDisabled(item.value.preview?.status)}"
-        onClick=${(e) => { if (!disabled) handleAction(e, item, true); }}>Preview</button>
+        disabled=${!isValid}
+        class="locui-url-action locui-url-action-view
+          ${!isValid ? ' disabled' : ''}${!preview ? ' clear' : ''}"
+        onClick=${(e) => handleAction(e, item, true)}>Preview</button>
       <button
-        class="locui-url-action locui-url-action-view${isDisabled(item.value.live?.status)}"
-        onClick=${(e) => { if (!disabled) handleAction(e, item); }}>Live</button>
+        disabled=${!isValid || !live}
+        class="locui-url-action locui-url-action-view${!isValid || !live ? ' disabled' : ''}"
+        onClick=${(e) => handleAction(e, item)}>${!live ? 'Not ' : ''}Live</button>
     </div>
   `;
 }
@@ -103,12 +112,12 @@ function TabPanel({ tab, idx, item }) {
     </div>`;
 }
 
-export default function Tabs({ suffix, path }) {
+export default function Tabs({ suffix, path, hasError }) {
   const tabs = useSignal([
     { title: 'Actions', selected: true },
     { title: 'Details' },
   ]);
-  const item = useSignal({ path });
+  const item = useSignal({ path, hasError });
   useEffect(() => { setActions(item); }, [item]);
   return html`
     <div class=locui-tabs>
