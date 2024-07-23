@@ -949,14 +949,13 @@ export async function init(enablements = {}) {
       experiments: [],
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
-  }
-  if (target === true) {
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const localizedURL = localizeLink(manifest.manifestPath);
       loadLink(localizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
   }
+
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
