@@ -56,6 +56,7 @@ const MILO_BLOCKS = [
   'mobile-app-banner',
   'modal',
   'modal-metadata',
+  'notification',
   'pdf-viewer',
   'quote',
   'read-more',
