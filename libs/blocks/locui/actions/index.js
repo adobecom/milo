@@ -122,12 +122,12 @@ async function findDeepFragments(path) {
       if (nestedFragments === undefined) {
         search.valid = 'not found';
         searched.push(search.pathname);
-        break;
+      } else {
+        const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
+          && !fragments.find((fragment) => fragment.pathname === nested.pathname));
+        if (newFragments?.length) fragments.push(...newFragments);
+        searched.push(search.pathname);
       }
-      const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
-        && !fragments.find((fragment) => fragment.pathname === nested.pathname));
-      if (newFragments?.length) fragments.push(...newFragments);
-      searched.push(search.pathname);
     }
   }
   return fragments.length ? getUrls(fragments) : [];
