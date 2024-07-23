@@ -1,4 +1,3 @@
-// branch: HEAD commit: 67de0c8cd791a99e9ce3fa3bdf055833941bd3aa Fri, 12 Jul 2024 09:45:07 GMT
 import{LitElement as T,html as s}from"/libs/deps/lit-all.min.js";var r=class{constructor(e,t){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(t),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as E}from"/libs/deps/lit-all.min.js";var b=E`
     :host {
         display: flex;

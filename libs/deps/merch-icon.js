@@ -1,7 +1,5 @@
-// branch: develop commit: 369516f3cda51fb1219ad0b3cf2c94c8f094c49b Tue, 21 May 2024 08:39:16 GMT
-import{LitElement as r,html as e,css as s}from"/libs/deps/lit-all.min.js";var i=class extends r{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0}};constructor(){super(),this.size="m"}render(){let t=this.closest("merch-card")?.querySelector('div[slot="body-xs"]').querySelector('a[href$="#mnemonic-link"]');return t&&(t.href=t.href.replace("#mnemonic-link","")),t?e`<a href="${t.href||"#"}">
+import{LitElement as r,html as e,css as s}from"/libs/deps/lit-all.min.js";var t=class extends r{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:i}=this;return i?e`<a href="${i}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
-                  />
               </a>`:e` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=s`
         :host {
             --img-width: 32px;
@@ -25,5 +23,5 @@ import{LitElement as r,html as e,css as s}from"/libs/deps/lit-all.min.js";var i=
             width: var(--img-width);
             height: var(--img-height);
         }
-    `};customElements.define("merch-icon",i);export{i as default};
+    `};customElements.define("merch-icon",t);export{t as default};
 //# sourceMappingURL=merch-icon.js.map

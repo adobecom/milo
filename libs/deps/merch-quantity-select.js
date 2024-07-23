@@ -1,4 +1,3 @@
-// branch: develop commit: 70eec73024148e3b3e8682872a90a9c0a0e68b8e Fri, 07 Jun 2024 14:50:35 GMT
 import{html as o,LitElement as p}from"/libs/deps/lit-all.min.js";import{css as l}from"/libs/deps/lit-all.min.js";var r=l`
     :host {
         box-sizing: border-box;

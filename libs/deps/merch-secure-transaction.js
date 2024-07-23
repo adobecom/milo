@@ -1,4 +1,3 @@
-// branch: develop commit: 369516f3cda51fb1219ad0b3cf2c94c8f094c49b Tue, 21 May 2024 08:39:16 GMT
 import{LitElement as p,html as n}from"/libs/deps/lit-all.min.js";import{css as l}from"/libs/deps/lit-all.min.js";var i=l`
     #label {
         align-items: center;

@@ -1,4 +1,3 @@
-// branch: develop commit: 7ff521873f6595e470276881ccfda07dbb8263ac Tue, 21 May 2024 09:37:12 GMT
 import{html as o,LitElement as E}from"/libs/deps/lit-all.min.js";var s=class{constructor(t,i){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(i),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as m}from"/libs/deps/lit-all.min.js";var f=m`
     :host {
         --merch-focused-outline: var(--merch-color-focus-ring) auto 1px;
