@@ -175,6 +175,8 @@ const parseContent = async (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
   ];
+  const calloutContainer = createTag('div');
+
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
@@ -237,9 +239,7 @@ const parseContent = async (el, merchCard) => {
         calloutContentWrapper.appendChild(imgElement);
       }
 
-      const calloutSlot = createTag('div', { slot: 'callout-text' });
-      calloutSlot.appendChild(calloutContentWrapper);
-      merchCard.appendChild(calloutSlot);
+      calloutContainer.appendChild(calloutContentWrapper);
       return;
     }
     if (isParagraphTag(tagName)) {
@@ -248,6 +248,12 @@ const parseContent = async (el, merchCard) => {
     }
     if (mnemonicList) bodySlot.append(mnemonicList);
   });
+
+  if (calloutContainer.children.length > 0) {
+    const calloutSlot = createTag('div', { slot: 'callout-content' });
+    calloutSlot.appendChild(calloutContainer);
+    merchCard.appendChild(calloutSlot);
+  }
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);

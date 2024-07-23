@@ -397,7 +397,7 @@ describe('Merch Card with Offer Selection', () => {
     expect(document.querySelector('merch-quantity-select')).to.not.exist;
   });
 
-  it('should handle callout-text with h6 and em tags', async () => {
+  it('should handle callout-content with h6 and em tags', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/callout.html');
 
     const merchCards = document.querySelectorAll('.merch-card');
@@ -405,7 +405,7 @@ describe('Merch Card with Offer Selection', () => {
     await delay();
 
     // Assert
-    const calloutSlot = segmentCard.querySelector('[slot="callout-text"]');
+    const calloutSlot = segmentCard.querySelector('[slot="callout-content"]');
     expect(calloutSlot).to.exist;
 
     const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper-with-icon');
