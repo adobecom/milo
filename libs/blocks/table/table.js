@@ -78,6 +78,11 @@ function handleHeading(table, headingCols) {
       col.innerHTML = '';
       col.append(row1, row2);
     }
+    const colHeader = col.querySelector('h1, h2, h3, h4, h5, h6');
+    const nodeToSetRoleScope = colHeader ?? col;
+    if (colHeader) col.removeAttribute('role');
+    nodeToSetRoleScope.setAttribute('role', 'columnheader');
+    nodeToSetRoleScope.setAttribute('scope', 'col');
   });
 }
 
@@ -210,6 +215,8 @@ function handleSection(sectionParams) {
     if (!isMerch) {
       const sectionRowTitle = nextRowCols?.[0];
       sectionRowTitle.classList.add('section-row-title');
+      sectionRowTitle.setAttribute('role', 'rowheader');
+      sectionRowTitle.setAttribute('scope', 'row');
     }
   } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
     row.classList.add('section-row');
@@ -236,6 +243,8 @@ function handleSection(sectionParams) {
       const sectionRowTitle = rowCols[0];
       handleTitleText(sectionRowTitle);
       sectionRowTitle.classList.add('section-row-title');
+      sectionRowTitle.setAttribute('role', 'rowheader');
+      sectionRowTitle.setAttribute('scope', 'row');
     }
   }
   return expandSection;
