@@ -49,8 +49,8 @@ export const logErrorFor = async (fn, message, tags) => {
 
 export function addMepHighlightAndTargetId(el, source) {
   let { manifestId, targetManifestId } = source.dataset;
-  manifestId = manifestId ?? source?.closest('[data-manifest-id]')?.dataset?.manifestId;
-  targetManifestId = targetManifestId ?? source?.closest('[data-adobe-target-testid]')?.dataset?.adobeTargetTestid;
+  manifestId ??= source?.closest('[data-manifest-id]')?.dataset?.manifestId;
+  targetManifestId ??= source?.closest('[data-adobe-target-testid]')?.dataset?.adobeTargetTestid;
   if (manifestId) el.dataset.manifestId = manifestId;
   if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   return el;
