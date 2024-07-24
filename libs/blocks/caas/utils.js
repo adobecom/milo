@@ -551,7 +551,9 @@ export const getConfig = async (originalState, strs = {}) => {
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const localesQueryParam = locales ? `&locales=${locales}` : '';
-  const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '';
+  const debug = (state.showIds && document.location.pathname.includes('/tools/caas'))
+    || state.container === 'categories'
+      ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
