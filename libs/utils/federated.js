@@ -20,7 +20,7 @@ export const getFederatedContentRoot = () => {
     : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    federatedContentRoot = `https://main--federal--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
+    federatedContentRoot = `https://main--federal--adobecom.hlx.${origin.endsWith('.live') ? 'live' : 'page'}`;
   }
 
   return federatedContentRoot;
