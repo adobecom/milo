@@ -4,9 +4,9 @@ import loadBlock from '../../libs/navigation/navigation.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
-describe('Bootstrapper', async () => {
+describe('Navigation component', async () => {
   it('Renders the footer block', async () => {
-    await loadBlock({ footer: { authoringPath: '/federal/home' }, env: 'qa' });
+    await loadBlock({ footer: { authoringPath: '/federal/home' }, env: 'qa' }, 'http://localhost:2000');
     const el = document.getElementsByTagName('footer');
     expect(el).to.exist;
   });
