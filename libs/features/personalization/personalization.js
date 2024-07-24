@@ -153,7 +153,7 @@ function checkSelectorType(selector) {
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
-    const resp = await fetch(url);
+    const resp = await fetch(normalizePath(url));
     if (!resp.ok) {
       /* c8 ignore next 5 */
       if (resp.status === 404) {
@@ -952,8 +952,8 @@ export async function init(enablements = {}) {
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
-      const localizedURL = localizeLink(manifest.manifestPath);
-      loadLink(localizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+      const normalizedURL = normalizePath(manifest.manifestPath);
+      loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
   }
 
