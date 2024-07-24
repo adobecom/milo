@@ -48,6 +48,13 @@ describe('article header', () => {
     stub.restore();
   });
 
+  it('updates share text after deferred event', async () => {
+    document.dispatchEvent(new Event('milo:deferred'));
+    const shareLink = document.querySelector('.article-byline-sharing a');
+    await delay(100);
+    expect(shareLink.getAttribute('aria-label')).to.equal('Click to share on twitter');
+  });
+
   it('should add copy-failure class to link if the copy fails', async () => {
     const writeTextStub = sinon.stub(navigator.clipboard, 'writeText').rejects();
     const copyLink = document.body.querySelector('.article-byline-sharing #copy-to-clipboard');
@@ -69,6 +76,17 @@ describe('article header', () => {
     const tooltip = await waitForElement('.copied-to-clipboard');
 
     expect(tooltip).to.exist;
+    writeTextStub.restore();
+  });
+
+  it('updates copy text after deferred event', async () => {
+    document.dispatchEvent(new Event('milo:deferred'));
+    const writeTextStub = sinon.stub(navigator.clipboard, 'writeText').resolves();
+    const copyLink = document.body.querySelector('.article-byline-sharing #copy-to-clipboard');
+    sinon.fake();
+    copyLink.click();
+    const tooltip = await waitForElement('.copied-to-clipboard');
+    expect(tooltip.textContent).to.equal('Link copied to clipboard');
     writeTextStub.restore();
   });
 
