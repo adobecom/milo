@@ -56,9 +56,9 @@ const decorateLocales = (current) => {
       ? `/${key}${current.pathname}`
       : current.pathname.replace(current.locale.prefix, prefix);
     if (localePath.startsWith('/langstore/')) {
-      localePath = localePath.replace('/langstore/', '/langstore/en/');
       // eslint-disable-next-line no-param-reassign
       key = 'langstore/en';
+      localePath = localePath.replace('/langstore/', `/${key}/`);
     }
     const li = createTag('li', { class: 'detail' }, `<span>${key || 'us'}</span>`);
     getStatus(li, localePath);
