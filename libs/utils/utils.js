@@ -724,7 +724,7 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  console.log('el', el);
+
   const walker = document.createTreeWalker(el,
     NodeFilter.SHOW_TEXT,
     {
@@ -1214,7 +1214,7 @@ export async function loadArea(area = document) {
   }
   const config = getConfig();
 
-  // await decoratePlaceholders(area, config);
+  await decoratePlaceholders(area, config);
 
   if (isDoc) {
     decorateDocumentExtras();
@@ -1225,11 +1225,7 @@ export async function loadArea(area = document) {
   const areaBlocks = [];
   for (const section of sections) {
     const sectionBlocks = await processSection(section, config, isDoc);
-    await Promise.all(sectionBlocks.map(async (section) => {
-      await decoratePlaceholders(section, config);
-    }));
     areaBlocks.push(...sectionBlocks);
-    console.log('areaBlocks', areaBlocks);
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
