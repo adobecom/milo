@@ -288,6 +288,9 @@ describe('class "InlinePrice"', () => {
         });
     });
 
+    /*
+    Commented out until issues in content with manually added tax labels are resolved
+
     describe('default display tax', () => {
         const SEGMENTS = ['individual', 'business', 'student', 'university'];
         const TESTS = [
@@ -676,6 +679,7 @@ describe('class "InlinePrice"', () => {
             expect(inlinePrice.textContent).equal('US$89.99/mo');
         });
     });
+    */
 });
 
 describe('commerce service', () => {

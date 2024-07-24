@@ -53,7 +53,7 @@ Consumers usually import commerce service dynamically and call its `init` functi
 import { getConfig } from '../../utils/utils.js';
 
 export default async function init(el) {
-  const { Log, init, reset } = await import('../../deps/commerce.js');
+  const { Log, init, reset } = await import('../../deps/mas/commerce.js');
   const log = Log.commerce.module('merch');
   const commerce = await init(getConfig);
   log.debug('Activated:', { commerce, el });

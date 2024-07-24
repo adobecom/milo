@@ -1,13 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { build } from 'esbuild';
-import { execSync } from 'node:child_process';
 
-// Get the current commit hash
-const commitHash = execSync('git rev-parse HEAD').toString().trim();
-const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
-console.log(`you're building from branch ${branch} with commit ${commitHash}`);
-const params = process.argv.slice(2);
-const outfolder = params.includes('milo') ? '../../../../libs/deps/' : '../libs';
+const outfolder = '../../../../libs/deps/mas';
 
 async function buildLitComponent(name) {
     const { metafile } = await build({

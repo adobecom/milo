@@ -12,7 +12,6 @@
     "sideEffects": false,
     "scripts": {
         "build": "npm run build:bundle && npm run build:types",
-        "build:milo": "npm run build:bundle milo && npm run build:types",
         "build:bundle": "node ./build.mjs",
         "build:types": "cp ./src/index.d.ts ../libs/commerce.d.ts",
         "build:watch": "npm run build:bundle --watch",

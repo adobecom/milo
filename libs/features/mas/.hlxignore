@@ -1,7 +1,1 @@
-.*
-*.md
-karma.config.js
-LICENSE
-package.json
-package-lock.json
-test/*
+*

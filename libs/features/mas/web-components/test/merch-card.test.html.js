@@ -135,4 +135,11 @@ runTests(async () => {
         ).title;
         expect(title).to.equal('Individuals');
     });
+
+    it('should have custom border color for segment card', async () => {
+        const segmentCard = document.querySelector('merch-card[variant="segment"].custom-border-color');
+        const borderColor = segmentCard.getAttribute('border-color');
+        expect(borderColor).to.exist;
+        expect(borderColor).to.not.equal('');
+    });
 });

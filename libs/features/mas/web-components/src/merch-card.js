@@ -33,6 +33,7 @@ export class MerchCard extends LitElement {
         variant: { type: String, reflect: true },
         size: { type: String, attribute: 'size', reflect: true },
         badgeColor: { type: String, attribute: 'badge-color' },
+        borderColor: { type: String, attribute: 'border-color' },
         badgeBackgroundColor: {
             type: String,
             attribute: 'badge-background-color',
@@ -109,11 +110,8 @@ export class MerchCard extends LitElement {
     #container;
 
     updated(changedProperties) {
-        if (
-            changedProperties.has('badgeBackgroundColor') &&
-            this.variant !== 'twp'
-        ) {
-            this.style.border = `1px solid ${this.badgeBackgroundColor}`;
+        if (changedProperties.has('badgeBackgroundColor') || changedProperties.has('borderColor')) {
+            this.style.border = this.computedBorderStyle;
         }
         this.updateComplete.then(async () => {
             const prices = Array.from(
@@ -124,6 +122,15 @@ export class MerchCard extends LitElement {
             this.adjustMiniCompareBodySlots();
             this.adjustMiniCompareFooterRows();
         });
+    }
+
+    get computedBorderStyle() {
+        if (this.variant !== 'twp') {
+            return `1px solid ${
+                this.borderColor ? this.borderColor : this.badgeBackgroundColor
+            }`;
+        }
+        return '';
     }
 
     get evergreen() {

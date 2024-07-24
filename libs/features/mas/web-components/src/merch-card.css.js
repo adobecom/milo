@@ -208,7 +208,6 @@ export const styles = css`
         gap: var(--consonant-merch-spacing-xxs);
         align-items: center;
         flex: 1;
-        height: 100%;
         line-height: normal;
     }
 

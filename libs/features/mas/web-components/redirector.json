@@ -4,7 +4,7 @@
     "redirects": [
         {
             "description": "Debug commerce web components",
-            "exampleUrl": "https://www.adobe.com/libs/deps/merch-card.js",
+            "exampleUrl": "https://www.adobe.com/libs/deps/mas/merch-card.js",
             "exampleResult": "http://localhost:2023/src/merch-card.js",
             "error": null,
             "includePattern": "/libs/deps/(merch.*)",
@@ -24,7 +24,7 @@
         },
         {
             "description": "Debug commerce web components",
-            "exampleUrl": "https://www.adobe.com/libs/deps/merch-offer-select.js",
+            "exampleUrl": "https://www.adobe.com/libs/deps/mas/merch-offer-select.js",
             "exampleResult": "http://localhost:2023/src/merch-offer-select.js",
             "error": null,
             "includePattern": "/libs/deps/(merch.*)",
@@ -44,7 +44,7 @@
         },
         {
             "description": "Debug commerce web components",
-            "exampleUrl": "https://www.adobe.com/libs/deps/merch-offer.js",
+            "exampleUrl": "https://www.adobe.com/libs/deps/mas/merch-offer.js",
             "exampleResult": "http://localhost:2023/src/merch-offer.js",
             "error": null,
             "includePattern": "/libs/deps/(merch.*)",
