@@ -12,10 +12,10 @@ const envMap = {
   qa: 'https://feds--milo--adobecom.hlx.page',
 };
 
-export default async function loadBlock(configs = {}) {
+export default async function loadBlock(configs = {}, customLib) {
   const { footer, locale, env = 'prod' } = configs;
   const branch = new URLSearchParams(window.location.search).get('navbranch');
-  const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : envMap[env];
+  const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
 
   // Relative path can't be used, as the script will run on consumer's app
   const { default: bootstrapBlock } = await import(`${miloLibs}/libs/navigation/bootstrapper.js`);
