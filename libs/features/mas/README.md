@@ -18,11 +18,11 @@ Refer to the corresponding README.md under any of the packages:
 * web-components - merch-card, merch-offer-selector and other web components
 
 # Consumption of artifacts in Milo
-Please run 'npm run build:milo'
+Please run 'npm run build'
 ```
-npm run build:milo
+npm run build
 ```
-Copy required artifacts from 'milo-libs' folder to milo/libs/deps/mas.
+Copy required artifacts folder to milo/libs/deps/mas.
 
 #### Troubleshooting
 Please reach out to us in `#tacocat-friends` for any questions.
