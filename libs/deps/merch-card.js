@@ -1,4 +1,4 @@
-// branch: MWPW-153245 commit: 80f21a78a0086314c79c0d2e95f754aa3520def0 Wed, 24 Jul 2024 08:38:44 GMT
+// branch: MWPW-153245 commit: 3dc1397288d0edf100d5f91173c4f9275978d3ca Wed, 24 Jul 2024 15:41:38 GMT
 import{html as o,LitElement as re,nothing as ne}from"/libs/deps/lit-all.min.js";import{LitElement as Q,html as M,css as Z}from"/libs/deps/lit-all.min.js";var h=class extends Q{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?M`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:M` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=Z`
@@ -340,7 +340,7 @@ import{html as o,LitElement as re,nothing as ne}from"/libs/deps/lit-all.min.js";
         }
     }
 
-    @media screen and ${u(f)} {
+    @media screen and ${y(b)} {
         :host([variant='mini-compare-chart']) .top-section {
             padding-top: var(--consonant-merch-spacing-xs);
         }
@@ -350,7 +350,7 @@ import{html as o,LitElement as re,nothing as ne}from"/libs/deps/lit-all.min.js";
             top: 10px;
         }
     }
-    @media screen and ${u(c)} {
+    @media screen and ${y(s)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -406,13 +406,13 @@ import{html as o,LitElement as re,nothing as ne}from"/libs/deps/lit-all.min.js";
         }
 
         /* Laptop */
-        @media screen and ${u(c)} {
+        @media screen and ${y(s)} {
             :host([size='super-wide']) {
                 grid-column: span 3;
             }
-        `];return p.push(k`
+        `];return c.push(A`
         /* Large desktop */
-        @media screen and ${u(h)} {
+        @media screen and ${y(g)} {
             :host([size='super-wide']) {
                 grid-column: span 4;
             }
@@ -521,6 +521,11 @@ import{html as o,LitElement as re,nothing as ne}from"/libs/deps/lit-all.min.js";
     --consonant-merch-card-twp-mobile-width: 300px;
     --consonant-merch-card-twp-mobile-height: 358px;
 
+    /* ccd-action */
+    --consonant-merch-card-ccd-action-width: 276px;
+    --consonant-merch-card-ccd-action-min-height: 320px;
+
+
     /*mini compare chart */
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
@@ -536,6 +541,15 @@ import{html as o,LitElement as re,nothing as ne}from"/libs/deps/lit-all.min.js";
 
     --ellipsis-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="2" cy="2" r="2" fill="%232c2c2c" transform="translate(6 6)"/><circle cx="2" cy="2" r="2" fill="%232c2c2c" data-name="Ellipse 71" transform="translate(12 6)"/><circle cx="2" cy="2" r="2" fill="%232c2c2c" transform="translate(0 6)"/></svg>');
 
+    /* callout */
+    --consonant-merch-card-callout-line-height: 21px;
+    --consonant-merch-card-callout-font-size: 14px;
+    --consonant-merch-card-callout-font-color: #2C2C2C;
+    --consonant-merch-card-callout-icon-size: 16px;
+    --consonant-merch-card-callout-icon-top: 6px;
+    --consonant-merch-card-callout-icon-right: 8px;
+    --consonant-merch-card-callout-letter-spacing: 0px;
+    --consonant-merch-card-callout-icon-padding: 34px;
 }
 
 merch-card-collection {
@@ -646,6 +660,43 @@ merch-card [slot='heading-xl'] {
     color: var(--merch-color-grey-80);
 }
 
+merch-card [slot='callout-text'] {
+    display: inline-block;
+    margin: var(--consonant-merch-spacing-xxxs) 0px;
+}
+
+merch-card [slot='callout-text'] > div {
+    position: relative;
+    display: inline-grid;
+    background: rgba(203 203 203 / 50%);
+    border-radius: var(--consonant-merch-spacing-xxxs);
+    padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
+}
+
+merch-card [slot='callout-text'] > div.callout-content-wrapper-with-icon {
+    padding-right: var(--consonant-merch-card-callout-icon-padding);
+}
+
+merch-card [slot='callout-text'] > div > div {
+    display: inline-block;
+    text-align: left;
+    font: normal normal normal var(--consonant-merch-card-callout-font-size)/var(--consonant-merch-card-callout-line-height) Adobe Clean;
+    letter-spacing: var(--consonant-merch-card-callout-letter-spacing);
+    color: var(--consonant-merch-card-callout-font-color);
+}
+
+merch-card [slot='callout-text'] img {
+    position: absolute;
+    top: var(--consonant-merch-card-callout-icon-top);
+    right: var(--consonant-merch-card-callout-icon-right);
+    width: var(--consonant-merch-card-callout-icon-size);
+    height: var(--consonant-merch-card-callout-icon-size);
+}
+
+merch-card[variant="mini-compare-chart"] [slot="callout-text"] {
+    padding: 0px var(--consonant-merch-spacing-s);
+}
+
 merch-card [slot='detail-m'] {
     font-size: var(--consonant-merch-card-detail-m-font-size);
     letter-spacing: var(--consonant-merch-card-detail-m-letter-spacing);
@@ -730,6 +781,10 @@ merch-card[variant="catalog"] [slot="action-menu-content"] p {
 merch-card[variant="catalog"] [slot="action-menu-content"] a {
     color: var(--consonant-merch-card-background-color);
     text-decoration: underline;
+}
+
+merch-card[variant="ccd-action"] .price-strikethrough {
+    font-size: 18px;
 }
 
 merch-card[variant="plans"] [slot="quantity-select"] {
@@ -878,7 +933,7 @@ merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     text-decoration: solid;
 }
 
-@media screen and ${f} {
+@media screen and ${b} {
     merch-card[variant="mini-compare-chart"] .mini-compare-chart-badge + [slot='heading-m'] {
         margin-top: var(--consonant-merch-spacing-m);
     }
@@ -969,7 +1024,7 @@ div[slot='bg-image'] img {
 }
 
 /* Mobile */
-@media screen and ${f} {
+@media screen and ${b} {
     :root {
         --consonant-merch-card-mini-compare-chart-width: 142px;
         --consonant-merch-card-segment-width: 276px;
@@ -981,7 +1036,7 @@ div[slot='bg-image'] img {
 
 
 /* Tablet */
-@media screen and ${i} {
+@media screen and ${d} {
     :root {
         --consonant-merch-card-catalog-width: 302px;
         --consonant-merch-card-plans-width: 302px;
@@ -994,7 +1049,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${c} {
+@media screen and ${s} {
     :root {
         --consonant-merch-card-catalog-width: 276px;
         --consonant-merch-card-plans-width: 276px;
@@ -1516,9 +1571,11 @@ body.merch-modal {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":o`<slot name="promo-text"></slot><slot name="callout-text"></slot>`}
+                ${this.promoBottom?"":o`<slot name="promo-text"></slot
+                          ><slot name="callout-text"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?o`<slot name="promo-text"></slot><slot name="callout-text"></slot>`:""}
+                ${this.promoBottom?o`<slot name="promo-text"></slot
+                          ><slot name="callout-text"></slot>`:""}
             </div>
             ${this.secureLabelFooter}`}renderImage(){return o`${this.cardImage}
             <div class="body">
