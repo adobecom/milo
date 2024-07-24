@@ -17,7 +17,7 @@ async function buildLitComponent(name) {
         sourcemap: true,
     });
 
-    writeFileSync(`../libs/${name}.json`, JSON.stringify(metafile));
+    writeFileSync(`../../../../libs/deps/mas/${name}.json`, JSON.stringify(metafile));
 }
 
 Promise.all([

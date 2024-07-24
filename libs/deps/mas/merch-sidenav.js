@@ -50,7 +50,7 @@ function debounce(func, delay) {
   };
 }
 
-// ../commons/src/deeplink.js
+// src/deeplink.js
 var EVENT_HASHCHANGE = "hashchange";
 function parseState(hash = window.location.hash) {
   const result = [];
@@ -100,14 +100,6 @@ function deeplink(callback) {
     window.removeEventListener(EVENT_HASHCHANGE, handler);
   };
 }
-
-// ../commons/src/aem.js
-var accessToken = localStorage.getItem("masAccessToken");
-var headers = {
-  Authorization: `Bearer ${accessToken}`,
-  pragma: "no-cache",
-  "cache-control": "no-cache"
-};
 
 // src/merch-search.js
 var MerchSearch = class extends LitElement {

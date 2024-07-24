@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 
-import { deeplink, pushState } from '@adobe/mas-commons';
+import { deeplink, pushState } from './deeplink.js';
 
 import { updateLiterals } from './literals.js';
 import { TABLET_DOWN } from './media.js';

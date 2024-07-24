@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import mas from './mocks/mas.js';
-import { getTemplateContent } from '@adobe/mas-commons/test/utils.js';
+import { getTemplateContent } from './utils.js';
 
 runTests(async () => {
     await mockFetch(withWcs);

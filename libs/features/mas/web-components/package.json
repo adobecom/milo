@@ -13,12 +13,10 @@
     ],
     "scripts": {
         "build": "node build.mjs",
-        "build:milo": "node build.mjs milo",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage --watch --debug",
         "test:ci": "wtr --config ./web-test-runner.config.mjs"
     },
     "dependencies": {
-        "@adobe/mas-commons": "^0.0.1"
     },
     "devDependencies": {
         "@web/dev-server": "^0.3.1",

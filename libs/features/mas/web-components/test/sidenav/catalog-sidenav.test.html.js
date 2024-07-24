@@ -11,7 +11,7 @@ import '../../src/sidenav/merch-sidenav.js';
 import '../../src/sidenav/merch-sidenav-list.js';
 import '../../src/sidenav/merch-sidenav-checkbox-group.js';
 import '../../src/merch-search.js';
-import { pushState, parseState } from '@adobe/mas-commons';
+import { pushState, parseState } from '../../src/deeplink.js';
 
 const resetChecks = async () => {
     document.querySelectorAll('sp-checkbox').forEach((cb) => {

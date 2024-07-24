@@ -5,7 +5,7 @@ import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockConfig } from './mocks/config.js';
 
-import { pushState } from '@adobe/mas-commons';
+import { pushState } from '../src/deeplink.js';
 
 import {
     appendMiloStyles,

@@ -10,7 +10,7 @@ import {
     EVENT_OFFER_SELECTED,
     EVENT_MERCH_STORAGE_CHANGE,
 } from './constants.js';
-import { parseState } from '@adobe/mas-commons';
+import { parseState } from './deeplink.js';
 
 const TAG_NAME = 'merch-twp-d2p';
 const TAB_INDIVIDUALS = 'individuals';

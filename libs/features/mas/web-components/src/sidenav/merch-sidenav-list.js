@@ -1,5 +1,5 @@
 import { html, LitElement, css } from 'lit';
-import { parseState, pushStateFromComponent } from '@adobe/mas-commons';
+import { parseState, pushStateFromComponent } from '../deeplink.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
 import { debounce } from '../utils';
 

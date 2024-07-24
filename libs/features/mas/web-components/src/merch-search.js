@@ -4,7 +4,7 @@ import {
     deeplink,
     pushStateFromComponent,
     parseState,
-} from '@adobe/mas-commons';
+} from './deeplink.js';
 
 export class MerchSearch extends LitElement {
     static properties = {

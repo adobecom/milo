@@ -19,7 +19,7 @@ import { _$LE } from 'lit';
 import { withWcs } from './mocks/wcs.js';
 import { withLiterals } from './mocks/literals.js';
 import mas from './mocks/mas.js';
-import { getTemplateContent } from '@adobe/mas-commons/test/utils.js';
+import { getTemplateContent } from './utils.js';
 
 const shouldSkipTests = sessionStorage.getItem('skipTests') === 'true';
 
