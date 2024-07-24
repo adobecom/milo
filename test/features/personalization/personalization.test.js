@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
-import { applyPers, matchGlob } from '../../../libs/features/personalization/personalization.js';
+import { applyPers, matchGlob, createFrag } from '../../../libs/features/personalization/personalization.js';
 import spoofParams from './spoofParams.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -224,5 +224,14 @@ describe('matchGlob function', () => {
   it('should match child page', async () => {
     const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
     expect(result).to.be.true;
+  });
+
+  it('should hide the wrapping <p> for the delayed modal anchor', async () => {
+    const parent = document.createElement('div');
+    const el = document.createElement('div');
+    parent.appendChild(el);
+    const wrapper = createFrag(el, '/fragments/promos/path-to-promo/#modal-hash:delay=1');
+    expect(wrapper.tagName).to.equal('P');
+    expect(wrapper.classList.contains('hide-block')).to.be.true;
   });
 });

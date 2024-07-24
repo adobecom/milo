@@ -18,9 +18,10 @@ import {
   lanaLog,
   logErrorFor,
   toFragment,
-  getFederatedUrl,
   federatePictureSources,
 } from '../global-navigation/utilities/utilities.js';
+
+import { getFederatedUrl } from '../../utils/federated.js';
 
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -285,13 +286,15 @@ class Footer {
 
     const socialElem = toFragment`<ul class="feds-social" daa-lh="Social"></ul>`;
 
+    const sanitizeLink = (link) => link.replace('#_blank', '').replace('#_dnb', '');
+
     CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
       if (!link) return;
 
       const iconElem = toFragment`<li class="feds-social-item">
           <a
-            href="${link.href}"
+            href="${sanitizeLink(link.href)}"
             class="feds-social-link"
             aria-label="${platform}"
             daa-ll="${getAnalyticsValue(platform, index + 1)}"
