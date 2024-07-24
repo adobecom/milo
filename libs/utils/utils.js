@@ -724,10 +724,28 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const found = regex.test(el.innerHTML);
-  if (!found) return;
+  console.log('el', el);
+  const walker = document.createTreeWalker(el,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: (node) => {
+        return regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    },
+  });
+
+  const nodes = [];
+  let node;
+  while (node = walker.nextNode()) {
+    nodes.push(node);
+  }
+
+  if (!nodes.length) return;
+
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(el.innerHTML, config, regex);
+  console.log('nodes', nodes);
+  for (const textNode of nodes) {
+    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
+  }
 }
 
 async function loadFooter() {
@@ -1196,7 +1214,7 @@ export async function loadArea(area = document) {
   }
   const config = getConfig();
 
-  await decoratePlaceholders(area, config);
+  // await decoratePlaceholders(area, config);
 
   if (isDoc) {
     decorateDocumentExtras();
@@ -1207,7 +1225,11 @@ export async function loadArea(area = document) {
   const areaBlocks = [];
   for (const section of sections) {
     const sectionBlocks = await processSection(section, config, isDoc);
+    await Promise.all(sectionBlocks.map(async (section) => {
+      await decoratePlaceholders(section, config);
+    }));
     areaBlocks.push(...sectionBlocks);
+    console.log('areaBlocks', areaBlocks);
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
