@@ -3,7 +3,7 @@ import path from 'path';
 import postcss from 'postcss';
 
 const spectrumCSSPath = path.resolve('node_modules/@spectrum-css/tokens/dist/index.css');
-const miloCSSPath = path.resolve('../../deps/spectrum2-styles.css');
+const miloCSSPath = path.resolve('../../styles/styles.css');
 
 const logFileSize = (filePath, status) => {
   const fileSizeInBytes = fs.statSync(filePath).size;
@@ -16,7 +16,6 @@ const miloCSS = fs.readFileSync(miloCSSPath, 'utf8');
 
 logFileSize(miloCSSPath, 'original');
 
-// Formats and transforms Spectrum CSS Rgb and opacity properties for performance
 const transformRgbProperties = (rule) => {
   const properties = {};
 
@@ -24,7 +23,6 @@ const transformRgbProperties = (rule) => {
 
   rule.walkDecls((decl) => {
     const { prop, value } = decl;
-
     decl.value = replaceZeroPx(value);
 
     let baseName;
@@ -56,9 +54,7 @@ const extractAndTransform = (css, prefix) => {
     if (!customProperties[selector]) {
       customProperties[selector] = {};
     }
-
     transformRgbProperties(rule);
-
     rule.walkDecls((decl) => {
       let propName = decl.prop;
       if (propName.startsWith(prefix)) propName = `--spectrum${propName.slice(prefix.length)}`;
@@ -69,6 +65,20 @@ const extractAndTransform = (css, prefix) => {
 };
 
 const spectrumProperties = extractAndTransform(spectrumCSS, '--spectrum');
+
+const getSpectrumPropertiesForSelector = (selector) => {
+  const map = {
+    ':root': ['.spectrum', '.spectrum--light', '.spectrum--medium', '.spectrum--lightest'],
+    '.dark': ['.spectrum--dark'],
+  };
+  const properties = {};
+  const propertiesToMerge = map[selector] || [selector];
+  propertiesToMerge.forEach((property) => {
+    Object.assign(properties, spectrumProperties[property] || {});
+  });
+  return properties;
+};
+
 const miloProperties = extractAndTransform(miloCSS, '--s2');
 
 const updateMiloCSS = (css) => {
@@ -81,9 +91,13 @@ const updateMiloCSS = (css) => {
         const { prop } = decl;
         if (prop.startsWith('--s2')) {
           const spectrumProp = `--spectrum${prop.slice(4)}`;
-          if (spectrumProperties[selector][spectrumProp] !== undefined) {
-            decl.value = spectrumProperties[selector][spectrumProp];
+          const spectrumProps = getSpectrumPropertiesForSelector(selector);
+          if (spectrumProps[spectrumProp] !== undefined) {
+            decl.value = spectrumProps[spectrumProp];
           }
+        }
+        if (decl.value.includes('--spectrum')) {
+          decl.value = decl.value.replace(/--spectrum/g, '--s2');
         }
       });
     }
