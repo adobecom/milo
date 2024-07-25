@@ -8,7 +8,6 @@
       "selector": "section2",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "target-var1": "/test/features/personalization/mocks/fragments/appendToSection",
       "chrome": "/test/features/personalization/mocks/fragments/appendToSection"
     }
   ],

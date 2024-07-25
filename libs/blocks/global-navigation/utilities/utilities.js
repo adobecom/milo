@@ -47,12 +47,13 @@ export const logErrorFor = async (fn, message, tags) => {
   }
 };
 
-export function addMepHighlightAndTargetId(el, source) {
-  let { manifestId, targetManifestId } = source.dataset;
-  manifestId ??= source?.closest('[data-manifest-id]')?.dataset?.manifestId;
-  targetManifestId ??= source?.closest('[data-adobe-target-testid]')?.dataset?.adobeTargetTestid;
+export function addMepHighlight(el, source) {
+  let { manifestId } = source.dataset;
+  if (!manifestId) {
+    const closestManifestId = source?.closest('[data-manifest-id]');
+    if (closestManifestId) manifestId = closestManifestId.dataset.manifestId;
+  }
   if (manifestId) el.dataset.manifestId = manifestId;
-  if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   return el;
 }
 
@@ -309,7 +310,6 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
-  if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
     const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
