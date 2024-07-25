@@ -33,7 +33,7 @@ import {
   toFragment,
   trigger,
   yieldToMain,
-  addMepHighlight,
+  addMepHighlightAndTargetId,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -919,14 +919,14 @@ class Gnav {
         observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
 
         delayDropdownDecoration({ template: triggerTemplate });
-        return addMepHighlight(triggerTemplate, item);
+        return addMepHighlightAndTargetId(triggerTemplate, item);
       }
       case 'primaryCta':
       case 'secondaryCta':
         // Remove its 'em' or 'strong' wrapper
         item.parentElement.replaceWith(item);
 
-        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`, item);
       case 'link': {
@@ -945,15 +945,15 @@ class Gnav {
           <div class="feds-navItem${activeModifier}">
             ${linkElem}
           </div>`;
-        return addMepHighlight(linkTemplate, item);
+        return addMepHighlightAndTargetId(linkTemplate, item);
       }
       case 'text':
-        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item.textContent}
           </div>`, item);
       default:
         /* c8 ignore next 3 */
-        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item}
           </div>`, item);
     }

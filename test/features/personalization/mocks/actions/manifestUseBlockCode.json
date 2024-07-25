@@ -9,6 +9,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "test\\features\\personalization\\mocks\\promo",
+      "target-var1": "test\\features\\personalization\\mocks\\promo",
       "firefox": "",
       "android": "",
       "ios": ""

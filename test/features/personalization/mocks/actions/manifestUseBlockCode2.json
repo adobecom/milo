@@ -9,6 +9,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/test/features/personalization/mocks/myblock",
+      "target-var1": "/test/features/personalization/mocks/myblock",
       "firefox": "",
       "android": "",
       "ios": ""
