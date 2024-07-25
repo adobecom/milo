@@ -390,8 +390,8 @@
   margin: 0 4px 0 -4px;
   top: 50%;
   transform: translateY(-50%);
-  border: 8px solid #0469E3;
-  border-color: transparent transparent transparent #0469E3;
+  border: 8px solid transparent;
+  border-left-color: #0469E3;
 }
 
 /* hover */
