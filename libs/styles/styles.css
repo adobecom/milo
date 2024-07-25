@@ -705,6 +705,7 @@ header:not(.global-navigation) ~ main {
  */
 header.global-navigation {
   height: var(--global-height-nav);
+  visibility: hidden;
 }
 
 header.global-navigation.has-promo {
