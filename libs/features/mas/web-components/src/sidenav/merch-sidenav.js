@@ -16,7 +16,7 @@ document.addEventListener('sp-closed', () => {
 
 export class MerchSideNav extends LitElement {
     static properties = {
-        title: { type: String },
+        sidenavTitle: { type: String },
         closeText: { type: String, attribute: 'close-text' },
         modal: { type: Boolean, attribute: 'modal', reflect: true },
     };
@@ -110,7 +110,7 @@ export class MerchSideNav extends LitElement {
                     <div id="content">
                         <div id="sidenav">
                             <div>
-                                <h2>${this.title}</h2>
+                                <h2>${this.sidenavTitle}</h2>
                                 <slot></slot>
                             </div>
                             <sp-link href="#" @click="${this.closeModal}"
@@ -125,7 +125,7 @@ export class MerchSideNav extends LitElement {
 
     get asAside() {
         return html`<sp-theme theme="spectrum" color="light" scale="medium"
-            ><h2>${this.title}</h2>
+            ><h2>${this.sidenavTitle}</h2>
             <slot></slot
         ></sp-theme>`;
     }

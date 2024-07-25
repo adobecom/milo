@@ -2,10 +2,10 @@ import { html, LitElement, css } from 'lit';
 import { parseState, pushStateFromComponent } from '../deeplink.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
 import { debounce } from '../utils';
-
+import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
 export class MerchSidenavList extends LitElement {
     static properties = {
-        title: { type: String },
+        sidenavListTitle: { type: String },
         label: { type: String },
         deeplink: { type: String, attribute: 'deeplink' },
         selectedText: {
@@ -65,6 +65,17 @@ export class MerchSidenavList extends LitElement {
             setTimeout(() => {
                 element.selected = true;
             }, 1);
+            this.dispatchEvent(
+                new CustomEvent(EVENT_MERCH_SIDENAV_SELECT, {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        type: 'sidenav',
+                        value: this.selectedValue,
+                        elt: this.selectedElement,
+                    },
+                }),
+            );
         }
     }
 
@@ -141,7 +152,7 @@ export class MerchSidenavList extends LitElement {
             aria-label="${this.label}"
             @change="${(e) => this.selectionChanged(e)}"
         >
-            ${this.title ? html`<h2>${this.title}</h2>` : ''}
+            ${this.sidenavListTitle ? html`<h2>${this.sidenavListTitle}</h2>` : ''}
             <slot></slot>
         </div>`;
     }

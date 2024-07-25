@@ -3,6 +3,10 @@ import { MatchMediaController } from '@spectrum-web-components/reactive-controll
 
 import { deeplink, pushState } from './deeplink.js';
 
+import {
+    EVENT_MERCH_CARD_COLLECTION_SORT,
+    EVENT_MERCH_CARD_COLLECTION_SHOWMORE,
+} from './constants.js';
 import { updateLiterals } from './literals.js';
 import { TABLET_DOWN } from './media.js';
 import { styles } from './merch-card-collection.css.js';
@@ -305,9 +309,25 @@ export class MerchCardCollection extends LitElement {
         } else {
             pushState({ sort: event.target.value });
         }
+
+        this.dispatchEvent(
+            new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SORT, {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: event.target.value,
+                },
+            }),
+        );
     }
 
     async showMore() {
+        this.dispatchEvent(
+            new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SHOWMORE, {
+                bubbles: true,
+                composed: true,
+            }),
+        );
         const page = this.page + 1;
         pushState({ page });
         this.page = page;

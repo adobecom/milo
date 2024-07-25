@@ -3,7 +3,7 @@ import { parseState, pushStateFromComponent } from '../deeplink.js';
 
 export class MerchSidenavCheckboxGroup extends LitElement {
     static properties = {
-        title: { type: String },
+        sidenavCheckboxTitle: { type: String },
         label: { type: String },
         deeplink: { type: String },
         selectedValues: { type: Array, reflect: true },
@@ -78,7 +78,7 @@ export class MerchSidenavCheckboxGroup extends LitElement {
 
     render() {
         return html`<div aria-label="${this.label}">
-            <h3>${this.title}</h3>
+            <h3>${this.sidenavCheckboxTitle}</h3>
             <div
                 @change="${(e) => this.selectionChanged(e)}"
                 class="checkbox-group"

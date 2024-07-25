@@ -1,5 +1,6 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement } from 'lit';
 import { debounce } from './utils';
+import { EVENT_MERCH_SEARCH_CHANGE } from './constants';
 import {
     deeplink,
     pushStateFromComponent,
@@ -17,8 +18,22 @@ export class MerchSearch extends LitElement {
 
     constructor() {
         super();
-        this.handleInput = () =>
+
+        this.handleInput = () => {
             pushStateFromComponent(this, this.search.value);
+            if (this.search.value) {
+                this.dispatchEvent(
+                    new CustomEvent(EVENT_MERCH_SEARCH_CHANGE, {
+                        bubbles: true,
+                        composed: true,
+                        detail: {
+                            type: 'search',
+                            value: this.search.value,
+                        },
+                    }),
+                );
+            }
+        };
         this.handleInputDebounced = debounce(this.handleInput.bind(this));
     }
 
@@ -26,7 +41,6 @@ export class MerchSearch extends LitElement {
         super.connectedCallback();
         if (!this.search) return;
         this.search.addEventListener('input', this.handleInputDebounced);
-        this.search.addEventListener('change', this.handleInputDebounced);
         this.search.addEventListener('submit', this.handleInputSubmit);
         this.updateComplete.then(() => {
             this.setStateFromURL();
@@ -37,7 +51,6 @@ export class MerchSearch extends LitElement {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.search.removeEventListener('input', this.handleInputDebounced);
-        this.search.removeEventListener('change', this.handleInputDebounced);
         this.search.removeEventListener('submit', this.handleInputSubmit);
         this.stopDeeplink?.();
     }

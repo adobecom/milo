@@ -71,6 +71,7 @@ Promise.all([
     build({
         entryPoints: ['./src/sidenav/merch-sidenav.js'],
         bundle: true,
+        minify: true,
         outfile: `${outfolder}/merch-sidenav.js`,
         format: 'esm',
         plugins: [rewriteImports()],

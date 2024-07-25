@@ -29,6 +29,9 @@ export const EVENT_MERCH_OFFER_SELECT_READY = 'merch-offer-select:ready';
 /** Event to dispatch when a merch-card is ready */
 export const EVENT_MERCH_CARD_READY = 'merch-card:ready';
 
+export const EVENT_MERCH_CARD_ACTION_MENU_TOGGLE =
+    'merch-card:action-menu-toggle';
+
 export const EVENT_OFFER_SELECTED = 'merch-offer:selected';
 
 export const EVENT_MERCH_STOCK_CHANGE = 'merch-stock:change';
@@ -37,3 +40,12 @@ export const EVENT_MERCH_STORAGE_CHANGE = 'merch-storage:change';
 
 export const EVENT_MERCH_QUANTITY_SELECTOR_CHANGE =
     'merch-quantity-selector:change';
+
+export const EVENT_MERCH_SEARCH_CHANGE = 'merch-search:change';
+
+export const EVENT_MERCH_CARD_COLLECTION_SORT = 'merch-card-collection:sort';
+
+export const EVENT_MERCH_CARD_COLLECTION_SHOWMORE =
+    'merch-card-collection:showmore';
+
+export const EVENT_MERCH_SIDENAV_SELECT = 'merch-sidenav:select';

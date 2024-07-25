@@ -30,7 +30,7 @@
             <div id="merch-sidenav"></div>
         </main>
         <template id="merch-sidenav-template">
-            <merch-sidenav title="REFINE YOUR RESULTS">
+            <merch-sidenav sidenavTitle="REFINE YOUR RESULTS">
                 <merch-search deeplink="search">
                     <sp-search placeholder="Search all products"></sp-search>
                 </merch-search>
@@ -53,12 +53,12 @@
                         </sp-sidenav-item>
                     </sp-sidenav>
                 </merch-sidenav-list>
-                <merch-sidenav-checkbox-group title="Types" label="types" deeplink="types">
+                <merch-sidenav-checkbox-group sidenavCheckboxTitle="Types" label="types" deeplink="types">
                     <sp-checkbox emphasized name="desktop">Desktop</sp-checkbox>
                     <sp-checkbox emphasized name="mobile">Mobile</sp-checkbox>
                     <sp-checkbox emphasized name="web">Web</sp-checkbox>
                 </merch-sidenav-checkbox-group>
-                <merch-sidenav-list title="RESOURCES">
+                <merch-sidenav-list sidenavListTitle="RESOURCES">
                     <sp-sidenav
                         manageTabIndex="true"
                         label="resources"
