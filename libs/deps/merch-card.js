@@ -1,4 +1,4 @@
-// branch: MWPW-154335 commit: 75fa81ee6cc026cbdb162636b715b61461266eca Mon, 22 Jul 2024 20:08:22 GMT
+// branch: MWPW-154335 commit: 63b7be556822da81243ffff85ae367f43618c7f2 Thu, 25 Jul 2024 05:58:29 GMT
 import{html as o,LitElement as te,nothing as re}from"/libs/deps/lit-all.min.js";import{LitElement as Y,html as M,css as Q}from"/libs/deps/lit-all.min.js";var h=class extends Y{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?M`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:M` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=Q`
@@ -390,7 +390,9 @@ import{html as o,LitElement as te,nothing as re}from"/libs/deps/lit-all.min.js";
         min-height: var(--consonant-merch-card-mini-compare-promo-text-height);
     }
     :host([variant='mini-compare-chart']) slot[name='callout-content'] {
-        min-height: var(--consonant-merch-card-mini-compare-callout-content-height);
+        min-height: var(
+            --consonant-merch-card-mini-compare-callout-content-height
+        );
     }
 
     :host([variant='plans']) ::slotted([slot='heading-xs']),
@@ -1559,8 +1561,8 @@ body.merch-modal {
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
                 <slot name="promo-text"></slot>
-                <slot name="callout-content"></slot>            
-                <slot name="body-xs"></slot>    
+                <slot name="callout-content"></slot>
+                <slot name="body-xs"></slot>
                 ${this.stockCheckbox}
             </div>
             <slot name="quantity-select"></slot>
@@ -1583,9 +1585,11 @@ body.merch-modal {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":o`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+                ${this.promoBottom?"":o`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?o`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+                ${this.promoBottom?o`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`:""}
             </div>
             ${this.secureLabelFooter}`}renderImage(){return o`${this.cardImage}
             <div class="body">
