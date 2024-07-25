@@ -257,45 +257,44 @@ main > .section[class*='-up'] > .content {
 /* Tablet up */
 @media (min-width: 600px) {
   .section.flex > .con-block,
-  .section.flex-2-tablet > .con-block {
+  .section.flex-two-tablet > .con-block {
     --flex-items: 2;
   }
 
-  .section.flex-3-tablet > .con-block {
+  .section.flex-three-tablet > .con-block {
     --flex-items: 3;
   }
 
-  .section.flex-4-tablet > .con-block {
+  .section.flex-four-tablet > .con-block {
     --flex-items: 4;
   }
 
-  .section.flex-5-tablet > .con-block {
+  .section.flex-five-tablet > .con-block {
     --flex-items: 5;
   }
 }
 
 /* Desktop up */
 @media (min-width: 1200px) {
-  .section.flex-2-desktop > .con-block {
+  .section.flex-two-desktop > .con-block {
     --flex-items: 2;
   }
 
   .section.flex > .con-block,
-  .section.flex-3-desktop > .con-block {
+  .section.flex-three-desktop > .con-block {
     --flex-items: 3;
   }
   
-  .section.flex-4-desktop > .con-block {
+  .section.flex-four-desktop > .con-block {
     --flex-items: 4;
   }
 
-  .section.flex-5-desktop > .con-block {
+  .section.flex-five-desktop > .con-block {
     --flex-items: 5;
   }
 }
 
-.section.justify-content-center { justify-content: center; }
-.section.align-items-stretch { align-items: stretch; }
+.section.flex-center { justify-content: center; }
 
 /* mobile only */
 @media (max-width: 600px) {
@@ -423,6 +422,5 @@ main > .section[class*='-up'] > .content {
   .section.masonry-layout .grid-span-9 {grid-column: span 9; }
   .section.masonry-layout .grid-span-10 {grid-column: span 10; }
   .section.masonry-layout .grid-span-11 {grid-column: span 11; }
-
-  /* todo: adaptive flex-grid https://codepen.io/bradleytaunt/pen/rQdLxv/ */
+  
 }

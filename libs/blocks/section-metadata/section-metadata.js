@@ -40,7 +40,10 @@ function handleMasonry(text, section) {
 
 function handleDisplay(key, text, section) {
   if (!(text || section)) return;
-  const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
+  const styles = text.split(', ').map((style) => {
+    style.replaceAll(' ', '-');
+    return `${key}-${style}`;
+  });
   styles.unshift(key);
   section.classList.add(...styles);
 }
