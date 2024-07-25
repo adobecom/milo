@@ -78,11 +78,9 @@ function handleHeading(table, headingCols) {
       col.innerHTML = '';
       col.append(row1, row2);
     }
-    const colHeader = col.querySelector('h1, h2, h3, h4, h5, h6');
-    const nodeToSetRoleScope = colHeader ?? col;
-    if (colHeader) col.removeAttribute('role');
-    nodeToSetRoleScope.setAttribute('role', 'columnheader');
-    nodeToSetRoleScope.setAttribute('scope', 'col');
+
+    col.setAttribute('role', 'columnheader');
+    col.setAttribute('scope', 'col');
   });
 }
 
