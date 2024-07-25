@@ -198,6 +198,7 @@ describe('global navigation', () => {
         const toggle = document.querySelector(selectors.mainNavToggle);
         // Clicking the toggle will load the search logic
         toggle.click();
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
         await clock.runAllAsync();
         // Expect the search input to be visible; focus on it and type
         const searchField = document.querySelector(selectors.searchField);

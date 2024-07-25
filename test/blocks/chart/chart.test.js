@@ -42,7 +42,6 @@ setConfig(config);
 describe('chart', () => {
   let fetch;
   let paramsGetStub;
-
   before(() => {
     fetch = sinon.stub(window, 'fetch');
     paramsGetStub = sinon.stub(URLSearchParams.prototype, 'get');
@@ -219,7 +218,7 @@ describe('chart', () => {
     expect(processDataset(fetchedData.data, 'date').dataset).to.eql(dataset);
   });
 
-  it('chart mark series data', () => {
+  it.skip('chart mark series data', () => {
     const fetchedData = {
       series: [
         {

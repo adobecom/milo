@@ -117,6 +117,7 @@
   --aspect-ratio-square: 1/1;
   --aspect-ratio-standard: 4/3;
   --aspect-ratio-wide: 16/9;
+  --aspect-ratio-tall: 9/16;
 
   /* icon sizes */
   --icon-size-xxl: 80px;
@@ -126,7 +127,7 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
-
+  
   /* z-index */
   --above-all: 9000; /* Used for page tools that overlay page content */
 }
@@ -472,8 +473,6 @@ picture.bg-img img {
   height: 100%;
   width: 100%;
 }
-
-
 
 /* progressive section appearance */
 main > div,
@@ -874,6 +873,10 @@ a.static:hover {
   .con-block.xl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xl-static); }
   .con-block.xxl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xxl-static); }
   .con-block.xxxl-spacing-static-bottom-tablet { padding-bottom: var(--spacing-xxxl-static); }
+  
+  /* margin */
+  .con-block.margin-top-tablet { margin-top: var(--spacing-s); }
+  .con-block.margin-bottom-tablet { margin-bottom: var(--spacing-s); }
 }
 
 /* tablet large up */
@@ -946,6 +949,10 @@ a.static:hover {
   .con-block.xl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xl-static); }
   .con-block.xxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxl-static); }
   .con-block.xxxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxxl-static); }
+
+  /* margin */
+  .con-block.margin-top-desktop { margin-top: var(--spacing-s); }
+  .con-block.margin-bottom-desktop { margin-bottom: var(--spacing-s); }
 }
 
 /* desktop large < 1440 */
