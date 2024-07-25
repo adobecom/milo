@@ -49,7 +49,7 @@ export function validateUrlsFormat(projectUrls, removeMedia = false) {
     if (urlOrigin !== origin) {
       url.valid = 'not same domain';
     }
-    if ((/\.(gif|jpg|jpeg|tiff|png|webp)$/i).test(url.pathname)) {
+    if ((/\.(gif|jpg|jpeg|tiff|png|webp|svg)$/i).test(url.pathname)) {
       url.valid = 'media';
     }
   });
