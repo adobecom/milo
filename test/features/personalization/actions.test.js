@@ -3,8 +3,8 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { init, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
-import mepSettings from './mepSettings.js';
+import { applyPers, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import spoofParams from './spoofParams.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -35,12 +35,10 @@ describe('replace action', () => {
     expect(document.querySelector('.how-to')).to.not.be.null;
     const parentEl = document.querySelector('#features-of-milo-experimentation-platform')?.parentElement;
 
-    await init(mepSettings);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(document.querySelector('#features-of-milo-experimentation-platform')).to.be.null;
-    const el = parentEl.firstElementChild.firstElementChild;
-    expect(el.href)
+    expect(parentEl.firstElementChild.firstElementChild.href)
       .to.equal('http://localhost:2000/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2');
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
     // .how-to should not be changed as it is targeted to firefox
     expect(document.querySelector('.how-to')).to.not.be.null;
   });
@@ -54,8 +52,7 @@ describe('replace action', () => {
 
     expect(document.querySelector('a[href="/fragments/replaceme"]')).to.exist;
     expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.exist;
-    await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     const fragmentResp = await readFile({ path: './mocks/fragments/fragmentReplaced.plain.html' });
     const inlineFragmentResp = await readFile({ path: './mocks/fragments/inlineFragReplaced.plain.html' });
@@ -86,8 +83,7 @@ describe('insertAfter action', async () => {
 
     expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
     expect(document.querySelector('a[href="/fragments/insertafterfragment"]')).to.be.null;
-    await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     let fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter"]');
     expect(fragment).to.not.be.null;
@@ -109,8 +105,7 @@ describe('insertBefore action', async () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
-    await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     let fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertbefore"]');
     expect(fragment).to.not.be.null;
@@ -132,8 +127,7 @@ describe('prependToSection action', async () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/prependToSection"]')).to.be.null;
-    await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     const fragment = document.querySelector('main > div:nth-child(2) > div:first-child a[href="/test/features/personalization/mocks/fragments/prependToSection"]');
     expect(fragment).to.not.be.null;
@@ -149,8 +143,7 @@ describe('appendToSection action', async () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/appendToSection"]')).to.be.null;
-    await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     const fragment = document.querySelector('main > div:nth-child(2) > div:last-child a[href="/test/features/personalization/mocks/fragments/appendToSection"]');
     expect(fragment).to.not.be.null;
@@ -162,9 +155,7 @@ describe('remove action', () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
-    mepSettings.mepButton = 'off';
-    await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
   });
   it('remove should remove content', async () => {
     expect(document.querySelector('.z-pattern')).to.be.null;
@@ -177,6 +168,7 @@ describe('remove action', () => {
   });
 
   it('removeContent should tag but not remove content in preview', async () => {
+    spoofParams({ mep: '' });
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
     let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
@@ -185,10 +177,7 @@ describe('remove action', () => {
 
     setTimeout(async () => {
       expect(document.querySelector('.z-pattern')).to.not.be.null;
-      mepSettings.mepButton = false;
-      await init(mepSettings);
-      expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
-
+      await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
       expect(document.querySelector('.z-pattern')).to.not.be.null;
       expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
 
@@ -206,9 +195,7 @@ describe('useBlockCode action', async () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
-    await init(mepSettings);
-    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0]
-      .targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     expect(getConfig().mep.blocks).to.deep.equal({ promo: 'http://localhost:2000/test/features/personalization/mocks/promo' });
     const promoBlock = document.querySelector('.promo');
@@ -222,9 +209,7 @@ describe('useBlockCode action', async () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
-    await init(mepSettings);
-    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0]
-      .targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     expect(getConfig().mep.blocks).to.deep.equal({ myblock: 'http://localhost:2000/test/features/personalization/mocks/myblock' });
     const myBlock = document.querySelector('.myblock');
@@ -239,8 +224,7 @@ describe('custom actions', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestReplace.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
-    await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
     expect(getConfig().mep.custom).to.be.undefined;
   });
 
@@ -249,34 +233,31 @@ describe('custom actions', async () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
-    await init(mepSettings);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    console.log(getConfig().mep.inBlock);
     expect(getConfig().mep.inBlock).to.deep.equal({
       'my-block': {
         commands: [{
           action: 'replace',
           target: '/fragments/fragmentreplaced',
           manifestId: false,
-          targetManifestId: false,
         },
         {
           action: 'replace',
           target: '/fragments/new-large-menu',
           manifestId: false,
           selector: '.large-menu',
-          targetManifestId: false,
         }],
         fragments: {
           '/fragments/sub-menu': {
             action: 'replace',
             target: '/fragments/even-more-new-sub-menu',
             manifestId: false,
-            targetManifestId: false,
           },
           '/fragments/new-sub-menu': {
             action: 'replace',
             target: '/fragments/even-more-new-sub-menu',
             manifestId: false,
-            targetManifestId: false,
           },
         },
       },
@@ -299,7 +280,7 @@ describe('custom actions', async () => {
     expect(document.querySelector(lcpLink)).not.to.exist;
     expect(document.querySelector(notLcpLink)).not.to.exist;
 
-    await init(mepSettings);
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     expect(document.querySelector(lcpLink)).to.exist;
     expect(document.querySelector(notLcpLink)).not.to.exist;
