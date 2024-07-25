@@ -382,10 +382,7 @@
   transform: translateY(-50%);
 }
 
-[dir="rtl"] .section-row-title .milo-tooltip.top::after,
-[dir="rtl"] .section-row-title .milo-tooltip.bottom::after,
-[dir="rtl"] .section-row-title .milo-tooltip.left::after,
-[dir="rtl"] .section-row-title .milo-tooltip.right::after {
+[dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
   left: -8px;
   margin: 0 4px 0 -4px;
   top: 50%;
@@ -570,10 +567,7 @@ header.global-navigation {
     background-color: var(--color-gray-100);
   }
 
-  .section-row-title .milo-tooltip.top::before,
-  .section-row-title .milo-tooltip.bottom::before,
-  .section-row-title .milo-tooltip.left::before,
-  .section-row-title .milo-tooltip.right::before {
+  .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
     left: initial;
     margin: 0 12px 0 0;
     right: 100%;
@@ -581,10 +575,7 @@ header.global-navigation {
     transform: translateY(-50%);
   }
 
-  .section-row-title .milo-tooltip.top::after,
-  .section-row-title .milo-tooltip.bottom::after,
-  .section-row-title .milo-tooltip.left::after,
-  .section-row-title .milo-tooltip.right::after {
+  .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
     left: -8px;
     margin: 0 4px 0 -4px;
     top: 50%;
@@ -593,19 +584,13 @@ header.global-navigation {
     border-color: transparent transparent transparent #0469E3;
   }
 
-  [dir="rtl"] .section-row-title .milo-tooltip.top::before,
-  [dir="rtl"] .section-row-title .milo-tooltip.bottom::before,
-  [dir="rtl"] .section-row-title .milo-tooltip.left::before,
-  [dir="rtl"] .section-row-title .milo-tooltip.right::before {
+  [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
     left: 100%;
     margin: 0 0 0 12px;
     right: initial;
   }
   
-  [dir="rtl"] .section-row-title .milo-tooltip.top::after,
-  [dir="rtl"] .section-row-title .milo-tooltip.bottom::after,
-  [dir="rtl"] .section-row-title .milo-tooltip.left::after,
-  [dir="rtl"] .section-row-title .milo-tooltip.right::after {
+  [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
     border-color: transparent #0469E3 transparent transparent;
     left: 100%;
     margin: 0 0 0 -4px;
