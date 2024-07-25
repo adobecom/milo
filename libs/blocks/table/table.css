@@ -602,7 +602,6 @@ header.global-navigation {
     right: initial;
   }
   
-
   [dir="rtl"] .section-row-title .milo-tooltip.top::after,
   [dir="rtl"] .section-row-title .milo-tooltip.bottom::after,
   [dir="rtl"] .section-row-title .milo-tooltip.left::after,
