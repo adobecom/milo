@@ -1,6 +1,3 @@
-export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net';
-export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net';
-
 export function logError(msg) {
   window.lana?.log(`SEOTECH: ${msg}`, {
     debug: false,
@@ -13,6 +10,7 @@ export function logError(msg) {
 export async function getVideoObject(url, options) {
   const videoUrl = new URL(url)?.href;
   const { subdomain } = options;
+  // FIXME: https://jira.corp.adobe.com/browse/WPS-26205
   const videoObjectUrl = `https://${subdomain}.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=${videoUrl}`;
   const resp = await fetch(videoObjectUrl, { headers: { 'Content-Type': 'application/json' } });
   const body = await resp?.json();
@@ -42,6 +40,7 @@ export async function sha256(message) {
 export async function getStructuredData(bucket, id, options) {
   if (!bucket || !id) throw new Error('bucket and id are required');
   const { subdomain } = options;
+  // FIXME: https://jira.corp.adobe.com/browse/WPS-26205
   const url = `https://${subdomain}.adobeioruntime.net/apis/v1/seotech/structured-data/${bucket}/${id}`;
   const resp = await fetch(url);
   if (!resp || !resp.ok) return null;
