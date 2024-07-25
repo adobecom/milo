@@ -34,7 +34,7 @@ async function validateUrl(url) {
   }
 }
 
-export function validateUrlsOrigin(projectUrls) {
+export function validateUrlsFormat(projectUrls, removeMedia = false) {
   projectUrls.forEach((projectUrl) => {
     const url = Array.isArray(projectUrl) ? projectUrl[0] : projectUrl;
     let urlOrigin = url.origin;
@@ -49,7 +49,13 @@ export function validateUrlsOrigin(projectUrls) {
     if (urlOrigin !== origin) {
       url.valid = 'not same domain';
     }
+    if ((/\.(gif|jpg|jpeg|tiff|png|webp)$/i).test(url.pathname)) {
+      url.valid = 'media';
+    }
   });
+  if (removeMedia) {
+    return projectUrls.filter((url) => url.valid === 'media');
+  }
   return projectUrls;
 }
 
@@ -67,7 +73,7 @@ async function validatedUrls(projectUrls) {
       setStatus('details', 'error', 'There was an error validating project URLs.', error);
     }
   }
-  return validateUrlsOrigin(projectUrls);
+  return validateUrlsFormat(projectUrls);
 }
 
 export function getUrls(jsonUrls) {
