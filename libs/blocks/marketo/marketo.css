@@ -535,8 +535,8 @@
 }
 
 .resource-form.section.two-up .marketo {
-  margin-left: calc(var(--grid-margins-width) * -1 / 2);
-  margin-right: calc(var(--grid-margins-width) * -1 / 2);
+  margin-left: calc(var(--grid-margins-width) * -1);
+  margin-right: calc(var(--grid-margins-width) * -1);
 }
 
 .resource-form .columns {
@@ -553,7 +553,7 @@
 }
 
 @media screen and (min-width: 600px) {
-  .resource-form .marketo {
+  .resource-form.section.two-up .marketo {
     margin-left: 0;
     margin-right: 0;
   }

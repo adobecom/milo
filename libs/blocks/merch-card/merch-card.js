@@ -44,7 +44,7 @@ const HEADING_MAP = {
   },
 };
 
-const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, h6, p, ul, em';
 
 const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
@@ -161,7 +161,9 @@ const parseContent = async (el, merchCard) => {
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
     const priceSmallType = el.querySelectorAll('h6');
-    appendSlot(priceSmallType, 'price-commitment', merchCard);
+    // Filter out any h6 elements that contain an <em> tag
+    const filteredPriceSmallType = Array.from(priceSmallType).filter((h6) => !h6.querySelector('em'));
+    if (filteredPriceSmallType.length > 0) appendSlot(filteredPriceSmallType, 'price-commitment', merchCard);
   }
 
   let headingSize = 3;
@@ -206,6 +208,40 @@ const parseContent = async (el, merchCard) => {
       }
       return;
     }
+    if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
+      const calloutContentWrapper = createTag('div');
+      const calloutContent = createTag('div');
+      const emElement = element.firstElementChild;
+      let imgElement = null;
+      const fragment = document.createDocumentFragment();
+
+      emElement.childNodes.forEach((child) => {
+        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
+          const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
+          imgElement = createTag('img', {
+            src: imgSrc,
+            title: decodeURIComponent(tooltipText),
+            class: 'callout-icon',
+          });
+        } else {
+          const clone = child.cloneNode(true);
+          fragment.appendChild(clone);
+        }
+      });
+
+      calloutContent.appendChild(fragment);
+      calloutContentWrapper.appendChild(calloutContent);
+
+      if (imgElement) {
+        calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
+        calloutContentWrapper.appendChild(imgElement);
+      }
+
+      const calloutSlot = createTag('div', { slot: 'callout-text' });
+      calloutSlot.appendChild(calloutContentWrapper);
+      merchCard.appendChild(calloutSlot);
+      return;
+    }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
       merchCard.append(bodySlot);
@@ -219,15 +255,17 @@ const parseContent = async (el, merchCard) => {
 };
 
 const getBadgeStyle = (badgeMetadata) => {
-  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+(, #[0-9a-fA-F]+)?$/;
   if (!badgeStyleRegex.test(badgeMetadata[0]?.innerText)) return null;
-  const style = badgeMetadata[0].innerText;
-  const badgeBackgroundColor = style.split(',')[0].trim();
-  const badgeColor = style.split(',')[1].trim();
+  const style = badgeMetadata[0].innerText.split(',').map((s) => s.trim());
+  if (style.length < 2) return null;
+  const badgeBackgroundColor = style[0];
+  const badgeColor = style[1];
+  const borderColor = style[2] !== 'none' ? style[2] : null;
   const badgeWrapper = badgeMetadata[0].parentNode;
   const badgeText = badgeMetadata[1].innerText;
   badgeWrapper.remove();
-  return { badgeBackgroundColor, badgeColor, badgeText };
+  return { badgeBackgroundColor, badgeColor, badgeText, borderColor };
 };
 
 const getActionMenuContent = (el) => {
@@ -345,6 +383,21 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
   merchCard.appendChild(miniCompareOffers);
 };
 
+const updateBigPrices = (merchCard) => {
+  const prices = merchCard.querySelectorAll('strong > em > span[is="inline-price"]');
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+  prices.forEach((span) => {
+    const strongTag = span.parentNode.parentNode;
+    const emTag = span.parentNode;
+    strongTag.replaceChild(span, emTag);
+    if (!isMobile) {
+      span.style.cssText = 'font-size: 24px; line-height: 22.5px;';
+    } else {
+      span.style.cssText = 'font-size: 16px; line-height: 24px;';
+    }
+  });
+};
+
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
@@ -403,7 +456,11 @@ export default async function init(el) {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
+        if (badge.borderColor) merchCard.setAttribute('border-color', badge.borderColor);
         merchCard.classList.add('badge-card');
+      } else if (badgeMetadata.children.length === 1) {
+        const borderColor = badgeMetadata.children[0].innerText.trim();
+        if (borderColor.startsWith('#')) merchCard.setAttribute('border-color', borderColor);
       }
     }
   }
@@ -509,7 +566,7 @@ export default async function init(el) {
         }
       }
     }
-
+    updateBigPrices(merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);

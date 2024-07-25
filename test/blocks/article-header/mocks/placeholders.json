@@ -10,6 +10,14 @@
     {
       "key": "no-results",
       "value": "No results found"
+    },
+    {
+      "key": "share-twitter",
+      "value": "Click to share on twitter"
+    },
+    {
+      "key": "copied-to-clipboard",
+      "value": "Link copied to clipboard"
     }
   ],
   ":type": "sheet"

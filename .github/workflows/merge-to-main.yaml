@@ -9,7 +9,6 @@ on:
 
 env:
   MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
-  MILO_STAGE_SLACK_WH: ${{secrets.MILO_STAGE_SLACK_WH}}
 
 jobs:
   merge-to-main:
