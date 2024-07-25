@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
 import {
@@ -55,6 +54,8 @@ const DATA_TYPE = {
 
 const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
+export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
+
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
@@ -86,6 +87,28 @@ export const normalizePath = (p, localize = true) => {
   return path;
 };
 
+export const preloadManifests = ({ targetManifests = [], persManifests = [] }) => {
+  let manifests = targetManifests;
+
+  manifests = manifests.concat(
+    persManifests.map((manifest) => ({
+      ...manifest,
+      manifestPath: normalizePath(appendJsonExt(manifest.manifestPath)),
+      manifestUrl: manifest.manifestPath,
+    })),
+  );
+
+  for (const manifest of manifests) {
+    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
+      loadLink(
+        manifest.manifestPath,
+        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
+      );
+    }
+  }
+  return manifests;
+};
+
 export const getFileName = (path) => path?.split('/').pop();
 
 const isInLcpSection = (el) => {
@@ -93,7 +116,7 @@ const isInLcpSection = (el) => {
   return lcpSection === el || lcpSection?.contains(el);
 };
 
-export const createFrag = (el, url, manifestId, targetManifestId) => {
+export const createFrag = (el, url, manifestId) => {
   let href = url;
   try {
     const { pathname, search, hash } = new URL(url);
@@ -103,7 +126,6 @@ export const createFrag = (el, url, manifestId, targetManifestId) => {
   }
   const a = createTag('a', { href }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
-  if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
   let frag = createTag('p', undefined, a);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
   if (isDelayedModalAnchor) frag.classList.add('hide-block');
@@ -140,9 +162,9 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  replace: (el, target, manifestId, targetManifestId) => {
+  replace: (el, target, manifestId) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
+    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
@@ -205,7 +227,6 @@ const consolidateObjects = (arr, prop, existing = {}) => arr.reduce((propMap, it
       selector,
       manifestPath: item.manifestPath,
       manifestId: i.manifestId,
-      targetManifestId: i.targetManifestId,
     };
     // eslint-disable-next-line no-restricted-syntax
     for (const key in propMap) {
@@ -289,9 +310,9 @@ function getSection(rootEl, idx) {
     : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
 }
 
-function registerInBlockActions(cmd, manifestId, targetManifestId) {
+function registerInBlockActions(cmd, manifestId) {
   const { action, target, selector } = cmd;
-  const command = { action, target, manifestId, targetManifestId };
+  const command = { action, target, manifestId };
 
   const blockAndSelector = selector.substring(IN_BLOCK_SELECTOR_PREFIX.length).trim().split(/\s+/);
   const [blockName] = blockAndSelector;
@@ -403,39 +424,24 @@ const addHash = (url, newHash) => {
   }
 };
 
-const setDataIdOnChildren = (sections, id, value) => {
-  [...sections[0].children].forEach(
-    (child) => (child.dataset[id] = value),
-  );
-};
-
-export const updateFragDataProps = (a, inline, sections, fragment) => {
-  const { manifestId, adobeTargetTestid } = a.dataset;
-  if (inline) {
-    if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
-    if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
-  } else {
-    if (manifestId) fragment.dataset.manifestId = manifestId;
-    if (adobeTargetTestid) fragment.dataset.adobeTargetTestid = adobeTargetTestid;
-  }
-};
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
-    const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
+    const { manifestId } = cmd;
+    const { action, selector, target: trgt } = cmd;
     const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
-      registerInBlockActions(cmd, manifestId, targetManifestId);
+      registerInBlockActions(cmd, manifestId);
       return;
     }
 
     if (action in COMMANDS) {
       const el = getSelectedElement(selector, action, rootEl);
-      COMMANDS[action](el, target, manifestId, targetManifestId);
+      COMMANDS[action](el, target, manifestId);
     } else if (action in CREATE_CMDS) {
       const el = getSelectedElement(selector, action, rootEl);
       el?.insertAdjacentElement(
         CREATE_CMDS[action],
-        createFrag(el, target, manifestId, targetManifestId),
+        createFrag(el, target, manifestId),
       );
     } else {
       /* c8 ignore next 2 */
@@ -444,21 +450,14 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
   });
 }
 
-const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOverrideName) => {
-  const config = getConfig();
-  let manifestId = getFileName(manifestPath);
-  let targetId = manifestId.replace('.json', '');
-  if (manifestOverrideName) targetId = manifestOverrideName;
-  if (!config.mep?.preview) manifestId = false;
+const getVariantInfo = (line, variantNames, variants, manifestId) => {
   const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
   const { selector } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
-  if (!config.mep?.preview) manifestId = false;
   variantNames.forEach((vn) => {
-    const targetManifestId = vn.startsWith(TARGET_EXP_PREFIX) ? targetId : false;
     if (!line[vn] || line[vn].toLowerCase() === 'false') return;
 
     const variantInfo = {
@@ -468,7 +467,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
       target: line[vn],
       selectorType: checkSelectorType(selector),
       manifestId,
-      targetManifestId,
     };
 
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
@@ -477,7 +475,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
         val: normalizePath(line[vn]),
         action,
         manifestId,
-        targetManifestId,
       });
     } else if (GLOBAL_CMDS.includes(action)) {
       variants[vn][action] = variants[vn][action] || [];
@@ -489,7 +486,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
           val: blockTarget,
           pageFilter,
           manifestId,
-          targetManifestId,
         });
       } else {
         variants[vn][action].push({
@@ -497,7 +493,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
           val: normalizePath(line[vn]),
           pageFilter,
           manifestId,
-          targetManifestId,
         });
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
@@ -509,7 +504,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
   });
 };
 
-export function parseManifestVariants(data, manifestPath, manifestOverrideName) {
+export function parseManifestVariants(data, manifestId) {
   if (!data?.length) return null;
 
   const manifestConfig = {};
@@ -524,15 +519,10 @@ export function parseManifestVariants(data, manifestPath, manifestOverrideName) 
       variants[vn] = { commands: [], fragments: [] };
     });
 
-    experiences.forEach((line) => {
-      getVariantInfo(line, variantNames, variants, manifestPath, manifestOverrideName);
-    });
+    experiences.forEach((line) => getVariantInfo(line, variantNames, variants, manifestId));
 
     manifestConfig.variants = variants;
     manifestConfig.variantNames = variantNames;
-    const config = getConfig();
-    if (!config.mep?.preview) manifestConfig.manifestId = false;
-
     return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
@@ -625,30 +615,12 @@ const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
   event: manifest.event,
   manifest: manifest.manifestPath,
-  executionOrder: '1-1',
   selectedVariant: { commands: [], fragments: [] },
   selectedVariantName: 'default',
   variantNames: ['all'],
   variants: {},
 });
 
-export const addMepAnalytics = (config, header) => {
-  config.mep.experiments.forEach((experiment) => {
-    experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
-      if (selector && targetManifestId) {
-        document.querySelectorAll(`.${selector}`)
-          .forEach((el) => (el.dataset.adobeTargetTestid = targetManifestId));
-      }
-    });
-    if (header) {
-      experiment?.selectedVariant?.updatemetadata?.forEach((updateMetaData) => {
-        if (updateMetaData?.selector === 'gnav-source' && updateMetaData.targetManifestId) {
-          header.dataset.adobeTargetTestid = updateMetaData.targetManifestId;
-        }
-      });
-    }
-  });
-};
 export async function getManifestConfig(info, variantOverride = false) {
   const {
     name,
@@ -661,7 +633,7 @@ export async function getManifestConfig(info, variantOverride = false) {
     disabled,
     event,
   } = info;
-  if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
+  if (disabled && !variantOverride) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;
@@ -672,25 +644,33 @@ export async function getManifestConfig(info, variantOverride = false) {
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
-  const infoTab = manifestInfo || data?.info?.data;
-  const infoObj = infoTab?.reduce((acc, item) => {
-    acc[item.key] = item.value;
-    return acc;
-  }, {});
-  const manifestOverrideName = name || infoObj?.['manifest-override-name']?.toLowerCase();
-  const manifestConfig = parseManifestVariants(persData, manifestPath, manifestOverrideName);
+
+  let manifestId = getFileName(manifestPath);
+  const config = getConfig();
+  if (!config.mep?.preview) {
+    manifestId = false;
+  } else if (name) {
+    manifestId = `${name}: ${manifestId}`;
+  }
+  const manifestConfig = parseManifestVariants(persData, manifestId);
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
     console.log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
+
+  const infoTab = manifestInfo || data?.info?.data;
   const infoKeyMap = {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
   if (infoTab) {
-    manifestConfig.manifestOverrideName = manifestOverrideName;
+    const infoObj = infoTab?.reduce((acc, item) => {
+      acc[item.key] = item.value;
+      return acc;
+    }, {});
+    manifestConfig.manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     const executionOrder = {
       'manifest-type': 1,
@@ -724,6 +704,7 @@ export async function getManifestConfig(info, variantOverride = false) {
     manifestConfig.selectedVariantName = 'default';
     manifestConfig.selectedVariant = 'default';
   }
+
   const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
@@ -744,22 +725,22 @@ export const deleteMarkedEls = (rootEl = document) => {
     .forEach((el) => el.remove());
 };
 
-const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
+const normalizeFragPaths = ({ selector, val, action }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
   action,
-  manifestId,
-  targetManifestId,
 });
-export async function categorizeActions(experiment, config) {
+
+export async function categorizeActions(experiment) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
   if (!selectedVariant || selectedVariant === 'default') return { experiment };
 
-  // only one replacepage can be defined
-  const { replacepage } = selectedVariant;
-  // eslint-disable-next-line prefer-destructuring
-  if (selectedVariant.replacepage?.length) config.mep.replacepage = replacepage[0];
+  if (selectedVariant.replacepage) {
+    // only one replacepage can be defined
+    await replaceInner(selectedVariant.replacepage[0]?.val, document.querySelector('main'));
+    document.querySelector('main').dataset.manifestId = manifestPath;
+  }
 
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
@@ -823,18 +804,14 @@ export function cleanAndSortManifestList(manifests) {
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
     }
   });
-  Object.keys(manifestObj).forEach((key) => {
-    delete manifestObj[key].variants;
-  });
   return Object.values(manifestObj).sort(compareExecutionOrder);
 }
 
 export function handleFragmentCommand(command, a) {
-  const { action, fragment, manifestId, targetManifestId } = command;
+  const { action, fragment, manifestId } = command;
   if (action === 'replace') {
     a.href = fragment;
     if (manifestId) a.dataset.manifestId = manifestId;
-    if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
     return fragment;
   }
   if (action === 'remove') {
@@ -848,125 +825,64 @@ export function handleFragmentCommand(command, a) {
 }
 
 export async function applyPers(manifests, postLCP = false) {
-  if (!manifests?.length) return;
-  let experiments = manifests;
-  const config = getConfig();
-  for (let i = 0; i < experiments.length; i += 1) {
-    experiments[i] = await getManifestConfig(experiments[i], config.mep?.variantOverride);
-  }
-
-  experiments = cleanAndSortManifestList(experiments);
-
-  let results = [];
-
-  for (const experiment of experiments) {
-    const result = await categorizeActions(experiment, config);
-    if (result) results.push(result);
-  }
-  results = results.filter(Boolean);
-
-  config.mep.experiments = [...config.mep.experiments, ...experiments];
-  config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
-  config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
-  config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
-
-  const main = document.querySelector('main');
-  if (config.mep.replacepage && !postLCP && main) {
-    await replaceInner(config.mep.replacepage.val, main);
-    const { manifestId, targetManifestId } = config.mep.replacepage;
-    if (manifestId) main.dataset.manifestId = manifestId;
-    if (targetManifestId) main.dataset.adobeTargetTestid = targetManifestId;
-  }
-
-  if (!postLCP) handleCommands(config.mep.commands);
-  deleteMarkedEls();
-
-  const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
-  if (!pznList.length) return;
-
-  const pznVariants = pznList.map((r) => {
-    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-    return val === 'default' ? 'nopzn' : val;
-  });
-  const pznManifests = pznList.map((r) => {
-    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return getFileName(val).replace('.json', '').trim().slice(0, 15);
-  });
-  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
-}
-
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
-  let persManifests = [];
-
-  if (persEnabled) {
-    persManifests = persEnabled.toLowerCase()
-      .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath }));
-  }
-
-  if (promoEnabled) {
-    const { default: getPromoManifests } = await import('./promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
-  }
-
-  if (mepParam && mepParam !== 'off') {
-    const persManifestPaths = persManifests.map((manifest) => {
-      const { manifestPath } = manifest;
-      if (manifestPath.startsWith('/')) return manifestPath;
-      try {
-        const url = new URL(manifestPath);
-        return url.pathname;
-      } catch (e) {
-        return manifestPath;
-      }
-    });
-
-    mepParam.split('---').forEach((manifestPair) => {
-      const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
-      if (!persManifestPaths.includes(manifestPath)) {
-        persManifests.push({ manifestPath });
-      }
-    });
-  }
-  return persManifests;
-};
-
-export async function init(enablements = {}) {
-  let manifests = [];
-  const {
-    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
-  } = enablements;
-  const config = getConfig();
-  if (!postLCP) {
-    config.mep = {
-      handleFragmentCommand,
-      updateFragDataProps,
-      preview: (mepButton !== 'off'
-        && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
-      variantOverride: parseMepParam(mepParam),
-      highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
-      targetEnabled: target,
-      experiments: [],
-    };
-    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
-    manifests?.forEach((manifest) => {
-      if (manifest.disabled) return;
-      const localizedURL = localizeLink(manifest.manifestPath);
-      loadLink(localizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
-    });
-  }
-
-  if (target === true || (target === 'gnav' && postLCP)) {
-    const { getTargetPersonalization } = await import('../../martech/martech.js');
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    manifests = manifests.concat(targetManifests);
-    if (targetPropositions?.length && window._satellite) {
-      window._satellite.track('propositionDisplay', targetPropositions);
-    }
-  }
   try {
-    await applyPers(manifests, postLCP);
+    const config = getConfig();
+    if (!postLCP) {
+      const {
+        mep: mepParam,
+        mepHighlight,
+        mepButton,
+      } = Object.fromEntries(PAGE_URL.searchParams);
+      config.mep = {
+        handleFragmentCommand,
+        preview: (mepButton !== 'off'
+          && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+        variantOverride: parseMepParam(mepParam),
+        highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+        mepParam,
+        targetEnabled: config.mep?.targetEnabled,
+      };
+    }
+
+    if (!manifests?.length) return;
+    let experiments = manifests;
+    for (let i = 0; i < experiments.length; i += 1) {
+      experiments[i] = await getManifestConfig(experiments[i], config.mep?.variantOverride);
+    }
+
+    experiments = cleanAndSortManifestList(experiments);
+
+    let results = [];
+
+    for (const experiment of experiments) {
+      const result = await categorizeActions(experiment);
+      if (result) {
+        results.push(result);
+      }
+    }
+    results = results.filter(Boolean);
+
+    config.mep.experiments ??= [];
+    config.mep.experiments = experiments;
+    config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
+    config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
+    config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+    if (!postLCP) handleCommands(config.mep.commands);
+    deleteMarkedEls();
+
+    const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
+    if (!pznList.length) return;
+
+    const pznVariants = pznList.map((r) => {
+      const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
+      return val === 'default' ? 'nopzn' : val;
+    });
+    const pznManifests = pznList.map((r) => {
+      const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
+      return getFileName(val).replace('.json', '').trim().slice(0, 15);
+    });
+    config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
   } catch (e) {
     console.warn(e);
     window.lana?.log(`MEP Error: ${e.toString()}`);

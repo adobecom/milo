@@ -8,8 +8,7 @@
       "selector": "section2",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "/test/features/personalization/mocks/fragments/prependToSection",
-      "target-var1": "/test/features/personalization/mocks/fragments/prependToSection"
+      "chrome": "/test/features/personalization/mocks/fragments/prependToSection"
     }
   ],
   ":type": "sheet"
