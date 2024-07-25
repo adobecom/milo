@@ -374,10 +374,7 @@
   margin-left: 16px;
 }
 
-[dir="rtl"] .section-row-title .milo-tooltip.top::before,
-[dir="rtl"] .section-row-title .milo-tooltip.bottom::before,
-[dir="rtl"] .section-row-title .milo-tooltip.left::before,
-[dir="rtl"] .section-row-title .milo-tooltip.right::before {
+[dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
   left: initial;
   margin: 0 12px 0 0;
   right: 100%;
