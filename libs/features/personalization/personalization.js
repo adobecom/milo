@@ -952,8 +952,8 @@ export async function init(enablements = {}) {
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
-      const localizedURL = localizeLink(manifest.manifestPath);
-      loadLink(localizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+      const normalizedURL = normalizePath(manifest.manifestPath);
+      loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
   }
 
