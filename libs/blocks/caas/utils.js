@@ -819,6 +819,7 @@ export const defaultState = {
   secondaryTags: [],
   secondarySource: [],
   setCardBorders: false,
+  showCardBadges: false,
   showFooterDivider: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
