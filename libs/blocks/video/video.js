@@ -1,5 +1,5 @@
 import { createIntersectionObserver, getConfig } from '../../utils/utils.js';
-import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
+import { applyHoverPlay, getVideoAttrs, applyInViewPortPlay } from '../../utils/decorate.js';
 
 const ROOT_MARGIN = 1000;
 
@@ -23,6 +23,7 @@ const loadVideo = (a) => {
   a.insertAdjacentHTML('afterend', video);
   const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
   applyHoverPlay(videoElem);
+  applyInViewPortPlay(videoElem);
   a.remove();
 };
 

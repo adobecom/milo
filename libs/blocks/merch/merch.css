@@ -8,8 +8,6 @@ span[data-wcs-osi] {
 }
 
 span.placeholder-resolved[data-template="strikethrough"], span.price.price-strikethrough {
-  font-size: var(--type-body-xs-size);
-  font-weight: normal;
   text-decoration: line-through;
 }
 
@@ -17,7 +15,7 @@ span.placeholder-resolved[data-template="strikethrough"], span.price.price-strik
   visibility: inherit;
 }
 
-a[is='checkout-link'] > span {
+a[is='checkout-link'].con-button > span {
   display: inline-block;
   text-align: center;
   width: 100%;

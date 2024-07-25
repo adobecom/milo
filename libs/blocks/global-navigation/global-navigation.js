@@ -621,10 +621,12 @@ class Gnav {
       children: getChildren(),
     });
 
-    window.UniversalNav(getConfiguration());
+    // Exposing UNAV config for consumers
+    CONFIG.universalNav.universalNavConfig = getConfiguration();
+    window.UniversalNav(CONFIG.universalNav.universalNavConfig);
 
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(getConfiguration());
+      window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
     });
   };
 
@@ -650,7 +652,9 @@ class Gnav {
   };
 
   loadSearch = () => {
-    if (this.blocks?.search?.instance) return null;
+    const instanceAlreadyExists = !!this.blocks?.search?.instance;
+    const searchNotInContent = !this.searchPresent();
+    if (instanceAlreadyExists || searchNotInContent) return null;
 
     return this.loadDelayed().then(() => {
       this.blocks.search.instance = new this.Search(this.blocks.search.config);
@@ -966,10 +970,10 @@ class Gnav {
     return this.elements.breadcrumbsWrapper;
   };
 
-  decorateSearch = () => {
-    const searchBlock = this.content.querySelector('.search');
+  searchPresent = () => !!this.content.querySelector('.search');
 
-    if (!searchBlock) return null;
+  decorateSearch = () => {
+    if (!this.searchPresent()) return null;
 
     this.blocks.search.config.trigger = toFragment`
       <button class="feds-search-trigger" aria-label="Search" aria-expanded="false" aria-controls="feds-search-bar" daa-ll="Search">

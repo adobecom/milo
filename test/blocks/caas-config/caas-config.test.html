@@ -114,11 +114,11 @@
         enableAdvancedTags.checked = true;
         enableAdvancedTags.dispatchEvent(new Event('change'));
         await delay(50);
-    
+
         await tagSelectorDropdownChoose('Secondary Source', 'Bacom');
         await tagSelectorDropdownChoose('Secondary Content Type Tags', 'Customer Story');
 
-        expectedConfig.collection.endpoint = 
+        expectedConfig.collection.endpoint =
           'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=bacom&secondaryTags=caas:content-type/customer-story&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
         expect(config).to.eql(expectedConfig);
       });
@@ -307,21 +307,17 @@
         await delay(50);
         const copyTextArea = document.querySelector('.copy-text');
 
-        // Windows/Linux encodes the hash very slightly differently than OSX
+        // Windows/OSX/Linux encode the hash very slightly differently
         // This is due to different header values in the zip output
-        // Note the start of each hash:
-        // Win: ~~H4sIAAAAAAAAA3
-        // Osx: ~~H4sIAAAAAAAAE3
+        // The header is the part before the first / in the hash
+        // Due to this we only compare the characters after the header value
 
-        // This does not affect the decoded hash value,
-        // so either of these are valid hashes for the same content
+        const hashWithoutHeader = 'bNhD9Lzw7Wafb9qDb2ruLGPBm3diLHoqgGJMjiTDFUcmhvUrR/16Q+nacm/TecL74ZvivAKU0a7JgvuI/AT3vwEHlRfbXt4UAC6ZhLf2ajEEZ7b5AhSITYkIeHMjTpqodeq/JiiwH4zEaqC0VWh6g6P0FpjUFy67Zgi0GyyPRqQJ32kiye4yR2hBT/M36CSPBqT03JuZSgsk/lKiLkjvmoNngg5QxoaM2mpstntGI7PeFkEMpK7a9i9rpClwjpvRY6Yglx9fgXn8fMMugLTqRiU+/LJcv8P6nVlx2FFo+NDWO/ZBtL0QmJIDPut+74OOB4JmqNTjV+WZ4SOFEJv72aHKxEIq+EG/he7MlUEM3lfZwNLgCa9H5EXaQ8+Nx+EeratI2NvRyuXwERUf8KKm6k6Wu0MEHqPXdWKWIJ87aka3QdreA79IEhSpm2ZXUQWONORhzBHl6GsOJhcgROLjZyVwbRvd0Hry3wCpoo3Zg4/UlAVXAWg70liR0XTGY8wQvtBSZIDdAszh+nfo7g/YlXZ6qmpuhR0VgTrf567tYiBJBDW5KrXDNsFHz/7HwCDwC48YyujOYwam2Vy0yYIsABfY66P/vMHbdQEMhCSfmEeoIEagXcnhTwZb4auzImibWturGaWh7lxC5qwM1FNqmtj5YXaWPIQ4UqMTU5MlGtY3yG5k/AljWnGLbG3xXUwekmxrJN4+HEiu8Hw8akFiSUejenGk14tAHw36Hbpca+NtCeAQny2eNpr8aj5KsAteMFQ7QnoKT2IMcG7Mip6aD40u6PBMxukd91irqYcL0TfXPSUS3uVc773hy2Ytygm2ubPaplhl0II67OpU9EuQ4au3Byx+wR7wBvpDSuZ7cWiIwh2Di9Kn+XEu0V7yjOtSzAy3+Fayiag9VbfRkqSeDOM17cjxDn7vhn4F9Rtcl9PgPZbRh5xB6dGfSbkdkRPZpuVxeESlLFNl9i7cPxZXjBF6F60QiSricvPi2EAyFb1X48+UZbUQ0dQVyXN5nHXeLGLDr0eEo+LjJ4luGPm4zhQza+AO+82vdLTrV3dNCcEz1M4LStuieOFHeRyKqJGnuQHH8YjMWInjcRtfR2xA0eHw9ozPQbLU9jZqaPJSBmW5smuDRbWxOcXr++x/O+0/8SwgAAA==';
 
-        const windowsHash = '~~H4sIAAAAAAAACnVVTY/bNhD9Lzw7Wafb9qDb2ruLGPBm3diLHoqgGJMjiTDFUcmhvUrR/16Q+nacm/TecIbz5oP/ClBKsyYL5iv+E9DzDhxUXmR/fVsIsGAa1tKvyRiU0e4LVCgyISbkwYE8baraofearMhyMB6jgdpSoeUBit5fYFpTsOyaLdhisDwSnSpwp40ku8cYqQ0xxd+snzASnNpzY+JdSjD5hxJ1UXLHHDQbfJAyXuiojeZmi2c0Ivt9IeSQyopt76J2ugLXiCk9ZjpiyfE1uNffB8wyaItOZOLTL8vlC7z/qRWXHYWWD02Nox6y1UJkQgL4rPu9Cz4eCJ6pWoNTnW+GhxROZOJvjyYXC6HoC/EWvjdbAjWoqbSHo8EVWIvOj7CDnB+Pwz9aVZO2UdDL5fIRFB3xo6TqTpa6QgcfoNZ3Y5YinjhrR7ZC21UB36UJClW8ZZdSB4055mDMEeTpaQwnFiJH4OBmJ3NtGN3TefDeAqugjdqBjeVLDVQBaznQW5LQqWIw5wleaCkyQW6AZnH8Ouk7g/YlXZ6qmptBoyIwp2r++i4WokRQg5tSK1wzbNT8f0xc2yslDNgiQIF9ufv/O4ziGmgopP6I4UIdIQL1Qg5vNqolvpousqaJKay6qRnU7ZIhd3WghkLbpN6D1VX6GOJAgUpMTZ5sbKqxy0bmjwCWNafY9gbf5dQBqSAj+ebxUGKF9+NBAxJLMgrdmzNtKzj0wbDfodslAX9bCI/gZPms0fQV8CjJKnDNmOEA7Sk4iT3IUZgVOTWdD1/S5ZmI0T3qs1ax7BOmF9U/p165zb3aueLJZd97E2xzZbNPucygA3FcySntkSDHj8D44OUP2CPeAF9I6VxPqpYIzCGYOGSqP9cSbYl3VId6dqDFv4JVVO2hqo2e7O5kEId2T45n6HM34zOwv9F1Cj3+Qxpt2DmEHt2ZtNsRGZF9Wi6XV0S6JYrsvsXb9+DKcQKvwnVNIkq4nLz4thAMhW+78Oc7MtqIaOoK5LijzzquEDFg16PDseHjwopPFvq4tBQyaOMP+M6vdbfPVFenheB41c8IStuie8lEeR+J2CWp5w4Uxy+KsRDB4za6jt6GoMHj6xmdgWar7Wnsqcl7GJjpxqYJHt3G5hSn57//AaZjTZUyCAAA';
-        const osxHash = '~~H4sIAAAAAAAAA3VVTY/bNhD9Lzw7Wafb9qDb2ruLGPBm3diLHoqgGJMjiTDFUcmhvUrR/16Q+nacm/TecIbz5oP/ClBKsyYL5iv+E9DzDhxUXmR/fVsIsGAa1tKvyRiU0e4LVCgyISbkwYE8baraofearMhyMB6jgdpSoeUBit5fYFpTsOyaLdhisDwSnSpwp40ku8cYqQ0xxd+snzASnNpzY+JdSjD5hxJ1UXLHHDQbfJAyXuiojeZmi2c0Ivt9IeSQyopt76J2ugLXiCk9ZjpiyfE1uNffB8wyaItOZOLTL8vlC7z/qRWXHYWWD02Nox6y1UJkQgL4rPu9Cz4eCJ6pWoNTnW+GhxROZOJvjyYXC6HoC/EWvjdbAjWoqbSHo8EVWIvOj7CDnB+Pwz9aVZO2UdDL5fIRFB3xo6TqTpa6QgcfoNZ3Y5YinjhrR7ZC21UB36UJClW8ZZdSB4055mDMEeTpaQwnFiJH4OBmJ3NtGN3TefDeAqugjdqBjeVLDVQBaznQW5LQqWIw5wleaCkyQW6AZnH8Ouk7g/YlXZ6qmptBoyIwp2r++i4WokRQg5tSK1wzbNT8f0xc2yslDNgiQIF9ufv/O4ziGmgopP6I4UIdIQL1Qg5vNqolvpousqaJKay6qRnU7ZIhd3WghkLbpN6D1VX6GOJAgUpMTZ5sbKqxy0bmjwCWNafY9gbf5dQBqSAj+ebxUGKF9+NBAxJLMgrdmzNtKzj0wbDfodslAX9bCI/gZPms0fQV8CjJKnDNmOEA7Sk4iT3IUZgVOTWdD1/S5ZmI0T3qs1ax7BOmF9U/p165zb3aueLJZd97E2xzZbNPucygA3FcySntkSDHj8D44OUP2CPeAF9I6VxPqpYIzCGYOGSqP9cSbYl3VId6dqDFv4JVVO2hqo2e7O5kEId2T45n6HM34zOwv9F1Cj3+Qxpt2DmEHt2ZtNsRGZF9Wi6XV0S6JYrsvsXb9+DKcQKvwnVNIkq4nLz4thAMhW+78Oc7MtqIaOoK5LijzzquEDFg16PDseHjwopPFvq4tBQyaOMP+M6vdbfPVFenheB41c8IStuie8lEeR+J2CWp5w4Uxy+KsRDB4za6jt6GoMHj6xmdgWar7Wnsqcl7GJjpxqYJHt3G5hSn57//AaZjTZUyCAAA';
-        const hash = copyTextArea.value.split('#')[1].trim();        
-        let isCorrectHash = false;
-        let osHash = navigator.platform.startsWith('Win') ? windowsHash : osxHash;
-        expect(hash).to.equal(osHash);
+        const hash = copyTextArea.value.split('#')[1].trim();
+
+        // remove the header from the hash, which is the first 21 characters
+        expect(hash.slice(21)).to.equal(hashWithoutHeader);
       });
 
       it('Clones an object', () => {

@@ -263,4 +263,26 @@ describe('custom actions', async () => {
       },
     });
   });
+
+  it('Only fragments in the first section should be preloaded', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestPreloadFrags.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    // This fragment is in the 1st section and should be preloaded
+    const lcpLink = 'link[href^="/test/features/personalization/mocks/fragments/fragmentReplaced"]';
+
+    // This fragment is in the 3rd section and should not be preloaded
+    const notLcpLink = 'link[href^="/test/features/personalization/mocks/fragments/inlineFragReplaced"]';
+
+    expect(document.querySelector(lcpLink)).not.to.exist;
+    expect(document.querySelector(notLcpLink)).not.to.exist;
+
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+
+    expect(document.querySelector(lcpLink)).to.exist;
+    expect(document.querySelector(notLcpLink)).not.to.exist;
+  });
 });
