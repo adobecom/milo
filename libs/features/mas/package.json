@@ -14,8 +14,7 @@
   "scripts": {
     "lint": "eslint --fix",
     "test": "npm run test:ci --workspaces",
-    "build": "npm run build --workspaces",
-    "build:milo": "npm run build:milo --workspaces"
+    "build": "npm run build --workspaces"
   },
   "dependencies": {
     "@spectrum-web-components/action-button": "^0.43.0",

@@ -82,9 +82,9 @@ Main idea is to once the development is done, and ideally PR is already merged, 
 For non Milo consumers, we will support official releases to artifactory.
 
 # Consumption in Milo
-run special build
+run
 ```
-npm run build:milo
+npm run build
 ```
 copy the build artifacts to Milo's deps folder:
 ```

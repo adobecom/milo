@@ -21,7 +21,7 @@ To explore bundle contents, upload `stats.json` file to [esbuild analyzer](https
 
 
 ### Milo Consumption
-To consume in milo, use another command - `npm run build:milo`, that will generate files in `milo-libs folder` 
+To consume in milo, use another command - `npm run build`, that will generate files in `/libs/deps/mas` folder 
 File `milo-libs/commerce.js` should be copied to Milo's [deps](https://github.com/adobecom/milo/tree/main/libs/deps).
 
 ### Testing
