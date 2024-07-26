@@ -322,7 +322,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* con-vars support */
-  .hero-marquee:is(.bg-top-mobile, .bg-top-mobile, .bg-bottom-mobile) .background {
+  .hero-marquee:is(.bg-top-mobile, .bg-bottom-mobile) .background,
+  .hero-marquee:is(.bg-top-mobile, .bg-bottom-mobile) .background video {
       position: relative;
   }
 
@@ -375,8 +376,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* con-vars support */
-  .hero-marquee.bg-top-tablet .background,
-  .hero-marquee.bg-bottom-tablet .background {
+  .hero-marquee:is(.bg-top-tablet, .bg-bottom-tablet) .background,
+  .hero-marquee:is(.bg-top-tablet, .bg-bottom-tablet) .background video {
     position: relative;
   }
 
