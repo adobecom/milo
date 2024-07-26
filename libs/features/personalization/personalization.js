@@ -571,13 +571,12 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   if (config.mep?.variantOverride?.[manifestPath]) {
     return config.mep.variantOverride[manifestPath];
   }
-
+  const trimNames = (arr) => arr.map((v) => v.trim()).filter(Boolean);
   const variantInfo = variantNames.reduce((acc, name) => {
     let nameArr = [name];
     if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
-    const vNames = nameArr.map((v) => v.trim()).filter(Boolean);
-    acc[name] = vNames;
-    acc.allNames = [...acc.allNames, ...vNames];
+    acc[name] = trimNames(nameArr);
+    acc.allNames = [...acc.allNames, ...trimNames(name.split(/[,&]/))];
     return acc;
   }, { allNames: [] });
 
