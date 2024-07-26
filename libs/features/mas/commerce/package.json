@@ -41,7 +41,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git@github.com:adobecom/mas.git",
+        "url": "git@github.com:adobecom/milo.git",
         "directory": "commerce"
     }
 }

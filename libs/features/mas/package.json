@@ -6,9 +6,7 @@
   "private": true,
   "workspaces": [
     "commerce",
-    "commons",
     "mas",
-    "studio",
     "web-components"
   ],
   "scripts": {
