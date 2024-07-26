@@ -408,15 +408,14 @@ describe('Merch Card with Offer Selection', () => {
     const calloutSlot = segmentCard.querySelector('[slot="callout-content"]');
     expect(calloutSlot).to.exist;
 
-    const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper-with-icon');
+    const calloutContentWrapper = calloutSlot.querySelector('div > div');
     expect(calloutContentWrapper).to.exist;
-    expect(calloutContentWrapper.classList.contains('callout-content-wrapper-with-icon')).to.be.true;
 
     const imgElement = calloutContentWrapper.querySelector('img.callout-icon');
     expect(imgElement).to.exist;
     expect(imgElement.title).to.equal('this is a dummy tooltip text');
 
-    const calloutContent = calloutContentWrapper.querySelector('div');
+    const calloutContent = calloutContentWrapper.querySelector('div > div');
     expect(calloutContent).to.exist;
     expect(calloutContent.textContent.trim()).to.equal('AI Assistant add-on available');
 

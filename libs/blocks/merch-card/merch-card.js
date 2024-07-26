@@ -235,7 +235,6 @@ const parseContent = async (el, merchCard) => {
       calloutContentWrapper.appendChild(calloutContent);
 
       if (imgElement) {
-        calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
         calloutContentWrapper.appendChild(imgElement);
       }
 
