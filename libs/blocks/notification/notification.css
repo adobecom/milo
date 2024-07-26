@@ -47,7 +47,8 @@
   font-weight: unset;
 }
 
-.notification [class*="heading-"] + p {
+.notification [class*="heading-"] + p,
+.notification.pill p {
   margin-block-end: var(--spacing-s);
 }
 
@@ -553,6 +554,10 @@
     flex-wrap: wrap;
     align-items: baseline;
     text-align: start;
+  }
+
+  .notification.pill .copy-wrap > * {
+    max-inline-size: 100%;
   }
 
   .notification.ribbon.space-between .foreground.container .icon-area {
