@@ -146,7 +146,7 @@ class GrayboxPromote extends LitElement {
         await getProjectInfo(this);
         await getSharepointData(this);
         const mainRepo = this.repo.replace('-graybox', '');
-        this.setup.adminPageUri = `https://milo.adobe.com/tools/graybox-promote?ref=${this.ref}&repo=${mainRepo}&owner=${this.owner}&host=business.adobe.com&project=${mainRepo.toUpperCase()}&referrer=MOCK_REF`;
+        this.setup.adminPageUri = `https://milo.adobe.com/tools/graybox-promote?ref=${this.ref}&repo=${mainRepo}&owner=${this.owner}&project=${mainRepo.toUpperCase()}`;
         await getGrayboxConfig(this);
         // TODO remove the line below after receiving user permissions
         this.setup.ignoreUserCheck = true;
