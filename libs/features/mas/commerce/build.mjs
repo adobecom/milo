@@ -1,8 +1,6 @@
 import { build } from 'esbuild';
 import fs from 'node:fs';
 
-const outfolder = '../../../../libs/deps/mas';
-
 const { metafile } = await build({
     alias: {
         react: '../mocks/react.js',
@@ -12,7 +10,7 @@ const { metafile } = await build({
     format: 'esm',
     metafile: true,
     minify: true,
-    outfile: `${outfolder}/commerce.js`,
+    outfile: '../../../../libs/deps/mas/commerce.js',
     platform: 'browser',
     sourcemap: true,
     target: ['es2020'],

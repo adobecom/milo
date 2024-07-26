@@ -11,7 +11,7 @@ const { metafile } = await build({
     metafile: true,
     minify: true,
     sourcemap: true,
-    outfile: '../libs/mas.js',
+    outfile: '../../../../libs/deps/mas/mas.js',
     platform: 'browser',
     target: ['es2020'],
 });
