@@ -850,6 +850,8 @@ export async function loadIms() {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
     }
+  }).catch(() => {
+    getConfig().entitlements([]);
   });
 
   return imsLoaded;
