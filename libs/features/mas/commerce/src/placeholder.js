@@ -237,6 +237,7 @@ export const HTMLPlaceholderMixin = {
      * Restores previous state of the component if the `render` method returned `false`.
      */
     requestUpdate(force = false) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         if (!this.isConnected || !useService()) return;
         const bucket = init(this);
         // Batch consecutive updates

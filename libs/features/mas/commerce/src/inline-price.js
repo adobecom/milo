@@ -104,6 +104,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
 
     /** @type {Commerce.Price.PlaceholderConstructor["createInlinePrice"]} */
     static createInlinePrice(options) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return null;
         const {
@@ -214,6 +215,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
      */
     async render(overrides = {}) {
         if (!this.isConnected) return false;
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
         const options = service.collectPriceOptions(
@@ -254,6 +256,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
      */
     renderOffers(offers, overrides = {}, version = undefined) {
         if (!this.isConnected) return;
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
         const options = service.collectPriceOptions({
@@ -277,6 +280,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
     }
 
     updateOptions(options) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
         const {

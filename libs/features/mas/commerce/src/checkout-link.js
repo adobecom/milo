@@ -40,6 +40,7 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
 
     /** @type {Commerce.Checkout.PlaceholderConstructor["createCheckoutLink"]} */
     static createCheckoutLink(options = {}, innerHTML = '') {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return null;
         const {
@@ -110,6 +111,7 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
 
     async render(overrides = {}) {
         if (!this.isConnected) return false;
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
         if (!this.dataset.imsCountry) {
@@ -164,6 +166,7 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
         version = undefined,
     ) {
         if (!this.isConnected) return false;
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
         const extraOptions = JSON.parse(
@@ -203,6 +206,7 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
     }
 
     updateOptions(options = {}) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
         const {

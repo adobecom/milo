@@ -92,6 +92,7 @@ export function Checkout({ providers, settings }, dataProviders) {
 
     /** @type {Commerce.Checkout.buildCheckoutAction} */
     async function buildCheckoutAction(offers, options) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const instance = useService();
         const checkoutAction = await dataProviders.getCheckoutAction?.(
             offers,
