@@ -1,4 +1,4 @@
-// branch: MWPW-154335 commit: 63b7be556822da81243ffff85ae367f43618c7f2 Thu, 25 Jul 2024 05:58:29 GMT
+// branch: MWPW-154335 commit: 53a1381a9c8448c37b19c68cf05c800c5dc2a823 Fri, 26 Jul 2024 05:38:48 GMT
 import{html as o,LitElement as te,nothing as re}from"/libs/deps/lit-all.min.js";import{LitElement as Y,html as M,css as Q}from"/libs/deps/lit-all.min.js";var h=class extends Y{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:e}=this;return e?M`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:M` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=Q`
@@ -704,7 +704,7 @@ merch-card [slot='callout-content'] img {
 }
 
 merch-card[variant="mini-compare-chart"] [slot='callout-content'] {
-    padding: 0px var(--consonant-merch-spacing-s);
+    padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) 0px;
 }
 
 merch-card[variant="mini-compare-chart"] [slot='callout-content'] [is="inline-price"] {
