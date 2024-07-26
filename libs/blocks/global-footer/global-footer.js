@@ -5,6 +5,7 @@ import {
   getMetadata,
   getConfig,
   loadBlock,
+  localizeLink,
 } from '../../utils/utils.js';
 
 import {
@@ -258,6 +259,7 @@ class Footer {
     } else {
       // No hash -> region selector expands a dropdown
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
+      regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       await loadBlock(regionSelector); // load fragment and replace original link
