@@ -566,19 +566,26 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
+function trimNames(arr) {
+  return arr.map((v) => v.trim()).filter(Boolean);
+}
+export function buildVariantInfo(variantNames) {
+  return variantNames.reduce((acc, name) => {
+    let nameArr = [name];
+    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
+    acc[name] = trimNames(nameArr);
+    acc.allNames = [...acc.allNames, ...trimNames(name.split(/[,&]|\bnot\b/))];
+    return acc;
+  }, { allNames: [] });
+}
+
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
   if (config.mep?.variantOverride?.[manifestPath]) {
     return config.mep.variantOverride[manifestPath];
   }
-  const trimNames = (arr) => arr.map((v) => v.trim()).filter(Boolean);
-  const variantInfo = variantNames.reduce((acc, name) => {
-    let nameArr = [name];
-    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
-    acc[name] = trimNames(nameArr);
-    acc.allNames = [...acc.allNames, ...trimNames(name.split(/[,&]/))];
-    return acc;
-  }, { allNames: [] });
+
+  const variantInfo = buildVariantInfo(variantNames);
 
   const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
