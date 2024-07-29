@@ -47,6 +47,7 @@ const decorateForeground = async (el, rows) => {
       await decorateLockupFromContent(row);
     } else if (i === (rows.length - 1)) {
       row.classList.add('footer');
+      if (row.textContent.trim() === '') row.classList.add('empty');
     } else {
       row.classList.add('extra-row');
     }
@@ -86,7 +87,7 @@ const init = async (el) => {
   if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
-  if (rows.length === 4) el.classList.add('has-footer');
+  if (rows.length === 4) el.classList.add('equal-height');
   if (rows.length >= 1) {
     const count = rows.length >= 3 ? 'three-plus' : rows.length;
     switch (count) {
