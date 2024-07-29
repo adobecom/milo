@@ -55,7 +55,7 @@ const loadCaas = async (a) => {
   const { env } = getConfig();
   const { host, search } = window.location;
   let chimeraEndpoint = 'www.adobe.com/chimera-api/collection';
-  let queryParams = new URLSearchParams(search);
+  const queryParams = new URLSearchParams(search);
   const caasEndpoint = queryParams.get('caasendpoint');
   const caasContainer = queryParams.get('caascontainer');
 
