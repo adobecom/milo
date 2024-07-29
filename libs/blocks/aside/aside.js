@@ -189,17 +189,9 @@ async function decorateLayout(el) {
   const picture = text?.querySelector('p picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   if (iconArea) {
-    let iconClass = 'icon-area';
-    let needsIconography = false;
-    if (el.className.includes('-avatar')) {
-      iconClass = 'avatar-area';
-      needsIconography = true;
-    }
-    if (el.className.includes('-lockup')) {
-      iconClass = 'lockup-area';
-      needsIconography = true;
-    }
-    if (needsIconography) await loadIconography();
+    const iconVariant = el.className.match(/-(avatar|lockup)/);
+    const iconClass = iconVariant ? `${iconVariant[1]}-area` : 'icon-area';
+    if (iconVariant) await loadIconography();
     iconArea.classList.add(iconClass);
   }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
