@@ -26,6 +26,7 @@ const defaultConfig = {
     },
     detailsTextOption: 'default',
     setCardBorders: false,
+    showCardBadges: false,
     showFooterDivider: false,
     useOverlayLinks: false,
     banner: {
