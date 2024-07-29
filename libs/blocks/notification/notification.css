@@ -2,6 +2,7 @@
   --min-block-size: 160px;
   --min-block-size-ribbon: 50px;
   --min-block-size-pill: 72px;
+  --margin-inline-pill-desktop: 80px;
   --margin-inline-ribbon: 30px;
   --max-inline-size-image: 75px;
   --max-inline-size-icon: 231px;
@@ -521,6 +522,10 @@
     padding-block: var(--spacing-xs);
     padding-inline: var(--spacing-m);
     margin: 0;
+  }
+
+  .notification.pill:not(.flexible) .foreground.container {
+    inline-size: calc(100% - var(--margin-inline-pill-desktop) * 2);
   }
 
   .notification.pill.flexible .foreground.container {
