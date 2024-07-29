@@ -6,3 +6,7 @@ export default function isUrl(str) {
     return false;
   }
 }
+
+export function getUrl(url) {
+  return Array.isArray(url) ? url[0] : url;
+}

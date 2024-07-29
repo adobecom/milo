@@ -16,6 +16,7 @@ import { getStatus, origin, preview } from '../utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
 import { getServiceUpdates } from '../utils/miloc.js';
 import { connectSK } from '../../../utils/sidekick.js';
+import { getUrl } from '../utils/url.js';
 
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout', 'Transcreate'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
@@ -36,7 +37,7 @@ async function validateUrl(url) {
 
 export function validateUrlsFormat(projectUrls, removeMedia = false) {
   projectUrls.forEach((projectUrl) => {
-    const url = Array.isArray(projectUrl) ? projectUrl[0] : projectUrl;
+    const url = getUrl(projectUrl);
     let urlOrigin = url.origin;
     if (url?.alt) {
       try {
@@ -49,12 +50,15 @@ export function validateUrlsFormat(projectUrls, removeMedia = false) {
     if (urlOrigin !== origin) {
       url.valid = 'not same domain';
     }
-    if ((/\.(gif|jpg|jpeg|tiff|png|webp|svg)$/i).test(url.pathname)) {
+    if ((/\.(gif|jpg|jpeg|tiff|png|webp)$/i).test(url.pathname)) {
       url.valid = 'media';
     }
   });
   if (removeMedia) {
-    return projectUrls.filter((url) => url.valid === 'media');
+    return projectUrls.filter((url) => {
+      const checkUrl = getUrl(url);
+      return checkUrl.valid !== 'media';
+    });
   }
   return projectUrls;
 }
