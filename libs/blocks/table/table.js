@@ -416,9 +416,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
+      filterChangeEvent();
     }
-
-    filterChangeEvent();
   };
 
   // For Mobile (else: tablet / desktop)
