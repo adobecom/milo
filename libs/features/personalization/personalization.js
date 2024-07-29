@@ -615,6 +615,7 @@ const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
   event: manifest.event,
   manifest: manifest.manifestPath,
+  executionOrder: '1-1',
   selectedVariant: { commands: [], fragments: [] },
   selectedVariantName: 'default',
   variantNames: ['all'],
