@@ -40,16 +40,13 @@ function handleHeading(table, headingCols) {
         textStartIndex += 1;
         if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
       }
-      const trackingHeaderElem = elements[textStartIndex];
+      elements[textStartIndex]?.classList.add('tracking-header');
+
       const pricingElem = elements[textStartIndex + 1];
       let bodyElem = elements[textStartIndex + 2];
-      const pricingElemID = `${trackingHeaderElem?.id ?? 'row-head'}-pricing`;
 
-      trackingHeaderElem?.classList.add('tracking-header');
       if (pricingElem) {
         pricingElem.classList.add('pricing');
-        pricingElem.setAttribute('id', pricingElemID);
-        trackingHeaderElem?.setAttribute('aria-describedby', pricingElem.id);
         if (isPriceBottom) {
           pricingElem.parentNode.insertBefore(
             elements[textStartIndex + 2],
@@ -59,16 +56,12 @@ function handleHeading(table, headingCols) {
         }
       }
 
-      const bodyElemID = `${trackingHeaderElem?.id ?? 'row-head'}-body`;
       if (bodyElem) {
         bodyElem.classList.add('body');
-        bodyElem.setAttribute('id', bodyElemID);
-        trackingHeaderElem.setAttribute('aria-describedby', `${bodyElemID} ${trackingHeaderElem.getAttribute('aria-describedby')}`);
       }
 
       decorateButtons(col, 'button-l');
       const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
-      buttonsWrapper.setAttribute('role', 'cell');
       col.append(buttonsWrapper);
       const buttons = col.querySelectorAll('.con-button');
 
@@ -88,8 +81,21 @@ function handleHeading(table, headingCols) {
       col.append(row1, row2);
     }
     const trackingHeader = col.querySelector('.tracking-header');
+    const headerPricing = col.querySelector('.pricing');
+    const headerBody = col.querySelector('.body:not(.action-area)');
     const nodeToApplyRoleScope = trackingHeader ?? col;
-    if (trackingHeader) col.removeAttribute('role');
+
+    if (trackingHeader) {
+      const trackingHeaderID = `c${col.dataset.colIndex}-${trackingHeader.innerText.replace(/^\s+|\s+$/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-')
+        .replace(/-+/g, '-') || ''}`;
+
+      trackingHeader.setAttribute('id', trackingHeaderID);
+      if (headerBody) headerBody.setAttribute('id', `${trackingHeader.id}-body`);
+      if (headerPricing) headerPricing.setAttribute('id', `${trackingHeader.id}-pricing`);
+      trackingHeader.setAttribute('aria-describedby', `${headerBody?.id ?? ''} ${headerPricing?.id ?? ''}`);
+
+      col.removeAttribute('role');
+    }
 
     nodeToApplyRoleScope.setAttribute('role', 'columnheader');
     nodeToApplyRoleScope.setAttribute('scope', 'col');
