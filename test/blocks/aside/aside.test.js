@@ -90,9 +90,7 @@ describe('aside', () => {
     before(() => {
       document.body.innerHTML = splitBody;
       const blocks = document.querySelectorAll('.aside');
-      blocks.forEach(async (el) => {
-        await init(el);
-      });
+      blocks.forEach((el) => init(el));
     });
 
     it('allows a background color', async () => {
