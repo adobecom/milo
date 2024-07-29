@@ -492,6 +492,14 @@
     justify-content: flex-start;
   }
 
+  html[dir="rtl"] .marquee.support-rtl.split .foreground.container {
+    flex-direction: row;
+  }
+
+  html[dir="rtl"] .marquee.support-rtl.split.row-reversed .foreground.container {
+    flex-direction: row-reverse;
+  }
+
   .marquee.split .asset img,
   .marquee.split.small .asset img,
   .marquee.split.large .asset img,
@@ -722,14 +730,6 @@
   html[dir="rtl"] .marquee.split.one-third:not(.row-reversed) .asset.bleed {
     left: 0;
     right: auto;
-  }
-  
-  html[dir="rtl"] .marquee.support-rtl.split .foreground.container {
-    flex-direction: row;
-  }
-
-  html[dir="rtl"] .marquee.support-rtl.split.row-reversed .foreground.container {
-    flex-direction: row-reverse;
   }
 
   .marquee.split.one-third .foreground.container .text,
