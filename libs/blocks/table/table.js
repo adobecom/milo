@@ -40,12 +40,16 @@ function handleHeading(table, headingCols) {
         textStartIndex += 1;
         if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
       }
-      elements[textStartIndex]?.classList.add('tracking-header');
+      const trackingHeaderElem = elements[textStartIndex];
       const pricingElem = elements[textStartIndex + 1];
       let bodyElem = elements[textStartIndex + 2];
+      const pricingElemID = `${trackingHeaderElem?.id ?? 'row-head'}-pricing`;
 
+      trackingHeaderElem?.classList.add('tracking-header');
       if (pricingElem) {
         pricingElem.classList.add('pricing');
+        pricingElem.setAttribute('id', pricingElemID);
+        trackingHeaderElem?.setAttribute('aria-describedby', pricingElem.id);
         if (isPriceBottom) {
           pricingElem.parentNode.insertBefore(
             elements[textStartIndex + 2],
@@ -54,12 +58,17 @@ function handleHeading(table, headingCols) {
           bodyElem = elements[textStartIndex + 1];
         }
       }
+
+      const bodyElemID = `${trackingHeaderElem?.id ?? 'row-head'}-body`;
       if (bodyElem) {
         bodyElem.classList.add('body');
+        bodyElem.setAttribute('id', bodyElemID);
+        trackingHeaderElem.setAttribute('aria-describedby', `${bodyElemID} ${trackingHeaderElem.getAttribute('aria-describedby')}`);
       }
 
       decorateButtons(col, 'button-l');
       const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
+      buttonsWrapper.setAttribute('role', 'cell');
       col.append(buttonsWrapper);
       const buttons = col.querySelectorAll('.con-button');
 
@@ -78,9 +87,12 @@ function handleHeading(table, headingCols) {
       col.innerHTML = '';
       col.append(row1, row2);
     }
+    const trackingHeader = col.querySelector('.tracking-header');
+    const nodeToApplyRoleScope = trackingHeader ?? col;
+    if (trackingHeader) col.removeAttribute('role');
 
-    col.setAttribute('role', 'columnheader');
-    col.setAttribute('scope', 'col');
+    nodeToApplyRoleScope.setAttribute('role', 'columnheader');
+    nodeToApplyRoleScope.setAttribute('scope', 'col');
   });
 }
 
@@ -503,9 +515,9 @@ export default function init(el) {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
       col.setAttribute('role', 'cell');
-      if (col.innerHTML) {
-        col.tabIndex = 0;
-      }
+      // if (col.innerHTML) {
+      //   col.tabIndex = 0;
+      // }
     });
 
     expandSection = handleSection(sectionParams);
