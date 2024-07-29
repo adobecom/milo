@@ -90,10 +90,7 @@ function decorateFlexible(el) {
     el.querySelector('.background'),
     el.querySelector('.foreground'),
     el.querySelector('.close'),
-  ].reduce((acc, curr) => {
-    if (curr) return [...acc, curr];
-    return acc;
-  }, []).filter(Boolean);
+  ].filter(Boolean);
   const inner = createTag('div', { class: 'flexible-inner' }, innards);
   if (el.style.background) {
     inner.style.background = el.style.background;
