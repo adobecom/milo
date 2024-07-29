@@ -580,6 +580,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
+      showCardBadges: state.showCardBadges,
       cardStyle: state.cardStyle,
       showTotalResults: state.showTotalResults,
       i18n: {
@@ -818,6 +819,7 @@ export const defaultState = {
   secondaryTags: [],
   secondarySource: [],
   setCardBorders: false,
+  showCardBadges: false,
   showFooterDivider: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
