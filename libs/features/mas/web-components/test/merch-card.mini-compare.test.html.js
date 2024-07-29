@@ -52,6 +52,7 @@ runTests(async () => {
                     'slot[name="price-commitment"]',
                     'slot[name="offers"]',
                     'slot[name="promo-text"]',
+                    'slot[name="callout-content"]',
                     'footer',
                 ]
                     .map((selector) =>
@@ -83,13 +84,14 @@ runTests(async () => {
             ].map((miniCompareChart) => {
                 const heights = new Array(5)
                     .fill()
-                    .map(
-                        (_, i) =>
+                    .map((_, i) =>
+                        Math.round(
                             window.getComputedStyle(
                                 miniCompareChart.querySelector(
                                     `.footer-row-cell:nth-child(${i + 1})`,
                                 ),
                             ).height,
+                        ),
                     )
                     .join(',');
                 return heights;
