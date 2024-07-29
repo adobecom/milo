@@ -452,6 +452,7 @@
   .notification.max-width-10-desktop .foreground.container {
     margin-inline: var(--grid-margins-width-10);
     gap: var(--spacing-l);
+    max-inline-size: calc(var(--grid-column-width) * 10);
   }
 
   .notification.full-width .foreground.container {
