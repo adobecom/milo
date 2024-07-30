@@ -1,35 +1,76 @@
-const blockConfig = {
-  footer: {
+const blockConfig = [
+  {
+    key: 'header',
+    name: 'global-navigation',
+    targetEl: 'header',
+    appendType: 'prepend',
+    params: ['imsClientId'],
+  },
+  {
+    key: 'footer',
     name: 'global-footer',
     targetEl: 'footer',
     appendType: 'appendChild',
+    params: ['privacyId', 'privacyLoadDelay'],
   },
-};
+];
 
 const envMap = {
   prod: 'https://www.adobe.com',
   stage: 'https://www.stage.adobe.com',
-  qa: 'https://feds--milo--adobecom.hlx.page',
+  qa: 'https://gnav--milo--adobecom.hlx.page',
 };
+
+function getParamsConfigs(configs) {
+  return blockConfig.reduce((acc, block) => {
+    block.params.forEach((param) => {
+      const value = configs[block.key]?.[param];
+      if (value !== undefined) {
+        acc[param] = value;
+      }
+    });
+    return acc;
+  }, {});
+}
+
 export default async function loadBlock(configs, customLib) {
-  const { footer, locale, env = 'prod' } = configs || {};
+  const { header, footer, authoringPath, env = 'prod', locale = '' } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
 
+  if (!header && !footer) {
+    console.error('No block configs found!');
+    return;
+  }
   // Relative path can't be used, as the script will run on consumer's app
-  const { default: bootstrapBlock } = await import(`${miloLibs}/libs/navigation/bootstrapper.js`);
-  const { default: locales } = await import(`${miloLibs}/libs/utils/locales.js`);
+  const [[{ default: bootstrapBlock }, { default: locales }, { setConfig }]] = await Promise.all([
+    Promise.all([
+      import(`${miloLibs}/libs/navigation/bootstrapper.js`),
+      import(`${miloLibs}/libs/utils/locales.js`),
+      import(`${miloLibs}/libs/utils/utils.js`),
+    ]),
+  ]);
+
+  const paramConfigs = getParamsConfigs(configs, miloLibs);
   const clientConfig = {
     origin: miloLibs,
     miloLibs: `${miloLibs}/libs`,
-    pathname: `/${locale || ''}`,
+    pathname: `/${locale}`,
     locales: configs.locales || locales,
+    contentRoot: authoringPath || footer.authoringPath,
+    ...paramConfigs,
   };
-  if (footer) {
-    const { authoringPath, privacyId, privacyLoadDelay = 3000 } = footer;
-    blockConfig.delay = privacyLoadDelay;
-    bootstrapBlock({ ...clientConfig, contentRoot: authoringPath, privacyId }, blockConfig.footer);
-  }
+  setConfig(clientConfig);
+
+  blockConfig.forEach((block) => {
+    const configBlock = configs[block.key];
+    if (configBlock) {
+      bootstrapBlock(`${miloLibs}/libs`, {
+        ...block,
+        ...(block.key === 'header' && { unavComponents: configBlock.unavComponents }),
+      });
+    }
+  });
 }
 
 window.loadNavigation = loadBlock;
