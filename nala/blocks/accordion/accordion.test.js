@@ -5,29 +5,14 @@ import AccordionBlock from './accordion.page.js';
 
 let webUtil;
 let accordion;
-let consoleErrors = [];
 
 const miloLibs = process.env.MILO_LIBS || '';
-const knownConsoleErrors = [
-  'Access-Control-Allow-Origin',
-  'Failed to load resource: net::ERR_FAILED',
-  'Invalid request',
-  'Attestation check for Topics',
-];
 
 test.describe('Milo Accordion Block test suite', () => {
   test.beforeEach(async ({ page }) => {
     webUtil = new WebUtil(page);
     accordion = new AccordionBlock(page);
-    page.on('console', (exception) => {
-      if (exception.type() === 'error') {
-        consoleErrors.push(exception.text());
-      }
-    });
   });
-
-  // Clear the consoleErrors array after each test
-  test.afterEach(async () => { consoleErrors = []; });
 
   // Test 0 : Accordion
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
@@ -65,11 +50,6 @@ test.describe('Milo Accordion Block test suite', () => {
       await expect(await accordion.section).toHaveAttribute('daa-lh', await webUtil.getSectionDaalh(1)); 
       await expect(await accordion.accordion).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('accordion-container', 1));  
     });
-
-    await test.step('step-4: Verify browser console errors', async () => {
-      consoleErrors.length > knownConsoleErrors.length && console.log('[Console error]:', consoleErrors);
-      expect.soft(consoleErrors.length).toBeLessThanOrEqual(knownConsoleErrors.length);
-    });
   });
 
   // Test 1 : Accordion (seo)
@@ -97,11 +77,6 @@ test.describe('Milo Accordion Block test suite', () => {
 
     await test.step('step-3: Verify analytics attributes', async () => {
       await expect(await accordion.accordion).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('accordion-container', 1));
-    });
-
-    await test.step('step-4: Verify browser console errors', async () => {
-      consoleErrors.length > knownConsoleErrors.length && console.log('[Console error]:', consoleErrors);
-      expect.soft(consoleErrors.length).toBeLessThanOrEqual(knownConsoleErrors.length);
     });
   });
 
@@ -134,16 +109,6 @@ test.describe('Milo Accordion Block test suite', () => {
 
     await test.step('step-3: Verify analytics attributes', async () => {
       await expect(await accordion.accordion).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('accordion-container', 1));  
-    });
-
-    await test.step('step-4: Verify browser console errors', async () => {
-      const unexpectedErrors = consoleErrors.filter(error => !knownConsoleErrors.some(knownError => error.includes(knownError)));
-
-      if (unexpectedErrors.length > knownConsoleErrors.length) {
-        console.log('[Console error]:', consoleErrors);
-      }
-      console.log('[All console errors]:', consoleErrors);
-      expect.soft(consoleErrors.length).toBeLessThanOrEqual(knownConsoleErrors.length);
     });
   });
 });

@@ -11,7 +11,7 @@ module.exports = {
         heading1: 'What size PDFs can I compress?',
         heading2: 'How do I check my PDF file size?',
       },
-      tags: '@accordion @3 @smoke @regression @milo',
+      tags: '@accordion @t1 @smoke @regression @milo',
     },
     {
       tcid: '1',
