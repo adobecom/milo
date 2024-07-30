@@ -14,7 +14,7 @@ import {
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { createTag, decorateSections, decorateFooterPromo } from '../../../utils/utils.js';
-import { getUrls, validateUrlsOrigin } from '../loc/index.js';
+import { getUrls, validateUrlsFormat } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import {
@@ -146,7 +146,7 @@ export async function findFragments() {
     }
     return acc;
   }, []);
-  return validateUrlsOrigin(foundFragments);
+  return validateUrlsFormat(foundFragments, true);
 }
 
 export async function syncToExcel(paths) {
