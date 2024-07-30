@@ -724,13 +724,13 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const walker = document.createTreeWalker(el,
+  const walker = document.createTreeWalker(
+    el,
     NodeFilter.SHOW_TEXT,
     {
-      acceptNode: (node) => {
-        return regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-    },
-  });
+      acceptNode: (node) => return regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  );
   const nodes = [];
   let node;
   while (node = walker.nextNode()) {
