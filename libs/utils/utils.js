@@ -724,7 +724,6 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-
   const walker = document.createTreeWalker(el,
     NodeFilter.SHOW_TEXT,
     {
@@ -732,15 +731,12 @@ async function decoratePlaceholders(area, config) {
         return regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
     },
   });
-
   const nodes = [];
   let node;
   while (node = walker.nextNode()) {
     nodes.push(node);
   }
-
   if (!nodes.length) return;
-
   const { replaceText } = await import('../features/placeholders.js');
   for (const textNode of nodes) {
     textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
