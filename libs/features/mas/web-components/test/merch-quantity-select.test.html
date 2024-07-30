@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quantity selector demo page</title>
+    <script>
+        window.process = {
+            env: {},
+        };
+    </script>
+    <style>
+        main {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        main > div {
+            display: initial;
+        }
+    </style>
+</head>
+
+<body>
+<script type="module" src="merch-quantity-select.test.html.js"></script>
+<main>
+    <merch-quantity-select title="Select a quantity" min="1" max="10" step="1" default-value="2" max-input="250"></merch-quantity-select>
+</main>
+</body>
+</html>

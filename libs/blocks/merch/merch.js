@@ -379,7 +379,7 @@ export async function initService(force = false) {
   commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const { hostname, searchParams } = new URL(window.location.href);
-    let commerceLibPath = '../../deps/commerce.js';
+    let commerceLibPath = '../../deps/mas/commerce.js';
     if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
       const maslibs = searchParams.get('maslibs');
       if (maslibs) {
