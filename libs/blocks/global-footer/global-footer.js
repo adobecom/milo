@@ -5,6 +5,7 @@ import {
   getMetadata,
   getConfig,
   loadBlock,
+  localizeLink,
 } from '../../utils/utils.js';
 
 import {
@@ -18,9 +19,10 @@ import {
   lanaLog,
   logErrorFor,
   toFragment,
-  getFederatedUrl,
   federatePictureSources,
 } from '../global-navigation/utilities/utilities.js';
+
+import { getFederatedUrl } from '../../utils/federated.js';
 
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -257,6 +259,7 @@ class Footer {
     } else {
       // No hash -> region selector expands a dropdown
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
+      regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       await loadBlock(regionSelector); // load fragment and replace original link
@@ -285,13 +288,15 @@ class Footer {
 
     const socialElem = toFragment`<ul class="feds-social" daa-lh="Social"></ul>`;
 
+    const sanitizeLink = (link) => link.replace('#_blank', '').replace('#_dnb', '');
+
     CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
       if (!link) return;
 
       const iconElem = toFragment`<li class="feds-social-item">
           <a
-            href="${link.href}"
+            href="${sanitizeLink(link.href)}"
             class="feds-social-link"
             aria-label="${platform}"
             daa-ll="${getAnalyticsValue(platform, index + 1)}"

@@ -154,14 +154,6 @@ const getTargetPersonalization = async () => {
   };
 };
 
-const getDtmLib = (env) => ({
-  edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
-  url:
-    env.name === 'prod'
-      ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
-});
-
 const setupEntitlementCallback = () => {
   const setEntitlements = async (destinations) => {
     const { default: parseEntitlements } = await import('../features/personalization/entitlements.js');
@@ -190,8 +182,12 @@ const setupEntitlementCallback = () => {
   );
 };
 
+function isProxied() {
+  return /^(www|milo|business|blog)(\.stage)?\.adobe\.com$/.test(window.location.hostname);
+}
+
 let filesLoadedPromise = false;
-const loadMartechFiles = async (config, url, edgeConfigId) => {
+const loadMartechFiles = async (config) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
@@ -204,23 +200,56 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
     setDeep(
       window,
       'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
-      config.locale.ietf,
+      { locale: config.locale.prefix.replace('/', ''), langCode: config.locale.ietf },
     );
     setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
 
+    const launchUrl = config.env.consumer?.marTechUrl || (
+      isProxied()
+        ? '/marketingtech'
+        : 'https://assets.adobedtm.com'
+    ) + (
+      config.env.name === 'prod'
+        ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+        : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
+    );
+    loadLink(launchUrl, { as: 'script', rel: 'preload' });
+
     window.marketingtech = {
       adobe: {
-        launch: { url, controlPageLoad: true },
-        alloy: { edgeConfigId },
+        launch: {
+          url: launchUrl,
+          controlPageLoad: true,
+        },
+        alloy: {
+          edgeConfigId: config.env.consumer?.edgeConfigId || config.env.edgeConfigId,
+          edgeDomain: (
+            isProxied()
+              ? window.location.hostname
+              : 'sstats.adobe.com'
+          ),
+          edgeBasePath: (
+            isProxied()
+              ? 'experienceedge'
+              : 'ee'
+          ),
+        },
         target: false,
       },
       milo: true,
     };
-    window.edgeConfigId = edgeConfigId;
+    window.edgeConfigId = config.env.edgeConfigId;
 
-    const env = ['stage', 'local'].includes(config.env.name) ? '.qa' : '';
-    const martechPath = `martech.main.standard${env}.min.js`;
-    await loadScript(`${config.miloLibs || config.codeRoot}/deps/${martechPath}`);
+    await loadScript((
+      isProxied()
+        ? ''
+        : 'https://www.adobe.com'
+    ) + (
+      config.env.name === 'prod'
+        ? '/marketingtech/main.standard.min.js'
+        : '/marketingtech/main.standard.qa.min.js'
+    ));
+
     window._satellite.track('pageload');
   };
 
@@ -234,11 +263,7 @@ export default async function init({
   postLCP = false,
 }) {
   const config = getConfig();
-
-  const { url, edgeConfigId } = getDtmLib(config.env);
-  loadLink(url, { as: 'script', rel: 'preload' });
-
-  const martechPromise = loadMartechFiles(config, url, edgeConfigId);
+  const martechPromise = loadMartechFiles(config);
 
   if (persEnabled) {
     loadLink(

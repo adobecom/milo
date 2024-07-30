@@ -98,7 +98,7 @@ export const createLinkMarkup = (
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const { Log, Defaults, getLocaleSettings } = await import('../../deps/commerce.js');
+  const { Log, Defaults, getLocaleSettings } = await import('../../deps/mas/commerce.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
   const ostSearchParameters = new URLSearchParams();

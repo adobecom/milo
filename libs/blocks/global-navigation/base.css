@@ -111,6 +111,10 @@
   align-items: center;
 }
 
+header.global-navigation {
+  visibility: visible;
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
   .feds-navLink,

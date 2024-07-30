@@ -1,22 +1,13 @@
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
+import { getFederatedContentRoot, getFederatedUrl } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
 loadLana();
 
 const FEDERAL_PATH_KEY = 'federal';
-
-// TODO when porting this to milo core, we should define this on config level
-// and allow consumers to add their own origins
-const allowedOrigins = [
-  'https://www.adobe.com',
-  'https://business.adobe.com',
-  'https://blog.adobe.com',
-  'https://milo.adobe.com',
-  'https://news.adobe.com',
-];
 
 export const selectors = {
   globalNav: '.global-navigation',
@@ -83,41 +74,6 @@ export function toFragment(htmlStrings, ...values) {
 
   return fragment;
 }
-
-// TODO we might eventually want to move this to the milo core utilities
-let federatedContentRoot;
-export const getFederatedContentRoot = () => {
-  if (federatedContentRoot) return federatedContentRoot;
-
-  const { origin } = window.location;
-
-  federatedContentRoot = allowedOrigins.some((o) => origin.replace('.stage', '') === o)
-    ? origin
-    : 'https://www.adobe.com';
-
-  if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    // Akamai as proxy to avoid 401s, given AEM-EDS MS auth cross project limitations
-    federatedContentRoot = origin.includes('.hlx.live')
-      ? 'https://main--federal--adobecom.hlx.live'
-      : 'https://www.stage.adobe.com';
-  }
-
-  return federatedContentRoot;
-};
-
-// TODO we should match the akamai patterns /locale/federal/ at the start of the url
-// and make the check more strict.
-export const getFederatedUrl = (url = '') => {
-  if (typeof url !== 'string' || !url.includes('/federal/')) return url;
-  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
-  try {
-    const { pathname, search, hash } = new URL(url);
-    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
-  } catch (e) {
-    lanaLog({ message: `getFederatedUrl errored parsing the URL: ${url}`, e, tags: 'errorType=warn,module=utilities' });
-  }
-  return url;
-};
 
 const getPath = (urlOrPath = '') => {
   try {
