@@ -70,10 +70,6 @@ const loadCaas = async (a) => {
     state.draftDb = true;
   }
 
-  if (caasContainer === 'live') {
-    state.draftDb = false;
-  }
-
   state.endpoint = chimeraEndpoint;
 
   initCaas(state, caasStrs, block);
