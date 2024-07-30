@@ -3,7 +3,7 @@ import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
-import '../../deps/merch-card.js';
+import '../../deps/mas/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -102,7 +102,7 @@ function extractQuantitySelect(el) {
     .map((value) => (value === '' ? undefined : Number(value)));
   quantitySelectConfig.remove();
   if (![3, 4, 5].includes(values.length)) return null;
-  import('../../deps/merch-quantity-select.js');
+  import('../../deps/mas/merch-quantity-select.js');
   [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
   const quantitySelect = createTag('merch-quantity-select', attributes);
   return quantitySelect;

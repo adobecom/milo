@@ -299,11 +299,11 @@ class Gnav {
     // Order is important, decorateTopnavWrapper will render the nav
     // Ensure any critical task is executed before it
     const tasks = [
-      loadBaseStyles,
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateAside,
       this.decorateTopnavWrapper,
+      loadBaseStyles,
       this.ims,
       this.addChangeEventListeners,
     ];
