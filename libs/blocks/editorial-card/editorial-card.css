@@ -160,7 +160,7 @@
   display: flex;
   align-items: center;
   justify-content: right;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-s);
   flex-flow: wrap;
   flex-direction: row;
 }
