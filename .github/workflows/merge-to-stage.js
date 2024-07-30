@@ -130,9 +130,10 @@ const merge = async ({ prs, type }) => {
 
   for await (const { number, files, html_url, title } of prs) {
     try {
-      if (files.some((file) => SEEN[file])) {
+      const fileOverlap = files.find((file) => SEEN[file]);
+      if (fileOverlap) {
         commentOnPR(
-          `Skipped ${number}: ${title} due to file "${file}" overlap. Merging will be attempted in the next batch`,
+          `Skipped ${number}: "${title}" due to file "${fileOverlap}" overlap. Merging will be attempted in the next batch`,
           number
         );
         continue;

@@ -73,9 +73,14 @@ export async function decorateSectionAnalytics(section, idx, config) {
   });
   const mepMartech = config?.mep?.martech || '';
   section.querySelectorAll('[data-block]').forEach((block, blockIdx) => {
-    const blockName = block.classList[0] || '';
-    block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName.slice(0, 15)}${mepMartech}`);
-    decorateDefaultLinkAnalytics(block, config);
+    const lhAtt = block.getAttribute('daa-lh');
+    if (lhAtt) {
+      block.setAttribute('daa-lh', `${lhAtt}${mepMartech}`);
+    } else {
+      const blockName = block.classList[0] || '';
+      block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName.slice(0, 15)}${mepMartech}`);
+      decorateDefaultLinkAnalytics(block, config);
+    }
     block.removeAttribute('data-block');
   });
 }
