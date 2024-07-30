@@ -364,10 +364,6 @@
     inline-size: auto;
   }
 
-  .notification.ribbon .foreground.container .icon-area {
-    flex-shrink: 1;
-  }
-
   .notification.ribbon .copy-wrap {
     margin-inline-end: var(--spacing-s);
   }
