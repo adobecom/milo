@@ -66,7 +66,7 @@ export default async function loadIcons(icons, config) {
         icon.classList.add('margin-inline-start');
       } else if (parent.firstChild === icon) {
         icon.classList.add('margin-inline-end');
-        if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
+        if (parent.parentElement?.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
       } else {
         icon.classList.add('margin-inline-start', 'margin-inline-end');
       }

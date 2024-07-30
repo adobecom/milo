@@ -158,7 +158,6 @@
 .hero-marquee .main-copy [class^="heading"],
 .hero-marquee .norm p:only-child { margin: 0; }
 .hero-marquee .norm :is(h1, h2, h3, h4, h5, h6) { margin: 0 0 var(--spacing-xs) 0; }
-.hero-marquee .norm .action-area { margin-top: var(--spacing-s); }
 .hero-marquee .norm div > *:last-child { margin-bottom: 0; }
 .hero-marquee .norm div *:first-child { margin-top: 0; }
 

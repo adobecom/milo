@@ -11,6 +11,7 @@ import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
 const rowTypeKeyword = 'con-block-row-';
 const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
+const textDefault = ['xxl', 'm', 'l']; // heading, body, detail
 
 function distillClasses(el, classes) {
   const taps = ['-heading', '-body', '-detail', '-button'];
@@ -70,6 +71,8 @@ function decorateText(el, classes) {
   } else {
     decorateButtons(el, 'button-xl');
   }
+  decorateBlockText(el, textDefault);
+  decorateTextOverrides(el, ['-heading', '-body', '-detail']);
 }
 
 function decorateLockupRow(el) {
@@ -174,7 +177,7 @@ export default async function init(el) {
     : null;
   if (assetUnknown) assetUnknown.classList.add('asset-unknown');
 
-  decorateBlockText(copy, ['xxl', 'm', 'l']); // heading, body, detail
+  decorateBlockText(copy, textDefault); // heading, body, detail
   decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
