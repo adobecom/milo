@@ -33,7 +33,6 @@ header.global-navigation {
   top: 0;
   z-index: 10;
   background-color: var(--feds-background-nav--light);
-  visibility: visible;
   box-sizing: content-box;
   overflow-x: clip;
 }
