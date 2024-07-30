@@ -739,9 +739,10 @@ async function decoratePlaceholders(area, config) {
   }
   if (!nodes.length) return;
   const { replaceText } = await import('../features/placeholders.js');
-  for (const textNode of nodes) {
+  const replaceNodes = nodes.map(async (textNode) => {
     textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
-  }
+  });
+  await Promise.all(replaceNodes);
 }
 
 async function loadFooter() {
