@@ -138,7 +138,8 @@ async function fetchCardsData(config, type, el) {
   if (!endpointElement) {
     throw new Error('No query-index endpoint provided');
   }
-  endpointElement.remove();
+  el.querySelector(`a[href*="${PROD_INDEX}"]`)?.remove();
+  el.querySelector(`a[href*="${PREVIEW_INDEX}"]`)?.remove();
   let queryIndexCardPath = localizeLink(endpointElement.getAttribute('href'), config);
   if (/\.json$/.test(queryIndexCardPath)) {
     queryIndexCardPath = `${queryIndexCardPath}?sheet=${type}`;
