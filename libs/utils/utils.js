@@ -742,7 +742,6 @@ async function decoratePlaceholders(area, config) {
   if (!nodes.length) return;
 
   const { replaceText } = await import('../features/placeholders.js');
-  console.log('nodes', nodes);
   for (const textNode of nodes) {
     textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
   }
