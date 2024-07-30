@@ -728,10 +728,9 @@ async function decoratePlaceholders(area, config) {
     el,
     NodeFilter.SHOW_TEXT,
     {
-      acceptNode: (node) => {
-        regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; 
-      },
-    }
+      acceptNode: (node) => regex.test(node.nodeValue)
+        ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
+    },
   );
   const nodes = [];
   let node;
