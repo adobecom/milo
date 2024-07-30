@@ -299,11 +299,11 @@ class Gnav {
     // Order is important, decorateTopnavWrapper will render the nav
     // Ensure any critical task is executed before it
     const tasks = [
-      loadBaseStyles,
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateAside,
       this.decorateTopnavWrapper,
+      loadBaseStyles,
       this.ims,
       this.addChangeEventListeners,
     ];
@@ -777,7 +777,7 @@ class Gnav {
   decorateAside = async () => {
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');
-    if (!isDesktop.matches || !promoPath) {
+    if (!promoPath) {
       this.block.classList.remove('has-promo');
       return this.elements.aside;
     }

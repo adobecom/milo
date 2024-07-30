@@ -397,7 +397,7 @@ describe('Merch Card with Offer Selection', () => {
     expect(document.querySelector('merch-quantity-select')).to.not.exist;
   });
 
-  it('should handle callout-text with h6 and em tags', async () => {
+  it('should handle callout-content with h6 and em tags', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/callout.html');
 
     const merchCards = document.querySelectorAll('.merch-card');
@@ -405,18 +405,17 @@ describe('Merch Card with Offer Selection', () => {
     await delay();
 
     // Assert
-    const calloutSlot = segmentCard.querySelector('[slot="callout-text"]');
+    const calloutSlot = segmentCard.querySelector('[slot="callout-content"]');
     expect(calloutSlot).to.exist;
 
-    const calloutContentWrapper = calloutSlot.querySelector('.callout-content-wrapper-with-icon');
+    const calloutContentWrapper = calloutSlot.querySelector('div > div');
     expect(calloutContentWrapper).to.exist;
-    expect(calloutContentWrapper.classList.contains('callout-content-wrapper-with-icon')).to.be.true;
 
     const imgElement = calloutContentWrapper.querySelector('img.callout-icon');
     expect(imgElement).to.exist;
     expect(imgElement.title).to.equal('this is a dummy tooltip text');
 
-    const calloutContent = calloutContentWrapper.querySelector('div');
+    const calloutContent = calloutContentWrapper.querySelector('div > div');
     expect(calloutContent).to.exist;
     expect(calloutContent.textContent.trim()).to.equal('AI Assistant add-on available');
 

@@ -3,7 +3,7 @@ import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
-import '../../deps/merch-card.js';
+import '../../deps/mas/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -102,7 +102,7 @@ function extractQuantitySelect(el) {
     .map((value) => (value === '' ? undefined : Number(value)));
   quantitySelectConfig.remove();
   if (![3, 4, 5].includes(values.length)) return null;
-  import('../../deps/merch-quantity-select.js');
+  import('../../deps/mas/merch-quantity-select.js');
   [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
   const quantitySelect = createTag('merch-quantity-select', attributes);
   return quantitySelect;
@@ -175,6 +175,8 @@ const parseContent = async (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
   ];
+  const calloutContainer = createTag('div');
+
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
@@ -233,13 +235,10 @@ const parseContent = async (el, merchCard) => {
       calloutContentWrapper.appendChild(calloutContent);
 
       if (imgElement) {
-        calloutContentWrapper.classList.add('callout-content-wrapper-with-icon');
         calloutContentWrapper.appendChild(imgElement);
       }
 
-      const calloutSlot = createTag('div', { slot: 'callout-text' });
-      calloutSlot.appendChild(calloutContentWrapper);
-      merchCard.appendChild(calloutSlot);
+      calloutContainer.appendChild(calloutContentWrapper);
       return;
     }
     if (isParagraphTag(tagName)) {
@@ -248,6 +247,12 @@ const parseContent = async (el, merchCard) => {
     }
     if (mnemonicList) bodySlot.append(mnemonicList);
   });
+
+  if (calloutContainer.children.length > 0) {
+    const calloutSlot = createTag('div', { slot: 'callout-content' });
+    calloutSlot.appendChild(calloutContainer);
+    merchCard.appendChild(calloutSlot);
+  }
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);

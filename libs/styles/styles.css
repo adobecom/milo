@@ -4,7 +4,7 @@
   --global-height-nav: 64px;
   --global-height-breadcrumbs: 33px;
   /* stylelint-disable-next-line custom-property-pattern */
-  --global-height-navPromo: 65px;
+  --global-height-navPromo: 72px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
 
   /* Colors */
@@ -708,13 +708,12 @@ header.global-navigation {
   visibility: hidden;
 }
 
-@media (min-width: 900px) {
-  header.global-navigation.has-promo {
-    height: auto;
-    /* stylelint-disable-next-line custom-property-pattern */
-    min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
-  }
+header.global-navigation.has-promo {
+  height: auto;
+  min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
+}
 
+@media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
   }

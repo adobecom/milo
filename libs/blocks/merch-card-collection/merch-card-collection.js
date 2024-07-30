@@ -182,11 +182,11 @@ export default async function init(el) {
   const type = el.classList[1];
   const cardsDataPromise = fetchCardsData(config, type, el);
 
-  const merchCardCollectionDep = import('../../deps/merch-card-collection.js');
+  const merchCardCollectionDep = import('../../deps/mas/merch-card-collection.js');
   let deps = [
     merchCardCollectionDep,
     import('../merch-card/merch-card.js'),
-    import('../../deps/merch-card.js'),
+    import('../../deps/mas/merch-card.js'),
   ];
 
   const { base, mep } = getConfig();
