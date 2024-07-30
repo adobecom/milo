@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { getFederatedUrl, getFederatedContentRoot } from '../../libs/utils/federated.js';
 
-const baseHost = 'https://www.stage.adobe.com';
+const baseHost = 'https://main--federal--adobecom.hlx.page';
 
 describe('Federated navigation utilities', () => {
   describe('getFederatedContentRoot', () => {
