@@ -50,7 +50,8 @@
   margin: 0 auto;
 }
 
-[class*=-up] .text-block .foreground {
+[class*=-up] .text-block .foreground,
+.section.flex .text-block .foreground {
   max-width: none;
   margin: 0;
 }

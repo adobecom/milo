@@ -616,16 +616,16 @@ span.icon.margin-inline-start { margin-inline-start: 8px; }
 .con-block.xxl-spacing-static-bottom { padding-bottom: var(--spacing-xxl-static); }
 .con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
-div[class*='-up'] .con-block.full-width { grid-column: 1 /-1; }
-div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
-div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
-div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
-div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
-div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
-div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
-div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
-div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
-div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
+.flex .con-block.full-width, div[class*='-up'] .con-block.full-width { grid-column: 1 /-1; }
+.flex .con-block.has-bg, div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
+.flex .con-block.has-bg.xs-spacing, div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
+.flex .con-block.has-bg.s-spacing, div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
+.flex .con-block.has-bg.m-spacing, div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
+.flex .con-block.has-bg.l-spacing, div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
+.flex .con-block.has-bg.xl-spacing, div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
+.flex .con-block.has-bg.xxl-spacing, div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+.flex .con-block.has-bg.xxxl-spacing, div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
+.flex .con-block.has-bg.no-spacing, div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 
 .con-block .foreground { position: relative; }
 

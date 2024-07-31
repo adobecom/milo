@@ -1,8 +1,3 @@
-:root {
-  --flex-gap: 32px; 
-}
-
-
 .section-metadata {
   display: none;
 }
@@ -142,35 +137,59 @@
   justify-items: center;
 }
 
-.section[class*='-up'].no-gap {
+.section[class*='-up'].no-gap,
+.section.flex.no-gap {
+  --flex-gap: 0%;
+
   gap: 0;
 }
 
-.section[class*='-up'].xxs-gap {
+.section[class*='-up'].xxs-gap,
+.section.flex.xxs-gap {
+  --flex-gap: var(--spacing-xxs);
+
   gap: var(--spacing-xxs);
 }
 
-.section[class*='-up'].xs-gap {
+.section[class*='-up'].xs-gap,
+.section.flex.xs-gap {
+  --flex-gap: var(--spacing-xs);
+
   gap: var(--spacing-xs);
 }
 
-.section[class*='-up'].s-gap {
+.section[class*='-up'].s-gap,
+.section.flex.s-gap {
+  --flex-gap: var(--spacing-s);
+
   gap: var(--spacing-s);
 }
 
-.section[class*='-up'].l-gap {
+.section[class*='-up'].l-gap,
+.section.flex.l-gap {
+  --flex-gap: var(--spacing-l);
+
   gap: var(--spacing-l);
 }
 
-.section[class*='-up'].xl-gap {
+.section[class*='-up'].xl-gap,
+.section.flex.xl-gap {
+  --flex-gap: var(--spacing-xl);
+
   gap: var(--spacing-xl)
 }
 
-.section[class*='-up'].xxl-gap {
+.section[class*='-up'].xxl-gap,
+.section.flex.xxl-gap {
+  --flex-gap: var(--spacing-xxl);
+  
   gap: var(--spacing-xxl);
 }
 
-.section[class*='-up'].xxxl-gap {
+.section[class*='-up'].xxxl-gap,
+.section.flex.xxxl-gap {
+  --flex-gap: var(--spacing-xxxl);
+  
   gap: var(--spacing-xxxl);
 }
 
@@ -241,6 +260,8 @@ main > .section[class*='-up'] > .content {
 }
 
 .section.flex {
+  --flex-gap: 32px;
+
   display: flex;
   flex-wrap: wrap;
   gap: var(--flex-gap);
