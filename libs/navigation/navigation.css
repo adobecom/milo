@@ -1,7 +1,6 @@
  /* Extracting the essential styles required for rendering the component independently */
  .global-navigation, .global-footer, .dialog-modal {
    font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-   font-size: 18px;
    line-height: 27px;
    color: #2c2c2c;
    word-wrap: break-word;
@@ -21,7 +20,11 @@
   height: auto;
 }
 
+.global-navigation {
+  font-size: 18px;
+}
+ 
 header.global-navigation {
-  height: var(--global-height-nav);
+  height: 64px;
   visibility: hidden;
 }
