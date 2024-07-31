@@ -547,6 +547,7 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   const valueNames = [
     'value',
     selectedVariantName.toLowerCase(),
+    config.locale.region.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
   ];
