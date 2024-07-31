@@ -11,7 +11,6 @@ const envMap = {
   stage: 'https://www.stage.adobe.com',
   qa: 'https://feds--milo--adobecom.hlx.page',
 };
-
 export default async function loadBlock(configs, customLib) {
   const { footer, locale, env = 'prod' } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
@@ -32,3 +31,5 @@ export default async function loadBlock(configs, customLib) {
     bootstrapBlock({ ...clientConfig, contentRoot: authoringPath, privacyId }, blockConfig.footer);
   }
 }
+
+window.loadNavigation = loadBlock;
