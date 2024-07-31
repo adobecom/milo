@@ -4,7 +4,7 @@ const MILO_TEMPLATES = [
   '404',
   'featured-story',
 ];
-const MILO_BLOCKS = [
+export const MILO_BLOCKS = [
   'accordion',
   'action-item',
   'action-scroller',

@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 import {
-  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
+  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig, MILO_BLOCKS,
 } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
@@ -131,8 +131,19 @@ const CREATE_CMDS = {
   appendtosection: 'beforeend',
 };
 
+const COMMANDS_KEYS = {
+  remove: 'remove',
+  replace: 'replace',
+  update: 'update',
+};
+
+const ATTRIBUTES_TO_UPDATE = {
+  html: 'html',
+  href: 'href',
+};
+
 const COMMANDS = {
-  remove: (el, target, manifestId) => {
+  [COMMANDS_KEYS.remove]: ({ el, target, manifestId }) => {
     if (target === 'false') return;
     if (manifestId) {
       el.dataset.removedManifestId = manifestId;
@@ -140,10 +151,24 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  replace: (el, target, manifestId, targetManifestId) => {
+  [COMMANDS_KEYS.replace]: ({ el, target, manifestId, targetManifestId }) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
+  },
+  [COMMANDS_KEYS.update]: ({ el, target, attr }) => {
+    if (!el) return;
+    switch (attr) {
+      case ATTRIBUTES_TO_UPDATE.href:
+        el.href = target;
+        break;
+      case ATTRIBUTES_TO_UPDATE.html:
+        el.innerHTML = target;
+        break;
+      default:
+        el.innerText = target;
+        break;
+    }
   },
 };
 
@@ -261,13 +286,6 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-const getDivInTargetedCell = (tableCell) => {
-  tableCell.replaceChildren();
-  const div = document.createElement('div');
-  tableCell.appendChild(div);
-  return div;
-};
-
 const querySelector = (el, selector, all = false) => {
   try {
     return all ? el.querySelectorAll(selector) : el.querySelector(selector);
@@ -277,18 +295,6 @@ const querySelector = (el, selector, all = false) => {
     return null;
   }
 };
-
-function getTrailingNumber(s) {
-  const match = s.match(/\d+$/);
-  return match ? parseInt(match[0], 10) : null;
-}
-
-function getSection(rootEl, idx) {
-  return rootEl === document
-    ? document.querySelector(`body > main > div:nth-child(${idx})`)
-    : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
-}
-
 function registerInBlockActions(cmd, manifestId, targetManifestId) {
   const { action, target, selector } = cmd;
   const command = { action, target, manifestId, targetManifestId };
@@ -329,14 +335,10 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
-function getSelectedElement(selector, action, rootEl) {
+function getSelectedElement({ selector, rootEl }) {
   if (!selector) return null;
-  if ((action.includes('appendtosection') || action.includes('prependtosection'))) {
-    if (!selector.includes('section')) return null;
-    const section = selector.trim().replace('section', '');
-    if (section !== '' && Number.isNaN(section)) return null;
-  }
   if (checkSelectorType(selector) === 'fragment') {
+    // handle fragment selector
     try {
       const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
       if (fragment) return fragment.parentNode;
@@ -344,55 +346,60 @@ function getSelectedElement(selector, action, rootEl) {
     } catch (e) {
       return null;
     }
-  }
-
-  let selectedEl;
-  if (selector.includes('.') || !['section', 'block', 'row'].some((s) => selector.includes(s))) {
-    selectedEl = querySelector(rootEl, selector);
-    if (selectedEl) return selectedEl;
-  }
-
-  const terms = selector.split(/\s+/);
-
-  let section = null;
-  if (terms[0]?.startsWith('section')) {
-    const sectionIdx = getTrailingNumber(terms[0]) || 1;
-    section = getSection(rootEl, sectionIdx);
-    terms.shift();
-  }
-
-  if (terms.length) {
-    const blockStr = terms.shift();
-    if (blockStr.includes('.')) {
-      selectedEl = querySelector(section || rootEl, blockStr);
-    } else {
-      const blockIndex = getTrailingNumber(blockStr) || 1;
-      const blockName = blockStr.replace(`${blockIndex}`, '');
-      if (blockName === 'block') {
-        if (!section) section = getSection(rootEl, 1);
-        selectedEl = querySelector(section, `:scope > div:nth-of-type(${blockIndex})`);
-      } else {
-        selectedEl = querySelector(section || rootEl, `.${blockName}`, true)?.[blockIndex - 1];
+  } else {
+    // assemble the CSS selector for MILO BLOCKS
+    MILO_BLOCKS.forEach((block) => {
+      const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
+      const match = regex.exec(selector);
+      if (match?.length) {
+        const simplifiedSelector = match[0].replace(/\s+/g, '');
+        const n = simplifiedSelector.match(/\d+/g) || '1';
+        const cleanClassSelector = match[2]; // this one has no digits and no spaces
+        const cssOptimizedSelector = `>.${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
+        // eslint-disable-next-line no-param-reassign
+        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
       }
-    }
-  } else if (section) {
-    return section;
-  }
+    });
+    // asseble the CSS selector for the wrapper elements
+    ['section', 'row', 'col'].forEach((sel) => {
+      const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
+      simplifiedSelectors?.forEach((simplifiedSelector) => {
+        const n = simplifiedSelector.match(/\d+/g) || '1';
+        const cssOptimizedSelector = `>div:nth-of-type(${n})`;
+        // eslint-disable-next-line no-param-reassign
+        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+      });
+    });
+    // assemble CSS selector for helper selectors or selector:attribute pairs
+    ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
+      const simplifiedSelectors = selector.match(new RegExp(`${sel}(\\:\\w+)?`, 'g'));
+      simplifiedSelectors?.forEach((simplifiedSelector) => {
+        switch (true) {
+          case simplifiedSelector.includes('primary-cta'):
+            // eslint-disable-next-line no-param-reassign
+            selector = selector.replace(simplifiedSelector, 'p strong a');
+            break;
+          case simplifiedSelector.includes('secondary-cta'):
+            // eslint-disable-next-line no-param-reassign
+            selector = selector.replace(simplifiedSelector, 'p em a');
+            break;
+          case simplifiedSelector.includes('action-area'):
+            // eslint-disable-next-line no-param-reassign
+            selector = selector.replace(simplifiedSelector, 'p:has(em, strong)');
+            break;
+          default: break;
+        }
+      });
+    });
+    // TODO: for testing purposes only. Remove when done
+    console.log('=====================================');
+    console.log('selector: ', selector.slice(1));
+    console.log('element: ', querySelector(rootEl ?? document, selector.slice(1)));
 
-  if (terms.length) {
-    // find targeted table cell in rowX colY format
-    const rowColMatch = /row(?<row>\d+)\s+col(?<col>\d+)/gm.exec(terms.join(' '));
-    if (rowColMatch) {
-      const { row, col } = rowColMatch.groups;
-      const tableCell = querySelector(selectedEl, `:nth-child(${row}) > :nth-child(${col})`);
-      if (!tableCell) return null;
-      return getDivInTargetedCell(tableCell);
-    }
+    // slice(1) removes trailing >
+    return querySelector(rootEl ?? document, selector.slice(1));
   }
-
-  return selectedEl;
 }
-
 const addHash = (url, newHash) => {
   if (!newHash) return url;
   try {
@@ -419,6 +426,11 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
     if (adobeTargetTestid) fragment.dataset.adobeTargetTestid = adobeTargetTestid;
   }
 };
+
+const getAttributeToUpdate = (action, selector) => (action === COMMANDS_KEYS.update
+  ? selector.match(/:(\w+)/g)?.toString()?.split(':')[1]
+  : null);
+
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
     const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
@@ -427,12 +439,11 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
       registerInBlockActions(cmd, manifestId, targetManifestId);
       return;
     }
-
+    const el = getSelectedElement({ selector, rootEl });
     if (action in COMMANDS) {
-      const el = getSelectedElement(selector, action, rootEl);
-      COMMANDS[action](el, target, manifestId, targetManifestId);
+      // eslint-disable-next-line max-len
+      COMMANDS[action]({ el, target, manifestId, targetManifestId, attr: getAttributeToUpdate(action, selector) });
     } else if (action in CREATE_CMDS) {
-      const el = getSelectedElement(selector, action, rootEl);
       el?.insertAdjacentElement(
         CREATE_CMDS[action],
         createFrag(el, target, manifestId, targetManifestId),
@@ -831,13 +842,13 @@ export function cleanAndSortManifestList(manifests) {
 
 export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
-  if (action === 'replace') {
+  if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
     if (manifestId) a.dataset.manifestId = manifestId;
     if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
     return fragment;
   }
-  if (action === 'remove') {
+  if (action === COMMANDS_KEYS.remove) {
     if (manifestId) {
       a.parentElement.dataset.removedManifestId = manifestId;
     } else {
