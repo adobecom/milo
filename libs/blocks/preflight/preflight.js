@@ -3,6 +3,7 @@ import { createTag, getConfig } from '../../utils/utils.js';
 import General from './panels/general.js';
 import SEO from './panels/seo.js';
 import Accessibility from './panels/accessibility.js';
+import Martech from './panels/martech.js';
 
 const HEADING = 'Milo Preflight';
 const IMG_PATH = '/blocks/preflight/img';
@@ -10,6 +11,7 @@ const IMG_PATH = '/blocks/preflight/img';
 const tabs = signal([
   { title: 'General', selected: true },
   { title: 'SEO' },
+  { title: 'Martech' },
   { title: 'Accessibility' },
 ]);
 
@@ -26,6 +28,8 @@ function setPanel(title) {
       return html`<${General} />`;
     case 'SEO':
       return html`<${SEO} />`;
+    case 'Martech':
+      return html`<${Martech} />`;
     case 'Accessibility':
       return html`<${Accessibility} />`;
     default:

@@ -1,5 +1,12 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { setConfig } from '../../../libs/utils/utils.js';
+
+const conf = {
+  codeRoot: '/libs',
+  contentRoot: `${window.location.origin}`,
+};
+setConfig(conf);
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/text/text.js');
@@ -62,11 +69,32 @@ describe('text block', () => {
       });
     });
   });
-
   describe('two content rows', () => {
     it('has viewport classes', () => {
       const mobileEl = document.querySelector('.text-block .mobile-up');
       expect(mobileEl).to.exist;
+    });
+  });
+  describe('cta container', () => {
+    it('is added around the last action area', () => {
+      const actionArea = document.querySelector('#has-container');
+      expect(actionArea.parentElement.className.includes('cta-container')).to.be.true;
+    });
+    it('is not added around action areas that are not last', () => {
+      const actionArea = document.querySelector('#no-container');
+      expect(actionArea.parentElement.className.includes('cta-container')).to.be.false;
+    });
+  });
+  describe('text block with mnemonics list', () => {
+    it('renders mnemonics list', async () => {
+      const textBlockWithMnemonics = document.querySelector('#mnemonics');
+      await init(textBlockWithMnemonics);
+      const mnemonicsList = textBlockWithMnemonics.querySelector('.mnemonic-list');
+      const productList = mnemonicsList?.querySelector('.product-list');
+      const productItems = productList?.querySelectorAll('.product-item');
+      expect(mnemonicsList).to.exist;
+      expect(productList).to.exist;
+      expect(productItems.length).to.equal(7);
     });
   });
 });

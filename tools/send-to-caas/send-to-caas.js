@@ -1,7 +1,6 @@
 /* eslint-disable new-cap */
 /* global tingle */
 /* eslint-disable no-alert */
-
 import { getImsToken } from '../utils/utils.js';
 
 import {
@@ -344,6 +343,21 @@ const noop = () => {};
 const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', owner = '' } = {}, loadScript = noop, loadStyle = noop) => {
   if (isPublishing()) return;
 
+  await loadTingleModalFiles(loadScript, loadStyle);
+  if (window.adobeid?.environment !== 'prod') {
+    showAlert(
+      'Send to CaaS needs to reload the page with prod IMS setup.  Please try again after reload.',
+      {
+        onClose: () => {
+          const url = new URL(window.location);
+          url.searchParams.append('env', 'prod');
+          window.location.assign(url);
+        },
+      },
+    );
+    return;
+  }
+
   setConfig({
     host: host || window.location.host, project, branch, repo, owner, doc: document,
   });
@@ -351,8 +365,6 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
   loadStyle('https://milo.adobe.com/tools/send-to-caas/send-to-caas.css');
 
   setPublishingTrue();
-
-  await loadTingleModalFiles(loadScript, loadStyle);
   const publishingModal = displayPublishingModal();
 
   try {

@@ -10,17 +10,17 @@ jobs:
     name: Running eslint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run eslint on changed files
-        uses: tj-actions/eslint-changed-files@v20
+        uses: tj-actions/eslint-changed-files@v25
         with:
           config_path: ".eslintrc.js"
           # ignore_path: "/path/to/.eslintignore"

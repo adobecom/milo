@@ -4,6 +4,7 @@ export default async function addPreviewToConfig({
   pageUrl,
   mepEnabled,
   persManifests,
+  targetEnabled,
 }) {
   const { mep: mepOverride, mepHighlight, mepButton } = Object.fromEntries(pageUrl.searchParams);
   const config = updateConfig({
@@ -12,6 +13,7 @@ export default async function addPreviewToConfig({
       preview: (mepButton !== 'off' && (mepOverride !== undefined || mepEnabled)),
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+      targetEnabled,
     },
   });
 
@@ -27,7 +29,7 @@ export default async function addPreviewToConfig({
       }
     });
 
-    config.mep.override.split(',').forEach((manifestPair) => {
+    config.mep.override.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
       if (!persManifestPaths.includes(manifestPath)) {
         persManifests.push({ manifestPath });

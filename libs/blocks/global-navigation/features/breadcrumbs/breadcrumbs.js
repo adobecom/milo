@@ -1,5 +1,6 @@
 import { getMetadata, getConfig } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
+import { getFederatedUrl } from '../../../../utils/federated.js';
 
 const metadata = {
   seo: 'breadcrumbs-seo',
@@ -67,7 +68,7 @@ const createBreadcrumbs = (element) => {
 
 const createWithBase = async (el) => {
   const element = el || toFragment`<div><ul></ul></div>`;
-  const url = getMetadata(metadata.base);
+  const url = getFederatedUrl(getMetadata(metadata.base));
   if (!url) return null;
   try {
     const resp = await fetch(`${url}.plain.html`);

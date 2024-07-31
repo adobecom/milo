@@ -1,5 +1,8 @@
 import { importMapsPlugin } from '@web/dev-server-import-maps';
 import { defaultReporter, summaryReporter } from '@web/test-runner';
+import { playwrightLauncher } from '@web/test-runner-playwright';
+
+const GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
 
 function customReporter() {
   return {
@@ -15,6 +18,10 @@ function customReporter() {
   };
 }
 export default {
+  playwright: true,
+  browsers: [
+    playwrightLauncher({ product: 'chromium', launchOptions: { headless: true } }),
+  ],
   coverageConfig: {
     include: [
       '**/libs/**',
@@ -27,19 +34,21 @@ export default {
       '**/test/**',
       '**/deps/**',
       '**/imslib/imslib.min.js',
+      '**/features/spectrum-web-components/**',
       // TODO: folders below need to have tests written for 100% coverage
       '**/ui/controls/**',
       '**/blocks/library-config/**',
       '**/hooks/**',
       '**/special/tacocat/**',
+      '**/libs/martech/martech.js', // ticket to add unit test: https://jira.corp.adobe.com/browse/MWPW-145975
+      '**/blocks/bulk-publish/**', // this block is not in use
     ],
   },
-  testFramework: { config: { retries: 1 } },
+  testFramework: { config: { retries: GITHUB_ACTIONS ? 1 : 0 } },
   plugins: [importMapsPlugin({})],
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),
     customReporter(),
-    summaryReporter(),
   ],
   testRunnerHtml: (testFramework) => `
     <html>

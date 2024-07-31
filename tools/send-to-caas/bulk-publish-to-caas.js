@@ -115,9 +115,7 @@ const processData = async (data, accessToken) => {
 
   let domain = `https://${host}`;
 
-  if (usePreview) {
-    domain = `https://main--${repo}--${owner}.hlx.page`;
-  } else if (publishToFloodgate !== 'default') {
+  if (usePreview || publishToFloodgate !== 'default') {
     domain = `https://main--${repo}--${owner}.hlx.live`;
   }
 

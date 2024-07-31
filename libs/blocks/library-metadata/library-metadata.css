@@ -1,5 +1,6 @@
 .library-metadata {
   margin: 24px auto;
+  display: block;
 }
 
 .library-metadata::before {
@@ -10,18 +11,16 @@
   border-radius: 6px;
   text-transform: uppercase;
   font-weight: 700;
+  font-size: smaller;
   color: #293c51;
   padding: 6px 12px;
 }
 
 .library-meta-row {
+  background-color: #EFEFEF;
   display: grid;
   grid-template-columns: 1fr 1fr;
   margin-top: 4px;
-  border-radius: 6px;
-}
-
-.library-meta-row {
-  background-color: #EFEFEF;
   padding: 6px 12px;
+  border-radius: 6px;
 }

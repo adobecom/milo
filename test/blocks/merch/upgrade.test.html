@@ -1,0 +1,68 @@
+<html>
+  <head>
+    <!-- the import map to use in our test -->
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "../../blocks/merch/mocks/embed-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import { stub } from 'sinon';
+    import { loadScript, setConfig, reloadPage } from '../../../libs/utils/utils.js';
+    import { CC_ALL_APPS, CC_SINGLE_APPS_ALL } from "../../../libs/blocks/merch/merch.js"
+    import handleUpgradeOffer, { handleIFrameEvents } from "../../../libs/blocks/merch/upgrade.js"
+    const CTA_PRODUCT_FAMILY = 'CC_ALL_APPS';
+    const UPGRADE_OFFER = { value: [{ offerId: '632B3ADD940A7FBB7864AA5AD19B8D28' }] };
+    const ENTITLEMENTS = [
+      {
+        offer: {
+          offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
+          product_arrangement: { family: 'ILLUSTRATOR' },
+        },
+        change_plan_available: true,
+      },
+    ];
+    const config = {
+      base: window.location.origin + '/libs',
+      codeRoot: '/libs',
+      env: { name: 'prod' },
+      placeholders: { 'upgrade-now': 'Upgrade Now' },
+    };
+
+    runTests(() => {
+      before(async () => {
+        setConfig(config);
+      });
+
+      describe('Upgrade Modal', () => {
+        it('should close modal and reload page', async () => {
+          const action = await handleUpgradeOffer(
+            CTA_PRODUCT_FAMILY,
+            UPGRADE_OFFER,
+            ENTITLEMENTS,
+            CC_SINGLE_APPS_ALL,
+            CC_ALL_APPS,
+          );
+          const { handler } = action;
+          await handler(new Event('click'));
+          const modal = document.querySelector('.dialog-modal.upgrade-flow-modal');
+
+          const dispatchEventStub = stub();
+          modal.dispatchEvent = dispatchEventStub;
+          handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"OrderComplete","data":{"actionRequired":false}}' });
+          handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"Close","data":{"actionRequired":false}}' });
+          expect(dispatchEventStub.calledOnceWith(new Event('closeModal'))).to.be.true;
+          expect(reloadPage.calledOnce).to.be.true;
+        });
+
+      });
+    });
+  </script>
+</html>

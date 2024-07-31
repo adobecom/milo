@@ -14,12 +14,23 @@ export default function init(a) {
         webkitallowfullscreen mozallowfullscreen allowfullscreen
         allow="encrypted-media; accelerometer; gyroscope; picture-in-picture"
         scrolling="no"
+        id="player-${id}"
         title="${title}">
       </iframe>
     </div>`;
     a.insertAdjacentHTML('afterend', embedHTML);
     a.remove();
+    if (document.readyState === 'complete') {
+      /* eslint-disable-next-line no-underscore-dangle */
+      window._satellite?.track('trackYoutube');
+    } else {
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState === 'complete') {
+          /* eslint-disable-next-line no-underscore-dangle */
+          window._satellite?.track('trackYoutube');
+        }
+      });
+    }
   };
-
   createIntersectionObserver({ el: a, callback: embedVideo });
 }

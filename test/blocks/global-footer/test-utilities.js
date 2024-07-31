@@ -68,9 +68,9 @@ export const allElementsVisible = (givenSelectors, parentEl) => {
     .every((el) => el);
 };
 
-export const waitForFooterToDecorate = () => Promise.all(
+export const waitForFooterToDecorate = (targetedSelectors = allSelectors) => Promise.all(
   Object
-    .keys(allSelectors)
+    .keys(targetedSelectors)
     .map((key) => waitForElement(allSelectors[key])),
 );
 

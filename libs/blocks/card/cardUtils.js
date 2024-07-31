@@ -32,19 +32,18 @@ export const addFooter = (links, container, merch) => {
   const linksArr = Array.from(links);
   const linksLeng = linksArr.length;
   const hrTag = merch ? '<hr>' : '';
-  let footer = `<div class="consonant-CardFooter">${hrTag}<div class="consonant-CardFooter-row" data-cells="1">`;
-  footer = linksArr.reduce(
-    (combined, link, index) => (
-      `${combined}<div class="consonant-CardFooter-cell consonant-CardFooter-cell--${(linksLeng === 2 && index === 0) ? 'left' : 'right'}">${link.outerHTML}</div>`),
-    footer,
-  );
-  footer += '</div></div>';
-
-  container.insertAdjacentHTML('beforeend', footer);
-  links.forEach((link) => {
+  const footer = createTag('div', { class: 'consonant-CardFooter' }, hrTag);
+  const row = createTag('div', { class: 'consonant-CardFooter-row', 'data-cells': '1' });
+  linksArr.forEach((link, index) => {
     const { parentElement } = link;
     if (parentElement && document.body.contains(parentElement)) parentElement.remove();
+    const holder = createTag('div', { class: `consonant-CardFooter-cell consonant-CardFooter-cell--${(linksLeng === 2 && index === 0) ? 'left' : 'right'}` });
+    holder.append(link);
+    row.append(holder);
   });
+
+  footer.append(row);
+  container.insertAdjacentElement('beforeend', footer);
 };
 
 export const addWrapper = (el, section, cardType) => {

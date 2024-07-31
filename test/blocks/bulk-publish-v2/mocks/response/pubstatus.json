@@ -1,0 +1,34 @@
+{
+  "topic": "publish",
+  "name": "job-2024-01-22t21-59-57-639z",
+  "state": "stopped",
+  "createTime": "2024-01-22T22:04:59.396Z",
+  "data": {
+      "paths": [
+          "/tools/bulk-publish-v2-test"
+      ],
+      "forceUpdate": true,
+      "phase": "completed",
+      "resources": [
+          {
+              "status": 200,
+              "path": "/tools/bulk-publish-v2-test",
+              "resourcePath": "/tools/bulk-publish-v2-test.md"
+          }
+      ]
+  },
+  "startTime": "2024-01-22T22:05:00.393Z",
+  "stopTime": "2024-01-22T22:05:05.421Z",
+  "invocationId": "28cc5dbd-8a10-55ae-baf5-039562d08aee",
+  "progress": {
+      "total": 1,
+      "processed": 1,
+      "failed": 0,
+      "notmodified": 0
+  },
+  "links": {
+      "list": "https://admin.hlx.page/job/adobecom/milo/main/publish",
+      "job": "https://admin.hlx.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z",
+      "self": "https://admin.hlx.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z/details"
+  }
+}

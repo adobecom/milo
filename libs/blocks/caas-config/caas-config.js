@@ -1,6 +1,6 @@
 /* eslint-disable compat/compat */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* global ClipboardItem */
+
 import {
   createContext,
   html,
@@ -60,7 +60,7 @@ const caasFilesLoaded = loadCaasFiles();
 const ConfiguratorContext = createContext();
 
 const defaultOptions = {
-  accessibilityLevel: {
+  cardTitleAccessibilityLevel: {
     2: '2',
     3: '3',
     4: '4',
@@ -75,12 +75,14 @@ const defaultOptions = {
     'double-wide': 'Double Width Card',
     product: 'Product Card',
     'text-card': 'Text Card',
+    'icon-card': 'Icon Card',
     'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
     'call-to-action': 'Call To Action',
     link: 'Link',
+    dark: 'Dark',
     hidden: 'Hide CTAs',
   },
   container: {
@@ -89,6 +91,7 @@ const defaultOptions = {
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
     carousel: 'Carousel',
+    categories: 'Product Categories',
   },
   ctaActions: {
     _blank: 'New Tab',
@@ -108,6 +111,10 @@ const defaultOptions = {
       '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   filterBuildPanel: {
     automatic: 'Automatic',
@@ -178,6 +185,7 @@ const defaultOptions = {
   source: {
     bacom: 'Bacom',
     doccloud: 'DocCloud',
+    events: 'Events',
     experienceleague: 'Experience League',
     hawks: 'Hawks',
     magento: 'Magento',
@@ -185,6 +193,8 @@ const defaultOptions = {
     milo: 'Milo',
     northstar: 'Northstar',
     workfront: 'Workfront',
+    'bacom-blog': 'Bacom Blog',
+    news: 'Newsroom',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
   titleHeadingLevel: {
@@ -203,6 +213,10 @@ const defaultOptions = {
   detailsTextOption: {
     default: 'Default',
     modifiedDate: 'Modified Date',
+  },
+  cardHoverEffect: {
+    default: 'Default',
+    grow: 'Grow',
   },
 };
 
@@ -344,17 +358,25 @@ const BasicsPanel = ({ tagsData }) => {
 
 const UiPanel = () => html`
   <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
+  <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
   <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
   <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
   <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
+  <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
+  <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
   <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
-  <${Select} options=${defaultOptions.accessibilityLevel} prop="accessibilityLevel" label="Card Accessibility Title Level" />
+  <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
   <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
+  <${Select}
+    label="Card Hover Effect"
+    prop="cardHoverEffect"
+    options=${defaultOptions.cardHoverEffect}
+  />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"
@@ -994,6 +1016,7 @@ const Configurator = ({ rootEl }) => {
   }, [state.placeholderUrl]);
 
   useEffect(async () => {
+    if (!state.tagsUrl) return;
     const { tags, errorMsg } = await loadCaasTags(state.tagsUrl);
     setPanels(getPanels(tags));
     setError(errorMsg || '');

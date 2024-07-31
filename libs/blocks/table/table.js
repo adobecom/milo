@@ -17,7 +17,8 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function handleHeading(headingCols, isPriceBottom) {
+function handleHeading(table, headingCols) {
+  const isPriceBottom = table.classList.contains('pricing-bottom');
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
     if (!col.innerHTML) {
@@ -34,11 +35,15 @@ function handleHeading(headingCols, isPriceBottom) {
       col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
       let textStartIndex = 0;
-      if (elements[0]?.querySelector('img')) {
+      const iconTile = elements[0]?.querySelector('img');
+      if (iconTile) {
         textStartIndex += 1;
+        if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
+      let bodyElem = elements[textStartIndex + 2];
+
       if (pricingElem) {
         pricingElem.classList.add('pricing');
         if (isPriceBottom) {
@@ -46,10 +51,11 @@ function handleHeading(headingCols, isPriceBottom) {
             elements[textStartIndex + 2],
             elements[textStartIndex + 1],
           );
+          bodyElem = elements[textStartIndex + 1];
         }
       }
-      if (elements[textStartIndex + 2]) {
-        elements[textStartIndex + 2].classList.add('body');
+      if (bodyElem) {
+        bodyElem.classList.add('body');
       }
 
       decorateButtons(col, 'button-l');
@@ -62,8 +68,8 @@ function handleHeading(headingCols, isPriceBottom) {
         buttonsWrapper.append(btnWrapper);
       });
 
-      const row1 = document.createElement('div');
-      const row2 = document.createElement('div');
+      const row1 = createTag('div', { class: 'table-heading-content' });
+      const row2 = createTag('div', { class: 'table-heading-button' });
       const row1LastIdx = isPriceBottom ? 3 : 4;
       [...elements].forEach((e, idx) => {
         if (idx < row1LastIdx) row1.appendChild(e);
@@ -81,7 +87,6 @@ function handleHighlight(table) {
   const firstRowCols = firstRow.querySelectorAll('.col');
   const secondRow = table.querySelector('.row-2');
   const secondRowCols = secondRow.querySelectorAll('.col');
-  const isPriceBottom = table.classList.contains('pricing-bottom');
   let headingCols = null;
 
   if (isHighlightTable) {
@@ -110,7 +115,7 @@ function handleHighlight(table) {
     firstRow.classList.add('row-heading');
   }
 
-  handleHeading(headingCols, isPriceBottom);
+  handleHeading(table, headingCols);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
@@ -131,10 +136,31 @@ function handleExpand(e) {
   }
 }
 
+function handleTitleText(cell) {
+  if (cell.querySelector('.table-title-text')) return;
+  const textSpan = createTag('span', { class: 'table-title-text' });
+  while (cell.firstChild) textSpan.append(cell.firstChild);
+
+  const iconTooltip = textSpan.querySelector('.icon-info, .icon-tooltip, .milo-tooltip');
+  if (iconTooltip) cell.append(iconTooltip.closest('em') || iconTooltip);
+
+  const firstIcon = textSpan.querySelector('.icon:first-child');
+  let nodeToInsert = textSpan;
+
+  if (firstIcon) {
+    const titleRowSpan = createTag('span', { class: 'table-title-row' });
+    titleRowSpan.append(firstIcon, textSpan);
+    nodeToInsert = titleRowSpan;
+  }
+
+  cell.insertBefore(nodeToInsert, cell.firstChild);
+}
+
 /**
  * @param {*} sectionParams that is from init()
  * @returns {boolean expandSection} that is the only variable get updated from sectionParams
  */
+
 function handleSection(sectionParams) {
   const {
     row, index, allRows, rowCols, isMerch, isCollapseTable, isHighlightTable,
@@ -157,6 +183,7 @@ function handleSection(sectionParams) {
         merchCol.setAttribute('role', 'rowheader');
       });
     } else {
+      handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
     }
@@ -207,6 +234,7 @@ function handleSection(sectionParams) {
       });
     } else {
       const sectionRowTitle = rowCols[0];
+      handleTitleText(sectionRowTitle);
       sectionRowTitle.classList.add('section-row-title');
     }
   }
@@ -336,6 +364,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   const mobileRenderer = () => {
+    table.dispatchEvent(tableHighlightLoadedEvent);
     const headings = table.querySelectorAll('.row-heading .col');
     const headingsLength = headings.length;
 

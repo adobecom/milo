@@ -1,5 +1,5 @@
-import { readFile, sendMouse, sendKeys } from '@web/test-runner-commands';
-import { expect } from '@esm-bundle/chai';
+import { readFile, sendMouse, sendKeys, resetMouse } from '@web/test-runner-commands';
+import { expect } from 'chai';
 import { MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 
@@ -11,6 +11,10 @@ describe('table and tablemetadata', () => {
     const tables = document.querySelectorAll('.table');
     tables.forEach((t) => init(t));
     window.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+  });
+
+  afterEach(async () => {
+    await resetMouse();
   });
 
   describe('standard table', () => {
@@ -95,6 +99,17 @@ describe('table and tablemetadata', () => {
       window.dispatchEvent(new Event('resize'));
       const col5 = await waitForElement('.table .col-5');
       expect(col5).to.be.exist;
+    });
+
+    it('supports multi content section headings', () => {
+      const multiContentHeading = document.querySelector('.multi-content-heading');
+      expect(multiContentHeading.childNodes.length).to.equal(1);
+    });
+
+    it('supports tooltip', () => {
+      const tooltipHeading = document.querySelector('.tooltip-heading');
+      expect(tooltipHeading.childNodes.length).to.equal(2);
+      expect(tooltipHeading.querySelector('.milo-tooltip, .icon-tooltip')).to.exist;
     });
   });
 });

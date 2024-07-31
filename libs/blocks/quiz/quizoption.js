@@ -24,17 +24,17 @@ export const OptionCard = ({
     <picture>
       ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${iconDesktop}" />`}
       ${iconTablet && html`<source media="(min-width: 600px)" srcset="${iconTablet}" />`}
-      <img src="${icon}" alt="${`Icon - ${title || text}`}" loading="lazy" />
+      <img src="${icon}" alt="" loading="lazy" />
     </picture>
   </div>`;
 
   const imageHtml = html`
     <div class="quiz-option-image" 
-      style="background-image: url('${image}')" loading="lazy">
+      style="background-image: url('${image}'); background-size: cover" loading="lazy">
     </div>`;
 
   const titleHtml = html`
-    <h3 class="quiz-option-title">${title}</h3>
+    <p class="quiz-option-title">${title}</p>
   `;
 
   const textHtml = html`
@@ -42,7 +42,7 @@ export const OptionCard = ({
   `;
 
   return html`<button class="quiz-option ${getOptionClass()}" data-option-name="${options}" 
-        aria-pressed="${!!selected}" tabindex="${disabled ? '-1' : '0'}">
+        role="checkbox" aria-checked="${!!selected}" disabled="${disabled}">
         ${(icon || iconTablet || iconDesktop) && getIconHtml()}
         ${image && imageHtml}
         <div class="quiz-option-text-container">  
@@ -78,7 +78,7 @@ export const GetQuizOption = ({
   btnAnalyticsData, background,
 }) => html`
   <div class="quiz-question">
-      <div class="quiz-options-container">
+      <div class="quiz-options-container" role="group" aria-labelledby="question">
         <${CreateOptions} 
           options=${options} 
           selectedCards=${selectedCards}

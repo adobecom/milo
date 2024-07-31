@@ -1,27 +1,32 @@
 /* eslint-disable no-async-promise-executor */
 import {
   decorateAutoBlock,
-  getConfig,
-  getMetadata,
-  loadBlock,
   decorateLinks,
+  getMetadata,
+  getConfig,
+  loadBlock,
+  localizeLink,
 } from '../../utils/utils.js';
 
 import {
-  toFragment,
-  getExperienceName,
-  loadDecorateMenu,
   getFedsPlaceholderConfig,
+  getExperienceName,
   getAnalyticsValue,
+  loadDecorateMenu,
+  fetchAndProcessPlainHtml,
   loadBaseStyles,
   yieldToMain,
   lanaLog,
   logErrorFor,
+  toFragment,
+  federatePictureSources,
 } from '../global-navigation/utilities/utilities.js';
 
-import { replaceKey, replaceText } from '../../features/placeholders.js';
+import { getFederatedUrl } from '../../utils/federated.js';
 
-const { miloLibs, codeRoot, locale } = getConfig();
+import { replaceKey } from '../../features/placeholders.js';
+
+const { miloLibs, codeRoot, locale, mep } = getConfig();
 const base = miloLibs || codeRoot;
 
 const CONFIG = {
@@ -30,11 +35,9 @@ const CONFIG = {
 };
 
 class Footer {
-  constructor(footerEl, contentUrl) {
-    this.footerEl = footerEl;
-    this.contentUrl = contentUrl;
+  constructor({ block } = {}) {
+    this.block = block;
     this.elements = {};
-
     this.init();
   }
 
@@ -56,7 +59,7 @@ class Footer {
       }
     }, intersectionOptions);
 
-    observer.observe(this.footerEl);
+    observer.observe(this.block);
 
     // Set timeout after which we load the footer automatically
     decorationTimeout = setTimeout(() => {
@@ -67,20 +70,27 @@ class Footer {
 
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
-    this.body = await this.fetchContent();
+    const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
+    this.body = await fetchAndProcessPlainHtml({
+      url,
+      shouldDecorateLinks: false,
+    });
 
     if (!this.body) return;
 
-    // TODO: revisit region picker and social links decoration logic
-    const regionAnchor = this.body.querySelector('.region-selector a');
-    if (regionAnchor?.href) {
-      regionAnchor.setAttribute('href', `${regionAnchor.getAttribute('href')}#_dnt#_dnb`);
-    }
-    const socialLinks = document.querySelectorAll('.social a');
-    socialLinks.forEach((socialLink) => {
-      socialLink.setAttribute('href', `${socialLink.getAttribute('href')}#_dnb`);
-    });
+    const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
+    const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
+    // We remove and add again the region and social elements from the body to make sure
+    // they don't get decorated twice
+    [regionParent, socialParent].forEach((parent) => parent?.replaceChildren());
+
     decorateLinks(this.body);
+
+    regionParent?.appendChild(region);
+    socialParent?.appendChild(social);
+
+    const path = getFederatedUrl(url);
+    federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
@@ -100,34 +110,11 @@ class Footer {
       await task();
     }
 
-    this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer|${document.body.dataset.mep}`);
+    const mepMartech = mep?.martech || '';
+    this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
 
-    this.footerEl.append(this.elements.footer);
+    this.block.append(this.elements.footer);
   }, 'Failed to decorate footer content', 'errorType=error,module=global-footer');
-
-  fetchContent = async () => {
-    const resp = await fetch(`${this.contentUrl}.plain.html`);
-
-    if (!resp.ok) {
-      lanaLog({
-        message: `Failed to fetch footer content; content url: ${this.contentUrl}, status: ${resp.statusText}`,
-        tags: 'errorType=warn,module=global-footer',
-      });
-    }
-
-    const html = await resp.text();
-
-    if (!html) return null;
-
-    const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), undefined, 'feds');
-
-    try {
-      return new DOMParser().parseFromString(parsedHTML, 'text/html').body;
-    } catch (e) {
-      lanaLog({ message: 'Footer could not be instantiated', tags: 'errorType=error,module=global-footer' });
-      return null;
-    }
-  };
 
   loadMenuLogic = async () => {
     this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
@@ -163,10 +150,16 @@ class Footer {
 
   loadIcons = async () => {
     const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
-
+    if (!file.ok) {
+      lanaLog({
+        message: 'Issue with loadIcons',
+        e: `${file.statusText} url: ${file.url}`,
+        tags: 'errorType=info,module=global-footer',
+      });
+    }
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
-    this.footerEl.append(elem);
+    this.block.append(elem);
   };
 
   decorateProducts = async () => {
@@ -180,7 +173,7 @@ class Footer {
     this.elements.featuredProducts = toFragment`<div class="feds-featuredProducts"></div>`;
 
     const [placeholder] = await Promise.all([
-      replaceKey('featured-products', getFedsPlaceholderConfig(), 'feds'),
+      replaceKey('featured-products', getFedsPlaceholderConfig()),
       this.loadMenuLogic(),
     ]);
 
@@ -207,10 +200,8 @@ class Footer {
       url = new URL(regionSelector.href);
     } catch (e) {
       lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'errorType=error,module=global-footer' });
-      throw e;
+      return this.elements.regionPicker;
     }
-
-    if (!url) return this.elements.regionPicker;
 
     const regionPickerClass = 'feds-regionPicker';
     const regionPickerTextElem = toFragment`<span class="feds-regionPicker-text">${regionSelector.textContent}</span>`;
@@ -238,7 +229,20 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
+      // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
+      if (regionPickerElem.classList[0] !== 'modal') {
+        lanaLog({
+          message: `Modal block class missing from region picker pre loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
+          tags: 'errorType=warn,module=global-footer',
+        });
+      }
       await loadBlock(regionPickerElem); // load modal logic and styles
+      if (regionPickerElem.classList[0] !== 'modal') {
+        lanaLog({
+          message: `Modal block class missing from region picker post loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
+          tags: 'errorType=warn,module=global-footer',
+        });
+      }
       // 'decorateAutoBlock' logic replaces class name entirely, need to add it back
       regionPickerElem.classList.add(regionPickerClass);
       regionPickerElem.addEventListener('click', () => {
@@ -255,6 +259,7 @@ class Footer {
     } else {
       // No hash -> region selector expands a dropdown
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
+      regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       await loadBlock(regionSelector); // load fragment and replace original link
@@ -283,13 +288,15 @@ class Footer {
 
     const socialElem = toFragment`<ul class="feds-social" daa-lh="Social"></ul>`;
 
+    const sanitizeLink = (link) => link.replace('#_blank', '').replace('#_dnb', '');
+
     CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
       if (!link) return;
 
       const iconElem = toFragment`<li class="feds-social-item">
           <a
-            href="${link.href}"
+            href="${sanitizeLink(link.href)}"
             class="feds-social-link"
             aria-label="${platform}"
             daa-ll="${getAnalyticsValue(platform, index + 1)}"
@@ -361,7 +368,11 @@ class Footer {
 }
 
 export default function init(block) {
-  const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
-  const footer = new Footer(block, url);
-  return footer;
+  try {
+    const footer = new Footer({ block });
+    return footer;
+  } catch (e) {
+    lanaLog({ message: 'Could not create footer', e });
+    return null;
+  }
 }

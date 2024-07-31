@@ -1,7 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { loadMnemonicList } from '../../../libs/blocks/marquee/marquee.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
@@ -12,6 +14,7 @@ const { default: init } = await import('../../../libs/blocks/marquee/marquee.js'
 const { default: videoBLock } = await import('../../../libs/blocks/video/video.js');
 const video = await readFile({ path: './mocks/video.html' });
 const multipleIcons = await readFile({ path: './mocks/multiple-icons.html' });
+
 describe('marquee', () => {
   const marquees = document.querySelectorAll('.marquee');
   marquees.forEach((marquee) => {
@@ -96,13 +99,68 @@ describe('marquee', () => {
     it('using img', () => {
       const marquee = document.getElementById('using-images');
       init(marquee);
-      expect(marquee.querySelector('.icon-area-multiple')).to.exist;
+      expect(marquee.querySelector('[icon-count]')).to.exist;
     });
 
     it('using svg', () => {
       const marquee = document.getElementById('using-svgs');
       init(marquee);
-      expect(marquee.querySelector('.icon-area-multiple')).to.exist;
+      expect(marquee.querySelector('[icon-count]')).to.exist;
+    });
+  });
+
+  describe('marquee light with mnemonic list', () => {
+    const marquee = document.getElementById('mnemonic-list');
+    init(marquee);
+    it('has a product-item-list', () => {
+      const productList = marquee.querySelector('.product-list');
+      expect(productList).to.exist;
+    });
+    it('has a product item', () => {
+      const product = marquee.querySelector('.product-item');
+      expect(product).to.exist;
+    });
+    it('has a product product with a title', () => {
+      const productList = marquee.querySelector('.product-list');
+      const product = productList.querySelectorAll('.product-item')[0];
+      const title = product.querySelector('strong');
+      expect(title).to.exist;
+    });
+    it('has a product with an image and title', () => {
+      const productList = marquee.querySelector('.product-list');
+      const product = productList.querySelectorAll('.product-item')[1];
+      const title = product.querySelector('strong');
+      const mnemonic = product.querySelector('picture');
+      expect(title).to.exist;
+      expect(mnemonic).to.exist;
+    });
+  });
+
+  describe('Dynamic import of mnemonic-list.js', () => {
+    let log;
+    let decorateMnemonicList;
+    let dynamicImport;
+    let foreground;
+
+    beforeEach(() => {
+      log = sinon.fake();
+      window.lana = { log };
+      decorateMnemonicList = sinon.fake();
+      dynamicImport = sinon.stub();
+      foreground = document.querySelector('.foreground');
+    });
+
+    it('should call decorateMnemonicList if the module is successfully imported', async () => {
+      dynamicImport.resolves({ decorateMnemonicList });
+      await loadMnemonicList(dynamicImport, decorateMnemonicList, foreground);
+      expect(decorateMnemonicList.calledOnceWith(foreground)).to.be.false;
+    });
+
+    it('should log an error if the module fails to import', async () => {
+      const error = new Error('Failed to load module');
+      dynamicImport.rejects(error);
+      await loadMnemonicList(dynamicImport, decorateMnemonicList, foreground);
+      expect(log.calledOnceWith(`Failed to load mnemonic marquee module: ${error}`)).to.be.false;
     });
   });
 });

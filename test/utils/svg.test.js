@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { decorateSVG } from '../../../libs/utils/utils.js';
+import { decorateSVG } from '../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/svg.html' });
 
@@ -28,6 +28,13 @@ describe('Decorate SVGs', () => {
     const pic = decorateSVG(el);
     expect(pic.nodeName).to.equal('PICTURE');
     expect(pic.querySelector('img').src).to.equal('https://milo.adobe.com/my-icon.svg');
+  });
+
+  it('Fully qualified SVG', async () => {
+    const el = document.querySelector('#in-fragments-folder');
+    const pic = decorateSVG(el);
+    expect(pic.nodeName).to.equal('PICTURE');
+    expect(pic.querySelector('img').src).to.equal('https://milo.adobe.com/fragments/my-icon.svg');
   });
 
   it('Alt text SVG', async () => {

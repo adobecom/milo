@@ -2,7 +2,8 @@ import { getConfig } from '../../utils/utils.js';
 
 /* c8 ignore next 11 */
 function handleEvent(prefix, link) {
-  document.cookie = `international=${prefix};path=/`;
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+  document.cookie = `international=${prefix};path=/;${domain}`;
   sessionStorage.setItem('international', prefix);
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
     if (!resp.ok) throw new Error('request failed');

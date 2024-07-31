@@ -34,10 +34,7 @@ dl.accordion {
   position: relative;
   text-align: left;
   width: 100%;
-}
-
-html[dir="rtl"] .accordion dt button {
-  padding: var(--spacing-s) var(--spacing-xs) var(--spacing-s) var(--spacing-m);
+  -webkit-text-size-adjust: 100%;
 }
 
 .accordion dt button:hover {
@@ -97,10 +94,6 @@ html[dir="rtl"] .accordion-icon {
   background-color: transparent;
 }
 
-html[dir="rtl"] .accordion dt button::before {
-  right: 0;
-}
-
 .accordion dt button[aria-expanded="true"]::before {
   background-color: var(--link-color-dark);
 }
@@ -156,6 +149,18 @@ html[dir="rtl"] .accordion dt button::before {
 .dark .accordion dt button:hover .accordion-icon::before,
 .dark .accordion dt button:hover .accordion-icon::after {
   background: var(--color-gray-100);
+}
+
+html[dir="rtl"] .accordion dt button {
+  padding: var(--spacing-s) var(--spacing-xs) var(--spacing-s) var(--spacing-m);
+}
+
+html[dir="rtl"] .accordion dt button::before {
+  right: 0;
+}
+
+.section[class*='-up'] dl.accordion {
+  max-width: unset;
 }
 
 /* Editorial Variation  */

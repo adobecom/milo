@@ -71,6 +71,10 @@ describe('basic brick', () => {
     expect(bricks[0].querySelector('.supplemental-text.body-xs')).to.exist;
   });
 
+  it('Arranges media with split row', async () => {
+    expect(document.querySelector('.media-brick.split.row.media-right')).to.exist;
+  });
+
   it('renders in fragments', async () => {
     const fragmentLink = document.body.querySelector('.fragment-link');
     await getFragment(fragmentLink);

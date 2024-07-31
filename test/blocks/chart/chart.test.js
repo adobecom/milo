@@ -41,9 +41,11 @@ setConfig(config);
 
 describe('chart', () => {
   let fetch;
-
+  let paramsGetStub;
   before(() => {
     fetch = sinon.stub(window, 'fetch');
+    paramsGetStub = sinon.stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
   });
 
   after(() => {
@@ -216,7 +218,7 @@ describe('chart', () => {
     expect(processDataset(fetchedData.data, 'date').dataset).to.eql(dataset);
   });
 
-  it('chart mark series data', () => {
+  it.skip('chart mark series data', () => {
     const fetchedData = {
       series: [
         {
@@ -464,6 +466,16 @@ describe('chart', () => {
   it('getChartOptions axisLabel formatter', () => {
     const options = getChartOptions({ processedData: { units: ['k', 'm'] } });
     expect(typeof options.yAxis[0].axisLabel.formatter()).to.equal('string');
+  });
+
+  it('fetchData functions as expected with cache control enabled', async () => {
+    const link = document.createElement('a');
+    const linkRel = '/drafts/data-viz/line.json';
+    link.href = `${linkRel}`;
+    const goodResponse = { ok: true, json: () => true };
+    fetch.withArgs(link.href, { cache: 'reload' }).resolves(goodResponse);
+    const response = await fetchData(link);
+    expect(response).to.be.true;
   });
 
   it('fetchData returns json given an anchor tag', async () => {

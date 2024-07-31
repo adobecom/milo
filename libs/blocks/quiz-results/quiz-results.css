@@ -20,7 +20,7 @@
   justify-content: center;
   width: 100%;
   max-width: 100%;
-  grid-template-columns: repeat(auto-fit,minmax(300px,max-content));
+  grid-template-columns: repeat(auto-fit, 300px);
   gap: 32px;
   padding-bottom: 32px;
 }
@@ -47,6 +47,10 @@
   .quiz-results .desktop-up,
   .quiz-results .big-desktop-up {
     display: none;
+  }
+
+  .quiz-results .quiz-card-list {
+    grid-template-columns: repeat(auto-fit, 378px);
   }
 }
 

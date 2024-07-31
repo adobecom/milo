@@ -1,0 +1,81 @@
+[
+    {
+        "variants": {
+            "all": {
+                "commands": [
+                    {
+                        "action": "appendtosection",
+                        "selector": "section1",
+                        "pageFilter": "",
+                        "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/in-target-version",
+                        "selectorType": "css"
+                    }
+                ],
+                "fragments": []
+            }
+        },
+        "variantNames": [
+            "all"
+        ],
+        "manifestOverrideName": "",
+        "manifestType": "personalization",
+        "executionOrder": "1-0",
+        "run": true,
+        "selectedVariantName": "all",
+        "selectedVariant": {
+            "commands": [
+                {
+                    "action": "appendtosection",
+                    "selector": "section1",
+                    "pageFilter": "",
+                    "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/in-target-version",
+                    "selectorType": "css"
+                }
+            ],
+            "fragments": []
+        },
+        "name": "MILO0013b - use fresh manifest over saved",
+        "manifest": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
+        "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
+        "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json"
+    },
+    {
+        "variants": {
+            "all": {
+                "commands": [
+                    {
+                        "action": "appendtosection",
+                        "selector": "section1",
+                        "pageFilter": "",
+                        "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/fresh-from-json-version",
+                        "selectorType": "css"
+                    }
+                ],
+                "fragments": []
+            }
+        },
+        "variantNames": [
+            "all"
+        ],
+        "manifestOverrideName": "",
+        "manifestType": "personalization",
+        "executionOrder": "1-0",
+        "run": true,
+        "selectedVariantName": "all",
+        "selectedVariant": {
+            "commands": [
+                {
+                    "action": "appendtosection",
+                    "selector": "section1",
+                    "pageFilter": "",
+                    "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/fresh-from-json-version",
+                    "selectorType": "css"
+                }
+            ],
+            "fragments": []
+        },
+        "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
+        "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
+        "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json"
+    }
+]

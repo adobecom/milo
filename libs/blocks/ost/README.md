@@ -23,3 +23,13 @@ perform the following:
 - open devtools console,
 - execute `copy(adobeIMS.getAccessToken().token)`,
 - add token to OST URL querystring, e.g.: `https://mwpw-127984--milo--vladen.hlx.page/tools/ost?token=eyJhb...`
+
+## Settings
+
+| Parameter                    | WCS & AOS Env    |  WCS & AOS landscape   |  Example                                               |
+| :---:   | :---: | :---: | :---: |
+| default (no parameter)       | Prod             | PUBLISHED              | https://milo.adobe.com/tools/ost                       |
+| ?wcsLandscape                | Prod             | DRAFT                  | https://milo.adobe.com/tools/ost?wcsLandscape=DRAFT    |
+| ?env=stage                   | Stage            | ALL                    | https://milo.adobe.com/tools/ost?env=stage             |
+
+Please note that the last parameter is not yet fully functional (env=stage). It will switch OST to use aos-stg env but will still use the prod token, so OST won't find any offer. This is to be fixed when the need to use env=stage comes.

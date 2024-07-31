@@ -1,0 +1,53 @@
+{
+  "name": "milo-spectrum-web-components",
+  "version": "0.0.1",
+  "description": "Common Spectrum Web Components modules for Milo",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build.mjs && ls -l dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lit": "^2.8.0",
+    "@spectrum-web-components/action-button": "^0.42.5",
+    "@spectrum-web-components/action-menu": "^0.42.5",
+    "@spectrum-web-components/alert-dialog": "^0.42.5",
+    "@spectrum-web-components/base": "^0.42.5",
+    "@spectrum-web-components/button-group": "^0.42.5",
+    "@spectrum-web-components/button": "^0.42.5",
+    "@spectrum-web-components/checkbox": "^0.42.5",
+    "@spectrum-web-components/close-button": "^0.42.5",
+    "@spectrum-web-components/dialog": "^0.42.5",
+    "@spectrum-web-components/divider": "^0.42.5",
+    "@spectrum-web-components/field-label": "^0.42.5",
+    "@spectrum-web-components/help-text": "^0.42.5",
+    "@spectrum-web-components/icon": "^0.42.5",
+    "@spectrum-web-components/icons-ui": "^0.42.5",
+    "@spectrum-web-components/icons-workflow": "^0.42.5",
+    "@spectrum-web-components/icons": "^0.42.5",
+    "@spectrum-web-components/link": "^0.42.5",
+    "@spectrum-web-components/menu": "^0.42.5",
+    "@spectrum-web-components/modal": "^0.42.5",
+    "@spectrum-web-components/overlay": "^0.42.5",
+    "@spectrum-web-components/picker": "^0.42.5",
+    "@spectrum-web-components/popover": "^0.42.5",
+    "@spectrum-web-components/progress-circle": "^0.42.5",
+    "@spectrum-web-components/radio": "^0.42.5",
+    "@spectrum-web-components/reactive-controllers": "^0.42.5",
+    "@spectrum-web-components/search": "^0.42.5",
+    "@spectrum-web-components/shared": "^0.42.5",
+    "@spectrum-web-components/sidenav": "^0.42.5",
+    "@spectrum-web-components/tabs": "^0.42.5",
+    "@spectrum-web-components/textfield": "^0.42.5",
+    "@spectrum-web-components/theme": "^0.42.5",
+    "@spectrum-web-components/tooltip": "^0.42.5",
+    "@spectrum-web-components/toast": "^0.42.5",
+    "@spectrum-web-components/tray": "^0.42.5",
+    "@spectrum-web-components/underlay": "^0.42.5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.8"
+  }
+}

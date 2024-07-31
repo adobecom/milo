@@ -14,7 +14,7 @@
   --feds-borderColor--light: #eaeaea;
   --feds-borderColor-menu--light: #e1e1e1;
   /* Top navigation - colors */
-  --feds-color-adobeBrand: #fa0f00;
+  --feds-color-adobeBrand: #EB1000;
   --feds-color-headline--light: #505050;
   /* Top navigation - misc */
   --feds-radius-utilityIcon: 4px;
@@ -97,6 +97,10 @@
   left: 18px;
 }
 
+.feds-navLink[class *= '-gradient'] {
+  display: none;
+}
+
 .feds-navLink-image,
 .feds-navLink-description {
   display: none;
@@ -105,6 +109,10 @@
 .feds-navLink-title {
   display: flex;
   align-items: center;
+}
+
+header.global-navigation {
+  visibility: visible;
 }
 
 /* Desktop styles */
@@ -216,11 +224,23 @@
 
   /* Nav Link special styles for A/B test */
   .feds-navLink[class *= '-gradient'] {
+    display: flex;
     border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .feds-menu-column--group .feds-navLink[class *= '-gradient'] {
+    padding-left: 8px;
+    padding-right: 8px;
+    column-gap: 8px;
   }
 
   .feds-navLink[class *= '-gradient']:not(:first-child) {
     margin-top: 12px;
+  }
+
+  .feds-menu-column--group .feds-navLink[class *= '-gradient'] picture {
+    max-width: 18px;
   }
 
   .feds-navLink[class *= '-gradient'] .feds-navLink-title {
@@ -265,5 +285,9 @@
 
   .feds-navLink--ai-gradient {
     background: linear-gradient(90deg, #bce3ff, #ffe9d3, #f8d5e4);
+  }
+
+  .feds-navLink--gray-gradient {
+    background: #eaeaea;
   }
 }

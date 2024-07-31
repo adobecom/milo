@@ -37,26 +37,53 @@ export async function getSVGsfromFile(path, selectors) {
 
 function getPlatforms(el) {
   const manualShares = el.querySelectorAll('a');
-  if (manualShares.length === 0) return null;
-  return [...manualShares].map((link) => {
-    const { href } = link;
+  if (manualShares.length === 0) return ['facebook', 'twitter', 'linkedin', 'pinterest', 'reddit'];
+  const platforms = [];
+  [...manualShares].forEach((share) => {
+    const { href } = share;
     const url = new URL(href);
     const parts = url.host.split('.');
-    return parts[parts.length - 2];
+    platforms.push(parts[parts.length - 2]);
+    const parentP = share.closest('p');
+    parentP?.remove();
   });
+  return platforms;
 }
 
 export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
-  const platforms = getPlatforms(block) || [
-    'facebook',
-    'twitter',
-    'linkedin',
-    'pinterest',
-    'reddit',
-  ];
-  block.innerHTML = '';
+  const platforms = getPlatforms(block);
+  const rows = block.querySelectorAll(':scope > div');
+  const childDiv = rows[0]?.querySelector(':scope > div');
+  const emptyRow = rows.length && childDiv?.innerText.trim() === '';
+  const toSentenceCase = (str) => {
+    if (!str || typeof str !== 'string') return '';
+    /* eslint-disable-next-line no-useless-escape */
+    return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
+  };
+
+  if (block.classList.contains('inline')) {
+    rows[0].innerHTML = '';
+  } else {
+    rows[0]?.classList.add('tracking-header');
+    // add share placeholder if empty row
+    if (!rows.length || emptyRow) {
+      const heading = toSentenceCase(await replaceKey('share-this-page', config));
+      block.append(createTag('p', null, heading));
+    }
+  }
+
+  // wrap innerHTML in <p> tag if none are present
+  if (childDiv && !emptyRow) {
+    const innerPs = childDiv.querySelectorAll(':scope > p');
+    if (innerPs.length === 0) {
+      const text = childDiv.innerText;
+      childDiv.innerText = '';
+      childDiv.append(createTag('p', null, text));
+    }
+  }
+
   const clipboardSupport = !!navigator.clipboard;
   if (clipboardSupport) platforms.push('clipboard');
   const svgs = await getSVGsfromFile(
@@ -64,8 +91,7 @@ export default async function decorate(block) {
     platforms,
   );
   if (!svgs) return;
-  /* eslint-disable  no-confusing-arrow,no-useless-escape */
-  const toSentenceCase = (str) => str && typeof str === 'string' ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
+
   const shareToText = toSentenceCase(await replaceKey('share-to', config));
   const url = encodeURIComponent(window.location.href);
   const title = document.title ?? url;
@@ -98,13 +124,11 @@ export default async function decorate(block) {
           href: `https://reddit.com/submit?url=${url}&title=${title}`,
         };
       default:
+        /* c8 ignore next 1 */
         return null;
     }
   };
-  if (!block.classList.contains('inline')) {
-    const heading = toSentenceCase(await replaceKey('share-this-page', config));
-    block.append(createTag('p', { class: 'tracking-header' }, heading));
-  }
+
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
     if (svg.name === 'clipboard') return;

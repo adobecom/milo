@@ -1,0 +1,19 @@
+{
+  "messageId": "d28498c7-6374-445c-a357-af50e2d907ea",
+  "job": {
+      "topic": "publish",
+      "name": "job-2024-01-22t21-59-57-639z",
+      "state": "created",
+      "createTime": "2024-01-22T21:59:57.639Z",
+      "data": {
+          "paths": [
+              "/tools/bulk-publish-v2-test"
+          ],
+          "forceUpdate": true
+      }
+  },
+  "links": {
+      "list": "https://admin.hlx.page/job/adobecom/milo/main/publish",
+      "self": "https://admin.hlx.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z"
+  }
+}

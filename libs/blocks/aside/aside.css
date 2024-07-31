@@ -72,6 +72,7 @@
 
 .aside .foreground.container .image {
   position: relative;
+  display: flex;
 }
 
 .aside .foreground.container > div {
@@ -84,13 +85,7 @@
   flex-basis: 100%;
 }
 
-.aside .foreground.container .image,
-.aside .foreground.container div:has(.milo-video) {
-  display: flex;
-}
-
 .aside.inline .foreground.container .image,
-.aside.inline .foreground.container div:has(.milo-video),
 .aside.inline .foreground.container .text {
   padding: 0;
 }
@@ -245,6 +240,10 @@
   flex-shrink: 0;
 }
 
+.aside.notification .text [class^="heading-"] + .action-area {
+  margin-top: var(--spacing-xs);
+}
+
 .aside.notification .foreground.container img {
   display: block;
 }
@@ -334,6 +333,10 @@
   color: var(--link-color);
 }
 
+.static-links .aside.notification.extra-small .foreground.container a:not(.con-button):last-of-type {
+  color: inherit;
+}
+
 .aside.notification.small .foreground.container .text a.con-button {
   display: table;
   margin-left: 0;
@@ -416,7 +419,7 @@
 }
 
 .aside.notification.center.small .foreground.container .text p {
-  text-align: left;
+  text-align: initial;
 }
 
 .aside.notification.large .foreground.container {
@@ -651,8 +654,7 @@
     margin-bottom: 0;
   }
 
-  .aside .foreground.container .image,
-  .aside .foreground.container div:has(.milo-video) {
+  .aside .foreground.container .image {
     margin: 0;
   }
 
@@ -801,6 +803,11 @@
     margin-left: 24px;
   }
 
+  [dir = "rtl"] .aside.notification.small .foreground.container .text .body-m.action-area {
+    margin-left: 0;
+    margin-right: 24px;
+  }
+
   .aside.split.half .foreground.container .text {
     flex: 0 0 41.72%;
   }
@@ -839,6 +846,11 @@
     width: auto;
     margin-right: var(--spacing-xs);
     margin-bottom: 0;
+  }
+
+  [dir = "rtl"] .aside.notification .foreground.container .icon-area {
+    margin-left: var(--spacing-xs);
+    margin-right: 0;
   }
 
   .aside.notification.extra-small .foreground.container.no-image .text {
@@ -922,8 +934,7 @@
     width: var(--grid-container-width);
   }
 
-  .aside .foreground.container > div,
-  .aside .foreground.container div:has(.milo-video) {
+  .aside .foreground.container > div {
     object-fit: cover;
     padding-left: 0;
   }
@@ -1095,6 +1106,8 @@
 
   .aside.promobar.popup {
     border-radius: var(--spacing-xl);
+    width: 85%;
+    max-width: 1600px;
   }
 
   .aside.promobar.popup .foreground.container .promo-text {

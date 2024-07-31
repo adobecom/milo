@@ -1,5 +1,5 @@
-import { createTag, getConfig, getMetadata, loadStyle, MILO_EVENTS } from '../../utils/utils.js';
-import { NON_TRACKED_MANIFEST_TYPE } from './personalization.js';
+import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
+import { TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -28,7 +28,7 @@ function updatePreviewButton() {
   });
 
   const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('mep', manifestParameter.join(','));
+  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 
   const mepHighlightCheckbox = document.querySelector(
     '.mep-popup input[type="checkbox"]#mepHighlightCheckbox',
@@ -113,7 +113,11 @@ function addPillEventListeners(div) {
     a.addEventListener('click', () => {
       if (a.getAttribute('href')) return false;
       const w = window.open('', '_blank');
-      w.document.write('<html><head></head><body>Please wait while we redirect you</body></html>');
+      w.document.write(`<html><head></head><body>
+        Please wait while we redirect you. 
+        If you are not redirected, please check that you are signed into the AEM sidekick
+        and try again.
+        </body></html>`);
       w.document.close();
       w.focus();
       getEditManifestUrl(a, w);
@@ -123,13 +127,13 @@ function addPillEventListeners(div) {
 }
 
 function createPreviewPill(manifests) {
-  const overlay = createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
+  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   document.body.append(overlay);
   const div = document.createElement('div');
   div.classList.add('mep-hidden');
   let manifestList = '';
   const manifestParameter = [];
-  manifests.forEach((manifest) => {
+  manifests?.forEach((manifest) => {
     const {
       variantNames,
       manifestPath = manifest.manifest,
@@ -169,14 +173,14 @@ function createPreviewPill(manifests) {
       <label for="${manifestPath}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
-    const manifestFileName = manifestPath.split('/').pop();
+    const manifestFileName = getFileName(manifestPath);
     const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
     const scheduled = manifest.event
       ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
-        <p>On: ${manifest.event.start?.toLocaleString()}</p>
+         <p>On: ${manifest.event.start?.toLocaleString()} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
          <p>Off: ${manifest.event.end?.toLocaleString()}</p>` : '';
     let analyticsTitle = '';
-    if (manifestType === NON_TRACKED_MANIFEST_TYPE) {
+    if (manifestType === TRACKED_MANIFEST_TYPE) {
       analyticsTitle = 'N/A for this manifest type';
     } else if (manifestOverrideName) {
       analyticsTitle = manifestOverrideName;
@@ -195,92 +199,105 @@ function createPreviewPill(manifests) {
       <div class="mep-manifest-variants">${radio}</div>
     </div>`;
   });
-  const targetOnText = getMetadata('target') === 'on' ? 'on' : 'off';
+  const config = getConfig();
+  let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
+  if (config.mep.targetEnabled === 'gnav') targetOnText = 'on for gnav only';
   const personalizationOn = getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('manifest', manifestParameter.join(','));
+  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 
-  const config = getConfig();
   let mepHighlightChecked = '';
   if (config.mep?.highlight) {
     mepHighlightChecked = 'checked="checked"';
     document.body.dataset.mepHighlight = true;
   }
 
+  const PREVIEW_BUTTON_ID = 'preview-button';
+
   div.innerHTML = `
     <div class="mep-manifest mep-badge">
-      <div class="mep-manifest-count">${manifests.length} Manifest(s) served</div>
       <span class="mep-open"></span>
+      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>
     </div>
     <div class="mep-popup">
-    <div class="mep-popup-header">
-      <div>
-        <h4>${manifests.length} Manifest(s) served</h4>
-        <span class="mep-close"></span>
-        <div class="mep-manifest-page-info-title">Page Info:</div>
-        <div>Target integration feature is ${targetOnText}</div>
-        <div>Personalization feature is ${personalizationOnText}</div>
-        <div>Page's Locale is ${config.locale.ietf}</div>
-      </div>
-    </div>
-    <div class="mep-manifest-list">
-      <div class="mep-manifest-info">
-        <div class="mep-manifest-variants">
-          <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
+      <div class="mep-popup-header">
+        <div>
+          <h4>${manifests?.length || 0} Manifest(s) served</h4>
+          <span class="mep-close"></span>
+          <div class="mep-manifest-page-info-title">Page Info:</div>
+          <div>Target integration feature is ${targetOnText}</div>
+          <div>Personalization feature is ${personalizationOnText}</div>
+          <div>Page's Locale is ${config.locale.ietf}</div>
         </div>
       </div>
-      ${manifestList}
-      <div class="mep-advanced-container">
-        <div class="mep-toggle-advanced">Advanced options</div>
-        <div class="mep-manifest-info mep-advanced-options">
-          <div>
-            Optional: new manifest location or path
-          </div>
+      <div class="mep-manifest-list">
+        <div class="mep-manifest-info">
           <div class="mep-manifest-variants">
+            <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
+          </div>
+        </div>
+        ${manifestList}
+        <div class="mep-advanced-container">
+          <div class="mep-toggle-advanced">Advanced options</div>
+          <div class="mep-manifest-info mep-advanced-options">
             <div>
-              <input type="text" name="new-manifest" id="new-manifest">
+              Optional: new manifest location or path
+            </div>
+            <div class="mep-manifest-variants">
+              <div>
+                <input type="text" name="new-manifest" id="new-manifest">
+              </div>
+            </div>
+          </div>
+          <div class="mep-manifest-info">
+            <div class="mep-manifest-variants mep-advanced-options">
+              <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
             </div>
           </div>
         </div>
-        <div class="mep-manifest-info">
-          <div class="mep-manifest-variants mep-advanced-options">
-            <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
-          </div>
-        </div>
       </div>
-    </div>
-    <div class="dark">
-      <a class="con-button outline button-l" href="${simulateHref.href}" title="Preview above choices">Preview</a>
+      <div class="dark">
+        <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices">Preview</a>
+      </div>
     </div>`;
+
+  const previewButton = div.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
+
+  if (previewButton) previewButton.href = simulateHref.href;
+
   overlay.append(div);
   addPillEventListeners(div);
 }
 
-function addMarkerData(manifests) {
-  manifests.forEach((manifest) => {
-    manifest?.selectedVariant.useblockcode?.forEach((item) => {
-      if (item.selector) {
-        document.querySelectorAll(`.${item.selector}`).forEach((el) => {
-          el.dataset.codeManifestId = manifest.manifest;
-        });
-      }
+function addHighlightData(manifests) {
+  manifests.forEach(({ selectedVariant, manifest }) => {
+    const manifestName = getFileName(manifest);
+
+    const updateManifestId = (selector, prop = 'manifestId') => {
+      document.querySelectorAll(selector).forEach((el) => (el.dataset[prop] = manifestName));
+    };
+
+    selectedVariant?.replacefragment?.forEach(
+      ({ val }) => updateManifestId(`[data-path*="${val}"]`),
+    );
+
+    selectedVariant?.useblockcode?.forEach(({ selector }) => {
+      if (selector) updateManifestId(`.${selector}`, 'codeManifestId');
     });
-    manifest?.selectedVariant.updatemetadata?.forEach((item) => {
-      if (item.selector === 'gnav-source') {
-        document.querySelectorAll('header, footer').forEach((el) => {
-          el.dataset.manifestId = manifest.manifest;
-        });
-      }
+
+    selectedVariant?.updatemetadata?.forEach(({ selector }) => {
+      if (selector === 'gnav-source') updateManifestId('header, footer');
     });
+    // eslint-disable-next-line max-len
+    document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`)
+      .forEach((el) => (el.dataset.manifestId = manifestName));
   });
 }
 
 export default async function decoratePreviewMode() {
-  const { miloLibs, codeRoot, experiments } = getConfig();
+  const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  addMarkerData(experiments);
-  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
-    createPreviewPill(experiments);
-  }, { once: true });
+  createPreviewPill(mep?.experiments);
+  if (mep?.experiments) addHighlightData(mep.experiments);
 }

@@ -1,88 +1,41 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
 import {
-  createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
+  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
 } from '../../utils/utils.js';
+import { getEntitlementMap } from './entitlements.js';
+
+/* c8 ignore start */
+const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
+export const PERSONALIZATION_TAGS = {
+  all: () => true,
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
+  firefox: () => navigator.userAgent.includes('Firefox'),
+  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
+  edge: () => navigator.userAgent.includes('Edg'),
+  android: () => navigator.userAgent.includes('Android'),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  windows: () => navigator.userAgent.includes('Windows'),
+  mac: () => navigator.userAgent.includes('Macintosh'),
+  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
+  tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
+  desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
+  loggedout: () => !window.adobeIMS?.isSignedInUser(),
+  loggedin: () => !!window.adobeIMS?.isSignedInUser(),
+};
+const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
+/* c8 ignore stop */
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
-const LS_ENT_KEY = 'milo:entitlements';
-const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
-const COLUMN_NOT_OPERATOR = 'not';
+const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
-const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
-const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
+const INLINE_HASH = '_inline';
 const PAGE_URL = new URL(window.location.href);
 
-export const NON_TRACKED_MANIFEST_TYPE = 'test or promo';
-
-export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
-
-export const normalizePath = (p) => {
-  let path = p;
-
-  if (!path.includes('/')) {
-    return path;
-  }
-
-  const config = getConfig();
-
-  if (path.startsWith(config.codeRoot)
-    || path.includes('.hlx.')
-    || path.startsWith(`https://${config.productionDomain}`)) {
-    try {
-      path = new URL(path).pathname;
-    } catch (e) { /* return path below */ }
-  } else if (!path.startsWith('http') && !path.startsWith('/')) {
-    path = `/${path}`;
-  }
-  return path;
-};
-
-export const preloadManifests = ({ targetManifests = [], persManifests = [] }) => {
-  let manifests = targetManifests;
-
-  manifests = manifests.concat(
-    persManifests.map((manifest) => ({
-      ...manifest,
-      manifestPath: appendJsonExt(manifest.manifestPath),
-      manifestUrl: manifest.manifestPath,
-    })),
-  );
-
-  for (const manifest of manifests) {
-    if (!manifest.manifestData && manifest.manifestPath && !manifest.disabled) {
-      manifest.manifestPath = normalizePath(manifest.manifestPath);
-      loadLink(
-        manifest.manifestPath,
-        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
-      );
-    }
-  }
-  return manifests;
-};
-
-/* c8 ignore start */
-export const PERSONALIZATION_TAGS = {
-  all: () => true,
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
-  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
-  android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
-  loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => window.adobeIMS?.isSignedInUser(),
-  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
-  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
-};
-
-export const ENTITLEMENT_TAGS = {
-  photoshop: (ents) => ents.photoshop_cc,
-  lightroom: (ents) => ents.lightroom_cc,
-};
-/* c8 ignore stop */
-
-const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
-const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
+export const TRACKED_MANIFEST_TYPE = 'personalization';
 
 // Replace any non-alpha chars except comma, space, ampersand and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
@@ -100,7 +53,47 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
-const createFrag = (el, url, manifestId) => {
+const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
+
+export const normalizePath = (p, localize = true) => {
+  let path = p;
+
+  if (!path?.includes('/')) {
+    return path;
+  }
+
+  const config = getConfig();
+
+  if (path.startsWith(config.codeRoot)
+    || path.includes('.hlx.')
+    || path.includes('.adobe.')) {
+    try {
+      const url = new URL(path);
+      const firstFolder = url.pathname.split('/')[1];
+      if (!localize
+        || config.locale.ietf === 'en-US'
+        || url.hash.includes('#_dnt')
+        || firstFolder in config.locales
+        || path.includes('.json')) {
+        path = url.pathname;
+      } else {
+        path = `${config.locale.prefix}${url.pathname}`;
+      }
+    } catch (e) { /* return path below */ }
+  } else if (!path.startsWith('http') && !path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  return path;
+};
+
+export const getFileName = (path) => path?.split('/').pop();
+
+const isInLcpSection = (el) => {
+  const lcpSection = document.querySelector('body > main > div');
+  return lcpSection === el || lcpSection?.contains(el);
+};
+
+export const createFrag = (el, url, manifestId, targetManifestId) => {
   let href = url;
   try {
     const { pathname, search, hash } = new URL(url);
@@ -110,48 +103,57 @@ const createFrag = (el, url, manifestId) => {
   }
   const a = createTag('a', { href }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
+  if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
   let frag = createTag('p', undefined, a);
+  const isDelayedModalAnchor = /#.*delay=/.test(href);
+  if (isDelayedModalAnchor) frag.classList.add('hide-block');
   const isSection = el.parentElement.nodeName === 'MAIN';
   if (isSection) {
     frag = createTag('div', undefined, frag);
   }
-  loadLink(`${href}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  if (isInLcpSection(el)) {
+    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  }
   return frag;
 };
 
-const COMMANDS = {
-  insertcontentafter: (el, target, manifestId) => el
-    .insertAdjacentElement('afterend', createFrag(el, target, manifestId)),
-  insertcontentbefore: (el, target, manifestId) => el
-    .insertAdjacentElement('beforebegin', createFrag(el, target, manifestId)),
-  removecontent: (el, target, manifestId) => {
-    if (target === 'false') return;
-    if (manifestId) {
-      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
-      el.insertAdjacentElement('beforebegin', div);
-    }
-    el.classList.add(CLASS_EL_DELETE);
-  },
-  replacecontent: (el, target, manifestId) => {
-    if (el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId));
-    el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
-  },
-};
-
-const VALID_COMMANDS = Object.keys(COMMANDS);
-
 const GLOBAL_CMDS = [
   'insertscript',
-  'replacefragment',
   'replacepage',
   'updatemetadata',
   'useblockcode',
 ];
 
+const CREATE_CMDS = {
+  insertafter: 'afterend',
+  insertbefore: 'beforebegin',
+  prependtosection: 'afterbegin',
+  appendtosection: 'beforeend',
+};
+
+const COMMANDS = {
+  remove: (el, target, manifestId) => {
+    if (target === 'false') return;
+    if (manifestId) {
+      el.dataset.removedManifestId = manifestId;
+      return;
+    }
+    el.classList.add(CLASS_EL_DELETE);
+  },
+  replace: (el, target, manifestId, targetManifestId) => {
+    if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
+    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
+    el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
+  },
+};
+
+function checkSelectorType(selector) {
+  return selector?.startsWith('/') || selector?.startsWith('http') ? 'fragment' : 'css';
+}
+
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
-    const resp = await fetch(url);
+    const resp = await fetch(normalizePath(url));
     if (!resp.ok) {
       /* c8 ignore next 5 */
       if (resp.status === 404) {
@@ -167,16 +169,56 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
+const getBlockProps = (fVal) => {
+  let val = fVal;
+  if (val?.includes('\\')) val = val?.split('\\').join('/');
+  if (!val?.startsWith('/')) val = `/${val}`;
+  const blockSelector = val?.split('/').pop();
+  const { origin } = PAGE_URL;
+  if (origin.includes('.hlx.') || origin.includes('localhost')) {
+    if (val.startsWith('/libs/')) {
+      /* c8 ignore next 2 */
+      const { miloLibs, codeRoot } = getConfig();
+      val = `${miloLibs || codeRoot}${val.replace('/libs', '')}`;
+    } else {
+      val = `${origin}${val}`;
+    }
+  }
+  return { blockSelector, blockTarget: val };
+};
+
+const consolidateArray = (arr, prop, existing = []) => arr
+  .reduce((results, i) => [...results, ...i[prop] || []], existing);
+
+const consolidateObjects = (arr, prop, existing = {}) => arr.reduce((propMap, item) => {
   item[prop]?.forEach((i) => {
-    propMap[i.selector] = i.val;
+    const { selector, val } = i;
+    if (prop === 'blocks') {
+      propMap[selector] = val;
+      return;
+    }
+
+    if (selector in propMap) return;
+    const action = {
+      action: i.action,
+      fragment: val,
+      selector,
+      manifestPath: item.manifestPath,
+      manifestId: i.manifestId,
+      targetManifestId: i.targetManifestId,
+    };
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key in propMap) {
+      if (propMap[key].fragment === selector) propMap[key] = action;
+    }
+    propMap[selector] = action;
   });
-  return propMap;
+  return { ...existing, ...propMap };
 }, {});
 
-const matchGlob = (searchStr, inputStr) => {
+export const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
-  const reg = new RegExp(`^${pattern}$`, 'i'); // devtool bug needs this backtick: `
+  const reg = new RegExp(`^${pattern}(\\.html)?$`, 'i'); // devtool bug needs this backtick: `
   return reg.test(inputStr);
 };
 
@@ -219,16 +261,182 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-function handleCommands(commands, manifestId, rootEl = document) {
-  commands.forEach((cmd) => {
-    if (VALID_COMMANDS.includes(cmd.action)) {
-      try {
-        const selectorEl = rootEl.querySelector(cmd.selector);
-        if (!selectorEl) return;
-        COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
-      } catch (e) {
-        console.log('Invalid selector: ', cmd.selector);
+const getDivInTargetedCell = (tableCell) => {
+  tableCell.replaceChildren();
+  const div = document.createElement('div');
+  tableCell.appendChild(div);
+  return div;
+};
+
+const querySelector = (el, selector, all = false) => {
+  try {
+    return all ? el.querySelectorAll(selector) : el.querySelector(selector);
+  } catch (e) {
+    /* eslint-disable-next-line no-console */
+    console.log('Invalid selector: ', selector);
+    return null;
+  }
+};
+
+function getTrailingNumber(s) {
+  const match = s.match(/\d+$/);
+  return match ? parseInt(match[0], 10) : null;
+}
+
+function getSection(rootEl, idx) {
+  return rootEl === document
+    ? document.querySelector(`body > main > div:nth-child(${idx})`)
+    : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
+}
+
+function registerInBlockActions(cmd, manifestId, targetManifestId) {
+  const { action, target, selector } = cmd;
+  const command = { action, target, manifestId, targetManifestId };
+
+  const blockAndSelector = selector.substring(IN_BLOCK_SELECTOR_PREFIX.length).trim().split(/\s+/);
+  const [blockName] = blockAndSelector;
+
+  const config = getConfig();
+  config.mep.inBlock ??= {};
+  config.mep.inBlock[blockName] ??= {};
+
+  let blockSelector;
+  if (blockAndSelector.length > 1) {
+    blockSelector = blockAndSelector.slice(1).join(' ');
+    command.selector = blockSelector;
+    if (checkSelectorType(blockSelector) === 'fragment') {
+      config.mep.inBlock[blockName].fragments ??= {};
+      const { fragments } = config.mep.inBlock[blockName];
+      delete command.selector;
+      if (blockSelector in fragments) return;
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const key in fragments) {
+        if (fragments[key].target === blockSelector) fragments[key] = command;
       }
+      fragments[blockSelector] = command;
+
+      blockSelector = normalizePath(blockSelector);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const key in fragments) {
+        if (fragments[key].target === blockSelector) fragments[key] = command;
+      }
+      fragments[blockSelector] = command;
+      return;
+    }
+  }
+  config.mep.inBlock[blockName].commands ??= [];
+  config.mep.inBlock[blockName].commands.push(command);
+}
+
+function getSelectedElement(selector, action, rootEl) {
+  if (!selector) return null;
+  if ((action.includes('appendtosection') || action.includes('prependtosection'))) {
+    if (!selector.includes('section')) return null;
+    const section = selector.trim().replace('section', '');
+    if (section !== '' && Number.isNaN(section)) return null;
+  }
+  if (checkSelectorType(selector) === 'fragment') {
+    try {
+      const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
+      if (fragment) return fragment.parentNode;
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  let selectedEl;
+  if (selector.includes('.') || !['section', 'block', 'row'].some((s) => selector.includes(s))) {
+    selectedEl = querySelector(rootEl, selector);
+    if (selectedEl) return selectedEl;
+  }
+
+  const terms = selector.split(/\s+/);
+
+  let section = null;
+  if (terms[0]?.startsWith('section')) {
+    const sectionIdx = getTrailingNumber(terms[0]) || 1;
+    section = getSection(rootEl, sectionIdx);
+    terms.shift();
+  }
+
+  if (terms.length) {
+    const blockStr = terms.shift();
+    if (blockStr.includes('.')) {
+      selectedEl = querySelector(section || rootEl, blockStr);
+    } else {
+      const blockIndex = getTrailingNumber(blockStr) || 1;
+      const blockName = blockStr.replace(`${blockIndex}`, '');
+      if (blockName === 'block') {
+        if (!section) section = getSection(rootEl, 1);
+        selectedEl = querySelector(section, `:scope > div:nth-of-type(${blockIndex})`);
+      } else {
+        selectedEl = querySelector(section || rootEl, `.${blockName}`, true)?.[blockIndex - 1];
+      }
+    }
+  } else if (section) {
+    return section;
+  }
+
+  if (terms.length) {
+    // find targeted table cell in rowX colY format
+    const rowColMatch = /row(?<row>\d+)\s+col(?<col>\d+)/gm.exec(terms.join(' '));
+    if (rowColMatch) {
+      const { row, col } = rowColMatch.groups;
+      const tableCell = querySelector(selectedEl, `:nth-child(${row}) > :nth-child(${col})`);
+      if (!tableCell) return null;
+      return getDivInTargetedCell(tableCell);
+    }
+  }
+
+  return selectedEl;
+}
+
+const addHash = (url, newHash) => {
+  if (!newHash) return url;
+  try {
+    const { origin, pathname, search } = new URL(url);
+    return `${origin}${pathname}${search}#${newHash}`;
+  } catch (e) {
+    return `${url}#${newHash}`;
+  }
+};
+
+const setDataIdOnChildren = (sections, id, value) => {
+  [...sections[0].children].forEach(
+    (child) => (child.dataset[id] = value),
+  );
+};
+
+export const updateFragDataProps = (a, inline, sections, fragment) => {
+  const { manifestId, adobeTargetTestid } = a.dataset;
+  if (inline) {
+    if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
+    if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
+  } else {
+    if (manifestId) fragment.dataset.manifestId = manifestId;
+    if (adobeTargetTestid) fragment.dataset.adobeTargetTestid = adobeTargetTestid;
+  }
+};
+export function handleCommands(commands, rootEl = document, forceInline = false) {
+  commands.forEach((cmd) => {
+    const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
+    const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
+    if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
+      registerInBlockActions(cmd, manifestId, targetManifestId);
+      return;
+    }
+
+    if (action in COMMANDS) {
+      const el = getSelectedElement(selector, action, rootEl);
+      COMMANDS[action](el, target, manifestId, targetManifestId);
+    } else if (action in CREATE_CMDS) {
+      const el = getSelectedElement(selector, action, rootEl);
+      el?.insertAdjacentElement(
+        CREATE_CMDS[action],
+        createFrag(el, target, manifestId, targetManifestId),
+      );
     } else {
       /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
@@ -236,31 +444,63 @@ function handleCommands(commands, manifestId, rootEl = document) {
   });
 }
 
-const getVariantInfo = (line, variantNames, variants) => {
-  const action = line.action?.toLowerCase();
+const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOverrideName) => {
+  const config = getConfig();
+  let manifestId = getFileName(manifestPath);
+  let targetId = manifestId.replace('.json', '');
+  if (manifestOverrideName) targetId = manifestOverrideName;
+  if (!config.mep?.preview) manifestId = false;
+  const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
   const { selector } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
+  if (!config.mep?.preview) manifestId = false;
   variantNames.forEach((vn) => {
-    if (!line[vn]) return;
+    const targetManifestId = vn.startsWith(TARGET_EXP_PREFIX) ? targetId : false;
+    if (!line[vn] || line[vn].toLowerCase() === 'false') return;
 
     const variantInfo = {
       action,
       selector,
       pageFilter,
       target: line[vn],
+      selectorType: checkSelectorType(selector),
+      manifestId,
+      targetManifestId,
     };
 
-    if (GLOBAL_CMDS.includes(action)) {
+    if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
+      variants[vn].fragments.push({
+        selector: normalizePath(variantInfo.selector),
+        val: normalizePath(line[vn]),
+        action,
+        manifestId,
+        targetManifestId,
+      });
+    } else if (GLOBAL_CMDS.includes(action)) {
       variants[vn][action] = variants[vn][action] || [];
 
-      variants[vn][action].push({
-        selector: normalizePath(selector),
-        val: normalizePath(line[vn]),
-      });
-    } else if (VALID_COMMANDS.includes(action)) {
+      if (action === 'useblockcode') {
+        const { blockSelector, blockTarget } = getBlockProps(line[vn]);
+        variants[vn][action].push({
+          selector: blockSelector,
+          val: blockTarget,
+          pageFilter,
+          manifestId,
+          targetManifestId,
+        });
+      } else {
+        variants[vn][action].push({
+          selector: normalizePath(selector),
+          val: normalizePath(line[vn]),
+          pageFilter,
+          manifestId,
+          targetManifestId,
+        });
+      }
+    } else if (action in COMMANDS || action in CREATE_CMDS) {
       variants[vn].commands.push(variantInfo);
     } else {
       /* c8 ignore next 2 */
@@ -269,10 +509,10 @@ const getVariantInfo = (line, variantNames, variants) => {
   });
 };
 
-export function parseConfig(data) {
+export function parseManifestVariants(data, manifestPath, manifestOverrideName) {
   if (!data?.length) return null;
 
-  const config = {};
+  const manifestConfig = {};
   const experiences = data.map((d) => normalizeKeys(d));
 
   try {
@@ -281,17 +521,22 @@ export function parseConfig(data) {
       .filter((vn) => !MANIFEST_KEYS.includes(vn));
 
     variantNames.forEach((vn) => {
-      variants[vn] = { commands: [] };
+      variants[vn] = { commands: [], fragments: [] };
     });
 
-    experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
+    experiences.forEach((line) => {
+      getVariantInfo(line, variantNames, variants, manifestPath, manifestOverrideName);
+    });
 
-    config.variants = variants;
-    config.variantNames = variantNames;
-    return config;
+    manifestConfig.variants = variants;
+    manifestConfig.variantNames = variantNames;
+    const config = getConfig();
+    if (!config.mep?.preview) manifestConfig.manifestId = false;
+
+    return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log('error parsing personalization config:', e, experiences);
+    console.log('error parsing personalization manifestConfig:', e, experiences);
   }
   return null;
 }
@@ -317,83 +562,13 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   return config;
 }
 
-const fetchEntitlements = async () => {
-  const [{ default: getUserEntitlements }] = await Promise.all([
-    import('../../blocks/global-navigation/utilities/getUserEntitlements.js'),
-    loadIms(),
-  ]);
-  return getUserEntitlements();
-};
-
-const setEntLocalStorage = (ents) => {
-  localStorage.setItem(LS_ENT_KEY, JSON.stringify(ents));
-  localStorage.setItem(LS_ENT_EXPIRE_KEY, Date.now());
-};
-
-const loadEntsFromLocalStorage = () => {
-  const ents = localStorage.getItem(LS_ENT_KEY);
-  const expireDate = localStorage.getItem(LS_ENT_EXPIRE_KEY);
-  const now = Date.now();
-  if (!ents || !expireDate || (now - expireDate) > ENT_CACHE_EXPIRE) return null;
-  if ((now - expireDate) > ENT_CACHE_REFRESH) {
-    // refresh entitlements in background
-    setTimeout(() => {
-      fetchEntitlements().then((newEnts) => {
-        setEntLocalStorage(newEnts);
-      });
-    }, 5000);
-  }
-  return JSON.parse(ents);
-};
-
-const clearEntLocalStorage = () => {
-  localStorage.removeItem(LS_ENT_KEY);
-  localStorage.removeItem(LS_ENT_EXPIRE_KEY);
-};
-
-export const getEntitlements = (() => {
-  let ents;
-  let logoutEventSet;
-  return (async () => {
-    if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) {
-      clearEntLocalStorage();
-      return {};
-    }
-    if (!ents) {
-      ents = loadEntsFromLocalStorage();
-    }
-    if (!ents) {
-      ents = await fetchEntitlements();
-      setEntLocalStorage(ents);
-    }
-    if (!logoutEventSet) {
-      window.addEventListener('feds:signOut', clearEntLocalStorage);
-      logoutEventSet = true;
-    }
-    return ents;
-  });
-})();
-
-const getFlatEntitlements = async () => {
-  const ents = await getEntitlements();
-  return {
-    ...ents.arrangement_codes,
-    ...ents.clouds,
-    ...ents.fulfilled_codes,
-  };
-};
-
-const checkForEntitlementMatch = (name, entitlements) => {
-  const entName = name.split('ent-')[1];
-  if (!entName) return false;
-  return entitlements[entName];
-};
-/* c8 ignore stop */
-
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
   if (!name) return false;
-  const searchParamVal = PAGE_URL.searchParams.get(name);
+  const params = new URLSearchParams(
+    Array.from(PAGE_URL.searchParams, ([key, value]) => [key.toLowerCase(), value?.toLowerCase()]),
+  );
+  const searchParamVal = params.get(name.toLowerCase());
   if (searchParamVal !== null) {
     if (val) return val === searchParamVal;
     return true; // if no val is set, just check for existence of param
@@ -403,19 +578,8 @@ const checkForParamMatch = (paramStr) => {
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
-  if (config.mep?.override !== '') {
-    let manifest;
-    /* c8 ignore start */
-    config.mep?.override.split(',').some((item) => {
-      const pair = item.trim().split('--');
-      if (pair[0] === manifestPath && pair.length > 1) {
-        [, manifest] = pair;
-        return true;
-      }
-      return false;
-    });
-    /* c8 ignore stop */
-    if (manifest) return manifest;
+  if (config.mep?.variantOverride?.[manifestPath]) {
+    return config.mep.variantOverride[manifestPath];
   }
 
   const variantInfo = variantNames.reduce((acc, name) => {
@@ -427,23 +591,20 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     return acc;
   }, { allNames: [] });
 
-  const hasEntitlementPrefix = variantInfo.allNames.some((name) => name.startsWith('ent-'));
+  const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
-  let entitlements = {};
-  if (hasEntitlementPrefix || hasEntitlementTag) {
-    entitlements = await getFlatEntitlements();
+  let userEntitlements = [];
+  if (hasEntitlementTag) {
+    userEntitlements = await config.entitlements();
   }
 
   const hasMatch = (name) => {
     if (name === '') return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
-    if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
-    if (entitlementKeys.includes(name)) {
-      return ENTITLEMENT_TAGS[name](entitlements);
-    }
-    return personalizationKeys.includes(name) && PERSONALIZATION_TAGS[name]();
+    if (userEntitlements?.includes(name)) return true;
+    return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
   const matchVariant = (name) => {
@@ -460,7 +621,35 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   return matchingVariant;
 }
 
-export async function getPersConfig(info) {
+const createDefaultExperiment = (manifest) => ({
+  disabled: manifest.disabled,
+  event: manifest.event,
+  manifest: manifest.manifestPath,
+  executionOrder: '1-1',
+  selectedVariant: { commands: [], fragments: [] },
+  selectedVariantName: 'default',
+  variantNames: ['all'],
+  variants: {},
+});
+
+export const addMepAnalytics = (config, header) => {
+  config.mep.experiments.forEach((experiment) => {
+    experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
+      if (selector && targetManifestId) {
+        document.querySelectorAll(`.${selector}`)
+          .forEach((el) => (el.dataset.adobeTargetTestid = targetManifestId));
+      }
+    });
+    if (header) {
+      experiment?.selectedVariant?.updatemetadata?.forEach((updateMetaData) => {
+        if (updateMetaData?.selector === 'gnav-source' && updateMetaData.targetManifestId) {
+          header.dataset.adobeTargetTestid = updateMetaData.targetManifestId;
+        }
+      });
+    }
+  });
+};
+export async function getManifestConfig(info, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -469,7 +658,12 @@ export async function getPersConfig(info) {
     manifestPlaceholders,
     manifestInfo,
     variantLabel,
+    disabled,
+    event,
   } = info;
+  if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
+    return createDefaultExperiment(info);
+  }
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
@@ -478,169 +672,303 @@ export async function getPersConfig(info) {
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
-  const config = parseConfig(persData);
-
   const infoTab = manifestInfo || data?.info?.data;
-  config.manifestType = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-type')?.value?.toLowerCase() || 'personalization';
-  config.manifestOverrideName = infoTab?.find((element) => element.key?.toLowerCase() === 'manifest-override-name')?.value?.toLowerCase();
+  const infoObj = infoTab?.reduce((acc, item) => {
+    acc[item.key] = item.value;
+    return acc;
+  }, {});
+  const manifestOverrideName = name || infoObj?.['manifest-override-name']?.toLowerCase();
+  const manifestConfig = parseManifestVariants(persData, manifestPath, manifestOverrideName);
 
-  if (!config) {
+  if (!manifestConfig) {
     /* c8 ignore next 3 */
-    console.log('Error loading personalization config: ', name || manifestPath);
+    console.log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
+  const infoKeyMap = {
+    'manifest-type': ['Personalization', 'Promo', 'Test'],
+    'manifest-execution-order': ['First', 'Normal', 'Last'],
+  };
+  if (infoTab) {
+    manifestConfig.manifestOverrideName = manifestOverrideName;
+    manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    const executionOrder = {
+      'manifest-type': 1,
+      'manifest-execution-order': 1,
+    };
+    Object.keys(infoObj).forEach((key) => {
+      if (!infoKeyMap[key]) return;
+      const index = infoKeyMap[key].indexOf(infoObj[key]);
+      executionOrder[key] = index > -1 ? index : 1;
+    });
+    manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+  } else {
+    // eslint-disable-next-line prefer-destructuring
+    manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
+    manifestConfig.executionOrder = '1-1';
+  }
 
+  manifestConfig.manifestPath = normalizePath(manifestPath);
   const selectedVariantName = await getPersonalizationVariant(
-    manifestPath,
-    config.variantNames,
+    manifestConfig.manifestPath,
+    manifestConfig.variantNames,
     variantLabel,
   );
 
-  if (selectedVariantName && config.variantNames.includes(selectedVariantName)) {
-    config.run = true;
-    config.selectedVariantName = selectedVariantName;
-    config.selectedVariant = config.variants[selectedVariantName];
+  if (selectedVariantName && manifestConfig.variantNames.includes(selectedVariantName)) {
+    manifestConfig.run = true;
+    manifestConfig.selectedVariantName = selectedVariantName;
+    manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
   } else {
     /* c8 ignore next 2 */
-    config.selectedVariantName = 'default';
-    config.selectedVariant = 'default';
+    manifestConfig.selectedVariantName = 'default';
+    manifestConfig.selectedVariant = 'default';
   }
-
   const placeholders = manifestPlaceholders || data?.placeholders?.data;
   if (placeholders) {
     updateConfig(
-      parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
+      parsePlaceholders(placeholders, getConfig(), manifestConfig.selectedVariantName),
     );
   }
 
-  config.name = name;
-  config.manifest = manifestPath;
-  config.manifestUrl = manifestUrl;
-  return config;
+  manifestConfig.name = name;
+  manifestConfig.manifest = manifestPath;
+  manifestConfig.manifestUrl = manifestUrl;
+  manifestConfig.disabled = disabled;
+  manifestConfig.event = event;
+  return manifestConfig;
 }
 
-const deleteMarkedEls = () => {
-  [...document.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+export const deleteMarkedEls = (rootEl = document) => {
+  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
     .forEach((el) => el.remove());
 };
 
-const normalizeFragPaths = ({ selector, val }) => ({
+const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
+  action,
+  manifestId,
+  targetManifestId,
 });
-
-export async function runPersonalization(info, config) {
-  const { manifestPath } = info;
-
-  const experiment = await getPersConfig(info);
-
+export async function categorizeActions(experiment, config) {
   if (!experiment) return null;
+  const { manifestPath, selectedVariant } = experiment;
+  if (!selectedVariant || selectedVariant === 'default') return { experiment };
 
-  const { selectedVariant } = experiment;
-  if (!selectedVariant) return {};
-  if (selectedVariant === 'default') {
-    return { experiment };
-  }
-
-  if (selectedVariant.replacepage) {
-    // only one replacepage can be defined
-    await replaceInner(selectedVariant.replacepage[0]?.val, document.querySelector('main'));
-    document.querySelector('main').dataset.manifestId = manifestPath;
-  }
+  // only one replacepage can be defined
+  const { replacepage } = selectedVariant;
+  // eslint-disable-next-line prefer-destructuring
+  if (selectedVariant.replacepage?.length) config.mep.replacepage = replacepage[0];
 
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  let manifestId = experiment.manifest;
-  if (!config.mep?.preview) {
-    manifestId = false;
-  } else if (experiment.name) {
-    manifestId = `${experiment.name}: ${manifestId}`;
-  }
-  handleCommands(selectedVariant.commands, manifestId);
-
-  selectedVariant.replacefragment &&= selectedVariant.replacefragment.map(normalizeFragPaths);
+  selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
   return {
+    manifestPath,
     experiment,
     blocks: selectedVariant.useblockcode,
-    fragments: selectedVariant.replacefragment,
+    fragments: selectedVariant.fragments,
+    commands: selectedVariant.commands,
   };
 }
 
-function cleanManifestList(manifests) {
-  const manifestPaths = [];
-  const cleanedList = [];
-  manifests.forEach((manifest) => {
-    try {
-      const url = new URL(manifest.manifestPath);
-      manifest.manifestPath = url.pathname;
-    } catch (e) {
-      // do nothing
-    }
-    const foundIndex = manifestPaths.indexOf(manifest.manifestPath);
-    if (foundIndex === -1) {
-      manifestPaths.push(manifest.manifestPath);
-      cleanedList.push(manifest);
-    } else {
-      cleanedList[foundIndex] = { ...cleanedList[foundIndex], ...manifest };
+function parseMepParam(mepParam) {
+  if (!mepParam) return false;
+  const mepObject = Object.create(null);
+  const decodedParam = decodeURIComponent(mepParam);
+  decodedParam.split('---').forEach((item) => {
+    const pair = item.trim().split('--');
+    if (pair.length > 1) {
+      const [manifestPath, selectedVariant] = pair;
+      mepObject[manifestPath] = selectedVariant;
     }
   });
-  return cleanedList;
+
+  return mepObject;
 }
 
-const createDefaultExperiment = (manifest) => ({
-  disabled: manifest.disabled,
-  event: manifest.event,
-  manifest: manifest.manifestPath,
-  variantNames: ['all'],
-  selectedVariantName: 'default',
-  selectedVariant: { commands: [] },
-});
+function compareExecutionOrder(a, b) {
+  if (a.executionOrder === b.executionOrder) return 0;
+  return a.executionOrder > b.executionOrder ? 1 : -1;
+}
 
-export async function applyPers(manifests) {
+export function cleanAndSortManifestList(manifests) {
   const config = getConfig();
-
-  if (!manifests?.length) return;
-
-  getEntitlements();
-  const cleanedManifests = cleanManifestList(manifests);
-
-  const override = config.mep?.override;
-  let results = [];
-  const experiments = [];
-  for (const manifest of cleanedManifests) {
-    if (manifest.disabled && !override) {
-      experiments.push(createDefaultExperiment(manifest));
-    } else {
-      const result = await runPersonalization(manifest, config);
-      if (result) {
-        results.push(result);
-        experiments.push(result.experiment);
+  const manifestObj = {};
+  let allManifests = manifests;
+  if (config.mep?.experiments) allManifests = [...manifests, ...config.mep.experiments];
+  allManifests.forEach((manifest) => {
+    try {
+      if (!manifest?.manifest) return;
+      if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
+      if (manifest.manifestPath in manifestObj) {
+        let fullManifest = manifestObj[manifest.manifestPath];
+        let freshManifest = manifest;
+        if (manifest.name) {
+          fullManifest = manifest;
+          freshManifest = manifestObj[manifest.manifestPath];
+        }
+        freshManifest.name = fullManifest.name;
+        freshManifest.selectedVariantName = fullManifest.selectedVariantName;
+        freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
+        manifestObj[manifest.manifestPath] = freshManifest;
+      } else {
+        manifestObj[manifest.manifestPath] = manifest;
       }
+    } catch (e) {
+      console.warn(e);
+      window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
+    }
+  });
+  Object.keys(manifestObj).forEach((key) => {
+    delete manifestObj[key].variants;
+  });
+  return Object.values(manifestObj).sort(compareExecutionOrder);
+}
+
+export function handleFragmentCommand(command, a) {
+  const { action, fragment, manifestId, targetManifestId } = command;
+  if (action === 'replace') {
+    a.href = fragment;
+    if (manifestId) a.dataset.manifestId = manifestId;
+    if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
+    return fragment;
+  }
+  if (action === 'remove') {
+    if (manifestId) {
+      a.parentElement.dataset.removedManifestId = manifestId;
+    } else {
+      a.parentElement.remove();
     }
   }
-  results = results.filter(Boolean);
-  deleteMarkedEls();
-  updateConfig({
-    ...config,
-    experiments,
-    expBlocks: consolidateObjects(results, 'blocks'),
-    expFragments: consolidateObjects(results, 'fragments'),
-  });
-  const pznList = results.filter((r) => (r.experiment.manifestType !== NON_TRACKED_MANIFEST_TYPE));
-  if (!pznList.length) {
-    document.body.dataset.mep = 'nopzn|nopzn';
-    return;
+  return false;
+}
+
+export async function applyPers(manifests, postLCP = false) {
+  if (!manifests?.length) return;
+  let experiments = manifests;
+  const config = getConfig();
+  for (let i = 0; i < experiments.length; i += 1) {
+    experiments[i] = await getManifestConfig(experiments[i], config.mep?.variantOverride);
   }
+
+  experiments = cleanAndSortManifestList(experiments);
+
+  let results = [];
+
+  for (const experiment of experiments) {
+    const result = await categorizeActions(experiment, config);
+    if (result) results.push(result);
+  }
+  results = results.filter(Boolean);
+
+  config.mep.experiments = [...config.mep.experiments, ...experiments];
+  config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
+  config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
+  config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+  const main = document.querySelector('main');
+  if (config.mep.replacepage && !postLCP && main) {
+    await replaceInner(config.mep.replacepage.val, main);
+    const { manifestId, targetManifestId } = config.mep.replacepage;
+    if (manifestId) main.dataset.manifestId = manifestId;
+    if (targetManifestId) main.dataset.adobeTargetTestid = targetManifestId;
+  }
+
+  if (!postLCP) handleCommands(config.mep.commands);
+  deleteMarkedEls();
+
+  const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
+  if (!pznList.length) return;
+
   const pznVariants = pznList.map((r) => {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
   });
   const pznManifests = pznList.map((r) => {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return val.split('/').pop().replace('.json', '').trim()
-      .slice(0, 15);
+    return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
-  document.body.dataset.mep = `${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+}
+
+export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
+  let persManifests = [];
+
+  if (persEnabled) {
+    persManifests = persEnabled.toLowerCase()
+      .split(/,|(\s+)|(\\n)/g)
+      .filter((path) => path?.trim())
+      .map((manifestPath) => ({ manifestPath }));
+  }
+
+  if (promoEnabled) {
+    const { default: getPromoManifests } = await import('./promo-utils.js');
+    persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
+  }
+
+  if (mepParam && mepParam !== 'off') {
+    const persManifestPaths = persManifests.map((manifest) => {
+      const { manifestPath } = manifest;
+      if (manifestPath.startsWith('/')) return manifestPath;
+      try {
+        const url = new URL(manifestPath);
+        return url.pathname;
+      } catch (e) {
+        return manifestPath;
+      }
+    });
+
+    mepParam.split('---').forEach((manifestPair) => {
+      const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!persManifestPaths.includes(manifestPath)) {
+        persManifests.push({ manifestPath });
+      }
+    });
+  }
+  return persManifests;
+};
+
+export async function init(enablements = {}) {
+  let manifests = [];
+  const {
+    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
+  } = enablements;
+  const config = getConfig();
+  if (!postLCP) {
+    config.mep = {
+      handleFragmentCommand,
+      updateFragDataProps,
+      preview: (mepButton !== 'off'
+        && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+      variantOverride: parseMepParam(mepParam),
+      highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
+      targetEnabled: target,
+      experiments: [],
+    };
+    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
+    manifests?.forEach((manifest) => {
+      if (manifest.disabled) return;
+      const normalizedURL = normalizePath(manifest.manifestPath);
+      loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    });
+  }
+
+  if (target === true || (target === 'gnav' && postLCP)) {
+    const { getTargetPersonalization } = await import('../../martech/martech.js');
+    const { targetManifests, targetPropositions } = await getTargetPersonalization();
+    manifests = manifests.concat(targetManifests);
+    if (targetPropositions?.length && window._satellite) {
+      window._satellite.track('propositionDisplay', targetPropositions);
+    }
+  }
+  try {
+    await applyPers(manifests, postLCP);
+  } catch (e) {
+    console.warn(e);
+    window.lana?.log(`MEP Error: ${e.toString()}`);
+  }
 }

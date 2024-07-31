@@ -7,14 +7,47 @@ function buildCaption(pEl) {
   return figCaptionEl;
 }
 
+function htmlToElement(html) {
+  const template = document.createElement('template');
+  const convertHtml = html.trim();
+  template.innerHTML = convertHtml;
+  return template.content.firstChild;
+}
+
+function decorateVideo(clone, figEl) {
+  let video = clone.querySelector('video');
+  const videoLink = clone.querySelector('a[href*=".mp4"]');
+  if (videoLink) {
+    const { href, hash, dataset } = videoLink;
+    const attrs = getVideoAttrs(hash, dataset);
+    const videoElem = `<video ${attrs}>
+      <source src="${href}" type="video/mp4" />
+    </video>`;
+
+    videoLink.insertAdjacentHTML('afterend', videoElem);
+    videoLink.remove();
+    video = clone.querySelector('video');
+  }
+  if (video) {
+    video.removeAttribute('data-mouseevent');
+    applyHoverPlay(video);
+    figEl.prepend(video);
+  }
+}
+
 export function buildFigure(blockEl) {
   const figEl = document.createElement('figure');
   figEl.classList.add('figure');
   Array.from(blockEl.children).forEach((child) => {
     const clone = child.cloneNode(true);
     // picture, video, or embed link is NOT wrapped in P tag
-    if (clone.nodeName === 'PICTURE' || clone.nodeName === 'VIDEO' || clone.nodeName === 'A'
-    || (clone.nodeName === 'SPAN' && clone.classList.contains('modal-img-link'))) {
+    const tags = ['PICTURE', 'VIDEO', 'A'];
+    if (tags.includes(clone.nodeName) || (clone.nodeName === 'SPAN' && clone.classList.contains('modal-img-link'))) {
+      if (clone.href?.includes('.mp4')) {
+        const videoPlaceholderLink = `<p>${clone.outerHTML}</p>`;
+        const videoLink = htmlToElement(videoPlaceholderLink);
+        decorateVideo(videoLink, figEl);
+      }
       figEl.prepend(clone);
     } else {
       // content wrapped in P tag(s)
@@ -26,23 +59,7 @@ export function buildFigure(blockEl) {
       if (picture) {
         figEl.prepend(picture);
       }
-      let video = clone.querySelector('video');
-      const videoLink = clone.querySelector('a[href*=".mp4"]');
-      if (videoLink) {
-        const { href, hash } = videoLink;
-        const attrs = getVideoAttrs(hash);
-        const videoElem = `<video ${attrs}>
-          <source src="${href}" type="video/mp4" />
-        </video>`;
-        videoLink.insertAdjacentHTML('afterend', videoElem);
-        videoLink.remove();
-        video = clone.querySelector('video');
-      }
-      if (video) {
-        video.removeAttribute('data-mouseevent');
-        applyHoverPlay(video);
-        figEl.prepend(video);
-      }
+      decorateVideo(clone, figEl);
       const caption = clone.querySelector('em');
       if (caption) {
         const figElCaption = buildCaption(caption);

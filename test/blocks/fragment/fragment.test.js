@@ -23,10 +23,28 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment } = await import('../../../libs/blocks/fragment/fragment.js');
 
 describe('Fragments', () => {
+  let paramsGetStub;
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
   it('Loads a fragment', async () => {
     const a = document.querySelector('a');
     await getFragment(a);
     const h1 = document.querySelector('h1');
+    expect(h1).to.exist;
+  });
+
+  it('Loads a fragment with cache control', async () => {
+    const a = document.querySelector('a.cache');
+    await getFragment(a);
+    const h1 = document.querySelector('h1.frag-cache');
     expect(h1).to.exist;
   });
 
@@ -76,5 +94,24 @@ describe('Fragments', () => {
     await getFragment(a);
     const pic = document.querySelector('picture.frag-image');
     expect(pic.classList.contains('decorated')).to.be.true;
+  });
+
+  it('only valid HTML should exist after resolving the fragments', async () => {
+    const { body } = new DOMParser().parseFromString(await readFile({ path: './mocks/body.html' }), 'text/html');
+    for (const a of body.querySelectorAll('a[href*="/fragment"]')) await getFragment(a);
+    const innerHtml = body.innerHTML;
+    // eslint-disable-next-line
+    body.innerHTML = body.innerHTML; // after reassignment, the parser guarantees the presence of only valid HTML
+    expect(innerHtml).to.equal(body.innerHTML);
+  });
+
+  it('should transfer all attributes when replacing a paragraph parent with a div parent', async () => {
+    const a = document.querySelector('a.frag-p');
+    const { attributes } = a.parentElement;
+    await getFragment(a);
+    const wrapper = document.querySelector('.frag-p-wrapper');
+    for (const attr of attributes) {
+      expect(wrapper.getAttribute(attr.name)).to.equal(attr.value);
+    }
   });
 });

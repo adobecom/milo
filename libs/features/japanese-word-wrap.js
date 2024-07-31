@@ -1,22 +1,9 @@
 /* eslint-disable no-console */
 import { getMetadata } from '../utils/utils.js';
 
-/**
- * Checks if an element contains a non-empty text node.
- *
- * @param {HTMLElement} element - The HTMLElement to check.
- * @returns true if the element contains a non-empty text node, false otherwise.
- */
 const hasTextNode = (element) => [...element.childNodes]
   .some(({ nodeType, textContent }) => nodeType === Node.TEXT_NODE && textContent.trim() !== '');
 
-/**
- * Recursively finds all elements that contain non-empty text nodes.
- * The search stops when an element with the 'jpwordwrap-disable' class is encountered.
- *
- * @param {HTMLElement} [element=document.body] - The root HTMLElement to start the search from.
- * @returns An array of DHTMLElements that contain non-empty text nodes.
- */
 function findTextElements(element = document.body) {
   const tagName = element.tagName.toLowerCase();
   if (tagName === 'header' || tagName === 'footer'
@@ -34,11 +21,6 @@ function findTextElements(element = document.body) {
 
 /**
  * Update the model to control line breaks occurring for the specified word.
- * @param {*} parser The BudouX parser to update.
- * @param {string} pattern The pattern that should be updated in the model.
- * @param {number} score The score that should be added from the pattern in the model.
- * @param {string} [markerSymbol='#'] The marker symbol to look for in the pattern string.
- * Defaults to '#'.
  */
 function updateParserModel(parser, pattern, score, markerSymbol = '#') {
   const markerPos = pattern.indexOf(markerSymbol);
@@ -72,11 +54,18 @@ function updateParserModel(parser, pattern, score, markerSymbol = '#') {
   }
 }
 
+function hasFlexOrGrid(element) {
+  const elStyles = getComputedStyle(element);
+
+  return (elStyles.display === 'flex' || elStyles.display === 'grid');
+}
+
+function isFirefox() {
+  return navigator.userAgent.includes('Firefox');
+}
+
 /**
  * Check if a word wrap has been applied to an element.
- *
- * @param {HTMLElement} element - The HTML element to be checked.
- * @returns true if a word wrap has been applied, otherwise false.
  */
 export function isWordWrapApplied(element) {
   return !!element.querySelector('wbr');
@@ -84,9 +73,6 @@ export function isWordWrapApplied(element) {
 
 /**
  * Check if a balanced word wrap has been applied to an element.
- *
- * @param {HTMLElement} element - The HTML element to be checked.
- * @returns true if a balanced word wrap has been applied, otherwise false.
  */
 export function isBalancedWordWrapApplied(element) {
   return !!element.querySelector('wbr[class^=jpn-balanced-wbr]');
@@ -94,8 +80,6 @@ export function isBalancedWordWrapApplied(element) {
 
 /**
  * Apply smart line-breaking algorithm depending on the given options.
- * @param {*} config The milo config.
- * @param {*} options The options to control line breaks.
  */
 export async function applyJapaneseLineBreaks(config, options = {}) {
   const { miloLibs, codeRoot } = config;
@@ -146,7 +130,11 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
 
   // Apply budoux to target selector
   textElements.forEach((el) => {
-    if (budouxExcludeElements.has(el) || isWordWrapApplied(el)) return;
+    if (
+      budouxExcludeElements.has(el)
+      || isWordWrapApplied(el)
+      || (isFirefox() && hasFlexOrGrid(el))
+    ) return;
     parser.applyElement(el, { threshold: budouxThres });
   });
 
@@ -155,7 +143,11 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
     const bw2 = new BalancedWordWrapper();
     // Apply balanced word wrap to target selector
     textElements.forEach((el) => {
-      if (bwExcludeElements.has(el) || isBalancedWordWrapApplied(el)) return;
+      if (
+        bwExcludeElements.has(el)
+        || isBalancedWordWrapApplied(el)
+        || (isFirefox() && hasFlexOrGrid(el))
+      ) return;
       bw2.applyElement(el);
     });
   }
@@ -164,8 +156,6 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
 /**
  * Apply smart line-breaking algorithm by inserting <wbr> between semantic blocks.
  * This allows browsers to break japanese sentences correctly.
- * @param {*} config The milo config.
- * @param {*} doc The Document or HTMLElement to which you want you apply word wrap.
  */
 export default async function controlJapaneseLineBreaks(config, scopeArea = document) {
   const disabled = getMetadata('jpwordwrap:disabled') === 'true' || false;

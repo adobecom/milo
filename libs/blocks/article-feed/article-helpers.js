@@ -129,7 +129,7 @@ export async function loadTaxonomy() {
         a.href = tax.link;
       } else {
         // eslint-disable-next-line no-console
-        window.lana.log(`Trying to get a link for an unknown topic: ${topic} (current page)`);
+        window.lana.log(`Trying to get a link for an unknown topic: ${topic} (current page)`, { tags: 'errorType=warn,module=article-feed' });
         a.href = '#';
       }
       delete a.dataset.topicLink;

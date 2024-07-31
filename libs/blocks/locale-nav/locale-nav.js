@@ -52,9 +52,14 @@ const decorateLocales = (current) => {
   delete locales[currLocale];
   return Object.keys(locales).map((key) => {
     const prefix = key === '' ? key : `/${key}`;
-    const localePath = currLocale === ''
+    let localePath = currLocale === ''
       ? `/${key}${current.pathname}`
       : current.pathname.replace(current.locale.prefix, prefix);
+    if (localePath.startsWith('/langstore/')) {
+      // eslint-disable-next-line no-param-reassign
+      key = 'langstore/en';
+      localePath = localePath.replace('/langstore/', `/${key}/`);
+    }
     const li = createTag('li', { class: 'detail' }, `<span>${key || 'us'}</span>`);
     getStatus(li, localePath);
     return li;

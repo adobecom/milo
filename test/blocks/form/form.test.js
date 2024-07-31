@@ -97,6 +97,7 @@ describe('Form Block', async () => {
     reqCheck.checked = true;
     reqCheck.closest('.field-wrapper').dispatchEvent(new Event('input'));
     submit.dispatchEvent(new Event('click'));
+    await new Promise((resolve) => { setTimeout(() => resolve(), 150); });
     const thanks = document.querySelector('.thank-you');
     expect(thanks).to.exist;
   });

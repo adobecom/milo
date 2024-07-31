@@ -12,7 +12,7 @@ const {
   findAndStoreResultData,
 } = await import('../../../libs/blocks/quiz/utils.js');
 
-const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+let locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 const QUIZ_BASE_PATH = 'https://mockdata/path/to/quiz';
 
@@ -44,11 +44,18 @@ describe('Quiz', () => {
   });
 
   it('Checking config values from the quiz block', async () => {
-    const { configPath, quizKey, analyticsType, analyticsQuiz } = initConfigPathGlob(quiz);
+    const {
+      configPath,
+      quizKey,
+      analyticsType,
+      analyticsQuiz,
+      shortQuiz,
+    } = initConfigPathGlob(quiz);
     expect(configPath).to.be.a('function');
     expect(quizKey).to.be.a.string;
     expect(analyticsType).to.be.a.string;
     expect(analyticsQuiz).to.be.a.string;
+    expect(shortQuiz).to.be.a('boolean');
   });
 
   it('Checking quiz data', async () => {
@@ -110,10 +117,56 @@ describe('Quiz', () => {
     expect(analyticsDataForBtnQCat).to.equal('Filters|cc:app-reco|q-category/photo');
   });
 
-  it('Checking analytics data for local storage', async () => {
-    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(answers);
+  it('Checking analytics data for local storage with null input', async () => {
+    const analyticsConfig = {
+      answers,
+      umbrellaProduct: null,
+      primaryProducts: null,
+      analyticsType: 'cc:app-reco',
+      analyticsQuiz: 'uarv3',
+    };
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(analyticsConfig);
     expect(analyticsDataForBtnQCat).to.be.not.empty;
-    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
+    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
+  });
+
+  it('Checking analytics data for local storage', async () => {
+    const analyticsConfig = {
+      answers,
+      umbrellaProduct: '',
+      primaryProducts: [],
+      analyticsType: 'cc:app-reco',
+      analyticsQuiz: 'uarv3',
+    };
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(analyticsConfig);
+    expect(analyticsDataForBtnQCat).to.be.not.empty;
+    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
+  });
+
+  it('Checking analytics data for local storage with umbrella product', async () => {
+    const analyticsConfig = {
+      answers,
+      umbrellaProduct: 'cc-ind',
+      primaryProducts: [],
+      analyticsType: 'cc:app-reco',
+      analyticsQuiz: 'uarv3',
+    };
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(analyticsConfig);
+    expect(analyticsDataForBtnQCat).to.be.not.empty;
+    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=cc-ind&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
+  });
+
+  it('Checking analytics data for local storage with other products', async () => {
+    const analyticsConfig = {
+      answers,
+      umbrellaProduct: '',
+      primaryProducts: ['ps-ind', 'ai-ind'],
+      analyticsType: 'cc:app-reco',
+      analyticsQuiz: 'uarv3',
+    };
+    const analyticsDataForBtnQCat = getAnalyticsDataForLocalStorage(analyticsConfig);
+    expect(analyticsDataForBtnQCat).to.be.not.empty;
+    expect(analyticsDataForBtnQCat).to.equal('type=cc:app-reco&quiz=uarv3&result=ps-ind|ai-ind&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual');
   });
 
   it('Testing structured fragments', async () => {
@@ -145,10 +198,9 @@ describe('Quiz', () => {
   });
 
   it('Testing redirect url', async () => {
-    const primaryProducts = ['express'];
-    const structuredFrags = getRedirectUrl('https://mockdata/path/to/quiz/uar-results', primaryProducts);
-    expect(structuredFrags).to.be.an('string');
-    expect(structuredFrags).to.include('express');
+    const redirectUrl = getRedirectUrl('https://mockdata/path/to/quiz/uar-results');
+    expect(redirectUrl).to.be.an('string');
+    expect(redirectUrl).to.include('cc-quiz');
   });
 
   it('Testing result flow with invalid selections', async () => {
@@ -193,12 +245,34 @@ describe('Quiz', () => {
     expect(flowData).to.be.an('array').of.length(5);
   });
 
+  it('Testing getLocalizedURL with country code or without country code', async () => {
+    locales = { '': { ietf: 'de-DE', tk: 'hah7vzn.css' } };
+    setConfig({ locales, pathname: '/de' });
+
+    // Import getLocalizedURL function
+    const { getLocalizedURL } = await import('../../../libs/blocks/quiz/utils.js');
+
+    expect(getLocalizedURL('/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
+    expect(getLocalizedURL('/de/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
+  });
+
+  it('Testing getLocalizedURL without locale define', async () => {
+    locales = { '': { } };
+    setConfig({ locales, pathname: '/de' });
+
+    // Import getLocalizedURL function
+    const { getLocalizedURL } = await import('../../../libs/blocks/quiz/utils.js');
+
+    expect(getLocalizedURL('/path/to/quiz/uar-results')).to.equal('/path/to/quiz/uar-results');
+    expect(getLocalizedURL('/de/path/to/quiz/uar-results')).to.equal('/de/path/to/quiz/uar-results');
+  });
+
   describe('Testing storeResultInLocalStorage with empty results as input', async () => {
     let resultToDelegate;
     const primaryProductCodes = [];
     const secondaryProductCodes = [];
     const umbrellaProductCode = '';
-    const pageLoad = 'type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
+    const pageLoad = 'type=cc:app-reco&quiz=uarv3&result=&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
     before(async () => {
       const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
       const resultResources = JSON.parse(resultResourcesData);
@@ -236,7 +310,7 @@ describe('Quiz', () => {
       'au-ind',
     ];
     const umbrellaProductCode = 'cc';
-    const pageLoad = 'type=cc:app-reco&quiz=uarv3&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
+    const pageLoad = 'type=cc:app-reco&quiz=uarv3&result=cc&selectedOptions=q-category/photo/video|q-rather/custom|q-photo/organize|q-video/social|q-customer/individual';
     before(async () => {
       const resultResourcesData = await readFile({ path: './mocks/result-resources.json' });
       const resultResources = JSON.parse(resultResourcesData);

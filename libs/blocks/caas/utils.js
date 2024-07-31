@@ -199,12 +199,22 @@ export const decodeCompressedString = async (txt) => {
 };
 
 export const loadCaasFiles = async () => {
-  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'stable';
+  const searchParams = new URLSearchParams(document.location.search);
+  const version = searchParams?.get('caasver') || 'stable';
+  let cssFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`;
+  let jsFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`;
 
-  loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
+  // for caas local development
+  const host = searchParams?.get('caashost');
+  if (host) {
+    cssFile = `http://${host}.corp.adobe.com:5000/dist/app.css`;
+    jsFile = `http://${host}.corp.adobe.com:5000/dist/main.js`;
+  }
+
+  loadStyle(cssFile);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
+  await loadScript(jsFile);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
@@ -391,6 +401,26 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
   return filterObj;
 };
 
+const getCategoryArray = async (state, country, lang) => {
+  const { tags } = await getTags(state.tagsUrl);
+  const categories = Object.values(tags)
+    .filter((tag) => tag.tagID === 'caas:product-categories')
+    .map((tag) => tag.tags);
+
+  const categoryItems = Object.entries(categories[0])
+    .map(([key, value]) => ({
+      group: key,
+      id: value.tagID,
+      title: value.title,
+      icon: value.icon || '',
+      items: Object.entries(value.tags)
+        .map((tag) => getFilterObj({ excludeTags: [], filterTag: [tag[1].tagID], icon: '', openedOnLoad: false }, tags, state, country, lang))
+        .filter((tag) => tag !== null),
+    }));
+
+  return [{ group: 'All Topics', title: 'All Topics', id: '', items: [] }, ...categoryItems];
+};
+
 const getFilterArray = async (state, country, lang, strs) => {
   if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
@@ -550,6 +580,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
+      showCardBadges: state.showCardBadges,
       cardStyle: state.cardStyle,
       showTotalResults: state.showTotalResults,
       i18n: {
@@ -565,7 +596,9 @@ export const getConfig = async (originalState, strs = {}) => {
         lastModified: strs.lastModified || 'Last modified {date}',
       },
       detailsTextOption: state.detailsTextOption,
+      hideDateInterval: state.hideDateInterval,
       setCardBorders: state.setCardBorders,
+      showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
       collectionButtonStyle: state.collectionBtnStyle,
       banner: {
@@ -584,6 +617,7 @@ export const getConfig = async (originalState, strs = {}) => {
         pool: state.sortReservoirPool,
       },
       ctaAction: state.ctaAction,
+      cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
@@ -595,6 +629,7 @@ export const getConfig = async (originalState, strs = {}) => {
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
       filters: await getFilterArray(state, country, language, strs),
+      categories: await getCategoryArray(state, country, language),
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
@@ -765,6 +800,7 @@ export const defaultState = {
   headers: [],
   hideCtaIds: [],
   hideCtaTags: [],
+  hideDateInterval: false,
   includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',
@@ -783,6 +819,8 @@ export const defaultState = {
   secondaryTags: [],
   secondarySource: [],
   setCardBorders: false,
+  showCardBadges: false,
+  showFooterDivider: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
   showFilters: false,

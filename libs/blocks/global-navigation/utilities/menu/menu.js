@@ -1,8 +1,9 @@
 import {
   decorateCta,
+  fetchAndProcessPlainHtml,
   getActiveLink,
   getAnalyticsValue,
-  getFedsPlaceholderConfig,
+  icons,
   isDesktop,
   logErrorFor,
   selectors,
@@ -10,9 +11,8 @@ import {
   toFragment,
   trigger,
   yieldToMain,
+  addMepHighlightAndTargetId,
 } from '../utilities.js';
-import { decorateLinks } from '../../../../utils/utils.js';
-import { replaceText } from '../../../../features/placeholders.js';
 
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
@@ -132,12 +132,9 @@ const decoratePromo = (elem, index) => {
   const imageElem = elem.querySelector('picture');
 
   if (!isImageOnly) {
-    const cachedImageElem = imageElem && elem.removeChild(imageElem.closest(`${selectors.gnavPromo} > div`));
-    const innerContainer = toFragment`<div class="feds-promo-content"></div>`;
-
-    innerContainer.append(...elem.children);
-    elem.appendChild(innerContainer);
-    if (cachedImageElem) elem.appendChild(cachedImageElem);
+    const content = [...elem.querySelectorAll(':scope > div')]
+      .find((section) => !(section.querySelector('picture') instanceof HTMLElement));
+    content?.classList.add('feds-promo-content');
   }
 
   decorateElements({ elem, className: 'feds-promo-link', index });
@@ -273,6 +270,21 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
   }
 };
 
+const decorateCrossCloudMenu = (content) => {
+  const crossCloudMenuEl = content.querySelector('.cross-cloud-menu');
+  if (!crossCloudMenuEl) return;
+
+  decorateElements({ elem: crossCloudMenuEl });
+  crossCloudMenuEl.className = 'feds-crossCloudMenu-wrapper';
+  crossCloudMenuEl.querySelector('div').className = 'feds-crossCloudMenu';
+  crossCloudMenuEl.querySelectorAll('ul li').forEach((el, index) => {
+    if (index === 0) el.querySelector('a')?.prepend(toFragment`${icons.home}`);
+    el.className = 'feds-crossCloudMenu-item';
+  });
+
+  content.append(crossCloudMenuEl);
+};
+
 // Current limitation: after an h5 (or h2 in the case of the footer)
 // is found in a menu column, no new sections can be created without a heading
 const decorateMenu = (config) => logErrorFor(async () => {
@@ -294,19 +306,21 @@ const decorateMenu = (config) => logErrorFor(async () => {
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
-    const path = pathElement.href.replace(/(\.html$|$)/, '.plain.html');
-    const res = await fetch(path);
-    if (res.status !== 200) return;
-    const content = await res.text();
-    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), undefined, 'feds');
-    const menuContent = toFragment`<div class="feds-menu-content">${parsedContent}</div>`;
+
+    const content = await fetchAndProcessPlainHtml({ url: pathElement.href });
+
+    if (!content) return;
+
+    const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
           ${menuContent}
         </div>
       </div>`;
-    // Content has been fetched dynamically, need to decorate links
-    decorateLinks(menuTemplate);
+    addMepHighlightAndTargetId(menuTemplate, content);
+
+    decorateCrossCloudMenu(menuTemplate);
+
     await decorateColumns({ content: menuContent });
 
     if (getActiveLink(menuTemplate) instanceof HTMLElement) {

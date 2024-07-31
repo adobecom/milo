@@ -94,7 +94,7 @@
           const a = document.getElementById('caaslink');
           await init(a);
           await waitForElement('#caas');
-          await delay(5);
+          await delay(50);
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));
@@ -104,7 +104,7 @@
           const a = document.getElementById('v2-caaslink');
           await init(a);
           await waitForElement('#caas');
-          await delay(5);
+          await delay(50);
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));

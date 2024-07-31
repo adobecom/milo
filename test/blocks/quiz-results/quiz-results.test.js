@@ -63,4 +63,17 @@ describe('Quiz Results', () => {
     /* eslint-disable no-underscore-dangle */
     expect(window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.customHash).to.equal('test analytics value');
   });
+  it('Sets section, block and link analytics attributes', async () => {
+    const el = document.body.querySelector('.basic-three');
+    localStorage.setItem('quiz-result-test', JSON.stringify(mockData.mockTwo));
+
+    await init(el, 'quiz-results', 'quiz-result-test');
+
+    await delay(700);
+    expect(document.querySelector('main > div').getAttribute('daa-lh')).to.equal(null);
+    expect(el.getAttribute('daa-lh')).to.equal(null);
+    expect(el.querySelector('.fragment > .section').getAttribute('daa-lh')).to.equal('s3');
+    expect(el.querySelector('.fragment > .section > .content').getAttribute('daa-lh')).to.equal('b1|content');
+    expect(el.querySelector('a').getAttribute('daa-ll')).to.equal('Fragment link-1--This is a basic frag');
+  });
 });

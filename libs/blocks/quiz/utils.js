@@ -7,24 +7,19 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 const VALID_URL_RE = /^(http(s):\/\/.)[-a-z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-z0-9@:%_+.~#?&//=]*)/;
 
-let configPath; let quizKey; let shortQuiz; let analyticsType; let analyticsQuiz; let metaData;
+let configPath;
+let quizKey;
+let shortQuiz;
+let analyticsType;
+let analyticsQuiz;
+let metaData;
 
 const initConfigPath = (quizMetaData) => {
   const quizConfigPath = quizMetaData.data.text;
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
-  return (filepath) => `${stringsPath || quizConfigPath}${filepath}`;
+  return (filepath) => `${stringsPath || getLocalizedURL(quizConfigPath)}${filepath}`;
 };
-
-const initQuizKey = () => {
-  const { locale } = getConfig();
-  quizKey = metaData.storage?.text;
-  return locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
-};
-
-const initAnalyticsType = () => metaData['analytics-type']?.text;
-
-const initAnalyticsQuiz = () => metaData['analytics-quiz']?.text;
 
 async function fetchContentOfFile(path) {
   const response = await fetch(configPath(path));
@@ -32,12 +27,12 @@ async function fetchContentOfFile(path) {
 }
 
 export const initConfigPathGlob = (rootElement) => {
-  metaData = getMetadata(rootElement);
-  shortQuiz = metaData['short-quiz']?.text === 'true';
+  metaData = getNormalizedMetadata(rootElement);
   configPath = initConfigPath(metaData);
-  quizKey = initQuizKey(rootElement);
-  analyticsType = initAnalyticsType();
-  analyticsQuiz = initAnalyticsQuiz();
+  shortQuiz = metaData.shortquiz?.text === 'true';
+  quizKey = metaData.storage?.text.toLowerCase();
+  analyticsType = metaData.analyticstype?.text;
+  analyticsQuiz = metaData.analyticsquiz?.text;
   return { configPath, quizKey, analyticsType, analyticsQuiz, shortQuiz };
 };
 
@@ -66,9 +61,13 @@ export const defaultRedirect = (url) => {
   window.location.href = url;
 };
 
-export const handleResultFlow = async (answers = [], redirectFunc = defaultRedirect) => {
-  const { destinationPage, primaryProductCodes } = await findAndStoreResultData(answers);
-  const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
+export const handleResultFlow = async (
+  answers = [],
+  quizEntryResults = {},
+  redirectFunc = defaultRedirect,
+) => {
+  const { destinationPage } = await findAndStoreResultData(answers, quizEntryResults);
+  const redirectUrl = getRedirectUrl(destinationPage);
   redirectFunc(redirectUrl);
 };
 
@@ -76,8 +75,8 @@ export const handleResultFlow = async (answers = [], redirectFunc = defaultRedir
  * Handling the result flow from here. Will need to make sure we capture all
  * the data so that we can come back.
  */
-export const findAndStoreResultData = async (answers = []) => {
-  const entireResultData = await parseResultData(answers);
+export const findAndStoreResultData = async (answers = [], quizEntryResults = {}) => {
+  const entireResultData = await parseResultData(answers, quizEntryResults);
   const resultData = entireResultData.filteredResults;
   const { resultResources } = entireResultData;
   let destinationPage = '';
@@ -86,7 +85,8 @@ export const findAndStoreResultData = async (answers = []) => {
   let umbrellaProduct = '';
 
   if (resultData.matchedResults.length > 0) {
-    destinationPage = resultData.matchedResults[0].url;
+    destinationPage = getLocalizedURL(resultData.matchedResults[0].url);
+
     primaryProductCodes = resultData.primary;
     secondaryProductCodes = resultData.secondary;
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result'];
@@ -123,6 +123,13 @@ export const storeResultInLocalStorage = (
   const structureFragsArray = structureFrags?.split(',');
   const nestedFragsPrimaryArray = nestedFragsPrimary?.split(',');
   const nestedFragsSecondaryArray = nestedFragsSecondary?.split(',');
+  const analyticsConfig = {
+    answers,
+    umbrellaProduct,
+    primaryProducts,
+    analyticsType,
+    analyticsQuiz,
+  };
   const resultToDelegate = {
     primaryProducts,
     secondaryProducts: secondaryProductCodes,
@@ -141,9 +148,13 @@ export const storeResultInLocalStorage = (
       secondaryProductCodes,
       umbrellaProduct,
     ),
-    pageloadHash: getAnalyticsDataForLocalStorage(answers),
+    pageloadHash: getAnalyticsDataForLocalStorage(analyticsConfig),
   };
-  localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
+
+  const { locale } = getConfig();
+  const quizLocalKey = locale?.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
+
+  localStorage.setItem(quizLocalKey, JSON.stringify(resultToDelegate));
   return resultToDelegate;
 };
 
@@ -159,11 +170,11 @@ export const structuredFragments = (
     resultResources?.data?.forEach((row) => {
       if (umbrellaProduct) {
         if (umbrellaProduct && row.product === umbrellaProduct) {
-          structureFragments.push(row[fragment]);
+          structureFragments.push(getLocalizedURL(row[fragment]));
         }
-      } else if (primaryProducts.length > 0 && primaryProducts.includes(row.product)
+      } else if (primaryProducts?.length > 0 && primaryProducts.includes(row.product)
       && row[fragment]) {
-        structureFragments.push(row[fragment]);
+        structureFragments.push(getLocalizedURL(row[fragment]));
       }
     });
   });
@@ -224,7 +235,7 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
 
       function insertFragment() {
         row[fragKey]?.split(',').forEach((val) => {
-          fragArray.push(val.trim());
+          fragArray.push(getLocalizedURL(val.trim()));
         });
       }
     });
@@ -232,13 +243,51 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
   return fragArray;
 };
 
-export const getRedirectUrl = (destinationPage, primaryProducts) => {
-  const separator = destinationPage.includes('?') ? '&' : '?';
-  return `${destinationPage}${separator}primary=${primaryProducts}&quizKey=${quizKey}`;
+/**
+ * Normalizes the metadata keys in the metadata object,
+ * cleaning them up and removing all but alphanumeric characters
+ */
+const normalizeKeys = (data) => {
+  const keys = Object.keys(data);
+  const cleanData = {};
+  for (const key of keys) {
+    const newKey = key.match(/[a-zA-Z0-9]/g).join('');
+    if (key !== newKey) {
+      cleanData[newKey] = data[key];
+    } else {
+      cleanData[key] = data[key];
+    }
+  }
+  return cleanData;
 };
 
-export const parseResultData = async (answers) => {
-  const results = await fetchContentOfFile(RESULTS_EP_NAME);
+export const getRedirectUrl = (destinationPage) => {
+  const separator = destinationPage.includes('?') ? '&' : '?';
+  return `${destinationPage}${separator}quizkey=${quizKey}`;
+};
+
+export const parseResultData = async (answers, quizEntryResults) => {
+  // Initialize an empty object for the results
+  const results = {};
+
+  // Fetch the content of the file asynchronously
+  const quizResultsData = await fetchContentOfFile(RESULTS_EP_NAME);
+
+  // Destructure data from fetched content and the existing quizResultsData
+  const { result: { data: quizResultsDataArray } } = quizResultsData;
+  const { 'result-fragments': { data: quizFragmentsDataArray } } = quizResultsData;
+  const { 'result-destination': { data: quizDestinationDataArray } } = quizResultsData;
+
+  // Check if quizEntryResults is defined and extract data, otherwise use empty arrays
+  const quizEntryResultsDataArray = quizEntryResults?.result?.data || [];
+  const quizEntryFragmentsDataArray = quizEntryResults?.['result-fragments']?.data || [];
+  const quizEntryDestinationDataArray = quizEntryResults?.['result-destination']?.data || [];
+
+  // Merge the data arrays from both sources
+  results.result = { data: [...quizResultsDataArray, ...quizEntryResultsDataArray] };
+  results['result-fragments'] = { data: [...quizFragmentsDataArray, ...quizEntryFragmentsDataArray] };
+  results['result-destination'] = { data: [...quizDestinationDataArray, ...quizEntryDestinationDataArray] };
+
   const filteredResults = results.result.data.reduce(
     (resultObj, resultMap) => {
       let hasMatch = false;
@@ -417,6 +466,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
 export const transformToFlowData = (userSelection) => {
   const flowData = userSelection.map(({ selectedCards, selectedQuestion }) => [
     selectedQuestion.questions, Object.keys(selectedCards)]);
+  if (userSelection[0].isML) { flowData.push('isML'); }
   return flowData;
 };
 
@@ -429,14 +479,49 @@ export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   return '';
 };
 
-export const getAnalyticsDataForLocalStorage = (answers) => {
+export const getAnalyticsDataForLocalStorage = (config) => {
+  const {
+    answers = [],
+    umbrellaProduct = '',
+    primaryProducts = [],
+    // eslint-disable-next-line no-shadow
+    analyticsType = '',
+    // eslint-disable-next-line no-shadow
+    analyticsQuiz = '',
+  } = config;
+
+  let formattedResultString = '';
   let formattedAnswerString = '';
-  answers.forEach((answer) => {
-    const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
-    formattedAnswerString = formattedAnswerString === '' ? eachAnswer : formattedAnswerString.concat('|', eachAnswer);
-  });
-  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&selectedOptions=${formattedAnswerString}`;
+  if (umbrellaProduct) {
+    formattedResultString = umbrellaProduct;
+  } else {
+    primaryProducts?.forEach((product) => {
+      formattedResultString = formattedResultString ? `${formattedResultString}|${product}` : product;
+    });
+  }
+
+  for (let i = 0; i < answers.length - 1; i += 1) {
+    const answer = answers[i];
+    const eachAnswer = i === 0 && answers[answers.length - 1] === 'isML' ? `${answer[0]}/interest-${answer[1].join('-')}` : `${answer[0]}/${answer[1].join('/')}`;
+    formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${eachAnswer}` : eachAnswer;
+  }
+
+  if (answers[answers.length - 1] !== 'isML') {
+    const answer = answers[answers.length - 1];
+    const lastFormattedAnswer = `${answer[0]}/${answer[1].join('/')}`;
+    formattedAnswerString = formattedAnswerString ? `${formattedAnswerString}|${lastFormattedAnswer}` : `${lastFormattedAnswer}`;
+  }
+
+  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&result=${formattedResultString}&selectedOptions=${formattedAnswerString}`;
   return analyticsHash;
 };
 
 export const isValidUrl = (url) => VALID_URL_RE.test(url);
+
+export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));
+
+export const getLocalizedURL = (originalURL) => {
+  const { locale } = getConfig();
+  const { prefix, ietf = 'en-US' } = locale || {};
+  return ietf !== 'en-US' && !originalURL.startsWith(`${prefix}/`) ? `${prefix}${originalURL}` : originalURL;
+};

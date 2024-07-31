@@ -11,12 +11,14 @@ export default async function iconList(content, list) {
     const title = createTag('li', { class: 'icon-item' }, icon);
     title.append(titleText);
     const copy = createTag('button', { class: 'copy' });
+    copy.id = `${key}-icon-copy`;
     copy.addEventListener('click', (e) => {
       e.target.classList.add('copied');
       setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
       const formatted = `:${key}:`;
       const blob = new Blob([formatted], { type: 'text/plain' });
       createCopy(blob);
+      window.hlx?.rum.sampleRUM('click', { source: e.target });
     });
     title.append(copy);
     list.append(title);
