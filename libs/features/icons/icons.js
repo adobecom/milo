@@ -232,10 +232,10 @@ export default async function loadIcons(icons, base) {
     const attrs = getIconAttributes(icon, base);
     icon.classList.add(`icon-milo-${attrs.name}`);
 
-    if (attrs.size === 'initial') icon.classList.add('size-initial'); 
+    if (attrs.size === 'initial') icon.classList.add('size-initial');
     const attributes = Object.keys(attrs).map((k) => `${k}="${attrs[k]}"`).join(' ');
     icon.insertAdjacentHTML('afterbegin', `<milo-icon ${attributes}></milo-icon>`);
-    
+
     // const svgElem = `<svg xmlns="http://www.w3.org/2000/svg" class="icon-milo">
     //   <image crossorigin="anonymous" href="${base}/img/icons/s1/${iconName}.svg"/>
     // </svg>`;
