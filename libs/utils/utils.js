@@ -865,8 +865,9 @@ export async function loadMartech({
     return true;
   }
 
-  const query = PAGE_URL.searchParams.get('martech');
-  if (query === 'off' || getMetadata('martech') === 'off') {
+  const martechQuery = PAGE_URL.searchParams.get('martech');
+  const marketingQuery = PAGE_URL.searchParams.get('marketingtech');
+  if (martechQuery === 'off' || marketingQuery === 'off' || getMetadata('martech') === 'off') {
     return false;
   }
 
