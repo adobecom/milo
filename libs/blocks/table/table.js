@@ -482,7 +482,10 @@ export default function init(el) {
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
+  let isDecorated = false;
+
   const handleTable = () => {
+    if (isDecorated) return;
     let originTable;
     let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
     if (isMerch) {
@@ -506,9 +509,20 @@ export default function init(el) {
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
     });
+
+    isDecorated = true;
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {
     handleTable();
   }, true);
+
+  const observer = new window.IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      observer.disconnect();
+      handleTable();
+    }
+  });
+
+  observer.observe(el);
 }
