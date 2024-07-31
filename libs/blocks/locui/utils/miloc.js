@@ -11,6 +11,7 @@ import {
   projectCancelled,
   allowCancelProject,
   polling,
+  urls,
 } from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
@@ -76,6 +77,10 @@ export async function getProjectStatus() {
       allowSyncToLangstore.value = true;
       allowSendForLoc.value = true;
       allowCancelProject.value = true;
+      if (urls.value.filter((item) => !item.sync).length) {
+        urls.value.forEach((item) => { item.sync = true; });
+        urls.value = [...urls.value];
+      }
     }
 
     if (json.projectStatus === 'waiting') {
