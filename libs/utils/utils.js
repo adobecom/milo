@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'carousel',
   'chart',
   'columns',
+  'editorial-card',
   'faas',
   'featured-article',
   'figure',
@@ -56,6 +57,7 @@ const MILO_BLOCKS = [
   'mobile-app-banner',
   'modal',
   'modal-metadata',
+  'notification',
   'pdf-viewer',
   'quote',
   'read-more',
@@ -92,16 +94,16 @@ const AUTO_BLOCKS = [
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
-  { fragment: '/fragments/' },
+  { fragment: '/fragments/', styles: false },
   { instagram: 'https://www.instagram.com' },
-  { slideshare: 'https://www.slideshare.net' },
-  { tiktok: 'https://www.tiktok.com' },
+  { slideshare: 'https://www.slideshare.net', styles: false },
+  { tiktok: 'https://www.tiktok.com', styles: false },
   { twitter: 'https://twitter.com' },
   { vimeo: 'https://vimeo.com' },
   { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
-  { 'pdf-viewer': '.pdf' },
+  { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
 ];
@@ -139,6 +141,7 @@ ENVS.local = {
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
+const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
 const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
@@ -168,13 +171,11 @@ export function getLocale(locales, pathname = window.location.pathname) {
   }
   const split = pathname.split('/');
   const localeString = split[1];
-  const locale = locales[localeString] || locales[''];
-  if (localeString === LANGSTORE) {
+  let locale = locales[localeString] || locales[''];
+  if ([LANGSTORE, PREVIEW].includes(localeString)) {
+    const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
+    if (ietf) locale = locales[ietf];
     locale.prefix = `/${localeString}/${split[2]}`;
-    if (
-      Object.values(locales)
-        .find((loc) => loc.ietf?.startsWith(split[2]))?.dir === 'rtl'
-    ) locale.dir = 'rtl';
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
@@ -299,8 +300,10 @@ export function localizeLink(
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
-    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
-      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
+      || path.startsWith(`/${PREVIEW}`)
+      || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+      || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
@@ -448,6 +451,7 @@ export async function loadBlock(block) {
   }
 
   const name = block.classList[0];
+  const hasStyles = AUTO_BLOCKS.find((ab) => Object.keys(ab).includes(name))?.styles ?? true;
   const { miloLibs, codeRoot, mep } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
@@ -457,7 +461,7 @@ export async function loadBlock(block) {
 
   const blockPath = `${path}/${name}`;
 
-  const styleLoaded = new Promise((resolve) => {
+  const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
 
@@ -477,6 +481,7 @@ export async function loadBlock(block) {
       resolve();
     })();
   });
+
   await Promise.all([styleLoaded, scriptLoaded]);
   return block;
 }
@@ -709,9 +714,9 @@ function decorateHeader() {
 async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
-  const { miloLibs, codeRoot } = config;
-  const base = miloLibs || codeRoot;
-  await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
+  const { base } = config;
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
 }
@@ -917,81 +922,36 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
   return getMdValue(mdKey);
 };
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
-  let persManifests = [];
-
-  if (persEnabled) {
-    persManifests = persEnabled.toLowerCase()
-      .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath }));
-  }
-
-  if (promoEnabled) {
-    const { default: getPromoManifests } = await import('../features/personalization/promo-utils.js');
-    persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
-  }
-
-  if (mepParam && mepParam !== 'off') {
-    const persManifestPaths = persManifests.map((manifest) => {
-      const { manifestPath } = manifest;
-      if (manifestPath.startsWith('/')) return manifestPath;
-      try {
-        const url = new URL(manifestPath);
-        return url.pathname;
-      } catch (e) {
-        return manifestPath;
-      }
-    });
-
-    mepParam.split('---').forEach((manifestPair) => {
-      const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
-      if (!persManifestPaths.includes(manifestPath)) {
-        persManifests.push({ manifestPath });
-      }
-    });
-  }
-  return persManifests;
-};
-
 async function checkForPageMods() {
-  const { mep: mepParam } = Object.fromEntries(PAGE_URL.searchParams);
+  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
-  const persEnabled = getMepEnablement('personalization');
-  const promoEnabled = getMepEnablement('manifestnames', PROMO_PARAM);
-  const targetEnabled = getMepEnablement('target');
-  const mepEnabled = persEnabled || targetEnabled || promoEnabled || mepParam;
-  if (!mepEnabled) return;
-
-  const config = getConfig();
-  config.mep = { targetEnabled };
-  loadLink(
-    `${config.base}/features/personalization/personalization.js`,
-    { as: 'script', rel: 'modulepreload' },
-  );
-
-  const persManifests = await combineMepSources(persEnabled, promoEnabled, mepParam);
-  if (targetEnabled === true) {
-    await loadMartech({ persEnabled: true, persManifests, targetEnabled });
-    return;
+  const pzn = getMepEnablement('personalization');
+  const promo = getMepEnablement('manifestnames', PROMO_PARAM);
+  const target = getMepEnablement('target');
+  if (!(pzn || target || promo || mepParam
+    || mepHighlight || mepButton || mepParam === '')) return;
+  if (target) {
+    loadMartech();
+  } else if (pzn) {
+    loadIms()
+      .then(() => {
+        /* c8 ignore next */
+        if (window.adobeIMS?.isSignedInUser()) loadMartech();
+      })
+      .catch((e) => { console.log('Unable to load IMS:', e); });
   }
-  if (!persManifests.length) return;
 
-  loadIms()
-    .then(() => {
-      if (window.adobeIMS.isSignedInUser()) loadMartech();
-    })
-    .catch((e) => { console.log('Unable to load IMS:', e); });
-
-  const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-  const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
-
-  await applyPers(manifests);
+  const { init } = await import('../features/personalization/personalization.js');
+  await init({
+    mepParam, mepHighlight, mepButton, pzn, promo, target,
+  });
 }
 
 async function loadPostLCP(config) {
   if (config.mep?.targetEnabled === 'gnav') {
-    await loadMartech({ persEnabled: true, postLCP: true });
+    /* c8 ignore next 2 */
+    const { init } = await import('../features/personalization/personalization.js');
+    await init({ postLCP: true });
   } else {
     loadMartech();
   }
@@ -1009,6 +969,11 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
+
+  if (config?.mep) {
+    import('../features/personalization/personalization.js')
+      .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
+  }
   if (config.mep?.preview) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());

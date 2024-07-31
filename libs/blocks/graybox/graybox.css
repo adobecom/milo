@@ -90,7 +90,7 @@
   position: fixed;
   right: 0;
   top: 15%;
-  z-index: calc(var(--above-all) + 1);
+  z-index: calc(var(--above-all) + 2);
 }
 
 .graybox-container .gb-toggle {
@@ -190,7 +190,7 @@
 }
 
 .dialog-modal.graybox-modal {
-  z-index: var(--above-all);
+  z-index: calc(var(--above-all) + 1);
 }
 
 .dialog-modal.graybox-modal.mobile > div {
@@ -260,7 +260,7 @@
 
 .modal-curtain.graybox-curtain.is-open {
   background: var(--gb-modal-bg);
-  z-index: calc(var(--above-all) - 1);
+  z-index: var(--above-all);
 }
 
 @media (max-height: 910px), (max-width: 420px) {

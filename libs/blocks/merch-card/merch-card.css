@@ -52,6 +52,5 @@ merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
     min-width: 66px; /* same as merch links */
     padding: 4px 18px 5px 21px;
     font-size: var(--consonant-merch-card-mini-compare-mobile-cta-font-size);
-
   }
 }

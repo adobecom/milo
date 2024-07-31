@@ -1,5 +1,5 @@
 import { readFile, sendKeys, setViewport } from '@web/test-runner-commands';
-import { expect } from '@esm-bundle/chai';
+import { expect } from 'chai';
 import { delay } from '../../helpers/waitfor.js';
 import { loadStyle } from '../../../libs/utils/utils.js';
 

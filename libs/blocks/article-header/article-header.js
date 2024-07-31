@@ -1,16 +1,15 @@
 import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
-import { copyToClipboard } from '../../utils/tools.js';
-import { loadTaxonomy, getLinkForTopic, getTaxonomyModule } from '../article-feed/article-helpers.js';
-import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons/icons.js';
-import { buildFigure } from '../figure/figure.js';
+
+let copyText = 'Copied to clipboard';
 
 async function validateAuthorUrl(url) {
   if (!url) return null;
 
   const resp = await fetch(`${url.toLowerCase()}.plain.html`);
   if (!resp?.ok) {
-    console.log(`Could not retrieve metadata for ${url}`);
+    /* c8 ignore next 3 */
+    window.lana?.log(`Could not retrieve metadata for ${url}`, { tags: 'errorType=warn,module=article-header' });
     return null;
   }
 
@@ -34,7 +33,6 @@ function openPopup(e) {
 
 async function buildAuthorInfo(authorEl, bylineContainer) {
   const { href, textContent } = authorEl;
-
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const authorImg = createTag('div', { class: 'article-author-image' });
@@ -57,6 +55,7 @@ async function buildAuthorInfo(authorEl, bylineContainer) {
         authorImg.style.backgroundImage = 'none';
       });
       img.addEventListener('error', () => {
+        /* c8 ignore next 1 */
         img.remove();
       });
     } else {
@@ -65,33 +64,63 @@ async function buildAuthorInfo(authorEl, bylineContainer) {
   }
 }
 
+async function copyToClipboard(button, copyTxt) {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    button.setAttribute('title', copyTxt);
+    button.setAttribute('aria-label', copyTxt);
+
+    const tooltip = createTag('div', { role: 'status', 'aria-live': 'polite', class: 'copied-to-clipboard' }, copyTxt);
+    button.append(tooltip);
+
+    setTimeout(() => {
+      /* c8 ignore next 1 */
+      tooltip.remove();
+    }, 3000);
+    button.classList.remove('copy-failure');
+    button.classList.add('copy-success');
+  } catch (e) {
+    button.classList.add('copy-failure');
+    button.classList.remove('copy-success');
+  }
+}
+
+async function updateShareText(shareBlock) {
+  const { replaceKey } = await import('../../features/placeholders.js');
+  const config = getConfig();
+  const labels = [
+    `${await replaceKey('share-twitter', config)}`,
+    `${await replaceKey('share-linkedin', config)}`,
+    `${await replaceKey('share-facebook', config)}`,
+    `${await replaceKey('copy-to-clipboard', config)}`,
+  ];
+  const shareLinks = shareBlock.querySelectorAll('a');
+  [...shareLinks].forEach((el, index) => el.setAttribute('aria-label', labels[index]));
+  copyText = await replaceKey('copied-to-clipboard', config);
+}
+
 async function buildSharing() {
   const url = encodeURIComponent(window.location.href);
   const title = encodeURIComponent(document.querySelector('h1').textContent);
   const description = encodeURIComponent(getMetadata('description'));
-
   const platformMap = {
     twitter: {
       'data-href': `https://www.twitter.com/share?&url=${url}&text=${title}`,
-      alt: `${await replaceKey('share-twitter', getConfig())}`,
-      'aria-label': `${await replaceKey('share-twitter', getConfig())}`,
+      'aria-label': 'share twitter',
     },
     linkedin: {
       'data-type': 'LinkedIn',
       'data-href': `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title}&summary=${description || ''}`,
-      alt: `${await replaceKey('share-linkedin', getConfig())}`,
-      'aria-label': `${await replaceKey('share-linkedin', getConfig())}`,
+      'aria-label': 'share linkedin',
     },
     facebook: {
       'data-type': 'Facebook',
       'data-href': `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-      alt: `${await replaceKey('share-facebook', getConfig())}`,
-      'aria-label': `${await replaceKey('share-facebook', getConfig())}`,
+      'aria-label': 'share facebook',
     },
     link: {
       id: 'copy-to-clipboard',
-      alt: `${await replaceKey('copy-to-clipboard', getConfig())}`,
-      'aria-label': `${await replaceKey('copy-to-clipboard', getConfig())}`,
+      'aria-label': 'copy to clipboard',
     },
   };
 
@@ -115,37 +144,46 @@ async function buildSharing() {
     link.addEventListener('click', openPopup);
   });
   const copyButton = sharing.querySelector('#copy-to-clipboard');
-  copyButton.addEventListener('click', async () => {
-    const copyText = await replaceKey('copied-to-clipboard', getConfig());
-    await copyToClipboard(copyButton, copyText);
-  });
+  copyButton.addEventListener('click', () => copyToClipboard(copyButton, copyText));
 
   return sharing;
 }
 
-async function validateDate(date) {
+function validateDate(date) {
   const { env } = getConfig();
   if (env?.name === 'prod') return;
   if (date && !/^[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}$/.test(date.textContent.trim())) {
-    // match publication date to MM-DD-YYYY format
     date.classList.add('article-date-invalid');
-    date.setAttribute('title', await replaceKey('invalid-date', getConfig()));
+    date.setAttribute('title', 'Invalid Date Format: Must be MM-DD-YYYY');
   }
 }
 
+function decorateFigure(el) {
+  el.classList.add('article-feature-image');
+  const picture = el.querySelector('picture');
+  const caption = el.querySelector('em');
+  const figure = document.createElement('figure');
+
+  if (caption) {
+    caption.classList.add('caption');
+    const figcaption = document.createElement('figcaption');
+    figcaption.append(caption);
+    figure.append(figcaption);
+  }
+
+  figure.classList.add('figure-feature');
+  figure.prepend(picture);
+  el.prepend(figure);
+  el.lastElementChild.remove();
+}
+
 export default async function init(blockEl) {
-  if (!getTaxonomyModule()) {
-    await loadTaxonomy();
-  }
-
   const childrenEls = Array.from(blockEl.children);
-  if (childrenEls.length < 4) {
-    console.warn('Block does not have enough children');
-  }
-
   const categoryContainer = childrenEls[0];
   const categoryEl = categoryContainer.firstElementChild.firstElementChild;
   if (categoryEl?.textContent) {
+    const { getTaxonomyModule, loadTaxonomy, getLinkForTopic } = await import('../article-feed/article-helpers.js');
+    if (!getTaxonomyModule()) await loadTaxonomy();
     const categoryTag = getLinkForTopic(categoryEl.textContent);
     categoryEl.innerHTML = categoryTag;
   }
@@ -162,19 +200,17 @@ export default async function init(blockEl) {
   const authorEl = authorContainer.querySelector('a');
   authorContainer.classList.add('article-author');
 
-  await buildAuthorInfo(authorEl, bylineContainer);
+  buildAuthorInfo(authorEl, bylineContainer);
 
   const date = bylineContainer.querySelector('.article-byline-info > p:last-child');
   date.classList.add('article-date');
-  await validateDate(date);
+  validateDate(date);
 
   const shareBlock = await buildSharing();
   bylineContainer.append(shareBlock);
 
   const featureImgContainer = childrenEls[3];
-  featureImgContainer.classList.add('article-feature-image');
-  const featureFigEl = buildFigure(featureImgContainer.firstElementChild);
-  featureFigEl.classList.add('figure-feature');
-  featureImgContainer.prepend(featureFigEl);
-  featureImgContainer.lastElementChild.remove();
+  decorateFigure(featureImgContainer);
+
+  document.addEventListener('milo:deferred', () => updateShareText(shareBlock));
 }

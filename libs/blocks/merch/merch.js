@@ -122,6 +122,32 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 let log;
 let upgradeOffer = null;
 
+/**
+ * Given a url, calculates the hostname of MAS platform.
+ * Supports, www prod, stage, local and feature branches.
+ * if params are missing, it will return the latest calculated or default value.
+ * @param {string} hostname optional
+ * @param {string} maslibs optional
+ * @returns base url for mas platform
+ */
+export function getMasBase(hostname, maslibs) {
+  let { baseUrl } = getMasBase;
+  if (!baseUrl) {
+    if (maslibs === 'stage') {
+      baseUrl = 'https://www.stage.adobe.com/mas';
+    } else if (maslibs === 'local') {
+      baseUrl = 'http://localhost:9001';
+    } else if (maslibs) {
+      const extension = /.page$/.test(hostname) ? 'page' : 'live';
+      baseUrl = `https://${maslibs}.hlx.${extension}`;
+    } else {
+      baseUrl = 'https://www.adobe.com/mas';
+    }
+    getMasBase.baseUrl = baseUrl;
+  }
+  return baseUrl;
+}
+
 export async function polyfills() {
   if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
@@ -326,15 +352,18 @@ export async function getModalAction(offers, options) {
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise) {
-  const [downloadAction, upgradeAction, modalAction] = await Promise.all([
-    getDownloadAction(options, imsSignedInPromise, offers),
-    getUpgradeAction(options, imsSignedInPromise, offers),
-    getModalAction(offers, options),
-  ]).catch((e) => {
+  try {
+    await imsSignedInPromise;
+    const [downloadAction, upgradeAction, modalAction] = await Promise.all([
+      getDownloadAction(options, imsSignedInPromise, offers),
+      getUpgradeAction(options, imsSignedInPromise, offers),
+      getModalAction(offers, options),
+    ]);
+    return downloadAction || upgradeAction || modalAction;
+  } catch (e) {
     log?.error('Failed to resolve checkout action', e);
     return [];
-  });
-  return downloadAction || upgradeAction || modalAction;
+  }
 }
 
 /**
@@ -349,7 +378,15 @@ export async function initService(force = false) {
   const { env, commerce = {}, locale } = getConfig();
   commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    const commerceLib = await import('../../deps/commerce.js');
+    const { hostname, searchParams } = new URL(window.location.href);
+    let commerceLibPath = '../../deps/mas/commerce.js';
+    if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
+      const maslibs = searchParams.get('maslibs');
+      if (maslibs) {
+        commerceLibPath = `${getMasBase(hostname, maslibs)}/libs/commerce.js`;
+      }
+    }
+    const commerceLib = await import(commerceLibPath);
     const service = await commerceLib.init(() => ({
       env,
       commerce,
@@ -376,8 +413,9 @@ export async function getCommerceContext(el, params) {
 }
 
 /**
- * Checkout parameter can be set Merch link, code config (scripts.js) or be a default from tacocat.
- * To get the default, 'undefinded' should be passed, empty string will trigger an error!
+ * Checkout parameter can be set on the merch link,
+ * code config (scripts.js) or be a default from tacocat.
+ * To get the default, 'undefined' should be passed, empty string will trigger an error!
  *
  * clientId - code config -> default (adobe_com)
  * workflow - merch link -> metadata -> default (UCv3)
