@@ -198,6 +198,7 @@ describe('global navigation', () => {
         const toggle = document.querySelector(selectors.mainNavToggle);
         // Clicking the toggle will load the search logic
         toggle.click();
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
         await clock.runAllAsync();
         // Expect the search input to be visible; focus on it and type
         const searchField = document.querySelector(selectors.searchField);
@@ -516,7 +517,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://www.stage.adobe.com/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
 
@@ -526,7 +527,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://www.stage.adobe.com/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
 

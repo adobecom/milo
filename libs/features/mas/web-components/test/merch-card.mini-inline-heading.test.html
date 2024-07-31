@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Merch Card Web Component demo page</title>
+    <script>
+        window.process = {
+            env: {},
+        };
+    </script>
+    <style>
+        main {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+        .action-area {
+            display: contents;
+        }
+
+        main>div {
+            display: initial;
+        }
+
+        #sidenav {
+            display: none;
+        }
+
+        @media screen and (min-width: 1440px) {
+            #sidenav {
+                flex: 1;
+                justify-content: stretch;
+                padding-top: 8px;
+                display: flex;
+                position: fixed;
+                bottom: 0px;
+                left: 0px;
+                gap: 20px;
+                flex-direction: column;
+                width: 220px;
+            }
+        }
+
+        #firstcards {
+            background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(140, 43, 95, 0.4430147058823529) 35%, rgba(0, 212, 255, 1) 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module" src="./merch-card.mini-inline-heading.test.html.js"></script>
+    <main>
+        <div id="sidenav">
+            <button onclick="skipTests()">Skip tests</button>
+            <button onclick="runTests()">Run tests</button>
+        </div>
+        <div class="three-merch-cards inline-heading" style="background: rgb(245, 245, 245);" daa-lh="s2">
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b1|merch-card">
+                <h3 id="adobe-genstudio" class="card-heading" slot="heading-xs"><a href="/products/genstudio" daa-ll="Adobe GenStudio-1--Adobe GenStudio">Adobe GenStudio</a></h3>
+                <div slot="body-xs">
+                    <p>
+                        <a href="https://milo.adobe.com/" class="image-link" daa-ll="-2--Adobe GenStudio"></a>
+                    </p>
+                    <p>A generative AI-first product that lets marketing teams quickly plan, create, manage, activate
+                        across apps and publishers, and measure on-brand content.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/genstudio" class="con-button blue" daa-ll="Learn more-3--Adobe GenStudio">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt="Image"></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b2|merch-card">
+                <h3 id="experience-manager-sites" class="card-heading" slot="heading-xs"><a href="/products/experience-manager/sites/aem-sites" daa-ll="Experience Manager Sites-1--Experience Manager Sites">Experience Manager Sites</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>A marketer and developer-friendly content management system (CMS) built to deliver personalized
+                        experiences to any audience on any channel.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/experience-manager/sites/aem-sites" class="con-button blue" daa-ll="Learn more-2--Experience Manager Sites">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b3|merch-card">
+                <h3 id="experience-manager-assets" class="card-heading" slot="heading-xs"><a href="/products/experience-manager/assets/aem-assets" daa-ll="Experience Manager Assets-1--Experience Manager Assets">Experience Manager Assets</a>
+                </h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>A cloud-native DAM built for today’s content needs, letting you easily manage thousands of assets
+                        to create, deliver, and optimize personalized experiences at scale.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/experience-manager/assets/aem-assets" class="con-button blue" daa-ll="Learn more-2--Experience Manager Assets">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b4|merch-card">
+                <h3 id="real-time-cdp" class="card-heading" slot="heading-xs"><a href="/products/real-time-customer-data-platform/rtcdp" daa-ll="Real Time CDP-1--Real Time CDP">Real-Time CDP</a></h3>
+                <div slot="body-xs">
+                    <p>
+                        <a href="https://business.adobe.com/products/real-time-customer-data-platform/rtcdp.html" class="image-link" target="_blank" daa-ll="-2--Real Time CDP"></a>
+                    </p>
+                    <p>Our real-time customer data platform collects B2C and B2B data from across systems and unifies it
+                        into real-time profiles ready for activation across any channel.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/real-time-customer-data-platform/rtcdp" class="con-button blue" daa-ll="Learn more-3--Real Time CDP">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt="Learn more"></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b5|merch-card">
+                <h3 id="journey-optimizer" class="card-heading" slot="heading-xs"><a href="/products/journey-optimizer/adobe-journey-optimizer" daa-ll="Journey Optimizer-1--Journey Optimizer">Journey Optimizer</a></h3>
+                <div slot="body-xs">
+                    <p>
+                        <a href="https://milo.adobe.com/" class="image-link" daa-ll="-2--Journey Optimizer"></a>
+                    </p>
+                    <p>Orchestrate real-time customer journeys to engage with customers in meaningful ways across the
+                        complete customer lifecycle.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/journey-optimizer/adobe-journey-optimizer" class="con-button blue" daa-ll="Learn more-3--Journey Optimizer">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt="Image"></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b6|merch-card">
+                <h3 id="journey-optimizer---b2b-edition--coming-soon" class="card-heading" slot="heading-xs"><a href="/products/journey-optimizer-b2b-edition" daa-ll="Journey Optimizer B2B Edition Coming Soon-1--Journey Optimizer B2B Edition Coming Soon">Journey
+                        Optimizer - B2B Edition : Coming Soon</a></h3>
+                <div slot="body-xs">
+                    <p>
+                        <a href="https://business.adobe.com/products/real-time-customer-data-platform/rtcdp.html" class="image-link" target="_blank" daa-ll="-2--Journey Optimizer B2B Edition Coming Soon"></a>
+                    </p>
+                    <p>Marketing and sales teams can collaborate to engage buying groups within target accounts using
+                        personalized, AI-powered content and journeys — driving demand with higher precision.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/journey-optimizer-b2b-edition" class="con-button blue" daa-ll="Learn more-3--Journey Optimizer B2B Edition Coming Soon">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt="Learn more"></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b7|merch-card">
+                <h3 id="customer-journey-analytics" class="card-heading" slot="heading-xs"><a href="/products/customer-journey-analytics/adobe-customer-journey-analytics" daa-ll="Customer Journey Analytics-1--Customer Journey Analytics">Customer Journey Analytics</a>
+                </h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Connect every customer touchpoint and visually explore journeys in real time to give teams the
+                        insights they need to build incredible customer experiences at scale.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/customer-journey-analytics/adobe-customer-journey-analytics" class="con-button blue" daa-ll="Learn more-2--Customer Journey Analytics">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b8|merch-card">
+                <h3 id="product-analytics" class="card-heading" slot="heading-xs"><a href="/products/product-analytics/adobe-product-analytics" daa-ll="Product Analytics-1--Product Analytics">Product Analytics</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Optimize products in the context of the complete customer experience. Product teams can now
+                        uncover hidden insights quickly to deliver personalized experiences using unified data and
+                        customer profiles.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/product-analytics/adobe-product-analytics" class="con-button blue" daa-ll="Learn more-2--Product Analytics">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b9|merch-card">
+                <h3 id="analytics" class="card-heading" slot="heading-xs"><a href="/products/analytics/adobe-analytics" daa-ll="Analytics-1--Analytics">Analytics</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Mix, match, and analyze data from any digital point in the customer journey. With in-depth
+                        analysis, versatile reporting, and predictive intelligence, get the insightful foundation needed
+                        to build better customer experiences.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/analytics/adobe-analytics" class="con-button blue" daa-ll="Learn more-2--Analytics">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b10|merch-card">
+                <h3 id="mix-modeler" class="card-heading" slot="heading-xs"><a href="/products/experience-platform/planning-and-measurement" daa-ll="Mix Modeler-1--Mix Modeler">Mix Modeler</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Get marketing budget clarity with advanced AI. Measure the impact of every dollar spent on
+                        marketing and advertising using AI — so you can plan, budget, and gauge your growing success.
+                    </p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/experience-platform/planning-and-measurement" class="con-button blue" daa-ll="Learn more-2--Mix Modeler">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b11|merch-card">
+                <h3 id="marketo-engage" class="card-heading" slot="heading-xs"><a href="/products/marketo/adobe-marketo" daa-ll="Marketo Engage-1--Marketo Engage">Marketo Engage</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>The complete toolkit to deliver winning lead and account-based marketing automation, from
+                        acquisition to advocacy.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/marketo/adobe-marketo" class="con-button blue" daa-ll="Learn more-2--Marketo Engage">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b12|merch-card">
+                <h3 id="workfront" class="card-heading" slot="heading-xs"><a href="/products/workfront/main" daa-ll="Workfront-1--Workfront">Workfront</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Connect, collaborate, and simplify workflows using Workfront to launch campaigns and deliver
+                        personalized experiences at scale.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/workfront/main" class="con-button blue" daa-ll="Learn more-2--Workfront">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b13|merch-card">
+                <h3 id="commerce" class="card-heading" slot="heading-xs"><a href="/products/magento/magento-commerce" daa-ll="Commerce-1--Commerce">Commerce</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Ecommerce that uses artificial intelligence (AI) and advanced data sharing to create end-to-end
+                        personalized B2C and B2B commerce experiences from a single platform that is flexible,
+                        extensible, and scalable.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/magento/magento-commerce" class="con-button blue" daa-ll="Learn more-2--Commerce">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b14|merch-card">
+                <h3 id="campaign" class="card-heading" slot="heading-xs"><a href="/products/campaign/adobe-campaign" daa-ll="Campaign-1--Campaign">Campaign</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Manage email marketing and cross-channel campaigns to engage with customers at scale.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/campaign/adobe-campaign" class="con-button blue" daa-ll="Learn more-2--Campaign">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b15|merch-card">
+                <h3 id="target" class="card-heading" slot="heading-xs"><a href="/products/target/adobe-target" daa-ll="Target-1--Target">Target</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>AI-powered testing, personalization, and automation help you understand what customers want and
+                        deliver those experiences at scale.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/target/adobe-target" class="con-button blue" daa-ll="Learn more-2--Target">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b16|merch-card">
+                <h3 id="experience-manager-forms" class="card-heading" slot="heading-xs"><a href="/products/experience-manager/forms/aem-forms" daa-ll="Experience Manager Forms-1--Experience Manager Forms">Experience Manager Forms</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Build end-to-end digital enrollment and onboarding journeys that deliver a personal touch to
+                        millions of customers with Experience Manager Forms.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/experience-manager/forms/aem-forms" class="con-button blue" daa-ll="Learn more-2--Experience Manager Forms">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b17|merch-card">
+                <h3 id="experience-manager-guides" class="card-heading" slot="heading-xs"><a href="/products/experience-manager/guides/aem-guides" daa-ll="Experience Manager Guides-1--Experience Manager Guides">Experience Manager Guides</a>
+                </h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Scale content creation, manage it efficiently, and publish faster with a cloud-native component
+                        content management system (CCMS) that empowers you to deliver consistent, engaging experiences.
+                    </p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/experience-manager/guides/aem-guides" class="con-button blue" daa-ll="Learn more-2--Experience Manager Guides">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b18|merch-card">
+                <h3 id="experience-manager-screens" class="card-heading" slot="heading-xs"><a href="/products/experience-manager/screens" daa-ll="Experience Manager Screens-1--Experience Manager Screens">Experience Manager Screens</a>
+                </h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Seamlessly connect online and in-venue experiences with our digital signage capability built on
+                        the industry’s best content and experience management platform.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/experience-manager/screens" class="con-button blue" daa-ll="Learn more-2--Experience Manager Screens">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b19|merch-card">
+                <h3 id="advertising" class="card-heading" slot="heading-xs"><a href="/products/advertising/adobe-advertising-cloud" daa-ll="Advertising-1--Advertising">Advertising</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Bring together all your media strategies, search marketing, TV advertising, and creative
+                        management.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/advertising/adobe-advertising-cloud" class="con-button blue" daa-ll="Learn more-2--Advertising">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b20|merch-card">
+                <h3 id="audience-manager" class="card-heading" slot="heading-xs"><a href="/products/audience-manager/adobe-audience-manager" daa-ll="Audience Manager-1--Audience Manager">Audience Manager</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Segment audiences and uncover insights to take action in real time with our data management
+                        platform.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/audience-manager/adobe-audience-manager" class="con-button blue" daa-ll="Learn more-2--Audience Manager">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+            <merch-card class="merch-card inline-heading" variant="inline-heading" size="" filters="all" types="" tabindex="0" daa-lh="b21|merch-card">
+                <h3 id="learning-manager" class="card-heading" slot="heading-xs"><a href="/products/learning-manager/adobe-learning-manager" daa-ll="Learning Manager-1--Learning Manager">Learning Manager</a></h3>
+                <div slot="body-xs">
+                    <p>
+
+                    </p>
+                    <p>Easily create on-brand learning experiences that make learning fun. Engage customers. Increase
+                        sales. Develop employee skills.</p>
+                </div>
+                <p class="action-area" slot="footer"><a href="/products/learning-manager/adobe-learning-manager" class="con-button blue" daa-ll="Learn more-2--Learning Manager">Learn more</a></p><merch-icon slot="icons" src="https://main--bacom--adobecom.hlx.page/products/media_10eea98de1a0e4e1360638ca4134fdced23abc016.png?width=750&amp;format=png&amp;optimize=medium" alt=""></merch-icon>
+            </merch-card>
+        </div>
+    </main>
+</body>
+
+</html>

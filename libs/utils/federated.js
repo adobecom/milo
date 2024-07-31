@@ -10,19 +10,17 @@ export const getFederatedContentRoot = () => {
     'https://milo.adobe.com',
     'https://news.adobe.com',
   ];
-  const { allowedOrigins = [] } = getConfig();
+  const { allowedOrigins = [], origin: configOrigin } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
+  // Non milo consumers will have its origin from congig
+  const origin = configOrigin || window.location.origin;
 
-  const { origin } = window.location;
   federatedContentRoot = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => origin.replace('.stage', '') === o)
     ? origin
     : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    // Akamai as proxy to avoid 401s, given AEM-EDS MS auth cross project limitations
-    federatedContentRoot = origin.includes('.hlx.live')
-      ? 'https://main--federal--adobecom.hlx.live'
-      : 'https://www.stage.adobe.com';
+    federatedContentRoot = `https://main--federal--adobecom.hlx.${origin.endsWith('.live') ? 'live' : 'page'}`;
   }
 
   return federatedContentRoot;

@@ -1,5 +1,5 @@
-import '../../deps/merch-mnemonic-list.js';
-import '../../deps/merch-card.js';
+import '../../deps/mas/merch-mnemonic-list.js';
+import '../../deps/mas/merch-card.js';
 import { createTag } from '../../utils/utils.js';
 
 const init = async (el) => {
