@@ -493,7 +493,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
 export default function init(el) {
   el.setAttribute('role', 'table');
-
   if (el.parentElement.classList.contains('section')) {
     el.parentElement.classList.add(`table-${el.classList.contains('merch') ? 'merch-' : ''}section`);
   }
@@ -561,5 +560,6 @@ export default function init(el) {
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {
     handleTable();
   }, true);
+
   tableIndex++;
 }
