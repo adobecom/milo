@@ -379,14 +379,18 @@ export class MerchCard extends LitElement {
                   `}`;
     }
 
+    get promoBottom() {
+      return this.classList.contains('promo-bottom');
+  }
+
     renderSegment() {
         return html` ${this.badge}
             <div class="body">
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="callout-content"></slot>
+                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
                 <slot name="body-xs"></slot>
+                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
             </div>
             <hr />
             ${this.secureLabelFooter}`;
@@ -399,17 +403,13 @@ export class MerchCard extends LitElement {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="callout-content"></slot>
+                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}
                 <slot name="body-xs"></slot>
+                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}  
                 ${this.stockCheckbox}
             </div>
             <slot name="quantity-select"></slot>
             ${this.secureLabelFooter}`;
-    }
-
-    get promoBottom() {
-        return this.classList.contains('promo-bottom');
     }
 
     renderCatalog() {
@@ -453,8 +453,7 @@ export class MerchCard extends LitElement {
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="body-xs"></slot>
+                ${this.promoBottom ? html`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
             </div>
             ${this.evergreen
                 ? html`
@@ -489,9 +488,9 @@ export class MerchCard extends LitElement {
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="callout-content"></slot>
+                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
                 <slot name="body-xs"></slot>
+                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
             </div>
             ${this.secureLabelFooter}`;
     }
@@ -540,8 +539,7 @@ export class MerchCard extends LitElement {
             <slot name="icons"></slot> ${this.badge}
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
-            <slot name="promo-text"></slot>
-            <slot name="body-xs"></slot>
+            ${this.promoBottom ? html`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
             <footer><slot name="footer"></slot></footer>
             ${this.defaultSlot}
         </div>`;
