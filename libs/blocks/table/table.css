@@ -12,6 +12,10 @@
   border-color: var(--border-color);
 }
 
+.section[class *= "grid-width-"] .table {
+  width: 100%;
+}
+
 .table a:not([class*="button"]) {
   display: inline-block;
 }
@@ -540,6 +544,10 @@ header.global-navigation {
   .table,
   .table.merch {
     margin: 0 30px;
+  }
+
+  .section[class *= "grid-width-"] .table {
+    margin: 0;
   }
 
   .table:not(.merch) .row .section-head-title,
