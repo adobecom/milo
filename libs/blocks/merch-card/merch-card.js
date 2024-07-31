@@ -222,7 +222,7 @@ const parseContent = async (el, merchCard) => {
         const emElement = element.firstElementChild;
         let imgElement = null;
         const fragment = document.createDocumentFragment();
-  
+
         emElement.childNodes.forEach((child) => {
           if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
             const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
@@ -236,14 +236,14 @@ const parseContent = async (el, merchCard) => {
             fragment.appendChild(clone);
           }
         });
-  
+
         calloutContent.appendChild(fragment);
         calloutContentWrapper.appendChild(calloutContent);
-  
+
         if (imgElement) {
           calloutContentWrapper.appendChild(imgElement);
         }
-  
+
         calloutContainer.appendChild(calloutContentWrapper);
         return;
       }
