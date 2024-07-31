@@ -200,7 +200,7 @@ const loadMartechFiles = async (config) => {
     setDeep(
       window,
       'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
-      { locale: config.locale.prefix.replace('/', ''), langCode: config.locale.ietf },
+      config.locale.ietf,
     );
     setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
 
