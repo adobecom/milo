@@ -9,6 +9,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/test/features/personalization/mocks/fragments/insertbefore",
+      "target-var1": "/test/features/personalization/mocks/fragments/insertbefore",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -19,6 +20,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/test/features/personalization/mocks/fragments/insertbeforefragment",
+      "target-var1": "/test/features/personalization/mocks/fragments/insertbeforefragment",
       "firefox": "",
       "android": "",
       "ios": ""

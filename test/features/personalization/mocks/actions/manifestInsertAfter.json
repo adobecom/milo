@@ -9,6 +9,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/test/features/personalization/mocks/fragments/insertafter",
+      "target-var1": "/test/features/personalization/mocks/fragments/insertafter",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -19,6 +20,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/test/features/personalization/mocks/fragments/insertafterfragment",
+      "target-var1": "/test/features/personalization/mocks/fragments/insertafterfragment",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -29,6 +31,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/test/features/personalization/mocks/fragments/insertafterfragment",
+      "target-var1": "/test/features/personalization/mocks/fragments/insertafterfragment",
       "firefox": "",
       "android": "",
       "ios": ""

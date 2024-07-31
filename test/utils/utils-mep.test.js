@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { combineMepSources, getMepEnablement } from '../../libs/utils/utils.js';
+import { getMepEnablement } from '../../libs/utils/utils.js';
+import { combineMepSources } from '../../libs/features/personalization/personalization.js';
 
 describe('MEP Utils', () => {
   describe('combineMepSources', async () => {

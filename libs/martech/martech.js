@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
@@ -46,16 +45,6 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
   window.addEventListener(eventName, listener, { once: true });
   window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
 });
-
-const getExpFromParam = (expParam) => {
-  const lastSlash = expParam.lastIndexOf('/');
-  return {
-    experiments: [{
-      experimentPath: expParam.substring(0, lastSlash),
-      variantLabel: expParam.substring(lastSlash + 1),
-    }],
-  };
-};
 
 const handleAlloyResponse = (response) => {
   const items = (
@@ -116,11 +105,8 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   });
 }
 
-const getTargetPersonalization = async () => {
+export const getTargetPersonalization = async () => {
   const params = new URL(window.location.href).searchParams;
-
-  const experimentParam = params.get('experiment');
-  if (experimentParam) return getExpFromParam(experimentParam);
 
   const timeout = parseInt(params.get('target-timeout'), 10)
     || parseInt(getMetadata('target-timeout'), 10)
@@ -249,7 +235,7 @@ const loadMartechFiles = async (config) => {
         ? '/marketingtech/main.standard.min.js'
         : '/marketingtech/main.standard.qa.min.js'
     ));
-
+    // eslint-disable-next-line no-underscore-dangle
     window._satellite.track('pageload');
   };
 
@@ -257,30 +243,8 @@ const loadMartechFiles = async (config) => {
   return filesLoadedPromise;
 };
 
-export default async function init({
-  persEnabled = false,
-  persManifests = [],
-  postLCP = false,
-}) {
+export default async function init() {
   const config = getConfig();
   const martechPromise = loadMartechFiles(config);
-
-  if (persEnabled) {
-    loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    if (targetManifests?.length || persManifests?.length) {
-      const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-      const manifests = preloadManifests({ targetManifests, persManifests });
-      await applyPers(manifests, postLCP);
-      if (targetPropositions?.length && window._satellite) {
-        window._satellite.track('propositionDisplay', targetPropositions);
-      }
-    }
-  }
-
   return martechPromise;
 }

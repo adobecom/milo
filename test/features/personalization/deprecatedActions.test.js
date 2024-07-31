@@ -3,8 +3,9 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { applyPers, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import { init, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
 import spoofParams from './spoofParams.js';
+import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -38,7 +39,7 @@ describe('Functional Test', () => {
     expect(document.querySelector('.how-to')).to.not.be.null;
     const parentEl = document.querySelector('#features-of-milo-experimentation-platform')?.parentElement;
 
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
     expect(document.querySelector('#features-of-milo-experimentation-platform')).to.be.null;
     expect(parentEl.firstElementChild.firstElementChild.href)
       .to.equal('http://localhost:2000/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2');
@@ -52,7 +53,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('.z-pattern')).to.not.be.null;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
     expect(document.querySelector('.z-pattern')).to.be.null;
   });
 
@@ -62,7 +63,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
 
     const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter"]');
     expect(fragment).to.not.be.null;
@@ -77,7 +78,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
 
     const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertbefore"]');
     expect(fragment).to.not.be.null;
@@ -94,7 +95,7 @@ describe('Functional Test', () => {
 
     expect(document.querySelector('a[href="/fragments/replaceme"]')).to.exist;
     expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.exist;
-    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    await init(mepSettings);
 
     const fragmentResp = await readFile({ path: './mocks/fragments/fragmentReplaced.plain.html' });
     const inlineFragmentResp = await readFile({ path: './mocks/fragments/inlineFragReplaced.plain.html' });
@@ -126,7 +127,7 @@ describe('Functional Test', () => {
       setFetchResponse(manifestJson);
 
       expect(document.querySelector('.z-pattern')).to.not.be.null;
-      await applyPers([{ manifestPath: '/mocks/manifestRemove.json' }]);
+      await init(mepSettings);
       expect(document.querySelector('.z-pattern')).to.not.be.null;
       expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
 

@@ -2,7 +2,8 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig } from '../../../libs/utils/utils.js';
-import { applyPers } from '../../../libs/features/personalization/personalization.js';
+import { init } from '../../../libs/features/personalization/personalization.js';
+import mepSettings from './mepSettings.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
@@ -35,7 +36,7 @@ it('pageFilter should exclude page if it is not a match', async () => {
   expect(document.querySelector('.marquee')).to.not.be.null;
   expect(document.querySelector('.newpage')).to.be.null;
 
-  await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+  await init(mepSettings);
 
   // Nothing should be changed since the pageFilter excludes this page
   expect(document.querySelector('.marquee')).to.not.be.null;
@@ -71,7 +72,7 @@ it('pageFilter should include page if it is a match', async () => {
   expect(document.querySelector('.marquee')).to.not.be.null;
   expect(document.querySelector('.newpage')).to.be.null;
 
-  await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+  await init(mepSettings);
 
   expect(document.querySelector('.marquee')).to.be.null;
   expect(document.querySelector('.newpage')).to.not.be.null;

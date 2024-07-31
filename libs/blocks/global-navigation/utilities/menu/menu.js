@@ -11,7 +11,7 @@ import {
   toFragment,
   trigger,
   yieldToMain,
-  addMepHighlight,
+  addMepHighlightAndTargetId,
 } from '../utilities.js';
 
 const decorateHeadline = (elem, index) => {
@@ -317,7 +317,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
           ${menuContent}
         </div>
       </div>`;
-    addMepHighlight(menuTemplate, content);
+    addMepHighlightAndTargetId(menuTemplate, content);
 
     decorateCrossCloudMenu(menuTemplate);
 
