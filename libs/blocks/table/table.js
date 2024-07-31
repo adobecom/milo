@@ -5,7 +5,7 @@ import { decorateButtons } from '../../utils/decorate.js';
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
-
+let tableIndex = 0;
 function defineDeviceByScreenSize() {
   const screenWidth = window.innerWidth;
   if (screenWidth >= DESKTOP_SIZE) {
@@ -41,7 +41,6 @@ function handleHeading(table, headingCols) {
         if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
       }
       elements[textStartIndex]?.classList.add('tracking-header');
-
       const pricingElem = elements[textStartIndex + 1];
       let bodyElem = elements[textStartIndex + 2];
 
@@ -55,7 +54,6 @@ function handleHeading(table, headingCols) {
           bodyElem = elements[textStartIndex + 1];
         }
       }
-
       if (bodyElem) {
         bodyElem.classList.add('body');
       }
@@ -86,12 +84,11 @@ function handleHeading(table, headingCols) {
     const nodeToApplyRoleScope = trackingHeader ?? col;
 
     if (trackingHeader) {
-      const trackingHeaderID = `c${col.dataset.colIndex}-${trackingHeader.innerText.replace(/^\s+|\s+$/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-')
-        .replace(/-+/g, '-') || ''}`;
+      const trackingHeaderID = `t${tableIndex + 1}-c${i + 1}-header`;
 
       trackingHeader.setAttribute('id', trackingHeaderID);
-      if (headerBody) headerBody.setAttribute('id', `${trackingHeader.id}-body`);
-      if (headerPricing) headerPricing.setAttribute('id', `${trackingHeader.id}-pricing`);
+      if (headerBody) headerBody.setAttribute('id', `${trackingHeaderID}-body`);
+      if (headerPricing) headerPricing.setAttribute('id', `${trackingHeaderID}-pricing`);
       trackingHeader.setAttribute('aria-describedby', `${headerBody?.id ?? ''} ${headerPricing?.id ?? ''}`);
 
       col.removeAttribute('role');
@@ -493,6 +490,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
 export default function init(el) {
   el.setAttribute('role', 'table');
+
   if (el.parentElement.classList.contains('section')) {
     el.parentElement.classList.add(`table-${el.classList.contains('merch') ? 'merch-' : ''}section`);
   }
@@ -521,9 +519,6 @@ export default function init(el) {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
       col.setAttribute('role', 'cell');
-      // if (col.innerHTML) {
-      //   col.tabIndex = 0;
-      // }
     });
 
     expandSection = handleSection(sectionParams);
@@ -563,4 +558,5 @@ export default function init(el) {
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {
     handleTable();
   }, true);
+  tableIndex++;
 }
