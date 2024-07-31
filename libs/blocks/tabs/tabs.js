@@ -72,9 +72,7 @@ function configTabs(config, rootElem) {
   if (!tabParam) return;
   const dashIndex = tabParam.lastIndexOf('-');
   const [tabsId, tabIndex] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
-  if (tabsId === config.id || (!tabsId && document.querySelector('.tabs').id === `tabs-${config.id}`)) {
-    rootElem.querySelector(`#tab-${config.id}-${tabIndex}`)?.click();
-  }
+  if (tabsId === config.id) rootElem.querySelector(`#tab-${config.id}-${tabIndex}`)?.click();
 }
 
 function initTabs(elm, config, rootElem) {
