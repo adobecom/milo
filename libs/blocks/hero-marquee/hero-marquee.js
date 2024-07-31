@@ -13,6 +13,9 @@ const rowTypeKeyword = 'con-block-row-';
 const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
 const textDefault = ['xxl', 'm', 'l']; // heading, body, detail
 
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
+
 function distillClasses(el, classes) {
   const taps = ['-heading', '-body', '-detail', '-button'];
   classes?.forEach((elClass) => {
@@ -49,10 +52,31 @@ function decorateQr(el) {
   });
 }
 
-function decorateLockupFromContent(el) {
+async function loadIconography() {
+  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+}
+
+async function decorateLockupFromContent(el) {
   const rows = el.querySelectorAll(':scope > p');
   const firstRowImg = rows[0]?.querySelector('img');
-  if (firstRowImg) rows[0].classList.add('lockup-area');
+  if (!firstRowImg) return;
+  await loadIconography();
+  rows[0].classList.add('lockup-area');
+  rows[0].childNodes.forEach((node) => {
+    if (node.nodeType === 3 && node.nodeValue !== ' ') {
+      const newSpan = createTag('span', { class: 'lockup-label' }, node.nodeValue);
+      node.parentElement.replaceChild(newSpan, node);
+    }
+  });
+}
+
+function decorateLockupRow(el, classes) {
+  const child = el.querySelector(':scope > div');
+  if (child) child.classList.add('lockup-area');
+  const iconSizeClass = classes?.find((c) => c.endsWith('-icon'));
+  if (iconSizeClass) el.classList.remove(iconSizeClass);
+  const lockupSize = iconSizeClass ? `${iconSizeClass.split('-')[0]}-lockup` : 'l-lockup';
+  el.classList.add(lockupSize);
 }
 
 function decorateBg(el) {
@@ -73,11 +97,6 @@ function decorateText(el, classes) {
   }
   decorateBlockText(el, textDefault);
   decorateTextOverrides(el, ['-heading', '-body', '-detail']);
-}
-
-function decorateLockupRow(el) {
-  const child = el.querySelector(':scope > div');
-  if (child) child.classList.add('lockup-area');
 }
 
 function decorateSup(el, classes) {
@@ -109,7 +128,7 @@ function loadContentType(el, key, classes) {
       decorateBg(el);
       break;
     case 'lockup':
-      decorateLockupRow(el);
+      decorateLockupRow(el, classes);
       break;
     case 'qrcode':
       decorateQr(el);
@@ -128,8 +147,7 @@ function loadContentType(el, key, classes) {
 }
 
 function loadBreakpointThemes() {
-  const { miloLibs, codeRoot } = getConfig();
-  loadStyle(`${miloLibs || codeRoot}/styles/breakpoint-theme.css`);
+  loadStyle(`${base}/styles/breakpoint-theme.css`);
 }
 
 export default async function init(el) {
@@ -178,7 +196,7 @@ export default async function init(el) {
   if (assetUnknown) assetUnknown.classList.add('asset-unknown');
 
   decorateBlockText(copy, textDefault); // heading, body, detail
-  decorateLockupFromContent(copy);
+  await decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
   /* c8 ignore next 2 */
