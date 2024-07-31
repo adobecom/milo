@@ -79,7 +79,7 @@
 }
 
 .editorial-card .foreground,
-.editorial-card .footer {
+.editorial-card .card-footer {
   padding: var(--spacing-xs);
 }
 
@@ -87,12 +87,12 @@
   padding: 0 var(--spacing-xs);
 }
 
-.editorial-card .footer {
+.editorial-card .card-footer {
   padding-top: 0;
   margin-top: auto;
 }
 
-.editorial-card .footer > div {
+.editorial-card .card-footer > div {
   display: flex;
   flex-direction: column;
   text-align: end;
@@ -100,7 +100,7 @@
   row-gap: var(--spacing-xxs);
 }
 
-.editorial-card .footer.empty { padding: 0; }
+.editorial-card .card-footer.empty { padding: 0; }
 
 .editorial-card.no-bg.no-border .foreground {
   padding: var(--spacing-s) 0;
@@ -111,7 +111,7 @@
 }
 
 .editorial-card.no-bg.no-border .static,
-.editorial-card.no-bg.no-border .footer {
+.editorial-card.no-bg.no-border .card-footer {
   padding-inline: 0;
 }
 
@@ -129,8 +129,8 @@
   line-height: 0;
 }
 
-.editorial-card.footer-align-left .footer > div { text-align: start; }
-.editorial-card.footer-align-center .footer > div { text-align: center; }
+.editorial-card.footer-align-left .card-footer > div { text-align: start; }
+.editorial-card.footer-align-center .card-footer > div { text-align: center; }
 
 .editorial-card.no-bg.no-border .foreground > div { 
   row-gap: var(--spacing-xs);
@@ -156,7 +156,7 @@
 }
 
 .editorial-card .action-area, 
-.editorial-card .footer > .action-area {
+.editorial-card .card-footer > .action-area {
   display: flex;
   align-items: center;
   justify-content: right;
@@ -203,6 +203,12 @@
   position: relative;
 }
 
+
+.editorial-card:is(.media-square, .media-wide, .media-standard, .media-tall) .media-area .milo-video {
+  height: auto;
+  padding: 0;
+}
+
 /* Aspect Ratio */
 .editorial-card.media-square .media-area img,
 .editorial-card.media-square .media-area video {
@@ -227,11 +233,6 @@
 .editorial-card.media-tall .media-area .milo-video {
   aspect-ratio: var(--aspect-ratio-tall);
   max-height: unset;
-}
-
-.editorial-card:is(.media-square, .media-wide, .media-standard, .media-tall) .media-area .milo-video {
-  height: auto;
-  padding: 0;
 }
 
 /* Media Height */
