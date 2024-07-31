@@ -998,6 +998,21 @@ export function scrollToHashedElement(hash) {
   });
 }
 
+function logPagePerf() {
+  const isChrome = () => {
+    const nav = window.navigator;
+    return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
+  };
+
+  if (getMetadata('pageperf') === 'on' && isChrome()) {
+    const sampleRate = parseInt(getMetadata('pageperf-rate'), 10) || 50;
+    if (Math.random() * 100 <= sampleRate) {
+      import('./logWebVitals.js')
+        .then((mod) => mod.default(getConfig().mep, getMetadata('pageperf-delay') || 1000));
+    }
+  }
+}
+
 export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
@@ -1025,6 +1040,8 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
+
+  logPagePerf();
 }
 
 function initSidekick() {
