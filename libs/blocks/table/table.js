@@ -79,17 +79,20 @@ function handleHeading(table, headingCols) {
       col.append(row1, row2);
     }
     const trackingHeader = col.querySelector('.tracking-header');
-    const headerPricing = col.querySelector('.pricing');
-    const headerBody = col.querySelector('.body:not(.action-area)');
     const nodeToApplyRoleScope = trackingHeader ?? col;
 
     if (trackingHeader) {
       const trackingHeaderID = `t${tableIndex + 1}-c${i + 1}-header`;
-
       trackingHeader.setAttribute('id', trackingHeaderID);
+
+      const headerBody = col.querySelector('.body:not(.action-area)');
       if (headerBody) headerBody.setAttribute('id', `${trackingHeaderID}-body`);
+
+      const headerPricing = col.querySelector('.pricing');
       if (headerPricing) headerPricing.setAttribute('id', `${trackingHeaderID}-pricing`);
-      trackingHeader.setAttribute('aria-describedby', `${headerBody?.id ?? ''} ${headerPricing?.id ?? ''}`);
+
+      const describedBy = `${headerBody?.id ?? ''} ${headerPricing?.id ?? ''}`.trim();
+      trackingHeader.setAttribute('aria-describedby', describedBy);
 
       col.removeAttribute('role');
     }
