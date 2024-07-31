@@ -37,7 +37,6 @@ export default async function loadBlock(configs, customLib) {
   const { header, footer, authoringPath, env = 'prod', locale = '' } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
-
   if (!header && !footer) {
     console.error('No block configs found!');
     return;
