@@ -210,36 +210,43 @@ const parseContent = async (el, merchCard) => {
       }
       return;
     }
-    if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
-      const calloutContentWrapper = createTag('div');
-      const calloutContent = createTag('div');
-      const emElement = element.firstElementChild;
-      let imgElement = null;
-      const fragment = document.createDocumentFragment();
-
-      emElement.childNodes.forEach((child) => {
-        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
-          const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
-          imgElement = createTag('img', {
-            src: imgSrc,
-            title: decodeURIComponent(tooltipText),
-            class: 'callout-icon',
-          });
-        } else {
-          const clone = child.cloneNode(true);
-          fragment.appendChild(clone);
+    if (tagName === 'H6') {
+      if (element.firstChild.nodeType === Node.TEXT_NODE) {
+        const paymentDetails = createTag('div', { slot: 'payment-details' });
+        paymentDetails.innerHTML = element.innerHTML;
+        const headingM = merchCard.querySelector('h4[slot="heading-m"]');
+        headingM?.append(paymentDetails);
+      } else if (element.firstElementChild?.tagName === 'EM') {
+        const calloutContentWrapper = createTag('div');
+        const calloutContent = createTag('div');
+        const emElement = element.firstElementChild;
+        let imgElement = null;
+        const fragment = document.createDocumentFragment();
+  
+        emElement.childNodes.forEach((child) => {
+          if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
+            const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
+            imgElement = createTag('img', {
+              src: imgSrc,
+              title: decodeURIComponent(tooltipText),
+              class: 'callout-icon',
+            });
+          } else {
+            const clone = child.cloneNode(true);
+            fragment.appendChild(clone);
+          }
+        });
+  
+        calloutContent.appendChild(fragment);
+        calloutContentWrapper.appendChild(calloutContent);
+  
+        if (imgElement) {
+          calloutContentWrapper.appendChild(imgElement);
         }
-      });
-
-      calloutContent.appendChild(fragment);
-      calloutContentWrapper.appendChild(calloutContent);
-
-      if (imgElement) {
-        calloutContentWrapper.appendChild(imgElement);
+  
+        calloutContainer.appendChild(calloutContentWrapper);
+        return;
       }
-
-      calloutContainer.appendChild(calloutContentWrapper);
-      return;
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);

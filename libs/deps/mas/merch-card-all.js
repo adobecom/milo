@@ -133,6 +133,7 @@ var I=window,q=I.ShadowRoot&&(I.ShadyCSS===void 0||I.ShadyCSS.nativeShadow)&&"ad
         height: fit-content;
         flex-direction: column;
         width: fit-content;
+        max-width: 140px;
         border-radius: 5px;
         position: relative;
         top: 0;
@@ -770,6 +771,13 @@ merch-card[variant="catalog"] [slot="action-menu-content"] p {
 merch-card[variant="catalog"] [slot="action-menu-content"] a {
     color: var(--consonant-merch-card-background-color);
     text-decoration: underline;
+}
+
+merch-card[variant="catalog"] [slot="payment-details"] {
+  font-size: var(--consonant-merch-card-body-font-size);
+  font-style: italic;
+  font-weight: 400;
+  line-height: var(--consonant-merch-card-body-line-height);
 }
 
 merch-card[variant="ccd-action"] .price-strikethrough {
@@ -1558,7 +1566,9 @@ body.merch-modal {
                     >${this.actionMenuContent}</slot
                 >
                 <slot name="heading-xs"></slot>
-                <slot name="heading-m"></slot>
+                <slot name="heading-m">
+                    <slot name="payment-details"></slot>
+                </slot>
                 <slot name="body-xxs"></slot>
                 ${this.promoBottom?"":l`<slot name="promo-text"></slot
                           ><slot name="callout-content"></slot>`}

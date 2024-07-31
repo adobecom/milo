@@ -409,7 +409,7 @@ export class MerchCard extends LitElement {
     }
 
     get promoBottom() {
-        return this.classList.contains('promo-bottom');
+      return this.classList.contains('promo-bottom');
     }
 
     renderCatalog() {
@@ -432,7 +432,9 @@ export class MerchCard extends LitElement {
                     >${this.actionMenuContent}</slot
                 >
                 <slot name="heading-xs"></slot>
-                <slot name="heading-m"></slot>
+                <slot name="heading-m">
+                    <slot name="payment-details"></slot>
+                </slot>
                 <slot name="body-xxs"></slot>
                 ${!this.promoBottom
                     ? html`<slot name="promo-text"></slot

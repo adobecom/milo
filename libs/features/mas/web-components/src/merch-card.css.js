@@ -140,6 +140,7 @@ export const styles = css`
         height: fit-content;
         flex-direction: column;
         width: fit-content;
+        max-width: 140px;
         border-radius: 5px;
         position: relative;
         top: 0;
