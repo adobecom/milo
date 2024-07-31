@@ -928,8 +928,8 @@ async function checkForPageMods() {
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = getMepEnablement('target');
-  if (!pzn && !target && !promo && !mepParam && !mepHighlight && !mepButton) return;
-
+  if (!(pzn || target || promo || mepParam
+    || mepHighlight || mepButton || mepParam === '')) return;
   if (target) {
     loadMartech();
   } else if (pzn) {
