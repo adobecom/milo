@@ -380,6 +380,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
       icon.parentElement.classList.add('point-cursor');
       icon.parentElement.addEventListener('click', () => handleExpand(icon));
+      icon.parentElement.setAttribute('tabindex', 0);
       icon.parentElement.addEventListener('keydown', (e) => {
         e.preventDefault();
         if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
