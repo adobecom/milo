@@ -47,7 +47,7 @@ const decorateForeground = async (el, rows) => {
       await decorateLockupFromContent(row);
     } else if (i === (rows.length - 1)) {
       row.classList.add('footer');
-      if (row.textContent.trim() === '') row.classList.add('empty');
+      if (!row.textContent.trim()) row.classList.add('empty');
     } else {
       row.classList.add('extra-row');
     }
