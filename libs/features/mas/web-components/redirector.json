@@ -1,0 +1,66 @@
+{
+    "createdBy": "Redirector v3.5.3",
+    "createdAt": "2023-09-19T09:47:16.033Z",
+    "redirects": [
+        {
+            "description": "Debug commerce web components",
+            "exampleUrl": "https://www.adobe.com/libs/deps/mas/merch-card.js",
+            "exampleResult": "http://localhost:2023/src/merch-card.js",
+            "error": null,
+            "includePattern": "/libs/deps/(merch.*)",
+            "excludePattern": "",
+            "patternDesc": "",
+            "redirectUrl": "http://localhost:2023/src/$1",
+            "patternType": "R",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "grouped": false,
+            "appliesTo": [
+                "stylesheet",
+                "script",
+                "xmlhttprequest",
+                "other"
+            ]
+        },
+        {
+            "description": "Debug commerce web components",
+            "exampleUrl": "https://www.adobe.com/libs/deps/mas/merch-offer-select.js",
+            "exampleResult": "http://localhost:2023/src/merch-offer-select.js",
+            "error": null,
+            "includePattern": "/libs/deps/(merch.*)",
+            "excludePattern": "",
+            "patternDesc": "",
+            "redirectUrl": "http://localhost:2023/src/$1",
+            "patternType": "R",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "grouped": false,
+            "appliesTo": [
+                "stylesheet",
+                "script",
+                "xmlhttprequest",
+                "other"
+            ]
+        },
+        {
+            "description": "Debug commerce web components",
+            "exampleUrl": "https://www.adobe.com/libs/deps/mas/merch-offer.js",
+            "exampleResult": "http://localhost:2023/src/merch-offer.js",
+            "error": null,
+            "includePattern": "/libs/deps/(merch.*)",
+            "excludePattern": "",
+            "patternDesc": "",
+            "redirectUrl": "http://localhost:2023/src/$1",
+            "patternType": "R",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "grouped": false,
+            "appliesTo": [
+                "stylesheet",
+                "script",
+                "xmlhttprequest",
+                "other"
+            ]
+        }
+    ]
+}
