@@ -1,4 +1,4 @@
-import '../../deps/merch-whats-included.js';
+import '../../deps/mas/merch-whats-included.js';
 import { createTag } from '../../utils/utils.js';
 
 const init = async (el) => {
