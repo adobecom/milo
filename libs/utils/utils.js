@@ -734,9 +734,10 @@ async function decoratePlaceholders(area, config) {
     },
   );
   const nodes = [];
-  let node;
-  while ((node = walker.nextNode()) !== null) {
+  let node = walker.nextNode();
+  while (node !== null) {
     nodes.push(node);
+    node = walker.nextNode();
   }
   if (!nodes.length) return;
   const { replaceText } = await import('../features/placeholders.js');
