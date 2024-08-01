@@ -336,7 +336,7 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
-function getSelectedElement({ selector }) {
+function getSelectedElement({ selector, rootEl }) {
   if (!selector) return null;
   const originalSelector = selector;
   if (checkSelectorType(selector) === 'fragment') {
@@ -394,7 +394,9 @@ function getSelectedElement({ selector }) {
       });
     });
     // eslint-disable-next-line no-param-reassign
-    selector = `body ${selector}`;
+    selector = selector.charAt(0) === '<' ? selector.slice(1) : selector;
+    // eslint-disable-next-line no-param-reassign
+    selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
     // TODO: for testing purposes only. Remove when done
     console.log('=====================================');
     console.log('selector: ', originalSelector, ' ==> ', selector);
