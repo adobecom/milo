@@ -157,6 +157,30 @@ describe('appendToSection action', async () => {
   });
 });
 
+describe('update action', () => {
+  it('should update marquee content', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdate.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    const primaryCTA = document.querySelector('.marquee p strong a');
+    const secondaryCTA = document.querySelector('.marquee p a');
+    const header = document.querySelector('.marquee h2');
+
+    expect(header).to.not.equal('updated text');
+    expect(primaryCTA.innerText).to.not.equal('updated text');
+    expect(primaryCTA.href).to.not.equal('updated text');
+    expect(secondaryCTA.innerText).to.not.equal('updated text');
+
+    await init(mepSettings);
+
+    expect(header).to.equal('updated text');
+    expect(primaryCTA.innerText).to.equal('updated text');
+    expect(primaryCTA.href).to.equal('updated text');
+    expect(secondaryCTA.innerText).to.equal('updated text');
+  });
+});
+
 describe('remove action', () => {
   before(async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });

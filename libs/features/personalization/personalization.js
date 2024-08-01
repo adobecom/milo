@@ -288,7 +288,6 @@ function normalizeKeys(obj) {
 
 const querySelector = (el, selector, all = false) => {
   try {
-    console.log(el);
     return all ? el.querySelectorAll(selector) : el.querySelector(selector);
   } catch (e) {
     /* eslint-disable-next-line no-console */
@@ -400,7 +399,7 @@ function getSelectedElement({ selector, rootEl }) {
     // TODO: for testing purposes only. Remove when done
     console.log('=====================================');
     console.log('selector: ', originalSelector, ' ==> ', selector);
-    console.log('element: ', querySelector(document, selector));
+    // console.log('element: ', querySelector(document, selector));
 
     // slice(1) removes trailing >
     return querySelector(document, selector);
