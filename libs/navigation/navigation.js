@@ -52,7 +52,7 @@ export default async function loadBlock(configs, customLib) {
 
   const paramConfigs = getParamsConfigs(configs, miloLibs);
   const clientConfig = {
-    origin: miloLibs,
+    origin: `https://main--federal--adobecom.hlx.${env === 'prod' ? 'live' : 'page'}`,
     miloLibs: `${miloLibs}/libs`,
     pathname: `/${locale}`,
     locales: configs.locales || locales,
