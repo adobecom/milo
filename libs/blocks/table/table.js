@@ -504,9 +504,9 @@ export default function init(el) {
     expandSection = handleSection(sectionParams);
   });
 
-  const isStickyHeader = el.classList.contains('sticky') ||
-    (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP') ||
-    (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE');
+  const isStickyHeader = el.classList.contains('sticky')
+    || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
+    || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE');
 
 
   handleHighlight(el);
