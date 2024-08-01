@@ -3,7 +3,7 @@ import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
-import '../../deps/merch-card.js';
+import '../../deps/mas/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -28,12 +28,14 @@ const CARD_TYPES = [
 
 const CARD_SIZES = ['wide', 'super-wide'];
 
-const TEXT_STYLES = {
-  H5: 'detail-m',
+const SLOT_MAP_DEFAULT = {
+  H5: 'promo-text',
   H4: 'body-xxs',
   H3: 'heading-xs',
   H2: 'heading-m',
 };
+
+const SLOT_MAP = { 'special-offers': { H5: 'detail-m' } };
 
 const HEADING_MAP = {
   'special-offers': {
@@ -42,7 +44,7 @@ const HEADING_MAP = {
   },
 };
 
-const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, h6, p, ul, em';
 
 const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
@@ -100,7 +102,7 @@ function extractQuantitySelect(el) {
     .map((value) => (value === '' ? undefined : Number(value)));
   quantitySelectConfig.remove();
   if (![3, 4, 5].includes(values.length)) return null;
-  import('../../deps/merch-quantity-select.js');
+  import('../../deps/mas/merch-quantity-select.js');
   [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
   const quantitySelect = createTag('merch-quantity-select', attributes);
   return quantitySelect;
@@ -133,6 +135,11 @@ const parseTwpContent = async (el, merchCard) => {
       const content = group.filter((e) => e.tagName.toLowerCase() === 'p' || e.tagName.toLowerCase() === 'ul');
       const bodySlot = createTag('div', { slot: 'body-xs' }, content);
       merchCard.append(bodySlot);
+
+      const whatsIncludedLink = bodySlot.querySelector('a[href*="merch-whats-included"]');
+      if (whatsIncludedLink) {
+        whatsIncludedLink.classList.add('merch-whats-included');
+      }
     } else if (index === 2) { // Footer section
       const footerContent = group.filter((e) => ['h5', 'p'].includes(e.tagName.toLowerCase()));
       const footer = createTag('div', { slot: 'footer' }, footerContent);
@@ -153,10 +160,10 @@ const parseContent = async (el, merchCard) => {
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
-    const promoText = el.querySelectorAll('h5');
     const priceSmallType = el.querySelectorAll('h6');
-    appendSlot(promoText, 'promo-text', merchCard);
-    appendSlot(priceSmallType, 'price-commitment', merchCard);
+    // Filter out any h6 elements that contain an <em> tag
+    const filteredPriceSmallType = Array.from(priceSmallType).filter((h6) => !h6.querySelector('em'));
+    if (filteredPriceSmallType.length > 0) appendSlot(filteredPriceSmallType, 'price-commitment', merchCard);
   }
 
   let headingSize = 3;
@@ -168,10 +175,12 @@ const parseContent = async (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
   ];
+  const calloutContainer = createTag('div');
+
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
-      let slotName = TEXT_STYLES[tagName];
+      let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
           element.classList.add('card-heading');
@@ -201,6 +210,37 @@ const parseContent = async (el, merchCard) => {
       }
       return;
     }
+    if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
+      const calloutContentWrapper = createTag('div');
+      const calloutContent = createTag('div');
+      const emElement = element.firstElementChild;
+      let imgElement = null;
+      const fragment = document.createDocumentFragment();
+
+      emElement.childNodes.forEach((child) => {
+        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
+          const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
+          imgElement = createTag('img', {
+            src: imgSrc,
+            title: decodeURIComponent(tooltipText),
+            class: 'callout-icon',
+          });
+        } else {
+          const clone = child.cloneNode(true);
+          fragment.appendChild(clone);
+        }
+      });
+
+      calloutContent.appendChild(fragment);
+      calloutContentWrapper.appendChild(calloutContent);
+
+      if (imgElement) {
+        calloutContentWrapper.appendChild(imgElement);
+      }
+
+      calloutContainer.appendChild(calloutContentWrapper);
+      return;
+    }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
       merchCard.append(bodySlot);
@@ -208,21 +248,29 @@ const parseContent = async (el, merchCard) => {
     if (mnemonicList) bodySlot.append(mnemonicList);
   });
 
+  if (calloutContainer.children.length > 0) {
+    const calloutSlot = createTag('div', { slot: 'callout-content' });
+    calloutSlot.appendChild(calloutContainer);
+    merchCard.appendChild(calloutSlot);
+  }
+
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
   }
 };
 
 const getBadgeStyle = (badgeMetadata) => {
-  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+(, #[0-9a-fA-F]+)?$/;
   if (!badgeStyleRegex.test(badgeMetadata[0]?.innerText)) return null;
-  const style = badgeMetadata[0].innerText;
-  const badgeBackgroundColor = style.split(',')[0].trim();
-  const badgeColor = style.split(',')[1].trim();
+  const style = badgeMetadata[0].innerText.split(',').map((s) => s.trim());
+  if (style.length < 2) return null;
+  const badgeBackgroundColor = style[0];
+  const badgeColor = style[1];
+  const borderColor = style[2] !== 'none' ? style[2] : null;
   const badgeWrapper = badgeMetadata[0].parentNode;
   const badgeText = badgeMetadata[1].innerText;
   badgeWrapper.remove();
-  return { badgeBackgroundColor, badgeColor, badgeText };
+  return { badgeBackgroundColor, badgeColor, badgeText, borderColor };
 };
 
 const getActionMenuContent = (el) => {
@@ -340,6 +388,21 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
   merchCard.appendChild(miniCompareOffers);
 };
 
+const updateBigPrices = (merchCard) => {
+  const prices = merchCard.querySelectorAll('strong > em > span[is="inline-price"]');
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+  prices.forEach((span) => {
+    const strongTag = span.parentNode.parentNode;
+    const emTag = span.parentNode;
+    strongTag.replaceChild(span, emTag);
+    if (!isMobile) {
+      span.style.cssText = 'font-size: 24px; line-height: 22.5px;';
+    } else {
+      span.style.cssText = 'font-size: 16px; line-height: 24px;';
+    }
+  });
+};
+
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
@@ -398,7 +461,11 @@ export default async function init(el) {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
+        if (badge.borderColor) merchCard.setAttribute('border-color', badge.borderColor);
         merchCard.classList.add('badge-card');
+      } else if (badgeMetadata.children.length === 1) {
+        const borderColor = badgeMetadata.children[0].innerText.trim();
+        if (borderColor.startsWith('#')) merchCard.setAttribute('border-color', borderColor);
       }
     }
   }
@@ -504,7 +571,7 @@ export default async function init(el) {
         }
       }
     }
-
+    updateBigPrices(merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);

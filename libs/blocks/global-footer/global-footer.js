@@ -5,6 +5,7 @@ import {
   getMetadata,
   getConfig,
   loadBlock,
+  localizeLink,
 } from '../../utils/utils.js';
 
 import {
@@ -18,9 +19,10 @@ import {
   lanaLog,
   logErrorFor,
   toFragment,
-  getFederatedUrl,
   federatePictureSources,
 } from '../global-navigation/utilities/utilities.js';
+
+import { getFederatedUrl } from '../../utils/federated.js';
 
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -72,12 +74,7 @@ class Footer {
     this.body = await fetchAndProcessPlainHtml({
       url,
       shouldDecorateLinks: false,
-    })
-      .catch((e) => lanaLog({
-        message: `Error fetching footer content ${url}`,
-        e,
-        tags: 'errorType=error,module=global-footer',
-      }));
+    });
 
     if (!this.body) return;
 
@@ -153,7 +150,13 @@ class Footer {
 
   loadIcons = async () => {
     const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
-
+    if (!file.ok) {
+      lanaLog({
+        message: 'Issue with loadIcons',
+        e: `${file.statusText} url: ${file.url}`,
+        tags: 'errorType=info,module=global-footer',
+      });
+    }
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
     this.block.append(elem);
@@ -256,6 +259,7 @@ class Footer {
     } else {
       // No hash -> region selector expands a dropdown
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
+      regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       await loadBlock(regionSelector); // load fragment and replace original link
@@ -284,13 +288,15 @@ class Footer {
 
     const socialElem = toFragment`<ul class="feds-social" daa-lh="Social"></ul>`;
 
+    const sanitizeLink = (link) => link.replace('#_blank', '').replace('#_dnb', '');
+
     CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
       if (!link) return;
 
       const iconElem = toFragment`<li class="feds-social-item">
           <a
-            href="${link.href}"
+            href="${sanitizeLink(link.href)}"
             class="feds-social-link"
             aria-label="${platform}"
             daa-ll="${getAnalyticsValue(platform, index + 1)}"

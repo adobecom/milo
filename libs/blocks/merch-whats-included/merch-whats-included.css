@@ -1,0 +1,37 @@
+.merch-whats-included-container > .fragment {
+  width: inherit;
+  height: inherit;
+  max-height: 100%;
+  display: block;
+}
+
+.merch-whats-included-container .content h3 {
+  margin: 0;
+}
+
+.merch-whats-included-container .fragment .container {
+  display: contents;
+}
+
+.merch-whats-included-container .fragment .content {
+  float: right;
+}
+
+.merch-whats-included-container .fragment .content a[is="checkout-link"] {
+  margin-inline-start: var(--spacing-xxs);
+}
+
+@media screen and (max-width: 767px) {
+  .merch-whats-included-container {
+    position: fixed;
+    overflow: hidden scroll;
+  }
+
+  .merch-mnemonic-list {
+    height: auto;
+  }
+
+  .merch-whats-included-container .fragment .container {
+    grid-auto-flow: row;
+  }
+}

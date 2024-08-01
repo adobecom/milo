@@ -1,3 +1,5 @@
+import { getFederatedContentRoot } from '../../utils/federated.js';
+
 let config;
 let createTag;
 let getMetadata;
@@ -201,6 +203,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     const downArrow = createTag('img', {
       class: 'icon-milo down-arrow',
       src: `${config.miloLibs || config.codeRoot}/ui/img/chevron.svg`,
+      role: 'presentation',
       width: 15,
       height: 15,
     });
@@ -257,7 +260,7 @@ async function showModal(details) {
   const promises = [
     tabs ? loadBlock(tabs) : null,
     tabs ? loadStyle(`${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`) : null,
-    loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`),
+    new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`, resolve); }),
   ];
   await Promise.all(promises);
   // eslint-disable-next-line import/no-cycle
@@ -280,15 +283,25 @@ export default async function loadGeoRouting(
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
 
-  const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-  if (!resp.ok) {
-    // eslint-disable-next-line import/no-cycle
-    const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
-    loadGeoRoutingOld(config, createTag, getMetadata);
-    return;
+  const urls = [
+    `${config.contentRoot ?? ''}/georoutingv2.json`,
+    `${config.contentRoot ?? ''}/georouting.json`,
+    `${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`,
+  ];
+  let resp;
+  for (const url of urls) {
+    resp = await fetch(url);
+    if (resp.ok) {
+      if (url.includes('georouting.json')) {
+        const json = await resp.json();
+        // eslint-disable-next-line import/no-cycle
+        const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
+        loadGeoRoutingOld(config, createTag, getMetadata, json);
+      }
+      break;
+    }
   }
   const json = await resp.json();
-
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');

@@ -8,13 +8,13 @@ import '../../features/spectrum-web-components/dist/checkbox.js';
 import '../../features/spectrum-web-components/dist/button.js';
 import '../../features/spectrum-web-components/dist/overlay.js';
 import '../../features/spectrum-web-components/dist/tooltip.js';
-import '../../deps/merch-card.js';
-import '../../deps/merch-offer-select.js';
-import '../../deps/merch-stock.js';
-import '../../deps/merch-quantity-select.js';
-import '../../deps/merch-secure-transaction.js';
-import '../../deps/merch-subscription-panel.js';
-import '../../deps/merch-twp-d2p.js';
+import '../../deps/mas/merch-card.js';
+import '../../deps/mas/merch-offer-select.js';
+import '../../deps/mas/merch-stock.js';
+import '../../deps/mas/merch-quantity-select.js';
+import '../../deps/mas/merch-secure-transaction.js';
+import '../../deps/mas/merch-subscription-panel.js';
+import '../../deps/mas/merch-twp-d2p.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 /**
@@ -71,6 +71,19 @@ export default async function init(el) {
   });
   content.querySelector('h4').setAttribute('slot', 'detail-xl');
   twp.append(...[...content.querySelectorAll(':scope > h4, merch-card')]);
+
+  const whatsIncludedFragment = el.querySelector('.fragment[data-path*="merch-whats-included"]');
+  if (whatsIncludedFragment) {
+    const whatsIncludedSlot = createTag(
+      'div',
+      {
+        slot: 'merch-whats-included',
+        class: 'hidden merch-whats-included-container',
+      },
+      whatsIncludedFragment,
+    );
+    twp.append(whatsIncludedSlot);
+  }
 
   const cciFooter = createTag('div', { slot: 'cci-footer' });
   cciFooter.append(...[...content.querySelectorAll('p:not(hr ~ p)')]);

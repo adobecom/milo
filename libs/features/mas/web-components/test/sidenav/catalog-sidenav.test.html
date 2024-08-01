@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Catalog Merch Side Nav test page</title>
+        <script type="module" src="../spectrum.js"></script>
+        <script type="module" src="./catalog-sidenav.test.html.js"></script>
+        <style>
+            #sidenav {
+                flex: 1;
+                justify-content: stretch;
+                padding-top: 8px;
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0px;
+                gap: 20px;
+                flex-direction: column;
+                width: 320px;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div id="sidenav">
+                <button onclick="skipTests()">Skip tests</button>
+                <button onclick="runTests()">Run tests</button>
+            </div>
+            <div id="merch-sidenav"></div>
+        </main>
+        <template id="merch-sidenav-template">
+            <merch-sidenav sidenavTitle="REFINE YOUR RESULTS">
+                <merch-search deeplink="search">
+                    <sp-search placeholder="Search all products"></sp-search>
+                </merch-search>
+                <merch-sidenav-list deeplink="filter">
+                    <sp-sidenav
+                        variant="multilevel"
+                        manageTabIndex="true"
+                        label="category"
+                    >
+                        <sp-sidenav-item value="all" label="All" selected></sp-sidenav-item>
+                        <sp-sidenav-item label="Creativity And Design" value="creativitydesign">
+                            <sp-sidenav-item value="photo" label="Photo"></sp-sidenav-item>
+                            <sp-sidenav-item value="graphic-design" label="Graphic Design"></sp-sidenav-item>
+                            <sp-sidenav-item value="video" label="Video"></sp-sidenav-item>
+                            <sp-sidenav-item value="illustration" label="Illustration"></sp-sidenav-item>
+                        </sp-sidenav-item>
+                        <sp-sidenav-item label="PDF and E-signatures" value="pdfesignature">
+                            <sp-sidenav-item value="pdf" label="PDF"></sp-sidenav-item>
+                            <sp-sidenav-item value="esignature" label="E-Signatures"></sp-sidenav-item>
+                        </sp-sidenav-item>
+                    </sp-sidenav>
+                </merch-sidenav-list>
+                <merch-sidenav-checkbox-group sidenavCheckboxTitle="Types" label="types" deeplink="types">
+                    <sp-checkbox emphasized name="desktop">Desktop</sp-checkbox>
+                    <sp-checkbox emphasized name="mobile">Mobile</sp-checkbox>
+                    <sp-checkbox emphasized name="web">Web</sp-checkbox>
+                </merch-sidenav-checkbox-group>
+                <merch-sidenav-list sidenavListTitle="RESOURCES">
+                    <sp-sidenav
+                        manageTabIndex="true"
+                        label="resources"
+                    >
+                    <sp-sidenav-item href="/products/special-offers.html">
+                        Special Offers<sp-icon-link-out-light class="right" slot="icon">
+                        </sp-icon-link-out-light>
+                    </sp-sidenav-item>
+                </merch-sidenav-list>
+            </merch-sidenav>
+        </template>
+    </body>
+</html>

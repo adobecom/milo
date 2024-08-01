@@ -69,7 +69,8 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
         .forEach((text) => text.classList.add(`body-${config[1]}`));
     }
   }
-  decorateButtons(el);
+  const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
+  decorateButtons(el, buttonSize);
   if (type === 'merch') decorateIconStack(el);
 }
 
@@ -148,10 +149,11 @@ export const decorateBlockHrs = (el) => {
   if (hasHr) el.classList.add('has-divider');
 };
 
-function applyTextOverrides(el, override) {
+function applyTextOverrides(el, override, targetEl) {
   const parts = override.split('-');
   const type = parts[1];
-  const els = el.querySelectorAll(`[class^="${type}"]`);
+  const scopeEl = (targetEl !== false) ? targetEl : el;
+  const els = scopeEl.querySelectorAll(`[class^="${type}"]`);
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
@@ -159,12 +161,12 @@ function applyTextOverrides(el, override) {
   });
 }
 
-export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
+export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail'], target = false) {
   const overrides = [...el.classList]
     .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
   if (!overrides.length) return;
   overrides.forEach((override) => {
-    applyTextOverrides(el, override);
+    applyTextOverrides(el, override, target);
     el.classList.remove(override);
   });
 }
@@ -173,12 +175,14 @@ export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
+  const playInViewport = hash?.includes('viewportplay');
   const poster = dataset?.videoPoster ? `poster='${dataset.videoPoster}'` : '';
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = 'autoplay muted';
+  const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
   if (isAutoplay && !isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs} loop`;
+    return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
   }
   if (playOnHover && isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
@@ -187,7 +191,7 @@ export function getVideoAttrs(hash, dataset) {
     return `${globalAttrs} muted data-hoverplay`;
   }
   if (isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs}`;
+    return `${globalAttrs} ${autoPlayAttrs} ${playInViewportAttrs}`;
   }
   return `${globalAttrs} controls`;
 }
@@ -198,5 +202,61 @@ export function applyHoverPlay(video) {
     video.addEventListener('mouseenter', () => { video.play(); });
     video.addEventListener('mouseleave', () => { video.pause(); });
     video.setAttribute('data-mouseevent', true);
+  }
+}
+
+function setObjectFitAndPos(text, pic, bgEl, objFitOptions) {
+  const backgroundConfig = text.split(',').map((c) => c.toLowerCase().trim());
+  const fitOption = objFitOptions.filter((c) => backgroundConfig.includes(c));
+  const focusOption = backgroundConfig.filter((c) => !fitOption.includes(c));
+  if (fitOption) [pic.querySelector('img').style.objectFit] = fitOption;
+  bgEl.innerHTML = '';
+  bgEl.append(pic);
+  bgEl.append(document.createTextNode(focusOption.join(',')));
+}
+
+export function handleObjectFit(bgRow) {
+  const bgConfig = bgRow.querySelectorAll('div');
+  [...bgConfig].forEach((r) => {
+    const pic = r.querySelector('picture');
+    if (!pic) return;
+    let text = '';
+    const pchild = [...r.querySelectorAll('p:not(:empty)')].filter((p) => p.innerHTML.trim() !== '');
+    if (pchild.length > 2) text = pchild[1]?.textContent.trim();
+    if (!text && r.textContent) text = r.textContent;
+    if (!text) return;
+    setObjectFitAndPos(text, pic, r, ['fill', 'contain', 'cover', 'none', 'scale-down']);
+  });
+}
+
+export function getVideoIntersectionObserver() {
+  if (!window?.videoIntersectionObs) {
+    window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const { intersectionRatio, target: video } = entry;
+        const isHaveLoopAttr = video.getAttributeNames().includes('loop');
+        const { playedOnce = false } = video.dataset;
+        const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
+        && video.readyState > video.HAVE_CURRENT_DATA;
+
+        if (intersectionRatio <= 0.8) {
+          video.pause();
+        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
+          video.play();
+        }
+      });
+    }, { threshold: [0.8] });
+  }
+  return window.videoIntersectionObs;
+}
+
+export function applyInViewPortPlay(video) {
+  if (!video) return;
+  if (video.hasAttribute('data-play-viewport')) {
+    const observer = getVideoIntersectionObserver();
+    video.addEventListener('ended', () => {
+      video.dataset.playedOnce = true;
+    });
+    observer.observe(video);
   }
 }

@@ -198,7 +198,7 @@ describe('Localized Gnav', () => {
 
   it('Test Gnav Localized Links', async () => {
     const links = document.getElementById('localized-links').getElementsByTagName('a');
-    links.forEach((anchor) => {
+    [...links].forEach((anchor) => {
       expect(anchor.href.startsWith('https://milo.adobe.com/fi/'), 'Menu Links should be localized').true;
     });
   });
@@ -206,7 +206,7 @@ describe('Localized Gnav', () => {
   it('Test Gnav DNT Links', async () => {
     const dntLinks = document.getElementById('dnt-links')
       .getElementsByTagName('a');
-    dntLinks.forEach((anchor) => {
+    [...dntLinks].forEach((anchor) => {
       const dntLink = anchor.href;
       expect(dntLink.startsWith('https://milo.adobe.com/fi/'), 'Menu DNT Links should not be localized').false;
       expect(dntLink.endsWith('#_dnt'), '#_dnt should be stripped').false;
@@ -215,7 +215,7 @@ describe('Localized Gnav', () => {
 
   it('Test Gnav Breadcrumb Links', async () => {
     const breadcrumbLinks = document.querySelector('header nav.breadcrumbs').getElementsByTagName('a');
-    breadcrumbLinks.forEach((anchor) => {
+    [...breadcrumbLinks].forEach((anchor) => {
       expect(anchor.href.startsWith('http://localhost:2000/fi/'), 'Breadcrumb Links should be localized').true;
     });
   });

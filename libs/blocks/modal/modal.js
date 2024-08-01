@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
@@ -11,6 +12,8 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
 </svg>`;
 
 let isDelayedModal = false;
+let prevHash = '';
+const dialogLoadingSet = new Set();
 
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
@@ -20,18 +23,15 @@ export function findDetails(hash, el) {
 }
 
 function fireAnalyticsEvent(event) {
-  // eslint-disable-next-line no-underscore-dangle
-  window._satellite?.track('event', {
+  const data = {
     xdm: {},
-    data: {
-      web: { webInteraction: { name: event?.type } },
-      _adobe_corpnew: { digitalData: event?.data },
-    },
-  });
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
+  window._satellite?.track('event', data);
 }
 
 export function sendAnalytics(event) {
-  // eslint-disable-next-line no-underscore-dangle
   if (window._satellite?.track) {
     fireAnalyticsEvent(event);
   } else {
@@ -67,6 +67,10 @@ export function closeModal(modal) {
   const hashId = window.location.hash.replace('#', '');
   if (hashId === modal.id) window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
   isDelayedModal = false;
+  if (prevHash) {
+    window.location.hash = prevHash;
+    prevHash = '';
+  }
 }
 
 function isElementInView(element) {
@@ -93,7 +97,12 @@ function getCustomModal(custom, dialog) {
 }
 
 async function getPathModal(path, dialog) {
-  const block = createTag('a', { href: path });
+  let href = path;
+  if (path.includes('/federal/')) {
+    const { getFederatedUrl } = await import('../../utils/federated.js');
+    href = getFederatedUrl(path);
+  }
+  const block = createTag('a', { href });
   dialog.append(block);
 
   // eslint-disable-next-line import/no-cycle
@@ -105,6 +114,7 @@ export async function getModal(details, custom) {
   if (!(details?.path || custom)) return null;
   const { id } = details || custom;
 
+  dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id });
   const loadedEvent = new Event('milo:modal:loaded');
 
@@ -172,6 +182,7 @@ export async function getModal(details, custom) {
 
   dialog.append(close);
   document.body.append(dialog);
+  dialogLoadingSet.delete(id);
   firstFocusable.focus({ preventScroll: true, ...focusVisible });
   window.dispatchEvent(loadedEvent);
 
@@ -220,7 +231,6 @@ export function delayedModal(el) {
   const { hash, delay } = getHashParams(el?.dataset.modalHash);
   if (!delay || !hash) return false;
   isDelayedModal = true;
-  el.classList.add('hide-block');
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
   el.dataset.modalHash = hash;
@@ -239,6 +249,7 @@ export function delayedModal(el) {
 export default function init(el) {
   const { modalHash } = el.dataset;
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
+  if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);
   return details ? getModal(details) : null;
 }
@@ -256,5 +267,8 @@ window.addEventListener('hashchange', (e) => {
   } else {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
+    if (e.oldURL?.includes('#')) {
+      prevHash = new URL(e.oldURL).hash;
+    }
   }
 });

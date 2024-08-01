@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 
 import { PRICE_LITERALS_URL } from '../../../../libs/blocks/merch/merch.js';
-import { applyPlanType } from '../../../../libs/deps/commerce.js';
+import { applyPlanType } from '../../../../libs/deps/mas/commerce.js';
 
 const { fetch } = window;
 

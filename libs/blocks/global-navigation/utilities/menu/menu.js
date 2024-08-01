@@ -5,14 +5,13 @@ import {
   getAnalyticsValue,
   icons,
   isDesktop,
-  lanaLog,
   logErrorFor,
   selectors,
   setActiveDropdown,
   toFragment,
   trigger,
   yieldToMain,
-  addMepHighlight,
+  addMepHighlightAndTargetId,
 } from '../utilities.js';
 
 const decorateHeadline = (elem, index) => {
@@ -308,12 +307,8 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
 
-    const content = await fetchAndProcessPlainHtml({ url: pathElement.href })
-      .catch((e) => lanaLog({
-        message: `Menu could not be fetched ${pathElement.href}`,
-        e,
-        tags: 'errorType=error,module=menu',
-      }));
+    const content = await fetchAndProcessPlainHtml({ url: pathElement.href });
+
     if (!content) return;
 
     const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
@@ -322,7 +317,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
           ${menuContent}
         </div>
       </div>`;
-    addMepHighlight(menuTemplate, content);
+    addMepHighlightAndTargetId(menuTemplate, content);
 
     decorateCrossCloudMenu(menuTemplate);
 

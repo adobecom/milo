@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
-import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/commerce.js';
+import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
@@ -21,6 +21,7 @@ import merch, {
   getCheckoutAction,
   PRICE_LITERALS_URL,
   PRICE_TEMPLATE_REGULAR,
+  getMasBase,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -70,6 +71,16 @@ const config = {
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
+};
+
+const updateSearch = ({ maslibs } = {}) => {
+  const url = new URL(window.location);
+  if (!maslibs) {
+    url.searchParams.delete('maslibs');
+  } else {
+    url.searchParams.set('maslibs', maslibs);
+  }
+  window.history.pushState({}, '', url);
 };
 
 /**
@@ -147,6 +158,7 @@ describe('Merch Block', () => {
 
   afterEach(() => {
     setSubscriptionsData();
+    updateSearch();
   });
 
   it('does not decorate merch with bad content', async () => {
@@ -531,12 +543,22 @@ describe('Merch Block', () => {
     });
 
     it('getCheckoutAction: handles errors gracefully', async () => {
-      const action = await getCheckoutAction([{ productArrangement: {} }], {}, Promise.reject(new Error('error')));
-      expect(action).to.be.undefined;
+      const imsSignedInPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error('error'));
+        }, 1);
+      });
+      const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
+      expect(action).to.be.empty;
     });
   });
 
   describe('Upgrade Flow', () => {
+    beforeEach(() => {
+      getMasBase.baseUrl = undefined;
+      updateSearch({});
+    });
+
     it('updates CTA text to Upgrade Now', async () => {
       mockIms();
       getUserEntitlements();
@@ -665,6 +687,45 @@ describe('Merch Block', () => {
         await el.onceSettled();
         expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
         el.remove();
+      });
+    });
+  });
+
+  describe('M@S consumption', () => {
+    describe('maslibs parameter', () => {
+      beforeEach(() => {
+        getMasBase.baseUrl = undefined;
+        updateSearch({});
+      });
+
+      it('should load commerce.js via maslibs', async () => {
+        initService.promise = undefined;
+        getMasBase.baseUrl = 'http://localhost:2000/test/blocks/merch/mas';
+        updateSearch({ maslibs: 'test' });
+        setConfig(config);
+        await mockIms();
+        const commerce = await initService(true);
+        expect(commerce.mock).to.be.true;
+      });
+
+      it('should return the default Adobe URL if no maslibs parameter is present', () => {
+        expect(getMasBase()).to.equal('https://www.adobe.com/mas');
+      });
+
+      it('should return the stage Adobe URL if maslibs=stage', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'stage')).to.equal('https://www.stage.adobe.com/mas');
+      });
+
+      it('should return the local URL if maslibs=local', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'local')).to.equal('http://localhost:9001');
+      });
+
+      it('should return the hlx live URL from the fork if maslibs contains double dashes', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'test--mas--user')).to.equal('https://test--mas--user.hlx.live');
+      });
+
+      it('should return the hlx page URL from the fork if maslibs contains double dashes', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.page', 'test--mas--user')).to.equal('https://test--mas--user.hlx.page');
       });
     });
   });

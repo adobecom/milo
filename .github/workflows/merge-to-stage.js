@@ -130,9 +130,10 @@ const merge = async ({ prs, type }) => {
 
   for await (const { number, files, html_url, title } of prs) {
     try {
-      if (files.some((file) => SEEN[file])) {
+      const fileOverlap = files.find((file) => SEEN[file]);
+      if (fileOverlap) {
         commentOnPR(
-          `Skipped ${number}: ${title} due to file overlap. Merging will be attempted in the next batch`,
+          `Skipped ${number}: "${title}" due to file "${fileOverlap}" overlap. Merging will be attempted in the next batch`,
           number
         );
         continue;
@@ -158,9 +159,10 @@ const merge = async ({ prs, type }) => {
           title,
           prefix,
         })
-      );
+      ).catch(console.error);
       await new Promise((resolve) => setTimeout(resolve, 5000));
     } catch (error) {
+      files.forEach((file) => (SEEN[file] = false));
       commentOnPR(`Error merging ${number}: ${title} ` + error.message, number);
     }
   }
