@@ -27,7 +27,7 @@ function Actions({ item }) {
       <button
         disabled=${!isValid}
         class="locui-url-action locui-url-action-view
-          ${!isValid ? ' disabled' : ''}${!preview ? ' clear' : ''}"
+          ${!isValid ? ' disabled' : ''}${!preview ? ' no-preview' : ''}"
         onClick=${(e) => handleAction(e, item, true)}>Preview</button>
       <button
         disabled=${!isValid || !live}
@@ -112,13 +112,13 @@ function TabPanel({ tab, idx, item }) {
     </div>`;
 }
 
-export default function Tabs({ suffix, path, hasError }) {
+export default function Tabs({ suffix, path, hasError, sync }) {
   const tabs = useSignal([
     { title: 'Actions', selected: true },
     { title: 'Details' },
   ]);
   const item = useSignal({ path, hasError });
-  useEffect(() => { setActions(item); }, [item]);
+  useEffect(() => { setActions(item); }, [item, sync]);
   return html`
     <div class=locui-tabs>
       <div class=locui-tab-buttons>

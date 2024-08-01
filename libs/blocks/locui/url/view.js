@@ -19,9 +19,9 @@ export default function Url({ suffix, item }) {
       <h3 class=locui-url-label>Path</h3>
       <p class=locui-url-path>${sourcePath}${hasError ? html`<span>${hasError}</span>` : ''}</p>
       <div class="locui-url-tab-group locui-url-tab-group-cols-${suffix.length}">
-        <${Tabs} suffix=${suffix[0]} path=${sourcePath} hasError=${hasError} />
+        <${Tabs} suffix=${suffix[0]} path=${sourcePath} hasError=${hasError} sync=${item.sync} />
         ${langstorePath && html`
-          <${Tabs} suffix=${suffix[1]} path=${langstorePath} hasError=${hasError} />
+          <${Tabs} suffix=${suffix[1]} path=${langstorePath} hasError=${hasError} sync=${item.sync} />
         `}
       </div>
     </li>
