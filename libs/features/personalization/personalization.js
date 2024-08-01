@@ -288,6 +288,7 @@ function normalizeKeys(obj) {
 
 const querySelector = (el, selector, all = false) => {
   try {
+    console.log(el);
     return all ? el.querySelectorAll(selector) : el.querySelector(selector);
   } catch (e) {
     /* eslint-disable-next-line no-console */
@@ -335,9 +336,9 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
-function getSelectedElement({ selector, rootEl }) {
+function getSelectedElement({ selector }) {
   if (!selector) return null;
-  let originalSelector = selector;
+  const originalSelector = selector;
   if (checkSelectorType(selector) === 'fragment') {
     // handle fragment selector
     try {
@@ -356,7 +357,7 @@ function getSelectedElement({ selector, rootEl }) {
         const simplifiedSelector = match[0].replace(/\s+/g, '');
         const n = simplifiedSelector.match(/\d+/g) || '1';
         const cleanClassSelector = match[2]; // this one has no digits and no spaces
-        const cssOptimizedSelector = `>.${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
+        const cssOptimizedSelector = `> .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
         // eslint-disable-next-line no-param-reassign
         selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
       }
@@ -366,7 +367,7 @@ function getSelectedElement({ selector, rootEl }) {
       const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
       simplifiedSelectors?.forEach((simplifiedSelector) => {
         const n = simplifiedSelector.match(/\d+/g) || '1';
-        const cssOptimizedSelector = `>div:nth-of-type(${n})`;
+        const cssOptimizedSelector = `> div:nth-of-type(${n})`;
         // eslint-disable-next-line no-param-reassign
         selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
       });
@@ -393,14 +394,14 @@ function getSelectedElement({ selector, rootEl }) {
       });
     });
     // eslint-disable-next-line no-param-reassign
-    selector = selector.charAt(0) === '>' ? selector.slice(1) : selector;
+    selector = `body ${selector}`;
     // TODO: for testing purposes only. Remove when done
     console.log('=====================================');
     console.log('selector: ', originalSelector, ' ==> ', selector);
-    console.log('element: ', querySelector(rootEl ?? document, selector));
+    console.log('element: ', querySelector(document, selector));
 
     // slice(1) removes trailing >
-    return querySelector(rootEl ?? document, selector);
+    return querySelector(document, selector);
   }
 }
 const addHash = (url, newHash) => {
