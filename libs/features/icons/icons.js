@@ -1,3 +1,5 @@
+import { getFederatedContentRoot } from '../../utils/federated.js';
+
 /**
  * @typedef Options
  * @property {Boolean} debug Should we output messages to console
@@ -162,6 +164,8 @@ class MiloIconElement extends HTMLElement {
 customElements.define('milo-icon', MiloIconElement);
 
 function getIconAttributes(icon, baseUrl) {
+  const federatedRoot = getFederatedContentRoot();
+
   const iconName = icon.classList[1].replace('icon-', '');
   let libOrigin = 'https://milo.adobe.com/libs';
   // const { origin } = window.location;
@@ -172,10 +176,13 @@ function getIconAttributes(icon, baseUrl) {
   // console.log('libOrigin', libOrigin);
   // console.log('baseUrl', baseUrl);
 
+  console.log('fedRoot', federatedRoot, 'base', baseUrl);
+  console.log(`${baseUrl}/img/icons/${options.defaultSet}/${iconName}.svg`, `${federatedRoot}/federal/libs/img/icons/${options.defaultSet}/${iconName}.svg`)
+
   const attrs = {
     name: iconName,
     type: options.defaultSet,
-    'data-url': `${baseUrl}/img/icons/${options.defaultSet}/${iconName}.svg`,
+    'data-url': `${baseUrl}/federal/libs/img/icons/${options.defaultSet}/${iconName}.svg`,
   };
 
   const setName = options.supportedSets.filter((name) => iconName.endsWith(name));
