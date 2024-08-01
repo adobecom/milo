@@ -386,19 +386,21 @@ function getSelectedElement({ selector, rootEl }) {
             break;
           case simplifiedSelector.includes('action-area'):
             // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p:has(em, strong)');
+            selector = selector.replace(simplifiedSelector, 'p:has(a)');
             break;
           default: break;
         }
       });
     });
+    // eslint-disable-next-line no-param-reassign
+    selector = selector.charAt(0) === '>' ? selector.slice(1) : selector;
     // TODO: for testing purposes only. Remove when done
     console.log('=====================================');
-    console.log('selector: ', originalSelector, ' ==> ', selector.slice(1));
-    console.log('element: ', querySelector(rootEl ?? document, selector.slice(1)));
+    console.log('selector: ', originalSelector, ' ==> ', selector);
+    console.log('element: ', querySelector(rootEl ?? document, selector));
 
     // slice(1) removes trailing >
-    return querySelector(rootEl ?? document, selector.slice(1));
+    return querySelector(rootEl ?? document, selector);
   }
 }
 const addHash = (url, newHash) => {
