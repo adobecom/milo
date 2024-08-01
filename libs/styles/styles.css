@@ -4,7 +4,7 @@
   --global-height-nav: 64px;
   --global-height-breadcrumbs: 33px;
   /* stylelint-disable-next-line custom-property-pattern */
-  --global-height-navPromo: 65px;
+  --global-height-navPromo: 72px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
 
   /* Colors */
@@ -108,7 +108,7 @@
   /* grid sizes */
   --grid-container-width: 83.4%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
-  --grid-margins-width: calc((100vw - var(--grid-container-width)) / 2);
+  --grid-margins-width: calc((100% - var(--grid-container-width)) / 2);
   --grid-margins-width-10: calc((100vw - (var(--grid-column-width) * 10)) / 2);
   --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
   --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
@@ -127,24 +127,6 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
-
-  
-  /* lockup sizes */
-  --type-lockup-all-weight: 700;
-  --type-lockup-xxl-size: 55px;
-  --type-lockup-xxl-ls: -0.01em;
-  --type-lockup-xl-size: 44px;
-  --type-lockup-xl-ls: -0.01em;
-  --type-lockup-l-size: 38px;
-  --type-lockup-l-ls: -0.01em;
-  --type-lockup-m-size: 27px;
-  --type-lockup-m-ls: -0.02em;
-  --type-lockup-s-size: 22px;
-  --type-lockup-s-ls: -0.02em;
-  --type-lockup-xs-size: 16px;
-  --type-lockup-xs-ls: 0;
-  --type-lockup-xxs-size: 11px;
-  --type-lockup-xxs-ls: -0.01em;
   
   /* z-index */
   --above-all: 9000; /* Used for page tools that overlay page content */
@@ -616,16 +598,16 @@ span.icon.margin-inline-start { margin-inline-start: 8px; }
 .con-block.xxl-spacing-static-bottom { padding-bottom: var(--spacing-xxl-static); }
 .con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
-.flex .con-block.full-width, div[class*='-up'] .con-block.full-width { grid-column: 1 /-1; }
-.flex .con-block.has-bg, div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
-.flex .con-block.has-bg.xs-spacing, div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
-.flex .con-block.has-bg.s-spacing, div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
-.flex .con-block.has-bg.m-spacing, div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
-.flex .con-block.has-bg.l-spacing, div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
-.flex .con-block.has-bg.xl-spacing, div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
-.flex .con-block.has-bg.xxl-spacing, div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
-.flex .con-block.has-bg.xxxl-spacing, div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
-.flex .con-block.has-bg.no-spacing, div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
+div[class*='-up'] .con-block.full-width { grid-column: 1 /-1; }
+div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
+div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
+div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
+div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
+div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
+div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
+div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
+div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 
 .con-block .foreground { position: relative; }
 
@@ -643,7 +625,6 @@ span.icon.margin-inline-start { margin-inline-start: 8px; }
   top: 0;
   bottom: 0;
 }
-
 
 .con-block .background>div { height: 100%; }
 
@@ -665,72 +646,6 @@ span.icon.margin-inline-start { margin-inline-start: 8px; }
 .con-block .background .desktop-only {
   display: none;
 }
-
-/* Lockup */
-.lockup-area {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-s);
-  font-weight: var(--type-lockup-all-weight);
-  line-height: 1.25em;
-}
-
-.lockup-area > * { line-height: 0; }
-
-.center .lockup-area { justify-content: center; }
-.right .lockup-area { justify-content: flex-end; }
-
-.xxs-lockup .lockup-area {
-  font-size: var(--type-lockup-xxs-size);
-  letter-spacing:var(--type-lockup-xxs-ls);
-  gap: 4px;
-}
-
-.xs-lockup .lockup-area {
-  font-size: var(--type-lockup-xs-size);
-  letter-spacing:var(--type-lockup-xs-ls);
-  gap: 6px;
-}
-
-.s-lockup .lockup-area {
-  font-size: var(--type-lockup-s-size);
-  letter-spacing:var(--type-lockup-s-ls);
-  gap: 8px;
-}
-
-.m-lockup .lockup-area {
-  font-size: var(--type-lockup-m-size);
-  letter-spacing:var(--type-lockup-m-ls);
-  gap: 10px;
-}
-
-.l-lockup .lockup-area {
-  font-size: var(--type-lockup-l-size);
-  letter-spacing:var(--type-lockup-l-ls);
-  gap: 15px;
-}
-
-.xl-lockup .lockup-area {
-  font-size: var(--type-lockup-xl-size);
-  letter-spacing:var(--type-lockup-xl-ls);
-  gap: 17px;
-}
-
-.xxl-lockup .lockup-area {
-  font-size: var(--type-lockup-xxl-size);
-  letter-spacing:var(--type-lockup-xxl-ls);
-  gap: 20px;
-}
-
-.xxs-lockup .lockup-area img { height: var(--icon-size-xxs); }
-.xs-lockup .lockup-area img { height: var(--icon-size-xs); }
-.s-lockup .lockup-area img { height: var(--icon-size-s); }
-.m-lockup .lockup-area img { height: var(--icon-size-m); }
-.l-lockup .lockup-area img { height: var(--icon-size-l); }
-.xl-lockup .lockup-area img { height: var(--icon-size-xl); }
-.xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
 
 /*** Global Styles ***/
 @font-face {
@@ -793,13 +708,12 @@ header.global-navigation {
   visibility: hidden;
 }
 
-@media (min-width: 900px) {
-  header.global-navigation.has-promo {
-    height: auto;
-    /* stylelint-disable-next-line custom-property-pattern */
-    min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
-  }
+header.global-navigation.has-promo {
+  height: auto;
+  min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
+}
 
+@media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
   }

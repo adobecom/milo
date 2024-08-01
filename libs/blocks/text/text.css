@@ -25,6 +25,15 @@
 
 .text-block .foreground > div *:first-child { margin-top: 0; }
 
+.flex .text-block.has-bg[class*='-spacing'],
+.flex .text-block.has-bg.no-spacing .foreground { padding: 0; }
+.flex .text-block.has-bg.xs-spacing .foreground { padding: var(--spacing-xs); }
+.flex .text-block.has-bg.s-spacing .foreground { padding: var(--spacing-s); }
+.flex .text-block.has-bg.m-spacing .foreground { padding: var(--spacing-m); }
+.flex .text-block.has-bg.l-spacing .foreground { padding: var(--spacing-l); }
+.flex .text-block.has-bg.xl-spacing .foreground { padding: var(--spacing-xl); }
+.flex .text-block.has-bg.xxl-spacing .foreground { padding: var(--spacing-xxl); }
+
 .text-block .background {
   bottom: 0;
   left: 0;
