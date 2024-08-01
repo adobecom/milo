@@ -508,7 +508,6 @@ export default function init(el) {
     || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
     || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE');
 
-
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
