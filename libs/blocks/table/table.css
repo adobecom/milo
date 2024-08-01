@@ -607,4 +607,8 @@ header.global-navigation {
     flex-direction: column;
     align-items: initial;
   }
+  
+  .table .action-area .con-button.button-l {
+    max-width: 70%;
+  }
 }
