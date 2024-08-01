@@ -140,7 +140,7 @@ export async function findFragments() {
     if (fragments.length > 0) {
       fragments.forEach((fragment) => {
         // De-dupe across pages that share fragments
-        const dupe = acc.some((url) => url[0]?.href === fragment.href);
+        const dupe = acc.some((url) => url[0]?.pathname === fragment.pathname);
         if (!dupe) acc.push([fragment]);
       });
     }
