@@ -297,13 +297,13 @@ main > .section[class*='-up'] > .content {
 
 /* Desktop up */
 @media (min-width: 1200px) {
-  .section.flex-two-desktop > .con-block {
-    --flex-items: 2;
-  }
-
   .section.flex > .con-block,
   .section.flex-three-desktop > .con-block {
     --flex-items: 3;
+  }
+
+  .section.flex-two-desktop > .con-block {
+    --flex-items: 2;
   }
   
   .section.flex-four-desktop > .con-block {
