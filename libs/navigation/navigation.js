@@ -42,12 +42,10 @@ export default async function loadBlock(configs, customLib) {
     return;
   }
   // Relative path can't be used, as the script will run on consumer's app
-  const [[{ default: bootstrapBlock }, { default: locales }, { setConfig }]] = await Promise.all([
-    Promise.all([
-      import(`${miloLibs}/libs/navigation/bootstrapper.js`),
-      import(`${miloLibs}/libs/utils/locales.js`),
-      import(`${miloLibs}/libs/utils/utils.js`),
-    ]),
+  const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
+    import(`${miloLibs}/libs/navigation/bootstrapper.js`),
+    import(`${miloLibs}/libs/utils/locales.js`),
+    import(`${miloLibs}/libs/utils/utils.js`),
   ]);
 
   const paramConfigs = getParamsConfigs(configs, miloLibs);
