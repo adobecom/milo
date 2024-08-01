@@ -37,6 +37,7 @@ function getContent(el, variants, link) {
 }
 
 export default function init(el) {
+  el.classList.add('con-block');
   const elems = el.querySelectorAll(':scope > div');
   const link = elems.length > 1 ? elems[elems.length - 1] : null;
   const content = getContent(elems[0], el.classList, link);
