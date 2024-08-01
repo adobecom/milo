@@ -337,6 +337,7 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
 
 function getSelectedElement({ selector, rootEl }) {
   if (!selector) return null;
+  let originalSelector = selector;
   if (checkSelectorType(selector) === 'fragment') {
     // handle fragment selector
     try {
@@ -393,7 +394,7 @@ function getSelectedElement({ selector, rootEl }) {
     });
     // TODO: for testing purposes only. Remove when done
     console.log('=====================================');
-    console.log('selector: ', selector.slice(1));
+    console.log('selector: ', originalSelector, ' ==> ', selector.slice(1));
     console.log('element: ', querySelector(rootEl ?? document, selector.slice(1)));
 
     // slice(1) removes trailing >
