@@ -275,6 +275,8 @@ main > .section[class*='-up'] > .content {
   width: calc((100% / var(--flex-items)) - (((var(--flex-items) - 1) / var(--flex-items)) * var(--flex-gap)));
 }
 
+.section.flex.flex-auto > .con-block { --flex-items: unset; }
+
 /* Tablet up */
 @media (min-width: 600px) {
   .section.flex > .con-block,
@@ -293,6 +295,8 @@ main > .section[class*='-up'] > .content {
   .section.flex-five-tablet > .con-block {
     --flex-items: 5;
   }
+
+  .section.flex.flex-auto-tablet > .con-block { --flex-items: unset; }
 }
 
 /* Desktop up */
@@ -313,6 +317,8 @@ main > .section[class*='-up'] > .content {
   .section.flex-five-desktop > .con-block {
     --flex-items: 5;
   }
+  
+  .section.flex.flex-auto-desktop > .con-block { --flex-items: unset; }
 }
 
 .section.flex-center { justify-content: center; }

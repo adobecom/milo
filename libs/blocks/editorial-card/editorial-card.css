@@ -6,6 +6,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-self: flex-start;
   transform: translateZ(0);
 }
 
@@ -55,9 +56,7 @@
   min-width: initial;
 }
 
-.editorial-card.has-footer {
-  height: 100%;
-}
+.editorial-card.has-footer { align-self: stretch; }
 
 .editorial-card .media-area picture,
 .editorial-card .foreground picture {
