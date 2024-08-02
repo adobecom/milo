@@ -212,6 +212,7 @@ const defaultOptions = {
   },
   detailsTextOption: {
     default: 'Default',
+    createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
   },
   cardHoverEffect: {
