@@ -597,7 +597,7 @@ header.global-navigation {
     margin: 0 0 0 12px;
     right: initial;
   }
-  
+
   [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
     border-color: transparent #0469E3 transparent transparent;
     left: 100%;
@@ -672,6 +672,10 @@ header.global-navigation {
   [dir="rtl"] .table .col-heading.force-last + .col-heading {
     border-top-left-radius: 0;
     border-top-right-radius: var(--border-radius);
+  }
+
+  .table:not(.merch) .section-row-title {
+    grid-column: 1 / span 2;
   }
 }
 
