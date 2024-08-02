@@ -401,7 +401,7 @@ function getSelectedElement({ selector, rootEl }) {
     selector = selector.charAt(0) === '<' ? selector.slice(1) : selector; // slice(1) removes trailing >
     // eslint-disable-next-line no-param-reassign
     selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
-    const element = querySelector(document, selector);
+    const element = querySelector(rootEl || document, selector);
 
     // TODO: for testing purposes only. Remove when done
     console.log('=====================================');
