@@ -348,50 +348,55 @@ function getSelectedElement({ selector, rootEl }) {
       return null;
     }
   } else {
-    // assemble the CSS selector for MILO BLOCKS
-    MILO_BLOCKS.forEach((block) => {
-      const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
-      const match = regex.exec(selector);
-      if (match?.length) {
-        const simplifiedSelector = match[0].replace(/\s+/g, '');
-        const n = simplifiedSelector.match(/\d+/g) || '1';
-        const cleanClassSelector = match[2]; // this one has no digits and no spaces
-        const cssOptimizedSelector = `> .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
-        // eslint-disable-next-line no-param-reassign
-        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
-      }
-    });
-    // asseble the CSS selector for the wrapper elements
-    ['section', 'row', 'col'].forEach((sel) => {
-      const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
-      simplifiedSelectors?.forEach((simplifiedSelector) => {
-        const n = simplifiedSelector.match(/\d+/g) || '1';
-        const cssOptimizedSelector = `> div:nth-of-type(${n})`;
-        // eslint-disable-next-line no-param-reassign
-        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
-      });
-    });
-    // assemble CSS selector for helper selectors or selector:attribute pairs
-    ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
-      const simplifiedSelectors = selector.match(new RegExp(`${sel}(\\:\\w+)?`, 'g'));
-      simplifiedSelectors?.forEach((simplifiedSelector) => {
-        switch (true) {
-          case simplifiedSelector.includes('primary-cta'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p strong a');
-            break;
-          case simplifiedSelector.includes('secondary-cta'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p em a');
-            break;
-          case simplifiedSelector.includes('action-area'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p:has(a)');
-            break;
-          default: break;
+    try {
+      // assemble the CSS selector for MILO BLOCKS
+      MILO_BLOCKS.forEach((block) => {
+        const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
+        const match = regex.exec(selector);
+        if (match?.length) {
+          const simplifiedSelector = match[0].replace(/\s+/g, '');
+          const n = simplifiedSelector.match(/\d+/g) || '1';
+          const cleanClassSelector = match[2]; // this one has no digits and no spaces
+          const cssOptimizedSelector = `> .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
+          // eslint-disable-next-line no-param-reassign
+          selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
         }
       });
-    });
+      // asseble the CSS selector for the wrapper elements
+      ['section', 'row', 'col'].forEach((sel) => {
+        const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
+        simplifiedSelectors?.forEach((simplifiedSelector) => {
+          const n = simplifiedSelector.match(/\d+/g) || '1';
+          const cssOptimizedSelector = `> div:nth-of-type(${n})`;
+          // eslint-disable-next-line no-param-reassign
+          selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+        });
+      });
+      // assemble CSS selector for helper selectors or selector:attribute pairs
+      ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
+        const simplifiedSelectors = selector.match(new RegExp(`${sel}(\\:\\w+)?`, 'g'));
+        simplifiedSelectors?.forEach((simplifiedSelector) => {
+          switch (true) {
+            case simplifiedSelector.includes('primary-cta'):
+              // eslint-disable-next-line no-param-reassign
+              selector = selector.replace(simplifiedSelector, 'p strong a');
+              break;
+            case simplifiedSelector.includes('secondary-cta'):
+              // eslint-disable-next-line no-param-reassign
+              selector = selector.replace(simplifiedSelector, 'p em a');
+              break;
+            case simplifiedSelector.includes('action-area'):
+              // eslint-disable-next-line no-param-reassign
+              selector = selector.replace(simplifiedSelector, 'p:has(a)');
+              break;
+            default: break;
+          }
+        });
+      });
+    } catch (e) {
+      console.error('Error optimizing selector: ', e);
+      return null;
+    }
     // eslint-disable-next-line no-param-reassign
     selector = selector.charAt(0) === '<' ? selector.slice(1) : selector;
     // eslint-disable-next-line no-param-reassign
@@ -399,7 +404,7 @@ function getSelectedElement({ selector, rootEl }) {
     // TODO: for testing purposes only. Remove when done
     console.log('=====================================');
     console.log('selector: ', originalSelector, ' ==> ', selector);
-    // console.log('element: ', querySelector(document, selector));
+    console.log('element: ', querySelector(document, selector));
 
     // slice(1) removes trailing >
     return querySelector(document, selector);
@@ -432,6 +437,10 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
+/**
+ * Returns the attribute to update if the action is "update"
+ * and an attribute (:href or :html) is provided
+ */
 const getAttributeToUpdate = (action, selector) => (action === COMMANDS_KEYS.update
   ? selector.match(/:(\w+)/g)?.toString()?.split(':')[1]
   : null);
