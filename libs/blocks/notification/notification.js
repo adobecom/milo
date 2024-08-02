@@ -81,7 +81,12 @@ function wrapCopy(foreground) {
 
 function decorateClose(el) {
   const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
-  btn.addEventListener('click', () => (el.style.display = 'none'));
+  btn.addEventListener('click', () => {
+    el.style.display = 'none';
+    el.closest('.section')?.classList.add('close-sticky-section');
+    document.dispatchEvent(new CustomEvent('stickyClose'));
+  });
+
   el.appendChild(btn);
 }
 
