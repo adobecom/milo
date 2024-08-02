@@ -203,7 +203,6 @@
   position: relative;
 }
 
-
 .editorial-card:is(.media-square, .media-wide, .media-standard, .media-tall) .media-area .milo-video {
   height: auto;
   padding: 0;
