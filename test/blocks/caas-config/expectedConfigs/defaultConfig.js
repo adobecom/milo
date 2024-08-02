@@ -8,6 +8,7 @@ const defaultConfig = {
     endpoint:
       'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
     fallbackEndpoint: '',
+    hideDateInterval: false,
     totalCardsToShow: 10,
     cardStyle: 'half-height',
     cardHoverEffect: 'default',
@@ -25,6 +26,7 @@ const defaultConfig = {
     },
     detailsTextOption: 'default',
     setCardBorders: false,
+    showCardBadges: false,
     showFooterDivider: false,
     useOverlayLinks: false,
     banner: {

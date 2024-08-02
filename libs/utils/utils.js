@@ -57,6 +57,7 @@ const MILO_BLOCKS = [
   'mobile-app-banner',
   'modal',
   'modal-metadata',
+  'notification',
   'pdf-viewer',
   'quote',
   'read-more',
@@ -93,16 +94,16 @@ const AUTO_BLOCKS = [
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
-  { fragment: '/fragments/' },
+  { fragment: '/fragments/', styles: false },
   { instagram: 'https://www.instagram.com' },
-  { slideshare: 'https://www.slideshare.net' },
-  { tiktok: 'https://www.tiktok.com' },
+  { slideshare: 'https://www.slideshare.net', styles: false },
+  { tiktok: 'https://www.tiktok.com', styles: false },
   { twitter: 'https://twitter.com' },
   { vimeo: 'https://vimeo.com' },
   { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
-  { 'pdf-viewer': '.pdf' },
+  { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
 ];
@@ -140,6 +141,7 @@ ENVS.local = {
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
+const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
 const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
@@ -169,13 +171,11 @@ export function getLocale(locales, pathname = window.location.pathname) {
   }
   const split = pathname.split('/');
   const localeString = split[1];
-  const locale = locales[localeString] || locales[''];
-  if (localeString === LANGSTORE) {
+  let locale = locales[localeString] || locales[''];
+  if ([LANGSTORE, PREVIEW].includes(localeString)) {
+    const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
+    if (ietf) locale = locales[ietf];
     locale.prefix = `/${localeString}/${split[2]}`;
-    if (
-      Object.values(locales)
-        .find((loc) => loc.ietf?.startsWith(split[2]))?.dir === 'rtl'
-    ) locale.dir = 'rtl';
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
@@ -300,8 +300,10 @@ export function localizeLink(
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
-    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
-      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
+      || path.startsWith(`/${PREVIEW}`)
+      || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+      || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
@@ -449,6 +451,7 @@ export async function loadBlock(block) {
   }
 
   const name = block.classList[0];
+  const hasStyles = AUTO_BLOCKS.find((ab) => Object.keys(ab).includes(name))?.styles ?? true;
   const { miloLibs, codeRoot, mep } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
@@ -458,7 +461,7 @@ export async function loadBlock(block) {
 
   const blockPath = `${path}/${name}`;
 
-  const styleLoaded = new Promise((resolve) => {
+  const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
 
@@ -478,6 +481,7 @@ export async function loadBlock(block) {
       resolve();
     })();
   });
+
   await Promise.all([styleLoaded, scriptLoaded]);
   return block;
 }
@@ -710,9 +714,9 @@ function decorateHeader() {
 async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
-  const { miloLibs, codeRoot } = config;
-  const base = miloLibs || codeRoot;
-  await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
+  const { base } = config;
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
 }

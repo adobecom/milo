@@ -301,7 +301,6 @@
 }
 
 .marquee.split .icon-area img {
-  height: auto;
   max-height: var(--icon-size-l);
   max-width: 275px;
   object-fit: contain;

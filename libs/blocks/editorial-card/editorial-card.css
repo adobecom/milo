@@ -1,17 +1,18 @@
+.editorial-card {
+  --card-height-default: 213px;
+  --card-scale-default: 1.03;
+
+  border: 1px solid var(--color-gray-300);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: translateZ(0);
+}
 
 .editorial-card,
 .editorial-card::after,
 .editorial-card::before {
     box-sizing: border-box;
-}
-
-.editorial-card {
-  border: 1px solid var(--color-gray-300);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-transform: translateZ(0);
 }
 
 .section.masonry-layout > .editorial-card[class*='grid-span-'] {
@@ -24,22 +25,22 @@
   border-color: var(--color-gray-700);
 }
 
-.editorial-card.no-bg { background: unset;}
-.editorial-card.no-border { border: unset;}
+.editorial-card.no-bg { background: none;}
+.editorial-card.no-border { border: none;}
 
 .editorial-card.click {
   cursor: pointer;
 }
 
-.editorial-card.click.grow { 
+.editorial-card.click.hover-scale { 
   transition: all .2s ease-in-out;
 }
 
-.editorial-card.click.grow:hover { 
-  transform: scale(1.03);
+.editorial-card.click.hover-scale:hover { 
+  transform: scale(var(--card-scale-default));
 }
 
-.editorial-card.has-bg.click.grow:hover { 
+.editorial-card:not(.no-bg).click.hover-scale:hover { 
   box-shadow: 0 3px 6px 0  rgba(0 0 0 / 16%);
 }
 
@@ -58,27 +59,19 @@
   height: 100%;
 }
 
-.section[class*='flex'] .editorial-card {
-  height: fit-content;
-}
-
-.section[class*='flex'] .editorial-card.has-footer {
-  height: auto;
-}
-
 .editorial-card .media-area picture,
 .editorial-card .foreground picture {
-  line-height: 0em;
+  line-height: 0;
   display: block;
 }
 
 .editorial-card .media-area img,
 .editorial-card .media-area video {
   object-fit: cover;
-  object-position: center center;
+  object-position: center;
   width: 100%;
   height: 100%;
-  max-height: 213px;
+  max-height: var(--card-height-default);
 }
 
 .editorial-card .media-area .modal-img-link {
@@ -90,7 +83,7 @@
   padding: var(--spacing-xs);
 }
 
-.editorial-card .static {
+.editorial-card .extra-row {
   padding: 0 var(--spacing-xs);
 }
 
@@ -102,16 +95,12 @@
 .editorial-card .footer > div {
   display: flex;
   flex-direction: column;
-  text-align: right;
+  text-align: end;
   justify-content: end;
   row-gap: var(--spacing-xxs);
 }
 
-.editorial-card.underline-links-footer .footer a:not([class*="button"]) {
-  text-decoration: underline;
-}
-
-.editorial-card.no-bg .foreground {
+.editorial-card.no-bg.no-border .foreground {
   padding: var(--spacing-s) 0;
 }
 
@@ -119,10 +108,9 @@
   padding-top: 0;
 }
 
-.editorial-card.no-bg .static,
-.editorial-card.no-bg .footer {
-  padding-right: 0;
-  padding-left: 0;
+.editorial-card.no-bg.no-border .static,
+.editorial-card.no-bg.no-border .footer {
+  padding-inline: 0;
 }
 
 .editorial-card .foreground > div {
@@ -135,7 +123,14 @@
   height: 100%;
 }
 
-.editorial-card.no-bg .foreground > div { 
+.editorial-card .media-area > div {
+  line-height: 0;
+}
+
+.editorial-card.footer-align-left .footer > div { text-align: start; }
+.editorial-card.footer-align-center .footer > div { text-align: center; }
+
+.editorial-card.no-bg.no-border .foreground > div { 
   row-gap: var(--spacing-xs);
 }
 
@@ -189,17 +184,15 @@
 }
 
 .editorial-card .background {
-  bottom: 0;
-  left: 0;
   position: absolute;
-  right: 0;
-  top: 0;
+  inset: 0;
   z-index: -1;
   overflow: hidden;
 }
 
 .editorial-card .media-area {
   overflow: hidden;
+  width: 100%;
 }
 
 .editorial-card .media-area.background {
@@ -249,11 +242,9 @@
 }
 
 .editorial-card.right { 
-  text-align: right; 
-  justify-items: right; 
+  text-align: end; 
+  justify-items: end; 
 }
 
-.editorial-card.footer-align-left .footer > div { text-align: left; }
-.editorial-card.footer-align-left .action-area { justify-content: left; }
-.editorial-card.footer-align-center .footer > div { text-align: center; }
+.editorial-card.footer-align-left .action-area { justify-content: start; }
 .editorial-card.footer-align-center .action-area { justify-content: center; }

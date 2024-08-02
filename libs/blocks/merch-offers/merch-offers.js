@@ -40,7 +40,7 @@ export default async function init(el) {
       ...commonsDeps,
       import(`${base}/features/spectrum-web-components/dist/overlay.js`),
       import(`${base}/features/spectrum-web-components/dist/popover.js`),
-      import(`${base}/deps/merch-secure-transaction.js`),
+      import(`${base}/deps/mas/merch-secure-transaction.js`),
     ]);
     const [label, tooltip] = el.querySelectorAll('h5, p');
     const merchSecureTransaction = createTag('merch-secure-transaction', { icon: true, label: label.innerText, tooltip: tooltip.innerText });
