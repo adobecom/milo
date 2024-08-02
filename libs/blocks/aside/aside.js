@@ -115,7 +115,7 @@ function combineTextBocks(textBlocks, iconArea, viewPort, variant) {
     default: {
       'mobile-up': ['s', 's'],
       'tablet-up': ['s', 's'],
-      'desktop-up': ['m', 'l'],
+      'desktop-up': ['m', 'xl'],
     },
     popup: {
       'mobile-up': ['s', 's'],
@@ -179,6 +179,11 @@ function decorateLayout(el) {
     media.classList.add('image');
     const video = media.querySelector('video');
     if (video) applyHoverPlay(video);
+  }
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const heading = headings[headings.length - 1];
+  if (el.classList.contains('large')) {
+    heading.nextElementSibling?.classList.add('body-xl');
   }
   const picture = text?.querySelector('p picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;

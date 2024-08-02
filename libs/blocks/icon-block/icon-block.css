@@ -6,11 +6,20 @@
 
 .dark .icon-block,
 .icon-block.dark {
-  color: #fff;
+  color: var(--color-white);
+  background-color: var(--color-black);
+  width: 90%;
+  margin: 0 auto var(--spacing-xl);
+  border-radius: var(--s2-corner-radius-900)
+}
+
+.dark .icon-block,
+.icon-block.dark .heading-xl {
+  color: var(--color-white);
 }
 
 .icon-block p {
-  margin: 0;
+  margin: 0 0 var(--spacing-l);
 }
 
 .icon-block .background {
@@ -78,12 +87,12 @@
 }
 
 .icon-block .foreground .icon-area img {
-  max-height: var(--icon-size-xxl);
+  max-height: var(--icon-size-xl);
   width: auto;
 }
 
 .icon-block .foreground .text-content [class*="heading"] {
-  margin: 0 0 var(--spacing-xs);
+  margin: 0 0 var(--spacing-m);
 }
 
 .icon-block.inline .foreground {
@@ -107,6 +116,12 @@
 
 .icon-block.inline .body-s.action-area {
   padding-top: 24px;
+}
+
+.icon-block.m-icon .icon-area,
+.icon-block.m-icon .icon-area picture img {
+  min-width:var(--icon-size-xs);
+  height: var(--icon-size-xs);
 }
 
 .icon-block.inline .icon-area,
@@ -404,9 +419,13 @@
 }
 
 @media screen and (min-width: 1200px) {
+  .dark .icon-block, .icon-block.dark {
+    width: 95%;
+  }
+  
   .icon-block.full-width .foreground,
   .icon-block.bio .foreground {
-    max-width: 800px;
+    max-width: 1260px;
     margin: 0 auto;
   }
 

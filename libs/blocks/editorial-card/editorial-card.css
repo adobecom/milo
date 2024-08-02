@@ -55,6 +55,11 @@
   min-width: initial;
 }
 
+.editorial-card.max-width {
+  max-width: 376px;
+  margin: auto
+}
+
 .editorial-card.equal-height {
   height: 100%;
 }
