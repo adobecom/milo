@@ -53,6 +53,8 @@
   margin: 0 auto;
 }
 
+.flex-center .action-item.center { margin: 0;}
+
 .action-item.small {
   font-size: var(--type-body-xs-size);
 }
