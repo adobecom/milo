@@ -398,16 +398,17 @@ function getSelectedElement({ selector, rootEl }) {
       return null;
     }
     // eslint-disable-next-line no-param-reassign
-    selector = selector.charAt(0) === '<' ? selector.slice(1) : selector;
+    selector = selector.charAt(0) === '<' ? selector.slice(1) : selector; // slice(1) removes trailing >
     // eslint-disable-next-line no-param-reassign
     selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
+    const element = querySelector(document, selector);
+
     // TODO: for testing purposes only. Remove when done
     console.log('=====================================');
     console.log('selector: ', originalSelector, ' ==> ', selector);
-    console.log('element: ', querySelector(document, selector));
+    console.log('element: ', element ? 'found' : '!!! NOT FOUND !!!');
 
-    // slice(1) removes trailing >
-    return querySelector(document, selector);
+    return element;
   }
 }
 const addHash = (url, newHash) => {
