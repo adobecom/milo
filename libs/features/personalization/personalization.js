@@ -349,7 +349,7 @@ function getSelectedElement({ selector, rootEl }) {
     }
   } else {
     try {
-      // assemble the CSS selector for MILO BLOCKS
+      // translate Milo Blocks names to CSS selectors
       MILO_BLOCKS.forEach((block) => {
         const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
         const match = regex.exec(selector);
@@ -362,7 +362,7 @@ function getSelectedElement({ selector, rootEl }) {
           selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
         }
       });
-      // asseble the CSS selector for the wrapper elements
+      // translate Simplified (pseudo) selectors to CSS selectors
       ['section', 'row', 'col'].forEach((sel) => {
         const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
         simplifiedSelectors?.forEach((simplifiedSelector) => {
@@ -372,7 +372,7 @@ function getSelectedElement({ selector, rootEl }) {
           selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
         });
       });
-      // assemble CSS selector for helper selectors or selector:attribute pairs
+      /// translate "helper" selectors (selector:attribute pairs) to CSS selectors
       ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
         const simplifiedSelectors = selector.match(new RegExp(`${sel}(\\:\\w+)?`, 'g'));
         simplifiedSelectors?.forEach((simplifiedSelector) => {
