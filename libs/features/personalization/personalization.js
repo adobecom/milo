@@ -34,6 +34,7 @@ const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
 const PAGE_URL = new URL(window.location.href);
+let IS_POST_LCP = false;
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -428,11 +429,12 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
       return;
     }
 
+    const el = getSelectedElement(selector, action, rootEl);
+    const firstSection = document.querySelector('main > div');
+    if (firstSection.contains(el) && !IS_POST_LCP) return;
     if (action in COMMANDS) {
-      const el = getSelectedElement(selector, action, rootEl);
       COMMANDS[action](el, target, manifestId, targetManifestId);
     } else if (action in CREATE_CMDS) {
-      const el = getSelectedElement(selector, action, rootEl);
       el?.insertAdjacentElement(
         CREATE_CMDS[action],
         createFrag(el, target, manifestId, targetManifestId),
@@ -847,7 +849,7 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
-export async function applyPers(manifests, postLCP = false) {
+export async function applyPers(manifests) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
@@ -871,14 +873,14 @@ export async function applyPers(manifests, postLCP = false) {
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
 
   const main = document.querySelector('main');
-  if (config.mep.replacepage && !postLCP && main) {
+  if (config.mep.replacepage && !IS_POST_LCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
     if (manifestId) main.dataset.manifestId = manifestId;
     if (targetManifestId) main.dataset.adobeTargetTestid = targetManifestId;
   }
 
-  if (!postLCP) handleCommands(config.mep.commands);
+  handleCommands(config.mep.commands);
   deleteMarkedEls();
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
@@ -935,10 +937,12 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
+    mepParam, mepHighlight, mepButton, pzn, promo, target, postlcp,
   } = enablements;
   const config = getConfig();
-  if (!postLCP) {
+  if (postlcp) {
+    IS_POST_LCP = true;
+  } else {
     config.mep = {
       handleFragmentCommand,
       updateFragDataProps,
@@ -957,7 +961,7 @@ export async function init(enablements = {}) {
     });
   }
 
-  if (target === true || (target === 'gnav' && postLCP)) {
+  if (target === true || (target === 'postlcp' && IS_POST_LCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
     manifests = manifests.concat(targetManifests);
@@ -966,7 +970,7 @@ export async function init(enablements = {}) {
     }
   }
   try {
-    await applyPers(manifests, postLCP);
+    await applyPers(manifests);
   } catch (e) {
     console.warn(e);
     window.lana?.log(`MEP Error: ${e.toString()}`);
