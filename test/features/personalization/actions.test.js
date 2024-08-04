@@ -125,7 +125,7 @@ describe('insertBefore action', async () => {
 });
 
 describe('prependToSection action', async () => {
-  it('appendToSection should add fragment to beginning of section', async () => {
+  it('prependToSection should add fragment to beginning of section', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestPrependToSection.json' });
 
     manifestJson = JSON.parse(manifestJson);
@@ -178,7 +178,7 @@ describe('update action', () => {
 
     expect(header.innerText).to.equal('updated text');
     expect(primaryCTA.innerText).to.equal('updated text');
-    expect(primaryCTA.href).to.equal('updated text');
+    expect(primaryCTA.href).to.equal('https://test.com/updated_href');
     expect(secondaryCTA.innerText).to.equal('updated text');
   });
 });

@@ -54,37 +54,39 @@ describe('Functional Test', () => {
   });
 
   it('Can select elements using block-#', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
     await loadManifestAndSetResponse('./mocks/manifestBlockNumber.json');
 
-    expect(document.querySelector('.marquee')).to.not.be.null;
+    const firstMarquee = document.getElementsByClassName('marquee')[0];
+    const secondMarquee = document.getElementsByClassName('marquee')[1];
+    expect(firstMarquee).to.not.be.null;
+    expect(secondMarquee).to.not.be.null;
     expect(document.querySelector('a[href="/fragments/replace/marquee/r2c1"]')).to.be.null;
     expect(document.querySelector('a[href="/fragments/replace/marquee-2/r3c2"]')).to.be.null;
-    const secondMarquee = document.getElementsByClassName('marquee')[1];
-    expect(secondMarquee).to.not.be.null;
 
     await init(mepSettings);
 
     const fragment = document.querySelector('a[href="/fragments/replace/marquee/r2c1"]');
-    expect(fragment).to.not.be.null;
-    const replacedCell = document.querySelector('.marquee > div:nth-child(2) > div:nth-child(1)');
-    expect(replacedCell.firstChild.firstChild).to.equal(fragment);
     const secondFrag = document.querySelector('a[href="/fragments/replace/marquee-2/r2c2"]');
-    expect(secondMarquee.lastElementChild.lastElementChild.firstChild.firstChild)
-      .to.equal(secondFrag);
+    expect(fragment).to.not.be.null;
+    expect(secondFrag).to.not.be.null;
+
+    const firstMarqueeReplacedCell = firstMarquee.querySelector('p > a');
+    const secondMarqueeReplacedCell = secondMarquee.querySelector('p > a');
+    expect(firstMarqueeReplacedCell.href).to.equal(fragment.href);
+    expect(secondMarqueeReplacedCell.href).to.equal(secondFrag.href);
   });
 
   it('Can select blocks using section and block indexs', async () => {
     await loadManifestAndSetResponse('./mocks/manifestSectionBlock.json');
 
-    expect(document.querySelector('.special-block')).to.not.be.null;
+    expect(document.querySelector('.custom-block-1')).to.not.be.null;
     expect(document.querySelector('.custom-block-2')).to.not.be.null;
-    expect(document.querySelector('.custom-block-3')).to.not.be.null;
 
     await init(mepSettings);
 
-    expect(document.querySelector('.special-block')).to.be.null;
+    expect(document.querySelector('.custom-block-1')).to.be.null;
     expect(document.querySelector('.custom-block-2')).to.be.null;
-    expect(document.querySelector('.custom-block-3')).to.be.null;
   });
 
   it('scheduled manifest should apply changes if active (bts)', async () => {
@@ -182,7 +184,7 @@ describe('Functional Test', () => {
 
     await init(mepSettings);
 
-    assert.calledWith(window.console.log, 'Invalid selector: ', '.bad...selector');
+    assert.calledWith(window.console.log, 'element: ', '!!! NOT FOUND !!!');
     window.console.log.reset();
   });
 

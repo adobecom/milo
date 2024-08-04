@@ -357,7 +357,7 @@ function getSelectedElement({ selector, rootEl }) {
           const simplifiedSelector = match[0].replace(/\s+/g, '');
           const n = simplifiedSelector.match(/\d+/g) || '1';
           const cleanClassSelector = match[2]; // this one has no digits and no spaces
-          const cssOptimizedSelector = `> .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
+          const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
           // eslint-disable-next-line no-param-reassign
           selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
         }
@@ -393,22 +393,29 @@ function getSelectedElement({ selector, rootEl }) {
           }
         });
       });
+      // transalte custom block selectors to CSS selectors
+      const customBlockSelectors = selector.match(/\.\w+-?\w+\d+/g);
+      customBlockSelectors?.forEach((customBlockSelector) => {
+        const n = customBlockSelector.match(/\d+/g);
+        const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
+        const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
+        // eslint-disable-next-line no-param-reassign
+        selector = selector.replace(customBlockSelector, cssOptimizedSelector);
+      });
+      // eslint-disable-next-line no-param-reassign
+      selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
+      const element = querySelector(rootEl || document, selector);
+
+      // TODO: for testing purposes only. Remove when done
+      console.log('=====================================');
+      console.log('selector: ', originalSelector, ' ==> ', selector);
+      console.log('element: ', element ? 'found' : '!!! NOT FOUND !!!');
+
+      return element;
     } catch (e) {
       console.error('Error optimizing selector: ', e);
       return null;
     }
-    // eslint-disable-next-line no-param-reassign
-    selector = selector.charAt(0) === '<' ? selector.slice(1) : selector; // slice(1) removes trailing >
-    // eslint-disable-next-line no-param-reassign
-    selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
-    const element = querySelector(rootEl || document, selector);
-
-    // TODO: for testing purposes only. Remove when done
-    console.log('=====================================');
-    console.log('selector: ', originalSelector, ' ==> ', selector);
-    console.log('element: ', element ? 'found' : '!!! NOT FOUND !!!');
-
-    return element;
   }
 }
 const addHash = (url, newHash) => {

@@ -30,7 +30,7 @@
       "selector": ".marquee primary-cta:href",
       "page filter (optional)": "",
       "param-newoffer=123": "",
-      "chrome": "updated text",
+      "chrome": "https://test.com/updated_href",
       "target-var1": "",
       "firefox": "",
       "android": "",
