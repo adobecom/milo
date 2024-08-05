@@ -182,7 +182,7 @@ function getIconAttributes(icon, baseUrl) {
   const attrs = {
     name: iconName,
     type: options.defaultSet,
-    'data-url': `${baseUrl}/federal/libs/img/icons/${options.defaultSet}/${iconName}.svg`,
+    'data-url': `${baseUrl}/img/icons/${options.defaultSet}/${iconName}.svg`,
   };
 
   const setName = options.supportedSets.filter((name) => iconName.endsWith(name));
