@@ -313,8 +313,9 @@ function focusOnTab(url) {
 async function openExternalModal(url, getModal) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
+  const urlWithPlan = focusOnTab(url);
   createTag('iframe', {
-    src: focusOnTab(url),
+    src: urlWithPlan,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
