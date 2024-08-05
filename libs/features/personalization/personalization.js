@@ -446,7 +446,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
     const {
-      manifestId, targetManifestId, action, selector, modifier, target: trgt 
+      manifestId, targetManifestId, action, selector, modifier, target: trgt,
     } = cmd;
     const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
