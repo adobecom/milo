@@ -1,6 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import '../../deps/merch-offer-select.js';
+import '../../deps/mas/merch-offer-select.js';
 
 const TWP = 'twp';
 const MINI_COMPARE_CHART = 'mini-compare-chart';
