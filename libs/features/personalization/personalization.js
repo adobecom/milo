@@ -169,21 +169,19 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fVal) => {
+const getBlockProps = (fVal, miloLibs, origin) => {
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
   const blockSelector = val?.split('/').pop();
-  const { origin } = PAGE_URL;
-  if (origin.includes('.hlx.') || origin.includes('localhost')) {
-    if (val.startsWith('/libs/')) {
-      /* c8 ignore next 2 */
-      const { miloLibs, codeRoot } = getConfig();
-      val = `${miloLibs || codeRoot}${val.replace('/libs', '')}`;
-    } else {
-      val = `${origin}${val}`;
-    }
+
+  if (val.startsWith('/libs/')) {
+    /* c8 ignore next 1 */
+    val = `${miloLibs}${val.replace('/libs', '')}`;
+  } else {
+    val = `${origin}${val}`;
   }
+
   return { blockSelector, blockTarget: val };
 };
 
@@ -457,6 +455,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
   if (!config.mep?.preview) manifestId = false;
+  const { origin } = PAGE_URL;
   variantNames.forEach((vn) => {
     const targetManifestId = vn.startsWith(TARGET_EXP_PREFIX) ? targetId : false;
     if (!line[vn] || line[vn].toLowerCase() === 'false') return;
@@ -483,7 +482,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
       variants[vn][action] = variants[vn][action] || [];
 
       if (action === 'useblockcode') {
-        const { blockSelector, blockTarget } = getBlockProps(line[vn]);
+        const { blockSelector, blockTarget } = getBlockProps(line[vn], config.miloLibs, origin);
         variants[vn][action].push({
           selector: blockSelector,
           val: blockTarget,
