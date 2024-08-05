@@ -15,8 +15,10 @@
 */
 
 import { decorateBlockText, decorateBlockBg, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
 const variants = ['banner', 'ribbon', 'pill'];
 const sizes = ['small', 'medium', 'large'];
 const [banner, ribbon, pill] = variants;
@@ -99,7 +101,22 @@ function decorateFlexible(el) {
   el.appendChild(inner);
 }
 
-function decorateLayout(el) {
+async function loadIconography() {
+  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+}
+
+async function decorateLockup(lockupArea, el) {
+  await loadIconography();
+  const icon = lockupArea.querySelector('picture');
+  const content = icon.nextElementSibling || icon.nextSibling;
+  const label = createTag('span', { class: 'lockup-label' }, content.nodeValue || content);
+  if (content.nodeType === 3) lockupArea.replaceChild(label, content);
+  else lockupArea.appendChild(label);
+  lockupArea.classList.add('lockup-area');
+  if (!el.className.match(/-(lockup|icon)/)) el.classList.add('s-lockup');
+}
+
+async function decorateLayout(el) {
   const [background, ...rest] = el.querySelectorAll(':scope > div');
   const foreground = rest.pop();
   if (background) decorateBlockBg(el, background);
@@ -108,6 +125,7 @@ function decorateLayout(el) {
   text?.classList.add('text');
   const iconArea = text?.querySelector('p picture')?.closest('p');
   iconArea?.classList.add('icon-area');
+  if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
   const fgMedia = foreground?.querySelector(':scope > div:not(.text) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const bgMedia = el.querySelector(':scope > div:not(.foreground) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const media = fgMedia ?? bgMedia;
@@ -118,10 +136,10 @@ function decorateLayout(el) {
   return foreground;
 }
 
-export default function init(el) {
+const init = async (el) => {
   el.classList.add('con-block');
   const { fontSizes, options } = getBlockData(el);
-  const blockText = decorateLayout(el);
+  const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
   if (options.borderBottom) {
     el.append(createTag('div', { style: `background: ${options.borderBottom};`, class: 'border' }));
@@ -129,4 +147,6 @@ export default function init(el) {
   decorateTextOverrides(el);
   el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
   if (el.matches(`:is(.${ribbon}, .${pill})`)) wrapCopy(blockText);
-}
+};
+
+export default init;
