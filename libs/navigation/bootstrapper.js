@@ -10,10 +10,17 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
     const block = createTag(targetEl, { class: name });
     document.body[blockConfig.appendType](block);
   }
-  // Configure Unav if unav components are in configs
-  if (blockConfig.targetEl === 'header' && blockConfig.unavComponents) {
-    const unavMeta = createTag('meta', { name: 'universal-nav', content: blockConfig.unavComponents });
-    document.head.append(unavMeta);
+  // Configure Unav components and redirect uri
+  if (blockConfig.targetEl === 'header') {
+    ['unavComponents', 'redirect'].forEach((key) => {
+      if (blockConfig[key]) {
+        const metaTag = createTag('meta', {
+          name: key === 'unavComponents' ? 'universal-nav' : 'adobe-home-redirect',
+          content: blockConfig[key],
+        });
+        document.head.append(metaTag);
+      }
+    });
   }
 
   initBlock(document.querySelector(targetEl));
