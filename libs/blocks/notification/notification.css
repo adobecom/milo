@@ -10,9 +10,10 @@
   --border-block-size: 10px;
   --close-size: 20px;
   --icon-size: 56px;
-  --icon-size-s: 40px;
+  --icon-size-m: 40px;
+  --icon-size-s: 32px;
   --icon-size-xs: 24px;
-  --icon-size-l: 64px;
+  --icon-size-xl: 64px;
   --pill-radius: 16px;
 
   display: flex;
@@ -187,7 +188,11 @@
   max-block-size: var(--icon-size);
 }
 
-.notification:is(.ribbon.s-icon, .pill) .icon-area img {
+.notification:is(.ribbon.m-icon, .pill) .icon-area img {
+  max-block-size: var(--icon-size-m);
+}
+
+.notification.s-icon:is(.ribbon, .pill) .icon-area img {
   max-block-size: var(--icon-size-s);
 }
 
@@ -195,8 +200,8 @@
   max-block-size: var(--icon-size-xs);
 }
 
-.notification.ribbon.l-icon .icon-area img {
-  max-block-size: var(--icon-size-l);
+.notification.ribbon.xl-icon .icon-area img {
+  max-block-size: var(--icon-size-xl);
 }
 
 .notification .text [class*="heading-"] + .action-area {
@@ -360,10 +365,6 @@
 
   .notification.ribbon .action-area {
     inline-size: auto;
-  }
-
-  .notification.ribbon .foreground.container .icon-area {
-    flex-shrink: 1;
   }
 
   .notification.ribbon .copy-wrap {
@@ -531,7 +532,7 @@
   }
 
   .notification.pill .icon-area img {
-    max-block-size: var(--icon-size-s);
+    max-block-size: var(--icon-size-m);
   }
 
   .notification.pill .foreground.container .action-area {
