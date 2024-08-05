@@ -140,6 +140,9 @@ ENVS.local = {
 
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
+const DESKTOP_SIZE = 900;
+const MOBILE_SIZE = 768;
+
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
@@ -519,6 +522,25 @@ export function decorateSVG(a) {
   }
 }
 
+function defineDeviceByScreenSize() {
+  const screenWidth = window.innerWidth;
+  if (screenWidth >= DESKTOP_SIZE) {
+    return 'DESKTOP';
+  }
+  if (screenWidth <= MOBILE_SIZE) {
+    return 'MOBILE';
+  }
+  return 'TABLET';
+}
+
+export function getImgSrc(pic) {
+  const viewport = defineDeviceByScreenSize() === 'MOBILE' ? 'mobile' : 'desktop';
+  let source = '';
+  if (viewport === 'mobile') source = pic.querySelector('source[type="image/webp"]:not([media])');
+  else source = pic.querySelector('source[type="image/webp"][media]');
+  return source.srcset;
+}
+
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
@@ -531,7 +553,7 @@ export function decorateImageLinks(el) {
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
       if (href.includes('.mp4')) {
-        const a = createTag('a', { href: url, 'data-video-poster': img.src });
+        const a = createTag('a', { href: url, 'data-video-poster': getImgSrc(picParent) });
         a.innerHTML = url;
         pic.replaceWith(a);
       } else {
