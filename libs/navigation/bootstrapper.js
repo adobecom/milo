@@ -12,10 +12,14 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
   }
   // Configure Unav components and redirect uri
   if (blockConfig.targetEl === 'header') {
-    ['unavComponents', 'redirect'].forEach((key) => {
+    const metaTags = [
+      { key: 'unavComponents', name: 'universal-nav' },
+      { key: 'redirect', name: 'adobe-home-redirect' }
+    ];
+    metaTags.forEach((tags) => {
       if (blockConfig[key]) {
         const metaTag = createTag('meta', {
-          name: key === 'unavComponents' ? 'universal-nav' : 'adobe-home-redirect',
+          name: tags.name,
           content: blockConfig[key],
         });
         document.head.append(metaTag);
