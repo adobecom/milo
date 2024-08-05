@@ -59,6 +59,18 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "update",
+      "selector": "section5...%$@#",
+      "'modifier": "html",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "<p>updated text</p>",
+      "target-var1": "",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"

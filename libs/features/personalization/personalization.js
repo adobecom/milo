@@ -345,74 +345,69 @@ function getSelectedElement({ selector, rootEl }) {
       return null;
     }
   } else {
-    try {
-      // translate Milo Blocks names to CSS selectors
-      MILO_BLOCKS.forEach((block) => {
-        const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
-        const match = regex.exec(selector);
-        if (match?.length) {
-          const simplifiedSelector = match[0].replace(/\s+/g, '');
-          const n = simplifiedSelector.match(/\d+/g) || '1';
-          const cleanClassSelector = match[2]; // this one has no digits and no spaces
-          const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
-          // eslint-disable-next-line no-param-reassign
-          selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+    // translate Milo Blocks names to CSS selectors
+    MILO_BLOCKS.forEach((block) => {
+      const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
+      const match = regex.exec(selector);
+      if (match?.length) {
+        const simplifiedSelector = match[0].replace(/\s+/g, '');
+        const n = simplifiedSelector.match(/\d+/g) || '1';
+        const cleanClassSelector = match[2]; // this one has no digits and no spaces
+        const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
+        // eslint-disable-next-line no-param-reassign
+        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+      }
+    });
+    // translate Simplified (pseudo) selectors to CSS selectors
+    ['section', 'row', 'col'].forEach((sel) => {
+      const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
+      simplifiedSelectors?.forEach((simplifiedSelector) => {
+        const n = simplifiedSelector.match(/\d+/g) || '1';
+        const cssOptimizedSelector = `> div:nth-of-type(${n})`;
+        // eslint-disable-next-line no-param-reassign
+        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+      });
+    });
+    /// translate "helper" selectors (selector:attribute pairs) to CSS selectors
+    ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
+      const simplifiedSelectors = selector.match(new RegExp(`${sel}`, 'g'));
+      simplifiedSelectors?.forEach((simplifiedSelector) => {
+        switch (true) {
+          case simplifiedSelector.includes('primary-cta'):
+            // eslint-disable-next-line no-param-reassign
+            selector = selector.replace(simplifiedSelector, 'p strong a');
+            break;
+          case simplifiedSelector.includes('secondary-cta'):
+            // eslint-disable-next-line no-param-reassign
+            selector = selector.replace(simplifiedSelector, 'p em a');
+            break;
+          case simplifiedSelector.includes('action-area'):
+            // eslint-disable-next-line no-param-reassign
+            selector = selector.replace(simplifiedSelector, 'p:has(em a, strong a)');
+            break;
+          default: break;
         }
       });
-      // translate Simplified (pseudo) selectors to CSS selectors
-      ['section', 'row', 'col'].forEach((sel) => {
-        const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
-        simplifiedSelectors?.forEach((simplifiedSelector) => {
-          const n = simplifiedSelector.match(/\d+/g) || '1';
-          const cssOptimizedSelector = `> div:nth-of-type(${n})`;
-          // eslint-disable-next-line no-param-reassign
-          selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
-        });
-      });
-      /// translate "helper" selectors (selector:attribute pairs) to CSS selectors
-      ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
-        const simplifiedSelectors = selector.match(new RegExp(`${sel}`, 'g'));
-        simplifiedSelectors?.forEach((simplifiedSelector) => {
-          switch (true) {
-            case simplifiedSelector.includes('primary-cta'):
-              // eslint-disable-next-line no-param-reassign
-              selector = selector.replace(simplifiedSelector, 'p strong a');
-              break;
-            case simplifiedSelector.includes('secondary-cta'):
-              // eslint-disable-next-line no-param-reassign
-              selector = selector.replace(simplifiedSelector, 'p em a');
-              break;
-            case simplifiedSelector.includes('action-area'):
-              // eslint-disable-next-line no-param-reassign
-              selector = selector.replace(simplifiedSelector, 'p:has(em a, strong a)');
-              break;
-            default: break;
-          }
-        });
-      });
-      // transalte custom block selectors to CSS selectors
-      const customBlockSelectors = selector.match(/\.\w+-?\w+\d+/g);
-      customBlockSelectors?.forEach((customBlockSelector) => {
-        const n = customBlockSelector.match(/\d+/g);
-        const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
-        const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
-        // eslint-disable-next-line no-param-reassign
-        selector = selector.replace(customBlockSelector, cssOptimizedSelector);
-      });
+    });
+    // transalte custom block selectors to CSS selectors
+    const customBlockSelectors = selector.match(/\.\w+-?\w+\d+/g);
+    customBlockSelectors?.forEach((customBlockSelector) => {
+      const n = customBlockSelector.match(/\d+/g);
+      const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
+      const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
       // eslint-disable-next-line no-param-reassign
-      selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
-      const element = querySelector(rootEl || document, selector);
+      selector = selector.replace(customBlockSelector, cssOptimizedSelector);
+    });
+    // eslint-disable-next-line no-param-reassign
+    selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
+    const element = querySelector(rootEl || document, selector);
 
-      // TODO: for testing purposes only. Remove when done
-      console.log('=====================================');
-      console.log('selector: ', originalSelector, ' ==> ', selector);
-      console.log('element: ', element ? 'found' : '!!! NOT FOUND !!!');
+    // TODO: for testing purposes only. Remove when done
+    console.log('=====================================');
+    console.log('selector: ', originalSelector, ' ==> ', selector);
+    console.log('element: ', element ? 'found' : '!!! NOT FOUND !!!');
 
-      return element;
-    } catch (e) {
-      console.error('Error optimizing selector: ', e);
-      return null;
-    }
+    return element;
   }
 }
 const addHash = (url, newHash) => {
