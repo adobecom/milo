@@ -219,7 +219,6 @@
   left: -100%;
 }
 
-
 [data-pep-dismissal-tooltip]::before {
   content: '';
   z-index: 2;
