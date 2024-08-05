@@ -2,6 +2,7 @@
   --min-block-size: 160px;
   --min-block-size-ribbon: 50px;
   --min-block-size-pill: 72px;
+  --margin-inline-pill-desktop: 80px;
   --margin-inline-ribbon: 30px;
   --max-inline-size-image: 75px;
   --max-inline-size-icon: 231px;
@@ -10,9 +11,10 @@
   --border-block-size: 10px;
   --close-size: 20px;
   --icon-size: 56px;
-  --icon-size-s: 40px;
+  --icon-size-m: 40px;
+  --icon-size-s: 32px;
   --icon-size-xs: 24px;
-  --icon-size-l: 64px;
+  --icon-size-xl: 64px;
   --pill-radius: 16px;
 
   display: flex;
@@ -47,7 +49,7 @@
   font-weight: unset;
 }
 
-.notification [class*="heading-"] + p {
+.notification .text p:not(.icon-area, .action-area) {
   margin-block-end: var(--spacing-s);
 }
 
@@ -187,7 +189,19 @@
   max-block-size: var(--icon-size);
 }
 
-.notification:is(.ribbon.s-icon, .pill) .icon-area img {
+.notification .icon-area.lockup-area img {
+  max-block-size: unset;
+}
+
+.notification .lockup-area {
+  flex-wrap: nowrap;
+}
+
+.notification:is(.ribbon.m-icon, .pill) .icon-area img {
+  max-block-size: var(--icon-size-m);
+}
+
+.notification.s-icon:is(.ribbon, .pill) .icon-area img {
   max-block-size: var(--icon-size-s);
 }
 
@@ -195,8 +209,8 @@
   max-block-size: var(--icon-size-xs);
 }
 
-.notification.ribbon.l-icon .icon-area img {
-  max-block-size: var(--icon-size-l);
+.notification.ribbon.xl-icon .icon-area img {
+  max-block-size: var(--icon-size-xl);
 }
 
 .notification .text [class*="heading-"] + .action-area {
@@ -213,6 +227,9 @@
   margin-block-end: var(--spacing-xs);
   flex-shrink: 0;
   display: flex;
+}
+
+.notification .foreground.container .icon-area:not(.lockup-area) {
   gap: var(--spacing-xs);
 }
 
@@ -362,10 +379,6 @@
     inline-size: auto;
   }
 
-  .notification.ribbon .foreground.container .icon-area {
-    flex-shrink: 1;
-  }
-
   .notification.ribbon .copy-wrap {
     margin-inline-end: var(--spacing-s);
   }
@@ -451,6 +464,7 @@
   .notification.max-width-10-desktop .foreground.container {
     margin-inline: var(--grid-margins-width-10);
     gap: var(--spacing-l);
+    max-inline-size: calc(var(--grid-column-width) * 10);
   }
 
   .notification.full-width .foreground.container {
@@ -465,6 +479,10 @@
   .notification .foreground.container .icon-area {
     max-inline-size: var(--max-inline-size-icon);
     margin-inline-end: var(--spacing-s);
+  }
+
+  .notification .foreground.container .lockup-area {
+    max-inline-size: none;
   }
 
   .notification.ribbon .foreground.container .icon-area {
@@ -495,8 +513,12 @@
     margin-inline: auto;
   }
 
-  .notification.pill [class*="heading-"],
   .notification.pill p {
+    inline-size: auto;
+  }
+
+  .notification.pill .text [class*="heading-"],
+  .notification.pill .text p {
     flex-shrink: 0;
     margin-block-end: 0;
   }
@@ -504,10 +526,6 @@
   .notification.pill .foreground.container .text [class*="heading-"] {
     margin-inline-end: var(--spacing-xxs);
     margin-block-end: 0;
-  }
-
-  .notification.pill p {
-    inline-size: auto;
   }
 
   .notification.pill .close {
@@ -521,6 +539,10 @@
     margin: 0;
   }
 
+  .notification.pill:not(.flexible) .foreground.container {
+    inline-size: calc(100% - var(--margin-inline-pill-desktop) * 2);
+  }
+
   .notification.pill.flexible .foreground.container {
     padding-inline: 0;
   }
@@ -531,7 +553,7 @@
   }
 
   .notification.pill .icon-area img {
-    max-block-size: var(--icon-size-s);
+    max-block-size: var(--icon-size-m);
   }
 
   .notification.pill .foreground.container .action-area {
@@ -553,6 +575,10 @@
     flex-wrap: wrap;
     align-items: baseline;
     text-align: start;
+  }
+
+  .notification.pill .copy-wrap > * {
+    max-inline-size: 100%;
   }
 
   .notification.ribbon.space-between .foreground.container .icon-area {

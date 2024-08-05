@@ -215,6 +215,10 @@
   color: white;
 }
 
+[dir="rtl"] [data-pep-dismissal-tooltip]::after {
+  left: -100%;
+}
+
 [data-pep-dismissal-tooltip]::before {
   content: '';
   z-index: 2;
@@ -236,7 +240,8 @@
 }
 
 @media (min-width: 1520px) {
-  [data-pep-dismissal-tooltip]::after {
+  [data-pep-dismissal-tooltip]::after,
+  [dir="rtl"] [data-pep-dismissal-tooltip]::after {
     left: calc(50% - 5rem);
   }
 }
