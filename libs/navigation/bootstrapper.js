@@ -14,12 +14,13 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
   if (blockConfig.targetEl === 'header') {
     const metaTags = [
       { key: 'unavComponents', name: 'universal-nav' },
-      { key: 'redirect', name: 'adobe-home-redirect' }
+      { key: 'redirect', name: 'adobe-home-redirect' },
     ];
-    metaTags.forEach((tags) => {
+    metaTags.forEach((tag) => {
+      const { key } = tag;
       if (blockConfig[key]) {
         const metaTag = createTag('meta', {
-          name: tags.name,
+          name: tag.name,
           content: blockConfig[key],
         });
         document.head.append(metaTag);
