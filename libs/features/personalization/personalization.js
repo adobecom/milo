@@ -442,7 +442,6 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
     const {
