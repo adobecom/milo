@@ -639,7 +639,7 @@ describe('Merch Block', () => {
       document.getElementsByTagName('head')[0].appendChild(meta);
       const el = document.querySelector('.merch.cta.twp.preselected-plan');
       const cta = await merch(el);
-      const { nodeName, textContent } = await cta.onceSettled();
+      const { nodeName } = await cta.onceSettled();
       expect(nodeName).to.equal('A');
       cta.click();
       await delay(100);
