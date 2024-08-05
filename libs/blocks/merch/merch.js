@@ -302,11 +302,19 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
+function focusOnTab(url) {
+  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
+  if (!metaPreselectPlan) return url;
+  const urlWithPlan = new URL(url);
+  urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
+  return urlWithPlan.href;
+}
+
 async function openExternalModal(url, getModal) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   createTag('iframe', {
-    src: url,
+    src: focusOnTab(url),
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',

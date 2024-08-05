@@ -589,7 +589,6 @@ describe('Merch Block', () => {
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
     });
-
     it('renders Milo TWP modal', async () => {
       mockIms();
       const el = document.querySelector('.merch.cta.milo.twp');
@@ -631,6 +630,21 @@ describe('Merch Block', () => {
       const modal = document.getElementById('checkout-link-modal');
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
+    });
+    it('renders TWP modal with preselected plan', async () => {
+      mockIms();
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'preselect-plan');
+      meta.setAttribute('content', 'edu');
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      const el = document.querySelector('.merch.cta.twp.preselected-plan');
+      const cta = await merch(el);
+      const { nodeName, textContent } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      cta.click();
+      await delay(100);
+      expect(document.querySelector('iframe').src).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu');
+      document.querySelector('meta[name="preselect-plan"]').remove();
     });
   });
 
