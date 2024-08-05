@@ -43,6 +43,7 @@ const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
 const MANIFEST_KEYS = [
   'action',
   'selector',
+  'modifier',
   'pagefilter',
   'page filter',
   'page filter optional',
@@ -137,11 +138,6 @@ const COMMANDS_KEYS = {
   update: 'update',
 };
 
-const ATTRIBUTES_TO_UPDATE = {
-  html: 'html',
-  href: 'href',
-};
-
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: ({ el, target, manifestId }) => {
     if (target === 'false') return;
@@ -156,19 +152,20 @@ const COMMANDS = {
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
-  [COMMANDS_KEYS.update]: ({ el, target, attr }) => {
+  [COMMANDS_KEYS.update]: ({ el, target, modifier, targetManifestId }) => {
     if (!el) return;
-    switch (attr) {
-      case ATTRIBUTES_TO_UPDATE.href:
+    switch (modifier) {
+      case 'href':
         el.href = target;
         break;
-      case ATTRIBUTES_TO_UPDATE.html:
+      case 'html':
         el.innerHTML = target;
         break;
       default:
         el.innerText = target;
         break;
     }
+    if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   },
 };
 
@@ -374,7 +371,7 @@ function getSelectedElement({ selector, rootEl }) {
       });
       /// translate "helper" selectors (selector:attribute pairs) to CSS selectors
       ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
-        const simplifiedSelectors = selector.match(new RegExp(`${sel}(\\:\\w+)?`, 'g'));
+        const simplifiedSelectors = selector.match(new RegExp(`${sel}`, 'g'));
         simplifiedSelectors?.forEach((simplifiedSelector) => {
           switch (true) {
             case simplifiedSelector.includes('primary-cta'):
@@ -387,7 +384,7 @@ function getSelectedElement({ selector, rootEl }) {
               break;
             case simplifiedSelector.includes('action-area'):
               // eslint-disable-next-line no-param-reassign
-              selector = selector.replace(simplifiedSelector, 'p:has(a)');
+              selector = selector.replace(simplifiedSelector, 'p:has(em a, strong a)');
               break;
             default: break;
           }
@@ -445,35 +442,29 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-/**
- * Returns the attribute to update if the action is "update"
- * and an attribute (:href or :html) is provided
- */
-const getAttributeToUpdate = (action, selector) => (action === COMMANDS_KEYS.update
-  ? selector.match(/:(\w+)/g)?.toString()?.split(':')[1]
-  : null);
 
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
-    const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
+    const {
+      manifestId, targetManifestId, action, selector, modifier, target: trgt 
+    } = cmd;
     const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd, manifestId, targetManifestId);
       return;
     }
     const el = getSelectedElement({ selector, rootEl });
+
+    if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
+
     if (action in COMMANDS) {
-      // eslint-disable-next-line max-len
-      COMMANDS[action]({ el, target, manifestId, targetManifestId, attr: getAttributeToUpdate(action, selector) });
-    } else if (action in CREATE_CMDS) {
-      el?.insertAdjacentElement(
-        CREATE_CMDS[action],
-        createFrag(el, target, manifestId, targetManifestId),
-      );
-    } else {
-      /* c8 ignore next 2 */
-      console.log('Invalid command found: ', cmd);
+      COMMANDS[action]({ el, target, manifestId, targetManifestId, modifier });
+      return;
     }
+    el?.insertAdjacentElement(
+      CREATE_CMDS[action],
+      createFrag(el, target, manifestId, targetManifestId),
+    );
   });
 }
 
@@ -484,7 +475,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
   if (manifestOverrideName) targetId = manifestOverrideName;
   if (!config.mep?.preview) manifestId = false;
   const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
-  const { selector } = line;
+  const { selector, modifier } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
@@ -497,6 +488,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
     const variantInfo = {
       action,
       selector,
+      modifier,
       pageFilter,
       target: line[vn],
       selectorType: checkSelectorType(selector),
@@ -527,6 +519,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
       } else {
         variants[vn][action].push({
           selector: normalizePath(selector),
+          modifier,
           val: normalizePath(line[vn]),
           pageFilter,
           manifestId,
