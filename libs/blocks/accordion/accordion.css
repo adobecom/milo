@@ -21,8 +21,8 @@ dl.accordion {
 .accordion dt button {
   align-items: center;
   border: none;
-  border-radius: var(--sn-corner-radius-800, 12px);
-  background: var(--s2-gray-50, #F8F8F8);
+  border-radius: var(--sn-corner-radius-800);
+  background: var(--s2-gray-50);
   margin-bottom: var(--spacing-xs);
   color: var(--text-color);
   display: flex;
