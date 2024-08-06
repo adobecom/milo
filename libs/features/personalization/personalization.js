@@ -332,9 +332,14 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
-function getSelectedElement({ selector, rootEl }) {
+function getSelectedElement({ selector, action, rootEl }) {
   if (!selector) return null;
-  const originalSelector = selector;
+
+  if (action.includes('pendtosection')) {
+    const hasIndexedSectionSelector = selector.match(/section\d+/);
+    if (!hasIndexedSectionSelector) return null;
+  }
+
   if (checkSelectorType(selector) === 'fragment') {
     // handle fragment selector
     try {
@@ -402,11 +407,6 @@ function getSelectedElement({ selector, rootEl }) {
     selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
     const element = querySelector(rootEl || document, selector);
 
-    // TODO: for testing purposes only. Remove when done
-    console.log('=====================================');
-    console.log('selector: ', originalSelector, ' ==> ', selector);
-    console.log('element: ', element ? 'found' : '!!! NOT FOUND !!!');
-
     return element;
   }
 }
@@ -447,7 +447,7 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
       registerInBlockActions(cmd, manifestId, targetManifestId);
       return;
     }
-    const el = getSelectedElement({ selector, rootEl });
+    const el = getSelectedElement({ selector, action, rootEl });
 
     if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
 

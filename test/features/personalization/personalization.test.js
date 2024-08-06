@@ -184,7 +184,7 @@ describe('Functional Test', () => {
 
     await init(mepSettings);
 
-    assert.calledWith(window.console.log, 'element: ', '!!! NOT FOUND !!!');
+    assert.calledWith(window.console.log, 'Invalid selector: ');
     window.console.log.reset();
   });
 
