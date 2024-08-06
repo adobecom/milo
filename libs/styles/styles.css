@@ -622,6 +622,14 @@
   color: var(--heading-color);
 }
 
+.title-xxxl,.title-xxl,.title-xl,
+.title-l,.title-m,.title-s,
+.title-xs {
+  font-family: var(--body-font-family);
+  color: var(--title-color);
+  margin: 0;
+}
+
 .heading-xxxl,.heading-xxl,
 .heading-xl,.heading-l,.heading-m,
 .heading-s,.heading-xs,

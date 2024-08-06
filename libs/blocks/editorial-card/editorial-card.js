@@ -52,6 +52,10 @@ const decorateForeground = async (el, rows) => {
       row.classList.add('extra-row');
     }
     decorateBlockText(row, ['m', 'm', 'm']); // heading, body, detail
+    const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    const heading = headings[headings.length - 1];
+    heading?.classList.add('title-xl');
+    heading?.classList.remove('heading-m');
     decorateBlockHrs(row);
   });
 };

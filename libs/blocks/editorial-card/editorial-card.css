@@ -19,6 +19,10 @@
   display: flex;
 }
 
+.section.four-up {
+  gap: var(--spacing-l);
+}
+
 .dark .editorial-card,
 .editorial-card.dark {
   color: #fff;
