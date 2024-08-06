@@ -19,5 +19,5 @@ const config = () => ({
 init(config);
 
 if (features.includes('merch-card')) {
-    import(`${origin}/libs/deps/merch-card-all.js`);
+    import('https://main--mas--adobecom.hlx.live/libs/merch-card-all.js');
 }
