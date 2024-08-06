@@ -1,13 +1,13 @@
 const LANA_CLIENT_ID = 'pageperf';
 
-let lanaSent = false;
+let lanaSent;
 
 function sendToLana(lanaData) {
   if (lanaSent) return;
   const ua = window.navigator.userAgent;
 
   Object.assign(lanaData, {
-    chromeVer: (ua.match(/Chrome\/(\d+\.\d+\.\d+\.\d+)/) || [])[1] || '',
+    chromeVer: ua.match(/Chrome\/(\d+\.\d+\.\d+\.\d+)/)?.[1] || '',
     country: sessionStorage.getItem('akamai') || '',
     // eslint-disable-next-line compat/compat
     downlink: window.navigator?.connection?.downlink || '',
@@ -41,9 +41,7 @@ function observeCLS(lanaData) {
   /* c8 ignore start */
   new PerformanceObserver((entryList) => {
     for (const entry of entryList.getEntries()) {
-      if (!entry.hadRecentInput) {
-        cls += entry.value;
-      }
+      if (!entry.hadRecentInput) cls += entry.value;
     }
     lanaData.cls = cls.toPrecision(4);
   }).observe({ type: 'layout-shift', buffered: true });

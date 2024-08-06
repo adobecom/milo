@@ -999,18 +999,15 @@ export function scrollToHashedElement(hash) {
 }
 
 function logPagePerf() {
+  if (getMetadata('pageperf') !== 'on') return;
   const isChrome = () => {
     const nav = window.navigator;
     return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
   };
-
-  if (getMetadata('pageperf') === 'on' && isChrome()) {
-    const sampleRate = parseInt(getMetadata('pageperf-rate'), 10) || 50;
-    if (Math.random() * 100 <= sampleRate) {
-      import('./logWebVitals.js')
-        .then((mod) => mod.default(getConfig().mep, getMetadata('pageperf-delay') || 1000));
-    }
-  }
+  const sampleRate = parseInt(getMetadata('pageperf-rate'), 10) || 50;
+  if (!isChrome() || Math.random() * 100 > sampleRate) return;
+  import('./logWebVitals.js')
+    .then((mod) => mod.default(getConfig().mep, getMetadata('pageperf-delay') || 1000));
 }
 
 export async function loadDeferred(area, blocks, config) {
