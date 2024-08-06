@@ -246,7 +246,7 @@ describe('Utils', () => {
 
     it('Add rel=nofollow to a link', () => {
       const noFollowContainer = document.querySelector('main div');
-      utils.decorateLinks(noFollowContainer)
+      utils.decorateLinks(noFollowContainer);
       const noFollowLink = noFollowContainer.querySelector('.no-follow');
       expect(noFollowLink.rel).to.contain('nofollow');
       expect(noFollowLink.href).to.equal('https://www.adobe.com/test');
