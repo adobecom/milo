@@ -334,10 +334,11 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
 
 function getSelectedElement({ selector, action, rootEl }) {
   if (!selector) return null;
+  let processedSel = selector;
 
-  if (checkSelectorType(selector) === 'fragment') {
+  if (checkSelectorType(processedSel) === 'fragment') {
     try {
-      const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
+      const fragment = document.querySelector(`a[href*="${normalizePath(processedSel, false)}"], a[href*="${normalizePath(processedSel, true)}"]`);
       if (fragment) return fragment.parentNode;
       return null;
     } catch (e) {
@@ -346,23 +347,21 @@ function getSelectedElement({ selector, action, rootEl }) {
   } else {
     MILO_BLOCKS.forEach((block) => {
       const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
-      const match = regex.exec(selector);
+      const match = regex.exec(processedSel);
       if (match?.length) {
         const simplifiedSelector = match[0].replace(/\s+/g, '');
         const n = simplifiedSelector.match(/\d+/g) || '1';
         const cleanClassSelector = match[2]; // this one has no digits and no spaces
         const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
-        // eslint-disable-next-line no-param-reassign
-        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+        processedSel = processedSel.replace(simplifiedSelector, cssOptimizedSelector);
       }
     });
     ['section', 'row', 'col'].forEach((sel) => {
-      const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
+      const simplifiedSelectors = processedSel.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
       simplifiedSelectors?.forEach((simplifiedSelector) => {
         const n = simplifiedSelector.match(/\d+/g) || '1';
         const cssOptimizedSelector = `> div:nth-of-type(${n})`;
-        // eslint-disable-next-line no-param-reassign
-        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+        processedSel = processedSel.replace(simplifiedSelector, cssOptimizedSelector);
       });
     });
     ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
@@ -370,16 +369,13 @@ function getSelectedElement({ selector, action, rootEl }) {
       simplifiedSelectors?.forEach((simplifiedSelector) => {
         switch (true) {
           case simplifiedSelector.includes('primary-cta'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p strong a');
+            processedSel = processedSel.replace(simplifiedSelector, 'p strong a');
             break;
           case simplifiedSelector.includes('secondary-cta'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p em a');
+            processedSel = processedSel.replace(simplifiedSelector, 'p em a');
             break;
           case simplifiedSelector.includes('action-area'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p:has(em a, strong a)');
+            processedSel = processedSel.replace(simplifiedSelector, 'p:has(em a, strong a)');
             break;
           default: break;
         }
@@ -390,11 +386,9 @@ function getSelectedElement({ selector, action, rootEl }) {
       const n = customBlockSelector.match(/\d+/g);
       const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
       const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
-      // eslint-disable-next-line no-param-reassign
-      selector = selector.replace(customBlockSelector, cssOptimizedSelector);
+      processedSel = processedSel.replace(customBlockSelector, cssOptimizedSelector);
     });
-    // eslint-disable-next-line no-param-reassign
-    selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
+    processedSel = rootEl === document ? `body > main ${processedSel}` : `:scope ${processedSel}`;
     const element = querySelector(rootEl || document, selector);
 
     if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
