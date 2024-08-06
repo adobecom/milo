@@ -701,7 +701,7 @@ describe('Merch Block', () => {
       },
     ];
     MODAL_URLS.forEach((modalUrl) => {
-      it('appends preselected plan to modal URL', async () => {
+      it(`appends preselected plan ${modalUrl.plan} to modal URL ${modalUrl.url}`, async () => {
         const meta = document.createElement('meta');
         meta.setAttribute('name', 'preselect-plan');
         meta.setAttribute('content', modalUrl.plan);
