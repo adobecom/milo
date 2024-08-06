@@ -1111,6 +1111,16 @@ async function documentPostSectionLoading(config) {
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
 }
 
+export function partition(arr, fn) {
+  return arr.reduce(
+    (acc, val, i, ar) => {
+      acc[fn(val, i, ar) ? 0 : 1].push(val);
+      return acc;
+    },
+    [[], []],
+  );
+}
+
 async function processSection(section, config, isDoc) {
   const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
@@ -1124,8 +1134,10 @@ async function processSection(section, config, isDoc) {
   }
 
   if (section.preloadLinks.length) {
-    const preloads = section.preloadLinks.map((block) => loadBlock(block));
+    const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
+    const preloads = nonModals.map((block) => loadBlock(block));
     await Promise.all(preloads);
+    modals.forEach((block) => loadBlock(block));
   }
 
   const loaded = section.blocks.map((block) => loadBlock(block));
