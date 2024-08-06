@@ -23,7 +23,7 @@ const sizes = ['extra-small', 'small', 'medium', 'large'];
 const [split, inline, notification] = variants;
 const [xsmall, small, medium, large] = sizes;
 const blockConfig = {
-  [split]: ['xl', 's', 'm'],
+  [split]: ['l', 's', 'm'],
   [inline]: ['s', 'm'],
   [notification]: {
     [xsmall]: ['m', 'm'],
@@ -183,7 +183,6 @@ function decorateLayout(el) {
   if (el.classList.contains('large')) {
     const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
     const heading = headings[headings.length - 1];
-    heading?.classList.add('heading-l');
     heading?.nextElementSibling?.classList.add('body-xl');
   }
   const picture = text?.querySelector('p picture');
