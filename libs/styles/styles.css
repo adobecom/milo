@@ -1176,7 +1176,7 @@ div[data-failed="true"]::before {
 .con-block.l-spacing { padding: var(--spacing-l) 0; }
 .con-block.xl-spacing { padding: var(--spacing-xl) 0; }
 .con-block.xxl-spacing { padding: var(--spacing-xxl) 0; }
-.con-block.xxxl-spacing { padding: var(--spacing-xxxl) var(--spacing-m); }
+.con-block.xxxl-spacing { padding: var(--spacing-xxxl) 0; }
 .con-block.no-spacing { padding: 0; }
 
 .con-block.xs-spacing-top { padding-top: var(--spacing-xs); }

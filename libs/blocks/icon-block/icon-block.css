@@ -11,6 +11,7 @@
   width: 90%;
   margin: 0 auto var(--spacing-xl);
   border-radius: var(--s2-corner-radius-900);
+  padding: var(--spacing-xxxl) var(--spacing-m);
 }
 
 .dark .icon-block,
