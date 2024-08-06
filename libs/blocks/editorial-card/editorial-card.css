@@ -85,16 +85,16 @@
 }
 
 .editorial-card .foreground,
-.editorial-card .card-footer {
-  padding: var(--spacing-xs);
+.editorial-card .footer {
+  padding: var(--s2-spacing-400) var(--s2-spacing-400) var(--s2-spacing-300);
 }
 
 .editorial-card .extra-row {
   padding: 0 var(--spacing-xs);
 }
 
-.editorial-card .card-footer {
-  padding-top: 0;
+.editorial-card .footer {
+  padding: 0 var(--s2-spacing-300) var(--s2-spacing-400);
   margin-top: auto;
 }
 
