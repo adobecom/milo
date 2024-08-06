@@ -302,10 +302,16 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
-function focusOnTab(url) {
+export function appendTabName(url) {
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
-  if (!metaPreselectPlan) return url;
-  const urlWithPlan = new URL(url);
+  if (!metaPreselectPlan || !metaPreselectPlan.content) return url;
+  let urlWithPlan;
+  try {
+    urlWithPlan = new URL(url);
+  } catch (err) {
+    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    return url;
+  }
   urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
   return urlWithPlan.href;
 }
@@ -313,9 +319,9 @@ function focusOnTab(url) {
 async function openExternalModal(url, getModal) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
-  const urlWithPlan = focusOnTab(url);
+  const urlWithTabName = appendTabName(url);
   createTag('iframe', {
-    src: urlWithPlan,
+    src: urlWithTabName,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',

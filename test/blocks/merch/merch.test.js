@@ -22,6 +22,7 @@ import merch, {
   PRICE_LITERALS_URL,
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
+  appendTabName,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -645,6 +646,61 @@ describe('Merch Block', () => {
       await delay(100);
       expect(document.querySelector('iframe').src).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu');
       document.querySelector('meta[name="preselect-plan"]').remove();
+    });
+
+    const MODAL_URLS = [
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu'
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=abc',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu'
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1#thisishash',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu#thisishash'
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator.html',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?plan=edu'
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator.html#thisishash',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?plan=edu#thisishash'
+      },
+      {
+        url: 'www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1', // invalid URL, protocol is missing
+        plan: 'edu',
+        urlWithPlan: 'www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1'
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=team'
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
+        plan: '',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1'
+      },
+    ];
+    MODAL_URLS.forEach((modalUrl) => {
+      it('appends preselected plan to modal URL', async () => {
+        const meta = document.createElement('meta');
+        meta.setAttribute('name', 'preselect-plan');
+        meta.setAttribute('content', modalUrl.plan);
+        document.getElementsByTagName('head')[0].appendChild(meta);
+
+        const resultUrl = appendTabName(modalUrl.url);
+        expect(resultUrl).to.equal(modalUrl.urlWithPlan);
+        document.querySelector('meta[name="preselect-plan"]').remove();
+      });
     });
   });
 
