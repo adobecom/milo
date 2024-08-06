@@ -545,10 +545,12 @@ export function parseManifestVariants(data, manifestPath, manifestOverrideName) 
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
-    'value',
     selectedVariantName.toLowerCase(),
+    config.locale.region.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
+    'value',
+    'other',
   ];
   const [val] = Object.entries(placeholders[0])
     .find(([key]) => valueNames.includes(key.toLowerCase()));
