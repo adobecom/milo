@@ -104,6 +104,7 @@
   text-align: end;
   justify-content: end;
   row-gap: var(--spacing-xxs);
+  font-weight: var(--s2-bold-font-weight);
 }
 
 .editorial-card .card-footer.empty { padding: 0; }
