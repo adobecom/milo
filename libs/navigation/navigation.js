@@ -38,7 +38,7 @@ export default async function loadBlock(configs, customLib) {
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
-    console.error('No block configs found!');
+    console.error('Global navigation Error: header and footer configurations are missing.');
     return;
   }
   // Relative path can't be used, as the script will run on consumer's app
