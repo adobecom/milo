@@ -188,7 +188,10 @@ export async function getModal(details, custom) {
 
   if (!dialog.classList.contains('curtain-off')) {
     document.body.classList.add('disable-scroll');
-    const curtain = createTag('div', { class: 'modal-curtain is-open' });
+    const curtain = createTag('div', {
+      class: 'modal-curtain is-open',
+      'daa-ll': `${analyticsEventName}:modalClose:curtainClose`,
+    });
     curtain.addEventListener('click', (e) => {
       if (e.target === curtain) closeModal(dialog);
     });

@@ -68,6 +68,11 @@ function configTabs(config, rootElem) {
     const sel = rootElem.querySelector(id);
     if (sel) sel.click();
   }
+  const tabParam = new URLSearchParams(window.location.search).get('tab');
+  if (!tabParam) return;
+  const dashIndex = tabParam.lastIndexOf('-');
+  const [tabsId, tabIndex] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
+  if (tabsId === config.id) rootElem.querySelector(`#tab-${config.id}-${tabIndex}`)?.click();
 }
 
 function initTabs(elm, config, rootElem) {

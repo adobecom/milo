@@ -2,6 +2,7 @@
   --min-block-size: 160px;
   --min-block-size-ribbon: 50px;
   --min-block-size-pill: 72px;
+  --margin-inline-pill-desktop: 80px;
   --margin-inline-ribbon: 30px;
   --max-inline-size-image: 75px;
   --max-inline-size-icon: 231px;
@@ -47,7 +48,8 @@
   font-weight: unset;
 }
 
-.notification [class*="heading-"] + p {
+.notification [class*="heading-"] + p,
+.notification.pill p {
   margin-block-end: var(--spacing-s);
 }
 
@@ -451,6 +453,7 @@
   .notification.max-width-10-desktop .foreground.container {
     margin-inline: var(--grid-margins-width-10);
     gap: var(--spacing-l);
+    max-inline-size: calc(var(--grid-column-width) * 10);
   }
 
   .notification.full-width .foreground.container {
@@ -521,6 +524,10 @@
     margin: 0;
   }
 
+  .notification.pill:not(.flexible) .foreground.container {
+    inline-size: calc(100% - var(--margin-inline-pill-desktop) * 2);
+  }
+
   .notification.pill.flexible .foreground.container {
     padding-inline: 0;
   }
@@ -553,6 +560,10 @@
     flex-wrap: wrap;
     align-items: baseline;
     text-align: start;
+  }
+
+  .notification.pill .copy-wrap > * {
+    max-inline-size: 100%;
   }
 
   .notification.ribbon.space-between .foreground.container .icon-area {

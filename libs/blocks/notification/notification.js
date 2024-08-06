@@ -72,10 +72,10 @@ function getBlockData(el) {
 function wrapCopy(foreground) {
   const text = foreground.querySelector('.text');
   if (!text) return;
-  const heading = text?.querySelector('h1, h2, h3, h4, h5, h6');
+  const heading = text?.querySelector('h1, h2, h3, h4, h5, h6, p:not(.icon-area, .action-area)');
   const icon = heading?.previousElementSibling;
   const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading?.nextElementSibling;
-  const copy = createTag('div', { class: 'copy-wrap' }, [heading, body]);
+  const copy = createTag('div', { class: 'copy-wrap' }, [heading, body].filter(Boolean));
   text?.insertBefore(copy, icon?.nextSibling || text.children[0]);
 }
 
@@ -90,8 +90,12 @@ function decorateFlexible(el) {
     el.querySelector('.background'),
     el.querySelector('.foreground'),
     el.querySelector('.close'),
-  ];
+  ].filter(Boolean);
   const inner = createTag('div', { class: 'flexible-inner' }, innards);
+  if (el.style.background) {
+    inner.style.background = el.style.background;
+    el.style.removeProperty('background');
+  }
   el.appendChild(inner);
 }
 

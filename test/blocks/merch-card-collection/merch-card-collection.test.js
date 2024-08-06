@@ -29,7 +29,7 @@ describe('Merch Cards', async () => {
       let data;
       const overrideUrl = /override-(.*).plain.html/;
       const overrideMatch = overrideUrl.exec(url);
-      const queryIndexMatch = /-cards.json/.test(url);
+      const queryIndexMatch = /-cards(-preview)?.json/.test(url);
       if ((overrideMatch && overrideRespondError) || (queryIndexMatch && queryIndexRespondError)) {
         return Promise.resolve({
           status: 500,
@@ -205,6 +205,26 @@ describe('Merch Cards', async () => {
     const el = document.getElementById('localizeQueryIndex');
     await init(el);
     expect(window.fetch.calledWith('https://main--milo--adobecom.hlx.live/fr/query-index-cards.json?sheet=catalog')).to.be.true;
+  });
+
+  it('should use preview query-index url if stage env and not hlx.live', async () => {
+    setConfig({
+      ...conf,
+      env: { name: 'stage' },
+    });
+    const el = document.getElementById('previewQueryIndex');
+    await init(el);
+    expect(window.fetch.calledWith('https://main--milo--adobecom.hlx.live/query-index-cards-preview.json?sheet=catalog')).to.be.true;
+  });
+
+  it('should default to prod index if preview is missing', async () => {
+    setConfig({
+      ...conf,
+      env: { name: 'stage' },
+    });
+    const el = document.getElementById('previewQueryIndexMissing');
+    await init(el);
+    expect(window.fetch.calledWith('https://main--milo--adobecom.hlx.live/query-index-cards.json?sheet=catalog')).to.be.true;
   });
 
   describe('error handling', async () => {
