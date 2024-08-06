@@ -161,6 +161,7 @@ import{html as o,LitElement as oe,nothing as ce}from"/libs/deps/lit-all.min.js";
         position: relative;
         top: 0;
         margin-left: var(--consonant-merch-spacing-xxs);
+        box-sizing: border-box;
     }
 
     .detail-bg-container {

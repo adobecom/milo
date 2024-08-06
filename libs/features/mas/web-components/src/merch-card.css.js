@@ -145,6 +145,7 @@ export const styles = css`
         position: relative;
         top: 0;
         margin-left: var(--consonant-merch-spacing-xxs);
+        box-sizing: border-box;
     }
 
     .detail-bg-container {
