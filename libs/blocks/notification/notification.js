@@ -113,7 +113,9 @@ async function decorateLockup(lockupArea, el) {
   if (content.nodeType === 3) lockupArea.replaceChild(label, content);
   else lockupArea.appendChild(label);
   lockupArea.classList.add('lockup-area');
-  if (!el.className.match(/-(lockup|icon)/)) el.classList.add('s-lockup');
+  const pre = el.className.match(/([xsml]+)-(lockup|icon)/);
+  if (!pre) el.classList.add(`${el.matches('.pill') ? 'm' : 'l'}-lockup`);
+  if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
 async function decorateLayout(el) {

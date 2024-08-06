@@ -193,6 +193,10 @@
   max-block-size: unset;
 }
 
+.notification .lockup-area {
+  flex-wrap: nowrap;
+}
+
 .notification:is(.ribbon.m-icon, .pill) .icon-area img {
   max-block-size: var(--icon-size-m);
 }
@@ -475,6 +479,10 @@
   .notification .foreground.container .icon-area {
     max-inline-size: var(--max-inline-size-icon);
     margin-inline-end: var(--spacing-s);
+  }
+
+  .notification .foreground.container .lockup-area {
+    max-inline-size: none;
   }
 
   .notification.ribbon .foreground.container .icon-area {
