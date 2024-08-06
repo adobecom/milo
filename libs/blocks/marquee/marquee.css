@@ -191,7 +191,7 @@
 
 .marquee.large {
   flex-direction: column-reverse;
-  background: var(--s2-background-layer-1-color)
+  background: var(--s2-background-layer-1-color);
 }
 
 .marquee:is(.center, .centered) .icon-area img {
@@ -330,7 +330,7 @@
 }
 
 .marquee.large .text .body-xl {
-  margin-bottom:var(--spacing-l);
+  margin-bottom: var(--spacing-l);
 }
 
 .marquee.large.split .text .body-xl {

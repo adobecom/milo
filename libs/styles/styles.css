@@ -403,7 +403,7 @@
   }
 
   @media (min-width: 1680px) { /* Large Desktop */
-    --grid-container-width: 1600px; 
+    --grid-container-width: 1600px;
     --grid-margins-width: calc((100% - var(--grid-container-width)) / 2);
   }
 
@@ -1076,7 +1076,7 @@ span.icon.margin-inline-end { margin-inline-end: var(--s2-spacing-100); }
 .dark .con-button:hover {
   background-color: var(--s2-transparent-white-100);
   border-color: var(--s2-gray-900);
-} 
+}
 
 .dark .con-button.blue {
   background-color: var(--color-white);

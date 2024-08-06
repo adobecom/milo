@@ -10,7 +10,7 @@
   background-color: var(--color-black);
   width: 90%;
   margin: 0 auto var(--spacing-xl);
-  border-radius: var(--s2-corner-radius-900)
+  border-radius: var(--s2-corner-radius-900);
 }
 
 .dark .icon-block,
@@ -120,7 +120,7 @@
 
 .icon-block.m-icon .icon-area,
 .icon-block.m-icon .icon-area picture img {
-  min-width:var(--icon-size-xs);
+  min-width: var(--icon-size-xs);
   height: var(--icon-size-xs);
 }
 
