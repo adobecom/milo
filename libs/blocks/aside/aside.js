@@ -180,10 +180,10 @@ function decorateLayout(el) {
     const video = media.querySelector('video');
     if (video) applyHoverPlay(video);
   }
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings[headings.length - 1];
   if (el.classList.contains('large')) {
-    heading.nextElementSibling?.classList.add('body-xl');
+    const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    const heading = headings[headings.length - 1];
+    heading?.nextElementSibling?.classList.add('body-xl');
   }
   const picture = text?.querySelector('p picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
