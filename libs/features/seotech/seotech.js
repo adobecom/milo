@@ -25,6 +25,7 @@ export function getRepoByImsClientId(imsClientId) {
     'adobedotcom-cc': 'cc',
     acrobatmilo: 'dc',
     bacom: 'bacom',
+    homepage_milo: 'homepage',
     milo: 'milo',
   }[imsClientId];
 }
