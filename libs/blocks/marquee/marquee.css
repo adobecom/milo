@@ -577,7 +577,7 @@
   }
 
   .marquee.large.desktop-light {
-    background-color: blue;
+    background-color: inherit;
   }
 
   .marquee.desktop-light {

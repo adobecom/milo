@@ -130,6 +130,10 @@
   gap: var(--spacing-xs);
 }
 
+.aside.promobar strong {
+  font-weight: inherit;
+}
+
 .aside.promobar .promo-text .action-area,
 .aside .foreground.container .text .action-area {
   margin-bottom: 0;
@@ -635,6 +639,9 @@
     min-height: 560px;
   }
 
+  .aside.large {
+    min-height: 640px;
+  }
 
   .aside .foreground.container {
     align-items: center;

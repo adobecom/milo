@@ -55,6 +55,7 @@
   min-width: initial;
 }
 
+/* Update variation name */
 .editorial-card.max-width {
   max-width: 376px;
   margin: auto;

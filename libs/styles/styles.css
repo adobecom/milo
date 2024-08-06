@@ -19,7 +19,7 @@
   /* Milo Color Specs */
   --color-white: var(--s2-white);
   --color-black: var(--s2-black);
-  --color-gray-100: #f8f8f8;
+  --color-gray-100: var(--s2-gray-100);
   --color-gray-200: #e8e8e8; 
   --color-gray-300: var(--s2-gray-300);
   --color-gray-400: var(--s2-gray-400);
@@ -1073,6 +1073,11 @@ span.icon.margin-inline-end { margin-inline-end: var(--s2-spacing-100); }
   border-color: var(--s2-gray-800);
 }
 
+.light .con-button {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
 .dark .con-button:hover {
   background-color: var(--s2-transparent-white-100);
   border-color: var(--s2-gray-900);
@@ -1086,6 +1091,13 @@ span.icon.margin-inline-end { margin-inline-end: var(--s2-spacing-100); }
 .dark .con-button.blue:hover {
   background-color: var(--s2-transparent-white-800);
   color: var(--color-black);
+}
+
+.light .con-button:hover,
+.light .con-button:active  {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
 }
 
 /* Not blocks */
