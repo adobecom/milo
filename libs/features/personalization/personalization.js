@@ -341,7 +341,6 @@ function getSelectedElement({ selector, action, rootEl }) {
   }
 
   if (checkSelectorType(selector) === 'fragment') {
-    // handle fragment selector
     try {
       const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
       if (fragment) return fragment.parentNode;
@@ -350,7 +349,6 @@ function getSelectedElement({ selector, action, rootEl }) {
       return null;
     }
   } else {
-    // translate Milo Blocks names to CSS selectors
     MILO_BLOCKS.forEach((block) => {
       const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
       const match = regex.exec(selector);
@@ -363,7 +361,6 @@ function getSelectedElement({ selector, action, rootEl }) {
         selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
       }
     });
-    // translate Simplified (pseudo) selectors to CSS selectors
     ['section', 'row', 'col'].forEach((sel) => {
       const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
       simplifiedSelectors?.forEach((simplifiedSelector) => {
@@ -373,7 +370,6 @@ function getSelectedElement({ selector, action, rootEl }) {
         selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
       });
     });
-    /// translate "helper" selectors (selector:attribute pairs) to CSS selectors
     ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
       const simplifiedSelectors = selector.match(new RegExp(`${sel}`, 'g'));
       simplifiedSelectors?.forEach((simplifiedSelector) => {
@@ -394,7 +390,6 @@ function getSelectedElement({ selector, action, rootEl }) {
         }
       });
     });
-    // transalte custom block selectors to CSS selectors
     const customBlockSelectors = selector.match(/\.\w+-?\w+\d+/g);
     customBlockSelectors?.forEach((customBlockSelector) => {
       const n = customBlockSelector.match(/\d+/g);
