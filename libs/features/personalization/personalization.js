@@ -335,11 +335,6 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
 function getSelectedElement({ selector, action, rootEl }) {
   if (!selector) return null;
 
-  if (action.includes('pendtosection')) {
-    const hasIndexedSectionSelector = selector.match(/section\d+/);
-    if (!hasIndexedSectionSelector) return null;
-  }
-
   if (checkSelectorType(selector) === 'fragment') {
     try {
       const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
@@ -401,6 +396,8 @@ function getSelectedElement({ selector, action, rootEl }) {
     // eslint-disable-next-line no-param-reassign
     selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
     const element = querySelector(rootEl || document, selector);
+
+    if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
 
     return element;
   }
