@@ -12,7 +12,7 @@ footer {
 .footer-nav-item-link a {
   display: block;
   text-decoration: none;
-  padding: 8px 0;
+  padding: 3px 0;
 }
 
 footer a:any-link {
@@ -304,6 +304,9 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
 }
 
 /* PRIVACY INFO */
+.footer-privacy {
+  font-size: var(--type-detail-s-size);
+}
 
 .footer-privacy-copyright {
   margin-top: 0;

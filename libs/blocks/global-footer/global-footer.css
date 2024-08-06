@@ -49,12 +49,6 @@
   flex-direction: column;
 }
 
-/* Additional nesting is needed for specificity */
-.feds-footer-wrapper .feds-menu-content .feds-navLink {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
 /* Featured products */
 .feds-featuredProducts {
   display: none;
@@ -228,6 +222,7 @@
   column-gap: 5px;
   flex-wrap: wrap;
   margin: 0;
+  font-size: 11px;
 }
 
 .feds-footer-privacyLink {
