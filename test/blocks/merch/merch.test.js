@@ -652,42 +652,42 @@ describe('Merch Block', () => {
       {
         url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
         plan: 'edu',
-        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu'
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu',
       },
       {
         url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=abc',
         plan: 'edu',
-        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu'
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu',
       },
       {
         url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1#thisishash',
         plan: 'edu',
-        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu#thisishash'
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu#thisishash',
       },
       {
         url: 'https://www.adobe.com/mini-plans/illustrator.html',
         plan: 'edu',
-        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?plan=edu'
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?plan=edu',
       },
       {
         url: 'https://www.adobe.com/mini-plans/illustrator.html#thisishash',
         plan: 'edu',
-        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?plan=edu#thisishash'
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?plan=edu#thisishash',
       },
       {
         url: 'www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1', // invalid URL, protocol is missing
         plan: 'edu',
-        urlWithPlan: 'www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1'
+        urlWithPlan: 'www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
       },
       {
         url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
         plan: 'team',
-        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=team'
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=team',
       },
       {
         url: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
         plan: '',
-        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1'
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
       },
     ];
     MODAL_URLS.forEach((modalUrl) => {
