@@ -647,7 +647,7 @@
     align-items: center;
     flex-direction: row;
     margin: 0 auto;
-    gap: var(--spacing-xl);
+    gap: var(--spacing-l);
   }
 
   .aside.mobile-row-reverse .foreground.container {
