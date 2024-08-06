@@ -304,7 +304,7 @@ async function openFragmentModal(path, getModal) {
 
 export function appendTabName(url) {
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
-  if (!metaPreselectPlan || !metaPreselectPlan.content) return url;
+  if (!metaPreselectPlan?.content) return url;
   let urlWithPlan;
   try {
     urlWithPlan = new URL(url);
