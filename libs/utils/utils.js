@@ -1193,6 +1193,15 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
+    // Ensure the window.marketingtech.adobe object exists
+  if (!window.marketingtech) {
+    window.marketingtech = {};
+  }
+  if (!window.marketingtech.adobe) {
+    window.marketingtech.adobe = {};
+  }
+  // Set the target flag to true
+  window.marketingtech.adobe.target = true;
 
   if (isDoc) {
     await checkForPageMods();
