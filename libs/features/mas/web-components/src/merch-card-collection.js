@@ -304,6 +304,7 @@ export class MerchCardCollection extends LitElement {
     }
 
     sortChanged(event) {
+        console.log('event.target.value', event.target.value);
         if (event.target.value === SORT_ORDER.authored) {
             pushState({ sort: undefined });
         } else {
