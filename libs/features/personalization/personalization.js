@@ -333,11 +333,12 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
 }
 
 function getSelectedElement({ selector, action, rootEl }) {
-  if (!selector) return null;
+  let modifiedSelector = selector;
+  if (!modifiedSelector) return null;
 
-  if (checkSelectorType(selector) === 'fragment') {
+  if (checkSelectorType(modifiedSelector) === 'fragment') {
     try {
-      const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
+      const fragment = document.querySelector(`a[href*="${normalizePath(modifiedSelector, false)}"], a[href*="${normalizePath(modifiedSelector, true)}"]`);
       if (fragment) return fragment.parentNode;
       return null;
     } catch (e) {
@@ -346,23 +347,21 @@ function getSelectedElement({ selector, action, rootEl }) {
   } else {
     MILO_BLOCKS.forEach((block) => {
       const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
-      const match = regex.exec(selector);
+      const match = regex.exec(modifiedSelector);
       if (match?.length) {
         const simplifiedSelector = match[0].replace(/\s+/g, '');
         const n = simplifiedSelector.match(/\d+/g) || '1';
-        const cleanClassSelector = match[2]; // this one has no digits and no spaces
+        const cleanClassSelector = match[2];
         const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
-        // eslint-disable-next-line no-param-reassign
-        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+        modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
       }
     });
     ['section', 'row', 'col'].forEach((sel) => {
-      const simplifiedSelectors = selector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
+      const simplifiedSelectors = modifiedSelector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
       simplifiedSelectors?.forEach((simplifiedSelector) => {
         const n = simplifiedSelector.match(/\d+/g) || '1';
         const cssOptimizedSelector = `> div:nth-of-type(${n})`;
-        // eslint-disable-next-line no-param-reassign
-        selector = selector.replace(simplifiedSelector, cssOptimizedSelector);
+        modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
       });
     });
     ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
@@ -370,32 +369,27 @@ function getSelectedElement({ selector, action, rootEl }) {
       simplifiedSelectors?.forEach((simplifiedSelector) => {
         switch (true) {
           case simplifiedSelector.includes('primary-cta'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p strong a');
+            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p strong a');
             break;
           case simplifiedSelector.includes('secondary-cta'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p em a');
+            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p em a');
             break;
           case simplifiedSelector.includes('action-area'):
-            // eslint-disable-next-line no-param-reassign
-            selector = selector.replace(simplifiedSelector, 'p:has(em a, strong a)');
+            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p:has(em a, strong a)');
             break;
           default: break;
         }
       });
     });
-    const customBlockSelectors = selector.match(/\.\w+-?\w+\d+/g);
+    const customBlockSelectors = modifiedSelector.match(/\.\w+-?\w+\d+/g);
     customBlockSelectors?.forEach((customBlockSelector) => {
       const n = customBlockSelector.match(/\d+/g);
       const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
       const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
-      // eslint-disable-next-line no-param-reassign
-      selector = selector.replace(customBlockSelector, cssOptimizedSelector);
+      modifiedSelector = modifiedSelector.replace(customBlockSelector, cssOptimizedSelector);
     });
-    // eslint-disable-next-line no-param-reassign
-    selector = rootEl === document ? `body > main ${selector}` : `:scope ${selector}`;
-    const element = querySelector(rootEl || document, selector);
+    modifiedSelector = rootEl === document ? `body > main ${modifiedSelector}` : `:scope ${selector}`;
+    const element = querySelector(rootEl || document, modifiedSelector);
 
     if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
 
