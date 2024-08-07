@@ -302,11 +302,26 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
+export function appendTabName(url) {
+  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
+  if (!metaPreselectPlan?.content) return url;
+  let urlWithPlan;
+  try {
+    urlWithPlan = new URL(url);
+  } catch (err) {
+    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    return url;
+  }
+  urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
+  return urlWithPlan.href;
+}
+
 async function openExternalModal(url, getModal) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
+  const urlWithTabName = appendTabName(url);
   createTag('iframe', {
-    src: url,
+    src: urlWithTabName,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',

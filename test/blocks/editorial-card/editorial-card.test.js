@@ -34,7 +34,7 @@ describe('editorial-card', () => {
   });
 
   it('w/ 4 rows has a footer', () => {
-    const footer = editorialCards[3].querySelector('.footer');
+    const footer = editorialCards[3].querySelector('.card-footer');
     expect(footer).to.exist;
   });
 
