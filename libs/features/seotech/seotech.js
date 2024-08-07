@@ -54,9 +54,11 @@ export async function getStructuredData(bucket, id, options) {
 export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
   const url = new URL(locationUrl);
   const params = new URLSearchParams(url.search);
-  const append = (obj) => {
+  const append = (obj, className) => {
     if (!obj) return;
-    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
+    const attributes = { type: 'application/ld+json' };
+    if (className) attributes.class = className;
+    const script = createTag('script', attributes, JSON.stringify(obj));
     document.head.append(script);
   };
 
@@ -66,13 +68,13 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
     const id = await sha256(url.pathname?.replace('.html', ''));
     const baseUrl = params.get('seotech-api-base-url') || 'https://www.adobe.com/seotech/api';
     promises.push(getStructuredData(bucket, id, { baseUrl })
-      .then((obj) => append(obj))
+      .then((obj) => append(obj, 'seotech-structured-data'))
       .catch((e) => logError(e.message)));
   }
   if (getMetadata('seotech-video-url')) {
     const env = getConfig()?.env?.name;
     promises.push(getVideoObject(getMetadata('seotech-video-url'), { env })
-      .then((videoObject) => append(videoObject))
+      .then((videoObject) => append(videoObject, 'seotech-video-url'))
       .catch((e) => logError(e.message)));
   }
   return Promise.all(promises);
