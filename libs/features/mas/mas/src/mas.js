@@ -1,5 +1,4 @@
 import { init } from '@adobe/mas-commerce';
-
 const { origin, searchParams } = new URL(import.meta.url);
 
 const locale = searchParams.get('locale') ?? 'US_en';
@@ -19,5 +18,8 @@ const config = () => ({
 init(config);
 
 if (features.includes('merch-card')) {
-    import('https://main--mas--adobecom.hlx.live/libs/merch-card-all.js');
+  import('../web-components/src/merch-card.js')
+    .then(() => import('../web-components/src/merch-icon.js'))
+    .then(() => import('../web-components/src/merch-datasource.js'))
+    .catch(error => console.error('Error loading mas modules:', error));
 }
