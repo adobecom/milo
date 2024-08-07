@@ -724,10 +724,27 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const found = regex.test(el.innerHTML);
-  if (!found) return;
+  const walker = document.createTreeWalker(
+    el,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(node) {
+        return regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      },
+    },
+  );
+  const nodes = [];
+  let node = walker.nextNode();
+  while (node !== null) {
+    nodes.push(node);
+    node = walker.nextNode();
+  }
+  if (!nodes.length) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(el.innerHTML, config, regex);
+  const replaceNodes = nodes.map(async (textNode) => {
+    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
+  });
+  await Promise.all(replaceNodes);
 }
 
 async function loadFooter() {
@@ -865,8 +882,9 @@ export async function loadMartech({
     return true;
   }
 
-  const query = PAGE_URL.searchParams.get('martech');
-  if (query === 'off' || getMetadata('martech') === 'off') {
+  if (PAGE_URL.searchParams.get('martech') === 'off'
+    || PAGE_URL.searchParams.get('marketingtech') === 'off'
+    || getMetadata('martech') === 'off') {
     return false;
   }
 
@@ -998,6 +1016,18 @@ export function scrollToHashedElement(hash) {
   });
 }
 
+function logPagePerf() {
+  if (getMetadata('pageperf') !== 'on') return;
+  const isChrome = () => {
+    const nav = window.navigator;
+    return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
+  };
+  const sampleRate = parseInt(getMetadata('pageperf-rate'), 10) || 50;
+  if (!isChrome() || Math.random() * 100 > sampleRate) return;
+  import('./logWebVitals.js')
+    .then((mod) => mod.default(getConfig().mep, getMetadata('pageperf-delay') || 1000));
+}
+
 export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
@@ -1025,6 +1055,8 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
+
+  logPagePerf();
 }
 
 function initSidekick() {
@@ -1111,6 +1143,16 @@ async function documentPostSectionLoading(config) {
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
 }
 
+export function partition(arr, fn) {
+  return arr.reduce(
+    (acc, val, i, ar) => {
+      acc[fn(val, i, ar) ? 0 : 1].push(val);
+      return acc;
+    },
+    [[], []],
+  );
+}
+
 async function processSection(section, config, isDoc) {
   const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
@@ -1124,8 +1166,10 @@ async function processSection(section, config, isDoc) {
   }
 
   if (section.preloadLinks.length) {
-    const preloads = section.preloadLinks.map((block) => loadBlock(block));
+    const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
+    const preloads = nonModals.map((block) => loadBlock(block));
     await Promise.all(preloads);
+    modals.forEach((block) => loadBlock(block));
   }
 
   const loaded = section.blocks.map((block) => loadBlock(block));
