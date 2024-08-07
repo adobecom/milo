@@ -766,7 +766,6 @@ export const initCaas = async (state, caasStrs, el) => {
 export const defaultState = {
   additionalRequestParams: [],
   altCTAs: false,
-  altCtaTag: '',
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
