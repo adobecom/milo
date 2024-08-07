@@ -140,8 +140,8 @@ ENVS.local = {
 
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
-const DESKTOP_SIZE = 900;
-const MOBILE_SIZE = 768;
+const DESKTOP_SIZE = 1200;
+const MOBILE_SIZE = 600;
 
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
