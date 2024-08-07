@@ -32,6 +32,8 @@ export const formValidate = (form) => {
 };
 
 export const decorateURL = (destination, baseURL = window.location) => {
+  if (!(destination.startsWith('http') || destination.startsWith('/'))) return null;
+
   try {
     let destinationUrl = new URL(destination, baseURL.origin);
     const { hostname, pathname, search, hash } = destinationUrl;
