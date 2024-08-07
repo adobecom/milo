@@ -902,7 +902,7 @@ const getPanels = (tagsData) => [
   },
   {
     title: 'UI',
-    content: html`<${UiPanel} tagsData=${tagsData} />`,
+    content: html`<${UiPanel} />`,
   },
   {
     title: 'Tags',
