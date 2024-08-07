@@ -2,7 +2,6 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/mas/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
@@ -403,6 +402,16 @@ const updateBigPrices = (merchCard) => {
   });
 };
 
+const addStartingAt = async (styles, merchCard) => {
+  if (styles.includes('starting-at')) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey('starting-at', getConfig()).then((key) => {
+      const startingAt = createTag('div', { slot: 'starting-at' }, key);
+      merchCard.append(startingAt);
+    });
+  }
+};
+
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
@@ -571,6 +580,7 @@ export default async function init(el) {
         }
       }
     }
+    addStartingAt(styles, merchCard);
     updateBigPrices(merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
