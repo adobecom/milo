@@ -23,6 +23,7 @@ export async function getVideoObject(url, options) {
   return body.videoObject;
 }
 
+// https://github.com/orgs/adobecom/discussions/2633
 export function getRepoByImsClientId(imsClientId) {
   return {
     'adobedotcom-cc': 'cc',
