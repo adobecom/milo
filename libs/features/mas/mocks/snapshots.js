@@ -65,6 +65,43 @@ const promo = `
 </span>
 `;
 
+const legacyPromo = `
+<span class="price" aria-label="US$6.49 per month">
+  <span class="price-currency-symbol"> US$ </span>
+  <span class="price-currency-space disabled"> </span>
+  <span class="price-integer"> 6 </span>
+  <span class="price-decimals-delimiter"> . </span>
+  <span class="price-decimals"> 49 </span>
+  <span class="price-recurrence"> /mo </span>
+  <span class="price-unit-type disabled"></span>
+  <span class="price-tax-inclusivity disabled"> </span>
+</span>
+`;
+
+const legacyPromoOldPrice = `
+<span class="price" aria-label="US$6.49 per month">
+  <span class="price-currency-symbol"> US$ </span>
+  <span class="price-currency-space disabled"> </span>
+  <span class="price-integer"> 6 </span>
+  <span class="price-decimals-delimiter"> . </span>
+  <span class="price-decimals"> 49 </span>
+  <span class="price-recurrence"> /mo </span>
+  <span class="price-unit-type disabled"></span>
+  <span class="price-tax-inclusivity disabled"> </span>
+</span>
+&nbsp;
+<span class="price price-strikethrough" aria-label="Regularly at US$12.99 per month">
+  <span class="price-currency-symbol"> US$ </span>
+  <span class="price-currency-space disabled"> </span>
+  <span class="price-integer"> 12 </span>
+  <span class="price-decimals-delimiter"> . </span>
+  <span class="price-decimals"> 99 </span>
+  <span class="price-recurrence"> /mo </span>
+  <span class="price-unit-type disabled"> </span>
+  <span class="price-tax-inclusivity disabled"> </span>
+</span>
+`;
+
 const promoStikethrough = `
 <span class="price" aria-label="US$43.99 per month">
   <span class="price-currency-symbol"> US$ </span>
@@ -135,6 +172,8 @@ export default {
     annual,
     price,
     promo,
+    legacyPromo,
+    legacyPromoOldPrice,
     promoStikethrough,
     strikethrough,
     taxExclusive,

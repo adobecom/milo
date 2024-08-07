@@ -298,6 +298,34 @@
             "merchant": "ADOBE"
         }
     ],
+    "abm-legacy-promo-mult": [
+        {
+            "offerId": "158BE89F0EFF59464067887A206A165E",
+            "priceDetails": {
+                "price": 6.49,
+                "priceWithoutDiscount": 12.99,
+                "priceWithoutTax": 6.49,
+                "priceWithoutDiscountAndTax": 12.99,
+                "usePrecision": true,
+                "formatString": "'US$'#,##0.00",
+                "taxDisplay": "TAX_EXCLUSIVE",
+                "taxTerm": "TAX"
+            },
+            "productArrangementCode": "PA-71",
+            "buyingProgram": "RETAIL",
+            "commitment": "YEAR",
+            "term": "MONTHLY",
+            "customerSegment": "TEAM",
+            "marketSegments": [
+                "COM"
+            ],
+            "salesChannel": "DIRECT",
+            "offerType": "PROMOTION",
+            "pricePoint": "TEAM_DIRECT_ADOBE_EXPRESS_50_OFF_INTRO_PRICING",
+            "language": "MULT",
+            "merchant": "ADOBE"
+        }
+    ],
     "m2m-promo-mult": [
         {
             "offerId": "257E1D82082387D152029F93C1030624",

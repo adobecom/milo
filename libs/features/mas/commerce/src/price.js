@@ -79,6 +79,7 @@ export function Price({ literals, providers, settings }) {
             return '';
         }
         const { template } = options;
+        let [offer] = offers;
         let method;
         switch (template) {
             // TODO: use price template name constants, export them from `consonant-templates`
@@ -95,7 +96,7 @@ export function Price({ literals, providers, settings }) {
                 method = priceAnnual;
                 break;
             default:
-                method = options.promotionCode ? pricePromo : price;
+                method = options.promotionCode || offer.offerType === 'PROMOTION' ? pricePromo : price;
         }
 
         const context = collectPriceOptions(options);
@@ -104,7 +105,6 @@ export function Price({ literals, providers, settings }) {
             literals.price,
             omitProperties(options.literals ?? {}),
         );
-        let [offer] = offers;
         offer = { ...offer, ...offer.priceDetails };
         return method(context, offer);
     }

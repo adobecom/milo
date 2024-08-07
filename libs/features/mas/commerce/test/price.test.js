@@ -92,6 +92,29 @@ describe('class "InlinePrice"', () => {
         expect(inlinePrice.innerHTML).to.be.html(snapshots.promo);
     });
 
+    it('renders price with legacy promo offer without old price', async () => {
+        await initService(mockConfig(), true);
+        const inlinePrice = mockInlinePrice('abm-legacy-promo');
+        inlinePrice.dataset.displayOldPrice = 'false';
+        await inlinePrice.onceSettled();
+        expect(inlinePrice.innerHTML).to.be.html(snapshots.legacyPromo);
+    });
+
+    it('renders price with legacy promo offer with old price', async () => {
+        await initService(mockConfig(), true);
+        const inlinePrice = mockInlinePrice('abm-legacy-promo');
+        inlinePrice.dataset.displayOldPrice = 'true';
+        await inlinePrice.onceSettled();
+        expect(inlinePrice.innerHTML).to.be.html(snapshots.legacyPromoOldPrice);
+    });
+
+    it('renders price with legacy promo offer with old price by default', async () => {
+        await initService(mockConfig(), true);
+        const inlinePrice = mockInlinePrice('abm-legacy-promo');
+        await inlinePrice.onceSettled();
+        expect(inlinePrice.innerHTML).to.be.html(snapshots.legacyPromoOldPrice);
+    });
+
     it('renders price with offer data', async () => {
         await initService(mockConfig(), true);
         class InlineOffer extends InlinePrice {

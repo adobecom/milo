@@ -474,7 +474,7 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
-  const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
+  const displayOldPrice = params.get('old');
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
