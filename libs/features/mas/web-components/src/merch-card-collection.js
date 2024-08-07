@@ -283,7 +283,7 @@ export class MerchCardCollection extends LitElement {
             <sp-action-menu
                 id="sortButton"
                 size="m"
-                @change="${this.sortChanged}"
+                onchange="${this.sortChanged}"
                 selects="single"
                 value="${alphabetical
                     ? SORT_ORDER.alphabetical
