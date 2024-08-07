@@ -18,8 +18,8 @@ const config = () => ({
 init(config);
 
 if (features.includes('merch-card')) {
-  import('../web-components/src/merch-card.js')
-    .then(() => import('../web-components/src/merch-icon.js'))
-    .then(() => import('../web-components/src/merch-datasource.js'))
+  import('../../web-components/src/merch-card.js')
+    .then(() => import('../../web-components/src/merch-icon.js'))
+    .then(() => import('../../web-components/src/merch-datasource.js'))
     .catch(error => console.error('Error loading mas modules:', error));
 }
