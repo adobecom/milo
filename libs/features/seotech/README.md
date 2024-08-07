@@ -28,9 +28,5 @@ This feature queries the SEOTECH service for structured data that should be adde
 Metadata Properties:
 
 - `seotech-structured-data`: `on` to enable SEOTECH lookup
-- `seotech-sheet-url`: url of Franklin Spreadsheet JSON (Optional)
 
-You can also specify `seotech-sheet-url` as a query parameter.
-Otherwise SEOTECH will search for _/structured-data.json_ at the root of the current page.
-
-See [seotech page](https://git.corp.adobe.com/pages/wcms/seotech/) (Corp Only) for list of supported structured data types.
+See [Structured Data for Milo](https://wiki.corp.adobe.com/x/YpPwwg) (Corp Only) for list of supported structured data types.
