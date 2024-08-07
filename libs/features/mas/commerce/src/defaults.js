@@ -27,7 +27,7 @@ export const Defaults = Object.freeze({
     quantity: 1,
     wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
     wcsBufferDelay: 1,
-    wcsEnv: WcsEnv.PRODUCTION,
+    wcsURL: 'https://www.adobe.com/web_commerce_artifact',
     landscape: Landscape.PUBLISHED,
     wcsBufferLimit: 1,
 });

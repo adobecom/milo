@@ -135,15 +135,18 @@ function getSettings(config = {}) {
     // TODO: add alias names for meta, search and storage
     // See https://git.corp.adobe.com/wcms/tacocat.js/pull/348#discussion_r6557570
     const { commerce = {}, locale = undefined } = config;
-    const hostEnv =
-        config.env?.name === HostEnv.PROD
-            ? HostEnv.PROD
-            : toEnumeration(
-                  getParameter(PARAM_ENV, commerce, { metadata: false }),
-                  HostEnv,
-                  HostEnv.PROD,
-              );
-    const env = hostEnv === HostEnv.STAGE ? Env.STAGE : Env.PRODUCTION;
+    const lowHostEnv = ['local', 'stage'].includes(config.env?.name);
+    let env = Env.PRODUCTION;
+    let wcsURL = 'https://www.adobe.com/web_commerce_artifact';
+    if (lowHostEnv) {
+      wcsURL = 'https://www.stage.adobe.com/web_commerce_artifact';
+      const forceWcsStage = getParameter(PARAM_ENV, commerce, { metadata: false }) === 'stage';
+      if (forceWcsStage) {
+        env = Env.STAGE;
+        wcsURL = `${wcsURL}_stage`;
+      }
+    }
+    
     const checkoutClientId =
         getParameter('checkoutClientId', commerce) ?? Defaults.checkoutClientId;
     const checkoutWorkflow = toEnumeration(
@@ -227,7 +230,7 @@ function getSettings(config = {}) {
         wcsApiKey,
         wcsBufferDelay,
         wcsBufferLimit,
-        wcsEnv: env === Env.STAGE ? WcsEnv.STAGE : WcsEnv.PRODUCTION,
+        wcsURL,
         landscape,
         domainSwitch,
     };

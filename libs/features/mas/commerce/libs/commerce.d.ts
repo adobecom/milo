@@ -575,7 +575,7 @@ declare global {
                 wcsApiKey: string;
                 wcsBufferDelay: number;
                 wcsBufferLimit: number;
-                wcsEnv: Environment;
+                wcsURL: string;
                 domainSwitch: boolean;
             }
         }

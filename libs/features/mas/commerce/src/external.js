@@ -10,7 +10,6 @@ import {
     Landscape,
     ProviderEnvironment,
 } from '@pandora/data-source-utils';
-import { webCommerceArtifact } from '@pandora/data-source-wcs';
 
 import {
     price,
@@ -89,5 +88,4 @@ export {
     toEnumeration,
     toKebabCase,
     toPositiveFiniteInteger,
-    webCommerceArtifact,
 };
