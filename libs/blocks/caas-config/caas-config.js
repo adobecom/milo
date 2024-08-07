@@ -397,7 +397,6 @@ const UiPanel = () => html`
   />
 `;
 
-
 const TagsPanel = ({ tagsData }) => {
   const context = useContext(ConfiguratorContext);
   if (!tagsData) return '';
