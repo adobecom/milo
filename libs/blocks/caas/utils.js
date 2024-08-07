@@ -599,6 +599,7 @@ export const getConfig = async (originalState, strs = {}) => {
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
+      altCtaOnLive: state.altCTAs,
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
@@ -764,6 +765,8 @@ export const initCaas = async (state, caasStrs, el) => {
 
 export const defaultState = {
   additionalRequestParams: [],
+  altCTAs: false,
+  altCtaTag: '',
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
