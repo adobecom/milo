@@ -1,3 +1,6 @@
+export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net';
+export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net';
+
 export function logError(msg) {
   window.lana?.log(`SEOTECH: ${msg}`, {
     debug: false,
@@ -8,10 +11,10 @@ export function logError(msg) {
 }
 
 export async function getVideoObject(url, options) {
+  const { env } = options;
   const videoUrl = new URL(url)?.href;
-  const { subdomain } = options;
-  // FIXME: https://jira.corp.adobe.com/browse/WPS-26205
-  const videoObjectUrl = `https://${subdomain}.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=${videoUrl}`;
+  const baseUrl = env === 'prod' ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
+  const videoObjectUrl = `${baseUrl}/api/v1/web/seotech/getVideoObject?url=${videoUrl}`;
   const resp = await fetch(videoObjectUrl, { headers: { 'Content-Type': 'application/json' } });
   const body = await resp?.json();
   if (!resp.ok) {
@@ -40,9 +43,8 @@ export async function sha256(message) {
 
 export async function getStructuredData(bucket, id, options) {
   if (!bucket || !id) throw new Error('bucket and id are required');
-  const { subdomain } = options;
-  // FIXME: https://jira.corp.adobe.com/browse/WPS-26205
-  const url = `https://${subdomain}.adobeioruntime.net/apis/v1/seotech/structured-data/${bucket}/${id}`;
+  const { baseUrl } = options;
+  const url = `${baseUrl}/structured-data/${bucket}/${id}`;
   const resp = await fetch(url);
   if (!resp || !resp.ok) return null;
   const body = await resp.json();
@@ -51,9 +53,7 @@ export async function getStructuredData(bucket, id, options) {
 
 export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
   const url = new URL(locationUrl);
-  const env = new URLSearchParams(url.search).get('seotech-env') || getMetadata('seotech-env');
-  const subdomain = env && env !== 'production' ? `14257-seotech-${env}` : '14257-seotech';
-
+  const params = new URLSearchParams(url.search);
   const append = (obj) => {
     if (!obj) return;
     const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
@@ -64,12 +64,14 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
   if (getMetadata('seotech-structured-data') === 'on') {
     const bucket = getRepoByImsClientId(getConfig()?.imsClientId);
     const id = await sha256(url.pathname?.replace('.html', ''));
-    promises.push(getStructuredData(bucket, id, { subdomain })
+    const baseUrl = params.get('seotech-api-base-url') || 'https://www.adobe.com/seotech/api';
+    promises.push(getStructuredData(bucket, id, { baseUrl })
       .then((obj) => append(obj))
       .catch((e) => logError(e.message)));
   }
   if (getMetadata('seotech-video-url')) {
-    promises.push(getVideoObject(getMetadata('seotech-video-url'), { subdomain })
+    const env = getConfig()?.env?.name;
+    promises.push(getVideoObject(getMetadata('seotech-video-url'), { env })
       .then((videoObject) => append(videoObject))
       .catch((e) => logError(e.message)));
   }

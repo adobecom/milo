@@ -40,7 +40,7 @@ describe('seotech', () => {
       await appendScriptTag(
         { locationUrl, getMetadata, getConfig: getConfigStub, createTag },
       );
-      const expectedApiCall = 'https://14257-seotech-stage.adobeioruntime.net/apis/v1/seotech/structured-data/cc/3e2d1ce8ccf0e45d42d33e0f190fc306ab1ee0f2890c8ff5da27414f8014ceb2';
+      const expectedApiCall = 'https://www.adobe.com/seotech/api/structured-data/cc/3e2d1ce8ccf0e45d42d33e0f190fc306ab1ee0f2890c8ff5da27414f8014ceb2';
       expect(fetchStub.getCall(0)?.firstArg).to.equal(expectedApiCall);
     });
 
@@ -63,7 +63,7 @@ describe('seotech', () => {
       await appendScriptTag(
         { locationUrl, getMetadata, getConfig: getConfigStub, createTag },
       );
-      const expectedApiCall = 'https://14257-seotech.adobeioruntime.net/apis/v1/seotech/structured-data/cc/f0f5cec5d8b70cf798b602c3586da39e93b9638d9b8001b3a4298605dc5f6ebe';
+      const expectedApiCall = 'https://www.adobe.com/seotech/api/structured-data/cc/f0f5cec5d8b70cf798b602c3586da39e93b9638d9b8001b3a4298605dc5f6ebe';
       expect(fetchStub.getCall(0)?.firstArg).to.equal(expectedApiCall);
       const el = await waitForElement('script[type="application/ld+json"]');
       const obj = JSON.parse(el.text);
@@ -104,7 +104,7 @@ describe('seotech', () => {
         { locationUrl: window.location.href, getMetadata, getConfig, createTag },
       );
       expect(fetchStub.calledOnceWith(
-        'https://14257-seotech.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
+        'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
       )).to.be.true;
       expect(lanaStub.calledOnceWith('SEOTECH: Failed to fetch video: ERROR!')).to.be.true;
     });
@@ -127,7 +127,7 @@ describe('seotech', () => {
         { locationUrl: window.location.href, getMetadata, getConfig, createTag },
       );
       expect(fetchStub.calledOnceWith(
-        'https://14257-seotech.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
+        'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
       )).to.be.true;
       const el = await waitForElement('script[type="application/ld+json"]');
       const obj = JSON.parse(el.text);
