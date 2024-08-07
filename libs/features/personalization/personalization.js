@@ -4,6 +4,7 @@
 import {
   createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
 } from '../../utils/utils.js';
+import getPromoManifests from './promo-utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
 /* c8 ignore start */
@@ -908,7 +909,6 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   }
 
   if (promoEnabled) {
-    const { default: getPromoManifests } = await import('./promo-utils.js');
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
