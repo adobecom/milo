@@ -56,6 +56,10 @@
   width: 100%;
 }
 
+.icon-block.full-width .foreground .action-area a, strong {
+  width: 100%;
+}
+
 .five-up .icon-block .foreground .text-content {
   padding-bottom: var(--spacing-xs);
 }
@@ -287,6 +291,7 @@
 
 .icon-block.full-width .foreground .text-content .action-area {
   justify-content: center;
+  flex-direction: column-reverse;
 }
 
 .icon-block.center .foreground .text-content .action-area {
@@ -387,7 +392,7 @@
   width: 100%;
 }
 
-@media screen and (min-width: 600px) and (max-width: 1200px) {
+@media screen and (min-width: 768px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
   }
@@ -419,7 +424,17 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@media screen and (min-width: 768px) {
+  .icon-block.full-width .foreground .text-content .action-area {
+    flex-direction: row;
+  }
+
+  .icon-block.full-width .foreground .action-area a, strong {
+    width: unset;
+  }
+}
+
+@media screen and (min-width: 1280px) {
   .dark .icon-block, .icon-block.dark {
     width: 95%;
   }
