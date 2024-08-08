@@ -733,7 +733,7 @@ async function decoratePlaceholders(area, config) {
         regex.lastIndex = 0;
         return a;
       },
-    },
+      },
   );
   const nodes = [];
   let node = walker.nextNode();
