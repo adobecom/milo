@@ -10,7 +10,7 @@ const BASE_CONFIG = {
   },
 };
 
-export async function getMSALConfig(telemetry) {
+export async function getMSALConfig({ telemetry, config = BASE_CONFIG }) {
   try {
     const { base } = getConfig();
     await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
@@ -22,7 +22,7 @@ export async function getMSALConfig(telemetry) {
       authority: sharepoint.authority,
     };
 
-    return { ...BASE_CONFIG, auth, telemetry };
+    return { ...config, auth, telemetry };
   } catch (err) {
     window.lana?.log(err);
     return { error: 'There was an error authenticating with Microsoft.' };
