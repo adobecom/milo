@@ -67,7 +67,7 @@ function getBlockData(el) {
   const variant = variants.find((varClass) => el.classList.contains(varClass)) || defaultVariant;
   const size = sizes.find((sizeClass) => el.classList.contains(sizeClass)) || defaultSize;
   const fontSizes = [...blockConfig[variant][size]];
-  if (el.classList.contains('s-button')) fontSizes.splice(3, 1, 'm');
+  if (el.classList.contains('m-button')) fontSizes.splice(3, 1, 'm');
   return { fontSizes, options: { ...getOpts(el) } };
 }
 
