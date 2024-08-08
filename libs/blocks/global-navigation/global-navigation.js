@@ -34,6 +34,7 @@ import {
   trigger,
   yieldToMain,
   addMepHighlightAndTargetId,
+  isDarkMode,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -603,7 +604,7 @@ class Gnav {
       env: environment,
       locale,
       imsClientId: window.adobeid?.client_id,
-      theme: 'light',
+      theme: isDarkMode() ? 'dark' : 'light',
       onReady: () => {
         this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
       },
@@ -1025,6 +1026,7 @@ export default async function init(block) {
     block.setAttribute('daa-im', 'true');
     const mepMartech = mep?.martech || '';
     block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
+    block.classList.add('darknav');
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });

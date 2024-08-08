@@ -1,5 +1,6 @@
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
+  setConfig,
 } from '../../../utils/utils.js';
 import { getFederatedContentRoot, getFederatedUrl } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
@@ -156,10 +157,18 @@ export function loadStyles(url) {
   });
 }
 
+export function isDarkMode() {
+  const gnavDarkMode = getMetadata('gnav-dark-mode');
+  const { theme } = getConfig();
+  if (gnavDarkMode && theme === 'dark') return true;
+  return false;
+}
+
 // Base styles are shared between top navigation and footer,
 // since they can be independent of each other.
 // CSS imports were not used due to duplication of file include
 export async function loadBaseStyles() {
+  if (isDarkMode()) await loadStyles(rootPath('dark-theme.css'));
   const url = rootPath('base.css');
   await loadStyles(url);
 }
