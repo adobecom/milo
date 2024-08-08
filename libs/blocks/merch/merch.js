@@ -212,22 +212,28 @@ export async function getCheckoutLinkConfig(productFamily, productCode, paCode) 
   }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
   const { locale: { region } } = getConfig();
-  let productCheckoutLinkConfigs = [];
-  if (paCode) {
-    productCheckoutLinkConfigs = checkoutLinkConfigs.data?.filter(
-      ({ [NAME_PRODUCT_FAMILY]: code }) => code === paCode,
-    );
-  }
-  if (productCode && productCheckoutLinkConfigs.length === 0) {
-    productCheckoutLinkConfigs = checkoutLinkConfigs.data?.filter(
-      ({ [NAME_PRODUCT_FAMILY]: code }) => code === productCode,
-    );
-  }
-  if (productCheckoutLinkConfigs.length === 0) {
-    productCheckoutLinkConfigs = checkoutLinkConfigs.data?.filter(
-      ({ [NAME_PRODUCT_FAMILY]: code }) => code === productFamily,
-    );
-  }
+
+  const {
+    paCodeConfigs,
+    productCodeConfigs,
+    productFamilyConfigs,
+  } = checkoutLinkConfigs.data.reduce((acc, config) => {
+    if (config[NAME_PRODUCT_FAMILY] === paCode) {
+      acc.paCodeConfigs.push(config);
+    } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
+      acc.productCodeConfigs.push(config);
+    } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
+      acc.productFamilyConfigs.push(config);
+    }
+    return acc;
+  }, { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] });
+
+  // helps to fallback to product family config
+  // if no locale specific config is found below.
+  const productCheckoutLinkConfigs = [
+    ...paCodeConfigs, ...productCodeConfigs, ...productFamilyConfigs,
+  ];
+
   if (productCheckoutLinkConfigs.length === 0) return undefined;
   const checkoutLinkConfig = productCheckoutLinkConfigs.find(
     ({ [NAME_LOCALE]: locale }) => locale === '',
