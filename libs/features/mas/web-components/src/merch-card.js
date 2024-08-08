@@ -391,7 +391,6 @@ export class MerchCard extends LitElement {
         return html` ${this.badge}
             <div class="body">
                 <slot name="heading-xs"></slot>
-                ${this.startingAt ? html`<slot name="starting-at"></slot>` : nothing}
                 <slot name="body-xxs"></slot>
                 ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
                 <slot name="body-xs"></slot>
@@ -437,7 +436,6 @@ export class MerchCard extends LitElement {
                     >${this.actionMenuContent}</slot
                 >
                 <slot name="heading-xs"></slot>
-                ${this.startingAt ? html`<slot name="starting-at"></slot>` : nothing}
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
                 ${!this.promoBottom
@@ -493,7 +491,6 @@ export class MerchCard extends LitElement {
             <div class="body">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
-                ${this.startingAt ? html`<slot name="starting-at"></slot>` : nothing}
                 <slot name="body-xxs"></slot>
                 ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
                 <slot name="body-xs"></slot>
@@ -510,7 +507,6 @@ export class MerchCard extends LitElement {
             </div>
             <slot name="heading-m"></slot>
             <slot name="body-m"></slot>
-            ${this.startingAt ? html`<slot name="starting-at"></slot>` : nothing}
             <slot name="heading-m-price"></slot>
             <slot name="body-xxs"></slot>
             <slot name="price-commitment"></slot>

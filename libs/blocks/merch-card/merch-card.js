@@ -407,7 +407,10 @@ const addStartingAt = async (styles, merchCard) => {
     const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('starting-at', getConfig()).then((key) => {
       const startingAt = createTag('div', { slot: 'starting-at' }, key);
-      merchCard.append(startingAt);
+      const firstPrice = merchCard.querySelectorAll('[id*="price"]');
+      if (firstPrice[0]) {
+        firstPrice[0].prepend(startingAt);
+      }
     });
   }
 };
