@@ -93,6 +93,14 @@
   padding: var(--s2-spacing-400) var(--s2-spacing-400) var(--s2-spacing-300);
 }
 
+.editorial-card .foreground p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .editorial-card .extra-row {
   padding: 0 var(--spacing-xs);
 }
