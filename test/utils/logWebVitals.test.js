@@ -6,6 +6,18 @@ import logWebVitals from '../../libs/utils/logWebVitals.js';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Log Web Vitals', () => {
+  before(() => {
+    let expires = '';
+    const date = new Date();
+    date.setTime(date.getTime() + (1 * 24 * 60 * 60 * 1000));
+    expires = `; expires=${date.toUTCString()}`;
+    document.cookie = `${'OptanonConsent'}=${encodeURIComponent('C0002:1')}${expires}; path=/`;
+  });
+
+  after(() => {
+    document.cookie = `${'OptanonConsent'}=; Max-Age=-99999999;`;
+  });
+
   it('Logs data to lana', (done) => {
     window.lana = {
       log: (logStr, logOpts) => {
