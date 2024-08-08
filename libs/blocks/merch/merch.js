@@ -198,7 +198,13 @@ export async function fetchCheckoutLinkConfigs(base = '') {
   return fetchCheckoutLinkConfigs.promise;
 }
 
-export async function getCheckoutLinkConfig(productFamily) {
+/**
+ * @param {*} productFamily product family code
+ * @param {*} productCode product code, can be undefined
+ * @param {*} paCode product arrangement code, can be undefined
+ * @returns checkout link config for the given product family and code
+ */
+export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
   let { base } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
     /* c8 ignore next 2 */
@@ -206,14 +212,27 @@ export async function getCheckoutLinkConfig(productFamily) {
   }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
   const { locale: { region } } = getConfig();
-  const productFamilyConfigs = checkoutLinkConfigs.data?.filter(
-    ({ [NAME_PRODUCT_FAMILY]: mappingProductFamily }) => mappingProductFamily === productFamily,
-  );
-  if (productFamilyConfigs.length === 0) return undefined;
-  const checkoutLinkConfig = productFamilyConfigs.find(
+  let productCheckoutLinkConfigs = [];
+  if (paCode) {
+    productCheckoutLinkConfigs = checkoutLinkConfigs.data?.filter(
+      ({ [NAME_PRODUCT_FAMILY]: code }) => code === paCode,
+    );
+  }
+  if (productCode && productCheckoutLinkConfigs.length === 0) {
+    productCheckoutLinkConfigs = checkoutLinkConfigs.data?.filter(
+      ({ [NAME_PRODUCT_FAMILY]: code }) => code === productCode,
+    );
+  }
+  if (productCheckoutLinkConfigs.length === 0) {
+    productCheckoutLinkConfigs = checkoutLinkConfigs.data?.filter(
+      ({ [NAME_PRODUCT_FAMILY]: code }) => code === productFamily,
+    );
+  }
+  if (productCheckoutLinkConfigs.length === 0) return undefined;
+  const checkoutLinkConfig = productCheckoutLinkConfigs.find(
     ({ [NAME_LOCALE]: locale }) => locale === '',
   );
-  const checkoutLinkConfigOverride = productFamilyConfigs.find(
+  const checkoutLinkConfigOverride = productCheckoutLinkConfigs.find(
     ({ [NAME_LOCALE]: locale }) => locale === region,
   ) ?? {};
   const overrides = Object.fromEntries(
@@ -231,14 +250,22 @@ export async function getCheckoutLinkConfig(productFamily) {
 export async function getDownloadAction(
   options,
   imsSignedInPromise,
-  [{ offerType, productArrangement: { productFamily: offerFamily } = {} }],
+  [{
+    offerType,
+    productArrangementCode,
+    productArrangement: { productCode, productFamily: offerFamily } = {},
+  }],
 ) {
   if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
   if (!entitlements?.length) return undefined;
-  const checkoutLinkConfig = await getCheckoutLinkConfig(offerFamily);
+  const checkoutLinkConfig = await getCheckoutLinkConfig(
+    offerFamily,
+    productCode,
+    productArrangementCode,
+  );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find((
     { offer: { product_arrangement: { family: subscriptionFamily } } },
@@ -355,9 +382,17 @@ export async function openModal(e, url, offerType) {
 }
 
 export async function getModalAction(offers, options) {
-  const [{ offerType, productArrangement: { productFamily: offerFamily } = {} }] = offers ?? [{}];
+  const [{
+    offerType,
+    productArrangementCode,
+    productArrangement: { productCode, productFamily: offerFamily } = {},
+  }] = offers ?? [{}];
   if (options.modal !== true) return undefined;
-  const checkoutLinkConfig = await getCheckoutLinkConfig(offerFamily);
+  const checkoutLinkConfig = await getCheckoutLinkConfig(
+    offerFamily,
+    productCode,
+    productArrangementCode,
+  );
   if (!checkoutLinkConfig) return undefined;
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   let url = checkoutLinkConfig[columnName];

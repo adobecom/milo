@@ -64,6 +64,14 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: '',
     LOCALE: '',
   },
+  {
+    PRODUCT_FAMILY: 'testPaCode',
+    DOWNLOAD_TEXT: 'paCode',
+  },
+  {
+    PRODUCT_FAMILY: 'testProductCode',
+    DOWNLOAD_TEXT: 'productCode',
+  },
   ],
 };
 
@@ -497,6 +505,20 @@ describe('Merch Block', () => {
     it('getCheckoutLinkConfig: returns undefined if productFamily is not found', async () => {
       const checkoutLinkConfig = await getCheckoutLinkConfig('XYZ');
       expect(checkoutLinkConfig).to.be.undefined;
+    });
+
+    it('getCheckoutLinkConfig: finds using paCode', async () => {
+      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'testPaCode');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+      checkoutLinkConfig = await getCheckoutLinkConfig('', '', 'testPaCode');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+    });
+
+    it('getCheckoutLinkConfig: finds using productCode', async () => {
+      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, 'testProductCode', undefined);
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+      checkoutLinkConfig = await getCheckoutLinkConfig('', 'testProductCode', '');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
     });
 
     it('getDownloadAction: returns undefined if not entitled', async () => {
