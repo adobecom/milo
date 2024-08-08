@@ -1000,7 +1000,8 @@ export function scrollToHashedElement(hash) {
 }
 
 function logPagePerf() {
-  if (getMetadata('pageperf') !== 'on') return;
+  const performanceConsent = document.cookie.split('OptanonConsent')[1]?.includes(encodeURIComponent('C0002:1'));
+  if (getMetadata('pageperf') !== 'on' || !performanceConsent) return;
   const isChrome = () => {
     const nav = window.navigator;
     return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
