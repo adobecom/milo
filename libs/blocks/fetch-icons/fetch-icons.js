@@ -19,14 +19,14 @@ function initCopyLinks(el) {
 
 async function fetchIconList(url) {
   const resp = await fetch(url);
-  const json = await resp.json()
+  const respJson = await resp.json()
     .then((json) => {
       json.content.data.forEach((icon) => {
         icons.push(icon);
       });
     });
-  if (!resp.ok) { return { error: json }; }
-  return { list: json };
+  if (!resp.ok) { return { error: respJson }; }
+  return { list: respJson };
 }
 
 export default async function init(el) {

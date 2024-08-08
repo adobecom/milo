@@ -1,4 +1,5 @@
 import { getFederatedContentRoot, getFederatedUrl } from '../../utils/federated.js';
+import { loadLink } from '../../utils/utils.js';
 
 let fetchedIcons;
 let fetched = false;
@@ -54,18 +55,24 @@ function decorateToolTip(icon) {
 export async function getSvgFromFile(path, name) {
   /* c8 ignore next */
   if (!path) return null;
-  const resp = await fetch(path);
-  /* c8 ignore next */
-  if (!resp.ok) return null;
-  const text = await resp.text();
-  const parser = new DOMParser();
-  const parsedText = parser.parseFromString(text, 'image/svg+xml');
-  const svg = parsedText.firstChild;
-  svg.id = name;
-  const parsedSvg = parsedText.querySelector('svg');
-  parsedSvg.classList.add('icon-milo', `icon-milo-${name}`);
-  fetchedIcons[name] = parsedSvg;
-  return svg;
+
+  try {
+    const resp = await fetch(path);
+    /* c8 ignore next */
+    if (!resp.ok) return null;
+    const text = await resp.text();
+    const parser = new DOMParser();
+    const parsedText = parser.parseFromString(text, 'image/svg+xml');
+    const svg = parsedText.firstChild;
+    svg.id = name;
+    const parsedSvg = parsedText.querySelector('svg');
+    parsedSvg.classList.add('icon-milo', `icon-milo-${name}`);
+    fetchedIcons[name] = parsedSvg;
+    return svg;
+  } catch (err) {
+    console.log('path:', path, 'name:', name, err);
+    return err;
+  }
 }
 
 async function decorateIcon(icon, config) {
@@ -73,14 +80,23 @@ async function decorateIcon(icon, config) {
     .find((c) => c.startsWith('icon-'))
     .substring(5);
   if (fetchedIcons[iconName] !== undefined || iconName === 'tooltip') return icon;
-  // const fedRoot = getFederatedContentRoot();
+  const fedRoot = getFederatedContentRoot();
+  const svgFedPath = `${fedRoot}/federal/libs/img/icons/svgs/${iconName}.svg`;
+  const svgFedAemPath = `https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`;
   // const { miloLibs, codeRoot } = config;
   // const base = miloLibs || codeRoot;
   // console.log('fedRoot', fedRoot);
   // const newIcon = await getSvgFromFile(`${base}/img/icons/s1/${iconName}.svg`, iconName);
-  const newIcon = await getSvgFromFile(`https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`, iconName);
+  // console.log('fedRoot', fedRoot, `https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`);
+  // console.log(`${fedRoot}/federal/libs/img/icons/svgs/${iconName}.svg`);
+  // console.log('fedUrl', fedUrl);
+
+  // set link in header
+  // const newSvg = loadLink(svgFedPath, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+
+  const newIcon = await getSvgFromFile(svgFedPath, iconName);
   if (!newIcon) fetchedIcons[iconName] = undefined;
-  console.log('decorateIcon()', iconName, 'fetchedIcons', fetchedIcons);
+  console.log('Error:', iconName, newIcon);
   return newIcon;
 }
 
