@@ -88,8 +88,12 @@
   display: block;
 }
 
+.card-footer {
+  margin-top: auto;
+}
+
 .editorial-card .foreground,
-.editorial-card .footer {
+.editorial-card .card-footer {
   padding: var(--s2-spacing-400) var(--s2-spacing-400) var(--s2-spacing-300);
 }
 
