@@ -639,10 +639,6 @@
     min-height: 560px;
   }
 
-  .aside.large {
-    min-height: 640px;
-  }
-
   .aside .foreground.container {
     align-items: center;
     flex-direction: row;
@@ -973,6 +969,10 @@
     flex: 0 0 70%;
     max-width: none;
     object-fit: cover;
+  }
+
+  .aside.large {
+    min-height: 640px;
   }
 
   .aside.split .split-image img,
