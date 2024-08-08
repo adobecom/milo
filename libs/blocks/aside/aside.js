@@ -14,8 +14,8 @@
 * Aside - v5.1
 */
 
-import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg, decorateTextOverrides } from '../../utils/decorate.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
 const variants = ['split', 'inline', 'notification'];
@@ -163,7 +163,13 @@ function decoratePromobar(el) {
   return foreground;
 }
 
-function decorateLayout(el) {
+async function loadIconography() {
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+}
+
+async function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) {
     decorateBlockBg(el, elems[0]);
@@ -182,7 +188,12 @@ function decorateLayout(el) {
   }
   const picture = text?.querySelector('p picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
-  iconArea?.classList.add('icon-area');
+  if (iconArea) {
+    const iconVariant = el.className.match(/-(avatar|lockup)/);
+    const iconClass = iconVariant ? `${iconVariant[1]}-area` : 'icon-area';
+    if (iconVariant) await loadIconography();
+    iconArea.classList.add(iconClass);
+  }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
   const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video, :scope > div:not(.text) a[href*=".mp4"]')?.closest('div');
@@ -202,18 +213,18 @@ function decorateLayout(el) {
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
   }
-  if (el.classList.contains('split')
-      && (el.classList.contains('medium') || el.classList.contains('large'))) {
-    decorateIconStack(el);
-  }
+  if (el.classList.contains('split')) decorateIconStack(el);
   return foreground;
 }
 
-export default function init(el) {
+export default async function init(el) {
   el.classList.add('con-block');
   const blockData = getBlockData(el);
-  const blockText = decorateLayout(el);
+  const blockText = await decorateLayout(el);
   decorateBlockText(blockText, blockData);
   decorateStaticLinks(el);
   formatPromoButton(el);
+  decorateTextOverrides(el);
+  // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
+  if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
 }
