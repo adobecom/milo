@@ -1,7 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { decorateLinks, loadStyle, setConfig } from '../../../libs/utils/utils.js';
 import { readMockText } from '../merch/mocks/fetch.js';
-import { replaceKey } from '../../../libs/features/placeholders.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
