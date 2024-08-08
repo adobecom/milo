@@ -51,7 +51,7 @@ function decorateToolTip(icon) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
-async function getSvgFromFile(path, name) {
+export async function getSvgFromFile(path, name) {
   /* c8 ignore next */
   if (!path) return null;
   const resp = await fetch(path);
@@ -60,14 +60,11 @@ async function getSvgFromFile(path, name) {
   const text = await resp.text();
   const parser = new DOMParser();
   const parsedText = parser.parseFromString(text, 'image/svg+xml');
-
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const svg = parsedText.firstChild;
   svg.id = name;
   const parsedSvg = parsedText.querySelector('svg');
-  while (parsedText.firstChild) svg.appendChild(parsedText.firstChild);
-  [...parsedSvg.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));
-  svg.classList.add('icon-milo', `icon-milo-${svg.id}`);
-  fetchedIcons[svg.id] = svg;
+  parsedSvg.classList.add('icon-milo', `icon-milo-${name}`);
+  fetchedIcons[name] = parsedSvg;
   return svg;
 }
 
@@ -75,14 +72,16 @@ async function decorateIcon(icon, config) {
   const iconName = Array.from(icon.classList)
     .find((c) => c.startsWith('icon-'))
     .substring(5);
-  if (fetchedIcons[iconName] !== undefined) return icon;
-  const fedRoot = getFederatedContentRoot();
-  const { miloLibs, codeRoot } = config;
-  const base = miloLibs || codeRoot;
-  await getSvgFromFile(`${fedRoot}/federal/libs/img/icons/svgs/${iconName}.svg`, iconName);
+  if (fetchedIcons[iconName] !== undefined || iconName === 'tooltip') return icon;
+  // const fedRoot = getFederatedContentRoot();
+  // const { miloLibs, codeRoot } = config;
+  // const base = miloLibs || codeRoot;
+  // console.log('fedRoot', fedRoot);
   // const newIcon = await getSvgFromFile(`${base}/img/icons/s1/${iconName}.svg`, iconName);
+  const newIcon = await getSvgFromFile(`https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`, iconName);
   if (!newIcon) fetchedIcons[iconName] = undefined;
   console.log('decorateIcon()', iconName, 'fetchedIcons', fetchedIcons);
+  return newIcon;
 }
 
 export default async function loadIcons(icons, config) {

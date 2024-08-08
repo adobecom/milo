@@ -29,6 +29,7 @@ const MILO_BLOCKS = [
   'editorial-card',
   'faas',
   'featured-article',
+  'fetch-icons',
   'figure',
   'form',
   'fragment',

@@ -1,0 +1,40 @@
+.fetch-icons {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.fetched-icons {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--spacing-m);
+  padding: var(--spacing-xl) 0;
+}
+
+.fetched-icons a {
+  display: inline;
+  width: 20px;
+  padding: var(--spacing-m) var(--spacing-l) var(--spacing-xl);
+  position: relative;
+  font-size: 1.5em;
+}
+
+.fetched-icons a:hover,
+.fetched-icons a:active,
+.fetched-icons a:focus {
+  background-color: rgba(0 0 0 /2%);
+}
+
+.fetched-icons a::before {
+  content: attr(alt);
+  position: absolute;
+  display: block;
+  bottom: 10px; 
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 4px;
+  font-size: 12px;
+  line-height: 1em;
+}
