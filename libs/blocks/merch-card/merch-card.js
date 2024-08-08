@@ -547,6 +547,7 @@ export default async function init(el) {
 
   addStock(merchCard, styles);
   if (styles.includes('secure')) {
+    const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
   }
   merchCard.setAttribute('filters', categories.join(','));
