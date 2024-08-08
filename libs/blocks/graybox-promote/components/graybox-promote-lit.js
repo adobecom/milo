@@ -106,7 +106,7 @@ const getSharepointData = async (context) => {
 const getFilePath = async (context) => {
   const { ref, repo, owner, referrer } = context;
   const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${referrer}`);
-  if (!status.ok) throw new Error("Failed to fetch file path. Please ensure you're signed in to Sidekick.");
+  if (!status.ok) throw new Error('Failed to fetch file path. Please ensure you\'re signed in to Sidekick.');
   const statusResp = await status.json();
   context.previewUrl = statusResp.preview.status === 200 && new URL(statusResp.preview.url);
   context.setup.projectExcelPath = (new URL(statusResp.preview.url)).pathname.replace('.json', '.xlsx');
@@ -115,7 +115,7 @@ const getFilePath = async (context) => {
 const preview = async (context) => {
   const { owner, repo, ref, setup: { projectExcelPath } } = context;
   const res = await fetch(`${ADMIN}/preview/${owner}/${repo}/${ref}${projectExcelPath.replace('.xlsx', '.json')}`, { method: 'POST' });
-  if (!res.ok) throw new Error("Failed to preview your file. Please ensure you're signed in to Sidekick.");
+  if (!res.ok) throw new Error('Failed to preview your file. Please ensure you\'re signed in to Sidekick.');
   context.previewUrl = new URL((await res.json()).preview.url);
 };
 
