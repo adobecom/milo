@@ -724,10 +724,24 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const found = regex.test(el.innerHTML);
-  if (!found) return;
+  const walker = document.createTreeWalker(el,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: (node) => {
+        return regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    },
+  });
+  const nodes = [];
+  let node;
+  while (node = walker.nextNode()) {
+    nodes.push(node);
+  }
+  if (!nodes.length) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(el.innerHTML, config, regex);
+  for (const textNode of nodes) {
+    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
+    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
+  }
 }
 
 async function loadFooter() {
