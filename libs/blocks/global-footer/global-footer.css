@@ -96,6 +96,7 @@
   color: var(--feds-color-link--light);
   border-color: var(--feds-color-link--light);
   fill: var(--feds-color-link--light);
+  text-decoration: none;
 }
 
 .feds-regionPicker:hover {
@@ -229,6 +230,7 @@
   display: flex;
   column-gap: 5px;
   align-items: center;
+  text-decoration: none;
   color: var(--feds-color-link--light);
   fill: var(--feds-color-link--light);
 }
