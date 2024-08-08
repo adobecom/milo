@@ -2,8 +2,8 @@
 import { getMSALConfig } from './msal.js';
 import { accessToken, accessTokenExtra, account } from './state.js';
 
-export default async function login({ scopes, extraScopes, telemetry = {} }) {
-  const msalConfig = await getMSALConfig(telemetry);
+export default async function login({ scopes, extraScopes, telemetry = {}, config }) {
+  const msalConfig = await getMSALConfig({ telemetry, config });
   const pca = new msal.PublicClientApplication(msalConfig);
   let tmpAccount = pca.getAllAccounts()[0];
   if (!tmpAccount) {

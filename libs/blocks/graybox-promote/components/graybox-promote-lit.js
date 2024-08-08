@@ -32,6 +32,13 @@ const KEYS = {
   },
 };
 const TELEMETRY = { application: { appName: 'Adobe Graybox Promote' } };
+const CONFIG = {
+  login: { redirectUri: '/tools/graybox-promote/spauth' },
+  cache: {
+    cacheLocation: 'sessionStorage',
+    storeAuthStateInCookie: false,
+  },
+};
 
 const getJson = async (url, errMsg = `Failed to fetch ${url}`) => {
   const res = await fetch(url);
@@ -56,7 +63,7 @@ const getAemInfo = (context) => {
 
 const getProjectInfo = async (context) => {
   const sheet = await getJson(
-    `${context.liveUrl.href}?sheet=settings`,
+    `${context.previewUrl.href}?sheet=settings`,
     'Failed to fetch project info',
   );
   context.setup.experienceName = getSheetValue(
@@ -69,7 +76,7 @@ const getProjectInfo = async (context) => {
 const getGrayboxConfig = async (context) => {
   const { ref, repo, owner, grayboxIoEnv } = context;
   const sheet = await getJson(
-    `https://${ref}--${repo}--${owner}.hlx.live/.milo/graybox-config.json`,
+    `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json`,
     'Failed to fetch graybox config',
   );
 
@@ -89,7 +96,7 @@ const getGrayboxConfig = async (context) => {
 };
 
 const getSharepointData = async (context) => {
-  const liveOrigin = context.liveUrl.origin.replace('-graybox', '').replace('.hlx.page', '.hlx.live');
+  const liveOrigin = context.previewUrl.origin.replace('-graybox', '').replace('.hlx.page', '.hlx.live');
   const { sharepoint } = await getServiceConfig(liveOrigin);
   context.setup.rootFolder = `/${sharepoint.rootMapping}`;
   context.setup.gbRootFolder = `/${sharepoint.rootMapping}-graybox`;
@@ -99,28 +106,20 @@ const getSharepointData = async (context) => {
 const getFilePath = async (context) => {
   const { ref, repo, owner, referrer } = context;
   const status = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${referrer}`);
-  if (!status.ok) throw new Error('Failed to fetch file path');
+  if (!status.ok) throw new Error('Failed to fetch file path. Please ensure you\'re signed in to Sidekick.');
   const statusResp = await status.json();
   context.previewUrl = statusResp.preview.status === 200 && new URL(statusResp.preview.url);
-  context.liveUrl = statusResp.live.status === 200 && new URL(statusResp.live.url);
   context.setup.projectExcelPath = (new URL(statusResp.preview.url)).pathname.replace('.json', '.xlsx');
 };
 
 const preview = async (context) => {
   const { owner, repo, ref, setup: { projectExcelPath } } = context;
   const res = await fetch(`${ADMIN}/preview/${owner}/${repo}/${ref}${projectExcelPath.replace('.xlsx', '.json')}`, { method: 'POST' });
-  if (!res.ok) throw new Error('Failed to fetch preview URL');
+  if (!res.ok) throw new Error('Failed to preview your file. Please ensure you\'re signed in to Sidekick.');
   context.previewUrl = new URL((await res.json()).preview.url);
 };
 
-const publish = async (context) => {
-  const { owner, repo, ref, setup: { projectExcelPath } } = context;
-  const res = await fetch(`${ADMIN}/live/${owner}/${repo}/${ref}${projectExcelPath.replace('.xlsx', '.json')}`, { method: 'POST' });
-  if (!res.ok) throw new Error('Failed to fetch live URL');
-  context.liveUrl = new URL((await res.json()).live.url);
-};
-
-const loginToSharepoint = async (context) => login({ scopes: ['files.readwrite', 'sites.readwrite.all'], telemetry: TELEMETRY })
+const loginToSharepoint = async (context) => login({ scopes: ['files.readwrite', 'sites.readwrite.all'], telemetry: TELEMETRY, config: CONFIG })
   .then(() => {
     context.setup.spToken = accessToken.value || accessTokenExtra.value;
   });
@@ -142,14 +141,11 @@ class GrayboxPromote extends LitElement {
         getAemInfo(this);
         await getFilePath(this);
         if (!this.previewUrl) await preview(this);
-        if (!this.liveUrl) await publish(this);
         await getProjectInfo(this);
         await getSharepointData(this);
         const mainRepo = this.repo.replace('-graybox', '');
         this.setup.adminPageUri = `https://milo.adobe.com/tools/graybox-promote?ref=${this.ref}&repo=${mainRepo}&owner=${this.owner}&project=${mainRepo.toUpperCase()}`;
         await getGrayboxConfig(this);
-        // TODO remove the line below after receiving user permissions
-        this.setup.ignoreUserCheck = true;
 
         if (!this.enablePromote) throw new Error('sharepoint.site.enablePromote is not enabled in graybox config');
 
@@ -169,7 +165,7 @@ class GrayboxPromote extends LitElement {
         });
         const promoteRes = await promote.json();
         if (promoteRes?.code === 200) {
-          return 'Successfully promoted';
+          return 'Promote triggered. Please check the status of your promote in the excel logs.';
         }
         throw new Error(`Could not promote: ${promote.payload}`);
       },
