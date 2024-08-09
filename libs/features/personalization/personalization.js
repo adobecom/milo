@@ -937,7 +937,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP, martech
+    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP, martech,
   } = enablements;
   const config = getConfig();
   if (!postLCP) {
