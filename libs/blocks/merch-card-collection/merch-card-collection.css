@@ -6,6 +6,6 @@ merch-card-collection {
   --link-color: var(--merch-color-grey-80);
 }
 
-merch-card-collection merch-card {
+merch-card-collection .merch-card.catalog {
   --webkit-transform: translate3d(0,0,0);
 }
