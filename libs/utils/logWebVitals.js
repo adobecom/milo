@@ -87,9 +87,21 @@ function logMepExperiments(lanaData, mep) {
   });
 }
 
-export default function webVitals(mep, { delay = 1000 } = {}) {
-  const lanaData = {};
-  logMepExperiments(lanaData, mep);
-  observeCLS(lanaData);
-  observeLCP(lanaData, delay);
+export default function webVitals(mep, { delay = 1000, sampleRate = 50 } = {}) {
+  const isChrome = () => {
+    const nav = window.navigator;
+    return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
+  };
+  if (!isChrome() || Math.random() * 100 > sampleRate) return;
+
+  function handleEvent() {
+    const performanceConsent = window.adobePrivacy.activeCookieGroups().indexOf('C0002') !== -1;
+    if (!performanceConsent) return;
+    const lanaData = {};
+    logMepExperiments(lanaData, mep);
+    observeCLS(lanaData);
+    observeLCP(lanaData, delay);
+  }
+  window.addEventListener('adobePrivacy:PrivacyConsent', handleEvent);
+  window.addEventListener('adobePrivacy:PrivacyCustom', handleEvent);
 }

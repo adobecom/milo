@@ -7,15 +7,11 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Log Web Vitals', () => {
   before(() => {
-    let expires = '';
-    const date = new Date();
-    date.setTime(date.getTime() + (1 * 24 * 60 * 60 * 1000));
-    expires = `; expires=${date.toUTCString()}`;
-    document.cookie = `${'OptanonConsent'}=${encodeURIComponent('C0002:1')}${expires}; path=/`;
+    window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
   });
 
   after(() => {
-    document.cookie = `${'OptanonConsent'}=; Max-Age=-99999999;`;
+    delete window.adobePrivacy;
   });
 
   it('Logs data to lana', (done) => {
@@ -52,7 +48,8 @@ describe('Log Web Vitals', () => {
         done();
       },
     };
-    logWebVitals(mepObject, { delay: 0 });
+    logWebVitals(mepObject, { delay: 0, sampleRate: 100 });
+    window.dispatchEvent(new Event('adobePrivacy:PrivacyCustom'));
   });
 });
 

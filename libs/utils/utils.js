@@ -1001,19 +1001,11 @@ export function scrollToHashedElement(hash) {
 
 function logPagePerf() {
   if (getMetadata('pageperf') !== 'on') return;
-  const consent = document.cookie.split('OptanonConsent=')[1];
-  const performanceGroup = 'C0002:1';
-  const performanceConsent = consent?.includes(encodeURIComponent(performanceGroup))
-  || consent?.includes(performanceGroup);
-  if (!performanceConsent) return;
-  const isChrome = () => {
-    const nav = window.navigator;
-    return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
-  };
-  const sampleRate = parseInt(getMetadata('pageperf-rate'), 10) || 50;
-  if (!isChrome() || Math.random() * 100 > sampleRate) return;
   import('./logWebVitals.js')
-    .then((mod) => mod.default(getConfig().mep, getMetadata('pageperf-delay') || 1000));
+    .then((mod) => mod.default(getConfig().mep, {
+      delay: getMetadata('pageperf-delay') || 1000,
+      sampleRate: parseInt(getMetadata('pageperf-rate'), 10) || 50,
+    }));
 }
 
 export async function loadDeferred(area, blocks, config) {
