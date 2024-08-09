@@ -151,13 +151,14 @@ const COMMANDS = {
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
-  [COMMANDS_KEYS.update]: ({ el, target, modifiers, targetManifestId }) => {
+  [COMMANDS_KEYS.update]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
     if (!el) return;
     if (modifiers.includes('href')) {
       el.href = target;
     } else {
       el.innerHTML = target;
     }
+    if (manifestId) el.dataset.manifestId = manifestId;
     if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   },
 };
