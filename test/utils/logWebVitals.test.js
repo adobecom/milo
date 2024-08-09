@@ -6,6 +6,14 @@ import logWebVitals from '../../libs/utils/logWebVitals.js';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Log Web Vitals', () => {
+  before(() => {
+    window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
+  });
+
+  after(() => {
+    delete window.adobePrivacy;
+  });
+
   it('Logs data to lana', (done) => {
     window.lana = {
       log: (logStr, logOpts) => {
@@ -40,7 +48,8 @@ describe('Log Web Vitals', () => {
         done();
       },
     };
-    logWebVitals(mepObject, { delay: 0 });
+    logWebVitals(mepObject, { delay: 0, sampleRate: 100 });
+    window.dispatchEvent(new Event('adobePrivacy:PrivacyCustom'));
   });
 });
 

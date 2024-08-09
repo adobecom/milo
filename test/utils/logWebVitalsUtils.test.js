@@ -11,7 +11,20 @@ document.head.innerHTML = `
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
-describe('Log Web Vitals', () => {
+describe('Log Web Vitals Utils', () => {
+  let intervalId;
+  before(() => {
+    window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
+    intervalId = setInterval(() => {
+      window.dispatchEvent(new Event('adobePrivacy:PrivacyCustom'));
+    }, 100);
+  });
+
+  after(() => {
+    delete window.adobePrivacy;
+    clearInterval(intervalId);
+  });
+
   it('Logs data to lana', (done) => {
     window.lana = {
       log: (logStr, logOpts) => {
