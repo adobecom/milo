@@ -2,8 +2,9 @@ import{html as e,css as i,LitElement as s}from"/libs/deps/lit-all.min.js";var t=
         :host {
             display: flex;
             flex-direction: row;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 5px;
+            margin-bottom: 5px;
+            margin-right: 10px;
             align-items: flex-end;
         }
 
