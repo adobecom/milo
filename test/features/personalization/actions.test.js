@@ -125,7 +125,7 @@ describe('insertBefore action', async () => {
 });
 
 describe('prependToSection action', async () => {
-  it('appendToSection should add fragment to beginning of section', async () => {
+  it('prependToSection should add fragment to beginning of section', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestPrependToSection.json' });
 
     manifestJson = JSON.parse(manifestJson);
@@ -154,6 +154,34 @@ describe('appendToSection action', async () => {
 
     const fragment = document.querySelector('main > div:nth-child(2) > div:last-child a[href="/test/features/personalization/mocks/fragments/appendToSection"]');
     expect(fragment).to.not.be.null;
+  });
+});
+
+describe('update action', () => {
+  it.only('should update marquee content', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdate.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    const primaryCTA = document.querySelector('.marquee p strong a');
+    const secondaryCTA = document.querySelector('.marquee p a');
+    const header = document.querySelector('.marquee h2');
+    const actionArea = document.querySelector('main div:nth-child(5) .marquee p:has(em a, strong a)');
+
+    expect(header.innerText).to.not.equal('updated text');
+    expect(primaryCTA.innerText).to.not.equal('updated text');
+    expect(primaryCTA.href).to.not.equal('updated text');
+    expect(secondaryCTA.innerText).to.not.equal('updated text');
+    expect(actionArea.innerHTML).to.not.equal('<p>updated text</p>');
+
+    await init(mepSettings);
+
+    expect(header.innerText).to.equal('updated text');
+    expect(primaryCTA.innerText).to.equal('updated text');
+    expect(primaryCTA.href).to.equal('https://test.com/updated_href');
+    expect(secondaryCTA.innerText).to.equal('updated text');
+    expect(actionArea.innerHTML).to.equal('<p>updated text</p>');
   });
 });
 

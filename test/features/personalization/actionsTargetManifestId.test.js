@@ -123,6 +123,30 @@ describe('appendToSection action', async () => {
   });
 });
 
+describe('update action', () => {
+  it('should update marquee content', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+    let manifestJson = await readFile({ path: './mocks/actions/manifestTargetUpdate.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    const primaryCTA = document.querySelector('.marquee p strong a');
+    const secondaryCTA = document.querySelector('.marquee p a');
+    const header = document.querySelector('.marquee h2');
+    const actionArea = document.querySelector('main div:nth-child(5) .marquee p:has(em a, strong a)');
+
+    expect(header.dataset.adobeTargetTestid).not.to.exist;
+    expect(primaryCTA.dataset.adobeTargetTestid).not.to.exist;
+    expect(secondaryCTA.dataset.adobeTargetTestid).not.to.exist;
+    expect(actionArea.dataset.adobeTargetTestid).not.to.exist;
+    await init(mepSettings);
+    expect(header.dataset.adobeTargetTestid).to.equal('manifest');
+    expect(primaryCTA.dataset.adobeTargetTestid).to.equal('manifest');
+    expect(secondaryCTA.dataset.adobeTargetTestid).to.equal('manifest');
+    expect(actionArea.dataset.adobeTargetTestid).to.equal('manifest');
+  });
+});
+
 describe('useBlockCode action', async () => {
   it('useBlockCode should override a current block with the custom block code provided', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestUseBlockCode.json' });

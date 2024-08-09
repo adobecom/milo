@@ -7,4 +7,5 @@ node_modules
 .idea
 .iml
 .env
+test-results
 **/mas/stats.json
