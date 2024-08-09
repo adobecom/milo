@@ -999,15 +999,6 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-function logPagePerf() {
-  if (getMetadata('pageperf') !== 'on') return;
-  import('./logWebVitals.js')
-    .then((mod) => mod.default(getConfig().mep, {
-      delay: getMetadata('pageperf-delay') || 1000,
-      sampleRate: parseInt(getMetadata('pageperf-rate'), 10) || 50,
-    }));
-}
-
 export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
@@ -1036,7 +1027,13 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
 
-  logPagePerf();
+  if (getMetadata('pageperf') === 'on') {
+    import('./logWebVitals.js')
+      .then((mod) => mod.default(getConfig().mep, {
+        delay: getMetadata('pageperf-delay') || 1000,
+        sampleRate: parseInt(getMetadata('pageperf-rate'), 10) || 50,
+      }));
+  }
 }
 
 function initSidekick() {
