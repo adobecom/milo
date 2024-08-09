@@ -41,7 +41,7 @@ describe('table and tablemetadata', () => {
     });
 
     it('hovering-test', async () => {
-      const headingCol = table.querySelector('.row-heading .col:not(.hidden)');
+      const headingCol = table.querySelector('.row-heading .col.col-2:not(.hidden)');
       const sectionHeads = table.querySelectorAll('.section-head');
       const lastSectionHead = sectionHeads[sectionHeads.length - 1];
       const lastExpandIcon = lastSectionHead.querySelector('.icon.expand');
