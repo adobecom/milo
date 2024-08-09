@@ -871,7 +871,7 @@ export async function loadMartech({
     return false;
   }
 
-  window.targetGlobalSettings = { bodyHidingEnabled: false };
+  window.targetGlobalSettings = { bodyHidingEnabled: true };
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
