@@ -70,7 +70,7 @@ export async function getSvgFromFile(path, name) {
     fetchedIcons[name] = parsedSvg;
     return svg;
   } catch (err) {
-    console.log('path:', path, 'name:', name, err);
+    console.log('path:', path, 'name:', name);
     return err;
   }
 }
@@ -81,7 +81,7 @@ async function decorateIcon(icon, config) {
     .substring(5);
   if (fetchedIcons[iconName] !== undefined || iconName === 'tooltip') return icon;
   const fedRoot = getFederatedContentRoot();
-  const svgFedPath = `${fedRoot}/federal/libs/img/icons/svgs/${iconName}.svg`;
+  // const svgFedPath = `${fedRoot}/federal/libs/img/icons/svgs/${iconName}.svg`;
   const svgFedAemPath = `https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`;
   // const { miloLibs, codeRoot } = config;
   // const base = miloLibs || codeRoot;
@@ -94,7 +94,7 @@ async function decorateIcon(icon, config) {
   // set link in header
   // const newSvg = loadLink(svgFedPath, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
 
-  const newIcon = await getSvgFromFile(svgFedPath, iconName);
+  const newIcon = await getSvgFromFile(svgFedAemPath, iconName);
   if (!newIcon) fetchedIcons[iconName] = undefined;
   console.log('Error:', iconName, newIcon);
   return newIcon;
