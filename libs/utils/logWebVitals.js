@@ -93,14 +93,17 @@ export default function webVitals(mep, { delay = 1000, sampleRate = 50 } = {}) {
     return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
   };
   if (!isChrome() || Math.random() * 100 > sampleRate) return;
-
+  const getConsent = () => window.adobePrivacy?.activeCookieGroups().indexOf('C0002') !== -1;
   function handleEvent() {
-    const performanceConsent = window.adobePrivacy.activeCookieGroups().indexOf('C0002') !== -1;
-    if (!performanceConsent) return;
+    if (!getConsent()) return;
     const lanaData = {};
     logMepExperiments(lanaData, mep);
     observeCLS(lanaData);
     observeLCP(lanaData, delay);
+  }
+  if (getConsent()) {
+    handleEvent();
+    return;
   }
   window.addEventListener('adobePrivacy:PrivacyConsent', handleEvent);
   window.addEventListener('adobePrivacy:PrivacyCustom', handleEvent);

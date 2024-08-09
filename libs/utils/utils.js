@@ -1030,8 +1030,8 @@ export async function loadDeferred(area, blocks, config) {
   if (getMetadata('pageperf') === 'on') {
     import('./logWebVitals.js')
       .then((mod) => mod.default(getConfig().mep, {
-        delay: getMetadata('pageperf-delay') || 1000,
-        sampleRate: parseInt(getMetadata('pageperf-rate'), 10) || 50,
+        delay: getMetadata('pageperf-delay'),
+        sampleRate: parseInt(getMetadata('pageperf-rate'), 10),
       }));
   }
 }
