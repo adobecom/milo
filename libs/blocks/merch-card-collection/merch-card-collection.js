@@ -311,11 +311,7 @@ export default async function init(el) {
   );
   const overrides = await overrideCards(cardsRoot, overridePromises, config);
   await initMerchCards(attributes.filtered, preferences, cardsRoot);
-  try {
-    await Promise.all([merchStyles, merchCardStyles, ...deps]);
-  } catch (error) {
-    console.log('Error when loading deps', error);
-  }
+  await Promise.all([merchStyles, merchCardStyles, ...deps]);
 
   merchCardCollection.append(...cardsRoot.children);
 
