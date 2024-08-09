@@ -128,7 +128,7 @@ import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";var m=class{con
             <sp-action-menu
                 id="sortButton"
                 size="m"
-                @change="${this.sortChanged}"
+                onchange="${this.sortChanged}"
                 selects="single"
                 value="${n?i.alphabetical:i.authored}"
             >
