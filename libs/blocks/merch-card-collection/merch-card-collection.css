@@ -5,7 +5,3 @@
 merch-card-collection {
   --link-color: var(--merch-color-grey-80);
 }
-
-merch-card-collection sp-tray {
-  opacity: 0.99;
-}
