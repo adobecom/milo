@@ -497,28 +497,13 @@ describe('Merch Block', () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(null);
       const mappings = await fetchCheckoutLinkConfigs('http://localhost:2000/libs');
-      expect(mappings).to.be.undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      expect(mappings.data).to.empty;
       fetchCheckoutLinkConfigs.promise = undefined;
     });
 
     it('getCheckoutLinkConfig: returns undefined if productFamily is not found', async () => {
       const checkoutLinkConfig = await getCheckoutLinkConfig('XYZ');
       expect(checkoutLinkConfig).to.be.undefined;
-    });
-
-    it('getCheckoutLinkConfig: finds using paCode', async () => {
-      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'testPaCode');
-      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
-      checkoutLinkConfig = await getCheckoutLinkConfig('', '', 'testPaCode');
-      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
-    });
-
-    it('getCheckoutLinkConfig: finds using productCode', async () => {
-      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, 'testProductCode', undefined);
-      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
-      checkoutLinkConfig = await getCheckoutLinkConfig('', 'testProductCode', '');
-      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
     });
 
     it('getDownloadAction: returns undefined if not entitled', async () => {
@@ -542,27 +527,6 @@ describe('Merch Block', () => {
       setSubscriptionsData(SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE);
       const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }]);
       expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
-    });
-
-    it('getModalAction: returns undefined if checkout-link config is not found', async () => {
-      fetchCheckoutLinkConfigs.promise = undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{ productArrangement: { productFamily: 'XZY' } }], { modal: true });
-      expect(action).to.be.undefined;
-    });
-
-    it('getModalAction: returns undefined if modal path is cancelled', async () => {
-      setConfig({
-        ...config,
-        pathname: '/fr/test.html',
-        locales: { fr: { ietf: 'fr-FR' } },
-        prodDomains: PROD_DOMAINS,
-        placeholders: { download: 'Télécharger' },
-      });
-      fetchCheckoutLinkConfigs.promise = undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{ productArrangement: { productFamily: 'PHOTOSHOP' } }], { modal: true });
-      expect(action).to.be.undefined;
     });
 
     it('getCheckoutAction: handles errors gracefully', async () => {
@@ -612,6 +576,7 @@ describe('Merch Block', () => {
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
     });
+
     it('renders Milo TWP modal', async () => {
       mockIms();
       const el = document.querySelector('.merch.cta.milo.twp');
@@ -654,6 +619,7 @@ describe('Merch Block', () => {
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
     });
+
     it('renders TWP modal with preselected plan', async () => {
       mockIms();
       const meta = document.createElement('meta');
@@ -668,6 +634,41 @@ describe('Merch Block', () => {
       await delay(100);
       expect(document.querySelector('iframe').src).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu');
       document.querySelector('meta[name="preselect-plan"]').remove();
+    });
+
+    it('getCheckoutLinkConfig: finds using paCode', async () => {
+      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'testPaCode');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+      checkoutLinkConfig = await getCheckoutLinkConfig('', '', 'testPaCode');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+    });
+
+    it('getCheckoutLinkConfig: finds using productCode', async () => {
+      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, 'testProductCode', undefined);
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+      checkoutLinkConfig = await getCheckoutLinkConfig('', 'testProductCode', '');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+    });
+
+    it('getModalAction: returns undefined if modal path is cancelled', async () => {
+      setConfig({
+        ...config,
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'PHOTOSHOP' } }], { modal: true });
+      expect(action).to.be.undefined;
+    });
+
+    it('getModalAction: returns undefined if checkout-link config is not found', async () => {
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'XZY' } }], { modal: true });
+      expect(action).to.be.undefined;
     });
 
     const MODAL_URLS = [

@@ -205,6 +205,7 @@ export async function getCheckoutLinkConfig(productFamily, productCode, paCode) 
     base = base.replace('.live', '.page');
   }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
+  if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
   const {
@@ -228,7 +229,7 @@ export async function getCheckoutLinkConfig(productFamily, productCode, paCode) 
     ...paCodeConfigs, ...productCodeConfigs, ...productFamilyConfigs,
   ];
 
-  if (productCheckoutLinkConfigs.length) return undefined;
+  if (!productCheckoutLinkConfigs.length) return undefined;
   const checkoutLinkConfig = productCheckoutLinkConfigs.find(
     ({ [NAME_LOCALE]: locale }) => locale === '',
   );
