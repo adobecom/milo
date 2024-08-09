@@ -404,7 +404,7 @@
   }
 
   .marquee.quiet.large .foreground .text {
-    max-width: 800px;
+    max-width: 650px;
   }
 
   .marquee.tablet-light a:not(.con-button) {
