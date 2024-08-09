@@ -35,7 +35,3 @@ import '@spectrum-web-components/link/sp-link.js';
 import '@spectrum-web-components/tabs/sp-tabs.js';
 import '@spectrum-web-components/tabs/sp-tab.js';
 import '@spectrum-web-components/tabs/sp-tab-panel.js';
-
-import { Overlay } from '@spectrum-web-components/overlay/src/Overlay.js';
-
-window.__merch__spectrum_Overlay = Overlay;

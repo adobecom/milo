@@ -147,7 +147,8 @@ export class MerchSideNav extends LitElement {
                 notImmediatelyClosable: true,
                 type: 'auto',
             };
-            const overlay = await window.__merch__spectrum_Overlay.open(
+            const overlay = await import(`${base}/features/spectrum-web-components/dist/overlay.js`);
+            overlay.open(
                 this.dialog,
                 options,
             );

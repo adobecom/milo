@@ -42,7 +42,8 @@ async function applyTemplate(templates, deeplink = true) {
         dialogBase.setAttribute('mode', 'fullscreenTakeover');
     }
 
-    const overlay = await window.__merch__spectrum_Overlay.open(dialogBase, {
+    const overlay = await import(`${base}/features/spectrum-web-components/dist/overlay.js`);
+    overlay.open(dialogBase, {
         trigger: undefined,
         type: 'modal',
     });
