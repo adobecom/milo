@@ -520,8 +520,11 @@ export const isValidUrl = (url) => VALID_URL_RE.test(url);
 
 export const getNormalizedMetadata = (el) => normalizeKeys(getMetadata(el));
 
+export const removeLeftToRightMark = (url) => decodeURIComponent(url).replace(/\u200E/g, '');
+
 export const getLocalizedURL = (originalURL) => {
   const { locale } = getConfig();
   const { prefix, ietf = 'en-US' } = locale || {};
-  return ietf !== 'en-US' && !originalURL.startsWith(`${prefix}/`) ? `${prefix}${originalURL}` : originalURL;
+  const decodedURL = removeLeftToRightMark(originalURL);
+  return ietf !== 'en-US' && !decodedURL.startsWith(`${prefix}/`) ? `${prefix}${decodedURL}` : decodedURL;
 };
