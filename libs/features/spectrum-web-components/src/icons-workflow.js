@@ -5,3 +5,5 @@ import '@spectrum-web-components/icons-workflow/icons/sp-icon-magnify.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-user.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-user-group.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-book.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-download.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-open-in.js';
