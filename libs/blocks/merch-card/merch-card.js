@@ -408,8 +408,13 @@ const addStartingAt = async (styles, merchCard) => {
     await replaceKey('starting-at', getConfig()).then((key) => {
       const startingAt = createTag('p', { slot: 'starting-at' }, key);
       const firstPrice = merchCard.querySelectorAll('span[is="inline-price"]');
-      if (firstPrice[0]) {
+      if (firstPrice.length > 0) {
         firstPrice[0].prepend(startingAt);
+      } else {
+        const unresolvedPrice = merchCard.querySelectorAll('[id*="price"]');
+        if (unresolvedPrice.length > 0) {
+          unresolvedPrice[0].prepend(startingAt);
+        }
       }
     });
   }
