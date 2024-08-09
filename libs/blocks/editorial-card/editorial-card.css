@@ -92,9 +92,13 @@
   margin-top: auto;
 }
 
-.editorial-card .foreground,
+.editorial-card .foreground {
+  padding: var(--s2-spacing-400) var(--s2-spacing-300) var(--s2-spacing-300);
+}
+
 .editorial-card .card-footer {
-  padding: var(--s2-spacing-400) var(--s2-spacing-400) var(--s2-spacing-300);
+  padding: 0 var(--s2-spacing-300) var(--s2-spacing-400);
+  margin-top: auto;
 }
 
 .editorial-card .foreground p {
@@ -109,10 +113,6 @@
   padding: 0 var(--spacing-xs);
 }
 
-.editorial-card .footer {
-  padding: 0 var(--s2-spacing-300) var(--s2-spacing-400);
-  margin-top: auto;
-}
 
 .editorial-card .card-footer > div {
   display: flex;
