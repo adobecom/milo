@@ -933,12 +933,12 @@ async function checkForPageMods() {
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = getMepEnablement('target');
+  const target = martech === 'off' ? false : getMepEnablement('target');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '')) return;
-  if (target && martech !== 'off') {
+  if (target) {
     loadMartech();
-  } else if (pzn) {
+  } else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
