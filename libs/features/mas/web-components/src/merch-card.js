@@ -1,5 +1,6 @@
 import { html, LitElement, nothing } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
+import { isMobile, isMobileOrTablet } from './utils.js';
 
 import {
     ARROW_DOWN,
@@ -127,8 +128,10 @@ export class MerchCard extends LitElement {
             );
             await Promise.all(prices.map((price) => price.onceSettled()));
             this.adjustTitleWidth();
-            this.adjustMiniCompareBodySlots();
-            this.adjustMiniCompareFooterRows();
+            if (!isMobile()) {
+              this.adjustMiniCompareBodySlots();
+              this.adjustMiniCompareFooterRows();
+            }
         });
     }
 
@@ -232,10 +235,6 @@ export class MerchCard extends LitElement {
             ...(this.footerSlot?.querySelectorAll('a[is="checkout-link"]') ??
                 []),
         ];
-    }
-
-    get isMobileOrTablet() {
-        return window.matchMedia('(max-width: 1024px)').matches;
     }
 
     async toggleStockOffer({ target }) {
@@ -418,7 +417,7 @@ export class MerchCard extends LitElement {
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                        ${this.isMobileOrTablet && this.actionMenu
+                        ${isMobileOrTablet() && this.actionMenu
                             ? 'always-visible'
                             : ''}
                         ${!this.actionMenu ? 'hidden' : 'invisible'}"
