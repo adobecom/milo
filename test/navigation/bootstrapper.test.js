@@ -4,21 +4,25 @@ import { stub, useFakeTimers, restore } from 'sinon';
 import loadBlock from '../../libs/navigation/bootstrapper.js';
 import fetchedFooter from '../blocks/global-footer/mocks/fetched-footer.js';
 import placeholders from '../blocks/global-navigation/mocks/placeholders.js';
+import { setConfig } from '../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 const blockConfig = {
-  name: 'global-footer',
-  targetEl: 'footer',
-  appendType: 'append',
-  footer: { authoringPath: '/federal/home', privacyLoadDelay: 0 },
+  footer: {
+    name: 'global-footer',
+    targetEl: 'footer',
+    appendType: 'append',
+  },
+  header: {
+    name: 'global-navigation',
+    targetEl: 'header',
+    appendType: 'prepend',
+    unavComponents: 'profile',
+  },
 };
 
-const miloConfigs = {
-  origin: 'https://feds--milo--adobecom.hlx.page',
-  miloLibs: 'http://localhost:2000/libs',
-  pathname: '/',
-};
+const miloLibs = 'http://localhost:2000/libs';
 
 const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
   resolve({
@@ -43,6 +47,7 @@ describe('Bootstrapper', async () => {
       if (url.includes('/footer.plain.html')) return mockRes({ payload: await readFile({ path: '../blocks/region-nav/mocks/regions.html' }) });
       return null;
     });
+    setConfig({ miloLibs, contentRoot: '/federal/dev' });
   });
 
   afterEach(() => {
@@ -50,13 +55,19 @@ describe('Bootstrapper', async () => {
   });
 
   it('Renders the footer block', async () => {
-    await loadBlock(miloConfigs, blockConfig);
+    await loadBlock(miloLibs, blockConfig.footer);
     const clock = useFakeTimers({
       toFake: ['setTimeout'],
       shouldAdvanceTime: true,
     });
     clock.tick(3000);
     const el = document.getElementsByTagName('footer');
+    expect(el).to.exist;
+  });
+
+  it('Renders the header block', async () => {
+    await loadBlock(miloLibs, blockConfig.header);
+    const el = document.getElementsByTagName('header');
     expect(el).to.exist;
   });
 });

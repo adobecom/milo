@@ -405,13 +405,15 @@ class Gnav {
       try {
         this.block.removeEventListener('click', this.loadDelayed);
         this.block.removeEventListener('keydown', this.loadDelayed);
-        const [
-          Search,
-        ] = await Promise.all([
-          loadBlock('../features/search/gnav-search.js'),
-          loadStyles(rootPath('features/search/gnav-search.css')),
-        ]);
-        this.Search = Search;
+        if (this.searchPresent()) {
+          const [
+            Search,
+          ] = await Promise.all([
+            loadBlock('../features/search/gnav-search.js'),
+            loadStyles(rootPath('features/search/gnav-search.css')),
+          ]);
+          this.Search = Search;
+        }
 
         if (!this.useUniversalNav) {
           const [ProfileDropdown] = await Promise.all([

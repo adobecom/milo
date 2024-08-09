@@ -32,7 +32,7 @@ dl.accordion {
   line-height: var(--type-heading-s-lh);
   padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
   position: relative;
-  text-align: left;
+  text-align: start;
   width: 100%;
   -webkit-text-size-adjust: 100%;
 }

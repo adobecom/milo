@@ -7,6 +7,7 @@ on:
 
 env:
   SLACK_HIGH_IMPACT_PR_WEBHOOK: ${{ secrets.SLACK_HIGH_IMPACT_PR_WEBHOOK }}
+  SLACK_MILO_UPDATES_WEBHOOK: ${{ secrets.SLACK_MILO_UPDATES_WEBHOOK }}
 
 jobs:
   send_alert:
