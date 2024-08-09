@@ -43,7 +43,6 @@ const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
 const MANIFEST_KEYS = [
   'action',
   'selector',
-  'modifier',
   'pagefilter',
   'page filter',
   'page filter optional',
@@ -152,18 +151,12 @@ const COMMANDS = {
     el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
-  [COMMANDS_KEYS.update]: ({ el, target, modifier, targetManifestId }) => {
+  [COMMANDS_KEYS.update]: ({ el, target, modifiers, targetManifestId }) => {
     if (!el) return;
-    switch (modifier) {
-      case 'href':
-        el.href = target;
-        break;
-      case 'html':
-        el.innerHTML = target;
-        break;
-      default:
-        el.innerText = target;
-        break;
+    if (modifiers.includes('href')) {
+      el.href = target;
+    } else {
+      el.innerHTML = target;
     }
     if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   },
@@ -426,7 +419,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
     const {
-      manifestId, targetManifestId, action, selector, modifier, target: trgt,
+      manifestId, targetManifestId, action, selector, modifiers, target: trgt,
     } = cmd;
     const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
@@ -438,7 +431,7 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
     if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
 
     if (action in COMMANDS) {
-      COMMANDS[action]({ el, target, manifestId, targetManifestId, modifier });
+      COMMANDS[action]({ el, target, manifestId, targetManifestId, modifiers });
       return;
     }
     el?.insertAdjacentElement(
@@ -455,8 +448,18 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
   if (manifestOverrideName) targetId = manifestOverrideName;
   if (!config.mep?.preview) manifestId = false;
   const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
-  const { selector, modifier } = line;
   const pageFilter = line['page filter'] || line['page filter optional'];
+  let { selector } = line;
+  let modifiers = [];
+  const selectorArr = selector.split('#');
+  if (selectorArr.length > 1) {
+    const modString = selectorArr.pop();
+    if (modString.startsWith('_')) {
+      modifiers = modString.split('_');
+      modifiers.shift();
+      selector = selectorArr.join('#');
+    }
+  }
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
@@ -468,7 +471,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
     const variantInfo = {
       action,
       selector,
-      modifier,
+      modifiers,
       pageFilter,
       target: line[vn],
       selectorType: checkSelectorType(selector),
@@ -499,7 +502,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
       } else {
         variants[vn][action].push({
           selector: normalizePath(selector),
-          modifier,
+          modifiers,
           val: normalizePath(line[vn]),
           pageFilter,
           manifestId,
