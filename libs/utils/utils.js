@@ -191,6 +191,8 @@ export function getMetadata(name, doc = document) {
 }
 
 const handleEntitlements = (() => {
+  const { martech } = Object.fromEntries(PAGE_URL.searchParams);
+  if (martech === 'off') return () => {};
   let entResolve;
   const entPromise = new Promise((resolve) => {
     entResolve = resolve;
@@ -949,7 +951,7 @@ async function checkForPageMods() {
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    mepParam, mepHighlight, mepButton, pzn, promo, target, martech,
+    mepParam, mepHighlight, mepButton, pzn, promo, target,
   });
 }
 

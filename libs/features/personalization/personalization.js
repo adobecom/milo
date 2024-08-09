@@ -597,7 +597,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
   let userEntitlements = [];
-  if (hasEntitlementTag && config.mep.martech !== 'off') {
+  if (hasEntitlementTag) {
     userEntitlements = await config.entitlements();
   }
 
@@ -937,7 +937,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP, martech,
+    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
   } = enablements;
   const config = getConfig();
   if (!postLCP) {
@@ -950,7 +950,6 @@ export async function init(enablements = {}) {
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
       experiments: [],
-      martech,
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
