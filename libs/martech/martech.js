@@ -221,7 +221,7 @@ const loadMartechFiles = async (config) => {
               : 'ee'
           ),
         },
-        target: false,
+        target: true,
       },
       milo: true,
     };
