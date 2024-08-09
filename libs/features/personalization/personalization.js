@@ -169,21 +169,19 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fVal) => {
+const getBlockProps = (fVal, miloLibs, origin) => {
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
   const blockSelector = val?.split('/').pop();
-  const { origin } = PAGE_URL;
-  if (origin.includes('.hlx.') || origin.includes('localhost')) {
-    if (val.startsWith('/libs/')) {
-      /* c8 ignore next 2 */
-      const { miloLibs, codeRoot } = getConfig();
-      val = `${miloLibs || codeRoot}${val.replace('/libs', '')}`;
-    } else {
-      val = `${origin}${val}`;
-    }
+
+  if (val.startsWith('/libs/')) {
+    /* c8 ignore next 1 */
+    val = `${miloLibs}${val.replace('/libs', '')}`;
+  } else {
+    val = `${origin}${val}`;
   }
+
   return { blockSelector, blockTarget: val };
 };
 
@@ -457,6 +455,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
   if (!config.mep?.preview) manifestId = false;
+  const { origin } = PAGE_URL;
   variantNames.forEach((vn) => {
     const targetManifestId = vn.startsWith(TARGET_EXP_PREFIX) ? targetId : false;
     if (!line[vn] || line[vn].toLowerCase() === 'false') return;
@@ -483,7 +482,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
       variants[vn][action] = variants[vn][action] || [];
 
       if (action === 'useblockcode') {
-        const { blockSelector, blockTarget } = getBlockProps(line[vn]);
+        const { blockSelector, blockTarget } = getBlockProps(line[vn], config.miloLibs, origin);
         variants[vn][action].push({
           selector: blockSelector,
           val: blockTarget,
@@ -578,20 +577,26 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
+function trimNames(arr) {
+  return arr.map((v) => v.trim()).filter(Boolean);
+}
+export function buildVariantInfo(variantNames) {
+  return variantNames.reduce((acc, name) => {
+    let nameArr = [name];
+    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
+    acc[name] = trimNames(nameArr);
+    acc.allNames = [...acc.allNames, ...trimNames(name.split(/[,&]|\bnot\b/))];
+    return acc;
+  }, { allNames: [] });
+}
+
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
   if (config.mep?.variantOverride?.[manifestPath]) {
     return config.mep.variantOverride[manifestPath];
   }
 
-  const variantInfo = variantNames.reduce((acc, name) => {
-    let nameArr = [name];
-    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
-    const vNames = nameArr.map((v) => v.trim()).filter(Boolean);
-    acc[name] = vNames;
-    acc.allNames = [...acc.allNames, ...vNames];
-    return acc;
-  }, { allNames: [] });
+  const variantInfo = buildVariantInfo(variantNames);
 
   const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
