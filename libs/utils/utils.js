@@ -924,14 +924,19 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 };
 
 async function checkForPageMods() {
-  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
+  const {
+    mep: mepParam,
+    mepHighlight,
+    mepButton,
+    martech,
+  } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = getMepEnablement('target');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '')) return;
-  if (target) {
+  if (target && martech !== 'off') {
     loadMartech();
   } else if (pzn) {
     loadIms()
@@ -944,7 +949,7 @@ async function checkForPageMods() {
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    mepParam, mepHighlight, mepButton, pzn, promo, target,
+    mepParam, mepHighlight, mepButton, pzn, promo, target, martech,
   });
 }
 
