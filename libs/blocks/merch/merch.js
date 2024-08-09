@@ -192,18 +192,12 @@ export async function fetchCheckoutLinkConfigs(base = '') {
     ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
       log?.error('Failed to fetch checkout link configs', e);
     }).then((mappings) => {
-      if (!mappings?.ok) return undefined;
+      if (!mappings?.ok) return { data: [] };
       return mappings.json();
     });
   return fetchCheckoutLinkConfigs.promise;
 }
 
-/**
- * @param {*} productFamily product family code
- * @param {*} productCode product code, can be undefined
- * @param {*} paCode product arrangement code, can be undefined
- * @returns checkout link config for the given product family and code
- */
 export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
   let { base } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
@@ -234,7 +228,7 @@ export async function getCheckoutLinkConfig(productFamily, productCode, paCode) 
     ...paCodeConfigs, ...productCodeConfigs, ...productFamilyConfigs,
   ];
 
-  if (productCheckoutLinkConfigs.length === 0) return undefined;
+  if (productCheckoutLinkConfigs.length) return undefined;
   const checkoutLinkConfig = productCheckoutLinkConfigs.find(
     ({ [NAME_LOCALE]: locale }) => locale === '',
   );
