@@ -596,6 +596,12 @@ merch-card:not([variant='inline-heading']) [slot='heading-xs'] a {
     color: var(--merch-color-grey-80);
 }
 
+merch-card [slot='starting-at'] {
+  font-size: var(--consonant-merch-card-body-xs-font-size);
+  line-height: var(--consonant-merch-card-body-xs-line-height);
+  font-weight: 500;
+}
+
 merch-card [slot='heading-xs'] a:not(:hover) {
     text-decoration: inherit;
 }
@@ -1520,7 +1526,7 @@ body.merch-modal {
                   `:c`
                       <hr />
                       ${this.secureLabelFooter}
-                  `}`}get promoBottom(){return this.classList.contains("promo-bottom")}renderSegment(){return c` ${this.badge}
+                  `}`}get promoBottom(){return this.classList.contains("promo-bottom")}get startingAt(){return this.classList.contains("starting-at")}renderSegment(){return c` ${this.badge}
             <div class="body">
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
