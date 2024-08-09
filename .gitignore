@@ -2,9 +2,9 @@
 .aem/*
 coverage
 logs/*
-node_modules
+*node_modules
 .DS_Store
 .idea
 .iml
 .env
-**/mas/stats.json
+**/mas/*/stats.json
