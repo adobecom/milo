@@ -2,9 +2,8 @@ import {
     CheckoutWorkflow,
     CheckoutWorkflowStep,
     Env,
-    Landscape,
-    WcsEnv,
 } from './external.js';
+import { Landscape } from './constants.js';
 
 /** @type {Commerce.Defaults} */
 export const Defaults = Object.freeze({

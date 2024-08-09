@@ -3,16 +3,22 @@ import {
     WorkflowStep,
 } from '@pandora/commerce-checkout-url-builder';
 import {
-    ProviderEnvironment,
-    Landscape,
-    Environment,
-} from '@pandora/data-source-utils';
-import {
     PriceDetails,
     ResolvedOffer,
     Term,
     Commitment,
 } from '@pandora/data-models-odm';
+
+declare enum ProviderEnvironment {
+  STAGE = "STAGE",
+  PRODUCTION = "PRODUCTION",
+  LOCAL = "LOCAL"
+}
+
+declare enum Landscape {
+  DRAFT = "DRAFT",
+  PUBLISHED = "PUBLISHED"
+}
 
 type RequiredKey<Type, Key extends keyof Type> = Type & {
     [Property in Key]-?: Type[Property];

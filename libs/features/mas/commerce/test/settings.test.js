@@ -1,4 +1,5 @@
-import { Env, WcsEnv, Landscape } from '../src/external.js';
+import { Env } from '../src/external.js';
+import { Landscape } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { getSettings } from '../src/settings.js';
 
@@ -63,7 +64,7 @@ describe('getSettings', () => {
             priceLiteralsPromise: undefined,
             quantity: [Defaults.quantity],
             wcsApiKey,
-            wcsEnv: WcsEnv.STAGE,
+            wcsEnv: 'STAGE',
             landscape: Landscape.DRAFT,
         });
         window.sessionStorage.removeItem(PARAM_ENV);
@@ -85,7 +86,7 @@ describe('getSettings', () => {
             priceLiteralsURL: undefined,
             priceLiteralsPromise: undefined,
             quantity: [Defaults.quantity],
-            wcsEnv: WcsEnv.PRODUCTION,
+            wcsEnv: 'PRODUCTION',
             landscape: Landscape.DRAFT,
         });
     });
@@ -107,7 +108,7 @@ describe('getSettings', () => {
             priceLiteralsURL: undefined,
             priceLiteralsPromise: undefined,
             quantity: [Defaults.quantity],
-            wcsEnv: WcsEnv.PRODUCTION,
+            wcsEnv: 'PRODUCTION',
             landscape: Landscape.PUBLISHED,
         });
     });

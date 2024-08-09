@@ -1,11 +1,9 @@
-import { PARAM_ENV, PARAM_LANDSCAPE } from './constants.js';
+import { PARAM_ENV, PARAM_LANDSCAPE, Landscape } from './constants.js';
 import { Defaults } from './defaults.js';
 import {
     CheckoutWorkflow,
     CheckoutWorkflowStep,
     Env,
-    WcsEnv,
-    Landscape,
     getParameter,
     toBoolean,
     toEnumeration,

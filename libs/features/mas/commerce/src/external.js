@@ -5,11 +5,6 @@ import {
     buildCheckoutUrl,
 } from '@pandora/commerce-checkout-url-builder';
 import { Term, Commitment } from '@pandora/data-models-odm';
-import {
-    Environment,
-    Landscape,
-    ProviderEnvironment,
-} from '@pandora/data-source-utils';
 
 import {
     price,
@@ -32,14 +27,11 @@ import {
     omitProperties,
     toBoolean,
     toEnumeration,
-    toKebabCase,
     toPositiveFiniteInteger,
-} from '@dexter/tacocat-core';
-import {
     applyPlanType,
     forceTaxExclusivePrice,
     PlanType,
-} from '@dexter/tacocat-wcs-client';
+} from '@dexter/tacocat-core';
 
 const { freeze } = Object;
 
@@ -47,10 +39,13 @@ const { freeze } = Object;
 const CheckoutWorkflow = freeze({ ...CheckoutType });
 /** @type {Commerce.Checkout.CheckoutWorkflowStep} */
 const CheckoutWorkflowStep = freeze({ ...WorkflowStep });
-const Env = freeze({ ...ProviderEnvironment });
+const Env = {
+  STAGE: "STAGE",
+  PRODUCTION: "PRODUCTION",
+  LOCAL: "LOCAL"
+};
 /** @type {Commerce.Wcs.WcsCommitment} */
 const WcsCommitment = freeze({ ...Commitment });
-const WcsEnv = freeze({ ...Environment });
 /** @type {Commerce.Wcs.WcsPlanType} */
 const WcsPlanType = freeze({ ...PlanType });
 /** @type {Commerce.Wcs.WcsTerm} */
@@ -61,8 +56,6 @@ export {
     CheckoutWorkflowStep,
     Env,
     WcsCommitment,
-    WcsEnv,
-    Landscape,
     WcsTerm,
     WcsPlanType,
     applyPlanType,
@@ -86,6 +79,5 @@ export {
     discount,
     toBoolean,
     toEnumeration,
-    toKebabCase,
     toPositiveFiniteInteger,
 };

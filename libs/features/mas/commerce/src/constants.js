@@ -24,3 +24,8 @@ export const STATE_PENDING = 'pending';
 export const STATE_RESOLVED = 'resolved';
 
 export const TAG_NAME_SERVICE = 'wcms-commerce';
+
+export const Landscape = {
+  DRAFT: "DRAFT",
+  PUBLISHED: "PUBLISHED"
+}
