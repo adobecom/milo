@@ -207,15 +207,16 @@ export default async function init(el) {
 
   const assetRow = allRows[0].classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
-  const mainCopy = createTag('div', { class: 'main-copy' }, copy.innerHTML);
+  const mainCopy = createTag('div', { class: 'main-copy' });
+  while (copy.childNodes.length > 0) {
+    mainCopy.appendChild(copy.childNodes[0]);
+  }
   rows.splice(mainRowIndex, 1);
   if (mainRowIndex > 0) {
     for (let i = 0; i < mainRowIndex; i += 1) {
       rows[i].classList.add('prepend');
     }
   }
-
-  copy.innerHTML = '';
   copy.append(mainCopy);
   [...rows].forEach((row) => {
     if (row.classList.contains('prepend')) {
@@ -243,5 +244,5 @@ export default async function init(el) {
       decorateButtons(row, 'button-xl');
     }
   });
-  decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
+  // decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
 }
