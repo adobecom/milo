@@ -6,7 +6,6 @@ import './merch-sidenav-list.js';
 import './merch-sidenav-checkbox-group.js';
 import { SPECTRUM_MOBILE_LANDSCAPE, TABLET_DOWN } from '../media.js';
 import { disableBodyScroll, enableBodyScroll } from '../bodyScrollLock.js';
-import { getConfig } from '../../../../../utils/utils.js';
 
 document.addEventListener('sp-opened', () => {
     document.body.classList.add('merch-modal');
@@ -148,9 +147,7 @@ export class MerchSideNav extends LitElement {
                 notImmediatelyClosable: true,
                 type: 'auto',
             };
-            const { base } = getConfig();
-            const overlay = await import(`${base}/features/spectrum-web-components/dist/overlay.js`);
-            overlay.open(
+            const overlay = await window.__merch__spectrum_Overlay.open(
                 this.dialog,
                 options,
             );
