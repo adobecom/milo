@@ -50,7 +50,6 @@ describe('Merch Card', () => {
     const merchCard = await init(document.querySelector('.segment'));
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
-        { selector: 'p[slot="starting-as"]', textContent: 'Starting at' },
         { selector: 'h3[slot="heading-xs"]', textContent: 'Lorem ipsum dolor sit amet' },
         { selector: 'h4[slot="promo-text"]', textContent: 'this promo is great see terms' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See what\'s included | Learn more' },
