@@ -20,6 +20,7 @@ export const styles = css`
         border-radius: var(--consonant-merch-spacing-xs);
         border: 1px solid var(--consonant-merch-card-border-color);
         box-sizing: border-box;
+        -webkit-transform: translate3d(0,0,0);
     }
 
     :host(.placeholder) {

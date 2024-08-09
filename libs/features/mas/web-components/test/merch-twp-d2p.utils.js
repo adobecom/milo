@@ -2,6 +2,7 @@ import { sendMouse } from '@web/test-runner-commands';
 import { delay } from './utils.js';
 import { expect } from '@esm-bundle/chai';
 import { getTemplateContent } from './utils.js';
+import { getConfig } from '../../../../utils/utils.js';
 
 const content = document.getElementById('content');
 const sidenav = document.getElementById('sidenav');
@@ -42,7 +43,9 @@ async function applyTemplate(templates, deeplink = true) {
         dialogBase.setAttribute('mode', 'fullscreenTakeover');
     }
 
-    const overlay = await window.__merch__spectrum_Overlay.open(dialogBase, {
+    const { base } = getConfig();
+    const overlay = await import(`${base}/features/spectrum-web-components/dist/overlay.js`);
+    overlay.open(dialogBase, {
         trigger: undefined,
         type: 'modal',
     });
