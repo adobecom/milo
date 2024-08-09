@@ -105,6 +105,6 @@ export default function webVitals(mep, { delay = 1000, sampleRate = 50 } = {}) {
     handleEvent();
     return;
   }
-  window.addEventListener('adobePrivacy:PrivacyConsent', handleEvent);
-  window.addEventListener('adobePrivacy:PrivacyCustom', handleEvent);
+  window.addEventListener('adobePrivacy:PrivacyConsent', handleEvent, { once: true });
+  window.addEventListener('adobePrivacy:PrivacyCustom', handleEvent, { once: true });
 }
