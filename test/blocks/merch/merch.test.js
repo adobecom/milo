@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
-import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/commerce.js';
+import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
@@ -22,6 +22,7 @@ import merch, {
   PRICE_LITERALS_URL,
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
+  appendTabName,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -589,7 +590,6 @@ describe('Merch Block', () => {
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
     });
-
     it('renders Milo TWP modal', async () => {
       mockIms();
       const el = document.querySelector('.merch.cta.milo.twp');
@@ -631,6 +631,86 @@ describe('Merch Block', () => {
       const modal = document.getElementById('checkout-link-modal');
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
+    });
+    it('renders TWP modal with preselected plan', async () => {
+      mockIms();
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'preselect-plan');
+      meta.setAttribute('content', 'edu');
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      const el = document.querySelector('.merch.cta.twp.preselected-plan');
+      const cta = await merch(el);
+      const { nodeName } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      cta.click();
+      await delay(100);
+      expect(document.querySelector('iframe').src).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu');
+      document.querySelector('meta[name="preselect-plan"]').remove();
+    });
+
+    const MODAL_URLS = [
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator1.html?mid=ft&web=1',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator1.html?mid=ft&web=1&plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator2.html?mid=ft&web=1&plan=abc',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator2.html?mid=ft&web=1&plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator3.html?mid=ft&web=1#thisishash',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator3.html?mid=ft&web=1&plan=edu#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator4.html',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator4.html?plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator5.html#thisishash',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator5.html?plan=edu#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator6.html?mid=ft&web=1',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator6.html?mid=ft&web=1&plan=team',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator7.html?mid=ft&web=1',
+        plan: '',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator7.html?mid=ft&web=1',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1#thisishash',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1&plan=team#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator9.sel1.sel2.html/resource#thisishash',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator9.sel1.sel2.html/resource?plan=team#thisishash',
+      },
+      {
+        url: 'www.adobe.com/mini-plans/illustrator10.html?mid=ft&web=1', // invalid URL, protocol is missing
+        plan: 'edu',
+        urlWithPlan: 'www.adobe.com/mini-plans/illustrator10.html?mid=ft&web=1',
+      },
+    ];
+    MODAL_URLS.forEach((modalUrl) => {
+      it(`appends preselected plan ${modalUrl.plan} to modal URL ${modalUrl.url}`, async () => {
+        const meta = document.createElement('meta');
+        meta.setAttribute('name', 'preselect-plan');
+        meta.setAttribute('content', modalUrl.plan);
+        document.getElementsByTagName('head')[0].appendChild(meta);
+
+        const resultUrl = appendTabName(modalUrl.url);
+        expect(resultUrl).to.equal(modalUrl.urlWithPlan);
+        document.querySelector('meta[name="preselect-plan"]').remove();
+      });
     });
   });
 

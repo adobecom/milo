@@ -264,7 +264,16 @@ const setupChangedEls = (globalNoClick) => {
   }
 };
 
+const transformLinks = () => {
+  const grayboxHostname = window.location.hostname;
+  const consumerHostname = grayboxHostname.replace(/[^.]+\.(?:([^.]+)-)?graybox\./, (_, sub) => `${sub || 'www'}.`);
+  document.querySelectorAll(`a[href*="${consumerHostname}"]`).forEach((el) => {
+    el.href = el.href.replace(consumerHostname, grayboxHostname);
+  });
+};
+
 const grayboxThePage = (grayboxEl, grayboxMenuOff) => () => {
+  transformLinks();
   document.body.classList.add(CLASS.GRAYBOX_BODY);
   const globalNoClick = grayboxEl.classList.contains(CLASS.NO_CLICK)
   || grayboxEl.classList.contains(OPTION.NO_CLICK);

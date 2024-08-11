@@ -46,7 +46,8 @@ const decorateForeground = async (el, rows) => {
       row.classList.add('foreground');
       await decorateLockupFromContent(row);
     } else if (i === (rows.length - 1)) {
-      row.classList.add('footer');
+      row.classList.add('card-footer');
+      if (!row.textContent.trim()) row.classList.add('empty');
     } else {
       row.classList.add('extra-row');
     }
@@ -86,12 +87,12 @@ const init = async (el) => {
   if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
-  if (rows.length === 4) el.classList.add('has-footer');
+  if (rows.length === 4) el.classList.add('equal-height');
   if (rows.length >= 1) {
     const count = rows.length >= 3 ? 'three-plus' : rows.length;
     switch (count) {
       case 'three-plus':
-        // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:footer)
+        // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:card-footer)
         decorateBgRow(el, head);
         rows = tail;
         await decorateForeground(el, rows);
