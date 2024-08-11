@@ -151,8 +151,7 @@ export class Footer {
         regionButton.setAttribute('aria-expanded', ariaExpanded);
       });
       document.addEventListener('click', (e) => {
-        const ariaExpanded = regionButton.classList.contains('inline-dialog-active');
-        if (ariaExpanded && !e.target.closest('.footer-region')) {
+        if (regionButton.classList.contains('inline-dialog-active') && !e.target.closest('.footer-region')) {
           regionButton.setAttribute('aria-expanded', false);
           regionButton.classList.remove('inline-dialog-active');
         }
