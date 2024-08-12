@@ -15,6 +15,7 @@ import {
 } from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
+import { accessToken } from '../../../tools/sharepoint/state.js';
 import { origin, preview } from './franklin.js';
 import { setExcelStatus, setStatus } from './status.js';
 import getServiceConfig from '../../../utils/service-config.js';
@@ -24,6 +25,7 @@ let pollingInterval = null;
 const INTERVAL = 3000;
 const MAX_COUNT = 1200; // 3000 x 1200 = 3600000s = 1 hour
 const ROLLOUT_ALL_AVAILABLE = ['completed', 'translated'];
+const UNAUTHORIZED = 401;
 
 let waiting = false;
 
@@ -38,6 +40,15 @@ function handleProjectStatusDetail(detail) {
     (key) => ROLLOUT_ALL_AVAILABLE.includes(detail[key].status),
   );
   languages.value = [...languages.value.map((lang) => ({ ...lang, ...detail[lang.code] }))];
+}
+
+function showAuthError(operation) {
+  cancelPolling();
+  setStatus(
+    'service',
+    'error',
+    `You donot have access to ${operation}.`,
+    'Please refresh page, login to sidekick and retry.');
 }
 
 export async function getProjectStatus() {
@@ -109,20 +120,25 @@ export async function startSync() {
   setStatus('service', 'info', 'Syncing documents to Langstore.');
   const url = await getMilocUrl();
   setExcelStatus('Sync to langstore/en', '');
-  const opts = { method: 'POST' };
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value } };
   const resp = await fetch(`${url}start-sync?project=${heading.value.projectId}`, opts);
+  if (resp.status === UNAUTHORIZED) showAuthError('start project');
   return resp.status;
 }
 
 export async function startProject({ skipSync }) {
   let url = await getMilocUrl();
   setStatus('service', 'info', 'Starting project');
-  const opts = { method: 'POST' };
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }  };
   url = `${url}start-project?project=${heading.value.projectId}`;
   if (skipSync) url = `${url}&skipsync=true`;
   const resp = await fetch(url, opts);
   if (resp.status === 201) setExcelStatus('Sent to localization service', '');
-  setStatus('service');
+  if (resp.status === UNAUTHORIZED) {
+    showAuthError('start project');
+  } else {
+    setStatus('service');
+  }
   return resp.status;
 }
 
@@ -132,7 +148,7 @@ export async function cancelProject() {
   allowCancelProject.value = false;
   let url = await getMilocUrl();
   setStatus('service', 'info', 'Cancelling project');
-  const opts = { method: 'POST' };
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }  };
   url = `${url}cancel-project?project=${heading.value.projectId}`;
   const resp = await fetch(url, opts);
   if (resp.status === 200) setExcelStatus('Project cancelled', '');
@@ -141,7 +157,11 @@ export async function cancelProject() {
     setStatus('service', 'error', 'Cancelling project', json.error);
     return resp.status;
   }
-  setStatus('service', 'info', 'Successfully Cancelled Project', null, 5000);
+  if (resp.status === UNAUTHORIZED) {
+    showAuthError('cancel project');
+  } else {
+    setStatus('service', 'info', 'Successfully Cancelled Project', null, 5000);
+  }
   return resp.status;
 }
 
@@ -155,8 +175,12 @@ export async function rolloutLang(
   if (ep === 'start-rollout') { statNotes = `${statNotes} - Reroll: ${reroll ? 'yes' : 'no'}`; }
   setExcelStatus(statAction, statNotes);
   const url = await getMilocUrl();
-  const opts = { method: 'POST' };
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }  };
   const resp = await fetch(`${url}${ep}?project=${heading.value.projectId}&languageCode=${languageCode}&reroll=${reroll}`, opts);
+  if (resp.status === UNAUTHORIZED) {
+    showAuthError('rollout');
+    return {};
+  }
   return resp.json();
 }
 
@@ -164,8 +188,8 @@ export async function createProject() {
   const url = await getMilocUrl();
   setStatus('service', 'info', 'Creating new project.');
   const body = `${origin}${heading.value.path}.json`;
-  const opts = { method: 'POST', body };
-  const resp = await fetch(`${url}create-project`, opts);
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }, body };
+  const resp = await fetch(`${url}create-project?locui=${encodeURIComponent(window.location.href)}`, opts);
   if (resp.status === 201) {
     setExcelStatus('Project Created', '');
     canRefresh.value = false;
@@ -179,6 +203,7 @@ export async function createProject() {
     const json = await resp.json();
     setStatus('service', 'error', 'Creating project', json.errors && json.errors?.length > 0 ? json.errors : json.error);
   }
+  if (resp.status === UNAUTHORIZED) showAuthError('create project');
   return resp.status;
 }
 
