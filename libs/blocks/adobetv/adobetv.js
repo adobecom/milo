@@ -1,4 +1,4 @@
-import { createIntersectionObserver } from '../../utils/utils.js';
+import { createIntersectionObserver, createTag } from '../../utils/utils.js';
 import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
 
 const ROOT_MARGIN = 1000;
@@ -9,11 +9,19 @@ const loadAdobeTv = (a) => {
     a.classList.add('hide');
     const { href, hash, dataset } = a;
     const attrs = getVideoAttrs(hash || 'autoplay', dataset);
-    const video = `<video ${attrs}>
-          <source src="${href}" type="video/mp4" />
-        </video>`;
-    if (!a.parentNode) return;
+    const video = `<video ${attrs}></video>`;
+    const parentElement = a.parentNode;
+    if (!parentElement) return;
     a.insertAdjacentHTML('afterend', video);
+    createIntersectionObserver({
+      el: parentElement,
+      options: { rootMargin: `${ROOT_MARGIN}px` },
+      callback: () => {
+        parentElement
+          .querySelector('video')
+          .appendChild(createTag('source', { src: href, type: 'video/mp4' }));
+      },
+    });
     const videoElem = document.body.querySelector(`source[src="${href}"]`)?.parentElement;
     applyHoverPlay(videoElem);
     a.remove();
@@ -29,13 +37,5 @@ const loadAdobeTv = (a) => {
 
 export default function init(a) {
   a.classList.add('hide-video');
-  if (a.textContent.includes('no-lazy')) {
-    loadAdobeTv(a);
-  } else {
-    createIntersectionObserver({
-      el: a,
-      options: { rootMargin: `${ROOT_MARGIN}px` },
-      callback: loadAdobeTv,
-    });
-  }
+  loadAdobeTv(a);
 }

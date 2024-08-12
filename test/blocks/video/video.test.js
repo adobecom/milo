@@ -1,9 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect, assert } from '@esm-bundle/chai';
-
 import sinon from 'sinon';
+import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 
-import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({});
@@ -105,7 +104,7 @@ describe('video uploaded using franklin bot', () => {
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
 
-  it('play video when element reached 80% viewport', async () => {
+  it.only('play video when element reached 80% viewport', async () => {
     const block = document.querySelector('.video.autoplay.viewportplay.scrolled-80');
     const a = block.querySelector('a');
     a.textContent = 'no-lazy';
@@ -116,20 +115,26 @@ describe('video uploaded using franklin bot', () => {
 
     init(a);
     const video = block.querySelector('video');
+    console.log(video);
+    const intersectionObserverAddsSource = () => {
+      console.log({ shild: video.firstElementChild });
+      return video.querySelector('source');
+    };
+    const playSpy = sinon.spy(video, 'play');
+    const pauseSpy = sinon.spy(video, 'pause');
+    await waitFor(intersectionObserverAddsSource);
     const source = video.querySelector('source');
     source.setAttribute('src', 'https://www.adobe.com/creativecloud/media_1167374e3354ef57f126fa78a55cbc1708ac4babd.mp4');
     source.setAttribute('type', 'video/mp4');
-
-    const playSpy = sinon.spy(video, 'play');
-    const pauseSpy = sinon.spy(video, 'pause');
 
     video.scrollIntoView();
     await nextFrame();
     await new Promise((resolve) => {
       setTimeout(resolve, 100);
     });
+    console.log('grr');
     assert.isTrue(playSpy.calledOnce);
-
+    console.log('grr-1');
     document.body.scrollIntoView();
     await nextFrame();
     await new Promise((resolve) => {
