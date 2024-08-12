@@ -52,8 +52,19 @@ export function Wcs({ settings }) {
         try {
             log.debug('Fetching:', options);
             options.offerSelectorIds = options.offerSelectorIds.sort();
-            const url = `${settings.wcsURL}?offer_selector_ids=${options.offerSelectorIds}&country=${options.country}&language=${options.language}&locale=${options.locale}&api_key=${apiKey}&landscape=${env === Env.STAGE ? 'ALL' : settings.landscape}`;
-            const response = await fetch(url);
+            const url = new URL(settings.wcsURL);
+            url.searchParams.set('offer_selector_ids', options.offerSelectorIds.join(','));
+            url.searchParams.set('country', options.country);
+            url.searchParams.set('language', options.language);
+            if (options.currency) {
+              url.searchParams.set('currency', options.currency);
+            }
+            url.searchParams.set('locale', options.locale);
+            url.searchParams.set('promotion_code', options.promotionCode);
+            url.searchParams.set('landscape', env === Env.STAGE ? 'ALL' : settings.landscape);
+            url.searchParams.set('api_key', apiKey);
+            
+            const response = await fetch(url.toString());
             if (response.ok) {            
               const data = await response.json();
               log.debug('Fetched:', options, data);
