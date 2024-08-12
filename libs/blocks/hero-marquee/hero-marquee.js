@@ -93,6 +93,7 @@ function wrapInnerHTMLInPTag(el) {
 
 function decorateText(el, classes) {
   el.classList.add('norm');
+  wrapInnerHTMLInPTag(el);
   const btnClass = classes?.find((c) => c.endsWith('-button'));
   if (btnClass) {
     const [theme, size] = btnClass.split('-').reverse();
@@ -101,7 +102,6 @@ function decorateText(el, classes) {
   } else {
     decorateButtons(el, 'button-xl');
   }
-  wrapInnerHTMLInPTag(el);
   decorateBlockText(el, textDefault);
   decorateTextOverrides(el, ['-heading', '-body', '-detail']);
 }
