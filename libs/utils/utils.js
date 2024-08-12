@@ -191,6 +191,8 @@ export function getMetadata(name, doc = document) {
 }
 
 const handleEntitlements = (() => {
+  const { martech } = Object.fromEntries(PAGE_URL.searchParams);
+  if (martech === 'off') return () => {};
   let entResolve;
   const entPromise = new Promise((resolve) => {
     entResolve = resolve;
@@ -924,16 +926,21 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 };
 
 async function checkForPageMods() {
-  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
+  const {
+    mep: mepParam,
+    mepHighlight,
+    mepButton,
+    martech,
+  } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = getMepEnablement('target');
+  const target = martech === 'off' ? false : getMepEnablement('target');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '')) return;
   if (target) {
     loadMartech();
-  } else if (pzn) {
+  } else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
