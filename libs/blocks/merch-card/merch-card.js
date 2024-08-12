@@ -584,8 +584,9 @@ export default async function init(el) {
         }
       }
     }
-    addStartingAt(styles, merchCard);
+
     updateBigPrices(merchCard);
+    await addStartingAt(styles, merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);
