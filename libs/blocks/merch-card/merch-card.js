@@ -409,7 +409,7 @@ const addStartingAt = async (styles, merchCard) => {
       const startingAt = createTag('div', { slot: 'starting-at' }, key);
       const prices = merchCard.querySelectorAll('span[is="inline-price"]');
       if (prices[0]) {
-        prices[0].prepend(startingAt);
+        prices[0].parentNode.prepend(startingAt);
       }
     });
   }
