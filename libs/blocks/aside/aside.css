@@ -999,12 +999,20 @@
 
   .aside .foreground.container {
     width: var(--grid-container-width);
-    gap: calc(var(--grid-column-width) * 2);
+    gap: var(--grid-column-width);
   }
 
   .aside .foreground.container > div {
     object-fit: cover;
     padding-left: 0;
+  }
+
+  .aside .foreground.container .text {
+    flex: 1 0 calc(var(--grid-column-width) * 6);
+  }
+
+  .aside .foreground.container .image {
+    flex: 1 0 calc(var(--grid-column-width) * 5);
   }
 
   .aside.inline .foreground.container .text {
