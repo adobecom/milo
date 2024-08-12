@@ -101,5 +101,5 @@ export default {
     </html>`,
   // Comment in the files for selectively running test suites
   // npm run test:file:watch allows to you to run single test file & view the result in a browser.
-  files: ['**/video.test.js'],
+  // files: ['**/utils.test.js'],
 };

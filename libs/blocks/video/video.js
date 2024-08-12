@@ -31,7 +31,7 @@ const loadVideo = (a) => {
         );
     },
   });
-  const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
+  const videoElem = parentElement.querySelector('video');
   applyHoverPlay(videoElem);
   applyInViewPortPlay(videoElem);
   a.remove();

@@ -7,9 +7,16 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({});
 const { default: init } = await import('../../../libs/blocks/video/video.js');
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('video uploaded using franklin bot', () => {
+  beforeEach(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
   it('decorates no-lazy video', async () => {
     const block = document.querySelector('.video.no-lazy');
     const a = block.querySelector('a');
@@ -104,10 +111,9 @@ describe('video uploaded using franklin bot', () => {
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
 
-  it.only('play video when element reached 80% viewport', async () => {
+  it('play video when element reached 80% viewport', async () => {
     const block = document.querySelector('.video.autoplay.viewportplay.scrolled-80');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
     const nextFrame = () => new Promise((resolve) => {
       requestAnimationFrame(resolve);
@@ -115,33 +121,27 @@ describe('video uploaded using franklin bot', () => {
 
     init(a);
     const video = block.querySelector('video');
-    console.log(video);
-    const intersectionObserverAddsSource = () => {
-      console.log({ shild: video.firstElementChild });
-      return video.querySelector('source');
-    };
     const playSpy = sinon.spy(video, 'play');
     const pauseSpy = sinon.spy(video, 'pause');
+    const intersectionObserverAddsSource = () => video.querySelector('source');
     await waitFor(intersectionObserverAddsSource);
-    const source = video.querySelector('source');
-    source.setAttribute('src', 'https://www.adobe.com/creativecloud/media_1167374e3354ef57f126fa78a55cbc1708ac4babd.mp4');
-    source.setAttribute('type', 'video/mp4');
-
     video.scrollIntoView();
     await nextFrame();
     await new Promise((resolve) => {
       setTimeout(resolve, 100);
     });
-    console.log('grr');
     assert.isTrue(playSpy.calledOnce);
-    console.log('grr-1');
-    document.body.scrollIntoView();
+
+    // push the video out of the viewport
+    const div = document.createElement('div');
+    div.style.height = '2000px';
+    video.parentNode.insertBefore(div, video);
+
     await nextFrame();
     await new Promise((resolve) => {
       setTimeout(resolve, 100);
     });
     assert.isTrue(pauseSpy.calledOnce);
-
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
 
@@ -156,15 +156,13 @@ describe('video uploaded using franklin bot', () => {
 
     init(a);
     const video = block.querySelector('video');
-    const source = video.querySelector('source');
-    source.setAttribute('src', 'https://www.adobe.com/creativecloud/media_1167374e3354ef57f126fa78a55cbc1708ac4babd.mp4');
-    source.setAttribute('type', 'video/mp4');
-
     const playSpy = sinon.spy(video, 'play');
     const pauseSpy = sinon.spy(video, 'pause');
     const endedSpy = sinon.spy();
-    video.addEventListener('ended', endedSpy);
+    const intersectionObserverAddsSource = () => video.querySelector('source');
+    await waitFor(intersectionObserverAddsSource);
 
+    video.addEventListener('ended', endedSpy);
     video.scrollIntoView();
     await nextFrame();
     await new Promise((resolve) => {
@@ -172,13 +170,16 @@ describe('video uploaded using franklin bot', () => {
     });
     assert.isTrue(playSpy.calledOnce);
 
-    document.body.scrollIntoView();
+    // push the video out of the viewport
+    const div = document.createElement('div');
+    div.style.height = '2000px';
+    video.parentNode.insertBefore(div, video);
+
     await nextFrame();
     await new Promise((resolve) => {
       setTimeout(resolve, 100);
     });
     assert.isTrue(pauseSpy.calledOnce);
-
     video.dispatchEvent(new Event('ended'));
     await nextFrame();
     await new Promise((resolve) => {
