@@ -6,6 +6,7 @@
 
 .region-nav a {
   text-decoration: none;
+  font-weight: var(--s2-regular-font-weight);
 }
 
 .region-nav > div:nth-of-type(2) > div > p {

@@ -1398,7 +1398,7 @@ a.xl-link {
 
 a {
   color: var(--link-color);
- 
+  font-weight: var(--s2-bold-font-weight)
 }
 
 a.primary-link {
