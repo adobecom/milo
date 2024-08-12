@@ -111,8 +111,11 @@ async function decorateLockup(lockupArea, el) {
   const icon = lockupArea.querySelector('picture');
   const content = icon.nextElementSibling || icon.nextSibling;
   const label = createTag('span', { class: 'lockup-label' }, content.nodeValue || content);
-  if (content.nodeType === 3) lockupArea.replaceChild(label, content);
-  else lockupArea.appendChild(label);
+  if (content.nodeType === 3) {
+    lockupArea.replaceChild(label, content);
+  } else {
+    lockupArea.appendChild(label);
+  }
   lockupArea.classList.add('lockup-area');
   const pre = el.className.match(/([xsml]+)-(lockup|icon)/);
   if (!pre) el.classList.add(`${el.matches('.pill') ? 'm' : 'l'}-lockup`);
