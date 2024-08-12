@@ -140,9 +140,7 @@ ENVS.local = {
 
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
-const DESKTOP_SIZE = 1200;
 const MOBILE_SIZE = 600;
-
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
@@ -524,19 +522,15 @@ export function decorateSVG(a) {
 
 function defineDeviceByScreenSize() {
   const screenWidth = window.innerWidth;
-  if (screenWidth >= DESKTOP_SIZE) {
-    return 'DESKTOP';
-  }
   if (screenWidth <= MOBILE_SIZE) {
-    return 'MOBILE';
+    return 'mobile';
   }
-  return 'TABLET';
+  return 'desktop';
 }
 
 export function getImgSrc(pic) {
-  const viewport = defineDeviceByScreenSize() === 'MOBILE' ? 'mobile' : 'desktop';
   let source = '';
-  if (viewport === 'mobile') source = pic.querySelector('source[type="image/webp"]:not([media])');
+  if (defineDeviceByScreenSize() === 'mobile') source = pic.querySelector('source[type="image/webp"]:not([media])');
   else source = pic.querySelector('source[type="image/webp"][media]');
   return source.srcset;
 }
