@@ -326,9 +326,12 @@ header.global-navigation .darknav {
 }
 
 @media (min-width: 1200px) {
-  .feds-crossCloudMenu-wrapper {
+  .darknav .feds-crossCloudMenu-wrapper {
     border-top: solid 1px var(--feds-borderColor--dark);
     background-color: var(--feds-background-popup--dark);
+  }
+  .darknav .feds-crossCloudMenu .feds-navLink:hover {
+    background-color: transparent;
   }
 }
 
@@ -448,6 +451,10 @@ header.global-navigation .darknav {
 
 .dialog-modal .region-nav a {
   color: var(--feds-color-link--hover--dark);
+}
+
+.dialog-modal .region-nav a:hover {
+  text-decoration: underline;
 }
 
 @media (min-width: 900px) {
