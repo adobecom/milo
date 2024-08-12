@@ -49,60 +49,60 @@ export function Wcs({ settings }) {
      */
     async function resolveWcsOffers(options, promises, reject = true) {
         let message = ERROR_MESSAGE_OFFER_NOT_FOUND;
-        try {
-            log.debug('Fetching:', options);
-            options.offerSelectorIds = options.offerSelectorIds.sort();
-            const url = new URL(settings.wcsURL);
-            url.searchParams.set('offer_selector_ids', options.offerSelectorIds.join(','));
-            url.searchParams.set('country', options.country);
-            url.searchParams.set('language', options.language);
-            if (options.currency) {
-              url.searchParams.set('currency', options.currency);
-            }
-            url.searchParams.set('locale', options.locale);
-            url.searchParams.set('promotion_code', options.promotionCode);
-            url.searchParams.set('landscape', env === Env.STAGE ? 'ALL' : settings.landscape);
-            url.searchParams.set('api_key', apiKey);
-            
-            const response = await fetch(url.toString());
-            if (response.ok) {            
-              const data = await response.json();
-              log.debug('Fetched:', options, data);
-              let offers = data.resolvedOffers ?? [];
-              offers = offers.map(applyPlanType);
-              // resolve all promises that have offers
-              promises.forEach(({ resolve }, offerSelectorId) => {
-                  // select offers with current OSI
-                  const resolved = offers
-                      .filter(({ offerSelectorIds }) =>
-                          offerSelectorIds.includes(offerSelectorId),
-                      )
-                      .flat();
-                  // resolve current promise if at least 1 offer is present
-                  if (resolved.length) {
-                      promises.delete(offerSelectorId);
-                      resolve(resolved);
-                  }
-              });  
-            }
-        } catch (error) {
-            // in case of 404 WCS error caused by a request with multiple osis,
-            // fallback to `fetch-by-one` strategy
-            if (error.status === 404 && options.offerSelectorIds.length > 1) {
-                log.debug('Multi-osi 404, fallback to fetch-by-one strategy');
-                await Promise.allSettled(
-                    options.offerSelectorIds.map((offerSelectorId) =>
-                        resolveWcsOffers(
-                            { ...options, offerSelectorIds: [offerSelectorId] },
-                            promises,
-                            false, // do not reject promises for missing offers, this will be done below
-                        ),
-                    ),
-                );
-            } else {
-                log.error('Failed:', options, error);
-                message = ERROR_MESSAGE_BAD_REQUEST;
-            }
+        log.debug('Fetching:', options);
+        options.offerSelectorIds = options.offerSelectorIds.sort();
+        const url = new URL(settings.wcsURL);
+        url.searchParams.set('offer_selector_ids', options.offerSelectorIds.join(','));
+        url.searchParams.set('country', options.country);
+        url.searchParams.set('language', options.language);
+        url.searchParams.set('locale', options.locale);
+        url.searchParams.set('landscape', env === Env.STAGE ? 'ALL' : settings.landscape);
+        url.searchParams.set('api_key', apiKey);
+        if (options.promotionCode) {
+          url.searchParams.set('promotion_code', options.promotionCode);
+        }
+        if (options.currency) {
+          url.searchParams.set('currency', options.currency);
+        }
+        
+        const response = await fetch(url.toString());
+        if (response.ok) {            
+          const data = await response.json();
+          log.debug('Fetched:', options, data);
+          let offers = data.resolvedOffers ?? [];
+          offers = offers.map(applyPlanType);
+          // resolve all promises that have offers
+          promises.forEach(({ resolve }, offerSelectorId) => {
+              // select offers with current OSI
+              const resolved = offers
+                  .filter(({ offerSelectorIds }) =>
+                      offerSelectorIds.includes(offerSelectorId),
+                  )
+                  .flat();
+              // resolve current promise if at least 1 offer is present
+              if (resolved.length) {
+                  promises.delete(offerSelectorId);
+                  resolve(resolved);
+              }
+          });  
+        }
+        // in case of 404 WCS error caused by a request with multiple osis,
+        // fallback to `fetch-by-one` strategy
+        else if (response.status === 404 && options.offerSelectorIds.length > 1) {
+          log.debug('Multi-osi 404, fallback to fetch-by-one strategy');
+          await Promise.allSettled(
+              options.offerSelectorIds.map((offerSelectorId) =>
+                  resolveWcsOffers(
+                      { ...options, offerSelectorIds: [offerSelectorId] },
+                      promises,
+                      false, // do not reject promises for missing offers, this will be done below
+                  ),
+              ),
+          );
+        } else {
+          const error = await response.text();
+          log.error(`Failed to fetch WCS offer. Status: ${response.status}, message: ${error}`, options);
+          message = ERROR_MESSAGE_BAD_REQUEST;
         }
 
         if (reject && promises.size) {

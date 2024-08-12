@@ -9,17 +9,6 @@ import {
     Commitment,
 } from '@pandora/data-models-odm';
 
-declare enum ProviderEnvironment {
-  STAGE = "STAGE",
-  PRODUCTION = "PRODUCTION",
-  LOCAL = "LOCAL"
-}
-
-declare enum Landscape {
-  DRAFT = "DRAFT",
-  PUBLISHED = "PUBLISHED"
-}
-
 type RequiredKey<Type, Key extends keyof Type> = Type & {
     [Property in Key]-?: Type[Property];
 };
@@ -137,8 +126,8 @@ declare global {
 
         interface Settings {
             country: string;
-            env: ProviderEnvironment;
-            landscape: Landscape;
+            env: string;
+            landscape: string;
             // TODO: ideally, this setting should be processed by price template and belong to price settings
             forceTaxExclusive: boolean;
             language: string;
@@ -340,7 +329,6 @@ declare global {
                 checkoutWorkflow: CheckoutType;
                 checkoutWorkflowStep: WorkflowStep;
                 entitlement: boolean;
-                upgrade: boolean;
                 modal: boolean;
                 extraOptions: Partial<Record<keyof CheckoutLinkParameter, any>>;
             }
@@ -582,7 +570,6 @@ declare global {
                 wcsBufferDelay: number;
                 wcsBufferLimit: number;
                 wcsURL: string;
-                domainSwitch: boolean;
             }
         }
     }
