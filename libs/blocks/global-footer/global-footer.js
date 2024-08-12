@@ -20,6 +20,7 @@ import {
   logErrorFor,
   toFragment,
   federatePictureSources,
+  isDarkMode,
 } from '../global-navigation/utilities/utilities.js';
 
 import { getFederatedUrl } from '../../utils/federated.js';
@@ -370,7 +371,7 @@ class Footer {
 export default function init(block) {
   try {
     const footer = new Footer({ block });
-    block.classList.add('darknav');
+    if (isDarkMode()) block.classList.add('darknav');
     return footer;
   } catch (e) {
     lanaLog({ message: 'Could not create footer', e });

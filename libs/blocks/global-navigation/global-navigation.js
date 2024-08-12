@@ -35,12 +35,13 @@ import {
   yieldToMain,
   addMepHighlightAndTargetId,
   isDarkMode,
+  darkIcons,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 export const CONFIG = {
-  icons,
+  icons: isDarkMode() ? darkIcons : icons,
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
@@ -1026,7 +1027,7 @@ export default async function init(block) {
     block.setAttribute('daa-im', 'true');
     const mepMartech = mep?.martech || '';
     block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
-    block.classList.add('darknav');
+    if (isDarkMode()) block.classList.add('darknav');
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });
