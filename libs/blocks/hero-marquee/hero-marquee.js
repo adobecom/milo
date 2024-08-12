@@ -11,9 +11,13 @@ import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
 const rowTypeKeyword = 'con-block-row-';
 const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
+const textDefault = ['xxl', 'm', 'l']; // heading, body, detail
+
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
 
 function distillClasses(el, classes) {
-  const taps = ['-heading', '-body', '-detail'];
+  const taps = ['-heading', '-body', '-detail', '-button'];
   classes?.forEach((elClass) => {
     const elTaps = taps.filter((tap) => elClass.endsWith(tap));
     if (!elTaps.length) return;
@@ -48,10 +52,31 @@ function decorateQr(el) {
   });
 }
 
-function decorateLockupFromContent(el) {
+async function loadIconography() {
+  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+}
+
+async function decorateLockupFromContent(el) {
   const rows = el.querySelectorAll(':scope > p');
   const firstRowImg = rows[0]?.querySelector('img');
-  if (firstRowImg) rows[0].classList.add('lockup-area');
+  if (!firstRowImg) return;
+  await loadIconography();
+  rows[0].classList.add('lockup-area');
+  rows[0].childNodes.forEach((node) => {
+    if (node.nodeType === 3 && node.nodeValue !== ' ') {
+      const newSpan = createTag('span', { class: 'lockup-label' }, node.nodeValue);
+      node.parentElement.replaceChild(newSpan, node);
+    }
+  });
+}
+
+function decorateLockupRow(el, classes) {
+  const child = el.querySelector(':scope > div');
+  if (child) child.classList.add('lockup-area');
+  const iconSizeClass = classes?.find((c) => c.endsWith('-icon'));
+  if (iconSizeClass) el.classList.remove(iconSizeClass);
+  const lockupSize = iconSizeClass ? `${iconSizeClass.split('-')[0]}-lockup` : 'l-lockup';
+  el.classList.add(lockupSize);
 }
 
 function decorateBg(el) {
@@ -66,16 +91,12 @@ function decorateText(el, classes) {
   if (btnClass) {
     const [theme, size] = btnClass.split('-').reverse();
     el.classList.remove(btnClass);
-    decorateButtons(el, `${size}-${theme}`);
+    decorateButtons(el, `${theme}-${size}`);
   } else {
     decorateButtons(el, 'button-xl');
   }
-  distillClasses(el, classes);
-}
-
-function decorateLockupRow(el) {
-  const child = el.querySelector(':scope > div');
-  if (child) child.classList.add('lockup-area');
+  decorateBlockText(el, textDefault);
+  decorateTextOverrides(el, ['-heading', '-body', '-detail']);
 }
 
 function decorateSup(el, classes) {
@@ -107,7 +128,7 @@ function loadContentType(el, key, classes) {
       decorateBg(el);
       break;
     case 'lockup':
-      decorateLockupRow(el);
+      decorateLockupRow(el, classes);
       break;
     case 'qrcode':
       decorateQr(el);
@@ -126,8 +147,7 @@ function loadContentType(el, key, classes) {
 }
 
 function loadBreakpointThemes() {
-  const { miloLibs, codeRoot } = getConfig();
-  loadStyle(`${miloLibs || codeRoot}/styles/breakpoint-theme.css`);
+  loadStyle(`${base}/styles/breakpoint-theme.css`);
 }
 
 export default async function init(el) {
@@ -175,8 +195,8 @@ export default async function init(el) {
     : null;
   if (assetUnknown) assetUnknown.classList.add('asset-unknown');
 
-  decorateBlockText(copy, ['xxl', 'm', 'l']); // heading, body, detail
-  decorateLockupFromContent(copy);
+  decorateBlockText(copy, textDefault);
+  await decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
   /* c8 ignore next 2 */
@@ -187,15 +207,16 @@ export default async function init(el) {
 
   const assetRow = allRows[0].classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
-  const mainCopy = createTag('div', { class: 'main-copy' }, copy.innerHTML);
+  const mainCopy = createTag('div', { class: 'main-copy' });
+  while (copy.childNodes.length > 0) {
+    mainCopy.appendChild(copy.childNodes[0]);
+  }
   rows.splice(mainRowIndex, 1);
   if (mainRowIndex > 0) {
     for (let i = 0; i < mainRowIndex; i += 1) {
       rows[i].classList.add('prepend');
     }
   }
-
-  copy.innerHTML = '';
   copy.append(mainCopy);
   [...rows].forEach((row) => {
     if (row.classList.contains('prepend')) {
