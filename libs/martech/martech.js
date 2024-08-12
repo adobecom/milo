@@ -89,7 +89,8 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   const timeoutTime = roundToQuarter(timeout);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  window.alloy('sendEvent', {
+  // eslint-disable-next-line no-underscore-dangle
+  window._satellite?.track?.('event', {
     documentUnloading: true,
     xdm: {
       eventType: 'web.webinteraction.linkClicks',
