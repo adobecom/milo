@@ -584,7 +584,7 @@ export default async function init(el) {
         }
       }
     }
-
+    addStartingAt(styles, merchCard);
     updateBigPrices(merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
@@ -593,7 +593,6 @@ export default async function init(el) {
   } else {
     parseTwpContent(el, merchCard);
   }
-  await addStartingAt(styles, merchCard);
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
