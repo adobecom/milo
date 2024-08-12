@@ -586,7 +586,6 @@ export default async function init(el) {
     }
 
     updateBigPrices(merchCard);
-    addStartingAt(styles, merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);
@@ -594,6 +593,7 @@ export default async function init(el) {
   } else {
     parseTwpContent(el, merchCard);
   }
+  await addStartingAt(styles, merchCard);
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
