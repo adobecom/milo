@@ -85,6 +85,12 @@ function decorateBg(el) {
   el.remove();
 }
 
+function wrapInnerHTMLInPTag(el) {
+  const innerDiv = el.querySelector(':scope > div');
+  const containsPTag = [...innerDiv.childNodes].some((node) => node.nodeName === 'P');
+  if (!containsPTag) innerDiv.innerHTML = `<p>${innerDiv.innerHTML}</p>`;
+}
+
 function decorateText(el, classes) {
   el.classList.add('norm');
   const btnClass = classes?.find((c) => c.endsWith('-button'));
@@ -95,6 +101,7 @@ function decorateText(el, classes) {
   } else {
     decorateButtons(el, 'button-xl');
   }
+  wrapInnerHTMLInPTag(el);
   decorateBlockText(el, textDefault);
   decorateTextOverrides(el, ['-heading', '-body', '-detail']);
 }
