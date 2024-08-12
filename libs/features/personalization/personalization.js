@@ -699,7 +699,7 @@ export async function getManifestConfig(info, variantOverride = false) {
   };
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
+    if (manifestOverrideName && manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
       manifestConfig.manifestOverrideName = manifestOverrideName;
     }
     const executionOrder = {
