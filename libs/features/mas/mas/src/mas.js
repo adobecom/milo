@@ -21,6 +21,6 @@ if (features.includes('merch-card')) {
   await Promise.allSettled([
     import('../../web-components/src/merch-card.js'),
     import('../../web-components/src/merch-icon.js'),
-    import('../../web-components/src/merch-datasource.js')
+    import('../../web-components/src/merch-datasource.js'),
   ]);
 }
