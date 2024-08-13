@@ -1,12 +1,9 @@
-import { createIntersectionObserver, getConfig, createTag } from '../../utils/utils.js';
-import { applyHoverPlay, getVideoAttrs, applyInViewPortPlay } from '../../utils/decorate.js';
-
-const ROOT_MARGIN = 1000;
+import { getConfig } from '../../utils/utils.js';
+import { turnAnchorIntoVideo } from '../../utils/decorate.js';
 
 const loadVideo = (a) => {
-  const parentElement = a.parentNode;
-  if (!parentElement) return;
-  const { pathname, hash, dataset } = a;
+  if (!a.parentNode) return;
+  const { pathname } = a;
   let videoPath = `.${pathname}`;
   if (pathname.match('media_.*.mp4')) {
     const { codeRoot } = getConfig();
@@ -16,25 +13,11 @@ const loadVideo = (a) => {
     const mediaFilename = pathname.split('/').pop();
     videoPath = `${root}${mediaFilename}`;
   }
-
-  const attrs = getVideoAttrs(hash, dataset);
-  const video = `<video ${attrs}></video>`;
-  a.insertAdjacentHTML('afterend', video);
-  createIntersectionObserver({
-    el: parentElement,
-    options: { rootMargin: `${ROOT_MARGIN}px` },
-    callback: () => {
-      parentElement
-        .querySelector('video')
-        .appendChild(
-          createTag('source', { src: videoPath, type: 'video/mp4' }),
-        );
-    },
+  turnAnchorIntoVideo({
+    hash: a.hash,
+    src: videoPath,
+    anchorTag: a,
   });
-  const videoElem = parentElement.querySelector('video');
-  applyHoverPlay(videoElem);
-  applyInViewPortPlay(videoElem);
-  a.remove();
 };
 
 export default function init(a) {
