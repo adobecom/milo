@@ -9,6 +9,10 @@
   font-weight: var(--s2-regular-font-weight);
 }
 
+.region-nav a:hover {
+  text-decoration: underline;
+}
+
 .region-nav > div:nth-of-type(2) > div > p {
   font-size: 16px;
   margin-bottom: 0;

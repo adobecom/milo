@@ -30,7 +30,7 @@ dl.accordion {
   font-size: var(--type-detail-l-size);
   font-weight: 700;
   line-height: var(--type-title-lh);
-  padding: var(--spacing-l) var(--spacing-xxxl) var(--spacing-l) var(--spacing-l);
+  padding: var(--s2-spacing-600) var(--spacing-xxxl) var(--s2-spacing-600) var(--s2-spacing-600);
   position: relative;
   text-align: start;
   width: 100%;
@@ -103,7 +103,6 @@ html[dir="rtl"] .accordion-icon {
   background: var(--color-white);
 }
 
-.accordion dt button:focus,
 .accordion dt button:hover,
 .accordion dt button[aria-expanded="true"] {
   background: var(--color-black);
