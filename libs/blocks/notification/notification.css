@@ -329,7 +329,7 @@
     gap: var(--spacing-s);
   }
 
-  .notification:is(.full-width, .ribbon) .foreground {
+  .notification:is(.max-width-12-desktop, .ribbon) .foreground {
     max-inline-size: var(--full-width);
     margin-inline: var(--grid-margins-width);
   }
@@ -453,11 +453,11 @@
     gap: var(--spacing-m);
   }
 
-  .notification:is(.full-width, .max-width-10-desktop) .foreground {
+  .notification:is(.max-width-12-desktop, .max-width-10-desktop) .foreground {
     inline-size: unset;
   }
 
-  .notification.full-width .foreground {
+  .notification.max-width-12-desktop .foreground {
     gap: var(--spacing-xl);
     margin-inline: var(--grid-margins-width);
   }
@@ -499,7 +499,7 @@
     max-inline-size: var(--max-inline-size-image-10);
   }
 
-  .notification.full-width .foreground .image {
+  .notification.max-width-12-desktop .foreground .image {
     inline-size: var(--inline-size-image-full);
     max-inline-size: var(--max-inline-size-image-full);
   }
