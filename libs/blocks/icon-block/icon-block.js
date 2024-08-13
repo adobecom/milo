@@ -32,7 +32,7 @@ const iconBlocks = {
     [variants[3]]: ['s', 's'],
   },
   large: {
-    [variants[0]]: ['xl', 'm'],
+    [variants[0]]: ['xl', 'xl'],
     [variants[1]]: ['m', 'm'],
     [variants[2]]: ['s', 's'],
     [variants[3]]: ['s', 's'],

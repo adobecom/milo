@@ -4,6 +4,11 @@
   line-height: 1.7;
 }
 
+.region-nav a {
+  text-decoration: none;
+  font-weight: var(--s2-regular-font-weight);
+}
+
 .region-nav > div:nth-of-type(2) > div > p {
   font-size: 16px;
   margin-bottom: 0;
@@ -50,6 +55,7 @@
   padding-left: 0;
   padding-right: 0;
   margin: 0;
+  text-decoration: none;
 }
 
 .region-nav > div:nth-of-type(2) {
