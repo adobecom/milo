@@ -26,6 +26,7 @@ describe('Modals', () => {
 
   afterEach(() => {
     sinon.restore();
+    window.fetch = ogFetch;
   });
 
   it('Doesnt load modals on page load with no hash', async () => {
