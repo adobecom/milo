@@ -3,8 +3,10 @@ import { readFile, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
+import { mockFetch } from '../../helpers/generalHelpers.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+
 const {
   default: init,
   getModal,
@@ -13,6 +15,8 @@ const {
   sendAnalytics,
 } = await import('../../../libs/blocks/modal/modal.js');
 const satellite = { track: sinon.spy() };
+
+const ogFetch = window.fetch;
 
 describe('Modals', () => {
   beforeEach(() => {
@@ -264,5 +268,15 @@ describe('sendAnalytics', () => {
     window._satellite.track.called = false;
     sendAnalytics({});
     expect(window._satellite.track.called).to.be.true;
+  });
+
+  it('Loads a federated modal on load with hash and closes when removed from hash', async () => {
+    window.fetch = mockFetch({ payload: { data: '' } });
+    window.location.hash = '#geo';
+    await waitForElement('#geo');
+    expect(document.getElementById('geo')).to.exist;
+    window.location.hash = '';
+    await waitForRemoval('#geo');
+    expect(document.getElementById('geo')).to.be.null;
   });
 });
