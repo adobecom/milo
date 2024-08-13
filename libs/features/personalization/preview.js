@@ -228,7 +228,7 @@ function createPreviewPill(manifests) {
           <div class="mep-manifest-page-info-title">Page Info:</div>
           <div>Target integration feature is ${targetOnText}</div>
           <div>Personalization feature is ${personalizationOnText}</div>
-          <div>Page's Prefix/Region/Local are ${config.mep.geoPrefix} / ${config.locale.region} / ${config.locale.ietf}</div>
+          <div>Page's Prefix/Region/Locale are ${config.mep.geoPrefix} / ${config.locale.region} / ${config.locale.ietf}</div>
         </div>
       </div>
       <div class="mep-manifest-list">
