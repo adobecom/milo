@@ -748,6 +748,14 @@ class Gnav {
 
     // Create image element
     const getImageEl = () => {
+      if (isDarkMode()) {
+        const allSvgImgs = rawBlock.querySelectorAll('picture img[src$=".svg"]');
+        if (allSvgImgs.length === 2) return allSvgImgs[1];
+
+        const images = blockLinks.filter((blockLink) => imgRegex.test(blockLink.href)
+        || imgRegex.test(blockLink.textContent));
+        if (images.length === 2) return getBrandImage(images[1]);
+      }
       const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
       if (svgImg) return svgImg;
 
