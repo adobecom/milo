@@ -191,6 +191,8 @@ export function getMetadata(name, doc = document) {
 }
 
 const handleEntitlements = (() => {
+  const { martech } = Object.fromEntries(PAGE_URL.searchParams);
+  if (martech === 'off') return () => {};
   let entResolve;
   const entPromise = new Promise((resolve) => {
     entResolve = resolve;
@@ -850,6 +852,9 @@ export async function loadIms() {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
     }
+  }).catch((e) => {
+    getConfig().entitlements([]);
+    throw e;
   });
 
   return imsLoaded;
@@ -924,16 +929,21 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 };
 
 async function checkForPageMods() {
-  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
+  const {
+    mep: mepParam,
+    mepHighlight,
+    mepButton,
+    martech,
+  } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = getMepEnablement('target');
+  const target = martech === 'off' ? false : getMepEnablement('target');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '')) return;
   if (target) {
     loadMartech();
-  } else if (pzn) {
+  } else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
@@ -999,18 +1009,6 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-function logPagePerf() {
-  if (getMetadata('pageperf') !== 'on') return;
-  const isChrome = () => {
-    const nav = window.navigator;
-    return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
-  };
-  const sampleRate = parseInt(getMetadata('pageperf-rate'), 10) || 50;
-  if (!isChrome() || Math.random() * 100 > sampleRate) return;
-  import('./logWebVitals.js')
-    .then((mod) => mod.default(getConfig().mep, getMetadata('pageperf-delay') || 1000));
-}
-
 export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
@@ -1039,7 +1037,13 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
 
-  logPagePerf();
+  if (getMetadata('pageperf') === 'on') {
+    import('./logWebVitals.js')
+      .then((mod) => mod.default(getConfig().mep, {
+        delay: getMetadata('pageperf-delay'),
+        sampleRate: parseInt(getMetadata('pageperf-rate'), 10),
+      }));
+  }
 }
 
 function initSidekick() {
