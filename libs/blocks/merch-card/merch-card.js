@@ -163,12 +163,20 @@ const appendPaymentDetails = (element, merchCard) => {
 
 const appendCalloutContent = (element, merchCard) => {
   if (element.firstElementChild?.tagName !== 'EM') return;
-  const calloutContainer = createTag('div');
-  const calloutContentWrapper = createTag('div');
+  let calloutSlot = merchCard.querySelector('div[slot="callout-content"]');
+  let calloutContainer = calloutSlot?.querySelector('div');
+  if (!calloutContainer) {
+    const calloutSlot = createTag('div', { slot: 'callout-content' });
+    calloutContainer = createTag('div');
+    calloutSlot.appendChild(calloutContainer);
+    merchCard.appendChild(calloutSlot);
+  }
+
+  const calloutContentWrapper =  createTag('div');
   const calloutContent = createTag('div');
   const emElement = element.firstElementChild;
-  let imgElement = null;
   const fragment = document.createDocumentFragment();
+  let imgElement = null;
 
   emElement.childNodes.forEach((child) => {
     if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
@@ -190,14 +198,7 @@ const appendCalloutContent = (element, merchCard) => {
   if (imgElement) {
     calloutContentWrapper.appendChild(imgElement);
   }
-
   calloutContainer.appendChild(calloutContentWrapper);
-
-  if (calloutContainer.children.length > 0) {
-    const calloutSlot = createTag('div', { slot: 'callout-content' });
-    calloutSlot.appendChild(calloutContainer);
-    merchCard.appendChild(calloutSlot);
-  }
 };
 
 const parseContent = async (el, merchCard) => {
