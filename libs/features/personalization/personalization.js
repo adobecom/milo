@@ -545,6 +545,7 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
+    config.mep?.geoPrefix,
     config.locale.region.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
@@ -955,6 +956,7 @@ export async function init(enablements = {}) {
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
       experiments: [],
+      geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || 'en-us',
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
