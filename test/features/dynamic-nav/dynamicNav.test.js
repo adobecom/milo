@@ -1,10 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import dynamicNav from '../../../libs/features/dynamic-navigation.js';
-
-window.lana = { log: stub() };
 
 describe('Dynamic nav', () => {
   beforeEach(() => {
