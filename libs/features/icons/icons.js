@@ -70,5 +70,7 @@ export default async function loadIcons(icons, config) {
       }
     }
     icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
+    const svgTag = icon.querySelector('svg');
+    svgTag.setAttribute('aria-label', iconName.replaceAll('-', ' '));
   });
 }
