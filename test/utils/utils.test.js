@@ -68,7 +68,7 @@ describe('Utils', () => {
 
     describe('Configure Auto Block', () => {
       it('Disable auto block when #_dnb in url', async () => {
-        setViewport({width:600, height:1500});
+        setViewport({ width: 600, height: 1500 });
         await waitForElement('.disable-autoblock');
         const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
