@@ -1,6 +1,7 @@
 import { turnAnchorIntoVideo } from '../../utils/decorate.js';
 
-const loadAdobeTv = (a) => {
+export default function init(a) {
+  a.classList.add('hide-video');
   const bgBlocks = ['aside', 'marquee', 'hero-marquee'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
@@ -18,9 +19,4 @@ const loadAdobeTv = (a) => {
     a.insertAdjacentHTML('afterend', embed);
     a.remove();
   }
-};
-
-export default function init(a) {
-  a.classList.add('hide-video');
-  loadAdobeTv(a);
 }

@@ -1,7 +1,8 @@
 import { getConfig } from '../../utils/utils.js';
 import { turnAnchorIntoVideo } from '../../utils/decorate.js';
 
-const loadVideo = (a) => {
+export default function init(a) {
+  a.classList.add('hide-video');
   if (!a.parentNode) return;
   const { pathname } = a;
   let videoPath = `.${pathname}`;
@@ -18,9 +19,4 @@ const loadVideo = (a) => {
     src: videoPath,
     anchorTag: a,
   });
-};
-
-export default function init(a) {
-  a.classList.add('hide-video');
-  loadVideo(a);
 }
