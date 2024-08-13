@@ -133,6 +133,7 @@ describe('video uploaded using franklin bot', () => {
 
   it('Don\'t play the video once it end when autoplay1 enabled', async () => {
     const block = document.querySelector('.video.autoplay1.viewportplay.ended');
+    const a = block.querySelector('a');
     block.append(a);
     const nextFrame = () => new Promise((resolve) => {
       requestAnimationFrame(resolve);
