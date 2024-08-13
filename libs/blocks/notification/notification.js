@@ -67,7 +67,7 @@ function getBlockData(el) {
   const variant = variants.find((varClass) => el.classList.contains(varClass)) || defaultVariant;
   const size = sizes.find((sizeClass) => el.classList.contains(sizeClass)) || defaultSize;
   const fontSizes = [...blockConfig[variant][size]];
-  const buttonSize = el.className.match(/([xsml])+-button/);
+  const buttonSize = el.className.match(/([xsml]+)-button/);
   if (buttonSize) fontSizes.splice(3, 1, buttonSize[1]);
   return { fontSizes, options: { ...getOpts(el) } };
 }
@@ -142,7 +142,7 @@ async function decorateLayout(el) {
   return foreground;
 }
 
-const init = async (el) => {
+export default async function init(el) {
   el.classList.add('con-block');
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
@@ -153,6 +153,4 @@ const init = async (el) => {
   decorateTextOverrides(el);
   el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
   if (el.matches(`:is(.${ribbon}, .${pill})`)) wrapCopy(blockText);
-};
-
-export default init;
+}
