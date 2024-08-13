@@ -605,11 +605,11 @@ describe('global navigation', () => {
   describe('GNav Dark theme', () => {
     it('should not contain dark theme class if dark theme is not configured', async () => {
       await createFullGlobalNavigation();
-      expect(document.querySelector(`${selectors.globalNav}`).classList.contains('darknav')).to.be.false;
+      expect(document.querySelector(selectors.globalNav).classList.contains('darknav')).to.be.false;
     });
     it('should contain dark theme class if dark theme is configured', async () => {
       await createFullGlobalNavigation({ customConfig: { theme: 'dark' } });
-      expect(document.querySelector(`${selectors.globalNav}`).classList.contains('darknav')).to.be.true;
+      expect(document.querySelector(selectors.globalNav).classList.contains('darknav')).to.be.true;
     });
     it('should use first image if not dark theme', async () => {
       await createFullGlobalNavigation({ globalNavigation: darkNav });

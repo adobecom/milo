@@ -428,7 +428,7 @@ describe('global footer', () => {
       await createFullGlobalFooter({ waitForDecoration: true });
       expect(document.querySelector('footer').classList.contains('darknav')).to.be.false;
     });
-    it('should not contain dark theme class if dark theme is not configured', async () => {
+    it('should contain dark theme class if dark theme is configured', async () => {
       await createFullGlobalFooter({ waitForDecoration: true, customConfig: { theme: 'dark' } });
       expect(document.querySelector('footer').classList.contains('darknav')).to.be.true;
     });
