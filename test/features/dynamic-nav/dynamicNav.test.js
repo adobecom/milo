@@ -1,7 +1,10 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import dynamicNav from '../../../libs/features/dynamic-navigation.js';
+
+window.lana = { log: stub() };
 
 describe('Dynamic nav', () => {
   beforeEach(() => {
@@ -39,10 +42,34 @@ describe('Dynamic nav', () => {
     expect(url).to.equal('some-source-string');
   });
 
-  it('Returns the pprovided url if it does not find an item in sessionStorage and dynamic nav is on', async () => {
+  it('Returns the provided url if it does not find an item in sessionStorage and dynamic nav is on', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/on.html' });
     window.sessionStorage.removeItem('gnavSource');
     const url = dynamicNav('gnav/aem-sites', 'bacom');
     expect(url).to.equal('gnav/aem-sites');
+  });
+
+  it('Returns the provided url if it finds a metadata matching the items in the ignore list', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/on-ignore-match.html' });
+    const url = dynamicNav('gnav/aem-sites', 'bacom');
+    expect(url).to.equal('gnav/aem-sites');
+  });
+
+  it('Returns the sessionStorage url when dynamic nav ignore items are present but do not match the metadata', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/on-ignore-does-not-match.html' });
+    const url = dynamicNav('gnav/aem-sites', 'bacom');
+    expect(url).to.equal('some-source-string');
+  });
+
+  it('Returns the sessionStorage url when dynamic nav ignore metadata is not found', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/on-ignore-misspelled.html' });
+    const url = dynamicNav('gnav/aem-sites', 'bacom');
+    expect(url).to.equal('some-source-string');
+  });
+
+  it('Returns the sessionStorage url when dynamic nav ignore metadata is not found', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/on-ignore-no-content.html' });
+    const url = dynamicNav('gnav/aem-sites', 'bacom');
+    expect(url).to.equal('some-source-string');
   });
 });

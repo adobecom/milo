@@ -2,24 +2,16 @@ import { getMetadata } from '../utils/utils.js';
 
 function checkForIgnoreValues() {
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
-
-  if (!dynamicNavDisableValues) {
-    window.lana.log('Dynamic-nav-disables not present to deactivate dynamic nav');
-    return false;
-  }
-
-  let match = false;
+  if (!dynamicNavDisableValues) return false;
 
   const metadataPairsMap = dynamicNavDisableValues.split(',').map((pair) => pair.split(';'));
-  metadataPairsMap.forEach((pair) => {
+  return metadataPairsMap.reduce((rdx, pair) => {
     const [metadataKey, metadataContent] = pair;
     const metaTagContent = getMetadata(metadataKey.toLowerCase());
-    if (!metaTagContent) return false;
-    if (metaTagContent.toLowerCase() !== metadataContent.toLowerCase()) return false;
-    match = true;
-  });
-
-  return match;
+    if (!metaTagContent
+      || metaTagContent.toLowerCase() !== metadataContent.toLowerCase()) return rdx;
+    return !rdx;
+  }, false);
 }
 
 export default function dynamicNav(url, key) {
