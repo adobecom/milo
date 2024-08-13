@@ -7,11 +7,11 @@ const loadAdobeTv = (a) => {
   const bgBlocks = ['aside', 'marquee', 'hero-marquee'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
+    const parentElement = a.parentNode;
+    if (!parentElement) return;
     const { href, hash, dataset } = a;
     const attrs = getVideoAttrs(hash || 'autoplay', dataset);
     const video = `<video ${attrs}></video>`;
-    const parentElement = a.parentNode;
-    if (!parentElement) return;
     a.insertAdjacentHTML('afterend', video);
     createIntersectionObserver({
       el: parentElement,

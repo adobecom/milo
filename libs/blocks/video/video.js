@@ -4,6 +4,8 @@ import { applyHoverPlay, getVideoAttrs, applyInViewPortPlay } from '../../utils/
 const ROOT_MARGIN = 1000;
 
 const loadVideo = (a) => {
+  const parentElement = a.parentNode;
+  if (!parentElement) return;
   const { pathname, hash, dataset } = a;
   let videoPath = `.${pathname}`;
   if (pathname.match('media_.*.mp4')) {
@@ -17,8 +19,6 @@ const loadVideo = (a) => {
 
   const attrs = getVideoAttrs(hash, dataset);
   const video = `<video ${attrs}></video>`;
-  const parentElement = a.parentNode;
-  if (!parentElement) return;
   a.insertAdjacentHTML('afterend', video);
   createIntersectionObserver({
     el: parentElement,

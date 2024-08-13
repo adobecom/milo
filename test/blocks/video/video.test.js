@@ -17,17 +17,6 @@ describe('video uploaded using franklin bot', () => {
     document.body.innerHTML = '';
   });
 
-  it('decorates no-lazy video', async () => {
-    const block = document.querySelector('.video.no-lazy');
-    const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
-    block.append(a);
-
-    init(a);
-    const video = await waitForElement('.video.no-lazy video');
-    expect(video).to.exist;
-  });
-
   it('decorates video', async () => {
     const block = document.querySelector('.video.normal');
     const a = block.querySelector('a');
@@ -80,7 +69,6 @@ describe('video uploaded using franklin bot', () => {
   it('no hoverplay attribute added when with autoplay on loop', async () => {
     const block = document.querySelector('.video.autoplay.playonhover');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
@@ -92,7 +80,6 @@ describe('video uploaded using franklin bot', () => {
   it('decorate video with hoverplay when only hoverplay is added to url', async () => {
     const block = document.querySelector('.video.hoveronly');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
@@ -103,7 +90,6 @@ describe('video uploaded using franklin bot', () => {
   it('decorate video with viewportplay only with autoplay', async () => {
     const block = document.querySelector('.video.autoplay.viewportplay');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
@@ -147,8 +133,6 @@ describe('video uploaded using franklin bot', () => {
 
   it('Don\'t play the video once it end when autoplay1 enabled', async () => {
     const block = document.querySelector('.video.autoplay1.viewportplay.ended');
-    const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
     const nextFrame = () => new Promise((resolve) => {
       requestAnimationFrame(resolve);
@@ -199,7 +183,6 @@ describe('video uploaded using franklin bot', () => {
   it('decorate video with viewportplay only with autoplay1', async () => {
     const block = document.querySelector('.video.autoplay1.viewportplay');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
@@ -210,7 +193,6 @@ describe('video uploaded using franklin bot', () => {
   it('decorate video with no viewportplay with autoplay1 hoverplay', async () => {
     const block = document.querySelector('.video.autoplay1.hoverplay.no-viewportplay');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
@@ -221,7 +203,6 @@ describe('video uploaded using franklin bot', () => {
   it('decorate video with no viewportplay with hoverplay', async () => {
     const block = document.querySelector('.video.hoverplay.no-viewportplay');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
@@ -232,7 +213,6 @@ describe('video uploaded using franklin bot', () => {
   it('decorate video with no viewportplay no autoplay', async () => {
     const block = document.querySelector('.video.no-autoplay.no-viewportplay');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
@@ -243,7 +223,6 @@ describe('video uploaded using franklin bot', () => {
   it('decorate video with no viewportplay no autoplay1', async () => {
     const block = document.querySelector('.video.no-autoplay1.no-viewportplay');
     const a = block.querySelector('a');
-    a.textContent = 'no-lazy';
     block.append(a);
 
     init(a);
