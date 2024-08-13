@@ -64,7 +64,7 @@ describe('Dynamic nav', () => {
     expect(url).to.equal('some-source-string');
   });
 
-  it('Returns the sessionStorage url when dynamic nav ignore metadata is not found', async () => {
+  it('Returns the sessionStorage url when dynamic nav ignore metadata content is empty', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/on-ignore-no-content.html' });
     const url = dynamicNav('gnav/aem-sites', 'bacom');
     expect(url).to.equal('some-source-string');
