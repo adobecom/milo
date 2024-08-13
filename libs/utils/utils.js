@@ -635,6 +635,10 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    if (a.href.includes('#_nofollow')) {
+      a.setAttribute('rel', 'nofollow');
+      a.href = a.href.replace('#_nofollow', '');
+    }
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
     } else {
