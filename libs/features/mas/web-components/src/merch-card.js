@@ -591,10 +591,7 @@ export class MerchCard extends LitElement {
             textNodes.forEach((node) => {
                 const text = node.textContent;
                 const words = text.split(' ');
-                const newText = words
-                    .map((word) => word.match(/.{1,7}/g)?.join('\u200B'))
-                    .join(' ');
-                node.textContent = newText;
+                node.textContent = '';
             });
         });
     }
