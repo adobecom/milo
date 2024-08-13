@@ -166,13 +166,13 @@ const appendCalloutContent = (element, merchCard) => {
   let calloutSlot = merchCard.querySelector('div[slot="callout-content"]');
   let calloutContainer = calloutSlot?.querySelector('div');
   if (!calloutContainer) {
-    const calloutSlot = createTag('div', { slot: 'callout-content' });
+    calloutSlot = createTag('div', { slot: 'callout-content' });
     calloutContainer = createTag('div');
     calloutSlot.appendChild(calloutContainer);
     merchCard.appendChild(calloutSlot);
   }
 
-  const calloutContentWrapper =  createTag('div');
+  const calloutContentWrapper = createTag('div');
   const calloutContent = createTag('div');
   const emElement = element.firstElementChild;
   const fragment = document.createDocumentFragment();
