@@ -745,6 +745,7 @@ async function decoratePlaceholders(area, config) {
   const { replaceText } = await import('../features/placeholders.js');
   const replaceNodes = nodes.map(async (textNode) => {
     textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
+    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
   });
   await Promise.all(replaceNodes);
 }
