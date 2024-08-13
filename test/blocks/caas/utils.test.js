@@ -190,7 +190,7 @@ describe('getConfig', () => {
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
-        altCtaOnLive: false,
+        altCTAs: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
