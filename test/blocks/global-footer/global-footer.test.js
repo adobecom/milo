@@ -422,4 +422,15 @@ describe('global footer', () => {
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Issue with loadIcons')));
     });
   });
+
+  describe('dark mode footer', async () => {
+    it('should not contain dark theme class if dark theme is not configured', async () => {
+      await createFullGlobalFooter({ waitForDecoration: true });
+      expect(document.querySelector('footer').classList.contains('darknav')).to.be.false;
+    });
+    it('should not contain dark theme class if dark theme is not configured', async () => {
+      await createFullGlobalFooter({ waitForDecoration: true, customConfig: { theme: 'dark' } });
+      expect(document.querySelector('footer').classList.contains('darknav')).to.be.true;
+    });
+  });
 });
