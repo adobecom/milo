@@ -1,5 +1,5 @@
 import { Env } from '../src/external.js';
-import { Landscape } from '../src/constants.js';
+import { Landscape, WCS_PROD_URL, WCS_STAGE_URL } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { getSettings } from '../src/settings.js';
 
@@ -77,7 +77,7 @@ describe('getSettings', () => {
           locale: "en_US",
           priceLiteralsURL: undefined,
           priceLiteralsPromise: undefined,
-          wcsURL: 'https://www.stage.adobe.com/web_commerce_artifact'
+          wcsURL: WCS_STAGE_URL
       });
     });
 
@@ -113,28 +113,31 @@ describe('getSettings', () => {
             priceLiteralsPromise: undefined,
             quantity: [Defaults.quantity],
             wcsApiKey,
-            wcsURL: 'https://www.stage.adobe.com/web_commerce_artifact_stage',
+            wcsURL: WCS_STAGE_URL,
             landscape: Landscape.DRAFT,
         });
         window.sessionStorage.removeItem(PARAM_ENV);
     });
 
-    it('host env "local" -> WCS prod origin + stage akamai', () => {
+    it('host env "local" -> WCS prod origin + prod akamai', () => {
       const config = { commerce: {}, env: { name: 'local' }, };
       const settings = getSettings(config);
-      expect(settings.wcsURL).to.equal('https://www.stage.adobe.com/web_commerce_artifact');
+      expect(settings.wcsURL).to.equal(WCS_PROD_URL);
+      expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
-    it('host env "stage" -> WCS prod origin + stage akamai', () => {
+    it('host env "stage" -> WCS prod origin + prod akamai', () => {
       const config = { commerce: {}, env: { name: 'stage' }, };
       const settings = getSettings(config);
-      expect(settings.wcsURL).to.equal('https://www.stage.adobe.com/web_commerce_artifact');
+      expect(settings.wcsURL).to.equal(WCS_PROD_URL);
+      expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "prod" -> WCS prod origin + prod akamai', () => {
       const config = { commerce: {}, env: { name: 'prod' }, };
       const settings = getSettings(config);
-      expect(settings.wcsURL).to.equal('https://www.adobe.com/web_commerce_artifact');
+      expect(settings.wcsURL).to.equal(WCS_PROD_URL);
+      expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "local" - override landscape and WCS origin (_stage)', () => {
@@ -142,8 +145,9 @@ describe('getSettings', () => {
         window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
         const config = { commerce: {}, env: { name: 'local' }, };
         const settings = getSettings(config);
-        expect(settings.wcsURL).to.equal('https://www.stage.adobe.com/web_commerce_artifact_stage');
+        expect(settings.wcsURL).to.equal(WCS_STAGE_URL);
         expect(settings.landscape).to.equal(Landscape.DRAFT);
+        expect(settings.env).to.equal(Env.STAGE);
     });
 
     it('host env "stage" - override landscape and WCS origin (_stage)', () => {
@@ -151,8 +155,9 @@ describe('getSettings', () => {
       window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
       const config = { commerce: {}, env: { name: 'stage' }, };
       const settings = getSettings(config);
-      expect(settings.wcsURL).to.equal('https://www.stage.adobe.com/web_commerce_artifact_stage');
+      expect(settings.wcsURL).to.equal(WCS_STAGE_URL);
       expect(settings.landscape).to.equal(Landscape.DRAFT);
+      expect(settings.env).to.equal(Env.STAGE);
     });
 
     it('if host env is "prod" - cant override landscape or WCS origin', () => {
@@ -160,8 +165,9 @@ describe('getSettings', () => {
         window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
         const config = { commerce: {}, env: { name: 'prod' }, };
         const settings = getSettings(config);
-        expect(settings.wcsURL).to.equal('https://www.adobe.com/web_commerce_artifact');
+        expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.landscape).to.equal(Landscape.PUBLISHED);
+        expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     [

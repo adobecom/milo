@@ -1,4 +1,4 @@
-import { PARAM_ENV, PARAM_LANDSCAPE, Landscape } from './constants.js';
+import { PARAM_ENV, PARAM_LANDSCAPE, Landscape, WCS_PROD_URL, WCS_STAGE_URL } from './constants.js';
 import { Defaults } from './defaults.js';
 import {
     CheckoutWorkflow,
@@ -133,16 +133,14 @@ function getSettings(config = {}) {
     // TODO: add alias names for meta, search and storage
     // See https://git.corp.adobe.com/wcms/tacocat.js/pull/348#discussion_r6557570
     const { commerce = {}, locale = undefined } = config;
-    const lowHostEnv = ['local', 'stage'].includes(config.env?.name);
     let env = Env.PRODUCTION;
-    let wcsURL = 'https://www.adobe.com/web_commerce_artifact';
-    if (lowHostEnv) {
-      wcsURL = 'https://www.stage.adobe.com/web_commerce_artifact';
-      const forceWcsStage = getParameter(PARAM_ENV, commerce, { metadata: false }) === 'stage';
-      if (forceWcsStage) {
-        env = Env.STAGE;
-        wcsURL = `${wcsURL}_stage`;
-      }
+    let wcsURL = WCS_PROD_URL;
+
+    const lowHostEnv = ['local', 'stage'].includes(config.env?.name);
+    const forceWcsStage = getParameter(PARAM_ENV, commerce, { metadata: false }) === 'stage';
+    if (lowHostEnv && forceWcsStage) {
+      env = Env.STAGE;
+      wcsURL = WCS_STAGE_URL;
     }
     
     const checkoutClientId =
