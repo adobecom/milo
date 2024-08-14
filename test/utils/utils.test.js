@@ -191,7 +191,7 @@ describe('Utils', () => {
     it('Decorates placeholder', () => {
       const paragraphs = [...document.querySelectorAll('p')];
       const lastPara = paragraphs.pop();
-      expect(lastPara.textContent).to.equal('nothing to see here');
+      expect(lastPara.textContent).to.equal(' inkl. MwSt.');
     });
 
     it('Decorates meta helix url', () => {
