@@ -101,12 +101,11 @@ export function Wcs({ settings }) {
                 ),
             );
           } else {
-            const error = await response.text();
-            log.error(`WCS request failed. Status: ${response.status}, message: ${error}`, options);
             message = ERROR_MESSAGE_BAD_REQUEST;
+            log.error(message, options);
           }
         } catch (e) {
-          message = 'Failed to fetch WCS offer.';
+          message = ERROR_MESSAGE_BAD_REQUEST;
           log.error(message, options, e);
         }
 
