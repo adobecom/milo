@@ -27,11 +27,10 @@
     },
     {
       "action": "update",
-      "selector": ".marquee primary-cta",
+      "selector": ".marquee primary-cta #_href",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "https://test.com/updated_href",
-      "'modifier": "href",
       "target-var1": "",
       "firefox": "",
       "android": "",
@@ -51,7 +50,6 @@
     {
       "action": "update",
       "selector": "section5 marquee action-area",
-      "'modifier": "html",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "<p>updated text</p>",
@@ -63,7 +61,6 @@
     {
       "action": "update",
       "selector": "section5...%$@#",
-      "'modifier": "html",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "<p>updated text</p>",
