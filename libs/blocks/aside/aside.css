@@ -21,12 +21,7 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.aside.promobar [class^="heading-"]:only-of-type,
-.aside.promobar [class^="heading-"]:last-of-type,
-.aside.notification.extra-small [class^="heading-"]:only-of-type,
-.aside.notification.extra-small [class^="heading-"]:last-of-type,
-.aside.notification.small [class^="heading-"]:only-of-type,
-.aside.notification.small [class^="heading-"]:last-of-type {
+.aside:is(.promobar, .notification.extra-small, .notification.small) [class^="heading-"]:is(:only-of-type, :last-of-type) {
   margin-bottom: 0;
 }
 
@@ -86,6 +81,16 @@
 .aside.split .foreground.container .text {
   margin: 0;
   max-width: var(--grid-container-width);
+}
+
+.aside.media-top-mobile .foreground .image,
+.aside.media-top-mobile .split-image {
+  order: -1;
+}
+
+.aside.media-bottom-mobile .foreground .image,
+.aside.media-bottom-mobile .split-image {
+  order: 1;
 }
 
 .aside.simple .foreground.container .text {
@@ -227,6 +232,10 @@
   align-items: center;
 }
 
+.aside.split .icon-stack-area li picture {
+  flex-shrink: 0;
+}
+
 .aside .foreground.container .icon-area picture {
   height: 100%;
 }
@@ -273,10 +282,6 @@
 .aside.split .foreground.container .image {
   margin: 0;
   display: none;
-}
-
-.aside.split .icon-stack-area li picture {
-  flex-shrink: 0;
 }
 
 .aside.notification .text [class^="heading-"] + .action-area {
@@ -488,6 +493,10 @@
   padding: 0;
 }
 
+.aside.no-media:not(.notification) .foreground.container {
+  gap: 0;
+}
+
 .aside.notification.large.center .foreground.container,
 .aside.notification.large .foreground.container.no-image {
   max-width: 800px;
@@ -641,27 +650,25 @@
   stroke: var(--color-white);
 }
 
-@media screen and (max-width: 600px) {
-  .aside.no-media:not(.notification) .foreground.container {
-    gap: 0;
-  }
+.aside.promobar.popup .mobile-up.hide-block ~ .promo-close {
+  display: none;
+}
 
-  .aside.promobar.popup .mobile-up.hide-block ~ .promo-close {
-    display: none;
-  }
-
+@media screen and (min-width: 600px) {
   .aside.media-top-mobile .foreground .image,
   .aside.media-top-mobile .split-image {
-    order: -1;
+    order: unset;
   }
 
   .aside.media-bottom-mobile .foreground .image,
   .aside.media-bottom-mobile .split-image {
-    order: 100;
+    order: unset;
   }
-}
 
-@media screen and (min-width: 600px) {
+  .aside.promobar.popup .mobile-up.hide-block ~ .promo-close {
+    display: unset;
+  }
+
   .aside .foreground.container {
     align-items: center;
     flex-direction: row;
@@ -920,13 +927,11 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1200px) {
+@media (min-width: 600px) and (max-width: 1199px) {
   .aside.promobar.popup .tablet-up.hide-block ~ .promo-close {
     display: none;
   }
-}
 
-@media (min-width: 600px) and (max-width: 1199px) {
   .aside.media-top-tablet .foreground.container,
   .aside.media-bottom-tablet .foreground.container {
     justify-content: center;
@@ -952,7 +957,7 @@
 
   .aside.large.media-top-tablet,
   .aside.large.media-bottom-tablet {
-    min-height: 0;
+    min-height: auto;
   }
 
   .aside.split.large.media-top-tablet .foreground.container .text,
