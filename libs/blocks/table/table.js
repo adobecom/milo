@@ -375,7 +375,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
 
     if ((!isMerch && !table.querySelector('.col-3'))
-      || (isMerch && !table.querySelector('.col-2'))) return;
+    || (isMerch && !table.querySelector('.col-2'))) return;
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
