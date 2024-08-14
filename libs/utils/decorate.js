@@ -1,7 +1,5 @@
 import { createTag, createIntersectionObserver } from './utils.js';
 
-const ROOT_MARGIN = 1000;
-
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
@@ -270,11 +268,11 @@ export function turnAnchorIntoVideo({ hash, src, anchorTag }) {
   anchorTag.insertAdjacentHTML('afterend', video);
   createIntersectionObserver({
     el: parentElement,
-    options: { rootMargin: `${ROOT_MARGIN}px` },
+    options: { rootMargin: '1000px' },
     callback: () => {
       parentElement
         .querySelector('video')
-        .appendChild(
+        ?.appendChild(
           createTag('source', { src, type: 'video/mp4' }),
         );
     },
