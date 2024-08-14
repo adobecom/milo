@@ -191,6 +191,8 @@ export function getMetadata(name, doc = document) {
 }
 
 const handleEntitlements = (() => {
+  const { martech } = Object.fromEntries(PAGE_URL.searchParams);
+  if (martech === 'off') return () => {};
   let entResolve;
   const entPromise = new Promise((resolve) => {
     entResolve = resolve;
@@ -633,6 +635,10 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    if (a.href.includes('#_nofollow')) {
+      a.setAttribute('rel', 'nofollow');
+      a.href = a.href.replace('#_nofollow', '');
+    }
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
     } else {
@@ -696,7 +702,7 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  header.className = headerMeta || 'gnav';
+  header.className = headerMeta || 'global-navigation';
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
@@ -729,7 +735,9 @@ async function decoratePlaceholders(area, config) {
     NodeFilter.SHOW_TEXT,
     {
       acceptNode(node) {
-        return regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        const a = regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        regex.lastIndex = 0;
+        return a;
       },
     },
   );
@@ -743,6 +751,7 @@ async function decoratePlaceholders(area, config) {
   const { replaceText } = await import('../features/placeholders.js');
   const replaceNodes = nodes.map(async (textNode) => {
     textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
+    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
   });
   await Promise.all(replaceNodes);
 }
@@ -755,7 +764,7 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  footer.className = footerMeta || 'footer';
+  footer.className = footerMeta || 'global-footer';
   await loadBlock(footer);
 }
 
@@ -867,6 +876,9 @@ export async function loadIms() {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
     }
+  }).catch((e) => {
+    getConfig().entitlements([]);
+    throw e;
   });
 
   return imsLoaded;
@@ -941,16 +953,21 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 };
 
 async function checkForPageMods() {
-  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
+  const {
+    mep: mepParam,
+    mepHighlight,
+    mepButton,
+    martech,
+  } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = getMepEnablement('target');
+  const target = martech === 'off' ? false : getMepEnablement('target');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '')) return;
   if (target) {
     loadMartech();
-  } else if (pzn) {
+  } else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
@@ -1016,18 +1033,6 @@ export function scrollToHashedElement(hash) {
   });
 }
 
-function logPagePerf() {
-  if (getMetadata('pageperf') !== 'on') return;
-  const isChrome = () => {
-    const nav = window.navigator;
-    return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
-  };
-  const sampleRate = parseInt(getMetadata('pageperf-rate'), 10) || 50;
-  if (!isChrome() || Math.random() * 100 > sampleRate) return;
-  import('./logWebVitals.js')
-    .then((mod) => mod.default(getConfig().mep, getMetadata('pageperf-delay') || 1000));
-}
-
 export async function loadDeferred(area, blocks, config) {
   const event = new Event(MILO_EVENTS.DEFERRED);
   area.dispatchEvent(event);
@@ -1056,7 +1061,13 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
 
-  logPagePerf();
+  if (getMetadata('pageperf') === 'on') {
+    import('./logWebVitals.js')
+      .then((mod) => mod.default(getConfig().mep, {
+        delay: getMetadata('pageperf-delay'),
+        sampleRate: parseInt(getMetadata('pageperf-rate'), 10),
+      }));
+  }
 }
 
 function initSidekick() {
