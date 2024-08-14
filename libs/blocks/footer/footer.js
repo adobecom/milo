@@ -150,6 +150,12 @@ export class Footer {
         const ariaExpanded = regionButton.classList.contains('inline-dialog-active');
         regionButton.setAttribute('aria-expanded', ariaExpanded);
       });
+      document.addEventListener('click', (e) => {
+        if (regionButton.classList.contains('inline-dialog-active') && !e.target.closest('.footer-region')) {
+          regionButton.setAttribute('aria-expanded', false);
+          regionButton.classList.remove('inline-dialog-active');
+        }
+      });
     }
     regionButton.className = 'footer-region-button';
     regionButton.setAttribute('aria-haspopup', true);

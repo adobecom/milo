@@ -1,7 +1,7 @@
 import { getConfig } from '../../utils/utils.js';
 
 const ENTITLEMENT_MAP = {
-  '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'photoshop-any',
+  '31943c06-06de-4f5f-8689-18973c13207a': 'photoshop-any',
   '8ba78b22-90fb-4b97-a1c4-f8c03a45cbc2': 'indesign-any',
   '8d3c8ac2-2937-486b-b6ff-37f02271b09b': 'illustrator-any',
   'fd30e9c7-9ae9-44db-8e70-5c652a5bb1d2': 'cc-all-apps-any',

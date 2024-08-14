@@ -143,6 +143,7 @@ function createPreviewPill(manifests) {
       manifestUrl,
       manifestOverrideName,
     } = manifest;
+    const editUrl = manifestUrl || manifestPath;
     let radio = '';
     variantNames.forEach((variant) => {
       const checked = {
@@ -180,18 +181,18 @@ function createPreviewPill(manifests) {
          <p>On: ${manifest.event.start?.toLocaleString()} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
          <p>Off: ${manifest.event.end?.toLocaleString()}</p>` : '';
     let analyticsTitle = '';
-    if (manifestType === TRACKED_MANIFEST_TYPE) {
+    if (manifestType !== TRACKED_MANIFEST_TYPE) {
       analyticsTitle = 'N/A for this manifest type';
     } else if (manifestOverrideName) {
       analyticsTitle = manifestOverrideName;
     } else {
       analyticsTitle = manifestFileName.replace('.json', '').slice(0, 20);
     }
-    manifestList += `<div class="mep-manifest-info" title="Full url: ${manifestUrl}&#013;Analytics manifest name: ${analyticsTitle}">
+    manifestList += `<div class="mep-manifest-info" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle}">
       <div class="mep-manifest-title">
         ${targetTitle}
         <i></i>
-        <a class="mep-edit-manifest" data-manifest-url="${manifestUrl}" data-manifest-path="${manifestPath}" target="_blank" title="Open manifest">
+        <a class="mep-edit-manifest" data-manifest-url="${editUrl}" data-manifest-path="${editUrl}" target="_blank" title="Open manifest">
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256" width="16px" height="16px" fill-rule="nonzero"><g transform=""><g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8.53333,8.53333)"><path d="M22.82813,3c-0.51175,0 -1.02356,0.19544 -1.41406,0.58594l-2.41406,2.41406l5,5l2.41406,-2.41406c0.781,-0.781 0.781,-2.04713 0,-2.82812l-2.17187,-2.17187c-0.3905,-0.3905 -0.90231,-0.58594 -1.41406,-0.58594zM17,8l-11.74023,11.74023c0,0 0.91777,-0.08223 1.25977,0.25977c0.342,0.342 0.06047,2.58 0.48047,3c0.42,0.42 2.64389,0.12436 2.96289,0.44336c0.319,0.319 0.29688,1.29688 0.29688,1.29688l11.74023,-11.74023zM4,23l-0.94336,2.67188c-0.03709,0.10544 -0.05623,0.21635 -0.05664,0.32813c0,0.55228 0.44772,1 1,1c0.11177,-0.00041 0.22268,-0.01956 0.32813,-0.05664c0.00326,-0.00128 0.00652,-0.00259 0.00977,-0.00391l0.02539,-0.00781c0.00196,-0.0013 0.00391,-0.0026 0.00586,-0.00391l2.63086,-0.92773l-1.5,-1.5z"></path></g></g></g></svg>
         </a>
         ${scheduled}
@@ -228,7 +229,7 @@ function createPreviewPill(manifests) {
           <div class="mep-manifest-page-info-title">Page Info:</div>
           <div>Target integration feature is ${targetOnText}</div>
           <div>Personalization feature is ${personalizationOnText}</div>
-          <div>Page's Locale is ${config.locale.ietf}</div>
+          <div>Page's Prefix/Region/Locale are ${config.mep.geoPrefix} / ${config.locale.region} / ${config.locale.ietf}</div>
         </div>
       </div>
       <div class="mep-manifest-list">

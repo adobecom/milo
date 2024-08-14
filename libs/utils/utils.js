@@ -191,6 +191,8 @@ export function getMetadata(name, doc = document) {
 }
 
 const handleEntitlements = (() => {
+  const { martech } = Object.fromEntries(PAGE_URL.searchParams);
+  if (martech === 'off') return () => {};
   let entResolve;
   const entPromise = new Promise((resolve) => {
     entResolve = resolve;
@@ -633,6 +635,10 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    if (a.href.includes('#_nofollow')) {
+      a.setAttribute('rel', 'nofollow');
+      a.href = a.href.replace('#_nofollow', '');
+    }
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
     } else {
@@ -696,7 +702,7 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  header.className = headerMeta || 'gnav';
+  header.className = headerMeta || 'global-navigation';
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
@@ -724,10 +730,30 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const found = regex.test(el.innerHTML);
-  if (!found) return;
+  const walker = document.createTreeWalker(
+    el,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(node) {
+        const a = regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        regex.lastIndex = 0;
+        return a;
+      },
+    },
+  );
+  const nodes = [];
+  let node = walker.nextNode();
+  while (node !== null) {
+    nodes.push(node);
+    node = walker.nextNode();
+  }
+  if (!nodes.length) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(el.innerHTML, config, regex);
+  const replaceNodes = nodes.map(async (textNode) => {
+    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
+    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
+  });
+  await Promise.all(replaceNodes);
 }
 
 async function loadFooter() {
@@ -738,7 +764,7 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  footer.className = footerMeta || 'footer';
+  footer.className = footerMeta || 'global-footer';
   await loadBlock(footer);
 }
 
@@ -850,6 +876,9 @@ export async function loadIms() {
     if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);
     }
+  }).catch((e) => {
+    getConfig().entitlements([]);
+    throw e;
   });
 
   return imsLoaded;
@@ -865,8 +894,9 @@ export async function loadMartech({
     return true;
   }
 
-  const query = PAGE_URL.searchParams.get('martech');
-  if (query === 'off' || getMetadata('martech') === 'off') {
+  if (PAGE_URL.searchParams.get('martech') === 'off'
+    || PAGE_URL.searchParams.get('marketingtech') === 'off'
+    || getMetadata('martech') === 'off') {
     return false;
   }
 
@@ -923,17 +953,22 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 };
 
 async function checkForPageMods() {
-  const { mep: mepParam, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
+  const {
+    mep: mepParam,
+    mepHighlight,
+    mepButton,
+    martech,
+  } = Object.fromEntries(PAGE_URL.searchParams);
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = getMepEnablement('target');
+  const target = martech === 'off' ? false : getMepEnablement('target');
   const ajo = getMepEnablement('404');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || ajo)) return;
   if (target || ajo) {
     loadMartech();
-  } else if (pzn) {
+  } else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
@@ -1026,6 +1061,14 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
+
+  if (getMetadata('pageperf') === 'on') {
+    import('./logWebVitals.js')
+      .then((mod) => mod.default(getConfig().mep, {
+        delay: getMetadata('pageperf-delay'),
+        sampleRate: parseInt(getMetadata('pageperf-rate'), 10),
+      }));
+  }
 }
 
 function initSidekick() {
@@ -1112,6 +1155,16 @@ async function documentPostSectionLoading(config) {
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
 }
 
+export function partition(arr, fn) {
+  return arr.reduce(
+    (acc, val, i, ar) => {
+      acc[fn(val, i, ar) ? 0 : 1].push(val);
+      return acc;
+    },
+    [[], []],
+  );
+}
+
 async function processSection(section, config, isDoc) {
   const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
@@ -1125,8 +1178,10 @@ async function processSection(section, config, isDoc) {
   }
 
   if (section.preloadLinks.length) {
-    const preloads = section.preloadLinks.map((block) => loadBlock(block));
+    const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
+    const preloads = nonModals.map((block) => loadBlock(block));
     await Promise.all(preloads);
+    modals.forEach((block) => loadBlock(block));
   }
 
   const loaded = section.blocks.map((block) => loadBlock(block));

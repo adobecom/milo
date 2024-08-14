@@ -92,7 +92,8 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, ajo = fals
   const timeoutTime = roundToQuarter(timeout);
   let val = `${ajo ? 'ajo' : 'target'} response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  window.alloy('sendEvent', {
+  // eslint-disable-next-line no-underscore-dangle
+  window._satellite?.track?.('event', {
     documentUnloading: true,
     xdm: {
       eventType: 'web.webinteraction.linkClicks',
@@ -195,7 +196,7 @@ const loadMartechFiles = async (config) => {
     setDeep(
       window,
       'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
-      config.locale.ietf,
+      { locale: config.locale.prefix.replace('/', ''), langCode: config.locale.ietf },
     );
     setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
 
