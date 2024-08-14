@@ -266,18 +266,14 @@ export function turnAnchorIntoVideo({ hash, src, anchorTag }) {
   const attrs = getVideoAttrs(hash, dataset);
   const video = `<video ${attrs}></video>`;
   anchorTag.insertAdjacentHTML('afterend', video);
+  const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({
     el: parentElement,
     options: { rootMargin: '1000px' },
     callback: () => {
-      parentElement
-        .querySelector('video')
-        ?.appendChild(
-          createTag('source', { src, type: 'video/mp4' }),
-        );
+      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
-  const videoEl = parentElement.querySelector('video');
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
