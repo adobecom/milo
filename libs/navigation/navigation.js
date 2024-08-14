@@ -55,6 +55,7 @@ export default async function loadBlock(configs, customLib) {
     pathname: `/${locale}`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer.authoringPath,
+    unavVersion: header?.unavVersion,
     ...paramConfigs,
   };
   setConfig(clientConfig);
