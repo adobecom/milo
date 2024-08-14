@@ -928,9 +928,10 @@ async function checkForPageMods() {
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = getMepEnablement('target');
+  const ajo = getMepEnablement('404');
   if (!(pzn || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '')) return;
-  if (target) {
+    || mepHighlight || mepButton || mepParam === '' || ajo)) return;
+  if (target || ajo) {
     loadMartech();
   } else if (pzn) {
     loadIms()
@@ -943,7 +944,7 @@ async function checkForPageMods() {
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    mepParam, mepHighlight, mepButton, pzn, promo, target,
+    mepParam, mepHighlight, mepButton, pzn, promo, target, ajo,
   });
 }
 

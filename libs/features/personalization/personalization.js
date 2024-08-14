@@ -935,13 +935,14 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
+    mepParam, mepHighlight, mepButton, pzn, promo, target, ajo, postLCP,
   } = enablements;
   const config = getConfig();
   if (!postLCP) {
     config.mep = {
       handleFragmentCommand,
       updateFragDataProps,
+      ajo,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
       variantOverride: parseMepParam(mepParam),
@@ -957,9 +958,9 @@ export async function init(enablements = {}) {
     });
   }
 
-  if (target === true || (target === 'gnav' && postLCP)) {
+  if (target === true || ajo || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
+    const { targetManifests, targetPropositions } = await getTargetPersonalization(ajo);
     manifests = manifests.concat(targetManifests);
     if (targetPropositions?.length && window._satellite) {
       window._satellite.track('propositionDisplay', targetPropositions);

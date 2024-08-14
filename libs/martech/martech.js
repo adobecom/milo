@@ -1,5 +1,7 @@
 import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
 
+const ALLOY_PROPOSITION_FETCH = 'alloy_propositionFetch';
+const ALLOY_PROPOSITION_FETCH_ERROR = 'alloy_propositionFetch_error';
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
 const TARGET_TIMEOUT_MS = 4000;
@@ -20,7 +22,7 @@ const setDeep = (obj, path, value) => {
 };
 
 // eslint-disable-next-line max-len
-const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Promise((resolve) => {
+const waitForEventOrTimeout = (eventName, eventErrorName, timeout, returnValIfTimeout) => new Promise((resolve) => {
   const listener = (event) => {
     // eslint-disable-next-line no-use-before-define
     clearTimeout(timer);
@@ -43,15 +45,14 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
   }, timeout);
 
   window.addEventListener(eventName, listener, { once: true });
-  window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
+  window.addEventListener(eventErrorName, errorListener, { once: true });
 });
 
-const handleAlloyResponse = (response) => {
-  const items = (
-    (response.propositions?.length && response.propositions)
-    || (response.decisions?.length && response.decisions)
-    || []
-  ).map((i) => i.items).flat();
+const handleAlloyResponse = (response, ajo = false) => {
+  const itemsContent = (!ajo && response.propositions?.length && response.propositions)
+  || (response.decisions?.length && response.decisions)
+  || [];
+  const items = itemsContent.map((i) => i.items).flat();
 
   if (!items?.length) return [];
 
@@ -60,16 +61,18 @@ const handleAlloyResponse = (response) => {
       const content = item?.data?.content;
       if (!content || !(content.manifestLocation || content.manifestContent)) return null;
 
-      return {
+      const manifest = {
         manifestPath: content.manifestLocation || content.manifestPath,
         manifestUrl: content.manifestLocation,
         manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
         manifestPlaceholders: content.manifestContent?.placeholders?.data,
-        manifestInfo: content.manifestContent?.info.data,
-        name: item.meta['activity.name'],
-        variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
+        manifestInfo: content.manifestContent?.info?.data,
+        name: item?.meta?.['activity.name'] || 'ajo',
+        variantLabel: (item?.meta?.['experience.name'] && `target-${item?.meta?.['experience.name']}`),
         meta: item.meta,
       };
+
+      return manifest;
     })
     .filter(Boolean);
 };
@@ -83,11 +86,11 @@ function calculateResponseTime(responseStart) {
   return roundToQuarter(responseTime);
 }
 
-function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
+function sendTargetResponseAnalytics(failure, responseStart, timeout, ajo = false, message = '') {
   // temporary solution until we can decide on a better timeout value
   const responseTime = calculateResponseTime(responseStart);
   const timeoutTime = roundToQuarter(timeout);
-  let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
+  let val = `${ajo ? 'ajo' : 'target'} response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
   window.alloy('sendEvent', {
     documentUnloading: true,
@@ -105,7 +108,9 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   });
 }
 
-export const getTargetPersonalization = async () => {
+export const getTargetPersonalization = async (ajo = false) => {
+  const eventName = ajo ? ALLOY_PROPOSITION_FETCH : ALLOY_SEND_EVENT;
+  const eventErrorName = ajo ? ALLOY_PROPOSITION_FETCH_ERROR : ALLOY_SEND_EVENT_ERROR;
   const params = new URL(window.location.href).searchParams;
 
   const timeout = parseInt(params.get('target-timeout'), 10)
@@ -113,25 +118,25 @@ export const getTargetPersonalization = async () => {
     || TARGET_TIMEOUT_MS;
 
   const responseStart = Date.now();
-  window.addEventListener(ALLOY_SEND_EVENT, () => {
+  window.addEventListener(eventName, () => {
     const responseTime = calculateResponseTime(responseStart);
     window.lana.log(`target response time: ${responseTime}`, { tags: 'errorType=info,module=martech' });
   }, { once: true });
 
   let manifests = [];
   let propositions = [];
-  const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
+  const response = await waitForEventOrTimeout(eventName, eventErrorName, timeout);
   if (response.error) {
     window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
     return [];
   }
   if (response.timeout) {
-    waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
-      .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
+    waitForEventOrTimeout(eventName, eventErrorName, 5100 - timeout)
+      .then(() => sendTargetResponseAnalytics(true, responseStart, timeout, ajo));
   } else {
-    sendTargetResponseAnalytics(false, responseStart, timeout);
-    manifests = handleAlloyResponse(response.result);
-    propositions = response.result?.propositions || [];
+    sendTargetResponseAnalytics(false, responseStart, timeout, ajo);
+    manifests = handleAlloyResponse(response.result, ajo);
+    propositions = (!ajo && response.result?.propositions) || [];
   }
 
   return {
@@ -141,6 +146,10 @@ export const getTargetPersonalization = async () => {
 };
 
 const setupEntitlementCallback = () => {
+  const config = getConfig();
+  const eventName = config?.mep?.ajo ? ALLOY_PROPOSITION_FETCH : ALLOY_SEND_EVENT;
+  const eventNameError = config?.mep?.ajo ? ALLOY_PROPOSITION_FETCH_ERROR : ALLOY_SEND_EVENT_ERROR;
+
   const setEntitlements = async (destinations) => {
     const { default: parseEntitlements } = await import('../features/personalization/entitlements.js');
     return parseEntitlements(destinations);
@@ -154,7 +163,7 @@ const setupEntitlementCallback = () => {
         resolve([]);
       }
     };
-    waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, [])
+    waitForEventOrTimeout(eventName, eventNameError, ENTITLEMENT_TIMEOUT, [])
       .then(handleEntitlements)
       .catch(() => resolve([]));
   };
