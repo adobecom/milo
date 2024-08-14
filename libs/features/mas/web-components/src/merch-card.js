@@ -42,6 +42,7 @@ export class MerchCard extends LitElement {
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         actionMenuContent: { type: String, attribute: 'action-menu-content' },
+        keyHandling: { type: Boolean, attribute: 'key-handling', reflect: true},
         customHr: { type: Boolean, attribute: 'custom-hr' },
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
@@ -106,6 +107,7 @@ export class MerchCard extends LitElement {
         this.filters = {};
         this.types = '';
         this.selected = false;
+        this.keyHandling = true;
     }
 
     #container;
@@ -549,7 +551,9 @@ export class MerchCard extends LitElement {
         super.connectedCallback();
         this.#container = this.getContainer();
         this.setAttribute('tabindex', this.getAttribute('tabindex') ?? '0');
-        this.addEventListener('keydown', this.keydownHandler);
+        if (this.keyHandling) {
+          this.addEventListener('keydown', this.keydownHandler);          
+        }
         this.addEventListener('mouseleave', this.toggleActionMenu);
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
@@ -572,7 +576,9 @@ export class MerchCard extends LitElement {
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        this.removeEventListener('keydown', this.keydownHandler);
+        if (this.keyHandling) {
+          this.removeEventListener('keydown', this.keydownHandler);
+        }
         this.removeEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,

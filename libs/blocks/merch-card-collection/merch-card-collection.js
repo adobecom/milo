@@ -162,6 +162,7 @@ async function initMerchCards(filtered, preferences, cardsRoot) {
   // re-order cards, update card filters
   [...cardsRoot.children].filter((card) => card.tagName === 'MERCH-CARD').forEach((merchCard) => {
     merchCard.style.display = 'none';
+    merchCard.keyHandling = false;
     const filters = { ...merchCard.filters };
     Object.keys(filters).forEach((key) => {
       const preference = preferences[key];
