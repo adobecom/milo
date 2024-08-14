@@ -797,7 +797,7 @@ merch-card[variant="catalog"] [slot="action-menu-content"] a {
     text-decoration: underline;
 }
 
-merch-card[variant="catalog"] [slot="payment-details"] {
+merch-card[variant="catalog"] .payment-details {
   font-size: var(--consonant-merch-card-body-font-size);
   font-style: italic;
   font-weight: 400;
@@ -1590,9 +1590,7 @@ body.merch-modal {
                     >${this.actionMenuContent}</slot
                 >
                 <slot name="heading-xs"></slot>
-                <slot name="heading-m">
-                    <slot name="payment-details"></slot>
-                </slot>
+                <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
                 ${this.promoBottom?"":o`<slot name="promo-text"></slot
                           ><slot name="callout-content"></slot>`}
