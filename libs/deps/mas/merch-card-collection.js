@@ -134,16 +134,16 @@ import{html as l,LitElement as A}from"/libs/deps/lit-all.min.js";var m=class{con
                 size="m"
                 @change="${this.sortChanged}"
                 selects="single"
-                value="${n?i.alphabetical:i.authored}"
+                value="${i?n.alphabetical:n.authored}"
             >
                 <span slot="label-only"
                     >${e}:
-                    ${n?o:t}</span
+                    ${i?o:t}</span
                 >
-                <sp-menu-item value="${i.authored}"
+                <sp-menu-item value="${n.authored}"
                     >${t}</sp-menu-item
                 >
-                <sp-menu-item value="${i.alphabetical}"
+                <sp-menu-item value="${n.alphabetical}"
                     >${o}</sp-menu-item
                 >
             </sp-action-menu>

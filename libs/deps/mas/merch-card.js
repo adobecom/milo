@@ -1027,7 +1027,7 @@ div[slot='bg-image'] img {
 
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     :root {
         --consonant-merch-card-catalog-width: 302px;
         --consonant-merch-card-plans-width: 302px;
@@ -1040,7 +1040,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     :root {
         --consonant-merch-card-catalog-width: 276px;
         --consonant-merch-card-plans-width: 276px;
@@ -1064,7 +1064,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.plans,
     .three-merch-cards.plans,
     .four-merch-cards.plans {
@@ -1073,7 +1073,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .three-merch-cards.plans,
     .four-merch-cards.plans {
         grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
@@ -1097,7 +1097,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.catalog,
     .three-merch-cards.catalog,
     .four-merch-cards.catalog {
@@ -1106,7 +1106,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .three-merch-cards.catalog,
     .four-merch-cards.catalog {
         grid-template-columns: repeat(3, var(--consonant-merch-card-catalog-width));
@@ -1130,7 +1130,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.special-offers,
     .three-merch-cards.special-offers,
     .four-merch-cards.special-offers {
@@ -1139,7 +1139,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .three-merch-cards.special-offers,
     .four-merch-cards.special-offers {
         grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-special-offers-width)));
@@ -1162,7 +1162,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.image,
     .three-merch-cards.image,
     .four-merch-cards.image {
@@ -1171,7 +1171,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .three-merch-cards.image,
     .four-merch-cards.image {
         grid-template-columns: repeat(3, var(--consonant-merch-card-image-width));
@@ -1195,7 +1195,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.segment,
     .three-merch-cards.segment,
     .four-merch-cards.segment {
@@ -1204,7 +1204,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .three-merch-cards.segment {
         grid-template-columns: repeat(3, minmax(276px, var(--consonant-merch-card-segment-width)));
     }
@@ -1224,7 +1224,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.product,
     .three-merch-cards.product,
     .four-merch-cards.product {
@@ -1233,7 +1233,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .three-merch-cards.product,
     .four-merch-cards.product {
         grid-template-columns: repeat(3, var(--consonant-merch-card-product-width));
@@ -1255,7 +1255,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .one-merch-card.twp,
     .two-merch-cards.twp {
         grid-template-columns: repeat(2, var(--consonant-merch-card-twp-width));
@@ -1266,7 +1266,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .one-merch-card.twp
     .two-merch-cards.twp {
         grid-template-columns: repeat(2, var(--consonant-merch-card-twp-width));
@@ -1305,7 +1305,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.inline-heading,
     .three-merch-cards.inline-heading,
     .four-merch-cards.inline-heading {
@@ -1314,7 +1314,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .three-merch-cards.inline-heading,
     .four-merch-cards.inline-heading {
         grid-template-columns: repeat(3, var(--consonant-merch-card-inline-heading-width));
@@ -1337,7 +1337,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.ccd-action,
     .three-merch-cards.ccd-action,
     .four-merch-cards.ccd-action {
@@ -1346,7 +1346,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .three-merch-cards.ccd-action,
     .four-merch-cards.ccd-action {
         grid-template-columns: repeat(3, var(--consonant-merch-card-ccd-action-width));
@@ -1390,7 +1390,7 @@ div[slot='bg-image'] img {
 }
 
 /* Tablet */
-@media screen and ${h} {
+@media screen and ${i} {
     .two-merch-cards.mini-compare-chart {
         grid-template-columns: repeat(2, minmax(var(--consonant-merch-card-mini-compare-chart-width), var(--consonant-merch-card-mini-compare-chart-wide-width)));
         gap: var(--consonant-merch-spacing-m);
@@ -1403,7 +1403,7 @@ div[slot='bg-image'] img {
 }
 
 /* desktop */
-@media screen and ${s} {
+@media screen and ${c} {
     .one-merch-card.mini-compare-chart {
         grid-template-columns: var(--consonant-merch-card-mini-compare-chart-wide-width);
     }
@@ -1463,6 +1463,11 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
+sp-button a[is="checkout-link"] {
+  color: inherit;
+  text-decoration: none;
+}
+
 merch-card span.placeholder-resolved[data-template='strikethrough'],
 merch-card span.price.price-strikethrough {
   font-size: var(--consonant-merch-card-body-xs-font-size);
@@ -1488,16 +1493,16 @@ body.merch-modal {
                     <input type="checkbox" @change=${this.toggleStockOffer}></input>
                     <span></span>
                     ${this.checkboxLabel}
-                </label>`:""}get cardImage(){return o` <div class="image">
+                </label>`:""}get cardImage(){return a` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}get secureLabelFooter(){let e=this.secureLabel?o`<span class="secure-transaction-label"
+        </div>`}get secureLabelFooter(){let e=this.secureLabel?a`<span class="secure-transaction-label"
                   >${this.secureLabel}</span
-              >`:"";return o`<footer>${e}<slot name="footer"></slot></footer>`}get miniCompareFooter(){let e=this.secureLabel?o`<slot name="secure-transaction-label">
+              >`:"";return a`<footer>${e}<slot name="footer"></slot></footer>`}get miniCompareFooter(){let e=this.secureLabel?a`<slot name="secure-transaction-label">
                   <span class="secure-transaction-label"
                       >${this.secureLabel}</span
                   ></slot
-              >`:o`<slot name="secure-transaction-label"></slot>`;return o`<footer>${e}<slot name="footer"></slot></footer>`}get badge(){let e;if(!(!this.badgeBackgroundColor||!this.badgeColor||!this.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.badgeBackgroundColor}; border-right: none;`),o`
+              >`:a`<slot name="secure-transaction-label"></slot>`;return a`<footer>${e}<slot name="footer"></slot></footer>`}get badge(){let e;if(!(!this.badgeBackgroundColor||!this.badgeColor||!this.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.badgeBackgroundColor}; border-right: none;`),a`
             <div
                 id="badge"
                 class="${this.variant}-badge"
@@ -1513,14 +1518,14 @@ body.merch-modal {
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen?o`
+            ${this.evergreen?a`
                       <div
                           class="detail-bg-container"
                           style="background: ${this.detailBg}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  `:o`
+                  `:a`
                       <hr />
                       ${this.secureLabelFooter}
                   `}`}get promoBottom(){return this.classList.contains("promo-bottom")}renderSegment(){return o` ${this.badge}
@@ -1532,7 +1537,7 @@ body.merch-modal {
                 ${this.promoBottom?o`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
             </div>
             <hr />
-            ${this.secureLabelFooter}`}renderPlans(){return o` ${this.badge}
+            ${this.secureLabelFooter}`}renderPlans(){return a` ${this.badge}
             <div class="body">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
@@ -1563,30 +1568,30 @@ body.merch-modal {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":o`<slot name="promo-text"></slot
+                ${this.promoBottom?"":a`<slot name="promo-text"></slot
                           ><slot name="callout-content"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?o`<slot name="promo-text"></slot
+                ${this.promoBottom?a`<slot name="promo-text"></slot
                           ><slot name="callout-content"></slot>`:""}
             </div>
-            ${this.secureLabelFooter}`}renderImage(){return o`${this.cardImage}
+            ${this.secureLabelFooter}`}renderImage(){return a`${this.cardImage}
             <div class="body">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
                 ${this.promoBottom?o`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:o`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
             </div>
-            ${this.evergreen?o`
+            ${this.evergreen?a`
                       <div
                           class="detail-bg-container"
                           style="background: ${this.detailBg}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  `:o`
+                  `:a`
                       <hr />
                       ${this.secureLabelFooter}
-                  `}`}renderInlineHeading(){return o` ${this.badge}
+                  `}`}renderInlineHeading(){return a` ${this.badge}
             <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot>
@@ -1594,7 +1599,7 @@ body.merch-modal {
                 </div>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.customHr?"":o`<hr />`} ${this.secureLabelFooter}`}renderProduct(){return o` ${this.badge}
+            ${this.customHr?"":a`<hr />`} ${this.secureLabelFooter}`}renderProduct(){return a` ${this.badge}
             <div class="body">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
@@ -1603,7 +1608,7 @@ body.merch-modal {
                 <slot name="body-xs"></slot>
                 ${this.promoBottom?o`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
             </div>
-            ${this.secureLabelFooter}`}renderMiniCompareChart(){let{badge:e}=this;return o` <div class="top-section${e?" badge":""}">
+            ${this.secureLabelFooter}`}renderMiniCompareChart(){let{badge:e}=this;return a` <div class="top-section${e?" badge":""}">
                 <slot name="icons"></slot> ${e}
             </div>
             <slot name="heading-m"></slot>
@@ -1615,7 +1620,7 @@ body.merch-modal {
             <slot name="promo-text"></slot>
             <slot name="callout-content"></slot>
             ${this.miniCompareFooter}
-            <slot name="footer-rows"><slot name="body-s"></slot></slot>`}renderTwp(){return o`${this.badge}
+            <slot name="footer-rows"><slot name="body-s"></slot></slot>`}renderTwp(){return a`${this.badge}
             <div class="top-section">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>

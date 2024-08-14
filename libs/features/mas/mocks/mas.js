@@ -1,5 +1,7 @@
 import { init } from '@adobe/mas-commerce';
-import '@adobe/mas-web-components/src/merch-card-all.js';
+import '@adobe/mas-web-components/src/merch-card.js';
+import '@adobe/mas-web-components/src/merch-icon.js';
+import '@adobe/mas-web-components/src/merch-datasource.js';
 
 const locale =
     document

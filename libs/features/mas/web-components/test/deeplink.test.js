@@ -25,8 +25,8 @@ describe('Deep linking', () => {
         });
         document.location.hash = 'filter=all&single_app=acrobat&types=desktop';
         await delay(1);
-        expect(events.length).to.equal(2);
-        expect(events[1]).to.deep.equal({
+        expect(events.length).to.equal(1);
+        expect(events[0]).to.deep.equal({
             filter: 'all',
             search: undefined,
             single_app: 'acrobat',
@@ -39,7 +39,7 @@ describe('Deep linking', () => {
             types: 'desktop%2Cmobile',
         });
         await delay(1);
-        expect(events[2]).to.deep.equal({
+        expect(events[1]).to.deep.equal({
             filter: 'all',
             search: undefined,
             single_app: undefined,
@@ -50,7 +50,7 @@ describe('Deep linking', () => {
             types: undefined,
         });
         await delay(1);
-        expect(events[4]).to.deep.equal({
+        expect(events[3]).to.deep.equal({
             filter: 'all',
             search: undefined,
             single_app: undefined,
@@ -64,7 +64,7 @@ describe('Deep linking', () => {
             types: undefined,
         });
         await delay(1);
-        expect(events[4]).to.deep.equal({
+        expect(events[3]).to.deep.equal({
             filter: 'all',
             types: undefined,
             sort: undefined,
@@ -78,6 +78,6 @@ describe('Deep linking', () => {
             types: 'desktop',
         });
         await delay(1);
-        expect(events.length).to.equal(7);
+        expect(events.length).to.equal(6);
     });
 });

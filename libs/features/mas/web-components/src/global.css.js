@@ -1060,6 +1060,11 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
+sp-button a[is="checkout-link"] {
+  color: inherit;
+  text-decoration: none;
+}
+
 merch-card span.placeholder-resolved[data-template='strikethrough'],
 merch-card span.price.price-strikethrough {
   font-size: var(--consonant-merch-card-body-xs-font-size);

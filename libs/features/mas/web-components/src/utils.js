@@ -138,22 +138,27 @@ export function getTextNodes(element) {
     return textNodes;
 }
 
+
 /**
  * Helper function to create an element with attributes
  * @param {string} tag
  * @param {Object} attributes
- * @param {*} innerHTML
+ * @param {*} content
  * @returns {HTMLElement}
  */
-export function createTag(tag, attributes = {}, innerHTML) {
-    const element = document.createElement(tag);
-    element.innerHTML = innerHTML;
+export function createTag(tag, attributes = {}, content) {
+  const element = document.createElement(tag);
+  if (content instanceof HTMLElement) {
+      element.appendChild(content);
+  } else {
+    element.innerHTML = content;
+  }
 
-    // Set attributes
-    for (const [key, value] of Object.entries(attributes)) {
-        element.setAttribute(key, value);
-    }
-    return element;
+  // Set attributes
+  for (const [key, value] of Object.entries(attributes)) {
+      element.setAttribute(key, value);
+  }
+  return element;
 }
 
 /**
