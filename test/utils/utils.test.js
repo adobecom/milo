@@ -244,6 +244,14 @@ describe('Utils', () => {
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
     });
 
+    it('Add rel=nofollow to a link', () => {
+      const noFollowContainer = document.querySelector('main div');
+      utils.decorateLinks(noFollowContainer);
+      const noFollowLink = noFollowContainer.querySelector('.no-follow');
+      expect(noFollowLink.rel).to.contain('nofollow');
+      expect(noFollowLink.href).to.equal('https://www.adobe.com/test');
+    });
+
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
