@@ -260,7 +260,7 @@ export function handleObjectFit(bgRow) {
   });
 }
 
-export function getVideoIntersectionObserver() {
+function getVideoIntersectionObserver() {
   if (!window?.videoIntersectionObs) {
     window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -281,7 +281,7 @@ export function getVideoIntersectionObserver() {
   return window.videoIntersectionObs;
 }
 
-export function applyInViewPortPlay(video) {
+function applyInViewPortPlay(video) {
   if (!video) return;
   if (video.hasAttribute('data-play-viewport')) {
     const observer = getVideoIntersectionObserver();
@@ -322,4 +322,22 @@ export async function loadCDT(el, classList) {
   } catch (error) {
     window.lana?.log(`Failed to load countdown timer module: ${error}`, { tags: 'countdown-timer' });
   }
+}
+
+export function turnAnchorIntoVideo({ hash, src, anchorTag }) {
+  const { dataset, parentElement } = anchorTag;
+  const attrs = getVideoAttrs(hash, dataset);
+  const video = `<video ${attrs}></video>`;
+  anchorTag.insertAdjacentHTML('afterend', video);
+  const videoEl = parentElement.querySelector('video');
+  createIntersectionObserver({
+    el: parentElement,
+    options: { rootMargin: '1000px' },
+    callback: () => {
+      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
+    },
+  });
+  applyHoverPlay(videoEl);
+  applyInViewPortPlay(videoEl);
+  anchorTag.remove();
 }
