@@ -4,6 +4,7 @@ const zeroImpactDirs = [
   '.kodiak',
   '.vscode',
   '.test',
+  '.browserslistrc',
   'libs/mep',
   '.eslintrc.js',
   'CODEOWNERS',

@@ -1,4 +1,5 @@
 import { html } from '../../deps/htm-preact.js';
+import { removeLeftToRightMark } from './utils.js';
 
 export const OptionCard = ({
   text, title, image, icon, iconTablet, iconDesktop, options, disabled, selected, background,
@@ -22,15 +23,15 @@ export const OptionCard = ({
 
   const getIconHtml = () => html`<div class="quiz-option-icon ${getIconClass()}">
     <picture>
-      ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${iconDesktop}" />`}
-      ${iconTablet && html`<source media="(min-width: 600px)" srcset="${iconTablet}" />`}
-      <img src="${icon}" alt="" loading="lazy" />
+      ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${removeLeftToRightMark(iconDesktop)}" />`}
+      ${iconTablet && html`<source media="(min-width: 600px)" srcset="${removeLeftToRightMark(iconTablet)}" />`}
+      <img src="${removeLeftToRightMark(icon)}" alt="" loading="lazy" />
     </picture>
   </div>`;
 
   const imageHtml = html`
     <div class="quiz-option-image" 
-      style="background-image: url('${image}'); background-size: cover" loading="lazy">
+      style="background-image: url('${removeLeftToRightMark(image)}'); background-size: cover" loading="lazy">
     </div>`;
 
   const titleHtml = html`

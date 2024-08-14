@@ -97,4 +97,10 @@ describe('marketo decorateURL', () => {
     const result = decorateURL('/marketo-block/thank-you', baseURL);
     expect(result).to.equal('https://business.adobe.com/uk/marketo-block/thank-you.html');
   });
+
+  it('Does not decorate non-url text', () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = decorateURL('Thank you for submitting the form', baseURL);
+    expect(result).to.be.null;
+  });
 });

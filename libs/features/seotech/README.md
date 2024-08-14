@@ -16,21 +16,17 @@ Metadata Properties:
 Video Platforms:
 
 - YouTube: Supported
-- Adobe TV: WIP
-- BYO HTML5: TBD
+- Adobe TV: Supported
+- BYO HTML5: See "Structured Data"
 
 See [video-metadata](../../blocks/video-metadata/) if you need to define a specific VideoObject on your page.
 
 ## Structured Data
 
-This feature queries the SEOTECH service for structured data that should be added to the page.
+This feature queries the SEOTECH service for adhoc structured data that should be added to the page.
 
 Metadata Properties:
 
 - `seotech-structured-data`: `on` to enable SEOTECH lookup
-- `seotech-sheet-url`: url of Franklin Spreadsheet JSON (Optional)
 
-You can also specify `seotech-sheet-url` as a query parameter.
-Otherwise SEOTECH will search for _/structured-data.json_ at the root of the current page.
-
-See [seotech page](https://git.corp.adobe.com/pages/wcms/seotech/) (Corp Only) for list of supported structured data types.
+See [Structured Data for Milo](https://wiki.corp.adobe.com/x/YpPwwg) (Corp Only) for complete documentation.
