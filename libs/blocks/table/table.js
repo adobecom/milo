@@ -375,7 +375,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
 
     if ((!isMerch && !table.querySelector('.col-3'))
-    || (isMerch && !table.querySelector('.col-2'))) return;
+      || (isMerch && !table.querySelector('.col-2'))) return;
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
@@ -504,9 +504,7 @@ export default function init(el) {
     expandSection = handleSection(sectionParams);
   });
 
-  const isStickyHeader = el.classList.contains('sticky')
-    || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
-    || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE');
+  const isStickyHeader = (el.classList.contains('sticky') && defineDeviceByScreenSize() !== 'MOBILE');
 
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
