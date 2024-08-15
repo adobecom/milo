@@ -152,6 +152,11 @@
   margin: 0;
 }
 
+.editorial-card .device {
+  font-size: var(--type-body-xxs-size);
+  line-height: var(--type-body-xxs-lh);
+}
+
 .editorial-card .lockup-area {
   row-gap: var(--spacing-xxs);
 }

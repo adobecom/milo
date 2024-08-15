@@ -25,9 +25,10 @@ async function decorateLockupFromContent(el) {
 const extendDeviceContent = (el) => {
   const detail = el.querySelector('[class^="detail-"]');
   const prevElem = detail?.previousElementSibling;
-  if (!prevElem || ![...prevElem.classList].some((c) => c.startsWith('body-'))) return;
-  prevElem.classList.remove('body-m');
-  prevElem.classList.add('body-xxs', 'device');
+  if (!prevElem) return;
+  const elBodyClass = [...prevElem.classList].find((c) => c.startsWith('body-'));
+  prevElem.classList.remove(elBodyClass);
+  prevElem.classList.add('device');
 };
 
 const decorateMedia = (el, media) => {

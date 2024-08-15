@@ -211,7 +211,8 @@
 .detail-xl,
 .detail-l,
 .detail-m,
-.detail-s {
+.detail-s,
+.detail-xs {
   margin: 0;
 }
 
