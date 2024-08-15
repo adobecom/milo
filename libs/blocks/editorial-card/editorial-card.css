@@ -147,6 +147,13 @@
   height: 100%;
 }
 
+.editorial-card .background .milo-video, 
+.editorial-card .background .milo-iframe {
+    height: 100%;
+    padding-bottom: 0;
+}
+
+
 .editorial-card .lockup-area,
 .editorial-card .device {
   margin: 0;
