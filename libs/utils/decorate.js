@@ -1,4 +1,4 @@
-import { createTag, loadStyle, getConfig } from './utils.js';
+import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 
@@ -115,8 +115,6 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
     [...node.children].forEach((child, i) => {
-      const videoLink = child.querySelector('a[href*=".mp4"]');
-      if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
       if (childCount > 1) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
       if (useHandleFocalpoint && pic
@@ -324,10 +322,11 @@ export async function loadCDT(el, classList) {
   }
 }
 
-export function turnAnchorIntoVideo({ hash, src, anchorTag }) {
+export function decorateAnchorVideo({ src, anchorTag }) {
+  if (!src.length || !(anchorTag instanceof HTMLElement)) return;
+  if (anchorTag.closest('.marquee, .aside, .hero-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
-  const attrs = getVideoAttrs(hash, dataset);
-  const video = `<video ${attrs}></video>`;
+  const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({
