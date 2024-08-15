@@ -15,7 +15,6 @@ export default function init(a) {
     videoPath = `${root}${mediaFilename}`;
   }
   turnAnchorIntoVideo({
-    hash: a.hash,
     src: videoPath,
     anchorTag: a,
   });

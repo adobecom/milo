@@ -7,7 +7,6 @@ export default function init(a) {
     a.classList.add('hide');
     if (!a.parentNode) return;
     turnAnchorIntoVideo({
-      hash: a.hash || 'autoplay',
       src: a.href,
       anchorTag: a,
     });
