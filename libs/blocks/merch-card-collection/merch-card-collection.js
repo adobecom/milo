@@ -187,7 +187,7 @@ export default async function init(el) {
   const cardsDataPromise = fetchCardsData(config, type, el);
 
   const merchCardCollectionDep = import('../../deps/mas/merch-card-collection.js');
-  const polyfills = import('../../deps/mas/polyfills.js');
+  const polyfills = import('../merch/merch.js');
   let deps = [
     polyfills,
     merchCardCollectionDep,
