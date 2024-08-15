@@ -35,6 +35,10 @@
   background-color: var(--color-white);
 }
 
+.table .col.section-row-title {
+  flex-wrap: nowrap;
+}
+
 .table .section-row .col {
   align-items: center;
 }
