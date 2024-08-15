@@ -57,12 +57,13 @@ const decorateForeground = async (el, rows) => {
 };
 
 const decorateBgRow = (el, background) => {
-  if (background.textContent.trim() === '') {
+  decorateBlockBg(el, background);
+  const rows = background.querySelectorAll(':scope > div');
+  const bgRowsEmpty = [...rows].every((row) => row.innerHTML.trim() === '');
+  if (bgRowsEmpty) {
     el.classList.add('no-bg');
     background.remove();
-    return;
   }
-  decorateBlockBg(el, background);
 };
 
 function handleClickableCard(el) {
