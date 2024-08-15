@@ -93,10 +93,10 @@ export function handleFocalpoint(pic, child, removeChild) {
   image.style.objectPosition = `${x} ${y}`;
 }
 
-export async function decorateBlockBg(block, node, { useHandleFocalpoint = false } = {}) {
+export async function decorateBlockBg(block, node, { useHandleFocalpoint = false, className = 'background' } = {}) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
-    node.classList.add('background');
+    node.classList.add(className);
     const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;

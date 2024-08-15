@@ -37,7 +37,7 @@ const decorateMedia = (el, media) => {
   if (mediaVideo) {
     applyHoverPlay(mediaVideo);
   }
-  if (media.children.length > 1) decorateBlockBg(el, media);
+  if (media.children.length > 1) decorateBlockBg(el, media, { className: 'vp-media' });
 };
 
 const decorateForeground = async (el, rows) => {
