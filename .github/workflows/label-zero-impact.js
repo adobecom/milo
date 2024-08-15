@@ -12,6 +12,7 @@ const zeroImpactDirs = [
   'LICENSE',
   'codecov.yaml',
   '.gitignore',
+  'package.json',
   'package-lock.json',
 ];
 const zeroImpactLabel = 'zero-impact';
