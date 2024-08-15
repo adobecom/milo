@@ -188,6 +188,7 @@ export default async function init(el) {
 
   const merchCardCollectionDep = import('../../deps/mas/merch-card-collection.js');
   const polyfills = import('../merch/merch.js');
+  await polyfills;
   let deps = [
     polyfills,
     merchCardCollectionDep,
@@ -297,7 +298,6 @@ export default async function init(el) {
     }
   }
 
-  await polyfills;
   await merchCardCollectionDep;
   performance.mark('merch-card-collection-render:start');
   const merchCardCollection = createTag('merch-card-collection', attributes);
