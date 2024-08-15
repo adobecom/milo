@@ -971,11 +971,11 @@ export async function init(enablements = {}) {
   }
 
   if (target === true || ajo || (target === 'gnav' && postLCP)) {
-    const { getTargetPersonalization } = await import('../../martech/martech.js');
-    const { targetManifests, targetPropositions } = await getTargetPersonalization(ajo);
-    manifests = manifests.concat(targetManifests);
-    if (targetPropositions?.length && window._satellite) {
-      window._satellite.track('propositionDisplay', targetPropositions);
+    const { getTargetAjoPersonalization } = await import('../../martech/martech.js');
+    const { targetAjoManifests, targetAjoPropositions } = await getTargetAjoPersonalization(ajo);
+    manifests = manifests.concat(targetAjoManifests);
+    if (targetAjoPropositions?.length && window._satellite) {
+      window._satellite.track('propositionDisplay', targetAjoPropositions);
     }
   }
   try {

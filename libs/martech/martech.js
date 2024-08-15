@@ -86,7 +86,7 @@ function calculateResponseTime(responseStart) {
   return roundToQuarter(responseTime);
 }
 
-function sendTargetResponseAnalytics(failure, responseStart, timeout, ajo = false, message = '') {
+function sendTargetAjoResponseAnalytics(failure, responseStart, timeout, ajo = false, message = '') {
   // temporary solution until we can decide on a better timeout value
   const responseTime = calculateResponseTime(responseStart);
   const timeoutTime = roundToQuarter(timeout);
@@ -109,7 +109,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, ajo = fals
   });
 }
 
-export const getTargetPersonalization = async (ajo = false) => {
+export const getTargetAjoPersonalization = async (ajo = false) => {
   const eventName = ajo ? ALLOY_PROPOSITION_FETCH : ALLOY_SEND_EVENT;
   const eventErrorName = ajo ? ALLOY_PROPOSITION_FETCH_ERROR : ALLOY_SEND_EVENT_ERROR;
   const params = new URL(window.location.href).searchParams;
@@ -133,16 +133,16 @@ export const getTargetPersonalization = async (ajo = false) => {
   }
   if (response.timeout) {
     waitForEventOrTimeout(eventName, eventErrorName, 5100 - timeout)
-      .then(() => sendTargetResponseAnalytics(true, responseStart, timeout, ajo));
+      .then(() => sendTargetAjoResponseAnalytics(true, responseStart, timeout, ajo));
   } else {
-    sendTargetResponseAnalytics(false, responseStart, timeout, ajo);
+    sendTargetAjoResponseAnalytics(false, responseStart, timeout, ajo);
     manifests = handleAlloyResponse(response.result, ajo);
-    propositions = (!ajo && response.result?.propositions) || [];
+    propositions = (!ajo && response.result?.propositions) || response.result?.decisions || [];
   }
 
   return {
-    targetManifests: manifests,
-    targetPropositions: propositions,
+    targetAjoManifests: manifests,
+    targetAjoPropositions: propositions,
   };
 };
 
