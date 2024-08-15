@@ -52,6 +52,22 @@ const cardContent = {
         },
         ctas: { size: 'l' },
     },
+    'special-offers': {
+        name: 'special-offers',
+        title: {
+            tag: 'h3',
+            slot: 'heading-xs',
+        },
+        prices: {
+            tag: 'h3',
+            slot: 'heading-xs',
+        },
+        description: {
+            tag: 'div',
+            slot: 'body-xs',
+        },
+        ctas: { size: 'l' },
+    },
 };
 
 async function parseMerchCard(item, merchCard) {
