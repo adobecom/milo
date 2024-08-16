@@ -737,50 +737,12 @@ export async function customFetch({ resource, withCacheRules }) {
 }
 
 async function decoratePlaceholders(area, config) {
-  const el = area.querySelector('main') || area;
-  const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const walker = document.createTreeWalker(
-    el,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        const a = regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-        regex.lastIndex = 0;
-        return a;
-      },
-    },
-  );
-  const nodes = [];
-  let node = walker.nextNode();
-  while (node !== null) {
-    nodes.push(node);
-    node = walker.nextNode();
-  }
-  if (!nodes.length) return;
-  const resource = `${config.locale.contentRoot}/placeholders.json`;
-  const [resp, { replaceText }] = await Promise.all([
-    customFetch({ resource, withCacheRules: true }).catch(() => ({})),
+  const placeholderPath = `${config?.locale?.contentRoot}/placeholders.json`;
+  const [placeholderResponse, { decorateArea }] = await Promise.all([
+    customFetch({ resource: placeholderPath, withCacheRules: true }).catch(() => ({})),
     import('../features/placeholders.js'),
   ]);
-  const json = resp.ok ? await resp.json() : { data: [] };
-  const placeholders = {};
-  if (json.data) {
-    json.data.forEach((item) => {
-      placeholders[item.key] = item.value;
-    });
-  }
-  const replaceNodes = nodes.map(async (textNode) => {
-    textNode.nodeValue = await replaceText(
-      textNode.nodeValue,
-      config,
-      regex,
-      '',
-      placeholders,
-      resource,
-    );
-    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
-  });
-  await Promise.all(replaceNodes);
+  await decorateArea({ area, placeholderResponse, placeholderPath });
 }
 
 async function loadFooter() {

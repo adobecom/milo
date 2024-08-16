@@ -1,6 +1,7 @@
-import { customFetch } from '../utils/utils.js';
+import { customFetch, getConfig } from '../utils/utils.js';
 
 const fetchedPlaceholders = {};
+const defaultRegex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
 const getPlaceholdersPath = (config, sheet) => {
   const path = `${config.locale.contentRoot}/placeholders.json`;
@@ -8,23 +9,28 @@ const getPlaceholdersPath = (config, sheet) => {
   return `${path}${query}`;
 };
 
+const processPlaceholderResponse = async (resp, path) => {
+  const json = resp.ok ? await resp.json() : { data: [] };
+  if (json.data.length === 0) return {};
+  const placeholders = {};
+  json.data.forEach((item) => {
+    placeholders[item.key] = item.value;
+  });
+  fetchedPlaceholders[path] = fetchedPlaceholders[path] || placeholders;
+  return placeholders;
+};
+
 const fetchPlaceholders = async (config, sheet) => {
-  const placeholdersPath = getPlaceholdersPath(config, sheet);
-  fetchedPlaceholders[placeholdersPath] = fetchedPlaceholders[placeholdersPath]
+  const path = getPlaceholdersPath(config, sheet);
+  fetchedPlaceholders[path] = fetchedPlaceholders[path]
     // eslint-disable-next-line no-async-promise-executor
     || new Promise(async (resolve) => {
-      const resp = await customFetch({ resource: placeholdersPath, withCacheRules: true })
+      const resp = await customFetch({ resource: path, withCacheRules: true })
         .catch(() => ({}));
-      const json = resp.ok ? await resp.json() : { data: [] };
-      if (json.data.length === 0) { resolve({}); return; }
-      const placeholders = {};
-      json.data.forEach((item) => {
-        placeholders[item.key] = item.value;
-      });
+      const placeholders = await processPlaceholderResponse(resp, path);
       resolve(placeholders);
     });
-
-  return fetchedPlaceholders[placeholdersPath];
+  return fetchedPlaceholders[path];
 };
 
 function keyToStr(key) {
@@ -100,19 +106,62 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
   return placeholders;
 }
 
-export async function replaceText(text, config, regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g, sheet = 'default', pl, path) {
-  fetchedPlaceholders[path] = fetchedPlaceholders[path] || pl;
+export async function replaceText(
+  text,
+  config,
+  regex = defaultRegex,
+  sheet = 'default',
+) {
   if (typeof text !== 'string' || !text.length) return '';
 
   const matches = [...text.matchAll(new RegExp(regex))];
   if (!matches.length) {
     return text;
   }
-  const keys = Array.from(matches, (match) => (match[1] || match[2]));
+  const keys = Array.from(matches, (match) => match[1] || match[2]);
   const placeholders = await replaceKeyArray(keys, config, sheet);
   // The .shift method is very slow, thus using normal iterator
   let i = 0;
   // eslint-disable-next-line no-plusplus
   const finalText = text.replaceAll(regex, () => placeholders[i++]);
   return finalText;
+}
+
+const findReplaceableNodes = (area) => {
+  const el = area.querySelector('main') || area;
+  const walker = document.createTreeWalker(
+    el,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(node) {
+        const a = defaultRegex.test(node.nodeValue)
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT;
+        defaultRegex.lastIndex = 0;
+        return a;
+      },
+    },
+  );
+  const nodes = [];
+  let node = walker.nextNode();
+  while (node !== null) {
+    nodes.push(node);
+    node = walker.nextNode();
+  }
+  return nodes;
+};
+
+export async function decorateArea({ area, placeholderResponse, placeholderPath }) {
+  const config = getConfig();
+  const nodes = findReplaceableNodes(area);
+  if (!nodes.length) return;
+  await processPlaceholderResponse(placeholderResponse, placeholderPath);
+  const replaceNodes = nodes.map(async (textNode) => {
+    textNode.nodeValue = await replaceText(
+      textNode.nodeValue,
+      config,
+    );
+    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
+  });
+  await Promise.all(replaceNodes);
 }
