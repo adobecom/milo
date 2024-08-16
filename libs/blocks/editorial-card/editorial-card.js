@@ -42,10 +42,10 @@ const decorateMedia = (el, media) => {
 };
 
 const decorateForeground = async (el, rows) => {
-  rows.forEach(async (row, i) => {
+  rows.forEach((row, i) => {
     if (i === 0) {
       row.classList.add('foreground');
-      await decorateLockupFromContent(row);
+      decorateLockupFromContent(row);
     } else if (i === (rows.length - 1)) {
       row.classList.add('card-footer');
       if (!row.textContent.trim()) row.classList.add('empty');
