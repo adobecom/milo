@@ -26,7 +26,7 @@ import {
 } from '../utils/miloc.js';
 import { signal } from '../../../deps/htm-preact.js';
 import Modal from './modal.js';
-import isUrl from '../utils/url.js';
+import { isUrl } from '../utils/url.js';
 
 export const showRolloutOptions = signal(false);
 

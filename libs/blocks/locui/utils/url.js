@@ -1,9 +1,9 @@
-export default function isUrl(str) {
+export function isUrl(str) {
   try {
     const url = new URL(str);
     return url;
   } catch (error) {
-    return false;
+    return undefined;
   }
 }
 
