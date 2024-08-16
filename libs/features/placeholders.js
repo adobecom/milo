@@ -1,3 +1,5 @@
+import { customFetch } from '../utils/utils.js';
+
 const fetchedPlaceholders = {};
 
 const getPlaceholdersPath = (config, sheet) => {
@@ -8,8 +10,6 @@ const getPlaceholdersPath = (config, sheet) => {
 
 const fetchPlaceholders = async (config, sheet) => {
   const placeholdersPath = getPlaceholdersPath(config, sheet);
-  const { customFetch } = await import('../utils/helpers.js');
-
   fetchedPlaceholders[placeholdersPath] = fetchedPlaceholders[placeholdersPath]
     // eslint-disable-next-line no-async-promise-executor
     || new Promise(async (resolve) => {
@@ -100,7 +100,8 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
   return placeholders;
 }
 
-export async function replaceText(text, config, regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g, sheet = 'default') {
+export async function replaceText(text, config, regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g, sheet = 'default', pl, path) {
+  fetchedPlaceholders[path] = fetchedPlaceholders[path] || pl;
   if (typeof text !== 'string' || !text.length) return '';
 
   const matches = [...text.matchAll(new RegExp(regex))];

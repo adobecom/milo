@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 
-const { customFetch } = await import('../../libs/utils/helpers.js');
+const { customFetch } = await import('../../libs/utils/utils.js');
 
 describe('Cache control', async () => {
   it('fetches with cache param', async () => {

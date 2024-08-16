@@ -727,6 +727,15 @@ async function decorateIcons(area, config) {
   await loadIcons(icons, config);
 }
 
+export async function customFetch({ resource, withCacheRules }) {
+  const options = {};
+  if (withCacheRules) {
+    const params = new URLSearchParams(window.location.search);
+    options.cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  }
+  return fetch(resource, options);
+}
+
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
@@ -748,9 +757,27 @@ async function decoratePlaceholders(area, config) {
     node = walker.nextNode();
   }
   if (!nodes.length) return;
-  const { replaceText } = await import('../features/placeholders.js');
+  const resource = `${config.locale.contentRoot}/placeholders.json`;
+  const [resp, { replaceText }] = await Promise.all([
+    customFetch({ resource, withCacheRules: true }).catch(() => ({})),
+    import('../features/placeholders.js'),
+  ]);
+  const json = resp.ok ? await resp.json() : { data: [] };
+  const placeholders = {};
+  if (json.data) {
+    json.data.forEach((item) => {
+      placeholders[item.key] = item.value;
+    });
+  }
   const replaceNodes = nodes.map(async (textNode) => {
-    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
+    textNode.nodeValue = await replaceText(
+      textNode.nodeValue,
+      config,
+      regex,
+      '',
+      placeholders,
+      resource,
+    );
     textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
   });
   await Promise.all(replaceNodes);
