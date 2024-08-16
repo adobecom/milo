@@ -127,7 +127,7 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
-  
+
   /* z-index */
   --above-all: 9000; /* Used for page tools that overlay page content */
 }
@@ -763,6 +763,16 @@ h5 {
 h6 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
+}
+
+h1:lang(ja),
+h2:lang(ja),
+h3:lang(ja),
+h4:lang(ja),
+h5:lang(ja),
+h6:lang(ja),
+p:lang(ja) {
+  line-break: strict;
 }
 
 /* Links */
