@@ -5,13 +5,11 @@ function checkForIgnoreValues() {
   if (!dynamicNavDisableValues) return false;
 
   const metadataPairsMap = dynamicNavDisableValues.split(',').map((pair) => pair.split(';'));
-  return metadataPairsMap.reduce((rdx, pair) => {
-    const [metadataKey, metadataContent] = pair;
+  return metadataPairsMap.some(([metadataKey, metadataContent]) => {
     const metaTagContent = getMetadata(metadataKey.toLowerCase());
-    if (!metaTagContent
-      || metaTagContent.toLowerCase() !== metadataContent.toLowerCase()) return rdx;
-    return !rdx;
-  }, false);
+    return (metaTagContent
+        && metaTagContent.toLowerCase() !== metadataContent.toLowerCase());
+  });
 }
 
 export default function dynamicNav(url, key) {
