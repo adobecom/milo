@@ -24,7 +24,7 @@
   font-size: 18px;
 }
  
-header.global-navigation {
+header.global-navigation, header.global-navigation.feds--dark {
   height: 64px;
   visibility: hidden;
 }
