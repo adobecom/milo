@@ -336,57 +336,92 @@ function getSelectedElement({ selector, action, rootEl }) {
     } catch (e) {
       return null;
     }
-  } else {
-    MILO_BLOCKS.forEach((block) => {
-      const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
-      const match = regex.exec(modifiedSelector);
-      if (match?.length) {
-        const simplifiedSelector = match[0].replace(/\s+/g, '');
-        const n = simplifiedSelector.match(/\d+/g) || '1';
-        const cleanClassSelector = match[2];
-        const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
-        modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
+  }
+  // const addNthChild = (sel, n) => {
+  // const simplifiedSelectors = {
+  //   'section': (n) => return 
+  //   'row': ,
+  //   'col',
+  //   'primary-cta',
+  //   'secondary-cta',
+  //   'action-area',
+  // }
+  // modifiedSelector = modifiedSelector.split('>').join(' > ');
+  // const selectorArr = modifiedSelector.split(' ');
+  // selectorArr.forEach((fSel, i) => {
+  //   let sel = fSel.trim();
+  //   simplifiedSelectors.forEach((simpleSel) => {
+  //     if (sel.startsWith(simpleSel)) {
+  //       selectorArr[i] = simpleSel;
+  //     }
+  //   });
+  // });
+  const specificSelectors = {
+    section: 'main > div',
+    'primary-cta': 'p strong a',
+    'secondary-cta': 'p em a',
+    'action-area': 'p:has(em a, strong a)',
+  };
+  const otherSelectors = ['row', 'col'];
+  const htmlEls = ['div', 'p', 'strong', 'em', 'picture', 'source', 'img'];
+  const notBlocks = [...otherSelectors, ...Object.keys(specificSelectors), ...htmlEls];
+  const terms = modifiedSelector.split('>').join(' > ').split(/\s+/);
+  modifiedSelector = terms.reduce((selStr, term) => {
+    const { blockName, blockIndex } = getBlockName(term);
+    if (notBlocks.includes(blockName)) {
+      return `${selStr} ${term}`;
+    }
+    return `${selStr} .${blockName}:nth-child(${blockIndex} of .${blockName})`;
+  }, '');
+  MILO_BLOCKS.forEach((block) => {
+    const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
+    const match = regex.exec(modifiedSelector);
+    if (match?.length) {
+      const simplifiedSelector = match[0].replace(/\s+/g, '');
+      const n = simplifiedSelector.match(/\d+/g) || '1';
+      const cleanClassSelector = match[2];
+      const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
+      modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
+    }
+  });
+  ['section', 'row', 'col'].forEach((sel) => {
+    const simplifiedSelectors = modifiedSelector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
+    simplifiedSelectors?.forEach((simplifiedSelector) => {
+      const n = simplifiedSelector.match(/\d+/g) || '1';
+      const cssOptimizedSelector = `> div:nth-of-type(${n})`;
+      modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
+    });
+  });
+  ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
+    const simplifiedSelectors = selector.match(new RegExp(`${sel}`, 'g'));
+    simplifiedSelectors?.forEach((simplifiedSelector) => {
+      switch (true) {
+        case simplifiedSelector.includes('primary-cta'):
+          modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p strong a');
+          break;
+        case simplifiedSelector.includes('secondary-cta'):
+          modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p em a');
+          break;
+        case simplifiedSelector.includes('action-area'):
+          modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p:has(em a, strong a)');
+          break;
+        default: break;
       }
     });
-    ['section', 'row', 'col'].forEach((sel) => {
-      const simplifiedSelectors = modifiedSelector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
-      simplifiedSelectors?.forEach((simplifiedSelector) => {
-        const n = simplifiedSelector.match(/\d+/g) || '1';
-        const cssOptimizedSelector = `> div:nth-of-type(${n})`;
-        modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
-      });
-    });
-    ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
-      const simplifiedSelectors = selector.match(new RegExp(`${sel}`, 'g'));
-      simplifiedSelectors?.forEach((simplifiedSelector) => {
-        switch (true) {
-          case simplifiedSelector.includes('primary-cta'):
-            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p strong a');
-            break;
-          case simplifiedSelector.includes('secondary-cta'):
-            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p em a');
-            break;
-          case simplifiedSelector.includes('action-area'):
-            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p:has(em a, strong a)');
-            break;
-          default: break;
-        }
-      });
-    });
-    const customBlockSelectors = modifiedSelector.match(/\.\w+-?\w+\d+/g);
-    customBlockSelectors?.forEach((customBlockSelector) => {
-      const n = customBlockSelector.match(/\d+/g);
-      const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
-      const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
-      modifiedSelector = modifiedSelector.replace(customBlockSelector, cssOptimizedSelector);
-    });
-    modifiedSelector = rootEl === document ? `body > main ${modifiedSelector}` : `:scope ${selector}`;
-    const element = querySelector(rootEl || document, modifiedSelector);
+  });
+  const customBlockSelectors = modifiedSelector.match(/\.\w+-?\w+\d+/g);
+  customBlockSelectors?.forEach((customBlockSelector) => {
+    const n = customBlockSelector.match(/\d+/g);
+    const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
+    const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
+    modifiedSelector = modifiedSelector.replace(customBlockSelector, cssOptimizedSelector);
+  });
+  modifiedSelector = rootEl === document ? `body > main ${modifiedSelector}` : `:scope ${selector}`;
+  const element = querySelector(rootEl || document, modifiedSelector);
 
-    if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
+  if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
 
-    return element;
-  }
+  return element;
 }
 const addHash = (url, newHash) => {
   if (!newHash) return url;
