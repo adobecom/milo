@@ -80,7 +80,8 @@ function handleClickableCard(el) {
 
 const init = async (el) => {
   el.classList.add('con-block');
-  if (el.className.includes('open')) {
+  const isOpen = el.className.includes('open');
+  if (isOpen) {
     el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
   }
   if (el.className.includes('rounded-corners')) {
@@ -91,7 +92,9 @@ const init = async (el) => {
   const [head, middle, ...tail] = rows;
   if (rows.length === 4) el.classList.add('equal-height');
   if (rows.length >= 1) {
-    const count = rows.length >= 3 ? 'three-plus' : rows.length;
+    let count = rows.length >= 3 ? 'three-plus' : rows.length;
+    // 3 rows + .open (0:media, 1:copy, last:card-footer) = NO BG ROW
+    if (rows.length === 3 && isOpen) count = 2;
     switch (count) {
       case 'three-plus':
         // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:card-footer)
