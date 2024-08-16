@@ -92,28 +92,29 @@ const init = async (el) => {
   const [head, middle, ...tail] = rows;
   if (rows.length === 4) el.classList.add('equal-height');
   if (rows.length >= 1) {
-    let count = rows.length >= 3 ? 'three-plus' : rows.length;
-    // 3 rows + .open (0:media, 1:copy, last:card-footer) = NO BG ROW
-    if (rows.length === 3 && isOpen) count = 2;
+    const count = rows.length >= 4 ? 'four-plus' : rows.length;
     switch (count) {
-      case 'three-plus':
-        // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:card-footer)
+      case 'four-plus':
+        // 4+ rows (0:bg, 1:media, 2:copy, ...3:static, last:card-footer)
         decorateBgRow(el, head);
         rows = tail;
         await decorateForeground(el, rows);
         decorateMedia(el, middle);
         break;
       case 2:
+      case 3:
         // 2 rows (0:media, 1:copy)
-        rows = middle;
-        await decorateForeground(el, [rows]);
+        // 3 rows (0:media, 1:copy, last:card-footer)
+        rows = [middle];
+        if (count === 3) rows = [middle, tail[0]];
+        await decorateForeground(el, rows);
         decorateMedia(el, head);
         el.classList.add('no-bg');
         break;
       case 1:
         // 1 row  (0:copy)
-        rows = head;
-        await decorateForeground(el, [rows]);
+        rows = [head];
+        await decorateForeground(el, rows);
         el.classList.add('no-bg', 'no-media');
         break;
       default:
