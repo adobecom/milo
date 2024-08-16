@@ -738,11 +738,13 @@ export async function customFetch({ resource, withCacheRules }) {
 
 async function decoratePlaceholders(area, config) {
   const placeholderPath = `${config?.locale?.contentRoot}/placeholders.json`;
+  let resolve;
+  window.tempPlaceholders = { placeholderPath: new Promise((r) => { resolve = r; }) };
   const [placeholderResponse, { decorateArea }] = await Promise.all([
     customFetch({ resource: placeholderPath, withCacheRules: true }).catch(() => ({})),
     import('../features/placeholders.js'),
   ]);
-  await decorateArea({ area, placeholderResponse, placeholderPath });
+  await decorateArea({ area, placeholderResponse, placeholderPath, resolve });
 }
 
 async function loadFooter() {

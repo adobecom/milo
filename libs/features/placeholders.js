@@ -1,6 +1,7 @@
 import { customFetch, getConfig } from '../utils/utils.js';
 
-const fetchedPlaceholders = {};
+const fetchedPlaceholders = window.tempPlaceholders || {};
+delete window.tempPlaceholders;
 const defaultRegex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
 const getPlaceholdersPath = (config, sheet) => {
@@ -151,11 +152,12 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
-export async function decorateArea({ area, placeholderResponse, placeholderPath }) {
+export async function decorateArea({ area, placeholderResponse, placeholderPath, resolve }) {
   const config = getConfig();
   const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
-  await processPlaceholderResponse(placeholderResponse, placeholderPath);
+  const placeholders = await processPlaceholderResponse(placeholderResponse, placeholderPath);
+  resolve(placeholders);
   const replaceNodes = nodes.map(async (textNode) => {
     textNode.nodeValue = await replaceText(
       textNode.nodeValue,
