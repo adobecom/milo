@@ -426,11 +426,11 @@ describe('global footer', () => {
   describe('dark mode footer', async () => {
     it('should not contain dark theme class if dark theme is not configured', async () => {
       await createFullGlobalFooter({ waitForDecoration: true });
-      expect(document.querySelector('footer').classList.contains('darknav')).to.be.false;
+      expect(document.querySelector('footer').classList.contains('feds--dark')).to.be.false;
     });
     it('should contain dark theme class if dark theme is configured', async () => {
       await createFullGlobalFooter({ waitForDecoration: true, customConfig: { theme: 'dark' } });
-      expect(document.querySelector('footer').classList.contains('darknav')).to.be.true;
+      expect(document.querySelector('footer').classList.contains('feds--dark')).to.be.true;
     });
   });
 });

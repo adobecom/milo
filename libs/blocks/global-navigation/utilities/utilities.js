@@ -170,9 +170,13 @@ export function isDarkMode() {
 // since they can be independent of each other.
 // CSS imports were not used due to duplication of file include
 export async function loadBaseStyles() {
-  const url = rootPath('base.css');
-  await loadStyles(url);
-  if (isDarkMode()) await loadStyles(rootPath('dark-nav.css'));
+  if (isDarkMode()) {
+    new Promise((resolve) => { loadStyle(rootPath('base.css'), resolve); })
+      .then(() => loadStyles(rootPath('dark-nav.css')));
+  } else {
+    const url = rootPath('base.css');
+    await loadStyles(url);
+  }
 }
 
 export function loadBlock(path) {
