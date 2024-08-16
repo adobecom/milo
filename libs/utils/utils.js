@@ -736,15 +736,40 @@ export async function customFetch({ resource, withCacheRules }) {
   return fetch(resource, options);
 }
 
+const findReplaceableNodes = (area) => {
+  const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
+  const el = area.querySelector('main') || area;
+  const walker = document.createTreeWalker(
+    el,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(node) {
+        const a = regex.test(node.nodeValue)
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT;
+        regex.lastIndex = 0;
+        return a;
+      },
+    },
+  );
+  const nodes = [];
+  let node = walker.nextNode();
+  while (node !== null) {
+    nodes.push(node);
+    node = walker.nextNode();
+  }
+  return nodes;
+};
+
 async function decoratePlaceholders(area, config) {
+  const nodes = findReplaceableNodes(area);
+  console.log(nodes);
+  if (!nodes.length) return;
   const placeholderPath = `${config?.locale?.contentRoot}/placeholders.json`;
-  let resolve;
-  window.tempPlaceholders = { placeholderPath: new Promise((r) => { resolve = r; }) };
-  const [placeholderResponse, { decorateArea }] = await Promise.all([
-    customFetch({ resource: placeholderPath, withCacheRules: true }).catch(() => ({})),
-    import('../features/placeholders.js'),
-  ]);
-  await decorateArea({ area, placeholderResponse, placeholderPath, resolve });
+  const placeholderRequest = customFetch({ resource: placeholderPath, withCacheRules: true })
+    .catch(() => ({}));
+  await import('../features/placeholders.js')
+    .then(({ decorateArea }) => decorateArea({ placeholderPath, placeholderRequest, nodes }));
 }
 
 async function loadFooter() {
@@ -1202,8 +1227,6 @@ export async function loadArea(area = document) {
   }
   const config = getConfig();
 
-  await decoratePlaceholders(area, config);
-
   if (isDoc) {
     decorateDocumentExtras();
   }
@@ -1219,6 +1242,7 @@ export async function loadArea(area = document) {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
+  await decoratePlaceholders(area, config);
 
   const currentHash = window.location.hash;
   if (currentHash) {

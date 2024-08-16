@@ -1,8 +1,6 @@
 import { customFetch, getConfig } from '../utils/utils.js';
 
-const fetchedPlaceholders = window.tempPlaceholders || {};
-delete window.tempPlaceholders;
-const defaultRegex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
+const fetchedPlaceholders = {};
 
 const getPlaceholdersPath = (config, sheet) => {
   const path = `${config.locale.contentRoot}/placeholders.json`;
@@ -21,12 +19,12 @@ const processPlaceholderResponse = async (resp, path) => {
   return placeholders;
 };
 
-const fetchPlaceholders = async (config, sheet) => {
-  const path = getPlaceholdersPath(config, sheet);
+const fetchPlaceholders = async ({ config, sheet, placeholderRequest, placeholderPath }) => {
+  const path = placeholderPath || getPlaceholdersPath(config, sheet);
   fetchedPlaceholders[path] = fetchedPlaceholders[path]
     // eslint-disable-next-line no-async-promise-executor
     || new Promise(async (resolve) => {
-      const resp = await customFetch({ resource: path, withCacheRules: true })
+      const resp = placeholderRequest || await customFetch({ resource: path, withCacheRules: true })
         .catch(() => ({}));
       const placeholders = await processPlaceholderResponse(resp, path);
       resolve(placeholders);
@@ -65,7 +63,7 @@ async function getPlaceholder(key, config, sheet) {
       },
     };
 
-    const defaultPlaceholders = await fetchPlaceholders(defaultConfig, sheet)
+    const defaultPlaceholders = await fetchPlaceholders({ config: defaultConfig, sheet })
       .catch(() => ({}));
     defaultFetched = true;
     return defaultPlaceholders;
@@ -73,7 +71,7 @@ async function getPlaceholder(key, config, sheet) {
 
   if (config.placeholders?.[key]) return config.placeholders[key];
 
-  const placeholders = await fetchPlaceholders(config, sheet).catch(async () => {
+  const placeholders = await fetchPlaceholders({ config, sheet }).catch(async () => {
     const defaultPlaceholders = await getDefaultPlaceholders();
     return defaultPlaceholders;
   });
@@ -110,7 +108,7 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
 export async function replaceText(
   text,
   config,
-  regex = defaultRegex,
+  regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g,
   sheet = 'default',
 ) {
   if (typeof text !== 'string' || !text.length) return '';
@@ -128,36 +126,11 @@ export async function replaceText(
   return finalText;
 }
 
-const findReplaceableNodes = (area) => {
-  const el = area.querySelector('main') || area;
-  const walker = document.createTreeWalker(
-    el,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        const a = defaultRegex.test(node.nodeValue)
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_REJECT;
-        defaultRegex.lastIndex = 0;
-        return a;
-      },
-    },
-  );
-  const nodes = [];
-  let node = walker.nextNode();
-  while (node !== null) {
-    nodes.push(node);
-    node = walker.nextNode();
-  }
-  return nodes;
-};
-
-export async function decorateArea({ area, placeholderResponse, placeholderPath, resolve }) {
+export async function decorateArea({ placeholderPath, placeholderRequest, nodes }) {
   const config = getConfig();
-  const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
-  const placeholders = await processPlaceholderResponse(placeholderResponse, placeholderPath);
-  resolve(placeholders);
+  await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
+  console.log(fetchedPlaceholders);
   const replaceNodes = nodes.map(async (textNode) => {
     textNode.nodeValue = await replaceText(
       textNode.nodeValue,
