@@ -8,7 +8,7 @@ function checkForIgnoreValues() {
   return metadataPairsMap.some(([metadataKey, metadataContent]) => {
     const metaTagContent = getMetadata(metadataKey.toLowerCase());
     return (metaTagContent
-        && metaTagContent.toLowerCase() !== metadataContent.toLowerCase());
+        && metaTagContent.toLowerCase() === metadataContent.toLowerCase());
   });
 }
 
