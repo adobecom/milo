@@ -178,11 +178,11 @@
     color: var(--feds-color-headline);
   }
   
-  .feds--dark .feds-promo--dark .feds-promo-link {
+  .feds--dark .feds-promo-link {
     color: var(--feds-color-blue-link);
   }
 
-  .feds--dark .feds-promo--dark .feds-promo-link:hover {
+  .feds--dark .feds-promo-link:hover {
     color: var(--feds-color-link--hover);
   }
 }
