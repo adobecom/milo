@@ -762,13 +762,13 @@ const findReplaceableNodes = (area) => {
 };
 
 async function decoratePlaceholders(area, config) {
+  console.log(area);
   const nodes = findReplaceableNodes(area);
-  console.log(nodes);
   if (!nodes.length) return;
   const placeholderPath = `${config?.locale?.contentRoot}/placeholders.json`;
   const placeholderRequest = customFetch({ resource: placeholderPath, withCacheRules: true })
     .catch(() => ({}));
-  await import('../features/placeholders.js')
+  return import('../features/placeholders.js')
     .then(({ decorateArea }) => decorateArea({ placeholderPath, placeholderRequest, nodes }));
 }
 
@@ -1186,11 +1186,11 @@ async function processSection(section, config, isDoc) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
     await Promise.all(fragPromises);
-    await decoratePlaceholders(section.el, config);
     const newlyDecoratedSection = decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;
   }
+  await decoratePlaceholders(section.el, config);
 
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
@@ -1242,7 +1242,6 @@ export async function loadArea(area = document) {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
-  await decoratePlaceholders(area, config);
 
   const currentHash = window.location.hash;
   if (currentHash) {
