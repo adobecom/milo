@@ -1,13 +1,6 @@
 import { html, LitElement, nothing } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 
-import {
-    ARROW_DOWN,
-    ARROW_LEFT,
-    ARROW_RIGHT,
-    ARROW_UP,
-    ENTER,
-} from './focus.js';
 import './global.css.js';
 import {
     EVENT_MERCH_CARD_READY,
