@@ -90,7 +90,7 @@ const init = async (el) => {
   if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
-  if (rows.length === 4) el.classList.add('equal-height');
+  if (rows.length === 3) el.classList.add('equal-height');
   if (rows.length >= 1) {
     const count = rows.length >= 4 ? 'four-plus' : rows.length;
     switch (count) {
