@@ -130,7 +130,6 @@ export async function decorateArea({ placeholderPath, placeholderRequest, nodes 
   const config = getConfig();
   if (!nodes.length) return;
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
-  console.log(fetchedPlaceholders);
   const replaceNodes = nodes.map(async (textNode) => {
     textNode.nodeValue = await replaceText(
       textNode.nodeValue,

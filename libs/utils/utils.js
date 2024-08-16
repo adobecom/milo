@@ -999,6 +999,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  decoratePlaceholders(document, config);
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
