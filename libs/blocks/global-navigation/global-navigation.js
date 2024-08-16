@@ -1037,7 +1037,7 @@ export default async function init(block) {
     block.setAttribute('daa-im', 'true');
     const mepMartech = mep?.martech || '';
     block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
-    if (isDarkMode()) block.classList.add('darknav');
+    if (isDarkMode()) block.classList.add('feds--dark');
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });

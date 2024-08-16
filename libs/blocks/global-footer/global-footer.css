@@ -4,7 +4,7 @@
   display: flex;
   justify-content: center;
   font-size: 12px;
-  background: var(--feds-background-footer--light);
+  background: var(--feds-background-footer);
 }
 
 .global-footer ul {
@@ -26,7 +26,7 @@
   display: flex;
   flex-direction: column;
   row-gap: 30px;
-  color: var(--feds-color-headline--light);
+  color: var(--feds-color-headline);
 }
 
 .feds-footer-wrapper ul {
@@ -65,7 +65,7 @@
   margin: 0 var(--feds-gutter-footer);
   border-width: 1px 0 1px 0;
   border-style: solid;
-  border-color: var(--feds-borderColor-featuredProducts--light);
+  border-color: var(--feds-borderColor-featuredProducts);
 }
 
 .feds-featuredProducts-label {
@@ -99,15 +99,15 @@
 /* Region picker */
 .feds-regionPicker {
   column-gap: 10px;
-  color: var(--feds-color-link--light);
-  border-color: var(--feds-color-link--light);
-  fill: var(--feds-color-link--light);
+  color: var(--feds-color-link);
+  border-color: var(--feds-color-link);
+  fill: var(--feds-color-link);
 }
 
 .feds-regionPicker:hover {
-  color: var(--feds-color-link--hover--light);
-  border-color: var(--feds-color-link--hover--light);
-  fill: var(--feds-color-link--hover--light);
+  color: var(--feds-color-link--hover);
+  border-color: var(--feds-color-link--hover);
+  fill: var(--feds-color-link--hover);
 }
 
 .feds-regionPicker:after {
@@ -145,8 +145,8 @@
   min-width: 130px;
   max-height: 300px;
   overflow-y: auto;
-  background: var(--feds-background-nav--light);
-  border: 1px solid var(--feds-color-border--light);
+  background: var(--feds-background-nav);
+  border: 1px solid var(--feds-borderColor);
   border-radius: 4px;
 }
 
@@ -186,11 +186,11 @@
   padding: 0 20px;
   display: block;
   line-height: 2;
-  color: var(--feds-color-link--hover--light);
+  color: var(--feds-color-link--hover);
 }
 
 .feds-regionPicker-wrapper > .fragment a:hover {
-  background: var(--feds-background-link--hover--light);
+  background: var(--feds-background-link--hover);
 }
 
 /* Social */
@@ -234,13 +234,13 @@
   display: flex;
   column-gap: 5px;
   align-items: center;
-  color: var(--feds-color-link--light);
-  fill: var(--feds-color-link--light);
+  color: var(--feds-color-link);
+  fill: var(--feds-color-link);
 }
 
 .feds-footer-privacyLink:hover {
-  color: var(--feds-color-link--hover--light);
-  fill: var(--feds-color-link--hover--light);
+  color: var(--feds-color-link--hover);
+  fill: var(--feds-color-link--hover);
 }
 
 .feds-adChoices-icon {

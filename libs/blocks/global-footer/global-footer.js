@@ -371,7 +371,7 @@ class Footer {
 export default function init(block) {
   try {
     const footer = new Footer({ block });
-    if (isDarkMode()) block.classList.add('darknav');
+    if (isDarkMode()) block.classList.add('feds--dark');
     return footer;
   } catch (e) {
     lanaLog({ message: 'Could not create footer', e });
