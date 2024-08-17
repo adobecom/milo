@@ -1,4 +1,6 @@
-import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
+import {
+  getConfig, getMetadata, loadIms, loadLink, loadScript, getMepEnablement,
+} from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
@@ -178,11 +180,15 @@ const loadMartechFiles = async (config) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
-    loadIms()
-      .then(() => {
-        if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
-      })
-      .catch(() => {});
+    if (getMepEnablement('xlg') === 'loggedout') {
+      setupEntitlementCallback();
+    } else {
+      loadIms()
+        .then(() => {
+          if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
+        })
+        .catch(() => {});
+    }
 
     setDeep(
       window,
