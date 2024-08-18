@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 import {
-  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig, MILO_BLOCKS,
+  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
 } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
@@ -134,9 +134,12 @@ const CREATE_CMDS = {
 const COMMANDS_KEYS = {
   remove: 'remove',
   replace: 'replace',
-  update: 'update',
 };
 
+function isFrag(str) {
+  const strLower = str.toLowerCase();
+  return (strLower.includes('/fragments/') && (strLower.startsWith('/') || strLower.startsWith('http')));
+}
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: ({ el, target, manifestId }) => {
     if (target === 'false') return;
@@ -146,20 +149,18 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  [COMMANDS_KEYS.replace]: ({ el, target, manifestId, targetManifestId }) => {
+  [COMMANDS_KEYS.replace]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
-    el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
-  },
-  [COMMANDS_KEYS.update]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
-    if (!el) return;
-    if (modifiers.includes('href')) {
-      el.href = target;
+    if (isFrag(target)) {
+      el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
+      el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
     } else {
-      el.innerHTML = target;
+      if (modifiers.includes('href')) el.href = target;
+      else el.innerHTML = target;
+
+      if (manifestId) el.dataset.manifestId = manifestId;
+      if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
     }
-    if (manifestId) el.dataset.manifestId = manifestId;
-    if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   },
 };
 
@@ -337,25 +338,7 @@ function getSelectedElement({ selector, action, rootEl }) {
       return null;
     }
   }
-  // const addNthChild = (sel, n) => {
-  // const simplifiedSelectors = {
-  //   'section': (n) => return 
-  //   'row': ,
-  //   'col',
-  //   'primary-cta',
-  //   'secondary-cta',
-  //   'action-area',
-  // }
-  // modifiedSelector = modifiedSelector.split('>').join(' > ');
-  // const selectorArr = modifiedSelector.split(' ');
-  // selectorArr.forEach((fSel, i) => {
-  //   let sel = fSel.trim();
-  //   simplifiedSelectors.forEach((simpleSel) => {
-  //     if (sel.startsWith(simpleSel)) {
-  //       selectorArr[i] = simpleSel;
-  //     }
-  //   });
-  // });
+
   const specificSelectors = {
     section: 'main > div',
     'primary-cta': 'p strong a',
@@ -363,64 +346,43 @@ function getSelectedElement({ selector, action, rootEl }) {
     'action-area': 'p:has(em a, strong a)',
   };
   const otherSelectors = ['row', 'col'];
-  const htmlEls = ['div', 'p', 'strong', 'em', 'picture', 'source', 'img'];
-  const notBlocks = [...otherSelectors, ...Object.keys(specificSelectors), ...htmlEls];
-  const terms = modifiedSelector.split('>').join(' > ').split(/\s+/);
-  modifiedSelector = terms.reduce((selStr, term) => {
-    const { blockName, blockIndex } = getBlockName(term);
-    if (notBlocks.includes(blockName)) {
-      return `${selStr} ${term}`;
-    }
-    return `${selStr} .${blockName}:nth-child(${blockIndex} of .${blockName})`;
-  }, '');
-  MILO_BLOCKS.forEach((block) => {
-    const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
-    const match = regex.exec(modifiedSelector);
-    if (match?.length) {
-      const simplifiedSelector = match[0].replace(/\s+/g, '');
-      const n = simplifiedSelector.match(/\d+/g) || '1';
-      const cleanClassSelector = match[2];
-      const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
-      modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
-    }
-  });
-  ['section', 'row', 'col'].forEach((sel) => {
-    const simplifiedSelectors = modifiedSelector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
-    simplifiedSelectors?.forEach((simplifiedSelector) => {
-      const n = simplifiedSelector.match(/\d+/g) || '1';
-      const cssOptimizedSelector = `> div:nth-of-type(${n})`;
-      modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
-    });
-  });
-  ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
-    const simplifiedSelectors = selector.match(new RegExp(`${sel}`, 'g'));
-    simplifiedSelectors?.forEach((simplifiedSelector) => {
-      switch (true) {
-        case simplifiedSelector.includes('primary-cta'):
-          modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p strong a');
-          break;
-        case simplifiedSelector.includes('secondary-cta'):
-          modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p em a');
-          break;
-        case simplifiedSelector.includes('action-area'):
-          modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p:has(em a, strong a)');
-          break;
-        default: break;
+  const htmlEls = ['div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
+  const conditions = modifiedSelector.split(',');
+  conditions.forEach((condition, i) => {
+    const terms = condition.split('>').join(' > ').split(/\s+/);
+    terms.forEach((term, j) => {
+      const prefix = term.match(/^[a-zA-Z/-]*/)[0]?.toLowerCase();
+      const suffix = term.match(/[0-9]*$/)[0];
+      if (!prefix || htmlEls.includes(prefix)) return term;
+      if (prefix === 'main'
+        && (terms[j + 1].toLowerCase().startsWith('section')
+        || terms[j + 2].toLowerCase().startsWith('section'))) {
+        if (terms[j + 1] === '>') terms[j + 1] = '';
+        terms[j] = '';
+        return '';
       }
+      let modifiedTerm = term;
+      if (otherSelectors.includes(prefix) || Object.keys(specificSelectors).includes(prefix)) {
+        if (otherSelectors.includes(prefix)) modifiedTerm = modifiedTerm.replace(prefix, '> div');
+        else modifiedTerm = modifiedTerm.replace(prefix, specificSelectors[prefix]);
+        if (suffix) modifiedTerm = modifiedTerm.replace(suffix, `:nth-child(${suffix})`);
+        terms[j] = modifiedTerm;
+        return modifiedTerm;
+      }
+      if (suffix) {
+        modifiedTerm = modifiedTerm.replace(suffix, `:nth-child(${suffix} of .${prefix})`);
+      }
+      terms[j] = `.${modifiedTerm}`;
+      return `.${modifiedTerm}`;
     });
+    conditions[i] = terms.join(' ');
+    return terms.join(' ');
   });
-  const customBlockSelectors = modifiedSelector.match(/\.\w+-?\w+\d+/g);
-  customBlockSelectors?.forEach((customBlockSelector) => {
-    const n = customBlockSelector.match(/\d+/g);
-    const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
-    const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
-    modifiedSelector = modifiedSelector.replace(customBlockSelector, cssOptimizedSelector);
-  });
-  modifiedSelector = rootEl === document ? `body > main ${modifiedSelector}` : `:scope ${selector}`;
+  modifiedSelector = conditions.join(',');
+  console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
   const element = querySelector(rootEl || document, modifiedSelector);
 
   if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
-
   return element;
 }
 const addHash = (url, newHash) => {
@@ -468,10 +430,13 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
       COMMANDS[action]({ el, target, manifestId, targetManifestId, modifiers });
       return;
     }
-    el?.insertAdjacentElement(
-      CREATE_CMDS[action],
-      createFrag(el, target, manifestId, targetManifestId),
-    );
+    const content = createFrag(el, target, manifestId, targetManifestId);
+    if (!isFrag(target)) {
+      content.innerHTML = target;
+      if (manifestId) content.dataset.manifestId = manifestId;
+      if (targetManifestId) content.dataset.adobeTargetTestid = targetManifestId;
+    }
+    el?.insertAdjacentElement(CREATE_CMDS[action], content);
   });
 }
 
