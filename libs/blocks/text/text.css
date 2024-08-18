@@ -73,6 +73,28 @@
   margin: var(--spacing-m) 0;
 }
 
+.text-block .title-l {
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+  font-weight: bold;
+  text-transform: none;
+  margin-bottom: var(--spacing-xs);
+}
+
+.text-block :is(.img-area, .lockup-area) {
+  margin-block-end: var(--spacing-m);
+}
+
+.text-block.rounded-corners .img-area img {
+  border-radius: 16px;
+}
+
+.text-block .img-area em {
+  display: block;
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+
 .text-block .icon-list-item {
   list-style: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E"); /* Must not be `none` for accessibility */
   position: relative;

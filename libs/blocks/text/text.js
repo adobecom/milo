@@ -38,6 +38,12 @@ function decorateMultiViewport(el) {
 
 function decorateBlockIconArea(el) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const first = el.querySelector('.foreground > div :first-child');
+  const firstImg = first?.querySelector('img');
+  if (firstImg) {
+    first.classList.add(`${el.matches('[class*="-lockup"]') ? 'lockup' : 'img'}-area`);
+    if (el.matches('.show-alt')) first.appendChild(createTag('p', { class: 'alt' }, 'foo'));
+  }
   if (!headings) return;
   headings.forEach((h) => {
     const hPrevElem = h.previousElementSibling;
@@ -124,4 +130,6 @@ export default async function init(el) {
     mnemonicList.querySelectorAll('p').forEach((product) => product.removeAttribute('class'));
     await loadBlock(mnemonicList);
   }
+  // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
+  if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
 }
