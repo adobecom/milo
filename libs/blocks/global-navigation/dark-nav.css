@@ -237,7 +237,16 @@
 }
 
 .dialog-modal .region-nav {
+  color: var(--feds-color-link);
   background-color: var(--feds-background-popup);
+}
+
+.dialog-modal .region-nav a {
+  color: var(--feds-color-blue-link);
+}
+
+.dialog-modal .region-nav a:hover {
+  text-decoration: underline;
 }
 
 header.global-navigation.feds--dark {
