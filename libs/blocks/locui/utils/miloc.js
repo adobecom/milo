@@ -56,7 +56,7 @@ function showAuthError(operation) {
     'service',
     'error',
     `You do not have access to ${operation}.`,
-    'Please refresh page, login to sidekick and retry.'
+    'Please refresh page, login to sidekick and retry.',
   );
 }
 
