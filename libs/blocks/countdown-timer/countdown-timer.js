@@ -10,3 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+
+export default function init(el) {
+  console.log(el);
+}
