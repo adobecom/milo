@@ -56,7 +56,8 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
     if (headings) {
       headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
-        headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
+        const prevSib = headings[0]?.previousElementSibling;
+        prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
         decorateIconArea(el);
       }
     }
