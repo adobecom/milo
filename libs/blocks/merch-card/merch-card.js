@@ -430,6 +430,9 @@ export default async function init(el) {
   const merchCard = createTag('merch-card', { class: styles.join(' '), 'data-block': '' });
   merchCard.setAttribute('variant', cardType);
   merchCard.setAttribute('size', styles.find((style) => CARD_SIZES.includes(style)) || '');
+  if (styles.includes('share')) {
+    merchCard.setAttribute('share', 'twitter,facebook');
+  }
   if (el.dataset.removedManifestId) {
     merchCard.dataset.removedManifestId = el.dataset.removedManifestId;
   }

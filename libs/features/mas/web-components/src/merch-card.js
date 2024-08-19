@@ -169,7 +169,7 @@ export class MerchCard extends LitElement {
                   >${this.secureLabel}</span
               >`
             : '';
-        return html`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+        return html`<footer>${secureLabel} ${this.shareButton} <slot name="footer"></slot></footer>`;
     }
 
     get miniCompareFooter() {
@@ -304,6 +304,11 @@ export class MerchCard extends LitElement {
         return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
     }
 
+    get descriptionText() {
+      return Array.from(this.querySelector('[slot="body-xs"]')?.children)
+      .find(el => el.childNodes.length && el.childNodes[0].nodeName==='#text')?.textContent || '';
+    }
+
     /**
      * If the card is the single app, set the order for all filters to 2.
      * If not, increment the order for all filters after the second card by 1.
@@ -331,7 +336,8 @@ export class MerchCard extends LitElement {
 
     _shareTwitter(e) {
       e?.preventDefault();
-      const shareHref = 'https://twitter.com/intent/tweet?text=Hello%20world';
+      const description = encodeURIComponent(this.descriptionText);
+      const shareHref = `https://twitter.com/intent/tweet?text=${description}&url=${window.location.href}`;
       window.open(shareHref, 'newwindow', 'width=600, height=400');
     }
 
@@ -340,7 +346,9 @@ export class MerchCard extends LitElement {
         return html``;
       }
       //const twitter = document
-      return html`<a id="share" href="" @click="${this._shareTwitter}">S</a>`;
+      return html`
+      <a id="share" class="share" href="" @click="${this._shareTwitter}">S</a>
+      `;
     }
 
     render() {
@@ -413,7 +421,6 @@ export class MerchCard extends LitElement {
 
     renderPlans() {
         return html` 
-            ${this.shareButton}
             ${this.badge}
             <div class="body">
                 <slot name="icons"></slot>

@@ -221,6 +221,16 @@ export const styles = css`
         background-size: contain;
     }
 
+    .share {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background:  var(--share-icon) no-repeat;
+      background-size: contain;
+      background-repeat: no-repeat;
+      text-indent: -9999px; /* Hides the text inside the anchor */
+    }
+
     .checkbox-container {
         display: flex;
         align-items: center;
