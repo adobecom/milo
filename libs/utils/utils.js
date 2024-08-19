@@ -929,7 +929,7 @@ async function checkForPageMods() {
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = getMepEnablement('target');
-  if (!(pzn || target || promo || mepParam
+  if (!(pzn || target === true || promo || mepParam
     || mepHighlight || mepButton || mepParam === '')) return;
   if (target === true) {
     loadMartech();
