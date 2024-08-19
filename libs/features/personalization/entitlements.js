@@ -22,6 +22,7 @@ const ENTITLEMENT_MAP = {
   'fc2d5b34-fa75-4e80-9f23-7d4b40bcfc9b': 'cc-paid',
   'c6927505-97b3-4655-995a-6452630fa9cb': 'fresco-any',
   'e82be3ab-1fbc-4410-a099-af6ac6d5dffe': 'cc-paid-no-stock',
+  '08691170-f6d6-46c7-9f3c-543d7761b64a': 'free-no-trial-loggedin-today',
 
   // PEP segments
   '6cb0d58c-3a65-47e2-b459-c52bb158d5b6': 'lightroom-web-usage',
