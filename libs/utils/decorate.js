@@ -193,7 +193,7 @@ export function getVideoAttrs(hash, dataset) {
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
   const playInViewport = hash?.includes('viewportplay');
-  const poster = getImgSrc(dataset.videoPoster) || '';
+  const poster = dataset?.videoPoster ? getImgSrc(dataset.videoPoster) : '';
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
