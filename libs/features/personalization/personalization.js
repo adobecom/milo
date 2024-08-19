@@ -127,7 +127,7 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
   if (action === 'replace') {
     addManifestAndTargetId(el, manifestId, targetManifestId);
   }
-  if (el?.parentElement.nodeName === 'A' && modifiers?.includes('href')) {
+  if (el?.nodeName === 'A' && modifiers?.includes('href')) {
     if (action === 'replace') el.href = content;
     else if (action === 'insertafter' || action === 'append') el.href = `${el.href}${content}`;
     else if (action === 'insertbefore' || action === 'prepend') el.href = `${content}${el.href}`;
