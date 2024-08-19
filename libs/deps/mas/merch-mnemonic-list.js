@@ -1,4 +1,4 @@
-import{html as e,css as i,LitElement as s}from"../lit-all.min.js";var t=class extends s{static styles=i`
+import{html as e,css as i,LitElement as s}from"/libs/deps/lit-all.min.js";var t=class extends s{static styles=i`
         :host {
             display: flex;
             flex-direction: row;
