@@ -1,4 +1,4 @@
-import{html as e,css as o,LitElement as l}from"/libs/deps/lit-all.min.js";var t=class extends l{static styles=o`
+import{html as e,css as o,LitElement as l}from"../lit-all.min.js";var t=class extends l{static styles=o`
         :host {
             display: inline-grid;
             place-items: end start;

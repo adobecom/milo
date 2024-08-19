@@ -1,4 +1,4 @@
-import{LitElement as r,html as e,css as s}from"/libs/deps/lit-all.min.js";var t=class extends r{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:i}=this;return i?e`<a href="${i}">
+import{LitElement as r,html as e,css as s}from"../lit-all.min.js";var t=class extends r{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:i}=this;return i?e`<a href="${i}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:e` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=s`
         :host {
