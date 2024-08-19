@@ -1,4 +1,4 @@
-import { createTag, createIntersectionObserver } from './utils.js';
+import { createTag } from './utils.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -56,7 +56,8 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
     if (headings) {
       headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
-        headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
+        const prevSib = headings[0]?.previousElementSibling;
+        prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
         decorateIconArea(el);
       }
     }
@@ -229,7 +230,7 @@ export function handleObjectFit(bgRow) {
   });
 }
 
-function getVideoIntersectionObserver() {
+export function getVideoIntersectionObserver() {
   if (!window?.videoIntersectionObs) {
     window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -250,7 +251,7 @@ function getVideoIntersectionObserver() {
   return window.videoIntersectionObs;
 }
 
-function applyInViewPortPlay(video) {
+export function applyInViewPortPlay(video) {
   if (!video) return;
   if (video.hasAttribute('data-play-viewport')) {
     const observer = getVideoIntersectionObserver();
@@ -259,22 +260,4 @@ function applyInViewPortPlay(video) {
     });
     observer.observe(video);
   }
-}
-
-export function turnAnchorIntoVideo({ hash, src, anchorTag }) {
-  const { dataset, parentElement } = anchorTag;
-  const attrs = getVideoAttrs(hash, dataset);
-  const video = `<video ${attrs}></video>`;
-  anchorTag.insertAdjacentHTML('afterend', video);
-  const videoEl = parentElement.querySelector('video');
-  createIntersectionObserver({
-    el: parentElement,
-    options: { rootMargin: '1000px' },
-    callback: () => {
-      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
-    },
-  });
-  applyHoverPlay(videoEl);
-  applyInViewPortPlay(videoEl);
-  anchorTag.remove();
 }

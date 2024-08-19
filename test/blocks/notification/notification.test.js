@@ -9,12 +9,14 @@ setConfig(conf);
 const mockBody = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/notification/notification.js');
 
-describe('notification', () => {
+describe('notification', async () => {
   let notifs;
-  beforeEach(() => {
+  beforeEach(async () => {
     document.body.innerHTML = mockBody;
     notifs = document.querySelectorAll('.notification');
-    notifs.forEach((notif) => init(notif));
+    notifs.forEach(async (notif) => {
+      await init(notif);
+    });
   });
 
   afterEach(() => {
