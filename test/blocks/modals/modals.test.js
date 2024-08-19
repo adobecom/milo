@@ -196,7 +196,10 @@ describe('Modals', () => {
 
   it('validates and returns proper hash parameters', () => {
     expect(getHashParams()).to.deep.equal({});
-    expect(getHashParams('#delayed-modal:delay=0')).to.deep.equal({ hash: '#delayed-modal' });
+    expect(getHashParams('#delayed-modal:delay=0')).to.deep.equal({
+      delay: 0,
+      hash: '#delayed-modal',
+    });
     expect(getHashParams('#delayed-modal:delay=1')).to.deep.equal({
       delay: 1000,
       hash: '#delayed-modal',
