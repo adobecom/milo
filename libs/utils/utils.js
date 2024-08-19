@@ -140,7 +140,6 @@ ENVS.local = {
 
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
-const MOBILE_SIZE = 600;
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
@@ -520,21 +519,6 @@ export function decorateSVG(a) {
   }
 }
 
-function defineDeviceByScreenSize() {
-  const screenWidth = window.innerWidth;
-  if (screenWidth <= MOBILE_SIZE) {
-    return 'mobile';
-  }
-  return 'desktop';
-}
-
-export function getImgSrc(pic) {
-  let source = '';
-  if (defineDeviceByScreenSize() === 'mobile') source = pic.querySelector('source[type="image/webp"]:not([media])');
-  else source = pic.querySelector('source[type="image/webp"][media]');
-  return source.srcset;
-}
-
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
@@ -547,7 +531,7 @@ export function decorateImageLinks(el) {
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
       if (href.includes('.mp4')) {
-        const a = createTag('a', { href: url, 'data-video-poster': getImgSrc(picParent) });
+        const a = createTag('a', { href: url, 'data-video-poster': pic.outerHTML });
         a.innerHTML = url;
         pic.replaceWith(a);
       } else {
