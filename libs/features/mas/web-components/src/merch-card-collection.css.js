@@ -14,6 +14,10 @@ export const styles = css`
         display: contents;
     }
 
+    sp-action-menu {
+      z-index: 1;
+    }
+
     #header {
         order: -2;
         display: grid;

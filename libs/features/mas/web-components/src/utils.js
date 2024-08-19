@@ -155,3 +155,19 @@ export function createTag(tag, attributes = {}, innerHTML) {
     }
     return element;
 }
+
+/**
+ * Checks if the current device is mobile based on the screen width.
+ * @returns {boolean} True if the device is mobile, otherwise false.
+ */
+export function isMobile() {
+  return window.matchMedia('(max-width: 767px)').matches;
+}
+
+/**
+ * Checks if the current device is mobile or tablet based on the screen width.
+ * @returns {boolean} True if the device is mobile, otherwise false.
+ */
+export function isMobileOrTablet() {
+  return window.matchMedia('(max-width: 1024px)').matches;
+}
