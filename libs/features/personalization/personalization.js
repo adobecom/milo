@@ -442,11 +442,11 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
   });
 }
 
-const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOverrideName) => {
+const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) => {
   const config = getConfig();
   let manifestId = getFileName(manifestPath);
   let targetId = manifestId.replace('.json', '');
-  if (manifestOverrideName) targetId = manifestOverrideName;
+  if (fTargetId) targetId = fTargetId;
   if (!config.mep?.preview) manifestId = false;
   const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
   const { selector } = line;
@@ -508,7 +508,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, manifestOver
   });
 };
 
-export function parseManifestVariants(data, manifestPath, manifestOverrideName) {
+export function parseManifestVariants(data, manifestPath, targetId) {
   if (!data?.length) return null;
 
   const manifestConfig = {};
@@ -524,7 +524,7 @@ export function parseManifestVariants(data, manifestPath, manifestOverrideName) 
     });
 
     experiences.forEach((line) => {
-      getVariantInfo(line, variantNames, variants, manifestPath, manifestOverrideName);
+      getVariantInfo(line, variantNames, variants, manifestPath, targetId);
     });
 
     manifestConfig.variants = variants;
@@ -545,6 +545,7 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
+    config.mep?.geoPrefix,
     config.locale.region.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
@@ -684,8 +685,9 @@ export async function getManifestConfig(info, variantOverride = false) {
     acc[item.key] = item.value;
     return acc;
   }, {});
-  const manifestOverrideName = name || infoObj?.['manifest-override-name']?.toLowerCase();
-  const manifestConfig = parseManifestVariants(persData, manifestPath, manifestOverrideName);
+  const manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
+  const targetId = name || manifestOverrideName;
+  const manifestConfig = parseManifestVariants(persData, manifestPath, targetId);
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
@@ -697,8 +699,10 @@ export async function getManifestConfig(info, variantOverride = false) {
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
   if (infoTab) {
-    manifestConfig.manifestOverrideName = manifestOverrideName;
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
+    if (manifestOverrideName && manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
+      manifestConfig.manifestOverrideName = manifestOverrideName;
+    }
     const executionOrder = {
       'manifest-type': 1,
       'manifest-execution-order': 1,
@@ -955,6 +959,7 @@ export async function init(enablements = {}) {
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
       experiments: [],
+      geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || 'en-us',
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
