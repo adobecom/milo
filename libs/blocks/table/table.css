@@ -3,7 +3,7 @@
   --border-color: #DADADA;
   --highlight-background: #F3D949;
   --hover-border-color: #357BEB;
-  --checkmark-color: #15A46E;
+  --checkmark-color: #2C2C2C;
   --border-radius: 16px;
 
   max-width: 1200px;
@@ -175,7 +175,7 @@
 }
 
 .table .row-heading .col.col-heading {
-  padding: 30px;
+  padding: 16px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -211,7 +211,7 @@
 }
 
 .table .row-heading .col.col-heading .buttons-wrapper > * {
-  margin: 12px 6px;
+  margin: 10px 6px;
 }
 
 .table.header-left .row-heading .col.col-heading .buttons-wrapper > * {
@@ -318,7 +318,7 @@
 }
 
 .table .icon-milo-info {
-  height: 18px;
+  height: 16px;
 }
 
 .table .icon-milo-info:hover {
@@ -465,7 +465,7 @@ header.global-navigation {
 .table:not(.merch) .row-heading.active,
 .table.merch .row-heading.active .col-heading {
   transition-duration: 400ms;
-  box-shadow: 0 6px 3px -3px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 3px -3px rgb(0 0 0 / 15%);
 }
 
 .top-border-transparent {
