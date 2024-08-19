@@ -1,6 +1,6 @@
 import { getMetadata } from '../utils/utils.js';
 
-function checkForIgnoreValues() {
+function isDynamicNavDisabled() {
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
   if (!dynamicNavDisableValues) return false;
 
@@ -13,7 +13,7 @@ function checkForIgnoreValues() {
 }
 
 export default function dynamicNav(url, key) {
-  if (checkForIgnoreValues()) return url;
+  if (isDynamicNavDisabled()) return url;
   const metadataContent = getMetadata('dynamic-nav');
 
   if (metadataContent === 'entry') {
