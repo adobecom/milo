@@ -635,6 +635,10 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    if (a.href.includes('#_nofollow')) {
+      a.setAttribute('rel', 'nofollow');
+      a.href = a.href.replace('#_nofollow', '');
+    }
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
     } else {
@@ -726,10 +730,30 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const found = regex.test(el.innerHTML);
-  if (!found) return;
+  const walker = document.createTreeWalker(
+    el,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(node) {
+        const a = regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        regex.lastIndex = 0;
+        return a;
+      },
+    },
+  );
+  const nodes = [];
+  let node = walker.nextNode();
+  while (node !== null) {
+    nodes.push(node);
+    node = walker.nextNode();
+  }
+  if (!nodes.length) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(el.innerHTML, config, regex);
+  const replaceNodes = nodes.map(async (textNode) => {
+    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
+    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
+  });
+  await Promise.all(replaceNodes);
 }
 
 async function loadFooter() {

@@ -22,8 +22,8 @@ import { Log } from './log.js';
  */
 const ACOM = '_acom';
 const WcsBaseUrl = {
-    [Env.PRODUCTION]: 'https://wcs.adobe.com',
-    [Env.STAGE]: 'https://wcs.stage.adobe.com',
+    [Env.PRODUCTION]: 'https://www.adobe.com',
+    [Env.STAGE]: 'https://www.stage.adobe.com',
     [Env.PRODUCTION + ACOM]: 'https://www.adobe.com',
     [Env.STAGE + ACOM]: 'https://www.stage.adobe.com',
 };
