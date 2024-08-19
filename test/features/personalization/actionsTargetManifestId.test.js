@@ -123,8 +123,8 @@ describe('appendToSection action', async () => {
   });
 });
 
-describe('update action', () => {
-  it('should update marquee content', async () => {
+describe('replace action with html/text instead of fragment', () => {
+  it('should replace marquee content', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
     let manifestJson = await readFile({ path: './mocks/actions/manifestTargetUpdate.json' });
     manifestJson = JSON.parse(manifestJson);

@@ -93,30 +93,6 @@ const isInLcpSection = (el) => {
   return lcpSection === el || lcpSection?.contains(el);
 };
 
-export const createFrag = (el, url, manifestId, targetManifestId) => {
-  let href = url;
-  try {
-    const { pathname, search, hash } = new URL(url);
-    href = `${pathname}${search}${hash}`;
-  } catch {
-    // ignore
-  }
-  const a = createTag('a', { href }, url);
-  if (manifestId) a.dataset.manifestId = manifestId;
-  if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
-  let frag = createTag('p', undefined, a);
-  const isDelayedModalAnchor = /#.*delay=/.test(href);
-  if (isDelayedModalAnchor) frag.classList.add('hide-block');
-  const isSection = el.parentElement.nodeName === 'MAIN';
-  if (isSection) {
-    frag = createTag('div', undefined, frag);
-  }
-  if (isInLcpSection(el)) {
-    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
-  }
-  return frag;
-};
-
 const GLOBAL_CMDS = [
   'insertscript',
   'replacepage',
@@ -136,10 +112,58 @@ const COMMANDS_KEYS = {
   replace: 'replace',
 };
 
-function isFrag(str) {
-  const strLower = str.toLowerCase();
-  return (strLower.includes('/fragments/') && (strLower.startsWith('/') || strLower.startsWith('http')));
+function addManifestAndTargetId(el, manifestId, targetManifestId) {
+  if (manifestId) el.dataset.manifestId = manifestId;
+  if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
 }
+
+function checkSelectorType(selector) {
+  const sel = selector.toLowerCase().trim();
+  if (sel.includes('/fragments/') && (sel.startsWith('/') || sel.startsWith('http'))) return 'fragment';
+  return 'other';
+}
+
+export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
+  if (action === 'replace') {
+    addManifestAndTargetId(el, manifestId, targetManifestId);
+    if (modifiers?.includes('href')) {
+      el.href = content;
+      return el;
+    }
+  }
+  if (checkSelectorType(content) !== 'fragment') {
+    if (action === 'replace') {
+      el.innerHTML = content;
+      return el;
+    }
+    const container = createTag('div', {}, content);
+    addManifestAndTargetId(container, manifestId, targetManifestId);
+    return container;
+  }
+  if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
+  let href = content;
+  try {
+    const { pathname, search, hash } = new URL(content);
+    href = `${pathname}${search}${hash}`;
+  } catch {
+    // ignore
+  }
+  const a = createTag('a', { href }, content);
+  addManifestAndTargetId(a, manifestId, targetManifestId);
+  let frag = createTag('p', undefined, a);
+  const isDelayedModalAnchor = /#.*delay=/.test(href);
+  if (isDelayedModalAnchor) frag.classList.add('hide-block');
+  const isSection = el?.parentElement.nodeName === 'MAIN';
+  if (isSection) {
+    frag = createTag('div', undefined, frag);
+  }
+  if (isInLcpSection(el)) {
+    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  }
+  addManifestAndTargetId(frag, manifestId, targetManifestId);
+  return frag;
+};
+
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: ({ el, target, manifestId }) => {
     if (target === 'false') return;
@@ -151,22 +175,12 @@ const COMMANDS = {
   },
   [COMMANDS_KEYS.replace]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
-    if (isFrag(target)) {
-      el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
-      el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
-    } else {
-      if (modifiers.includes('href')) el.href = target;
-      else el.innerHTML = target;
-
-      if (manifestId) el.dataset.manifestId = manifestId;
-      if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
-    }
+    el.insertAdjacentElement(
+      'beforebegin',
+      createContent(el, target, manifestId, targetManifestId, 'replace', modifiers),
+    );
   },
 };
-
-function checkSelectorType(selector) {
-  return selector?.startsWith('/') || selector?.startsWith('http') ? 'fragment' : 'css';
-}
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
@@ -257,8 +271,7 @@ const setMetadata = (metadata) => {
   const propName = selector.startsWith('og:') ? 'property' : 'name';
   let metaEl = document.querySelector(`meta[${propName}="${selector}"]`);
   if (!metaEl) {
-    metaEl = document.createElement('meta');
-    metaEl.setAttribute(propName, selector);
+    metaEl = createTag('meta', { [propName]: selector });
     document.head.append(metaEl);
   }
   metaEl.setAttribute('content', val);
@@ -325,20 +338,7 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
-function getSelectedElement({ selector, action, rootEl }) {
-  let modifiedSelector = selector;
-  if (!modifiedSelector) return null;
-
-  if (checkSelectorType(modifiedSelector) === 'fragment') {
-    try {
-      const fragment = document.querySelector(`a[href*="${normalizePath(modifiedSelector, false)}"], a[href*="${normalizePath(modifiedSelector, true)}"]`);
-      if (fragment) return fragment.parentNode;
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
+function modifySelectorTerm(term) {
   const specificSelectors = {
     section: 'main > div',
     'primary-cta': 'p strong a',
@@ -347,38 +347,53 @@ function getSelectedElement({ selector, action, rootEl }) {
   };
   const otherSelectors = ['row', 'col'];
   const htmlEls = ['div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
-  const conditions = modifiedSelector.split(',');
-  conditions.forEach((condition, i) => {
-    const terms = condition.split('>').join(' > ').split(/\s+/);
-    terms.forEach((term, j) => {
-      const prefix = term.match(/^[a-zA-Z/-]*/)[0]?.toLowerCase();
-      const suffix = term.match(/[0-9]*$/)[0];
-      if (!prefix || htmlEls.includes(prefix)) return term;
-      if (prefix === 'main'
-        && (terms[j + 1].toLowerCase().startsWith('section')
-        || terms[j + 2].toLowerCase().startsWith('section'))) {
-        if (terms[j + 1] === '>') terms[j + 1] = '';
-        terms[j] = '';
-        return '';
+  const prefix = term.match(/^[a-zA-Z/-]*/)[0]?.toLowerCase();
+  const suffix = term.match(/[0-9]*$/)[0];
+  if (!prefix || htmlEls.includes(prefix)) return term;
+  let modifiedTerm = term;
+  if (otherSelectors.includes(prefix) || Object.keys(specificSelectors).includes(prefix)) {
+    if (otherSelectors.includes(prefix)) modifiedTerm = modifiedTerm.replace(prefix, '> div');
+    else modifiedTerm = modifiedTerm.replace(prefix, specificSelectors[prefix]);
+    if (suffix) modifiedTerm = modifiedTerm.replace(suffix, `:nth-child(${suffix})`);
+    return modifiedTerm;
+  }
+  if (suffix) {
+    modifiedTerm = modifiedTerm.replace(suffix, `:nth-child(${suffix} of .${prefix})`);
+  }
+  return `.${modifiedTerm}`;
+}
+
+function getSelectedElement({ selector, action, rootEl }) {
+  let modifiedSelector = selector.trim();
+  if (!modifiedSelector) return null;
+
+  if (checkSelectorType(modifiedSelector) === 'fragment') {
+    try {
+      const fragment = document.querySelector(
+        `a[href*="${normalizePath(modifiedSelector, false)}"], a[href*="${normalizePath(modifiedSelector, true)}"]`,
+      );
+      if (fragment) return fragment.parentNode;
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  const terms = modifiedSelector.split('>').join(' > ').split(',').join(' , ')
+    .split(/\s+/);
+  terms.forEach((term, i) => {
+    if (term.toLowerCase() === 'main') {
+      const next = terms[i + 1]?.toLowerCase();
+      const nextNext = terms[i + 2]?.toLowerCase();
+      if (next?.startsWith('section') || nextNext?.startsWith('section')) {
+        terms[i] = '';
+        if (next === '>') terms[i + 1] = '';
       }
-      let modifiedTerm = term;
-      if (otherSelectors.includes(prefix) || Object.keys(specificSelectors).includes(prefix)) {
-        if (otherSelectors.includes(prefix)) modifiedTerm = modifiedTerm.replace(prefix, '> div');
-        else modifiedTerm = modifiedTerm.replace(prefix, specificSelectors[prefix]);
-        if (suffix) modifiedTerm = modifiedTerm.replace(suffix, `:nth-child(${suffix})`);
-        terms[j] = modifiedTerm;
-        return modifiedTerm;
-      }
-      if (suffix) {
-        modifiedTerm = modifiedTerm.replace(suffix, `:nth-child(${suffix} of .${prefix})`);
-      }
-      terms[j] = `.${modifiedTerm}`;
-      return `.${modifiedTerm}`;
-    });
-    conditions[i] = terms.join(' ');
-    return terms.join(' ');
+    } else {
+      terms[i] = modifySelectorTerm(term);
+    }
   });
-  modifiedSelector = conditions.join(',');
+  modifiedSelector = terms.join(' ');
   console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
   const element = querySelector(rootEl || document, modifiedSelector);
 
@@ -407,8 +422,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
     if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
   } else {
-    if (manifestId) fragment.dataset.manifestId = manifestId;
-    if (adobeTargetTestid) fragment.dataset.adobeTargetTestid = adobeTargetTestid;
+    addManifestAndTargetId(fragment, manifestId, adobeTargetTestid);
   }
 };
 
@@ -427,16 +441,15 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
     if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
 
     if (action in COMMANDS) {
-      COMMANDS[action]({ el, target, manifestId, targetManifestId, modifiers });
+      COMMANDS[action]({
+        el, target, manifestId, targetManifestId, modifiers, action,
+      });
       return;
     }
-    const content = createFrag(el, target, manifestId, targetManifestId);
-    if (!isFrag(target)) {
-      content.innerHTML = target;
-      if (manifestId) content.dataset.manifestId = manifestId;
-      if (targetManifestId) content.dataset.adobeTargetTestid = targetManifestId;
-    }
-    el?.insertAdjacentElement(CREATE_CMDS[action], content);
+    el?.insertAdjacentElement(
+      CREATE_CMDS[action],
+      createContent(el, target, manifestId, targetManifestId),
+    );
   });
 }
 
@@ -854,8 +867,7 @@ export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
   if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
-    if (manifestId) a.dataset.manifestId = manifestId;
-    if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
+    addManifestAndTargetId(a, manifestId, targetManifestId);
     return fragment;
   }
   if (action === COMMANDS_KEYS.remove) {
@@ -895,8 +907,7 @@ export async function applyPers(manifests, postLCP = false) {
   if (config.mep.replacepage && !postLCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
-    if (manifestId) main.dataset.manifestId = manifestId;
-    if (targetManifestId) main.dataset.adobeTargetTestid = targetManifestId;
+    addManifestAndTargetId(main, manifestId, targetManifestId);
   }
 
   if (!postLCP) handleCommands(config.mep.commands);

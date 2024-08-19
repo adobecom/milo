@@ -4,7 +4,7 @@ import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers,
-  init, matchGlob, createFrag, combineMepSources, buildVariantInfo,
+  init, matchGlob, createContent, combineMepSources, buildVariantInfo,
 } from '../../../libs/features/personalization/personalization.js';
 import spoofParams from './spoofParams.js';
 import mepSettings from './mepSettings.js';
@@ -369,7 +369,7 @@ describe('matchGlob function', () => {
     const parent = document.createElement('div');
     const el = document.createElement('div');
     parent.appendChild(el);
-    const wrapper = createFrag(el, '/fragments/promos/path-to-promo/#modal-hash:delay=1');
+    const wrapper = createContent(el, '/fragments/promos/path-to-promo/#modal-hash:delay=1');
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
   });
