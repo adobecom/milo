@@ -369,7 +369,7 @@ function modifySelectorTerm(term) {
   return `.${modifiedTerm}`;
 }
 
-function getSelectedElement({ selector, action, rootEl }) {
+function getSelectedElement({ selector, rootEl }) {
   let modifiedSelector = selector.trim();
   if (!modifiedSelector) return null;
 
@@ -439,7 +439,7 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
       registerInBlockActions(cmd, manifestId, targetManifestId);
       return;
     }
-    const el = getSelectedElement({ selector, action, rootEl });
+    const el = getSelectedElement({ selector, rootEl });
 
     if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
 
