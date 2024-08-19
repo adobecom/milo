@@ -2,13 +2,6 @@ import { html, LitElement, nothing } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import { isMobile, isMobileOrTablet } from './utils.js';
 
-import {
-    ARROW_DOWN,
-    ARROW_LEFT,
-    ARROW_RIGHT,
-    ARROW_UP,
-    ENTER,
-} from './focus.js';
 import './global.css.js';
 import {
     EVENT_MERCH_CARD_READY,
@@ -550,7 +543,6 @@ export class MerchCard extends LitElement {
         super.connectedCallback();
         this.#container = this.getContainer();
         this.setAttribute('tabindex', this.getAttribute('tabindex') ?? '0');
-        this.addEventListener('keydown', this.keydownHandler);
         this.addEventListener('mouseleave', this.toggleActionMenu);
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
@@ -573,7 +565,7 @@ export class MerchCard extends LitElement {
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        this.removeEventListener('keydown', this.keydownHandler);
+
         this.removeEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,
@@ -601,76 +593,6 @@ export class MerchCard extends LitElement {
     }
 
     // custom methods
-    keydownHandler(e) {
-        const currentCard =
-            document.activeElement?.closest(MERCH_CARD_NODE_NAME);
-        if (!currentCard) return;
-        function selectNextCard(x, y) {
-            const el = document
-                .elementFromPoint(x, y)
-                ?.closest(MERCH_CARD_NODE_NAME);
-            if (el) {
-                currentCard.selected = false;
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                el.focus();
-                el.selected = true;
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-        const { x, y, width, height } = currentCard.getBoundingClientRect();
-        const offset = 64;
-
-        const { code } = e;
-        if (code === 'Tab') {
-            const focusableElements = Array.from(
-                this.querySelectorAll(
-                    'a[href], button:not([disabled]), textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select',
-                ),
-            );
-            const firstFocusableElement = focusableElements[0];
-            const lastFocusableElement =
-                focusableElements[focusableElements.length - 1];
-
-            if (
-                !e.shiftKey &&
-                document.activeElement === lastFocusableElement
-            ) {
-                let parentSection = this.closest('.section');
-                if(!parentSection) parentSection = document;
-                const merchCardsInSection = parentSection.querySelectorAll(MERCH_CARD_NODE_NAME);
-                const lastMerchCard = merchCardsInSection[merchCardsInSection.length - 1];
-                if (this === lastMerchCard) return;
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            } else if (
-                e.shiftKey &&
-                document.activeElement === firstFocusableElement
-            ) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            }
-        } else {
-            switch (code) {
-                case ARROW_LEFT:
-                    selectNextCard(x - offset, y);
-                    break;
-                case ARROW_RIGHT:
-                    selectNextCard(x + width + offset, y);
-                    break;
-                case ARROW_UP:
-                    selectNextCard(x, y - offset);
-                    break;
-                case ARROW_DOWN:
-                    selectNextCard(x, y + height + offset);
-                    break;
-                case ENTER:
-                    if (this.variant === 'twp') return;
-                    this.footerSlot?.querySelector('a')?.click();
-                    break;
-            }
-        }
-    }
 
     updateMiniCompareElementMinHeight(el, name) {
         const elMinHeightPropertyName = `--consonant-merch-card-mini-compare-${name}-height`;

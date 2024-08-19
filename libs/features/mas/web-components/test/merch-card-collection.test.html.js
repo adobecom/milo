@@ -3,21 +3,18 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
-import { mockConfig } from './mocks/config.js';
 
 import { pushState } from '../src/deeplink.js';
 
 import {
     appendMiloStyles,
     delay,
-    keyDown,
     toggleLargeDesktop,
 } from './utils.js';
 
 import '../src/sidenav/merch-sidenav.js';
 import '../src/merch-card-collection.js';
 
-import { ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP } from '../src/focus.js';
 import { withWcs } from './mocks/wcs.js';
 import { withLiterals } from './mocks/literals.js';
 import mas from './mocks/mas.js';
@@ -74,17 +71,14 @@ const visibleCards = (index) => {
 
 let merchCards;
 
-const shouldSkipTests =
-    sessionStorage.getItem('skipTests') ?? window.innerWidth < 1200
-        ? 'true'
-        : 'false';
+const shouldSkipTests = sessionStorage.getItem('skipTests') ? 'true' : 'false';
 runTests(async () => {
     await toggleLargeDesktop();
     mockLana();
     await mockFetch(withWcs, withLiterals);
     await mas();
     if (shouldSkipTests !== 'true') {
-        describe('merch-card-collection web component', () => {
+      describe('merch-card-collection web component', () => {
             let render;
             beforeEach(() => {
                 document.location.hash = '';
@@ -173,67 +167,10 @@ runTests(async () => {
                     'noSearchResultsText',
                 );
             });
-
-            it('should support navigation by keyboard', async () => {
-                document.location.hash = '';
-                render();
-                await delay(100);
-                const acrobat = visibleCards(2);
-                acrobat.focus();
-                await keyDown(ARROW_RIGHT);
-                expect(document.activeElement.title).to.equal('Premiere Pro');
-                await keyDown(ARROW_RIGHT);
-                expect(document.activeElement.title).to.equal('Premiere Pro');
-                await keyDown(ARROW_DOWN);
-                await keyDown(ARROW_LEFT);
-                expect(document.activeElement.title).to.equal('Adobe Express');
-                await keyDown(ARROW_UP);
-                expect(document.activeElement.title).to.equal('Photoshop');
-                await keyDown(ARROW_DOWN);
-                await keyDown(ARROW_DOWN);
-                expect(document.activeElement.title).to.equal(
-                    'Lightroom (1TB)',
-                );
-                await keyDown(ARROW_LEFT);
-                expect(document.activeElement.title).to.equal('After Effects');
-                await keyDown(ARROW_DOWN);
-                expect(document.activeElement.title).to.equal('Dreamweaver');
-                // Tab click cannot be simulated
-            });
-
-            it('alphabetical: should support navigation by keyboard', async () => {
-                pushState({ sort: 'alphabetical' });
-                render();
-                await delay(100);
-                const acrobat = visibleCards(2);
-                acrobat.focus();
-                await keyDown(ARROW_RIGHT);
-                expect(document.activeElement.title).to.equal('Acrobat Pro');
-                await keyDown(ARROW_RIGHT);
-                expect(document.activeElement.title).to.equal('Acrobat Pro');
-                await keyDown(ARROW_DOWN);
-                await keyDown(ARROW_LEFT);
-                expect(document.activeElement.title).to.equal('Acrobat Reader');
-                await keyDown(ARROW_UP);
-                expect(document.activeElement.title).to.equal(
-                    'Acrobat PDF Pack',
-                );
-                await keyDown(ARROW_DOWN);
-                await keyDown(ARROW_DOWN);
-                expect(document.activeElement.title).to.equal(
-                    'Acrobat Standard',
-                );
-                await keyDown(ARROW_DOWN);
-                expect(document.activeElement.title).to.equal(
-                    'Adobe Embedded Print Engine',
-                );
-                await keyDown(ARROW_RIGHT);
-                expect(document.activeElement.title).to.equal('Adobe Express');
-            });
         });
-    } else {
-        appendMiloStyles();
-    }
+  } else {
+    appendMiloStyles();
+  }
 });
 
 document.getElementById('showMore').addEventListener('click', () => {
