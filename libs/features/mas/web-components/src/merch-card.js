@@ -40,6 +40,7 @@ export class MerchCard extends LitElement {
             attribute: 'badge-background-color',
         },
         badgeText: { type: String, attribute: 'badge-text' },
+        share: {type: String, attribute: 'share'},
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         actionMenuContent: { type: String, attribute: 'action-menu-content' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
@@ -328,6 +329,20 @@ export class MerchCard extends LitElement {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
+    _shareTwitter(e) {
+      e?.preventDefault();
+      const shareHref = 'https://twitter.com/intent/tweet?text=Hello%20world';
+      window.open(shareHref, 'newwindow', 'width=600, height=400');
+    }
+
+    get shareButton() {
+      if (!this.share) {
+        return html``;
+      }
+      //const twitter = document
+      return html`<a id="share" href="" @click="${this._shareTwitter}">S</a>`;
+    }
+
     render() {
         if (!this.isConnected || this.style.display === 'none') return;
         switch (this.variant) {
@@ -397,7 +412,9 @@ export class MerchCard extends LitElement {
     }
 
     renderPlans() {
-        return html` ${this.badge}
+        return html` 
+            ${this.shareButton}
+            ${this.badge}
             <div class="body">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
