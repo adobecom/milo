@@ -103,8 +103,8 @@ const GLOBAL_CMDS = [
 const CREATE_CMDS = {
   insertafter: 'afterend',
   insertbefore: 'beforebegin',
-  prependtosection: 'afterbegin',
-  appendtosection: 'beforeend',
+  prepend: 'afterbegin',
+  append: 'beforeend',
 };
 
 const COMMANDS_KEYS = {
@@ -126,10 +126,16 @@ function checkSelectorType(selector) {
 export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
   if (action === 'replace') {
     addManifestAndTargetId(el, manifestId, targetManifestId);
-    if (modifiers?.includes('href')) {
+  }
+  if (el?.parentElement.nodeName === 'A' && modifiers?.includes('href')) {
+    if (action === 'replace') {
       el.href = content;
-      return el;
+    } else if (action === 'insertafter' || action.includes('append')) {
+      el.href = `${el.href}${content}`;
+    } else if (action === 'insertbefore' || action.includes('prepend')) {
+      el.href = `${content}${el.href}`;
     }
+    return el;
   }
   if (checkSelectorType(content) !== 'fragment') {
     if (action === 'replace') {
@@ -395,10 +401,7 @@ function getSelectedElement({ selector, action, rootEl }) {
   });
   modifiedSelector = terms.join(' ');
   console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
-  const element = querySelector(rootEl || document, modifiedSelector);
-
-  if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
-  return element;
+  return querySelector(rootEl || document, modifiedSelector);
 }
 const addHash = (url, newHash) => {
   if (!newHash) return url;
@@ -459,7 +462,9 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   let targetId = manifestId.replace('.json', '');
   if (fTargetId) targetId = fTargetId;
   if (!config.mep?.preview) manifestId = false;
-  const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
+  // retro support
+  const action = line.action?.toLowerCase()
+    .replace('content', '').replace('fragment', '').replace('tosection', '');
   const pageFilter = line['page filter'] || line['page filter optional'];
   let { selector } = line;
   let modifiers = [];
