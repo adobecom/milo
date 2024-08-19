@@ -53,13 +53,6 @@ Promise.all([
         outfile: `${outfolder}/merch-card-collection.js`,
     }),
     build({
-        bundle: true,
-        entryPoints: ['./src/plans-modal.js'],
-        format: 'esm',
-        plugins: [rewriteImports()],
-        outfile: `${outfolder}/plans-modal.js`,
-    }),
-    build({
         entryPoints: ['./src/sidenav/merch-sidenav.js'],
         bundle: true,
         minify: true,
