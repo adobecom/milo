@@ -42,13 +42,22 @@ function handleProjectStatusDetail(detail) {
   languages.value = [...languages.value.map((lang) => ({ ...lang, ...detail[lang.code] }))];
 }
 
+const cancelPolling = () => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+    polling.value = false;
+  }
+};
+
 function showAuthError(operation) {
   cancelPolling();
   setStatus(
     'service',
     'error',
-    `You donot have access to ${operation}.`,
-    'Please refresh page, login to sidekick and retry.');
+    `You do not have access to ${operation}.`,
+    'Please refresh page, login to sidekick and retry.'
+  );
 }
 
 export async function getProjectStatus() {
@@ -129,7 +138,7 @@ export async function startSync() {
 export async function startProject({ skipSync }) {
   let url = await getMilocUrl();
   setStatus('service', 'info', 'Starting project');
-  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }  };
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value } };
   url = `${url}start-project?project=${heading.value.projectId}`;
   if (skipSync) url = `${url}&skipsync=true`;
   const resp = await fetch(url, opts);
@@ -148,7 +157,7 @@ export async function cancelProject() {
   allowCancelProject.value = false;
   let url = await getMilocUrl();
   setStatus('service', 'info', 'Cancelling project');
-  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }  };
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value } };
   url = `${url}cancel-project?project=${heading.value.projectId}`;
   const resp = await fetch(url, opts);
   if (resp.status === 200) setExcelStatus('Project cancelled', '');
@@ -175,7 +184,7 @@ export async function rolloutLang(
   if (ep === 'start-rollout') { statNotes = `${statNotes} - Reroll: ${reroll ? 'yes' : 'no'}`; }
   setExcelStatus(statAction, statNotes);
   const url = await getMilocUrl();
-  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }  };
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value } };
   const resp = await fetch(`${url}${ep}?project=${heading.value.projectId}&languageCode=${languageCode}&reroll=${reroll}`, opts);
   if (resp.status === UNAUTHORIZED) {
     showAuthError('rollout');
@@ -189,7 +198,7 @@ export async function createProject() {
   setStatus('service', 'info', 'Creating new project.');
   const body = `${origin}${heading.value.path}.json`;
   const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }, body };
-  const resp = await fetch(`${url}create-project?locui=${encodeURIComponent(window.location.href)}`, opts);
+  const resp = await fetch(`${url}create-project`, opts);
   if (resp.status === 201) {
     setExcelStatus('Project Created', '');
     canRefresh.value = false;
@@ -206,14 +215,6 @@ export async function createProject() {
   if (resp.status === UNAUTHORIZED) showAuthError('create project');
   return resp.status;
 }
-
-const cancelPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-    pollingInterval = null;
-    polling.value = false;
-  }
-};
 
 export async function getServiceUpdates() {
   const url = await getMilocUrl();
