@@ -6,16 +6,34 @@ const ChatBot = ({ data }) => {
   const [userInput, setUserInput] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [isMessageEnabled, setIsMessageEnabled] = useState(false);
 
   const handleMLInput = async (event) => {
     setUserInput(event.target.value);
   };
 
+  const handleCheckboxChange = () => {
+    setIsMessageEnabled(!isMessageEnabled);
+  };
+
   const handleSendMessage = async () => {
-    if (userInput.trim()) {
+    let finalMessage = userInput.trim();
+    if (finalMessage) {
       setIsTyping(true);
-      const botResponse = await getMLResults(data.endpoint.text, 'CCHomeMLRepo1', userInput);
-      setChatHistory([...chatHistory, { sender: 'user', message: userInput }, { sender: 'bot', message: botResponse }]);
+      const newChatHistory = [...chatHistory, { sender: 'user', message: userInput }];
+      setChatHistory(newChatHistory);
+
+      if (isMessageEnabled) {
+        finalMessage = `<s>[INST] <<SYS>>\n\n<</SYS>>\n\nSystem: You are an expert recommender for Adobe products and want to help users understand why you recommend they purchase Photoshop given that they said their interests were \\nuser:${finalMessage}[/INST]`;
+      } else { 
+        finalMessage = `<s>[INST] <<SYS>>\n\n<</SYS>>\n\n \\nuser:${finalMessage}[/INST]`;
+      }
+
+      for await (const chunk of getMLResults(data.endpoint.text, 'CCHomeMLRepo1', finalMessage)) {
+        newChatHistory.push({ sender: 'bot', message: chunk });
+        setChatHistory([...newChatHistory]); // Spread to create a new reference
+      }
+
       setUserInput('');
       setIsTyping(false);
     }
@@ -49,7 +67,18 @@ const ChatBot = ({ data }) => {
           onMLEnter=${handleMLEnter} 
           placeholderText="Type your message..."
         />
-        <button onClick=${handleSendMessage}>Submit</button>
+        <div class="button-container">
+          <button onClick=${handleSendMessage}>Submit</button>
+        </div>
+        <div class="label-container">
+          <label>
+            <input 
+              type="checkbox" 
+              checked=${isMessageEnabled} 
+              onChange=${handleCheckboxChange} 
+            /> Enable System Settings(System: You are an expert recommender for Adobe products and want to help users understand why you recommend they purchase Photoshop given that they said their interests were)
+          </label>
+         </div>
       </div>
     </div>
   `;
