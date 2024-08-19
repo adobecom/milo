@@ -198,7 +198,7 @@ const loadMartechFiles = async (config) => {
     ) + (
       config.env.name === 'prod'
         ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-        : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
+        : '/d4d114c60e50/950e58636f21/launch-8199d1291066-development.min.js'
     );
     loadLink(launchUrl, { as: 'script', rel: 'preload' });
 
