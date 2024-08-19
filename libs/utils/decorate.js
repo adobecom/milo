@@ -185,7 +185,7 @@ export function getImgSrc(pic) {
   const doc = parser.parseFromString(pic, 'text/html');
   if (defineDeviceByScreenSize() === 'mobile') source = doc.querySelector('source[type="image/webp"]:not([media])');
   else source = doc.querySelector('source[type="image/webp"][media]');
-  return `poster='${source.srcset}'`;
+  return source?.srcset ? `poster='${source.srcset}'` : '';
 }
 
 export function getVideoAttrs(hash, dataset) {
@@ -193,7 +193,7 @@ export function getVideoAttrs(hash, dataset) {
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
   const playInViewport = hash?.includes('viewportplay');
-  const poster = dataset?.videoPoster ? getImgSrc(dataset.videoPoster) : '';
+  const poster = getImgSrc(dataset.videoPoster);
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
