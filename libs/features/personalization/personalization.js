@@ -381,6 +381,7 @@ function getSelectedElement({ selector, action, rootEl }) {
       modifiedSelector = modifiedSelector.replace(customBlockSelector, cssOptimizedSelector);
     });
     modifiedSelector = rootEl === document ? `body > main ${modifiedSelector}` : `:scope ${selector}`;
+    console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
     const element = querySelector(rootEl || document, modifiedSelector);
 
     if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
