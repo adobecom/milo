@@ -931,7 +931,7 @@ async function checkForPageMods() {
   const target = getMepEnablement('target');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '')) return;
-  if (target) {
+  if (target === true) {
     loadMartech();
   } else if (pzn) {
     loadIms()
