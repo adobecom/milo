@@ -28,3 +28,12 @@ header.global-navigation, header.global-navigation.feds--dark {
   height: 64px;
   visibility: hidden;
 }
+
+@media (min-width: 900px) {
+  .feds-promo-link {
+    color: #035FE6;
+  }
+  .feds-promo-link:hover {
+    color: #136FF6;
+  }
+}
