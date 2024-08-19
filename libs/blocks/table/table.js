@@ -86,10 +86,10 @@ function handleHeading(table, headingCols) {
       trackingHeader.setAttribute('id', trackingHeaderID);
 
       const headerBody = col.querySelector('.body:not(.action-area)');
-      if (headerBody) headerBody.setAttribute('id', `${trackingHeaderID}-body`);
+      headerBody?.setAttribute('id', `${trackingHeaderID}-body`);
 
       const headerPricing = col.querySelector('.pricing');
-      if (headerPricing) headerPricing.setAttribute('id', `${trackingHeaderID}-pricing`);
+      headerPricing?.setAttribute('id', `${trackingHeaderID}-pricing`);
 
       const describedBy = `${headerBody?.id ?? ''} ${headerPricing?.id ?? ''}`.trim();
       trackingHeader.setAttribute('aria-describedby', describedBy);
