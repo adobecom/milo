@@ -25,7 +25,7 @@ const ChatBot = ({ data }) => {
 
       if (isMessageEnabled) {
         finalMessage = `<s>[INST] <<SYS>>\n\n<</SYS>>\n\nSystem: You are an expert recommender for Adobe products and want to help users understand why you recommend they purchase Photoshop given that they said their interests were \\nuser:${finalMessage}[/INST]`;
-      } else { 
+      } else {
         finalMessage = `<s>[INST] <<SYS>>\n\n<</SYS>>\n\n \\nuser:${finalMessage}[/INST]`;
       }
 
@@ -59,7 +59,7 @@ const ChatBot = ({ data }) => {
           </div>
         `)}
       </div>
-      ${isTyping && html`<div class="bot-typing">Bot is typing...</div>`}
+      ${isTyping && html`<div class="bot-typing">Adobe AI is typing...</div>`}
       <div class="input-container">
         <${mlField}
           cardsUsed=${false} 
