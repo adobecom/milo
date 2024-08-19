@@ -128,13 +128,9 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     addManifestAndTargetId(el, manifestId, targetManifestId);
   }
   if (el?.parentElement.nodeName === 'A' && modifiers?.includes('href')) {
-    if (action === 'replace') {
-      el.href = content;
-    } else if (action === 'insertafter' || action.includes('append')) {
-      el.href = `${el.href}${content}`;
-    } else if (action === 'insertbefore' || action.includes('prepend')) {
-      el.href = `${content}${el.href}`;
-    }
+    if (action === 'replace') el.href = content;
+    else if (action === 'insertafter' || action === 'append') el.href = `${el.href}${content}`;
+    else if (action === 'insertbefore' || action === 'prepend') el.href = `${content}${el.href}`;
     return el;
   }
   if (checkSelectorType(content) !== 'fragment') {
