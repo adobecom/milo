@@ -80,8 +80,7 @@ function handleClickableCard(el) {
 
 const init = async (el) => {
   el.classList.add('con-block');
-  const isOpen = el.className.includes('open');
-  if (isOpen) {
+  if (el.className.includes('open')) {
     el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
   }
   if (el.className.includes('rounded-corners')) {
@@ -90,31 +89,28 @@ const init = async (el) => {
   if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
-  if (rows.length === 3) el.classList.add('equal-height');
+  if (rows.length === 4) el.classList.add('equal-height');
   if (rows.length >= 1) {
-    const count = rows.length >= 4 ? 'four-plus' : rows.length;
+    const count = rows.length >= 3 ? 'three-plus' : rows.length;
     switch (count) {
-      case 'four-plus':
-        // 4+ rows (0:bg, 1:media, 2:copy, ...3:static, last:card-footer)
+      case 'three-plus':
+        // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:card-footer)
         decorateBgRow(el, head);
         rows = tail;
         await decorateForeground(el, rows);
         decorateMedia(el, middle);
         break;
       case 2:
-      case 3:
         // 2 rows (0:media, 1:copy)
-        // 3 rows (0:media, 1:copy, last:card-footer)
-        rows = [middle];
-        if (count === 3) rows = [middle, tail[0]];
-        await decorateForeground(el, rows);
+        rows = middle;
+        await decorateForeground(el, [rows]);
         decorateMedia(el, head);
         el.classList.add('no-bg');
         break;
       case 1:
         // 1 row  (0:copy)
-        rows = [head];
-        await decorateForeground(el, rows);
+        rows = head;
+        await decorateForeground(el, [rows]);
         el.classList.add('no-bg', 'no-media');
         break;
       default:
