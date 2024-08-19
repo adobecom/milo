@@ -11,6 +11,10 @@ import{html as a,LitElement as A}from"/libs/deps/lit-all.min.js";var m=class{con
         display: contents;
     }
 
+    sp-action-menu {
+      z-index: 1;
+    }
+
     #header {
         order: -2;
         display: grid;
