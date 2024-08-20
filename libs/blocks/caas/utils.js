@@ -599,7 +599,7 @@ export const getConfig = async (originalState, strs = {}) => {
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
-      altCtaOnLive: state.altCTAs,
+      altCtaOnLive: state.altCtaOnLive,
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
