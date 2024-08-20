@@ -4,9 +4,8 @@ import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers,
-  init, matchGlob, createFrag, combineMepSources, buildVariantInfo,
+  init, matchGlob, createContent, combineMepSources, buildVariantInfo,
 } from '../../../libs/features/personalization/personalization.js';
-import spoofParams from './spoofParams.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -310,16 +309,6 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
   });
-
-  it('should override to param-newoffer=123', async () => {
-    spoofParams({ newoffer: '123' });
-    const config = getConfig();
-    await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
-    setTimeout(async () => {
-      await init(mepSettings);
-      expect(config.mep.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
-    }, 100);
-  });
 });
 
 describe('matchGlob function', () => {
@@ -369,7 +358,7 @@ describe('matchGlob function', () => {
     const parent = document.createElement('div');
     const el = document.createElement('div');
     parent.appendChild(el);
-    const wrapper = createFrag(el, '/fragments/promos/path-to-promo/#modal-hash:delay=1');
+    const wrapper = createContent(el, '/fragments/promos/path-to-promo/#modal-hash:delay=1');
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
   });

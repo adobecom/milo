@@ -86,6 +86,8 @@ describe('insertAfter action', async () => {
 
     expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
     expect(document.querySelector('a[href="/fragments/insertafterfragment"]')).to.be.null;
+    expect(document.querySelector('#insertafter').getAttribute('href')).to.equal('/my-page.html');
+    expect(document.querySelector('#inserted-html')).to.be.null;
     await init(mepSettings);
     expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
 
@@ -98,6 +100,8 @@ describe('insertAfter action', async () => {
     expect(fragment).to.not.be.null;
 
     expect(fragment.parentElement.previousElementSibling.querySelector('a[href="/fragments/insertaround"]')).to.exist;
+    expect(document.querySelector('#insertafter').getAttribute('href')).to.equal('/my-page.html#modal');
+    expect(document.querySelector('#inserted-html')).to.not.be.null;
   });
 });
 
@@ -109,6 +113,7 @@ describe('insertBefore action', async () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
+    expect(document.querySelector('#insertbefore').getAttribute('href')).to.equal('/my-page.html');
     await init(mepSettings);
     expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
 
@@ -121,6 +126,7 @@ describe('insertBefore action', async () => {
     expect(fragment).to.not.be.null;
 
     expect(fragment.parentElement.nextElementSibling.querySelector('a[href="/fragments/insertaround"]')).to.exist;
+    expect(document.querySelector('#insertbefore').getAttribute('href')).to.equal('/de/my-page.html');
   });
 });
 
@@ -157,8 +163,8 @@ describe('appendToSection action', async () => {
   });
 });
 
-describe('update action', () => {
-  it.only('should update marquee content', async () => {
+describe('replace action with html/text instead of fragment', () => {
+  it('should replace marquee content', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
     let manifestJson = await readFile({ path: './mocks/actions/manifestUpdate.json' });
     manifestJson = JSON.parse(manifestJson);

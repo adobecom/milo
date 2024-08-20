@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 import {
-  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig, MILO_BLOCKS,
+  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
 } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
@@ -93,30 +93,6 @@ const isInLcpSection = (el) => {
   return lcpSection === el || lcpSection?.contains(el);
 };
 
-export const createFrag = (el, url, manifestId, targetManifestId) => {
-  let href = url;
-  try {
-    const { pathname, search, hash } = new URL(url);
-    href = `${pathname}${search}${hash}`;
-  } catch {
-    // ignore
-  }
-  const a = createTag('a', { href }, url);
-  if (manifestId) a.dataset.manifestId = manifestId;
-  if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
-  let frag = createTag('p', undefined, a);
-  const isDelayedModalAnchor = /#.*delay=/.test(href);
-  if (isDelayedModalAnchor) frag.classList.add('hide-block');
-  const isSection = el.parentElement.nodeName === 'MAIN';
-  if (isSection) {
-    frag = createTag('div', undefined, frag);
-  }
-  if (isInLcpSection(el)) {
-    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
-  }
-  return frag;
-};
-
 const GLOBAL_CMDS = [
   'insertscript',
   'replacepage',
@@ -127,14 +103,71 @@ const GLOBAL_CMDS = [
 const CREATE_CMDS = {
   insertafter: 'afterend',
   insertbefore: 'beforebegin',
-  prependtosection: 'afterbegin',
-  appendtosection: 'beforeend',
+  prepend: 'afterbegin',
+  append: 'beforeend',
 };
 
 const COMMANDS_KEYS = {
   remove: 'remove',
   replace: 'replace',
-  update: 'update',
+};
+
+function addManifestAndTargetId(el, manifestId, targetManifestId) {
+  if (manifestId) el.dataset.manifestId = manifestId;
+  if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
+}
+
+function checkSelectorType(selector) {
+  const sel = selector.toLowerCase().trim();
+  if (sel.includes('/fragments/') && (sel.startsWith('/') || sel.startsWith('http'))) return 'fragment';
+  return 'other';
+}
+
+export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
+  if (action === 'replace') {
+    addManifestAndTargetId(el, manifestId, targetManifestId);
+  }
+  if (el?.nodeName === 'A' && modifiers?.includes('href')) {
+    if (action === 'replace') el.href = content;
+    else if (action === 'insertafter' || action === 'append') {
+      el.setAttribute('href', `${el.getAttribute('href')}${content}`);
+    } else if (action === 'insertbefore' || action === 'prepend') {
+      el.setAttribute('href', `${content}${el.getAttribute('href')}`);
+    }
+    addManifestAndTargetId(el, manifestId, targetManifestId);
+    return el;
+  }
+  if (checkSelectorType(content) !== 'fragment') {
+    if (action === 'replace') {
+      el.innerHTML = content;
+      return el;
+    }
+    const container = createTag('div', {}, content);
+    addManifestAndTargetId(container, manifestId, targetManifestId);
+    return container;
+  }
+  if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
+  let href = content;
+  try {
+    const { pathname, search, hash } = new URL(content);
+    href = `${pathname}${search}${hash}`;
+  } catch {
+    // ignore
+  }
+  const a = createTag('a', { href }, content);
+  addManifestAndTargetId(a, manifestId, targetManifestId);
+  let frag = createTag('p', undefined, a);
+  const isDelayedModalAnchor = /#.*delay=/.test(href);
+  if (isDelayedModalAnchor) frag.classList.add('hide-block');
+  const isSection = el?.parentElement.nodeName === 'MAIN';
+  if (isSection) {
+    frag = createTag('div', undefined, frag);
+  }
+  if (isInLcpSection(el)) {
+    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  }
+  addManifestAndTargetId(frag, manifestId, targetManifestId);
+  return frag;
 };
 
 const COMMANDS = {
@@ -146,26 +179,14 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  [COMMANDS_KEYS.replace]: ({ el, target, manifestId, targetManifestId }) => {
+  [COMMANDS_KEYS.replace]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
-    el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
-  },
-  [COMMANDS_KEYS.update]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
-    if (!el) return;
-    if (modifiers.includes('href')) {
-      el.href = target;
-    } else {
-      el.innerHTML = target;
-    }
-    if (manifestId) el.dataset.manifestId = manifestId;
-    if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
+    el.insertAdjacentElement(
+      'beforebegin',
+      createContent(el, target, manifestId, targetManifestId, 'replace', modifiers),
+    );
   },
 };
-
-function checkSelectorType(selector) {
-  return selector?.startsWith('/') || selector?.startsWith('http') ? 'fragment' : 'css';
-}
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
@@ -256,8 +277,7 @@ const setMetadata = (metadata) => {
   const propName = selector.startsWith('og:') ? 'property' : 'name';
   let metaEl = document.querySelector(`meta[${propName}="${selector}"]`);
   if (!metaEl) {
-    metaEl = document.createElement('meta');
-    metaEl.setAttribute(propName, selector);
+    metaEl = createTag('meta', { [propName]: selector });
     document.head.append(metaEl);
   }
   metaEl.setAttribute('content', val);
@@ -324,70 +344,73 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
-function getSelectedElement({ selector, action, rootEl }) {
+function modifySelectorTerm(term) {
+  const specificSelectors = {
+    section: 'main > div',
+    'primary-cta': 'p strong a',
+    'secondary-cta': 'p em a',
+    'action-area': 'p:has(em a, strong a)',
+  };
+  const otherSelectors = ['row', 'col'];
+  const htmlEls = ['div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
+  let startText = term.match(/^[a-zA-Z/./-]*/)[0]?.toLowerCase();
+  const endNumber = term.match(/[0-9]*$/)[0];
+  if (!startText || htmlEls.includes(startText)) return term;
+  let modifiedTerm = term;
+  if (otherSelectors.includes(startText) || Object.keys(specificSelectors).includes(startText)) {
+    if (otherSelectors.includes(startText)) modifiedTerm = modifiedTerm.replace(startText, '> div');
+    else modifiedTerm = modifiedTerm.replace(startText, specificSelectors[startText]);
+    if (endNumber) modifiedTerm = modifiedTerm.replace(endNumber, `:nth-child(${endNumber})`);
+    return modifiedTerm;
+  }
+  if (!startText.startsWith('.')) {
+    startText = `.${startText}`;
+    modifiedTerm = `.${modifiedTerm}`;
+  }
+  if (endNumber) {
+    modifiedTerm = modifiedTerm.replace(endNumber, `:nth-child(${endNumber} of ${startText})`);
+  }
+  return modifiedTerm;
+}
+export function modifyNonFragmentSelector(selector) {
   let modifiedSelector = selector;
+  const terms = modifiedSelector.split('>').join(' > ').split(',').join(' , ')
+    .split(/\s+/);
+  terms.forEach((term, i) => {
+    if (term.toLowerCase() === 'main') {
+      const next = terms[i + 1]?.toLowerCase();
+      const nextNext = terms[i + 2]?.toLowerCase();
+      if (next?.startsWith('section') || nextNext?.startsWith('section')) {
+        terms[i] = '';
+        if (next === '>') terms[i + 1] = '';
+      }
+    } else {
+      terms[i] = modifySelectorTerm(term);
+    }
+  });
+  modifiedSelector = terms.join(' ');
+  console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
+  return modifiedSelector;
+}
+
+function getSelectedElement({ selector, rootEl }) {
+  let modifiedSelector = selector.trim();
   if (!modifiedSelector) return null;
 
   if (checkSelectorType(modifiedSelector) === 'fragment') {
     try {
-      const fragment = document.querySelector(`a[href*="${normalizePath(modifiedSelector, false)}"], a[href*="${normalizePath(modifiedSelector, true)}"]`);
+      const fragment = document.querySelector(
+        `a[href*="${normalizePath(modifiedSelector, false)}"], a[href*="${normalizePath(modifiedSelector, true)}"]`,
+      );
       if (fragment) return fragment.parentNode;
       return null;
     } catch (e) {
       return null;
     }
-  } else {
-    MILO_BLOCKS.forEach((block) => {
-      const regex = new RegExp(`(\\s|^)(${block})\\.?(\\d+)?(\\s|$)`, 'g');
-      const match = regex.exec(modifiedSelector);
-      if (match?.length) {
-        const simplifiedSelector = match[0].replace(/\s+/g, '');
-        const n = simplifiedSelector.match(/\d+/g) || '1';
-        const cleanClassSelector = match[2];
-        const cssOptimizedSelector = ` .${cleanClassSelector}:nth-child(${n} of .${cleanClassSelector})`;
-        modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
-      }
-    });
-    ['section', 'row', 'col'].forEach((sel) => {
-      const simplifiedSelectors = modifiedSelector.match(new RegExp(`${sel}\\.?\\d?`, 'g'));
-      simplifiedSelectors?.forEach((simplifiedSelector) => {
-        const n = simplifiedSelector.match(/\d+/g) || '1';
-        const cssOptimizedSelector = `> div:nth-of-type(${n})`;
-        modifiedSelector = modifiedSelector.replace(simplifiedSelector, cssOptimizedSelector);
-      });
-    });
-    ['primary-cta', 'secondary-cta', 'action-area'].forEach((sel) => {
-      const simplifiedSelectors = selector.match(new RegExp(`${sel}`, 'g'));
-      simplifiedSelectors?.forEach((simplifiedSelector) => {
-        switch (true) {
-          case simplifiedSelector.includes('primary-cta'):
-            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p strong a');
-            break;
-          case simplifiedSelector.includes('secondary-cta'):
-            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p em a');
-            break;
-          case simplifiedSelector.includes('action-area'):
-            modifiedSelector = modifiedSelector.replace(simplifiedSelector, 'p:has(em a, strong a)');
-            break;
-          default: break;
-        }
-      });
-    });
-    const customBlockSelectors = modifiedSelector.match(/\.\w+-?\w+\d+/g);
-    customBlockSelectors?.forEach((customBlockSelector) => {
-      const n = customBlockSelector.match(/\d+/g);
-      const blockName = customBlockSelector.replace(/(\.|\d+)/g, '');
-      const cssOptimizedSelector = ` .${blockName}:nth-child(${n} of .${blockName})`;
-      modifiedSelector = modifiedSelector.replace(customBlockSelector, cssOptimizedSelector);
-    });
-    modifiedSelector = rootEl === document ? `body > main ${modifiedSelector}` : `:scope ${selector}`;
-    console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
-    const element = querySelector(rootEl || document, modifiedSelector);
-
-    if (action.includes('pendtosection') && element?.parentNode?.nodeName !== 'MAIN') return null;
-
-    return element;
   }
+
+  modifiedSelector = modifyNonFragmentSelector(modifiedSelector);
+  return querySelector(rootEl || document, modifiedSelector);
 }
 const addHash = (url, newHash) => {
   if (!newHash) return url;
@@ -411,8 +434,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
     if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
   } else {
-    if (manifestId) fragment.dataset.manifestId = manifestId;
-    if (adobeTargetTestid) fragment.dataset.adobeTargetTestid = adobeTargetTestid;
+    addManifestAndTargetId(fragment, manifestId, adobeTargetTestid);
   }
 };
 
@@ -426,17 +448,19 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
       registerInBlockActions(cmd, manifestId, targetManifestId);
       return;
     }
-    const el = getSelectedElement({ selector, action, rootEl });
+    const el = getSelectedElement({ selector, rootEl });
 
     if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
 
     if (action in COMMANDS) {
-      COMMANDS[action]({ el, target, manifestId, targetManifestId, modifiers });
+      COMMANDS[action]({
+        el, target, manifestId, targetManifestId, action, modifiers,
+      });
       return;
     }
     el?.insertAdjacentElement(
       CREATE_CMDS[action],
-      createFrag(el, target, manifestId, targetManifestId),
+      createContent(el, target, manifestId, targetManifestId, action, modifiers),
     );
   });
 }
@@ -447,7 +471,9 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   let targetId = manifestId.replace('.json', '');
   if (fTargetId) targetId = fTargetId;
   if (!config.mep?.preview) manifestId = false;
-  const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
+  // retro support
+  const action = line.action?.toLowerCase()
+    .replace('content', '').replace('fragment', '').replace('tosection', '');
   const pageFilter = line['page filter'] || line['page filter optional'];
   let { selector } = line;
   let modifiers = [];
@@ -855,8 +881,7 @@ export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
   if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
-    if (manifestId) a.dataset.manifestId = manifestId;
-    if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
+    addManifestAndTargetId(a, manifestId, targetManifestId);
     return fragment;
   }
   if (action === COMMANDS_KEYS.remove) {
@@ -896,8 +921,7 @@ export async function applyPers(manifests, postLCP = false) {
   if (config.mep.replacepage && !postLCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
-    if (manifestId) main.dataset.manifestId = manifestId;
-    if (targetManifestId) main.dataset.adobeTargetTestid = targetManifestId;
+    addManifestAndTargetId(main, manifestId, targetManifestId);
   }
 
   if (!postLCP) handleCommands(config.mep.commands);
