@@ -765,13 +765,7 @@ h6 {
   line-height: var(--type-heading-xs-lh);
 }
 
-h1:lang(ja),
-h2:lang(ja),
-h3:lang(ja),
-h4:lang(ja),
-h5:lang(ja),
-h6:lang(ja),
-p:lang(ja) {
+:is(h1, h2, h3, h4, h5, h6, p):lang(ja) {
   line-break: strict;
 }
 
