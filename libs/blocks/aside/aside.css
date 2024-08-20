@@ -1012,11 +1012,11 @@
     padding-left: 0;
   }
 
-  .aside .foreground.container .text {
+  .aside:not(.notification) .foreground.container .text {
     flex: 1 0 calc(var(--grid-column-width) * 6);
   }
 
-  .aside .foreground.container .image {
+  .aside:not(.notification) .foreground.container .image {
     flex: 1 0 calc(var(--grid-column-width) * 5);
   }
 
